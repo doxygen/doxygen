@@ -36,8 +36,9 @@ struct Config
   static QCString outputDir; // the global output directory
   static QCString outputLanguage; // the output language
   static bool     noIndexFlag; // generate condensed index flag
-  static bool     extractAllFlag; // gererate docs for all classes flag
+  static bool     extractAllFlag; // generate docs for all classes flag
   static bool     extractPrivateFlag; // generate docs for private members flag
+  static bool     extractStaticFlag; // generate docs for static members flag
   static bool     hideMemberFlag; // hide undocumented members.
   static bool     hideClassFlag; // hide undocumented members.
   static bool     briefMemDescFlag; // enable `inline' brief member descr.
@@ -112,8 +113,11 @@ struct Config
   static bool     classGraphFlag; // class graph
   static bool     collGraphFlag; // collaboration graph
   static bool     includeGraphFlag; // include graph
+  static bool     includedByGraphFlag; // depends on include graph
   static bool     gfxHierarchyFlag; // flag to enable graphical hierarchy
   static QCString dotPath; // path to the dot tool
+  static int      maxDotGraphWidth; // max dot graph width
+  static int      maxDotGraphHeight; // max dot graph height
   static bool     searchEngineFlag; // generate search engine flag
   static QCString cgiName; // the name of the CGI binary
   static QCString cgiURL; // the absolute URL to the CGI binary

@@ -429,7 +429,8 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     QCString trCompoundReference(const char *clName,
-                                    ClassDef::CompoundType compType)
+                                 ClassDef::CompoundType compType,
+                                 bool /*isTemplate*/)
       // used as the title of the HTML page of a class/struct/union
     {
       QCString result=(QCString)clName+" ";

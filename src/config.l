@@ -73,6 +73,7 @@ QCString Config::outputLanguage = "English";
 bool     Config::noIndexFlag = FALSE;
 bool     Config::extractAllFlag = FALSE;
 bool     Config::extractPrivateFlag = FALSE;
+bool     Config::extractStaticFlag = FALSE;
 bool     Config::hideMemberFlag = FALSE;
 bool     Config::hideClassFlag = FALSE;
 bool     Config::briefMemDescFlag = TRUE;
@@ -126,7 +127,7 @@ QStrList Config::extraPackageList;
 QCString Config::latexHeaderFile;
 bool     Config::pdfHyperFlag = FALSE;
 bool     Config::latexBatchModeFlag = FALSE;
-bool     Config::generateRTF = FALSE;
+bool     Config::generateRTF = TRUE;
 QCString Config::rtfOutputDir = "rtf";
 bool     Config::compactRTFFlag = FALSE;
 bool     Config::rtfHyperFlag = FALSE;
@@ -147,8 +148,11 @@ bool     Config::haveDotFlag = FALSE;
 bool     Config::classGraphFlag = TRUE;
 bool     Config::collGraphFlag = TRUE;
 bool     Config::includeGraphFlag = TRUE;
+bool     Config::includedByGraphFlag = TRUE;
 bool     Config::gfxHierarchyFlag = TRUE;
 QCString Config::dotPath;
+int      Config::maxDotGraphWidth = 1024;
+int      Config::maxDotGraphHeight = 1024;
 bool     Config::searchEngineFlag = FALSE;
 QCString Config::cgiName = "search.cgi";
 QCString Config::cgiURL;
@@ -175,6 +179,8 @@ static QCString     elemStr;
 //static QCString     colsInAlphaIndexString;
 static QCString     tabSizeString;
 static QCString     colsInAlphaIndexString;
+static QCString     maxDotGraphWidthString;
+static QCString     maxDotGraphHeightString;
 
 /* -----------------------------------------------------------------
  */
@@ -215,6 +221,7 @@ static int yyread(char *buf,int max_size)
 <Start>"DISABLE_INDEX"[ \t]*"="         { BEGIN(GetBool); b=&Config::noIndexFlag; }
 <Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool); b=&Config::extractAllFlag; }
 <Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool); b=&Config::extractPrivateFlag; }
+<Start>"EXTRACT_STATIC"[ \t]*"="        { BEGIN(GetBool); b=&Config::extractStaticFlag; }
 <Start>"HIDE_UNDOC_MEMBERS"[ \t]*"="    { BEGIN(GetBool); b=&Config::hideMemberFlag; }
 <Start>"HIDE_UNDOC_CLASSES"[ \t]*"="    { BEGIN(GetBool); b=&Config::hideClassFlag; }
 <Start>"BRIEF_MEMBER_DESC"[ \t]*"="     { BEGIN(GetBool); b=&Config::briefMemDescFlag; }
@@ -289,8 +296,11 @@ static int yyread(char *buf,int max_size)
 <Start>"CLASS_GRAPH"[ \t]*"="           { BEGIN(GetBool); b=&Config::classGraphFlag; }
 <Start>"COLLABORATION_GRAPH"[ \t]*"="   { BEGIN(GetBool); b=&Config::collGraphFlag; }
 <Start>"INCLUDE_GRAPH"[ \t]*"="         { BEGIN(GetBool); b=&Config::includeGraphFlag; }
+<Start>"INCLUDED_BY_GRAPH"[ \t]*"="     { BEGIN(GetBool); b=&Config::includedByGraphFlag; }
 <Start>"GRAPHICAL_HIERARCHY"[ \t]*"="   { BEGIN(GetBool); b=&Config::gfxHierarchyFlag; }
 <Start>"DOT_PATH"[ \t]*"="              { BEGIN(GetString); s=&Config::dotPath; s->resize(0); }
+<Start>"MAX_DOT_GRAPH_WIDTH"[ \t]*"="   { BEGIN(GetString); s=&maxDotGraphWidthString; s->resize(0); }
+<Start>"MAX_DOT_GRAPH_HEIGHT"[ \t]*"="  { BEGIN(GetString); s=&maxDotGraphHeightString; s->resize(0); }
 <Start>"SEARCHENGINE"[ \t]*"="          { BEGIN(GetBool); b=&Config::searchEngineFlag; }
 <Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString); s=&Config::cgiName; s->resize(0); }
 <Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString); s=&Config::cgiURL; s->resize(0); }
@@ -395,6 +405,7 @@ void dumpConfig()
   printf("noIndexFlag=`%d'\n",Config::noIndexFlag);
   printf("extractAllFlag=`%d'\n",Config::extractAllFlag);
   printf("extractPrivateFlag=`%d'\n",Config::extractPrivateFlag);
+  printf("extractStaticFlag=`%d'\n",Config::extractStaticFlag);
   printf("hideMemberFlag=`%d'\n",Config::hideMemberFlag);
   printf("hideClassFlag=`%d'\n",Config::hideClassFlag);
   printf("briefMemDescFlag=`%d'\n",Config::briefMemDescFlag);
@@ -577,8 +588,11 @@ void dumpConfig()
   printf("classGraphFlag=`%d'\n",Config::classGraphFlag);
   printf("collGraphFlag=`%d'\n",Config::collGraphFlag);
   printf("includeGraphFlag=`%d'\n",Config::includeGraphFlag);
+  printf("includedByGraphFlag=`%d'\n",Config::includedByGraphFlag);
   printf("gfxHierarchyFlag=`%d'\n",Config::gfxHierarchyFlag);
   printf("dotPath=`%s'\n",Config::dotPath.data());
+  printf("maxDotGraphWidth=`%d'\n",Config::maxDotGraphWidth);
+  printf("maxDotGraphHeight=`%d'\n",Config::maxDotGraphHeight);
   printf("# Configuration::addtions related to the search engine   \n");
   printf("searchEngineFlag=`%d'\n",Config::searchEngineFlag);
   printf("cgiName=`%s'\n",Config::cgiName.data());
@@ -605,6 +619,7 @@ void Config::init()
   Config::noIndexFlag = FALSE;
   Config::extractAllFlag = FALSE;
   Config::extractPrivateFlag = FALSE;
+  Config::extractStaticFlag = FALSE;
   Config::hideMemberFlag = FALSE;
   Config::hideClassFlag = FALSE;
   Config::briefMemDescFlag = TRUE;
@@ -658,7 +673,7 @@ void Config::init()
   Config::latexHeaderFile.resize(0);
   Config::pdfHyperFlag = FALSE;
   Config::latexBatchModeFlag = FALSE;
-  Config::generateRTF = FALSE;
+  Config::generateRTF = TRUE;
   Config::rtfOutputDir = "rtf";
   Config::compactRTFFlag = FALSE;
   Config::rtfHyperFlag = FALSE;
@@ -679,8 +694,11 @@ void Config::init()
   Config::classGraphFlag = TRUE;
   Config::collGraphFlag = TRUE;
   Config::includeGraphFlag = TRUE;
+  Config::includedByGraphFlag = TRUE;
   Config::gfxHierarchyFlag = TRUE;
   Config::dotPath.resize(0);
+  Config::maxDotGraphWidth = 1024;
+  Config::maxDotGraphHeight = 1024;
   Config::searchEngineFlag = FALSE;
   Config::cgiName = "search.cgi";
   Config::cgiURL.resize(0);
@@ -818,8 +836,10 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# If the EXTRACT_ALL tag is set to YES all classes and functions will be \n";
-    t << "# included in the documentation, even if no documentation was available. \n";
+    t << "# If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n";
+    t << "# documentation are documented, even if no documentation was available. \n";
+    t << "# Private class members and static file members will be hidden unless \n";
+    t << "# the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES \n";
     t << "\n";
   }
   t << "EXTRACT_ALL           = ";
@@ -838,8 +858,21 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# If the EXTRACT_STATIC tag is set to YES all static members of a file \n";
+    t << "# will be included in the documentation. \n";
+    t << "\n";
+  }
+  t << "EXTRACT_STATIC        = ";
+  writeBoolValue(t,Config::extractStaticFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all \n";
-    t << "# undocumented members inside documented classes or files. \n";
+    t << "# undocumented members of documented classes, files or namespaces. \n";
+    t << "# If set to NO (the default) these members will be included in the \n";
+    t << "# various overviews, but no documentation section is generated. \n";
+    t << "# This option has no effect if EXTRACT_ALL is enabled. \n";
     t << "\n";
   }
   t << "HIDE_UNDOC_MEMBERS    = ";
@@ -849,7 +882,9 @@ void writeTemplateConfig(QFile *f,bool sl)
   {
     t << "\n";
     t << "# If the HIDE_UNDOC_CLASSESS tag is set to YES, Doxygen will hide all \n";
-    t << "# undocumented classes. \n";
+    t << "# undocumented classes that are normally visible in the class hierarchy. \n";
+    t << "# If set to NO (the default) these class will be included in the various \n";
+    t << "# overviews. This option has no effect if EXTRACT_ALL is enabled. \n";
     t << "\n";
   }
   t << "HIDE_UNDOC_CLASSES    = ";
@@ -1735,6 +1770,17 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# If the ENABLE_PREPROCESSING, INCLUDED_BY_GRAPH, and HAVE_DOT tags are set to \n";
+    t << "# YES then doxygen will generate a graph for each documented header file showing \n";
+    t << "# the documented files that directly or indirectly include this file \n";
+    t << "\n";
+  }
+  t << "INCLUDED_BY_GRAPH     = ";
+  writeBoolValue(t,Config::includedByGraphFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen \n";
     t << "# will graphical hierarchy of all classes instead of a textual one. \n";
     t << "\n";
@@ -1745,12 +1791,38 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# This tag can be used to specify the path where the dot tool can be found. \n";
-    t << "# If left blank, it is assumed the dot tool can be found on the path. \n";
+    t << "# The tag DOT_PATH can be used to specify the path where the dot tool can be \n";
+    t << "# found. If left blank, it is assumed the dot tool can be found on the path. \n";
     t << "\n";
   }
   t << "DOT_PATH              = ";
   writeStringValue(t,Config::dotPath);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The MAX_DOT_GRAPH_WIDTH tag can be used to set the maximum allowed width \n";
+    t << "# (in pixels) of the graphs generated by dot. If a graph becomes larger than \n";
+    t << "# this value, doxygen will try to truncate the graph, so that it fits within \n";
+    t << "# the specified constraint. Beware that most browsers cannot cope with very \n";
+    t << "# large images. \n";
+    t << "\n";
+  }
+  t << "MAX_DOT_GRAPH_WIDTH   = ";
+  writeIntValue(t,Config::maxDotGraphWidth);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The MAX_DOT_GRAPH_HEIGHT tag can be used to set the maximum allows height \n";
+    t << "# (in pixels) of the graphs generated by dot. If a graph becomes larger than \n";
+    t << "# this value, doxygen will try to truncate the graph, so that it fits within \n";
+    t << "# the specified constraint. Beware that most browsers cannot cope with very \n";
+    t << "# large images. \n";
+    t << "\n";
+  }
+  t << "MAX_DOT_GRAPH_HEIGHT  = ";
+  writeIntValue(t,Config::maxDotGraphHeight);
   t << "\n";
   if (!sl)
   {

@@ -48,17 +48,42 @@ static QCString filterTitle(const char *s)
   return result;  
 }
 
-static QCString escapeLabelName(const QCString &s)
+static QCString escapeLabelName(const char *s)
 {
   QCString result;
-  uint i;
-  for (i=0;i<s.length();i++)
+  const char *p=s;
+  char c;
+  while ((c=*p++))
   {
-    char c=s.at(i);
     switch (c)
     {
       case '%': result+="\\%"; break;
+      case '|': result+="\\texttt{\"|}"; break;
+      case '!': result+="\"!"; break;
       default: result+=c;
+    }
+  }
+  return result;
+}
+
+static QCString escapeMakeIndexChars(LatexGenerator *g,QTextStream &t,const char *s)
+{
+  QCString result;
+  const char *p=s;
+  char str[2];
+  str[1]=0;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '!': t << "\"!"; break;
+      case '"': t << "\"\""; break;
+      case '@': t << "\"@"; break;
+      case '|': t << "\\texttt{\"|}"; break;
+      case '[': t << "["; break;
+      case ']': t << "]"; break;
+      default:  str[0]=c; g->docify(str); break;
     }
   }
   return result;
@@ -178,7 +203,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
           t << "}\n";
           if (Config::paperType=="a4wide") t << "\\usepackage{a4wide}\n";
           t << "\\usepackage{makeidx}\n"
-               "\\usepackage{fancyheadings}\n"
+               "\\usepackage{fancyhdr}\n"
                "\\usepackage{epsfig}\n"
                "\\usepackage{float}\n"
                "\\usepackage{doxygen}\n";
@@ -865,11 +890,11 @@ void LatexGenerator::startMemberDoc(const char *clname,
       t << "}!";
     }
     t << escapeLabelName(memname) << "@{";
-    docify(memname);
+    escapeMakeIndexChars(this,t,memname);
     t << "}}" << endl;
 
     t << "\\index{" << escapeLabelName(memname) << "@{";
-    docify(memname);
+    escapeMakeIndexChars(this,t,memname);
     t << "}";
     if (clname)
     {
@@ -934,7 +959,7 @@ void LatexGenerator::addToIndex(const char *s1,const char *s2)
   if (s1)
   {
     t << "\\index{" << escapeLabelName(s1) << "@{";
-    docify(s1);
+    escapeMakeIndexChars(this,t,s1);
     t << "}";
     if (s2)
     {

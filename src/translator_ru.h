@@ -402,7 +402,9 @@ class TranslatorRussian : public Translator
 	// need translation
 	return "Документация по друзьям класса и связанным с ними функциям";
     }
-    QCString trCompoundReference(const char* clName,ClassDef::CompoundType compType)
+    QCString trCompoundReference(const char* clName,
+                                 ClassDef::CompoundType compType,
+                                 bool /*isTemplate*/)
     {
 	QCString result=(QCString)clName+" ";
 	switch(compType)

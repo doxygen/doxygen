@@ -1,5 +1,5 @@
 Name: doxygen
-Version: 1.1.4
+Version: 1.1.4-20000625
 Summary: documentation system for C, C++ and IDL
 Release: 1
 Source0: doxygen-%{version}.src.tar.gz

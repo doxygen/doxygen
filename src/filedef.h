@@ -122,9 +122,11 @@ class FileDef : public Definition
 
     void setGenerateSource(bool b) { isSource=b; }
     bool generateSource() const { return isSource; }
+
     void addIncludeDependency(FileDef *fd,const char *incName,bool local);
+    void addIncludedByDependency(FileDef *fd,const char *incName,bool local);
     QList<IncludeInfo> *includeFileList() const { return includeList; }
-    QDict<IncludeInfo> *includeFileDict() const { return includeDict; }
+    QList<IncludeInfo> *includedByFileList() const { return includedByList; }
 
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
@@ -145,6 +147,8 @@ class FileDef : public Definition
     ClassList  *classList;
     QDict<IncludeInfo> *includeDict;
     QList<IncludeInfo> *includeList;
+    QDict<IncludeInfo> *includedByDict;
+    QList<IncludeInfo> *includedByList;
     NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
     NamespaceList *usingDirList;

@@ -120,7 +120,8 @@ static void decrLevel()
   }
   else
   {
-    err("Error: More #endif's than #if's found.\n");
+    err("%s:%d: Error: More #endif's than #if's found.\n",
+	g_yyFileName.data(),g_yyLineNr);
   }
 }
 
@@ -128,7 +129,8 @@ static bool otherCaseDone()
 {
   if (g_level==0)
   {
-    err("Error: Found an #else without a preceding #if.\n");
+    err("%s:%d: Error: Found an #else without a preceding #if.\n",
+	g_yyFileName.data(),g_yyLineNr);
     return TRUE;
   }
   else
@@ -165,7 +167,7 @@ static FILE *findFile(const char *fileName)
   {
     QCString absName=(QCString)s+"/"+fileName;
     QFileInfo fi(absName);
-    if (fi.exists())
+    if (fi.exists() && fi.isFile())
     {
       FILE *f;
       if (!Config::inputFilter.isEmpty())
@@ -279,6 +281,7 @@ static void processConcatOperators(QCString &expr)
 {
   QRegExp r("[ \\t\\n]*##[ \\t\\n]*"); 
   int l,n,i=0;
+  if (expr.isEmpty()) return;
   while ((n=r.match(expr,i,&l))!=-1)
   {
     if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
@@ -840,6 +843,11 @@ static void readIncludeFile(const QCString &inc)
       {
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(g_yyFileDef,incFileName,localInclude);
+	// add included by dependency
+        if (g_yyFileDef)
+        {
+  	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
+        }
       }
       // store the state of the old file 
       FileState *fs=new FileState;
@@ -861,6 +869,11 @@ static void readIncludeFile(const QCString &inc)
 	FileDef *fd = findFileDef(inputNameDict,incFileName,ambig);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
+	// add included by dependency
+        if (fd)
+        {
+  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
+        }
       }
 #if SHOW_INCLUDES
       msg("#include %s: not found! skipping...\n",incFileName.data());

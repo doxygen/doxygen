@@ -531,7 +531,8 @@ class TranslatorItalian : public Translator
 
     /*! used as the title of the HTML page of a class/struct/union */
     QCString trCompoundReference(const char *clName,
-                                    ClassDef::CompoundType compType)
+                                 ClassDef::CompoundType compType,
+                                 bool /* isTemplate */)
     {
       QCString result="Riferimenti per ";
       switch(compType)

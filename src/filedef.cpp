@@ -46,6 +46,9 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   includeList   = new QList<IncludeInfo>;
   includeList->setAutoDelete(TRUE);
   includeDict   = new QDict<IncludeInfo>(61);
+  includedByList = new QList<IncludeInfo>;
+  includedByList->setAutoDelete(TRUE);
+  includedByDict = new QDict<IncludeInfo>(61);
   namespaceList = new NamespaceList;
   namespaceDict = new NamespaceDict(7);
   srcDefDict = 0;
@@ -188,13 +191,29 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config::haveDotFlag && Config::includeGraphFlag)
   {
     //printf("Graph for file %s\n",name().data());
-    DotInclDepGraph incDepGraph(this);
+    DotInclDepGraph incDepGraph(this,FALSE);
     if (!incDepGraph.isTrivial())
     {
       ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
       parseText(ol,theTranslator->trInclDepGraph(name()));
+      ol.endInclDepGraph(incDepGraph);
+      ol.enableAll();
+    }
+    //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
+  }
+
+  if (Config::haveDotFlag && Config::includedByGraphFlag)
+  {
+    //printf("Graph for file %s\n",name().data());
+    DotInclDepGraph incDepGraph(this,TRUE);
+    if (!incDepGraph.isTrivial())
+    {
+      ol.disable(OutputGenerator::Man);
+      ol.newParagraph();
+      ol.startInclDepGraph();
+      parseText(ol,theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
     }
@@ -454,6 +473,7 @@ void FileDef::addMemberListToGroup(MemberList *ml,
     {
       QCString *pGrpHeader = memberHeaderDict[groupId];
       QCString *pDocs      = memberDocDict[groupId];
+      //printf("Member `%s' pGrpHeader=%p\n",md->name().data(),pGrpHeader);
       if (pGrpHeader)
       {
         MemberGroup *mg = memberGroupDict->find(groupId);
@@ -463,6 +483,7 @@ void FileDef::addMemberListToGroup(MemberList *ml,
           memberGroupDict->insert(groupId,mg);
           memberGroupList->append(mg);
         }
+        //printf("insert member %s in group %s\n",md->name().data(),pGrpHeader->data());
         mg->insertMember(md);
         md->setMemberGroup(mg);
       }
@@ -592,6 +613,21 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
     ii->local       = local;
     includeList->append(ii);
     includeDict->insert(iName,ii);
+  }
+}
+
+void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local)
+{
+  //printf("FileDef::addIncludedByDependency(%p,%s,%d)\n",fd,incName,local);
+  QCString iName = fd ? fd->absFilePath().data() : incName;
+  if (!iName.isEmpty() && includedByDict->find(iName)==0)
+  {
+    IncludeInfo *ii = new IncludeInfo;
+    ii->fileDef     = fd;
+    ii->includeName = incName;
+    ii->local       = local;
+    includedByList->append(ii);
+    includedByDict->insert(iName,ii);
   }
 }
 

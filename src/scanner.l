@@ -83,6 +83,7 @@ static int              lastFormulaContext;
 static int              lastAnchorContext;
 static int              lastInitializerContext;
 static int              lastClassTemplSpecContext;
+static int              lastSkipHtmlCommentContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -130,6 +131,7 @@ static bool             inReturnBlock;
 static bool             inAuthorBlock;
 static bool             inDeprecatedBlock;
 static bool             inVersionBlock;
+static bool             inSinceBlock;
 static bool             inDateBlock;
 static bool             inBugBlock;
 static bool             inNoteBlock;
@@ -218,6 +220,7 @@ static void initParser()
   inAuthorBlock = FALSE;
   inDeprecatedBlock = FALSE;
   inVersionBlock = FALSE;
+  inSinceBlock = FALSE;
   inDateBlock = FALSE;
   inBugBlock = FALSE;
   inNoteBlock = FALSE;
@@ -669,7 +672,7 @@ static void tryEndItemList()
 static bool inBlock()
 {
   return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
-         inVersionBlock || inDateBlock || inWarningBlock || inRemarkBlock || 
+         inVersionBlock || inSinceBlock || inDateBlock || inWarningBlock || inRemarkBlock || 
 	 inAttentionBlock || inBugBlock || inNoteBlock ||
 	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
 	 inPostBlock || inInvarBlock;
@@ -684,7 +687,7 @@ static void endBlock()
     }
     outDoc->endDescList();
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
-    inVersionBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
+    inVersionBlock=inSinceBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
     inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
     inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
 }
@@ -965,7 +968,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 %x	FuncQual
 %x	Operator
 %x	Array
-%x	Curly
+%x	ReadBody
 %x	Using
 %x	UsingDirective
 %x	NameSpaceDocArg1
@@ -1089,7 +1092,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 %x	ReadFuncArgType
 %x	ReadTempArgs
 %x	Specialization
-%x      DocSkipHtmlComment
+%x      SkipHtmlComment
 %x      ReadFormulaShort
 %x	ReadFormulaLong
 %x	AnchorLabel
@@ -1149,9 +1152,6 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+			{
   					  addListItemMarker(yytext+1);
   					}
-<DocScan>"<!--"				{ BEGIN(DocSkipHtmlComment); }
-<DocSkipHtmlComment>"--"[!]?">"		{ BEGIN(DocScan); }
-<DocSkipHtmlComment>.
 <DocScan,Text>"&copy;"			{ outDoc->writeCopyright(); }
 <DocScan,Text>"&quot;"			{ outDoc->writeQuote(); }
 <DocScan,Text>"&"[AEIOUYaeiouy]"uml;"	{ outDoc->writeUmlaut(yytext[1]); }
@@ -1468,6 +1468,24 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trVersion()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+  					}
+<DocScan>{CMD}"since"/{BN}		{
+  				          endArgumentList();
+  					  if (!inSinceBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inSinceBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trSince()+": ");
 					    outDoc->endBold();
 					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();
@@ -2641,6 +2659,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  *currentTemplateSpec+=*yytext; 
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
+					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
@@ -2651,7 +2670,6 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else
 					  {
-					    lineCount();
 					    if (YY_START==FindMembers)
 					    {
 					      addType( current ) ;
@@ -2668,6 +2686,9 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      BEGIN(FindMembers);
 					  }
 					}
+<FindMembers>"::"			{
+					  current->name+=yytext;
+  					}
 <CppQuote>"("{B}*"\""			{
   					  insideCppQuote=TRUE;
   					  BEGIN(FindMembers);
@@ -2812,7 +2833,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    BEGIN(AfterDoc);
 					  }
   					}
-<FindMembers>"//@{"|"/*@{*/"		{
+<FindMembers,FindFields>"//@{"|"/*@{"	{
 					  if (memberGroupId!=NOGROUP)
 					  {
   					    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
@@ -2833,8 +2854,24 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    current->mGrpId = memberGroupId;
 					    lastMemberGroupLine = yyLineNr;
 					  }
+					  tmpDocType=-1;
+					  if (current_root->section & Entry::SCOPE_MASK)
+					      current->inside = current_root->name+"::";
+					  if (yytext[1]=='/') // C++ style comment
+					  {
+  					    current->brief.resize(0);
+					    lastDocContext = YY_START;
+					    BEGIN( LineDoc );
+					  }
+					  else // C style comment 
+					  {
+					    current->doc.resize(0);
+					    lastDocContext = YY_START;
+					    removeSlashes=FALSE;
+					    BEGIN( Doc );
+					  }
   					}
-<FindMembers>"//@}"|"/*@}*/"		{
+<FindMembers,FindFields,ReadInitializer>"//@}"|"/*@}*/"	{
 					  if (memberGroupId==NOGROUP)
 					  {
 					    warn(yyFileName,yyLineNr,
@@ -2849,7 +2886,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      	               new QCString(memberGroupDocs)
 							      );
 					    memberGroupId=NOGROUP;
-					    current->mGrpId=NOGROUP;
+					    if (YY_START!=ReadInitializer) current->mGrpId=NOGROUP;
 					    memberGroupHeader.resize(0);
 					    memberGroupDocs.resize(0);
 					  }
@@ -3111,25 +3148,25 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<Curly>[^\r\n{}"'/]*			{ current->program += yytext ; }
-<Curly>"//".*				{ current->program += yytext ; }
-<Curly>\"[^\r\n"]*\"			{ current->program += yytext ; }
-<Curly>"/*"{B}*				{ current->program += yytext ;
-					  lastContext = Curly ;
+<ReadBody>[^\r\n{}"'/]*			{ current->program += yytext ; }
+<ReadBody>"//".*				{ current->program += yytext ; }
+<ReadBody>\"[^\r\n"]*\"			{ current->program += yytext ; }
+<ReadBody>"/*"{B}*				{ current->program += yytext ;
+					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<Curly>"/*"{BL}				{ current->program += yytext ;
+<ReadBody>"/*"{BL}				{ current->program += yytext ;
 					  ++yyLineNr ;
-					  lastContext = Curly ;
+					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<Curly>"'"\\[0-7]{1,3}"'"               { current->program += yytext; }
-<Curly>"'"\\."'"                        { current->program += yytext; }
-<Curly>"'"."'"                          { current->program += yytext; }
-<Curly>"{"				{ current->program += yytext ;
+<ReadBody>"'"\\[0-7]{1,3}"'"               { current->program += yytext; }
+<ReadBody>"'"\\."'"                        { current->program += yytext; }
+<ReadBody>"'"."'"                          { current->program += yytext; }
+<ReadBody>"{"				{ current->program += yytext ;
 					  ++curlyCount ;
 					}
-<Curly>"}"				{ //err("Curly count=%d\n",curlyCount);
+<ReadBody>"}"				{ //err("ReadBody count=%d\n",curlyCount);
   					  if ( curlyCount>0 )
 					  {
 					    current->program += yytext ;
@@ -3305,10 +3342,10 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   */
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
-<Curly>{BN}+				{ current->program += yytext ;
+<ReadBody>{BN}+				{ current->program += yytext ;
 					  lineCount() ;
 					}
-<Curly>.				{ current->program += yytext ; }
+<ReadBody>.				{ current->program += yytext ; }
 
 <FindMembers>"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ {
   					  current->bodyLine = yyLineNr;
@@ -3596,12 +3633,14 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
 <FuncQual>{BN}*"throw"{BN}*"("		{ 
   					  current->exception = " throw (" ;
+					  roundCount=0;
 					  lineCount() ;
 					  BEGIN( ExcpRound ) ;
 					}
 <FuncQual>{BN}*"raises"{BN}*"("         {
   					  current->exception = " raises (" ;
 					  lineCount() ;
+					  roundCount=0;
 					  BEGIN( ExcpRound ) ;
   					}
 <ExcpRound>"("				{ current->exception += *yytext ;
@@ -3619,6 +3658,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <Function>"("				{ current->type += current->name ;
 					  current->name  = current->args ;
 					  current->args  = yytext ;
+					  roundCount=0;
 					  BEGIN( FuncRound ) ;
 					}
 <Function>"#"				{ lastCPPContext = YY_START;
@@ -3931,7 +3971,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
 					    current->name.sprintf("@%d",anonCount++);
 					  curlyCount=0;
-					  BEGIN( Curly ) ;
+					  BEGIN( ReadBody ) ;
 					}
 <BasesProt>"virtual"                    { baseVirt = Virtual; }
 <BasesProt>"public"                     { baseProt = Public; }
@@ -3975,6 +4015,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    BEGIN(lastSkipSharpContext);
   					}
 <Specialization>{BN}+			{ lineCount(); *specName +=' '; }
+<Specialization>"<<"			{ *specName += yytext; }
+<Specialization>">>"			{ *specName += yytext; }
 <Specialization>.			{
   					  *specName += *yytext;
   					}
@@ -4008,7 +4050,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  curlyCount=0;
-					  BEGIN( Curly ) ;
+					  BEGIN( ReadBody ) ;
 					}
 <SkipUnionSwitch>"("			{
   					  roundCount++;
@@ -4032,11 +4074,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
-					  if (YY_START==Curly)
+					  if (YY_START==ReadBody)
 					    current->doc+="\n\n";
 					  else
   					    current->doc.resize(0);
@@ -4045,7 +4087,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    current->inside = current_root->name+"::";
 					  BEGIN( Doc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -4053,7 +4095,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if (!Config::autoBriefFlag) // use the Qt style
 					  {
 					    tmpDocType=-1;
-					    if (YY_START==Curly)
+					    if (YY_START==ReadBody)
 					      current->doc+="\n\n";
 					    else
   					      current->doc.resize(0);
@@ -4061,11 +4103,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else // Use the javadoc style
 					  {
-					    if (YY_START==Curly)
+					    if (YY_START==ReadBody)
 					    {
 					      tmpDocType=-1;
 					      current->doc+="\n\n";
-					      lastDocContext = Curly;
+					      lastDocContext = ReadBody;
 					      BEGIN( Doc );
 					    }
 					    else
@@ -4077,7 +4119,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    }
 					  }
   					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator>"//!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar>"//!" { 
   					  current->brief.resize(0);
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
@@ -4085,7 +4127,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    current->inside = current_root->name+"::";
 					  BEGIN( LineDoc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator>"///"/[^/] { 
+<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar>"///"/[^/] { 
   					  current->brief.resize(0);
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
@@ -4286,6 +4328,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  memberGroupDocs.resize(0);
 					  BEGIN(GroupHeader);
   					}
+<LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>"<!--"	{ 
+					  lastSkipHtmlCommentContext = YY_START;
+					  BEGIN(SkipHtmlComment); 
+					}
+<SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
+<SkipHtmlComment>.
 <LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"{B}+	{
   					  todoStartContext = YY_START;
 					  todoString.resize(0);
