@@ -291,8 +291,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
             {
               if (!Config::genTagFile.isEmpty())
-                tagFile << md->name() << " " << md->anchor() 
-                  << " \"\"" << endl;
+              {
+                tagFile << "    <member>" << endl;
+                tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
+                tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
+                tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
+                tagFile << "    </member>" << endl;
+              }
               md->writeLink(typeDecl,cd,nd,fd,gd);
             }
             else
@@ -325,9 +330,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
               if (fmd->hasDocumentation()) // enum value has docs
               {
-                if (!Config::genTagFile.isEmpty())
-                  tagFile << fmd->name() << " " << fmd->anchor() 
-                    << " \"" << fmd->argsString() << "\"";
+              if (!Config::genTagFile.isEmpty())
+              {
+                tagFile << "    <member>" << endl;
+                tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+                tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
+                tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
+                tagFile << "    </member>" << endl;
+              }
                 fmd->writeLink(typeDecl,cd,nd,fd,gd);
               }
               else // no docs for this enum value

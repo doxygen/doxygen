@@ -730,7 +730,22 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
 
-  if (!Config::genTagFile.isEmpty()) tagFile << ">" << name() << ":";
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  <compound kind=\"";
+    switch(compType)
+    {
+      case Class:     tagFile << "class";     break; 
+      case Struct:    tagFile << "struct";    break; 
+      case Union:     tagFile << "union";     break; 
+      case Interface: tagFile << "interface"; break; 
+      case Exception: tagFile << "exception"; break; 
+    }
+    tagFile << "\">" << endl;
+    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+  }
+
   
   if (Config::classDiagramFlag) ol.disableAllBut(OutputGenerator::Man);
 
@@ -756,7 +771,23 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          if (!Config::genTagFile.isEmpty()) tagFile << cd->name() << "?";
+          if (!Config::genTagFile.isEmpty()) 
+          {
+            tagFile << "    <base";
+            if (bcd->prot==Protected)
+            {
+              tagFile << " protection=\"protected\"";
+            }
+            else if (bcd->prot==Private)
+            {
+              tagFile << " protection=\"private\"";
+            }
+            if (bcd->virt==Virtual)
+            {
+              tagFile << " virtualness=\"virtual\"";
+            }
+            tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+          }
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
         }
         else
@@ -773,8 +804,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,inheritLine.right(inheritLine.length()-index));
     ol.newParagraph();
   }
-
-  if (!Config::genTagFile.isEmpty()) tagFile << " \"" << fileName << ".html\"\n";
 
   // write subclasses
   if ((count=inheritedBy->count())>0)
@@ -1156,6 +1185,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
 
   ol.endTextBlock();
+
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  </compound>" << endl;
+  }
  
   endFile(ol);
 }

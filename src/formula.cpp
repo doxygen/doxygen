@@ -103,7 +103,7 @@ void FormulaList::generateBitmaps(const char *path)
   {
     //printf("Running latex...\n");
     //system("latex _formulas.tex </dev/null >/dev/null");
-    if (iSystem("latex _formulas.tex")!=0)
+    if (iSystem("latex","_formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look for typos in _formulas.tex!\n");
       formulaError=TRUE;
@@ -117,14 +117,14 @@ void FormulaList::generateBitmaps(const char *path)
     {
       int pageNum=*pagePtr;
       msg("Generating image form-%d.gif for formula\n",pageNum);
-      char dviCmd[256];
+      char dviArgs[4096];
       QCString formBase;
       formBase.sprintf("_form%d",pageNum);
       // run dvips to convert the page with number pageIndex to an
       // encapsulated postscript.
-      sprintf(dviCmd,"dvips -q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
+      sprintf(dviArgs,"-q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
           pageIndex,formBase.data());
-      if (iSystem(dviCmd)!=0)
+      if (iSystem("dvips",dviArgs)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
         return;
@@ -208,13 +208,13 @@ void FormulaList::generateBitmaps(const char *path)
         WaitForSingleObject(sInfo.hProcess,INFINITE); 
       }
 #else
-      char gsCmd[256];
-      sprintf(gsCmd,"gs -q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
+      char gsArgs[4096];
+      sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                     "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
-      if (iSystem(gsCmd)!=0)
+      if (iSystem("gs",gsArgs)!=0)
       {
         err("Problem running ghostscript. Check your installation!\n");
         return;

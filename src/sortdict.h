@@ -23,6 +23,25 @@
 #include <qlist.h>
 #include <qdict.h>
 
+template<class T> class SDict;
+
+/*! internal wrapper class that redirects compareItems() to the 
+ *  dictionary 
+ */
+template<class T>
+class SList : public QList<T>
+{
+  public:
+    SList(SDict<T> *owner) : m_owner(owner) {}
+    ~SList() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return m_owner->compareItems(item1,item2);
+    }
+  private:
+    SDict<T> *m_owner;  
+};
+
 /*! Ordered dictionary of elements of type T. 
  *  Internally uses a QList<T> and a QDict<T>.
  */
@@ -30,23 +49,7 @@ template<class T>
 class SDict 
 {
   private:
-
-    /*! internal wrapper class that redirects compareItems() to the 
-     *  dictionary 
-     */
-    class SList : public QList<T>
-    {
-      public:
-        SList(SDict<T> *owner) : m_owner(owner) {}
-       ~SList() {}
-        int compareItems(GCI item1,GCI item2)
-        {
-          return m_owner->compareItems(item1,item2);
-        }
-      private:
-        SDict<T> *m_owner;  
-    };
-    SList *m_list;
+    SList<T> *m_list;
     QDict<T> *m_dict;
     
   public:
@@ -56,7 +59,7 @@ class SDict
      */
     SDict(int size) 
     {
-      m_list = new SList(this);
+      m_list = new SList<T>(this);
       m_dict = new QDict<T>(size);
     }
     /*! Destroys the dictionary */
@@ -168,6 +171,5 @@ class SDict
     };
 
 };
-
 
 #endif

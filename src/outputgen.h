@@ -176,7 +176,7 @@ class OutputGenerator
     virtual void writeSectionRefItem(const char *,const char *,const char *) = 0;
     virtual void writeSectionRefAnchor(const char *,const char *,const char *) = 0;
     virtual void lineBreak() = 0;
-    virtual void addToIndex(const char *s1,const char *s2) = 0;
+    virtual void addIndexItem(const char *s1,const char *s2) = 0;
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;

@@ -304,6 +304,7 @@ void HtmlGenerator::writeString(const char *text)
 void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
                                    const char *name)
 {
+  //printf("HtmlGenerator::writeIndexItem(%s,%s,%s)\n",ref,f,name);
   QCString *dest;
   t << "<li>";
   if (ref || f)

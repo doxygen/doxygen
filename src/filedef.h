@@ -121,12 +121,7 @@ class FileDef : public Definition
     void addUsingDeclaration(ClassDef *cd);
     ClassList *getUsedClasses() const { return usingDeclList; }
 
-    //void setGenerateSource(bool b) { isSource=b; }
-    bool generateSourceFile() const 
-    { return !isReference() && 
-              (Config::sourceBrowseFlag || Config::verbatimHeaderFlag) &&
-              name().right(4)!=".doc" && name().right(4)!=".txt"; 
-    }
+    bool generateSourceFile() const;
 
     void addIncludeDependency(FileDef *fd,const char *incName,bool local);
     void addIncludedByDependency(FileDef *fd,const char *incName,bool local);

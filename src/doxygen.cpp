@@ -40,7 +40,7 @@
 #include "config.h"
 #include "util.h"
 #include "pre.h"
-#include "tag.h"
+#include "tagreader.h"
 #include "dot.h"
 
 #include "outputlist.h"
@@ -226,14 +226,10 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
   PageInfo *pi=0;
   if ((pi=pageSDict->find(name)))
   {
-    //warn("Warning: Page %s was already documented. Ignoring documentation "
-    //     "at line %d of %s\n",root->name.data(),root->startLine,
-    //                          root->fileName.data());
-
     // append documentation block to the page.
     pi->doc+="\n\n"+doc;
   }
-  else
+  else // new page
   {
     QCString baseName=name;
     if (baseName.right(4)==".tex") 
@@ -380,6 +376,10 @@ static void buildGroupList(Entry *root)
     else
     {
       gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
+      if (root->tagInfo)
+      {
+        gd->setReference(root->tagInfo->tagName);
+      }
       gd->setBriefDescription(root->brief);
       gd->setDocumentation(root->doc);
       gd->addSectionsToDefinition(root->anchors);
@@ -565,11 +565,9 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       {
         iName=fd->name();
       }
-      if (Config::verbatimHeaderFlag || Config::sourceBrowseFlag) 
-        // generate code for header
+      if (fd->generateSourceFile()) // generate code for header
       {
         cd->setIncludeFile(fd,iName,local);
-        //fd->setGenerateSource(TRUE);
       }
       else // put #include in the class documentation without link
       {
@@ -728,7 +726,15 @@ static void buildClassList(Entry *root)
 
         //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
         
-        ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec);
+        QCString tagName;
+        QCString refFileName;
+        if (root->tagInfo)
+        {
+          tagName     = root->tagInfo->tagName;
+          refFileName = root->tagInfo->fileName;
+        }
+        ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
+                                  tagName,refFileName);
         cd->setDocumentation(root->doc); // copy docs to definition
         cd->setBriefDescription(root->brief);
         //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
@@ -861,7 +867,12 @@ static void buildNamespaceList(Entry *root)
               )
            */ 
       {
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName);
+        QCString tagName;
+        if (root->tagInfo)
+        {
+          tagName=root->tagInfo->tagName;
+        }
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName);
         nd->setDocumentation(root->doc); // copy docs to definition
         nd->setBriefDescription(root->brief);
         nd->addSectionsToDefinition(root->anchors);
@@ -1169,6 +1180,11 @@ static MemberDef *addVariableToClass(
       root->type,name,root->args,0,
       prot,Normal,root->stat,FALSE,
       mtype,0,0);
+  if (root->tagInfo) 
+  {
+    md->setAnchor(root->tagInfo->anchor);
+    md->setReference(root->tagInfo->tagName);
+  }
   md->setMemberClass(cd);
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
@@ -1283,22 +1299,37 @@ static MemberDef *addVariableToFile(
   MemberName *mn=functionNameDict[name];
   if (mn)
   {
+    QCString nscope=removeAnonymousScopes(scope);
+    NamespaceDef *nd=0;
+    if (!nscope.isEmpty())
+    {
+      nd = getResolvedNamespace(nscope);
+    }
     MemberNameIterator mni(*mn);
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      QCString nscope=removeAnonymousScopes(scope);
-      NamespaceDef *nd=0;
-      if (!nscope.isEmpty())
-      {
-        nd = getResolvedNamespace(nscope);
-      }
-      if (nd==0 || md->getNamespaceDef()==nd) 
+      if ((nd==0 && root->fileName==md->getFileDef()->absFilePath())
+          || (nd!=0 && md->getNamespaceDef()==nd))
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
         md->setRefItems(root->todoId,root->testId);
         return md;
+      }
+      
+      if (nd==0 && md->isExplicit()!=root->explicitExternal)
+      {
+        // merge ingroup specifiers
+        if (md->getGroupDef()==0 && root->groups->first())
+        {
+          GroupDef *gd=groupDict[root->groups->first()->data()];
+          md->setGroupDef(gd);
+        }
+        else if (md->getGroupDef()!=0 && root->groups->count()==0)
+        {
+          root->groups->append(new QCString(md->getGroupDef()->name()));
+        }
       }
     } 
   }
@@ -1308,6 +1339,11 @@ static MemberDef *addVariableToFile(
       root->type,name,root->args,0,
       Public, Normal,root->stat,FALSE,
       mtype,0,0);
+  if (root->tagInfo) 
+  {
+    md->setAnchor(root->tagInfo->anchor);
+    md->setReference(root->tagInfo->tagName);
+  }
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc);
@@ -1322,6 +1358,7 @@ static MemberDef *addVariableToFile(
   md->setMemberGroupId(root->mGrpId);
   md->setBodyDef(fd);
   md->setDefinition(def);
+  md->setExplicitExternal(root->explicitExternal);
   //if (root->mGrpId!=-1) 
   //{
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -1458,8 +1495,7 @@ void buildVarList(Entry *root)
     QCString type=root->type.stripWhiteSpace();
     ClassDef *cd=0;
 
-    int ni;
-    if ((ni=root->name.findRev("::"))!=-1) goto nextMember;
+    if (root->name.findRev("::")!=-1) goto nextMember;
                /* skip this member, because it is a 
                 * static variable definition (always?), which will be
                 * found in a class scope as well, but then we know the
@@ -1634,7 +1670,6 @@ static void buildMemberList(Entry *root)
           name=name.left(i); 
         }
              
-
         //if (Config::includeSourceFlag && !root->body.isEmpty())
         //{
         //  printf("Function: %s\n-----------------\n%s\n------------------\n",
@@ -1649,9 +1684,12 @@ static void buildMemberList(Entry *root)
             root->type,name,root->args,root->exception,
             root->protection,root->virt,root->stat,!root->relates.isEmpty(),
             mtype,root->mtArgList,root->argList);
+        if (root->tagInfo) 
+        {
+          md->setAnchor(root->tagInfo->anchor);
+          md->setReference(root->tagInfo->tagName);
+        }
         md->setMemberClass(cd);
-        //md->setDefFile(root->fileName);
-        //md->setDefLine(root->startLine);
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
         md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -1752,12 +1790,6 @@ static void buildMemberList(Entry *root)
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
                !isMember &&
-
-               //rname.find("::")==-1 && // TODO: remove this check
-               //                             // it breaks cases like 
-               //                             // func<A::B>(), but it is needed
-               //                             // for detect that A::func() is a member 
-               
                root->relates.isEmpty() &&
                root->type.left(7)!="extern " &&
                root->type.left(8)!="typedef " 
@@ -1788,11 +1820,6 @@ static void buildMemberList(Entry *root)
             QCString nsName,rnsName;
             if (nd)  nsName  = nd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
-            QCString groupName,rgroupName;
-            if (md->getGroupDef()) groupName=md->getGroupDef()->name().copy();
-            if (root->groups && root->groups->first()) rgroupName=root->groups->first()->copy(); 
-            //printf("namespace `%s' `%s'\n",nsName.data(),rnsName.data());
-            //printf("groupNames `%s' `%s'\n",groupName.data(),rgroupName.data());
             if ( 
                 matchArguments(md->argumentList(),root->argList,0,nsName)
                )
@@ -1801,18 +1828,16 @@ static void buildMemberList(Entry *root)
               found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
                     ((fd!=0 &&                          // no external reference and
                       fd->absFilePath()==root->fileName // prototype in the same file
-                     ) || 
-                     (
-                      !groupName.isEmpty() ||           // member is or was part of a group
-                      !rgroupName.isEmpty()
-                     )
+                     ) 
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
               
               //printf("combining function with prototype found=%d `%s'<->`%s'!\n",
               //    found,fd->absFilePath().data(),root->fileName.data());
-              // merge members documentation and properties
+
+              // merge argument lists
               mergeArguments(root->argList,md->argumentList());
+              // merge documentation
               if (!md->documentation() && !root->doc.isEmpty())
               {
                 md->setDocumentation(root->doc);
@@ -1821,6 +1846,7 @@ static void buildMemberList(Entry *root)
               {
                 md->setBriefDescription(root->brief);
               }
+              // merge body definitions
               if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
               {
                 md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -1828,6 +1854,17 @@ static void buildMemberList(Entry *root)
                 md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
               } 
               md->addSectionsToDefinition(root->anchors);
+
+              // merge ingroup specifiers
+              if (md->getGroupDef()==0 && root->groups->first())
+              {
+                GroupDef *gd=groupDict[root->groups->first()->data()];
+                md->setGroupDef(gd);
+              }
+              else if (md->getGroupDef()!=0 && root->groups->count()==0)
+              {
+                root->groups->append(new QCString(md->getGroupDef()->name()));
+              }
             }
           }
         }
@@ -1843,6 +1880,11 @@ static void buildMemberList(Entry *root)
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,FALSE,
               MemberDef::Function,root->tArgList,root->argList);
+          if (root->tagInfo) 
+          {
+            md->setAnchor(root->tagInfo->anchor);
+            md->setReference(root->tagInfo->tagName);
+          }
           //md->setDefFile(root->fileName);
           //md->setDefLine(root->startLine);
           md->setDocumentation(root->doc);
@@ -1909,25 +1951,17 @@ static void buildMemberList(Entry *root)
 
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
           {
+            // add member to namespace
             nd->insertMember(md); 
             md->setNamespace(nd);
             md->setRefItems(root->todoId,root->testId);
           }
-          else
+          else if (fd)
           {
-            // find file definition
-            //FileDef *fd=0;
-            //bool ambig;
-            //if (!root->fileName.isEmpty() && 
-            //    (fd=findFileDef(inputNameDict,root->fileName,ambig))
-            //   )
-            if (fd)
-            {
-              // add member to the file
-              fd->insertMember(md);
-              md->setFileDef(fd); 
-              md->setRefItems(root->todoId,root->testId);
-            }
+            // add member to the file
+            fd->insertMember(md);
+            md->setFileDef(fd); 
+            md->setRefItems(root->todoId,root->testId);
           }
 
           // add member to the list of file members
@@ -2046,8 +2080,15 @@ static void transferFunctionDocumentation()
     /* find a matching function declaration and definition for this function */
     for (;(md=mni.current());++mni)
     {
-      if (md->isPrototype()) mdec=md;
-      if (md->isFunction() && !md->isStatic() && !md->isPrototype()) mdef=md;
+      if (md->isPrototype()) 
+        mdec=md;
+      else if (md->isVariable() && md->isExternal()) 
+        mdec=md;
+      
+      if (md->isFunction() && !md->isStatic() && !md->isPrototype()) 
+        mdef=md;
+      else if (md->isVariable() && !md->isExternal() && !md->isStatic())
+        mdef=md;
     }
     //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
     //    mdef, mdef ? mdef->name().data() : "",
@@ -2335,10 +2376,14 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
           return TRUE;
         }
-        else if (insertUndocumented)
+        else if (scopeOffset==0 && insertUndocumented)
         {
-          Debug::print(Debug::Classes,0,"    Undocumented base class `%s' baseClassName=%s\n",bi->name.data(),baseClassName.data());
-          baseClass=new ClassDef(root->fileName,root->startLine,baseClassName,ClassDef::Class);
+          Debug::print(Debug::Classes,0,
+                       "    Undocumented base class `%s' baseClassName=%s\n",
+                       bi->name.data(),baseClassName.data()
+                      );
+          baseClass=new ClassDef(root->fileName,root->startLine,
+                                 baseClassName,ClassDef::Class);
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
@@ -3511,6 +3556,11 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,root->tArgList,root->argList);
+          if (root->tagInfo) 
+          {
+            md->setAnchor(root->tagInfo->anchor);
+            md->setReference(root->tagInfo->tagName);
+          }
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
           QCString doc=getOverloadDocs();
@@ -3589,6 +3639,11 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,root->tArgList,root->argList);
+          if (root->tagInfo) 
+          {
+            md->setAnchor(root->tagInfo->anchor);
+            md->setReference(root->tagInfo->tagName);
+          }
           //printf("Related member name=`%s' decl=`%s' bodyLine=`%d'\n",
           //       funcName.data(),funcDecl.data(),root->bodyLine);
 
@@ -3738,7 +3793,7 @@ static void findMemberDocumentation(Entry *root)
     ((root->section==Entry::FUNCTION_SEC // function
       ||   
       (root->section==Entry::VARIABLE_SEC && // variable
-      !root->type.isEmpty() && root->type.left(8)!="typedef " &&
+      !root->type.isEmpty() && /*root->type.left(8)!="typedef " &&*/
        compoundKeywordDict.find(root->type)==0
       )
      ) && 
@@ -3857,6 +3912,11 @@ static void findEnums(Entry *root)
           root->fileName,root->startLine,
           0,name,0,0,root->protection,Normal,FALSE,FALSE,
           MemberDef::Enumeration,0,0);
+      if (root->tagInfo) 
+      {
+        md->setAnchor(root->tagInfo->anchor);
+        md->setReference(root->tagInfo->tagName);
+      }
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       //md->setDefFile(root->fileName);
       //md->setDefLine(root->startLine);
@@ -4238,10 +4298,7 @@ static void generateFileSources()
       FileDef *fd;
       for (;(fd=fni.current());++fni)
       {
-        bool src = !fd->isReference() &&
-                   fd->name().right(4)!=".doc" && fd->name().right(4)!=".txt" &&
-                   (Config::verbatimHeaderFlag || Config::sourceBrowseFlag);
-        if (src)
+        if (fd->generateSourceFile())
         {
           msg("Generating code for file %s...\n",fd->name().data());
           fd->writeSource(*outputList);
@@ -4520,6 +4577,32 @@ static void findDefineDocumentation(Entry *root)
   {
     //printf("found define `%s' `%s' brief=`%s' doc=`%s'\n",
     //       root->name.data(),root->args.data(),root->brief.data(),root->doc.data());
+
+    if (root->tagInfo && !root->name.isEmpty()) // define read from a tag file
+    {
+      MemberDef *md=new MemberDef("<tagfile>",1,
+                    "#define",root->name,root->args,0,
+                    Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
+      md->setAnchor(root->tagInfo->anchor);
+      md->setReference(root->tagInfo->tagName);
+      bool ambig;
+      QCString filePathName = root->parent->fileName;
+      FileDef *fd=findFileDef(inputNameDict,filePathName,ambig);
+      //printf("Searching for `%s' fd=%p\n",filePathName.data(),fd);
+      md->setFileDef(fd);
+      MemberName *mn;
+      if ((mn=functionNameDict[root->name]))
+      {
+        mn->append(md);
+      }
+      else 
+      {
+        mn = new MemberName(root->name);
+        mn->append(md);
+        functionNameDict.insert(root->name,mn);
+        functionNameList.inSort(mn);
+      }
+    }
     MemberName *mn=functionNameDict[root->name];
     if (mn)
     {
@@ -4723,7 +4806,7 @@ static void generatePageDocs()
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup)
+    if (!pi->inGroup && !pi->isReference())
     {
       msg("Generating docs for page %s...\n",pi->name.data());
       outputList->disable(OutputGenerator::Man);
@@ -4747,6 +4830,15 @@ static void generatePageDocs()
       outputList->endTextBlock();
       endFile(*outputList);
       outputList->enable(OutputGenerator::Man);
+
+      if (!Config::genTagFile.isEmpty())
+      {
+        tagFile << "  <compound kind=\"page\">" << endl;
+        tagFile << "    <name>" << pi->name << "</name>" << endl;
+        tagFile << "    <title>" << pi->title << "</title>" << endl;
+        tagFile << "    <filename>" << pi->name << "</filename>" << endl;
+        tagFile << "  </compound>" << endl;
+      }
     }
   }
 }
@@ -4837,7 +4929,10 @@ static void generateGroupDocs()
     //       "Warning: group %s does not have any (documented) members.",
     //        gd->name().data());
     //}
-    gd->writeDocumentation(*outputList);
+    if (!gd->isReference())
+    {
+      gd->writeDocumentation(*outputList);
+    }
   }
 }
 
@@ -5065,7 +5160,7 @@ static void generateConfigFile(const char *configFile,bool shortList)
 
 //----------------------------------------------------------------------------
 
-static void readTagFile(const char *tl)
+static void readTagFile(Entry *root,const char *tl)
 {
   QCString tagLine = tl;
   QCString fileName;
@@ -5077,7 +5172,7 @@ static void readTagFile(const char *tl)
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     QFileInfo fi(fileName);
     tagDestinationDict.insert(fi.fileName(),new QCString(destName));
-    //printf("insert tagDestination %s->%s\n",fileName.data(),destName.data());
+    //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
   {
@@ -5097,7 +5192,7 @@ static void readTagFile(const char *tl)
   else
     msg("Reading tag file `%s'...\n",fileName.data());
 
-  parseTagFile(fileName);
+  parseTagFile(root,fi.absFilePath(),fi.fileName());
 }
 
 //----------------------------------------------------------------------------
@@ -5921,37 +6016,6 @@ int main(int argc,char **argv)
     msg("Read %d bytes\n",input.curPos());
   }
 
-
-  /**************************************************************************
-   *             Handle Tag Files                                           *
-   **************************************************************************/
-
-  msg("Reading tag files\n");
-  
-  s=Config::tagFileList.first();
-  while (s)
-  {
-    readTagFile(s);
-    s=Config::tagFileList.next();
-  }
-  
-  QFile *tag =new QFile(Config::genTagFile);
-  if (!Config::genTagFile.isEmpty())
-  {
-    if (!tag->open(IO_WriteOnly))
-    {
-      err("Error: cannot open tag file %s for writing\n",
-          Config::genTagFile.data()
-         );
-      exit(1);
-    }
-    tagFile.setDevice(tag);
-  }
-  
-  /**************************************************************************
-   *             Gather information                                         * 
-   **************************************************************************/
-  
   // Notice: the order of the function calls below is very important!
   
   if (Config::generateHtml)
@@ -5963,6 +6027,39 @@ int main(int argc,char **argv)
   Entry *root=new Entry;
   root->program=input;
 
+
+  /**************************************************************************
+   *             Handle Tag Files                                           *
+   **************************************************************************/
+
+  msg("Reading tag files\n");
+  
+  s=Config::tagFileList.first();
+  while (s)
+  {
+    readTagFile(root,s);
+    s=Config::tagFileList.next();
+  }
+  
+  QFile *tag=0;
+  if (!Config::genTagFile.isEmpty())
+  {
+    tag=new QFile(Config::genTagFile);
+    if (!tag->open(IO_WriteOnly))
+    {
+      err("Error: cannot open tag file %s for writing\n",
+          Config::genTagFile.data()
+         );
+      exit(1);
+    }
+    tagFile.setDevice(tag);
+    tagFile << "<tagfile>" << endl;
+  }
+  
+  /**************************************************************************
+   *             Gather information                                         * 
+   **************************************************************************/
+  
   msg("Parsing input...\n");
   parseMain(root);            // build a tree of entries
 
@@ -6217,12 +6314,16 @@ int main(int argc,char **argv)
   {
     FTVHelp::getInstance()->finalize();
   }
+  if (!Config::genTagFile.isEmpty())
+  {
+    tagFile << "</tagfile>" << endl;
+    delete tag;
+  }
 
 
   if (Config::generateHtml) removeDoxFont(Config::htmlOutputDir);
   if (Config::generateRTF)  removeDoxFont(Config::rtfOutputDir);
 
-  delete tag;
 
   return 0;
 }

@@ -22,6 +22,7 @@
 #include "message.h"
 #include "config.h"
 #include "classlist.h"
+#include "util.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -46,21 +47,7 @@ void generateDTD()
 
 void writeXMLString(QTextStream &t,const char *s)
 {
-  if (s==0) return;
-  const char *p=s;
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '<':  t << "&lt;";   break;
-      case '>':  t << "&gt;";   break;
-      case '&':  t << "&amp;";  break;
-      case '\'': t << "&apos;"; break; 
-      case '"':  t << "&quot;"; break;
-      default:   t << c;        break;         
-    }
-  }
+  t << convertToXML(s);
 }
 
 void writeXMLLink(QTextStream &t,const char *compoundId,const char *memId,

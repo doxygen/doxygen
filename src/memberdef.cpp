@@ -258,6 +258,7 @@ MemberDef::MemberDef(const char *df,int dl,
   initLines=0;
   type=t;
   args=a;
+  args=args.stripWhiteSpace();
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
   declLine=0;
   memberGroup=0;
@@ -277,6 +278,7 @@ MemberDef::MemberDef(const char *df,int dl,
   annEnumType=0;
   indDepth=0;
   section=0;
+  explExt=FALSE;
   maxInitLines=defMaxInitLines;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
@@ -507,8 +509,43 @@ void MemberDef::writeDeclaration(OutputList &ol,
     
     if (!Config::genTagFile.isEmpty())
     {
-      tagFile << name() << " " << anchor() << " \""
-              << argsString() << "\"\n";
+      tagFile << "    <member kind=\"";
+      switch (mtype)
+      {
+        case Define:      tagFile << "define";      break;
+        case EnumValue:   tagFile << "enumvalue";   break;
+        case Property:    tagFile << "property";    break;
+        case Variable:    tagFile << "variable";    break;
+        case Typedef:     tagFile << "typedef";     break;
+        case Enumeration: tagFile << "enumeration"; break;
+        case Function:    tagFile << "function";    break;
+        case Signal:      tagFile << "signal";      break;
+        case Prototype:   tagFile << "prototype";   break;
+        case Friend:      tagFile << "friend";      break;
+        case DCOP:        tagFile << "dcop";        break;
+        case Slot:        tagFile << "slot";        break;
+      }
+      if (prot!=Public)
+      {
+        tagFile << "\" protection=\"";
+        if (prot==Protected) tagFile << "public";
+        else /* Private */   tagFile << "protected"; 
+      }
+      if (virt!=Normal)
+      {
+        tagFile << "\" virtualness=\"";
+        if (virt==Virtual) tagFile << "virtual";
+        else /* Pure */    tagFile << "pure"; 
+      }
+      if (isStatic())
+      {
+        tagFile << "\" static=\"yes";
+      }
+      tagFile << "\">" << endl;
+      tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
+      tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+      tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
+      tagFile << "    </member>" << endl;
     }
       
     Definition *d=0;
@@ -593,8 +630,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
       QCString doxyName=name().copy();
       if (!cname.isEmpty()) doxyName.prepend(cname+"::");
       ol.startDoxyAnchor(cfname,anchor(),doxyName);
-      ol.addToIndex(name(),cname);
-      ol.addToIndex(cname,name());
+
+      ol.addIndexItem(name(),cname);
+      ol.addIndexItem(cname,name());
+
       if (hasHtmlHelp)
       {
         htmlHelp->addIndexItem(cname,name(),cfname,anchor());
@@ -1115,8 +1154,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
               //ol.startItemList();
               ol.startDescTable();
             }
-            ol.addToIndex(fmd->name(),cname);
-            ol.addToIndex(cname,fmd->name());
+
+            ol.addIndexItem(fmd->name(),cname);
+            ol.addIndexItem(cname,fmd->name());
+
             if (Config::generateHtml && Config::htmlHelpFlag)
             {
               HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());

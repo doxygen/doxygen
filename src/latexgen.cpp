@@ -494,9 +494,12 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
-          t << "{"; //Module Documentation}\n";
-          found=TRUE;
+          if (!gd->isReference())
+          {
+            if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+            t << "{"; //Module Documentation}\n";
+            found=TRUE;
+          }
           gd=groupList.next();
         }
       }
@@ -507,7 +510,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && nd->countMembers()>0)
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
@@ -616,14 +619,20 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
-          found=TRUE;
+          if (!gd->isReference())
+          {
+            t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
+            found=TRUE;
+          }
           gd=groupList.next();
         }
         while (gd)
         {
-          if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
-          t << "{" << gd->getOutputFileBase() << "}\n";
+          if (!gd->isReference())
+          {
+            if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
+            t << "{" << gd->getOutputFileBase() << "}\n";
+          }
           gd=groupList.next();
         }
       }
@@ -1050,7 +1059,7 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 //  writeDoxyAnchor(0,clName,anchor,0);
 //}
 
-void LatexGenerator::addToIndex(const char *s1,const char *s2)
+void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 {
   if (s1)
   {
@@ -1066,6 +1075,7 @@ void LatexGenerator::addToIndex(const char *s1,const char *s2)
     t << "}";
   }
 }
+
 
 void LatexGenerator::startSection(const char *lab,const char *,bool sub)
 {
@@ -1092,13 +1102,16 @@ void LatexGenerator::writeSectionRef(const char *,const char *lab,
     t << "}{";
     docify(text);
     t << "}";
+    //t << " {\\rm (p.\\,\\pageref{" << lab << "})}";
   }
   else
   {
     if (strcmp(lab,text)!=0) // lab!=text
     {
       // todo: don't hardcode p. here!
-      t << "{\\bf " << text << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
+      t << "{\\bf ";
+      docify(text);
+      t << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
     }
     else
     {

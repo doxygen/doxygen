@@ -36,6 +36,27 @@
 #include "suffixtree.h"
 #include "searchindex.h"
 #include "logos.h"
+
+static QCString convertToXML(const char *s)
+{ 
+  QCString result;
+  if (s==0) return result;
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {     
+    switch (c)
+    {   
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
+      case '&':  result+="&amp;";  break;
+      case '\'': result+="&apos;"; break; 
+      case '"':  result+="&quot;"; break;
+      default:   result+=c;        break;         
+    }
+  }
+  return result;
+}
   
 struct MemberDef
 {
@@ -61,21 +82,20 @@ QDict<ClassDef> fileDict(1009);
 static bool genTag;
 static bool genIndex;
 
-static QStrList bases;
+static QStrList  bases;
 static QCString  inputString;
-static int      inputPosition;
+static int       inputPosition;
 static QCString  yyFileName;
-static int      yyLineNr;
+static int       yyLineNr;
 static QCString  classFile;
 static QCString  memberRef;
 static QCString  memberName;
 static QCString  memberArgs;
 static QCString  className;
-//static bool     newClass;
 static QCString  docBaseLink;
 static QCString  docAnchor;
 static QCString  docRefName;
-static bool     nameBug;
+static bool      nameBug;
 static SearchIndex searchIndex;
 
 #define YY_NEVER_INTERACTIVE 1
@@ -423,7 +443,8 @@ void parse(QCString &s)
 void parseFile(QFileInfo &fi)
 {
   fprintf(stderr,"Parsing file %s...\n",fi.fileName().data());
-  QFile f(fi.absFilePath().data());
+  QFile f;
+  f.setName(fi.absFilePath());
   if (f.open(IO_ReadOnly))
   {
     yyFileName = fi.fileName();
@@ -575,7 +596,8 @@ int main(int argc,char **argv)
       fi.setFile(dir+"/search.cgi");
       if (!fi.exists())
       {
-        QFile f(dir+"/search.cgi");
+        QFile f;
+	f.setName(dir+"/search.cgi");
 	if (f.open(IO_WriteOnly))
 	{
 	  QTextStream t(&f);
@@ -601,31 +623,40 @@ int main(int argc,char **argv)
   }
   if (genTag)
   {
-    QFile f(tagName);
+    QFile f;
+    f.setName(tagName);
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
+      t << "<tagfile>" << endl;
       ClassDef *cd=classList.first();
       while (cd)
       {
-	if (cd->isFile) t << "&"; else t << ">";
-	t << cd->name << ":";
+	t << "  <compound kind=\"";
+	if (cd->isFile) t << "file"; else t << "class";  
+	t << "\">" << endl;
+	t << "    <name>" << convertToXML(cd->name) << "</name>" << endl; 
         char *base=cd->bases.first();
         while (base)
 	{
-	  t << base << "?";
+	  t << "    <base>" << convertToXML(base) << "</base>" << endl;
 	  base=cd->bases.next();
 	}
-	if (!cd->isFile) t << " \"" << cd->fileName << "\"";
-	t << endl; 
+	t << "    <filename>" << convertToXML(cd->fileName) << "</filename>" << endl;
 	MemberDef *md=cd->memberList.first();
 	while (md)
 	{
-	  t << md->name << " " << md->anchor << " \"" << md->args << "\"" << endl;
+	  t << "    <member kind=\"function\">" << endl;
+	  t << "      <name>" << convertToXML(md->name) << "</name>" << endl;
+	  t << "      <anchor>" << convertToXML(md->anchor) << "</anchor>" << endl;
+	  t << "      <arglist>" << convertToXML(md->args) << "</arglist>" << endl;
+	  t << "    </member>" << endl;
 	  md=cd->memberList.next();
 	}
+	t << "  </compound>" << endl;
 	cd=classList.next();
       }
+      t << "</tagfile>" << endl;
     }
     else
     {

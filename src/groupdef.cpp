@@ -249,7 +249,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   startFile(ol,fileName,title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);
-  endTitle(ol,getOutputFileBase(),name());
+  endTitle(ol,getOutputFileBase(),title);
 
   //brief=brief.stripWhiteSpace();
   //int bl=brief.length();
@@ -269,6 +269,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  <compound kind=\"group\">" << endl;
+    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
+    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+  }
   
   ol.startMemberSections();
   if (fileList->count()>0)
@@ -284,6 +291,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.docify("file ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+      if (!Config::genTagFile.isEmpty()) 
+      {
+        tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+      }
       ol.endMemberItem(FALSE);
       if (!fd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
@@ -309,6 +320,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.docify("namespace ");
       ol.insertMemberAlign();
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
+      if (!Config::genTagFile.isEmpty()) 
+      {
+        tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+      }
       ol.endMemberItem(FALSE);
       if (!nd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
@@ -333,6 +348,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.startMemberItem(0);
       //ol.insertMemberAlign();
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
+      if (!Config::genTagFile.isEmpty()) 
+      {
+        tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
+      }
       ol.endMemberItem(FALSE);
       if (!gd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
@@ -396,23 +415,27 @@ void GroupDef::writeDocumentation(OutputList &ol)
   PageSDictIterator pdi(*pageDict);
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    QCString pageName;
-    if (Config::caseSensitiveNames)
-      pageName=pi->name.copy();
-    else
-      pageName=pi->name.lower();
-    
-    SectionInfo *si=0;
-    if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-        (si=sectionDict[pi->name])!=0)
+    if (!pi->isReference())
     {
-      ol.startSection(si->label,si->title,TRUE);
-      ol.docify(si->title);
-      ol.endSection(si->label,TRUE);
+      QCString pageName = pi->getOutputFileBase();
+
+      if (!Config::genTagFile.isEmpty()) 
+      {
+        tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
+      }
+
+      SectionInfo *si=0;
+      if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
+          (si=sectionDict[pi->name])!=0)
+      {
+        ol.startSection(si->label,si->title,TRUE);
+        ol.docify(si->title);
+        ol.endSection(si->label,TRUE);
+      }
+      ol.startTextBlock();
+      parseDoc(ol,pi->defFileName,pi->defLine,0,0,pi->doc);
+      ol.endTextBlock();
     }
-    ol.startTextBlock();
-    parseDoc(ol,pi->defFileName,pi->defLine,0,0,pi->doc);
-    ol.endTextBlock();
   }
 
   defineMembers.countDocMembers(TRUE);
@@ -473,6 +496,11 @@ void GroupDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
     varMembers.writeDocumentation(ol,name(),this);
+  }
+
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  </compound>" << endl;
   }
 
   endFile(ol); 

@@ -1,5 +1,12 @@
 # make script used to create a config file for windows
 
+$target = shift @ARGV;
+$make   = "make";
+if ($target eq "msvc") 
+{
+  $make = "nmake";
+}
+
 use Cwd;
 
 # get current working directory
@@ -9,9 +16,9 @@ $pwd=cwd();
 open(FILE,">makeconfig") || die "Cannot create file makeconfig!";
 
 print FILE "DOXYGEN   = $pwd\n";
-print FILE "TMAKEPATH = $pwd\\tmake\\lib\\win32-msvc\n";
+print FILE "TMAKEPATH = $pwd\\tmake\\lib\\win32-$target\n";
 print FILE "TMAKE     = $pwd\\tmake\\bin\\tmake\n";
-print FILE "MAKE      = nmake\n";
+print FILE "MAKE      = $make\n";
 print FILE "PERL      = perl\n";
 print FILE "RM        = del /s /q\n";
 print FILE "VERSION   = ";

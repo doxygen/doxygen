@@ -16,6 +16,7 @@
  */
 
 #include "sortdict.h"
+#include "config.h"
 
 class PageInfo
 {
@@ -33,6 +34,15 @@ class PageInfo
     QCString doc;
     QCString title;
 
+    // external reference? if so then this is the tag file name
+    QCString reference;
+
+    // functions to get a uniform interface with Definitions
+    QCString getOutputFileBase() const 
+    { if (Config::caseSensitiveNames) return name; else return name.lower(); }
+    bool isReference() const { return !reference.isEmpty(); }
+    QCString getReference() const { return reference; }
+    
     // ids
     int todoId;
     int testId;

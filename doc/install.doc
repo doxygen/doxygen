@@ -337,29 +337,20 @@ doxygen for Windows.
 
 Here is what is required:
 <ul>
-<li>WinZip to unpack the tar source distribution. This can be found at
-    http://www.winzip.com/ . 
+<li>An unzip/untar tool like WinZip to unpack the tar source distribution. 
+    This can be found at http://www.winzip.com/  
 
     The good, tested, and free alternative is the <code>tar</code> utility
     supplied with <a href="http://sourceware.cygnus.com/cygwin/">cygwin
     tools</a>. Anyway, the cygwin's flex, bison, and sed are also
     recommended below.
 
-    Notice (not related to tar): The good alternative to the WinZip,
-    concerning the zipping/unzipping are the Zip/UnZip utilities by
-    Info-ZIP which are available for free from
-    ftp://ftp.freesoftware.com/pub/infozip/index.html . 
-    There also are archives with binaries for Windows. The tip is to 
-    download the unz540xN.exe and zip23xN.zip (they were used without 
-    problems here) which
-    contain UnZip, Zip, and other auxiliary (but not necessary)
-    utilities related to the UnZip and Zip. 
-    It may be the case that
-    
 <li>Microsoft Visual C++ (I only tested with version 6.0).
     Use the <code>vcvars32.bat</code> batch file to set the environment 
     variables (if you did not select to do this automatically during 
-    installation).
+    installation). 
+
+    Borland C++ or MINGW (see http://www.mingw.org) are also supported. 
 
 <li>Perl 5.0 or higher for Windows. This can be download from:
     http://www.ActiveState.com/Products/ActivePerl/
@@ -387,7 +378,7 @@ Here is what is required:
     steps.
 
 <li>Since Doxygen-1.2.2-20001015, the distribution includes the part
-    of Qt-2.2.0 that is needed for compilation of doxygen, doxytag,
+    of Qt-2.x.x that is needed for compilation of doxygen, doxytag,
     and doxysearch. The missing files for Windows were also created.
     This allows compilation of doxygen on systems without X11 or the
     full Qt. For doxywizard Qt-2.2 is still required however.
@@ -456,13 +447,13 @@ Compilation is now done by performing the following steps:
 <li>goto the doxygen root dir and type:
 
 \verbatim
-    make.bat
+    make.bat msvc
 \endverbatim
 
     This should build the executables 
     <code>doxygen.exe</code>, <code>doxytag.exe</code>, and 
-    <code>doxysearch.exe</code> (The compiler should not produce any 
-    serious warnings or errors).
+    <code>doxysearch.exe</code> using Microsoft's Visual C++ compiler
+    (The compiler should not produce any serious warnings or errors).
 
 <li>To build the examples, go to the <code>examples</code> subdirectory
     and type:

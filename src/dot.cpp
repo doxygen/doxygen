@@ -580,20 +580,18 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     t << "}" << endl;
     f.close();
 
-    QCString dotCmd(4096);
-    dotCmd.sprintf("%sdot -Tgif \"%s\" -o \"%s\"",
-                   Config::dotPath.data(),dotName.data(),gifName.data());
+    QCString dotArgs(4096);
+    dotArgs.sprintf("-Tgif \"%s\" -o \"%s\"",dotName.data(),gifName.data());
     //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
-    if (iSystem(dotCmd)!=0)
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
       return;
     }
-    dotCmd.sprintf("%sdot -Timap \"%s\" -o \"%s\"",
-                   Config::dotPath.data(),dotName.data(),mapName.data());
+    dotArgs.sprintf("-Timap \"%s\" -o \"%s\"",dotName.data(),mapName.data());
     //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
-    if (iSystem(dotCmd)!=0)
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
@@ -996,11 +994,10 @@ static void findMaximalDotGraph(DotNode *root,
     writeDotGraph(root,format,baseName,lrRank,renderParents,
                   curDistance,backArrows);
 
-    QCString dotCmd(4096);
+    QCString dotArgs(4096);
     // create annotated dot file
-    dotCmd.sprintf("%sdot -Tdot \"%s.dot\" -o \"%s_tmp.dot\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       return;
@@ -1103,10 +1100,10 @@ void DotClassGraph::writeGraph(QTextStream &out,
 
   if (format==GIF) // run dot to create a .gif image
   {
-    QCString dotCmd(4096);
-    dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    QCString dotArgs(4096);
+    dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
+                   baseName.data(),baseName.data());
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1115,9 +1112,8 @@ void DotClassGraph::writeGraph(QTextStream &out,
     if (generateImageMap)
     {
       // run dot again to create an image map
-      dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
-          Config::dotPath.data(),baseName.data(),baseName.data());
-      if (iSystem(dotCmd)!=0)
+      dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
+      if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
       {
         err("Error: Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
@@ -1146,10 +1142,9 @@ void DotClassGraph::writeGraph(QTextStream &out,
   }
   else if (format==EPS) // run dot to create a .eps image
   {
-    QCString dotCmd(4096);
-    dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    QCString dotArgs(4096);
+    dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1164,10 +1159,10 @@ void DotClassGraph::writeGraph(QTextStream &out,
     }
     if (Config::usePDFLatexFlag)
     {
-      QCString epstopdfCmd(4096);
-      epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+      QCString epstopdfArgs(4096);
+      epstopdfArgs.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
-      if (iSystem(epstopdfCmd)!=0)
+      if (iSystem("epstopdf",epstopdfArgs)!=0)
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);
@@ -1307,10 +1302,10 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   if (format==GIF)
   {
     // run dot to create a .gif image
-    QCString dotCmd(4096);
-    dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    QCString dotArgs(4096);
+    dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
+                   baseName.data(),baseName.data());
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1320,9 +1315,9 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     if (generateImageMap)
     {
       // run dot again to create an image map
-      dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
-          Config::dotPath.data(),baseName.data(),baseName.data());
-      if (iSystem(dotCmd)!=0)
+      dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",
+                      baseName.data(),baseName.data());
+      if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
       {
         err("Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
@@ -1343,10 +1338,10 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   else if (format==EPS)
   {
     // run dot to create a .eps image
-    QCString dotCmd(4096);
-    dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    QCString dotArgs(4096);
+    dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
+                   baseName.data(),baseName.data());
+    if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1361,10 +1356,10 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     }
     if (Config::usePDFLatexFlag)
     {
-      QCString epstopdfCmd(4096);
-      epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+      QCString epstopdfArgs(4096);
+      epstopdfArgs.sprintf("\"%s.eps\" -outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
-      if (iSystem(epstopdfCmd)!=0)
+      if (iSystem("epstopdf",epstopdfArgs)!=0)
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);
@@ -1435,10 +1430,9 @@ void generateGraphLegend(const char *path)
   QDir::setCurrent(d.absPath());
 
   // run dot to generate the a .gif image from the graph
-  QCString dotCmd(4096);
-  dotCmd.sprintf("%sdot -Tgif graph_legend.dot -o graph_legend.gif",
-                   Config::dotPath.data());
-  if (iSystem(dotCmd)!=0)
+  QCString dotArgs(4096);
+  dotArgs.sprintf("-Tgif graph_legend.dot -o graph_legend.gif");
+  if (iSystem(Config::dotPath+"dot",dotArgs)!=0)
   {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);

@@ -76,7 +76,7 @@ class Definition
 
     bool isReference() const { return !ref.isEmpty(); }
     void setReference(const char *r) { ref=r; }
-    QCString getReference() { return ref; }
+    QCString getReference() const { return ref; }
 
     /*! returns the base file name that corresponds with the \a name of this 
      *  definition. This replaces a number of special characters in the

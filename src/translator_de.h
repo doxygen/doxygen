@@ -383,7 +383,7 @@ class TranslatorGerman : public Translator
 
     QCString trNamespaceList()
       // used as the title of page containing all the index of all namespaces.
-    { return ""; }
+    { return "Lister aller Namensberiche"; }
     QCString trNamespaceListDescription(bool extractAll)
       // used as an introduction to the namespace list
     {
