@@ -79,8 +79,10 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), m_insideItem(FALSE), m_hide(FALSE) 
+LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci,
+                                 bool insideTabbing) 
+  : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
+    m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing) 
 {
 }
 
@@ -979,7 +981,7 @@ void LatexDocVisitor::visitPost(DocText *)
 
 void LatexDocVisitor::filter(const char *str)
 { 
-  filterLatexString(m_t,str,FALSE,m_insidePre,m_insideItem);
+  filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);
 }
 
 void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)

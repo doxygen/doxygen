@@ -990,9 +990,9 @@ void RTFDocVisitor::visitPre(DocImage *img)
     m_t << "\\par" << endl;
     m_t << "{" << endl;
     m_t << rtf_Style_Reset << endl;
-    m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+    m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
     m_t << img->name();
-    m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+    m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
     m_t << "}" << endl;
     m_lastIsPara=TRUE;
   }
@@ -1381,9 +1381,9 @@ void RTFDocVisitor::writeDotFile(const QString &fileName)
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;
-  m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
   m_t << baseName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
-  m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
 }

@@ -2873,7 +2873,8 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
     ftvHelp->incContentsDepth();
   }
 
-  ol.writeIndexItem(dd->getReference(),dd->getOutputFileBase(),dd->shortName());
+  ol.writeIndexItem(dd->getReference(),dd->getOutputFileBase(),
+      dd->shortName());
   if (dd->isReference()) 
   { 
     ol.startTypewriter(); 

@@ -216,17 +216,20 @@ Step2::Step2(QWidget *parent) : QWidget(parent,"Step2")
 
 bool Step2::crossReferencingEnabled() const
 {
+  //printf("Step2::crossReferencingEnabled()=%d\n",m_crossRef->isOn());
   return m_crossRef->isOn();
 }
 
 void Step2::enableCrossReferencing()
 {
+  //printf("Step2::enableCrossReferencing()\n");
   m_crossRef->setChecked(TRUE);
 }
 
 bool Step2::extractAll() const
 {
-  return m_extractMode->selectedId()==1;
+  //printf("Step2::extractAll()=%d\n",m_extractMode->find(1)->isOn());
+  return m_extractMode->find(1)->isOn();
 }
 
 bool Step2::crossReferencing() const
@@ -247,11 +250,13 @@ OptLang Step2::optimizeFor() const
 
 void Step2::setExtractAll(bool enable)
 {
+  //printf("Step2::setExtractAll(%d)\n",enable);
   m_extractMode->setButton(enable?1:0);
 }
 
 void Step2::setCrossReferencing(bool enable)
 {
+  //printf("Step2::setCrossReferencing(%d)\n",enable);
   m_crossRef->setChecked(enable);
 }
 
@@ -374,12 +379,19 @@ bool Step3::searchEnabled() const
 
 HtmlStyle Step3::htmlStyle() const   
 { 
-  switch (m_htmlOptions->selectedId())
+  if (m_htmlOptions->find(0)->isOn())
   {
-    case 0: return HS_Plain;
-    case 1: return HS_TreeView;
-    case 2: return HS_CHM;
+    return HS_Plain;
   }
+  else if (m_htmlOptions->find(1)->isOn())
+  {
+    return HS_TreeView;
+  }
+  else if (m_htmlOptions->find(2)->isOn())
+  {
+    return HS_CHM;
+  }
+  // broken radio button logic
   return HS_Plain;
 }
 

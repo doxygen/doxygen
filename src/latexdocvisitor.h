@@ -30,7 +30,7 @@ class QString;
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci,bool insideTabbing);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -154,6 +154,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
+    bool m_insideTabbing;
     QStack<bool> m_enabled;
 };
 

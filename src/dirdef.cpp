@@ -4,6 +4,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "language.h"
+#include "message.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -27,9 +28,13 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
   }
   
   m_subdirs.setAutoDelete(TRUE);
-  m_fileList = new FileList;
+  m_fileList   = new FileList;
   m_classSDict = new ClassSDict(17);
-  m_dirCount = g_dirCount++;
+  m_usedDirs   = new QDict<UsedDir>(257);
+  m_usedDirs->setAutoDelete(TRUE);
+  m_dirCount   = g_dirCount++;
+  m_level=-1;
+  m_parent=0;
 }
 
 DirDef::~DirDef()
@@ -40,6 +45,7 @@ void DirDef::addSubDir(DirDef *subdir)
 {
   m_subdirs.inSort(subdir);
   subdir->setOuterScope(this);
+  subdir->m_parent=this;
 }
 
 void DirDef::addFile(FileDef *fd)
@@ -250,6 +256,136 @@ void DirDef::writeNavigationPath(OutputList &ol)
   ol.popGeneratorState();
 }
 
+void DirDef::setLevel()
+{
+  if (m_level==-1) // level not set before
+  {
+    DirDef *p = parent();
+    if (p)
+    {
+      p->setLevel();
+      m_level = p->level()+1;
+    }
+    else
+    {
+      m_level = 0;
+    }
+  }
+}
+
+/** Add as "uses" dependency between \a this dir and \a dir,
+ *  that was caused by a dependency on file \a fd.
+ */ 
+void DirDef::addUsesDependency(DirDef *dir,FileDef *fd,bool inherited)
+{
+  if (this==dir) return; // do not add self-dependencies
+  //printf("  > add dependency %s->%s due to %s\n",shortName().data(),
+  //    dir->shortName().data(),fd->name().data());
+
+  // levels match => add direct dependency
+  bool added=FALSE;
+  UsedDir *usedDir = m_usedDirs->find(dir->getOutputFileBase());
+  if (usedDir) // dir dependency already present
+  {
+     FileDef *usedFd = usedDir->findFile(fd->getOutputFileBase());
+     if (usedFd==0) // new file dependency
+     {
+       //printf("  => new file\n");
+       usedDir->addFile(fd); 
+       added=TRUE;
+     }
+     else
+     {
+       // dir & file dependency already added
+     }
+  }
+  else // new directory dependency
+  {
+    //printf("  => new file\n");
+    usedDir = new UsedDir(dir,inherited);
+    usedDir->addFile(fd); 
+    m_usedDirs->insert(dir->getOutputFileBase(),usedDir);
+    added=TRUE;
+  }
+  if (added && dir->parent())
+  {
+    // add relation to parent of used dir
+    addUsesDependency(dir->parent(),fd,inherited);
+  }
+  if (parent())
+  {
+    // add relation for the parent of this dir as well
+    parent()->addUsesDependency(dir,fd,TRUE);
+  }
+}
+
+/** Computes the dependencies between directories
+ */
+void DirDef::computeDependencies()
+{
+  FileList *fl = m_fileList;
+  if (fl) 
+  {
+    QListIterator<FileDef> fli(*fl);
+    FileDef *fd;
+    for (fli.toFirst();(fd=fli.current());++fli) // foreach file in dir dd
+    {
+      //printf("** dir=%s file=%s\n",shortName().data(),fd->name().data());
+      QList<IncludeInfo> *ifl = fd->includeFileList();
+      if (ifl)
+      {
+        QListIterator<IncludeInfo> ifli(*ifl); 
+        IncludeInfo *ii;
+        for (ifli.toFirst();(ii=ifli.current());++ifli) // foreach include file
+        {
+          //printf("  > %s\n",ii->includeName.data());
+          if (ii->fileDef && ii->fileDef->isLinkable()) // linkable file
+          {
+            DirDef *usedDir = ii->fileDef->getDirDef();
+            if (usedDir)
+            {
+              // add dependency: thisDir->usedDir
+              addUsesDependency(usedDir,ii->fileDef,FALSE);
+            }
+          } 
+        }
+      }
+    }
+  }
+}
+
+bool DirDef::isParentOf(DirDef *dir) const
+{
+  if (dir->parent()==this) // this is a parent of dir 
+    return TRUE;
+  else if (dir->parent()) // repeat for the parent of dir
+    return isParentOf(dir->parent()); 
+  else
+    return FALSE;
+}
+
+//----------------------------------------------------------------------
+
+UsedDir::UsedDir(DirDef *dir,bool inherited) :
+   m_dir(dir), m_inherited(inherited)
+{
+}
+
+UsedDir::~UsedDir()
+{
+}
+
+void UsedDir::addFile(FileDef *fd)
+{
+  m_files.insert(fd->getOutputFileBase(),fd);
+}
+
+FileDef *UsedDir::findFile(const char *name)
+{
+  QCString n=name;
+  return n.isEmpty() ? 0 : m_files.find(n);
+}
+
 //----------------------------------------------------------------------
 // helper functions
 
@@ -300,6 +436,103 @@ DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
     p=i+1;
   }
   return dir;
+}
+
+void DirDef::writeDepGraph(QTextStream &t)
+{
+    t << "digraph G {\n";
+    t << "  compound=true\n";
+
+    QDict<DirDef> dirsInGraph(257);
+    
+    dirsInGraph.insert(getOutputFileBase(),this);
+    if (isCluster())
+    {
+      t << "  subgraph cluster" << getOutputFileBase() << " {\n";
+      t << "    " << getOutputFileBase() << " [shape=plaintext label=\"" 
+        << shortName() << "\"];\n";
+
+      // add nodes for sub directories
+      QListIterator<DirDef> sdi(m_subdirs);
+      DirDef *sdir;
+      for (sdi.toFirst();(sdir=sdi.current());++sdi)
+      {
+        t << "    " << sdir->getOutputFileBase() << " [shape=box label=\"" 
+          << sdir->shortName() << "\"";
+        if (sdir->isCluster())
+        {
+          t << " color=\"red\" fillcolor=\"white\" style=\"filled\"";
+        }
+        t << "];\n";
+        dirsInGraph.insert(sdir->getOutputFileBase(),sdir);
+      }
+      t << "  }\n";
+    }
+    else
+    {
+      t << getOutputFileBase() << " [shape=box label=\"" << shortName() << "\"];\n";
+    }
+
+    // add nodes for other used directories
+    QDictIterator<UsedDir> udi(*m_usedDirs);
+    UsedDir *udir;
+    //printf("*** For dir %s\n",shortName().data());
+    for (udi.toFirst();(udir=udi.current());++udi) 
+      // for each used dir (=directly used or a parent of a directly used dir)
+    {
+      const DirDef *usedDir=udir->dir();
+      DirDef *dir=this;
+      while (dir)
+      {
+        //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
+        //    dir->shortName().data(),usedDir->shortName().data(),
+        //    dir->parent()==usedDir->parent(),
+        //    usedDir->shortName().data(),
+        //    shortName().data(),
+        //    !usedDir->isParentOf(this)
+        //    );
+        if (dir!=usedDir && dir->parent()==usedDir->parent() && !usedDir->isParentOf(this))
+          // include if both have the same parent (or no parent)
+        {
+          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\"" 
+            << usedDir->shortName() << "\"";
+          if (usedDir->isCluster())
+          {
+            t << " color=\"red\" fillcolor=\"white\" style=\"filled\"";
+          }
+          t << "];\n";
+          dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
+          break;
+        }
+        dir=dir->parent();
+      }
+    }
+
+    // add relations between all selected directories
+    DirDef *dir;
+    QDictIterator<DirDef> di(dirsInGraph);
+    for (di.toFirst();(dir=di.current());++di) // foreach dir in the graph
+    {
+      QDictIterator<UsedDir> udi(*dir->usedDirs());
+      UsedDir *udir;
+      for (udi.toFirst();(udir=udi.current());++udi) // foreach used dir
+      {
+        const DirDef *usedDir=udir->dir();
+        if ((dir!=this || !udir->inherited()) &&     // only show direct dependendies for this dir
+            (usedDir!=this || !udir->inherited()) && // only show direct dependendies for this dir
+            !usedDir->isParentOf(dir) &&             // don't point to own parent
+            dirsInGraph.find(usedDir->getOutputFileBase())) // only point to nodes that are in the graph
+        {
+          int nrefs = udir->files().count();
+          t << "  " << dir->getOutputFileBase() << "->" 
+            << usedDir->getOutputFileBase();
+          t << " [headlabel=\"" << nrefs << "\" headhref=\"http://www.doxygen.org\"]";
+          t << ";\n";
+        }
+      }
+    }
+
+    t << "}\n";
 }
 
 //----------------------------------------------------------------------
@@ -354,6 +587,87 @@ void buildDirectories()
       }
     }
   }
+}
+
+void computeDirDependencies()
+{
+  DirDef *dir;
+  DirSDict::Iterator sdi(Doxygen::directories);
+  // compute nesting level for each directory
+  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  {
+    dir->setLevel();
+  }
+  // compute uses dependencies between directories
+  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  {
+    dir->computeDependencies();
+  }
+
+#if 0
+  printf("-------------------------------------------------------------\n");
+  // print dependencies (for debugging)
+  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  {
+    if (dir->usedDirs())
+    {
+      QDictIterator<UsedDir> udi(*dir->usedDirs());
+      UsedDir *usedDir;
+      for (udi.toFirst();(usedDir=udi.current());++udi)
+      {
+        printf("%s depends on %s due to ",
+            dir->shortName().data(),usedDir->dir()->shortName().data());
+        QDictIterator<FileDef> fdi(usedDir->files());
+        FileDef *fd;
+        for (fdi.toFirst();(fd=fdi.current());++fdi)
+        {
+          printf("%s ",fd->name().data());
+        }
+        printf("\n");
+      }
+    }
+  }
+  printf("^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^\n");
+#endif
+}
+
+
+void writeDirDependencyGraph(const char *dirName)
+{
+  QString path;
+  DirDef *dir;
+  DirSDict::Iterator sdi(Doxygen::directories);
+  QFile htmlPage(QCString(dirName)+"/dirdeps.html");
+  if (htmlPage.open(IO_WriteOnly))
+  {
+    QTextStream out(&htmlPage);
+    out << "<html><body>";
+    for (sdi.toFirst();(dir=sdi.current());++sdi)
+    {
+      path=dirName;
+      path+="/";
+      path+=dir->getOutputFileBase();
+      path+="_dep.dot";
+      out << "<h4>" << dir->displayName() << "</h4>" << endl;
+      out << "<img src=\"" << dir->getOutputFileBase() << "_dep.gif\">" << endl;
+      QFile f(path);
+      if (f.open(IO_WriteOnly))
+      {
+        QTextStream t(&f);
+        dir->writeDepGraph(t);
+      }
+      f.close();
+      QCString dotArgs(4096);
+      QCString outFile = QCString(dirName)+"/"+dir->getOutputFileBase()+"_dep.gif";
+      dotArgs.sprintf("%s -Tgif -o %s",path.data(),outFile.data());
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+      }
+    }
+    out << "</body></html>";
+  }
+  htmlPage.close();
 }
 
 void generateDirDocs(OutputList &ol)
