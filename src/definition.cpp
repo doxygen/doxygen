@@ -243,6 +243,7 @@ static bool readCodeFragment(const char *fileName,
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString cmd=Config_getString("INPUT_FILTER")+" \""+fileName+"\"";
   FILE *f = Config_getBool("FILTER_SOURCE_FILES") ? popen(cmd,"r") : fopen(fileName,"r");
+  bool found=FALSE;
   if (f)
   {
     int c=0;
@@ -257,7 +258,6 @@ static bool readCodeFragment(const char *fileName,
     if (!feof(f))
     {
       // skip until the opening bracket or lonely : is found
-      bool found=FALSE;
       char cn=0;
       while (lineNr<=endLine && !feof(f) && !found)
       {
@@ -324,11 +324,11 @@ static bool readCodeFragment(const char *fileName,
           result.truncate(braceIndex+1);
         }
         endLine=lineNr-1;
-        return TRUE;
       }
     }
+    if (Config_getBool("FILTER_SOURCE_FILES")) pclose(f); else fclose(f);
   }
-  return FALSE;
+  return found;
 }
 
 /*! Write a reference to the source code defining this definition */

@@ -405,6 +405,7 @@ int guessSection(const char *name)
   return 0;
 }
 
+// TODO: remove this!
 QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
                         Definition **typedefContext)
 {
@@ -543,195 +544,6 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-//static QDict<Definition> g_resolvedScopes;
-//
-///*
-// * find the fully qualified class name refered to by the input class
-// * or typedef name against the input scope.
-// * loops through scope and each of its parent scopes looking for a
-// * match against the input name. Also recursively calls itself to check
-// * against any imported namespaces in each scope being checked.
-// */
-//ClassDef *getResolvedClassRecursive(
-//                           Definition *scope,
-//                           const char *n,
-//                           bool *pIsTypeDef,
-//                           QCString *pTemplSpec
-//                          )
-//{
-//  QCString name = n;
-//  // bail out if there is no name
-//  if (name.isEmpty()) return 0;
-//  // use the global scope if no scope was passed
-//  if (scope==0) scope=Doxygen::globalScope;
-//  ClassDef *cd=0;
-//
-//  //printf("===================\n");
-//  Definition *typedefScope = 0;
-//  //printf("-----------------------------------------------------\n");
-//  QCString subst = resolveTypeDef(scope,name,&typedefScope);
-//  //printf("trying getResolvedClass(%s,%s) => subst=%s\n",
-//  //    scope ? scope->name().data() : "<none>", name.data(),subst.data());
-//
-//  if (!subst.isEmpty())
-//  {
-//    //printf("  typedef value=%s typedefScope=%s\n",subst.data(),
-//    //          typedefScope?typedefScope->qualifiedName().data():0);
-//
-//    // strip * and & from n
-//    int ip=subst.length()-1;
-//    while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || 
-//          subst.at(ip)==' ')) ip--;
-//    subst=subst.left(ip+1);
-//
-//    if (pIsTypeDef) *pIsTypeDef=TRUE;
-//    if (subst==name) // avoid resolving "typedef struct foo foo"; 
-//    {
-//      cd = Doxygen::classSDict.find(name);
-//      if (cd) goto found;
-//    }
-//    else
-//    {
-//      int count=0; // recursion detection guard
-//      QCString newSubst;
-//      QCString typeName = subst;
-//      //printf( "---> subst=%s\n",subst.data());
-//
-//      while (!(newSubst=resolveTypeDef(typedefScope,typeName)).isEmpty() 
-//          && count<10)
-//      {
-//        //printf( "---> newSubst=%s\n",newSubst.data());
-//        if (typeName==newSubst) 
-//        {
-//          cd = Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
-//          //printf("  getClass: exit `%s' %p\n",subst.data(),cd);
-//          if (cd) goto found;
-//          break;
-//        }
-//        subst=newSubst;
-//        // strip * and & from n
-//        int ip=subst.length()-1;
-//        while (ip>=0 && subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
-//        subst=subst.left(ip+1);
-//        //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
-//
-//        typeName=newSubst;
-//        //if (index!=-1) typeName.prepend(name.left(index)+"::");
-//        count++;
-//      }
-//      if (count==10)
-//      {
-//        warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",n);
-//        cd = Doxygen::classSDict.find(name);
-//        if (cd) goto found;
-//      }
-//      else
-//      {
-//        int i;
-//        if (typedefScope)
-//        {
-//          cd = Doxygen::classSDict.find(typedefScope->qualifiedName()+"::"+typeName);
-//        }
-//        if (cd==0)
-//        {
-//          cd = Doxygen::classSDict.find(typeName);
-//        }
-//        //printf("  getClass: subst %s->%s cd=%p\n",name.data(),typeName.data(),cd);
-//        if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
-//        {
-//          if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
-//          cd = Doxygen::classSDict.find(typeName.left(i));
-//        }
-//        //if (cd) goto found;
-//      }
-//    }
-//    // whether we found something or not, we stop searching to prevent
-//    // finding false positives.
-//    goto found;
-//  }
-//  else // not a typedef
-//  {
-//    do
-//    {
-//      //printf("  %s is not a typedef value in scope %s\n",name.data(),scope?scope->name().data():"<global>");
-//      if (pIsTypeDef) *pIsTypeDef=FALSE;
-//      if (scope!=Doxygen::globalScope) 
-//      {
-//        cd = Doxygen::classSDict.find(scope->name()+"::"+name);
-//      }
-//      else
-//      {
-//        cd = Doxygen::classSDict.find(name);
-//      }
-//      if (cd==0) 
-//      {
-//        if (scope->definitionType()==Definition::TypeNamespace)
-//        {
-//          NamespaceDef *nscope = (NamespaceDef*)scope;
-//          ClassSDict *cl = nscope->getUsedClasses();
-//          if (cl) // see if the class was imported via a using statement 
-//          {
-//            ClassSDict::Iterator cli(*cl);
-//            ClassDef *ucd;
-//            for (cli.toFirst();(ucd=cli.current());++cli)
-//            {
-//              //printf("comparing %s<->%s\n",ucd->name().data(),name.data());
-//              if (rightScopeMatch(ucd->name(),name))
-//              {
-//                cd=ucd;
-//                break;
-//              }
-//            }
-//          }
-//          NamespaceSDict *nl = nscope->getUsedNamespaces();
-//          if (nl) // check used namespaces for the class
-//          {
-//            NamespaceSDict::Iterator nli(*nl);
-//            NamespaceDef *und;
-//            for (nli.toFirst();(und=nli.current());++nli)
-//            {
-//              if (g_resolvedScopes.find(und->name())==0)
-//              {
-//                g_resolvedScopes.insert(und->name(),und);
-//                cd = getResolvedClassRecursive(und,name,pIsTypeDef,pTemplSpec);
-//                g_resolvedScopes.remove(und->name());
-//                if (cd) break;
-//              }
-//            }
-//          }
-//        }
-//      }
-//      if (cd) goto found;
-//
-//      if (scope==Doxygen::globalScope) scope=0; 
-//      else if (scope) scope=scope->getOuterScope();
-//      //fprintf(stderr,"scope=%p\n",scope);
-//    } while (scope);
-//  }
-//
-//found:
-//  //printf("getResolvedClass()=%s\n",cd?cd->name().data():"<none>");
-//  return cd;
-//}
-//
-//
-//ClassDef *getOldResolvedClass(
-//                           Definition *scope,
-//                           const char *n,
-//                           bool *pIsTypeDef,
-//                           QCString *pTemplSpec
-//                          )
-//{
-//  g_resolvedScopes.clear();
-//  return getResolvedClassRecursive(scope,n,pIsTypeDef,pTemplSpec);
-//}
-//
-
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-
 static QDict<MemberDef> g_resolvedTypedefs;
 
 // forward declaration
@@ -744,7 +556,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
 
-/*! Returns the class representing the value of the typedef represented by md.
+/*! Returns the class representing the value of the typedef represented by \a md
+ *  within file \a fileScope.
  *
  *  Example: typedef A T; will return the class representing A if it is a class.
  * 
@@ -865,7 +678,10 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
   return current; // path could be followed
 }
 
-bool accessibleViaUsingClass(const ClassSDict *cl,FileDef *fileScope,Definition *item,const QCString &explicitScopePart="")
+bool accessibleViaUsingClass(const ClassSDict *cl,
+                             FileDef *fileScope,
+                             Definition *item,
+                             const QCString &explicitScopePart="")
 {
   if (cl) // see if the class was imported via a using statement 
   {
@@ -893,7 +709,10 @@ bool accessibleViaUsingClass(const ClassSDict *cl,FileDef *fileScope,Definition 
   return FALSE;
 }
 
-bool accessibleViaUsingNamespace(const NamespaceSDict *nl,FileDef *fileScope,Definition *item,const QCString &explicitScopePart="")
+bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
+                                 FileDef *fileScope,
+                                 Definition *item,
+                                 const QCString &explicitScopePart="")
 {
   if (nl) // check used namespaces for the class
   {
@@ -1211,7 +1030,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5) // prevent const ::A from being converted to const::A
+    else if (c=='t' && csp==5 && !isId(s.at(i+1))) // prevent const ::A from being converted to const::A
     {
       result+="t ";
       csp=0;
