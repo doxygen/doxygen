@@ -105,7 +105,6 @@ template<class type> inline void QList<type>::deleteItem( QCollection::Item d )
 }
 
 
-
 template<class type> class Q_EXPORT QListIterator : public QGListIterator
 {
 public:

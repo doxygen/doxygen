@@ -183,7 +183,7 @@ int qstricmp( const char *str1, const char *str2 )
     int res;
     uchar c;
     if ( !s1 || !s2 )
-	return s1 == s1 ? 0 : (int)((long)s2 - (long)s1);
+	return s1 == s2 ? 0 : (int)((long)s2 - (long)s1);
     for ( ; !(res = (c=tolower(*s1)) - tolower(*s2)); s1++, s2++ )
 	if ( !c )				// strings are equal
 	    break;

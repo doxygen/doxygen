@@ -144,7 +144,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
         }
       }
       else
@@ -156,7 +156,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,cd->name(),0);
+          ftvHelp->addContentsItem(hasChildren,0,0,0,cd->name());
         }
       }
       if (hasChildren)
@@ -271,7 +271,7 @@ void writeClassTree(ClassList *cl)
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
         }
       }
       if (hasChildren)
@@ -340,7 +340,7 @@ void writeClassHierarchy(OutputList &ol)
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
           }
         }
         else
@@ -352,7 +352,7 @@ void writeClassHierarchy(OutputList &ol)
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(hasChildren,cd->name(),0);
+            ftvHelp->addContentsItem(hasChildren,0,0,0,cd->name());
           }
         }
         if (hasChildren) 
@@ -412,7 +412,7 @@ void writeHierarchicalIndex(OutputList &ol)
   if (Config::generateHtml && Config::ftvHelpFlag /*&& !Config::htmlHelpGroupsOnly*/)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"hierarchy"); 
+    ftvHelp->addContentsItem(TRUE,0,"hierarchy",0,ftvHelpTitle); 
   }
   if (Config::haveDotFlag && Config::gfxHierarchyFlag)
   {
@@ -459,7 +459,7 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   if (Config::generateHtml && Config::ftvHelpFlag)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,ftvHelpTitle,"inherits"); 
+    ftvHelp->addContentsItem(FALSE,0,"inherits",0,ftvHelpTitle); 
   }
   ol.startTextLink("hierarchy",0);
   parseText(ol,theTranslator->trGotoTextualHierarchy());
@@ -538,7 +538,7 @@ void writeFileIndex(OutputList &ol)
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"files"); 
+    ftvHelp->addContentsItem(TRUE,0,"files",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
@@ -638,7 +638,7 @@ void writeFileIndex(OutputList &ol)
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,fd->name(),fd->getOutputFileBase());
+            ftvHelp->addContentsItem(FALSE,fd->getReference(),fd->getOutputFileBase(),0,fd->name());
           }
         }
         else
@@ -652,7 +652,7 @@ void writeFileIndex(OutputList &ol)
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,fd->name(),0);
+            ftvHelp->addContentsItem(FALSE,0,0,0,fd->name());
           }
         }
         if (src)
@@ -738,7 +738,7 @@ void writeNamespaceIndex(OutputList &ol)
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"namespaces"); 
+    ftvHelp->addContentsItem(TRUE,0,"namespaces",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
@@ -771,7 +771,7 @@ void writeNamespaceIndex(OutputList &ol)
       }
       if (hasFtvHelp)
       {
-        ftvHelp->addContentsItem(FALSE,nd->name(),nd->getOutputFileBase());
+        ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->name());
       }
     }
     nd=namespaceList.next();
@@ -851,7 +851,7 @@ void writeAnnotatedClassList(OutputList &ol)
       }
       if (hasFtvHelp)
       {
-        FTVHelp::getInstance()->addContentsItem(FALSE,cd->name(),cd->getOutputFileBase());
+        FTVHelp::getInstance()->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
       }
     }
     cd=classList.next(); 
@@ -1060,7 +1060,7 @@ void writeAnnotatedIndex(OutputList &ol)
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"annotated"); 
+    ftvHelp->addContentsItem(TRUE,0,"annotated",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trCompoundListDescription());
@@ -1536,7 +1536,7 @@ void writeExampleIndex(OutputList &ol)
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"examples"); 
+    ftvHelp->addContentsItem(TRUE,0,"examples",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trExamplesDescription());
@@ -1553,13 +1553,13 @@ void writeExampleIndex(OutputList &ol)
     {
       ol.writeObjectLink(0,n,0,pi->title);
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->title,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->title,n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,n,0,pi->title);
     }
     else
     {
       ol.writeObjectLink(0,n,0,pi->name);
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->name,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->name,n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,n,0,pi->name);
     }
     ol.writeString("\n");
   }
@@ -1620,7 +1620,7 @@ void writePageIndex(OutputList &ol)
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"pages"); 
+    ftvHelp->addContentsItem(TRUE,0,"pages",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trRelatedPagesDescription());
@@ -1651,7 +1651,7 @@ void writePageIndex(OutputList &ol)
       ol.writeEndAnnoItem(pageName);
       ol.writeString("\n");
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pageTitle,pageName);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
     }
   }
   ol.endIndexList();
@@ -1742,7 +1742,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
     }
     if(ftvHelp)
     {
-        ftvHelp->addContentsItem(hasSubGroups || hasSubPages,gd->groupTitle(),gd->getOutputFileBase()); 
+        ftvHelp->addContentsItem(hasSubGroups || hasSubPages,gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle()); 
         ftvHelp->incContentsDepth();
     }
 
@@ -1770,9 +1770,10 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
                                    si ? si->label.data() : 0
                                   ); 
       if(ftvHelp)  ftvHelp->addContentsItem(FALSE,
-                                   convertToHtml(pi->title),
+                                   gd->getReference(),
                                    gd->getOutputFileBase(),
-                                   si ? si->label.data() : 0
+                                   si ? si->label.data() : 0,
+                                   convertToHtml(pi->title)
                                   ); 
     }
 
@@ -1972,7 +1973,7 @@ void writeGroupIndex(OutputList &ol)
     ftvHelp = FTVHelp::getInstance();
     //if(!Config::htmlHelpGroupsOnly)
     //{
-        ftvHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
+        ftvHelp->addContentsItem(TRUE,0,"modules",0,htmlHelpTitle); 
         ftvHelp->incContentsDepth();
     //}
   }
@@ -2042,7 +2043,7 @@ void writeIndex(OutputList &ol)
   }
   if (Config::generateHtml && Config::ftvHelpFlag)
   {
-    FTVHelp::getInstance()->addContentsItem(FALSE,title,indexName); 
+    FTVHelp::getInstance()->addContentsItem(FALSE,0,indexName,0,title); 
   }
 
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);

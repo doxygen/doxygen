@@ -110,6 +110,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
 <li> \refitem cfg_generate_testlist GENERATE_TESTLIST
 <li> \refitem cfg_generate_todolist GENERATE_TODOLIST
+<li> \refitem cfg_generate_treeview GENERATE_TREEVIEW
 <li> \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
 <li> \refitem cfg_have_dot HAVE_DOT
 <li> \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
@@ -162,6 +163,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
 <li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
+<li> \refitem cfg_treeview_width TREEVIEW_WIDTH
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
 <li> \refitem cfg_warn_format WARN_FORMAT
 <li> \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
@@ -736,6 +738,22 @@ followed by the descriptions of the tags grouped by category.
  \addindex ENUM_VALUES_PER_LINE
  This tag can be used to set the number of enum values (range [1..20])
  that doxygen will group on one line in the generated HTML documentation.
+
+\anchor cfg_generate_treeview
+<dt>\c GENERATE_TREEVIEW <dd>
+ \addindex GENERATE_TREEVIEW
+ If the \c GENERATE_TREEVIEW tag is set to YES, a side pannel will be
+ generated containing a tree-like index structure (just like the one that
+ is generated for HTML Help). For this to work a browser that supports
+ JavaScript and frames is required (for instance Netscape 4.0+
+ or Internet explorer 4.0+).
+
+\anchor cfg_treeview_width
+<dt>\c TREEVIEW_WIDTH <dd>
+ \addindex TREEVIEW_WIDTH
+ If the treeview is enabled (see \c GENERATE_TREEVIEW) then this tag can be
+ used to set the initial width (in pixels) of the frame in which the tree
+ is shown.
 
 </dl>
 \subsection latex_output LaTeX related options

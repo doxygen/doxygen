@@ -453,6 +453,23 @@ void configStrToVal()
     Config::enumValuesPerLine=cols;
   }
   
+  if (treeViewWidthString.isEmpty())
+  {
+    Config::treeViewWidth=250;
+  }
+  else
+  {
+    bool ok;
+    int width = treeViewWidthString.toInt(&ok);
+    if (!ok || width<0 || width>1500)
+    {
+      warn_cont("Warning: argument of TREEVIEW_WIDTH is not a valid number in the range [0..1500]!\n"
+	   "Using the default of 250!\n");
+      width = 250;
+    }
+    Config::treeViewWidth=width;
+  }
+
   if (maxDotGraphWidthString.isEmpty())
   {
     Config::maxDotGraphWidth=1024;

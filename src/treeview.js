@@ -11,14 +11,17 @@
 //       27 Jan 98 - Root folder starts open; support for USETEXTLINKS; 
 //                   make the ftien4 a js file 
 //       
+// DvH:  Dec 2000 -  Made some minor changes to support external 
+//                   references
  
 // Definition of class Folder 
 // ***************************************************************** 
  
-function Folder(folderDescription, hreference) //constructor 
+function Folder(folderDescription, tagName, hreference) //constructor 
 { 
   //constant data 
   this.desc = folderDescription 
+  this.tagName = tagName
   this.hreference = hreference 
   this.id = -1   
   this.navObj = 0  
@@ -186,6 +189,10 @@ function drawFolder(leftSide)
   } 
   else 
     doc.write(this.desc) 
+  if (this.tagName!="")
+  {
+    doc.write(" [external]")
+  }
   doc.write("</td>")  
   doc.write("\n</table>\n") 
    
@@ -209,7 +216,12 @@ function outputFolderLink()
 { 
   if (this.hreference) 
   { 
-    doc.write("<a href='" + this.hreference + "' TARGET=\"basefrm\" ") 
+    doc.write("<a ")
+    if (this.tagName)
+    {
+      doc.write("doxygen='" + this.tagName + "' ");
+    }
+    doc.write("href='" + this.hreference + "' TARGET=\"basefrm\" ") 
     if (browserVersion > 0) 
       doc.write("onClick='javascript:clickOnFolder("+this.id+")'") 
     doc.write(">") 
@@ -242,10 +254,11 @@ function folderSubEntries()
 // Definition of class Item (a document or link inside a Folder) 
 // ************************************************************* 
  
-function Item(itemDescription, itemLink) // Constructor 
+function Item(itemDescription, tagName, itemLink) // Constructor 
 { 
   // constant data 
   this.desc = itemDescription 
+  this.tagName = tagName
   this.link = itemLink 
   this.id = -1 //initialized in initalize() 
   this.navObj = 0 //initialized in render() 
@@ -319,6 +332,10 @@ function drawItem(leftSide)
     doc.write("<a href=" + this.link + ">" + this.desc + "</a>") 
   else 
     doc.write(this.desc) 
+  if (this.tagName!="")
+  {
+    doc.write(" [external]");
+  }
   doc.write("\n</table>\n") 
    
   if (browserVersion == 2) 
@@ -422,32 +439,22 @@ function initializeDocument()
 // Auxiliary Functions for Folder-Treee backward compatibility 
 // ********************************************************* 
  
-function gFld(description, hreference) 
+function gFld(description, tagName, hreference) 
 { 
-  folder = new Folder(description, hreference) 
+  folder = new Folder(description, tagName, hreference) 
   return folder 
 } 
  
-function gLnk(target, description, linkData) 
+function gLnk(description, tagName, linkData) 
 { 
   fullLink = "" 
  
   if (linkData!="")
   {
-    if (target==0) 
-    { 
-      fullLink = "'"+linkData+"' target=\"basefrm\"" 
-    } 
-    else 
-    { 
-      if (target==1) 
-        fullLink = "'http://"+linkData+"' target=_blank" 
-      else 
-        fullLink = "'http://"+linkData+"' target=\"basefrm\"" 
-    }
+    fullLink = "'"+linkData+"' target=\"basefrm\"" 
   } 
  
-  linkItem = new Item(description, fullLink)   
+  linkItem = new Item(description, tagName, fullLink)   
   return linkItem 
 } 
  

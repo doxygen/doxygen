@@ -169,8 +169,9 @@ Thanks go to:
 <li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 
     Vlastimil Havran, Petr Prikryl, Ahmed Also Faisal, Alessandro Falappa, 
     Kenji Nagamatsu, Francisco Oltra Thennet, Olli Korhonen, 
-    Boris Bralo, Nickolay Semyonov, and Grzegorz Kowal for providing 
-    translations into various languages.
+    Boris Bralo, Nickolay Semyonov, Richard Kim, Földvári György,
+    Grzegorz Kowal, and Wang Weihan 
+    for providing translations into various languages.
 <li>many, many others for suggestions, patches and bug reports.
 </ul>
 */

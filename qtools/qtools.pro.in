@@ -36,7 +36,11 @@ HEADERS		= qarray.h \
 		  qtextstream.h \
 		  qtl.h \
 		  qvaluelist.h \
-		  qvector.h
+		  qvector.h \
+                  qxml.h \
+                  qvaluestack.h \
+                  qmap.h \
+		  qmodules.h
 SOURCES		= qbuffer.cpp \
 		  qcollection.cpp \
 		  qcstring.cpp \
@@ -55,7 +59,9 @@ SOURCES		= qbuffer.cpp \
 		  qstring.cpp \
                   qtextstream.cpp \
 		  qtextcodec.cpp \
-		  qstringlist.cpp
+		  qstringlist.cpp \
+	          qxml.cpp \
+                  qmap.cpp
 
 unix:SOURCES +=   qfile_unix.cpp \
 		  qdir_unix.cpp \

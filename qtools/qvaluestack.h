@@ -1,9 +1,9 @@
 /****************************************************************************
 ** 
 **
-** Definition of base class for all collection classes
+** Definition of QValueStack class
 **
-** Created : 920629
+** Created : 990925
 **
 ** Copyright (C) 1992-2000 Trolltech AS.  All rights reserved.
 **
@@ -35,40 +35,30 @@
 **
 **********************************************************************/
 
-#ifndef QCOLLECTION_H
-#define QCOLLECTION_H
+#ifndef QVALUESTACK_H
+#define QVALUESTACK_H
 
 #ifndef QT_H
-#include "qglobal.h"
+#include "qvaluelist.h"
 #endif // QT_H
 
 
-class QGVector;
-class QGList;
-class QGDict;
-
-
-class Q_EXPORT QCollection			// inherited by all collections
+template<class T>
+class Q_EXPORT QValueStack : public QValueList<T>
 {
 public:
-    bool autoDelete()	const	       { return del_item; }
-    void setAutoDelete( bool enable )  { del_item = enable; }
-
-    virtual uint  count() const = 0;
-    virtual void  clear() = 0;			// delete all objects
-
-    typedef void *Item;				// generic collection item
-
-protected:
-    QCollection() { del_item = FALSE; }		// no deletion of objects
-    QCollection(const QCollection &) { del_item = FALSE; }
-    virtual ~QCollection() {}
-
-    bool del_item;				// default FALSE
-
-    virtual Item     newItem( Item );		// create object
-    virtual void     deleteItem( Item );	// delete object
+    QValueStack() {}
+   ~QValueStack() {}
+    void  push( const T& d ) { append(d); }
+    T pop()
+    {
+	T elem( this->last() );
+	if ( !this->isEmpty() )
+	    remove( this->fromLast() );
+	return elem;
+    }
+    T& top() { return this->last(); }
+    const T& top() const { return this->last(); }
 };
 
-
-#endif // QCOLLECTION_H
+#endif

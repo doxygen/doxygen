@@ -241,7 +241,7 @@ QDir::~QDir()
   is using a relative or an absolute file path. You can call the function
   convertToAbs() to convert a relative QDir to an absolute one.
 
-  \sa path(), absPath(), exists, cleanDirPath(), dirName(),
+  \sa path(), absPath(), exists(), cleanDirPath(), dirName(),
       absFilePath(), isRelative(), convertToAbs()
 */
 
@@ -469,7 +469,6 @@ bool QDir::cdUp()
 /*!
   \fn QString QDir::nameFilter() const
   Returns the string set by setNameFilter()
-  \sa setNameFilter()
 */
 
 /*!
@@ -481,7 +480,7 @@ bool QDir::cdUp()
   ".cpp" and all files ending with ".h", you simply call
   dir.setNameFilter("*.cpp *.h") or dir.setNameFilter("*.cpp;*.h")
 
-  \sa nameFilter()
+  \sa nameFilter(), setFilter()
 */
 
 void QDir::setNameFilter( const QString &nameFilter )
@@ -495,7 +494,6 @@ void QDir::setNameFilter( const QString &nameFilter )
 /*!
   \fn QDir::FilterSpec QDir::filter() const
   Returns the value set by setFilter()
-  \sa setFilter()
 */
 
 /*! \enum QDir::FilterSpec
@@ -533,7 +531,8 @@ void QDir::setNameFilter( const QString &nameFilter )
   Sets the filter used by entryList() and entryInfoList(). The filter is used
   to specify the kind of files that should be returned by entryList() and
   entryInfoList().
-  \sa nameFilter()
+
+  \sa filter(), setNameFilter()
 */
 
 void QDir::setFilter( int filterSpec )
@@ -1030,7 +1029,20 @@ QStringList qt_makeFilterList( const QString &filter )
 	QString s = *it;
 	if ( s[ (int)s.length() - 1 ] == ';' )
 	    s.remove( s.length() - 1, 1 );
+	if ( s[0] == '\"' ) {
+	    s.remove( 0, 1 );
+	    while( ++it != lst.end() ) {
+		QString s2 = *it;
+		s += " "+s2;
+		if ( s2[(int)s2.length() -1] == '\"' ) {
+		    s.remove( s.length() -1, 1 );
+		    break;
+		}
+	    }
+	}
 	lst2 << s;
+	if ( it == lst.end() )
+	    break;
     }
     return lst2;
 }

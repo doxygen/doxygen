@@ -731,7 +731,7 @@ static void buildClassList(Entry *root)
         ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec);
         cd->setDocumentation(root->doc); // copy docs to definition
         cd->setBriefDescription(root->brief);
-        //printf("new ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
+        //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
         cd->setTemplateArguments(root->tArgList);
         cd->setProtection(root->protection);
         cd->addSectionsToDefinition(root->anchors);
@@ -1364,7 +1364,7 @@ static MemberDef *addVariableToFile(
 
 void buildVarList(Entry *root)
 {
-  QRegExp re("([^)]*)");
+  static const QRegExp re("([^)]*)");
   int i=-1;
   if (!root->name.isEmpty() &&
       //root->type!="class" && root->type!="interface" && 
@@ -1397,9 +1397,9 @@ void buildVarList(Entry *root)
     {
       // recover from parse error caused by redundant braces
       root->type=root->name;
-      QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+      static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
       int l;
-      i=root->args.isEmpty() ? -1 : re.match(root->args,0,&l);
+      i=root->args.isEmpty() ? -1 : reName.match(root->args,0,&l);
       root->name=root->args.mid(i,l);
       root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
       //printf("new: type=`%s' name=`%s' args=`%s'\n",
@@ -1408,10 +1408,19 @@ void buildVarList(Entry *root)
     else
     {
       i=root->type.find(re,0);
-      if (i!=-1) // function variable
+      if (i!=-1) // function pointer
       {
-        root->type=root->type.left(root->type.length()-1);
-        root->args.prepend(")");
+        int ai = root->type.find('[',i);
+        if (ai>i) // function pointer array
+        {
+          root->args.prepend(root->type.right(root->type.length()-ai));
+          root->type=root->type.left(ai);
+        }
+        else
+        {
+          root->type=root->type.left(root->type.length()-1);
+          root->args.prepend(")");
+        }
       }
     }
     
@@ -2047,39 +2056,48 @@ static void transferFunctionDocumentation()
         matchArguments(mdef->argumentList(),mdec->argumentList())
        ) /* match found */
     {
-      //printf("Found member %s: def in %s and dec in %s\n",
-      //    mn->memberName(),mdef->getFileDef()->name().data(),
-      //    mdec->getFileDef()->name().data());
-      
-      /* copy documentation between function definition and declaration */
-      if (mdec->briefDescription())
+      FileDef *fdef = mdef->getFileDef();
+      FileDef *fdec = mdec->getFileDef();
+
+      // check if not in different but documented files
+      if (Config::extractAllFlag || 
+          fdef==fdec || 
+          !fdef->hasDocumentation() || !mdec->hasDocumentation())
       {
-        mdef->setBriefDescription(mdec->briefDescription());
+        //printf("Found member %s: def in %s and dec in %s\n",
+        //    mn->memberName(),mdef->getFileDef()->name().data(),
+        //    mdec->getFileDef()->name().data());
+
+        /* copy documentation between function definition and declaration */
+        if (mdec->briefDescription())
+        {
+          mdef->setBriefDescription(mdec->briefDescription());
+        }
+        else if (mdef->briefDescription())
+        {
+          mdec->setBriefDescription(mdef->briefDescription());
+        }
+        if (mdef->documentation())
+        {
+          mdec->setDocumentation(mdef->documentation());
+        }
+        else if (mdec->documentation())
+        {
+          mdef->setDocumentation(mdec->documentation());
+        }
+        if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
+        {
+          mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
+          mdef->setBodyDef(mdec->getFileDef());
+        }
+        else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
+        {
+          mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
+          mdec->setBodyDef(mdef->getFileDef());
+        }
+        mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
+        mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
       }
-      else if (mdef->briefDescription())
-      {
-        mdec->setBriefDescription(mdef->briefDescription());
-      }
-      if (mdef->documentation())
-      {
-        mdec->setDocumentation(mdef->documentation());
-      }
-      else if (mdec->documentation())
-      {
-        mdef->setDocumentation(mdec->documentation());
-      }
-      if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
-      {
-        mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
-        mdef->setBodyDef(mdec->getFileDef());
-      }
-      else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
-      {
-        mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
-        mdec->setBodyDef(mdef->getFileDef());
-      }
-      mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
-      mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
     }
   }
 }

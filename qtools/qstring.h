@@ -646,8 +646,11 @@ inline QString::QString() :
 //
 inline QString::~QString()
 {
-    if ( d->deref() )
+    if ( d->deref() ) {
+	if ( d == shared_null )
+	    shared_null = 0;
 	d->deleteSelf();
+    }
 }
 
 inline QString &QString::operator=( QChar c )

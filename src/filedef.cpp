@@ -164,6 +164,10 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.docify(ii->includeName);
       ol.enableAll();
       ol.disableAllBut(OutputGenerator::Html);
+      
+      // Here we use the include file name as it appears in the file.
+      // we could also we the name as it is used within doxygen,
+      // then we should have used fd->docName() instead of ii->includeName
       if (fd && fd->isLinkable() && fd->generateSourceFile())
       {
         ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
@@ -172,6 +176,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       {
         ol.docify(ii->includeName);
       }
+      
       ol.enableAll();
       if (ii->local)
         ol.docify("\"");
@@ -438,7 +443,10 @@ void FileDef::writeSource(OutputList &ol)
 
   initParseCodeContext();
   ol.startCodeFragment();
-  parseCode(ol,0,fileToString(absFilePath(),TRUE),FALSE,0,this);
+  parseCode(ol,0,
+            fileToString(absFilePath(),Config::filterForSourceFlag),
+            FALSE,0,this
+           );
   ol.endCodeFragment();
   endFile(ol);
   ol.enableAll();

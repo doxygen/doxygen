@@ -51,6 +51,13 @@ class TranslatorChinese : public Translator
     { return "成员函数文档"; }
     QCString trMemberDataDocumentation()
     { return "成员数据文档"; }
+    QCString trGeneratedFrom(const char *s,bool single)
+    { 
+      QCString result=(QCString)"De documentatie voor deze"+s+
+                     " is gegenereerd op grond van de volgende file";
+      if (single) result+=":";   else result+="s:";
+      return result;
+    }
     QCString trMore()
     { return "更多..."; }
     QCString trListOfAllMembers()
@@ -495,17 +502,17 @@ class TranslatorChinese : public Translator
     /*! Text for the \pre command */
     QCString trPrecondition()
     {
-      return "前提条件";
+      return "前置条件";
     }
     /*! Text for the \post command */
     QCString trPostcondition()
     {
-      return "Postcondition";
+      return "后置条件";
     }
     /*! Text for the \invariant command */
     QCString trInvariant()
     {
-      return "Invariant";
+      return "不变性";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     QCString trInitialValue()

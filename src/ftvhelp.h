@@ -32,8 +32,10 @@ class FTVHelp
     /*! return the current depth of the contents tree */ 
     int  contentsDepth() { return m_dc; }
     void addContentsItem(bool isDir,
-                         const char *name, const char *ref = 0, 
-                         const char *anchor = 0);
+                         const char *ref,
+                         const char *file,
+                         const char *anchor, 
+                         const char *name);
 
   private:
     FTVHelp();
