@@ -30,6 +30,10 @@
 #ifndef __MD5_LOC_H__
 #define __MD5_LOC_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define HEX_STRING	"0123456789abcdef"	/* to convert to hex */
 #define BLOCK_SIZE_MASK	(MD5_BLOCK_SIZE - 1)
 
@@ -102,5 +106,9 @@
       a = CYCLIC (a, s);				\
       a += b;						\
     } while (0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! __MD5_LOC_H__ */

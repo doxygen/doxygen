@@ -522,7 +522,7 @@ QCString MemberDef::anchor() const
 
 bool MemberDef::isLinkableInProject() const
 {
-  //printf("MemberDef::isLinkableInProject()\n");
+  //printf("MemberDef::isLinkableInProject(name=%s)\n",name().data());
   if (m_templateMaster)
   {
     return m_templateMaster->isLinkableInProject();

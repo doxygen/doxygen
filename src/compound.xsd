@@ -93,6 +93,7 @@
 
   <xsd:complexType name="memberdefType">
     <xsd:sequence>
+      <xsd:element name="templateparamlist" type="templateparamlistType" minOccurs="0" />
       <xsd:element name="type" type="linkedTextType" minOccurs="0" />
       <xsd:element name="definition" minOccurs="0" />
       <xsd:element name="argsstring" minOccurs="0" />
@@ -632,6 +633,11 @@
       <xsd:enumeration value="protected-slot" />
       <xsd:enumeration value="protected-static-func" />
       <xsd:enumeration value="protected-static-attrib" />
+      <xsd:enumeration value="package-type" />
+      <xsd:enumeration value="package-func" />
+      <xsd:enumeration value="package-attrib" />
+      <xsd:enumeration value="package-static-func" />
+      <xsd:enumeration value="package-static-attrib" />
       <xsd:enumeration value="private-type" />
       <xsd:enumeration value="private-func" />
       <xsd:enumeration value="private-attrib" />

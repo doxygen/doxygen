@@ -672,6 +672,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	EnumDocArg1
 %x	FuncPtr
 %x	EndFuncPtr
+%x	FuncPtrInit
 %x	FuncFunc
 %x	FuncFuncEnd
 %x	FuncFuncType
@@ -2643,8 +2644,32 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}	
-<FuncQual>"="				{ // typically a initialized function pointer
+<FuncQual>"="				{ // typically an initialized function pointer
                                           current->args += *yytext; 
+					  BEGIN(FuncPtrInit);
+  					}
+<FuncPtrInit>[{;]			{
+  					  unput(*yytext);
+					  BEGIN(FuncQual);
+  					}
+<FuncPtrInit>\"				{
+                                          current->args += *yytext; 
+  					  pCopyQuotedString=&current->args;
+					  lastStringContext=FuncPtrInit;
+					  BEGIN(CopyString);
+					}
+<FuncPtrInit>{CHARLIT}			{
+                                          current->args += yytext; 
+  					}
+<FuncPtrInit>{ID}			{
+                                          current->args += yytext; 
+					}
+<FuncPtrInit>.				{
+                                          current->args += *yytext; 
+  					}
+<FuncPtrInit>\n				{
+                                          current->args += *yytext; 
+					  yyLineNr++;
   					}
 <FuncQual>{ID}				{ // typically a K&R style C function
 					  if (checkForKnRstyleC())

@@ -701,6 +701,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   QString name = linkToText(g_token->name,TRUE);
   if (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
+    //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member->isLinkable());
     if (member) // member link
     {
       children.append(new 

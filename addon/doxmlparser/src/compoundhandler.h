@@ -153,6 +153,7 @@ class CompoundHandler : public IClass,
     DocHandler*                    m_detailed;
     ProgramListingHandler*         m_programListing;
     StringImpl                     m_id;
+    StringImpl                     m_protection;
     StringImpl                     m_kindString;
     CompoundKind                   m_kind;
     StringImpl                     m_name;

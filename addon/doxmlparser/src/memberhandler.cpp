@@ -158,27 +158,15 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
 {
   //printf("MemberHandler::MemberHandler() %p\n",this);
   addEndHandler("memberdef",this,&MemberHandler::endMember);
-  addEndHandler("enumvalue",this,&MemberHandler::endMember);
+
+  addStartHandler("templateparamlist",this,&MemberHandler::startTemplateParamList);
+  addEndHandler("templateparamlist",this,&MemberHandler::endTemplateParamList);
 
   addStartHandler("type",this,&MemberHandler::startType);
-  addStartHandler("initializer",this,&MemberHandler::startInitializer);
-  addStartHandler("exception",this,&MemberHandler::startException);
-  addStartHandler("enumvalue",this,&MemberHandler::startEnumValue2);
-
+  // definition
+  // argsstring
   addStartHandler("name",this,&MemberHandler::startName);
   addEndHandler("name",this,&MemberHandler::endName);
-
-  addStartHandler("param",this,&MemberHandler::startParam);
-
-  addStartHandler("briefdescription",this,&MemberHandler::startBriefDesc);
-
-  addStartHandler("detaileddescription",this,&MemberHandler::startDetailedDesc);
-
-  addStartHandler("references",this,&MemberHandler::startReferences);
-  addEndHandler("references",this,&MemberHandler::endReferences);
-  
-  addStartHandler("referencedby",this,&MemberHandler::startReferencedBy);
-  addEndHandler("referencedby",this,&MemberHandler::endReferencedBy);
 
   addStartHandler("reimplements",this,&MemberHandler::startReimplements);
   addEndHandler("reimplements",this,&MemberHandler::endReimplements);
@@ -186,11 +174,28 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addStartHandler("reimplementedby",this,&MemberHandler::startReimplementedBy);
   addEndHandler("reimplementedby",this,&MemberHandler::endReimplementedBy);
 
+  addStartHandler("param",this,&MemberHandler::startParam);
+
+  addStartHandler("enumvalue",this,&MemberHandler::startEnumValue2);
+  addEndHandler("enumvalue",this,&MemberHandler::endMember);
+
+  addStartHandler("initializer",this,&MemberHandler::startInitializer);
+  addStartHandler("exception",this,&MemberHandler::startException);
+
+  addStartHandler("briefdescription",this,&MemberHandler::startBriefDesc);
+
+  addStartHandler("detaileddescription",this,&MemberHandler::startDetailedDesc);
+
+  // inbodydescription
+  
   addStartHandler("location",this,&MemberHandler::startLocation);
   addEndHandler("location");
 
-  addStartHandler("templateparamlist",this,&MemberHandler::startTemplateParamList);
-  addEndHandler("templateparamlist",this,&MemberHandler::endTemplateParamList);
+  addStartHandler("references",this,&MemberHandler::startReferences);
+  addEndHandler("references",this,&MemberHandler::endReferences);
+  
+  addStartHandler("referencedby",this,&MemberHandler::startReferencedBy);
+  addEndHandler("referencedby",this,&MemberHandler::endReferencedBy);
 
   m_type.setAutoDelete(TRUE);
   m_initializer.setAutoDelete(TRUE);

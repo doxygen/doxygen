@@ -1397,6 +1397,9 @@ void HtmlGenerator::writeSearchPage()
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
+#if QT_VERSION >= 200
+      t.setEncoding(QTextStream::Latin1);
+#endif
       if (g_header.isEmpty()) 
       {
         writeDefaultHeaderFile(t,"Search");

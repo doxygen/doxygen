@@ -1012,6 +1012,11 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   generateXMLSection(cd,ti,t,&cd->proSlots,"protected-slot");
   generateXMLSection(cd,ti,t,&cd->proStaticMethods,"protected-static-func");
   generateXMLSection(cd,ti,t,&cd->proStaticAttribs,"protected-static-attrib");
+  generateXMLSection(cd,ti,t,&cd->pacTypes,"package-type");
+  generateXMLSection(cd,ti,t,&cd->pacMethods,"package-func");
+  generateXMLSection(cd,ti,t,&cd->pacAttribs,"package-attrib");
+  generateXMLSection(cd,ti,t,&cd->pacStaticMethods,"package-static-func");
+  generateXMLSection(cd,ti,t,&cd->pacStaticAttribs,"package-static-attrib");
   generateXMLSection(cd,ti,t,&cd->priTypes,"private-type");
   generateXMLSection(cd,ti,t,&cd->priMethods,"private-func");
   generateXMLSection(cd,ti,t,&cd->priAttribs,"private-attrib");

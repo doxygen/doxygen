@@ -41,6 +41,11 @@ class SectionTypeMap
       m_map.insert("protected-slot",new int(ISection::ProSlots));
       m_map.insert("protected-static-func",new int(ISection::ProStatFuncs));
       m_map.insert("protected-static-attrib",new int(ISection::ProStatAttribs));
+      m_map.insert("package-type",new int(ISection::PacTypes));
+      m_map.insert("package-func",new int(ISection::PacFuncs));
+      m_map.insert("package-attrib",new int(ISection::PacAttribs));
+      m_map.insert("package-static-func",new int(ISection::PacStatFuncs));
+      m_map.insert("package-static-attrib",new int(ISection::PacStatAttribs));
       m_map.insert("private-type",new int(ISection::PriTypes));
       m_map.insert("private-func",new int(ISection::PriFuncs));
       m_map.insert("private-attrib",new int(ISection::PriAttribs));

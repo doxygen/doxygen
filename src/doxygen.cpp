@@ -4037,7 +4037,7 @@ static void addMemberDocs(Entry *root,
 static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
-  ClassDef *tcd = getClass(scopeName);
+  ClassDef *tcd = getResolvedClass(nd,fd,scopeName);
   if (tcd==0) // try using declaration
   {
     ClassSDict *cl = 0;
@@ -4438,7 +4438,7 @@ static void findMember(Entry *root,
   }
   //printf("new scope=`%s'\n",scopeName.data());
 
-  QCString tempScopeName=scopeName.copy();
+  QCString tempScopeName=scopeName;
   ClassDef *cd=getClass(scopeName);
   if (cd)
   {

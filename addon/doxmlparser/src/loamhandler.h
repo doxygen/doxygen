@@ -31,6 +31,8 @@ class ListOfAllMembersHandler : public BaseHandler<ListOfAllMembersHandler>
     virtual void startMember(const QXmlAttributes& attrib);
     virtual void startName(const QXmlAttributes& attrib);
     virtual void endName();
+    virtual void startScope(const QXmlAttributes& attrib);
+    virtual void endScope();
     virtual void startListOfAllMembers(const QXmlAttributes& attrib);
     virtual void endListOfAllMembers();
 

@@ -243,7 +243,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 if (md->isDetailedSectionLinkable())
                 {
                   ol.disableAllBut(OutputGenerator::Html);
-                  ol.endEmphasis();
+                  //ol.endEmphasis();
                   ol.docify(" ");
                   if (md->getGroupDef()!=0 && gd==0) // forward link to group
                   {
@@ -256,7 +256,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                   }
                   ol.parseText(theTranslator->trMore());
                   ol.endTextLink();
-                  ol.startEmphasis();
+                  //ol.startEmphasis();
                   ol.enableAll();
                 }
                 ol.endMemberDescription();
