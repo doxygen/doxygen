@@ -58,6 +58,7 @@ static int		lastContext;
 static int		lastCContext;
 static int              lastDocContext;
 static int              lastDocRelContext;
+static int              lastDocRelAlsoContext;
 static int              lastCPPContext;
 static int              lastSkipSharpContext;
 static int              lastSkipRoundContext;
@@ -428,7 +429,8 @@ static QCString extractName(const QCString &s)
 static void setContext()
 {
   QCString fileName = yyFileName;
-  insideIDL  = fileName.right(4)==".idl" || fileName.right(4)==".odl";
+  insideIDL  = fileName.right(4)==".idl" || fileName.right(5)==".pidl" || 
+               fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
   insideCS   = fileName.right(3)==".cs";
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
@@ -587,6 +589,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      ClassDocFuncExc
 %x	ClassDocDefine
 %x      ClassDocRelates
+%x      ClassDocRelatesAlso
 %x      ClassDocBrief
 %x      ClassDocOverload
 %x	ClassDefineArgs
@@ -1320,6 +1323,35 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					        current->name  = yytext;
 					      else
 						current->name += yytext;
+					      if (current->name.left(7)=="static ")
+					      {
+						current->stat = TRUE;
+						current->name= current->name.mid(7);
+					      }
+					      else if (current->name.left(7)=="inline ")
+					      {
+						if (current->type.isEmpty())
+						{
+						  current->type="inline";
+						}
+						else
+						{
+						  current->type+="inline ";
+						}
+						current->name= current->name.mid(7);
+					      }
+					      else if (current->name.left(6)=="const ")
+					      {
+						if (current->type.isEmpty())
+						{
+						  current->type="const";
+						}
+						else
+						{
+						  current->type+="const ";
+						}
+						current->name=current->name.mid(6);
+					      }
 					    }
 					    QCString tmp=yytext;
 					    if (nameIsOperator(tmp))
@@ -3617,6 +3649,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           }
 					  BEGIN( lastDocRelContext );
 					}
+<ClassDoc,Doc,JavaDoc>{B}*{CMD}"relate"[sd]"also"{B}*    { 
+                                          lastDocRelAlsoContext = YY_START;
+                                           BEGIN( ClassDocRelatesAlso ); 
+                                        }
+<ClassDocRelatesAlso>({ID}"::")*{ID}    { 
+  					  current->relatesDup = TRUE;
+					  current->relates = yytext;
+					  if (current->mGrpId!=NOGROUP) 
+					  {
+					    memberGroupRelates = yytext;
+					  }
+					  BEGIN( lastDocRelAlsoContext );
+                                        }
 <NameSpaceDocArg1>{SCOPENAME}		{
   					  current->name = yytext;
 					  newDocState();

@@ -175,6 +175,10 @@ class MemberDef : public Definition
     MemberDef *reimplements() const;
     MemberList *reimplementedBy() const;
     
+    // For function documentation that can also be found in a class's related func section.
+    void setRelatedAlso(ClassDef *cd)     { m_relatedAlso=cd; }
+    ClassDef *relatedAlso() const         { return m_relatedAlso; }
+    
     // enumeration specific members
     void insertEnumField(MemberDef *md);
     void setEnumScope(MemberDef *md);
@@ -248,6 +252,11 @@ class MemberDef : public Definition
     void setBodyMember(MemberDef *md) { bodyMemb = md; }
     void setDocsForDefinition(bool b) { docsForDefinition = b; }
 
+    // cached typedef functions
+    bool isTypedefValCached() const { return m_isTypedefValCached; }
+    ClassDef *getCachedTypedefVal() const { return m_cachedTypedefValue; }
+    void cacheTypedefVal(ClassDef *val) { m_isTypedefValCached=TRUE; m_cachedTypedefValue=val; }
+    
     // declaration <-> definition relation
     void setMemberDefinition(MemberDef *md) { memDef=md; }
     void setMemberDeclaration(MemberDef *md) { memDec=md; }
@@ -270,6 +279,7 @@ class MemberDef : public Definition
     MemberList *redefinedBy;  // the list of members that redefine this one
     MemberDef  *memDef;       // member definition for this declaration
     MemberDef  *memDec;       // member declaration for this definition
+    ClassDef   *m_relatedAlso;  // points to class marked by relatedAlso
 
     ExampleSDict *exampleSDict; // a dictionary of all examples for quick access
 
@@ -332,6 +342,10 @@ class MemberDef : public Definition
     MemberDef(const MemberDef &);
     MemberDef &operator=(const MemberDef &);
     static int s_indentLevel;
+
+    bool m_isTypedefValCached;
+    ClassDef *m_cachedTypedefValue;
+
 };
 
 #endif

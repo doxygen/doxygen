@@ -49,7 +49,7 @@ class ClassDict : public QDict<ClassDef>
 class ClassSDict : public SDict<ClassDef>
 {
   public:
-    ClassSDict(int size) : SDict<ClassDef>(size) {}
+    ClassSDict(int size=17) : SDict<ClassDef>(size) {}
    ~ClassSDict() {}
    int compareItems(GCI item1,GCI item2);
    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,

@@ -59,13 +59,10 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_allexternals ALLEXTERNALS 
 \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
-\refitem cfg_bin_abspath BIN_ABSPATH 
 \refitem cfg_binary_toc BINARY_TOC
 \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 \refitem cfg_call_graph CALL_GRAPH
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
-\refitem cfg_cgi_name CGI_NAME 
-\refitem cfg_cgi_url CGI_URL 
 \refitem cfg_chm_file CHM_FILE
 \refitem cfg_class_diagrams CLASS_DIAGRAMS 
 \refitem cfg_class_graph CLASS_GRAPH
@@ -76,8 +73,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_details_at_top DETAILS_AT_TOP 
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
-\refitem cfg_doc_abspath DOC_ABSPATH 
-\refitem cfg_doc_url DOC_URL
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
 \refitem cfg_dot_path DOT_PATH
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
@@ -92,7 +87,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
 \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
 \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
-\refitem cfg_ext_doc_paths EXT_DOC_PATHS
 \refitem cfg_external_groups EXTERNAL_GROUPS
 \refitem cfg_extra_packages EXTRA_PACKAGES
 \refitem cfg_extract_all EXTRACT_ALL
@@ -209,7 +203,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_xml_schema XML_SCHEMA
 \endsecreflist
 
-\section config_general General options
+\section config_project Project related options
 \anchor cfg_project_name
 <dl>
 
@@ -258,7 +252,175 @@ followed by the descriptions of the tags grouped by category.
  whereas setting the tag to \c NO uses a Unix-style encoding (the default for
  all platforms other than Windows).
 
+\anchor cfg_brief_member_desc
+<dt>\c BRIEF_MEMBER_DESC <dd>
+ \addindex BRIEF_MEMBER_DESC
+ If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) doxygen will
+ include brief member descriptions after the members that are listed in
+ the file and class documentation (similar to JavaDoc).
+ Set to NO to disable this.
+
+\anchor cfg_repeat_brief
+<dt>\c REPEAT_BRIEF <dd>
+ \addindex REPEAT_BRIEF
+ If the \c REPEAT_BRIEF tag is set to \c YES (the default) doxygen will 
+ prepend the brief description of a member or function before the detailed 
+ description 
+
+ \par Note: 
+ If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
+ brief descriptions will be completely suppressed.
+
+\anchor cfg_always_detailed_sec
+<dt>\c ALWAYS_DETAILED_SEC <dd>
+ \addindex ALWAYS_DETAILED_SEC
+ If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
+ doxygen will generate a detailed section even if there is only a brief
+ description.
+
+\anchor cfg_inline_inherited_memb
+<dt>\c INLINE_INHERITED_MEMB <dd>
+\addindex INLINE_INHERITED_MEMB
+ If the \c INLINE_INHERITED_MEMB tag is set to \c YES, doxygen will show all inherited
+ members of a class in the documentation of that class as if those members were
+ ordinary class members. Constructors, destructors and assignment operators of
+ the base classes will not be shown.
+
+\anchor cfg_full_path_names
+<dt>\c FULL_PATH_NAMES <dd>
+ \addindex FULL_PATH_NAMES
+ If the \c FULL_PATH_NAMES tag is set to \c YES doxygen will prepend the full
+ path before files name in the file list and in the header files. If set
+ to NO the shortest path that makes the file name unique will be used
+
+\anchor cfg_strip_from_path
+<dt>\c STRIP_FROM_PATH <dd>
+ \addindex STRIP_FROM_PATH
+ If the \c FULL_PATH_NAMES tag is set to \c YES then the \c STRIP_FROM_PATH tag
+ can be used to strip a user-defined part of the path. Stripping is
+ only done if one of the specified strings matches the left-hand part of the 
+ path.
+
+\anchor cfg_case_sense_names
+<dt>\c CASE_SENSE_NAMES <dd>
+ \addindex CASE_SENSE_NAMES
+ If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then doxygen
+ will only generate file names in lower-case letters. If set to
+ \c YES upper-case letters are also allowed. This is useful if you have
+ classes or files whose names only differ in case and if your file system
+ supports case sensitive file names.
+
+\anchor cfg_short_names
+<dt>\c SHORT_NAMES <dd>
+ \addindex SHORT_NAMES
+ If the \c SHORT_NAMES tag is set to \c YES, doxygen will generate much shorter
+ (but less readable) file names. This can be useful is your file systems
+ doesn't support long names like on DOS, Mac, or CD-ROM.
+
+\anchor cfg_verbatim_headers
+<dt>\c VERBATIM_HEADERS <dd>
+ \addindex VERBATIM_HEADERS
+  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
+  will generate a verbatim copy of the header file for each class for
+  which an include is specified. Set to NO to disable this.
+  \sa Section \ref cmdclass "\\class".
+
+\anchor cfg_javadoc_autobrief
+<dt>\c JAVADOC_AUTOBRIEF <dd>
+ \addindex JAVADOC_AUTOBRIEF
+  If the \c JAVADOC_AUTOBRIEF is set to \c YES then doxygen
+  will interpret the first line (until the first dot) of a JavaDoc-style
+  comment as the brief description. If set to NO (the default), the 
+  Javadoc-style will behave just like the Qt-style comments.
+
+\anchor cfg_multiline_cpp_is_brief
+<dt>\c MULTILINE_CPP_IS_BRIEF <dd>
+ \addindex MULTILINE_CPP_IS_BRIEF
+  The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen
+  treat a multi-line C++ special comment block (i.e. a block of //! or ///
+  comments) as a brief description. This used to be the default behaviour.
+  The new default is to treat a multi-line C++ comment block as a detailed
+  description. Set this tag to YES if you prefer the old behaviour instead.
+  Note that setting this tag to YES also means that rational rose comments
+  are not recognised any more.
+
+\anchor cfg_details_at_top
+<dt>\c DETAILS_AT_TOP <dd>
+ \addindex DETAILS_AT_TOP
+  If the DETAILS_AT_TOP tag is set to YES then Doxygen
+  will output the detailed description near the top, like JavaDoc.
+  If set to NO, the detailed description appears after the member
+  documentation.
+
+\anchor cfg_inherit_docs
+<dt>\c INHERIT_DOCS <dd>
+ \addindex INHERIT_DOCS
+ If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
+ member inherits the documentation from any documented member that it
+ reimplements.
+
+\anchor cfg_distribute_group_doc
+<dt>\c DISTRIBUTE_GROUP_DOC <dd>
+ \addindex DISTRIBUTE_GROUP_DOC
+ If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
+ tag is set to YES, then doxygen will reuse the documentation of the first
+ member in the group (if any) for the other members of the group. By default
+ all members of a group must be documented explicitly.
+
+\anchor cfg_tab_size
+<dt>\c TAB_SIZE <dd>
+ \addindex TAB_SIZE
+ the \c TAB_SIZE tag can be used to set the number of spaces in a tab.
+ Doxygen uses this value to replace tabs by spaces in code fragments.
+
+\anchor cfg_aliases
+<dt>\c ALIASES <dd>
+ \addindex ALIASES
+ This tag can be used to specify a number of aliases that acts 
+ as commands in the documentation. An alias has the form 
+\verbatim
+ name=value
+\endverbatim
+ For example adding 
+\verbatim
+ "sideeffect=\par Side Effects:\n" 
+\endverbatim
+ will allow you to
+ put the command \\sideeffect (or \@sideeffect) in the documentation, which 
+ will result in a user-defined paragraph with heading "Side Effects:".
+ You can put \\n's in the value part of an alias to insert newlines.
+
+\anchor cfg_optimize_output_for_c
+<dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
+ \addindex OPTIMIZE_OUTPUT_FOR_C
+ Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
+ of C sources only. Doxygen will then generate output that is more tailored 
+ for C. For instance, some of the names that are used will be different. 
+ The list of all members will be omitted, etc. 
+
+\anchor cfg_optimize_output_java
+<dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
+ \addindex OPTIMIZE_OUTPUT_JAVA
+ Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources 
+ only. Doxygen will then generate output that is more tailored for Java.
+ For instance, namespaces will be presented as packages, qualified scopes 
+ will look different, etc. 
+
+\anchor cfg_subgrouping
+<dt>\c SUBGROUPING <dd>
+ \addindex SUBGROUPING
+ Set the \c SUBGROUPING tag to \c YES (the default) to allow class member groups of
+ the same type (for instance a group of public functions) to be put as a
+ subgroup of that type (e.g. under the Public Functions section). Set it to
+ \c NO to prevent subgrouping. Alternatively, this can be done per class using
+ the \ref cmdnosubgrouping "\\nosubgrouping" command. 
+
+</dl>
+
+\section config_build Build related options
 \anchor cfg_extract_all
+<dl>
+
 <dt>\c EXTRACT_ALL <dd>
  \addindex EXTRACT_ALL
  If the \c EXTRACT_ALL tag is set to \c YES doxygen will assume all 
@@ -324,55 +486,6 @@ documentation blocks found inside the body of a function.
 If set to \c NO (the default) these blocks will be appended to the 
 function's detailed documentation block.
  
-\anchor cfg_brief_member_desc
-<dt>\c BRIEF_MEMBER_DESC <dd>
- \addindex BRIEF_MEMBER_DESC
- If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) doxygen will
- include brief member descriptions after the members that are listed in
- the file and class documentation (similar to JavaDoc).
- Set to NO to disable this.
-
-\anchor cfg_repeat_brief
-<dt>\c REPEAT_BRIEF <dd>
- \addindex REPEAT_BRIEF
- If the \c REPEAT_BRIEF tag is set to \c YES (the default) doxygen will 
- prepend the brief description of a member or function before the detailed 
- description 
-
- \par Note: 
- If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
- brief descriptions will be completely suppressed.
-
-\anchor cfg_always_detailed_sec
-<dt>\c ALWAYS_DETAILED_SEC <dd>
- \addindex ALWAYS_DETAILED_SEC
- If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
- doxygen will generate a detailed section even if there is only a brief
- description.
-
-\anchor cfg_inline_inherited_memb
-<dt>\c INLINE_INHERITED_MEMB <dd>
-\addindex INLINE_INHERITED_MEMB
- If the \c INLINE_INHERITED_MEMB tag is set to \c YES, doxygen will show all inherited
- members of a class in the documentation of that class as if those members were
- ordinary class members. Constructors, destructors and assignment operators of
- the base classes will not be shown.
-
-\anchor cfg_full_path_names
-<dt>\c FULL_PATH_NAMES <dd>
- \addindex FULL_PATH_NAMES
- If the \c FULL_PATH_NAMES tag is set to \c YES doxygen will prepend the full
- path before files name in the file list and in the header files. If set
- to NO the shortest path that makes the file name unique will be used
-
-\anchor cfg_strip_from_path
-<dt>\c STRIP_FROM_PATH <dd>
- \addindex STRIP_FROM_PATH
- If the \c FULL_PATH_NAMES tag is set to \c YES then the \c STRIP_FROM_PATH tag
- can be used to strip a user-defined part of the path. Stripping is
- only done if one of the specified strings matches the left-hand part of the 
- path.
-
 \anchor cfg_internal_docs
 <dt>\c INTERNAL_DOCS <dd>
  \addindex INTERNAL_DOCS
@@ -381,22 +494,6 @@ function's detailed documentation block.
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
 
-\anchor cfg_case_sense_names
-<dt>\c CASE_SENSE_NAMES <dd>
- \addindex CASE_SENSE_NAMES
- If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then doxygen
- will only generate file names in lower-case letters. If set to
- \c YES upper-case letters are also allowed. This is useful if you have
- classes or files whose names only differ in case and if your file system
- supports case sensitive file names.
-
-\anchor cfg_short_names
-<dt>\c SHORT_NAMES <dd>
- \addindex SHORT_NAMES
- If the \c SHORT_NAMES tag is set to \c YES, doxygen will generate much shorter
- (but less readable) file names. This can be useful is your file systems
- doesn't support long names like on DOS, Mac, or CD-ROM.
-
 \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>
  \addindex HIDE_SCOPE_NAMES
@@ -404,54 +501,12 @@ function's detailed documentation block.
  will show members with their full class and namespace scopes in the
  documentation. If set to \c YES the scope will be hidden. 
 
-\anchor cfg_verbatim_headers
-<dt>\c VERBATIM_HEADERS <dd>
- \addindex VERBATIM_HEADERS
-  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
-  will generate a verbatim copy of the header file for each class for
-  which an include is specified. Set to NO to disable this.
-  \sa Section \ref cmdclass "\\class".
-
 \anchor cfg_show_include_files
 <dt>\c SHOW_INCLUDE_FILES <dd>
  \addindex SHOW_INCLUDE_FILES
  If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
  will put a list of the files that are included by a file in the documentation 
  of that file.
-
-\anchor cfg_javadoc_autobrief
-<dt>\c JAVADOC_AUTOBRIEF <dd>
- \addindex JAVADOC_AUTOBRIEF
-  If the \c JAVADOC_AUTOBRIEF is set to \c YES then doxygen
-  will interpret the first line (until the first dot) of a JavaDoc-style
-  comment as the brief description. If set to NO (the default), the 
-  Javadoc-style will behave just like the Qt-style comments.
-
-\anchor cfg_multiline_cpp_is_brief
-<dt>\c MULTILINE_CPP_IS_BRIEF <dd>
- \addindex MULTILINE_CPP_IS_BRIEF
-  The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen
-  treat a multi-line C++ special comment block (i.e. a block of //! or ///
-  comments) as a brief description. This used to be the default behaviour.
-  The new default is to treat a multi-line C++ comment block as a detailed
-  description. Set this tag to YES if you prefer the old behaviour instead.
-  Note that setting this tag to YES also means that rational rose comments
-  are not recognised any more.
-
-\anchor cfg_details_at_top
-<dt>\c DETAILS_AT_TOP <dd>
- \addindex DETAILS_AT_TOP
-  If the DETAILS_AT_TOP tag is set to YES then Doxygen
-  will output the detailed description near the top, like JavaDoc.
-  If set to NO, the detailed description appears after the member
-  documentation.
-
-\anchor cfg_inherit_docs
-<dt>\c INHERIT_DOCS <dd>
- \addindex INHERIT_DOCS
- If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
- member inherits the documentation from any documented member that it
- reimplements.
 
 \anchor cfg_inline_info
 <dt>\c INLINE_INFO <dd>
@@ -466,27 +521,6 @@ function's detailed documentation block.
  will sort the (detailed) documentation of file and class members
  alphabetically by member name. If set to \c NO the members will appear in
  declaration order.
-
-\anchor cfg_distribute_group_doc
-<dt>\c DISTRIBUTE_GROUP_DOC <dd>
- \addindex DISTRIBUTE_GROUP_DOC
- If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
- tag is set to YES, then doxygen will reuse the documentation of the first
- member in the group (if any) for the other members of the group. By default
- all members of a group must be documented explicitly.
-
-\anchor cfg_tab_size
-<dt>\c TAB_SIZE <dd>
- \addindex TAB_SIZE
- the \c TAB_SIZE tag can be used to set the number of spaces in a tab.
- Doxygen uses this value to replace tabs by spaces in code fragments.
-
-\anchor cfg_enabled_sections
-<dt>\c ENABLED_SECTIONS <dd>
- \addindex ENABLED_SECTIONS
- The \c ENABLED_SECTIONS tag can be used to enable conditional
- documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
- \ref cmdendif "\\endif" blocks.
 
 \anchor cfg_generate_deprecatedlist
 <dt>\c GENERATE_DEPRECATEDLIST <dd>
@@ -518,22 +552,12 @@ function's detailed documentation block.
  disable (NO) the bug list. This list is created by 
  putting \ref cmdbug "\\bug" commands in the documentation.
 
-\anchor cfg_aliases
-<dt>\c ALIASES <dd>
- \addindex ALIASES
- This tag can be used to specify a number of aliases that acts 
- as commands in the documentation. An alias has the form 
-\verbatim
- name=value
-\endverbatim
- For example adding 
-\verbatim
- "sideeffect=\par Side Effects:\n" 
-\endverbatim
- will allow you to
- put the command \\sideeffect (or \@sideeffect) in the documentation, which 
- will result in a user-defined paragraph with heading "Side Effects:".
- You can put \\n's in the value part of an alias to insert newlines.
+\anchor cfg_enabled_sections
+<dt>\c ENABLED_SECTIONS <dd>
+ \addindex ENABLED_SECTIONS
+ The \c ENABLED_SECTIONS tag can be used to enable conditional
+ documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
+ \ref cmdendif "\\endif" blocks.
 
 \anchor cfg_max_initializer_lines
 <dt>\c MAX_INITIALIZER_LINES <dd>
@@ -545,37 +569,12 @@ function's detailed documentation block.
  individual variables and defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation.
 
-\anchor cfg_optimize_output_for_c
-<dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
- \addindex OPTIMIZE_OUTPUT_FOR_C
- Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
- of C sources only. Doxygen will then generate output that is more tailored 
- for C. For instance, some of the names that are used will be different. 
- The list of all members will be omitted, etc. 
-
-\anchor cfg_optimize_output_java
-<dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
- \addindex OPTIMIZE_OUTPUT_JAVA
- Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources 
- only. Doxygen will then generate output that is more tailored for Java.
- For instance, namespaces will be presented as packages, qualified scopes 
- will look different, etc. 
-
 \anchor cfg_show_used_files
 <dt>\c SHOW_USED_FILES <dd>
  \addindex SHOW_USED_FILES
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
-
-\anchor cfg_subgrouping
-<dt>\c SUBGROUPING <dd>
- \addindex SUBGROUPING
- Set the \c SUBGROUPING tag to \c YES (the default) to allow class member groups of
- the same type (for instance a group of public functions) to be put as a
- subgroup of that type (e.g. under the Public Functions section). Set it to
- \c NO to prevent subgrouping. Alternatively, this can be done per class using
- the \ref cmdnosubgrouping "\\nosubgrouping" command. 
 
 </dl>
 
@@ -1568,52 +1567,13 @@ remove the intermediate dot files that are used to generate the various graphs.
 
 <dt>\c SEARCHENGINE <dd>
  \addindex SEARCHENGINE
- The \c SEARCHENGINE tag specifies whether or not a 
- search should be used. Possible values are \c YES and \c NO. 
- If set to \c NO or left blank, the values of all other tags in this section 
- will be ignored.
-
-\anchor cfg_cgi_name
-<dt>\c CGI_NAME <dd>
- \addindex CGI_NAME
- The \c CGI_NAME tag should be the name of the CGI script that
- starts the search engine (<tt>doxysearch</tt>) with the correct parameters.
- A script with this name will be generated by doxygen.
-
-\anchor cfg_cgi_url
-<dt>\c CGI_URL <dd>
- \addindex CGI_URL
- The \c CGI_URL tag should be the absolute URL to the directory where the
- cgi binaries are located. See the documentation of your HTTP daemon for 
- details.
-
-\anchor cfg_doc_url
-<dt>\c DOC_URL <dd>
- \addindex DOC_URL
- The \c DOC_URL tag should be the absolute URL to the directory where the
- documentation is located. If left blank the absolute path to the 
- documentation, with \c file:// prepended to it, will be used. 
- This is correct for local viewing only.
-
-\anchor cfg_doc_abspath
-<dt>\c DOC_ABSPATH <dd>
- \addindex DOC_ABSPATH
- The \c DOC_ABSPATH tag should be the absolute path to the directory where the
- documentation is located. If left blank the directory on the local machine
- will be used.
-
-\anchor cfg_bin_abspath
-<dt>\c BIN_ABSPATH <dd>     
- \addindex BIN_ABSPATH
- The \c BIN_ABSPATH tag must point to the directory where the doxysearch binary
- is installed.
-
-\anchor cfg_ext_doc_paths
-<dt>\c EXT_DOC_PATHS <dd>  
- \addindex EXT_DOC_PATHS
- The \c EXT_DOC_PATHS tag can be used to specify one or more paths to 
- documentation generated for other projects. This allows doxysearch to search
- the documentation for these projects as well. All paths must be absolute.
+ The \c SEARCHENGINE tag specifies whether or not the HTML output should
+ contain a search facility. Possible values are \c YES and \c NO. 
+ If set to YES, doxygen will produce a search index and a PHP script
+ to search through the index. For this to work the documentation should
+ be viewed via a web-server running PHP version 4.1.0 or higher.
+ (See http://www.php.net/manual/en/installation.php for installation 
+ instructions).
 
 </dl>
 <h2>Examples</h2>
@@ -1649,11 +1609,6 @@ INCLUDE_PATH     = examples
 TAGFILES         = qt.tag
 PERL_PATH        = /usr/local/bin/perl
 SEARCHENGINE     = YES
-CGI_NAME         = search.cgi
-CGI_URL          = http://www.stack.nl/~dimitri/cgi-bin
-DOC_URL          = http://www.stack.nl/~dimitri/qdbttabular
-DOC_ABSPATH      = /home/dimitri/.html/qdbttabular
-BIN_ABSPATH      = /home/dimitri/bin
 \endverbatim
 
 To regenerate the Qt-1.44 documentation from the sources, you could use the

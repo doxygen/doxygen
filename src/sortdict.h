@@ -109,13 +109,15 @@ class SDict
       m_dict = new QDict<T>(size);
 #endif
     }
+
     /*! Destroys the dictionary */
     virtual ~SDict() 
     {
       delete m_list;
       delete m_dict;
     }
-    /*! Appends a compound to the dictionary. The element is owned by the
+
+    /*! Appends an element to the dictionary. The element is owned by the
      *  dictionary.
      *  \param key The unique key to use to quicky find the item later on.
      *  \param d The compound to add.
@@ -132,12 +134,32 @@ class SDict
       }
 #endif
     }
+
+    /*! Prepends an element to the dictionary. The element is owned by the
+     *  dictionary.
+     *  \param key The unique key to use to quicky find the item later on.
+     *  \param d The compound to add.
+     *  \sa find()
+     */
+    void prepend(const char *key,const T *d)
+    {
+      m_list->prepend(d);
+      m_dict->insert(key,d);
+#if AUTORESIZE
+      if (m_dict->size()>SDict_primes[m_sizeIndex])
+      {
+        m_dict->resize(SDict_primes[++m_sizeIndex]);
+      }
+#endif
+    }
+
     /*! Remove an item from the dictionary */
     bool remove(const char *key)
     {
       T *item = m_dict->take(key);
       return item ? m_list->remove(item) : FALSE;
     }
+
     /*! Sorts the members of the dictionary. First appending a number
      *  of members and then sorting them is faster (O(NlogN) than using 
      *  inSort() for each member (O(N^2)).
@@ -162,11 +184,13 @@ class SDict
       }
 #endif
     }
+
     /*! Indicates whether or not the dictionary owns its elements */
     void setAutoDelete(bool val)
     {
       m_list->setAutoDelete(val);
     }
+
     /*! Looks up a compound given its key. 
      *  \param key The key to identify this element.
      *  \return The requested compound or zero if it cannot be found.
@@ -188,6 +212,7 @@ class SDict
     {
       return m_list->at(i);
     }
+
     /*! Function that is used to compare two items when sorting.
      *  Overload this to properly sort items.
      *  \sa inSort()
@@ -196,6 +221,7 @@ class SDict
     {
       return item1!=item2;
     }
+
     /*! Clears the dictionary. Will delete items if setAutoDelete() was
      *  set to \c TRUE.
      *  \sa setAutoDelete
@@ -205,6 +231,7 @@ class SDict
       m_list->clear();
       m_dict->clear();
     }
+    
     /*! Returns the number of items stored in the dictionary
      */
     int count()
@@ -225,11 +252,13 @@ class SDict
         {
           m_li = new QListIterator<T>(*dict.m_list);
         }
+
         /*! Destroys the dictionary */
         virtual ~Iterator()
         {
           delete m_li;
         }
+
         /*! Set the iterator to the first element in the list. 
          *  \return The first compound, or zero if the list was empty. 
          */
@@ -237,6 +266,7 @@ class SDict
         {
           return m_li->toFirst();
         }
+
         /*! Set the iterator to the last element in the list. 
          *  \return The first compound, or zero if the list was empty. 
          */
@@ -244,11 +274,13 @@ class SDict
         {
           return m_li->toLast();
         }
+
         /*! Returns the current compound */
         T *current() const
         {
           return m_li->current();
         }
+        
         /*! Moves the iterator to the next element.
          *  \return the new "current" element, or zero if the iterator was
          *          already pointing at the last element.
@@ -257,6 +289,7 @@ class SDict
         {
           return m_li->operator++();
         }
+
         /*! Moves the iterator to the previous element.
          *  \return the new "current" element, or zero if the iterator was
          *          already pointing at the first element.
@@ -315,12 +348,14 @@ class SIntDict
       m_dict = new QIntDict<T>(size);
 #endif
     }
+
     /*! Destroys the dictionary */
     virtual ~SIntDict() 
     {
       delete m_list;
       delete m_dict;
     }
+
     /*! Appends a compound to the dictionary. The element is owned by the
      *  dictionary.
      *  \param key The unique key to use to quicky find the item later on.
@@ -338,12 +373,32 @@ class SIntDict
       }
 #endif
     }
+
+    /*! Prepend a compound to the dictionary. The element is owned by the
+     *  dictionary.
+     *  \param key The unique key to use to quicky find the item later on.
+     *  \param d The compound to add.
+     *  \sa find()
+     */
+    void prepend(int key,const T *d)
+    {
+      m_list->prepend(d);
+      m_dict->insert(key,d);
+#if AUTORESIZE
+      if (m_dict->size()>SDict_primes[m_sizeIndex])
+      {
+        m_dict->resize(SDict_primes[++m_sizeIndex]);
+      }
+#endif
+    }
+
     /*! Remove an item from the dictionary */
     bool remove(int key)
     {
       T *item = m_dict->take(key);
       return item ? m_list->remove(item) : FALSE;
     }
+
     /*! Sorts the members of the dictionary. First appending a number
      *  of members and then sorting them is faster (O(NlogN) than using 
      *  inSort() for each member (O(N^2)).
@@ -352,6 +407,7 @@ class SIntDict
     {
       m_list->sort();
     }
+
     /*! Inserts a compound into the dictionary in a sorted way.
      *  \param key The unique key to use to quicky find the item later on.
      *  \param d The compound to add.
@@ -368,11 +424,13 @@ class SIntDict
       }
 #endif
     }
+
     /*! Indicates whether or not the dictionary owns its elements */
     void setAutoDelete(bool val)
     {
       m_list->setAutoDelete(val);
     }
+
     /*! Looks up a compound given its key. 
      *  \param key The key to identify this element.
      *  \return The requested compound or zero if it cannot be found.
@@ -394,6 +452,7 @@ class SIntDict
     {
       return m_list->at(i);
     }
+
     /*! Function that is used to compare two items when sorting.
      *  Overload this to properly sort items.
      *  \sa inSort()
@@ -402,6 +461,7 @@ class SIntDict
     {
       return item1!=item2;
     }
+
     /*! Clears the dictionary. Will delete items if setAutoDelete() was
      *  set to \c TRUE.
      *  \sa setAutoDelete
@@ -411,6 +471,7 @@ class SIntDict
       m_list->clear();
       m_dict->clear();
     }
+
     /*! Returns the number of items stored in the dictionary
      */
     int count()
@@ -431,11 +492,13 @@ class SIntDict
         {
           m_li = new QListIterator<T>(*dict.m_list);
         }
+        
         /*! Destroys the dictionary */
         virtual ~Iterator()
         {
           delete m_li;
         }
+        
         /*! Set the iterator to the first element in the list. 
          *  \return The first compound, or zero if the list was empty. 
          */
@@ -443,6 +506,7 @@ class SIntDict
         {
           return m_li->toFirst();
         }
+        
         /*! Set the iterator to the last element in the list. 
          *  \return The first compound, or zero if the list was empty. 
          */
@@ -450,11 +514,13 @@ class SIntDict
         {
           return m_li->toLast();
         }
+        
         /*! Returns the current compound */
         T *current() const
         {
           return m_li->current();
         }
+        
         /*! Moves the iterator to the next element.
          *  \return the new "current" element, or zero if the iterator was
          *          already pointing at the last element.
@@ -463,6 +529,7 @@ class SIntDict
         {
           return m_li->operator++();
         }
+        
         /*! Moves the iterator to the previous element.
          *  \return the new "current" element, or zero if the iterator was
          *          already pointing at the first element.

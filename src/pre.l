@@ -22,7 +22,6 @@
  */
 
 #include <stdio.h>
-//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 

@@ -185,7 +185,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
   int i=0;
   if (
       (varType=g_codeClassSDict[ltype]) ||  // look for class definitions inside the code block
-      (varType=getResolvedClass(g_currentDefinition,ltype)) // look for global class definitions
+      (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,ltype)) // look for global class definitions
      ) 
   {
     DBG_CTX((stderr,"** AddVariable type=%s name=%s\n",ltype.data(),lname.data()));
@@ -507,11 +507,11 @@ static ClassDef *stripClassName(const char *s)
     ClassDef *cd=0;
     if (!g_classScope.isEmpty())
     {
-      cd=getResolvedClass(g_currentDefinition,g_classScope+"::"+clName);
+      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,g_classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(g_currentDefinition,clName);
+      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,clName);
     }
     //printf("stripClass trying `%s' = %p\n",clName.data(),cd);
     if (cd)
@@ -651,13 +651,15 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
 
   if (!g_theVarContext.findVariable(className)) // not a local variable
   {
-    //printf("not a local var!\n");
     Definition *d = g_currentDefinition;
-    cd = getResolvedClass(d,className);
+    cd = getResolvedClass(d,g_sourceFileDef,className);
     if (cd==0 && (i=className.find('<'))!=-1)
     {
-      cd=getResolvedClass(d,className.left(i));
+      cd=getResolvedClass(d,g_sourceFileDef,className.left(i));
     }
+  }
+  else
+  {
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
@@ -678,12 +680,13 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
   else 
   {
+    //printf("class %s not linkable! cd=%p\n",clName,cd);
     //printf("typeOnly=%d\n",typeOnly);
     if (cd==0 && !typeOnly) // not a class, see if it is a global enum/variable/typedef.
     {
       MemberDef *md = setCallContextForVar(clName);
-      //printf("is a global md=%p\n",md);
-      if (md)
+      //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
+      if (md && (g_currentDefinition==0 || isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)!=-1))
       {
         Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                md->getBodyDef() : md->getOuterScope();
@@ -849,7 +852,7 @@ static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
   }
   else // variable not in current context, maybe it is in a parent context
   {
-    vcd = getResolvedClass(g_currentDefinition,g_classScope);
+    vcd = getResolvedClass(g_currentDefinition,g_sourceFileDef,g_classScope);
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName.data());
@@ -1166,7 +1169,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  {
 					    g_insideBody=FALSE;
 					    g_currentMemberDef=0;
-					    g_currentDefinition=0;
+					    if (g_currentDefinition) 
+					      g_currentDefinition=g_currentDefinition->getOuterScope();
+					    else
+					      g_currentDefinition=0;
 					  }
 					  BEGIN(Body);
 					}
@@ -1232,7 +1238,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					    g_scopeStack.push(CLASSBLOCK);
 					    pushScope(g_curClassName);
 					    //printf("***** g_curClassName=%s\n",g_curClassName.data());
-					    if (getResolvedClass(g_currentDefinition,g_curClassName)==0)
+					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
 					      g_curClassDef=new ClassDef("<code>",1,
 				 		  g_curClassName,ClassDef::Class);
@@ -1243,7 +1249,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					      {
 						ClassDef *bcd;
 						bcd=g_codeClassSDict[s];
-						if (bcd==0) bcd=getResolvedClass(g_currentDefinition,s);
+						if (bcd==0) bcd=getResolvedClass(g_currentDefinition,g_sourceFileDef,s);
 						if (bcd)
 						{
 						  g_curClassDef->insertBaseClass(bcd,s,Public,Normal);
@@ -1631,7 +1637,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  int index = g_name.findRev("::");
 					  if (index!=-1) 
 					  {
-					    ClassDef *cd=getResolvedClass(Doxygen::globalScope,g_name.left(index));
+					    ClassDef *cd=getResolvedClass(Doxygen::globalScope,g_sourceFileDef,g_name.left(index));
 					    if (cd)
 					    {
 					      setClassScope(cd->name());

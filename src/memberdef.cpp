@@ -271,6 +271,7 @@ MemberDef::MemberDef(const char *df,int dl,
   classDef=0;
   fileDef=0;
   redefines=0;
+  m_relatedAlso=0;
   redefinedBy=0;
   nspace=0;
   memDef=0;
@@ -370,9 +371,11 @@ MemberDef::MemberDef(const char *df,int dl,
   {
     declArgList = 0;
   }
-  m_templateMaster=0;
-  classSectionSDict=0;
-  docsForDefinition=TRUE;
+  m_templateMaster = 0;
+  classSectionSDict = 0;
+  docsForDefinition = TRUE;
+  m_isTypedefValCached = FALSE;
+  m_cachedTypedefValue = 0;
 }
 
 /*! Destroys the member definition. */

@@ -42,6 +42,7 @@ Entry::Entry()
   mGrpId = -1;
   tagInfo = 0;
   sli = 0;
+  relatesDup = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
@@ -69,6 +70,7 @@ Entry::Entry(const Entry &e)
   docLine     = e.docLine;
   docFile     = e.docFile.copy();
   relates     = e.relates.copy();
+  relatesDup  = e.relatesDup;
   brief       = e.brief.copy();
   briefLine   = e.briefLine;
   briefFile   = e.briefFile.copy();
@@ -227,6 +229,7 @@ void Entry::reset()
   docFile.resize(0);
   docLine=-1;
   relates.resize(0);
+  relatesDup=FALSE;
   brief.resize(0);
   briefFile.resize(0);
   briefLine=-1;

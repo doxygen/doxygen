@@ -363,18 +363,24 @@ void NamespaceDef::addUsingDirective(NamespaceDef *nd)
 {
   if (usingDirList==0)
   {
-    usingDirList = new NamespaceList;
+    usingDirList = new NamespaceSDict;
   }
-  usingDirList->append(nd);
+  if (usingDirList->find(nd->qualifiedName())==0)
+  {
+    usingDirList->append(nd->qualifiedName(),nd);
+  }
 }
 
 void NamespaceDef::addUsingDeclaration(ClassDef *cd)
 {
   if (usingDeclList==0)
   {
-    usingDeclList = new ClassList;
+    usingDeclList = new ClassSDict;
   }
-  usingDeclList->append(cd);
+  if (usingDeclList->find(cd->qualifiedName())==0)
+  {
+    usingDeclList->append(cd->qualifiedName(),cd);
+  }
 }
 
 QCString NamespaceDef::getOutputFileBase() const 
@@ -416,5 +422,45 @@ QCString NamespaceDef::displayName() const
     result = substitute(result,"::",".");
   }
   return result; 
+}
+
+void NamespaceDef::combineUsingRelations()
+{
+  if (visited) return; // already done
+  visited=TRUE;
+  if (usingDirList)
+  {
+    NamespaceSDict::Iterator nli(*usingDirList);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      nd->combineUsingRelations();
+    }
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      // add used namespaces of namespace nd to this namespace
+      if (nd->getUsedNamespaces())
+      {
+        NamespaceSDict::Iterator unli(*nd->getUsedNamespaces());
+        NamespaceDef *und;
+        for (unli.toFirst();(und=unli.current());++unli)
+        {
+          //printf("Adding namespace %s to the using list of %s\n",und->qualifiedName().data(),qualifiedName().data());
+          addUsingDirective(und);
+        }
+      }
+      // add used classes of namespace nd to this namespace
+      if (nd->getUsedClasses())
+      {
+        ClassSDict::Iterator cli(*nd->getUsedClasses());
+        ClassDef *ucd;
+        for (cli.toFirst();(ucd=cli.current());++cli)
+        {
+          //printf("Adding class %s to the using list of %s\n",cd->qualifiedName().data(),qualifiedName().data());
+          addUsingDeclaration(ucd);
+        }
+      }
+    }
+  }
 }
 

@@ -275,6 +275,7 @@ class Entry
     int          briefLine;   //!< line number at which the brief desc. was found
     QCString     briefFile;   //!< file in which the brief desc. was found
     QCString     relates;     //!< related class (doc block)
+    bool         relatesDup;  //!< keep duplicate doc in original file also
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
     int          bodyLine;    //!< line number of the definition in the source

@@ -1270,7 +1270,7 @@ void Config::create()
   
   // option definitions
   //-----------------------------------------------------------------------------------------------
-  addInfo("General","General configuration options");
+  addInfo("Project","Project related configuration options");
   //-----------------------------------------------------------------------------------------------
   
   
@@ -1404,6 +1404,143 @@ void Config::create()
 #endif
 		 );
   cb = addBool(
+                    "BRIEF_MEMBER_DESC",
+                    "If the BRIEF_MEMBER_DESC tag is set to YES (the default) Doxygen will \n"
+                    "include brief member descriptions after the members that are listed in \n"
+                    "the file and class documentation (similar to JavaDoc). \n"
+                    "Set to NO to disable this. \n",
+                    TRUE
+                 );
+  cb = addBool(
+                    "REPEAT_BRIEF",
+                    "If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend \n"
+                    "the brief description of a member or function before the detailed description. \n"
+                    "Note: if both HIDE_UNDOC_MEMBERS and BRIEF_MEMBER_DESC are set to NO, the \n"
+                    "brief descriptions will be completely suppressed. \n",
+                    TRUE
+                 );
+  cb = addBool(
+                    "ALWAYS_DETAILED_SEC",
+                    "If the ALWAYS_DETAILED_SEC and REPEAT_BRIEF tags are both set to YES then \n"
+                    "Doxygen will generate a detailed section even if there is only a brief \n"
+                    "description. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "INLINE_INHERITED_MEMB",
+                    "If the INLINE_INHERITED_MEMB tag is set to YES, doxygen will show all inherited \n"
+                    "members of a class in the documentation of that class as if those members were \n"
+		    "ordinary class members. Constructors, destructors and assignment operators of \n"
+		    "the base classes will not be shown. \n",
+		    FALSE
+                 );
+  cb = addBool(
+                    "FULL_PATH_NAMES",
+                    "If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full \n"
+                    "path before files name in the file list and in the header files. If set \n"
+                    "to NO the shortest path that makes the file name unique will be used. \n",
+                    FALSE
+                 );
+  cl = addList(
+                    "STRIP_FROM_PATH",
+                    "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
+                    "can be used to strip a user-defined part of the path. Stripping is \n"
+                    "only done if one of the specified strings matches the left-hand part of \n"
+                    "the path. It is allowed to use relative paths in the argument list.\n"
+                 );
+  cl->addDependency("FULL_PATH_NAMES");
+  cb = addBool(
+                    "SHORT_NAMES",
+		    "If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter \n"
+		    "(but less readable) file names. This can be useful is your file systems \n"
+		    "doesn't support long names like on DOS, Mac, or CD-ROM. \n",
+		    FALSE
+                 );
+  cb = addBool(
+                    "JAVADOC_AUTOBRIEF",
+                    "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
+                    "will interpret the first line (until the first dot) of a JavaDoc-style \n"
+                    "comment as the brief description. If set to NO, the JavaDoc \n"
+                    "comments will behave just like the Qt-style comments (thus requiring an \n"
+                    "explict @brief command for a brief description. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "MULTILINE_CPP_IS_BRIEF",
+                    "The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen \n"
+                    "treat a multi-line C++ special comment block (i.e. a block of //! or /// \n"
+		    "comments) as a brief description. This used to be the default behaviour. \n"
+		    "The new default is to treat a multi-line C++ comment block as a detailed \n"
+		    "description. Set this tag to YES if you prefer the old behaviour instead. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "DETAILS_AT_TOP",
+                    "If the DETAILS_AT_TOP tag is set to YES then Doxygen \n"
+                    "will output the detailed description near the top, like JavaDoc.\n"
+                    "If set to NO, the detailed description appears after the member \n"
+                    "documentation. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "INHERIT_DOCS",
+                    "If the INHERIT_DOCS tag is set to YES (the default) then an undocumented \n"
+                    "member inherits the documentation from any documented member that it \n"
+                    "reimplements. \n",
+                    TRUE
+                 );
+  cb = addBool(
+                    "DISTRIBUTE_GROUP_DOC",
+                    "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
+                    "tag is set to YES, then doxygen will reuse the documentation of the first \n"
+                    "member in the group (if any) for the other members of the group. By default \n"
+                    "all members of a group must be documented explicitly.\n",
+                    FALSE
+                 );
+  ci = addInt(
+                    "TAB_SIZE",
+                    "The TAB_SIZE tag can be used to set the number of spaces in a tab. \n"
+                    "Doxygen uses this value to replace tabs by spaces in code fragments. \n",
+                    1,16,8
+                );
+  cl = addList(
+                    "ALIASES",
+                    "This tag can be used to specify a number of aliases that acts \n"
+                    "as commands in the documentation. An alias has the form \"name=value\". \n"
+                    "For example adding \"sideeffect=\\par Side Effects:\\n\" will allow you to \n"
+                    "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
+                    "will result in a user-defined paragraph with heading \"Side Effects:\". \n"
+                    "You can put \\n's in the value part of an alias to insert newlines. \n" 
+                 );
+  cb = addBool(
+                    "OPTIMIZE_OUTPUT_FOR_C",
+                    "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources \n"
+                    "only. Doxygen will then generate output that is more tailored for C. \n"
+                    "For instance, some of the names that are used will be different. The list \n"
+                    "of all members will be omitted, etc. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "OPTIMIZE_OUTPUT_JAVA",
+                    "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources \n"
+                    "only. Doxygen will then generate output that is more tailored for Java. \n"
+                    "For instance, namespaces will be presented as packages, qualified scopes \n"
+                    "will look different, etc. \n",
+                    FALSE
+                 );
+  cb = addBool(    
+                    "SUBGROUPING",
+		    "Set the SUBGROUPING tag to YES (the default) to allow class member groups of \n"
+		    "the same type (for instance a group of public functions) to be put as a \n"
+		    "subgroup of that type (e.g. under the Public Functions section). Set it to \n"
+		    "NO to prevent subgrouping. Alternatively, this can be done per class using \n"
+		    "the \\nosubgrouping command. \n",
+		    TRUE
+                );
+  //-----------------------------------------------------------------------------------------------
+  addInfo("Build","Build related configuration options");
+  //-----------------------------------------------------------------------------------------------
+  cb = addBool(
                     "EXTRACT_ALL",
                     "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
                     "documentation are documented, even if no documentation was available. \n"
@@ -1464,52 +1601,6 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
-                    "BRIEF_MEMBER_DESC",
-                    "If the BRIEF_MEMBER_DESC tag is set to YES (the default) Doxygen will \n"
-                    "include brief member descriptions after the members that are listed in \n"
-                    "the file and class documentation (similar to JavaDoc). \n"
-                    "Set to NO to disable this. \n",
-                    TRUE
-                 );
-  cb = addBool(
-                    "REPEAT_BRIEF",
-                    "If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend \n"
-                    "the brief description of a member or function before the detailed description. \n"
-                    "Note: if both HIDE_UNDOC_MEMBERS and BRIEF_MEMBER_DESC are set to NO, the \n"
-                    "brief descriptions will be completely suppressed. \n",
-                    TRUE
-                 );
-  cb = addBool(
-                    "ALWAYS_DETAILED_SEC",
-                    "If the ALWAYS_DETAILED_SEC and REPEAT_BRIEF tags are both set to YES then \n"
-                    "Doxygen will generate a detailed section even if there is only a brief \n"
-                    "description. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "INLINE_INHERITED_MEMB",
-                    "If the INLINE_INHERITED_MEMB tag is set to YES, doxygen will show all inherited \n"
-                    "members of a class in the documentation of that class as if those members were \n"
-		    "ordinary class members. Constructors, destructors and assignment operators of \n"
-		    "the base classes will not be shown. \n",
-		    FALSE
-                 );
-  cb = addBool(
-                    "FULL_PATH_NAMES",
-                    "If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full \n"
-                    "path before files name in the file list and in the header files. If set \n"
-                    "to NO the shortest path that makes the file name unique will be used. \n",
-                    FALSE
-                 );
-  cl = addList(
-                    "STRIP_FROM_PATH",
-                    "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
-                    "can be used to strip a user-defined part of the path. Stripping is \n"
-                    "only done if one of the specified strings matches the left-hand part of \n"
-                    "the path. It is allowed to use relative paths in the argument list.\n"
-                 );
-  cl->addDependency("FULL_PATH_NAMES");
-  cb = addBool(
                     "INTERNAL_DOCS",
                     "The INTERNAL_DOCS tag determines if documentation \n"
                     "that is typed after a \\internal command is included. If the tag is set \n"
@@ -1527,13 +1618,6 @@ void Config::create()
                     TRUE
                  );
   cb = addBool(
-                    "SHORT_NAMES",
-		    "If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter \n"
-		    "(but less readable) file names. This can be useful is your file systems \n"
-		    "doesn't support long names like on DOS, Mac, or CD-ROM. \n",
-		    FALSE
-                 );
-  cb = addBool(
                     "HIDE_SCOPE_NAMES",
                     "If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen \n"
                     "will show members with their full class and namespace scopes in the \n"
@@ -1545,39 +1629,6 @@ void Config::create()
                     "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
                     "will put a list of the files that are included by a file in the documentation \n"
                     "of that file. \n",
-                    TRUE
-                 );
-  cb = addBool(
-                    "JAVADOC_AUTOBRIEF",
-                    "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
-                    "will interpret the first line (until the first dot) of a JavaDoc-style \n"
-                    "comment as the brief description. If set to NO, the JavaDoc \n"
-                    "comments will behave just like the Qt-style comments (thus requiring an \n"
-                    "explict @brief command for a brief description. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "MULTILINE_CPP_IS_BRIEF",
-                    "The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen \n"
-                    "treat a multi-line C++ special comment block (i.e. a block of //! or /// \n"
-		    "comments) as a brief description. This used to be the default behaviour. \n"
-		    "The new default is to treat a multi-line C++ comment block as a detailed \n"
-		    "description. Set this tag to YES if you prefer the old behaviour instead. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "DETAILS_AT_TOP",
-                    "If the DETAILS_AT_TOP tag is set to YES then Doxygen \n"
-                    "will output the detailed description near the top, like JavaDoc.\n"
-                    "If set to NO, the detailed description appears after the member \n"
-                    "documentation. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "INHERIT_DOCS",
-                    "If the INHERIT_DOCS tag is set to YES (the default) then an undocumented \n"
-                    "member inherits the documentation from any documented member that it \n"
-                    "reimplements. \n",
                     TRUE
                  );
   cb = addBool(
@@ -1594,20 +1645,6 @@ void Config::create()
                     "declaration order. \n",
                     TRUE
                  );
-  cb = addBool(
-                    "DISTRIBUTE_GROUP_DOC",
-                    "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
-                    "tag is set to YES, then doxygen will reuse the documentation of the first \n"
-                    "member in the group (if any) for the other members of the group. By default \n"
-                    "all members of a group must be documented explicitly.\n",
-                    FALSE
-                 );
-  ci = addInt(
-                    "TAB_SIZE",
-                    "The TAB_SIZE tag can be used to set the number of spaces in a tab. \n"
-                    "Doxygen uses this value to replace tabs by spaces in code fragments. \n",
-                    1,16,8
-                );
   cb = addBool(
                     "GENERATE_TODOLIST",
                     "The GENERATE_TODOLIST tag can be used to enable (YES) or \n"
@@ -1637,15 +1674,6 @@ void Config::create()
                     TRUE
 	         );
   cl = addList(
-                    "ALIASES",
-                    "This tag can be used to specify a number of aliases that acts \n"
-                    "as commands in the documentation. An alias has the form \"name=value\". \n"
-                    "For example adding \"sideeffect=\\par Side Effects:\\n\" will allow you to \n"
-                    "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
-                    "will result in a user-defined paragraph with heading \"Side Effects:\". \n"
-                    "You can put \\n's in the value part of an alias to insert newlines. \n" 
-                 );
-  cl = addList(
                     "ENABLED_SECTIONS",
                     "The ENABLED_SECTIONS tag can be used to enable conditional \n"
                     "documentation sections, marked by \\if sectionname ... \\endif. \n"
@@ -1662,37 +1690,13 @@ void Config::create()
                     0,10000,30
                  );
   cb = addBool(
-                    "OPTIMIZE_OUTPUT_FOR_C",
-                    "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources \n"
-                    "only. Doxygen will then generate output that is more tailored for C. \n"
-                    "For instance, some of the names that are used will be different. The list \n"
-                    "of all members will be omitted, etc. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "OPTIMIZE_OUTPUT_JAVA",
-                    "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources \n"
-                    "only. Doxygen will then generate output that is more tailored for Java. \n"
-                    "For instance, namespaces will be presented as packages, qualified scopes \n"
-                    "will look different, etc. \n",
-                    FALSE
-                 );
-  cb = addBool(
                     "SHOW_USED_FILES",
                     "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
                     "at the bottom of the documentation of classes and structs. If set to YES the \n"
                     "list will mention the files that were used to generate the documentation. \n",
                     TRUE
                 );
-  cb = addBool(    
-                    "SUBGROUPING",
-		    "Set the SUBGROUPING tag to YES (the default) to allow class member groups of \n"
-		    "the same type (for instance a group of public functions) to be put as a \n"
-		    "subgroup of that type (e.g. under the Public Functions section). Set it to \n"
-		    "NO to prevent subgrouping. Alternatively, this can be done per class using \n"
-		    "the \\nosubgrouping command. \n",
-		    TRUE
-                );
+  
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------

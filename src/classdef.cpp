@@ -891,6 +891,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     {
       ol.startTypewriter();
       bool isIDLorJava = nm.right(4)==".idl" || 
+                         nm.right(5)==".pidl" || 
                          nm.right(5)==".java";
       if (isIDLorJava)
       {

@@ -401,6 +401,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "\\setlength{\\parskip}{0.2cm}\n";
   t << "\\addtocounter{secnumdepth}{1}\n";
   t << "\\sloppy\n";
+  t << "\\usepackage[T1]{fontenc}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)

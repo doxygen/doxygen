@@ -40,7 +40,7 @@ class ExampleSDict;
 class ClassSDict;
 class BaseClassList;
 class GroupDef;
-class NamespaceList;
+class NamespaceSDict;
 class ClassList;
 class MemberGroupSDict;
 class Definition;
@@ -121,17 +121,18 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
 bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
-                           NamespaceList *usingNamespaces=0,
-                           ClassList *usingClasses=0);
+                           NamespaceSDict *usingNamespaces=0,
+                           ClassSDict *usingClasses=0);
 void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE);
 QCString substituteClassNames(const QCString &s);
 QCString substitute(const char *s,const char *src,const char *dst);
 QCString resolveDefines(const char *n);
 ClassDef *getClass(const char *key);
 ClassDef *getResolvedClass(Definition *scope,
-                                  const char *key,
-                                  bool *pIsTypeDef=0,
-                                  QCString *pTemplSpec=0);
+                           FileDef *fileScope,
+                           const char *key,
+                           bool *pIsTypeDef=0,
+                           QCString *pTemplSpec=0);
 NamespaceDef *getResolvedNamespace(const char *key);
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
@@ -201,6 +202,9 @@ QCString rtfFormatBmkStr(const char *name);
 QCString linkToText(const char *link,bool isFileName);
 QCString stripExtension(const char *fName);
 void replaceNamespaceAliases(QCString &scope,int i);
+int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
+int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
+                     const QCString &explicitScopePart);
 
 #endif
 

@@ -25,7 +25,7 @@
 #ifndef TRANSLATOR_ES_H
 #define TRANSLATOR_ES_H
 
-class TranslatorSpanish : public TranslatorAdapter_1_2_7
+class TranslatorSpanish : public TranslatorAdapter_1_3_3
 {
   public:
     virtual QCString idLanguage()
@@ -355,9 +355,14 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
     virtual QCString trEnumerationValues()
     { return "Valores de la enumeración"; }
     
-    /*! This is used in man pages as the author section. */
-    virtual QCString trAuthor()
-    { return "Autor"; }
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Author" : "author"));
+      if (!singular)  result+="s";
+      return result; 
+    }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
@@ -1221,7 +1226,122 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
       if (!singular)  result+="es";
       return result; 
     }
-   
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Hace referencia a";
+    }
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementa "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementado en "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Tabla de Contenidos";
+    }
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Lista de Desaprobados";
+    }
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Eventos";
+    }
+    
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Documentación de los Eventos";
+    }
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Tipos del Paquete";
+    }
+    
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Funciones del Paquete";
+    }
+
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Funciones Estáticas del Paquete";
+    }
+
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Atributos del Paquete";
+    }
+
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return "Atributos Estáticos del Paquete";
+    }
+     
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Todo";
+    }
+
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Gráfico de llamadas para esta función:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+
 };
 
 

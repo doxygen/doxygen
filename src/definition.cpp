@@ -18,6 +18,8 @@
 #include "qtbc.h"
 #include <ctype.h>
 #include <qregexp.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "config.h"
 #include "definition.h"
 #include "doxygen.h"
@@ -28,6 +30,47 @@
 #include "util.h"
 #include "groupdef.h"
 #include "section.h"
+
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#define popen _popen
+#define pclose _pclose
+#endif
+
+static void addToMap(const char *name,Definition *d)
+{
+  QCString symbolName = name;
+  int index=symbolName.findRev("::");
+  if (index!=-1) symbolName=symbolName.mid(index+2);
+  if (!symbolName.isEmpty()) 
+  {
+    DefinitionList *dl=Doxygen::symbolMap->find(symbolName);
+    if (dl==0)
+    {
+      dl = new DefinitionList;
+      Doxygen::symbolMap->append(symbolName,dl);
+    }
+    //printf("******* adding symbol `%s'\n",symbolName.data());
+    dl->append(d);
+  }
+}
+
+static void removeFromMap(Definition *d)
+{
+  QCString symbolName = d->name();
+  int index=symbolName.findRev("::");
+  if (index!=-1) symbolName=symbolName.mid(index+2);
+  if (!symbolName.isEmpty()) 
+  {
+    //printf("******* removing symbol `%s'\n",symbolName.data());
+    DefinitionList *dl=Doxygen::symbolMap->find(symbolName);
+    if (dl)
+    {
+      ASSERT(dl!=0);
+      bool b = dl->removeRef(d);
+      ASSERT(b==TRUE);
+    }
+  }
+}
 
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
@@ -64,10 +107,12 @@ Definition::Definition(const char *df,int dl,
   m_briefFile=(QCString)"<"+name+">";
   m_docLine=1;
   m_docFile=(QCString)"<"+name+">";
+  addToMap(name,this);
 }
 
 Definition::~Definition()
 {
+  removeFromMap(this);
   delete m_sectionDict;
   delete m_sourceRefByDict;
   delete m_sourceRefsDict;
@@ -196,26 +241,27 @@ static bool readCodeFragment(const char *fileName,
 {
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
-  QFile f(fileName);
-  if (f.open(IO_ReadOnly))
+  QCString cmd=Config_getString("INPUT_FILTER")+" \""+fileName+"\"";
+  FILE *f = Config_getBool("FILTER_SOURCE_FILES") ? popen(cmd,"r") : fopen(fileName,"r");
+  if (f)
   {
     int c=0;
     int col=0;
     int lineNr=1;
     // skip until the startLine has reached
-    while (lineNr<startLine && !f.atEnd())
+    while (lineNr<startLine && !feof(f))
     {
-      while ((c=f.getch())!='\n' && c!=-1) /* skip */;
+      while ((c=fgetc(f))!='\n' && c==EOF) /* skip */;
       lineNr++; 
     }
-    if (!f.atEnd())
+    if (!feof(f))
     {
       // skip until the opening bracket or lonely : is found
       bool found=FALSE;
       char cn=0;
-      while (lineNr<=endLine && !f.atEnd() && !found)
+      while (lineNr<=endLine && !feof(f) && !found)
       {
-        while ((c=f.getch())!='{' && c!=':' && c!=-1) 
+        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF) 
         {
           if (c=='\n') 
           {
@@ -232,7 +278,7 @@ static bool readCodeFragment(const char *fileName,
         }
         if (c==':')
         {
-          cn=f.getch();
+          cn=fgetc(f);
           if (cn!=':') found=TRUE;
         }
         else if (c=='{')
@@ -262,12 +308,13 @@ static bool readCodeFragment(const char *fileName,
           int size_read;
           do {
             // read up to maxLineLength-1 bytes, the last byte being zero
-            size_read = f.readLine(lineStr, maxLineLength);
+            char *p = fgets(lineStr, maxLineLength,f);
+            if (p) size_read=qstrlen(p); else size_read=-1;
             result+=lineStr;
           } while (size_read == (maxLineLength-1));
 
           lineNr++; 
-        } while (lineNr<=endLine && !f.atEnd());
+        } while (lineNr<=endLine && !feof(f));
 
         // strip stuff after closing bracket
         int newLineIndex = result.findRev('\n');

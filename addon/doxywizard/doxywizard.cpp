@@ -450,6 +450,8 @@ ConfigFile::ConfigFile( QWidget *parent ) : QWidget( parent )
           addDependency(m_switches,option->dependsOn(),option->name());
         }
         break;
+      case ConfigOption::O_Obsolete:
+        break;
     } 
   }
   if (page) page->addStretch(1);
