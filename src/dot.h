@@ -152,7 +152,7 @@ class DotClassGraph
 class DotInclDepGraph
 {
   public:
-    DotInclDepGraph(FileDef *fd,int maxRecusionDepth,bool inverse=FALSE);
+    DotInclDepGraph(FileDef *fd,int maxRecusionDepth,bool inverse);
    ~DotInclDepGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
                     bool writeImageMap=TRUE);

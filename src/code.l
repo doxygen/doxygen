@@ -672,6 +672,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
   else 
   {
+    //printf("typeOnly=%d\n",typeOnly);
     if (cd==0 && !typeOnly) // not a class, see if it is a global enum/variable/typedef.
     {
       MemberDef *md = setCallContextForVar(clName);
@@ -1556,7 +1557,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\<\>]*">")? {
 					  addParmType();
 					  g_parmName=yytext; 
-					  generateClassOrGlobalLink(*g_code,yytext,TRUE);
+					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
 					}
 <MemberCall2,FuncCall>,			{
   					  g_code->codify(yytext);
@@ -1798,6 +1799,11 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    codifyLines(yytext);
 					    endFontClass();
 					  }
+					  if (YY_START==SkipCxxComment)
+					  {
+					    endFontClass();
+					    BEGIN( g_lastCContext ) ;
+					  }
   					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
@@ -1814,6 +1820,11 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    startFontClass("comment");
 					    codifyLines(yytext);
 					    endFontClass();
+					  }
+					  if (YY_START==SkipCxxComment)
+					  {
+					    endFontClass();
+					    BEGIN( g_lastCContext ) ;
 					  }
   					}
 <*>\n{B}*"/*@"[{}]			{ // remove one-line group marker

@@ -39,7 +39,7 @@ It can help you in three ways:
      The documentation is extracted directly from the sources, which
      makes it much easier to keep the documentation consistent with the
      source code.
-<li> You can configure doxygen to extract the code structure 
+<li> You can \ref extract_all "configure" doxygen to extract the code structure 
      from undocumented source files. This is very useful to quickly 
      find your way in large source distributions. 
      You can also visualize the relations between the various elements 

@@ -2371,8 +2371,21 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   cl = addList(
                     "TAGFILES",
-                    "The TAGFILES tag can be used to specify one or more tagfiles. \n"
-                 );
+                    "The TAGFILES option can be used to specify one or more tagfiles. \n"
+		    "Optionally an initial location of the external documentation \n"
+		    "can be added for each tagfile. The format of a tag file without \n"
+		    "this location is as follows: \n"
+		    "  TAGFILES = file1 file2 ... \n" 
+		    "Adding location for the tag files is done as follows: \n"
+		    "  TAGFILES = file1=loc1 \"file2 = loc2\" ... \n"
+	            "where \"loc1\" and \"loc2\" can be relative or absolute paths or \n"
+		    "URLs. If a location is present for each tag, the installdox tool \n"
+		    "does not have to be run to correct the links.\n"
+		    "Note that each tag file must have a unique name\n"
+		    "(where the name does NOT include the path)\n"
+	            "If a tag file is not located in the directory in which doxygen \n"
+	            "is run, you must also specify the path to the tagfile here. \n"
+               );
   cl->setWidgetType(ConfigList::File);
   cs = addString(
                     "GENERATE_TAGFILE",

@@ -310,7 +310,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("INCLUDE_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
-    DotInclDepGraph incDepGraph(this,FALSE);
+    DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),FALSE);
     if (!incDepGraph.isTrivial())
     {
       ol.disable(OutputGenerator::Man);
@@ -326,7 +326,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("INCLUDED_BY_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
-    DotInclDepGraph incDepGraph(this,TRUE);
+    DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),TRUE);
     if (!incDepGraph.isTrivial())
     {
       ol.disable(OutputGenerator::Man);

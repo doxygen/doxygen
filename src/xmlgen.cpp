@@ -979,7 +979,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd->name(),0,cd->documentation());
   t << "    </detaileddescription>" << endl;
   DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance,
-                                 Config_getBool("MAX_DOT_GRAPH_DEPTH"));
+                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!inheritanceGraph.isTrivial())
   {
     t << "    <inheritancegraph>" << endl;
@@ -987,7 +987,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     t << "    </inheritancegraph>" << endl;
   }
   DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation,
-                                 Config_getBool("MAX_DOT_GRAPH_DEPTH"));
+                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!collaborationGraph.isTrivial())
   {
     t << "    <collaborationgraph>" << endl;
@@ -1162,7 +1162,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "</includedby>" << endl;
   }
 
-  DotInclDepGraph incDepGraph(fd,FALSE);
+  DotInclDepGraph incDepGraph(fd,Config_getInt("MAX_DOT_GRAPH_DEPTH"),FALSE);
   if (!incDepGraph.isTrivial())
   {
     t << "    <incdepgraph>" << endl;
@@ -1170,7 +1170,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    </incdepgraph>" << endl;
   }
 
-  DotInclDepGraph invIncDepGraph(fd,TRUE);
+  DotInclDepGraph invIncDepGraph(fd,Config_getInt("MAX_DOT_GRAPH_DEPTH"),TRUE);
   if (!invIncDepGraph.isTrivial())
   {
     t << "    <invincdepgraph>" << endl;
