@@ -1186,20 +1186,17 @@ void Config::check()
   }
 
 #undef PUTENV
-#undef GETENV
 #undef SEP
 #if defined(_WIN32) && !defined(__GNUC__) && (__BORLANDC__ < 0x0550)
 #define PUTENV _putenv
-#define GETENV _getenv
 #define SEP ";"
 #else 
 #define PUTENV putenv
-#define GETENV getenv
 #define SEP ":"
 #endif
   if (Config_getBool("HAVE_DOT")) 
   {
-    char *curFontPath = GETENV("DOTFONTPATH");
+    char *curFontPath = getenv("DOTFONTPATH");
     int l=curFontPath ? strlen(curFontPath)+1 : 0;
     static char *buf = 0;
     buf = (char *)realloc(buf,strlen("DOTFONTPATH=.")+l+1);
