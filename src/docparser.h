@@ -586,6 +586,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
     QString  m_file;
     QString  m_ref;
     QString  m_anchor;
+    QString  m_refText;
 };
 
 /*! @brief Node representing a reference to some item */

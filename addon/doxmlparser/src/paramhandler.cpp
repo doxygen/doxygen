@@ -20,10 +20,8 @@
 TemplateParamListHandler::TemplateParamListHandler(IBaseHandler *parent) : m_parent(parent)
 {
   addStartHandler("param",this,&TemplateParamListHandler::startParam);
-  //addEndHandler("param",this,&TemplateParamListHandler::endParam);
 
   addEndHandler("templateparamlist",this,&TemplateParamListHandler::endTemplateParamList);
-
 }
 
 void TemplateParamListHandler::startParam(const QXmlAttributes& attrib)

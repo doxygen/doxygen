@@ -133,14 +133,14 @@ struct Grouping
   {
     GROUPING_LOWEST,
     GROUPING_AUTO_WEAK =
-      GROUPING_LOWEST,   //!< membership in group was defined via @weakgroup @{ @}
-    GROUPING_AUTO_ADD,    //!< membership in group was defined via @add[to]group @{ @}
-    GROUPING_AUTO_DEF,    //!< membership in group was defined via @defgroup @{ @}
+    GROUPING_LOWEST,   //!< membership in group was defined via \@weakgroup \@{ \@}
+    GROUPING_AUTO_ADD,    //!< membership in group was defined via \@add[to]group \@{ \@}
+    GROUPING_AUTO_DEF,    //!< membership in group was defined via \@defgroup \@{ \@}
     GROUPING_AUTO_HIGHEST =
-      GROUPING_AUTO_DEF,
-    GROUPING_INGROUP,      //!< membership in group was defined by @ingroup
+    GROUPING_AUTO_DEF,
+    GROUPING_INGROUP,      //!< membership in group was defined by \@ingroup
     GROUPING_HIGHEST =
-      GROUPING_INGROUP
+    GROUPING_INGROUP
   };
 
   static const char *getGroupPriName( GroupPri_t priority )
@@ -265,8 +265,8 @@ class Entry
     QList<ArgumentList> *tArgLists; //!< template argument declarations
     QCString	 program;     //!< the program text
     QCString     initializer; //!< initial value (for variables)
-    QCString     includeFile; //!< include file (2 arg of \class, must be unique)
-    QCString     includeName; //!< include name (3 arg of \class)
+    QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
+    QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
     int          docLine;     //!< line number at which the documentation was found
     QCString     docFile;     //!< file in which the documentation was found

@@ -62,7 +62,7 @@ PREDEFINED             = MY_MACRO()=
       manual for more information.
   </ol> 
 
-<li><b>When I set EXTRACT_ALL to NO non of my functions are shown in the documentation.</b></li>
+<li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the documentation.</b></li>
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -111,9 +111,9 @@ in the documentation of the class MyClassName regardless of the name of the actu
 header file in which the definition of MyClassName is contained.
 
 If you want doxygen to show that the include file should be included using
-brackets you should type:
+quotes instead of angle brackets you should type:
 \verbatim
-/*! \class MyClassName include.h "path/include.h"
+/*! \class MyClassName myhdr.h "path/myhdr.h"
  *
  *  Docs for MyClassName
  */
@@ -187,18 +187,36 @@ EXCLUDE_PATTERNS = */test/*
 Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
 remove the % and keep the word unlinked.
 
+<li><b>My favourite programming language is X. Can I still use doxygen?</b>
+
+No, not as such; doxygen needs to understand the structure of what it reads. 
+If you don't mind spending some time on it, there are several options:
+- If the grammer of X is close to C or C++, then it is probably not too hard to
+  tweak src/scanner.l a bit so the language is supported. This is done
+  for all other languages directly supported by doxygen 
+  (i.e. Java, IDL, C#, PHP).
+- If the grammer of X is somewhat different than you can write an input
+  filter that translates X into something similar enough to C/C++ for
+  doxygen to understand (this approach is taken for VB, Object Pascal, and
+  Javascript, see http://www.stack.nl/~dimitri/doxygen/download.html#helpers).
+- If the grammer is completely different one could write a parser for X and 
+  write a backend that produces a similar syntax tree as is done by 
+  src/scanner.l (and also by src/tagreader.cpp while reading tag files).
+
 <li><b>Help! I get the cryptic message 
  "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
 
-This error happens when doxygen lexical scanner has a rules that matches
-more than 16K input character in one go. I've seen this happening 
+This error happens when doxygen lexical scanner has a rule that matches
+more than 16K of input characters in one go. I've seen this happening 
 on a very large generated file (\>16K lines), where the built-in preprocessor 
 converted it into an empty file (with \>16K of newlines). Another case
 where this might happen is if you have lines in your code with more than
 16K characters. 
 
-If you have ran into such a case and want me to fix it, you
-should send me a code fragment that triggers the message.
+If you have run into such a case and want me to fix it, you
+should send me a code fragment that triggers the message. The workaround
+the problem put some line-breaks into your file, split it up into smaller 
+parts, or exclude it from the input using EXCLUDE.
 
 <li><b>How did doxygen get its name?</b>
 
@@ -211,7 +229,7 @@ generator -> gen
 \endverbatim
 
 At the time I was looking into lex and yacc, where a lot of things start with
-"yy", so the "y" slipped in and made things pronouncable.
+"yy", so the "y" slipped in and made things pronounceable.
 
 <li><b>What was the reason to develop doxygen?</b>
 

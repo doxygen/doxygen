@@ -16,7 +16,16 @@
 #ifndef _DOXMLINTF_H
 #define _DOXMLINTF_H
 
-#include <qstring.h>
+/*! \file
+ *  \brief The interface to the object model provided by the XML parser 
+ *         library.
+ *
+ *  To start using this library one calls createObjectModel and then
+ *  uses the returned IDoxygen interface to read doxygen generated
+ *  XML output and navigate through the information contained in it.
+ *
+ *  @see createObjectModel()
+ */
 
 class IMember;
 class IDocIterator;
@@ -24,12 +33,20 @@ class ICompound;
 class ISection;
 class INode;
 
+/*! \brief Read only interface to a string. 
+ */
 class IString
 {
   public:
+    /*! Returns a latin1 character representation of the string. */
     virtual const char *latin1() const = 0;
+    /*! Returns a 16-bit unicode character representation of the character at 
+     *  position \a index in the string. The first character is at index 0.
+     */
     virtual unsigned short unicodeCharAt(int index) const = 0;
+    /*! Returns true if this string is empty or false otherwise */
     virtual bool isEmpty() const = 0;
+    /*! Returns the number of characters in the string. */
     virtual int length() const = 0;
 };
 
@@ -107,24 +124,6 @@ class IMemberReferenceIterator
     virtual void release() = 0;
 };
 
-class IEnumValue
-{
-  public:
-    virtual const IString * name() const = 0;
-    virtual const IString * initializer() const = 0;
-};
-
-class IEnumValueIterator 
-{
-  public:
-    virtual IEnumValue *toFirst() = 0;
-    virtual IEnumValue *toLast() = 0;
-    virtual IEnumValue *toNext() = 0;
-    virtual IEnumValue *toPrev() = 0;
-    virtual IEnumValue *current() const = 0;
-    virtual void release() = 0;
-};
-
 class IDoc
 {
   public:
@@ -161,8 +160,9 @@ class IDoc
       Entry,              // 28 -> IDocEntry
       Section,            // 29 -> IDocSection
       Preformatted,       // 30 -> IDocPreformatted
-      Symbol,             // 31 -> IDocSymbol
-      Root                // 32 -> IDocRoot
+      Verbatim,           // 31 -> IDocVerbatim
+      Symbol,             // 32 -> IDocSymbol
+      Root                // 33 -> IDocRoot
     };
     virtual Kind kind() const = 0;
 };
@@ -399,6 +399,12 @@ class IDocPreformatted : public IDoc
     virtual IDocIterator *contents() const = 0; 
 };
 
+class IDocVerbatim : public IDoc
+{
+  public:
+    virtual const IString *text() const = 0; 
+};
+
 class IDocSymbol : public IDoc
 {
   public:
@@ -499,7 +505,8 @@ class IMember
   public:
     enum MemberKind { Invalid=0,
                       Define, Property, Variable, Typedef, Enum,
-                      Function, Signal, Prototype, Friend, DCOP, Slot
+                      Function, Signal, Prototype, Friend, DCOP, Slot, 
+                      EnumValue
                     };
     virtual ICompound *compound() const = 0;
     virtual ISection *section() const = 0;
@@ -525,10 +532,79 @@ class IMember
     virtual int definitionLine() const = 0;
     virtual IMemberReference *reimplements() const = 0;
     virtual IMemberReferenceIterator *reimplementedBy() const = 0;
-    virtual IEnumValueIterator *enumValues() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
 };
+
+class IDefine : public IMember
+{
+  public:
+};
+
+class IProperty : public IMember
+{
+  public:
+};
+
+class IVariable : public IMember
+{
+  public:
+};
+
+class ITypedef : public IMember
+{
+  public:
+};
+
+class IFunction : public IMember
+{
+  public:
+};
+
+class ISignal : public IMember
+{
+  public:
+};
+
+class IPrototype : public IMember
+{
+  public:
+};
+
+class IFriend : public IMember
+{
+  public:
+};
+
+class IDCOP : public IMember
+{
+  public:
+};
+
+class ISlot : public IMember
+{
+  public:
+};
+
+class IEnumValue : public IMember
+{
+  public:
+    virtual const IString * name() const = 0;
+};
+
+#if 0
+class IEnumValueIterator 
+{
+  public:
+    virtual IEnumValue *toFirst() = 0;
+    virtual IEnumValue *toLast() = 0;
+    virtual IEnumValue *toNext() = 0;
+    virtual IEnumValue *toPrev() = 0;
+    virtual IEnumValue *current() const = 0;
+    virtual void release() = 0;
+};
+#endif
+
 
 class IMemberIterator 
 {
@@ -539,6 +615,12 @@ class IMemberIterator
     virtual IMember *toPrev() = 0;
     virtual IMember *current() const = 0;
     virtual void release() = 0;
+};
+
+class IEnum : public IMember
+{
+  public:
+    virtual IMemberIterator *enumValues() const = 0;
 };
 
 /*! \brief The interface to a section in the object model. 

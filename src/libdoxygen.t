@@ -59,9 +59,6 @@ sub GenerateDep {
 #$ GenerateDep("defargs.cpp","defargs.l");
 	$(LEX) -PdefargsYY -t defargs.l >defargs.cpp
 
-#$ GenerateDep("doc.cpp","doc.l");
-	$(LEX) -PdocYY -t doc.l >doc.cpp
-
 #$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
 	$(LEX) -PdoctokenizerYY -t doctokenizer.l >doctokenizer.cpp
 

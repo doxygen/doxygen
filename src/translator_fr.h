@@ -39,6 +39,8 @@
  * -------------+------------------------------------------------------------
  *  2002-09-24  | Update for new since 1.2.17
  * -------------+------------------------------------------------------------
+ *  2002-10-22  | Update for new since 1.2.18
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
@@ -146,7 +148,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
-     *  compounds or files (see the \group command).
+     *  compounds or files (see the \\group command).
      */
     QCString trModules()
     { return "Modules"; }
@@ -1282,6 +1284,22 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
       return "Liste obsolète";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Evènements";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Documentation des évènements";
+    }
 
 };
 #endif

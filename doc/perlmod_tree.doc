@@ -1,0 +1,377 @@
+/*! \page perlmod_tree Nodes in the documentation tree of the Perl Module output format
+
+<h2>Nodes in the documentation tree of the Perl Module output
+format.</h2>
+
+This is a description of the structure of the documentation tree in
+<b>DoxyDocs.pm</b>.  Each item in the list below describes a node in
+the tree, and the format of the description is as follows:
+
+<ul>
+<li>[ key =&gt; ] <b>Name</b> <i>(type)</i>.  Explanation of the content.
+</ul>
+
+Where
+
+<ul>
+
+<li>The "key =&gt;" part only appears if the parent node is a hash.
+"key" is the key for this node.
+
+<li><b>"Name"</b> is a unique name for the node, defined in
+DoxyModel.pm.
+
+<li><i>"(type)"</i> is the type of the node: "string" for string
+nodes, "hash" for hash nodes, "list" for list nodes, and "doc" for
+documentation subtrees.  The structure of documentation subtrees is
+not described anywhere yet, but you can look for example at
+<b>doxylatex.pl</b> to see how to process it.
+
+</ul>
+
+The meaning of each node in the documentation tree is as follows:
+<ul>
+<li> <b>Root</b> <i>(hash)</i>. Root node.
+<ul>
+<li>classes =&gt; <b>Classes</b> <i>(list)</i>. Documented classes.
+<ul>
+<li> <b>Class</b> <i>(hash)</i>. A documented class.
+<ul>
+<li>protected_members =&gt; <b>ClassProtectedMembers</b> <i>(hash)</i>. Information about the protected members in the class.
+<ul>
+<li>members =&gt; <b>ClassProtectedMemberList</b> <i>(list)</i>. protected member list.
+<ul>
+<li> <b>ClassProtectedMember</b> <i>(hash)</i>. A protected member.
+<ul>
+<li>protection =&gt; <b>ClassProtectedMemberProtection</b> <i>(string)</i>. Protection of the protected member.
+<li>detailed =&gt; <b>ClassProtectedMemberDetailed</b> <i>(hash)</i>. Detailed information about the protected member.
+<ul>
+<li>doc =&gt; <b>ClassProtectedMemberDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the protected member.
+<li>see =&gt; <b>ClassProtectedMemberSee</b> <i>(doc)</i>. "See also" documentation for the protected member.
+</ul>
+<li>kind =&gt; <b>ClassProtectedMemberKind</b> <i>(string)</i>. Kind of protected member (usually "variable").
+<li>name =&gt; <b>ClassProtectedMemberName</b> <i>(string)</i>. Name of the protected member.
+<li>type =&gt; <b>ClassProtectedMemberType</b> <i>(string)</i>. Data type of the protected member.
+</ul>
+</ul>
+</ul>
+<li>detailed =&gt; <b>ClassDetailed</b> <i>(hash)</i>. Detailed information about the class.
+<ul>
+<li>doc =&gt; <b>ClassDetailedDoc</b> <i>(doc)</i>. Detailed documentation block for the class.
+</ul>
+<li>protected_typedefs =&gt; <b>ClassProtectedTypedefs</b> <i>(hash)</i>. Information about the protected typedefs in the class.
+<ul>
+<li>members =&gt; <b>ClassProtectedTypedefList</b> <i>(list)</i>. protected typedef list.
+<ul>
+<li> <b>ClassProtectedTypedef</b> <i>(hash)</i>. A protected typedef.
+<ul>
+<li>protection =&gt; <b>ClassProtectedTypedefProtection</b> <i>(string)</i>. Protection of the protected typedef.
+<li>detailed =&gt; <b>ClassProtectedTypedefDetailed</b> <i>(hash)</i>. Detailed information about the protected typedef.
+<ul>
+<li>doc =&gt; <b>ClassProtectedTypedefDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the protected typedef.
+<li>see =&gt; <b>ClassProtectedTypedefSee</b> <i>(doc)</i>. "See also" documentation for the protected typedef.
+</ul>
+<li>kind =&gt; <b>ClassProtectedTypedefKind</b> <i>(string)</i>. Kind of protected typedef (usually "typedef").
+<li>name =&gt; <b>ClassProtectedTypedefName</b> <i>(string)</i>. Name of the protected typedef.
+<li>type =&gt; <b>ClassProtectedTypedefType</b> <i>(string)</i>. Data type of the protected typedef.
+</ul>
+</ul>
+</ul>
+<li>name =&gt; <b>ClassName</b> <i>(string)</i>. Name of the class.
+<li>private_members =&gt; <b>ClassPrivateMembers</b> <i>(hash)</i>. Information about the private members in the class.
+<ul>
+<li>members =&gt; <b>ClassPrivateMemberList</b> <i>(list)</i>. private member list.
+<ul>
+<li> <b>ClassPrivateMember</b> <i>(hash)</i>. A private member.
+<ul>
+<li>protection =&gt; <b>ClassPrivateMemberProtection</b> <i>(string)</i>. Protection of the private member.
+<li>detailed =&gt; <b>ClassPrivateMemberDetailed</b> <i>(hash)</i>. Detailed information about the private member.
+<ul>
+<li>doc =&gt; <b>ClassPrivateMemberDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the private member.
+<li>see =&gt; <b>ClassPrivateMemberSee</b> <i>(doc)</i>. "See also" documentation for the private member.
+</ul>
+<li>kind =&gt; <b>ClassPrivateMemberKind</b> <i>(string)</i>. Kind of private member (usually "variable").
+<li>name =&gt; <b>ClassPrivateMemberName</b> <i>(string)</i>. Name of the private member.
+<li>type =&gt; <b>ClassPrivateMemberType</b> <i>(string)</i>. Data type of the private member.
+</ul>
+</ul>
+</ul>
+<li>private_typedefs =&gt; <b>ClassPrivateTypedefs</b> <i>(hash)</i>. Information about the private typedefs in the class.
+<ul>
+<li>members =&gt; <b>ClassPrivateTypedefList</b> <i>(list)</i>. private typedef list.
+<ul>
+<li> <b>ClassPrivateTypedef</b> <i>(hash)</i>. A private typedef.
+<ul>
+<li>protection =&gt; <b>ClassPrivateTypedefProtection</b> <i>(string)</i>. Protection of the private typedef.
+<li>detailed =&gt; <b>ClassPrivateTypedefDetailed</b> <i>(hash)</i>. Detailed information about the private typedef.
+<ul>
+<li>doc =&gt; <b>ClassPrivateTypedefDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the private typedef.
+<li>see =&gt; <b>ClassPrivateTypedefSee</b> <i>(doc)</i>. "See also" documentation for the private typedef.
+</ul>
+<li>kind =&gt; <b>ClassPrivateTypedefKind</b> <i>(string)</i>. Kind of private typedef (usually "typedef").
+<li>name =&gt; <b>ClassPrivateTypedefName</b> <i>(string)</i>. Name of the private typedef.
+<li>type =&gt; <b>ClassPrivateTypedefType</b> <i>(string)</i>. Data type of the private typedef.
+</ul>
+</ul>
+</ul>
+<li>protected_methods =&gt; <b>ClassProtectedMethods</b> <i>(hash)</i>. Information about the protected methods in the class.
+<ul>
+<li>members =&gt; <b>ClassProtectedMethodList</b> <i>(list)</i>. protected method list.
+<ul>
+<li> <b>ClassProtectedMethod</b> <i>(hash)</i>. A protected method.
+<ul>
+<li>parameters =&gt; <b>ClassProtectedMethodParams</b> <i>(list)</i>. List of the parameters of the protected method.
+<ul>
+<li> <b>ClassProtectedMethodParam</b> <i>(hash)</i>. A parameter of the protected method.
+<ul>
+<li>declaration_name =&gt; <b>ClassProtectedMethodParamName</b> <i>(string)</i>. The name of the parameter.
+<li>type =&gt; <b>ClassProtectedMethodParamType</b> <i>(string)</i>. The data type of the parameter.
+</ul>
+</ul>
+<li>protection =&gt; <b>ClassProtectedMethodProtection</b> <i>(string)</i>. Protection of the protected method.
+<li>virtualness =&gt; <b>ClassProtectedMethodVirtualness</b> <i>(string)</i>. Virtualness of the protected method.
+<li>detailed =&gt; <b>ClassProtectedMethodDetailed</b> <i>(hash)</i>. Detailed information about the protected method.
+<ul>
+<li>params =&gt; <b>ClassProtectedMethodPDBlocks</b> <i>(list)</i>. List of parameter documentation blocks for the protected method.
+<ul>
+<li> <b>ClassProtectedMethodPDBlock</b> <i>(hash)</i>. A parameter documentation block for the protected method.
+<ul>
+<li>parameters =&gt; <b>ClassProtectedMethodPDParams</b> <i>(list)</i>. Parameter list for this parameter documentation block.
+<ul>
+<li> <b>ClassProtectedMethodPDParam</b> <i>(hash)</i>. A parameter documented by this documentation block.
+<ul>
+<li>name =&gt; <b>ClassProtectedMethodPDParamName</b> <i>(string)</i>. Name of the parameter.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassProtectedMethodPDDoc</b> <i>(doc)</i>. Documentation for this parameter documentation block.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassProtectedMethodDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the protected method.
+<li>see =&gt; <b>ClassProtectedMethodSee</b> <i>(doc)</i>. "See also" documentation for the protected method.
+<li>return =&gt; <b>ClassProtectedMethodReturn</b> <i>(doc)</i>. Documentation about the return value of the protected method.
+</ul>
+<li>kind =&gt; <b>ClassProtectedMethodKind</b> <i>(string)</i>. Kind of protected method (usually "function").
+<li>name =&gt; <b>ClassProtectedMethodName</b> <i>(string)</i>. Name of the protected method.
+<li>type =&gt; <b>ClassProtectedMethodType</b> <i>(string)</i>. Data type returned by the protected method.
+<li>static =&gt; <b>ClassProtectedMethodStatic</b> <i>(string)</i>. Whether the protected method is static.
+</ul>
+</ul>
+</ul>
+<li>public_typedefs =&gt; <b>ClassPublicTypedefs</b> <i>(hash)</i>. Information about the public typedefs in the class.
+<ul>
+<li>members =&gt; <b>ClassPublicTypedefList</b> <i>(list)</i>. public typedef list.
+<ul>
+<li> <b>ClassPublicTypedef</b> <i>(hash)</i>. A public typedef.
+<ul>
+<li>protection =&gt; <b>ClassPublicTypedefProtection</b> <i>(string)</i>. Protection of the public typedef.
+<li>detailed =&gt; <b>ClassPublicTypedefDetailed</b> <i>(hash)</i>. Detailed information about the public typedef.
+<ul>
+<li>doc =&gt; <b>ClassPublicTypedefDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the public typedef.
+<li>see =&gt; <b>ClassPublicTypedefSee</b> <i>(doc)</i>. "See also" documentation for the public typedef.
+</ul>
+<li>kind =&gt; <b>ClassPublicTypedefKind</b> <i>(string)</i>. Kind of public typedef (usually "typedef").
+<li>name =&gt; <b>ClassPublicTypedefName</b> <i>(string)</i>. Name of the public typedef.
+<li>type =&gt; <b>ClassPublicTypedefType</b> <i>(string)</i>. Data type of the public typedef.
+</ul>
+</ul>
+</ul>
+<li>public_members =&gt; <b>ClassPublicMembers</b> <i>(hash)</i>. Information about the public members in the class.
+<ul>
+<li>members =&gt; <b>ClassPublicMemberList</b> <i>(list)</i>. public member list.
+<ul>
+<li> <b>ClassPublicMember</b> <i>(hash)</i>. A public member.
+<ul>
+<li>protection =&gt; <b>ClassPublicMemberProtection</b> <i>(string)</i>. Protection of the public member.
+<li>detailed =&gt; <b>ClassPublicMemberDetailed</b> <i>(hash)</i>. Detailed information about the public member.
+<ul>
+<li>doc =&gt; <b>ClassPublicMemberDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the public member.
+<li>see =&gt; <b>ClassPublicMemberSee</b> <i>(doc)</i>. "See also" documentation for the public member.
+</ul>
+<li>kind =&gt; <b>ClassPublicMemberKind</b> <i>(string)</i>. Kind of public member (usually "variable").
+<li>name =&gt; <b>ClassPublicMemberName</b> <i>(string)</i>. Name of the public member.
+<li>type =&gt; <b>ClassPublicMemberType</b> <i>(string)</i>. Data type of the public member.
+</ul>
+</ul>
+</ul>
+<li>private_methods =&gt; <b>ClassPrivateMethods</b> <i>(hash)</i>. Information about the private methods in the class.
+<ul>
+<li>members =&gt; <b>ClassPrivateMethodList</b> <i>(list)</i>. private method list.
+<ul>
+<li> <b>ClassPrivateMethod</b> <i>(hash)</i>. A private method.
+<ul>
+<li>parameters =&gt; <b>ClassPrivateMethodParams</b> <i>(list)</i>. List of the parameters of the private method.
+<ul>
+<li> <b>ClassPrivateMethodParam</b> <i>(hash)</i>. A parameter of the private method.
+<ul>
+<li>declaration_name =&gt; <b>ClassPrivateMethodParamName</b> <i>(string)</i>. The name of the parameter.
+<li>type =&gt; <b>ClassPrivateMethodParamType</b> <i>(string)</i>. The data type of the parameter.
+</ul>
+</ul>
+<li>protection =&gt; <b>ClassPrivateMethodProtection</b> <i>(string)</i>. Protection of the private method.
+<li>virtualness =&gt; <b>ClassPrivateMethodVirtualness</b> <i>(string)</i>. Virtualness of the private method.
+<li>detailed =&gt; <b>ClassPrivateMethodDetailed</b> <i>(hash)</i>. Detailed information about the private method.
+<ul>
+<li>params =&gt; <b>ClassPrivateMethodPDBlocks</b> <i>(list)</i>. List of parameter documentation blocks for the private method.
+<ul>
+<li> <b>ClassPrivateMethodPDBlock</b> <i>(hash)</i>. A parameter documentation block for the private method.
+<ul>
+<li>parameters =&gt; <b>ClassPrivateMethodPDParams</b> <i>(list)</i>. Parameter list for this parameter documentation block.
+<ul>
+<li> <b>ClassPrivateMethodPDParam</b> <i>(hash)</i>. A parameter documented by this documentation block.
+<ul>
+<li>name =&gt; <b>ClassPrivateMethodPDParamName</b> <i>(string)</i>. Name of the parameter.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassPrivateMethodPDDoc</b> <i>(doc)</i>. Documentation for this parameter documentation block.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassPrivateMethodDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the private method.
+<li>see =&gt; <b>ClassPrivateMethodSee</b> <i>(doc)</i>. "See also" documentation for the private method.
+<li>return =&gt; <b>ClassPrivateMethodReturn</b> <i>(doc)</i>. Documentation about the return value of the private method.
+</ul>
+<li>kind =&gt; <b>ClassPrivateMethodKind</b> <i>(string)</i>. Kind of private method (usually "function").
+<li>name =&gt; <b>ClassPrivateMethodName</b> <i>(string)</i>. Name of the private method.
+<li>type =&gt; <b>ClassPrivateMethodType</b> <i>(string)</i>. Data type returned by the private method.
+<li>static =&gt; <b>ClassPrivateMethodStatic</b> <i>(string)</i>. Whether the private method is static.
+</ul>
+</ul>
+</ul>
+<li>public_methods =&gt; <b>ClassPublicMethods</b> <i>(hash)</i>. Information about the public methods in the class.
+<ul>
+<li>members =&gt; <b>ClassPublicMethodList</b> <i>(list)</i>. public method list.
+<ul>
+<li> <b>ClassPublicMethod</b> <i>(hash)</i>. A public method.
+<ul>
+<li>parameters =&gt; <b>ClassPublicMethodParams</b> <i>(list)</i>. List of the parameters of the public method.
+<ul>
+<li> <b>ClassPublicMethodParam</b> <i>(hash)</i>. A parameter of the public method.
+<ul>
+<li>declaration_name =&gt; <b>ClassPublicMethodParamName</b> <i>(string)</i>. The name of the parameter.
+<li>type =&gt; <b>ClassPublicMethodParamType</b> <i>(string)</i>. The data type of the parameter.
+</ul>
+</ul>
+<li>protection =&gt; <b>ClassPublicMethodProtection</b> <i>(string)</i>. Protection of the public method.
+<li>virtualness =&gt; <b>ClassPublicMethodVirtualness</b> <i>(string)</i>. Virtualness of the public method.
+<li>detailed =&gt; <b>ClassPublicMethodDetailed</b> <i>(hash)</i>. Detailed information about the public method.
+<ul>
+<li>params =&gt; <b>ClassPublicMethodPDBlocks</b> <i>(list)</i>. List of parameter documentation blocks for the public method.
+<ul>
+<li> <b>ClassPublicMethodPDBlock</b> <i>(hash)</i>. A parameter documentation block for the public method.
+<ul>
+<li>parameters =&gt; <b>ClassPublicMethodPDParams</b> <i>(list)</i>. Parameter list for this parameter documentation block.
+<ul>
+<li> <b>ClassPublicMethodPDParam</b> <i>(hash)</i>. A parameter documented by this documentation block.
+<ul>
+<li>name =&gt; <b>ClassPublicMethodPDParamName</b> <i>(string)</i>. Name of the parameter.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassPublicMethodPDDoc</b> <i>(doc)</i>. Documentation for this parameter documentation block.
+</ul>
+</ul>
+<li>doc =&gt; <b>ClassPublicMethodDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the public method.
+<li>see =&gt; <b>ClassPublicMethodSee</b> <i>(doc)</i>. "See also" documentation for the public method.
+<li>return =&gt; <b>ClassPublicMethodReturn</b> <i>(doc)</i>. Documentation about the return value of the public method.
+</ul>
+<li>kind =&gt; <b>ClassPublicMethodKind</b> <i>(string)</i>. Kind of public method (usually "function").
+<li>name =&gt; <b>ClassPublicMethodName</b> <i>(string)</i>. Name of the public method.
+<li>type =&gt; <b>ClassPublicMethodType</b> <i>(string)</i>. Data type returned by the public method.
+<li>static =&gt; <b>ClassPublicMethodStatic</b> <i>(string)</i>. Whether the public method is static.
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li>files =&gt; <b>Files</b> <i>(list)</i>. Documented files.
+<ul>
+<li> <b>File</b> <i>(hash)</i>. A documented file.
+<ul>
+<li>detailed =&gt; <b>FileDetailed</b> <i>(hash)</i>. Detailed information about the file.
+<ul>
+<li>doc =&gt; <b>FileDetailedDoc</b> <i>(doc)</i>. Detailed documentation block for the file.
+</ul>
+<li>functions =&gt; <b>FileFunctions</b> <i>(hash)</i>. Information about the functions in the file.
+<ul>
+<li>members =&gt; <b>FileFunctionList</b> <i>(list)</i>. function list.
+<ul>
+<li> <b>FileFunction</b> <i>(hash)</i>. A function.
+<ul>
+<li>parameters =&gt; <b>FileFunctionParams</b> <i>(list)</i>. List of the parameters of the function.
+<ul>
+<li> <b>FileFunctionParam</b> <i>(hash)</i>. A parameter of the function.
+<ul>
+<li>declaration_name =&gt; <b>FileFunctionParamName</b> <i>(string)</i>. The name of the parameter.
+<li>type =&gt; <b>FileFunctionParamType</b> <i>(string)</i>. The data type of the parameter.
+</ul>
+</ul>
+<li>protection =&gt; <b>FileFunctionProtection</b> <i>(string)</i>. Protection of the function.
+<li>virtualness =&gt; <b>FileFunctionVirtualness</b> <i>(string)</i>. Virtualness of the function.
+<li>detailed =&gt; <b>FileFunctionDetailed</b> <i>(hash)</i>. Detailed information about the function.
+<ul>
+<li>params =&gt; <b>FileFunctionPDBlocks</b> <i>(list)</i>. List of parameter documentation blocks for the function.
+<ul>
+<li> <b>FileFunctionPDBlock</b> <i>(hash)</i>. A parameter documentation block for the function.
+<ul>
+<li>parameters =&gt; <b>FileFunctionPDParams</b> <i>(list)</i>. Parameter list for this parameter documentation block.
+<ul>
+<li> <b>FileFunctionPDParam</b> <i>(hash)</i>. A parameter documented by this documentation block.
+<ul>
+<li>name =&gt; <b>FileFunctionPDParamName</b> <i>(string)</i>. Name of the parameter.
+</ul>
+</ul>
+<li>doc =&gt; <b>FileFunctionPDDoc</b> <i>(doc)</i>. Documentation for this parameter documentation block.
+</ul>
+</ul>
+<li>doc =&gt; <b>FileFunctionDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the function.
+<li>see =&gt; <b>FileFunctionSee</b> <i>(doc)</i>. "See also" documentation for the function.
+<li>return =&gt; <b>FileFunctionReturn</b> <i>(doc)</i>. Documentation about the return value of the function.
+</ul>
+<li>kind =&gt; <b>FileFunctionKind</b> <i>(string)</i>. Kind of function (usually "function").
+<li>name =&gt; <b>FileFunctionName</b> <i>(string)</i>. Name of the function.
+<li>type =&gt; <b>FileFunctionType</b> <i>(string)</i>. Data type returned by the function.
+<li>static =&gt; <b>FileFunctionStatic</b> <i>(string)</i>. Whether the function is static.
+</ul>
+</ul>
+</ul>
+<li>name =&gt; <b>FileName</b> <i>(string)</i>. Name of the file.
+<li>variables =&gt; <b>FileVariables</b> <i>(hash)</i>. Information about the variables in the file.
+<ul>
+<li>members =&gt; <b>FileVariableList</b> <i>(list)</i>. variable list.
+<ul>
+<li> <b>FileVariable</b> <i>(hash)</i>. A variable.
+<ul>
+<li>protection =&gt; <b>FileVariableProtection</b> <i>(string)</i>. Protection of the variable.
+<li>detailed =&gt; <b>FileVariableDetailed</b> <i>(hash)</i>. Detailed information about the variable.
+<ul>
+<li>doc =&gt; <b>FileVariableDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the variable.
+<li>see =&gt; <b>FileVariableSee</b> <i>(doc)</i>. "See also" documentation for the variable.
+</ul>
+<li>kind =&gt; <b>FileVariableKind</b> <i>(string)</i>. Kind of variable (usually "variable").
+<li>name =&gt; <b>FileVariableName</b> <i>(string)</i>. Name of the variable.
+<li>type =&gt; <b>FileVariableType</b> <i>(string)</i>. Data type of the variable.
+</ul>
+</ul>
+</ul>
+<li>typedefs =&gt; <b>FileTypedefs</b> <i>(hash)</i>. Information about the typedefs in the file.
+<ul>
+<li>members =&gt; <b>FileTypedefList</b> <i>(list)</i>. typedef list.
+<ul>
+<li> <b>FileTypedef</b> <i>(hash)</i>. A typedef.
+<ul>
+<li>protection =&gt; <b>FileTypedefProtection</b> <i>(string)</i>. Protection of the typedef.
+<li>detailed =&gt; <b>FileTypedefDetailed</b> <i>(hash)</i>. Detailed information about the typedef.
+<ul>
+<li>doc =&gt; <b>FileTypedefDetailedDoc</b> <i>(doc)</i>. Detailed documentation for the typedef.
+<li>see =&gt; <b>FileTypedefSee</b> <i>(doc)</i>. "See also" documentation for the typedef.
+</ul>
+<li>kind =&gt; <b>FileTypedefKind</b> <i>(string)</i>. Kind of typedef (usually "typedef").
+<li>name =&gt; <b>FileTypedefName</b> <i>(string)</i>. Name of the typedef.
+<li>type =&gt; <b>FileTypedefType</b> <i>(string)</i>. Data type of the typedef.
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+*/

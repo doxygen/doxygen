@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "graphhandler.h"
 #include "sectionhandler.h"
+#include "loamhandler.h"
 
 //----------------------------------------------------------------------------
 
@@ -146,7 +147,7 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
     m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
     m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0),
     m_includeDependencyGraph(0), m_includedByDependencyGraph(0), m_templateParamList(0),
-    m_titleHandler(0)
+    m_titleHandler(0), m_members(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
@@ -202,12 +203,10 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addEndHandler("innergroup");
 
   addStartHandler("templateparamlist",this,&CompoundHandler::startTemplateParamList);
-  addEndHandler("templateparamlist");
-
-  addStartHandler("param",this,&CompoundHandler::startParam);
-  addEndHandler("param");
 
   addStartHandler("title",this,&CompoundHandler::startTitle);
+
+  addStartHandler("listofallmembers",this,&CompoundHandler::startListOfAllMembers);
 }
 
 CompoundHandler::~CompoundHandler()
@@ -221,6 +220,8 @@ CompoundHandler::~CompoundHandler()
   delete m_collaborationGraph;
   delete m_includeDependencyGraph;
   delete m_includedByDependencyGraph;
+  delete m_templateParamList;
+  delete m_members;
 }
 
 void CompoundHandler::startSection(const QXmlAttributes& attrib)
@@ -298,17 +299,16 @@ void CompoundHandler::startInnerGroup(const QXmlAttributes& attrib)
   m_innerCompounds.append(new QString(attrib.value("refid")));
 }
 
-void CompoundHandler::startParam(const QXmlAttributes& attrib)
-{
-  ParamHandler *ph = new ParamHandler(this);
-  ph->startParam(attrib);
-  m_params.append(ph);
-}
-
 void CompoundHandler::startTemplateParamList(const QXmlAttributes& attrib)
 {
   m_templateParamList = new TemplateParamListHandler(this);
-  m_templateParamList->startParam(attrib);
+  m_templateParamList->startTemplateParamList(attrib);
+}
+
+void CompoundHandler::startListOfAllMembers(const QXmlAttributes& attrib)
+{
+  m_members = new ListOfAllMembersHandler(this);
+  m_members->startListOfAllMembers(attrib);
 }
 
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
@@ -388,11 +388,16 @@ void CompoundHandler::initialize(MainHandler *mh)
   {
     sec->initialize(this);
   }
+  if (m_members)
+  {
+    m_members->initialize(mh);
+  }
 }
 
 void CompoundHandler::insertMember(MemberHandler *mh)
 {
   m_memberDict.insert(mh->id()->latin1(),mh);
+  mh->initialize(m_mainHandler);
   QList<MemberHandler> *mhl = m_memberNameDict.find(mh->id()->latin1());
   if (mhl==0)
   {
@@ -478,7 +483,7 @@ IDocRoot *CompoundHandler::detailedDescription() const
 
 IMember *CompoundHandler::memberById(const char *id) const 
 { 
-  return m_memberDict[id]; 
+  return (IFunction*)m_memberDict[id]; 
 }
 
 IGraph *CompoundHandler::inheritanceGraph() const 
@@ -530,3 +535,10 @@ const IDocTitle *CompoundHandler::title() const
 {
   return m_titleHandler;
 }
+
+IMemberReferenceIterator *CompoundHandler::members() const
+{
+  return m_members ? m_members->members() : 0;
+}
+
+

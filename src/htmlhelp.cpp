@@ -337,13 +337,13 @@ void HtmlHelp::initialize()
   s_languageDict.insert("dutch",    new QCString("0x413 Dutch"));
   s_languageDict.insert("finnish",  new QCString("0x40B Finnish"));
   s_languageDict.insert("french",   new QCString("0x40C French"));
-  s_languageDict.insert("german",   new QCString("0x40C German"));
+  s_languageDict.insert("german",   new QCString("0x407 German"));
   s_languageDict.insert("greece",   new QCString("0x408 Greece"));
   s_languageDict.insert("hungarian",new QCString("0x40E Hungarian"));
   s_languageDict.insert("italian",  new QCString("0x410 Italian"));
   s_languageDict.insert("norwegian",new QCString("0x814 Norwegian"));
-  s_languageDict.insert("polish",   new QCString("0x815 Polish"));
-  s_languageDict.insert("portugese",new QCString("0x815 Portuguese(Portugal)"));
+  s_languageDict.insert("polish",   new QCString("0x415 Polish"));
+  s_languageDict.insert("portugese",new QCString("0x816 Portuguese(Portugal)"));
   s_languageDict.insert("brazil",   new QCString("0x416 Portuguese(Brazil)"));
   s_languageDict.insert("russian",  new QCString("0x419 Russian"));
   s_languageDict.insert("spanish",  new QCString("0x40A Spannish(Traditional Sort)"));

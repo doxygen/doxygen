@@ -51,6 +51,8 @@ class MemberReferenceIterator : public BaseIterator<IMemberReferenceIterator,IMe
       BaseIterator<IMemberReferenceIterator,IMemberReference,MemberReference>(list) {}
 };
 
+
+#if 0
 class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
 {
   public:
@@ -65,12 +67,12 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
 
     // IEnumValue
     virtual const IString *name() const { return &m_name; }
-    virtual const IString *initializer() const { return &m_initializer; }
+    virtual ILinkedTextIterator *initializer() const
+    { return new LinkedTextIterator(m_initializer); }
 
     void setName(const QString &name) { m_name=name; }
-    void setInitializer(const QString &init) { m_initializer=init; }
     
-    virtual ~EnumValueHandler() {  delete m_brief;  delete m_detailed; }
+    virtual ~EnumValueHandler();
     EnumValueHandler(IBaseHandler *parent);
 
     virtual IDocRoot *briefDescription() const
@@ -80,10 +82,11 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
 
   private:
     StringImpl m_name;
-    StringImpl m_initializer;
+    QList<LinkedTextImpl> m_initializer;
     IBaseHandler *m_parent;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
+    LinkedTextHandler *m_linkedTextHandler;
 };
 
 class EnumValueIterator : public BaseIterator<IEnumValueIterator,IEnumValue,EnumValueHandler>
@@ -92,15 +95,29 @@ class EnumValueIterator : public BaseIterator<IEnumValueIterator,IEnumValue,Enum
     EnumValueIterator(const QList<EnumValueHandler> &list) : 
       BaseIterator<IEnumValueIterator,IEnumValue,EnumValueHandler>(list) {}
 };
+#endif
 
 
-class MemberHandler : public IMember, public BaseHandler<MemberHandler>
+class MemberHandler : public IDefine,
+                      public IProperty, 
+                      public IVariable,
+                      public ITypedef,
+                      public IFunction,
+                      public ISignal,
+                      public IPrototype,
+                      public IFriend,
+                      public IDCOP,
+                      public ISlot,
+                      public IEnum,
+                      public IEnumValue,
+                      public BaseHandler<MemberHandler>
 {
   public:
     virtual void startMember(const QXmlAttributes& attrib);
     virtual void endMember();
     virtual void startParam(const QXmlAttributes& attrib);
     virtual void startType(const QXmlAttributes& attrib);
+    virtual void startName(const QXmlAttributes& attrib);
     virtual void endName();
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
@@ -116,6 +133,7 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual void startInitializer(const QXmlAttributes& attrib);
     virtual void startException(const QXmlAttributes& attrib);
     virtual void startEnumValue(const QXmlAttributes& attrib);
+    virtual void startEnumValue2(const QXmlAttributes& attrib);
     virtual void startTemplateParamList(const QXmlAttributes &attrib);
     virtual void endTemplateParamList();
 
@@ -172,13 +190,14 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     { return m_reimplements; }
     virtual IMemberReferenceIterator *reimplementedBy() const
     { return new MemberReferenceIterator(m_reimplementedBy); }
-    virtual IEnumValueIterator *enumValues() const
-    { return new EnumValueIterator(m_enumValues); }
     virtual IDocRoot *briefDescription() const
     { return m_brief; }
     virtual IDocRoot *detailedDescription() const
     { return m_detailed; }
 
+    // IEnum
+    virtual IMemberIterator *enumValues() const;
+    
     void initialize(MainHandler *m);
     void setCompoundHandler(CompoundHandler *c);
     void setSectionHandler(SectionHandler *s);
@@ -212,16 +231,19 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     bool m_isConst;
     bool m_isVolatile;
     LinkedTextHandler *m_linkedTextHandler;
-    QList<EnumValueHandler> m_enumValues;
+    QList<MemberHandler> m_enumValues;
     bool m_insideTemplateParamList;
     bool m_hasTemplateParamList;
 };
 
-class MemberIterator : public BaseIterator<IMemberIterator,IMember,MemberHandler>
+class MemberIterator : public BaseIteratorVia<IMemberIterator,
+                                        IMember,
+                                        MemberHandler,
+                                        IFunction>
 {
   public:
     MemberIterator(const QList<MemberHandler> &list) : 
-      BaseIterator<IMemberIterator,IMember,MemberHandler>(list) {}
+      BaseIteratorVia<IMemberIterator,IMember,MemberHandler,IFunction>(list) {}
 };
 
 void memberhandler_init();

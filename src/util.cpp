@@ -2570,6 +2570,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
       linkText=linkText.right(linkText.length()-2);
     }
   }
+  //printf("generateLink linkText=%s\n",linkText.data());
   if (resolveLink(clName,lr,inSeeBlock,&compound,&pageInfo,anchor))
   {
     if (pageInfo) // link to page
@@ -2595,6 +2596,10 @@ bool generateLink(OutputDocInterface &od,const char *clName,
       {
         writePageRef(od,compound->getOutputFileBase(),anchor);
       }
+    }
+    else
+    {
+      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
     }
     return TRUE;
   }
@@ -3267,7 +3272,7 @@ QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
  *  that make up specialized classes. The switch \a parentOnly 
  *  determines whether or not a template "at the end" of a scope 
  *  should be considered, e.g. with \a parentOnly is \c TRUE, A<T>::B<S> will 
- *  try to strip <T> and not <S>, while \a parentOnly is \c FALSE will 
+ *  try to strip \<T\> and not \<S\>, while \a parentOnly is \c FALSE will 
  *  strip both unless A<T> or B<S> are specialized template classes. 
  */
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,

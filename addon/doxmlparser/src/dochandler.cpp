@@ -1097,7 +1097,7 @@ void ImageHandler::endImage()
 DotFileHandler::DotFileHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
-  addEndHandler("image",this,&DotFileHandler::endDotFile);
+  addEndHandler("dotfile",this,&DotFileHandler::endDotFile);
 }
 
 DotFileHandler::~DotFileHandler()
@@ -1328,6 +1328,32 @@ IDocIterator *PreformattedHandler::contents() const
 }
 
 //----------------------------------------------------------------------
+// VerbatimHandler
+//----------------------------------------------------------------------
+
+VerbatimHandler::VerbatimHandler(IBaseHandler *parent)
+  :  m_parent(parent)
+{
+  addEndHandler("verbatim",this,&VerbatimHandler::endVerbatim);
+}
+
+VerbatimHandler::~VerbatimHandler()
+{
+}
+
+void VerbatimHandler::startVerbatim(const QXmlAttributes&)
+{
+  m_parent->setDelegate(this);
+  m_curString="";
+}
+
+void VerbatimHandler::endVerbatim()
+{
+  m_text = m_curString;
+  m_parent->setDelegate(0);
+}
+
+//----------------------------------------------------------------------
 // SymbolHandler
 //----------------------------------------------------------------------
 
@@ -1393,6 +1419,7 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
   addStartHandler("table",this,&ParagraphHandler::startTable);
   addStartHandler("preformatted",this,&ParagraphHandler::startPreformatted);
+  addStartHandler("verbatim",this,&ParagraphHandler::startVerbatim);
   addStartHandler("umlaut",this,&ParagraphHandler::startUmlaut);
   addStartHandler("acute",this,&ParagraphHandler::startAcute);
   addStartHandler("grave",this,&ParagraphHandler::startGrave);
@@ -1565,6 +1592,14 @@ void ParagraphHandler::startPreformatted(const QXmlAttributes& attrib)
   PreformattedHandler *ph = new PreformattedHandler(this);
   ph->startPreformatted(attrib);
   m_children.append(ph);
+}
+
+void ParagraphHandler::startVerbatim(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  VerbatimHandler *vh = new VerbatimHandler(this);
+  vh->startVerbatim(attrib);
+  m_children.append(vh);
 }
 
 void ParagraphHandler::startUmlaut(const QXmlAttributes& attrib)
