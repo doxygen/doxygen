@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- * 
- *
  * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -15,21 +13,19 @@
  *
  */
 
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef COMMENTSCAN_H
+#define COMMENTSCAN_H
 
 #include "qtbc.h"
+#include "entry.h"
 
-class OutputList;
-class Entry;
-
-// Public interface provided by the language scanner
-void parseMain(Entry *);
-void parseMain(Entry *,const char *fileName);
-
-// Internal callback interface for comment block scanner
-void parsePrototype(const QCString &text);
-void handleGroupStartCommand(const char *header);
-void handleGroupEndCommand();
+bool parseCommentBlock(/* in,out */ Entry *curEntry,
+                       /* in */     const QCString &comment,
+		       /* in */     const QCString &fileName,
+		       /* in */     int lineNr,
+		       /* in */     bool isBrief,
+		       /* in */     bool isJavaDocStyle,
+		       /* in,out */ Protection &prot
+		      );
 
 #endif

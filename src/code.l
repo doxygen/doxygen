@@ -2395,7 +2395,14 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
   					  if (--g_bracketCount<=0) 
 					  {
-					    BEGIN( CallEnd ); 
+					    if (g_name.isEmpty())
+					    {
+					      BEGIN( Body );
+					    }
+					    else
+					    {
+					      BEGIN( CallEnd ); 
+					    }
 					  }
 					}
 <CallEnd>[ \t\n]*			{ codifyLines(yytext); }

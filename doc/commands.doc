@@ -171,7 +171,7 @@ doxygen. Unrecognized commands are treated as normal text.
     Structural indicators
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\section cmdaddtogroup \addtogroup <name> [(title)]
+\section cmdaddtogroup \\addtogroup <name> [(title)]
   \addindex \\addtogroup
   Defines a group just like \ref cmddefgroup "\\defgroup", but in contrast to
   that command using the same \<name\> more than once will not result in a warning,
@@ -205,7 +205,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup" and
   \ref cmdweakgroup "\\weakgroup".
 
-\section cmdcallgraph \callgraph 
+\section cmdcallgraph \\callgraph 
 
   \addindex \\callgraph
   When this command is put in a comment block of a function or method
@@ -217,7 +217,7 @@ doxygen. Unrecognized commands are treated as normal text.
   doxygen code parser which is not perfect.
 
 <hr>
-\section cmdcategory \category <name> [<header-file>] [<header-name>]
+\section cmdcategory \\category <name> [<header-file>] [<header-name>]
 
   \addindex \\category
   For Objective-C only: Indicates that a comment block contains documentation 
@@ -227,7 +227,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdclass \class <name> [<header-file>] [<header-name>]
+\section cmdclass \\class <name> [<header-file>] [<header-name>]
 
   \addindex \\class
   Indicates that a comment block contains documentation for a
@@ -250,7 +250,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\section cmddef \def <name>
+\section cmddef \\def <name>
 
   \addindex \\def
   Indicates that a comment block contains documentation for a 
@@ -264,7 +264,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\section cmddefgroup \defgroup <name> (group title)
+\section cmddefgroup \\defgroup <name> (group title)
 
   \addindex \\defgroup
   Indicates that a comment block contains documentation for a
@@ -279,7 +279,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \ref cmdweakgroup "\\weakgroup".
 
 <hr>
-\section cmddir \dir [<path fragment>]
+\section cmddir \\dir [<path fragment>]
   
   \addindex \\dir
   Indicates that a comment block contains documentation for a directory.
@@ -292,7 +292,7 @@ doxygen. Unrecognized commands are treated as normal text.
 
 <hr>
 
-\section cmdenum \enum <name>
+\section cmdenum \\enum <name>
 
   \addindex \\enum
   Indicates that a comment block contains documentation for an 
@@ -314,7 +314,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\section cmdexample \example <file-name>
+\section cmdexample \\example <file-name>
   
   \addindex \\example
   Indicates that a comment block contains documentation for a source code 
@@ -347,7 +347,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdinclude "\\include".
 
 <hr>
-\section cmdfile \file [<name>]
+\section cmdfile \\file [<name>]
   
   \addindex \\file
   Indicates that a comment block contains documentation for a source or 
@@ -371,7 +371,7 @@ doxygen. Unrecognized commands are treated as normal text.
   has been set to YES in the configuration file.
 
 <hr>
-\section cmdfn \fn (function declaration)
+\section cmdfn \\fn (function declaration)
  
   \addindex \\fn
   Indicates that a comment block contains documentation for a function
@@ -402,7 +402,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdvar "\\var" and \ref cmdtypedef "\\typedef".
 
 <hr>
-\section cmdhideinitializer \hideinitializer
+\section cmdhideinitializer \\hideinitializer
 
   \addindex \\hideinitializer
   By default the value of a define and the initializer of a variable
@@ -413,7 +413,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdshowinitializer "\\showinitializer".
 
 <hr>
-\section cmdingroup \ingroup (<groupname> [<groupname> <groupname>])
+\section cmdingroup \\ingroup (<groupname> [<groupname> <groupname>])
 
   \addindex \\ingroup
   If the \\ingroup command is placed in a comment block of a
@@ -424,7 +424,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \ref cmdaddtogroup "\\addtogroup" and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
-\section cmdinterface \interface <name> [<header-file>] [<header-name>]
+\section cmdinterface \\interface <name> [<header-file>] [<header-name>]
 
   \addindex \\interface
   Indicates that a comment block contains documentation for an
@@ -434,7 +434,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdinternal \internal
+\section cmdinternal \\internal
   
   \addindex \\internal
   This command writes the message `For internal use only' to the output and
@@ -451,7 +451,7 @@ doxygen. Unrecognized commands are treated as normal text.
   to show or hide the internal documentation.
 
 <hr>
-\section cmdmainpage \mainpage [(title)]
+\section cmdmainpage \\mainpage [(title)]
 
   \addindex \\mainpage
 
@@ -487,7 +487,7 @@ doxygen. Unrecognized commands are treated as normal text.
      section \ref cmdpage "\\page".
 
 <hr>
-\section cmdname \name (header)  
+\section cmdname \\name (header)  
 
 This command turns a comment block into a header
 definition of a member group. The
@@ -498,14 +498,14 @@ members of the group.
 See section \ref memgroup for an example.
 
 <hr>
-\section cmdnamespace \namespace <name> 
+\section cmdnamespace \\namespace <name> 
 
   \addindex \\namespace
   Indicates that a comment block contains documentation for a
   namespace with name \<name\>. 
   
 <hr>
-\section cmdnosubgrouping \nosubgrouping
+\section cmdnosubgrouping \\nosubgrouping
 
   \addindex \\nosubgrouping
   This command can be put in the documentation
@@ -514,7 +514,7 @@ See section \ref memgroup for an example.
   Public/Protected/Private/... section.
 
 <hr>
-\section cmdoverload \overload [(function declaration)]
+\section cmdoverload \\overload [(function declaration)]
 
   \addindex \\overload
   This command can be used to generate the following 
@@ -545,14 +545,14 @@ See section \ref memgroup for an example.
   \endhtmlonly
 
 <hr>
-\section cmdpackage \package <name>
+\section cmdpackage \\package <name>
   
   \addindex \\package
   Indicates that a comment block contains documentation for a
   Java package with name \<name\>. 
 
 <hr>
-\section cmdpage \page <name> (title)
+\section cmdpage \\page <name> (title)
 
   \addindex \\page
   Indicates that a comment block contains a piece of documentation that is
@@ -582,7 +582,7 @@ See section \ref memgroup for an example.
               \ref cmdref "\\ref".
 
 <hr>
-\section cmdproperty \property (qualified property name)
+\section cmdproperty \\property (qualified property name)
 
   \addindex \\property
   Indicates that a comment block contains documentation for a
@@ -592,7 +592,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
 
 <hr>
-\section cmdprotocol \protocol <name> [<header-file>] [<header-name>]
+\section cmdprotocol \\protocol <name> [<header-file>] [<header-name>]
 
   \addindex \\protocol
   Indicates that a comment block contains documentation for a
@@ -602,7 +602,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdrelates \relates <name>
+\section cmdrelates \\relates <name>
 
   \addindex \\relates
   This command can be used in the documentation of a non-member function
@@ -620,7 +620,7 @@ See section \ref memgroup for an example.
   \endhtmlonly
 
 <hr>
-\section cmdrelatesalso \relatesalso <name>
+\section cmdrelatesalso \\relatesalso <name>
 
   \addindex \\relatesalso
   This command can be used in the documentation of a non-member function
@@ -631,7 +631,7 @@ See section \ref memgroup for an example.
   class. It only works for functions.  
 
 <hr>
-\section cmdshowinitializer \showinitializer
+\section cmdshowinitializer \\showinitializer
 
   \addindex \\showinitializer
   By default the value of a define and the initializer of a variable
@@ -642,7 +642,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdhideinitializer "\\hideinitializer".
 
 <hr>
-\section cmdstruct \struct <name> [<header-file>] [<header-name>]
+\section cmdstruct \\struct <name> [<header-file>] [<header-name>]
 
   \addindex \\struct
   Indicates that a comment block contains documentation for a
@@ -652,7 +652,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdtypedef \typedef (typedef declaration)
+\section cmdtypedef \\typedef (typedef declaration)
 
   \addindex \\typedef
   Indicates that a comment block contains documentation for a
@@ -662,7 +662,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
 
 <hr>
-\section cmdunion \union <name> [<header-file>] [<header-name>]
+\section cmdunion \\union <name> [<header-file>] [<header-name>]
 
   \addindex \\union
   Indicates that a comment block contains documentation for a
@@ -672,7 +672,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\section cmdvar \var (variable declaration)
+\section cmdvar \\var (variable declaration)
 
   \addindex \\var
   Indicates that a comment block contains documentation for a variable or
@@ -682,7 +682,7 @@ See section \ref memgroup for an example.
   \sa section \ref cmdfn "\\fn" and \ref cmdtypedef "\\typedef".
 
 <hr>
-\section cmdweakgroup \weakgroup <name> [(title)]
+\section cmdweakgroup \\weakgroup <name> [(title)]
   \addindex \\addtogroup
   Can be used exactly like \ref cmdaddtogroup "\\addtogroup", but has
   a lower priority when it comes to resolving conflicting grouping
@@ -697,7 +697,7 @@ See section \ref memgroup for an example.
     \htmlonly --- </center>\endhtmlonly</h2>
 
 <hr>
-\section cmdattention \attention { attention text }
+\section cmdattention \\attention { attention text }
 
   \addindex \\attention
   Starts a paragraph where a message that needs attention may be entered. 
@@ -708,7 +708,7 @@ See section \ref memgroup for an example.
   The \\attention command ends when a blank line or some other 
   sectioning command is encountered. 
 
-\section cmdauthor \author { list of authors }
+\section cmdauthor \\author { list of authors }
 
   \addindex \\author
   Starts a paragraph where one or more author names may be entered. 
@@ -728,7 +728,7 @@ See section \ref memgroup for an example.
   \endhtmlonly
 
 <hr>
-\section cmdbrief \brief {brief description}
+\section cmdbrief \\brief {brief description}
 
   \addindex \\brief
   Starts a paragraph that serves as a brief description. For classes and files
@@ -744,7 +744,7 @@ See section \ref memgroup for an example.
   Synonymous to \\short.
  
 <hr>
-\section cmdbug \bug { bug description }
+\section cmdbug \\bug { bug description }
 
   \addindex \\bug
   Starts a paragraph where one or more bugs may be reported. 
@@ -759,7 +759,7 @@ See section \ref memgroup for an example.
   for an example.
 
 <hr>
-\section cmdcond \cond [<section-label>]
+\section cmdcond \\cond [<section-label>]
 
   \addindex \\cond
   Starts a conditional section that ends with a corresponding 
@@ -825,7 +825,7 @@ The output will be different depending on whether \c ENABLED_SECTIONS
 is empty, \c TEST, \c DEV, or \c DEV \c TEST.
 
 <hr>
-\section cmddate \date { date description }
+\section cmddate \\date { date description }
 
   \addindex \\date
   Starts a paragraph where one or more dates may be entered. 
@@ -840,7 +840,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   for an example.
 
 <hr>
-\section cmddeprecated \deprecated { description }
+\section cmddeprecated \\deprecated { description }
 
   \addindex \\deprecated
   Starts a paragraph indicating that this documentation block belongs to
@@ -848,7 +848,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   expected life span, etc.
 
 <hr>
-\section cmdelse \else 
+\section cmdelse \\else 
 
   \addindex \\else
   Starts a conditional section if the previous conditional section 
@@ -859,7 +859,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
       \ref cmdendif "\\endif."
 
 <hr>
-\section cmdelseif \elseif <section-label>
+\section cmdelseif \\elseif <section-label>
 
   \addindex \\elseif
   Starts a conditional documentation section if the previous section 
@@ -874,7 +874,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\section cmdendcond \endcond
+\section cmdendcond \\endcond
 
   \addindex \\endcond
   Ends a conditional section that was started by \ref cmdcond "\\cond".
@@ -882,7 +882,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   \sa \ref cmdcond "\\cond".
 
 <hr>
-\section cmdendif \endif 
+\section cmdendif \\endif 
 
   \addindex \\endif
   Ends a conditional section that was started by \c \\if or \c \\ifnot
@@ -891,7 +891,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   \sa \ref cmdif "\\if", and \ref cmdifnot "\\ifnot".
 
 <hr>
-\section cmdexception \exception <exception-object> { exception description }
+\section cmdexception \\exception <exception-object> { exception description }
 
   \addindex \\exception
   Starts an exception description for an exception object with name 
@@ -909,7 +909,7 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   the tag \\exceptions is a synonym for this tag.
 
 <hr>
-\section cmdif \if <section-label>
+\section cmdif \\if <section-label>
 
   \addindex \\if
   Starts a conditional documentation section. The section ends 
@@ -967,7 +967,7 @@ ALIASES  = "english=\if english" \
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\section cmdifnot \ifnot <section-label>
+\section cmdifnot \\ifnot <section-label>
 
   \addindex \\ifnot
   Starts a conditional documentation section. The section ends 
@@ -981,7 +981,7 @@ ALIASES  = "english=\if english" \
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\section cmdinvariant \invariant { description of invariant }
+\section cmdinvariant \\invariant { description of invariant }
 
   \addindex \\invariant
   Starts a paragraph where the invariant of an entity can be described.
@@ -995,7 +995,7 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered.
 
 <hr>
-\section cmdnote \note { text }
+\section cmdnote \\note { text }
 
   \addindex \\note
   Starts a paragraph where a note can be entered. The paragraph will be 
@@ -1009,7 +1009,7 @@ ALIASES  = "english=\if english" \
   for an example.
 
 <hr>
-\section cmdpar \par [(paragraph title)] { paragraph }
+\section cmdpar \\par [(paragraph title)] { paragraph }
 
   \addindex \\par
   If a paragraph title is given this command starts a paragraph with a 
@@ -1033,7 +1033,7 @@ ALIASES  = "english=\if english" \
   \endhtmlonly
 
 <hr>
-\section cmdparam \param <parameter-name> { parameter description }
+\section cmdparam \\param <parameter-name> { parameter description }
 
   \addindex \\param
   Starts a parameter description for a function parameter with name 
@@ -1067,7 +1067,7 @@ void memcpy(void *dest, const void *src, size_t n);
   example.
 
 <hr>
-\section cmdpost \post { description of the postcondition }
+\section cmdpost \\post { description of the postcondition }
 
   \addindex \\post
   Starts a paragraph where the postcondition of an entity can be described.
@@ -1081,7 +1081,7 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered.
 
 <hr>
-\section cmdpre \pre { description of the precondition }
+\section cmdpre \\pre { description of the precondition }
 
   \addindex \\pre
   Starts a paragraph where the precondition of an entity can be described.
@@ -1095,7 +1095,7 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered.
   
 <hr>
-\section cmdremarks \remarks { remark text }
+\section cmdremarks \\remarks { remark text }
 
   \addindex \\remarks
   Starts a paragraph where one or more remarks may be entered. 
@@ -1109,7 +1109,7 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. 
 
 <hr>
-\section cmdreturn \return { description of the return value }
+\section cmdreturn \\return { description of the return value }
 
   \addindex \\return
   Starts a return value description for a function. 
@@ -1121,7 +1121,7 @@ void memcpy(void *dest, const void *src, size_t n);
   example.
   
 <hr>
-\section cmdretval \retval <return value> { description }
+\section cmdretval \\retval <return value> { description }
 
   \addindex \\retval
   Starts a return value description for a function with name 
@@ -1135,7 +1135,7 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. 
 
 <hr>
-\section cmdsa \sa { references }
+\section cmdsa \\sa { references }
 
   \addindex \\sa
   Starts a paragraph where one or more cross-references to classes, 
@@ -1152,13 +1152,13 @@ void memcpy(void *dest, const void *src, size_t n);
       to objects.
 
 <hr>
-\section cmdsee \see { references }
+\section cmdsee \\see { references }
 
   \addindex \\see
   Equivalent to \ref cmdsa "\\sa". Introduced for compatibility with Javadoc.
 
 <hr>
-\section cmdsince \since { text }
+\section cmdsince \\since { text }
 
   \addindex \\since
   This tag can be used to specify since when (version or time) an
@@ -1168,7 +1168,7 @@ void memcpy(void *dest, const void *src, size_t n);
   line or some other sectioning command is encountered. 
 
 <hr>
-\section cmdtest \test { paragraph describing a test case }
+\section cmdtest \\test { paragraph describing a test case }
 
   \addindex \\test
   Starts a paragraph where a test case can be described. 
@@ -1178,7 +1178,7 @@ void memcpy(void *dest, const void *src, size_t n);
   indicates the origin of the test case.
 
 <hr>
-\section cmdthrow \throw <exception-object> { exception description }
+\section cmdthrow \\throw <exception-object> { exception description }
 
   \addindex \\throw
   Synonymous to \\exception (see section \ref cmdexception "\\exception").
@@ -1187,7 +1187,7 @@ void memcpy(void *dest, const void *src, size_t n);
   the tag \\throws is a synonym for this tag.
 
 <hr>
-\section cmdtodo \todo { paragraph describing what is to be done }
+\section cmdtodo \\todo { paragraph describing what is to be done }
 
   \addindex \\todo
   Starts a paragraph where a TODO item is described. 
@@ -1197,7 +1197,7 @@ void memcpy(void *dest, const void *src, size_t n);
   indicates the origin of the item.
 
 <hr>
-\section cmdversion \version { version number }
+\section cmdversion \\version { version number }
 
   \addindex \\version
   Starts a paragraph where one or more version strings may be entered. 
@@ -1213,7 +1213,7 @@ void memcpy(void *dest, const void *src, size_t n);
   for an example.
  
 <hr>
-\section cmdwarning \warning { warning message }
+\section cmdwarning \\warning { warning message }
 
   \addindex \\warning
   Starts a paragraph where one or more warning messages may be entered. 
@@ -1227,7 +1227,7 @@ void memcpy(void *dest, const void *src, size_t n);
   sectioning command is encountered. See section \ref cmdauthor "\\author" 
   for an example.
 
-\section cmdxrefitem \xrefitem <key> "(heading)" "(list title)" {text}
+\section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" {text}
 
  \addindex \\xrefitem
  This command is a generalization of commands such as \ref cmdtodo "\\todo" 
@@ -1264,13 +1264,13 @@ void memcpy(void *dest, const void *src, size_t n);
     Commands to create links
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\section cmdaddindex \addindex (text)
+\section cmdaddindex \\addindex (text)
 
   \addindex \\addindex
   This command adds (text) to the \f$\mbox{\LaTeX}\f$ index.
 
 <hr>
-\section cmdanchor \anchor <word>
+\section cmdanchor \\anchor <word>
 
   \addindex \\anchor
   This command places an invisible, named anchor into the documentation
@@ -1283,7 +1283,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\section cmdendlink \endlink
+\section cmdendlink \\endlink
 
   \addindex \\endlink 
   This command ends a link that is started with the \\link command.
@@ -1291,7 +1291,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \sa section \ref cmdlink "\\link".
 
 <hr>
-\section cmdlink \link <link-object> 
+\section cmdlink \\link <link-object> 
 
   \addindex \\link
   The links that are automatically generated by doxygen always have the
@@ -1307,7 +1307,7 @@ void memcpy(void *dest, const void *src, size_t n);
   generated links and valid link-objects.
 
 <hr>
-\section cmdref \ref <name> ["(text)"]
+\section cmdref \\ref <name> ["(text)"]
 
   \addindex \\ref
   Creates a reference to a named section, subsection, page or anchor.
@@ -1323,7 +1323,7 @@ void memcpy(void *dest, const void *src, size_t n);
     Section \ref cmdpage "\\page" for an example of the \\ref command.
 
 <hr>
-\section cmdsection \section <section-name> (section title)
+\section cmdsection \\section <section-name> (section title)
   
   \addindex \\section
   Creates a section with name \<section-name\>. The title of the
@@ -1334,7 +1334,7 @@ void memcpy(void *dest, const void *src, size_t n);
            \e not in other documentation blocks!
 
 <hr>
-\section cmdsubsection \subsection <subsection-name> (subsection title)
+\section cmdsubsection \\subsection <subsection-name> (subsection title)
 
   \addindex \\subsection
   Creates a subsection with name \<subsection-name\>. The title of the
@@ -1350,7 +1350,7 @@ void memcpy(void *dest, const void *src, size_t n);
            \ref cmdsubsection "\\subsection" command.
 
 <hr>
-\section cmdsubsubsection \subsubsection <subsubsection-name> (subsubsection title)
+\section cmdsubsubsection \\subsubsection <subsubsection-name> (subsubsection title)
 
   \addindex \\subsubsection
   Creates a subsubsection with name \<subsubsection-name\>. The title of the
@@ -1366,7 +1366,7 @@ void memcpy(void *dest, const void *src, size_t n);
            \ref cmdsubsubsection "\\subsubsection" command.
 
 <hr>
-\section cmdparagraph \paragraph <paragraph-name> (paragraph title)
+\section cmdparagraph \\paragraph <paragraph-name> (paragraph title)
 
   \addindex \\paragraph
   Creates a named paragraph with name \<paragraph-name\>. The title of the
@@ -1387,7 +1387,7 @@ void memcpy(void *dest, const void *src, size_t n);
     Commands for displaying examples
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\section cmddontinclude \dontinclude <file-name>
+\section cmddontinclude \\dontinclude <file-name>
 
   \addindex \\dontinclude
   This command can be used to parse a source file without actually 
@@ -1420,7 +1420,7 @@ void memcpy(void *dest, const void *src, size_t n);
                \ref cmdskipline "\\skipline", and \ref cmduntil "\\until".
 
 <hr>
-\section cmdinclude \include <file-name>
+\section cmdinclude \\include <file-name>
 
   \addindex \\include
   This command can be used to include a source file as a block of code.
@@ -1451,7 +1451,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \sa section \ref cmdexample "\\example" and \ref cmddontinclude "\\dontinclude".
 
 <hr>
-\section cmdincludelineno \includelineno <file-name>
+\section cmdincludelineno \\includelineno <file-name>
 
   \addindex \\includelineno
   This command works the same way as \\include, but will add line 
@@ -1460,7 +1460,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \sa section \ref cmdinclude "\\include".
 
 <hr>
-\section cmdline \line ( pattern )
+\section cmdline \\line ( pattern )
 
   \addindex \\line
   This command searches line by line through the example that was last
@@ -1476,7 +1476,7 @@ void memcpy(void *dest, const void *src, size_t n);
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmdskip \skip ( pattern )
+\section cmdskip \\skip ( pattern )
 
   \addindex \\skip
   This command searches line by line through the example that was last
@@ -1490,7 +1490,7 @@ void memcpy(void *dest, const void *src, size_t n);
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmdskipline \skipline ( pattern ) 
+\section cmdskipline \\skipline ( pattern ) 
 
   \addindex \\skipline
   This command searches line by line through the example that was last
@@ -1512,7 +1512,7 @@ void memcpy(void *dest, const void *src, size_t n);
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmduntil \until ( pattern )
+\section cmduntil \\until ( pattern )
 
   \addindex \\until
   This command writes all lines of the example that was last
@@ -1527,7 +1527,7 @@ void memcpy(void *dest, const void *src, size_t n);
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmdverbinclude \verbinclude <file-name>
+\section cmdverbinclude \\verbinclude <file-name>
 
   \addindex \\verbinclude
   This command includes the file \<file-name\> verbatim in the documentation.
@@ -1538,7 +1538,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
-\section cmdhtmlinclude \htmlinclude <file-name>
+\section cmdhtmlinclude \\htmlinclude <file-name>
 
   \addindex \\htmlinclude
   This command includes the file \<file-name\> as is in the HTML documentation.
@@ -1553,7 +1553,7 @@ void memcpy(void *dest, const void *src, size_t n);
     Commands for visual enhancements
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\section cmda \a <word>
+\section cmda \\a <word>
  
   \addindex \\a
   Displays the argument \<word\> using a special font.
@@ -1567,7 +1567,7 @@ void memcpy(void *dest, const void *src, size_t n);
   ... the \a x and \a y coordinates are used to ...
 
 <hr>
-\section cmdarg \arg { item-description }
+\section cmdarg \\arg { item-description }
   
   \addindex \\arg
   This command has one argument that continues until the first
@@ -1600,7 +1600,7 @@ void memcpy(void *dest, const void *src, size_t n);
 
 
 <hr>
-\section cmdb \b <word>
+\section cmdb \\b <word>
 
   \addindex \\b
   Displays the argument \<word\> using a bold font.
@@ -1608,7 +1608,7 @@ void memcpy(void *dest, const void *src, size_t n);
   To put multiple words in bold use \<b\>multiple words\</b\>.
   
 <hr>
-\section cmdc \c <word>
+\section cmdc \\c <word>
 
   \addindex \\c
   Displays the argument \<word\> using a typewriter font.
@@ -1627,7 +1627,7 @@ void memcpy(void *dest, const void *src, size_t n);
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
 
 <hr>
-\section cmdcode \code
+\section cmdcode \\code
 
   \addindex \\code
   Starts a block of code. A code block is treated differently
@@ -1638,7 +1638,7 @@ void memcpy(void *dest, const void *src, size_t n);
   \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim"  
 
 <hr>
-\section cmdcopydoc \copydoc <link-object>
+\section cmdcopydoc \\copydoc <link-object>
 
   \addindex \\copydoc
   Copies a documentation block from the object specified by \<link-object\>
@@ -1676,7 +1676,7 @@ void memcpy(void *dest, const void *src, size_t n);
   relation will be broken and flagged as an error.
 
 <hr>
-\section cmddot \dot
+\section cmddot \\dot
 
   \addindex \\dot
   Starts a text fragment which should contain a valid description of a
@@ -1710,7 +1710,7 @@ class C {};
 \endcode
   
 <hr>
-\section cmddotfile \dotfile <file> ["caption"] 
+\section cmddotfile \\dotfile <file> ["caption"] 
 
   \addindex \\dotfile
   Inserts an image generated by dot from \<file\> into the documentation. 
@@ -1728,7 +1728,7 @@ class C {};
   stripped before the caption is displayed.
 
 <hr>
-\section cmde \e <word>
+\section cmde \\e <word>
 
   \addindex \\e 
   Displays the argument \<word\> in italics.
@@ -1746,7 +1746,7 @@ class C {};
   To emphasis multiple words use \<em\>multiple words\</em\>.
 
 <hr>
-\section cmdem \em <word>
+\section cmdem \\em <word>
 
   \addindex \\em 
   Displays the argument \<word\> in italics.
@@ -1763,20 +1763,20 @@ class C {};
   Equivalent to \ref cmde "\\e"
 
 <hr>
-\section cmdendcode \endcode
+\section cmdendcode \\endcode
 
   \addindex \\endcode
   Ends a block of code.
   \sa section \ref cmdcode "\\code"
  
 <hr>
-\section cmdenddot \enddot
+\section cmdenddot \\enddot
 
   \addindex \\enddot
   Ends a blocks that was started with \ref cmddot "\\dot".
 
 <hr>
-\section cmdendhtmlonly \endhtmlonly
+\section cmdendhtmlonly \\endhtmlonly
 
   \addindex \\endhtmlonly
   Ends a block of text that was started with a \\htmlonly command.
@@ -1784,7 +1784,7 @@ class C {};
   \sa section \ref cmdhtmlonly "\\htmlonly".
 
 <hr>
-\section cmdendlatexonly \endlatexonly
+\section cmdendlatexonly \\endlatexonly
 
   \addindex \\endlatexonly
   Ends a block of text that was started with a \\latexonly command.
@@ -1792,7 +1792,7 @@ class C {};
   \sa section \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\section cmdendmanonly \endmanonly
+\section cmdendmanonly \\endmanonly
 
   \addindex \\endmanonly
   Ends a block of text that was started with a \\manonly command.
@@ -1800,7 +1800,7 @@ class C {};
   \sa section \ref cmdmanonly "\\manonly".
 
 <hr>
-\section cmdendverbatim \endverbatim
+\section cmdendverbatim \\endverbatim
 
   \addindex \\endverbatim
   Ends a block of text that was started with a \\verbatim command.
@@ -1808,7 +1808,7 @@ class C {};
   \sa section \ref cmdverbatim "\\verbatim".
 
 <hr>
-\section cmdendxmlonly \endxmlonly
+\section cmdendxmlonly \\endxmlonly
 
   \addindex \\endxmlonly
   Ends a block of text that was started with a \\xmlonly command.
@@ -1816,7 +1816,7 @@ class C {};
   \sa section \ref cmdxmlonly "\\xmlonly".
 
 <hr>
-\section cmdfdollar \f$
+\section cmdfdollar \\f$
 
   \addindex \\f\$
 
@@ -1824,7 +1824,7 @@ class C {};
   \sa section \ref formulas "formulas" for an example.
   
 <hr>
-\section cmdfbropen \f[
+\section cmdfbropen \\f[
 
   \addindex \\f[
 
@@ -1833,7 +1833,7 @@ class C {};
   \sa section \ref cmdfbrclose "\\f]" and section \ref formulas "formulas".
 
 <hr>
-\section cmdfbrclose \f]
+\section cmdfbrclose \\f]
 
   \addindex \\f]
   
@@ -1842,7 +1842,7 @@ class C {};
   \sa section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
 
 <hr>
-\section cmdhtmlonly \htmlonly
+\section cmdhtmlonly \\htmlonly
 
   \addindex \\htmlonly
   Starts a block of text that will be verbatim included in the
@@ -1862,7 +1862,7 @@ class C {};
               \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\section cmdimage \image <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image <format> <file> ["caption"] [<sizeindication>=<size>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
@@ -1917,7 +1917,7 @@ class C {};
            So \e you have to make sure this is the case!
 
 <hr>
-\section cmdlatexonly \latexonly
+\section cmdlatexonly \\latexonly
 
   \addindex \\latexonly
   Starts a block of text that will be verbatim included in the
@@ -1937,7 +1937,7 @@ class C {};
   and section \ref cmdhtmlonly "\\htmlonly".
 
 <hr>
-\section cmdmanonly \manonly
+\section cmdmanonly \\manonly
 
   \addindex \\manonly
   Starts a block of text that will be verbatim included in the
@@ -1953,7 +1953,7 @@ class C {};
               \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\section cmdli \li { item-description }
+\section cmdli \\li { item-description }
   
   \addindex \\li
   This command has one argument that continues until the first
@@ -1985,14 +1985,14 @@ class C {};
   Equivalent to \ref cmdarg "\\arg"
 
 <hr>
-\section cmdn \n 
+\section cmdn \\n 
   
   \addindex \\n
   Forces a new line. Equivalent to \<br\> and inspired by
   the printf function.
 
 <hr>
-\section cmdp \p <word>
+\section cmdp \\p <word>
  
   \addindex \\p
   Displays the parameter \<word\> using a typewriter font.
@@ -2009,7 +2009,7 @@ class C {};
   Equivalent to \ref cmdc "\\c"
  
 <hr>
-\section cmdverbatim \verbatim
+\section cmdverbatim \\verbatim
 
   \addindex \\verbatim
   Starts a block of text that will be verbatim included in both the
@@ -2021,7 +2021,7 @@ class C {};
   \\verbatim command or the parser will get confused!
 
 <hr>
-\section cmdxmlonly \xmlonly
+\section cmdxmlonly \\xmlonly
 
   \addindex \\xmlonly
   Starts a block of text that will be verbatim included in the
@@ -2034,7 +2034,7 @@ class C {};
               \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\section cmdbackslash \\
+\section cmdbackslash \\\\
 
   \addindex \\\\
   This command writes a backslash character (\\) to the HTML and 
@@ -2042,7 +2042,7 @@ class C {};
   cases because doxygen uses it to detect commands.
 
 <hr>
-\section cmdat \@
+\section cmdat \\\@
 
   \addindex \\\@
   This command writes an at-sign (\@) to the HTML and 
@@ -2050,7 +2050,7 @@ class C {};
   because doxygen uses it to detect JavaDoc commands.
 
 <hr>
-\section cmdtilde \~[LanguageId]
+\section cmdtilde \\~[LanguageId]
   \addindex \\~
   This command enables/disables a language specific filter. This can be
   used to put documentation for different language into one comment block
@@ -2067,14 +2067,14 @@ class C {};
    
 
 <hr>
-\section cmdamp \&
+\section cmdamp \\\&
 
   \addindex \\\&
   This command writes the \& character to output. 
   This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
-\section cmddollar \$
+\section cmddollar \\\$
 
   \addindex \\\$
   This command writes the \$ character to the output. 
@@ -2082,7 +2082,7 @@ class C {};
   environment variables.
 
 <hr>
-\section cmdhash \#
+\section cmdhash \\\#
 
   \addindex \\\#
   This command writes the \# character to the output. This 
@@ -2090,20 +2090,20 @@ class C {};
   to documented entities. 
 
 <hr>
-\section cmdlt \<
+\section cmdlt \\\<
 
   \addindex \\\<
   This command writes the \< character to the output. 
   This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
-\section cmdgt \>
+\section cmdgt \\\>
 
   \addindex \\\>
   This command writes the \> character to the output. This 
   character has to be escaped because it has a special meaning in HTML.
 
-\section cmdperc \%
+\section cmdperc \\\%
 
   \addindex \\\%
   This command writes the \% character to the output. This 

@@ -44,11 +44,17 @@ distclean: clean
 	-rm -f addon/doxywizard/moc/moc_*
 	-rm -f addon/doxywizard/config.cpp
 
+DATE=$(shell date "+%B %Y")
 
 install: doxywizard_install 
 	$(INSTTOOL) -d $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
+	$(INSTTOOL) -d $(INSTALL)/man/man1
+	cat doc/doxygen.1    | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/man/man1/doxygen.1 ; \
+	cat doc/doxytag.1    | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/man/man1/doxytag.1 ; \
+	cat doc/doxywizard.1 | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/man/man1/doxywizard.1 ;
+
 
 install_docs: install
 	$(INSTTOOL) -d $(DOCDIR)

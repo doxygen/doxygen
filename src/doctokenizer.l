@@ -308,9 +308,11 @@ OPMASK    ({BLANK}*{OPNORM}{FUNCARG})|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD1     [^ \t\n\r\\@<>()\[\]:;\?{}&$#,.]+|"{"|"}"|("\""[^"\n]*"\"")
+CHARWORD  [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,.]
+CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]
+WORD1     "%"?{CHARWORD}+|"{"|"}"|("\""[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
-WORD1NQ   [^ \t\n\r\\@<>()\[\]:;\?{}&$#,."]+ 
+WORD1NQ   "%"?{CHARWORDQ}+
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
