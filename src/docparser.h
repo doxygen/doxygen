@@ -33,6 +33,7 @@ class MemberDef;
 class PageInfo;
 class Definition;
 class MemberGroup;
+class SectionDict;
 
 //---------------------------------------------------------------------------
 
@@ -51,7 +52,8 @@ class MemberGroup;
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context, MemberDef *md,
-                            const char *input,bool isExample);
+                            const char *input,bool isExample,
+                            SectionDict *sections=0);
 
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.

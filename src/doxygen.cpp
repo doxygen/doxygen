@@ -2939,9 +2939,11 @@ static void findUsedClassesForClass(Entry *root,
         //printf("findUsedClassesForClass(%s)=%s\n",masterCd->name().data(),type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
         {
+          //printf("Found used class %s\n",usedClassName.data());
           // the name could be a type definition, resolve it
           // TODO: recursive typedef resolution
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
+          //printf("Found resolved class %s\n",typeName.data());
           
           // add any template arguments to the class
           QCString usedName = usedClassName+templSpec;
@@ -2993,34 +2995,10 @@ static void findUsedClassesForClass(Entry *root,
 
           if (!found)
           {
-            ClassDef *usedCd=0;
-#if 0
-            Definition *scope=masterCd->getOuterScope();
-            do
-            {
-              // TODO: also consider using declarations and directives
-              //       as done for inheritance relations.
+            ClassDef *usedCd=findClassWithinClassContext(masterCd,usedName);
+            //printf("Looking for used class: result=%p master=%p\n",usedCd,masterCd);
 
-              QCString scopeName;
-              if (scope) scopeName=scope->qualifiedName();
-              if (!scopeName.isEmpty())
-              {
-                usedCd=getResolvedClass(masterCd,scopeName+"::"+usedName,0,&templSpec);
-                if (usedCd==0) usedCd=getResolvedClass(masterCd,scopeName+"::"+usedClassName,0,&templSpec);
-                //printf("Search for class %s result=%p\n",(scopeName+"::"+usedName).data(),usedCd);
-              }
-              else
-              {
-                usedCd=getResolvedClass(masterCd,usedName,0,&templSpec);
-                if (usedCd==0) usedCd=getResolvedClass(masterCd,usedClassName,0,&templSpec);
-                //printf("Search for class %s result=%p\n",usedName.data(),usedCd);
-              }
-              if (scope) scope=scope->getOuterScope();
-            } while (scope && usedCd==0);
-#endif
-            usedCd = findClassWithinClassContext(masterCd,usedName);
-
-            if (usedCd && usedCd!=masterCd) 
+            if (usedCd /*&& usedCd!=masterCd*/) 
             {
               found=TRUE;
               Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
@@ -6109,7 +6087,7 @@ static void findMainPage(Entry *root)
                               indexName, root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->fileName = indexName;
-      Doxygen::mainPage->addSections(root->anchors);
+      //Doxygen::mainPage->addSections(root->anchors);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
@@ -6253,7 +6231,7 @@ static void generatePageDocs()
       {
         scName=pi->context->name();
       }
-      outputList->parseDoc(pi->defFileName,pi->defLine,scName,0,pi->doc,FALSE);
+      outputList->parseDoc(pi->defFileName,pi->defLine,scName,0,pi->doc,FALSE,pi->sectionDict);
       outputList->endTextBlock();
       endFile(*outputList);
       //outputList->enable(OutputGenerator::Man);
@@ -6293,7 +6271,7 @@ static void buildExampleList(Entry *root)
         PageInfo *pi=new PageInfo(root->fileName,root->startLine,
                                   root->name,root->doc,root->args);
         pi->fileName = convertNameToFile(pi->name+"-example");
-        pi->addSections(root->anchors);
+        //pi->addSections(root->anchors);
         
         Doxygen::exampleSDict->inSort(root->name,pi);
         addExampleToGroups(root,pi);

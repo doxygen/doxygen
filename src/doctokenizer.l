@@ -288,7 +288,7 @@ OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD1     [^ \t\n\r\\@<>()\[\]:;\?{}&$#,.]+|"{"|"}"
+WORD1     [^ \t\n\r\\@<>()\[\]:;\?{}&$#,.]+|"{"|"}"|("\""[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 WORD1NQ   [^ \t\n\r\\@<>()\[\]:;\?{}&$#,."]+ 
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
@@ -603,7 +603,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
   			 return 0;
                        }
 
-<St_Ref>("#"|"::")?({ID}[.#:-])*{ID} {
+<St_Ref>("#"|"::")?({ID}("."|"#"|"::"|"-"))*{ID} {
   			 g_token->name=yytext;
 			 return TK_WORD;
   		       }

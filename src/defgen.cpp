@@ -450,14 +450,16 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
   t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_" << endl
     << cd->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
 
-  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);
+  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance,
+                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!inheritanceGraph.isTrivial())
   {
     t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_" << endl;
     inheritanceGraph.writeDEF(t);
     t << endl << "_EnD_oF_dEf_TeXt_;" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation);
+  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation,
+                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!collaborationGraph.isTrivial())
   {
     t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_" << endl;

@@ -978,14 +978,16 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd->name(),0,cd->documentation());
   t << "    </detaileddescription>" << endl;
-  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);
+  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance,
+                                 Config_getBool("MAX_DOT_GRAPH_DEPTH"));
   if (!inheritanceGraph.isTrivial())
   {
     t << "    <inheritancegraph>" << endl;
     inheritanceGraph.writeXML(t);
     t << "    </inheritancegraph>" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation);
+  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation,
+                                 Config_getBool("MAX_DOT_GRAPH_DEPTH"));
   if (!collaborationGraph.isTrivial())
   {
     t << "    <collaborationgraph>" << endl;

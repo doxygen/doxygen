@@ -467,9 +467,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
         MemberDef *tmd=0;
         for (;(tmd=mni.current());++mni)
         {
-          //printf("Found member %s scope=%p mContext=%p\n",tmd->name().data(),
-          //    tmd->getOuterScope(),mContext);
-          if (tmd->isTypedef() && tmd->getOuterScope()==resScope)
+          //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
+          //    tmd->name().data(), resScope->name().data(), 
+          //    tmd->getOuterScope()->name().data(), mContext);
+          if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
+            /*! TODO: look if resScope is visible within tmd->getOuterScope() */
           {
             md=tmd;
           }
@@ -2739,6 +2741,10 @@ bool generateLink(OutputDocInterface &od,const char *clName,
       {
         linkText=((GroupDef *)compound)->groupTitle(); // use group's title as link
       }
+      else if (compound->definitionType()==Definition::TypeFile)
+      {
+        linkText=lt; // use text "as is"
+      }
       od.writeObjectLink(compound->getReference(),
                          compound->getOutputFileBase(),anchor,linkText);
       if (!compound->isReference())
@@ -2761,6 +2767,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
 
 void generateFileRef(OutputDocInterface &od,const char *name,const char *text)
 {
+  //printf("generateFileRef(%s,%s)\n",name,text);
   QCString linkText = text ? text : name;
   //FileInfo *fi;
   FileDef *fd;
@@ -3581,7 +3588,8 @@ found:
 //----------------------------------------------------------------------------
 
 PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
-                           const QCString &doc,QList<QCString> *anchors,
+                           const QCString &doc,
+                           QList<QCString> * /*anchors*/,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
                            GroupDef *gd,
@@ -3634,7 +3642,7 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
       pageName=pi->name.lower();
     //setFileNameForSections(anchors,pageName,pi);
     pi->fileName = pageName;
-    pi->addSections(anchors);
+    //pi->addSections(anchors);
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pi);

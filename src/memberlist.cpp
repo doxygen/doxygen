@@ -179,103 +179,100 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   MemberListIterator mli(*this);
   for ( ; (md=mli.current()); ++mli )
   {
-    //printf(">>> Member `%s' type=%d\n",md->name().data(),md->memberType());
-    switch(md->memberType())
+    if (md->isBriefSectionVisible())
     {
-      case MemberDef::Define:    // fall through
-      case MemberDef::Prototype: // fall through
-      case MemberDef::Typedef:   // fall through
-      case MemberDef::Variable:  // fall through
-      case MemberDef::Function:  // fall through
-      case MemberDef::Signal:    // fall through
-      case MemberDef::Slot:      // fall through
-      case MemberDef::DCOP:      // fall through
-      case MemberDef::Property:  // fall through
-      case MemberDef::Event:  
+      //printf(">>> Member `%s' type=%d\n",md->name().data(),md->memberType());
+      switch(md->memberType())
       {
-        if (md->isBriefSectionVisible())
-        {
-          if (first) ol.startMemberList(),first=FALSE;
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
-        }
-        break;
-      }
-      case MemberDef::Enumeration: 
-      {
-        if (first) ol.startMemberList(),first=FALSE;
-        int enumVars=0;
-        MemberListIterator vmli(*this);
-        MemberDef *vmd;
-        QCString name(md->name());
-        int i=name.findRev("::");
-        if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
-        if (name[0]=='@') // anonymous enum => append variables
-        {
-          for ( ; (vmd=vmli.current()) ; ++vmli)
+        case MemberDef::Define:    // fall through
+        case MemberDef::Prototype: // fall through
+        case MemberDef::Typedef:   // fall through
+        case MemberDef::Variable:  // fall through
+        case MemberDef::Function:  // fall through
+        case MemberDef::Signal:    // fall through
+        case MemberDef::Slot:      // fall through
+        case MemberDef::DCOP:      // fall through
+        case MemberDef::Property:  // fall through
+        case MemberDef::Event:  
           {
-            QCString vtype=vmd->typeString();
-            if ((vtype.find(name))!=-1) 
-            {
-              enumVars++;
-              vmd->setAnonymousEnumType(md);
-            }
+            if (first) ol.startMemberList(),first=FALSE;
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            break;
           }
-        }
-        // if this is an anoymous enum and there are variable of this
-        // enum type (i.e. enumVars>0), then we do not show the enum here.
-        if (enumVars==0) // show enum here
-        {
-          ol.startMemberItem(0);
-          ol.writeString("enum ");
-          ol.insertMemberAlign();
-          //ol+=typeDecl; // append the enum values.
-          md->writeEnumDeclaration(ol,cd,nd,fd,gd);
-          ol.endMemberItem();
-          if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+        case MemberDef::Enumeration: 
           {
-            ol.startMemberDescription();
-            ol.parseDoc(
-                md->briefFile(),md->briefLine(),
-                cd?cd->name().data():0,md,
-                md->briefDescription(),
-                FALSE
+            if (first) ol.startMemberList(),first=FALSE;
+            int enumVars=0;
+            MemberListIterator vmli(*this);
+            MemberDef *vmd;
+            QCString name(md->name());
+            int i=name.findRev("::");
+            if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
+            if (name[0]=='@') // anonymous enum => append variables
+            {
+              for ( ; (vmd=vmli.current()) ; ++vmli)
+              {
+                QCString vtype=vmd->typeString();
+                if ((vtype.find(name))!=-1) 
+                {
+                  enumVars++;
+                  vmd->setAnonymousEnumType(md);
+                }
+              }
+            }
+            // if this is an anoymous enum and there are variables of this
+            // enum type (i.e. enumVars>0), then we do not show the enum here.
+            if (enumVars==0) // show enum here
+            {
+              ol.startMemberItem(0);
+              ol.writeString("enum ");
+              ol.insertMemberAlign();
+              //ol+=typeDecl; // append the enum values.
+              md->writeEnumDeclaration(ol,cd,nd,fd,gd);
+              ol.endMemberItem();
+              if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+              {
+                ol.startMemberDescription();
+                ol.parseDoc(
+                    md->briefFile(),md->briefLine(),
+                    cd?cd->name().data():0,md,
+                    md->briefDescription(),
+                    FALSE
                     );
-            if (md->isDetailedSectionLinkable())
-            {
-              ol.disableAllBut(OutputGenerator::Html);
-              ol.endEmphasis();
-              ol.docify(" ");
-              if (md->getGroupDef()!=0 && gd==0) // forward link to group
-              {
-                ol.startTextLink(md->getGroupDef()->getOutputFileBase(),
-                                 md->anchor());
+                if (md->isDetailedSectionLinkable())
+                {
+                  ol.disableAllBut(OutputGenerator::Html);
+                  ol.endEmphasis();
+                  ol.docify(" ");
+                  if (md->getGroupDef()!=0 && gd==0) // forward link to group
+                  {
+                    ol.startTextLink(md->getGroupDef()->getOutputFileBase(),
+                        md->anchor());
+                  }
+                  else
+                  {
+                    ol.startTextLink(0,md->anchor());
+                  }
+                  ol.parseText(theTranslator->trMore());
+                  ol.endTextLink();
+                  ol.startEmphasis();
+                  ol.enableAll();
+                }
+                ol.endMemberDescription();
               }
-              else
-              {
-                ol.startTextLink(0,md->anchor());
-              }
-              ol.parseText(theTranslator->trMore());
-              ol.endTextLink();
-              ol.startEmphasis();
-              ol.enableAll();
             }
-            ol.endMemberDescription();
+            md->warnIfUndocumented();
+            break;
           }
-        }
-        md->warnIfUndocumented();
-        break;
+        case MemberDef::Friend:
+          {
+            if (first) ol.startMemberList(),first=FALSE;
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            break;
+          }
+        case MemberDef::EnumValue: 
+          break;
       }
-      case MemberDef::Friend:
-      {
-        if (md->isBriefSectionVisible())
-        {
-          if (first) ol.startMemberList(),first=FALSE;
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
-        }
-        break;
-      }
-      case MemberDef::EnumValue: 
-        break;
     }
   }
 

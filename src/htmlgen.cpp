@@ -63,6 +63,7 @@ static const char *defaultStyleSheet =
 "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
 "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
 "BODY { background: white; color: black }\n"
+"EM.mdesc { font-size: smaller }\n"
 "TD.indexkey { \n"
 "   background-color: #eeeeff; \n"
 "   font-weight: bold; \n"
@@ -791,11 +792,11 @@ void HtmlGenerator::startMemberDescription()
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<tr><td>&nbsp;</td><td><font size=-1><em>"; 
+    t << "<tr><td>&nbsp;</td><td><em class=\"mdesc\">"; 
   }
   else
   {
-    t << "<dl class=\"el\"><dd><font size=-1><em>";
+    t << "<dl class=\"el\"><dd><em class=\"mdesc\">";
   }
 }
 
@@ -804,11 +805,11 @@ void HtmlGenerator::endMemberDescription()
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "</em></font><br><br></td></tr>" << endl; 
+    t << "</em><br><br></td></tr>" << endl; 
   }
   else
   {
-    t << "<br><br></em></font></dl>";
+    t << "<br><br></em></dl>";
   }
 }
 
@@ -1046,7 +1047,7 @@ void HtmlGenerator::startParameterName(bool oneArgOnly)
   {
     t << "1\" valign=\"top";
   }
-  t << "\" nowrap>&nbsp;";
+  t << "\" nowrap>"; //&nbsp;";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList)
@@ -1057,7 +1058,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
     if (emptyList)
     {
       t << "          </td>" << endl;
-      t << "          <td class=\"md\" valign=\"top\">)&nbsp;</td>" << endl;
+      t << "          <td class=\"md\" valign=\"top\">&nbsp;)&nbsp;</td>" << endl;
       t << "          <td class=\"md\" nowrap>";
     }
     else

@@ -26,7 +26,7 @@
 #include "translator_nl.h"
 #endif
 #ifdef LANG_SE
-#include "translator_se.h"
+//#include "translator_se.h"
 #endif
 #ifdef LANG_CZ
 #include "translator_cz.h"
@@ -47,7 +47,7 @@
 #include "translator_es.h"
 #endif
 #ifdef LANG_FI
-#include "translator_fi.h"
+//#include "translator_fi.h"
 #endif
 #ifdef LANG_RU
 #include "translator_ru.h"
@@ -112,6 +112,16 @@
 
 Translator *theTranslator=0;
 
+static const char obsoleteMsg[] =
+        "---------\n"
+        "ERROR: The selected language is no longer supported!\n"
+        "If you want doxygen to produce output in this language \n"
+        "you are kindly requested to help bringing the documentation \n"
+        "up to date. Please read the development section of the manual \n"
+        "for more information or contact Petr Prikryl (Prikryl@skil.cz).\n"
+        "Thanks in advance!\n"
+        "---------\n";
+
 bool setTranslator(const char *langName)
 {
   if (L_EQUAL("english"))
@@ -128,7 +138,9 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SE
   else if (L_EQUAL("swedish"))
   {
-    theTranslator=new TranslatorSwedish;
+    //theTranslator=new TranslatorSwedish;
+    theTranslator=new TranslatorEnglish;
+    err(obsoleteMsg);
   }
 #endif
 #ifdef LANG_CZ
@@ -174,7 +186,9 @@ bool setTranslator(const char *langName)
 #ifdef LANG_FI
   else if (L_EQUAL("finnish"))
   {
-    theTranslator=new TranslatorFinnish;
+    //theTranslator=new TranslatorFinnish;
+    theTranslator=new TranslatorEnglish;
+    err(obsoleteMsg);
   }
 #endif
 #ifdef LANG_RU

@@ -593,4 +593,7 @@ Q_EXPORT void qObsolete( const char *obj, const char *oldfunc );
 Q_EXPORT void qObsolete( const char *message );
 #endif
 
+// DvH: added to avoid warnings on recent gcc versions
+#define Q_DELETE_VOID_UNDEFINED
+
 #endif // QGLOBAL_H

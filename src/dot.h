@@ -76,7 +76,7 @@ class DotNode
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,
-               int maxDistance=1000,bool backArrows=TRUE);
+               int maxDistance,bool backArrows);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t,bool isClassGraph);
@@ -125,7 +125,7 @@ class DotClassGraph
 {
   public:
     enum GraphType { Interface, Implementation, Inheritance };
-    DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth=1000);
+    DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth);
    ~DotClassGraph();
     bool isTrivial() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
@@ -152,7 +152,7 @@ class DotClassGraph
 class DotInclDepGraph
 {
   public:
-    DotInclDepGraph(FileDef *fd,bool inverse=FALSE);
+    DotInclDepGraph(FileDef *fd,int maxRecusionDepth,bool inverse=FALSE);
    ~DotInclDepGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
                     bool writeImageMap=TRUE);
@@ -168,6 +168,7 @@ class DotInclDepGraph
     QCString        m_diskName;
     int             m_maxDistance;
     bool            m_inverse;
+    int             m_recDepth;
 };
 
 void generateGraphLegend(const char *path);

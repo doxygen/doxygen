@@ -344,7 +344,7 @@ $(TARGET): $(OBJECTS) $(OBJMOC)
         $(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS) -Bdynamic
 \endverbatim
 
-<b>GNU 2.7.2.x compiler problems</b>
+<b>GCC compiler problems</b>
 
 Older versions of the GNU compiler have problems with constant strings
 containing characters with character codes larger than 127. Therefore 
@@ -356,6 +356,9 @@ On some platforms (such as OpenBSD) using some versions of gcc with
 -O2 can lead to eating all memory during the compilation of files 
 such as config.cpp. As a workaround use --debug as a configure option 
 or omit the -O2 for the particular files in the Makefile.
+
+Gcc versions before 2.95 may produce broken binaries due to bugs in 
+these compilers. 
 
 <b>Dot problems</b>
 

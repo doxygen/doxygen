@@ -37,6 +37,7 @@
 #include "cmdmapper.h"
 #include "printdocvisitor.h"
 #include "message.h"
+#include "section.h"
 
 #define DBG(x) do {} while(0)
 //#define DBG(x) printf x
@@ -58,10 +59,11 @@ static const char *sectionLevelToName[] =
 //---------------------------------------------------------------------------
 
 // global variables during a call to validatingParseDoc
-static bool        g_hasParamCommand;
-static MemberDef * g_memberDef;
-static QDict<void> g_paramsFound;
-static bool        g_isExample;
+static bool         g_hasParamCommand;
+static MemberDef *  g_memberDef;
+static QDict<void>  g_paramsFound;
+static bool         g_isExample;
+static SectionDict *g_sectionDict;
 
 // include file state
 static QString g_includeFileText;
@@ -703,6 +705,10 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     }
     else // compound link
     {
+      if (compound->definitionType()==Definition::TypeFile)
+      {
+        name=g_token->name;
+      }
       children.append(new 
           DocLinkedWord(parent,name,
             compound->getReference(),
@@ -1153,6 +1159,10 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
     {
       m_file   = sec->fileName;
       m_anchor = sec->label;
+      if (g_sectionDict && g_sectionDict->find(id)==0)
+      {
+        g_sectionDict->insert(id,sec);
+      }
     }
     else
     {
@@ -1458,6 +1468,10 @@ void DocSecRefItem::parse()
     {
       m_file   = sec->fileName;
       m_anchor = sec->label;
+      if (g_sectionDict && g_sectionDict->find(m_target)==0)
+      {
+        g_sectionDict->insert(m_target,sec);
+      }
     }
     else
     {
@@ -4339,6 +4353,7 @@ reparsetoken:
         break;
     }
   }
+  retval=0;
 endparagraph:
   handlePendingStyleCommands(this,m_children);
   DocNode *n = g_nodeStack.pop();
@@ -4369,6 +4384,10 @@ int DocSection::parse()
       m_anchor = sec->label;
       m_title  = sec->title;
       if (m_title.isEmpty()) m_title = sec->label;
+      if (g_sectionDict && g_sectionDict->find(m_id)==0)
+      {
+        g_sectionDict->insert(m_id,sec);
+      }
     }
   }
 
@@ -4611,7 +4630,8 @@ void DocRoot::parse()
 
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,MemberDef *md,
-                            const char *input,bool isExample)
+                            const char *input,bool isExample,
+                            SectionDict *sections)
 {
   
   //printf("========== validating %s at line %d\n",fileName,startLine);
@@ -4633,6 +4653,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
+  g_sectionDict = sections;
   
   doctokenizerYYlineno=startLine;
   doctokenizerYYinit(input,g_fileName);
