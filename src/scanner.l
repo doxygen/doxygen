@@ -127,7 +127,6 @@ static bool             inBugBlock;
 static bool             inWarningBlock;
 static bool             inParBlock;
 static bool             firstSeeArg;
-static bool             javaDocSee;
 static char             afterDocTerminator;
 static int              tmpDocType;
 static QCString         sectionLabel;
@@ -200,7 +199,6 @@ static void initParser()
   inWarningBlock = FALSE;
   inParBlock = FALSE;
   firstSeeArg = FALSE;
-  javaDocSee = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -707,8 +705,12 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   }
   else
   {
-    warn("Warning: image file %s is not found. ",fileName);
-    warn("Check your IMAGE_PATH\n");
+    result=fileName;
+    if (result.left(5)!="http:")
+    {
+      warn("Warning: image file %s is not found in IMAGE_PATH: "  
+	   "assuming external image. ",fileName);
+    }
   }
   return result;
 }
@@ -1243,7 +1245,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
 					    //firstSeeArg=TRUE;
-					    //javaDocSee=!strcmp(yytext,"@see");
 					    outDoc->startDescList();
 					    //outDoc->writeBoldString("See also: ");
 					    outDoc->startBold();
@@ -1439,8 +1440,8 @@ VAR	  [vV][aA][rR]
 <DocImage>[lL][aA][tT][eE][xX]		{
   					  BEGIN(DocLatexImageName);
   					}
-<DocHtmlImageName>{FILE}                {
-  					  curImageName = findAndCopyImage(yytext,IT_Html);
+<DocHtmlImageName>{FILE}|{URLMASK}      {
+  					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_Html);
 					  if (!curImageName.isEmpty())
 					  {
 					    storeOutputListState();
@@ -1451,7 +1452,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocScan);
   					}
 <DocLatexImageName>{FILE}		{
-  					  curImageName = findAndCopyImage(yytext,IT_Latex);
+  					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_Latex);
 					  if (curImageName.isEmpty())
 					    BEGIN(DocScan);
 					  else

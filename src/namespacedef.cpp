@@ -73,7 +73,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   if (Config::genTagFile.length()>0) tagFile << "%" << name() << ":\n";
   
   OutputList briefOutput(&ol); 
-  if (briefDescription()) 
+  if (!briefDescription().isEmpty()) 
   {
     parseDoc(briefOutput,name(),0,briefDescription());
     ol+=briefOutput;

@@ -14,23 +14,7 @@
  *
  */
 
-
 /*! \page history Doxygen History
-
-<h3>TODO/Wish list</h3>
-<ul>
-<li>Add support for grouping members, and document then as a group.
-<li>Support for K&R-style function arguments.
-<li>More ouput formats: suggested are info format and RTF format.
-<li>Split long lists in an index to a set of smaller lists.
-<li>Add a nice graphical front-end for creating and modifying the 
-    configuration file (it should be flexible enough to quickly add new options).
-<li>Improve the search index generation, so it uses less memory and
-    is easier to get running.
-<li>Generate code metrics (Anyone know a good book about code metrics?)
-<li>Add features that you think are missing... So if you know any that are
-    not yet listed here, please let me know.
-</ul>
 
 <h3>Features scheduled for version 1.0</h3>
 <ul>

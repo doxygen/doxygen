@@ -1201,6 +1201,97 @@ static int          anchorCount;
 static FileDef     *sourceFileDef;
 static QCString     lastVariable;
 
+// start a new line of code, inserting a line number if sourceFileDef
+// is TRUE. If a definition starts at the current line, then the line
+// number is linked to the documentation of that definition.
+static void startCodeLine(OutputList &ol)
+{
+  if (sourceFileDef)
+  {
+    QCString lineNumber,lineAnchor;
+    lineNumber.sprintf("%05d ",yyLineNr);
+    lineAnchor.sprintf("l%05d",yyLineNr);
+    Definition *d   = sourceFileDef->getSourceDefinition(yyLineNr);
+    QCString anchor = sourceFileDef->getSourceAnchor(yyLineNr);
+    if (d && d->isLinkableInProject())
+    {
+      ol.startCodeAnchor(lineAnchor);
+      ol.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+	                   anchor,lineNumber);
+      ol.endCodeAnchor();
+    }
+    else
+    {
+      ol.codify(lineNumber);
+    }
+  }
+  ol.startCodeLine(); 
+}
+
+// write a code fragment `text' that may span multiple lines, inserting
+// line numbers for each line.
+static void codifyLines(char *text)
+{
+  char *p=text,*sp=p;
+  char c;
+  bool done=FALSE;
+  while (!done)
+  {
+    sp=p;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      yyLineNr++;
+      *(p-1)='\0';
+      code->codify(sp);
+      code->endCodeLine();
+      if (yyLineNr<inputLines) 
+      {
+	startCodeLine(*code);
+      }
+    }
+    else
+    {
+      code->codify(sp);
+      done=TRUE;
+    }
+  }
+}
+
+// writes a link to a fragment `text' that may span multiple lines, inserting
+// line numbers for each line. If `text' contains newlines, the link will be 
+// split into multiple links with the same destination, one for each line.
+static void writeMultiLineCodeLink(OutputList &ol,
+                  const char *ref,const char *file,
+                  const char *anchor,const char *text)
+{
+  bool done=FALSE;
+  QCString ts = text;
+  char *p=ts.data();
+  while (!done)
+  {
+    char *sp=p;
+    char c;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      yyLineNr++;
+      *(p-1)='\0';
+      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.endCodeLine();
+      if (yyLineNr<inputLines) 
+      {
+	startCodeLine(ol);
+      }
+    }
+    else
+    {
+      ol.writeCodeLink(ref,file,anchor,sp);
+      done=TRUE;
+    }
+  }
+}
+
 static void addType()
 {
   if (name=="const") { name.resize(0); return; }
@@ -1258,7 +1349,7 @@ static void addParameter()
   }
 }
 
-static void generateClassLink(OutputList &ol,const char *clName)
+static void generateClassLink(OutputList &ol,char *clName)
 {
   QCString className=clName;
   if (className.length()==0) return;
@@ -1280,11 +1371,12 @@ static void generateClassLink(OutputList &ol,const char *clName)
 	anchorCount++;
       }
     }
-    ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
+    //ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
   }
   else
   {
-    ol.codify(clName);
+    codifyLines(clName);
   }
 }
 
@@ -1323,8 +1415,10 @@ static bool getLink(const char *className,
     if (d)
     {
       //printf("d->getOutputBase()=`%s' name=`%s'\n",d->getOutputFileBase().data(),md->name().data());
-      result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	                   md->anchor(),text ? text : memberName);
+      //result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+      //                   md->anchor(),text ? text : memberName);
+      writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
+	                       md->anchor(),text ? text : memberName);
       return TRUE;
     } 
   }
@@ -1346,7 +1440,7 @@ static ClassDef *stripClassName(const char *s)
 }
 
 static void generateMemberLink(OutputList &ol,const char *varName,
-            const char *memName)
+            char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
   //                          varName,memName,classScope.data());
@@ -1393,7 +1487,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
       }
       else
       {
-	ol.codify(memName);
+	codifyLines(memName);
       }
       return;
     }
@@ -1420,17 +1514,19 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	      MemberName *mmn=memberNameDict[memName];
 	      if (mmn)
 	      {
-	      MemberNameIterator mmni(*mmn);
-	      MemberDef *mmd;
-	      for (;(mmd=mmni.current());++mmni)
-	      {
-		if (mmd->memberClass()==mcd)
+		MemberNameIterator mmni(*mmn);
+		MemberDef *mmd;
+		for (;(mmd=mmni.current());++mmni)
 		{
-		  ol.writeCodeLink(mcd->getReference(),mcd->getOutputFileBase(),
-		      mmd->anchor(),memName);
-		  return;
+		  if (mmd->memberClass()==mcd)
+		  {
+		    //ol.writeCodeLink(mcd->getReference(),mcd->getOutputFileBase(),
+		    //	mmd->anchor(),memName);
+		    writeMultiLineCodeLink(ol,mcd->getReference(),
+			mcd->getOutputFileBase(),mmd->anchor(),memName);
+		    return;
+		  }
 		}
-	      }
 	      }
 	    }
 	  }
@@ -1438,16 +1534,31 @@ static void generateMemberLink(OutputList &ol,const char *varName,
       }
     }
   }
-  ol.codify(memName);
+  codifyLines(memName);
   return;
 }
 
-static void generateFunctionLink(OutputList &ol,const char *funcName)
+static QCString removeWhiteSpace(const char *s)
+{
+  QCString result;
+  if (s)
+  {
+    const char *p=s;
+    int c;
+    while ((c=*p++))
+    {
+      if (c!=' ' && c!='\n' && c!='\r' && c!='\t') result+=c;
+    }
+  }
+  return result;
+}
+
+static void generateFunctionLink(OutputList &ol,char *funcName)
 {
   OutputList result(&ol);
   CodeClassDef *ccd=0;
   QCString locScope=classScope.copy();
-  QCString locFunc=funcName;
+  QCString locFunc=removeWhiteSpace(funcName);
   int i=locFunc.findRev("::");
   if (i>0)
   {
@@ -1475,7 +1586,7 @@ static void generateFunctionLink(OutputList &ol,const char *funcName)
   }
   else
   {
-    ol.codify(funcName);
+    codifyLines(funcName);
   }
   return;
 }
@@ -1488,66 +1599,6 @@ static int countLines()
   int count=1;
   while ((c=*p++)) if (c=='\n') count++; 
   return count;
-}
-
-static void startCodeLine()
-{
-  if (sourceFileDef)
-  {
-    QCString lineNumber,lineAnchor;
-    lineNumber.sprintf("%05d ",yyLineNr);
-    lineAnchor.sprintf("l%05d",yyLineNr);
-    //MemberDef *md = sourceFileDef->getSourceDefinition(yyLineNr);
-    //Definition *d=0;
-    //if (md)
-    //{
-    //  d=md->memberClass();
-    //  if (!d) d=md->getFileDef();
-    //}
-    //if (md && d)
-    Definition *d   = sourceFileDef->getSourceDefinition(yyLineNr);
-    QCString anchor = sourceFileDef->getSourceAnchor(yyLineNr);
-    if (d && d->isLinkableInProject())
-    {
-      code->startCodeAnchor(lineAnchor);
-      code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	                   anchor,lineNumber);
-      code->endCodeAnchor();
-    }
-    else
-    {
-      code->codify(lineNumber);
-    }
-  }
-  code->startCodeLine(); 
-}
-
-static void codifyLines(char *text)
-{
-  char *p=text,*sp=p;
-  char c;
-  bool done=FALSE;
-  while (!done)
-  {
-    sp=p;
-    while ((c=*p++) && c!='\n');
-    if (c=='\n')
-    {
-      yyLineNr++;
-      *(p-1)='\0';
-      code->codify(sp);
-      code->endCodeLine();
-      if (yyLineNr<inputLines) 
-      {
-	startCodeLine();
-      }
-    }
-    else
-    {
-      code->codify(sp);
-      done=TRUE;
-    }
-  }
 }
 
 /* -----------------------------------------------------------------
@@ -1749,7 +1800,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 502 "code.l"
+#line 553 "code.l"
 
 
 
@@ -1858,12 +1909,12 @@ do_action:	/* This label is used only to access EOF actions. */
 	{ /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 504 "code.l"
+#line 555 "code.l"
 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 505 "code.l"
+#line 556 "code.l"
 {
 					  code->codify(yytext);
   					  BEGIN( ReadInclude ); 
@@ -1871,7 +1922,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 509 "code.l"
+#line 560 "code.l"
 { 
                                           codifyLines(yytext);
 					  //code->codify(yytext);
@@ -1880,7 +1931,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 514 "code.l"
+#line 565 "code.l"
 {
 					  //FileInfo *f;
 					  bool ambig;
@@ -1903,7 +1954,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 533 "code.l"
+#line 584 "code.l"
 { 
   					  code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
@@ -1911,21 +1962,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 537 "code.l"
+#line 588 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 540 "code.l"
+#line 591 "code.l"
 { 
   					  codifyLines(yytext);
 					}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 543 "code.l"
+#line 594 "code.l"
 { 
   					  codifyLines(yytext);
 					  BEGIN( Body ) ;
@@ -1933,14 +1984,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 547 "code.l"
+#line 598 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 550 "code.l"
+#line 601 "code.l"
 { 
   					  code->codify(yytext);
   					  curlyCount++;
@@ -1949,7 +2000,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 555 "code.l"
+#line 606 "code.l"
 { 
   					  code->codify(yytext);
   					  inClass=FALSE; 
@@ -1962,7 +2013,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 564 "code.l"
+#line 615 "code.l"
 { 
   					  code->codify(yytext);
   					  BEGIN( Body ); 
@@ -1970,7 +2021,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 568 "code.l"
+#line 619 "code.l"
 {
 					  addType();
 					  code->codify(yytext);
@@ -1978,7 +2029,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 572 "code.l"
+#line 623 "code.l"
 {
 					  ccd.name=yytext;
 					  addType();
@@ -1987,7 +2038,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 577 "code.l"
+#line 628 "code.l"
 {
   					  codifyLines(yytext);
   					  BEGIN( Bases ); 
@@ -1995,7 +2046,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 581 "code.l"
+#line 632 "code.l"
 {
   					  code->codify(yytext);
 					  curlyCount++;
@@ -2012,35 +2063,35 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 594 "code.l"
+#line 645 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 597 "code.l"
+#line 648 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 600 "code.l"
+#line 651 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 603 "code.l"
+#line 654 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 606 "code.l"
+#line 657 "code.l"
 { 
 					  //printf("%s:addBase(%s)\n",ccd.name.data(),yytext);
   					  ccd.bases.inSort(yytext); 
@@ -2049,7 +2100,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 611 "code.l"
+#line 662 "code.l"
 { 
   					  code->codify(yytext);
   					  sharpCount=1;
@@ -2058,7 +2109,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 616 "code.l"
+#line 667 "code.l"
 {
   					  code->codify(yytext);
   					  ++sharpCount; 
@@ -2066,7 +2117,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 620 "code.l"
+#line 671 "code.l"
 { 
   					  code->codify(yytext);
   					  if (--sharpCount<=0)
@@ -2075,7 +2126,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 625 "code.l"
+#line 676 "code.l"
 { 
   					  code->codify(yytext);
 					}
@@ -2085,7 +2136,7 @@ case 26:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 630 "code.l"
+#line 681 "code.l"
 {
   					  codifyLines(yytext);
   				          name.resize(0);type.resize(0);
@@ -2093,7 +2144,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 634 "code.l"
+#line 685 "code.l"
 {
   					  codifyLines(yytext);
   				          name.resize(0);type.resize(0);
@@ -2108,7 +2159,7 @@ YY_RULE_SETUP
   */
 case 28:
 YY_RULE_SETUP
-#line 645 "code.l"
+#line 696 "code.l"
 { 
 					  generateClassLink(*code,yytext);
   					  //codifyLines(yytext);
@@ -2118,7 +2169,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 651 "code.l"
+#line 702 "code.l"
 {
   					  addType();
 					  //if (type.length()==0)
@@ -2134,7 +2185,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 663 "code.l"
+#line 714 "code.l"
 {
   					  code->codify(yytext);
   					  lastStringContext=YY_START;
@@ -2143,21 +2194,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 668 "code.l"
+#line 719 "code.l"
 { 
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 671 "code.l"
+#line 722 "code.l"
 {
   					  code->codify(yytext);
   					}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 674 "code.l"
+#line 725 "code.l"
 {
   					  code->codify(yytext);
   					  BEGIN( lastStringContext );
@@ -2165,14 +2216,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 678 "code.l"
+#line 729 "code.l"
 {
   					  code->codify(yytext);
 					}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 681 "code.l"
+#line 732 "code.l"
 {
   					  code->codify(yytext);
   					  name.resize(0);type.resize(0);
@@ -2180,14 +2231,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 685 "code.l"
+#line 736 "code.l"
 {
   					  code->codify(yytext);
   					}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 688 "code.l"
+#line 739 "code.l"
 { 
   					  code->codify(yytext);
   					  BEGIN( MemberCall ); 
@@ -2195,7 +2246,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 692 "code.l"
+#line 743 "code.l"
 {
   					  if (name.length()>0)
 					    generateMemberLink(*code,name,yytext);
@@ -2208,7 +2259,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 701 "code.l"
+#line 752 "code.l"
 { 
   					  code->codify(yytext);
     					  type.resize(0);
@@ -2218,7 +2269,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 707 "code.l"
+#line 758 "code.l"
 {
   					  code->codify(yytext);
   					  if (type.length()>0) 
@@ -2230,14 +2281,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 715 "code.l"
+#line 766 "code.l"
 {
 					  code->codify(yytext);
 					}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 718 "code.l"
+#line 769 "code.l"
 {
 					  addParmType();
 					  parmName=yytext; 
@@ -2246,7 +2297,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 723 "code.l"
+#line 774 "code.l"
 {
   					  code->codify(yytext);
 					  addParameter();
@@ -2255,7 +2306,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 728 "code.l"
+#line 779 "code.l"
 {
   					  code->codify(yytext);
   					  bracketCount++; 
@@ -2263,7 +2314,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 732 "code.l"
+#line 783 "code.l"
 { 
   					  code->codify(yytext);
   					  if (--bracketCount<=0) 
@@ -2274,7 +2325,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 739 "code.l"
+#line 790 "code.l"
 {
   					  codifyLines(yytext);
   					  bracketCount=0;
@@ -2287,7 +2338,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 748 "code.l"
+#line 799 "code.l"
 {
 					  addParameter();
 					  parmType.resize(0);parmName.resize(0);
@@ -2300,7 +2351,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 757 "code.l"
+#line 808 "code.l"
 {
 					  addParameter();
 					  parmType.resize(0);parmName.resize(0);
@@ -2312,7 +2363,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 765 "code.l"
+#line 816 "code.l"
 { 
   					  code->codify(yytext);
 					  curlyCount++; 
@@ -2321,7 +2372,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 770 "code.l"
+#line 821 "code.l"
 {
 					  generateClassLink(*code,yytext);
   					}
@@ -2331,14 +2382,14 @@ case 51:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 773 "code.l"
+#line 824 "code.l"
 {
 					  generateFunctionLink(*code,yytext);
 					}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 776 "code.l"
+#line 827 "code.l"
 { 
   					  code->codify(yytext);
 					  args=yytext; 
@@ -2347,7 +2398,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 781 "code.l"
+#line 832 "code.l"
 { 
   					  if (args.length()>0)
 					    generateMemberLink(*code,args,yytext);
@@ -2359,7 +2410,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 789 "code.l"
+#line 840 "code.l"
 {
   					  code->codify(yytext);
     					  args=yytext;
@@ -2367,21 +2418,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 793 "code.l"
+#line 844 "code.l"
 {
   					  code->codify(yytext);
   					}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 796 "code.l"
+#line 847 "code.l"
 {
   					  code->codify(yytext);
   					}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 799 "code.l"
+#line 850 "code.l"
 { 
   					  code->codify(yytext);
   					  BEGIN( lastCContext ) ; 
@@ -2389,7 +2440,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 803 "code.l"
+#line 854 "code.l"
 { 
   					  codifyLines(yytext);
 					  BEGIN( lastCContext ) ;
@@ -2400,49 +2451,49 @@ case 59:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 807 "code.l"
+#line 858 "code.l"
 {
   					  yyLineNr+=QCString(yytext).contains('\n');
 					}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 810 "code.l"
+#line 861 "code.l"
 {
   					  yyLineNr+=QCString(yytext).contains('\n');
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					  BEGIN(lastSpecialCContext);
   					}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 819 "code.l"
+#line 870 "code.l"
 {
   					  BEGIN(lastSpecialCContext);
   					}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 822 "code.l"
+#line 873 "code.l"
 
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 823 "code.l"
+#line 874 "code.l"
 
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 824 "code.l"
+#line 875 "code.l"
 { yyLineNr++; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 825 "code.l"
+#line 876 "code.l"
 
 	YY_BREAK
 /*
@@ -2471,31 +2522,31 @@ YY_RULE_SETUP
  */
 case 66:
 YY_RULE_SETUP
-#line 850 "code.l"
+#line 901 "code.l"
 { // remove special one-line comment
   					  yyLineNr+=((QCString)yytext).contains('\n');
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 858 "code.l"
+#line 909 "code.l"
 { // remove special one-line comment
   					  yyLineNr++;
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 866 "code.l"
+#line 917 "code.l"
 { // strip special one-line comment
   					  char c[2]; c[0]='\n'; c[1]=0;
   					  codifyLines(c);
@@ -2506,7 +2557,7 @@ case 69:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 870 "code.l"
+#line 921 "code.l"
 {
 					  lastSpecialCContext = YY_START;
 					  yyLineNr++;
@@ -2518,7 +2569,7 @@ case 70:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 875 "code.l"
+#line 926 "code.l"
 { // special C comment block at a new line
 					  lastSpecialCContext = YY_START;
 					  BEGIN(RemoveSpecialCComment);
@@ -2529,7 +2580,7 @@ case 71:
 yy_c_buf_p = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 879 "code.l"
+#line 930 "code.l"
 { // special C comment block half way a line
 					  lastSpecialCContext = YY_START;
 					  BEGIN(RemoveSpecialCComment);
@@ -2537,7 +2588,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 883 "code.l"
+#line 934 "code.l"
 { 
   					  code->codify(yytext);
   					  lastCContext = YY_START ;
@@ -2546,7 +2597,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 888 "code.l"
+#line 939 "code.l"
 { 
   					  code->codify(yytext);
   					  lastCContext = YY_START ;
@@ -2555,14 +2606,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 893 "code.l"
+#line 944 "code.l"
 {
   					  codifyLines(yytext); 
   					}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 896 "code.l"
+#line 947 "code.l"
 {
   					  code->codify(yytext);
 					}
@@ -2578,7 +2629,7 @@ YY_RULE_SETUP
   */
 case 76:
 YY_RULE_SETUP
-#line 909 "code.l"
+#line 960 "code.l"
 ECHO;
 	YY_BREAK
 			case YY_STATE_EOF(INITIAL):
@@ -3477,7 +3528,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 909 "code.l"
+#line 960 "code.l"
 
 
 /*@ ----------------------------------------------------------------------------
@@ -3500,7 +3551,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
                   bool exBlock, const char *exName,FileDef *fd)
 {
   code = new OutputList(&ol);
-  if (s.length()==0) return;
+  if (s.isEmpty()) return;
   inputString   = s;
   inputPosition = 0;
   inputLines    = countLines();
@@ -3513,7 +3564,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   exampleName   = exName;
   sourceFileDef = fd;
   exampleFile   = convertSlashes(exampleName,TRUE)+"-example";
-  startCodeLine();
+  startCodeLine(*code);
   type.resize(0);
   name.resize(0);
   args.resize(0);

@@ -43,6 +43,8 @@ static int labelToEnumValue(const char *l)
     return Debug::Functions;
   else if (label=="Variables")
     return Debug::Variables;
+  else if (label=="Preprocessor")
+    return Debug::Preprocessor;
   else
     return 0;
 }
@@ -60,4 +62,9 @@ void Debug::clearFlag(const char *lab)
 void Debug::setPriority(int p)
 {
   curPrio = p;
+}
+
+bool Debug::isFlagSet(DebugMask mask)
+{
+  return (curMask & mask)!=0;
 }

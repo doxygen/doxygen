@@ -991,8 +991,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
             ol.disableAllBut(OutputGenerator::Man);
             ol.writeString(" ");
             ol.enableAll();
-            ol.endDescTableTitle();
             ol.endDoxyAnchor();
+            ol.endDescTableTitle();
             //ol.newParagraph();
             ol.startDescTableData();
 

@@ -93,6 +93,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.disable(OutputGenerator::Latex);
     ol.startTextLink(0,"_details");
     parseText(ol,theTranslator->trMore());
+    ol.endTextLink();
     ol.enable(OutputGenerator::Latex);
   }
   if (fileList->count()>0)

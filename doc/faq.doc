@@ -56,6 +56,25 @@ as <code>PREPROCESSING = YES</code>.
 
 Look at section \ref preprocessing for the answer.
 
+<li><b>How can I change what's after the <code>#include</code> in class documentation?</b>
+
+You can document your class like
+
+\verbatim
+/*! \class MyClassName include.h path/include.h
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
+To make doxygen put <br><br>
+<code>
+#include <path/include.h>
+</code>
+
+in the documentation of the class MyClassName regardless of the name of the actual 
+header file in which the definition of MyClassName is contained.
+
 </ol>
 */
 

@@ -707,7 +707,7 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# the TAB_SIZE tag can be used to set the number of spaces in a tab\n";
+    t << "# the TAB_SIZE tag can be used to set the number of spaces in a tab.\n";
     t << "# Doxygen uses this value to replace tabs by spaces in code fragments.\n";
     t << "\n";
   }
@@ -795,16 +795,6 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "IMAGE_PATH           =\n";
-  if (!sl)
-  {
-    t << "\n";
-    t << "# If the value of the IMAGE_PATH tag contains directories, you can use the\n";
-    t << "# IMAGE_PATTERNS tag to specify one or more wildcard pattern (like *.gif \n";
-    t << "# and *.eps) to filter out the image files in the directories. If left \n";
-    t << "# blank all files are included.\n";
-    t << "\n";
-  }
-  t << "IMAGE_PATTERNS       =\n";
   if (!sl)
   {
     t << "\n";
