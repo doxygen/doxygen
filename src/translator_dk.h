@@ -72,7 +72,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-class TranslatorDanish : public TranslatorAdapter_1_3_8
+class TranslatorDanish : public Translator
 {
   public:
 
@@ -1444,6 +1444,19 @@ class TranslatorDanish : public TranslatorAdapter_1_3_8
     {
       return "Fundne ord:"; //translation?
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for
+     *  file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Kildefilen " + filename;
+    }
+
 
 /*---------- For internal use: ----------------------------------------*/
   protected:

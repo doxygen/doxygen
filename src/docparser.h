@@ -568,8 +568,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
 {
   public:
     enum Type { Html, Latex, Rtf };
-    DocImage(DocNode *parent,const HtmlAttribList &attribs,const QString &name,Type t) : 
-      m_parent(parent), m_attribs(attribs), m_name(name), m_type(t) {}
+    DocImage(DocNode *parent,const HtmlAttribList &attribs,const QString &name,Type t);
     Kind kind() const          { return Kind_Image; }
     Type type() const          { return m_type; }
     QString name() const       { return m_name; }
@@ -577,6 +576,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
     bool hasCaption() const    { return !m_children.isEmpty(); }
     QString width() const      { return m_width; }
     QString height() const     { return m_height; }
+    QString relPath() const    { return m_relPath; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     void accept(DocVisitor *v) { CompAccept<DocImage>::accept(this,v); }
     void parse();
@@ -588,18 +588,19 @@ class DocImage : public CompAccept<DocImage>, public DocNode
     Type     m_type;
     QString  m_width;
     QString  m_height;
+    QString  m_relPath;
 };
 
 /*! @brief Node representing a dot file */
 class DocDotFile : public CompAccept<DocDotFile>, public DocNode
 {
   public:
-    DocDotFile(DocNode *parent,const QString &name) : 
-      m_parent(parent), m_name(name) { }
+    DocDotFile(DocNode *parent,const QString &name);
     void parse();
     Kind kind() const          { return Kind_DotFile; }
     QString name() const       { return m_name; }
     QString file() const       { return m_file; }
+    QString relPath() const    { return m_relPath; }
     bool hasCaption() const    { return !m_children.isEmpty(); }
     QString width() const      { return m_width; }
     QString height() const     { return m_height; }
@@ -609,6 +610,7 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     DocNode *m_parent;
     QString  m_name;
     QString  m_file;
+    QString  m_relPath;
     QString  m_width;
     QString  m_height;
 };

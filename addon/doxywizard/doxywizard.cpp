@@ -850,7 +850,7 @@ void MainWidget::launchWizard()
   // step1
   wizard.setProjectName(Config_getString("PROJECT_NAME"));
   wizard.setProjectNumber(Config_getString("PROJECT_NUMBER"));
-  if (Config_getList("INPUT").count()==1)
+  if (Config_getList("INPUT").count()>0)
   {
     QString dirName=Config_getList("INPUT").getFirst();
     QFileInfo fi(dirName);
@@ -1109,6 +1109,8 @@ void MainWidget::loadConfigFile()
   if (!fn.isEmpty())
   {
     loadConfigFromFile(fn);
+    // set current dir to where the config file is located
+    QDir::setCurrent(QFileInfo(fn).dirPath(TRUE));
   }
 }
 

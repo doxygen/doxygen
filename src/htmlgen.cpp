@@ -309,6 +309,12 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
 static void writeDefaultHeaderFile(QTextStream &t, const char *title,
                                    const char *relPath,bool usePathCmd)
 {
+  QString relPathStr;
+  if (usePathCmd) 
+    relPathStr="$relpath$";
+  else
+    relPathStr=relPath;
+
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
     "<html><head>" 
     "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
@@ -320,11 +326,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
   {
-    if (usePathCmd) 
-      t << "$relpath$";
-    else
-      t << relPath;
-    t << "doxygen.css";
+    t << relPathStr << "doxygen.css";
   }
   else
   {
@@ -334,7 +336,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
     {
       err("Error: user specified HTML style sheet file does not exist!\n");
     }
-    t << cssfi.fileName();
+    t << relPathStr << cssfi.fileName();
   }
   t << "\" rel=\"stylesheet\" type=\"text/css\">\n"
     "</head><body>\n";

@@ -99,6 +99,7 @@ static bool               g_macroExpansion; // from the configuration
 static bool               g_expandOnlyPredef; // from the configuration
 static int                g_commentCount;
 static bool               g_insideComment;
+static bool               g_isImported;
 
 
 static void setFileName(const char *name)
@@ -1065,12 +1066,12 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef) 
       {
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(g_yyFileDef,incFileName,localInclude);
+	oldFileDef->addIncludeDependency(g_yyFileDef,incFileName,localInclude,g_isImported);
 	// add included by dependency
         if (g_yyFileDef)
         {
 	  //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
-  	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
+  	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude,g_isImported);
         }
       }
       FileState *fs=new FileState;
@@ -1100,12 +1101,12 @@ static void readIncludeFile(const QCString &inc)
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
 	//printf("findFileDef(%s)=%p\n",incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
+	oldFileDef->addIncludeDependency(fd,incFileName,localInclude,g_isImported);
 	// add included by dependency
         if (fd)
         {
           //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
-  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
+  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude,g_isImported);
         }
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
@@ -1386,11 +1387,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ReadString>.				{
   					  g_defArgsStr+=*yytext;
   					}
-<Command>"include"{B}+/{ID}		{
+<Command>("include"|"import"){B}+/{ID}	{
+  					  g_isImported = yytext[1]=='m';
   					  if (g_macroExpansion) 
 					    BEGIN(IncludeID);
   					}
-<Command>"include"{B}*[<"]		{ 
+<Command>("include"|"import"){B}*[<"]	{ 
+  					  g_isImported = yytext[1]=='m';
 					  char c[2];
 					  c[0]=yytext[yyleng-1];c[1]='\0';
 					  g_incName=c;

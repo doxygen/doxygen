@@ -144,6 +144,10 @@ SOURCE=..\qtools\qglobal.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\qtools\qgcache.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\qtools\qgvector.cpp
 # End Source File
 # Begin Source File

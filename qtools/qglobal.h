@@ -132,6 +132,8 @@
 #define _OS_CYGWIN_
 #elif defined(__BEOS__)
 #define _OS_BEOS_
+#elif defined(__MINT__)
+#define _OS_MINT_
 #else
 #error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
 #endif

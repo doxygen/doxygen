@@ -790,16 +790,18 @@ png_handle_cHRM(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
 #endif
 
 #if defined(PNG_READ_sRGB_SUPPORTED)
+#undef  png_abs
+#define png_abs(x) (((x)>0)?(x):-(x))
    if (info_ptr->valid & PNG_INFO_sRGB)
       {
-      if (abs(int_x_white - 31270L) > 1000 ||
-          abs(int_y_white - 32900L) > 1000 ||
-          abs(int_x_red   - 64000L) > 1000 ||
-          abs(int_y_red   - 33000L) > 1000 ||
-          abs(int_x_green - 30000L) > 1000 ||
-          abs(int_y_green - 60000L) > 1000 ||
-          abs(int_x_blue  - 15000L) > 1000 ||
-          abs(int_y_blue  -  6000L) > 1000)
+      if (png_abs(int_x_white - 31270L) > 1000 ||
+          png_abs(int_y_white - 32900L) > 1000 ||
+          png_abs(int_x_red   - 64000L) > 1000 ||
+          png_abs(int_y_red   - 33000L) > 1000 ||
+          png_abs(int_x_green - 30000L) > 1000 ||
+          png_abs(int_y_green - 60000L) > 1000 ||
+          png_abs(int_x_blue  - 15000L) > 1000 ||
+          png_abs(int_y_blue  -  6000L) > 1000)
          {
 
             png_warning(png_ptr,
@@ -925,15 +927,17 @@ png_handle_sRGB(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
 
 #ifdef PNG_READ_cHRM_SUPPORTED
 #ifdef PNG_FIXED_POINT_SUPPORTED
+#undef  png_abs
+#define png_abs(x) (((x)>0)?(x):-(x))
    if (info_ptr->valid & PNG_INFO_cHRM)
-      if (abs(info_ptr->int_x_white - 31270L) > 1000 ||
-          abs(info_ptr->int_y_white - 32900L) > 1000 ||
-          abs(info_ptr->int_x_red   - 64000L) > 1000 ||
-          abs(info_ptr->int_y_red   - 33000L) > 1000 ||
-          abs(info_ptr->int_x_green - 30000L) > 1000 ||
-          abs(info_ptr->int_y_green - 60000L) > 1000 ||
-          abs(info_ptr->int_x_blue  - 15000L) > 1000 ||
-          abs(info_ptr->int_y_blue  -  6000L) > 1000)
+      if (png_abs(info_ptr->int_x_white - 31270L) > 1000 ||
+          png_abs(info_ptr->int_y_white - 32900L) > 1000 ||
+          png_abs(info_ptr->int_x_red   - 64000L) > 1000 ||
+          png_abs(info_ptr->int_y_red   - 33000L) > 1000 ||
+          png_abs(info_ptr->int_x_green - 30000L) > 1000 ||
+          png_abs(info_ptr->int_y_green - 60000L) > 1000 ||
+          png_abs(info_ptr->int_x_blue  - 15000L) > 1000 ||
+          png_abs(info_ptr->int_y_blue  -  6000L) > 1000)
          {
             png_warning(png_ptr,
               "Ignoring incorrect cHRM value when sRGB is also present");

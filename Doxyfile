@@ -166,7 +166,7 @@ MAN_LINKS              = NO
 #---------------------------------------------------------------------------
 # configuration options related to the XML output
 #---------------------------------------------------------------------------
-GENERATE_XML           = YES
+GENERATE_XML           = NO
 XML_OUTPUT             = xml
 XML_SCHEMA             = 
 XML_DTD                = 

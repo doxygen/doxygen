@@ -709,7 +709,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       baseName=baseName.right(baseName.length()-i-1);
     }
     m_t << "<div align=\"center\">" << endl;
-    m_t << "<img src=\"" << img->name() << "\" alt=\"" 
+    m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
       << baseName << "\"" << htmlAttribsToString(img->attribs()) << ">" << endl;
     if (img->hasCaption())
     {
@@ -743,7 +743,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  writeDotFile(df->file(),"");
+  writeDotFile(df->file(),df->relPath());
   m_t << "<div align=\"center\">" << endl;
   if (df->hasCaption())
   { 

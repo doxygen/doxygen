@@ -13,6 +13,7 @@ irix-g++
 irix-n32      
 linux-g++      
 macosx-c++
+m68k-atari-mint-g++
 netbsd-g++    
 openbsd-g++    
 osf1-cxx      

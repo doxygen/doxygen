@@ -1010,7 +1010,6 @@ ClassDef *getResolvedClassRec(Definition *scope,
   QCString name=n;
   QCString explicitScopePart;
 
-  //int qualifierIndex = name.findRev("::"); // todo: deal with cases like A<B::C>
   int qualifierIndex = computeQualifiedIndex(name);
   //printf("name=%s qualifierIndex=%d\n",name.data(),qualifierIndex);
   if (qualifierIndex!=-1) // qualified name
@@ -1032,7 +1031,6 @@ ClassDef *getResolvedClassRec(Definition *scope,
   //printf("Looking for symbol %s result=%p\n",name.data(),dl);
   if (dl==0) 
   {
-    // name is not a known symbol
     return 0;
   }
 
@@ -1181,7 +1179,7 @@ ClassDef *getResolvedClass(Definition *scope,
   }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
-  // 
+   
   return result;
 }
 
@@ -4120,14 +4118,22 @@ QCString substituteTemplateArgumentsInString(
         ++formAli,actArg=actualArgs->next()
         )
     {
-      //printf("n=%s formArg->type=%s formArg->name=%s\n",
-      //    n.data(),formArg->type.data(),formArg->name.data());
       if (formArg->type=="class" || formArg->type=="typename")
       {
+        //printf("n=%s formArg->type=%s formArg->name=%si formArg->defval=%s\n",
+        //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
           // replace formal argument with the actual argument of the instance
-          result += actArg->type+" "; 
+          if (actArg->name.isEmpty())
+          {
+            result += actArg->type+" "; 
+          }
+          else // for case where the actual arg is something like "unsigned int"
+               // the "int" part is in actArg->name.
+          {
+            result += actArg->type+" "+actArg->name+" "; 
+          }
           found=TRUE;
         }
         else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&

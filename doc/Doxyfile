@@ -33,10 +33,9 @@ CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = .
 INPUT             = index.doc install.doc starting.doc docblocks.doc lists.doc \
                     grouping.doc formulas.doc diagrams.doc preprocessing.doc \
-                    external.doc faq.doc trouble.doc history.doc features.doc \
+                    autolink.doc output.doc external.doc faq.doc trouble.doc history.doc features.doc \
 		    doxygen_usage.doc doxytag_usage.doc \
-                    doxywizard_usage.doc \
-                    installdox_usage.doc output.doc autolink.doc \
+                    doxywizard_usage.doc installdox_usage.doc \
 		    config.doc commands.doc htmlcmds.doc language.doc \
                     perlmod.doc perlmod_tree.doc arch.doc 
 FILE_PATTERNS     = *.cpp *.h *.doc

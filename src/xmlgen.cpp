@@ -619,6 +619,15 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   }
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
+  
+  if (md->memberType() == MemberDef::Property)
+  {
+    if (md->isReadable())
+      t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>" << endl;
+    if (md->isWritable())
+      t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>" << endl;
+  }
+  
   MemberDef *rmd = md->reimplements();
   if (rmd)
   {

@@ -1081,8 +1081,9 @@ static void findUsingDirectives(Entry *root)
   {
     //printf("Found using directive %s at line %d of %s\n",
     //    root->name.data(),root->startLine,root->fileName.data());
+    QCString name=substitute(root->name,".","::");
     bool ambig;
-    if (!root->name.isEmpty())
+    if (!name.isEmpty())
     {
       NamespaceDef *usingNd = 0;
       NamespaceDef *nd = 0;
@@ -1109,8 +1110,8 @@ static void findUsingDirectives(Entry *root)
       {
         QCString scope=scopeOffset>0 ? 
                       nsName.left(scopeOffset)+"::" : QCString();
-        usingNd = getResolvedNamespace(scope+root->name);
-        //printf("Trying with scope=`%s' usingNd=%p\n",(scope+root->name).data(),usingNd);
+        usingNd = getResolvedNamespace(scope+name);
+        //printf("Trying with scope=`%s' usingNd=%p\n",(scope+name).data(),usingNd);
         if (scopeOffset==0)
         {
           scopeOffset=-1;
@@ -1121,7 +1122,7 @@ static void findUsingDirectives(Entry *root)
         }
       } while (scopeOffset>=0 && usingNd==0);
 
-      //printf("%s -> %p\n",root->name.data(),usingNd);
+      //printf("%s -> %p\n",name.data(),usingNd);
 
       // add the namespace the correct scope
       if (usingNd)
@@ -1141,7 +1142,7 @@ static void findUsingDirectives(Entry *root)
       else // unknown namespace, but add it anyway.
       {
         NamespaceDef *nd=new NamespaceDef(
-            root->fileName,root->startLine,root->name);
+            root->fileName,root->startLine,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1169,7 +1170,7 @@ static void findUsingDirectives(Entry *root)
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(root->fileName);
         // add class to the list
-        Doxygen::namespaceSDict.inSort(root->name,nd);
+        Doxygen::namespaceSDict.inSort(name,nd);
         nd->setRefItems(root->sli);
       }
     }
@@ -1490,6 +1491,8 @@ static MemberDef *addVariableToClass(
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setMemberSpecifiers(root->memSpec);
+  md->setReadAccessor(root->read);
+  md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
@@ -2928,18 +2931,18 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
   return templateNames;
 }
 
-/*! Searches a class from within the context of \a cd and returns its
+/*! Searches a class from within \a context and \a cd and returns its
  *  definition if found (otherwise 0 is returned).
- *  This function differs from getResolvedClass in that it also takes 
- *  using declarations and definition into account.
  */
-static ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
+static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,const QCString &name)
 {
+  
+#if 0
   ClassDef *result=0;
 
+  FileDef *fd=cd->getFileDef();
   // try using of namespaces in namespace scope
   NamespaceDef *nd=cd->getNamespaceDef();
-  FileDef *fd=cd->getFileDef();
   if (nd) // class is inside a namespace
   {
     QCString fName = nd->name()+"::"+name;
@@ -3029,8 +3032,21 @@ static ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
       }
     }
   }
+#endif
 
-  return getResolvedClass(cd,fd,name);
+  FileDef *fd=cd->getFileDef();
+  ClassDef *result=0;
+  if (context)
+  {
+    result = getResolvedClass(context,0,name);
+    //printf("** Trying to find %s within context %s result=%s\n",
+    //    name.data(),context->name().data(),result ? result->name().data() : "<none>");
+  }
+  if (result==0)
+  {
+    result = getResolvedClass(cd,fd,name);
+  }
+  return result;
 }
 
 enum FindBaseClassRelation_Mode 
@@ -3042,6 +3058,7 @@ enum FindBaseClassRelation_Mode
 
 static bool findClassRelation(
                            Entry *root,
+                           Definition *context,
                            ClassDef *cd,
                            BaseInfo *bi,
                            QDict<int> *templateNames,
@@ -3052,6 +3069,7 @@ static bool findClassRelation(
 
 
 static void findUsedClassesForClass(Entry *root,
+                           Definition *context,
                            ClassDef *masterCd,
                            ClassDef *instanceCd,
                            bool isArtificial,
@@ -3072,6 +3090,7 @@ static void findUsedClassesForClass(Entry *root,
       MemberDef *md=mi->memberDef;
       if (md->isVariable()) // for each member variable in this class
       {
+        //printf("Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
         QCString type=removeRedundantWhiteSpace(md->typeString());
         int pos=0;
         QCString usedClassName;
@@ -3082,10 +3101,10 @@ static void findUsedClassesForClass(Entry *root,
         {
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
-        //printf("findUsedClassesForClass(%s)=%s\n",masterCd->name().data(),type.data());
+        //printf("  template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
         {
-          //printf("Found used class %s\n",usedClassName.data());
+          //printf("  found used class %s\n",usedClassName.data());
           // the name could be a type definition, resolve it
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
           //printf("*** Found resolved class %s for %s\n",typeName.data(),usedClassName.data());
@@ -3105,8 +3124,8 @@ static void findUsedClassesForClass(Entry *root,
             replaceNamespaceAliases(usedClassName,si);
           }
           // add any template arguments to the class
-          QCString usedName = usedClassName+templSpec;
-          //printf("usedName=%s\n",usedName.data());
+          QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
+          //printf("    usedName=%s\n",usedName.data());
 
           bool delTempNames=FALSE;
           if (templateNames==0)
@@ -3115,7 +3134,7 @@ static void findUsedClassesForClass(Entry *root,
             delTempNames=TRUE;
           }
           BaseInfo bi(usedName,Public,Normal);
-          findClassRelation(root,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
+          findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
 
           if (masterCd->templateArguments())
           {
@@ -3150,8 +3169,9 @@ static void findUsedClassesForClass(Entry *root,
 
           if (!found)
           {
-            ClassDef *usedCd=findClassWithinClassContext(masterCd,usedName);
-            //printf("Looking for used class: result=%p master=%p\n",usedCd,masterCd);
+            ClassDef *usedCd=findClassWithinClassContext(context,masterCd,usedName);
+            //printf("Looking for used class %s: result=%s master=%s\n",
+            //    usedName.data(),usedCd?usedCd->name().data():"<none>",masterCd?masterCd->name().data():"<none>");
 
             if (usedCd) 
             {
@@ -3197,6 +3217,7 @@ static void findUsedClassesForClass(Entry *root,
 
 static void findBaseClassesForClass(
       Entry *root,
+      Definition *context,
       ClassDef *masterCd,
       ClassDef *instanceCd,
       FindBaseClassRelation_Mode mode,
@@ -3235,18 +3256,18 @@ static void findBaseClassesForClass(
       if (mode==DocumentedOnly)
       {
         // find a documented base class in the correct scope
-        if (!findClassRelation(root,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+        if (!findClassRelation(root,context,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
         {
           if (!Config_getBool("HIDE_UNDOC_RELATIONS"))
           {
             // no documented base class -> try to find an undocumented one
-            findClassRelation(root,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
+            findClassRelation(root,context,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
           }
         }
       }
       else if (mode==TemplateInstances)
       {
-        findClassRelation(root,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
+        findClassRelation(root,context,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
       }
       if (delTempNames)
       {
@@ -3260,6 +3281,7 @@ static void findBaseClassesForClass(
 //----------------------------------------------------------------------
 
 static bool findTemplateInstanceRelation(Entry *root,
+            Definition *context,
             ClassDef *templateClass,const QCString &templSpec,
             QDict<int> *templateNames,
             bool isArtificial)
@@ -3302,10 +3324,10 @@ static bool findTemplateInstanceRelation(Entry *root,
       Debug::print(Debug::Classes,0,"        template root found %s!\n",templateRoot->name.data());
       ArgumentList *templArgs = new ArgumentList;
       stringToArgumentList(templSpec,templArgs);
-      findBaseClassesForClass(templateRoot,templateClass,instanceClass,
+      findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
           TemplateInstances,isArtificial,templArgs,templateNames);
 
-      findUsedClassesForClass(templateRoot,templateClass,instanceClass,
+      findUsedClassesForClass(templateRoot,context,templateClass,instanceClass,
           isArtificial,templArgs,templateNames);
       delete templArgs;
     }
@@ -3339,6 +3361,7 @@ static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
 
 static bool findClassRelation(
                            Entry *root,
+                           Definition *context,
                            ClassDef *cd,
                            BaseInfo *bi,
                            QDict<int> *templateNames,
@@ -3416,10 +3439,10 @@ static bool findClassRelation(
             (bi->virt==Normal)?"normal":"virtual"
            );
 
-        int i;
-        int si=baseClassName.findRev("::");
+        int i=baseClassName.find('<');
+        int si=baseClassName.findRev("::",i==-1 ? baseClassName.length() : i);
         if (si==-1) si=0;
-        if (baseClass==0 && (i=baseClassName.find('<',si))!=-1) 
+        if (baseClass==0 && i!=-1) 
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
@@ -3467,7 +3490,7 @@ static bool findClassRelation(
         //NamespaceDef *nd=cd->getNamespaceDef();
         if (!found)
         {
-          baseClass=findClassWithinClassContext(cd,baseClassName);
+          baseClass=findClassWithinClassContext(context,cd,baseClassName);
           //printf("findClassWithinClassContext(%s,%s)=%p\n",
           //    cd->name().data(),baseClassName.data(),baseClass);
           found = baseClass!=0 && baseClass!=cd;
@@ -3490,7 +3513,7 @@ static bool findClassRelation(
           // relations.
           if (!templSpec.isEmpty() && mode==TemplateInstances)
           {
-            findTemplateInstanceRelation(root,baseClass,templSpec,templateNames,isArtificial);
+            findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
           }
           else if (mode==DocumentedOnly)
           {
@@ -3643,7 +3666,7 @@ static void findInheritedTemplateInstances()
     if ((cd=getClass(bName)))
     {
       //printf("Class %s %d\n",cd->name().data(),root->extends->count());
-      findBaseClassesForClass(root,cd,cd,TemplateInstances,FALSE);
+      findBaseClassesForClass(root,cd,cd,cd,TemplateInstances,FALSE);
     }
   }
 }
@@ -3663,7 +3686,7 @@ static void findUsedTemplateInstances()
     Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
-      findUsedClassesForClass(root,cd,cd,TRUE);
+      findUsedClassesForClass(root,cd,cd,cd,TRUE);
     }
   }
 }
@@ -3683,7 +3706,7 @@ static void computeClassRelations()
     Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
-      findBaseClassesForClass(root,cd,cd,DocumentedOnly,FALSE);
+      findBaseClassesForClass(root,cd,cd,cd,DocumentedOnly,FALSE);
     }
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && 
         bName.right(2)!="::")
@@ -3762,10 +3785,10 @@ static void computeTemplateClassRelations()
             
             tbi.name = substituteTemplateArgumentsInString(bi->name,tl,templArgs);
             // find a documented base class in the correct scope
-            if (!findClassRelation(root,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
+            if (!findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
             {
               // no documented base class -> try to find an undocumented one
-              findClassRelation(root,tcd,&tbi,actualTemplateNames,Undocumented,FALSE);
+              findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,Undocumented,FALSE);
             }
             delete actualTemplateNames;
           }
@@ -6194,14 +6217,15 @@ static void findSectionsInDocumentation()
 
 static void flushCachedTemplateRelations()
 {
-  // remove all references to template classes from the cache
-  // as there can be new template instances that should be linked
-  // to instead.
+  // remove all references to classes from the cache
+  // as there can be new template instances in the inheritance path
+  // to this class. Optimization: only remove those classes that
+  // have inheritance instances as direct or indirect sub classes.
   QCacheIterator<LookupInfo> ci(Doxygen::lookupCache);
   LookupInfo *li=0;
   for (ci.toFirst();(li=ci.current());++ci)
   {
-    if (li->classDef && li->classDef->isTemplate())
+    if (li->classDef)
     {
       Doxygen::lookupCache.remove(ci.currentKey());
     }
@@ -8244,6 +8268,7 @@ void parseInput()
   
   msg("Building file list...\n");
   buildFileList(root);
+  //generateFileTree();
   
   msg("Searching for included using directives...\n");
   findIncludedUsingDirectives();

@@ -93,6 +93,10 @@ class MemberDef : public Definition
     NamespaceDef* getNamespaceDef() const { return nspace; }
     //Definition *getCompoundDef() const;
 
+    // grabbing the property read/write accessor names
+    const char *getReadAccessor() const      { return read; }
+    const char *getWriteAccessor() const     { return write; }
+    
     // querying the grouping definition
     GroupDef *getGroupDef() const            { return group; }
     Grouping::GroupPri_t getGroupPri() const { return grouppri; }
@@ -161,6 +165,8 @@ class MemberDef : public Definition
     void setSectionList(Definition *d,MemberList *sl);
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void setExplicitExternal(bool b)      { explExt=b; }
+    void setReadAccessor(const char *r)   { read=r; }
+    void setWriteAccessor(const char *w)  { write=w; }
     
     void makeRelated()                    { related=TRUE; } 
 
@@ -307,6 +313,8 @@ class MemberDef : public Definition
     QCString type;            // return type
     QCString args;            // function arguments/variable array specifiers
     QCString bitfields;       // struct member bitfields
+    QCString read;            // property read accessor
+    QCString write;           // property write accessor
     QCString exception;       // exceptions that can be thrown
     QCString init;            // initializer
     int initLines;            // number of lines in the initializer

@@ -837,7 +837,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      ObjCProtocolList
 %x	QtPropType
 %x	QtPropName
-%x	QtPropRW
+%x	QtPropRead
+%x	QtPropWrite
 
 %%
 
@@ -1181,7 +1182,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->virt = Virtual;
 					  lineCount();
 					}
-<FindMembers>{B}*"abstract"{BN}+    	{ current->type += " abstract ";
+<FindMembers>{B}*"abstract"{BN}+    	{ 
+                                          if (!insidePHP) 
+					  {
+					    current->type += " abstract ";
+					  }
 					  current->virt = Pure;
 					  lineCount();
 					}
@@ -1253,7 +1258,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
 					  lineCount();
-                                          if (insideIDL || insideJava || insideCS || insideD)
+                                          if (insideIDL || insideJava || insideCS || insideD || insidePHP)
 					  {
   					    isTypedef=FALSE;
 					    current->section = Entry::INTERFACE_SEC;
@@ -1621,15 +1626,20 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <QtPropName>{ID}			{
   					  current->name=yytext;
-  					  BEGIN(QtPropRW);
+  					  BEGIN(QtPropRead);
   					}
-<QtPropRW>"READ"			{
+<QtPropRead>"READ"			{
   					  current->memSpec |= Entry::Readable;
   					}
-<QtPropRW>"WRITE"			{
+<QtPropRead>{ID}			{
+  					  current->read = yytext;
+  					  BEGIN(QtPropWrite);
+  					}
+<QtPropWrite>"WRITE"			{
   					  current->memSpec |= Entry::Writable;
   					}
-<QtPropRW>")"				{
+<QtPropWrite>{ID}			{
+  					  current->write = yytext;
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
@@ -1666,7 +1676,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    {
 					      addType( current ) ;
 					    }
-					    bool javaLike = insideJava || insideCS || insideD;
+					    bool javaLike = insideJava || insideCS || insideD || insidePHP;
 					    if (javaLike && strcmp(yytext,"public")==0)
 					    {
 					      current->protection = Public;
@@ -2230,27 +2240,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           {
                                             current->type = current->type.mid(3);
                                           }
-					  current->type=current->type.simplifyWhiteSpace();
-					  current->args=removeRedundantWhiteSpace(current->args);
-					                // was: current->args.simplifyWhiteSpace();
-					  current->name=current->name.stripWhiteSpace();
-					  //if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
-					  //{
-					  //  // add typedef to dictionary
-					  //  QCString dest = extractName(current->type.right(current->type.length()-8));
-					  //  if (Doxygen::typedefDict[current->name]==0 && !dest.isEmpty())
-					  //  {		
-					  //    //printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
-					  //    QCString scope;
-					  //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
-                                          //    Doxygen::typedefDict.insert(current->name, new TypedefInfo(dest,scope));
-					  //  }
-					  //}
-					  current->section = Entry::VARIABLE_SEC ;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
-					  current_root->addSubEntry( current ) ;
+					  if (!current->name.isEmpty() && current->section!=Entry::ENUM_SEC)
+					  {
+					    current->type=current->type.simplifyWhiteSpace();
+					    current->args=removeRedundantWhiteSpace(current->args);
+					    current->name=current->name.stripWhiteSpace();
+					    current->section = Entry::VARIABLE_SEC ;
+					    current->fileName = yyFileName;
+					    current->startLine = yyLineNr;
+					    //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
+					    current_root->addSubEntry( current ) ;
+					  }
 					  if ( *yytext == ',')
 					  {
 					    current = new Entry(*current);
@@ -3558,15 +3558,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    roundCount=0;
 					    BEGIN(SkipUnionSwitch);
 					  }
-					  else if (insideJava && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
-					  {
-  					    current->type.resize(0);
-					    baseProt=Public;
-                                            baseVirt=Normal;
-					    baseName.resize(0);
-					    BEGIN( BasesProt ) ;
-					  }
-					  else if (insidePHP && (strcmp(yytext,"extends")==0))
+					  else if ((insideJava || insidePHP) && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
 					  {
   					    current->type.resize(0);
 					    baseProt=Public;
@@ -3684,10 +3676,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN( ReadBody ) ;
 					  }
 					}
-<BasesProt>"virtual"                    { baseVirt = Virtual; }
-<BasesProt>"public"                     { baseProt = Public; }
-<BasesProt>"protected"                  { baseProt = Protected; }
-<BasesProt>"private"                    { baseProt = Private; }
+<BasesProt>"virtual"{BN}+               { lineCount(); baseVirt = Virtual; }
+<BasesProt>"public"{BN}+                { lineCount(); baseProt = Public; }
+<BasesProt>"protected"{BN}+             { lineCount(); baseProt = Protected; }
+<BasesProt>"private"{BN}+               { lineCount(); baseProt = Private; }
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 

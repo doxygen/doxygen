@@ -240,6 +240,12 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.startTextBlock(); 
     writeDetailedDocumentation(ol);
     ol.endTextBlock();
+
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::RTF);
+    ol.newParagraph();
+    ol.popGeneratorState();
   }
   else if (!briefDescription().isEmpty()) 
   {
@@ -275,11 +281,15 @@ void FileDef::writeDocumentation(OutputList &ol)
                       fd->name().right(5)==".java";
       }
       ol.startTypewriter();
-      if (isIDLorJava)
+      if (isIDLorJava) // IDL/Java include
       {
         ol.docify("import ");
       }
-      else
+      else if (ii->imported) // Objective-C include
+      {
+        ol.docify("#import ");
+      }
+      else // C/C++ include
       {
         ol.docify("#include ");
       }
@@ -302,12 +312,13 @@ void FileDef::writeDocumentation(OutputList &ol)
             0,ii->includeName);
         if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
         {
-          const char *locStr = (ii->local || isIDLorJava) ? "yes" : "no";
+          const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
+          const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
           Doxygen::tagFile << "    <includes id=\"" 
-                           << convertToXML(fd->getOutputFileBase()) 
-                           << "\" name=\"" 
-                           << convertToXML(fd->name())
-                           << "\" local=\"" << locStr << "\">" 
+                           << convertToXML(fd->getOutputFileBase()) << "\" "
+                           << "name=\"" << convertToXML(fd->name()) << "\" "
+                           << "local=\"" << locStr << "\" "
+                           << "imported=\"" << impStr << "\">"
                            << convertToXML(ii->includeName)
                            << "</includes>" 
                            << endl;
@@ -543,66 +554,30 @@ void FileDef::insertMember(MemberDef *md)
   {
     case MemberDef::Variable:     
     case MemberDef::Property:     
-      if (sortBriefDocs)
-        decVarMembers.inSort(md);
-      else
-        decVarMembers.append(md);
-      if (sortMemberDocs)
-        docVarMembers.inSort(md); 
-      else
-        docVarMembers.append(md);
+      if (sortBriefDocs)  decVarMembers.inSort(md); else decVarMembers.append(md);
+      if (sortMemberDocs) docVarMembers.inSort(md); else docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (sortBriefDocs)
-        decFuncMembers.inSort(md);
-      else
-        decFuncMembers.append(md);
-      if (sortMemberDocs)    
-        docFuncMembers.inSort(md); 
-      else
-        docFuncMembers.append(md);
+      if (sortBriefDocs)  decFuncMembers.inSort(md); else decFuncMembers.append(md);
+      if (sortMemberDocs) docFuncMembers.inSort(md); else docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (sortBriefDocs)
-        decTypedefMembers.inSort(md);
-      else
-        decTypedefMembers.append(md);
-      if (sortMemberDocs)
-        docTypedefMembers.inSort(md); 
-      else
-        docTypedefMembers.append(md);
+      if (sortBriefDocs)  decTypedefMembers.inSort(md); else decTypedefMembers.append(md);
+      if (sortMemberDocs) docTypedefMembers.inSort(md); else docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (sortBriefDocs)
-        decEnumMembers.inSort(md);
-      else
-        decEnumMembers.append(md);
-      if (sortMemberDocs)
-        docEnumMembers.inSort(md); 
-      else
-        docEnumMembers.append(md);
+      if (sortBriefDocs)  decEnumMembers.inSort(md); else decEnumMembers.append(md);
+      if (sortMemberDocs) docEnumMembers.inSort(md); else docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    // enum values are shown inside their enums
       break;
     case MemberDef::Prototype:    
-      if (sortBriefDocs)
-        decProtoMembers.inSort(md);
-      else
-        decProtoMembers.append(md);
-      if (sortMemberDocs)
-        docProtoMembers.inSort(md); 
-      else
-        docProtoMembers.append(md);
+      if (sortBriefDocs)  decProtoMembers.inSort(md); else decProtoMembers.append(md);
+      if (sortMemberDocs) docProtoMembers.inSort(md); else docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (sortBriefDocs)
-        decDefineMembers.inSort(md);
-      else
-        decDefineMembers.append(md);
-      if (sortMemberDocs)
-        docDefineMembers.inSort(md); 
-      else
-        docDefineMembers.append(md);
+      if (sortBriefDocs)  decDefineMembers.inSort(md); else decDefineMembers.append(md);
+      if (sortMemberDocs) docDefineMembers.inSort(md); else docDefineMembers.append(md);
       break;
     default:
        err("FileDef::insertMembers(): "
@@ -693,7 +668,8 @@ void FileDef::addUsingDeclaration(Definition *d)
   }
 }
 
-void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
+void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local,
+                                   bool imported)
 {
   //printf("FileDef::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
@@ -703,6 +679,7 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
     ii->fileDef     = fd;
     ii->includeName = incName;
     ii->local       = local;
+    ii->imported    = imported;
     includeList->append(ii);
     includeDict->insert(iName,ii);
   }
@@ -759,7 +736,8 @@ void FileDef::addIncludedUsingDirectives()
 }
 
 
-void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local)
+void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,
+                                      bool local,bool imported)
 {
   //printf("FileDef::addIncludedByDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
@@ -769,6 +747,7 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
     ii->fileDef     = fd;
     ii->includeName = incName;
     ii->local       = local;
+    ii->imported    = imported;
     includedByList->append(ii);
     includedByDict->insert(iName,ii);
   }
@@ -970,7 +949,7 @@ static void generateIndent(QTextStream &t,DirEntry *de,int level)
   }
 }
 
-
+#if 0
 static void writeDirTreeNode(QTextStream &t,Directory *root,int level)
 {
   QCString indent;
@@ -1001,12 +980,43 @@ static void writeDirTreeNode(QTextStream &t,Directory *root,int level)
     }
   }
 }
+#endif
 
-void generateFileTree(QTextStream &t)
+static void addDirsAsGroups(Directory *root,GroupDef *parent,int level)
+{
+  GroupDef *gd=0;
+  if (root->kind()==DirEntry::Dir)
+  {
+    gd = new GroupDef("<generated>",
+                      1,
+                      root->name(), // name
+                      root->name()  // title
+                     );
+    if (parent) 
+    {
+      parent->addGroup(gd);
+    }
+    else
+    {
+      Doxygen::groupSDict.append(root->name(),gd);
+    }
+  }
+  QListIterator<DirEntry> dli(root->children());
+  DirEntry *de;
+  for (dli.toFirst();(de=dli.current());++dli)
+  {
+    if (de->kind()==DirEntry::Dir)
+    {
+      addDirsAsGroups((Directory *)de,gd,level+1);
+    }
+  }
+}
+
+void generateFileTree()
 {
   FTVHelp::generateTreeViewImages();
   
-  Directory *root=new Directory(0,"");
+  Directory *root=new Directory(0,"root");
   root->setLast(TRUE);
   FileNameListIterator fnli(Doxygen::inputNameList); 
   FileName *fn;
@@ -1019,11 +1029,14 @@ void generateFileTree(QTextStream &t)
       mergeFileDef(root,fd);
     }
   }
-  t << "<div class=\"directory\">\n";
-  writeDirTreeNode(t,root,0);
-  t << "</div>\n";
+  //t << "<div class=\"directory\">\n";
+  //writeDirTreeNode(t,root,0);
+  //t << "</div>\n";
+  addDirsAsGroups(root,0,0);
   delete root;
 }
+
+//-------------------------------------------------------------------
 
 void FileDef::combineUsingRelations()
 {

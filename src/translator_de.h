@@ -84,13 +84,16 @@
 //    - Updated a few strings which changed in CVS revision 1.22
 //      ("compound" vs. "class")
 //    
+//   2004/08/01 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.3.8" version
+//    
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_3_8
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -156,7 +159,7 @@ class TranslatorGerman : public TranslatorAdapter_1_3_8
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
-    { return "Mehr..."; }
+    { return "Mehr ..."; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
@@ -1604,6 +1607,18 @@ class TranslatorGerman : public TranslatorAdapter_1_3_8
     {
       return "Treffer:";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return filename + " Quellcode";
+    }
+
 };
 
 #endif
