@@ -33,8 +33,8 @@ int MemberName::compareItems(GCI item1, GCI item2)
 {
   MemberDef *m1=(MemberDef *)item1;
   MemberDef *m2=(MemberDef *)item2;
-  ClassDef *c1=m1->memberClass();
-  ClassDef *c2=m2->memberClass();
+  ClassDef *c1=m1->getClassDef();
+  ClassDef *c2=m2->getClassDef();
   FileDef  *f1=m1->getFileDef();
   FileDef  *f2=m2->getFileDef();
   if (c1 && c2)
@@ -55,8 +55,8 @@ int MemberNameInfo::compareItems(GCI item1, GCI item2)
 {
   MemberInfo *m1=(MemberInfo *)item1;
   MemberInfo *m2=(MemberInfo *)item2;
-  ClassDef *c1=m1->memberDef->memberClass();
-  ClassDef *c2=m2->memberDef->memberClass();
+  ClassDef *c1=m1->memberDef->getClassDef();
+  ClassDef *c2=m2->memberDef->getClassDef();
   FileDef  *f1=m1->memberDef->getFileDef();
   FileDef  *f2=m2->memberDef->getFileDef();
   if (c1 && c2)

@@ -236,7 +236,7 @@ MemberDef::MemberDef(const char *df,int dl,
   //printf("++++++ MemberDef(%s file=%s,line=%d) ++++++ \n",na,df,dl);
   classDef=0;
   fileDef=0;
-  fileDec=0;
+  //fileDec=0;
   redefines=0;
   redefinedBy=0;
   nspace=0;
@@ -392,10 +392,10 @@ QCString MemberDef::getOutputFileBase() const
   {
     return fileDef->getOutputFileBase();
   }
-  else if (fileDec)
-  {
-    return fileDec->getOutputFileBase();
-  }
+  //else if (fileDec)
+  //{
+  //  return fileDec->getOutputFileBase();
+  //}
   else if (nspace)
   {
     return nspace->getOutputFileBase();
@@ -703,10 +703,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
         {
           //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
           annMemb->writeLink(ol,
-              annMemb->memberClass(),
-              annMemb->getNamespace(),
+              annMemb->getClassDef(),
+              annMemb->getNamespaceDef(),
               annMemb->getFileDef(),
-              annMemb->groupDef()
+              annMemb->getGroupDef()
                             );
           annMemb->annUsed=annUsed=TRUE;
         }
@@ -794,7 +794,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scopeName)
 {
-  if (memberClass()==0 && isStatic() && !Config::extractStaticFlag) return;
+  if (getClassDef()==0 && isStatic() && !Config::extractStaticFlag) return;
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
   if (
@@ -806,8 +806,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
      )
   {
     // get definition. TODO: make a method of this
-    NamespaceDef *nd=getNamespace();
-    ClassDef     *cd=memberClass();
+    NamespaceDef *nd=getNamespaceDef();
+    ClassDef     *cd=getClassDef();
     FileDef      *fd=getFileDef();
     Definition   *d = 0;
     if (cd) d=cd; else if (nd) d=nd; else d=fd;
@@ -1160,7 +1160,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     MemberDef *bmd=reimplements();
     ClassDef  *bcd=0; 
-    if (bmd && (bcd=bmd->memberClass()))
+    if (bmd && (bcd=bmd->getClassDef()))
     {
 #if 0
       if (lvirt!=Normal) // search for virtual member of the deepest base class
@@ -1168,7 +1168,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         MemberDef *lastBmd=bmd;
         while (lastBmd) 
         {
-          ClassDef *lastBcd = lastBmd->memberClass();
+          ClassDef *lastBcd = lastBmd->getClassDef();
           if (lastBmd->virtualness()!=Normal && 
               lastBmd->isLinkable() &&
               lastBcd->isLinkable()
@@ -1227,7 +1227,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       MemberDef *bmd=0;
       uint count=0;
       ClassDef *bcd=0;
-      for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->memberClass());++mli)
+      for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->getClassDef());++mli)
       {
         // count the members that directly inherit from md and for
         // which the member and class are visible in the docs.
@@ -1253,7 +1253,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
           count=0;
           // find the entryIndex-th documented entry in the inheritance list.
-          for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->memberClass());--mli)
+          for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->getClassDef());--mli)
           {
             if ( bmd->isLinkable() && bcd->isLinkable()) 
             {
@@ -1310,10 +1310,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 void MemberDef::warnIfUndocumented()
 {
   if (memberGroup) return;
-  ClassDef     *cd = memberClass();
-  NamespaceDef *nd = getNamespace();
+  ClassDef     *cd = getClassDef();
+  NamespaceDef *nd = getNamespaceDef();
   FileDef      *fd = getFileDef();
-  GroupDef     *gd = groupDef();
+  GroupDef     *gd = getGroupDef();
   Definition *d=0;
   const char *t=0;
   if (cd) 
@@ -1348,7 +1348,7 @@ bool MemberDef::isLinkable()
 bool MemberDef::detailsAreVisible() const          
 { 
   return !documentation().isEmpty() || // has detailed docs
-         /*(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources */
+         (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
          (!briefDescription().isEmpty() && 
@@ -1385,7 +1385,7 @@ bool MemberDef::visibleMemberGroup(bool hideNoHeader)
 QCString MemberDef::getScopeString() const
 {
   QCString result;
-  if (memberClass()) result=memberClass()->name();
-  else if (getNamespace()) result=getNamespace()->name();
+  if (getClassDef()) result=getClassDef()->name();
+  else if (getNamespaceDef()) result=getNamespaceDef()->name();
   return result;
 }

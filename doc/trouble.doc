@@ -80,12 +80,24 @@ know why.
 
 Furthermore, I would appreciate a mail if you have found
 a bug, or if you have ideas (or even better some code or a patch) 
-how to fix existing bugs and limitations. 
+how to fix existing bugs and limitations. For patches please use
+"diff -u"
+
+<h2>How to report a bug</h2>
+
+If you think you have found a bug in doxygen, please report it so I can
+fix it.
+
+Always include the following information in your bug report: 
+- The version of doxygen you are using.
+- The name and version number of your operating system 
 
 The easiest way for me to solve bugs is if you can send me a small example
-demonstrating the problem you have (make sure the example compiles!). It is
-usually a good idea to send along the configuation file as well, but please 
-use doxygen with the <code>-s</code> flag while generating it. 
+demonstrating the problem you have. Please make sure the example is valid
+source code (try compiling it) and if the problem is really captured by
+the example.
+It is usually a good idea to send along the configuation file as well, 
+but please use doxygen with the <code>-s</code> flag while generating it. 
 
 My e-mail address: <a href="mailto:dimitri@stack.nl">dimitri@stack.nl</a> 
 */

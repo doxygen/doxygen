@@ -14,8 +14,8 @@
 
 PROJECT_NAME      = 
 OUTPUT_DIRECTORY  = ..
-HTML_HEADER       =
-HTML_FOOTER       =
+HTML_HEADER       = 
+HTML_FOOTER       = 
 QUIET             = NO
 WARNINGS          = YES
 DISABLE_INDEX     = YES
@@ -26,11 +26,15 @@ GENERATE_LATEX    = YES
 GENERATE_HTML     = YES
 GENERATE_HTMLHELP = YES
 GENERATE_RTF      = NO
+ENABLED_SECTIONS  = logo_on
 ENABLE_PREPROCESSING = NO
+CASE_SENSE_NAMES  = NO
+IMAGE_PATH        = .
 INPUT             = index.doc install.doc starting.doc docblocks.doc \
                     grouping.doc formulas.doc diagrams.doc preprocessing.doc \
                     external.doc faq.doc trouble.doc history.doc features.doc \
 		    doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
+                    doxywizard_usage.doc \
                     installdox_usage.doc output.doc autolink.doc \
 		    config.doc commands.doc htmlcmds.doc language.doc
 FILE_PATTERNS     = *.cpp *.h *.doc

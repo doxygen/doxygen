@@ -17,16 +17,17 @@
 /*! \page doxygen_usage Doxygen usage
 
 Doxygen is a command line based utility.  Calling \c doxygen with the
-\c -h option at the command line will give you a brief description of the 
+\c --help option at the command line will give you a brief description of the 
 usage of the program.
 
 All options consist of a leading character <tt>-</tt>, 
-followed by one character and optionally an argument.
+followed by one character and one or more arguments depending on the option.
 
-To generate a class browser you typically need to follow these steps:
+To generate a manual for your project you typically 
+need to follow these steps:
 <ol>
 <li> You document your source code with 
-     special documentation blocks.
+     special documentation blocks (see section \ref specialblock).
 <li> You generate a configuration file (see section \ref config) by 
      calling doxygen with the \c -g option:
 \verbatim
@@ -42,12 +43,50 @@ doxygen <config_file>
 \endverbatim
 </ol>
 
+If you have a configuration file generated with an older version of
+doxygen that you can upgrade it to the current version by running doxygen
+with the -u option.
+\verbatim
+doxygen -u <config_file>
+\endverbatim
+All configuration settings in the orginal configuration file will be copied
+to the new configuration file. Any new options will have their default value.
+Note that comments that you may have added in the original configuration file 
+will be lost.
+
+If you want to fine-tune the way the output looks, doxygen allows you 
+generate default style sheet, header, and footer files that you can edit
+afterwards:
+<ul>
+<li>For HTML output, you can generate the default header file 
+    (see \ref cfg_html_header "HTML_HEADER"), the default footer 
+    (see \ref cfg_html_footer "HTML_FOOTER"), and the default style
+    sheet (see \ref cfg_html_stylesheet "HTML_STYLESHEET"), using the
+    following command:
+\verbatim
+doxygen -w html header.html footer.html stylesheet.css
+\endverbatim
+<li>For LaTeX output, you can generate the first part of \c refman.tex 
+    (see \ref cfg_latex_header "LATEX_HEADER") and the style sheet included
+    by that header (normally <code>doxygen.sty</code>), using:
+\verbatim
+doxygen -w latex header.tex doxygen.sty
+\endverbatim
+<li>For RTF output, you can generate the default style sheet file (see
+    \ref cfg_rtf_stylesheet_file "RTF_STYLESHEET_FILE") using:
+\verbatim
+doxygen -w rtf rtfstyle.cfg
+\endverbatim
+</ul>
+
 <b>Note:</b><br>
 <ul>
-<li> If you do not want the description for each item in the configuration
-     file then you can use the optional \c -s option.
-     Try to use this option if you send me a configuration file as part of
-     a bug report!
+<li> If you do not want documentation for each item inside the configuration
+     file then you can use the optional \c -s option. This can use be
+     used in combination with the \c -u option, to add or strip the
+     documentation from an existing configuration file.
+     Please use the \c -s this option if you send me a configuration file 
+     as part of a bug report!
 <li> To make doxygen read/write to standard input/output instead of from/to 
      a file, use \c - for the file name.
 </ul>

@@ -357,7 +357,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
       {
         QCString scope=md->getScopeString();
         QCString name=md->name();
-        //printf("class=%p scope=%s scopeName=%s\n",md->memberClass(),scope.data(),scopeName);
+        //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
         if (!scope.isEmpty() && scope!=scopeName)
         {
           name.prepend(scope+"::");

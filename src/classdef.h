@@ -102,10 +102,12 @@ class ClassDef : public Definition
     ArgumentList *outerTemplateArguments() const;
     void setTemplateArguments(ArgumentList *al);
     //QCString getTemplateNameString();
-    void setNamespace(NamespaceDef *nd) { nspace = nd; }
-    NamespaceDef *getNamespace() { return nspace; }
-    void setFileDef(FileDef *fd) { fileDef=fd; }
+    
+    NamespaceDef *getNamespaceDef() { return nspace; }
     FileDef *getFileDef() const { return fileDef; }
+    
+    void setNamespace(NamespaceDef *nd) { nspace = nd; }
+    void setFileDef(FileDef *fd) { fileDef=fd; }
     void mergeMembers();
     bool isBaseClass(ClassDef *bcd);
     void determineImplUsageRelation();

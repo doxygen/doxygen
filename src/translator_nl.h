@@ -583,10 +583,119 @@ class TranslatorDutch : public Translator
       return "Static Private Attributen";
     }
 
+
 //////////////////////////////////////////////////////////////////////////
-// new since 1.1.1
+// new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
+    /*! Used as a marker that is put before a todo item */
+    QCString trTodo()
+    {
+      return "Todo";
+    }
+    /*! Used as the header of the todo list */
+    QCString trTodoList()
+    {
+      return "Todo Lijst";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trReferencedBy()
+    {
+      return "Wordt aangeroepen door";
+    }
+    QCString trRemarks()
+    {
+      return "Opmerkingen";
+    }
+    QCString trAttention()
+    {
+      return "Attentie";
+    }
+    QCString trInclByDepGraph()
+    {
+      return "Deze graaf geeft aan welke files direct of "
+             "indirect afhankelijk zijn van deze file:";
+    }
+    QCString trSince()
+    {
+      return "Sinds";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    QCString trLegendTitle()
+    {
+      return "Graaf Legenda";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    QCString trLegendDocs()
+    {
+      return 
+        "Deze pagina legt uit hoe de grafen die gegenereerd worden door doxygen "
+        "ge&iuml;nterpreteerd dienen te worden.<p>\n"
+        "Beschouw het volgende voorbeeld:\n"
+        "\\code\n"
+        "/*! Onzichtbare klasse vanwege afkappen van de graaf */\n"
+        "class Invisible { };\n\n"
+        "/*! Afgekapte klasse, overervingsrelatie is verborgen */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* Klasse is niet gedocumenteerd met doxygen commentaar */\n"
+        "class Undocumented { };\n\n"
+        "/*! Klasse met public inheritance */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Klasse met protected inheritance */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Klasse met private inheritance */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Klasse die wordt gebruikt door de klasse Inherited */\n"
+        "class Used { };\n\n"
+        "/*! Super klasse die overerft van een aantal andere klassen */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "Als de \\c MAX_DOT_GRAPH_HEIGHT tag in the configuratie file "
+        "op 200 gezet is, zal het bestaande voorbeeld resulteren in de volgende graaf:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "De rechthoeken in the bovenstaande graaf hebben de volgende betekenis:\n"
+        "<ul>\n"
+        "<li>Een gevulde zwarte rechthoek representeert de structure of klasse waarvoor "
+        "de graaf is gegeneerd.\n"
+        "<li>Een rechthoek met een zwarte rand representeert een gedocumenteerde structure of klasse.\n"
+        "<li>Een rechthoek met een grijze rand representeert een ongedocumenteerde structure of klasse.\n"
+        "<li>Een rechthoek met een rode rand representeert een gedocumenteerde structure or klasse waarvoor\n"
+        "niet alle overervings- of gebruiksrelaties konden worden getoond. Een graaf wordt "
+        "afgekapt als hij niet past binnen de gespecificeerde grenzen."
+        "</ul>\n"
+        "De pijlen hebben de volgende betekenis:\n"
+        "<ul>\n"
+        "<li>Een donkerblauwe pijl visualizeert een public inheritance "
+        "relatie tussen twee klassen.\n"
+        "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
+        "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"
+        "<li>Een paars gestreepte pijl wordt gebruikt indien een klasse bevat is of gebruikt wordt "
+        "door een andere klasse. De pijl is gelabeled met de variable(n) "
+        "die toegang geven tot de aangewezen klasse of structure. \n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    QCString trLegend()
+    {
+      return "legenda";
+    }
 };
 
 #endif

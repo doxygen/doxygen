@@ -92,7 +92,11 @@ Compilation is now done by performing the following steps:
 
     If you have Qt-2.1.x installed and want to build the GUI front-end, you
     should run the configure script with the <code>--with-doxywizard</code> 
-    option.
+    option:
+
+\verbatim
+    configure --with-doxywizard
+\endverbatim
 
     For an overview of other configuration options use
 
@@ -216,6 +220,9 @@ If you are compiling for HP-UX with aCC and you get this error:
     #include <alloca.h>  
 \endverbatim
 
+  If that does not help, try removing <code>ce_parse.cpp</code> and let 
+  bison rebuilt it (this worked for me).
+
 If you are compiling for Digital Unix, the same problem can be solved
 (according to Barnard Schmallhof) by replacing the following in 
 ce_parse.cpp:
@@ -256,7 +263,50 @@ ce_parse.cpp:
 
 <b>Sun compiler problems</b>
 
+I tried compiling doxygen only with Sun's C++ WorkShop Compiler
+version 5.0 (I used <code>./configure --platform solaris-cc</code>)
 
+Qt-2.x.x is required for this compiler (Qt-1.44 has problems with the bool
+type).
+
+Compiling the \c doxygen binary went ok, but while linking <code>doxytag</code> I got a 
+lot of link errors, like these:
+
+\verbatim
+QList<PageInfo>::__vtbl   /home/dimitri/doxygen/objects/SunWS_cache/CC_obj_6/6c3eO4IogMT2vrlGCQUQ.o
+[Hint: try checking whether the first non-inlined, non-pure virtual function of class QList<PageInfo> is defined]
+\endverbatim
+
+These are generated because the compiler is confused about the object sharing
+between \c doxygen and \c doxytag. To compile \c doxytag and \c doxysearch 
+anyway do:
+
+\verbatim
+rm -rf objects
+mkdir objects
+cd src
+gmake -f Makefile.doxytag
+gmake -f Makefile.doxysearch
+\endverbatim
+
+when configuring with <code>--static</code> I got:
+
+\verbatim
+Undefined                       first referenced
+ symbol                             in file
+dlclose                             /usr/lib/libc.a(nss_deffinder.o)
+dlsym                               /usr/lib/libc.a(nss_deffinder.o)
+dlopen                              /usr/lib/libc.a(nss_deffinder.o)
+\endverbatim
+
+Manually adding <code>-Bdynamic</code> after the target rule in 
+<code>Makefile.doxygen</code> and <code>Makefile.doxytag</code> 
+will fix this:
+
+\verbatim
+$(TARGET): $(OBJECTS) $(OBJMOC) 
+        $(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS) -Bdynamic
+\endverbatim
 
 <b>GNU 2.7.2.x compiler problems</b>
 

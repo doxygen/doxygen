@@ -66,14 +66,23 @@ void NamespaceDef::distributeMemberGroupDocumentation()
 }
 void NamespaceDef::insertUsedFile(const char *f)
 {
-  if (files.find(f)==-1) files.append(f);
+  if (files.find(f)==-1) 
+  {
+    if (Config::sortMembersFlag)
+      files.inSort(f);
+    else
+      files.append(f);
+  }
 }
 
 void NamespaceDef::insertClass(ClassDef *cd)
 {
   if (classDict->find(cd->name())==0)
   {
-    classList->append(cd);
+    if (Config::sortMembersFlag)
+      classList->inSort(cd);
+    else
+      classList->append(cd);
     classDict->insert(cd->name(),cd);
   }
 }
@@ -121,13 +130,48 @@ void NamespaceDef::insertMember(MemberDef *md)
   allMemberList.append(md); 
   switch(md->memberType())
   {
-    case MemberDef::Variable:     varMembers.inSort(md); break;
-    case MemberDef::Function:     funcMembers.inSort(md); break;
-    case MemberDef::Typedef:      typedefMembers.inSort(md); break;
-    case MemberDef::Enumeration:  enumMembers.inSort(md); break;
-    case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
-    case MemberDef::Prototype:    protoMembers.inSort(md); break;
-    case MemberDef::Define:       defineMembers.inSort(md); break;
+    case MemberDef::Variable:     
+      if (Config::sortMembersFlag)
+        varMembers.inSort(md); 
+      else
+        varMembers.append(md);
+      break;
+    case MemberDef::Function: 
+      if (Config::sortMembersFlag)    
+        funcMembers.inSort(md); 
+      else
+        funcMembers.append(md);
+      break;
+    case MemberDef::Typedef:      
+      if (Config::sortMembersFlag)
+        typedefMembers.inSort(md); 
+      else
+        typedefMembers.append(md);
+      break;
+    case MemberDef::Enumeration:  
+      if (Config::sortMembersFlag)
+        enumMembers.inSort(md); 
+      else
+        enumMembers.append(md);
+      break;
+    case MemberDef::EnumValue:    
+      if (Config::sortMembersFlag)
+        enumValMembers.inSort(md); 
+      else
+        enumValMembers.append(md);
+      break;
+    case MemberDef::Prototype:    
+      if (Config::sortMembersFlag)
+        protoMembers.inSort(md); 
+      else
+        protoMembers.append(md);
+      break;
+    case MemberDef::Define:       
+      if (Config::sortMembersFlag)
+        defineMembers.inSort(md); 
+      else
+        defineMembers.append(md);
+      break;
     default:
        err("NamespaceDef::insertMembers(): unexpected member inserted in namespace!\n");
   }

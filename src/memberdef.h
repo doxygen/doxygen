@@ -72,6 +72,71 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     
+    QCString getOutputFileBase() const;
+    const char *declaration() const       { return decl; }
+    const char *definition() const        { return def; }
+    const char *typeString() const        { return type; }
+    const char *argsString() const        { return args; }
+    const char *excpString() const        { return exception; }     
+    const char *anchor() const            { return anc; }
+    const QCString &initializer() const   { return init; }
+    int initializerLines() const          { return initLines; }
+    int  getMemberSpecifiers() const      { return memSpec; }
+    MemberList *getSectionList() const    { return section; }
+
+    // scope query members
+    ClassDef *getClassDef() const         { return classDef; }
+    GroupDef *getGroupDef() const         { return group; }
+    FileDef  *getFileDef() const          { return fileDef; }
+    NamespaceDef* getNamespaceDef() const { return nspace; }
+
+    // direct kind info 
+    Protection protection() const         { return prot; }
+    Specifier virtualness() const         { return virt; }
+    MemberType memberType() const         { return mtype; }
+
+    // convenience methods
+    bool isSignal() const                 { return mtype==Signal;      }
+    bool isSlot() const                   { return mtype==Slot;        }
+    bool isVariable() const               { return mtype==Variable;    }
+    bool isEnumerate() const              { return mtype==Enumeration; }
+    bool isEnumValue() const              { return mtype==EnumValue;   }
+    bool isTypedef() const                { return mtype==Typedef;     }
+    bool isFunction() const               { return mtype==Function;    } 
+    bool isDefine() const                 { return mtype==Define;      }
+    bool isFriend() const                 { return mtype==Friend;      }
+    bool isRelated() const                { return related; }
+    bool isStatic() const                 { return stat; }
+    bool isInline() const                 { return (memSpec&Entry::Inline)!=0; }
+    bool isExplicit() const               { return (memSpec&Entry::Explicit)!=0; }
+    bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
+
+    // output info
+    bool isLinkableInProject();
+    bool isLinkable();
+    bool detailsAreVisible() const;
+    bool hasDocumentation();  // overrides hasDocumentation in definition.h
+
+    // set functions
+    void setMemberType(MemberType t)      { mtype=t; }
+    void setDefinition(const char *d)     { def=d; }
+    void setFileDef(FileDef *fd)          { fileDef=fd; }
+    void setAnchor(const char *a)         { anc=a; }
+    void setProtection(Protection p)      { prot=p; }
+    void setMemberSpecifiers(int s)       { memSpec=s; }
+    void mergeMemberSpecifiers(int s)     { memSpec|=s; }
+    void setInitializer(const char *i)    { init=i; 
+                                           init=init.stripWhiteSpace();
+                                           initLines=init.contains('\n');
+                                          }
+    void setMaxInitLines(int lines)       { if (lines!=-1) maxInitLines=lines; }
+    void setMemberClass(ClassDef *cd)     { classDef=cd; }
+    void setSectionList(MemberList *sl)   { section=sl; }
+    void setGroupDef(GroupDef *gd)        { group=gd; }
+    
+    void makeRelated()                    { related=TRUE; } 
+
+    // output generatation
     void writeLink(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclaration(OutputList &ol,
@@ -81,56 +146,11 @@ class MemberDef : public Definition
                             const char *scopeName/*,MemberType m*/);
     void warnIfUndocumented();
     
-    QCString getOutputFileBase() const;
-    const char *declaration() const      { return decl; }
-    const char *definition() const       { return def; }
-    const char *typeString() const       { return type; }
-    const char *argsString() const       { return args; }
-    const char *excpString() const       { return exception; }     
-    const char *anchor() const           { return anc; }
-    const QCString &initializer() const  { return init; }
-    int initializerLines() const         { return initLines; }
-    ClassDef *memberClass() const        { return classDef; }
-    Protection protection() const        { return prot; }
-    Specifier virtualness() const        { return virt; }
-    MemberType memberType() const        { return mtype; }
-    GroupDef *groupDef() const           { return group; }
-    FileDef *getFileDef()                { return fileDef; }
-    FileDef *getFileDec()                { return fileDec; }
-    bool isRelated() const               { return related; }
-    bool isStatic() const                { return stat; }
-    bool isInline() const                { return (memSpec&Entry::Inline)!=0; }
-    bool isExplicit() const              { return (memSpec&Entry::Explicit)!=0; }
-    bool isMutable() const               { return (memSpec&Entry::Mutable)!=0; }
-    MemberList *getSectionList() const   { return section; }
-    void setMemberType(MemberType t)     { mtype=t; }
-    void setDefinition(const char *d)    { def=d; }
-    void setFileDef(FileDef *fd)         { fileDef=fd; }
-    void setFileDec(FileDef *fd)         { fileDec=fd; }
-    void setAnchor(const char *a)        { anc=a; }
-    void setProtection(Protection p)     { prot=p; }
-    void setMemberSpecifiers(int s)      { memSpec=s; }
-    int  getMemberSpecifiers() const     { return memSpec; }
-    void mergeMemberSpecifiers(int s)    { memSpec|=s; }
-    void setInitializer(const char *i)   { init=i; 
-                                           init=init.stripWhiteSpace();
-                                           initLines=init.contains('\n');
-                                         }
-    void setMaxInitLines(int lines)      { if (lines!=-1) maxInitLines=lines; }
-    void setMemberClass(ClassDef *cd)    { classDef=cd; }
-    void setSectionList(MemberList *sl)  { section=sl; }
-    void makeRelated()                   { related=TRUE; } 
-    void setGroupDef(GroupDef *gd)       { group=gd; }
-    bool hasDocumentation();  // overrides hasDocumentation in definition.h
-    bool isLinkableInProject();
-    bool isLinkable();
-    
-    bool detailsAreVisible() const;
     // relation to other members
-    void setReimplements(MemberDef *md) { redefines=md; }
+    void setReimplements(MemberDef *md)   { redefines=md; }
     void insertReimplementedBy(MemberDef *md);
-    MemberDef  *reimplements() const    { return redefines; }
-    MemberList *reimplementedBy() const { return redefinedBy; }
+    MemberDef  *reimplements() const      { return redefines; }
+    MemberList *reimplementedBy() const   { return redefinedBy; }
     
     // enumeration specific members
     void insertEnumField(MemberDef *md);
@@ -148,20 +168,9 @@ class MemberDef : public Definition
     
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
-    //void writeExample(OutputList &ol);
     bool hasExamples();
     ExampleList *getExampleList() const { return exampleList; }
 
-    // convenience members
-    bool isSignal() const    { return mtype==Signal;      }
-    bool isSlot() const      { return mtype==Slot;        }
-    bool isVariable() const  { return mtype==Variable;    }
-    bool isEnumerate() const { return mtype==Enumeration; }
-    bool isEnumValue() const { return mtype==EnumValue;   }
-    bool isTypedef() const   { return mtype==Typedef;     }
-    bool isFunction() const  { return mtype==Function;    } 
-    bool isDefine() const    { return mtype==Define;      }
-    bool isFriend() const    { return mtype==Friend;      }
     
     // prototype related members
     void setPrototype(bool p) { proto=p; }
@@ -178,10 +187,8 @@ class MemberDef : public Definition
     ArgumentList *scopeDefTemplateArguments() const { return scopeTAL; }
     void setMemberDefTemplateArguments(ArgumentList *t);
     ArgumentList *memberDefTemplateArguments() const { return membTAL; }
-    //QCString getScopeTemplateNameString();
     
     // namespace related members
-    NamespaceDef *getNamespace() const { return nspace; }
     void setNamespace(NamespaceDef *nd) { nspace=nd; }
 
     // member group related members
@@ -190,6 +197,7 @@ class MemberDef : public Definition
     void setMemberGroupId(int id) { grpId=id; }
     int getMemberGroupId() const { return grpId; }
     
+    // annonymous scope members
     void setFromAnnonymousScope(bool b) { annScope=b; }    
     void setFromAnnonymousMember(MemberDef *m) { annMemb=m; }    
     bool fromAnnonymousScope() const { return annScope; }
@@ -204,7 +212,6 @@ class MemberDef : public Definition
   private:
     ClassDef   *classDef;     // member of or related to 
     FileDef    *fileDef;      // member of file definition 
-    FileDef    *fileDec;      // member of file declaration
     MemberDef  *redefines;    // the member that is redefined by this one
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field
     MemberDef  *annEnumType;  // the annonymous enum that is the type of this member
@@ -225,8 +232,6 @@ class MemberDef : public Definition
     QCString declFile;        // file where the declaration was found
     int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
-    //QCString defFile;         // file where the definition was found
-    //int      defLine;         // line where the definition was found
     QCString anc;             // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
@@ -237,10 +242,10 @@ class MemberDef : public Definition
     bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
-    bool annScope;
-    bool annUsed;
-    bool annShown;
-    int  indDepth;
+    bool annScope;            // member is part of an annoymous scope
+    bool annUsed;             
+    bool annShown;           
+    int  indDepth;            // indentation depth for this member if inside an annonymous scope
     int  maxInitLines;        // when the initializer will be displayed 
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
@@ -249,7 +254,6 @@ class MemberDef : public Definition
     ArgumentList *scopeTAL;   // template argument list of class template
     ArgumentList *membTAL;    // template argument list of class template
     int grpId;                // group id
-    //QCString grpHeader;       // group header
     MemberGroup *memberGroup; // group's member definition
 
     GroupDef *group;          // group in which this member is in

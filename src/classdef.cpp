@@ -779,9 +779,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<font size=2><center>[");
+        ol.writeString("<center><font size=\"2\">[");
         ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
-        ol.writeString("]</center></font>");
+        ol.writeString("]</font></center>");
         ol.popGeneratorState();
       }
       ol.popGeneratorState();
@@ -811,9 +811,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<font size=2><center>[");
+        ol.writeString("<center><font size=\"2\">[");
         ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
-        ol.writeString("]</center></font>");
+        ol.writeString("]</font></center>");
         ol.popGeneratorState();
       }
       ol.popGeneratorState();
@@ -1123,7 +1123,7 @@ void ClassDef::writeMemberList(OutputList &ol)
     while (mi)
     {
       MemberDef *md=mi->memberDef;
-      ClassDef  *cd=md->memberClass();
+      ClassDef  *cd=md->getClassDef();
       
       // compute the protection level for this member
       Protection protect=md->protection();
@@ -1301,7 +1301,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   //ol.insertMemberAlign();
   //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
 
-  if (inGroup && md && md->memberClass()==this) return;
+  if (inGroup && md && md->getClassDef()==this) return;
   
   switch(compType)
   {
@@ -1447,13 +1447,13 @@ void ClassDef::mergeMembers(/*ClassDef *cd,BaseClassList *bcl*/)
           bool hidden=FALSE;
           MemberNameInfoIterator dstMnii(*dstMni); 
           MemberInfo *dstMi;
-          ClassDef *srcCd = srcMd->memberClass();
+          ClassDef *srcCd = srcMd->getClassDef();
           for ( ; (dstMi=dstMnii.current()) && !found; ++dstMnii )
           {
             MemberDef *dstMd = dstMi->memberDef;
             if (srcMd!=dstMd) // different members
             {
-              ClassDef *dstCd = dstMd->memberClass();
+              ClassDef *dstCd = dstMd->getClassDef();
               //printf("Is %s a base class of %s?\n",srcCd->name(),dstCd->name());
               if (srcCd==dstCd || dstCd->isBaseClass(srcCd)) 
                 // member is in the same or a base class
@@ -1565,7 +1565,7 @@ void ClassDef::mergeMembers(/*ClassDef *cd,BaseClassList *bcl*/)
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
             MemberInfo *newMi=new MemberInfo(mi->memberDef,bcd->prot,virt);
-            //if (mi->memberDef->memberClass()!=bClass)
+            //if (mi->memberDef->getClassDef()!=bClass)
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
             newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();

@@ -54,7 +54,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
   {
     //printf("md=%p md->name()=`%s' inGroup=%d getMemberGroup()=%p\n",
     //    md,md->name().data(),inGroup,md->getMemberGroup());
-    if (!(md->memberClass()==0 && md->isStatic() && !Config::extractStaticFlag) &&
+    if (!(md->getClassDef()==0 && md->isStatic() && !Config::extractStaticFlag) &&
         (!Config::hideMemberFlag || md->hasDocumentation()) &&
         (
          (!Config::hideMemberFlag || !md->documentation().isEmpty() || 
@@ -73,7 +73,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
         case MemberDef::Variable:    varCnt++,m_count++;  break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
-        case MemberDef::Slot:        if (!md->isRelated() || md->memberClass())
+        case MemberDef::Slot:        if (!md->isRelated() || md->getClassDef())
                                        funcCnt++,m_count++; 
                                      break;
         case MemberDef::Enumeration: enumCnt++,m_count++; break;
@@ -119,7 +119,7 @@ void MemberList::countDocMembers()
     //printf("%s MemberList::countDocMembers() details=%d\n",
     //    md->name().data(),md->detailsAreVisible());
     bool visibleIfStatic = 
-      !(md->memberClass()==0 && md->isStatic() && !Config::extractStaticFlag);
+      !(md->getClassDef()==0 && md->isStatic() && !Config::extractStaticFlag);
 
     if (visibleIfStatic && 
         (Config::extractAllFlag || md->detailsAreVisible()) 
@@ -410,7 +410,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     {
       if (
           ( md->isFunction() || md->isSignal() || md->isSlot()) &&
-          ( !md->isRelated() || md->memberClass() ) &&
+          ( !md->isRelated() || md->getClassDef() ) &&
           inGroup==md->visibleMemberGroup(sectionPerType)
          ) 
       {

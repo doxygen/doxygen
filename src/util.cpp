@@ -300,13 +300,19 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   for (i=0;i<l;i++)
   {
     char c=s.at(i);
-    if (i<l-2 && c=='<' && (isId(s.at(i+1)) || isspace(s.at(i+1))))
+    if (i<l-2 && c=='<' &&  // current char is a <
+        (isId(s.at(i+1)) || isspace(s.at(i+1))) && // next char is a id char or space
+        (i<8 || s.mid(i-8,8)!="operator") // string in front is not "operator"
+       )
     {
-      result+="< ";
+      result+="< "; // insert extra space for layouting (nested) templates
     }
-    else if (i>0 && c=='>' && (isId(s.at(i-1)) || isspace(s.at(i-1))))
+    else if (i>0 && c=='>' && // current char is a >
+             (isId(s.at(i-1)) || isspace(s.at(i-1))) && // prev char is a id char or space
+             (i<8 || s.mid(i-8,8)!="operator") // string in front is not "operator"
+            )
     {
-      result+=" >";
+      result+=" >"; // insert extra space for layouting (nested) templates
     }
     else if (c!=' ' ||
 	(i!=0 && i!=l-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
@@ -1480,7 +1486,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       //printf("Trying class scope %s\n",className.data());
 
       ClassDef *fcd=0;
-      if ((fcd=getClass(className)) &&  // is it a documented class
+      if ((fcd=getResolvedClass(className)) &&  // is it a documented class
            fcd->isLinkable() 
          )
       {
@@ -1501,7 +1507,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             //printf("match=%d\n",match);
             if (match)
             {
-              ClassDef *mcd=mmd->memberClass();
+              ClassDef *mcd=mmd->getClassDef();
               int m=minClassDistance(fcd,mcd);
               if (m<mdist && mcd->isLinkable())
               {
@@ -1533,7 +1539,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 mmd->isLinkable()
                )
             {
-              ClassDef *mcd=mmd->memberClass();
+              ClassDef *mcd=mmd->getClassDef();
               //printf("  >Class %s found\n",mcd->name().data());
               int m=minClassDistance(fcd,mcd);
               if (m<mdist && mcd->isLinkable())
@@ -1594,9 +1600,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           MemberDef *mmd=mn->first();
           while (mmd && !found)
           {
-            //printf("mmd->getNamespace()=%p fnd=%p\n",
-            //    mmd->getNamespace(),fnd);
-            if (mmd->getNamespace()==fnd && 
+            //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
+            //    mmd->getNamespaceDef(),fnd);
+            if (mmd->getNamespaceDef()==fnd && 
                 //(mmd->isReference() || mmd->hasDocumentation())
                 mmd->isLinkable()
                )
@@ -1630,7 +1636,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             // the first defined!
             while (mmd && !found)
             {
-              if (mmd->getNamespace()==fnd && 
+              if (mmd->getNamespaceDef()==fnd && 
                   //(mmd->isReference() || mmd->hasDocumentation())
                   mmd->isLinkable()
                  )
@@ -1646,14 +1652,14 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
         else // no scope => global function
         {
-          //printf("Function with global scope `%s'\n",namespaceName.data());
+          //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
           md=mn->first();
           while (md)
           {
             if (md->isLinkable())
             {
               fd=md->getFileDef();
-              gd=md->groupDef();
+              gd=md->getGroupDef();
               //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
               //    md->name().data(),args,fd,gd);
               bool inGroup=FALSE;
@@ -1688,13 +1694,14 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             md=mn->last();
             while (md)
             {
-              if (md->isLinkable())
+              //printf("Found member `%s'\n",md->name().data());
+              if (1 /* md->isLinkable() */)
               {
-                //printf("md->name()=`%s'\n",md->name().data());
+                //printf("member is linkable md->name()=`%s'\n",md->name().data());
                 fd=md->getFileDef();
-                gd=md->groupDef();
+                gd=md->getGroupDef();
                 bool inGroup=FALSE;
-                if ((fd && fd->isLinkable()) |+
+                if ((fd && fd->isLinkable()) ||
                     (inGroup=(gd && gd->isLinkable()))
                    )
                 {

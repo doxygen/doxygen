@@ -952,7 +952,7 @@ static MemberDef *addVariableToClass(
     MemberDef *md=mn->first();
     while (md)
     {
-      if (md->memberClass()==cd && root->type==md->typeString()) 
+      if (md->getClassDef()==cd && root->type==md->typeString()) 
         // member already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
@@ -1085,7 +1085,7 @@ static MemberDef *addVariableToFile(
       {
         nd = namespaceDict[nscope];
       }
-      if (nd==0 || md->getNamespace()==nd) 
+      if (nd==0 || md->getNamespaceDef()==nd) 
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
@@ -1352,8 +1352,9 @@ static void buildMemberList(Entry *root)
                 );
 
     bool isFriend=root->type.find("friend ")!=-1;
+    QCString rname = removeRedundantWhiteSpace(root->name);
 
-    if (!root->name.isEmpty())
+    if (!rname.isEmpty())
     {
       
       ClassDef *cd=0;
@@ -1365,18 +1366,18 @@ static void buildMemberList(Entry *root)
       QCString scope=stripAnnonymousNamespaceScope(root->parent->name.copy());
 
       bool isMember=FALSE;
-      int memIndex=root->name.find("::");
+      int memIndex=rname.find("::");
       if (memIndex!=-1)
       {
-        int ts=root->name.find('<');
-        int te=root->name.find('>');
+        int ts=rname.find('<');
+        int te=rname.find('>');
         if (ts==-1 || te==-1)
         {
           isMember=TRUE;
         }
         else
         {
-          isMember=memIndex<ts && memIndex<te;
+          isMember=memIndex<ts || memIndex>te;
         }
       }
       
@@ -1398,7 +1399,7 @@ static void buildMemberList(Entry *root)
           root->type=root->type.left(i+l);
         }
 
-        QCString name=removeRedundantWhiteSpace(root->name);
+        QCString name=removeRedundantWhiteSpace(rname);
         if (name.left(2)=="::") name=name.right(name.length()-2);
 
         MemberDef::MemberType mtype;
@@ -1417,7 +1418,7 @@ static void buildMemberList(Entry *root)
         //if (Config::includeSourceFlag && !root->body.isEmpty())
         //{
         //  printf("Function: %s\n-----------------\n%s\n------------------\n",
-        //         root->name.data(),root->body.data());
+        //         rname.data(),root->body.data());
         //}
 
         // new member function, signal or slot.
@@ -1500,7 +1501,7 @@ static void buildMemberList(Entry *root)
                      "    def=`%s'\n",
                      root->type.data(),
                      root->parent->name.data(),
-                     root->name.data(),
+                     rname.data(),
                      root->args.data(),
                      root->proto,
                      def.data()
@@ -1532,7 +1533,7 @@ static void buildMemberList(Entry *root)
                !(root->parent->section & Entry::COMPOUND_MASK) &&
                !isMember &&
 
-               //root->name.find("::")==-1 && // TODO: remove this check
+               //rname.find("::")==-1 && // TODO: remove this check
                //                             // it breaks cases like 
                //                             // func<A::B>(), but it is needed
                //                             // for detect that A::func() is a member 
@@ -1550,23 +1551,37 @@ static void buildMemberList(Entry *root)
         bool found=FALSE;
         MemberName *mn;
         //MemberDef *fmd;
-        if ((mn=functionNameDict[root->name]))
+        if ((mn=functionNameDict[rname]))
         {
-          //printf("--> function %s already found!\n",root->name.data());
+          //printf("--> function %s already found!\n",rname.data());
           MemberDef *md=mn->first();
           while (md && !found)
           {
-            NamespaceDef *nd = md->getNamespace();
+            NamespaceDef *nd = md->getNamespaceDef();
+            NamespaceDef *rnd = 0;
+            if (!root->parent->name.isEmpty())
+            {
+              rnd = namespaceDict[root->parent->name];
+            }
             FileDef *fd = md->getFileDef();
-            QCString nsName = nd ? nd->name().data() : "";
-            //printf("namespace `%s'\n",nsName.data());
+            QCString nsName,rnsName;
+            if (nd)  nsName  = nd->name().copy();
+            if (rnd) rnsName = rnd->name().copy();
+            //printf("namespace `%s' `%s'\n",nsName.data(),rnsName.data());
             if ( 
                 matchArguments(md->argumentList(),root->argList,0,nsName)
                )
             {
-              // function already found in the same file, one is probably
-              // a prototype.
-              found=nd || fd->absFilePath()==root->fileName;
+              // see if we need to create a new member
+              found=nsName==rnsName && // members are in the same namespace
+                    ((fd!=0 && // no external reference
+                      fd->absFilePath()==root->fileName // prototype in the same file
+                     ) || 
+                     md->getGroupDef()!=0 // member is part of a group
+                    ); 
+              // otherwise, allow a duplicate global member with the same argument list
+              
+              // merge members documentation and properties
               mergeArguments(root->argList,md->argumentList());
               if (!md->documentation() && !root->doc.isEmpty())
               {
@@ -1590,10 +1605,10 @@ static void buildMemberList(Entry *root)
         if (!found) /* global function is unique with respect to the file */
         {
           //printf("New function type=`%s' name=`%s' args=`%s' bodyLine=%d\n",
-          //       root->type.data(),root->name.data(),root->args.data(),root->bodyLine);
+          //       root->type.data(),rname.data(),root->args.data(),root->bodyLine);
           
           // new global function
-          QCString name=removeRedundantWhiteSpace(root->name);
+          QCString name=removeRedundantWhiteSpace(rname);
           MemberDef *md=new MemberDef(
               root->fileName,root->startLine,
               root->type,name,root->args,root->exception,
@@ -1641,7 +1656,7 @@ static void buildMemberList(Entry *root)
                      "    def=`%s'\n",
                      root->type.data(),
                      root->parent->name.data(),
-                     root->name.data(),
+                     rname.data(),
                      root->args.data(),
                      root->proto,
                      def.data()
@@ -1705,10 +1720,10 @@ static void buildMemberList(Entry *root)
         }
 
         //printf("unrelated function %d `%s' `%s' `%s'\n",
-        //    root->parent->section,root->type.data(),root->name.data(),root->args.data());
+        //    root->parent->section,root->type.data(),rname.data(),root->args.data());
       }
     }
-    else if (root->name.isEmpty())
+    else if (rname.isEmpty())
     {
         warn(root->fileName,root->startLine,
              "Warning: Illegal member name found."
@@ -1748,11 +1763,11 @@ static void findFriends()
           //printf("Checking for matching arguments 
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-          NamespaceDef *nd=mmd->getNamespace();
+          NamespaceDef *nd=mmd->getNamespaceDef();
           if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
               matchArguments(mmd->argumentList(),
                              fmd->argumentList(),
-                             mmd->memberClass()->name(),
+                             mmd->getClassDef()->name(),
                              nd ? nd->name().data() : 0
                             )
              ) // if the member is related and the arguments match then the 
@@ -1951,7 +1966,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         }
 
         bool found=baseClass!=0 && baseClass!=cd;
-        NamespaceDef *nd=cd->getNamespace();
+        NamespaceDef *nd=cd->getNamespaceDef();
         if (!found)
         {
           FileDef *fd=cd->getFileDef();
@@ -2166,8 +2181,8 @@ static void addMemberDocs(Entry *root,
   // strip extern specifier
   if (fDecl.left(7)=="extern ") fDecl=fDecl.right(fDecl.length()-7);
   md->setDefinition(fDecl);
-  ClassDef     *cd=md->memberClass();
-  NamespaceDef *nd=md->getNamespace();
+  ClassDef     *cd=md->getClassDef();
+  NamespaceDef *nd=md->getNamespaceDef();
   if (al)
   {
     mergeArguments(md->argumentList(),al);
@@ -2390,7 +2405,7 @@ static bool findUnrelatedFunction(Entry *root,
     while (md)
     {
       bool ambig;
-      NamespaceDef *nd=md->getNamespace();
+      NamespaceDef *nd=md->getNamespaceDef();
       //printf("Namespace namespaceName=%s nd=%s\n",
       //    namespaceName.data(),nd ? nd->name().data() : "<none>");
       FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
@@ -2897,7 +2912,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
         {
           Debug::print(Debug::FindMembers,0,
                  "3. member definition found scopeName=`%s'\n",scopeName.data());
-          ClassDef *cd=md->memberClass();
+          ClassDef *cd=md->getClassDef();
           //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
           ClassDef *tcd=0;
           
@@ -3036,7 +3051,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
             md=mn->first();
             while (md)
             {
-              ClassDef *cd=md->memberClass();
+              ClassDef *cd=md->getClassDef();
               if (cd!=0 && cd->name()==className) candidates++;
               md=mn->next();
             }
@@ -3047,7 +3062,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
             md=mn->first();
             while (md)
             {
-              ClassDef *cd=md->memberClass();
+              ClassDef *cd=md->getClassDef();
               if (cd!=0 && cd->name()==className)
               {
                 warn_cont("  %s",md->declaration());
@@ -3075,14 +3090,14 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
         // however be avoided, because it is error prone
         MemberDef *md=mn->first();
         ASSERT(md);
-        ClassDef *cd=md->memberClass();
+        ClassDef *cd=md->getClassDef();
         ASSERT(cd);
         QCString className=cd->name().copy();
         md=mn->next();
         bool unique=TRUE;
         while (md)
         {
-          ClassDef *cd=md->memberClass();
+          ClassDef *cd=md->getClassDef();
           if (className!=cd->name()) unique=FALSE; 
           md=mn->next();
         } 
@@ -3519,7 +3534,7 @@ static void findEnums(Entry *root)
           {
             if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
             {
-              NamespaceDef *fnd=fmd->getNamespace();
+              NamespaceDef *fnd=fmd->getNamespaceDef();
               if (fnd==nd) // enum value is inside a namespace
               {
                 md->insertEnumField(fmd);
@@ -3537,7 +3552,7 @@ static void findEnums(Entry *root)
             }
             else
             {
-              ClassDef *fcd=fmd->memberClass();
+              ClassDef *fcd=fmd->getClassDef();
               if (fcd==cd) // enum value is inside a class
               {
                 md->insertEnumField(fmd); // add field def to list
@@ -3605,7 +3620,7 @@ static void findEnumDocumentation(Entry *root)
           MemberDef  *md=mn->first();
           while (md && !found)
           {
-            ClassDef *cd=md->memberClass();
+            ClassDef *cd=md->getClassDef();
             if (cd && cd->name()==className)
             {
               // documentation outside a compound overrides the documentation inside it
@@ -3729,8 +3744,8 @@ static void computeMemberRelations()
       for ( ; bmdi.current() ; ++bmdi) // for each other member with that signature
       {
         MemberDef *bmd=bmdi.current();
-        ClassDef *bmcd = bmd->memberClass();
-        ClassDef *mcd = md->memberClass();
+        ClassDef *bmcd = bmd->getClassDef();
+        ClassDef *mcd = md->getClassDef();
         //printf("Check relation between `%s'::`%s' and `%s'::`%s'\n",
         //       mcd->name().data(),md->name().data(),
         //       bmcd->name().data(),bmd->name().data()
@@ -3750,7 +3765,7 @@ static void computeMemberRelations()
             {
               MemberDef *rmd;
               if ((rmd=md->reimplements())==0 ||
-                  minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->memberClass())
+                  minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef())
                  )
               {
                 //printf("setting (new) reimplements member\n");
@@ -3905,13 +3920,13 @@ static void addSourceReferences()
     MemberDef *md=0;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      ClassDef *cd=md->memberClass();
+      ClassDef *cd=md->getClassDef();
       FileDef *fd=md->getBodyDef();
       if (fd && cd && cd->isLinkableInProject() && md->getStartBodyLine()!=-1 &&
           md->isLinkableInProject())
       {
         Definition *d=cd;
-        if (d==0) d=md->getNamespace();
+        if (d==0) d=md->getNamespaceDef();
         if (d==0) d=md->getFileDef();
         fd->addSourceRef(md->getStartBodyLine(),d,md);
       }
@@ -3924,9 +3939,9 @@ static void addSourceReferences()
     MemberDef *md=0;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      NamespaceDef *nd=md->getNamespace();
+      NamespaceDef *nd=md->getNamespaceDef();
       FileDef *fd=md->getBodyDef();
-      GroupDef *gd=md->groupDef();
+      GroupDef *gd=md->getGroupDef();
       if (md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
           ((nd && nd->isLinkableInProject()) ||
            (fd && fd->isLinkableInProject()) ||
@@ -4641,22 +4656,17 @@ static void generateSearchIndex()
 
 //----------------------------------------------------------------------------
 
-/*! Generate a template version of the configuration file.
- *  If the \a shortList parameter is TRUE a configuration file without
- *  comments will be generated.
- */
-static void generateConfigFile(const char *configFile,bool shortList)
+static bool openOutputFile(const char *outFile,QFile &f)
 {
-  QFile f;
   bool fileOpened=FALSE;
-  bool writeToStdout=(configFile[0]=='-' && configFile[1]==0);
+  bool writeToStdout=(outFile[0]=='-' && outFile[1]=='\0');
   if (writeToStdout) // write to stdout
   {
     fileOpened = f.open(IO_WriteOnly,stdout);
   }
   else // write to file
   {
-    QFileInfo fi(configFile);
+    QFileInfo fi(outFile);
     if (fi.exists()) // create a backup
     {
       QDir dir=fi.dir();
@@ -4665,14 +4675,24 @@ static void generateConfigFile(const char *configFile,bool shortList)
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     } 
-    f.setName(configFile);
+    f.setName(outFile);
     fileOpened = f.open(IO_WriteOnly);
   }
- 
+  return fileOpened;
+}
+
+/*! Generate a template version of the configuration file.
+ *  If the \a shortList parameter is TRUE a configuration file without
+ *  comments will be generated.
+ */
+static void generateConfigFile(const char *configFile,bool shortList)
+{
+  QFile f;
+  bool fileOpened=openOutputFile(configFile,f);
+  bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
     writeTemplateConfig(&f,shortList);
-    f.close();
     if (!writeToStdout)
     {
       msg("\n\nConfiguration file `%s' created.\n\n",configFile);
@@ -4690,60 +4710,6 @@ static void generateConfigFile(const char *configFile,bool shortList)
     exit(1);
   }
 }
-
-//----------------------------------------------------------------------------
-
-/*! Generate a template stylesheet
- */
-static void generateStyleSheetFile(OutputGenerator::OutputType outType,const char *sheetName)
-{
-  QFile f;
-  bool fileOpened=FALSE;
-  bool writeToStdout = strcmp(sheetName,"-")==0;
-  if (writeToStdout) // write to stdout
-  {
-    fileOpened = f.open(IO_WriteOnly,stdout);
-  }
-  else // write to file
-  {
-    QFileInfo fi(sheetName);
-    if (fi.exists()) // create a backup
-    {
-      QDir dir=fi.dir();
-      QFileInfo backup(fi.fileName()+".bak");
-      if (backup.exists()) // remove existing backup
-        dir.remove(backup.fileName());
-      dir.rename(fi.fileName(),fi.fileName()+".bak");
-    } 
-    f.setName(sheetName);
-    fileOpened = f.open(IO_WriteOnly);
-  }
- 
-  if (fileOpened)
-  {
-    switch(outType)
-    {
-      case OutputGenerator::RTF:
-        RTFGenerator::writeStyleSheetFile(f);
-        break;
-      case OutputGenerator::Html:
-        HtmlGenerator::writeStyleSheetFile(f);
-        break;
-      case OutputGenerator::Latex:
-        LatexGenerator::writeStyleSheetFile(f);
-        break;    
-      default:
-        break;
-    }
-    f.close();
-  }
-  else
-  {
-    err("Error: Cannot open file %s for writing\n",sheetName);
-    exit(1);
-  }
-}
-
 
 //----------------------------------------------------------------------------
 // read and parse a tag file
@@ -5189,8 +5155,9 @@ static void usage(const char *name)
   msg("    %s [configName]\n\n",name);
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
   msg("4) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
-  msg("    %s -w rtf|html|latex outputFileName [configName]\n",name);
-  msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
+  msg("    RTF:   %s -w rtf styleSheetFile\n",name);
+  msg("    HTML:  %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
+  msg("    LaTeX: %s -w latex headerFile styleSheetFile [configFile]\n\n",name);
   msg("If -s is specified the comments in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   exit(1);
@@ -5261,28 +5228,65 @@ int main(int argc,char **argv)
           err("Error: option -w is missing format specifier rtf, html or latex\n");
           exit(1);
         } 
-        if (optind+1>=argc)
-        {
-          err("Error: option -w is missing a configuration file name\n");
-          exit(1);
-        }
         if (stricmp(formatName,"rtf")==0)
         {
-          generateStyleSheetFile(OutputGenerator::RTF,argv[optind+1]);
+          if (optind+1>=argc)
+          {
+            err("Error: option \"-w rtf\" is missing a style sheet file name\n");
+            exit(1);
+          }
+          QFile f;
+          if (openOutputFile(argv[optind+1],f))
+          {
+            RTFGenerator::writeStyleSheetFile(f);
+          }
           exit(1);
         }
         else if (stricmp(formatName,"html")==0)
         {
-          generateStyleSheetFile(OutputGenerator::Html,argv[optind+1]);
+          if (optind+4<argc)
+          {
+            QCString configFile=fileToString(argv[optind+4]);
+            if (configFile.isEmpty()) exit(1);
+            parseConfig(fileToString(argv[optind+4])); 
+            configStrToVal();
+            substituteEnvironmentVars();
+            checkConfig();
+          }
+          else
+          {
+            Config::init();
+            setTranslator("English");
+          }
+          if (optind+3>=argc)
+          {
+            err("Error: option \"-w html\" does not have enough arguments\n");
+            exit(1);
+          }
+          QFile f;
+          if (openOutputFile(argv[optind+1],f))
+          {
+            HtmlGenerator::writeHeaderFile(f);
+          }
+          f.close();
+          if (openOutputFile(argv[optind+2],f))
+          {
+            HtmlGenerator::writeFooterFile(f);
+          }
+          f.close();
+          if (openOutputFile(argv[optind+3],f))
+          {
+            HtmlGenerator::writeStyleSheetFile(f);
+          }
           exit(1);
         }
         else if (stricmp(formatName,"latex")==0)
         {
-          if (optind+2<argc) // use config file to get settings
+          if (optind+3<argc) // use config file to get settings
           {
-            QCString configFile=fileToString(argv[optind+2]);
+            QCString configFile=fileToString(argv[optind+3]);
             if (configFile.isEmpty()) exit(1);
-            parseConfig(fileToString(argv[optind+2])); 
+            parseConfig(fileToString(argv[optind+3])); 
             configStrToVal();
             substituteEnvironmentVars();
             checkConfig();
@@ -5292,7 +5296,21 @@ int main(int argc,char **argv)
             Config::init();
             setTranslator("English");
           }
-          generateStyleSheetFile(OutputGenerator::Latex,argv[optind+1]);
+          if (optind+2>=argc)
+          {
+            err("Error: option \"-w html\" does not have enough arguments\n");
+            exit(1);
+          }
+          QFile f;
+          if (openOutputFile(argv[optind+1],f))
+          {
+            LatexGenerator::writeHeaderFile(f);
+          }
+          f.close();
+          if (openOutputFile(argv[optind+2],f))
+          {
+            LatexGenerator::writeStyleSheetFile(f);
+          }
           exit(1);
         }
         else 
@@ -5356,7 +5374,7 @@ int main(int argc,char **argv)
   else
   {
     QFileInfo fi(argv[optind]);
-    if (fi.exists())
+    if (fi.exists() || strcmp(argv[optind],"-")==0)
     {
       config=fileToString(argv[optind]);
       configName=argv[optind];
@@ -5765,8 +5783,7 @@ int main(int argc,char **argv)
     msg("Combining RTF output...\n");
     if (!RTFGenerator::preProcessFileInplace(Config::rtfOutputDir,"refman.rtf"))
     {
-      err("Error processing RTF files!\n");
-      exit(1);
+      err("An error occurred during post-processing the RTF files!\n");
     }
   }
   

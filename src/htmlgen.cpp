@@ -45,7 +45,7 @@ static const char *defaultStyleSheet =
       "A.codeRef { font-weight: normal; color: #4444ee }\n"
       "DL.el { margin-left: -1cm }\n"
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
-      "DIV.in { margin-left: 16 }\n"
+      //"DIV.in { margin-left: 16 }\n"
       "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }\n"
       "TD.md { background-color: #f2f2ff }\n"
       "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }\n"
@@ -96,6 +96,61 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   QTextStream t(&file);
   t << defaultStyleSheet;
 }
+
+static void writeDefaultHeaderFile(QTextStream &t,const char *title,
+                                   bool external)
+{
+  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
+    "<html><head><meta name=\"robots\" content=\"noindex\">\n"
+    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
+         << theTranslator->idLanguageCharset() << "\">\n"
+    "<title>" << title << "</title>\n";
+  t << "<link ";
+  if (external) 
+    t << "doxygen=\"_doc:" << Config::docURL 
+      << "\" href=\"" << Config::docURL << "/";
+  else
+    t << "href=\"";
+  if (Config::htmlStyleSheet.isEmpty())
+  {
+    t << "doxygen.css";
+  }
+  else
+  {
+    QFileInfo cssfi(Config::htmlStyleSheet);
+    if (!cssfi.exists())
+    {
+      err("Error: user specified HTML style sheet file does not exist!\n");
+    }
+    t << cssfi.fileName();
+  }
+  t << "\" rel=\"stylesheet\" type=\"text/css\">\n"
+    "</head><body bgcolor=\"#ffffff\">\n";
+}
+
+
+void HtmlGenerator::writeHeaderFile(QFile &file)
+{
+  QTextStream t(&file);
+  writeDefaultHeaderFile(t,"$title",FALSE);
+}
+
+void HtmlGenerator::writeFooterFile(QFile &file)
+{
+  QTextStream t(&file);
+  t << "<hr><address><small>\n";
+  t << "Generated at $datetime for $projectname ";
+  t << " by <a href=\"http://www.stack.nl/~dimitri/doxygen/index.html\">\n"
+    << "<img src=\"doxygen.gif\" alt=\"doxygen\" " 
+    << "align=\"middle\" border=0 width=110 height=53>\n"
+    << "</a> $doxygenversion written by"
+    << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
+    << " &copy;&nbsp;1997-2000</small></address>\n"
+    << "</body>\n"
+    << "</html>\n";
+}
+
+
 void HtmlGenerator::startFile(const char *name,const char *title,bool external)
 {
   QCString fileName=name;
@@ -105,28 +160,7 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   lastFile = fileName;
   if (header.isEmpty()) 
   {
-    t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
-         "<html><head><meta name=\"robots\" content=\"noindex\">\n"
-         "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
-         << theTranslator->idLanguageCharset() << "\">\n"
-         "<title>" << title << "</title>\n";
-    t << "<link ";
-    if (external) 
-      t << "doxygen=\"_doc:" << Config::docURL 
-        << "\" href=\"" << Config::docURL << "/";
-    else
-      t << "href=\"";
-    if (Config::htmlStyleSheet.isEmpty())
-    {
-      t << "doxygen.css";
-    }
-    else
-    {
-      QFileInfo cssfi(Config::htmlStyleSheet);
-      t << cssfi.fileName();
-    }
-    t << "\" rel=\"stylesheet\" type=\"text/css\">\n"
-         "</head><body bgcolor=\"#ffffff\">\n";
+    writeDefaultHeaderFile(t,title,external);
   }
   else
   {
@@ -190,13 +224,13 @@ void HtmlGenerator::writeFooter(int part,bool external)
           t << "src=\"";
         }
         t << "doxygen.gif\" alt=\"doxygen\" " 
-          << "align=center border=0 " << endl << 
+          << "align=\"middle\" border=0 " << endl << 
              "width=110 height=53></a>" << versionString <<" ";
       }
       break;
     default:
       if (footer.isEmpty())
-        t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy; "
+        t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;"
              "1997-2000</small></address>\n</body>\n</html>\n";
       break;
       
@@ -561,7 +595,15 @@ void HtmlGenerator::endColorFont()
 void HtmlGenerator::writeFormula(const char *n,const char *text)
 {
   if (text && text[0]=='\\') t << "<p><center>" << endl;
-  t << "<img align=\"top\" src=\"" << n << "\">" << endl;
+  t << "<img align=";
+#if !defined(_WIN32)
+  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
+                             // not seem to support align == "middle" :-((
+#else
+  t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
+                             // displays formulas nicely with align == "middle" 
+#endif
+  t << " src=\"" << n << "\">" << endl;
   if (text && text[0]=='\\') t << "</center><p>" << endl;
 }
 
@@ -899,7 +941,13 @@ void HtmlGenerator::endMemberGroup(bool)
 
 void HtmlGenerator::startIndent()        
 { 
+  // I really wanted to use CSS here to provide an indented section, but
+  // alas, Netscape is buggy enough to sometimes "forget" to end the
+  // indent cause a staircase effect where the indent continuously increases.
+  // It's back to abusing tables :-(
+  
   //t << "<div class=\"in\">" << endl; 
+
   t << "<table cellspacing=5 cellpadding=0 border=0>\n"
        "  <tr>\n"
        "    <td>\n"

@@ -1104,7 +1104,20 @@ void DotClassGraph::writeGraph(QTextStream &out,
        return;
     }
     out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-        << m_startNode->m_label << "_" << mapName << "\"></center>" << endl;
+        << m_startNode->m_label << "_" << mapName << "\" alt=\"";
+    switch (m_graphType)
+    {
+      case Implementation:
+        out << "Collaboration graph";
+        break;
+      case Interface:
+        out << "Interface dependency graph";
+        break;
+      case Inheritance:
+        out << "Inheritance graph";
+        break;
+    }
+    out << "\"></center>" << endl;
     out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
     convertMapFile(out,baseName+".map");
     out << "</map><p>" << endl;
@@ -1140,7 +1153,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
            "\\end{center}\n"
            "\\end{figure}\n";
   }
-  //thisDir.remove(baseName+".dot");
+  thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1280,7 +1293,9 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     }
 
     out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-        << mapName << "_map\">";
+        << mapName << "_map\" alt=\"";
+    if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
+    out << "\">";
     out << "</center>" << endl;
     out << "<map name=\"" << mapName << "_map\">" << endl;
     convertMapFile(out,baseName+".map");

@@ -29,6 +29,7 @@ class LatexGenerator : public OutputGenerator
    ~LatexGenerator();
     static void init();
     static void writeStyleSheetFile(QFile &f);
+    static void writeHeaderFile(QFile &f);
 
     OutputGenerator *copy();
     //OutputGenerator *clone() { return new LatexGenerator(*this); }
@@ -117,10 +118,10 @@ class LatexGenerator : public OutputGenerator
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\bf "; }
     void endBold()       { t << "}"; }
-    void startDescription() { t << "\\begin{description}" << endl; }
-    void endDescription()   { t << "\\end{description}" << endl; }
-    void startDescItem()    { t << "\\item["; }
-    void endDescItem()      { t << "]" << endl; }
+    void startDescription();
+    void endDescription();
+    void startDescItem();
+    void endDescItem();
     void lineBreak() { t << "\\par\n"; }
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc();
@@ -236,6 +237,7 @@ class LatexGenerator : public OutputGenerator
     LatexGenerator &operator=(const LatexGenerator &);
     int col;
     bool insideTabbing;
+    bool firstDescItem;
 };
 
 #endif
