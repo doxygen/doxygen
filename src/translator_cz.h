@@ -135,6 +135,9 @@
 //  - trImplementedFromList() and trImplementedInList() implemented
 //    (new since 1.2.13)
 //  
+// 2002/03/05
+//  - ... forgot to replace TranslatorAdapter... base class by Translator.
+//
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -154,7 +157,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public TranslatorAdapter_1_2_13
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 

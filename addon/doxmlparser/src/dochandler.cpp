@@ -17,51 +17,77 @@
 #include "debug.h"
 #include <qmap.h>
 
+//----------------------------------------------------------------------
+
 class TypeNameMapper
 {
   public:
     TypeNameMapper()
     {
-      m_typeNameMap.insert("see",       SimpleSectHandler::See);
-      m_typeNameMap.insert("return",    SimpleSectHandler::Return);
-      m_typeNameMap.insert("author",    SimpleSectHandler::Author);
-      m_typeNameMap.insert("version",   SimpleSectHandler::Version);
-      m_typeNameMap.insert("since",     SimpleSectHandler::Since);
-      m_typeNameMap.insert("date",      SimpleSectHandler::Date);
-      m_typeNameMap.insert("bug",       SimpleSectHandler::Bug);
-      m_typeNameMap.insert("note",      SimpleSectHandler::Note);
-      m_typeNameMap.insert("warning",   SimpleSectHandler::Warning);
-      m_typeNameMap.insert("par",       SimpleSectHandler::Par);
-      m_typeNameMap.insert("deprecated",SimpleSectHandler::Deprecated);
-      m_typeNameMap.insert("pre",       SimpleSectHandler::Pre);
-      m_typeNameMap.insert("post",      SimpleSectHandler::Post);
-      m_typeNameMap.insert("invariant", SimpleSectHandler::Invar);
-      m_typeNameMap.insert("remark",    SimpleSectHandler::Remark);
-      m_typeNameMap.insert("attention", SimpleSectHandler::Attention);
-      m_typeNameMap.insert("todo",      SimpleSectHandler::Todo);
-      m_typeNameMap.insert("test",      SimpleSectHandler::Test);
-      m_typeNameMap.insert("rcs",       SimpleSectHandler::RCS);
-      m_typeNameMap.insert("enumvalues",SimpleSectHandler::EnumValues);
-      m_typeNameMap.insert("examples",  SimpleSectHandler::Examples);
+      m_map.insert("see",       SimpleSectHandler::See);
+      m_map.insert("return",    SimpleSectHandler::Return);
+      m_map.insert("author",    SimpleSectHandler::Author);
+      m_map.insert("version",   SimpleSectHandler::Version);
+      m_map.insert("since",     SimpleSectHandler::Since);
+      m_map.insert("date",      SimpleSectHandler::Date);
+      m_map.insert("bug",       SimpleSectHandler::Bug);
+      m_map.insert("note",      SimpleSectHandler::Note);
+      m_map.insert("warning",   SimpleSectHandler::Warning);
+      m_map.insert("par",       SimpleSectHandler::Par);
+      m_map.insert("deprecated",SimpleSectHandler::Deprecated);
+      m_map.insert("pre",       SimpleSectHandler::Pre);
+      m_map.insert("post",      SimpleSectHandler::Post);
+      m_map.insert("invariant", SimpleSectHandler::Invar);
+      m_map.insert("remark",    SimpleSectHandler::Remark);
+      m_map.insert("attention", SimpleSectHandler::Attention);
+      m_map.insert("todo",      SimpleSectHandler::Todo);
+      m_map.insert("test",      SimpleSectHandler::Test);
+      m_map.insert("rcs",       SimpleSectHandler::RCS);
+      m_map.insert("enumvalues",SimpleSectHandler::EnumValues);
+      m_map.insert("examples",  SimpleSectHandler::Examples);
     }
     SimpleSectHandler::Types stringToType(const QString &typeStr)
     {
-      return m_typeNameMap[typeStr];
+      return m_map[typeStr];
     }
   private:
-    QMap<QString,SimpleSectHandler::Types> m_typeNameMap;
+    QMap<QString,SimpleSectHandler::Types> m_map;
+};
+
+class HighlightMapper
+{
+  public:
+    HighlightMapper()
+    {
+      m_map.insert("comment",        HighlightHandler::Comment);
+      m_map.insert("keyword",        HighlightHandler::Keyword);
+      m_map.insert("keywordtype",    HighlightHandler::KeywordType);
+      m_map.insert("keywordflow",    HighlightHandler::KeywordFlow);
+      m_map.insert("charliteral",    HighlightHandler::CharLiteral);
+      m_map.insert("stringliteral",  HighlightHandler::StringLiteral);
+      m_map.insert("preprocessor",   HighlightHandler::Preprocessor);
+    }
+    HighlightHandler::HighlightKind stringToKind(const QString &kindStr)
+    {
+      return m_map[kindStr];
+    }
+  private:
+    QMap<QString,HighlightHandler::HighlightKind> m_map;
 };
 
 static TypeNameMapper *s_typeMapper;
+static HighlightMapper *s_highlightMapper;
 
 void dochandler_init()
 {
   s_typeMapper = new TypeNameMapper;
+  s_highlightMapper = new HighlightMapper;
 }
 
 void dochandler_exit()
 {
   delete s_typeMapper;
+  delete s_highlightMapper;
 }
   
 //----------------------------------------------------------------------
@@ -820,6 +846,7 @@ HighlightHandler::HighlightHandler(IBaseHandler *parent)
   m_children.setAutoDelete(TRUE);
   addEndHandler("highlight",this,&HighlightHandler::endHighlight);
   addStartHandler("ref",this,&HighlightHandler::startRef);
+  m_hl = Invalid;
 }
 
 HighlightHandler::~HighlightHandler()
@@ -828,7 +855,8 @@ HighlightHandler::~HighlightHandler()
 
 void HighlightHandler::startHighlight(const QXmlAttributes& attrib)
 {
-  m_class = attrib.value("class");
+  m_hlString = attrib.value("class");
+  m_hl = s_highlightMapper->stringToKind(m_hlString);
   m_curString="";
   m_parent->setDelegate(this);
 }
@@ -836,7 +864,7 @@ void HighlightHandler::startHighlight(const QXmlAttributes& attrib)
 void HighlightHandler::endHighlight()
 {
   addTextNode();
-  debug(2,"highlight class=`%s'\n",m_class.data());
+  debug(2,"highlight class=`%s'\n",m_hlString.data());
   m_parent->setDelegate(0);
 }
 
@@ -857,6 +885,11 @@ void HighlightHandler::addTextNode()
         m_curString.data());
     m_curString="";
   }
+}
+
+IDocIterator *HighlightHandler::codeElements() const
+{
+  return new HighlightIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -931,6 +964,12 @@ void CodeLineHandler::addTextNode()
   }
 }
 
+IDocIterator *CodeLineHandler::codeElements() const
+{
+  return new CodeLineIterator(*this);
+}
+
+
 //----------------------------------------------------------------------
 // ProgramListingHandler
 //----------------------------------------------------------------------
@@ -986,6 +1025,13 @@ void ProgramListingHandler::startCodeLine(const QXmlAttributes& attrib)
   clh->startCodeLine(attrib);
   m_hasLineNumber=FALSE; 
 }
+
+IDocIterator *ProgramListingHandler::codeLines() const
+{
+  return new ProgramListingIterator(*this);
+}
+
+
 
 //----------------------------------------------------------------------
 // FormulaHandler
@@ -1155,6 +1201,11 @@ void EntryHandler::startParagraph(const QXmlAttributes& attrib)
   m_children.append(ph);
 }
 
+IDocIterator *EntryHandler::contents() const
+{
+  return new EntryIterator(*this);
+}
+
 //----------------------------------------------------------------------
 // RowHandler
 //----------------------------------------------------------------------
@@ -1186,6 +1237,11 @@ void RowHandler::startEntry(const QXmlAttributes& attrib)
   EntryHandler *eh = new EntryHandler(this);
   eh->startEntry(attrib);
   m_children.append(eh);
+}
+
+IDocIterator *RowHandler::entries() const
+{
+  return new RowIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -1234,6 +1290,12 @@ void TableHandler::endCaption()
 {
   m_caption = m_curString;
 }
+
+IDocIterator *TableHandler::rows() const
+{
+  return new TableIterator(*this);
+}
+
 
 //----------------------------------------------------------------------
 // ParagraphHandler

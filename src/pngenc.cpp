@@ -99,7 +99,7 @@ void PngEncoder::write(const char *name)
        png_palette[i].green = palette[i].green;
        png_palette[i].blue  = palette[i].blue;
      }
-     png_set_PLTE(png_ptr, info_ptr, png_palette, PNG_MAX_PALETTE_LENGTH);
+     png_set_PLTE(png_ptr, info_ptr, png_palette, numOfColors);
      png_set_IHDR( png_ptr, info_ptr, width, height, bit_depth,
          PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
          PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE

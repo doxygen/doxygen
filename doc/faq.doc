@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -218,7 +218,7 @@ Qt had nicely generated documentation (using an internal tool which
 they didn't want to release) and I wrote similar docs by hand. 
 This was a nightmare to maintain, so I wanted a similar tool. I looked at
 Doc++ but that just wasn't good enough (it didn't support signals and
-slots and did have the Qt look and feel I have grown to like), 
+slots and did not have the Qt look and feel I had grown to like), 
 so I started to write my own tool...
 
 </ol>

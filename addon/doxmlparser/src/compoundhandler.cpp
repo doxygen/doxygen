@@ -17,6 +17,8 @@
 #include "compoundhandler.h"
 #include "dochandler.h"
 #include "debug.h"
+#include "graphhandler.h"
+#include "sectionhandler.h"
 
 class CompoundErrorHandler : public QXmlErrorHandler
 {
@@ -129,6 +131,10 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
 
   addStartHandler("programlisting",this,&CompoundHandler::startProgramListing);
 
+  addStartHandler("inheritancegraph",this,&CompoundHandler::startInheritanceGraph);
+
+  addStartHandler("collaborationgraph",this,&CompoundHandler::startCollaborationGraph);
+
 }
 
 CompoundHandler::~CompoundHandler()
@@ -194,7 +200,7 @@ void CompoundHandler::endCompoundName()
 
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 {
-  SuperClass *sc=new SuperClass(
+  RelatedClass *sc=new RelatedClass(
           attrib.value("refid"),
           attrib.value("prot"),
           attrib.value("virt")
@@ -208,7 +214,7 @@ void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 
 void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
 {
-  SubClass *sc = new SubClass(
+  RelatedClass *sc = new RelatedClass(
           attrib.value("refid"),
           attrib.value("prot"),
           attrib.value("virt")
@@ -264,5 +270,44 @@ void CompoundHandler::release()
     m_mainHandler->unloadCompound(this);
     delete this; 
   }
+}
+
+ISectionIterator *CompoundHandler::sections() const 
+{ 
+  return new SectionIterator(m_sections); 
+}
+    
+IMemberIterator *CompoundHandler::memberByName(const QString &name) const
+{ 
+  QList<MemberHandler> *ml = m_memberNameDict[name]; 
+  if (ml==0) return 0;
+  return new MemberIterator(*ml);
+}
+
+void CompoundHandler::startInheritanceGraph(const QXmlAttributes &attrib)
+{
+  m_inheritanceGraph = new GraphHandler(this,"inheritancegraph");
+  m_inheritanceGraph->startGraph(attrib);
+}
+
+void CompoundHandler::startCollaborationGraph(const QXmlAttributes &attrib)
+{
+  m_collaborationGraph = new GraphHandler(this,"collaborationgraph");
+  m_collaborationGraph->startGraph(attrib);
+}
+
+IDocRoot *CompoundHandler::briefDescription() const 
+{ 
+  return m_brief; 
+}
+
+IDocRoot *CompoundHandler::detailedDescription() const 
+{ 
+  return m_detailed; 
+}
+
+IMember *CompoundHandler::memberById(const QString &id) const 
+{ 
+  return m_memberDict[id]; 
 }
 

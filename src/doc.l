@@ -752,13 +752,30 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
       else
       {
 	warn(yyFileName,yyLineNr,
-             "Warning: could not write output image %s",outputFile.data());
+	    "Warning: could not write output image %s",outputFile.data());
       }
     }
     else
     {
       warn(yyFileName,yyLineNr,
-           "Warning: could not open image %s",fileName);
+	  "Warning: could not open image %s",fileName);
+    }
+
+    if (type==IT_Latex && Config_getBool("USE_PDFLATEX") && 
+	fd->name().right(4)==".eps"
+       )
+    { // we have an .eps image in pdflatex mode => convert it to a pdf.
+      QCString outputDir = Config_getString("LATEX_OUTPUT");
+      QCString baseName  = fd->name().left(fd->name().length()-4);
+      QCString epstopdfArgs(4096);
+      epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
+                           outputDir.data(), baseName.data(),
+			   outputDir.data(), baseName.data());
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      {
+	err("Error: Problems running epstopdf. Check your TeX installation!\n");
+      }
+      return baseName;
     }
   }
   else if (ambig)
@@ -1202,13 +1219,13 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>{CMD}"link"/{BN}	        { BEGIN( DocLink ); }
 <DocScan>"{"{CMD}"link"{BN}+	        { BEGIN( DocJavaLink ); }
 <DocSkipWord>[a-z_A-Z0-9.:()]+		{ BEGIN( DocScan ); }
-<DocLink>[a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+  {  // TODO: support operators as well!
+<DocLink>[a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?  {  // TODO: support operators as well!
   					  linkRef  = stripKnownExtensions(yytext);
 					  linkText = "";
   					  BEGIN( DocLinkText ); 
 					}
 <DocJavaLink>([a-z_A-Z0-9]+".")+	{ /* Skip scope prefix (TODO: fix) */ }
-<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\[\]]*")")? {  // TODO: support operators as well!
+<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\[\]]*")")?({B}*("const"|"volatile"))? {  // TODO: support operators as well!
   					  linkRef  = yytext;
 					  linkText = "";
 					  BEGIN( DocJavaLinkText );
@@ -2076,7 +2093,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 					  BEGIN(DocScan);
   					}
-<DocScan,DocRefName>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")" {
+<DocScan,DocRefName>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")"({B}*("const"|"volatile"))? {
   					  if (!insideHtmlLink)
 					  {
   					    generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -2087,7 +2104,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 					  BEGIN(DocScan);
   					}
-<DocScan,DocRefName>{SCOPEMASK}("()")?	{
+<DocScan,DocRefName>{SCOPEMASK}("()"({B}*("const"|"volatile"))?)? {
   					  if (!insideHtmlLink)
 					  {
   					    generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -2617,7 +2634,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    {
 					      outDoc->newParagraph(); 
 					    }
-					    if (ib) endBlock();
+					    if (ib && currentListIndent.top()=="P") 
+					    { // inside paragraph block
+					      endBlock();
+					    }
 					  }
 					}
 <DocScan>{BN}+/\n			{ 

@@ -1309,7 +1309,7 @@ static void writeTemplateLists(Definition *d,QTextStream &t)
   }
 }
 
-static void writeListOfAllMember(ClassDef *cd,QTextStream &t)
+static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
 {
   t << "    <listofallmembers>" << endl;
   MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
@@ -1365,7 +1365,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   // + list of direct sub classes
   // + list of inner classes
   // + collaboration diagram
-  // - list of all members
+  // + list of all members
   // + user defined member sections
   // + standard member sections
   // + detailed member documentation
@@ -1459,7 +1459,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
   writeTemplateLists(cd,t);
-  writeListOfAllMember(cd,t);
+  writeListOfAllMembers(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

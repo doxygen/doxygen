@@ -110,8 +110,8 @@ class IDoc
     enum Kind 
     { 
       Invalid = 0,        //  0
-      Para,               //  1 -> IDocPara
-      Text,               //  2 -> IDocText
+      Para = 1,           //  1 -> IDocPara
+      Text = 2,           //  2 -> IDocText
       MarkupModifier,     //  3 -> IDocMarkupModifier
       ItemizedList,       //  4 -> IDocItemizedList
       OrderedList,        //  5 -> IDocOrderedList
@@ -271,35 +271,35 @@ class IDocLineBreak : public IDoc
 class IDocULink : public IDoc
 {
   public:
-    virtual QString url() = 0;
-    virtual QString text() = 0;
+    virtual QString url() const = 0;
+    virtual QString text() const = 0;
 };
 
 class IDocEMail : public IDoc
 {
   public:
-    virtual QString address() = 0;
+    virtual QString address() const = 0;
 };
 
 class IDocLink : public IDoc
 {
   public:
-    virtual QString refId() = 0;
-    virtual QString text() = 0;
+    virtual QString refId() const = 0;
+    virtual QString text() const = 0;
 };
 
 class IDocProgramListing : public IDoc
 {
   public:
-    virtual IDocIterator *codeLines() = 0;
+    virtual IDocIterator *codeLines() const = 0;
 };
 
 class IDocCodeLine : public IDoc
 {
   public:
-    virtual int lineNumber() = 0;
-    virtual QString refId() = 0;
-    virtual IDocIterator *codeElements() = 0;
+    virtual int lineNumber() const = 0;
+    virtual QString refId() const = 0;
+    virtual IDocIterator *codeElements() const = 0;
 };
 
 class IDocHighlight : public IDoc
@@ -311,56 +311,56 @@ class IDocHighlight : public IDoc
       KeywordType, KeywordFlow, CharLiteral, 
       StringLiteral, Preprocessor
     };
-    virtual HighlightKind highlightKind() = 0;
-    virtual IDocIterator *codeElements() = 0;
+    virtual HighlightKind highlightKind() const = 0;
+    virtual IDocIterator *codeElements() const = 0;
 };
 
 class IDocFormula : public IDoc
 {
   public:
-    virtual QString id() = 0;
-    virtual QString text() = 0;
+    virtual QString id() const = 0;
+    virtual QString text() const = 0;
 };
 
 class IDocImage : public IDoc
 {
   public:
-    virtual QString name() = 0;
-    virtual QString caption() = 0;
+    virtual QString name() const = 0;
+    virtual QString caption() const = 0;
 };
 
 class IDocDotFile : public IDoc
 {
   public:
-    virtual QString name() = 0;
-    virtual QString caption() = 0;
+    virtual QString name() const = 0;
+    virtual QString caption() const = 0;
 };
 
 class IDocIndexEntry : public IDoc
 {
   public:
-    virtual QString primary() = 0;
-    virtual QString secondary() = 0;
+    virtual QString primary() const = 0;
+    virtual QString secondary() const = 0;
 };
 
 class IDocTable : public IDoc
 {
   public:
-    virtual IDocIterator *rows() = 0;
-    virtual int numColumns() = 0;
-    virtual QString caption() = 0;
+    virtual IDocIterator *rows() const = 0;
+    virtual int numColumns() const = 0;
+    virtual QString caption() const = 0;
 };
 
 class IDocRow : public IDoc
 {
   public:
-    virtual IDocIterator *entries() = 0;
+    virtual IDocIterator *entries() const = 0;
 };
 
 class IDocEntry : public IDoc
 {
   public:
-    virtual IDocIterator *contents() = 0;
+    virtual IDocIterator *contents() const = 0;
 };
 
 class IDocSection : public IDoc
@@ -386,6 +386,72 @@ class IDocIterator
     virtual IDoc *toPrev() = 0;
     virtual IDoc *current() const = 0;
     virtual void release() = 0;
+};
+
+class IEdgeLabel
+{
+  public:
+    virtual QString label() = 0;
+};
+
+class IEdgeLabelIterator 
+{
+  public:
+    virtual IEdgeLabel *toFirst() = 0;
+    virtual IEdgeLabel *toLast() = 0;
+    virtual IEdgeLabel *toNext() = 0;
+    virtual IEdgeLabel *toPrev() = 0;
+    virtual IEdgeLabel *current() const = 0;
+    virtual void release() = 0;
+};
+
+class IChildNode
+{
+  public:
+    enum NodeRelation { PublicInheritance, ProtectedInheritance,
+                        PrivateInheritance, Usage, TemplateInstace
+                      };
+    virtual QString id() const = 0;
+    virtual NodeRelation relation() const = 0;
+    virtual IEdgeLabelIterator *edgeLabels() const = 0;
+};
+
+class IChildNodeIterator 
+{
+  public:
+    virtual IChildNode *toFirst() = 0;
+    virtual IChildNode *toLast() = 0;
+    virtual IChildNode *toNext() = 0;
+    virtual IChildNode *toPrev() = 0;
+    virtual IChildNode *current() const = 0;
+    virtual void release() = 0;
+};
+
+class INode
+{
+  public:
+    virtual QString id() const = 0;
+    virtual QString label() const = 0;
+    virtual QString linkId() const = 0;
+    virtual IChildNodeIterator *children() const = 0;
+};
+
+class INodeIterator 
+{
+  public:
+    virtual INode *toFirst() = 0;
+    virtual INode *toLast() = 0;
+    virtual INode *toNext() = 0;
+    virtual INode *toPrev() = 0;
+    virtual INode *current() const = 0;
+    virtual void release() = 0;
+};
+
+class IGraph
+{
+  public:
+    virtual INodeIterator *nodes() const = 0;
+    virtual ~IGraph() {}
 };
 
 class IMember 
@@ -501,6 +567,33 @@ class ICompound
      *  zero, the memory for the compound will be released.
      */
     virtual void release() = 0;
+
+    // TODO:
+    // class:
+    //  IRelatedCompoundIterator *baseClasses()
+    //  IRelatedCompoundIterator *derivedClasses()
+    //  ICompoundIterator *innerClasses()
+    //  ITemplateParamListIterator *templateParamLists()
+    //  listOfAllMembers()
+    //  IDotGraph *inheritanceGraph()
+    //  IDotGraph *collaborationGraph()
+    //  locationFile()
+    //  locationLine()
+    //  locationBodyStartLine()
+    //  locationBodyEndLine()
+    // namespace:
+    //  ICompound *innerNamespaces()
+    // file:
+    //  includes()
+    //  includedBy()
+    //  IDotGraph *includeDependencyGraph()
+    //  IDotGraph *includedByDependencyGraph()
+    //  IDocProgramListing *source()
+    // group:
+    //  Title()
+    //  innerFile()
+    //  innerPage()
+    // page:
 };
 
 class ICompoundIterator 
