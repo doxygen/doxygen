@@ -52,6 +52,7 @@ class FormulaDict : public QDict<Formula>
   public:
     FormulaDict(uint size) : 
       QDict<Formula>(size) {}
+   ~FormulaDict() {}
 };
 
 #endif

@@ -6,6 +6,9 @@
  *
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (June 1999)
+ * Updates:
+ *		1999/09/10: corrected some small typos in the "new since 0.49-990425" section
+ *					added the "new since 0.49-990728" section
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -293,15 +296,15 @@ class TranslatorItalian : public Translator
     QCString trCompoundReference(const char *clName,
                                     ClassDef::CompoundType compType)
     {
-      QCString result="Riferimenti per la";
+      QCString result="Riferimenti per ";
       switch(compType)
       {
-        case ClassDef::Class:  result+=" classe"; break;
-        case ClassDef::Struct: result+=" struct"; break;
-        case ClassDef::Union:  result+=" union"; break;
-        case ClassDef::Interface:  result+=" interface"; break;
+        case ClassDef::Class:  result+="la classe "; break;
+        case ClassDef::Struct: result+="la struct "; break;
+        case ClassDef::Union:  result+="la union "; break;
+        case ClassDef::Interface:  result+="l'interfaccia "; break;
       }
-      result+=" "+(QCString)clName;
+      result+=(QCString)clName;
       return result;
     }
     QCString trFileReference(const char *fileName)
@@ -375,6 +378,40 @@ class TranslatorItalian : public Translator
     { return "Indice dei namespaces"; }
     QCString trNamespaceDocumentation()
     { return "Documentazione dei namespaces"; }
+	
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990728
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is put at the bottom of a class documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Class", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"La documentazione per questa ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="classe"; break;
+        case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Union:      result+="union"; break;
+        case ClassDef::Interface:  result+="interfaccia"; break;
+      }
+      result+=" è stata generata a partire ";
+      if (single) result+="dal seguente file:";
+	  else result+="dai seguenti files:";
+      return result;
+    }
+
+    /*! This is in the (quick) index as a link to the alphabetical compound
+     * list.
+     */
+    virtual QCString trAlphabeticalList()
+    {
+      return "Lista in ordine alfabetico";
+    }
+
 };
 
 #endif

@@ -203,7 +203,7 @@ The one-line comments should contain a brief description,
 whereas the multi-line comment blocks contain a more detailed description.
 The brief descriptions are included in the member overview of a class, 
 namespace or file and are printed using a small italic font 
-(this description can be omitted by setting \c BRIEF_MEMBER_DESC to \c NO in 
+(this description can be omitted by setting \c BRIEF_STDMETHOD_DESC to \c NO in 
 the config file). By default the brief descriptions are also the first 
 sentence of the detailed description 
 (this can be changed by setting the \c REPEAT_BRIEF tag to \c NO). 
@@ -443,7 +443,7 @@ after preprocessing becomes:
 \endverbatim
 
 Notice that doxygen will now expand \e all macro definitions 
-(recursively if needed). This is often too much, therefore doxygen also 
+(recursively if needed). This is often too much. Therefore, doxygen also 
 allows you to expand only those defines that you explicitly 
 specify. For this you have to set the \c EXPAND_ONLY_PREDEF tag to \c YES
 and specify the macro definitions after the \c PREDEFINED tag.  
@@ -462,9 +462,9 @@ of an abstract base class called \c IUnknown:
 /*! The IUnknown interface */
 DECLARE_INTERFACE(IUnknown)
 {
-  MEMBER(HRESULT,QueryInterface) (THIS_ REFIID iid, void **ppv) PURE;
-  MEMBER(ULONG,AddRef) (THIS) PURE;
-  MEMBER(ULONG,Release) (THIS) PURE;
+  STDMETHOD(HRESULT,QueryInterface) (THIS_ REFIID iid, void **ppv) PURE;
+  STDMETHOD(ULONG,AddRef) (THIS) PURE;
+  STDMETHOD(ULONG,Release) (THIS) PURE;
 };
 \endverbatim
 
@@ -479,7 +479,7 @@ ENABLE_PREPROCESSING = YES
 MACRO_EXPANSION      = YES
 EXPAND_ONLY_PREDEF   = YES
 PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
-                       "MEMBER(result,name)=virtual result name" \
+                       "STDMETHOD(result,name)=virtual result name" \
                        "PURE= = 0" \
                        THIS_= \
                        THIS= \

@@ -41,7 +41,11 @@ doxygen <config_file>
 \endverbatim
 </ol>
 
-If you also want a search engine to be generated, you should look
+The \c -s option is optional and can be used suppress the description that 
+doxygen normally generates for each tag. Try to use this option if you send 
+me configuration files!
+
+If you also want to use the search engine, you should look
 at section \ref doxysearch_usage. 
 
 */

@@ -62,9 +62,9 @@ void MemberGroup::writeDocumentation(OutputList &ol)
   }
   ol.disable(OutputGenerator::Man);
   startFile(ol,fileName,title);
-  startTitle(ol);
+  startTitle(ol,getOutputFileBase());
   ol.docify(title);
-  endTitle(ol,name());
+  endTitle(ol,getOutputFileBase(),name());
   
 
   OutputList briefOutput(&ol);

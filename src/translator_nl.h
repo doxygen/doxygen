@@ -384,6 +384,55 @@ class TranslatorDutch : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Namespace Documentatie"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990728
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is put at the bottom of a class documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Class", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"De documentatie voor deze ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="class"; break;
+        case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Union:      result+="union"; break;
+        case ClassDef::Interface:  result+="interface"; break;
+      }
+      result+=" is gegenereerd op grond van de volgende file";
+      if (single) result+=":"; else result+="s:";
+      return result;
+    }
+
+    /*! This is in the (quick) index as a link to the alphabetical compound
+     * list.
+     */
+    virtual QCString trAlphabeticalList()
+    { return "Alphabetical List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990901
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the heading text for the retval command. */
+    virtual QCString trReturnValues()
+    { return "Retour waarden"; }
+
+    /*! This is in the (quick) index as a link to the main page (index.html)
+     */
+    virtual QCString trMainPage()
+    { return "Hoofd Pagina"; }
+
+    /*! This is used in references to page that are put in the LaTeX 
+     *  documentation. It should be an abbreviation of the word page.
+     */
+    virtual QCString trPageAbbreviation()
+    { return "p."; }
 };
 
 #endif

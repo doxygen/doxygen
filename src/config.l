@@ -71,6 +71,7 @@ QCString Config::latexOutputDir;
 QCString Config::manOutputDir;          
 QCString Config::outputLanguage;
 QCString Config::headerFile;          
+QCString Config::latexHeaderFile;          
 QCString Config::footerFile;          
 QCString Config::cgiName;          
 QCString Config::cgiURL;          
@@ -111,6 +112,7 @@ bool     Config::caseSensitiveNames  = FALSE;
 bool     Config::includeSourceFlag   = FALSE;
 bool     Config::htmlHelpFlag        = FALSE;
 bool     Config::alphaIndexFlag      = FALSE;
+bool     Config::pdfHyperFlag        = FALSE;
 bool     Config::autoBriefFlag       = TRUE;
 bool     Config::warningFlag         = TRUE; 
 bool     Config::generateHtml        = TRUE;
@@ -123,6 +125,8 @@ bool     Config::classDiagramFlag    = TRUE;
 bool     Config::repeatBriefFlag     = TRUE;
 bool     Config::verbatimHeaderFlag  = TRUE;
 bool     Config::htmlAlignMemberFlag = TRUE;
+bool     Config::inheritDocsFlag     = TRUE;
+bool     Config::inlineInfoFlag      = TRUE;
   
 /* -----------------------------------------------------------------
  *
@@ -180,6 +184,7 @@ static int yyread(char *buf,int max_size)
 <Start>"LATEX_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::latexOutputDir;   }
 <Start>"HTML_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::headerFile;       }
 <Start>"HTML_FOOTER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::footerFile;       }
+<Start>"LATEX_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::latexHeaderFile;  }
 <Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString);  s=&Config::cgiName;          }
 <Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString);  s=&Config::cgiURL;           }
 <Start>"DOC_URL"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docURL;           }
@@ -232,6 +237,9 @@ static int yyread(char *buf,int max_size)
 <Start>"JAVADOC_AUTOBRIEF"[ \t]*"="     { BEGIN(GetBool);    b=&Config::autoBriefFlag; }
 <Start>"GENERATE_HTMLHELP"[ \t]*"="     { BEGIN(GetBool);    b=&Config::htmlHelpFlag; }
 <Start>"ALPHABETICAL_INDEX"[ \t]*"="    { BEGIN(GetBool);    b=&Config::alphaIndexFlag; }
+<Start>"PDF_HYPERLINKS"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::pdfHyperFlag; }
+<Start>"INHERIT_DOCS"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inheritDocsFlag; }
+<Start>"INLINE_INFO"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inlineInfoFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -375,6 +383,7 @@ void Config::init()
   Config::manOutputDir ="man";          
   Config::outputLanguage = "English";
   Config::headerFile.resize(0);          
+  Config::latexHeaderFile.resize(0);          
   Config::footerFile.resize(0);          
   Config::cgiName = "search.cgi";          
   Config::cgiURL.resize(0);          
@@ -415,6 +424,7 @@ void Config::init()
   Config::includeSourceFlag   = FALSE;
   Config::htmlHelpFlag        = FALSE;
   Config::alphaIndexFlag      = FALSE;
+  Config::pdfHyperFlag        = FALSE;
   Config::warningFlag         = TRUE; 
   Config::generateHtml        = TRUE;
   Config::generateLatex       = TRUE;
@@ -427,6 +437,8 @@ void Config::init()
   Config::verbatimHeaderFlag  = TRUE;
   Config::htmlAlignMemberFlag = TRUE;
   Config::autoBriefFlag       = TRUE;
+  Config::inheritDocsFlag     = TRUE;
+  Config::inlineInfoFlag      = TRUE;
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
@@ -636,13 +648,30 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# If the JAVADOC_NO_AUTOBRIEF is set to YES (the default) then Doxygen\n";
+    t << "# If the JAVADOC_AUTOBRIEF tag is set to YES (the default) then Doxygen\n";
     t << "# will interpret the first line (until the first dot) of a JavaDoc-style\n";
     t << "# comment as the brief description. If set to NO, the Javadoc-style will\n";
     t << "# behave just like the Qt-style comments.\n";
     t << "\n";
   }
   t << "JAVADOC_AUTOBRIEF    = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# if the INHERIT_DOCS tag is set to YES (the default) then an undocumented\n";
+    t << "# member inherits the documentation from any documented member that it\n";
+    t << "# reimplements.\n";
+    t << "\n";
+  }
+  t << "INHERIT_DOCS         = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# if the INLINE_INFO tag is set to YES (the default) then a tag [inline]\n";
+    t << "# is inserted in the documentation for inline members.\n";
+    t << "\n";
+  }
+  t << "INLINE_INFO          = YES\n";
   if (!sl)
   {
     t << "\n";
@@ -838,6 +867,26 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "EXTRA_PACKAGES       =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The LATEX_HEADER tag can be used to specify a personal LaTeX header for \n";
+    t << "# the generated latex document. The header should contain everything until\n";
+    t << "# the first chapter. If it is left blank doxygen will generate a \n";
+    t << "# standard header. Notice: only use this tag if you know what you are doing!\n";
+    t << "\n";
+  }
+  t << "LATEX_HEADER          =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated\n";
+    t << "# is prepared for conversion to pdf (using ps2pdf). The pdf file will\n";
+    t << "# contain links (just like the HTML output) instead of page references\n";
+    t << "# This makes the output suitable for online browsing using a pdf viewer.\n";
+    t << "\n";
+  }
+  t << "PDF_HYPERLINKS       = NO\n";
   if (!sl)
   {
     t << "\n";
@@ -1174,6 +1223,17 @@ void checkConfig()
     {
       err("Error: tag HTML_FOOTER: footer file `%s' "
 	  "does not exist\n",Config::footerFile.data());
+      exit(1);
+    }
+  }
+  // Test to see if LaTeX header is valid
+  if (Config::latexHeaderFile.length()>0)
+  {
+    QFileInfo fi(Config::latexHeaderFile);
+    if (!fi.exists())
+    {
+      err("Error: tag LATEX_HEADER: header file `%s' "
+	  "does not exist\n",Config::latexHeaderFile.data());
       exit(1);
     }
   }

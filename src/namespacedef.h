@@ -76,6 +76,7 @@ class NamespaceDef : public Definition
 class NamespaceList : public QList<NamespaceDef>
 { 
   public:
+   ~NamespaceList() {}
     int compareItems(GCI item1,GCI item2)
     {
       return strcmp(((NamespaceDef *)item1)->name(),
@@ -95,6 +96,7 @@ class NamespaceDict : public QDict<NamespaceDef>
 {
   public:
     NamespaceDict(int size) : QDict<NamespaceDef>(size) {}
+   ~NamespaceDict() {}
 };
 
 #endif

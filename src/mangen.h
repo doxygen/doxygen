@@ -50,8 +50,8 @@ class ManGenerator : public OutputGenerator
     void startProjectNumber() {}
     void endProjectNumber() {}
     void writeStyleInfo(int) {}
-    void startTitleHead() {}
-    void endTitleHead(const char *);
+    void startTitleHead(const char *) {}
+    void endTitleHead(const char *,const char *);
     void startTitle();
     void endTitle() {}
     
@@ -63,8 +63,8 @@ class ManGenerator : public OutputGenerator
     void endItemList()    {}
     void startEnumList()  {}
     void endEnumList()    {}
-    void startAlfabeticalIndexList() {}
-    void endAlfabeticalIndexList() {} 
+    void startAlphabeticalIndexList() {}
+    void endAlphabeticalIndexList() {} 
     void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
@@ -110,11 +110,13 @@ class ManGenerator : public OutputGenerator
     void endDescItem();
     void lineBreak() { t << "\n.br" << endl; }
     void writeChar(char c);
-    void startMemberDoc(const char *,const char *,const char *);
+    void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc() {}
-    void writeDoxyAnchor(const char *clName,const char *anchor,const char *name);
+    void startDoxyAnchor(const char *,const char *,
+                         const char *,const char *) {}
+    void endDoxyAnchor() {}
     void writeLatexSpacing() {}
-    void writeLatexLabel(const char *,const char *) {}
+    //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
@@ -162,11 +164,13 @@ class ManGenerator : public OutputGenerator
     void endClassDiagram(ClassDiagram &,const char *,const char *) {}
     void startColorFont(uchar,uchar,uchar) {}
     void endColorFont()   {}
-    void writePageRef(const char *,const char *) {}
+    void startPageRef() {}
+    void endPageRef(const char *,const char *) {}
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *) {}
     void writeNonBreakableSpace() { t << "  "; }
+    void writeImage(const char *,const char *,const char *) {}
     
   private:
     bool firstCol;

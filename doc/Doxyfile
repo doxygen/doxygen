@@ -1,3 +1,16 @@
+#
+# $Id$
+#
+# Copyright (C) 1997-1999 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# All output generated with Doxygen is not covered by this license.
+
 PROJECT_NAME     = 
 OUTPUT_DIRECTORY = ..
 HTML_HEADER      =
@@ -14,7 +27,7 @@ ENABLE_PREPROCESSING = NO
 INPUT            = index.doc install.doc starting.doc faq.doc trouble.doc \
 		   history.doc features.doc \
 		   doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
-                   installdox_usage.doc autolink.doc \
+                   installdox_usage.doc output.doc autolink.doc \
 		   config.doc commands.doc htmlcmds.doc language.doc
 FILE_PATTERNS    = *.cpp *.h *.doc
 EXAMPLE_PATH     = ../examples
@@ -29,3 +42,4 @@ DOC_URL          =
 DOC_ABSPATH      =
 BIN_ABSPATH      = /usr/local/bin/
 EXT_DOC_PATHS    =
+PDF_HYPERLINKS   = YES

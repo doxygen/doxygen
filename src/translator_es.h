@@ -16,7 +16,7 @@
 
 
 /**
- * translator_es.h modifief by Francisco Oltra 
+ * translator_es.h modified by Francisco Oltra 
  * Some notes: 
  * - Computer related use of the spanish language differs from
  * country to country, so some words might not sound so good

@@ -47,10 +47,15 @@ Uppdateringar.
 
 ===================================================================================
 Problem!
-   Namespace och slot: har de nån hygglig svensk översättning???
+   Slot: nån hygglig svensk översättning???
 
    Skicka gärna synpunkter.
 ===================================================================================
+1999/09/01
+*  Det verkar som om "namnrymd" är en hyggligt vedertagen svensk översättning
+   av "namnepace", så jag kör med det från och med nu.
+*  "interface" heter numera "gränssnitt"
+
 */
 
 #ifndef TRANSLATOR_SE_H
@@ -349,13 +354,13 @@ class TranslatorSwedish : public Translator
 // new since 0.49-990307
 
     virtual QCString trNamespaceList()
-    { return "Namespacelista"; }
+    { return "Namnrymdlista"; }
 
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Här är en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
-      result+="namespaces med en kort förklaring:";
+      result+="namnrymder med en kort förklaring:";
       return result;
     }
 
@@ -379,10 +384,10 @@ class TranslatorSwedish : public Translator
       QCString result=(QCString)clName+" ";
       switch(compType)
       {
-        case ClassDef::Class:  result+=" Klass"; break;
-        case ClassDef::Struct: result+=" Strukt"; break;
-        case ClassDef::Union:  result+=" Union"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Class:  result+=" klass"; break;
+        case ClassDef::Struct: result+=" strukt"; break;
+        case ClassDef::Union:  result+=" union"; break;
+        case ClassDef::Interface:  result+=" gränssnitt"; break;
       }
       result+="referens";
       return result;
@@ -398,7 +403,7 @@ class TranslatorSwedish : public Translator
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" namespacereferens";
+      result+=" namnrymdreferens";
       return result;
     }
 
@@ -474,25 +479,65 @@ class TranslatorSwedish : public Translator
     }
 
     virtual QCString trNamespaceMembers()
-    { return "Namespacemedlemmar"; }
+    { return "Namnrymdsmedlemmar"; }
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
       QCString result="Här är en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
-      result+="namespacemedlemmar med länkar till ";
+      result+="namnrymdsmedlemmar med länkar till ";
       if (extractAll)
-        result+=" namespace-dokumentationen för varje medlem:";
+        result+=" namnrymd-dokumentationen för varje medlem:";
       else
-        result+="de namespaces de tillhör:";
+        result+="de namnrymder de tillhör:";
       return result;
     }
 
     virtual QCString trNamespaceIndex()
-    { return "Namespaceindex"; }
+    { return "Namnrymdsindex"; }
 
     virtual QCString trNamespaceDocumentation()
+      { return "Namnrymd-dokumentation"; }
+    //////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
 
-{ return "Namespace-dokumentation"; }
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    virtual QCString trNamespaces()
+    { return "Namnrymder"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990728
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is put at the bottom of a class documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Class", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Dokumentationen för ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="denna klass "; break;
+        case ClassDef::Struct:     result+="denna strukt "; break;
+        case ClassDef::Union:      result+="denna union "; break;
+        case ClassDef::Interface:  result+="detta gränssnitt "; break;
+      }
+      result+="var genererad från följande fil";
+      if (single) result+=":"; else result+="er:";
+      return result;
+    }
+
+    /*! This is in the (quick) index as a link to the alphabetical compound
+     * list.
+     */
+    virtual QCString trAlphabeticalList()
+    {
+      return "Alfabetisk lista";
+    }
 };
 
 #endif

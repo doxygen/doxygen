@@ -72,8 +72,8 @@ extern int guessSection(const char *name);
 //extern QCString nameToFile(const char *name);
 extern bool isId(char c);
 extern QCString removeRedundantWhiteSpace(const QCString &s);
-extern void startTitle(OutputList &ol);
-extern void endTitle(OutputList &ol,const char *name);
+extern void startTitle(OutputList &ol,const char *fileName);
+extern void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,
                const char *title,bool external=FALSE);
 void endFile(OutputList &ol,bool external=FALSE);
@@ -84,6 +84,7 @@ QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleList *el);
 void setFileNameForSections(QList<QCString> *anchorList,const char *fileName);
 QCString stripAnnonymousScope(const QCString &s);
+QCString stripAnnonymousNamespaceScope(const QCString &s);
 
 
 //void writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
@@ -92,5 +93,6 @@ QCString stripAnnonymousScope(const QCString &s);
 QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
+void writePageRef(OutputList &ol,const char *cn,const char *mn);
 
 #endif

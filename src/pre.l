@@ -1155,7 +1155,7 @@ BN	[ \t\r\n]
                                           ifcount++; 
   					  //printf("#if... depth=%d\n",ifcount);
 					}
-<SkipCommand>"else"/[^a-z_A-Z0-9]	{
+<SkipCommand>"else"			{
 					  //printf("Else! ifcount=%d otherCaseDone=%d\n",ifcount,otherCaseDone());
   					  if (ifcount==0 && !otherCaseDone())
 					  {
@@ -1179,7 +1179,7 @@ BN	[ \t\r\n]
 					    }
 					  }
 					}
-<SkipCommand>"endif"/[^a-z_A-Z0-9]	{ 
+<SkipCommand>"endif"			{ 
   					  decrLevel();
   				          if (--ifcount<0)
   					  {

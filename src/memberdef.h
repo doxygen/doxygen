@@ -84,12 +84,14 @@ class MemberDef : public Definition
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
-    void setBody(const QCString &b)       { body=b; }
+    void setBody(const QCString &b)      { body=b; }
+    void setInline(bool in)              { inLine=in; }
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
+    bool isInline() const                { return inLine; }
     bool hasDocumentation()  // overrides hasDocumentation in definition.h
       { return Definition::hasDocumentation() || !body.isEmpty(); }
 
@@ -212,12 +214,14 @@ class MemberDef : public Definition
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class
     bool    stat;             // is it a static function?
+    bool    inLine;           // is it an inline function?
     MemberType mtype;         // returns the kind of member
     bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
     bool annScope;
     bool annUsed;
+    bool annShown;
     int  indDepth;
     MemberDef *annMemb;
     ArgumentList *argList;    // argument list of this member

@@ -25,6 +25,7 @@ enum IndexSections
 {
   isTitlePageStart,
   isTitlePageAuthor,
+  isMainPage,
   isModuleIndex,
   isNamespaceIndex,
   isClassHierarchyIndex,

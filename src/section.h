@@ -44,6 +44,7 @@ class SectionDict : public QDict<SectionInfo>
 {
   public:
     SectionDict(int size) : QDict<SectionInfo>(size) {}
+   ~SectionDict() {}
 };
 
 #endif

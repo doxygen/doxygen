@@ -37,6 +37,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   path=p;
   filepath=path+nm;
   filename=nameToFile(nm);
+  diskname=filename.copy();
   setReference(ref);
   memList      = new MemberList;
   classList     = new ClassList;
@@ -72,9 +73,9 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   QCString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
-  startTitle(ol);
+  startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trFileReference(name()));
-  endTitle(ol,name());
+  endTitle(ol,getOutputFileBase(),name());
   //ol.newParagraph();
   
   if (Config::genTagFile.length()>0) tagFile << "&" << name() << ":\n";
@@ -184,8 +185,8 @@ void FileDef::writeDocumentation(OutputList &ol)
         ol.endMemberItem(FALSE,0,0,FALSE);
       }
       cd=classList->next();
-      if (found) ol.endMemberList();
     }
+    if (found) ol.endMemberList();
   }
   
   memList->writeDeclarations(ol,0,0,this,0,0);
@@ -265,14 +266,11 @@ void FileDef::writeDocumentation(OutputList &ol)
     memList->writeDocumentation(ol,name(),MemberDef::EnumValue);
   }
 
-  int cnt;
-  if ( (cnt=memList->funcCount()>0) )
+  if ( memList->funcCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    QCString cntString;
-    cntString.sprintf(" (%d)",cnt);
-    parseText(ol,theTranslator->trFunctionDocumentation()+cntString);
+    parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
     memList->writeDocumentation(ol,name(),MemberDef::Function);
   }

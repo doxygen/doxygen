@@ -171,11 +171,11 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <Template>.			{
   				  name+=*yytext;
   				}
-<Operator>{B}*"()"{B}*"<>"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{B}*"<>"{B}*/"("	{
   				  name+="() <>";
 				  BEGIN(ReadArgs);
   				}
-<Operator>{B}*"()"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{B}*/"("	{
   				  name+="()";
 				  BEGIN(ReadArgs);
   				}

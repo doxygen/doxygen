@@ -62,6 +62,7 @@ struct Argument
 class ArgumentList : public QList<Argument> 
 {
   public:
+   ~ArgumentList() {}
     ArgumentList() : QList<Argument>(), 
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
@@ -106,6 +107,7 @@ class Entry
       NAMESPACEDOC_SEC = 0x02000000,
       INTERFACE_SEC    = 0x04000000,
       INTERFACEDOC_SEC = 0x08000000,
+      MAINPAGEDOC_SEC  = 0x10000000,
       COMPOUND_MASK    = CLASS_SEC | STRUCT_SEC | UNION_SEC | INTERFACE_SEC,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC | INTERFACEDOC_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
@@ -126,6 +128,7 @@ class Entry
     bool slot;                // a Qt slot ?
     bool stat;                // static ?
     bool proto;               // prototype ?
+    bool inLine;              // inline ?
     Specifier    virt;        // virtualness of the entry 
     Entry       *parent;      // parent node in the tree
     QCString	 type;        // member type 

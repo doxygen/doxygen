@@ -63,10 +63,10 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   QCString pageTitle=name()+" Namespace Reference";
   startFile(ol,fileName,pageTitle);
-  startTitle(ol);
+  startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);
   parseText(ol,theTranslator->trNamespaceReference(name()));
-  endTitle(ol,name());
+  endTitle(ol,getOutputFileBase(),name());
   
   if (Config::genTagFile.length()>0) tagFile << "%" << name() << ":\n";
   
@@ -94,7 +94,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     bool found=FALSE;
     while (cd)
     {
-      if (cd->isLinkable())
+      if (cd->name().find('@')==-1)
       {
         if (!found)
         {
@@ -120,7 +120,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
         }
         ol.writeString(" ");
         ol.insertMemberAlign();
-        if (cd->hasDocumentation()) 
+        if (cd->isLinkable()) 
         {
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),

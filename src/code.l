@@ -213,7 +213,10 @@ static bool getLink(const char *className,
       //                                  exampleFile.data());
       if (md->addExample(anchor,exampleName,exampleFile))
       {
+	bool latexEnabled = result.isEnabled(OutputGenerator::Latex);
+	if (latexEnabled) result.disable(OutputGenerator::Latex);
 	result.writeAnchor(anchor);
+	if (latexEnabled) result.enable(OutputGenerator::Latex);
 	anchorCount++;
       }
     }
@@ -222,6 +225,7 @@ static bool getLink(const char *className,
 
     if (d)
     {
+      //printf("d->getOutputBase()=`%s' name=`%s'\n",d->getOutputFileBase().data(),md->name().data());
       result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
 	                   md->anchor(),memberName);
       return TRUE;
@@ -384,7 +388,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  if ((fd=findFileDef(&inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {
-					    code->writeCodeLink(0,fd->getOutputFileBase(),0,yytext);
+					    code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
 					  }
 					  else
 					  {

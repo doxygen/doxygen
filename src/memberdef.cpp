@@ -235,8 +235,10 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   eUsed=FALSE;
   proto=FALSE;
   annScope=FALSE;
+  inLine=FALSE;
   annMemb=0;
   annUsed=FALSE;
+  annShown=FALSE;
   indDepth=0;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
@@ -500,27 +502,47 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
     
     // search for the last annonymous scope in the member type
     ClassDef *annoClassDef=0;
-    while (i!=-1 && cname.find(type.mid(i,l))!=-1)
+    //while (i!=-1 && cname.find(type.mid(i,l))!=-1)
+    //{
+    //  i=r.match(type,i+l,&l);
+    //}
+    int il=i-1,ir=i+l;
+    if (i!=-1) // found annonymous scope in type
     {
-      i=r.match(type,i+l,&l);
-    }
-    if (i!=-1) 
-    {
-      // get the definition of the annonymous class that is 
-      // the type of this member
-      annoClassDef=getClass(cname+"::"+type.mid(i,l));
+      // extract annonymous scope
+      while (il>=0 && (isId(type.at(il)) || type.at(il)==':' || type.at(il)=='@')) il--;
+      if (il>0) il++;
+      while (ir<(int)type.length() && (isId(type.at(ir)) || type.at(ir)==':' || type.at(ir)=='@')) ir++;
+
+      //QCString annName = type.mid(i,l);
+      QCString annName = type.mid(il,ir-il);
+      
+      // if inside a class or namespace try to prepend the scope name
+      if ((cd || nd) && annName.left(cname.length())!=cname) 
+      {
+        QCString ts=stripAnnonymousNamespaceScope(cname+"::"+annName);
+        //printf("Member::writeDeclaration: Trying %s\n",ts.data());
+        annoClassDef=getClass(ts);
+      }
+      // if not found yet, try without scope name
+      if (annoClassDef==0)
+      {
+        QCString ts=stripAnnonymousNamespaceScope(annName);
+        //printf("Member::writeDeclaration: Trying %s\n",ts.data());
+        annoClassDef=getClass(ts);
+      }
     }
 
     // start a new member declaration
-    ol.startMemberItem(gId!=-1,((i!=-1) || annMemb) ? 1 : 0);
-
+    ol.startMemberItem(gId!=-1,(annoClassDef || annMemb) ? 1 : 0);
+    
     // If there is no detailed description we need to write the anchor here.
     bool detailsVisible = detailsAreVisible();
     if (!detailsVisible && !Config::extractAllFlag && !annMemb)
     {
       QCString doxyName=name().copy();
       if (!cname.isEmpty()) doxyName.prepend(cname+"::");
-      ol.writeDoxyAnchor(cname,anchor(),doxyName);
+      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
       ol.addToIndex(name(),cname);
       ol.addToIndex(cname,name());
       if (hasHtmlHelp)
@@ -538,18 +560,19 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
     //  ol.writeLatexLabel(cname,anchor());
     //}
 
-    if (tArgList)
-    {
-      writeTemplatePrefix(ol,tArgList,FALSE);
-    }
-    
-    if (i!=-1 || annMemb)
+    //printf("member name=%s indDepth=%d\n",name().data(),indDepth);
+    if (annoClassDef || annMemb)
     {
       int j;
       for (j=0;j<indDepth;j++) 
       {
         ol.writeNonBreakableSpace();
       }
+    }
+    
+    if (tArgList)
+    {
+      writeTemplatePrefix(ol,tArgList,FALSE);
     }
     
     if (i!=-1)
@@ -560,15 +583,23 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
       if (annoClassDef)
       {
         //printf("class found!\n");
-        annoClassDef->writeDeclaration(ol);
+        annoClassDef->writeDeclaration(ol,annMemb);
         ol.startMemberItem(gId!=-1,2);
         int j;
         for (j=0;j<indDepth;j++) 
         {
           ol.writeNonBreakableSpace();
         }
+        QCString varName=type.right(type.length()-ir).stripWhiteSpace();
         ol.docify("}");
-        ol.docify(type.right(type.length()-i-l).stripWhiteSpace());
+        if (varName.isEmpty() && (name().isEmpty() || name().at(0)=='@')) 
+        {
+          ol.docify(";"); 
+        }
+        else 
+        {
+          ol.docify(varName);
+        }
       }
       else
       {
@@ -605,35 +636,43 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
       ol.insertMemberAlign();
     
     // write name
-    if (grpId!=-1)
+    if (!name().isEmpty() && name().at(0)!='@')
     {
-      if (annMemb)
+      if (grpId!=-1)
       {
-        //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-        annMemb->writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
-        annMemb->annUsed=annUsed=TRUE;
+        if (annMemb)
+        {
+          //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
+          annMemb->writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
+          annMemb->annUsed=annUsed=TRUE;
+        }
+        else
+          writeLink(ol,0,0,0,memberGroup);
+        //ol.writeBoldString(name()); 
       }
-      else
-        writeLink(ol,0,0,0,memberGroup);
-      //ol.writeBoldString(name()); 
-    }
-    else if (isLinkable())
-    {
-      if (annMemb)
+      else if (isLinkable())
       {
-        //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-        annMemb->writeLink(ol,annMemb->memberClass(),nd,fd,inGroup ? memberGroup : 0);
-        annMemb->annUsed=annUsed=TRUE;
+        if (annMemb)
+        {
+          //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
+          annMemb->writeLink(ol,
+              annMemb->memberClass(),
+              annMemb->getNamespace(),
+              annMemb->getFileDef(),
+              inGroup ? memberGroup : 0
+                            );
+          annMemb->annUsed=annUsed=TRUE;
+        }
+        else
+          //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
+          writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
       }
-      else
-        //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
-        writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
-    }
-    else // there is a brief member description and brief member 
-         // descriptions are enabled or there is no detailed description.
-    {
-      if (annMemb) annMemb->annUsed=annUsed=TRUE;
-      ol.writeBoldString(name());
+      else // there is a brief member description and brief member 
+        // descriptions are enabled or there is no detailed description.
+      {
+        if (annMemb) annMemb->annUsed=annUsed=TRUE;
+        ol.writeBoldString(name());
+      }
     }
 
     // if member template specifiers are not part of the name, but they are
@@ -657,8 +696,14 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
       ol.docify(excpString());
     }
 
-    ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef!=0 && indDepth==0);
+    if (!detailsVisible && !Config::extractAllFlag && !annMemb)
+    {
+      ol.endDoxyAnchor();
+    }
 
+    ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef!=0 && indDepth==0);
+    
+    //ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef || annMemb);
     // write brief description
     if (!briefDescription().isEmpty() && Config::briefMemDescFlag && 
         gId==-1 && !inGroup && !annMemb)
@@ -743,27 +788,28 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       {
         if (vmd->isEnumerate() && def.mid(i,l)==vmd->name())
         {
-          ol.startMemberDoc(cname,name(),anchor());
+          ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+          ol.startMemberDoc(cname,name(),anchor(),name());
           if (hasHtmlHelp)
           {
             htmlHelp->addIndexItem(cname,name(),cfname,anchor());
           }
-          ol.writeDoxyAnchor(cname,anchor(),doxyName);
           linkifyText(ol,scopeName,name(),def.left(i));
           ol+=*vmd->enumDecl();
           linkifyText(ol,scopeName,name(),def.right(def.length()-i-l));
+          //ol.endDoxyAnchor();
           found=TRUE;
         }
       }
       if (!found) // anonymous compound
       {
         //printf("Annonymous compound `%s'\n",cname.data());
-        ol.startMemberDoc(cname,name(),anchor());
+        ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+        ol.startMemberDoc(cname,name(),anchor(),name());
         if (hasHtmlHelp)
         {
           htmlHelp->addIndexItem(cname,name(),cfname,anchor());
         }
-        ol.writeDoxyAnchor(cname,anchor(),doxyName);
         // strip annonymous compound names from definition
         int si=def.find(' '),pi,ei=i+l;
         if (si==-1) si=0;
@@ -772,17 +818,19 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
         ol.docify(def.left(si));
         ol.docify(" { ... } ");
         // last ei characters of def contain pointer/reference specifiers
+        int ni=def.findRev("::");
+        if (ni>=ei) ei=ni+2;
         linkifyText(ol,scopeName,name(),def.right(def.length()-ei));
       }
     }
     else
     {
-      ol.startMemberDoc(cname,name(),anchor());
+      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+      ol.startMemberDoc(cname,name(),anchor(),name());
       if (hasHtmlHelp)
       {
         htmlHelp->addIndexItem(cname,name(),cfname,anchor());
       }
-      ol.writeDoxyAnchor(cname,anchor(),doxyName);
 
       ArgumentList *scopeAl=scopeDefTemplateArguments();
       if (scopeAl==0 && cd) scopeAl=cd->templateArguments(); 
@@ -840,7 +888,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
 
     if (isStatic() || protection()!=Public || 
         virt!=Normal || isSignal() || isFriend() || 
-        isRelated() || isSlot()
+        isRelated() || isSlot() || 
+        (isInline() && Config::inlineInfoFlag)
        )
     {
       // write the member specifier list
@@ -852,6 +901,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       else if (isRelated()) sl.append("related");
       else
       {
+        if      (Config::inlineInfoFlag && isInline())              
+                                          sl.append("inline");
         if      (isStatic())              sl.append("static");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
@@ -871,6 +922,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       ol.endTypewriter();
     }
     ol.endMemberDoc();
+    ol.endDoxyAnchor();
     ol.startIndent();
     ol.newParagraph();
 
@@ -915,7 +967,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
               ol.endBold();
               ol.startItemList();
             }
-            ol.writeDoxyAnchor(cname,fmd->anchor(),fmd->name());
             ol.addToIndex(fmd->name(),cname);
             ol.addToIndex(cname,fmd->name());
             if (Config::generateHtml && Config::htmlHelpFlag)
@@ -923,10 +974,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
               HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());
             }
             ol.writeListItem();
+            ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
             first=FALSE;
             ol.startBold();
             ol.docify(fmd->name());
             ol.endBold();
+            ol.endDoxyAnchor();
             ol.newParagraph();
 
             if (!fmd->briefDescription().isEmpty())
@@ -979,18 +1032,18 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if ( bcd->isLinkableInProject()) 
+            if ( bcd->isLinkableInProject() && !Config::pdfHyperFlag ) 
             {
-              ol.writePageRef(bcd->name(),bmd->anchor());
+              writePageRef(ol,bcd->name(),bmd->anchor());
             }
           }
           else
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 0,bcd->name());
-            if (bcd->isLinkableInProject())
+            if (bcd->isLinkableInProject() && !Config::pdfHyperFlag )
             {
-              ol.writePageRef(bcd->name(),0);
+              writePageRef(ol,bcd->name(),0);
             }
           }
           parseText(ol,reimplFromLine.right(
@@ -1041,7 +1094,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
 
           count=0;
           // find the entryIndex-th documented entry in the inheritance list.
-          for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->memberClass());++mli)
+          for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->memberClass());--mli)
           {
             if ( bmd->isLinkable() && bcd->isLinkable()) 
             {
@@ -1058,9 +1111,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
             //{
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if (bcd->isLinkableInProject()) 
+            if (bcd->isLinkableInProject() && !Config::pdfHyperFlag ) 
             {
-              ol.writePageRef(bcd->name(),bmd->anchor());
+              writePageRef(ol,bcd->name(),bmd->anchor());
             }
             //}
             //else

@@ -275,10 +275,10 @@ void writeHierarchicalIndex(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"hierarchy","Hierarchical Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trClassHierarchy();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   if (Config::generateHtml && Config::htmlHelpFlag)
   {
@@ -318,10 +318,10 @@ void writeFileIndex(OutputList &ol)
   if (documentedFiles==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"files","File Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trFileList();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
   if (hasHtmlHelp)
@@ -410,10 +410,10 @@ void writeNamespaceIndex(OutputList &ol)
   if (documentedNamespaces==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"namespaces","Namespace Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trNamespaceList();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
   if (hasHtmlHelp)
@@ -536,31 +536,126 @@ void writeAnnotatedClassList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writeAlfabeticalClassList(OutputList &ol)
+// write an alphabetical index of all class with a header for each letter
+void writeAlphabeticalClassList(OutputList &ol)
 {
-  ol.startAlfabeticalIndexList(); 
-  //ClassDef *cd=classList.first();
-  //while (cd)
+  ol.startAlphabeticalIndexList(); 
+
+  // first count the number of headers
   ClassListIterator cli(classList);
   ClassDef *cd;
   char startLetter=0;
+  int headerItems=0;
   for (;(cd=cli.current());++cli)
+  {
+    if (cd->isLinkableInProject())
+    {
+      if (cd->name().at(0)!=startLetter) // new begin letter => new header
+      {
+        startLetter=cd->name().at(0);
+        headerItems++;
+      }
+    }
+  }
+
+  // the number of columns in the table
+  const int columns = 5;
+
+  int i,j;
+  int totalItems = headerItems + annotatedClasses;            // number of items in the table
+  int rows = (totalItems + columns - 1)/columns;              // number of rows in the table
+  int itemsInLastRow = (totalItems + columns -1)%columns + 1; // number of items in the last row
+
+  //printf("headerItems=%d totalItems=%d columns=%d rows=%d itemsInLastRow=%d\n",
+  //    headerItems,totalItems,columns,rows,itemsInLastRow);
+
+  // create one class list for each column 
+  ClassList *colList = new ClassList[columns];
+
+  // fill the columns with the class list (row elements in each column,
+  // expect for the columns with number >= itemsInLastRow, which get on
+  // item less.
+  int col=0,row=0;
+  //int icount=0;
+  startLetter=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject())
     {
       if (cd->name().at(0)!=startLetter)
       {
+        // insert a new header using a dummy class pointer.
         startLetter=cd->name().at(0);
-        char s[2]; s[0]=startLetter; s[1]=0;
-        ol.writeIndexHeading(s);
+        colList[col].append((ClassDef *)8); // insert dummy for the header
+        row++;
+        if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) 
+        { 
+          // if the header is the last item in the row, we add an extra
+          // row to make it easier to find the text of the header (this
+          // is then contained in the next cell)
+          colList[col].append(cd); 
+          col++; 
+          row=0; 
+        }
       }
-      ol.writeObjectLink(cd->getReference(),
-                         cd->getOutputFileBase(),0,cd->name());
-      ol.lineBreak();
+      // add the class definition to the correct column list
+      colList[col].append(cd);
+      row++;
+      if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) { col++; row=0; }
     }
-    cd=classList.next(); 
   }
-  ol.endAlfabeticalIndexList();
+
+  // create iterators for each column
+  ClassListIterator **colIterators = new ClassListIterator*[columns];
+  for (i=0;i<columns;i++)
+  {
+    colIterators[i] = new ClassListIterator(colList[i]);
+  }
+
+  // generate table
+  for (i=0;i<rows;i++) // forarch table row
+  {
+    ol.nextTableRow();
+    // the last column may contain less items then the others
+    int colsInRow = (i<rows-1) ? columns : itemsInLastRow; 
+    //printf("row [%d]\n",i);
+    for (j=0;j<colsInRow;j++) // foreach table column
+    {
+      ClassDef *cd = colIterators[j]->current();
+      //printf("columns [%d] cd=%p\n",j,cd);
+      if (cd==(ClassDef *)8) // the class pointer is really a header
+      {
+        cd=++(*colIterators[j]); // get the next item
+        if (cd)
+        {
+          //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
+          startLetter=cd->name().at(0);
+          char s[2]; s[0]=startLetter; s[1]=0;
+          ol.writeIndexHeading(s);
+        }
+      }
+      else if (cd) // a real class, insert a link
+      {
+        ol.writeObjectLink(cd->getReference(),
+                           cd->getOutputFileBase(),0,cd->name());
+        ol.writeNonBreakableSpace();
+        //printf("item ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
+        ++(*colIterators[j]);
+      }
+      ol.endTableColumn();
+      if (j<colsInRow-1) ol.nextTableColumn();
+    }
+    ol.endTableRow();
+  }
+  ol.endAlphabeticalIndexList();
+
+  // release the temporary memory
+  for (i=0;i<columns;i++)
+  {
+    delete colIterators[i];
+  }
+  delete[] colIterators;
+  delete[] colList;
 }
 
 //----------------------------------------------------------------------------
@@ -569,11 +664,11 @@ void writeAlphabeticalIndex(OutputList &ol)
 {
   ol.disableAllBut(OutputGenerator::Html);
   if (annotatedClasses==0) return;
-  startFile(ol,"classes.html","Alfabetical index");
-  startTitle(ol);
+  startFile(ol,"classes.html","Alphabetical index");
+  startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trCompoundIndex());
-  endTitle(ol,0);
-  writeAlfabeticalClassList(ol);
+  endTitle(ol,0,0);
+  writeAlphabeticalClassList(ol);
   endFile(ol);
   ol.enableAll();
 }
@@ -587,10 +682,10 @@ void writeAnnotatedIndex(OutputList &ol)
   //if (classList.count()==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"annotated","Annotated Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trCompoundList();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   if (Config::generateHtml && Config::htmlHelpFlag)
   {
@@ -728,9 +823,9 @@ void writeMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"functions","Compound Member Index");
-  startTitle(ol);
+  startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trCompoundMembers());
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   parseText(ol,theTranslator->trCompoundMembersDescription(Config::extractAllFlag));
   writeMemberList(ol);
   endFile(ol);
@@ -921,9 +1016,9 @@ void writeFileMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"globals","File Member Index");
-  startTitle(ol);
+  startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trFileMembers());
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   parseText(ol,theTranslator->trFileMembersDescription(Config::extractAllFlag));
   writeFileMemberList(ol);
   endFile(ol);
@@ -939,9 +1034,9 @@ void writeNamespaceMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"namespacemembers","Namespace Member Index");
-  startTitle(ol);
+  startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trNamespaceMembers());
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   parseText(ol,theTranslator->trNamespaceMemberDescription(Config::extractAllFlag));
   writeNamespaceMemberList(ol);
   endFile(ol);
@@ -1007,10 +1102,10 @@ void writeHeaderIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"headers","Header File Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trHeaderFiles();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   if (Config::generateHtml && Config::htmlHelpFlag)
   {
@@ -1036,10 +1131,10 @@ void writeExampleIndex(OutputList &ol)
   if (exampleList.count()==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trExamples();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
   if (hasHtmlHelp)
@@ -1084,10 +1179,10 @@ void writePageIndex(OutputList &ol)
   if (pageList.count()==0) return;
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trRelatedPages();
   ol.docify(title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
   if (hasHtmlHelp)
@@ -1173,10 +1268,10 @@ void writeGroupIndex(OutputList &ol)
   if (documentedGroups==0) return; 
   ol.disable(OutputGenerator::Man);
   startFile(ol,"modules","Module Index");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString title = Config::projectName+" "+theTranslator->trModules();
   parseText(ol,title);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   HtmlHelp *htmlHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
   if (hasHtmlHelp)
@@ -1212,9 +1307,16 @@ void writeIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   ol.startFile("index","Main Index",FALSE);
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
-  ol.startTitleHead();
-  parseText(ol,projPrefix+theTranslator->trDocumentation());
-  ol.endTitleHead(0);
+  ol.startTitleHead(0);
+  if (mainPage && !mainPage->title.isEmpty())
+  {
+    parseDoc(ol,0,0,mainPage->title);
+  }
+  else
+  {
+    parseText(ol,projPrefix+theTranslator->trDocumentation());
+  }
+  ol.endTitleHead(0,0);
   ol.newParagraph();
   if (!Config::projectNumber.isEmpty())
   {
@@ -1223,6 +1325,12 @@ void writeIndex(OutputList &ol)
     ol.endProjectNumber();
   }
   if (Config::noIndexFlag) writeQuickLinks(ol,FALSE);
+
+  if (mainPage)
+  {
+    parseDoc(ol,0,0,mainPage->doc);
+  }
+  
   endFile(ol);
   ol.disable(OutputGenerator::Html);
   
@@ -1241,6 +1349,19 @@ void writeIndex(OutputList &ol)
   ol.startIndexSection(isTitlePageAuthor);
   parseText(ol,theTranslator->trGeneratedBy());
   ol.endIndexSection(isTitlePageAuthor);
+  if (mainPage)
+  {
+    ol.startIndexSection(isMainPage);
+    if (!mainPage->title.isEmpty())
+    {
+      parseDoc(ol,0,0,mainPage->title);
+    }
+    else
+    {
+      parseText(ol,projPrefix+theTranslator->trMainPage());
+    }
+    ol.endIndexSection(isMainPage);
+  }
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleIndex);

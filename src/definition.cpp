@@ -73,3 +73,17 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
     s=anchorList->next();
   }
 }
+
+void Definition::setBriefDescription(const char *b) 
+{ 
+  brief=QCString(b).stripWhiteSpace(); 
+  int bl=brief.length(); 
+  if (bl>0) // add puntuation if needed
+  {
+    switch(brief.at(bl-1))
+    {
+      case '.': case '!': case '?': break;
+      default: brief+='.'; break;
+    }
+  }
+}

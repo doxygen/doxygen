@@ -170,17 +170,25 @@ void HtmlGenerator::writeStyleInfo(int part)
     t << "DL.el { margin-left: -1cm }" << endl;
     t << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl;
     t << "DIV.in { margin-left: 16 }" << endl;
+    t << "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }" << endl;
     t << "A.gl:link { color: #ffffff }" << endl;
     t << "A.gl:visited { color: #ffffff }" << endl;
     t << "A.gl { text-decoration: none; font-weight: bold; background-color: " << GROUP_COLOR << " }" << endl;
+    t << "TD.md { background-color: #f2f2ff }" << endl;
     t << endl;
     endPlainFile();
   }
 }
 
-void HtmlGenerator::writeDoxyAnchor(const char *,const char *anchor, const char *name)
+void HtmlGenerator::startDoxyAnchor(const char *,const char *,
+                                    const char *anchor, const char *name)
 {
-  t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
+  t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\">";
+}
+
+void HtmlGenerator::endDoxyAnchor()
+{
+  t << "</a>" << endl;
 }
 
 void HtmlGenerator::newParagraph()
@@ -601,17 +609,40 @@ void HtmlGenerator::endIndexList()
   //}
 }
 
-void HtmlGenerator::startAlfabeticalIndexList()
+void HtmlGenerator::startAlphabeticalIndexList()
 {
-  t << "<multicol cols=5><dl compact>" << endl;
+  t << "<table width=95% border=0 cellspacing=0 cellpadding=0>" << endl;
 }
 
-void HtmlGenerator::endAlfabeticalIndexList()
+void HtmlGenerator::endAlphabeticalIndexList()
 {
-  t << "</dl></multicol>" << endl;
+  t << "</table>" << endl;
 }
 
 void HtmlGenerator::writeIndexHeading(const char *s)
 {
-  t << "<dt><b><big>" << s << "</big></b><dd>" << endl;
+  //t << "<dt><b><big>" << s << "</big></b><dd>" << endl;
+  t << "<div class=\"ah\"><font color=\"white\"><b>&nbsp;&nbsp;" << s 
+    << "&nbsp;&nbsp;</b></font></div>";
+}
+
+void HtmlGenerator::writeImage(const char *name,const char *,const char *)
+{
+  QCString baseName=name;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i); 
+  }
+  t << "<img src=" << name << " alt=\"" << baseName << "\">" << endl;
+}
+
+void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
+{ 
+  t << endl << "<p><table width=100%% cellpadding=2 cellspacing=0 border=0><tr><td class=\"md\"><b>" << endl; 
+}
+
+void HtmlGenerator::endMemberDoc()     
+{ 
+  t << endl << "</b></td></tr></table>" << endl; 
 }

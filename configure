@@ -21,10 +21,11 @@ f_shared=YES
 f_make=NO
 f_perl=NO
 f_plf_auto=NO
-f_prefix=/usr/local
+f_prefix=/usr
 f_insttool=install
+f_english=NO
 
-while test -n "$1"; do
+while test -n "$1";  do
   case $1 in
     --prefix)
        shift; f_prefix=$1
@@ -40,6 +41,9 @@ while test -n "$1"; do
        ;;
     --debug)
        f_debug=YES
+       ;;
+    --english-only)
+       f_english=YES
        ;;
     --platform)
        shift; f_platform=$1
@@ -68,33 +72,35 @@ done
 if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
-          [--perl name] [--make name] [--platform target] [--prefix]
-          [--install]
+          [--perl name] [--make name] [--platform target] [--prefix dir]
+          [--install name] [--english-only]
 
-Options: 
+Options:ll 
 
-  --help              Print this message
+  --help                Print this help
 
-  --shared | --static Build using shared or static linking
-		      [default: shared]
+  --shared | --static   Build using shared or static linking
+		        [default: shared]
 
-  --release | --debug Build for release or debug 
-		      [default: release]
+  --release | --debug   Build for release or debug 
+		        [default: release]
 
-  --perl name         Use \`name' as the name of the perl interpreter 
-		      [default: autodetect]
+  --perl name           Use \`name' as the name of the perl interpreter 
+		        [default: autodetect]
 
-  --make name         Use \`name' as the name of the GNU make tool
-		      [default: autodetect]
+  --make name           Use \`name' as the name of the GNU make tool
+		        [default: autodetect]
 
-  --platform target   Do not detect platform but use \`target' instead.
-                      See PLATFORMS for a list of possibilities
+  --platform target     Do not detect platform but use \`target' instead.
+                        See PLATFORMS for a list of possibilities
 
-  --prefix dir        Installation prefix directory
-                      [default: /usr/local]
+  --prefix dir          Installation prefix directory
+                        [default: /usr]
   
-  --install name      name of the GNU install tool
-                      [default: install]
+  --install name        Use \`name' as the name of the GNU install tool
+                        [default: install]
+
+  --english-only        Include support for English only.
 
 EOF
   test "$f_error" = y && exit 1
@@ -196,11 +202,11 @@ if test -z "$QTDIR"; then
   echo "check your Qt installation!"
   exit 2
 else
-  if ! test -d "$QTDIR/lib"; then
+  if test ! -d "$QTDIR/lib"; then
     echo "QTDIR is set, but library directory does not exist!"
     exit 2
   fi
-  if ! test -d "$QTDIR/include"; then
+  if test ! -d "$QTDIR/include"; then
     echo "QTDIR is set, but include directory does not exist!"
     exit 2
   fi
@@ -218,8 +224,10 @@ if test "$f_make" = NO; then
   for i in $make_names; do
     for j in $make_dirs; do
       if test -x "$j/$i"; then
-        make_prog="$j/$i"
-        break 2
+        if test -n "`$j/$i --version 2>/dev/null | grep GNU`"; then
+          make_prog="$j/$i"
+          break 2
+        fi
       fi
     done
   done
@@ -281,15 +289,21 @@ RM        = rm -f
 VERSION   = `cat VERSION`
 INSTALL   = $f_prefix
 INSTTOOL  = $f_insttool
-DOXYDOCS  = $PWD
+DOXYDOCS  = ..
 
 export TMAKEPATH
 EOF
 
 touch .tmakeconfig
 if test "$f_shared" = NO; then
-cat > .tmakeconfig <<EOF
+  cat >> .tmakeconfig <<EOF
 TMAKE_LFLAGS = -static
+EOF
+fi
+
+if test "$f_english" = YES; then
+  cat >> .tmakeconfig << EOF
+TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi
 
