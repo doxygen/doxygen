@@ -20,6 +20,7 @@
  *	includes
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
@@ -84,7 +85,7 @@ QCString Config::inputFilter;
 QCString Config::paperType;
 QCString Config::manExtension;
 QCString Config::htmlStyleSheet;
-QCString Config::ignorePrefix;
+QStrList Config::ignorePrefixList;
 QStrList Config::includePath;                
 QStrList Config::examplePath;
 QStrList Config::imagePath;
@@ -141,6 +142,8 @@ bool     Config::inlineInfoFlag      = TRUE;
 bool     Config::collGraphFlag       = TRUE;
 bool     Config::includeGraphFlag    = TRUE;
 bool     Config::gfxHierarchyFlag    = TRUE;
+bool     Config::showIncFileFlag     = TRUE;
+bool     Config::stripCommentsFlag   = TRUE;
 int      Config::tabSize             = 8;
 int      Config::colsInAlphaIndex    = 5;
 
@@ -219,7 +222,7 @@ static int yyread(char *buf,int max_size)
 <Start>"TAB_SIZE"[ \t]*"="		{ BEGIN(GetString);  s=&tabSizeString;              s->resize(0);  }
 <Start>"HTML_STYLESHEET"[ \t]*"="	{ BEGIN(GetString);  s=&Config::htmlStyleSheet;     s->resize(0);  }
 <Start>"COLS_IN_ALPHA_INDEX"[ \t]*"="   { BEGIN(GetString);  s=&colsInAlphaIndexString;     s->resize(0);  }
-<Start>"IGNORE_PREFIX"[ \t]*"="		{ BEGIN(GetString);  s=&Config::ignorePrefix;       s->resize(0);  }
+<Start>"IGNORE_PREFIX"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::ignorePrefixList;   l->clear(); elemStr=""; }
 <Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::includePath;        l->clear(); elemStr=""; }
 <Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::examplePath;        l->clear(); elemStr=""; }
 <Start>"IMAGE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::imagePath;          l->clear(); elemStr=""; }
@@ -276,6 +279,8 @@ static int yyread(char *buf,int max_size)
 <Start>"GENERATE_RTF"[ \t]*"="          { BEGIN(GetBool);    b=&Config::generateRTF; }
 <Start>"COMPACT_RTF"[ \t]*"="           { BEGIN(GetBool);    b=&Config::compactRTFFlag; }
 <Start>"RTF_HYPERLINKS"[ \t]*"="        { BEGIN(GetBool);    b=&Config::rtfHyperFlag; }
+<Start>"SHOW_INCLUDE_FILES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::showIncFileFlag; }
+<Start>"STRIP_CODE_COMMENTS"[ \t]*"="   { BEGIN(GetBool);    b=&Config::stripCommentsFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -433,7 +438,7 @@ void Config::init()
   Config::paperType = "a4wide";
   Config::manExtension = ".3";
   Config::htmlStyleSheet.resize(0);
-  Config::ignorePrefix.resize(0);
+  Config::ignorePrefixList.clear();
   Config::includePath.clear();                
   Config::examplePath.clear();
   Config::imagePath.clear();
@@ -492,6 +497,8 @@ void Config::init()
   Config::collGraphFlag       = TRUE;
   Config::includeGraphFlag    = TRUE;
   Config::gfxHierarchyFlag    = TRUE;
+  Config::showIncFileFlag     = TRUE;
+  Config::stripCommentsFlag   = TRUE;
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
@@ -697,6 +704,15 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct\n";
+    t << "# doxygen to hide any special comment blocks from generated source code\n";
+    t << "# fragments. Normal C and C++ comments will always remain visible.\n"; 
+    t << "\n";
+  }
+  t << "STRIP_CODE_COMMENTS  = YES\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# If the CASE_SENSE_NAMES tag is set to NO (the default) then Doxygen\n";
     t << "# will only generate file names in lower case letters. If set to\n";
     t << "# YES upper case letters are also allowed. This is useful if you have\n";
@@ -714,6 +730,15 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "VERBATIM_HEADERS     = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen\n";
+    t << "# will put list of the files that are included by a file in the documentation\n";
+    t << "# of that file.\n";
+    t << "\n";
+  }
+  t << "SHOW_INCLUDE_FILES   = YES\n";
   if (!sl)
   {
     t << "\n";
@@ -945,8 +970,8 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
     t << "# In case all classes in a project start with a common prefix, all\n";
     t << "# classes will be put under the same header in the alphabetical index.\n";
-    t << "# The IGNORE_PREFIX tag can be use to specify a prefix that should be ignored\n";
-    t << "# while generating the index headers.\n";
+    t << "# The IGNORE_PREFIX tag can be used to specify one or more prefixes that\n";
+    t << "# should be ignored while generating the index headers.\n";
     t << "\n";
   }
   t << "IGNORE_PREFIX        = \n";
@@ -1649,6 +1674,11 @@ void checkConfig()
       }
     }
   }
+
+#if defined(_WIN32)
+  if (Config::haveDotFlag) _putenv("DOTFONTPATH=.");
+#endif
+  
 }
 
 void parseConfig(const QCString &s)

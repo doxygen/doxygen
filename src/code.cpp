@@ -2510,60 +2510,57 @@ YY_RULE_SETUP
 #line 887 "code.l"
 
 	YY_BREAK
-/*
-<SkipSpecialComment>"//"
-<SkipSpecialComment>[ \t]*"* /"		{
-  					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialComment>[ \t]*"* /"[ \t\n]*"\n"/"/ *"  {
-  					  //g_code->codify("\n");
-					  //QCString lineText=yytext;
-  					  //g_yyLineNr+=lineText.contains('\n');
-  					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialComment>.	
-<SkipSpecialComment>\n			{ 
-  					  codifyLines(yytext); 
-					}
-<SkipSpecialCxxComment>.* /\n		{
-  					  codifyLines(yytext); 
-					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialCxxComment>.	
-<SkipSpecialCxxComment>\n		{ 
-  					  codifyLines(yytext); 
-					}
- */
 case 67:
 YY_RULE_SETUP
-#line 912 "code.l"
+#line 888 "code.l"
 { // remove special one-line comment
-  					  g_yyLineNr+=((QCString)yytext).contains('\n');
-                                          g_code->endCodeLine();
-                                          if (g_yyLineNr<g_inputLines) 
-                                          {
-                                            startCodeLine(*g_code);
-                                          }
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr+=((QCString)yytext).contains('\n');
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 920 "code.l"
+#line 903 "code.l"
 { // remove special one-line comment
-  					  g_yyLineNr++;
-                                          g_code->endCodeLine();
-                                          if (g_yyLineNr<g_inputLines) 
-                                          {
-                                            startCodeLine(*g_code);
-                                          }
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr++;
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 928 "code.l"
+#line 918 "code.l"
 { // strip special one-line comment
-  					  char c[2]; c[0]='\n'; c[1]=0;
-  					  codifyLines(c);
+  					  if (Config::stripCommentsFlag)
+					  {
+					    char c[2]; c[0]='\n'; c[1]=0;
+					    codifyLines(c);
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 	YY_BREAK
 case 70:
@@ -2571,11 +2568,20 @@ case 70:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 932 "code.l"
+#line 929 "code.l"
 {
-					  g_lastSpecialCContext = YY_START;
-					  g_yyLineNr++;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+  					  {
+					    g_lastSpecialCContext = YY_START;
+					    g_yyLineNr++;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    codifyLines(yytext);
+					    BEGIN(SkipComment);
+  					  }
 					}
 	YY_BREAK
 case 71:
@@ -2583,10 +2589,19 @@ case 71:
 yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 937 "code.l"
+#line 943 "code.l"
 { // special C comment block at a new line
-					  g_lastSpecialCContext = YY_START;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+ 					  }
 					}
 	YY_BREAK
 case 72:
@@ -2594,20 +2609,33 @@ case 72:
 yy_c_buf_p = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 941 "code.l"
+#line 956 "code.l"
 { // special C comment block half way a line
-					  g_lastSpecialCContext = YY_START;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+					  }
 					}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 945 "code.l"
-{}
+#line 969 "code.l"
+{ if (!Config::stripCommentsFlag)
+  					  {
+					    g_code->codify(yytext);
+					  }
+					}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 946 "code.l"
+#line 974 "code.l"
 { 
   					  g_code->codify(yytext);
   					  g_lastCContext = YY_START ;
@@ -2616,7 +2644,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 951 "code.l"
+#line 979 "code.l"
 { 
   					  g_code->codify(yytext);
   					  g_lastCContext = YY_START ;
@@ -2625,14 +2653,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 956 "code.l"
+#line 984 "code.l"
 {
   					  codifyLines(yytext); 
   					}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 959 "code.l"
+#line 987 "code.l"
 {
   					  g_code->codify(yytext);
 					}
@@ -2648,7 +2676,7 @@ YY_RULE_SETUP
   */
 case 78:
 YY_RULE_SETUP
-#line 972 "code.l"
+#line 1000 "code.l"
 ECHO;
 	YY_BREAK
 			case YY_STATE_EOF(INITIAL):
@@ -3547,7 +3575,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 972 "code.l"
+#line 1000 "code.l"
 
 
 /*@ ----------------------------------------------------------------------------

@@ -885,64 +885,92 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <RemoveSpecialCComment>"//"|"/*"
 <RemoveSpecialCComment>\n  { g_yyLineNr++; }
 <RemoveSpecialCComment>.
-  /*
-<SkipSpecialComment>"//"
-<SkipSpecialComment>[ \t]*"* /"		{
-  					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialComment>[ \t]*"* /"[ \t\n]*"\n"/"/ *"  {
-  					  //g_code->codify("\n");
-					  //QCString lineText=yytext;
-  					  //g_yyLineNr+=lineText.contains('\n');
-  					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialComment>.	
-<SkipSpecialComment>\n			{ 
-  					  codifyLines(yytext); 
-					}
-<SkipSpecialCxxComment>.* /\n		{
-  					  codifyLines(yytext); 
-					  BEGIN( lastDContext ) ;
-  					}
-<SkipSpecialCxxComment>.	
-<SkipSpecialCxxComment>\n		{ 
-  					  codifyLines(yytext); 
-					}
- */
 <*>\n({B}*"//"[!/][^\n]*\n)*		{ // remove special one-line comment
-  					  g_yyLineNr+=((QCString)yytext).contains('\n');
-                                          g_code->endCodeLine();
-                                          if (g_yyLineNr<g_inputLines) 
-                                          {
-                                            startCodeLine(*g_code);
-                                          }
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr+=((QCString)yytext).contains('\n');
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
-  					  g_yyLineNr++;
-                                          g_code->endCodeLine();
-                                          if (g_yyLineNr<g_inputLines) 
-                                          {
-                                            startCodeLine(*g_code);
-                                          }
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr++;
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
-  					  char c[2]; c[0]='\n'; c[1]=0;
-  					  codifyLines(c);
+  					  if (Config::stripCommentsFlag)
+					  {
+					    char c[2]; c[0]='\n'; c[1]=0;
+					    codifyLines(c);
+					  }
+					  else
+					  {
+					    codifyLines(yytext);
+					  }
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
-					  g_lastSpecialCContext = YY_START;
-					  g_yyLineNr++;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+  					  {
+					    g_lastSpecialCContext = YY_START;
+					    g_yyLineNr++;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    codifyLines(yytext);
+					    BEGIN(SkipComment);
+  					  }
 					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
-					  g_lastSpecialCContext = YY_START;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+ 					  }
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
-					  g_lastSpecialCContext = YY_START;
-					  BEGIN(RemoveSpecialCComment);
+					  if (Config::stripCommentsFlag)
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+					  }
 					}
-<*>"/*"("!"?)"*/"			{}
+<*>"/*"("!"?)"*/"			{ if (!Config::stripCommentsFlag)
+  					  {
+					    g_code->codify(yytext);
+					  }
+					}
 <*>"/*"					{ 
   					  g_code->codify(yytext);
   					  g_lastCContext = YY_START ;

@@ -43,12 +43,13 @@ QCString Definition::nameToFile(const char *name)
   {
     switch(c)
     {
-      case ':': result+="_c_"; break;
+      case ':': result+="_"; break;
       case '<': result+="_lt"; break;
       case '>': result+="_gt"; break;
       case '*': result+="_ast"; break;
       case '&': result+="_amp"; break;
       case '|': result+="_p_"; break;
+      case '!': result+="_e_"; break;
       case ',': result+="_x_"; break;
       case ' ': break;
       default: 

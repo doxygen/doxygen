@@ -120,7 +120,9 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_repeat_brief REPEAT_BRIEF
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
+<li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 <li> \refitem cfg_source_browser SOURCE_BROWSER
+<li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
 <li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
 <li> \refitem cfg_rtf_output RTF_OUTPUT
@@ -292,6 +294,13 @@ followed by the descriptions of the tags grouped by category.
  Setting the \c INLINE_SOURCES tag to \c YES will include the body
  of functions, classes and enums directly into the documentation.
 
+\anchor cfg_strip_code_comments
+<dt>\c STRIP_CODE_COMMENTS <dd>
+ \addindex STRIP_CODE_COMMENTS
+ Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct
+ doxygen to hide any special comment blocks from generated source code
+ fragments. Normal C and C++ comments will always remain visible.
+
 \anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
  \addindex CASE_SENSE_NAMES
@@ -308,6 +317,13 @@ followed by the descriptions of the tags grouped by category.
   will generate a verbatim copy of the header file for each class for
   which an include is specified. Set to NO to disable this.
   \sa Section \ref cmdclass "\\class".
+
+\anchor cfg_show_include_files
+<dt>\c SHOW_INCLUDE_FILES <dd>
+ \addindex SHOW_INCLUDE_FILES
+ If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen
+ will put list of the files that are included by a file in the documentation 
+ of that file.
 
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
@@ -559,10 +575,11 @@ used to specify the number of columns in which this list will be split (can be a
 
 \anchor cfg_ignore_prefix
 <dt>\c IGNORE_PREFIX <dd>
-In case all classes in a project start with a common prefix, all
-classes will be put under the same header in the alphabetical index.
-The \c IGNORE_PREFIX tag can be use to specify a prefix that should be ignored
-while generating the index headers.
+In case all classes in a project start with a common prefix, all classes will 
+be put under the same header in the alphabetical index.
+The \c IGNORE_PREFIX tag can be used to specify a prefix 
+(or a list of prefixes) that should be ignored while generating the index 
+headers.
 
 </dl>
 

@@ -1130,6 +1130,14 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
       srcA->type = dstA->type.left(i2+2)+srcA->type;
       srcA->name = dstA->name.copy();
     }
+    if (srcA->docs.isEmpty() && !dstA->docs.isEmpty())
+    {
+      srcA->docs = dstA->docs.copy();
+    }
+    else if (dstA->docs.isEmpty() && !srcA->docs.isEmpty())
+    {
+      dstA->docs = srcA->docs.copy();
+    }
   }
   //printf("result mergeArguments `%s', `%s'\n",
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
@@ -1694,20 +1702,21 @@ bool generateLink(OutputList &ol,const char *clName,
   //FileInfo *fi=0;
   FileDef *fd;
   GroupDef *gd;
+  PageInfo *pi;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
     ol.docify(lt);
     return FALSE;
   }
-  else if ((pageDict[linkRef])) // link to a page
+  else if ((pi=pageDict[linkRef])) // link to a page
   {
-    ol.writeObjectLink(0,linkRef,0,lt);  
+    ol.writeObjectLink(0,pi->name,0,lt);  
     return TRUE;
   }
-  else if ((exampleDict[linkRef])) // link to an example
+  else if ((pi=exampleDict[linkRef])) // link to an example
   {
-    ol.writeObjectLink(0,linkRef+"-example",0,lt);
+    ol.writeObjectLink(0,convertSlashes(pi->name,TRUE)+"-example",0,lt);
     return TRUE;
   }
   else if ((gd=groupDict[linkRef])) // link to a group
@@ -1915,3 +1924,24 @@ QCString substituteKeywords(const QCString &s,const char *title)
     
 //----------------------------------------------------------------------
 
+/*! Returns the character index within \a name of the first prefix
+ *  in Config::ignorePrefixList that matches \a name at the left hand side,
+ *  or zero if no match was found
+ */ 
+int getPrefixIndex(const QCString &name)
+{
+  char *s = Config::ignorePrefixList.first();
+  while (s)
+  {
+    const char *ps=s;
+    const char *pd=name.data();
+    int i=0;
+    while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
+    if (*ps==0 && *pd!=0)
+    {
+      return i;
+    }
+    s = Config::ignorePrefixList.next();
+  }
+  return 0;
+}

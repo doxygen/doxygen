@@ -259,10 +259,6 @@ void DotNode::deleteNode()
       // do not access cn after this!
     }
   }
-  //printf("delete node %s from memory (c=%d,p=%d)\n",
-  //    m_label.data(),
-  //    m_children?m_children->count():0,
-  //    m_parents?m_parents->count():0);
   delete this;
 }
 
@@ -413,73 +409,62 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
-  //QFile ind("inherit.html");
-  //if (ind.open(IO_WriteOnly))
-  //{
-  //  QTextStream ti(&ind);
-    //ti << "<html><head><title>Class Hierarchy</title></head>" << endl;
-    //ti << "<body bgcolor=#ffffff>" << endl;
-    out << "<table border=0 cellspacing=10 cellpadding=0>" << endl;
+  out << "<table border=0 cellspacing=10 cellpadding=0>" << endl;
 
-    QListIterator<DotNode> dnli(*m_rootSubgraphs);
-    DotNode *n;
-    for (dnli.toFirst();(n=dnli.current());++dnli)
+  QListIterator<DotNode> dnli(*m_rootSubgraphs);
+  DotNode *n;
+  for (dnli.toFirst();(n=dnli.current());++dnli)
+  {
+    QCString baseName;
+    QCString diskName=n->m_url.copy();
+    int i=diskName.find('$'); /* should not return -1 */
+    if (i!=-1) diskName=diskName.right(diskName.length()-i-1);
+    baseName.sprintf("inherit_graph_%s",diskName.data());
+    QCString dotName=baseName+".dot";
+    QCString gifName=baseName+".gif";
+    QCString mapName=baseName+".map";
+
+    QFile f(dotName);
+    if (!f.open(IO_WriteOnly)) return;
+    QTextStream t(&f);
+    t << "digraph inheritance" << endl;
+    t << "{" << endl;
+    t << "  rankdir=LR;" << endl;
+    QListIterator<DotNode> dnli2(*m_rootNodes);
+    DotNode *node;
+    for (;(node=dnli2.current());++dnli2)
     {
-      //printf("Node %s color=%d (c=%d,p=%d)\n",
-      //    n->m_label.data(),n->m_subgraphId,
-      //    n->m_children?n->m_children->count():0,
-      //    n->m_parents?n->m_parents->count():0);
-
-      QCString baseName;
-      baseName.sprintf("inherit_graph_%s",n->m_label.data());
-      QCString dotName=baseName+".dot";
-      QCString gifName=baseName+".gif";
-      QCString mapName=baseName+".map";
-
-      QFile f(dotName);
-      if (!f.open(IO_WriteOnly)) return;
-      QTextStream t(&f);
-      t << "digraph inheritance" << endl;
-      t << "{" << endl;
-      t << "  rankdir=LR;" << endl;
-      QListIterator<DotNode> dnli2(*m_rootNodes);
-      DotNode *node;
-      for (;(node=dnli2.current());++dnli2)
-      {
-        if (node->m_subgraphId==n->m_subgraphId) node->write(t);
-      }
-      t << "}" << endl;
-      f.close();
-
-      QCString dotCmd;
-      dotCmd.sprintf("dot -Tgif %s -o %s",dotName.data(),gifName.data());
-      //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
-      if (system(dotCmd)!=0)
-      {
-        err("Problems running dot. Check your installation!\n");
-        out << "</table>" << endl;
-        return;
-      }
-      dotCmd.sprintf("dot -Timap %s -o %s",dotName.data(),mapName.data());
-      //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
-      if (system(dotCmd)!=0)
-      {
-        err("Problems running dot. Check your installation!\n");
-        out << "</table>" << endl;
-        return;
-      }
-      out << "<tr><td><img src=\"" << gifName << "\" border=\"0\" usemap=\"#" 
-          << n->m_label << "_map\"></td></tr>" << endl;
-      out << "<map name=\"" << n->m_label << "_map\">" << endl;
-      convertMapFile(out,mapName);
-      out << "</map>" << endl;
-      thisDir.remove(dotName);
-      thisDir.remove(mapName);
+      if (node->m_subgraphId==n->m_subgraphId) node->write(t);
     }
-    out << "</table>" << endl;
-  //  ti << "</body></html>" << endl;
-  //  ind.close();
-  //}
+    t << "}" << endl;
+    f.close();
+
+    QCString dotCmd;
+    dotCmd.sprintf("dot -Tgif %s -o %s",dotName.data(),gifName.data());
+    //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
+    if (system(dotCmd)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      out << "</table>" << endl;
+      return;
+    }
+    dotCmd.sprintf("dot -Timap %s -o %s",dotName.data(),mapName.data());
+    //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
+    if (system(dotCmd)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      out << "</table>" << endl;
+      return;
+    }
+    out << "<tr><td><img src=\"" << gifName << "\" border=\"0\" usemap=\"#" 
+      << n->m_label << "_map\"></td></tr>" << endl;
+    out << "<map name=\"" << n->m_label << "_map\">" << endl;
+    convertMapFile(out,mapName);
+    out << "</map>" << endl;
+    thisDir.remove(dotName);
+    thisDir.remove(mapName);
+  }
+  out << "</table>" << endl;
 
   QDir::setCurrent(oldDir);
 }

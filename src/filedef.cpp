@@ -126,46 +126,49 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   ol.writeSynopsis();
  
-  ol.startTextBlock(TRUE);
-  QListIterator<IncludeInfo> ili(*includeList);
-  IncludeInfo *ii;
-  for (;(ii=ili.current());++ili)
+  if (Config::showIncFileFlag)
   {
-    FileDef *fd=ii->fileDef;
-    ol.startTypewriter();
-    ol.docify("#include ");
-    if (ii->local)
-      ol.docify("\"");
-    else
-      ol.docify("<");
-    ol.disable(OutputGenerator::Html);
-    ol.docify(ii->includeName);
-    ol.enableAll();
-    ol.disableAllBut(OutputGenerator::Html);
-    if (fd && fd->isLinkable() && 
-        (fd->generateSource() || Config::sourceBrowseFlag)
-       )
+    ol.startTextBlock(TRUE);
+    QListIterator<IncludeInfo> ili(*includeList);
+    IncludeInfo *ii;
+    for (;(ii=ili.current());++ili)
     {
-      ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
-    }
-    else
-    {
+      FileDef *fd=ii->fileDef;
+      ol.startTypewriter();
+      ol.docify("#include ");
+      if (ii->local)
+        ol.docify("\"");
+      else
+        ol.docify("<");
+      ol.disable(OutputGenerator::Html);
       ol.docify(ii->includeName);
+      ol.enableAll();
+      ol.disableAllBut(OutputGenerator::Html);
+      if (fd && fd->isLinkable() && 
+          (fd->generateSource() || Config::sourceBrowseFlag)
+         )
+      {
+        ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
+      }
+      else
+      {
+        ol.docify(ii->includeName);
+      }
+      ol.enableAll();
+      if (ii->local)
+        ol.docify("\"");
+      else
+        ol.docify(">");
+      ol.endTypewriter();
+      ol.disable(OutputGenerator::RTF);
+      ol.lineBreak();
+      ol.enableAll();
+      ol.disableAllBut(OutputGenerator::RTF);
+      ol.newParagraph();
+      ol.enableAll();
     }
-    ol.enableAll();
-    if (ii->local)
-      ol.docify("\"");
-    else
-      ol.docify(">");
-    ol.endTypewriter();
-    ol.disable(OutputGenerator::RTF);
-    ol.lineBreak();
-    ol.enableAll();
-    ol.disableAllBut(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.enableAll();
+    ol.endTextBlock();
   }
-  ol.endTextBlock();
   
   if (Config::haveDotFlag && Config::includeGraphFlag)
   {

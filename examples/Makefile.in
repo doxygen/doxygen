@@ -20,12 +20,12 @@ all: class/html/index.html \
      template/html/index.html \
      tag/html/index.html \
      group/html/index.html \
-     diagram/html/index.html
+     diagrams/html/index.html
 
 clean:
 	rm -rf  class define enum file func page relates author \
                 par overload example include qtstyle jdstyle structcmd \
-		autolink tag restypedef afterdoc template
+		autolink tag restypedef afterdoc template tag group diagrams
 
 class/html/index.html: class.h class.cfg
 	$(DOXYGEN)/bin/doxygen class.cfg
@@ -92,5 +92,7 @@ template/html/index.html: templ.cpp templ.cfg
 group/html/index.html: group.cpp group.cfg
 	$(DOXYGEN)/bin/doxygen group.cfg
 
-diagram/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
+diagrams/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
+ifneq ($(HAVE_DOT),)
 	$(DOXYGEN)/bin/doxygen diagrams.cfg
+endif
