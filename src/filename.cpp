@@ -60,6 +60,7 @@ void FileName::generateDiskNames()
       while (fd && fd->isReference()) fd=next();
       char c=fd->path.at(i);
       if (c=='/') j=i; // remember last position of dirname
+      fd=next();
       while (fd && !found)
       {
         if (!fd->isReference())
@@ -67,8 +68,8 @@ void FileName::generateDiskNames()
           //printf("i=%d fd->path=`%s' fd->name=`%s'\n",i,fd->path.data(),fd->name().data());
           if (i==(int)fd->path.length())
           {
-            warning("Warning: Input file %s found multiple times!\n"
-                    "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
+            //warning("Warning: Input file %s found multiple times!\n"
+            //        "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
             found=TRUE;
           }
           else if (fd->path[i]!=c)
@@ -84,8 +85,11 @@ void FileName::generateDiskNames()
     while (fd)
     {
       //printf("fd->setName(%s)\n",(fd->path.right(fd->path.length()-j-1)+name).data());
-      fd->setName(fd->path.right(fd->path.length()-j-1)+name);
-      fd->diskname=convertSlashes(fd->name());
+      if (!fd->isReference())
+      {
+        fd->setName(fd->path.right(fd->path.length()-j-1)+name);
+        fd->diskname=convertSlashes(fd->name());
+      }
       fd=next();
     }
   }

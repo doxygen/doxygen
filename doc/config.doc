@@ -88,7 +88,6 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_html_output HTML_OUTPUT
 <li> \refitem cfg_html_stylesheet HTML_STYLESHEET
 <li> \refitem cfg_image_path IMAGE_PATH
-<li> \refitem cfg_image_patterns IMAGE_PATTERNS
 <li> \refitem cfg_include_path INCLUDE_PATH
 <li> \refitem cfg_inherit_docs INHERIT_DOCS
 <li> \refitem cfg_inline_info INLINE_INFO
@@ -115,6 +114,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
+<li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
 <li> \refitem cfg_warnings WARNINGS
@@ -314,6 +314,11 @@ followed by the descriptions of the tags grouped by category.
  If the \c INLINE_INFO tag is set to \c YES (the default) then a tag [inline]
  is inserted in the documentation for inline members.
 
+\anchor cfg_tab_size
+<dt>\c TAB_SIZE <dd>
+  the TAB_SIZE tag can be used to set the number of spaces in a tab.
+  Doxygen uses this value to replace tabs by spaces in code fragments.
+
 </dl>
 
 \subsection config_input Input related options
@@ -381,14 +386,6 @@ followed by the descriptions of the tags grouped by category.
  The \c IMAGE_PATH tag can be used to specify one or more files or
  directories that contain images that are to be included in the 
  documentation (see the \ref cmdimage "\image" command).
-
-\anchor cfg_image_patterns
-<dt>\c IMAGE_PATTERNS <dd>
- \addindex IMAGE_PATTERNS
- If the value of the \c IMAGE_PATH tag contains directories, you can use the
- \c IMAGE_PATTERNS tag to specify one or more wildcard pattern (like *.gif
- and *.eps) to filter out the image files in the directories. If left
- blank all files are included.
 
 \anchor cfg_input_filter
 <dt>\c INPUT_FILTER <dd>

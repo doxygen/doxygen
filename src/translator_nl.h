@@ -259,7 +259,7 @@ class TranslatorDutch : public Translator
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const char *clName,
                                     ClassDef::CompoundType compType)
       // used as the title of the HTML page of a class/struct/union
     {
@@ -274,14 +274,14 @@ class TranslatorDutch : public Translator
       result+=" Referentie";
       return result;
     }
-    virtual QCString trFileReference(const char *fileName)
+    QCString trFileReference(const char *fileName)
       // used as the title of the HTML page of a file
     {
       QCString result=fileName;
       result+=" File Referentie"; 
       return result;
     }
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
       QCString result=namespaceName;
@@ -290,29 +290,29 @@ class TranslatorDutch : public Translator
     }
     
     // these are for the member sections of a class, struct or union 
-    virtual QCString trPublicMembers()
+    QCString trPublicMembers()
     { return "Public Members"; }
-    virtual QCString trPublicSlots()
+    QCString trPublicSlots()
     { return "Public Slots"; }
-    virtual QCString trSignals()
+    QCString trSignals()
     { return "Signals"; }
-    virtual QCString trStaticPublicMembers()
+    QCString trStaticPublicMembers()
     { return "Static Public Members"; }
-    virtual QCString trProtectedMembers()
+    QCString trProtectedMembers()
     { return "Protected Members"; }
-    virtual QCString trProtectedSlots()
+    QCString trProtectedSlots()
     { return "Protected Slots"; }
-    virtual QCString trStaticProtectedMembers()
+    QCString trStaticProtectedMembers()
     { return "Static Protected Members"; }
-    virtual QCString trPrivateMembers()
+    QCString trPrivateMembers()
     { return "Private Members"; }
-    virtual QCString trPrivateSlots()
+    QCString trPrivateSlots()
     { return "Private Slots"; }
-    virtual QCString trStaticPrivateMembers()
+    QCString trStaticPrivateMembers()
     { return "Static Private Members"; }
     // end of member sections 
     
-    virtual QCString trWriteList(int numEntries)
+    QCString trWriteList(int numEntries)
     {
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
@@ -336,35 +336,35 @@ class TranslatorDutch : public Translator
       return result; 
     }
     
-    virtual QCString trInheritsList(int numEntries)
+    QCString trInheritsList(int numEntries)
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
     {
       return "Erft over van "+trWriteList(numEntries)+".";
     }
-    virtual QCString trInheritedByList(int numEntries)
+    QCString trInheritedByList(int numEntries)
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
       return "Wordt overge&euml;rfd door "+trWriteList(numEntries)+".";
     }
-    virtual QCString trReimplementedFromList(int numEntries)
+    QCString trReimplementedFromList(int numEntries)
       // used in member documentation blocks to produce a list of 
       // members that are hidden by this one.
     {
       return "Nieuwe implementatie van "+trWriteList(numEntries)+".";
     }
-    virtual QCString trReimplementedInList(int numEntries)
+    QCString trReimplementedInList(int numEntries)
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
       return "Opnieuw ge&iuml;mplementeerd in "+trWriteList(numEntries)+".";
     }
 
-    virtual QCString trNamespaceMembers()
+    QCString trNamespaceMembers()
       // This is put above each page as a link to all members of namespaces.
     { return "Namespace Members"; }
-    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     { 
       QCString result="Hier is een lijst van alle ";
@@ -376,11 +376,11 @@ class TranslatorDutch : public Translator
         result+="de namespaces waartoe ze behoren:";
       return result;
     }
-    virtual QCString trNamespaceIndex()
+    QCString trNamespaceIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all namespaces.
     { return "Namespace Index"; }
-    virtual QCString trNamespaceDocumentation()
+    QCString trNamespaceDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Namespace Documentatie"; }
@@ -392,7 +392,7 @@ class TranslatorDutch : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
@@ -412,7 +412,7 @@ class TranslatorDutch : public Translator
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
-    virtual QCString trAlphabeticalList()
+    QCString trAlphabeticalList()
     { return "Alphabetical List"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -420,19 +420,36 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    virtual QCString trReturnValues()
+    QCString trReturnValues()
     { return "Retour waarden"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    virtual QCString trMainPage()
+    QCString trMainPage()
     { return "Hoofd Pagina"; }
 
     /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
      */
-    virtual QCString trPageAbbreviation()
+    QCString trPageAbbreviation()
     { return "p."; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991106
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trSources()
+    {
+      return "Sources";
+    }
+    QCString trDefinedAtLineInSourceFile()
+    {
+      return "De definitie bevindt zich op regel @0 in de file @1.";
+    }
+    QCString trDefinedInSourceFile()
+    {
+      return "De definitie bevindt zich in de file @0.";
+    }
 };
 
 #endif

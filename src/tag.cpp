@@ -1939,7 +1939,11 @@ void parseTagFile(const char *fileName)
 {
   FILE *f=fopen(fileName,"r");
   QFileInfo fi(fileName);
-  if (!f || !fi.exists());
+  if (!f || !fi.exists()) 
+  {
+    if (f) fclose(f);
+    return;
+  }
   tagName = fi.fileName();
   tagYYin = f;
 

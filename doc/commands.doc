@@ -1057,10 +1057,8 @@ Doxygen. Unrecognized commands are treated as normal text.
   
   The second argument specifies the file name of the image. 
   Doxygen will look for files in the paths (or files) that you specified 
-  after the \ref cfg_image_path "IMAGE_PATH" tag and filter those files through the patterns 
-  you specified after the \ref cfg_image_patterns "IMAGE_PATTERNS" tag. 
-  If the image is found it
-  will be copied to the correct output directory.
+  after the \ref cfg_image_path "IMAGE_PATH" tag.
+  If the image is found it will be copied to the correct output directory.
   If the image name contains spaces you'll have to put quotes (") around it.
   
   The third argument can be used to specify the width or height of the
@@ -1083,7 +1081,6 @@ Doxygen. Unrecognized commands are treated as normal text.
 
 \verbatim
   IMAGE_PATH     = my_image_dir
-  IMAGE_PATTERNS = *.eps *.gif *.jpg 
 \endverbatim
 
   \warning The image format for HTML is limited to what your

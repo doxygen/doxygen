@@ -53,7 +53,7 @@ Problem!
 ===================================================================================
 1999/09/01
 *  Det verkar som om "namnrymd" är en hyggligt vedertagen svensk översättning
-   av "namnepace", så jag kör med det från och med nu.
+   av "namespace", så jag kör med det från och med nu.
 *  "interface" heter numera "gränssnitt"
 
 */
@@ -537,6 +537,41 @@ class TranslatorSwedish : public Translator
     virtual QCString trAlphabeticalList()
     {
       return "Alfabetisk lista";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990901
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the heading text for the retval command. */
+    virtual QCString trReturnValues()
+    { return "Returvärden"; }
+
+    /*! This is in the (quick) index as a link to the main page (index.html)
+     */
+    virtual QCString trMainPage()
+    { return "Huvudsida"; }
+
+    /*! This is used in references to page that are put in the LaTeX 
+     *  documentation. It should be an abbreviation of the word page.
+     */
+    virtual QCString trPageAbbreviation()
+    { return "s."; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991003
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSources()
+    {
+      return "Källor";
+    }
+    virtual QCString trDefinedAtLineInSourceFile()
+    {
+      return "Definition på rad @0 i filen @1.";
+    }
+    virtual QCString trDefinedInSourceFile()
+    {
+      return "Definition i filen @0.";
     }
 };
 

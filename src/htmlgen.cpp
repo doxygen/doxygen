@@ -124,11 +124,14 @@ void HtmlGenerator::writeFooter(int part,bool external)
         t << "<hr><address><small>";
       else
         t << substitute(
-               substitute(  
-                 substitute(footer,"$title",lastTitle),
-                 "$datetime",dateToString(TRUE)
+               substitute(
+                 substitute(  
+                   substitute(footer,"$title",lastTitle),
+                   "$datetime",dateToString(TRUE)
+                 ),
+                 "$date",dateToString(FALSE)
                ),
-               "$date",dateToString(FALSE)
+               "$doxygenversion",versionString
              );
       break;
     case 1:
@@ -663,7 +666,7 @@ void HtmlGenerator::endIndexList()
 
 void HtmlGenerator::startAlphabeticalIndexList()
 {
-  t << "<table width=95% border=0 cellspacing=0 cellpadding=0>" << endl;
+  t << "<table align=center width=95% border=0 cellspacing=0 cellpadding=0>" << endl;
 }
 
 void HtmlGenerator::endAlphabeticalIndexList()
@@ -684,9 +687,9 @@ void HtmlGenerator::writeImage(const char *name,const char *,const char *)
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
-    baseName=baseName.right(baseName.length()-i); 
+    baseName=baseName.right(baseName.length()-i-1); 
   }
-  t << "<img src=" << name << " alt=\"" << baseName << "\">" << endl;
+  t << "<img src=\"" << name << "\" alt=\"" << baseName << "\">" << endl;
 }
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 

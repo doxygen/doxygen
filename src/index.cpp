@@ -358,7 +358,7 @@ void writeFileIndex(OutputList &ol)
                               fd->name()
                              );
         ol.docify(" (");
-        if (fd->briefDescription())
+        if (!fd->briefDescription().isEmpty())
         {
           OutputList briefOutput(&ol);
           parseDoc(briefOutput,0,0,
@@ -421,24 +421,27 @@ void writeSourceIndex(OutputList &ol)
     FileDef *fd=fn->first();
     while (fd)
     {
-      if (!started)
+      if (!fd->isReference())
       {
-        started=TRUE;
-        ol.startItemList();
-      }
-      ol.writeListItem();
-      QCString path;
-      if (Config::fullPathNameFlag) 
-      {
-        path=stripFromPath(fd->getPath().copy());
-      }
-      if (!path.isEmpty()) ol.docify(path);
-      ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
-      ol.writeString("\n");
-      if (Config::generateHtml && Config::htmlHelpFlag)
-      {
-        HtmlHelp::getInstance()->addContentsItem(
-            fd->name(),fd->sourceName());
+        if (!started)
+        {
+          started=TRUE;
+          ol.startItemList();
+        }
+        ol.writeListItem();
+        QCString path;
+        if (Config::fullPathNameFlag) 
+        {
+          path=stripFromPath(fd->getPath().copy());
+        }
+        if (!path.isEmpty()) ol.docify(path);
+        ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+        ol.writeString("\n");
+        if (Config::generateHtml && Config::htmlHelpFlag)
+        {
+          HtmlHelp::getInstance()->addContentsItem(
+              fd->name(),fd->sourceName());
+        }
       }
       fd=fn->next();
     }
@@ -497,7 +500,7 @@ void writeNamespaceIndex(OutputList &ol)
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
-      if (nd->briefDescription())
+      if (!nd->briefDescription().isEmpty())
       {
         OutputList briefOutput(&ol);
         parseDoc(briefOutput,nd->name(),0,
@@ -570,7 +573,7 @@ void writeAnnotatedClassList(OutputList &ol)
       }
       ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
       ol.docify(" (");
-      if (cd->briefDescription())
+      if (!cd->briefDescription().isEmpty())
       {
         OutputList briefOutput(&ol);
         parseDoc(briefOutput,cd->name(),0,

@@ -320,8 +320,8 @@ void writeExample(OutputList &ol,ExampleList *el)
   QCString exampleLine=theTranslator->trWriteList(el->count());
  
   bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-  bool manEnabled   = ol.isEnabled(OutputGenerator::Html);
-  bool htmlEnabled  = ol.isEnabled(OutputGenerator::Man);
+  bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
+  bool htmlEnabled  = ol.isEnabled(OutputGenerator::Html);
   QRegExp marker("@[0-9]+");
   int index=0,newIndex,matchLen;
   // now replace all markers in inheritLine with links to the classes
@@ -624,21 +624,25 @@ QCString fileToString(const char *name)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      err("Error: file `%s' not found\n",name);
-      exit(1);
+      warn("Error: file `%s' not found\n",name);
+      return "";
     }
     f.setName(name);
     fileOpened=f.open(IO_ReadOnly);
   }
   if (!fileOpened)  
   {
-    err("Error: cannot open file `%s' for reading\n",name);
-    exit(1);
+    warn("Error: cannot open file `%s' for reading\n",name);
+    return "";
   }
   int fsize=f.size();
-  QCString contents(fsize+1);
+  QCString contents(fsize+2);
   f.readBlock(contents.data(),fsize);
-  contents[fsize]='\0';
+  if (fsize==0 || contents[fsize-1]=='\n') 
+    contents[fsize]='\0';
+  else
+    contents[fsize]='\n';
+  contents[fsize+1]='\0';
   f.close();
   return contents;
 }

@@ -40,6 +40,7 @@
 #include "message.h"
 #include "util.h"
 #include "defargs.h"
+#include "debug.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -48,7 +49,7 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
-#define DUMP_OUTPUT 0   // set this to one to see what the preprocessor 
+#define DUMP_OUTPUT 1   // set this to one to see what the preprocessor 
                         // produces.
 #define SHOW_INCLUDES 0 // set this to one to list all parsed include files
 
@@ -1627,9 +1628,9 @@ void cleanupPreprocessor()
 
 void preprocessFile(const char *fileName,BufStr &output)
 {
-#if DUMP_OUTPUT  
+//#if DUMP_OUTPUT  
   uint orgOffset=output.curPos();
-#endif
+//#endif
 
   outputBuf=&output;
   includeStack.setAutoDelete(TRUE);
@@ -1765,20 +1766,23 @@ void preprocessFile(const char *fileName,BufStr &output)
   else
     pclose(preYYin);
   
-#if DUMP_OUTPUT  
-  char *orgPos=output.data()+orgOffset;
-  char *newPos=output.data()+output.curPos();
-  printf("Resulting size: %d bytes\n",newPos-orgPos);
-  int line=1;
-  printf("---------\n00001 ");
-  while (orgPos<newPos) 
+//#if DUMP_OUTPUT  
+  if (Debug::isFlagSet(Debug::Preprocessor))
   {
-    putchar(*orgPos);
-    if (*orgPos=='\n') printf("%05d ",++line);
-    orgPos++;
+    char *orgPos=output.data()+orgOffset;
+    char *newPos=output.data()+output.curPos();
+    printf("Preprocessor output (size: %d bytes):\n",newPos-orgPos);
+    int line=1;
+    printf("---------\n00001 ");
+    while (orgPos<newPos) 
+    {
+      putchar(*orgPos);
+      if (*orgPos=='\n') printf("%05d ",++line);
+      orgPos++;
+    }
+    printf("\n---------\n");
   }
-  printf("\n---------\n");
-#endif
+//#endif
 }
 
 extern "C" { // some bogus code to keep the compiler happy

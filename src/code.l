@@ -109,6 +109,97 @@ static int          anchorCount;
 static FileDef     *sourceFileDef;
 static QCString     lastVariable;
 
+// start a new line of code, inserting a line number if sourceFileDef
+// is TRUE. If a definition starts at the current line, then the line
+// number is linked to the documentation of that definition.
+static void startCodeLine(OutputList &ol)
+{
+  if (sourceFileDef)
+  {
+    QCString lineNumber,lineAnchor;
+    lineNumber.sprintf("%05d ",yyLineNr);
+    lineAnchor.sprintf("l%05d",yyLineNr);
+    Definition *d   = sourceFileDef->getSourceDefinition(yyLineNr);
+    QCString anchor = sourceFileDef->getSourceAnchor(yyLineNr);
+    if (d && d->isLinkableInProject())
+    {
+      ol.startCodeAnchor(lineAnchor);
+      ol.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+	                   anchor,lineNumber);
+      ol.endCodeAnchor();
+    }
+    else
+    {
+      ol.codify(lineNumber);
+    }
+  }
+  ol.startCodeLine(); 
+}
+
+// write a code fragment `text' that may span multiple lines, inserting
+// line numbers for each line.
+static void codifyLines(char *text)
+{
+  char *p=text,*sp=p;
+  char c;
+  bool done=FALSE;
+  while (!done)
+  {
+    sp=p;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      yyLineNr++;
+      *(p-1)='\0';
+      code->codify(sp);
+      code->endCodeLine();
+      if (yyLineNr<inputLines) 
+      {
+	startCodeLine(*code);
+      }
+    }
+    else
+    {
+      code->codify(sp);
+      done=TRUE;
+    }
+  }
+}
+
+// writes a link to a fragment `text' that may span multiple lines, inserting
+// line numbers for each line. If `text' contains newlines, the link will be 
+// split into multiple links with the same destination, one for each line.
+static void writeMultiLineCodeLink(OutputList &ol,
+                  const char *ref,const char *file,
+                  const char *anchor,const char *text)
+{
+  bool done=FALSE;
+  QCString ts = text;
+  char *p=ts.data();
+  while (!done)
+  {
+    char *sp=p;
+    char c;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      yyLineNr++;
+      *(p-1)='\0';
+      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.endCodeLine();
+      if (yyLineNr<inputLines) 
+      {
+	startCodeLine(ol);
+      }
+    }
+    else
+    {
+      ol.writeCodeLink(ref,file,anchor,sp);
+      done=TRUE;
+    }
+  }
+}
+
 static void addType()
 {
   if (name=="const") { name.resize(0); return; }
@@ -166,7 +257,7 @@ static void addParameter()
   }
 }
 
-static void generateClassLink(OutputList &ol,const char *clName)
+static void generateClassLink(OutputList &ol,char *clName)
 {
   QCString className=clName;
   if (className.length()==0) return;
@@ -188,11 +279,12 @@ static void generateClassLink(OutputList &ol,const char *clName)
 	anchorCount++;
       }
     }
-    ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
+    //ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
   }
   else
   {
-    ol.codify(clName);
+    codifyLines(clName);
   }
 }
 
@@ -231,8 +323,10 @@ static bool getLink(const char *className,
     if (d)
     {
       //printf("d->getOutputBase()=`%s' name=`%s'\n",d->getOutputFileBase().data(),md->name().data());
-      result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	                   md->anchor(),text ? text : memberName);
+      //result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+      //                   md->anchor(),text ? text : memberName);
+      writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
+	                       md->anchor(),text ? text : memberName);
       return TRUE;
     } 
   }
@@ -254,7 +348,7 @@ static ClassDef *stripClassName(const char *s)
 }
 
 static void generateMemberLink(OutputList &ol,const char *varName,
-            const char *memName)
+            char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
   //                          varName,memName,classScope.data());
@@ -301,7 +395,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
       }
       else
       {
-	ol.codify(memName);
+	codifyLines(memName);
       }
       return;
     }
@@ -328,17 +422,19 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	      MemberName *mmn=memberNameDict[memName];
 	      if (mmn)
 	      {
-	      MemberNameIterator mmni(*mmn);
-	      MemberDef *mmd;
-	      for (;(mmd=mmni.current());++mmni)
-	      {
-		if (mmd->memberClass()==mcd)
+		MemberNameIterator mmni(*mmn);
+		MemberDef *mmd;
+		for (;(mmd=mmni.current());++mmni)
 		{
-		  ol.writeCodeLink(mcd->getReference(),mcd->getOutputFileBase(),
-		      mmd->anchor(),memName);
-		  return;
+		  if (mmd->memberClass()==mcd)
+		  {
+		    //ol.writeCodeLink(mcd->getReference(),mcd->getOutputFileBase(),
+		    //	mmd->anchor(),memName);
+		    writeMultiLineCodeLink(ol,mcd->getReference(),
+			mcd->getOutputFileBase(),mmd->anchor(),memName);
+		    return;
+		  }
 		}
-	      }
 	      }
 	    }
 	  }
@@ -346,16 +442,31 @@ static void generateMemberLink(OutputList &ol,const char *varName,
       }
     }
   }
-  ol.codify(memName);
+  codifyLines(memName);
   return;
 }
 
-static void generateFunctionLink(OutputList &ol,const char *funcName)
+static QCString removeWhiteSpace(const char *s)
+{
+  QCString result;
+  if (s)
+  {
+    const char *p=s;
+    int c;
+    while ((c=*p++))
+    {
+      if (c!=' ' && c!='\n' && c!='\r' && c!='\t') result+=c;
+    }
+  }
+  return result;
+}
+
+static void generateFunctionLink(OutputList &ol,char *funcName)
 {
   OutputList result(&ol);
   CodeClassDef *ccd=0;
   QCString locScope=classScope.copy();
-  QCString locFunc=funcName;
+  QCString locFunc=removeWhiteSpace(funcName);
   int i=locFunc.findRev("::");
   if (i>0)
   {
@@ -383,7 +494,7 @@ static void generateFunctionLink(OutputList &ol,const char *funcName)
   }
   else
   {
-    ol.codify(funcName);
+    codifyLines(funcName);
   }
   return;
 }
@@ -396,66 +507,6 @@ static int countLines()
   int count=1;
   while ((c=*p++)) if (c=='\n') count++; 
   return count;
-}
-
-static void startCodeLine()
-{
-  if (sourceFileDef)
-  {
-    QCString lineNumber,lineAnchor;
-    lineNumber.sprintf("%05d ",yyLineNr);
-    lineAnchor.sprintf("l%05d",yyLineNr);
-    //MemberDef *md = sourceFileDef->getSourceDefinition(yyLineNr);
-    //Definition *d=0;
-    //if (md)
-    //{
-    //  d=md->memberClass();
-    //  if (!d) d=md->getFileDef();
-    //}
-    //if (md && d)
-    Definition *d   = sourceFileDef->getSourceDefinition(yyLineNr);
-    QCString anchor = sourceFileDef->getSourceAnchor(yyLineNr);
-    if (d && d->isLinkableInProject())
-    {
-      code->startCodeAnchor(lineAnchor);
-      code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	                   anchor,lineNumber);
-      code->endCodeAnchor();
-    }
-    else
-    {
-      code->codify(lineNumber);
-    }
-  }
-  code->startCodeLine(); 
-}
-
-static void codifyLines(char *text)
-{
-  char *p=text,*sp=p;
-  char c;
-  bool done=FALSE;
-  while (!done)
-  {
-    sp=p;
-    while ((c=*p++) && c!='\n');
-    if (c=='\n')
-    {
-      yyLineNr++;
-      *(p-1)='\0';
-      code->codify(sp);
-      code->endCodeLine();
-      if (yyLineNr<inputLines) 
-      {
-	startCodeLine();
-      }
-    }
-    else
-    {
-      code->codify(sp);
-      done=TRUE;
-    }
-  }
 }
 
 /* -----------------------------------------------------------------
@@ -812,7 +863,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					  BEGIN(lastSpecialCContext);
   					}
@@ -852,7 +903,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
@@ -860,7 +911,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
                                           code->endCodeLine();
                                           if (yyLineNr<inputLines) 
                                           {
-                                            startCodeLine();
+                                            startCodeLine(*code);
                                           }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
@@ -928,7 +979,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
                   bool exBlock, const char *exName,FileDef *fd)
 {
   code = new OutputList(&ol);
-  if (s.length()==0) return;
+  if (s.isEmpty()) return;
   inputString   = s;
   inputPosition = 0;
   inputLines    = countLines();
@@ -941,7 +992,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   exampleName   = exName;
   sourceFileDef = fd;
   exampleFile   = convertSlashes(exampleName,TRUE)+"-example";
-  startCodeLine();
+  startCodeLine(*code);
   type.resize(0);
   name.resize(0);
   args.resize(0);
