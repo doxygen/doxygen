@@ -80,7 +80,7 @@ class Definition
     virtual bool isLinkable() const = 0;
     virtual QCString getReference() const { return m_ref; }
 
-    bool isReference() const { return !m_ref.isEmpty(); }
+    virtual bool isReference() const { return !m_ref.isEmpty(); }
     void setReference(const char *r) { m_ref=r; }
 
     /*! Add the list of anchors that mark the sections that are found in the 

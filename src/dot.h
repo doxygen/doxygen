@@ -30,7 +30,7 @@ enum GraphOutputFormat { GIF , EPS };
 
 struct EdgeInfo
 {
-  enum Colors { Blue=0, Green=1, Red=2, Black=3, Grey=4 };
+  enum Colors { Blue=0, Green=1, Red=2, Purple=3, Grey=4, Orange=5 };
   enum Styles { Solid=0, Dashed=1 };
   EdgeInfo() : m_color(0), m_style(0), m_labColor(0) {}
  ~EdgeInfo() {}
@@ -60,7 +60,7 @@ class DotNode
     DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE);
    ~DotNode();
     void addChild(DotNode *n,
-                  int edgeColor=EdgeInfo::Black,
+                  int edgeColor=EdgeInfo::Purple,
                   int edgeStyle=EdgeInfo::Solid,
                   const char *edgeLab=0,
                   const char *edgeURL=0,

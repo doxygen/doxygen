@@ -163,6 +163,8 @@ void MarkupHandler::endSuperscript()
 ListItemHandler::ListItemHandler(IBaseHandler *parent) 
   : DocNode(ListItem), m_parent(parent)
 {
+  m_children.setAutoDelete(TRUE);
+  
   addEndHandler("listitem",this,&ListItemHandler::endListItem);
 
   addStartHandler("para",this,&ListItemHandler::startParagraph);
@@ -236,6 +238,48 @@ void ListHandler::startListItem(const QXmlAttributes& attrib)
 // ParameterHandler
 //----------------------------------------------------------------------
 
+ParameterHandler::ParameterHandler(IBaseHandler *parent) : DocNode(Parameter),
+  m_parent(parent), m_description(0)
+{
+  addEndHandler("parametername",this,&ParameterHandler::endParameterName);
+  addEndHandler("parameterdescription",this,&ParameterHandler::endParameterDescription);
+  addStartHandler("para",this,&ParameterHandler::startParagraph);
+}
+
+ParameterHandler::~ParameterHandler()
+{
+  delete m_description;
+}
+
+void ParameterHandler::startParameterName(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+}
+
+void ParameterHandler::endParameterName()
+{
+  m_name = m_curString;
+  printf("parameter %s\n",m_name.data());
+  m_curString="";
+  m_parent->setDelegate(0);
+}
+
+void ParameterHandler::startParameterDescription(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+}
+
+void ParameterHandler::endParameterDescription()
+{
+  m_parent->setDelegate(0);
+}
+
+void ParameterHandler::startParagraph(const QXmlAttributes& attrib)
+{
+  ASSERT(m_description==0);
+  m_description = new ParagraphHandler(this);
+  m_description->startParagraph(attrib);
+}
 
 //----------------------------------------------------------------------
 // ParameterListHandler
@@ -245,6 +289,10 @@ ParameterListHandler::ParameterListHandler(IBaseHandler *parent)
   : DocNode(ParameterList), m_parent(parent)
 {
   addEndHandler("parameterlist",this,&ParameterListHandler::endParameterList);
+  addStartHandler("parametername",this,&ParameterListHandler::startParameterName);
+  addStartHandler("parameterdescription",this,&ParameterListHandler::startParameterDescription);
+  addStartHandler("title");
+  addEndHandler("title");
   m_parameters.setAutoDelete(TRUE);
   m_curParam=0;
 }
@@ -253,14 +301,36 @@ ParameterListHandler::~ParameterListHandler()
 {
 }
 
-void ParameterListHandler::startParameterList(const QXmlAttributes& /*attrib*/)
+void ParameterListHandler::startParameterList(const QXmlAttributes& attrib)
 {
+  QString kind = attrib.value("kind");
+  if (kind=="retval")         m_type=RetVal;
+  else if (kind=="exception") m_type=Exception;
+  else if (kind=="param")     m_type=Param;
+  else
+  {
+    printf("Error: invalid parameterlist type: %s\n",kind.data());
+  }
+  printf("parameterlist kind=%s\n",kind.data());
   m_parent->setDelegate(this);
 }
 
 void ParameterListHandler::endParameterList()
 {
   m_parent->setDelegate(0);
+}
+
+void ParameterListHandler::startParameterName(const QXmlAttributes& attrib)
+{
+  m_curParam = new ParameterHandler(this);
+  m_parameters.append(m_curParam);
+  m_curParam->startParameterName(attrib);
+}
+
+void ParameterListHandler::startParameterDescription(const QXmlAttributes& attrib)
+{
+  ASSERT(m_curParam!=0);
+  m_curParam->startParameterDescription(attrib);
 }
 
 //----------------------------------------------------------------------
@@ -279,10 +349,12 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
 
   addStartHandler("itemizedlist",this,&ParagraphHandler::startItemizedList);
   addStartHandler("orderedlist",this,&ParagraphHandler::startOrderedList);
+  addStartHandler("parameterlist",this,&ParagraphHandler::startParameterList);
 }
 
 ParagraphHandler::~ParagraphHandler()
 {
+  delete m_markupHandler;
 }
 
 void ParagraphHandler::startParagraph(const QXmlAttributes& /*attrib*/)
@@ -339,6 +411,8 @@ void ParagraphHandler::addTextNode()
 
 DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
 {
+  m_children.setAutoDelete(TRUE);
+
   addEndHandler("briefdescription",this,&DocHandler::endDoc);
   addEndHandler("detaileddescription",this,&DocHandler::endDoc);
 

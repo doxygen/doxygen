@@ -2038,6 +2038,13 @@ void Config::create()
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
+                    "TEMPLATE_RELATIONS",
+		    "If set to YES, the inheritance and collaboration graphs will show the \n"
+		    "relations between templates and their instances. \n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
                     "INCLUDE_GRAPH",
                     "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDE_GRAPH, and HAVE_DOT \n"
                     "tags are set to YES then doxygen will generate a graph for each documented \n"

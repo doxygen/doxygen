@@ -359,10 +359,29 @@ MemberDef::~MemberDef()
   delete m_defTmpArgLists;
 }
 
+void MemberDef::setReimplements(MemberDef *md)   
+{ 
+  if (m_templateMaster) 
+  {
+    m_templateMaster->setReimplements(md);
+  }
+  else
+  {
+    redefines=md; 
+  }
+}
+
 void MemberDef::insertReimplementedBy(MemberDef *md)
 {
-  if (redefinedBy==0) redefinedBy = new MemberList;
-  redefinedBy->inSort(md);
+  if (m_templateMaster)
+  {
+    m_templateMaster->insertReimplementedBy(md);
+  }
+  else
+  {
+    if (redefinedBy==0) redefinedBy = new MemberList;
+    redefinedBy->inSort(md);
+  }
 }
 
 void MemberDef::insertEnumField(MemberDef *md)
@@ -1472,18 +1491,31 @@ void MemberDef::warnIfUndocumented()
 
 bool MemberDef::isLinkableInProject() const
 {
-  return !name().isEmpty() && name().at(0)!='@' &&
-         ((hasDocumentation() && !isReference())  
-         ) && 
-         (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || 
-          mtype==Friend) && // not a hidden member due to protection
-         (classDef!=0 || Config_getBool("EXTRACT_STATIC") || 
-          !isStatic()); // not a static file/namespace member
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkableInProject();
+  }
+  else
+  {
+    return !name().isEmpty() && name().at(0)!='@' &&
+      (hasDocumentation() && !isReference()) && 
+      (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || 
+      mtype==Friend) && // not a hidden member due to protection
+      (classDef!=0 || Config_getBool("EXTRACT_STATIC") || 
+      !isStatic()); // not a static file/namespace member
+  }
 }
 
 bool MemberDef::isLinkable() const
 {
-  return isLinkableInProject() || isReference();
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkable();
+  }
+  else
+  {
+    return isLinkableInProject() || isReference();
+  }
 }
 
 void MemberDef::setEnumDecl(OutputList &ed) 

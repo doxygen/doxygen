@@ -34,7 +34,11 @@ Definition::Definition(const char *df,int dl,
   m_defFileName = df;
   m_defLine = dl;
   m_name=name; 
-  m_localName=stripScope(name);
+  if (m_name!="<globalScope>") 
+    m_localName=stripScope(name);
+  else
+    m_localName=name;
+  //printf("m_localName=%s\n",m_localName.data());
   m_brief=b; 
   m_doc=d; 
   m_sectionDict=0, 

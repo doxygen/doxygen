@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------
 # General configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = dox2html
+PROJECT_NAME           = xmlparse
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = doc
 OUTPUT_LANGUAGE        = English
@@ -145,8 +145,8 @@ INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
 GRAPHICAL_HIERARCHY    = YES
 DOT_PATH               = 
-MAX_DOT_GRAPH_WIDTH    = 3024
-MAX_DOT_GRAPH_HEIGHT   = 3024
+MAX_DOT_GRAPH_WIDTH    = 1280
+MAX_DOT_GRAPH_HEIGHT   = 1024
 GENERATE_LEGEND        = YES
 DOT_CLEANUP            = YES
 #---------------------------------------------------------------------------

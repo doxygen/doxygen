@@ -51,7 +51,8 @@ class DocNode
       ItemizedList,
       OrderedList,
       ListItem,
-      ParameterList
+      ParameterList,
+      Parameter
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -182,8 +183,11 @@ class ParameterHandler : public DocNode,
   public:
     ParameterHandler(IBaseHandler *parent);
     virtual ~ParameterHandler();
-    virtual void startParameterList(const QXmlAttributes& attrib);
-    virtual void endParameterList();
+    virtual void startParameterName(const QXmlAttributes& attrib);
+    virtual void endParameterName();
+    virtual void startParameterDescription(const QXmlAttributes& attrib);
+    virtual void endParameterDescription();
+    virtual void startParagraph(const QXmlAttributes& attrib);
 
   private:
     IBaseHandler     *m_parent;
@@ -201,15 +205,45 @@ class ParameterListHandler : public DocNode,
                              public BaseHandler<ParameterListHandler>
 {
   public:
+    enum Types { Param, RetVal, Exception };
     ParameterListHandler(IBaseHandler *parent);
     virtual ~ParameterListHandler();
     virtual void startParameterList(const QXmlAttributes& attrib);
     virtual void endParameterList();
+    virtual void startParameterName(const QXmlAttributes& attrib);
+    virtual void startParameterDescription(const QXmlAttributes& attrib);
 
   private:
     IBaseHandler            *m_parent;
     QList<ParameterHandler>  m_parameters;
     ParameterHandler        *m_curParam;
+    Types                    m_type;
+};
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a simple section with an unnumbered header.
+ *
+ */
+class SimpleSectHandler : public DocNode, 
+                          public BaseHandler<SimpleSectHandler>
+{
+  public:
+    enum Types { See, Return, Author, Version, 
+                 Since, Date, Bug, Note,
+                 Warning, Par, Deprecated, Pre, 
+                 Post, Invar, Remark, Attention 
+    };
+    SimpleSectHandler(IBaseHandler *parent);
+    virtual ~SimpleSectHandler();
+    virtual void startSimpleSect(const QXmlAttributes& attrib);
+    virtual void endSimpleSect();
+
+  private:
+    IBaseHandler            *m_parent;
+    ParameterHandler        *m_curParam;
+    Types                    m_type;
+    QString                  m_title;
 };
 
 //-----------------------------------------------------------------------------
@@ -252,7 +286,7 @@ class DocHandler : public BaseHandler<DocHandler>
     virtual ~DocHandler();
   private:
     IBaseHandler *m_parent;
-    QList<DocNode> m_children;
+    QList<ParagraphHandler> m_children;
 };
 
 #endif

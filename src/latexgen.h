@@ -185,7 +185,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList()     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
-    void startParamList()    { startDescList(); }
+    void startParamList(ParamListTypes)    
+                             { startDescList(); }
     void endParamList()      { endDescList(); }
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }

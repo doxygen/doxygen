@@ -2819,7 +2819,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
     }
     else
     {
-      num = (int)value;
+      num = *(int*)&value;
     }
     QCString result;
     result.sprintf("a%05d",num); 
@@ -3109,10 +3109,13 @@ bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStr
 /*! Substitutes any occurrence of a formal argument from argument list
  *  \a formalArgs in \a name by the corresponding actual argument in
  *  argument list \a actualArgs. The result after substitution
- *  is returned as a string.
+ *  is returned as a string. The argument \a className is used to
+ *  prevent recursive substitution.
  */
 QCString substituteTemplateArgumentsInString(
-       const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs)
+       const QCString &name,
+       ArgumentList *formalArgs,
+       ArgumentList *actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());

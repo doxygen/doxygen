@@ -33,11 +33,15 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addStartHandler("briefdescription",this,&MemberHandler::startBriefDesc);
 
   addStartHandler("detaileddescription",this,&MemberHandler::startDetailedDesc);
+
+  m_params.setAutoDelete(TRUE);
   
 }
 
 MemberHandler::~MemberHandler()
 {
+  delete m_brief;
+  delete m_detailed;
 }
 
 void MemberHandler::startMember(const QXmlAttributes& attrib)

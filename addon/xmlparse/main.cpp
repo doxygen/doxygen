@@ -55,14 +55,17 @@ int main(int argc,char **argv)
     exit(1);
   }
 
-  QFile xmlFile(argv[1]);
-  MainHandler handler;
-  ErrorHandler errorHandler;
-  QXmlInputSource source( xmlFile );
-  QXmlSimpleReader reader;
-  reader.setContentHandler( &handler );
-  reader.setErrorHandler( &errorHandler );
-  reader.parse( source );
+  //for (;;)
+  //{
+    QFile xmlFile(argv[1]);
+    MainHandler handler;
+    ErrorHandler errorHandler;
+    QXmlInputSource source( xmlFile );
+    QXmlSimpleReader reader;
+    reader.setContentHandler( &handler );
+    reader.setErrorHandler( &errorHandler );
+    reader.parse( source );
+  //}
   
   return 0;
 }

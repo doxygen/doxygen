@@ -40,6 +40,7 @@ class DotGfxHierarchyTable;
 class BaseOutputDocInterface
 {
   public:
+    enum ParamListTypes { Param, RetVal, Exception };
 
     /*! Start of a bullet list: e.g. \c <ul> in html. writeListItem() is
      *  Used for the bullet items.
@@ -208,7 +209,7 @@ class BaseOutputDocInterface
     virtual void writeCCedil(char) = 0;
     virtual void startDescList() = 0;
     virtual void endDescList() = 0;
-    virtual void startParamList() = 0;
+    virtual void startParamList(ParamListTypes t) = 0;
     virtual void endParamList() = 0;
     virtual void endDescTitle() = 0;
     virtual void writeDescItem() = 0;

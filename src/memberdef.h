@@ -161,7 +161,7 @@ class MemberDef : public Definition
     void warnIfUndocumented();
     
     // relation to other members
-    void setReimplements(MemberDef *md)   { redefines=md; }
+    void setReimplements(MemberDef *md);
     void insertReimplementedBy(MemberDef *md);
     MemberDef  *reimplements() const      { return redefines; }
     MemberList *reimplementedBy() const   { return redefinedBy; }

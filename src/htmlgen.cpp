@@ -899,7 +899,7 @@ void HtmlGenerator::endMemberDocName()
 void HtmlGenerator::startParameterList()
 {
   DBG_HTML(t << "<!-- startParameterList -->" << endl;)
-  t << "          <td class=\"md\">(&nbsp</td>" << endl;
+  t << "          <td class=\"md\">(&nbsp;</td>" << endl;
 }
 
 void HtmlGenerator::startParameterType(bool first)
@@ -948,7 +948,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
       t << "          <td></td>" << endl;
-      t << "          <td class=\"md\">)&nbsp</td>" << endl;
+      t << "          <td class=\"md\">)&nbsp;</td>" << endl;
       t << "          <td class=\"md\" colspan=\"2\">";
     }
   }
