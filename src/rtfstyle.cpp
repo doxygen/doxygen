@@ -442,7 +442,7 @@ void loadStylesheet(const char *name, QDict<StyleData>& dict)
   {
     QCString s(4096); // string buffer of max line length
     s = t.readLine().stripWhiteSpace();
-    if (s.length()==0 || s.at(0)=='#') continue; // skip blanks & comments
+    if (s.isEmpty() || s.at(0)=='#') continue; // skip blanks & comments
     int sepLength;
     int sepStart = separator.match(s,0,&sepLength);
     if (sepStart<=0) // no valid assignment statement

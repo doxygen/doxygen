@@ -162,26 +162,27 @@ static void parseHtmlAttribs(const char *att)
     while (i<len && c==' ') { c=attribs.at(++i); } 
     if (attribs.at(i)=='=') // option has value
     {
-      i++;
+      c=attribs.at(++i);
       // skip spaces
       while (i<len && c==' ') { c=attribs.at(++i); } 
       if (attribs.at(i)=='\'') // option '...'
       {
-	i++;
+        c=attribs.at(++i);
 	startAttrib=i;
+	
 	// search for matching quote 
         while (i<len && c!='\'') { c=attribs.at(++i); } 
 	endAttrib=i;
-	i++;
+        c=attribs.at(++i);
       }
       else if (attribs.at(i)=='"') // option "..."
       {
-	i++;
+        c=attribs.at(++i);
 	startAttrib=i;
 	// search for matching quote 
         while (i<len && c!='"') { c=attribs.at(++i); } 
 	endAttrib=i;
-	i++;
+        c=attribs.at(++i);
       }
       else // value without any quotes
       {
@@ -189,7 +190,7 @@ static void parseHtmlAttribs(const char *att)
 	// search for separator
         while (i<len && c!=' ') { c=attribs.at(++i); } 
 	endAttrib=i;
-	i++;
+        c=attribs.at(++i);
       }
       opt.value  = attribs.mid(startAttrib,endAttrib-startAttrib); 
     }
@@ -378,7 +379,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-])+[a-z_A-Z0-9\-]+ { // Mail address
+<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ { // Mail address
                          g_token->name=yytext;
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
@@ -598,7 +599,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
   			 return 0;
                        }
 
-<St_Ref>{ID}	       {
+<St_Ref>({ID}[.-])*{ID} {
   			 g_token->name=yytext;
 			 return TK_WORD;
   		       }

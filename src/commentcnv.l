@@ -41,7 +41,7 @@ static void replaceCommentMarker(const char *s,int len)
     p++;
   }
   // replace start of comment marker by spaces
-  while ((c=*p) && (c=='/' || c=='!')) 
+  while ((c=*p) && (c=='/' || c=='!' || c=='#')) 
   {
     g_outBuf->addChar(' ');
     p++;
@@ -109,6 +109,12 @@ static int yyread(char *buf,int max_size)
 				     copyToOutput(yytext+i,yyleng-i); 
 				     BEGIN(SComment); 
                                    }
+<Scan>"//##Documentation".*\n	   { /* Start of Rational Rose ANSI C++ comment block */
+                                     int i=17; //=strlen("//##Documentation");
+				     copyToOutput("/**",3);
+				     copyToOutput(yytext+i,yyleng-i);
+				     BEGIN(SComment);
+  				   }
 <Scan>"//".*\n		           { /* one line C++ comment */ 
   				     copyToOutput(yytext,yyleng); 
 				   }
@@ -179,6 +185,12 @@ static int yyread(char *buf,int max_size)
                                    }
 <SComment>\n[ \t]*"//!".*/\n       { 
                                      replaceCommentMarker(yytext,yyleng); 
+                                   }
+<SComment>^[ \t]*"//##".*/\n       {
+                                     replaceCommentMarker(yytext,yyleng);
+                                   }
+<SComment>\n[ \t]*"//##".*/\n      {
+                                     replaceCommentMarker(yytext,yyleng);
                                    }
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 

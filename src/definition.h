@@ -113,6 +113,7 @@ class Definition
     //int testId() const { return m_testId; }
     //int bugId() const { return m_bugId; }
     void setRefItems(const QList<ListItemInfo> *sli);
+    void mergeRefItems(Definition *d);
     int getSpecialListId(const char *listName) const;
     const QList<ListItemInfo> *specialListItems() const;
 

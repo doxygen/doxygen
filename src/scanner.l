@@ -851,11 +851,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindMembers>{BN}{1,80}			{
   					  lineCount();
   					}
-<FindMembers>{B}*"package"{BN}+ 	{ // Java package
-  					  lineCount();
-					  BEGIN(PackageName);
-
-  					}
 <PackageName>{ID}("."{ID})*		{
   					  //current->name = yytext;
                                           //current->fileName = yyFileName; 
@@ -1283,6 +1278,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      BEGIN(NextSemi);
 					    else // insideJava
 					      BEGIN(JavaImport);
+					  }
+					  else if (insideJava && strcmp(yytext,"package")==0)
+					  {
+  					    lineCount();
+					    BEGIN(PackageName);
 					  }
 					  else if (insideIDL && strcmp(yytext,"case")==0)
 					  {
@@ -1913,7 +1913,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      current = new Entry(*current);
 					      if (current->section==Entry::NAMESPACE_SEC || 
 						  current->section==Entry::INTERFACE_SEC ||
-						  insideJava
+						  insideJava || insidePHP
 						 )
 					      { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						current->reset();

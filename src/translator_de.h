@@ -101,7 +101,7 @@ class TranslatorGerman : public Translator
     {
       QCString result="\\usepackage{ngerman}\n";
       result+="\\usepackage{t1enc}% Trennung verbessern bei Umlauten\n";
-      result+="%\\usepackage[latin1]{inputenc}% Kodierung (cp850,latin1,ansinew)";
+      result+="%\\usepackage[latin1]{inputenc}% Kodierung (cp850,latin1,ansinew)\n";
       return result;
     }
 

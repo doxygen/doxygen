@@ -620,6 +620,28 @@ void Definition::setRefItems(const QList<ListItemInfo> *sli)
   }
 }
 
+void Definition::mergeRefItems(Definition *d)
+{
+  if (d->specialListItems())
+  {
+    // deep copy the list
+    if (m_specialListItems==0) 
+    {
+      m_specialListItems=new QList<ListItemInfo>;
+      m_specialListItems->setAutoDelete(TRUE);
+    }
+    QListIterator<ListItemInfo> slii(*d->specialListItems());
+    ListItemInfo *lii;
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      if (getSpecialListId(lii->type)==-1)
+      {
+        m_specialListItems->append(new ListItemInfo(*lii));
+      }
+    } 
+  }
+}
+
 int Definition::getSpecialListId(const char *listName) const
 {
   if (m_specialListItems)

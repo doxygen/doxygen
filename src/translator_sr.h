@@ -1414,7 +1414,23 @@ private:
     {
       return decode( "Spisak zastarelih funkcija èlanica" );
     } 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
 
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Dogaðaji";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Dokumentacija dogaðaja";
+    }
+ 
 };
 
 #endif

@@ -166,7 +166,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
       else
       {
         m_insidePre=FALSE;
-        m_t << "</pre>\n";
+        m_t << "</pre>";
       }
   }
 }
@@ -279,24 +279,26 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
 {
   if (l->isEnumList())
   {
-    m_t << "<ol>\n";
+    m_t << "<ol>";
   }
   else
   {
-    m_t << "<ul>\n";
+    m_t << "<ul>";
   }
+  if (!l->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPost(DocAutoList *l)
 {
   if (l->isEnumList())
   {
-    m_t << "</ol>\n";
+    m_t << "</ol>";
   }
   else
   {
-    m_t << "</ul>\n";
+    m_t << "</ul>";
   }
+  if (!l->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocAutoListItem *)
@@ -318,8 +320,11 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   if (!p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameter sections
         p->parent()->kind()==DocNode::Kind_ParamSect
-       )
-     ) m_t << "\n<p>\n";
+       ) 
+     ) 
+  {
+    m_t << "<p>";
+  }
 }
 
 void HtmlDocVisitor::visitPre(DocRoot *)
@@ -391,14 +396,16 @@ void HtmlDocVisitor::visitPost(DocTitle *)
   m_t << "</b></dt><dd>";
 }
 
-void HtmlDocVisitor::visitPre(DocSimpleList *)
+void HtmlDocVisitor::visitPre(DocSimpleList *sl)
 {
-  m_t << "<ul>\n";
+  m_t << "<ul>";
+  if (!sl->isPreformatted()) m_t << "\n";
 }
 
-void HtmlDocVisitor::visitPost(DocSimpleList *)
+void HtmlDocVisitor::visitPost(DocSimpleList *sl)
 {
-  m_t << "</ul>\n";
+  m_t << "</ul>";
+  if (!sl->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSimpleListItem *)
@@ -406,9 +413,10 @@ void HtmlDocVisitor::visitPre(DocSimpleListItem *)
   m_t << "<li>";
 }
 
-void HtmlDocVisitor::visitPost(DocSimpleListItem *) 
+void HtmlDocVisitor::visitPost(DocSimpleListItem *li) 
 {
-  m_t << "</li>\n";
+  m_t << "</li>";
+  if (!li->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSection *s)
@@ -435,14 +443,16 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
 void HtmlDocVisitor::visitPost(DocHtmlList *s) 
 {
   if (s->type()==DocHtmlList::Ordered) 
-    m_t << "</ol>\n"; 
+    m_t << "</ol>"; 
   else 
-    m_t << "</ul>\n";
+    m_t << "</ul>";
+  if (!s->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlListItem *i)
 {
-  m_t << "<li" << htmlAttribsToString(i->attribs()) << ">\n";
+  m_t << "<li" << htmlAttribsToString(i->attribs()) << ">";
+  if (!i->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlListItem *) 

@@ -62,7 +62,8 @@ PREDEFINED             = MY_MACRO()=
       manual for more information.
   </ol> 
 
-<li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the documentation.</b></li>
+<li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the 
+    documentation.</b></li>
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -72,6 +73,9 @@ command.
 Alternatively, you can put all members in a group (or module)
 using the \\ingroup command and then document the group using a comment
 block containing the \\defgroup command.
+
+For member functions or functions that are part of a namespace you should
+document either the class or namespace.
  
 <li><b>How can I make doxygen ignore some code fragment?</b>
 <p>
