@@ -248,9 +248,9 @@ class DirEntry
 {
   public:
     enum EntryKind { Dir, File };
-    DirEntry::DirEntry(DirEntry *parent,FileDef *fd)  
+    DirEntry(DirEntry *parent,FileDef *fd)  
        : m_parent(parent), m_kind(File), m_fd(fd), m_isLast(FALSE) { }
-    DirEntry::DirEntry(DirEntry *parent)              
+    DirEntry(DirEntry *parent)              
        : m_parent(parent), m_kind(Dir), m_fd(0), m_isLast(FALSE) { }
     virtual ~DirEntry() { }
     EntryKind kind() const { return m_kind; }

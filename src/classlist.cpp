@@ -71,7 +71,11 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
          )
       {
         bool isLink = cd->isLinkable();
-        if (isLink || !Config_getBool("HIDE_UNDOC_CLASSES"))
+        if (isLink || 
+             (!Config_getBool("HIDE_UNDOC_CLASSES") && 
+              (!cd->isLocal() || Config_getBool("EXTRACT_LOCAL_CLASSES"))
+             )
+           )
         {
           if (!found)
           {
@@ -127,8 +131,10 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.startMemberDescription();
             ol.parseDoc(cd->briefFile(),cd->briefLine(),cd,0,
                         cd->briefDescription(),FALSE,FALSE);
-            if ((!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
-                !cd->documentation().isEmpty())
+            if (//(!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
+                //!cd->documentation().isEmpty())
+                cd->isLinkableInProject()
+               )
             {
               ol.pushGeneratorState();
               ol.disableAllBut(OutputGenerator::Html);

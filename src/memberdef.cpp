@@ -1739,14 +1739,14 @@ void MemberDef::warnIfUndocumented()
   //       "isDocumentedFriendClass()=%d name()=%s prot=%d\n",
   //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
   //       name().data(),prot);
-  if (/*d && d->isLinkable() &&*/ !isLinkable() && 
+  if (!isLinkable() && 
       !isDocumentedFriendClass() && 
-      name().find('@')==-1 &&
+      name().find('@')==-1 && d->name().find('@')==-1 &&
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
      )
   {
-   warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s of %s %s is not documented.",
-        name().data(),argsString()?argsString():"",t,d->name().data());
+    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s of %s %s is not documented.",
+         name().data(),argsString()?argsString():"",t,d->name().data());
   }
 }
 

@@ -749,7 +749,7 @@ void FTVHelp::generateTreeView()
     t << "    </script>\n";
     t << "  </head>\n";
     t << "\n";
-    t << "  <body bgcolor=\"#ffffff\">\n";
+    t << "  <body>\n";
     t << "    <div class=\"directory\">\n";
     t << "      <h3>";
     QCString &projName = Config_getString("PROJECT_NAME");

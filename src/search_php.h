@@ -74,7 +74,7 @@
 "          $freq=readInt($file); \n"
 "          $docInfo[$i]=array(\"idx\"=>$idx,\"freq\"=>$freq,\"rank\"=>0.0);\n"
 "          $totalFreq+=$freq;\n"
-"          if ($statInfo[\"full\"]) $totalfreq+=$freq;\n"
+"          if ($statInfo[\"full\"]) $totalFreq+=$freq;\n"
 "        }\n"
 "        // read name an url info for the doc\n"
 "        for ($i=0;$i<$numDocs;$i++)\n"

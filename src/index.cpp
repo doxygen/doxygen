@@ -20,6 +20,7 @@
 #include <qtextstream.h>
 #include <qdatetime.h>
 #include <qdir.h>
+#include <qregexp.h>
 
 #include "message.h"
 #include "index.h"
@@ -136,34 +137,28 @@ bool stripWord(QCString &s,QCString w)
 // some quasi intelligent brief description abbreviator :^)
 QCString abbreviate(const char *s,const char *name)
 {
+  QCString scopelessName=name;
+  int i=scopelessName.findRev("::");
+  if (i!=-1) scopelessName=scopelessName.mid(i);
   QCString result=s;
-  QCString start1=(QCString)"The "+name+" class ";
-  QCString start2=(QCString)"The "+name+" widget ";
-  QCString start3=(QCString)"The "+name+" file ";
   result=result.stripWhiteSpace();
   // strip trailing .
   if (!result.isEmpty() && result.at(result.length()-1)=='.') 
     result=result.left(result.length()-1);
-  bool found=FALSE;
-  found = found || stripWord(result,start1);
-  found = found || stripWord(result,start2);
-  found = found || stripWord(result,start3);
-  if (found)
+
+  // strip any predefined prefix
+  QStrList &briefDescAbbrev = Config_getList("ANNOTATION_FROM_BRIEF");
+  const char *p = briefDescAbbrev.first();
+  while (p)
   {
-    bool found=FALSE;
-    found = found || stripWord(result,"is ");
-    found = found || stripWord(result,"provides ");
-    found = found || stripWord(result,"specifies ");
-    found = found || stripWord(result,"contains ");
-    found = found || stripWord(result,"represents ");
-    found = found || stripWord(result,"implements ");
-    if (found)
-    {
-      stripWord(result,"a ");
-      stripWord(result,"an ");
-      stripWord(result,"the ");
-    }
+    QCString s = p;
+    s.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
+    s += " ";
+    stripWord(result,s);
+    p = briefDescAbbrev.next();
   }
+
+  // capitalize first word
   if (!result.isEmpty())
   {
     int c=result[0];
@@ -1320,13 +1315,13 @@ void writeAnnotatedClassList(OutputList &ol)
 void writeAlphabeticalClassList(OutputList &ol)
 {
   //ol.startAlphabeticalIndexList(); 
-  ol.writeString("<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 
   // first count the number of headers
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   char startLetter=0;
   int headerItems=0;
+  QCString alphaLinks = "<p><div class=\"qindex\">";
   for (;(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
@@ -1336,10 +1331,18 @@ void writeAlphabeticalClassList(OutputList &ol)
       if (toupper(cd->className().at(index))!=startLetter) // new begin letter => new header
       {
         startLetter=toupper(cd->className().at(index));
+        if (headerItems) alphaLinks += "&nbsp;|&nbsp;";
         headerItems++;
+	alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
+                      startLetter + "\">" + 
+                      startLetter + "</a>";
       }
     }
   }
+  alphaLinks += "</div><p>\n";
+  ol.writeString(alphaLinks);
+
+  ol.writeString("<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 
   // the number of columns in the table
   const int columns = Config_getInt("COLS_IN_ALPHA_INDEX");
@@ -1419,6 +1422,9 @@ void writeAlphabeticalClassList(OutputList &ol)
           startLetter=toupper(cd->className().at(index));
           char s[2]; s[0]=startLetter; s[1]=0;
           //ol.writeIndexHeading(s);
+          ol.writeString("<a name=\"letter_");
+          ol.writeString(s);
+          ol.writeString("\"></a>");
           ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
                            "<tr>"
                              "<td><div class=\"ah\">&nbsp;&nbsp;"); 
@@ -1476,6 +1482,8 @@ void writeAlphabeticalClassList(OutputList &ol)
   }
   //ol.endAlphabeticalIndexList();
   ol.writeString("</table>");
+  
+  ol.writeString(alphaLinks);
 
   // release the temporary memory
   for (i=0;i<columns;i++)
