@@ -24,7 +24,7 @@
 <li>Using the dot tool of the AT&T's GraphViz package, doxygen can now
     generate inheritance diagrams, collaboration diagrams, include
     dependency graphs, included by graphs and graphical inheritance overviews.
-<li>Function arguments can now be documentation with separate comment blocks.
+<li>Function arguments can now be documented with separate comment blocks.
 <li>Initializers and macro definitions are now included in the documentation.
 <li>Variables and typedefs are now put in their own section.
 <li>Old configuration files can be upgraded using the -u option without
@@ -52,7 +52,7 @@
 <ul>
 <li>Support for templates and namespaces.
 <li>Internationalization support. Currently supported languages are:
-    English, Czech, German, Spanish, Finnish, French, Italian, Japanse,
+    English, Czech, German, Spanish, Finnish, French, Italian, Japanese,
     Dutch, and Swedish. 
 <li>Automatic generation of inheritance diagrams for sub & super classes.
 <li>Support for man page, compressed HTML help, and hyperlinked PDF output.

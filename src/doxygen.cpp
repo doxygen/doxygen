@@ -256,10 +256,17 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
       {
         si->fileName=gd->getOutputFileBase();
       }
+      else if (pi->inGroup)
+      {
+        si->fileName=pi->inGroup->getOutputFileBase().copy();
+      }
       else
       {
         si->fileName=pageName;
       }
+      //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
+      //      si->label.data(),si->definition?si->definition->name().data():"<none>",
+      //      si->fileName.data());
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section info %s\n",pi->name.data());
       Doxygen::sectionDict.insert(pageName,si);
@@ -2362,8 +2369,13 @@ static bool findBaseClassRelation(
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
       bool baseClassIsTypeDef;
-      ClassDef *baseClass=getResolvedClass(baseClassName,&baseClassIsTypeDef);
-      //printf("baseClassName=`%s' baseClass=%p\n",baseClassName.data(),baseClass);
+      QCString templSpec;
+      ClassDef *baseClass=getResolvedClass(baseClassName,&baseClassIsTypeDef,&templSpec);
+      //printf("    baseClassName=`%s' baseClass=%s templSpec=%s\n",
+      //                     baseClassName.data(),
+      //                     baseClass?baseClass->name().data():"<none>",
+      //                     templSpec.data()
+      //      );
       if (baseClassName!=root->name) // check for base class with the same name, 
         // look in the outer scope for a match
       {
@@ -2376,7 +2388,6 @@ static bool findBaseClassRelation(
            );
 
         int i;
-        QCString templSpec;
         if (baseClass==0 && (i=baseClassName.find('<'))!=-1) 
           // base class has template specifiers
         {
@@ -2510,7 +2521,7 @@ static bool findBaseClassRelation(
         }
         if (isTemplBaseClass==-1 && found)
         {
-          Debug::print(Debug::Classes,0,"    Documented base class `%s'\n",bi->name.data());
+          Debug::print(Debug::Classes,0,"    Documented base class `%s' templSpec=%s\n",bi->name.data(),templSpec.data());
           // add base class to this class
           QCString usedName;
           if (baseClassIsTypeDef) usedName=bi->name;
@@ -3681,11 +3692,12 @@ static void findMember(Entry *root,
             FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
             // list of namespaces using in the file that this member definition is part of
             NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
+            ClassList *cl = fd ? fd->getUsedClasses() : 0;
             
             bool matching=
               md->isVariable() || md->isTypedef() || // needed for function pointers
               (md->argumentList()==0 && root->argList->count()==0) || 
-              matchArguments(argList, root->argList,className,namespaceName,TRUE,nl);
+              matchArguments(argList, root->argList,className,namespaceName,TRUE,nl,cl);
 
 
             Debug::print(Debug::FindMembers,0,
@@ -4952,7 +4964,10 @@ static void buildPageList(Entry *root)
   {
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    addRefItem(root->todoId,root->testId,root->bugId,"page","index",title);
+    addRefItem(root->todoId,root->testId,root->bugId,"page",
+               Config_getBool("GENERATE_TREEVIEW")?"main":"index",
+               title
+              );
   }
   EntryListIterator eli(*root->sublist);
   Entry *e;
@@ -4970,17 +4985,18 @@ static void findMainPage(Entry *root)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
+      QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
       Doxygen::mainPage = new PageInfo(root->fileName,root->startLine,
-                              "index", root->doc,title);
+                              indexName, root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
-      Doxygen::mainPage->fileName = "index";
+      Doxygen::mainPage->fileName = indexName;
       Doxygen::mainPage->addSections(root->anchors);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
           Doxygen::mainPage->name,Doxygen::mainPage->title,SectionInfo::Section);
-      si->fileName="index";
-      Doxygen::sectionDict.insert("index",si);
+      si->fileName=indexName;
+      Doxygen::sectionDict.insert(indexName,si);
     }
     else
     {
@@ -5057,13 +5073,39 @@ static void resolveUserReferences()
   SectionInfo *si;
   for (;(si=sdi.current());++sdi)
   {
+    //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
+    //        si->label.data(),si->definition?si->definition->name().data():"<none>",
+    //        si->fileName.data());
+    PageInfo *pi=0;
+
+    // if this section is in a page and the page is in a group, then we
+    // have to adjust the link file name to point to the group.
+    if (!si->fileName.isEmpty() && 
+        (pi=Doxygen::pageSDict->find(si->fileName)) &&
+        pi->inGroup)
+    {
+      si->fileName=pi->inGroup->getOutputFileBase().copy();
+    }
+
+
     if (si->definition)
     {
-      //printf("si=`%s' def=`%s' file=`%s'\n",
-      //         si->label.data(),
-      //         si->definition->name().data(),
-      //         si->definition->getOutputFileBase().data());
-      si->fileName=si->definition->getOutputFileBase().copy();
+      // TODO: there should be one function in Definition that returns
+      // the file to link to, so we can avoid the following tests.
+      GroupDef *gd=0;
+      if (si->definition->definitionType()==Definition::TypeMember)
+      {
+        gd = ((MemberDef *)si->definition)->getGroupDef();
+      }
+      
+      if (gd)
+      {
+        si->fileName=gd->getOutputFileBase().copy();
+      }
+      else
+      {
+        si->fileName=si->definition->getOutputFileBase().copy();
+      }
     }
     // hack: the items of a todo/test list are all fragments from different files, 
     // so the resulting section's all have the wrong file name (not from the
@@ -5421,7 +5463,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    Config::instance()->writeTemplate(&f,shortList);
+    Config::instance()->writeTemplate(&f,shortList,updateOnly);
     if (!writeToStdout)
     {
       if (!updateOnly)
@@ -6006,8 +6048,8 @@ void readConfiguration(int argc, char **argv)
             QCString configFile=fileToString(argv[optind+4]);
             if (configFile.isEmpty()) exit(1);
             Config::instance()->parse(fileToString(argv[optind+4]),argv[optind+4]); 
-            Config::instance()->convertStrToVal();
             Config::instance()->substituteEnvironmentVars();
+            Config::instance()->convertStrToVal();
             Config::instance()->check();
           }
           else
@@ -6044,8 +6086,8 @@ void readConfiguration(int argc, char **argv)
             QCString configFile=fileToString(argv[optind+3]);
             if (configFile.isEmpty()) exit(1);
             Config::instance()->parse(fileToString(argv[optind+3]),argv[optind+3]); 
-            Config::instance()->convertStrToVal();
             Config::instance()->substituteEnvironmentVars();
+            Config::instance()->convertStrToVal();
             Config::instance()->check();
           }
           else // use default config
@@ -6144,7 +6186,6 @@ void readConfiguration(int argc, char **argv)
   }
 
   Config::instance()->parse(config,configName); 
-  Config::instance()->convertStrToVal();
 
   if (updateConfig)
   {
@@ -6153,6 +6194,7 @@ void readConfiguration(int argc, char **argv)
   }
   
   Config::instance()->substituteEnvironmentVars();
+  Config::instance()->convertStrToVal();
   Config::instance()->check();
 }
 

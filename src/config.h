@@ -48,79 +48,19 @@ class ConfigOption
     QCString docs() const { return m_doc; }
 
     QCString dependsOn() const { return m_dependency; }
-    void addDependency(const char *dep)
-    {
-      m_dependency = dep;
-    }
+    void addDependency(const char *dep) { m_dependency = dep; }
 
   protected:
-    virtual void writeTemplate(QTextStream &t,bool sl) = 0;
+    virtual void writeTemplate(QTextStream &t,bool sl,bool upd) = 0;
     virtual void convertStrToVal() {}
-    virtual void substEnvVars() {}
+    virtual void substEnvVars() = 0;
     virtual void init() {}
 
-    QCString convertToComment(const QCString &s)
-    {
-      QCString result;
-      if (s.isEmpty()) return result;
-      else
-      {
-        result+="# ";
-        QCString tmp=s.stripWhiteSpace();
-        char *p=tmp.data();
-        char c;
-        while ((c=*p++))
-        {
-          if (c=='\n') result+="\n# ";
-          else result+=c;
-        }
-        result+='\n';
-      }
-      return result;
-    }
-
-    void writeBoolValue(QTextStream &t,bool v)
-    {
-      if (v) t << "YES"; else t << "NO";
-    }
-
-    void writeIntValue(QTextStream &t,int i)
-    {
-      t << i;
-    }
-
-    void writeStringValue(QTextStream &t,QCString &s)
-    {
-      const char *p=s.data();
-      char c;
-      bool hasBlanks=FALSE;
-      if (p)
-      {
-        while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
-        if (hasBlanks) 
-          t << "\"" << s << "\"";
-        else
-          t << s;
-      }
-    }
-
-    void writeStringList(QTextStream &t,QStrList &l)
-    {
-      const char *p = l.first();
-      bool first=TRUE;
-      while (p)
-      {
-        char c;
-        const char *s=p;
-        bool hasBlanks=FALSE;
-        while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
-        if (!first) t << "                         ";
-        first=FALSE;
-        if (hasBlanks) t << "\"" << s << "\""; else t << s;
-        p = l.next();
-        if (p) t << " \\" << endl;
-      }
-    }
+    QCString convertToComment(const QCString &s);
+    void writeBoolValue(QTextStream &t,bool v);
+    void writeIntValue(QTextStream &t,int i);
+    void writeStringValue(QTextStream &t,QCString &s);
+    void writeStringList(QTextStream &t,QStrList &l);
 
     QCString m_spaces;
     QCString m_name;
@@ -141,7 +81,7 @@ class ConfigInfo : public ConfigOption
       m_name = name;
       m_doc = doc;
     }
-    void writeTemplate(QTextStream &t, bool sl)
+    void writeTemplate(QTextStream &t, bool sl,bool)
     {
       if (!sl)
       {
@@ -151,6 +91,7 @@ class ConfigInfo : public ConfigOption
       t << "# " << m_doc << endl;
       t << "#---------------------------------------------------------------------------\n";
     }
+    void substEnvVars() {}
 };
 
 /*! \brief Option of the list type.
@@ -171,7 +112,7 @@ class ConfigList : public ConfigOption
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl)
+    void writeTemplate(QTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -209,7 +150,8 @@ class ConfigEnum : public ConfigOption
       return QStrListIterator(m_valueRange);
     }
     QCString *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl)
+    void substEnvVars();
+    void writeTemplate(QTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -250,7 +192,7 @@ class ConfigString : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     void setDefaultValue(const char *v) { m_defValue = v; }
     QCString *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl)
+    void writeTemplate(QTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -292,7 +234,8 @@ class ConfigInt : public ConfigOption
     int minVal() const { return m_minVal; }
     int maxVal() const { return m_maxVal; }
     void convertStrToVal();
-    void writeTemplate(QTextStream &t,bool sl)
+    void substEnvVars();
+    void writeTemplate(QTextStream &t,bool sl,bool upd)
     {
       if (!sl)
       {
@@ -301,7 +244,14 @@ class ConfigInt : public ConfigOption
         t << endl;
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
-      writeIntValue(t,m_value);
+      if (upd)
+      {
+        writeStringValue(t,m_valueString);
+      }
+      else
+      {
+        writeIntValue(t,m_value);
+      }
       t << "\n";
     }
     void init() { m_value = m_defValue; }
@@ -327,8 +277,11 @@ class ConfigBool : public ConfigOption
       m_value = defVal;
       m_defValue = defVal;
     }
+    QCString *valueStringRef() { return &m_valueString; }
     bool *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl)
+    void convertStrToVal();
+    void substEnvVars();
+    void writeTemplate(QTextStream &t,bool sl,bool upd)
     {
       if (!sl)
       {
@@ -337,13 +290,21 @@ class ConfigBool : public ConfigOption
         t << endl;
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
-      writeBoolValue(t,m_value);
+      if (upd)
+      {
+        writeStringValue(t,m_valueString);
+      }
+      else
+      {
+        writeBoolValue(t,m_value);
+      }
       t << "\n";
     }
     void init() { m_value = m_defValue; }
   private:
     bool m_value;
     bool m_defValue;
+    QCString m_valueString;
 };
 
 #define Config_getString(val)  Config::instance()->getString(__FILE__,__LINE__,val)
@@ -512,7 +473,7 @@ class Config
      *  is \c TRUE the description of each configuration option will
      *  be omitted.
      */
-    void writeTemplate(QFile *f,bool shortIndex);
+    void writeTemplate(QFile *f,bool shortIndex,bool updateOnly);
 
     /////////////////////////////
     // internal API

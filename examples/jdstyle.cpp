@@ -34,7 +34,7 @@ class Test
       /**
        * a normal member taking two arguments and returning an integer value.
        * @param a an integer argument.
-       * @param s a constant chararcter pointer.
+       * @param s a constant character pointer.
        * @see Test()
        * @see ~Test()
        * @see testMeToo()

@@ -91,7 +91,7 @@ around the blocks that should be hidden and put:
 in the config file then all blocks should be skipped by Doxygen as long
 as <code>PREPROCESSING = YES</code>.
 
-<li><b>How can I change what's after the <code>\#include</code> in the class documentation?</b>
+<li><b>How can I change what is after the <code>\#include</code> in the class documentation?</b>
 
 You can document your class like
 
@@ -119,7 +119,7 @@ brackets you should type:
  */
 \endverbatim
 
-<li><b>How can I use tag files in combination with compressed HTML</b>
+<li><b>How can I use tag files in combination with compressed HTML?</b>
 
 If you want to refer from one compressed HTML file 
 \c a.chm to another compressed HTML file 
@@ -160,7 +160,7 @@ doxygen generates. You can include this by putting
 \verbatim
 <LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
 \endverbatim
-In the HEAD section of the HTML page.
+in the HEAD section of the HTML page.
 
 <li><b>Why does doxygen use Qt?</b>
 
@@ -194,7 +194,7 @@ This error happens when doxygen lexical scanner has a rules that matches
 more than 16K input character in one go. I've seen this happening 
 on a very large generated file (>16K lines), where the built-in preprocessor 
 converted it into an empty file (with >16K of newlines). Another case
-where this might happen is if you have lines in you code with more than
+where this might happen is if you have lines in your code with more than
 16K characters.
 
 </ol>

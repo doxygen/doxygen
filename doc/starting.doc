@@ -105,7 +105,7 @@ doxygen <config-file>
 
 Doxygen will create a \c html, \c rtf, \c latex and/or \c man directory inside 
 the output directory. 
-As the names suggest the \c html directory contain the
+As the names suggest these directories contain the
 generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$ and Unix-Man page
 format.
 
@@ -132,12 +132,12 @@ documentation, \c doxygen writes a \c Makefile into the \c latex directory.
 By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
 <code>make</code> of course). This file can then be viewed using \c xdvi or 
-converted into a postscript file \c refman.ps by 
+converted into a PostScript file \c refman.ps by 
 typing <code>make ps</code> (this requires <code>dvips</code>).  
 To put 2 pages on one physical page use <code>make ps_2on1</code> instead.
-The resulting Postscript file can be send to a postscript
-printer. If you do not have a postscript printer, you can try to use 
-ghostscript to convert postscript into something your printer understands.
+The resulting PostScript file can be send to a PostScript
+printer. If you do not have a PostScript printer, you can try to use 
+ghostscript to convert PostScript into something your printer understands.
 Conversion to PDF is also possible if you have installed the ghostscript
 interpreter; just type <code>make pdf</code> (or <code>make pdf_2on1</code>). 
 To get the best results for PDF output you should set 

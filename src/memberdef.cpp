@@ -597,7 +597,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   {
     QCString doxyName=name().copy();
     if (!cname.isEmpty()) doxyName.prepend(cname+"::");
-    ol.startDoxyAnchor(cfname,anchor(),doxyName);
+    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
 
     ol.addIndexItem(name(),cname);
     ol.addIndexItem(cname,name());
@@ -912,7 +912,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
         {
-          ol.startDoxyAnchor(cfname,anchor(),doxyName);
+          ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
           ol.startMemberDoc(cname,name(),anchor(),name());
           if (hasHtmlHelp)
           {
@@ -928,7 +928,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (!found) // anonymous compound
       {
         //printf("Anonymous compound `%s'\n",cname.data());
-        ol.startDoxyAnchor(cfname,anchor(),doxyName);
+        ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
         ol.startMemberDoc(cname,name(),anchor(),name());
         if (hasHtmlHelp)
         {
@@ -950,7 +950,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      ol.startDoxyAnchor(cfname,anchor(),doxyName);
+      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
       ol.startMemberDoc(cname,name(),anchor(),name());
       if (hasHtmlHelp)
       {
@@ -1189,7 +1189,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             //ol.writeListItem();
             ol.startDescTableTitle();
-            ol.startDoxyAnchor(cfname,fmd->anchor(),fmd->name());
+            ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
             first=FALSE;
             ol.startEmphasis();
             ol.docify(fmd->name());

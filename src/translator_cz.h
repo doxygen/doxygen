@@ -119,7 +119,19 @@
 //    the context better.
 //  - Implemented new method trAuthor(params).
 //  - Removed obsolete methods trAuthor() and trAuthors().
+//
+// 2001/05/25
+//  - Updated misleading information in trLegendDocs().
+//  - The trReimplementedInList() updated to fit the context better.
+//  - The trReimplementedFromList() updated to fit the context better.
 //  
+// Todo
+// ----
+//  - The trReimplementedFromList() should pass the kind of the 
+//    reimplemented element.  It can be method, typedef or possibly 
+//    something else.  It is difficult to find the general translation
+//    for all kinds in the Czech language.
+// 
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
@@ -148,7 +160,7 @@ class TranslatorCzech : public Translator
     }
     
   public:
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
 
     virtual QCString idLanguage()
     { return "czech"; }
@@ -560,7 +572,7 @@ class TranslatorCzech : public Translator
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return decode("Hodnoty výètù"); }
+    { return decode("Hodnoty výètu"); }
     
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
@@ -757,7 +769,7 @@ class TranslatorCzech : public Translator
       return decode(result);
     }
     
-    /*! \mgroup Class sections
+    /*! 
      *  these are for the member sections of a class, struct or union 
      */
     virtual QCString trPublicMembers()
@@ -780,7 +792,6 @@ class TranslatorCzech : public Translator
     { return decode("Privátní sloty"); }
     virtual QCString trStaticPrivateMembers()
     { return decode("Statické privátní metody"); }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -834,8 +845,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      QCString result("Reimplementuje ");
-      result += (numEntries == 1) ? "metodu tøídy " : "metody tøíd ";
+      QCString result("Reimplementuje stejnojmenný prvek z ");
       result += trWriteList(numEntries)+".";
       return decode(result);
     }
@@ -845,8 +855,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      QCString result("Reimplementováno ");
-      result += (numEntries == 1) ? "tøídou " : "tøídami ";
+      QCString result("Reimplementováno v ");
       result += trWriteList(numEntries)+".";
       return decode(result);
     }
@@ -1157,11 +1166,13 @@ class TranslatorCzech : public Translator
         "class Truncated : public Invisible { };\n\n"
         "/* Tøída, která není dokumentována komentáøi programu doxygen. */\n"
         "class Undocumented { };\n\n"
-        "/*! Odvozená tøída s veøejným (public) dìdìním bázové tøídy. */\n"
+        "/*! Bázová tøída dìdìná veøejnì (public inheritance). */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Odvozená tøída s chránìným (protected) dìdìním bázové tøídy. */\n"
+        "/*! Bázová tøída, použitá pro chránìné dìdìní "
+        "(protected inheritance). */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Odvozená tøída s privátním dìdìním bázové tøídy. */\n"
+        "/*! Bázová tøída, využitá pro privátní dìdìní "
+        "(private inheritance). */\n"
         "class PrivateBase { };\n\n"
         "/*! Tøída, která je využívána tøídou Inherited. */\n"
         "class Used { };\n\n"
@@ -1197,10 +1208,11 @@ class TranslatorCzech : public Translator
         "Šipky (tj. hrany grafu) mají následující význam:\n"
         "<ul>\n"
         "<li>Tmavì modrá šipka se používá pro oznaèení vztahu veøejné "
-            "dìdiènosti mezi dvìma tøídami.\n"
+            "dìdiènosti (public) mezi dvìma tøídami.\n"
         "<li>Tmavì zelená šipka oznaèuje vztah chránìné dìdiènosti "
             "(protected).\n"
-        "<li>Tmavì èervená šipka oznaèuje vztah privátní dìdiènosti.\n"
+        "<li>Tmavì èervená šipka oznaèuje vztah privátní dìdiènosti "
+            "(private).\n"
         "<li>Purpurová šipka kreslená èárkovanì se používá v pøípadì, "
             "kdy je tøída obsažena v jiné tøídì,\n"
             "nebo kdy je používána jinou tøídou. Je oznaèena identifikátorem "

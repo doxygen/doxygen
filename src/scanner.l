@@ -3635,6 +3635,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  // insert \n and decrement the line number to compensate for the artifical newline
 					  unput('\n');
 					  yyLineNr--;
+					  BEGIN( Doc );
 					}
 <FileDocArg1>"*/"			{
   					  current->name = yyFileName;

@@ -279,15 +279,6 @@ static void forceEndTable()
 
 //-----------------------------------------------------------------------------
 
-static void endArgumentList()
-{
-  if (insideArgumentList)
-  {
-    insideArgumentList=FALSE;
-    outDoc->endItemList();
-  }
-}
-
 static void includeFile(OutputDocInterface &od,const char *fileName,bool quiet)
 {
   bool ambig;
@@ -643,6 +634,35 @@ static void forceEndItemList()
     }
   }
   insideItemList=FALSE;
+}
+
+static void endArgumentList()
+{
+#if 0
+  IndentInfo *info;
+  while ((info=listIndentStack.pop())!=0)
+  {
+    delete info;
+  }
+  while (!currentListIndent.isEmpty())
+  {
+    char c=*currentListIndent.pop();
+    switch(c)
+    {
+       case 'O': outDoc->endEnumList(); break;
+       case 'U': outDoc->endItemList(); break;
+       case 'D':
+	if (!inBlock()) outDoc->endDescription(); 
+	break;
+    }
+  }
+  insideItemList=FALSE;
+#endif
+  if (insideArgumentList)
+  {
+    insideArgumentList=FALSE;
+    outDoc->endItemList();
+  }
 }
 
 //-----------------------------------------------------------------
@@ -1697,6 +1717,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  BEGIN(DocScan);
   					}
 <DocRefName>({SCOPENAME}|{FILE}){B}+/"\""	{
+					  //printf(">>> ref `%s'\n",yytext);
   					  sectionRef=yytext;
 					  sectionRef=sectionRef.stripWhiteSpace();
 					  BEGIN(DocRefArgStart);
@@ -1710,6 +1731,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  SectionInfo *sec;
 					  if ((sec=Doxygen::sectionDict[sectionRef]))
 					  {
+					    //printf("Is a section!\n");
 					    if (sec->type==SectionInfo::Anchor)
 					    {
 					      outDoc->writeObjectLink(sec->ref,sec->fileName,sec->label,text);

@@ -45,6 +45,10 @@
 //    - Removed implementation of latexBabelPackage(), trVerbatimText(),
 //      trFiles(), added latexLanguageSupportCommand().
 //
+//   2001/05/25 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Update for "new since 1.2.7-20010524" version:
+//      removed trAuthors(), trAuthor(), added trAuthor(bool, bool)
+//
 // Todo: 
 //   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
 //     strings (see translator.h)
@@ -58,9 +62,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-#include "translator.h"
-
-class TranslatorGerman : public TranslatorAdapterCVS
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -398,10 +400,6 @@ class TranslatorGerman : public TranslatorAdapterCVS
     virtual QCString trEnumerationValues()
     { return "Aufzählungswerte"; }
 
-    /* This is used in man pages as the author section. */
-    virtual QCString trAuthor()
-    { return "Autor"; }
-
     /*  This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -498,10 +496,6 @@ class TranslatorGerman : public TranslatorAdapterCVS
     /* this text is generated when the \date command is used. */
     virtual QCString trDate()
     { return "Datum"; }
-
-    /* this text is generated when the \author command is used. */
-    virtual QCString trAuthors()
-    { return "Autor(en)"; }
 
     /* this text is generated when the \return command is used. */
     virtual QCString trReturns()
@@ -1293,6 +1287,20 @@ class TranslatorGerman : public TranslatorAdapterCVS
       return result;
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7-20010524
+    //////////////////////////////////////////////////////////////////////////
+  
+    /*  This text is generated when the \author command is used and
+     *  for the author section in man pages. 
+     */
+    virtual QCString trAuthor(bool, bool singular)
+    {
+      QCString result("Autor");
+      if (!singular)  result+="en";
+      return result;
+    }
+    
 };
 
 #endif

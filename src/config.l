@@ -63,6 +63,75 @@ void initWarningFormat()
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_UNPUT
 
+/* -----------------------------------------------------------------
+ */
+
+QCString ConfigOption::convertToComment(const QCString &s)
+{
+  QCString result;
+  if (s.isEmpty()) return result;
+  else
+  {
+    result+="# ";
+    QCString tmp=s.stripWhiteSpace();
+    char *p=tmp.data();
+    char c;
+    while ((c=*p++))
+    {
+      if (c=='\n') result+="\n# ";
+      else result+=c;
+    }
+    result+='\n';
+  }
+  return result;
+}
+
+void ConfigOption::writeBoolValue(QTextStream &t,bool v)
+{
+  if (v) t << "YES"; else t << "NO";
+}
+
+void ConfigOption::writeIntValue(QTextStream &t,int i)
+{
+  t << i;
+}
+
+void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
+{
+  const char *p=s.data();
+  char c;
+  bool hasBlanks=FALSE;
+  if (p)
+  {
+    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
+    if (hasBlanks) 
+      t << "\"" << s << "\"";
+    else
+      t << s;
+  }
+}
+
+void ConfigOption::writeStringList(QTextStream &t,QStrList &l)
+{
+  const char *p = l.first();
+  bool first=TRUE;
+  while (p)
+  {
+    char c;
+    const char *s=p;
+    bool hasBlanks=FALSE;
+    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
+    if (!first) t << "                         ";
+    first=FALSE;
+    if (hasBlanks) t << "\"" << s << "\""; else t << s;
+    p = l.next();
+    if (p) t << " \\" << endl;
+  }
+}
+
+/* -----------------------------------------------------------------
+ */
+
 Config *Config::m_instance = 0;
 
 void ConfigInt::convertStrToVal() 
@@ -73,10 +142,31 @@ void ConfigInt::convertStrToVal()
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
-      warn_cont("Warning: argument of %s is not a valid number in the range [%d..%d]!\n"
-                "Using the default of %d!\n",m_name.data(),m_minVal,m_maxVal,m_value);
+      warn_cont("Warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
+                "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
     m_value=val;
+  }
+}
+
+void ConfigBool::convertStrToVal()
+{
+  QCString val = m_valueString.stripWhiteSpace().lower();
+  if (!val.isEmpty())
+  {
+    if (val=="yes" || val=="true" || val=="1") 
+    {
+      m_value=TRUE;
+    }
+    else if (val=="no" || val=="false" || val=="0")
+    {
+      m_value=FALSE;
+    }
+    else
+    {
+      warn_cont("Warning: argument `%s' for option %s is not a valid boolean value\n"
+                "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
+    }
   }
 }
 
@@ -362,8 +452,8 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(GetString);
 					         break;
 					       case ConfigOption::O_Bool:
-						 b = ((ConfigBool *)option)->valueRef();
-					         BEGIN(GetBool);
+						 s = ((ConfigBool *)option)->valueStringRef();
+					         BEGIN(GetString);
 						 break;
 					     }
 					   }
@@ -545,7 +635,7 @@ static void writeStringList(QTextStream &t,QStrList &l)
 }
 #endif
 
-void Config::writeTemplate(QFile *f,bool sl)
+void Config::writeTemplate(QFile *f,bool sl,bool upd)
 {
   QTextStream t(f);
 #ifdef DOXYWIZARD
@@ -568,7 +658,7 @@ void Config::writeTemplate(QFile *f,bool sl)
   ConfigOption *option = m_options->first();
   while (option)
   {
-    option->writeTemplate(t,sl);
+    option->writeTemplate(t,sl,upd);
     option = m_options->next();
   }
 }
@@ -691,6 +781,20 @@ void ConfigList::substEnvVars()
   substEnvVarsInStrList(m_value);
 }
 
+void ConfigBool::substEnvVars()
+{
+  substEnvVarsInString(m_valueString);
+}
+
+void ConfigInt::substEnvVars()
+{
+  substEnvVarsInString(m_valueString);
+}
+
+void ConfigEnum::substEnvVars()
+{
+  substEnvVarsInString(m_value);
+}
 
 void Config::substituteEnvironmentVars()
 {
@@ -1602,7 +1706,7 @@ void Config::create()
   cb->addDependency("GENERATE_HTML");
   cb = addBool(
                     "TOC_EXPAND",
-                    "The TOC_EXPAND flag can be set YES to add extra items for group members \n"
+                    "The TOC_EXPAND flag can be set to YES to add extra items for group members \n"
                     "to the contents of the Html help documentation and to the tree view. \n",
                     FALSE
                  );
@@ -1753,7 +1857,7 @@ void Config::create()
                     "If the RTF_HYPERLINKS tag is set to YES, the RTF that is generated \n"
                     "will contain hyperlink fields. The RTF file will \n"
                     "contain links (just like the HTML output) instead of page references. \n"
-                    "This makes the output suitable for online browsing using a WORD or other. \n"
+                    "This makes the output suitable for online browsing using WORD or other. \n"
                     "programs which support those fields. \n"
                     "Note: wordpad (write) and others do not support links. \n",
                     FALSE

@@ -161,9 +161,10 @@ Compilation is now done by performing the following steps:
     make install
 \endverbatim   
 
-    Binaries are installed in the directory <code>\<prefix\>/bin</code>
-    Documentation and examples in the directory 
-    <code>\<prefix\>/doc/doxygen</code>
+    Binaries are installed in the directory <code>\<prefix\>/bin</code>,
+    documentation and examples in the directory 
+    <code>\<prefix\>/share/doc/packages/doxygen</code> (use
+    <code>DOCDIR\\<path\></code> after <code>make</code> to change this).
 
     <code>\<prefix\></code> defaults to /usr but can be changed with 
     the <code>--prefix</code> option of the configure script. 
@@ -182,12 +183,12 @@ Compilation is now done by performing the following steps:
 
 <b>Qt problems</b>
 
-The Qt include files and libraries are not a sub directory of the
-directory pointed to by QTDIR on some systems.
+The Qt include files and libraries are not a subdirectory of the
+directory pointed to by QTDIR on some systems
 (for instance on Red Hat 6.0 includes are in /usr/include/qt and
-libs are in /usr/lib)
+libs are in /usr/lib).
   
-The solution: goto the root of the doxygen distribution and do:
+The solution: go to the root of the doxygen distribution and do:
 \verbatim
    mkdir qt
    cd qt
@@ -203,7 +204,7 @@ Now install doxygen as described above.
 
 <b>Latex problems</b>
 
-the file <code>a4wide.sty</code> is not available for all distributions. If
+The file <code>a4wide.sty</code> is not available for all distributions. If
 your distribution does not have it please select another paper type
 in the config file (see the \ref cfg_paper_type "PAPER_TYPE" tag in the 
 config file).
@@ -352,7 +353,7 @@ Here is what is required:
 
     Borland C++ or MINGW (see http://www.mingw.org) are also supported. 
 
-<li>Perl 5.0 or higher for Windows. This can be download from:
+<li>Perl 5.0 or higher for Windows. This can be downloaded from:
     http://www.ActiveState.com/Products/ActivePerl/
 
 <li>The GNU tools flex, bison, and sed.
@@ -390,7 +391,7 @@ Here is what is required:
     As a result doxygen can be compiled on systems without X11 or the
     commerical version of Qt. 
 
-    For doxywizard, a complete Qt library this is 
+    For doxywizard, a complete Qt library is 
     still a requirement however. You may be interested in the professional 
     license of <A HREF="http://www.trolltech.com/products/qt.html">Qt for 
     Windows</A> \latexonly\par (see 
@@ -400,7 +401,7 @@ Here is what is required:
 <li>To generate LaTeX documentation or formulas in HTML you need the tools:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
     To get these working under Windows
-    install the fpTeX distribution You can download it at:
+    install the fpTeX distribution. You can download it at:
     ftp://ctan.tug.org/tex-archive/systems/win32/web2c/fptex-0.3/
 
     Make sure the tools are available from a dos box, by adding the 
@@ -409,7 +410,7 @@ Here is what is required:
     For your information, the LaTeX is freely available set of so
     called macros and styles on the top of the famous TeX program
     (by famous Donald Knuth) and the accompanied utilities (all
-    available for free). It is used to for high quality
+    available for free). It is used for high quality
     typesetting. The result -- in the form of so called
     <code>DVI</code> (DeVice Independent) file -- can be printed or
     displayed on various devices preserving exactly the same look up
@@ -457,7 +458,7 @@ Compilation is now done by performing the following steps:
     of the documentation into PostScript or PDF. 
     It is \e not needed for compiling the doxygen's binaries. 
     
-<li>goto the doxygen root dir and type:
+<li>Go to the doxygen root dir and type:
 
 \verbatim
     make.bat msvc
@@ -486,10 +487,10 @@ Compilation is now done by performing the following steps:
     nmake
 \endverbatim
 
-    The generated docs int HTML are located in the <code>..\html</code>
+    The generated HTML docs are located in the <code>..\html</code>
     subdirectory.
 
-    The sources for LaTeX documentation are located in <code>..\latex</code>
+    The sources for LaTeX documentation are located in the <code>..\latex</code>
     subdirectory. From those sources, the DVI, PostScript, and PDF
     documentation can be generated. 
 </ol>

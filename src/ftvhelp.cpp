@@ -274,6 +274,9 @@ static void generateFolderTreeViewData()
   else
   {
     QTextStream t(&f);
+#if QT_VERSION >= 200
+    t.setEncoding(QTextStream::Latin1);
+#endif
     t << "<html><head>";
     t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
       << theTranslator->idLanguageCharset() << "\">\n";
@@ -389,6 +392,10 @@ void FTVHelp::initialize()
   }
   /* Write the header of the contents file */
   m_cts.setDevice(m_cf);
+#if QT_VERSION >= 200
+  m_cts.setEncoding(QTextStream::Latin1);
+#endif
+
   m_cts << "foldersTree = gFld(\"<b>";
   if (Config_getString("PROJECT_NAME").isEmpty())
   {

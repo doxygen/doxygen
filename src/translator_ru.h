@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapterCVS
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -70,7 +70,11 @@ class TranslatorRussian : public TranslatorAdapterCVS
 
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
-    { return "\\usepackage[russianb]{babel}\n"; }
+#ifdef _WIN32
+    { return "\\usepackage[cp1251]{inputenc}\n\\usepackage[russian]{babel}\n"; }
+#else
+    { return "\\usepackage[koi8-r]{inputenc}\n\\usepackage[russian]{babel}\n"; }
+#endif
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -168,13 +172,6 @@ class TranslatorRussian : public TranslatorAdapterCVS
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return decode("определено в"); }
-
-    // TODO: trVerbatimText is no longer used => remove!
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    virtual QCString trVerbatimText(const char *f)
-    { return decode( (QCString)"Это прямая вставка текста из включаемого файла")+f; }
 
     // quick reference sections
 
@@ -466,10 +463,6 @@ class TranslatorRussian : public TranslatorAdapterCVS
     virtual QCString trEnumerationValues()
     { return decode("Элементы перечислений"); }
 
-    /*! This is used in man pages as the author section. */
-    virtual QCString trAuthor()
-    { return decode("Автор"); }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -531,9 +524,6 @@ class TranslatorRussian : public TranslatorAdapterCVS
     /*! This is used in the documentation of a group before the list of 
      *  links to documented files
      */
-    virtual QCString trFiles()
-    { return decode("Файлы"); }
-
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
      */
@@ -542,7 +532,7 @@ class TranslatorRussian : public TranslatorAdapterCVS
       QCString result=decode("Документация ");
       if (projName) result+=decode("по ")+projName;
       result+=decode(". Последние изменения: ")+date;
-      result+=decode(". Создано системой ");
+      result+=decode(". Создано системой");
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
@@ -583,10 +573,6 @@ class TranslatorRussian : public TranslatorAdapterCVS
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return decode("Дата"); }
-
-    /*! this text is generated when the \\author command is used. */
-    virtual QCString trAuthors()
-    { return decode("Автор(ы)"); }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
@@ -1181,7 +1167,14 @@ class TranslatorRussian : public TranslatorAdapterCVS
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      return decode("Классы");
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return decode( "Структуры данных" );
+      }
+      else
+      {
+        return decode( "Классы" );
+      }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
@@ -1254,9 +1247,17 @@ class TranslatorRussian : public TranslatorAdapterCVS
      */
     virtual QCString trClass(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Класс" : "класс"));
-      if(!singular) result+="ы";
-      return decode(result); 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        QCString result((first_capital ? "Структуры данных" : "структуры данных"));
+        return decode(result); 
+      }
+      else
+      {
+        QCString result((first_capital ? "Класс" : "класс"));
+        if(!singular) result+="ы";
+        return decode(result); 
+      }
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1336,6 +1337,18 @@ class TranslatorRussian : public TranslatorAdapterCVS
       return decode(result); 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Автор" : "автор"));
+      if (!singular) result+="ы";
+      return decode(result); 
+    }
 };
 
 #endif

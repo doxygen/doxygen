@@ -390,21 +390,20 @@ void LatexGenerator::writeHeaderFile(QFile &f)
 void LatexGenerator::writeStyleSheetFile(QFile &f)
 {
   QTextStream t(&f);
+#if QT_VERSION >= 200
+  t.setEncoding(QTextStream::Latin1);
+#endif
+
   writeDefaultStyleSheetPart1(t);
   QCString &projectName = Config_getString("PROJECT_NAME");
-  t << "Generated at " << dateToString(TRUE);
-  if (projectName.isEmpty()) 
-  {
-    t << " for " << projectName << " ";
-  }
-  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2001";
+
+  t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
+  t << " doxygen " << theTranslator->trWrittenBy() << " ";
+  t << "Dimitri van Heesch \\copyright~1997-2001";
   writeDefaultStyleSheetPart2(t);
-  t << "Generated at " << dateToString(TRUE);
-  if (projectName.isEmpty()) 
-  {
-    t << " for " << projectName << " ";
-  }
-  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2001";
+  t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
+  t << " doxygen " << theTranslator->trWrittenBy() << " ";
+  t << "Dimitri van Heesch \\copyright~1997-2001";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -1096,8 +1095,8 @@ void LatexGenerator::endMemberDoc()
   if (Config_getBool("COMPACT_LATEX")) t << "\\hfill";
 }
 
-void LatexGenerator::startDoxyAnchor(const char *fName,const char *anchor,
-                                     const char *)
+void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
+                                     const char *anchor, const char *)
 {
   if (Config_getBool("PDF_HYPERLINKS"))
   {

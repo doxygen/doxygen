@@ -30,6 +30,7 @@ French
 Christophe Bordeux: bordeux@lig.di.epfl.ch
 
 German  
+Jens Seidel: jensseidel@users.sourceforge.net
 Jens Breitenstein: Jens.Breitenstein@tlc.de
 
 Hungarian
@@ -59,6 +60,9 @@ Alexandru Iosup: aiosup@yahoo.com
 
 Russian
 Alexandr Chelpanov: cav@cryptopro.ru
+
+Slovak
+Stanislav Kudlac: qwerty1@pobox.sk
 
 Slovene
 Matjaz Ostroversnik: matjaz.ostroversnik@zrs-tk.si

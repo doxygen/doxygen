@@ -272,6 +272,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    a->array  = removeRedundantWhiteSpace(g_curArgArray);
 					    a->defval = g_curArgDefValue.copy();
 					    a->docs   = g_curArgDocs.stripWhiteSpace();
+					    a->docs   += "\n"; // for commands that need termination in doc.l (like \verbatim)
 					    //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
 					    g_argList->append(a);
 					  }

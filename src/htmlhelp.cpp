@@ -264,6 +264,9 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   cts.setDevice(cf);
+#if QT_VERSION >= 200
+  cts.setEncoding(QTextStream::Latin1);
+#endif
   cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -281,6 +284,9 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   kts.setDevice(kf);
+#if QT_VERSION >= 200
+  kts.setEncoding(QTextStream::Latin1);
+#endif
   kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -297,6 +303,10 @@ void HtmlHelp::createProjectFile()
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
+#if QT_VERSION >= 200
+    t.setEncoding(QTextStream::Latin1);
+#endif
+
     QCString indexName="index.html";
     if (Config_getBool("GENERATE_TREEVIEW")) indexName="main.html";
     t << "[OPTIONS]\n"

@@ -17,17 +17,17 @@
 /*! \page formulas Including formulas 
 
 Doxygen allows you to put \f$\mbox{\LaTeX}\f$ formulas in the
-output (this works only for the HTML and \f$\mbox{\LaTeX}\f$ formats, 
-not for the man page output). To be able to include formulas (as images)
-in the HTML documentation, you will also need to have the following tools
-installed
+output (this works only for the HTML and \f$\mbox{\LaTeX}\f$ output, 
+not for the RTF nor for the man page output). To be able to include 
+formulas (as images) in the HTML documentation, you will also need to 
+have the following tools installed
 <ul>
 <li>\c latex: the \f$\mbox{\LaTeX}\f$ compiler, needed to parse the formulas. 
     To test I have used the teTeX 0.9 distribution.
-<li>\c dvips: a tool to convert dvi files to postscript files 
+<li>\c dvips: a tool to convert DVI files to PostScript files 
     I have used version 5.86 from Radical Eye software for testing.
-<li>\c gs: the ghostscript interpreter for converting postscript files 
-    to bitmaps. I have used Aladdin Ghostscript 5.10 for testing.
+<li>\c gs: the GhostScript interpreter for converting PostScript files 
+    to bitmaps. I have used Aladdin GhostScript 5.10 for testing.
 </ul>
 
 There are two ways to include formulas in the documentation.
@@ -44,7 +44,7 @@ There are two ways to include formulas in the documentation.
   \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
 <br>
 <li>Unnumbered displayed formulas that are centered on a separate line.
-    These formulas should be put between \\f\[ and \\f\] commands.
+    These formulas should be put between \\f[ and \\f] commands.
     An example:
 \verbatim
   \f[

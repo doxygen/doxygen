@@ -38,6 +38,7 @@ class ClassSDict;
 class BaseClassList;
 class GroupDef;
 class NamespaceList;
+class ClassList;
 class MemberGroupList;
 class MemberGroupDict;
 
@@ -96,10 +97,10 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
 extern bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
-                           NamespaceList *usingList=0);
+                           NamespaceList *usingNamespaces=0,
+                           ClassList *usingClasses=0);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
 extern QCString substituteClassNames(const QCString &s);
-//extern QCString convertFileName(const QCString &s);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
