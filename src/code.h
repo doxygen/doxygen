@@ -17,12 +17,12 @@
 #ifndef CODE_H
 #define CODE_H
 
+#include "qtbc.h"
 #include <stdio.h>
-#include <qstring.h>
 
 class OutputList;
 
-extern void parseCode(OutputList &,const char *,const QString &, 
+extern void parseCode(OutputList &,const char *,const QCString &, 
             bool ,const char *);
 extern void initParseCodeContext();
 #endif

@@ -15,9 +15,10 @@
  */
 
 #include <stdlib.h>
-#include <qregexp.h>
-#include <qstring.h>
 #include <ctype.h>
+
+#include "qtbc.h"
+#include <qregexp.h>
 #include "util.h"
 #include "message.h"
 #include "classdef.h"
@@ -37,9 +38,22 @@ bool isId(char c)
   return c=='_' || isalnum(c);
 }
 
-QString generateMarker(int id)
+// strip annonymous part of the scope
+QCString stripAnnonymousScope(const QCString &s)
 {
-  QString result;
+  QCString result=s;
+  int i;
+  while (!result.isEmpty() && result.at(0)=='@' && (i=result.find("::"))!=-1)
+  { 
+    result=result.right(result.length()-i-2);
+  }
+  return result;
+}
+
+
+QCString generateMarker(int id)
+{
+  QCString result;
   result.sprintf("@%d\n",id);
   return result;
 }
@@ -49,7 +63,7 @@ QString generateMarker(int id)
 // If anyone knows or uses another extension please let me know :-)
 int guessSection(const char *name)
 {
-  QString n=((QString)name).lower();
+  QCString n=((QCString)name).lower();
   if (n.right(2)==".c"   ||
       n.right(3)==".cc"  ||
       n.right(4)==".cxx" ||
@@ -66,7 +80,7 @@ int guessSection(const char *name)
 }
 
 
-//QString resolveDefines(const char *n)
+//QCString resolveDefines(const char *n)
 //{
 //  return n;
 //  if (n)
@@ -81,9 +95,9 @@ int guessSection(const char *name)
 //  return 0;
 //}
 
-QString resolveTypedefs(const QString &n)
+QCString resolveTypedefs(const QCString &n)
 {
-  QString *subst=typedefDict[n];
+  QCString *subst=typedefDict[n];
   if (subst && !subst->isNull())
   {
     return *subst;
@@ -97,7 +111,7 @@ QString resolveTypedefs(const QString &n)
 ClassDef *getClass(const char *name)
 {
   if (!name) return 0;
-  //QString key=resolveTypedefs(resolveDefines(name));
+  //QCString key=resolveTypedefs(resolveDefines(name));
   //Define *def=defineDict[key];
   //if (def && def->nargs==0 && def->definition.length()>0) // normal define
   //  key=def->definition; // use substitution
@@ -105,10 +119,10 @@ ClassDef *getClass(const char *name)
   return classDict[resolveTypedefs(name)];
 }
 
-QString removeRedundantWhiteSpace(const QString &s)
+QCString removeRedundantWhiteSpace(const QCString &s)
 {
   if (s.length()==0) return s;
-  QString result;
+  QCString result;
   uint i;
   for (i=0;i<s.length();i++)
   {
@@ -152,11 +166,11 @@ void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
   if (manEnabled)   ol.enable(OutputGenerator::Man);
 }
 
-QString addTemplateNames(const QString &s,const QString &n,const QString &t)
+QCString addTemplateNames(const QCString &s,const QCString &n,const QCString &t)
 {
   //printf("addTemplateNames(%s)\n",s.data());
-  QString result;
-  QString clRealName=n;
+  QCString result;
+  QCString clRealName=n;
   int p=0,i;
   if ((i=clRealName.find('<'))!=-1)
   {
@@ -183,11 +197,11 @@ QString addTemplateNames(const QString &s,const QString &n,const QString &t)
   return result;
 }
 
-static void linkifyText(OutputList &ol,const char *clName,const char *name,const char *text)
+static void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text)
 {
-  //printf("class %s name %s Text: %s\n",clName,name,text);
+  //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
   QRegExp regExp("[a-z_A-Z0-9:<>]+");
-  QString txtStr=text;
+  QCString txtStr=text;
   OutputList result(&ol);
   int matchLen;
   int index=0;
@@ -199,55 +213,86 @@ static void linkifyText(OutputList &ol,const char *clName,const char *name,const
     // add non-word part to the result
     result.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
     // get word from string
-    QString word=txtStr.mid(newIndex,matchLen);
+    QCString word=txtStr.mid(newIndex,matchLen);
     ClassDef *cd=0;
     FileDef *fd=0;
     MemberDef *md=0;
     NamespaceDef *nd=0;
 
+    QCString scopeName=scName;
+    QCString searchName=name;
+    //printf("word=`%s' scopeName=`%s' searchName=`%s'\n",
+    //        word.data(),scopeName.data(),searchName.data());
     // check if `word' is a documented class name
-    if (word.length()>0 && word!=name && word!=clName)
+    if (word.length()>0 && 
+        word.right(searchName.length())!=searchName && 
+        word!=scopeName.right(word.length())
+       )
     {
-      if ((cd=getClass(word)))
+      //printf("Searching...\n");
+      int scopeOffset=scopeName.length();
+      bool found=FALSE;
+      do // for each scope (starting with full scope and going to empty scope)
       {
-        // add link to the result
-        if (cd->isVisible())
+        QCString fullName = word.copy();
+        if (scopeOffset>0)
         {
-          result.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          fullName.prepend(scopeName.left(scopeOffset)+"::");
         }
-        else
+        //printf("Trying class %s\n",fullName.data());
+
+        if ((cd=getClass(fullName)))
         {
-          result.docify(word);
+          // add link to the result
+          if (cd->isVisible())
+          {
+            result.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+            found=TRUE;
+          }
         }
-      }
-      else if (getDefs(word,clName,0,md,cd,fd,nd) && md->hasDocumentation())
+        
+        if (scopeOffset==0)
+        {
+          scopeOffset=-1;
+        }
+        else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+        {
+          scopeOffset=0;
+        }
+      } while (!found && scopeOffset>=0);
+
+      if (!found && 
+          getDefs(scName,word,0,md,cd,fd,nd) && 
+          (md->isTypedef() || md->isEnumerate()) &&
+          md->hasDocumentation() 
+         )
       {
-        if (cd && cd->isVisible() && !md->isFunction()) // word is a member of cd
+        if (cd && cd->isVisible()) // fullName is a member of cd
         {
           result.writeObjectLink(cd->getReference(),
-                  cd->getOutputFileBase(),md->anchor(),word);
+              cd->getOutputFileBase(),md->anchor(),word);
+          found=TRUE;
         }
         else if (nd && nd->hasDocumentation())
         {
           result.writeObjectLink(nd->getReference(),
-                  nd->getOutputFileBase(),md->anchor(),word);
+              nd->getOutputFileBase(),md->anchor(),word);
+          found=TRUE;
         }
-        else if (fd && fd->hasDocumentation()) // word is a global in file fd
+        else if (fd && fd->hasDocumentation()) // fullName is a global in file fd
         {
           result.writeObjectLink(fd->getReference(),
-                  fd->getOutputFileBase(),md->anchor(),word);
-        }
-        else // add word to the result
-        {
-          result.docify(word);
+              fd->getOutputFileBase(),md->anchor(),word);
+          found=TRUE;
         }
       }
-      else // add word to the result
+
+      if (!found) // add word to the result
       {
         result.docify(word);
       }
     }
-    else // add word to the result
+    else
     {
       result.docify(word);
     }
@@ -261,13 +306,13 @@ static void linkifyText(OutputList &ol,const char *clName,const char *name,const
 }
 
 static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
-                                 const QString &scopeName,MemberDef *md)
+                                 const QCString &scopeName,MemberDef *md)
 {
   ArgumentList *argList=md->argumentList();
   if (argList==0) return; // member has no function like argument list
   ol.docify(" ("); // start argument list
   Argument *a=argList->first();
-  QString cName;
+  QCString cName;
   if (cd && cd->templateArguments())
   {
     cName=cd->getTemplateNameString(); 
@@ -278,13 +323,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     int vp;
     if ((vp=a->type.find(re))!=-1) // argument type is a function pointer
     {
-      QString n=a->type.left(vp);
+      QCString n=a->type.left(vp);
       if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(ol,scopeName,md->name(),n);
     }
     else // non-function pointer type
     {
-      QString n=a->type;
+      QCString n=a->type;
       if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(ol,scopeName,md->name(),n);
     }
@@ -306,7 +351,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
     if (a->defval.length()>0) // write the default value
     {
-      QString n=a->defval;
+      QCString n=a->defval;
       if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
       ol.docify(" = ");
       linkifyText(ol,scopeName,md->name(),n); 
@@ -327,7 +372,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
 
 void writeExample(OutputList &ol,ExampleList *el)
 {
-  QString exampleLine=theTranslator->trWriteList(el->count());
+  QCString exampleLine=theTranslator->trWriteList(el->count());
  
   QRegExp marker("@[0-9]+");
   int index=0,newIndex,matchLen;
@@ -347,9 +392,9 @@ void writeExample(OutputList &ol,ExampleList *el)
 
 
 
-QString argListToString(ArgumentList *al)
+QCString argListToString(ArgumentList *al)
 {
-  QString result;
+  QCString result;
   if (al==0) return result;
   Argument *a=al->first();
   result+="(";
@@ -416,7 +461,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
 {
   bool manEnabled = ol.isEnabled(OutputGenerator::Man);
   bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
-  QString extLink,absPath;
+  QCString extLink,absPath;
   if (ext) { extLink="_doc:"; absPath="/"; }
   if (manEnabled) ol.disable(OutputGenerator::Man);
   if (texEnabled) ol.disable(OutputGenerator::Latex);
@@ -456,7 +501,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
-  if (includeFiles.count()>0 && verbatimHeaderFlag)
+  if (includeFiles.count()>0 && Config::verbatimHeaderFlag)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"headers.html");
@@ -498,7 +543,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
-  if (searchEngineFlag)
+  if (Config::searchEngineFlag)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem("_cgi:","");
@@ -521,7 +566,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
 void startFile(OutputList &ol,const char *name,const char *title,bool external)
 {
   ol.startFile(name,title,external);
-  if (!noIndexFlag) writeQuickLinks(ol,TRUE,external);
+  if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE,external);
 }
 
 void endFile(OutputList &ol,bool external)
@@ -531,15 +576,15 @@ void endFile(OutputList &ol,bool external)
   if (latexEnabled) ol.disable(OutputGenerator::Latex);
   if (manEnabled)   ol.disable(OutputGenerator::Man);
   ol.writeFooter(0,external); // write the footer
-  if (footerFile.length()==0)
+  if (Config::footerFile.length()==0)
   {
     parseText(ol,theTranslator->trGeneratedAt(
               dateToString(TRUE),
-              projectName
+              Config::projectName
              ));
   }
   ol.writeFooter(1,external); // write the link to the picture
-  if (footerFile.length()==0)
+  if (Config::footerFile.length()==0)
   {
     parseText(ol,theTranslator->trWrittenBy());
   }
@@ -555,14 +600,14 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
 {
   int i,l;
   bool hasDocs=md->hasDocumentation();
-  if ((!hasDocs && hideMemberFlag) || 
-      (hideMemberFlag && 
+  if ((!hasDocs && Config::hideMemberFlag) || 
+      (Config::hideMemberFlag && 
        md->documentation().isEmpty() && 
-       !briefMemDescFlag && 
-       !repeatBriefFlag
+       !Config::briefMemDescFlag && 
+       !Config::repeatBriefFlag
       ) 
      ) return;
-  QString type=md->typeString();
+  QCString type=md->typeString();
   QRegExp r("@[0-9]+");
   if ((i=r.match(type,0,&l))==-1 || !md->enumUsed())
   {
@@ -571,22 +616,23 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
     // strip `friend' keyword from type
     if (type.left(7)=="friend ") type=type.right(type.length()-7);
     
-    if (genTagFile.length()>0)
+    if (Config::genTagFile.length()>0)
     {
       tagFile << md->name() << " " << md->anchor() << " \""
               << md->argsString() << "\"\n";
     }
       
-    QString cname;
+    QCString cname;
     if (cd)      cname=cd->name(); 
     else if (nd) cname=nd->name();
     else if (fd) cname=fd->name();
 
+    ol.startMemberItem();
     // If there is no detailed description we need to write the anchor here.
     bool detailsVisible = md->detailsAreVisible();
-    if (!detailsVisible && !extractAllFlag)
+    if (!detailsVisible && !Config::extractAllFlag)
     {
-      QString doxyName=md->name().copy();
+      QCString doxyName=md->name().copy();
       if (!cname.isEmpty()) doxyName.prepend(cname+"::");
       ol.writeDoxyAnchor(cname,md->anchor(),doxyName);
       ol.addToIndex(md->name(),cname);
@@ -601,35 +647,37 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
       ol.addToIndex(cname,md->name());
       ol.writeLatexLabel(cname,md->anchor());
     }
-    ol.startMemberItem();
 
     // write type
     if (i!=-1)
     {
-      QString newType = type.left(i) + " { ... } " +
+      QCString newType = type.left(i) + " { ... } " +
         type.right(type.length()-i-l);
       type = newType;
-      ol.docify(type);
+      //ol.docify(type);
+      linkifyText(ol,cname,md->name(),type); 
     }
     else
     {
-      ol.docify(type);
+      //ol.docify(type);
+      linkifyText(ol,cname,md->name(),type); 
     }
-    QString name=md->name().copy();
-    if (type.length()>0) ol.writeString(" ");
+    QCString name=md->name().copy();
+    bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+    if (htmlOn && Config::htmlAlignMemberFlag && type.length()>0)
+    {
+      ol.disable(OutputGenerator::Html);
+    }
+    if (!type.isEmpty()) ol.docify(" ");
+    if (htmlOn) 
+    {
+      ol.enable(OutputGenerator::Html);
+    }
 
     ol.insertMemberAlign();
     
     // write name
-    if ( extractAllFlag ||
-         (md->briefDescription().isEmpty() || !briefMemDescFlag) && 
-         (!md->documentation().isEmpty() || 
-               (!md->briefDescription().isEmpty() && 
-                !briefMemDescFlag &&
-                repeatBriefFlag
-               )
-         )
-       )
+    if (md->hasDocumentation())
     {
       //printf("writeLink %s->%d\n",name.data(),md->hasDocumentation());
       writeLink(ol,cd,nd,fd,md,name);
@@ -643,7 +691,8 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
     if (md->argsString()) 
     {
       ol.writeString(" ");
-      ol.docify(md->argsString());
+      //ol.docify(md->argsString());
+      linkifyText(ol,cname,md->name(),md->argsString()); 
     }
     
     if (md->excpString())
@@ -655,22 +704,21 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
     ol.endMemberItem();
 
     // write brief description
-    if (!md->briefDescription().isEmpty() && briefMemDescFlag)
+    if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag)
     {
       ol.startMemberDescription();
       parseDoc(ol,cname,md->name(),md->briefDescription());
-      if (!md->documentation().isEmpty()) 
-      {
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.endEmphasis();
-        ol.docify(" ");
-        ol.startTextLink(0,md->anchor());
-        //ol.writeObjectLink(0,0,md->anchor()," More...");
-        parseText(ol,theTranslator->trMore());
-        ol.endTextLink();
-        ol.startEmphasis();
-        ol.enableAll();
-      }
+      //if (!md->documentation().isEmpty()) 
+      //{
+      //  ol.disableAllBut(OutputGenerator::Html);
+      //  ol.endEmphasis();
+      //  ol.docify(" ");
+      //  ol.startTextLink(0,md->anchor());
+      //  parseText(ol,theTranslator->trMore());
+      //  ol.endTextLink();
+      //  ol.startEmphasis();
+      //  ol.enableAll();
+      //}
       ol.endMemberDescription();
       ol.newParagraph();
     }
@@ -695,7 +743,9 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
   }
   if (subtitle) 
   {
+    ol.startMemberSubtitle();
     parseText(ol,subtitle);
+    ol.endMemberSubtitle();
   }
 
   if (!fd && !nd) ol.startMemberList();
@@ -711,7 +761,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     for ( ; (md=mli.current()); ++mli )
     {
       if (md->isDefine() && 
-          (md->argsString() || md->hasDocumentation() || extractAllFlag)
+          (md->argsString() || md->hasDocumentation() || Config::extractAllFlag)
          ) 
         writeMemberDef(ol,cd,nd,fd,md);
     }
@@ -763,34 +813,35 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     for ( ; (md=mli.current()) ; ++mli )
     {
       /*bool hasDocs=md->hasDocumentation();*/
-      QString type=md->typeString();
+      QCString type=md->typeString();
       type=type.stripWhiteSpace();
-      if (md->isEnumerate() /*&& (hasDocs || !hideMemberFlag)*/) 
+      if (md->isEnumerate() /*&& (hasDocs || !Config::hideMemberFlag)*/) 
       {
-        if (!hideMemberFlag ||                // do not hide undocumented members or
+        if (!Config::hideMemberFlag ||                // do not hide undocumented members or
             !md->documentation().isEmpty() || // member has detailed descr. or
             md->hasDocumentedEnumValues() ||  // member has documented enum vales.
-            briefMemDescFlag ||               // brief descr. is shown or
-            repeatBriefFlag                   // brief descr. is repeated.
+            Config::briefMemDescFlag ||               // brief descr. is shown or
+            Config::repeatBriefFlag                   // brief descr. is repeated.
            )
         {
           OutputList typeDecl(&ol);
-          QString name=md->name().copy();
+          QCString name=md->name().copy();
           int i=name.findRev("::");
           if (i!=-1) name=name.right(name.length()-i-2); // strip scope
           if (name[0]!='@') // not an anonymous enum
           {
-            if (extractAllFlag ||
-                (md->briefDescription().isEmpty() || !briefMemDescFlag) &&
-                (!md->documentation().isEmpty() || md->hasDocumentedEnumValues() ||
-                 (!md->briefDescription().isEmpty() && 
-                  !briefMemDescFlag &&
-                  repeatBriefFlag
-                 )
-                )
-               )
+            //if (Config::extractAllFlag ||
+            //    (md->briefDescription().isEmpty() || !Config::briefMemDescFlag) &&
+            //    (!md->documentation().isEmpty() || md->hasDocumentedEnumValues() ||
+            //     (!md->briefDescription().isEmpty() && 
+            //      !Config::briefMemDescFlag &&
+            //      Config::repeatBriefFlag
+            //     )
+            //    )
+            //   )
+            if (md->hasDocumentation() || md->hasDocumentedEnumValues())
             {
-              if (genTagFile.length()>0)
+              if (Config::genTagFile.length()>0)
                 tagFile << md->name() << " " << md->anchor() 
                   << " \"" << md->argsString() << "\"";
               writeLink(typeDecl,cd,nd,fd,md,name);
@@ -811,7 +862,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
             {
               if (fmd->hasDocumentation())
               {
-                if (genTagFile.length()>0)
+                if (Config::genTagFile.length()>0)
                   tagFile << fmd->name() << " " << fmd->anchor() 
                     << " \"" << fmd->argsString() << "\"";
                 writeLink(typeDecl,cd,nd,fd,fmd,fmd->name());
@@ -834,7 +885,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           {
             for ( ; (vmd=vmli.current()) ; ++vmli)
             {
-              QString vtype=vmd->typeString();
+              QCString vtype=vmd->typeString();
               if ((vtype.find(name))!=-1) enumVars++;
             }
           }
@@ -845,25 +896,25 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
             ol.insertMemberAlign();
             ol+=typeDecl;
             ol.endMemberItem();
-            //QString brief=md->briefDescription();
+            //QCString brief=md->briefDescription();
             //brief=brief.stripWhiteSpace();
-            if (!md->briefDescription().isEmpty() && briefMemDescFlag)
+            if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag)
             {
               ol.startMemberDescription();
               parseDoc(ol,cd?cd->name().data():0,
                   md->name().data(),md->briefDescription());
-              if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
-              {
-                ol.disableAllBut(OutputGenerator::Html);
-                ol.endEmphasis();
-                ol.docify(" ");
-                ol.startTextLink(0,md->anchor());
-                //ol.writeObjectLink(0,0,md->anchor()," More...");
-                parseText(ol,theTranslator->trMore());
-                ol.endTextLink();
-                ol.startEmphasis();
-                ol.enableAll();
-              }
+              //if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
+              //{
+              //  ol.disableAllBut(OutputGenerator::Html);
+              //  ol.endEmphasis();
+              //  ol.docify(" ");
+              //  ol.startTextLink(0,md->anchor());
+              //  //ol.writeObjectLink(0,0,md->anchor()," More...");
+              //  parseText(ol,theTranslator->trMore());
+              //  ol.endTextLink();
+              //  ol.startEmphasis();
+              //  ol.enableAll();
+              //}
               ol.endMemberDescription();
               ol.disable(OutputGenerator::Man);
               ol.newParagraph();
@@ -904,7 +955,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     {
       if ( md->isFriend()) 
       {
-        QString type=md->typeString();
+        QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
         if (md->hasDocumentation() && type!="friend class")
         {
@@ -930,7 +981,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
             ol.endMemberItem();
           }
-          else if (!hideMemberFlag) // no documentation
+          else if (!Config::hideMemberFlag) // no documentation
           {
             ol.startMemberItem();
             ol.docify("class ");
@@ -971,7 +1022,7 @@ void setAnchors(char id,MemberList *ml)
   MemberDef *md=ml->first();
   while (md)
   {
-    QString anchor;
+    QCString anchor;
     anchor.sprintf("%c%d",id,count++);
     //printf("Member %s anchor %s\n",md->name(),anchor.data());
     md->setAnchor(anchor);
@@ -992,21 +1043,21 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
     //      md->hasDocumentedEnumValues()             // one of its values is documented
     //     ) ||                                       // or 
     //     (!md->briefDescription().isEmpty() &&      // member has brief description and
-    //      !briefMemDescFlag &&                      // brief description not shown earlier and
-    //      repeatBriefFlag                           // brief description should be repeated.
+    //      !Config::briefMemDescFlag &&                      // brief description not shown earlier and
+    //      Config::repeatBriefFlag                           // brief description should be repeated.
     //     );
     if (md->memberType()==m &&                      // filter member type
-        (extractAllFlag || hasDocs) 
+        (Config::extractAllFlag || hasDocs) 
        )
     {
-      if (extractAllFlag && !hasDocs) 
+      if (Config::extractAllFlag && !hasDocs) 
       {
         ol.disable(OutputGenerator::Latex); // Latex cannot insert a pagebreak 
                                             // if there are a lot of empty sections,
                                             // so we disable LaTeX for all empty 
-                                            // sections even if extractAllFlag is enabled
+                                            // sections even if Config::extractAllFlag is enabled
       }
-      QString cname;
+      QCString cname;
       NamespaceDef *nd=md->getNamespace();
       ClassDef     *cd=md->memberClass();
       FileDef      *fd=md->getFileDef();
@@ -1014,11 +1065,11 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       else if (nd) cname=nd->name();
       else if (fd) cname=fd->name();
       // get member name
-      QString doxyName=md->name().copy();
-      // prepend scope if there is any (TODO: prepend namespace scope as well)
-      if (scopeName) doxyName.prepend((QString)scopeName+"::");
+      QCString doxyName=md->name().copy();
+      // prepend scope if there is any 
+      if (scopeName) doxyName.prepend((QCString)scopeName+"::");
       
-      QString def = md->definition();
+      QCString def = md->definition();
       if (md->isEnumerate()) def.prepend("enum ");
       MemberDef *smd;
       if (md->isEnumValue() && def[0]=='@') def = def.right(def.length()-2);
@@ -1060,7 +1111,8 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
         ol.writeDoxyAnchor(cname,md->anchor(),doxyName);
         ArgumentList *al=0;
         if (cd && (!md->isRelated() || !md->templateArguments()) && 
-            (al=cd->templateArguments())) // class template prefix
+            ((al=md->scopeTemplateArguments()) || (al=cd->templateArguments()))
+           ) // class template prefix
         {
           writeTemplatePrefix(ol,al);
         }
@@ -1070,7 +1122,11 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
         {
           writeTemplatePrefix(ol,al);
         }
-        if (cd && cd->templateArguments())
+        if (cd && md->scopeTemplateArguments())
+        {
+          def=addTemplateNames(def,cd->name(),md->getScopeTemplateNameString());
+        }
+        else if (cd && cd->templateArguments())
         {
           // add template name lists to all occurrences of the class name.
           def=addTemplateNames(def,cd->name(),cd->getTemplateNameString());
@@ -1129,8 +1185,8 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       ol.newParagraph();
 
       if (!md->briefDescription().isEmpty() && 
-          (repeatBriefFlag || 
-             (!briefMemDescFlag && md->documentation().isEmpty())
+          (Config::repeatBriefFlag || 
+             (!Config::briefMemDescFlag && md->documentation().isEmpty())
           )
          )  
       { 
@@ -1140,6 +1196,12 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       if (!md->documentation().isEmpty())
       { 
         parseDoc(ol,scopeName,md->name(),md->documentation()+"\n");
+      }
+      if (!md->bodyCode().isEmpty())
+      {
+        ol.startCodeFragment();
+        parseCode(ol,scopeName,md->bodyCode(),FALSE,0);
+        ol.endCodeFragment();
       }
       
       if (md->isEnumerate())
@@ -1193,149 +1255,149 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       }
       
       MemberDef *bmd=md->reimplements();
-      if (bmd)
+      ClassDef  *bcd=0; 
+      if (bmd && (bcd=bmd->memberClass()))
       {
         if (virt!=Normal) // search for virtual member of the deepest base class
         {
           MemberDef *lastBmd=bmd;
           while (lastBmd) 
           {
-            if (lastBmd->virtualness()!=Normal) bmd=lastBmd;
+            ClassDef *lastBcd = lastBmd->memberClass();
+            if (lastBmd->virtualness()!=Normal && 
+                lastBmd->hasDocumentation() &&
+                (lastBmd->protection()!=Private || Config::extractPrivateFlag) &&
+                lastBcd->hasDocumentation() &&
+                (lastBcd->protection()!=Private || Config::extractPrivateFlag)
+               ) { bmd=lastBmd; bcd=lastBcd; }
             lastBmd=lastBmd->reimplements();
           }
         }
         // write class that contains a member that is reimplemented by this one
-        ClassDef *bcd = bmd->memberClass();
-        ol.newParagraph();
-        //parseText(ol,theTranslator->trReimplementedFrom());
-        //ol.docify(" ");
-        
-        QString reimplFromLine = theTranslator->trReimplementedFromList(1);
-        int markerPos = reimplFromLine.find("@0");
-        if (markerPos!=-1) // should always pass this.
+        if (bcd->hasDocumentation() || bcd->isReference())
         {
-          parseText(ol,reimplFromLine.left(markerPos)); //text left from marker
-          if (bmd->hasDocumentation() && 
-              (bmd->protection()!=Private || extractPrivateFlag)
-             ) // replace marker with link
+          ol.newParagraph();
+
+          QCString reimplFromLine = theTranslator->trReimplementedFromList(1);
+          int markerPos = reimplFromLine.find("@0");
+          if (markerPos!=-1) // should always pass this.
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-                bmd->anchor(),bcd->name());
-            if (
-                !bcd->isReference() &&
-                //(bcd->hasDocumentation() || !hideClassFlag) &&
-                //(bcd->protection()!=Private || extractPrivateFlag)
-                bcd->isVisible() 
-                /*&& bmd->detailsAreVisible()*/
-               ) ol.writePageRef(bcd->name(),bmd->anchor());
-          }
-          else
-          {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-                0,bcd->name());
-            if (
-                !bcd->isReference() &&
-                //(bcd->hasDocumentation() || !hideClassFlag) &&
-                //(bcd->protection()!=Private || extractPrivateFlag)
-                bcd->isVisible()
-               ) ol.writePageRef(bcd->name(),0);
-          }
-          parseText(ol,reimplFromLine.right(
-                 reimplFromLine.length()-markerPos-2)); // text right from marker
-       
-        }
-        else
-        {
-          err("Error: translation error: no marker in trReimplementsFromList()\n");
-        }
-        
-        //ol.writeString(".");
-      }
-      MemberList *bml=md->reimplementedBy();
-      int count;
-      if (bml && (count=bml->count())>0)
-      {
-        // write the list of classes that overwrite this member
-        ol.newParagraph();
-        //parseText(ol,theTranslator->trReimplementedIn());
-        //ol.writeString("Reimplemented in ");
-        //ol.docify(" ");
-        
-        QString reimplInLine = 
-          theTranslator->trReimplementedInList(bml->count());
-        QRegExp marker("@[0-9]+");
-        int index=0,newIndex,matchLen;
-        // now replace all markers in reimplInLine with links to the classes
-        while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
-        {
-          parseText(ol,reimplInLine.mid(index,newIndex-index));
-          bool ok;
-          uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-          bmd=bml->at(entryIndex);
-          if (ok && bmd) // write link for marker
-          {
-            ClassDef *bcd = bmd->memberClass();
-            if (bmd->hasDocumentation() &&
-                (bmd->protection()!=Private || extractPrivateFlag)
-               )
+            parseText(ol,reimplFromLine.left(markerPos)); //text left from marker
+            if (bmd->hasDocumentation() && 
+                (bmd->protection()!=Private || Config::extractPrivateFlag)
+               ) // replace marker with link
             {
               ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                   bmd->anchor(),bcd->name());
-              if (!bcd->isReference() && bcd->isVisible()) 
-                ol.writePageRef(bcd->name(),bmd->anchor());
+              if (
+                  !bcd->isReference() &&
+                  //(bcd->hasDocumentation() || !Config::hideClassFlag) &&
+                  //(bcd->protection()!=Private || Config::extractPrivateFlag)
+                  bcd->isVisible() 
+                  /*&& bmd->detailsAreVisible()*/
+                 ) ol.writePageRef(bcd->name(),bmd->anchor());
             }
             else
             {
               ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                   0,bcd->name());
-              if (!bcd->isReference() && bcd->isVisible()) 
-                ol.writePageRef(bcd->name(),0);
+              if (
+                  !bcd->isReference() &&
+                  //(bcd->hasDocumentation() || !Config::hideClassFlag) &&
+                  //(bcd->protection()!=Private || Config::extractPrivateFlag)
+                  bcd->isVisible()
+                 ) ol.writePageRef(bcd->name(),0);
             }
-          }
-          index=newIndex+matchLen;
-        } 
-        parseText(ol,reimplInLine.right(reimplInLine.length()-index));
+            parseText(ol,reimplFromLine.right(
+                  reimplFromLine.length()-markerPos-2)); // text right from marker
 
-#if 0
-        bmd=bml->first();
-        while (bmd)
-        {
-          ClassDef *bcd = bmd->memberClass();
-          if (bmd->hasDocumentation())
-          {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-                          bmd->anchor(),bcd->name());
-          if (
-              !bcd->isReference() &&
-              //(bcd->hasDocumentation() || !hideClassFlag) &&
-              //(bcd->protection()!=Private || extractPrivateFlag)
-              bcd->isVisible()
-              /*&& bmd->detailsAreVisible()*/
-             ) ol.writePageRef(bcd->name(),bmd->anchor());
           }
           else
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-                0,bcd->name());
-            if (
-                !bcd->isReference() &&
-                //(bcd->hasDocumentation() || !hideClassFlag) &&
-                //(bcd->protection()!=Private || extractPrivateFlag)
-                bcd->isVisible()
-               ) ol.writePageRef(bcd->name(),0);
-          }
-          bmd=bml->next(); 
-          if (bmd)
-          {
-            if (bml->at()==count-1) 
-              //ol.writeString(" and "); 
-              parseText(ol," "+theTranslator->trAnd()+" ");
-            else 
-              ol.writeString(", ");
+            err("Error: translation error: no marker in trReimplementsFromList()\n");
           }
         }
-        ol.writeString(".");
-#endif
+        
+        //ol.writeString(".");
+      }
+      MemberList *bml=md->reimplementedBy();
+      if (bml)
+      {
+        MemberListIterator mli(*bml);
+        MemberDef *bmd=0;
+        uint count=0;
+        ClassDef *bcd=0;
+        for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->memberClass());++mli)
+        {
+          // count the members that directly inherit from md and for
+          // which the member and class are visible in the docs.
+          if (bmd->hasDocumentation() && 
+              (bmd->protection()!=Private || Config::extractPrivateFlag) &&
+              bcd->hasDocumentation() &&
+              (bcd->protection()!=Private || Config::extractPrivateFlag)
+             ) count++;
+        }
+        if (count>0)
+        {
+          mli.toFirst();
+          // write the list of classes that overwrite this member
+          ol.newParagraph();
+          //parseText(ol,theTranslator->trReimplementedIn());
+          //ol.writeString("Reimplemented in ");
+          //ol.docify(" ");
+
+          QCString reimplInLine = 
+            theTranslator->trReimplementedInList(count);
+          QRegExp marker("@[0-9]+");
+          int index=0,newIndex,matchLen;
+          // now replace all markers in reimplInLine with links to the classes
+          while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
+          {
+            parseText(ol,reimplInLine.mid(index,newIndex-index));
+            bool ok;
+            uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+            //bmd=bml->at(entryIndex);
+            
+            count=0;
+            // find the entryIndex-th documented entry in the inheritance list.
+            for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->memberClass());++mli)
+            {
+              if (bmd->hasDocumentation() && 
+                  (bmd->protection()!=Private || Config::extractPrivateFlag) &&
+                  bcd->hasDocumentation() &&
+                  (bcd->protection()!=Private || Config::extractPrivateFlag)
+                 ) 
+              {
+                if (count==entryIndex) break;
+                count++;
+              }
+            }
+            
+            if (ok && bcd && bmd) // write link for marker
+            {
+              //if (bmd->hasDocumentation() &&
+              //    (bmd->protection()!=Private || Config::extractPrivateFlag)
+              //   )
+              //{
+              ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+                  bmd->anchor(),bcd->name());
+              if (!bcd->isReference() && bcd->isVisible()) 
+                ol.writePageRef(bcd->name(),bmd->anchor());
+              //}
+              //else
+              //{
+              //  ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+              //      0,bcd->name());
+              //  if (!bcd->isReference() && bcd->isVisible()) 
+              //    ol.writePageRef(bcd->name(),0);
+              //}
+            }
+            ++mli;
+            index=newIndex+matchLen;
+          } 
+          parseText(ol,reimplInLine.right(reimplInLine.length()-index));
+
+        }
       }
       // write the list of examples that use this member
       if (md->hasExamples())
@@ -1353,7 +1415,7 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       }
       ol.endIndent();
       // enable LaTeX again
-      if (extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
+      if (Config::extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
                                           
     }
   }
@@ -1362,7 +1424,7 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
 //----------------------------------------------------------------------------
 // read a file with `name' to a string.
 
-QString fileToString(const char *name)
+QCString fileToString(const char *name)
 {
   if (name==0 || name[0]==0) return 0;
   QFileInfo fi(name);
@@ -1378,32 +1440,32 @@ QString fileToString(const char *name)
     exit(1);
   }
   int fsize=fi.size();
-  QString contents(fsize+1);
+  QCString contents(fsize+1);
   f.readBlock(contents.data(),fsize);
   contents[fsize]='\0';
   f.close();
   return contents;
 }
 
-QString dateToString(bool includeTime)
+QCString dateToString(bool includeTime)
 {
   if (includeTime)
   {
-    return QDateTime::currentDateTime().toString();
+    return convertToQCString(QDateTime::currentDateTime().toString());
   }
   else
   {
     const QDate &d=QDate::currentDate();
-    QString result;
+    QCString result;
     result.sprintf("%d %s %d",
         d.day(),
-        d.monthName(d.month()),
+        convertToQCString(d.monthName(d.month())).data(),
         d.year());
     return result;
   }
   //QDate date=dt.date();
   //QTime time=dt.time();
-  //QString dtString;
+  //QCString dtString;
   //dtString.sprintf("%02d:%02d, %04d/%02d/%02d",
   //    time.hour(),time.minute(),date.year(),date.month(),date.day());
   //return dtString;
@@ -1440,11 +1502,11 @@ static int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0)
 //}
 
 // strip any template specifiers that follow className in string s
-static QString trimTemplateSpecifiers(const QString &className,const QString &s)
+static QCString trimTemplateSpecifiers(const QCString &className,const QCString &s)
 {
   // first we resolve any defines
   //int i=0,p,l;
-  //QString result;
+  //QCString result;
   //QRegExp r("[A-Z_a-z][A-Z_a-z0-9]*");
   //while ((p=r.match(s,i,&l))!=-1)
   //{
@@ -1455,7 +1517,7 @@ static QString trimTemplateSpecifiers(const QString &className,const QString &s)
   //if (i<(int)s.length()) result+=s.mid(i,s.length()-i);
   
   // We strip the template arguments following className (if any)
-  QString result=s.copy();
+  QCString result=s.copy();
   int l=className.length();
   if (l>0) // there is a class name
   {
@@ -1488,17 +1550,31 @@ static QString trimTemplateSpecifiers(const QString &className,const QString &s)
 }
 
 // removes the (one and only) occurrence of name:: from s.
-static QString trimScope(const QString &name,const QString &s)
+static QCString trimScope(const QCString &name,const QCString &s)
 {
-  int spos=s.find(name+"::");
-  if (spos!=-1)
+  int scopeOffset=name.length();
+  QCString result=s;
+  do // for each scope
   {
-    return s.left(spos)+s.right(s.length()-spos-name.length()-2);
-  }
-  return s;
+    QCString tmp;
+    QCString scope=name.left(scopeOffset)+"::";
+    //printf("Trying with scope=`%s'\n",scope.data());
+    
+    int i,p=0;
+    while ((i=result.find(scope,p))!=-1) // for each occurrence
+    {
+      tmp+=result.mid(p,i-p); // add part before pattern
+      p=i+scope.length();
+    }
+    tmp+=result.right(result.length()-p); // add trailing part
+
+    scopeOffset=name.findRev("::",scopeOffset-1);
+    result = tmp;
+  } while (scopeOffset>0);   
+  return result;
 }
 
-static QString trimBaseClassScope(BaseClassList *bcl,const QString &s)
+static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s)
 {
   BaseClassListIterator bcli(*bcl);
   BaseClassDef *bcd;
@@ -1528,12 +1604,14 @@ static QString trimBaseClassScope(BaseClassList *bcl,const QString &s)
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
                     const char *cl,const char *ns)
 {
-  QString className=cl;
-  QString namespaceName=ns;
+  QCString className=cl;
+  QCString namespaceName=ns;
+
   //printf("matchArguments(%s,%s) className=%s namespaceName=%s\n",
   //    srcAl ? argListToString(srcAl).data() : "",
   //    dstAl ? argListToString(dstAl).data() : "",
   //    cl,ns);
+
   if (srcAl==0 || dstAl==0)
   {
     return srcAl==dstAl; // at least one of the members is not a function
@@ -1544,6 +1622,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     Argument *a=new Argument;
     a->type = "void";
     srcAl->append(a);
+    return TRUE;
   }
   if ( dstAl->count()==0 && srcAl->count()==1 &&
        srcAl->getFirst()->type=="void" )
@@ -1555,6 +1634,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   }
   if (srcAl->count() != dstAl->count())
   {
+    //printf("Different number of arguments!\n");
     return FALSE; // different number of arguments -> no match
   }
   if (srcAl->constSpecifier != dstAl->constSpecifier) 
@@ -1572,15 +1652,15 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   Argument *srcA,*dstA;
   for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
   {
-    QString srcAType=trimTemplateSpecifiers(className,srcA->type);
-    QString dstAType=trimTemplateSpecifiers(className,dstA->type);
+    QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
+    QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
     
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
-      //printf("`%s' <=> `%s'\n",srcAType.data(),dstAType.data());
+      //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
 
-      QString srcScope;
-      QString dstScope;
+      QCString srcScope;
+      QCString dstScope;
 
       // strip redundant scope specifiers
       if (!className.isEmpty())
@@ -1778,6 +1858,10 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
       dstA->type = srcA->type.copy();
       dstA->name = dstA->name.copy();
     }
+    else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
+    {
+      srcA->name = dstA->name.copy();
+    }
     int i1=srcA->type.find("::"),
         i2=dstA->type.find("::"),
         j1=srcA->type.length()-i1-2,
@@ -1801,335 +1885,523 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
 }
 
-//----------------------------------------------------------------------
-// searches for the class and member definitions corresponding with 
-// memberName and className.
-// These classes are returned using `md' and `cd'.
-// returns TRUE if the class and member both could be found
-
-bool getDefs(const QString &memberName,const QString &className, 
+/*!
+ * Searches for a member definition given its name `memberName' as a string.
+ * memberName may also include a (partial) scope to indicate the scope
+ * in which the member is located.
+ *
+ * The parameter `scName' is a string representing the name of the scope in 
+ * which the link was found.
+ *
+ * In case of a function args contains a string representation of the 
+ * argument list. Passing 0 means the member has no arguments. 
+ * Passing "()" means any argument list will do, but "()" is preferred.
+ *
+ * The function returns TRUE if the member is known and documented or
+ * FALSE if it is not.
+ * If TRUE is returned parameter `md' contains a pointer to the member 
+ * definition. Furthermore exactly one of the parameter `cd', `nd', or `fd' 
+ * will be non-zero:
+ *   - if `cd' is non zero, the member was found in a class pointed to by cd.
+ *   - if `nd' is non zero, the member was found in a namespace pointed to by nd.
+ *   - if `fd' is non zero, the member was found in the global namespace of
+ *     file fd.
+ */
+bool getDefs(const QCString &scName,const QCString &memberName, 
              const char *args,
              MemberDef *&md, ClassDef *&cd, FileDef *&fd,NamespaceDef *&nd)
 {
-  //printf("Search for %s::%s %s\n",className.data(),memberName.data(),args);
   fd=0, md=0, cd=0, nd=0;
-  if (memberName.length()==0) return FALSE;
-  MemberName *mn;
-  if ((mn=memberNameDict[memberName]) && className.length()>0)
+  if (memberName.length()==0) return FALSE; /* empty name => nothing to link */
+
+  QCString scopeName=scName.copy();
+  //printf("Search for name=%s args=%s in scope=%s\n",
+  //          memberName.data(),args,scopeName.data());
+  
+  int is,im,pm=0;
+  // strip common part of the scope from the scopeName
+  while ((is=scopeName.findRev("::"))!=-1 && 
+         (im=memberName.find("::",pm))!=-1 &&
+         (scopeName.right(scopeName.length()-is-2)==memberName.mid(pm,im-pm))
+        )
+  {
+    scopeName=scopeName.left(is); 
+    pm=im+2;
+  }
+  //printf("result after scope corrections scope=%s name=%s\n",
+  //          scopeName.data(),memberName.data());
+  
+  QCString mName=memberName;
+  QCString mScope;
+  if ((im=memberName.findRev("::"))!=-1)
+  {
+    mScope=memberName.left(im); 
+    mName=memberName.right(memberName.length()-im-2);
+  }
+  
+  // handle special the case where both scope name and member scope are equal
+  if (mScope==scopeName) scopeName.resize(0);
+
+  //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
+  
+  MemberName *mn = memberNameDict[mName];
+  if (mn && scopeName.length()+mScope.length()>0)
   {
     //printf("  >member name found\n");
-    ClassDef *fcd=0;
-    //printf("className=%s\n",className.data());
-    if ((fcd=getClass(className)) && fcd->hasDocumentation())
+    int scopeOffset=scopeName.length();
+    do
     {
-      //printf("  >member class found\n");
-      MemberDef *mmd=mn->first();
-      int mdist=maxInheritanceDepth; 
-      while (mmd)
+      QCString className = scopeName.left(scopeOffset);
+      if (!className.isEmpty() && !mScope.isEmpty())
       {
-        if ((mmd->protection()!=Private || extractPrivateFlag) &&
-            mmd->hasDocumentation() 
-            /*mmd->detailsAreVisible()*/
-            /* && (args==0 || matchArgumentsOld(mmd->argsString(),args)) */
-            )
-        {
-          bool match=TRUE;
-          ArgumentList *argList=0;
-          if (args)
-          {
-            match=FALSE;
-            argList=new ArgumentList;
-            stringToArgumentList(args,argList);
-            match=matchArguments(mmd->argumentList(),argList); 
-          }
-          if (match)
-          {
-            ClassDef *mcd=mmd->memberClass();
-            int m=minClassDistance(fcd,mcd);
-            if (m<mdist && mcd->isVisible())
-            {
-              mdist=m;
-              cd=mcd;
-              md=mmd;
-            }
-          }
-          if (argList)
-          {
-            delete argList;
-          }
-        }
-        mmd=mn->next();
+        className.append("::"+mScope);
       }
-      if (mdist==maxInheritanceDepth && !strcmp(args,"()"))
-        // no exact match found, but if args="()" an arbitrary member will do
+      else if (!mScope.isEmpty())
       {
-        //printf("  >Searching for arbitrary member\n");
-        mmd=mn->first();
+        className=mScope.copy();
+      }
+      //printf("Trying class scope %s\n",className.data());
+
+      ClassDef *fcd=0;
+      if ((fcd=getClass(className)) &&  // is it a documented class
+            fcd->isVisibleExt() 
+         )
+      {
+        //printf("  Found fcd=%p\n",fcd);
+        MemberDef *mmd=mn->first();
+        int mdist=maxInheritanceDepth; 
         while (mmd)
         {
-          if ((mmd->protection()!=Private || extractPrivateFlag) &&
-              (
-               mmd->hasDocumentation() 
-               /*mmd->detailsAreVisible()*/
-               || mmd->isReference()
-              )
+          if ((mmd->protection()!=Private || Config::extractPrivateFlag) &&
+              mmd->hasDocumentation() 
+              /*mmd->detailsAreVisible()*/
+              /* && (args==0 || matchArgumentsOld(mmd->argsString(),args)) */
              )
           {
-            ClassDef *mcd=mmd->memberClass();
-            //printf("  >Class %s found\n",mcd->name().data());
-            int m=minClassDistance(fcd,mcd);
-            if (m<mdist && mcd->isVisible())
+            bool match=TRUE;
+            ArgumentList *argList=0;
+            if (args)
             {
-              //printf("Class distance %d\n",m);
-              mdist=m;
-              cd=mcd;
-              md=mmd;
+              argList=new ArgumentList;
+              stringToArgumentList(args,argList);
+              match=matchArguments(mmd->argumentList(),argList); 
+            }
+            if (match)
+            {
+              ClassDef *mcd=mmd->memberClass();
+              int m=minClassDistance(fcd,mcd);
+              if (m<mdist && mcd->isVisible())
+              {
+                mdist=m;
+                cd=mcd;
+                md=mmd;
+              }
+            }
+            if (argList)
+            {
+              delete argList;
             }
           }
           mmd=mn->next();
         }
+        if (mdist==maxInheritanceDepth && !strcmp(args,"()"))
+          // no exact match found, but if args="()" an arbitrary member will do
+        {
+          //printf("  >Searching for arbitrary member\n");
+          mmd=mn->last();
+          while (mmd)
+          {
+            if ((mmd->protection()!=Private || Config::extractPrivateFlag) &&
+                (
+                 mmd->hasDocumentation() 
+                 /*mmd->detailsAreVisible()*/
+                 || mmd->isReference()
+                )
+               )
+            {
+              ClassDef *mcd=mmd->memberClass();
+              //printf("  >Class %s found\n",mcd->name().data());
+              int m=minClassDistance(fcd,mcd);
+              if (m<mdist && mcd->isVisible())
+              {
+                //printf("Class distance %d\n",m);
+                mdist=m;
+                cd=mcd;
+                md=mmd;
+              }
+            }
+            mmd=mn->prev();
+          }
+        }
+        //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
+        if (mdist<maxInheritanceDepth) return TRUE; /* found match */
+      } 
+      /* goto the parent scope */
+      
+      if (scopeOffset==0)
+      {
+        scopeOffset=-1;
       }
-      //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
-      return mdist<maxInheritanceDepth;
-    } 
+      else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+      {
+        scopeOffset=0;
+      }
+    } while (scopeOffset>=0);
+    
+    // unknown or undocumented scope 
   }
   else // maybe an namespace or file member ?
   {
-    MemberName *mn;
-    if ((mn=functionNameDict[memberName])) // name is known
+    //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
+    //              scopeName.data(),mScope.data(),mName.data());
+    //printf("  >member name found\n");
+    if ((mn=functionNameDict[mName])) // name is known
     {
       NamespaceDef *fnd=0;
-      if (className.length()>0 && (fnd=namespaceDict[className]) &&
-          fnd->hasDocumentation())
-      { // inside a namespace
-        MemberDef *mmd=mn->first();
-        while (mmd)
-        {
-          if (mmd->getNamespace()==fnd && mmd->hasDocumentation())
-          { // namespace is found
-            nd=fnd;
-            md=mmd;
-            return TRUE;
-          }
-          mmd=mn->next();
-        }
-      }
-      // maybe a file member (e.g. global function or variable)
-      md=mn->first();
-      while (md)
+      int scopeOffset=scopeName.length();
+      do
       {
-        if (/*md->detailsAreVisible()*/ md->hasDocumentation())
+        QCString namespaceName = scopeName.left(scopeOffset);
+        if (!namespaceName.isEmpty() && !mScope.isEmpty())
         {
-          fd=md->getFileDef();
-          if (fd && fd->hasDocumentation())
+          namespaceName.append("::"+mScope);
+        }
+        else if (!mScope.isEmpty())
+        {
+          namespaceName=mScope.copy();
+        }
+        if (namespaceName.length()>0 && 
+            (fnd=namespaceDict[namespaceName]) &&
+            fnd->isVisibleExt()
+           )
+        {
+          //printf("Function inside existing namespace `%s'\n",namespaceName.data());
+          bool found=FALSE;
+          MemberDef *mmd=mn->first();
+          while (mmd && !found)
           {
-            return TRUE;
+            //printf("mmd->getNamespace()=%p fnd=%p\n",
+            //    mmd->getNamespace(),fnd);
+            if (mmd->getNamespace()==fnd && 
+                (mmd->isReference() || mmd->hasDocumentation())
+               )
+            { // namespace is found
+              bool match=TRUE;
+              ArgumentList *argList=0;
+              if (args)
+              {
+                argList=new ArgumentList;
+                stringToArgumentList(args,argList);
+                match=matchArguments(mmd->argumentList(),argList); 
+              }
+              if (match)
+              {
+                nd=fnd;
+                md=mmd;
+                found=TRUE;
+              }
+              if (args)
+              {
+                delete argList;
+              }
+            }
+            mmd=mn->next();
+          }
+          if (!found && !strcmp(args,"()")) 
+            // no exact match found, but if args="()" an arbitrary 
+            // member will do
+          {
+            MemberDef *mmd=mn->last(); // searching backward will get 
+            // the first defined!
+            while (mmd && !found)
+            {
+              if (mmd->getNamespace()==fnd && 
+                  (mmd->isReference() || mmd->hasDocumentation())
+                 )
+              {
+                nd=fnd;
+                md=mmd;
+                found=TRUE;
+              }
+              mmd=mn->prev();
+            }
+          }
+          if (found) return TRUE;
+        }
+        else // no scope => global function
+        {
+          //printf("Function with global scope `%s'\n",namespaceName.data());
+          md=mn->first();
+          while (md)
+          {
+            if (md->isReference() || md->hasDocumentation())
+            {
+              //printf("md->name()=`%s'\n",md->name().data());
+              fd=md->getFileDef();
+              if (fd && (fd->isReference() || fd->hasDocumentation()))
+              {
+                //printf("fd->name()=`%s'\n",fd->name().data());
+                bool match=TRUE;
+                ArgumentList *argList=0;
+                if (args)
+                {
+                  argList=new ArgumentList;
+                  stringToArgumentList(args,argList);
+                  match=matchArguments(md->argumentList(),argList); 
+                  delete argList;
+                }
+                if (match) return TRUE;
+              }
+            }
+            md=mn->next();
+          }
+          if (!strcmp(args,"()"))
+          {
+            // no exact match found, but if args="()" an arbitrary 
+            // member will do
+            md=mn->last();
+            while (md)
+            {
+              if (md->isReference() || md->hasDocumentation())
+              {
+                //printf("md->name()=`%s'\n",md->name().data());
+                fd=md->getFileDef();
+                if (fd && (fd->isReference() || fd->hasDocumentation()))
+                {
+                  return TRUE;
+                }
+              }
+              md=mn->prev();
+            }
           }
         }
-        md=mn->next();
-      }
+        if (scopeOffset==0)
+        {
+          scopeOffset=-1;
+        }
+        else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+        {
+          scopeOffset=0;
+        }
+      } while (scopeOffset>=0);
+    }
+    else
+    {
+      //printf("Unknown function `%s'\n",mName.data());
     }
   }
   return FALSE;
 }
 
-//----------------------------------------------------------------------
-// Generate a hypertext link to the class with name `clName'.
-// If linkTxt is not null this text is used as the link, otherwise
-// the name of the class will be used. If the class could be found a 
-// hypertext link (in HTML) is written, otherwise the text of the link will 
-// be written.
-
-void generateClassRef(OutputList &ol,const char *clName,const char *linkTxt)
+/*!
+ * Searches for a scope definition given its name as a string via parameter
+ * `scope'. 
+ *
+ * The parameter `docScope' is a string representing the name of the scope in 
+ * which the `scope' string was found.
+ *
+ * The function returns TRUE if the scope is known and documented or
+ * FALSE if it is not.
+ * If TRUE is returned exactly one of the parameter `cd', `nd' 
+ * will be non-zero:
+ *   - if `cd' is non zero, the scope was a class pointed to by cd.
+ *   - if `nd' is non zero, the scope was a namespace pointed to by nd.
+ */
+bool getScopeDefs(const char *docScope,const char *scope,
+                         ClassDef *&cd, NamespaceDef *&nd)
 {
-  QString className=clName;
-  QString linkText=linkTxt ? linkTxt : (const char *)className;
-  if (className.length()==0) 
+  cd=0;nd=0;
+
+  QCString scopeName=scope;
+  //printf("getScopeDefs: docScope=`%s' scope=`%s'\n",docScope,scope);
+  if (scopeName.length()==0) return FALSE;
+
+  QCString docScopeName=docScope;
+  int scopeOffset=docScopeName.length();
+
+  do // for each possible docScope (from largest to and including empty)
   {
-    ol.docify(linkText);
-    return;
-  }
-  ClassDef *cd=0;
-  NamespaceDef *nd=0;
-  if ((cd=getClass(className)) && cd->isVisible())
-  {
-    ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,linkText);
-    if (!cd->isReference()) ol.writePageRef(cd->name(),0);
-  }
-  else if ((nd=namespaceDict[className]) && nd->hasDocumentation())
-  {
-    ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,linkText);
-    ol.writePageRef(nd->name(),0);
-  }
-  else
-    ol.docify(linkText);
+    QCString fullName=scopeName.copy();
+    if (scopeOffset>0) fullName.prepend(docScopeName.left(scopeOffset)+"::");
+    
+    if ((cd=getClass(fullName)) && cd->isVisibleExt())
+    {
+      return TRUE; // class link written => quit 
+    }
+    else if ((nd=namespaceDict[fullName]) && nd->isVisibleExt())
+    {
+      return TRUE; // namespace link written => quit 
+    }
+    if (scopeOffset==0)
+    {
+      scopeOffset=-1;
+    }
+    else if ((scopeOffset=docScopeName.findRev("::",scopeOffset-1))==-1)
+    {
+      scopeOffset=0;
+    }
+  } while (scopeOffset>=0);
+  
+  return FALSE;
 }
 
-//----------------------------------------------------------------------
-// generate a reference to a class or member.
-// `clName' is the name of the class that contains the documentation 
-// string that is returned.
-// `name' is the name of the member or class that we want to link to.
-// `name' may have five formats:
-//    1) "ClassName"
-//    2) "memberName()"    one of the (overloaded) function or define 
-//                         with name memberName.
-//    3) "memberName(...)" a specific (overloaded) function or define 
-//                         with name memberName
-//    4) "::memberName     a non-function member or define
-//    5) ("ClassName::")+"memberName()" 
-//    6) ("ClassName::")+"memberName(...)" 
-//    7) ("ClassName::")+"memberName" 
+/*!
+ * generate a reference to a class, namespace or member.
+ * `scName' is the name of the scope that contains the documentation 
+ * string that is returned.
+ * `name' is the name that we want to link to.
+ * `name' may have five formats:
+ *    1) "ScopeName"
+ *    2) "memberName()"    one of the (overloaded) function or define 
+ *                         with name memberName.
+ *    3) "memberName(...)" a specific (overloaded) function or define 
+ *                         with name memberName
+ *    4) "::memberName     a non-function member or define
+ *    5) ("ScopeName::")+"memberName()" 
+ *    6) ("ScopeName::")+"memberName(...)" 
+ *    7) ("ScopeName::")+"memberName" 
+ * instead of :: the # symbol may also be used.
+ */
 
-void generateRef(OutputList &ol,const char *clName,
+void generateRef(OutputList &ol,const char *scName,
                  const char *name,bool inSeeBlock,const char *rt)
 {
-  //printf("generateRef(clName=%s,name=%s,rt=%s)\n",clName,name,rt);
+  //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
   
-  // check if we have a plane name
-  QString tmpName = substitute(name,"#","::");
-  QString linkText = rt;
+  QCString tmpName = substitute(name,"#","::");
+  QCString linkText = rt;
   int scopePos=tmpName.findRev("::");
-  int bracePos=tmpName.find('(');
-  if (scopePos==-1 && bracePos==-1)
+  int bracePos=tmpName.findRev('('); // reverse is needed for operator()(...)
+  if (bracePos==-1) // simple name
   {
-    if (!inSeeBlock) /* check for class link */
+    ClassDef *cd=0;
+    NamespaceDef *nd=0;
+    if (linkText.isNull()) linkText=tmpName;
+    // check if this is a class or namespace reference
+    if (scName!=tmpName && getScopeDefs(scName,name,cd,nd))
     {
-      if (linkText.isNull()) linkText=tmpName;
-      // check if this is a class reference
-      if (clName!=tmpName) 
-        generateClassRef(ol,name,linkText);
-      else
-        ol.docify(linkText);
+      if (cd) // scope matches that of a class
+      {
+        ol.writeObjectLink(cd->getReference(),
+            cd->getOutputFileBase(),0,linkText);
+        if (!cd->isReference()) 
+          ol.writePageRef(cd->name(),0);
+      }
+      else // scope matches that of a namespace
+      {
+        ol.writeObjectLink(nd->getReference(),
+            nd->getOutputFileBase(),0,linkText);
+        if (!nd->getReference()) 
+          ol.writePageRef(nd->name(),0);
+      }
+      // link has been written, stop now.
       return;
     }
-    else /* check if it is a class, if not continue to search */
+    else if (scName==tmpName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
     {
-      if (clName!=tmpName && getClass(tmpName)!=0)
-      {
-        generateClassRef(ol,tmpName,linkText);
-        return;
-      }
+      ol.docify(linkText);
+      // text has been written, stop now.
+      return;
     }
+    // continue search...
+    linkText = rt; 
   }
   
   // extract scope
-  QString scopeContext=clName;
-  QString scopeUser;
-  if (scopePos>0) scopeUser=tmpName.left(scopePos); 
-  
+  QCString scopeStr=scName;
+
   //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
 
-  // extract name
-  int startNamePos=scopePos!=-1 ? scopePos+2 : 0;
+  // extract userscope+name
   int endNamePos=bracePos!=-1 ? bracePos : tmpName.length();
-  QString nameStr=tmpName.mid(startNamePos,endNamePos-startNamePos);
+  QCString nameStr=tmpName.left(endNamePos);
 
   // extract arguments
-  QString argsStr;
+  QCString argsStr;
   if (bracePos!=-1) argsStr=tmpName.right(tmpName.length()-bracePos);
   
   // create a default link text if none was explicitly given
   bool explicitLink=TRUE;
   if (linkText.isNull())
   {
-    if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
-    linkText+=nameStr;
+    //if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
+    linkText=nameStr;
+    if (linkText.left(2)=="::") linkText=linkText.right(linkText.length()-2);
     explicitLink=FALSE;
   } 
   //printf("scope=`%s' name=`%s' arg=`%s' linkText=`%s'\n",
   //       scopeStr.data(),nameStr.data(),argsStr.data(),linkText.data());
 
-  //Define *d=0;
   MemberDef *md    = 0;
   ClassDef *cd     = 0;
   FileDef *fd      = 0;
   NamespaceDef *nd = 0;
-  int scopeOffset=scopeContext.length();
-  do
+
+  //printf("Try with scName=`%s' nameStr=`%s' argsStr=`%s'\n",
+  //        scopeStr.data(),nameStr.data(),argsStr.data());
+
+  // check if nameStr is a member or global.
+  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd))
   {
-    QString totalScope=scopeUser.copy();
-    if (scopeOffset>0) 
+    //printf("after getDefs nd=%p\n",nd);
+    QCString anchor = (md->isReference() || md->hasDocumentation()) ? md->anchor() : 0;
+    QCString cName,aName;
+    if (cd) // nameStr is a member of cd
     {
-      if (!totalScope.isEmpty()) totalScope.prepend("::");
-      totalScope.prepend(scopeContext.left(scopeOffset));
+      //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
+      //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
+      ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+          anchor,linkText.stripWhiteSpace());
+      cName=cd->name();
+      aName=md->anchor();
     }
-    //printf("Try with totalScope=`%s'\n",totalScope.data());
-    // check if nameStr is a member or global.
-    if (getDefs(nameStr,totalScope,argsStr,md,cd,fd,nd))
+    else if (nd) // nameStr is a member of nd
     {
-      QString anchor = md->hasDocumentation() ? md->anchor() : 0;
-      QString cName,aName;
-      if (cd) // nameStr is a member of cd
-      {
-        //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
-        //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
-        ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-                           anchor,linkText.stripWhiteSpace());
-        cName=cd->name();
-        aName=md->anchor();
-      }
-      else if (nd) // nameStr is a member of nd
-      {
-        ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
-                           anchor,linkText.stripWhiteSpace());
-        cName=nd->name();
-        aName=md->anchor();
-      }
-      else if (fd) // nameStr is a global in file fd
-      {
-        //printf("addFileLink(%s,%s,%s)\n",fd->getOutputFileBase(),anchor.data(),
-        //        resultName.stripWhiteSpace().data());
-        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
-                           anchor,linkText.stripWhiteSpace());
-        cName=fd->name();
-        aName=md->anchor();
-      }
-      else // should not be reached
-      {
-        //printf("add no link fd=cd=0\n");
-        ol.docify(linkText);
-      }
-
-      // for functions we add the arguments if explicitly specified or else "()"
-      if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot())) 
-      {
-        if (argsStr.isNull())
-          ol.writeString("()");
-        else
-          ol.docify(argsStr);
-      }
-
-      // generate the page reference (for LaTeX)
-      if (cName.length()>0 || aName.length()>0)
-      {
-        if (
-             (cd && !cd->isReference() && cd->isVisible()) || 
-             (fd && !fd->isReference()) ||
-             (nd /* TODO: && !nd->isReference() */)
-           ) 
-        {
-          ol.writePageRef(cName,aName);
-        }
-      }
-      return;
+      //printf("writing namespace link\n");
+      ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+          anchor,linkText.stripWhiteSpace());
+      cName=nd->name();
+      aName=md->anchor();
     }
-    //  else if (!nameStr.isNull() && (d=defineDict[nameStr]))
-    //     // check if nameStr is perhaps a define
-    //  {
-    //    if (d->hasDocumentation() && d->fileDef)
-    //    {
-    //      ol.writeObjectLink(0,d->fileDef->getOutputFileBase(),d->anchor,
-    //                         linkText.stripWhiteSpace());
-    //      if (!explicitLink) ol.docify(argsStr);
-    //    }
-    //  }
-    if (scopeOffset==0)
-      scopeOffset=-1;
-    else if ((scopeOffset=scopeContext.findRev("::",scopeOffset-1))==-1)
-      scopeOffset=0;
-  } while (scopeOffset>=0);
-  
+    else if (fd) // nameStr is a global in file fd
+    {
+      //printf("addFileLink(%s,%s,%s)\n",fd->getOutputFileBase(),anchor.data(),
+      //        resultName.stripWhiteSpace().data());
+      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
+          anchor,linkText.stripWhiteSpace());
+      cName=fd->name();
+      aName=md->anchor();
+    }
+    else // should not be reached
+    {
+      //printf("add no link fd=cd=0\n");
+      ol.docify(linkText);
+    }
+
+    // for functions we add the arguments if explicitly specified or else "()"
+    if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot())) 
+    {
+      if (argsStr.isNull())
+        ol.writeString("()");
+      else
+        ol.docify(argsStr);
+    }
+
+    // generate the page reference (for LaTeX)
+    if (cName.length()>0 || aName.length()>0)
+    {
+      if (
+          (cd && !cd->isReference() && cd->isVisible()) || 
+          (fd && !fd->isReference()) ||
+          (nd /* TODO: && !nd->isReference() */)
+         ) 
+      {
+        ol.writePageRef(cName,aName);
+      }
+    }
+    return;
+  }
+
   // nothing found
   if (rt) 
     ol.docify(rt); 
@@ -2150,9 +2422,9 @@ void generateRef(OutputList &ol,const char *clName,
 void generateLink(OutputList &ol,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
-  QString linkRef=lr;
+  QCString linkRef=lr;
   //PageInfo *pi=0;
-  //printf("generateLink(%s,%s)\n",lr,lt);
+  //printf("generateLink(%s,%s,%s) inSeeBlock=%d\n",clName,lr,lt,inSeeBlock);
   //FileInfo *fi=0;
   FileDef *fd;
   bool ambig;
@@ -2172,7 +2444,7 @@ void generateLink(OutputList &ol,const char *clName,
 
 void generateFileRef(OutputList &ol,const char *name,const char *text)
 {
-  QString linkText = text ? text : name;
+  QCString linkText = text ? text : name;
   //FileInfo *fi;
   FileDef *fd;
   bool ambig;
@@ -2186,14 +2458,14 @@ void generateFileRef(OutputList &ol,const char *name,const char *text)
 
 //----------------------------------------------------------------------
 
-QString substituteClassNames(const QString &s)
+QCString substituteClassNames(const QCString &s)
 {
   int i=0,l,p;
-  QString result;
+  QCString result;
   QRegExp r("[a-z_A-Z][a-z_A-Z0-9]*");
   while ((p=r.match(s,i,&l))!=-1)
   {
-    QString *subst;
+    QCString *subst;
     if (p>i) result+=s.mid(i,p-i);
     if ((subst=substituteDict[s.mid(p,l)]))
     {
@@ -2211,14 +2483,14 @@ QString substituteClassNames(const QString &s)
 
 //----------------------------------------------------------------------
 
-QString convertSlashes(const QString &s,bool dots)
+QCString convertSlashes(const QCString &s,bool dots)
 {
-  QString result;
+  QCString result;
   int i,l=s.length();
   for (i=0;i<l;i++)
     if (s.at(i)!='/' && (!dots || s.at(i)!='.'))
     {
-      if (caseSensitiveNames)
+      if (Config::caseSensitiveNames)
       {
         result+=s[i]; 
       }
@@ -2235,10 +2507,10 @@ QString convertSlashes(const QString &s,bool dots)
 //----------------------------------------------------------------------
 // substitute all occurences of `src' in `s' by `dst'
 
-QString substitute(const char *s,const char *src,const char *dst)
+QCString substitute(const char *s,const char *src,const char *dst)
 {
-  QString input=s;
-  QString output;
+  QCString input=s;
+  QCString output;
   int i=0,p;
   while ((p=input.find(src,i))!=-1)
   {
@@ -2255,8 +2527,8 @@ QString substitute(const char *s,const char *src,const char *dst)
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 {
   ambig=FALSE;
-  QString name=n;
-  QString path;
+  QCString name=n;
+  QCString path;
   if (name.isNull()) return 0;
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
@@ -2298,8 +2570,8 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 
 void showFileDefMatches(const FileNameDict *fnDict,const char *n)
 {
-  QString name=n;
-  QString path;
+  QCString name=n;
+  QCString path;
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
@@ -2323,10 +2595,10 @@ void showFileDefMatches(const FileNameDict *fnDict,const char *n)
 
 //----------------------------------------------------------------------
 
-void setFileNameForSections(QList<QString> *anchorList,const char *fileName)
+void setFileNameForSections(QList<QCString> *anchorList,const char *fileName)
 {
   if (!anchorList) return;
-  QString *s=anchorList->first();
+  QCString *s=anchorList->first();
   while (s)
   {
     SectionInfo *si;

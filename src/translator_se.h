@@ -14,245 +14,484 @@
  *
  */
 
-/*-------------------------------------------------------------------------
+/*
+==================================================================================
 Svensk översättning av:
 Samuel Hägglund      <sahag96@ite.mh.se>
 Xet Erixon           <xet@xeqt.com>
+==================================================================================
+Uppdateringar.
+1999/04/29
+*  Omskrivningar av en hel del ordval, t.ex.
+   ENG                  INNAN          EFTER
+   compound             inhängnad      sammansatt
+   structs              structs        strukter
+   unions               unions         unioner
 
-Skicka gärna synpunkter. 
---------------------------------------------------------------------------*/
+   osv...
+
+*  Alla översättnings-strängar returnerar i alla fall en något så när vettig
+   förklaring...
+
+1999/05/27
+*  Det verkade som vi glömt en del mellanslag i vissa strängar vilket resulterade
+   i att en del ord blev ihopskrivna.
+
+*  Bytt en del ordval igen...
+   ENG                       INNAN          EFTER
+   reference manual          Uppslagsbok    referensmanual
+
+*  Skrivit ihop en del ord som innan hade bindestreck
+*  En del nya översättningar är tillagda.
+*  Gamla översättningar borttagna
+
+===================================================================================
+Problem!
+   Namespace och slot: har de nån hygglig svensk översättning???
+
+   Skicka gärna synpunkter.
+===================================================================================
+*/
 
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-#include <qstring.h>
+#include "translator.h"
 
 class TranslatorSwedish : public Translator
 {
   public:
-    QString latexBabelPackage()
+    QCString latexBabelPackage()
     { return "swedish"; }
-    QString trInherits()
-    { return "Ärver"; }
-    QString trAnd()
-    { return "och"; }
-    QString trInheritedBy()
-    { return "Ärvd av"; }
-    QString trRelatedFunctions()
+
+    QCString trRelatedFunctions()
     { return "Besläktade funktioner"; }
-    QString trRelatedSubscript()
+
+    QCString trRelatedSubscript()
     { return "(Observera att dessa inte är medlemsfunktioner)"; }
-    QString trDetailedDescription()
+
+    QCString trDetailedDescription()
     { return "Detaljerad beskrivning"; }
-    QString trMemberTypedefDocumentation()
+
+    QCString trMemberTypedefDocumentation()
     { return "Dokumentation över typdefinierade medlemmar"; }
-    QString trMemberEnumerationDocumentation()
+
+    QCString trMemberEnumerationDocumentation()
     { return "Dokumentation över egenuppräknande medlemmar"; }
-    QString trMemberFunctionDocumentation()
+
+    QCString trMemberFunctionDocumentation()
     { return "Dokumentation över medlemsfunktioner"; }
-    QString trMemberDataDocumentation()
+
+    QCString trMemberDataDocumentation()
     { return "Dokumentation över datamedlemmar"; }
-    QString trGeneratedFrom(const char *s,bool single)
+
+    QCString trGeneratedFrom(const char *s,bool single)
     { 
-      QString result=(QString)"Dokumentationen för denna"+s+
+
+    QCString result=(QCString)"Dokumentationen för denna"+s+
                      " är skapad utifrån följande fil";
       if (single) result+=":";   else result+="er:";
       return result;
     }
-    QString trMore()
+    QCString trMore()
     { return "Mer..."; }
-    QString trReference()
-    { return "Referens"; }
-    QString trListOfAllMembers()
+
+    QCString trListOfAllMembers()
     { return "Lista över alla medlemmar."; }
-    QString trMemberList()
+
+    QCString trMemberList()
     { return "Medlemslista"; }
-    QString trThisIsTheListOfAllMembers()
-    { return "Det här är en fullständig lista över medlemmar för"; }
-    QString trIncludingInheritedMembers()
-    { return "med alla ärvda medlemmar."; }
-    QString trGeneratedAutomatically(const char *s)
-    { QString result="Automatiskt skapad av Doxygen";
-      if (s) result+=(QString)" för "+s;
+
+    QCString trThisIsTheListOfAllMembers()
+    { return "Det här är en fullständig lista över medlemmar för "; }
+
+    QCString trIncludingInheritedMembers()
+    { return " med alla ärvda medlemmar."; }
+
+    QCString trGeneratedAutomatically(const char *s)
+    { QCString result="Automatiskt skapad av Doxygen";
+      if (s) result+=(QCString)" för "+s;
       result+=" från källkoden."; 
       return result;
     }
-    QString trEnumName()
+
+    QCString trEnumName()
     { return "enum namn"; }
-    QString trEnumValue()
+
+    QCString trEnumValue()
     { return "enum värde"; }
-    QString trDefinedIn()
-    { return "deklarerad i"; }
-    QString trIncludeFile()
-    { return "Inkluderingsfil"; }
-    QString trVerbatimText(const char *f)
-    { return (QString)"Detta är den ordagranna texten från inkluderingsfilen"+f; }
-    QString trModules()
+
+    QCString trDefinedIn()
+    { return "definierad i"; }
+
+
+    QCString trVerbatimText(const char *f)
+    { return (QCString)"Detta är den ordagranna texten från inkluderingsfilen "+f; }
+
+    QCString trModules()
     { return "Moduler"; }
-    QString trClassHierarchy()
+
+    QCString trClassHierarchy()
     { return "Klasshierarki"; }
-    QString trCompoundList()
+
+    QCString trCompoundList()
     { return "Sammansatt klasslista"; }
-    QString trFileList()
+
+    QCString trFileList()
     { return "Fillista"; }
-    QString trHeaderFiles()
+
+    QCString trHeaderFiles()
     { return "Headerfiler"; }
-    QString trCompoundMembers()
+
+    QCString trCompoundMembers()
     { return "Sammansatta klassmedlemmar"; }
-    QString trFileMembers()
+
+    QCString trFileMembers()
     { return "Filmedlemmar"; }
-    QString trRelatedPages()
+
+    QCString trRelatedPages()
     { return "Besläktade sidor"; }
-    QString trExamples()
+
+    QCString trExamples()
     { return "Exempel"; }
-    QString trSearch()
+
+    QCString trSearch()
     { return "Sök"; }
-    QString trClassHierarchyDescription()
+
+    QCString trClassHierarchyDescription()
     { return "Denna lista över arv är grovt, men inte helt, "
              "sorterad i alfabetisk ordning:";
     }
-    QString trFileListDescription(bool extractAll)
+
+    QCString trFileListDescription(bool extractAll)
     {
-      QString result="Här följer en lista över alla ";
+      QCString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="filer, med en kort beskrivning:";
       return result;
     }
-    QString trCompoundListDescription()
-     { return "Här följer klasserna, structerna och "
+
+    QCString trCompoundListDescription()
+     { return "Här följer klasserna, strukterna och "
              "unionerna med en kort beskrivning:"; 
     }
-    QString trCompoundMembersDescription(bool extractAll)
+
+    QCString trCompoundMembersDescription(bool extractAll)
     {
-      QString result="Här följer en lista över alla ";
+
+    QCString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="klassmedlemmar med länkar till ";
       if (extractAll) result+="klassdokumentationen för varje medlem:";
       else result+="klasserna som de tillhör:";
       return result;
     }
-    QString trFileMembersDescription(bool extractAll)
+
+    QCString trFileMembersDescription(bool extractAll)
     {
-      QString result="Här följer en lista över alla ";
+      QCString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="filmedlemmar med länkar till ";
       if (extractAll) result+="dokumentationsfilen för varje medlem:";
       else result+="filerna som de tillhör:";
       return result;
     }
-    QString trHeaderFilesDescription()
+
+    QCString trHeaderFilesDescription()
     { return "Här följer headerfilerna som API:n består av:"; }
-    QString trExamplesDescription()
+
+    QCString trExamplesDescription()
     { return "Här följer en lista med alla exempel:"; }
-    QString trRelatedPagesDescription()
-    { return "Här följer en lista över alla relaterade dokumentationssidor:";
-}     QString trModulesDescription()
+
+    QCString trRelatedPagesDescription()
+    { return "Här följer en lista över alla besläktade dokumentationssidor:";}
+
+    QCString trModulesDescription()
     { return "Här följer en lista över alla moduler:"; }
-    QString trNoDescriptionAvailable()
+
+    QCString trNoDescriptionAvailable()
     { return "Beskrivning saknas"; }
 
-    QString trDocumentation()
+    QCString trDocumentation()
     { return "Dokumentation"; }
-    QString trModuleIndex()
-    { return "Modul Index"; }
-    QString trHierarchicalIndex()
-    { return "Hierarkiskt Index"; }
-    QString trCompoundIndex()
-    { return "Sammansatt Index"; }
-    QString trFileIndex() 
-    { return "Fil Index"; }
-    QString trModuleDocumentation()
-    { return "Dokumentation över moduler"; }
-    QString trClassDocumentation()
-    { return "Dokumentation över klasser"; }
-    QString trFileDocumentation()
-    { return "Dokumentation över filer"; }
-    QString trExampleDocumentation()
-    { return "Dokumentation över exempel"; }
-    QString trPageDocumentation()
-    { return "Dokumentation av sidor"; }
-    QString trReferenceManual()
-    { return "Uppslagsbok"; }
 
-    QString trDefines()
+    QCString trModuleIndex()
+    { return "Modulindex"; }
+
+    QCString trHierarchicalIndex()
+    { return "Hierarkiskt Index"; }
+
+    QCString trCompoundIndex()
+    { return "Sammansatt Index"; }
+
+    QCString trFileIndex()
+    { return "Filindex"; }
+
+    QCString trModuleDocumentation()
+    { return "Dokumentation över moduler"; }
+
+    QCString trClassDocumentation()
+    { return "Dokumentation över klasser"; }
+
+    QCString trFileDocumentation()
+    { return "Dokumentation över filer"; }
+
+    QCString trExampleDocumentation()
+    { return "Dokumentation över exempel"; }
+
+    QCString trPageDocumentation()
+    { return "Dokumentation av sidor"; }
+
+    QCString trReferenceManual()
+    { return "Referensmanual"; }
+
+    QCString trDefines()
     { return "Definitioner"; }
-    QString trFuncProtos()
+    QCString trFuncProtos()
     { return "Funktionsprototyper"; }
-    QString trTypedefs()
+    QCString trTypedefs()
     { return "Typdefinitioner"; }
-    QString trEnumerations()
+    QCString trEnumerations()
     { return "Egenuppräknande typer"; }
-    QString trFunctions()
+    QCString trFunctions()
     { return "Funktioner"; }
-    QString trVariables()
+
+    QCString trVariables()
     { return "Variabler"; }
-    QString trEnumerationValues()
-    { return "Egenuppräknade värden"; }
-    QString trReimplementedFrom()
-    { return "Återanvänd från"; }
-    QString trReimplementedIn()
-    { return "Återanvänd i"; }
-    QString trAuthor()
+
+    QCString trEnumerationValues()
+    { return "Egenuppräknade typers värden"; }
+
+    QCString trAuthor()
     { return "Författare"; }
-    QString trDefineDocumentation()
+
+    QCString trDefineDocumentation()
     { return "Dokumentation över definitioner"; }
-    QString trFunctionPrototypeDocumentation()
+
+    QCString trFunctionPrototypeDocumentation()
     { return "Dokumentation över funktionsprototyper"; }
-    QString trTypedefDocumentation()
+
+    QCString trTypedefDocumentation()
     { return "Dokumentation över typdefinitioner"; }
-    QString trEnumerationTypeDocumentation()
-    { return "Dokumentation över egenuppräknande typer (enum)"; }
-    QString trEnumerationValueDocumentation()
+
+    QCString trEnumerationTypeDocumentation()
+    { return "Dokumentation över egenuppräknande typer"; }
+
+    QCString trEnumerationValueDocumentation()
     { return "Dokumentation över egenuppräknande typers värden"; }
-    QString trFunctionDocumentation()
+
+    QCString trFunctionDocumentation()
     { return "Dokumentation över funktioner"; }
-    QString trVariableDocumentation()
+
+    QCString trVariableDocumentation()
     { return "Dokumentation över variabler"; }
-    QString trCompounds()
+
+    QCString trCompounds()
     { return "Sammansättning"; }
-    QString trFiles()
+
+    QCString trFiles()
     { return "Filer"; }
-    QString trGeneratedAt(const char *date,const char *projName)
-    { 
-      QString result=(QString)"Skapad "+date;
-      if (projName) result+=(QString)" för "+projName;
-      result+=(QString)" av";
+
+    QCString trGeneratedAt(const char *date,const char *projName)
+    {
+      QCString result=(QCString)"Skapad "+date;
+      if (projName) result+=(QCString)" för "+projName;
+      result+=(QCString)" av";
       return result;
     }
-    QString trWrittenBy()
+
+    QCString trWrittenBy()
     {
       return "skriven av";
     }
-    QString trClassDiagram(const char *clName)
+
+    QCString trClassDiagram(const char *clName)
     {
-      return (QString)"Klass-diagram för "+clName;
+      return (QCString)"Klassdiagram för "+clName;
     }
-    QString trForInternalUseOnly()
+
+    QCString trForInternalUseOnly()
     { return "Endast för internt bruk."; }
-    QString trReimplementedForInternalReasons()
-    { return "Omskriven av intern anledning ; "
-             "API:n påverkas inte."; 
-    }
-    QString trWarning()
+
+    QCString trReimplementedForInternalReasons()
+    { return "Omskriven av intern anledning ; API:n påverkas inte.";}
+
+    QCString trWarning()
     { return "Varning"; }
-    QString trBugsAndLimitations()
+
+    QCString trBugsAndLimitations()
     { return "Fel och begränsningar"; }
-    QString trVersion()
+
+    QCString trVersion()
     { return "Version"; }
-    QString trDate()
+
+    QCString trDate()
     { return "Datum"; }
-    QString trAuthors()
+
+    QCString trAuthors()
     { return "Författare"; }
-    QString trReturns()
+
+    QCString trReturns()
     { return "Returnerar"; }
-    QString trSeeAlso()
+
+    QCString trSeeAlso()
     { return "Se även"; }
-    QString trParameters()
+
+    QCString trParameters()
     { return "Parametrar"; }
-    QString trExceptions()
+
+    QCString trExceptions()
     { return "Undantag"; }
-    QString trGeneratedBy()
+
+    QCString trGeneratedBy()
     { return "Skapad av"; }
+
+// new since 0.49-990307
+
+    virtual QCString trNamespaceList()
+    { return "Namespacelista"; }
+
+    virtual QCString trNamespaceListDescription(bool extractAll)
+    {
+      QCString result="Här är en lista över alla ";
+      if (!extractAll) result+="dokumenterade ";
+      result+="namespaces med en kort förklaring:";
+      return result;
+    }
+
+    virtual QCString trFriends()
+    { return "Vänner"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990405
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trRelatedFunctionDocumentation()
+    { return "Vänners och besläktade funktioners dokumentation"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990425
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCompoundReference(const char *clName,
+                                    ClassDef::CompoundType compType)
+    {
+      QCString result=(QCString)clName+" ";
+      switch(compType)
+      {
+        case ClassDef::Class:  result+=" Klass"; break;
+        case ClassDef::Struct: result+=" Strukt"; break;
+        case ClassDef::Union:  result+=" Union"; break;
+      }
+      result+="referens";
+      return result;
+    }
+
+    virtual QCString trFileReference(const char *fileName)
+    {
+      QCString result=fileName;
+      result+=" filreferens";
+      return result;
+    }
+
+    virtual QCString trNamespaceReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" namespacereferens";
+      return result;
+    }
+
+    virtual QCString trPublicMembers()
+    { return "Publika medlemmar"; }
+    virtual QCString trPublicSlots()
+    { return "Publika slots"; }
+    virtual QCString trSignals()
+    { return "Signaler"; }
+    virtual QCString trStaticPublicMembers()
+    { return "Statiska  publika medlemmar"; }
+    virtual QCString trProtectedMembers()
+    { return "Skyddade medlemmar"; }
+    virtual QCString trProtectedSlots()
+    { return "Skyddade slots"; }
+    virtual QCString trStaticProtectedMembers()
+    { return "Statiska skyddade medlemmar"; }
+    virtual QCString trPrivateMembers()
+    { return "Privata medlemmar"; }
+    virtual QCString trPrivateSlots()
+    { return "Privata slots"; }
+    virtual QCString trStaticPrivateMembers()
+    { return "Statiska privata medlemmar"; }
+    // end of member sections
+
+    virtual QCString trWriteList(int numEntries)
+    {
+      // this function is used to produce a comma-separated list of items.
+      // use generateMarker(i) to indicate where item i should be put.
+      QCString result;
+      int i;
+      // the inherits list contain `numEntries' classes
+      for (i=0;i<numEntries;i++)
+      {
+        // use generateMarker to generate placeholders for the class links!
+        result+=generateMarker(i); // generate marker for entry i in the list
+                                   // (order is left to right)
+
+        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        {
+          if (i<numEntries-2) // not the fore last entry
+            result+=", ";
+          else                // the fore last entry
+            result+=", och ";
+        }
+      }
+      return result;
+    }
+
+    virtual QCString trInheritsList(int numEntries)
+      // used in class documentation to produce a list of base classes,
+      // if class diagrams are disabled.
+    {
+      return "Ärver "+trWriteList(numEntries)+".";
+    }
+    virtual QCString trInheritedByList(int numEntries)
+      // used in class documentation to produce a list of super classes,
+      // if class diagrams are disabled.
+    {
+      return "Ärvd av "+trWriteList(numEntries)+".";
+    }
+    virtual QCString trReimplementedFromList(int numEntries)
+      // used in member documentation blocks to produce a list of
+      // members that are hidden by this one.
+    {
+      return "Återskapad från "+trWriteList(numEntries)+".";
+    }
+    virtual QCString trReimplementedInList(int numEntries)
+    {
+      // used in member documentation blocks to produce a list of
+      // all member that overwrite the implementation of this member.
+      return "Återskapad i "+trWriteList(numEntries)+".";
+    }
+
+    virtual QCString trNamespaceMembers()
+    { return "Namespacemedlemmar"; }
+    virtual QCString trNamespaceMemberDescription(bool extractAll)
+    {
+      QCString result="Här är en lista över alla ";
+      if (!extractAll) result+="dokumenterade ";
+      result+="namespacemedlemmar med länkar till ";
+      if (extractAll)
+        result+=" namespace-dokumentationen för varje medlem:";
+      else
+        result+="de namespaces de tillhör:";
+      return result;
+    }
+
+    virtual QCString trNamespaceIndex()
+    { return "Namespaceindex"; }
+
+    virtual QCString trNamespaceDocumentation()
+
+{ return "Namespace-dokumentation"; }
 };
 
 #endif

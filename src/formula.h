@@ -17,7 +17,7 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 
@@ -27,11 +27,11 @@ class Formula
     Formula(const char *text);
    ~Formula();
     int getId();
-    QString getFormulaText() const { return form; }
+    QCString getFormulaText() const { return form; }
     
   private:
     int number;
-    QString form;
+    QCString form;
 };
 
 class FormulaList : public QList<Formula>

@@ -15,6 +15,7 @@
  *
  */
 
+#include "qtbc.h"
 #include "entry.h"
 
 class ClassDef;
@@ -30,8 +31,8 @@ class DiagramItem
     DiagramItem(DiagramItem *p,int number,ClassDef *cd,
                 Protection prot,Specifier virt,const char *ts);
    ~DiagramItem();
-    QString label() const;
-    QString fileName() const;
+    QCString label() const;
+    QCString fileName() const;
     DiagramItem *parentItem() { return parent; } 
     DiagramItemList *getChildren() { return children; }
     void move(int dx,int dy) { x+=dx; y+=dy; }
@@ -53,7 +54,7 @@ class DiagramItem
     int num;
     Protection prot;
     Specifier virt;
-    QString templSpec;
+    QCString templSpec;
     bool inList;
     ClassDef *classDef;
 };

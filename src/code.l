@@ -24,8 +24,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qstring.h>  
-  
+#include "qtbc.h"
 #include "scanner.h"
 #include "entry.h"
 #include "doxygen.h"
@@ -47,7 +46,7 @@ class CodeClassDef
     }
    ~CodeClassDef() {}
 
-    QString name;
+    QCString name;
     QStrList bases;
 };  
   
@@ -63,9 +62,9 @@ class CodeVarDef
     }
    ~CodeVarDef() {} 
     
-    QString name;
-    QString type; 
-    QString classScope;
+    QCString name;
+    QCString type; 
+    QCString classScope;
 };
 
 typedef QList<CodeClassDef> CodeClassList; 
@@ -91,19 +90,19 @@ static int	    bracketCount = 0;
 static int	    curlyCount   = 0;
 static int	    sharpCount   = 0;
 static int	    yyLineNr     = 0;
-static QString      type;
-static QString      name;
-static QString      args;
-static QString      parmType;
-static QString      parmName;
+static QCString      type;
+static QCString      name;
+static QCString      args;
+static QCString      parmType;
+static QCString      parmName;
 static bool         inClass;
-static QString      classScope;
+static QCString      classScope;
 static OutputList   *code;
 static CodeClassDef ccd;
 static CodeVarDef   cvd;
 static bool         exampleBlock;
-static QString      exampleName;
-static QString      exampleFile;
+static QCString      exampleName;
+static QCString      exampleFile;
 static int          anchorCount;
 
 static void addType()
@@ -125,9 +124,9 @@ static void addParmType()
   parmName.resize(0) ;
 }
 
-static void setClassScope(const QString &name)
+static void setClassScope(const QCString &name)
 {
-  QString n=name;
+  QCString n=name;
   n=n.simplifyWhiteSpace();
   int index;
   if ((index=n.find("::"))!=-1)
@@ -165,14 +164,14 @@ static void addParameter()
 
 static void generateClassLink(OutputList &ol,const char *clName)
 {
-  QString className=clName;
+  QCString className=clName;
   if (className.length()==0) return;
   ClassDef *cd;
   if ((cd=getClass(className)) && cd->isVisible())
   {
     if (exampleBlock)
     {
-      QString anchor;
+      QCString anchor;
       anchor.sprintf("_a%d",anchorCount);
       //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),exampleName.data(),
       //                                   exampleFile.data());
@@ -200,16 +199,16 @@ static bool getLink(const char *className,
   ClassDef     *cd;
   FileDef      *fd;
   NamespaceDef *nd;
-  QString m=memberName;
-  QString c=className;
+  QCString m=memberName;
+  QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
-  if (getDefs(m,c,"()",md,cd,fd,nd) &&
+  if (getDefs(c,m,"()",md,cd,fd,nd) &&
       (md->hasDocumentation() || md->isReference()))
   {
     //printf("Found!\n");
     if (exampleBlock)
     {
-      QString anchor;
+      QCString anchor;
       anchor.sprintf("a%d",anchorCount);
       //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),exampleName.data(),
       //                                  exampleFile.data());
@@ -339,6 +338,8 @@ static int yyread(char *buf,int max_size)
 
 ID	[a-z_A-Z][a-z_A-Z0-9]*
 
+%option noyywrap
+
 %x      SkipString
 %x	SkipCPP
 %x	SkipComment
@@ -380,7 +381,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    code->codify(yytext);
 					  }
 					  char c=yyinput();
-					  QString text;
+					  QCString text;
 					  text+=c;
 					  code->codify(text);
 					  BEGIN( Body );
@@ -663,7 +664,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
   					}
 <SkipSpecialComment>[ \t]*"*/"[ \t\n]*"\n"/"/*"  {
   					  //code->codify("\n");
-					  QString lineText=yytext;
+					  QCString lineText=yytext;
   					  yyLineNr+=lineText.contains('\n');
   					  BEGIN( lastDContext ) ;
   					}
@@ -700,7 +701,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
   					  code->codify(yytext);
   					}
 <*>([ \t\n]*"\n"){2,}			{ // combine multiple blank lines
-  					  QString sepLine=yytext;
+  					  QCString sepLine=yytext;
   					  code->codify("\n\n");
   					  yyLineNr+=sepLine.contains('\n'); 
 					}
@@ -723,7 +724,7 @@ void initParseCodeContext()
   anchorCount = 0;
 }
 
-void parseCode(OutputList &ol,const char *className,const QString &s, 
+void parseCode(OutputList &ol,const char *className,const QCString &s, 
                   bool e, const char *exName)
 {
   code = new OutputList(&ol);
@@ -752,6 +753,6 @@ void parseCode(OutputList &ol,const char *className,const QString &s,
 }
 
 extern "C" { // some bogus code to keep the compiler happy
-  int  codeYYwrap() { return 1 ; }
+//  int  codeYYwrap() { return 1 ; }
   void codeYYdummy() { yy_flex_realloc(0,0); } 
 }

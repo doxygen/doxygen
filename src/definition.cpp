@@ -14,6 +14,7 @@
  *
  */
 
+#include "qtbc.h"
 #include <ctype.h>
 #include "definition.h"
 #include "doxygen.h"
@@ -28,23 +29,23 @@ Definition::~Definition()
   delete sectionList;
 }
 
-QString Definition::nameToFile(const char *name)
+QCString Definition::nameToFile(const char *name)
 {
-  QString result;
+  QCString result;
   char c;
   const char *p=name;
   while ((c=*p++)!=0)
   {
     switch(c)
     {
-      case ':': break;
+      case ':': result+="_"; break;
       case '<': result+="_lt"; break;
       case '>': result+="_gt"; break;
       case '*': result+="_ast"; break;
       case '&': result+="_amp"; break;
       case ' ': break;
       default: 
-        if (caseSensitiveNames)
+        if (Config::caseSensitiveNames)
           result+=c;
         else
           result+=tolower(c); 
@@ -54,10 +55,10 @@ QString Definition::nameToFile(const char *name)
   return result;
 }
 
-void Definition::addSectionsToDefinition(QList<QString> *anchorList)
+void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 {
   if (!anchorList) return;
-  QString *s=anchorList->first();
+  QCString *s=anchorList->first();
   while (s)
   {
     SectionInfo *si=0;

@@ -15,6 +15,8 @@
  */
 
 #include <stdlib.h>
+
+#include "qtbc.h"
 #include <qdir.h>
 #include "latexgen.h"
 #include "config.h"
@@ -24,9 +26,9 @@
 #include "diagram.h"
 #include "language.h"
 
-//static QString escapeLabelName(const QString &s)
+//static QCString escapeLabelName(const QCString &s)
 //{
-//  QString result;
+//  QCString result;
 //  uint i;
 //  for (i=0;i<s.length();i++)
 //  {
@@ -45,7 +47,7 @@
 LatexGenerator::LatexGenerator()
   : OutputGenerator()
 {
-  dir=latexOutputDir;
+  dir=Config::latexOutputDir;
   col=0;
 }
 
@@ -68,7 +70,7 @@ void LatexGenerator::append(const OutputGenerator *g)
 
 void LatexGenerator::init()
 {
-  QString dir=latexOutputDir;
+  QCString dir=Config::latexOutputDir;
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
@@ -76,7 +78,7 @@ void LatexGenerator::init()
     exit(1);
   }
   
-  QString fileName=dir+"/Makefile";
+  QCString fileName=dir+"/Makefile";
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
@@ -104,7 +106,7 @@ void LatexGenerator::init()
 
 void LatexGenerator::startFile(const char *name,const char *,bool)
 {
-  QString fileName=name;
+  QCString fileName=name;
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
 }
@@ -126,16 +128,16 @@ void LatexGenerator::startProjectNumber()
 
 void LatexGenerator::startIndexSection(IndexSections is)
 {
-  QString paperName;
+  QCString paperName;
   switch (is)
   {
     case isTitlePageStart:
       {
-        if (paperType=="a4wide") paperName="a4"; else paperName=paperType;
+        if (Config::paperType=="a4wide") paperName="a4"; else paperName=Config::paperType;
         t << "\\documentclass[" << paperName << "paper]{";
-        if (compactLatexFlag) t << "article"; else t << "book";
+        if (Config::compactLatexFlag) t << "article"; else t << "book";
         t << "}\n";
-        if (paperType=="a4wide") t << "\\usepackage{a4wide}\n";
+        if (Config::paperType=="a4wide") t << "\\usepackage{a4wide}\n";
         t << "\\usepackage{makeidx}\n"
           "\\usepackage{fancyheadings}\n"
           "\\usepackage{epsf}\n"
@@ -145,11 +147,11 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           t << "\\usepackage{" << theTranslator->latexBabelPackage() << "}\n";
         }
-        const char *s=extraPackageList.first();
+        const char *s=Config::extraPackageList.first();
         while (s)
         {
           t << "\\usepackage{" << s << "}\n";
-          s=extraPackageList.next();
+          s=Config::extraPackageList.next();
         }
         t << "\\makeindex\n"
           "\\setcounter{tocdepth}{1}\n"
@@ -169,23 +171,23 @@ void LatexGenerator::startIndexSection(IndexSections is)
       t << "}\n\\author{";
       break;
     case isModuleIndex:
-      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Module Index}\n"
       break;
     case isNamespaceIndex:
-      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Namespace Index}\"
       break;
     case isClassHierarchyIndex:
-      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Hierarchical Index}\n"
       break;
     case isCompoundIndex:
-      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Annotated Compound Index}\n"
       break;
     case isFileIndex:
-      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Annotated File Index}\n"
       break;
     case isModuleDocumentation:
@@ -196,7 +198,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (gd->hasDocumentation() || gd->countMembers()>0)
           {
-            if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+            if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; //Module Documentation}\n";
             found=TRUE;
           }
@@ -212,7 +214,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (nd->hasDocumentation())
           {
-            if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+            if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
             found=TRUE;
           }
@@ -228,7 +230,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (!cd->isReference() && cd->isVisible())
           {
-            if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+            if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; //Compound Documentation}\n";
             found=TRUE;
           }
@@ -249,7 +251,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+                if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
                 t << "{"; //File Documentation}\n";
                 isFirst=FALSE;
                 break;
@@ -263,13 +265,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isExampleDocumentation:
       {
-        if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+        if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
         t << "{"; //Example Documentation}\n";
       }
       break;
     case isPageDocumentation:
       {
-        if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+        if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
         t << "{"; //Page Documentation}\n";
       }
       break;
@@ -289,9 +291,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
         "\\date{" << dateToString(TRUE) << "}\n"
         "\\maketitle\n"
         "\\pagenumbering{roman}\n";
-      if (!compactLatexFlag) t << "\\clearemptydoublepage\n";
+      if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
       t << "\\tableofcontents\n";
-      if (!compactLatexFlag) t << "\\clearemptydoublepage\n";
+      if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
       t << "\\pagenumbering{arabic}\n";
       break;
     case isModuleIndex:
@@ -326,7 +328,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (gd->hasDocumentation() || gd->countMembers()>0)
           {
-            if (compactLatexFlag) t << "\\input"; else t << "\\include";
+            if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
           }
           gd=groupList.next();
@@ -350,7 +352,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (nd->hasDocumentation() || nd->countMembers()>0)
           {
-            if (compactLatexFlag) t << "\\input"; else t << "\\include";
+            if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << nd->getOutputFileBase() << "}\n";
           }
           nd=namespaceList.next();
@@ -382,7 +384,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
           //   )
           if (!cd->isReference() && cd->isVisible())
           {
-            if (compactLatexFlag) t << "\\input"; else t << "\\include";
+            if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << cd->getOutputFileBase() << "}\n";
           } 
           cd=classList.next();
@@ -407,7 +409,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
               }
               else
               {
-                if (compactLatexFlag) t << "\\input" ; else t << "\\include";
+                if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
                 t << "{" << fd->getOutputFileBase() << "}\n";
               }
             }
@@ -428,7 +430,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (pi)
         {
-          if (compactLatexFlag) t << "\\input" ; else t << "\\include";
+          if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
           t << "{" << convertSlashes(pi->name,TRUE) << "-example}\n";
           pi=exampleList.next();
         }
@@ -440,8 +442,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         PageInfo *pi=pageList.first();
         if (pi)
         {
-          QString pageName;
-          if (caseSensitiveNames)
+          QCString pageName;
+          if (Config::caseSensitiveNames)
             pageName=pi->name.copy();
           else
             pageName=pi->name.lower();
@@ -450,9 +452,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (pi)
         {
-          if (compactLatexFlag) t << "\\input" ; else t << "\\include";
-          QString pageName;
-          if (caseSensitiveNames)
+          if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
+          QCString pageName;
+          if (Config::caseSensitiveNames)
             pageName=pi->name.copy();
           else
             pageName=pi->name.lower();
@@ -473,7 +475,7 @@ void LatexGenerator::writeStyleInfo(int part)
   {
     case 0:
       {
-        QString pname=projectName.stripWhiteSpace();
+        QCString pname=Config::projectName.stripWhiteSpace();
         startPlainFile("doxygen.sty");
         t << "\\NeedsTeXFormat{LaTeX2e}\n";
         t << "\\ProvidesPackage{doxygen}\n";
@@ -484,7 +486,7 @@ void LatexGenerator::writeStyleInfo(int part)
         t << "\\addtolength{\\headwidth}{\\marginparwidth}\n";
         t << "\\newcommand{\\clearemptydoublepage}{\\newpage{\\pagestyle{empty}";
         t << "\\cleardoublepage}}\n";
-        if (!compactLatexFlag) 
+        if (!Config::compactLatexFlag) 
           t << "\\renewcommand{\\chaptermark}[1]{\\markboth{#1}{}}\n";
         t << "\\renewcommand{\\sectionmark}[1]{\\markright{\\thesection\\ #1}}\n";
         t << "\\lhead[\\fancyplain{}{\\bfseries\\thepage}]\n";
@@ -501,7 +503,7 @@ void LatexGenerator::writeStyleInfo(int part)
     case 2:
       {
         t << " Dimitri van Heesch \\copyright 1997-1999}]{}\n";
-        //QString dtString=dateToString(FALSE);
+        //QCString dtString=dateToString(FALSE);
         t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize ";
       }
       break;
@@ -646,7 +648,7 @@ void LatexGenerator::writeObjectLink(const char *, const char *,
 
 void LatexGenerator::writePageRef(const char *clname, const char *anchor)
 {
-  t << " {\\rm (p. \\pageref{";
+  t << " {\\rm (p.~\\pageref{";
   if (clname) t << clname; 
   if (anchor) t << "_" << anchor;
   t << "})}";
@@ -662,12 +664,12 @@ void LatexGenerator::writeCodeLink(const char *,const char *,
 
 void LatexGenerator::startTitle()
 {
-  if (compactLatexFlag) t << "\\subsection{"; else t << "\\section{"; 
+  if (Config::compactLatexFlag) t << "\\subsection{"; else t << "\\section{"; 
 }
 
 void LatexGenerator::startGroupHeader()
 {
-  if (compactLatexFlag) t << "\\subsubsection*{"; else t << "\\subsection*{";
+  if (Config::compactLatexFlag) t << "\\subsubsection*{"; else t << "\\subsection*{";
 }
 
 void LatexGenerator::endGroupHeader()
@@ -700,7 +702,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   t << "}" << endl;
   //
-  if (compactLatexFlag) t << "\\subsubsection{"; else t << "\\subsection{";
+  if (Config::compactLatexFlag) t << "\\subsubsection{"; else t << "\\subsection{";
   t << "\\setlength{\\rightskip}{0pt plus 5cm}";
 }
 
@@ -762,7 +764,7 @@ void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
   startBold();
   docify(title);
   endBold();
-  t << " (p. \\pageref{" << lab << "})" << endl;
+  t << " (p.~\\pageref{" << lab << "})" << endl;
 }
 
 //void LatexGenerator::docify(const char *str)
@@ -808,78 +810,101 @@ void LatexGenerator::docify(const char *str)
                    else  
                      { t << "$\\backslash$"; }
                    break;           
-        // the Latin-1 characters
-        case 161: t << "!`";            break;
-        case 181: t << "$\\mu$";        break;
-        case 191: t << "?`";            break;
-        case 192: t << "\\`{A}";        break;
-        case 193: t << "\\'{A}";        break;
-        case 194: t << "\\^{A}";        break;
-        case 195: t << "\\~{A}";        break;
-        case 196: t << "\\\"{A}";       break;
-        case 197: t << "\\AA ";         break;
-        case 198: t << "\\AE ";         break;
-        case 199: t << "\\c{C}";        break;
-        case 200: t << "\\`{E}";        break;
-        case 201: t << "\\'{E}";        break;
-        case 202: t << "\\^{E}";        break;
-        case 203: t << "\\\"{E}";       break;
-        case 204: t << "\\`{I}";        break;
-        case 205: t << "\\'{I}";        break;
-        case 206: t << "\\^{I}";        break;
-        case 207: t << "\\\"{I}";       break;
-        case 208: t << "D ";            break; // anyone know the real code?
-        case 209: t << "\\~{N}";        break;
-        case 210: t << "\\`{O}";        break;
-        case 211: t << "\\'{O}";        break;
-        case 212: t << "\\^{O}";        break;
-        case 213: t << "\\~{O}";        break;
-        case 214: t << "\\\"{O}";       break;
-        case 215: t << "$\\times$";     break;
-        case 216: t << "\\O";           break;
-        case 217: t << "\\`{U}";        break;
-        case 218: t << "\\'{U}";        break;
-        case 219: t << "\\^{U}";        break;
-        case 220: t << "\\\"{U}";       break;
-        case 221: t << "\\'{Y}";        break;
-        case 223: t << "\"s ";          break; // assumes german package     
-        case 224: t << "\\`{a}";        break;
-        case 225: t << "\\'{a}";        break;
-        case 226: t << "\\^{a}";        break;
-        case 227: t << "\\~{a}";        break;
-        case 228: t << "\\\"{a}";       break;
-        case 229: t << "\\aa ";         break;
-        case 230: t << "\\ae ";         break;
-        case 231: t << "\\c{c}";        break;
-        case 232: t << "\\`{e}";        break;
-        case 233: t << "\\'{e}";        break;
-        case 234: t << "\\^{e}";        break;
-        case 235: t << "\\\"{e}";       break;
-        case 236: t << "\\`{\\i}";      break;
-        case 237: t << "\\'{\\i}";      break;
-        case 238: t << "\\^{\\i}";      break;
-        case 239: t << "\\\"{\\i}";     break;
-        case 241: t << "\\~{n}";        break;
-        case 242: t << "\\`{o}";        break;
-        case 243: t << "\\'{o}";        break;
-        case 244: t << "\\^{o}";        break;
-        case 245: t << "\\~{o}";        break;
-        case 246: t << "\\\"{o}";       break;
-        case 248: t << "\\o ";          break;
-        case 249: t << "\\`{u}";        break;
-        case 250: t << "\\'{u}";        break;
-        case 251: t << "\\^{u}";        break;
-        case 252: t << "\\\"{u}";       break;
-        case 253: t << "\\'{y}";        break;
-        case 255: t << "\\\"{y}";       break;           
         
         default:   
-                   if ((isupper(c) && islower(pc)) 
-                   // ||
-                   //    (pc!=':' && c==':') ||
-                   //    (pc==':' && c!=':')
-                      ) t << "\\-";
-                   t << (char)c; 
+          if (theTranslator->latexBabelPackage()=="a4j")
+          { // language is japanese
+            if (c>=128) // wide character
+            {
+              t << (char)c;
+              if (*p)  
+              {
+                c = *p++;
+                t << (char)c;
+              }
+              else // ascii char => see if we can insert hypenation hint
+              {
+                if (isupper(c) && islower(pc)) t << "\\-";
+                t << (char)c;    
+              }
+            } 
+          }
+          else // language is other than japanese
+          {
+            switch(c)
+            {
+              // the Latin-1 characters
+              case 161: t << "!`";            break;
+              case 181: t << "$\\mu$";        break;
+              case 191: t << "?`";            break;
+              case 192: t << "\\`{A}";        break;
+              case 193: t << "\\'{A}";        break;
+              case 194: t << "\\^{A}";        break;
+              case 195: t << "\\~{A}";        break;
+              case 196: t << "\\\"{A}";       break;
+              case 197: t << "\\AA ";         break;
+              case 198: t << "\\AE ";         break;
+              case 199: t << "\\c{C}";        break;
+              case 200: t << "\\`{E}";        break;
+              case 201: t << "\\'{E}";        break;
+              case 202: t << "\\^{E}";        break;
+              case 203: t << "\\\"{E}";       break;
+              case 204: t << "\\`{I}";        break;
+              case 205: t << "\\'{I}";        break;
+              case 206: t << "\\^{I}";        break;
+              case 207: t << "\\\"{I}";       break;
+              case 208: t << "D ";            break; // anyone know the real code?
+              case 209: t << "\\~{N}";        break;
+              case 210: t << "\\`{O}";        break;
+              case 211: t << "\\'{O}";        break;
+              case 212: t << "\\^{O}";        break;
+              case 213: t << "\\~{O}";        break;
+              case 214: t << "\\\"{O}";       break;
+              case 215: t << "$\\times$";     break;
+              case 216: t << "\\O";           break;
+              case 217: t << "\\`{U}";        break;
+              case 218: t << "\\'{U}";        break;
+              case 219: t << "\\^{U}";        break;
+              case 220: t << "\\\"{U}";       break;
+              case 221: t << "\\'{Y}";        break;
+              case 223: t << "\"s ";          break; // assumes german package     
+              case 224: t << "\\`{a}";        break;
+              case 225: t << "\\'{a}";        break;
+              case 226: t << "\\^{a}";        break;
+              case 227: t << "\\~{a}";        break;
+              case 228: t << "\\\"{a}";       break;
+              case 229: t << "\\aa ";         break;
+              case 230: t << "\\ae ";         break;
+              case 231: t << "\\c{c}";        break;
+              case 232: t << "\\`{e}";        break;
+              case 233: t << "\\'{e}";        break;
+              case 234: t << "\\^{e}";        break;
+              case 235: t << "\\\"{e}";       break;
+              case 236: t << "\\`{\\i}";      break;
+              case 237: t << "\\'{\\i}";      break;
+              case 238: t << "\\^{\\i}";      break;
+              case 239: t << "\\\"{\\i}";     break;
+              case 241: t << "\\~{n}";        break;
+              case 242: t << "\\`{o}";        break;
+              case 243: t << "\\'{o}";        break;
+              case 244: t << "\\^{o}";        break;
+              case 245: t << "\\~{o}";        break;
+              case 246: t << "\\\"{o}";       break;
+              case 248: t << "\\o ";          break;
+              case 249: t << "\\`{u}";        break;
+              case 250: t << "\\'{u}";        break;
+              case 251: t << "\\^{u}";        break;
+              case 252: t << "\\\"{u}";       break;
+              case 253: t << "\\'{y}";        break;
+              case 255: t << "\\\"{y}";       break;           
+              default: // normal ascii char 
+              { 
+                // see if we can insert an hyphenation hint
+                if (isupper(c) && islower(pc)) t << "\\-";
+                t << (char)c;    
+              }
+            }
+          }
       }
       pc = c;
     }
@@ -916,7 +941,7 @@ void LatexGenerator::writeChar(char c)
 
 void LatexGenerator::startClassDiagram()
 {
-  if (compactLatexFlag) t << "\\subsubsection*"; else t << "\\subsection*";
+  if (Config::compactLatexFlag) t << "\\subsubsection*"; else t << "\\subsection*";
   t << "{";
 }
 

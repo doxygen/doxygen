@@ -26,9 +26,9 @@ FileName::~FileName()
 {
 }
 
-//static QString convertSlashes(const char *s)
+//static QCString convertSlashes(const char *s)
 //{
-//  QString result=s;
+//  QCString result=s;
 //  int i,l=result.length();
 //  for (i=0;i<l;i++) if (result.at(i)=='/') result.at(i)='_';
 //  return result;
@@ -36,7 +36,7 @@ FileName::~FileName()
 
 void FileName::generateDiskNames()
 {
-  QString commonPrefix;
+  QCString commonPrefix;
   FileDef *fd=first();
   int count=0;
   while (fd) { if (!fd->isReference()) count++; fd=next(); }
@@ -66,8 +66,8 @@ void FileName::generateDiskNames()
           //printf("i=%d fd->path=`%s' fd->name=`%s'\n",i,fd->path.data(),fd->name().data());
           if (i==(int)fd->path.length())
           {
-            warning("Warning: Input file found multiple times!\n"
-                    "         The generated documentation for this file may not be correct!\n");
+            warning("Warning: Input file %s found multiple times!\n"
+                    "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
             found=TRUE;
           }
           else if (fd->path[i]!=c)

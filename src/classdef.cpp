@@ -29,9 +29,9 @@
 #include "diagram.h"
 #include "language.h"
 
-static QString stripExtension(const char *fName)
+static QCString stripExtension(const char *fName)
 {
-  QString result=fName;
+  QCString result=fName;
   if (result.right(5)==".html") result=result.left(result.length()-5);
   return result;
 }
@@ -47,7 +47,7 @@ ClassDef::ClassDef(const char *nm,CompoundType ct,const char *ref,const char *fN
     fileName="class_"+nameToFile(nm);
   if (ref) 
   {
-    //url=(QString)"doxygen=\""+ref+":\" href=\""+fileName;
+    //url=(QCString)"doxygen=\""+ref+":\" href=\""+fileName;
     exampleList = 0;
     exampleDict = 0;
   }
@@ -105,7 +105,7 @@ void ClassDef::insertMember(const MemberDef *md)
   //printf("adding %s::%s\n",name(),md->name());
   if (!reference)
   {
-    if (md->isRelated() && (extractPrivateFlag || md->protection()!=Private))
+    if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
     {
       related.append(md);
     }
@@ -152,7 +152,7 @@ void ClassDef::insertMember(const MemberDef *md)
     }
   }
   // check if we should add this member in the `all members' list
-  if (md->isFriend() || md->protection()!=Private || extractPrivateFlag)
+  if (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag)
   {
     MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
     MemberNameInfo *mni=0;
@@ -220,8 +220,8 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
 void ClassDef::writeDocumentation(OutputList &ol)
 {
   // write title
-  QString pageTitle=name().copy();
-  QString pageType;
+  QCString pageTitle=name().copy();
+  QCString pageType;
   switch(compType)
   {
     case Class:  pageType=" Class";  break;
@@ -257,12 +257,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   if (incFile)
   {
-    QString nm=incName.copy();
+    QCString nm=incName.copy();
     if (incName.isNull()) nm=incFile->name();
     ol.startTypewriter();
     ol.docify("#include <");
     ol.disable(OutputGenerator::Man);
-    if (verbatimHeaderFlag)
+    if (Config::verbatimHeaderFlag)
     {
       ol.writeObjectLink(0,fileName+"-include",0,nm);
     }
@@ -279,9 +279,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.newParagraph();
   }
 
-  if (genTagFile.length()>0) tagFile << ">" << name() << ":";
+  if (Config::genTagFile.length()>0) tagFile << ">" << name() << ":";
   
-  if (classDiagramFlag) ol.disableAllBut(OutputGenerator::Man);
+  if (Config::classDiagramFlag) ol.disableAllBut(OutputGenerator::Man);
 
   // write superclasses
   int count;
@@ -289,7 +289,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     //parseText(ol,theTranslator->trInherits()+" ");
 
-    QString inheritLine = theTranslator->trInheritsList(inherits->count());
+    QCString inheritLine = theTranslator->trInheritsList(inherits->count());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -304,7 +304,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->hasDocumentation() || cd->isReference())
         {
-          if (genTagFile.length()>0) tagFile << cd->getOutputFileBase() << "?";
+          if (Config::genTagFile.length()>0) tagFile << cd->getOutputFileBase() << "?";
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
         }
         else
@@ -320,41 +320,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
     } 
     parseText(ol,inheritLine.right(inheritLine.length()-index));
     ol.newParagraph();
-    
-#if 0
-    BaseClassDef *bcd=inherits->first();
-    while (bcd)
-    {
-      ClassDef *cd=bcd->classDef;
-      if (cd->hasDocumentation() || cd->isReference())
-      {
-        if (genTagFile.length()>0) tagFile << cd->classFile() << "?";
-        ol.writeObjectLink(cd->getReference(),cd->classFile(),0,cd->name()+bcd->templSpecifiers);
-      }
-      else
-      {
-        ol.docify(cd->name());
-      }
-      writeInheritanceSpecifier(ol,bcd);
-      bcd=inherits->next();
-      if (bcd)
-      {
-        if (inherits->at()==count-1) 
-          parseText(ol," "+theTranslator->trAnd()+" "); 
-        else 
-          ol.writeString(", ");
-      }
-    }
-    ol.writeString(".");
-#endif
   }
 
-  if (genTagFile.length()>0) tagFile << " \"" << fileName << ".html\"\n";
+  if (Config::genTagFile.length()>0) tagFile << " \"" << fileName << ".html\"\n";
 
   // write subclasses
   if ((count=inheritedBy->count())>0)
   {
-    QString inheritLine = theTranslator->trInheritedByList(inheritedBy->count());
+    QCString inheritLine = theTranslator->trInheritedByList(inheritedBy->count());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -381,37 +354,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     } 
     parseText(ol,inheritLine.right(inheritLine.length()-index));
     ol.newParagraph();
-        
-#if 0
-    parseText(ol,theTranslator->trInheritedBy()+" ");
-    BaseClassDef *bcd=inheritedBy->first();
-    while (bcd)
-    {
-      ClassDef *cd=bcd->classDef;
-      if (cd->hasDocumentation() || cd->isReference())
-      {
-        ol.writeObjectLink(cd->getReference(),cd->classFile(),0,cd->name());
-      }
-      else
-      {
-        ol.docify(cd->name());
-      }
-      writeInheritanceSpecifier(ol,bcd);
-      bcd=inheritedBy->next();
-      if (bcd) 
-      {
-        if (inheritedBy->at()==count-1) 
-          parseText(ol," "+theTranslator->trAnd()+" "); 
-        else 
-          ol.writeString(", ");
-      }
-    }
-    ol.writeString(".");
-    ol.newParagraph();
-#endif
   }
 
-  if (classDiagramFlag) ol.enableAll();
+  if (Config::classDiagramFlag) ol.enableAll();
   
   count=0;
   BaseClassDef *ibcd;
@@ -419,23 +364,17 @@ void ClassDef::writeDocumentation(OutputList &ol)
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
-    if (//(icd->protection()!=Private || extractPrivateFlag) &&
-        //(icd->hasDocumentation() || !hideClassFlag || icd->isReference()) 
-        icd->isVisibleExt()
-       ) count++;
+    if ( icd->isVisibleExt()) count++;
     ibcd=inheritedBy->next();
   }
   ibcd=inherits->first();
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
-    if (//(icd->protection()!=Private || extractPrivateFlag) &&
-        //(icd->hasDocumentation() || !hideClassFlag | icd->isReference()) 
-        icd->isVisibleExt()
-       ) count++;
+    if ( icd->isVisibleExt()) count++;
     ibcd=inherits->next();
   }
-  if (classDiagramFlag && count>0) 
+  if (Config::classDiagramFlag && count>0) 
     // write class diagram
   {
     ClassDiagram diagram(this); // create a diagram of this class.
@@ -465,7 +404,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   writeMemberDecs(ol,this,0,0,theTranslator->trProtectedMembers(),0,&proMembers); 
   writeMemberDecs(ol,this,0,0,theTranslator->trProtectedSlots(),0,&proSlots); 
   writeMemberDecs(ol,this,0,0,theTranslator->trStaticProtectedMembers(),0,&proStaticMembers); 
-  if (extractPrivateFlag)
+  if (Config::extractPrivateFlag)
   {
     writeMemberDecs(ol,this,0,0,theTranslator->trPrivateMembers(),0,&priMembers); 
     writeMemberDecs(ol,this,0,0,theTranslator->trPrivateSlots(),0,&priSlots); 
@@ -491,10 +430,28 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
-    if (tempArgs) // class is a template
+    
+    ArgumentList *al=0;
+    int ti;
+    ClassDef *pcd=0;
+    int pi=0;
+    // find the outer most class scope
+    while ((ti=name().find("::",pi))!=-1 && 
+           (pcd=getClass(name().left(ti)))==0
+          ) pi=ti+2;
+    
+    if (pcd)
+    {
+      al=pcd->templateArguments();
+    }
+    else
+    {
+      al=tempArgs;
+    }
+    
+    if (al) // class is a template
     {
       ol.startSubsubsection(); 
-      ArgumentList *al=tempArgs;
       ol.docify("template<");
       Argument *a=al->first();
       while (a)
@@ -554,7 +511,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   signals.countDocMembers();
     
   if ( pubMembers.typedefCount() + proMembers.typedefCount() + 
-       (extractPrivateFlag ? priMembers.typedefCount() : 0 )
+       (Config::extractPrivateFlag ? priMembers.typedefCount() : 0 )
      )
   {
     ol.writeRuler();
@@ -564,7 +521,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Typedef);
     writeMemberDocs(ol,&proMembers,name(),MemberDef::Typedef); 
-    if (extractPrivateFlag)
+    if (Config::extractPrivateFlag)
     {
       writeMemberDocs(ol,&priMembers,name(),MemberDef::Typedef); 
     }
@@ -572,7 +529,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (pubMembers.enumCount() +
       proMembers.enumCount() +
-      ( extractPrivateFlag ?  priMembers.enumCount() : 0 )
+      ( Config::extractPrivateFlag ?  priMembers.enumCount() : 0 )
      )
   {
     ol.writeRuler();
@@ -582,7 +539,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Enumeration);
     writeMemberDocs(ol,&proMembers,name(),MemberDef::Enumeration); 
-    if (extractPrivateFlag)
+    if (Config::extractPrivateFlag)
     {
       writeMemberDocs(ol,&priMembers,name(),MemberDef::Enumeration); 
     }
@@ -590,7 +547,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
  
   if (pubMembers.enumValueCount() +
       proMembers.enumValueCount() +
-      ( extractPrivateFlag ?  priMembers.enumValueCount() : 0 )
+      ( Config::extractPrivateFlag ?  priMembers.enumValueCount() : 0 )
      )
   {
     ol.writeRuler();
@@ -600,7 +557,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::EnumValue);
     writeMemberDocs(ol,&proMembers,name(),MemberDef::EnumValue); 
-    if (extractPrivateFlag)
+    if (Config::extractPrivateFlag)
     {
       writeMemberDocs(ol,&priMembers,name(),MemberDef::EnumValue); 
     }
@@ -610,7 +567,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
        pubStaticMembers.funcCount() +
        proMembers.funcCount() + proSlots.funcCount() +
        proStaticMembers.funcCount() +
-       (extractPrivateFlag ?
+       (Config::extractPrivateFlag ?
           priMembers.funcCount() + priSlots.funcCount() +
           priStaticMembers.funcCount() : 0
        ) 
@@ -628,7 +585,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeMemberDocs(ol,&proMembers,name(),MemberDef::Function); 
     writeMemberDocs(ol,&proSlots,name(),MemberDef::Slot); 
     writeMemberDocs(ol,&proStaticMembers,name(),MemberDef::Function); 
-    if (extractPrivateFlag)
+    if (Config::extractPrivateFlag)
     {
       writeMemberDocs(ol,&priMembers,name(),MemberDef::Function); 
       writeMemberDocs(ol,&priSlots,name(),MemberDef::Slot); 
@@ -636,7 +593,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
   }
   
-  if ( friends.count() + related.count() )
+  if ( friends.friendCount() + related.count() )
   {
     ol.writeRuler();
     ol.startGroupHeader();
@@ -649,7 +606,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   if ( pubMembers.varCount() + pubStaticMembers.varCount() +
        proMembers.varCount() + proStaticMembers.varCount() +
-       (extractPrivateFlag ? 
+       (Config::extractPrivateFlag ? 
           priMembers.varCount() + priStaticMembers.varCount() : 0
        )
      )
@@ -663,7 +620,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeMemberDocs(ol,&pubStaticMembers,name(),MemberDef::Variable); 
     writeMemberDocs(ol,&proMembers,name(),MemberDef::Variable); 
     writeMemberDocs(ol,&proStaticMembers,name(),MemberDef::Variable); 
-    if (extractPrivateFlag)
+    if (Config::extractPrivateFlag)
     {
       writeMemberDocs(ol,&priMembers,name(),MemberDef::Variable); 
       writeMemberDocs(ol,&priStaticMembers,name(),MemberDef::Variable); 
@@ -691,13 +648,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
 
       ol.writeListItem();
-      QString path=fd->getPath().copy();
-      if (fullPathNameFlag)
+      QCString path=fd->getPath().copy();
+      if (Config::fullPathNameFlag)
       {
         // strip part of the path
-        if (path.left(stripFromPath.length())==stripFromPath)
+        if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
         {
-          path=path.right(path.length()-stripFromPath.length());
+          path=path.right(path.length()-Config::stripFromPath.length());
         }
         ol.docify(path);
       }
@@ -723,7 +680,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
   ol.enableAll();
  
   endFile(ol);
@@ -776,7 +733,7 @@ void ClassDef::writeMemberList(OutputList &ol)
       if (cd && !md->name().isEmpty() && md->name()[0]!='@' && 
           (
            md->isFriend() || 
-           (mi->prot!=Private && (protect!=Private || extractPrivateFlag))
+           (mi->prot!=Private && (protect!=Private || Config::extractPrivateFlag))
           )
          )
       {
@@ -784,7 +741,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         if (cd->isVisible() && (md->hasDocumentation() || md->isReference())) 
           // create a link to the documentation
         {
-          QString name=mi->ambiguityResolutionScope+md->name();
+          QCString name=mi->ambiguityResolutionScope+md->name();
           ol.writeListItem();
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
               md->anchor(),name);
@@ -801,7 +758,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("\n");
           memberWritten=TRUE;
         }
-        else if (!hideMemberFlag) // no documentation, 
+        else if (!Config::hideMemberFlag) // no documentation, 
                                   // generate link to the class instead.
         {
           ol.writeListItem();
@@ -874,7 +831,7 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,fileName+"-include",name()+" Include File");
   startTitle(ol);
-  QString n=incName.copy();
+  QCString n=incName.copy();
   if (incName.isNull()) n=incFile->name();
   parseText(ol,n);
   endTitle(ol,0);
@@ -917,7 +874,7 @@ bool ClassDef::hasExamples()
 // write the list of all examples that are use this class.
 void ClassDef::writeExample(OutputList &ol)
 {
-  QString exampleLine=theTranslator->trWriteList(exampleList->count());
+  QCString exampleLine=theTranslator->trWriteList(exampleList->count());
  
   QRegExp marker("@[0-9]+");
   int index=0,newIndex,matchLen;
@@ -970,9 +927,9 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
   }
 }
 
-QString ClassDef::getTemplateNameString()
+QCString ClassDef::getTemplateNameString()
 {
-  QString result;
+  QCString result;
   if (!tempArgs || tempArgs->count()==0) return result;
   result="<";
   Argument *a=tempArgs->first();

@@ -259,7 +259,15 @@ void printSearchPage(bool open=FALSE)
 
 int readInt(FILE *f)
 {
-  return (fgetc(f)<<24)+(fgetc(f)<<16)+(fgetc(f)<<8)+fgetc(f);
+  unsigned char c_24 = fgetc(f);
+  unsigned char c_16 = fgetc(f);
+  unsigned char c_08 = fgetc(f);
+  unsigned char c_00 = fgetc(f);
+  return ((unsigned int)c_24<<24)+
+         ((unsigned int)c_16<<16)+
+         ((unsigned int)c_08<<8)+
+         c_00;
+  //return (fgetc(f)<<24)+(fgetc(f)<<16)+(fgetc(f)<<8)+fgetc(f);
 }
 
 //----------------------------------------------------------------------------
@@ -755,10 +763,10 @@ void fileToBuf(const char *name, char **buf)
 {
   FILE *f;
   struct stat file_stats;
-  if ((f=fopen(name,"r"))==NULL) return;
+  if ((f=fopen(name,"rb"))==NULL) return;
   if (stat(name,&file_stats)==-1)
   {
-    message("Error: could not fstat header file %s\n",name);
+    message("Error: could not fstat file %s\n",name);
     exit(1);
   }
   unsigned int len=file_stats.st_size;
@@ -769,7 +777,7 @@ void fileToBuf(const char *name, char **buf)
   }
   if (fread(*buf,1,len,f)!=len)
   {
-    message("Error: could not read header file %s\n",name);
+    message("Error: could not read file %s\n",name);
     exit(1);
   }
   (*buf)[len]='\0';
@@ -808,12 +816,20 @@ void getConfig(const char *s)
   
   char headerFile[MAXSTRLEN];
   strcpy(headerFile,s);
+#if defined(_WIN32)
+  strcat(headerFile,"\\header.html");
+#else
   strcat(headerFile,"/header.html");
+#endif
   fileToBuf(headerFile,&headerBuf);
   
   char footerFile[MAXSTRLEN];
   strcpy(footerFile,s);
+#if defined(_WIN32)
+  strcat(footerFile,"\\footer.html");
+#else
   strcat(footerFile,"/footer.html");
+#endif
   fileToBuf(footerFile,&footerBuf);
   
 }
@@ -908,16 +924,24 @@ int main(int argc,char **argv)
   {
     char configFile[MAXSTRLEN];
     strcpy(configFile,argv[argIndex]);
+#if defined(_WIN32)
+    strcat(configFile,"\\search.cfg");
+#else
     strcat(configFile,"/search.cfg");
+#endif
 
     char indexFile[MAXSTRLEN];
     strcpy(indexFile,argv[argIndex]);
+#if defined(_WIN32)
+    strcat(indexFile,"\\search.idx");
+#else
     strcat(indexFile,"/search.idx");
+#endif
 
     FileInfo *fi=fileList.add();
     FILE *g;
     
-    if ((fi->f=fopen(indexFile,"r"))==NULL)
+    if ((fi->f=fopen(indexFile,"rb"))==NULL)
     {
       message("Error: could not open index file %s\n",indexFile);
       exit(1);

@@ -40,10 +40,10 @@ void MemberList::countDecMembers()
   MemberDef *md=first();
   while (md)
   {
-    if ((!hideMemberFlag || md->hasDocumentation()) &&
-        (!hideMemberFlag || !md->documentation().isEmpty() || 
-         briefMemDescFlag || repeatBriefFlag
-        ) || extractAllFlag || 
+    if ((!Config::hideMemberFlag || md->hasDocumentation()) &&
+        (!Config::hideMemberFlag || !md->documentation().isEmpty() || 
+         Config::briefMemDescFlag || Config::repeatBriefFlag
+        ) || Config::extractAllFlag || 
         (md->isEnumerate() &&
          md->hasDocumentedEnumValues()
         )
@@ -59,7 +59,7 @@ void MemberList::countDecMembers()
         case MemberDef::EnumValue:   enumValCnt++; break;
         case MemberDef::Typedef:     typeCnt++;    break;
         case MemberDef::Prototype:   protoCnt++;   break;
-        case MemberDef::Define:      if (extractAllFlag || md->argsString() || md->hasDocumentation() ) 
+        case MemberDef::Define:      if (Config::extractAllFlag || md->argsString() || md->hasDocumentation() ) 
                                        defCnt++;     
                                      break;
         case MemberDef::Friend:      friendCnt++;  break;
@@ -73,18 +73,11 @@ void MemberList::countDecMembers()
 
 void MemberList::countDocMembers()
 {
-  varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt;
+  varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
   MemberDef *md=first();
   while (md)
   {
-    //if (extractAllFlag || /*md->hasDocumentation()*/
-    //    !md->documentation().isEmpty() ||
-    //    (!md->briefDescription().isEmpty() && 
-    //     !briefMemDescFlag && 
-    //     repeatBriefFlag 
-    //    )
-    //   )
-    if (extractAllFlag || md->detailsAreVisible())
+    if (Config::extractAllFlag || md->detailsAreVisible())
     {
       QRegExp r("@[0-9]+");
       int dummy;

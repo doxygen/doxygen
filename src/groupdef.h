@@ -17,7 +17,7 @@
 #ifndef GROUPDEF_H
 #define GROUPDEF_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qlist.h>
 #include "definition.h"
 
@@ -36,7 +36,7 @@ class GroupDef : public Definition
     GroupDef(const char *name,const char *title);
    ~GroupDef();
     //const char *groupFile() const { return fileName; }
-    QString getOutputFileBase() const { return fileName; }
+    QCString getOutputFileBase() const { return fileName; }
     const char *groupTitle() const { return title; }
     void addFile(const FileDef *def); 
     void addClass(const ClassDef *def);
@@ -45,8 +45,8 @@ class GroupDef : public Definition
     int countMembers() const;
 
   private: 
-    QString title;                      // title of the group
-    QString fileName;                   // base name of the generated file
+    QCString title;                      // title of the group
+    QCString fileName;                   // base name of the generated file
     FileList *fileList;                 // list of all files in the group
     ClassList *classList;               // list of all classes in the group
     NamespaceList *namespaceList;       // list of all namespace in the group

@@ -14,246 +14,263 @@
  *
  */
 
-#ifndef TRANSLATOR_NL_H
-#define TRANSLATOR_NL_H
+
+/**
+ * translator_es.h modifief by Francisco Oltra 
+ * Some notes: 
+ * - Computer related use of the spanish language differs from
+ * country to country, so some words might not sound so good
+ * to some people (but it does to me, *grin* ). A good example
+ * is the spanish for File: i use "Archivo", others may prefer
+ * "Fichero".
+ * - Some words were not translated for understandability, since
+ * we are talking about a  computer program here!
+ * - Some of the functions are called in some order coherent with
+ * the english grammar, this results in some ugly constructs.
+ */
+
+#ifndef TRANSLATOR_ES_H
+#define TRANSLATOR_ES_H
 
 #include "translator.h"
 
-class TranslatorDutch : public Translator
+class TranslatorSpanish : public Translator
 {
   public:
     QCString latexBabelPackage()
-    { return "dutch"; }
+    { return "spanish"; }
     QCString trRelatedFunctions()
-    { return "Gerelateerde functies"; }
+    { return "Funciones Relacionadas"; }
     QCString trRelatedSubscript()
-    { return "(Merk op dat dit geen member functies zijn.)"; }
+    { return "(Note que estos no son funciones miembro.)"; }
     QCString trDetailedDescription()
-    { return "Gedetaileerde Beschrijving"; }
+    { return "Descripción Detallada"; }
     QCString trMemberTypedefDocumentation()
-    { return "Documentatie van type definitie members"; }
+    { return "Documentación de Miembros Typedef"; }
     QCString trMemberEnumerationDocumentation()
-    { return "Documentatie van enumeratie members"; }
+    { return "Documentación de Miembros de Enumeración"; }
     QCString trEnumerationValueDocumentation()
-    { return "Documentatie van enumeratie waarden"; }
+    { return "Documentación de los Valores de Enumeración"; }
     QCString trMemberFunctionDocumentation()
-    { return "Documentatie van functie members"; }
+    { return "Documentación de Funciones Miembro"; }
     QCString trMemberDataDocumentation()
-    { return "Documentatie van data members"; }
+    { return "Documentación de Datos Miembro"; }
     QCString trGeneratedFrom(const char *s,bool single)
     { 
-      QCString result=(QCString)"De documentatie voor deze"+s+
-                     " is gegenereerd op grond van de volgende file";
+      QCString result=(QCString)"La documentación para esta"+s+
+                     " fue generada del siguiente archivo";
       if (single) result+=":";   else result+="s:";
       return result;
     }
     QCString trMore()
-    { return "Meer..."; }
+    { return "Más..."; }
     QCString trListOfAllMembers()
-    { return "Lijst van alle members."; }
+    { return "Lista de todos los miembros."; }
     QCString trMemberList()
-    { return "Member Lijst"; }
+    { return "Lista de Miembros"; }
     QCString trThisIsTheListOfAllMembers()
-    { return "Dit is de complete lijst van alle members voor"; }
+    { return "Esta es la lista completa de miembros para "; }
     QCString trIncludingInheritedMembers()
-    { return ", inclusief alle overge&euml;rfde members."; }
+    { return ", incluyendo todos los miembros heredados."; }
     QCString trGeneratedAutomatically(const char *s)
-    { QCString result="Automatisch gegenereerd door Doxygen"; 
-      if (s) result+=(QCString)" voor "+s;
-      result+=" uit de programmacode."; 
+    { QCString result="Generado automáticamente por Doxygen"; 
+      if (s) result+=(QCString)" para "+s;
+      result+=" desde el código fuente."; 
       return result;
     }
     QCString trEnumName()
-    { return "enum naam"; }
+    { return "nombre de enum"; }
     QCString trEnumValue()
-    { return "enum waarde"; }
+    { return "valor de enum"; }
     QCString trDefinedIn()
-    { return "gedefinieerd in"; }
+    { return "definido en"; }
     QCString trVerbatimText(const char *f)
-    { return (QCString)"Dit is de letterlijke tekst van de include file "+f+"."; }
+    { return (QCString)"Esto es texto verbatim del archivo incluído "+f+"."; }
     QCString trModules()
-    { return "Modules"; }
+    { return "Modulos"; }
     QCString trClassHierarchy()
-    { return "Klasse Hi&euml;rarchie"; }
+    { return "Jerarquía de la clase"; }
     QCString trCompoundList()
-    { return "Compound Lijst"; }
+    { return "Lista de Tipos Compuestos"; }
     QCString trFileList()
-    { return "File Lijst"; }
+    { return "Lista de Archivos"; }
     QCString trHeaderFiles()
-    { return "Header Lijst"; }
+    { return "Archivos de Cabecera"; }
     QCString trCompoundMembers()
-    { return "Compound Members"; }
+    { return "Miembros de Compuestos"; }
     QCString trFileMembers()
-    { return "File members"; }
+    { return "Miembros de los Archivos"; }
     QCString trRelatedPages()
-    { return "Gerelateerde pagina's"; }
+    { return "Páginas Relacionadas"; }
     QCString trExamples()
-    { return "Voorbeelden"; }
+    { return "Ejemplos"; }
     QCString trSearch()
-    { return "Zoeken"; }
+    { return "Buscar"; }
     QCString trClassHierarchyDescription()
-    { return "Deze inheritance lijst is min of meer alfabetisch "
-             "gesorteerd:";
+    { return "Esta lista de herencia está ordenada alfabéticamente, "
+             "pero no completamente:";
     }
     QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Hieronder volgt de lijst met alle ";
-      if (!extractAll) result+="gedocumenteerde ";
-      result+="files, elk met een korte beschrijving:";
+      QCString result="Esta es una lista de todos ";
+      result+="los archivos ";
+      if (!extractAll) result+="documentados ";
+      result+="con breves descripciones:";
       return result;
     }
     QCString trCompoundListDescription()
-    { return "Hieronder volgen de klassen, structs en "
-             "unions met voor elk een korte beschrijving:"; 
+    { return "Aquí estan las clases, estructuras y "
+             "uniones con descripciones breves:"; 
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Hieronder volgt de lijst met alle ";
-      if (!extractAll) result+="gedocumenteerde ";
-      result+="klasse members met links naar ";
-      if (extractAll) result+="de klasse documentatie voor elke member:";
-      else result+="de klassen waartoe ze behoren:";
+      QCString result="Esta es una lista de todos ";
+      result+="miembros de clases ";
+      if (!extractAll) result+="documentados ";
+      result+="con enlaces a ";
+      if (extractAll) result+="la documentación de clase para cada miembro:";
+      else result+="las clases a que pertenecen:";
       return result;
     }
     QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Hieronder volgt de lijst met alle ";
-      if (!extractAll) result+="gedocumenteerde ";
-      result+="file members met links naar ";
-      if (extractAll) result+="de file documentatie voor elke member:";
-      else result+="de files waartoe ze behoren:";
+      QCString result="Esta es una lista de todos los miembros de los archivos ";
+      if (!extractAll) result+="documentados ";
+      result+="con enlaces a ";
+      if (extractAll) result+="la documentación de archivo para cada miembro:";
+      else result+="los archivos a que pertenecen:";
       return result;
     }
     QCString trHeaderFilesDescription()
-    { return "Hieronder volgen de header files die de API vormen:"; }
+    { return "Aquí estan los archivos de cabecera que forman el API:"; }
     QCString trExamplesDescription()
-    { return "Hieronder volgt de lijst met alle voorbeelden:"; }
+    { return "Esta es la lista de todos los ejemplos:"; }
     QCString trRelatedPagesDescription()
-    { return "Hieronder volgt de lijst met alle pagina's die gerelateerde documentatie bevatten:"; }
+    { return "Esta es una lista de todos las páginas con documentación relacionada:"; }
     QCString trModulesDescription()
-    { return "Hieronder volgt de lijst met alle modules:"; }
+    { return "Esta es una lista con todos los modulos:"; }
     QCString trNoDescriptionAvailable()
-    { return "Geen korte beschrijving beschikbaar"; }
+    { return "No existe descripción disponible"; }
 
     QCString trDocumentation()
-    { return "Documentatie"; }
+    { return "Documentación"; }
     QCString trModuleIndex()
-    { return "Module Index"; }
+    { return "Índice de Modulos"; }
     QCString trHierarchicalIndex()
-    { return "Hi&euml;rarchische Index"; }
+    { return "Índice Jerárquico"; }
     QCString trCompoundIndex()
-    { return "Compound Index"; }
+    { return "Índice de Tipos Compuestos"; }
     QCString trFileIndex() 
-    { return "File Index"; }
+    { return "Índice de Archivos"; }
     QCString trModuleDocumentation()
-    { return "Module Documentatie"; }
+    { return "Documentación de los Modulos"; }
     QCString trClassDocumentation()
-    { return "Klasse Documentatie"; }
+    { return "Documentación de las clases"; }
     QCString trFileDocumentation()
-    { return "File Documentatie"; }
+    { return "Documentación de los Archivos"; }
     QCString trExampleDocumentation()
-    { return "Documentatie van voorbeelden"; }
+    { return "Documentación de los Ejemplos"; }
     QCString trPageDocumentation()
-    { return "Documentatie van gerelateerde pagina's"; }
+    { return "Documentación de las Páginas Relacionadas"; }
     QCString trReferenceManual()
-    { return "Naslagwerk"; }
+    { return "Manual de Referencia"; }
 
     QCString trDefines()
-    { return "Defines"; }
+    { return "Definiciones"; }
     QCString trFuncProtos()
-    { return "Functie Prototypes"; }
+    { return "Prototipo de Funciones"; }
     QCString trTypedefs()
     { return "Typedefs"; }
     QCString trEnumerations()
-    { return "Enumeraties"; }
+    { return "Enumeraciones"; }
     QCString trFunctions()
-    { return "Functies"; }
+    { return "Funciones"; }
     QCString trVariables()
-    { return "Variabelen"; }
+    { return "Variables"; }
     QCString trEnumerationValues()
-    { return "Enumeratie waarden"; }
+    { return "Valores de Enumeraciones"; }
     QCString trAuthor()
-    { return "auteur"; }
+    { return "Autor"; }
     QCString trDefineDocumentation()
-    { return "Documentatie van defines"; }
+    { return "Documentación de las Definiciones"; }
     QCString trFunctionPrototypeDocumentation()
-    { return "Documentatie van functie Prototypes"; }
+    { return "Documentación de los Prototipos de Funciones"; }
     QCString trTypedefDocumentation()
-    { return "Documentatie van typedefs"; }
+    { return "Documentación de Typedefs"; }
     QCString trEnumerationTypeDocumentation()
-    { return "Documentatie van enumeratie types"; }
+    { return "Documentación de Enumeración de tipos"; }
     QCString trFunctionDocumentation()
-    { return "Documentatie van functies"; }
+    { return "Documentación de Funciones"; }
     QCString trVariableDocumentation()
-    { return "Documentatie van variabelen"; }
+    { return "Documentación de Variables"; }
     QCString trCompounds()
-    { return "Compounds"; }
+    { return "Tipos Compuestos"; }
     QCString trFiles()
-    { return "Files"; }
+    { return "Archivos"; }
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QCString result=(QCString)"Gegenereerd op "+date;
-      if (projName) result+=(QCString)" voor "+projName;
-      result+=(QCString)" door";
+      QCString result=(QCString)"Generado el "+date;
+      if (projName) result+=(QCString)" para "+projName;
+      result+=(QCString)" por";
       return result;
     }
     QCString trWrittenBy()
     {
-      return "geschreven door";
+      return "escrito por";
     }
     QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Klasse diagram voor "+clName;
+      return (QCString)"Diagrama de clases para "+clName;
     }
+
     QCString trForInternalUseOnly()
-    { return "Alleen voor intern gebruik."; }
+    { return "Para uso interno solamente."; }
     QCString trReimplementedForInternalReasons()
-    { return "Om interne rederene opnieuwd ge&iuml;mplemented; "
-             "de API wordt er niet door be&iuml;nvloed."; 
+    { return "Reimplementado por razones internas; el API no se ve afectado."; 
     }
     QCString trWarning()
-    { return "Waarschuwing"; }
+    { return "Atención"; }
     QCString trBugsAndLimitations()
-    { return "Fouten en beperkingen"; }
+    { return "Bugs y Limitaciones"; }
     QCString trVersion()
-    { return "Versie"; }
+    { return "Versión"; }
     QCString trDate()
-    { return "Datum"; }
+    { return "Fecha"; }
     QCString trAuthors()
-    { return "Auteur(s)"; }
+    { return "Autor(es)"; }
     QCString trReturns()
-    { return "Retourneerd"; }
+    { return "Devuelve"; }
     QCString trSeeAlso()
-    { return "Zie ook"; }
+    { return "Ver también"; }
     QCString trParameters()
-    { return "Parameters"; }
+    { return "Parámetros"; }
     QCString trExceptions()
-    { return "Excepties"; }
+    { return "Excepciones"; }
     QCString trGeneratedBy()
-    { return "Gegenereerd door"; }
+    { return "Generado por"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307 
 //////////////////////////////////////////////////////////////////////////
     
     QCString trNamespaceList()
-    { return "Namespace Lijst"; }
+    { return "Lista de Namespaces"; }
     QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Hier is een lijst met alle ";
-      if (!extractAll) result+="gedocumenteerde ";
-      result+="namespaces met voor elk een korte beschrijving:";
+      QCString result="Esta es una lista de los namespaces ";
+      if (!extractAll) result+="documentados ";
+      result+="con descripciones breves:";
       return result;
     }
     QCString trFriends()
-    { return "Friends"; }
+    { return "Clases Amigas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
     
     QCString trRelatedFunctionDocumentation()
-    { return "Documentatie van friends en gerelateerde functies"; }
+    { return "Documentación de Clases Amigas y Funciones Relacionadas"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -266,49 +283,49 @@ class TranslatorDutch : public Translator
       QCString result=(QCString)clName+" ";
       switch(compType)
       {
-        case ClassDef::Class:  result+=" Class"; break;
-        case ClassDef::Struct: result+=" Struct"; break;
-        case ClassDef::Union:  result+=" Union"; break;
+        case ClassDef::Class:  result+=" Clase"; break;
+        case ClassDef::Struct: result+=" Estructura"; break;
+        case ClassDef::Union:  result+=" Unión"; break;
       }
-      result+=" Referentie";
+      result+=" Referencia";
       return result;
     }
     virtual QCString trFileReference(const char *fileName)
       // used as the title of the HTML page of a file
     {
       QCString result=fileName;
-      result+=" File Referentie"; 
+      result+=" Referencia de Archivos"; 
       return result;
     }
     virtual QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
       QCString result=namespaceName;
-      result+=" Namespace Referentie";
+      result+=" Referencia de Namespace";
       return result;
     }
     
     // these are for the member sections of a class, struct or union 
     virtual QCString trPublicMembers()
-    { return "Public Members"; }
+    { return "Miembros Públicos"; }
     virtual QCString trPublicSlots()
-    { return "Public Slots"; }
+    { return "Slots Públicos"; }
     virtual QCString trSignals()
-    { return "Signals"; }
+    { return "Señales"; }
     virtual QCString trStaticPublicMembers()
-    { return "Static Public Members"; }
+    { return "Miembros Estáticos Públicos"; }
     virtual QCString trProtectedMembers()
-    { return "Protected Members"; }
+    { return "Miembros Protegidos"; }
     virtual QCString trProtectedSlots()
-    { return "Protected Slots"; }
+    { return "Slots Protegidos"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Static Protected Members"; }
+    { return "Miembros Protegidos Estáticos"; }
     virtual QCString trPrivateMembers()
-    { return "Private Members"; }
+    { return "Miembros Privados"; }
     virtual QCString trPrivateSlots()
-    { return "Private Slots"; }
+    { return "Slots Privados"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Static Private Members"; }
+    { return "Miembros Estáticos Privados"; }
     // end of member sections 
     
     virtual QCString trWriteList(int numEntries)
@@ -329,7 +346,7 @@ class TranslatorDutch : public Translator
           if (i<numEntries-2) // not the fore last entry 
             result+=", ";
           else                // the fore last entry
-            result+=" en ";
+            result+=" y ";
         }
       }
       return result; 
@@ -339,50 +356,50 @@ class TranslatorDutch : public Translator
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
     {
-      return "Erft over van "+trWriteList(numEntries)+".";
+      return "Hereda a "+trWriteList(numEntries)+".";
     }
     virtual QCString trInheritedByList(int numEntries)
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
-      return "Wordt overge&euml;rfd door "+trWriteList(numEntries)+".";
+      return "Heredado por "+trWriteList(numEntries)+".";
     }
     virtual QCString trReimplementedFromList(int numEntries)
       // used in member documentation blocks to produce a list of 
       // members that are hidden by this one.
     {
-      return "Nieuwe implementatie van "+trWriteList(numEntries)+".";
+      return "Reimplementado por "+trWriteList(numEntries)+".";
     }
     virtual QCString trReimplementedInList(int numEntries)
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
-      return "Opnieuw ge&iuml;mplementeerd in "+trWriteList(numEntries)+".";
+      return "Reimplementado en "+trWriteList(numEntries)+".";
     }
 
     virtual QCString trNamespaceMembers()
       // This is put above each page as a link to all members of namespaces.
-    { return "Namespace Members"; }
+    { return "Miembros del Namespace"; }
     virtual QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     { 
-      QCString result="Hier is een lijst van alle ";
-      if (!extractAll) result+="gedocumenteerde ";
-      result+="namespace members met links naar ";
+      QCString result="Esta es una lista de todos los miembros de namespace ";
+      if (!extractAll) result+="documentados ";
+      result+="con enlaces a ";
       if (extractAll) 
-        result+="de namespace documentatie voor iedere member:";
+        result+="a la documentación de namespaces para cada miembro:";
       else 
-        result+="de namespaces waartoe ze behoren:";
+        result+="los namespaces a los que pertenecen:";
       return result;
     }
     virtual QCString trNamespaceIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all namespaces.
-    { return "Namespace Index"; }
+    { return "Índice de Namespaces"; }
     virtual QCString trNamespaceDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
-    { return "Namespace Documentatie"; }
+    { return "Documentación de Namespaces"; }
 };
 
 #endif

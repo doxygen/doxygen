@@ -83,6 +83,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberSections() {} 
     void startMemberHeader() { startGroupHeader(); }
     void endMemberHeader() { endGroupHeader(); }
+    void startMemberSubtitle() {}
+    void endMemberSubtitle() {}
     void startMemberList()  { t << "\\begin{CompactItemize}" << endl; }
     void endMemberList()    { t << "\\end{CompactItemize}"   << endl; }
     void startMemberItem() { t << "\\item " << endl; }

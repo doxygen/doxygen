@@ -16,31 +16,32 @@
 
 #include "entry.h"
 
-static int newCount=0;
+int Entry::num=0;
 
 Entry::Entry()
 {
-  num=newCount++;
+  num++;
   //printf("New Entry %d\n",num);
   parent=0;
   sublist = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends = new QList<BaseInfo>;
   extends->setAutoDelete(TRUE);
-  groups = new QList<QString>;
+  groups = new QList<QCString>;
   groups->setAutoDelete(TRUE);
-  anchors = new QList<QString>;
+  anchors = new QList<QCString>;
   anchors->setAutoDelete(TRUE);
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
   tArgList = 0;
+  mGrpId = -1;
   reset();
 }
 
 Entry::Entry(const Entry &e)
 {
-  num=newCount++;
+  num++;
   //printf("Copy New Entry %d\n",num);
   section     = e.section;
   protection  = e.protection;
@@ -62,13 +63,14 @@ Entry::Entry(const Entry &e)
   inside      = e.inside.copy();
   fileName    = e.fileName.copy();
   startLine   = e.startLine;
+  mGrpId      = e.mGrpId;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
   extends->setAutoDelete(TRUE);
-  groups      = new QList<QString>;
+  groups      = new QList<QCString>;
   groups->setAutoDelete(TRUE);
-  anchors     = new QList<QString>;
+  anchors     = new QList<QCString>;
   anchors->setAutoDelete(TRUE);
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
@@ -92,17 +94,17 @@ Entry::Entry(const Entry &e)
   }
   
   // deep copy group list
-  QListIterator<QString> sli(*e.groups);
-  QString *s;
+  QListIterator<QCString> sli(*e.groups);
+  QCString *s;
   for (;(s=sli.current());++sli)
   {
-    groups->append(new QString(*s));
+    groups->append(new QCString(*s));
   }
   
-  QListIterator<QString> sli2(*e.anchors);
+  QListIterator<QCString> sli2(*e.anchors);
   for (;(s=sli2.current());++sli2)
   {
-    anchors->append(new QString(*s));
+    anchors->append(new QCString(*s));
   }
 
   // deep copy argument list
@@ -140,8 +142,8 @@ Entry::~Entry()
   delete groups;
   delete anchors;
   delete argList;
-  //printf("Entry::~Entry() tArgList=%p\n",tArgList);
   delete tArgList;
+  num--;
 }
 
 void Entry::addSubEntry(Entry *current)
@@ -171,6 +173,7 @@ void Entry::reset()
   args.resize(0);
   exception.resize(0);
   program.resize(0);
+  body.resize(0);
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
@@ -178,6 +181,7 @@ void Entry::reset()
   brief.resize(0);
   inside.resize(0);
   fileName.resize(0);
+  mGrpId = -1;
   section = EMPTY_SEC;
   sig     = FALSE;
   virt    = Normal;
@@ -202,6 +206,7 @@ int Entry::getSize()
   size+=args.length()+1;
   size+=exception.length()+1;
   size+=program.length()+1;
+  size+=body.length()+1;
   size+=includeFile.length()+1;
   size+=includeName.length()+1;
   size+=doc.length()+1;
@@ -216,7 +221,7 @@ int Entry::getSize()
     size+=bi->name.length()+1+sizeof(bi->prot)+sizeof(bi->virt);
     bi=extends->next(); 
   }
-  QString *s=groups->first();
+  QCString *s=groups->first();
   while (s)
   {
     size+=sizeof(QLNode);

@@ -18,13 +18,13 @@
 #ifndef _CONSTEXP_H
 #define _CONSTEXP_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include "cppvalue.h"
 
-extern bool parseCppExpression(const QString &s);
+extern bool parseCppExpression(const QCString &s);
 extern int cppExpYYparse();
 extern int cppExpYYdebug;
-extern QString strToken;
+extern QCString strToken;
 extern CPPValue resultValue;
 
 #endif

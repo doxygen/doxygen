@@ -29,7 +29,7 @@ class MemberName : public QList<MemberDef>
    
     int compareItems(GCI item1,GCI item2);
   private:
-    QString name;
+    QCString name;
 };
 
 class MemberNameIterator : public QListIterator<MemberDef>
@@ -62,8 +62,8 @@ struct MemberInfo
   MemberDef *memberDef;
   Protection prot;
   Specifier virt;
-  QString scopePath;
-  QString ambiguityResolutionScope; 
+  QCString scopePath;
+  QCString ambiguityResolutionScope; 
 };
 
 class MemberNameInfo : public QList<MemberInfo>
@@ -74,7 +74,7 @@ class MemberNameInfo : public QList<MemberInfo>
     const char *memberName() const { return name; }
     int compareItems(GCI item1,GCI item2);
   private:
-    QString name;
+    QCString name;
 };
 
 class MemberNameInfoIterator : public QListIterator<MemberInfo>

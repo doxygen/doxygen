@@ -14,6 +14,7 @@
  *
  */
 
+#include "qtbc.h"
 #include "searchindex.h"
 #include "suffixtree.h"
 
@@ -44,7 +45,7 @@ bool SearchIndex::addWord(const char *key,const char *word,bool special)
   DocRef *dr=0;
   if (word && key && strlen(key)>0 && (dr=refDict[key]))
   {
-    suffixTree->insertWord(((QString)word).lower(),dr->index(),special); 
+    suffixTree->insertWord(((QCString)word).lower(),dr->index(),special); 
     return TRUE; 
   }
   else if (word)

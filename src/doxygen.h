@@ -18,6 +18,7 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
+#include "qtbc.h"
 #include "groupdef.h"
 #include "filedef.h"
 #include "classdef.h"
@@ -34,9 +35,9 @@ struct PageInfo
 {
   PageInfo(const char *n,const char *d,const char *t) 
      { name=n; doc=d; title=t; }
-  QString name;
-  QString doc;
-  QString title;
+  QCString name;
+  QCString doc;
+  QCString title;
 };
 
 class PageList : public QList<PageInfo> 
@@ -47,10 +48,10 @@ class PageList : public QList<PageInfo>
   }
 };
 
-class BufStr : public QString
+class BufStr : public QCString
 {
   public:
-    BufStr(int size) : QString(size), offset(0), spareRoom(10240) {}
+    BufStr(int size) : QCString(size), offset(0), spareRoom(10240) {}
     void addChar(char c)
     {
       if (offset>=size()) resize(size()+spareRoom);
@@ -73,11 +74,11 @@ class BufStr : public QString
     const int spareRoom; // 10Kb extra room to avoid frequent resizing
 };
 
-typedef QList<QString>     StringList;
+typedef QList<QCString>     StringList;
 typedef QDict<MemberDef>   MemberDict;
 typedef QDict<ClassDef>    ClassDict;
 typedef QDict<FileDef>     FileDict;
-typedef QDict<QString>     StringDict;
+typedef QDict<QCString>     StringDict;
 typedef QDict<PageInfo>    PageDict;
 typedef QDict<GroupDef>    GroupDict;
 

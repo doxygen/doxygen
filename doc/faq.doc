@@ -1,0 +1,49 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * All output generated with Doxygen is not covered by this license.
+ *
+ */
+/*! \page faq Frequently Asked Questions
+
+<ol>
+<li><b>How do get information on the index page in HTML?</b>
+<p>
+There is no real support for title pages at the moment. But you can
+override the default index page, by using the following comment block:
+\verbatim
+/*! \page index My Personal Index Page
+ *
+ * This is my index personal index page.
+ */
+\endverbatim
+
+<li><b>How can I avoid that some code fragment is parsed by Doxyen?</b>
+<p>
+You can use Doxygen's preprocessor for this: 
+If you put
+\verbatim
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+ /* code that must be skipped by Doxygen */
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+\endverbatim
+around the blocks that should be hidden and put:
+\verbatim
+  PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
+\endverbatim
+in the config file then all blocks should be skipped by Doxygen as long
+as <code>PREPROCESSING = YES</code>.
+</ol>
+*/
+

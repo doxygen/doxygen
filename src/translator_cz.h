@@ -17,7 +17,7 @@
 #ifndef TRANSLATOR_CZ_H
 #define TRANSLATOR_CZ_H
 
-#include <qstring.h>
+#include "translator.h"
 
 // The translation from English to Czech by Vlastimil Havran.
 // In the cases where are more translations possible I hope
@@ -29,247 +29,247 @@
 class TranslatorCzech : public Translator
 {
   public:
-    QString latexBabelPackage()
+    QCString latexBabelPackage()
     { return "czech"; }
-    QString trInherits()
+    QCString trInherits()
     { return "Dedi"; }
-    QString trAnd()
+    QCString trAnd()
     { return "a"; }
-    QString trInheritedBy()
+    QCString trInheritedBy()
     { return "Je Potomkem"; }
-    QString trRelatedFunctions()
+    QCString trRelatedFunctions()
     { return "Pribuzne Metody"; }
-    QString trRelatedSubscript()
+    QCString trRelatedSubscript()
     { return "(Tyto funkce nejsou metody.)"; }
-    QString trDetailedDescription()
+    QCString trDetailedDescription()
     { return "Podrobna Dokumentace"; }
-    QString trMemberTypedefDocumentation()
+    QCString trMemberTypedefDocumentation()
     { return "Dokumentace pro Deklaraci Typu (typedef) ve Tride";}
-    QString trMemberEnumerationDocumentation()
+    QCString trMemberEnumerationDocumentation()
     { return "Dokumentace Vyctovych Typu"; }
-    QString trEnumerationValueDocumentation()
+    QCString trEnumerationValueDocumentation()
     { return "Dokumentace Hodnot Vyctovych Typu"; }
-    QString trMemberFunctionDocumentation()
+    QCString trMemberFunctionDocumentation()
     { return "Dokumentace Metod"; }
-    QString trMemberDataDocumentation()
+    QCString trMemberDataDocumentation()
     { return "Dokumentace Datovych Slozek Tridy"; }
-    QString trGeneratedFrom(const char *s,bool single)
+    QCString trGeneratedFrom(const char *s,bool single)
     { 
-      QString result=(QString)"Dokumentace pro tento"+s+
+      QCString result=(QCString)"Dokumentace pro tento"+s+
                      " byla generovana z nasledujiciho souboru";
       if (single) result+=":";   else result+="s:";
       return result;
     }
-    QString trMore()
+    QCString trMore()
     { return "Detaily"; }
-    QString trReference()
+    QCString trReference()
     { return "Reference"; }
-    QString trListOfAllMembers()
+    QCString trListOfAllMembers()
     { return "Seznam vsech datovych slozek a metod tridy."; }
-    QString trMemberList()
+    QCString trMemberList()
     { return "Seznam datovych polozek a metod tridy"; }
-    QString trThisIsTheListOfAllMembers()
+    QCString trThisIsTheListOfAllMembers()
     { return "Toto je uplny seznam datovych slozek a metod tridy pro"; }
-    QString trIncludingInheritedMembers()
+    QCString trIncludingInheritedMembers()
     { return "zahrnuje vsechny nasledujici zdedene datove slozky a metody."; }
-    QString trGeneratedAutomatically(const char *s)
-    { QString result="Automaticky vygenerovany pomoci programu Doxygen"; 
-      if (s) result+=(QString)" pro "+s;
+    QCString trGeneratedAutomatically(const char *s)
+    { QCString result="Automaticky vygenerovany pomoci programu Doxygen"; 
+      if (s) result+=(QCString)" pro "+s;
       result+=" ze zdrojoveho souboru."; 
       return result;
     }
-    QString trEnumName()
+    QCString trEnumName()
     { return "pojmenovani vyctoveho typu"; }
-    QString trEnumValue()
+    QCString trEnumValue()
     { return "hodnota vyctoveho typu"; }
-    QString trDefinedIn()
+    QCString trDefinedIn()
     { return "definovany v"; }
-    QString trIncludeFile()
+    QCString trIncludeFile()
     { return "Vklada soubor"; }
-    QString trVerbatimText(const char *f)
-    { return (QString)"Toto je presny text z vlozeneho souboru "+f+""; }
-    QString trModules()
+    QCString trVerbatimText(const char *f)
+    { return (QCString)"Toto je presny text z vlozeneho souboru "+f+""; }
+    QCString trModules()
     { return "Moduly"; }
-    QString trClassHierarchy()
+    QCString trClassHierarchy()
     { return "Hierarchie trid"; }
-    QString trCompoundList()
+    QCString trCompoundList()
     { return "Seznam objektovych typu"; }
-    QString trFileList()
+    QCString trFileList()
     { return "Seznam souboru"; }
-    QString trHeaderFiles()
+    QCString trHeaderFiles()
     { return "Hlavickove soubory"; }
-    QString trCompoundMembers()
+    QCString trCompoundMembers()
     { return "Datove slozky a metody objektovych typu"; }
-    QString trFileMembers()
+    QCString trFileMembers()
     { return "Globalni deklarace"; }
-    QString trRelatedPages()
+    QCString trRelatedPages()
     { return "Souvisejici stranky"; }
-    QString trExamples()
+    QCString trExamples()
     { return "Priklady:"; }
-    QString trSearch()
+    QCString trSearch()
     { return "Hledej"; }
-    QString trClassHierarchyDescription()
+    QCString trClassHierarchyDescription()
     { return "Tento seznam dedicnych zavislosti je temer setriden"
 	     " podle abecedy:";
     }
-    QString trFileListDescription(bool extractAll)
+    QCString trFileListDescription(bool extractAll)
     {
-      QString result="A toto je seznam vsech ";
+      QCString result="A toto je seznam vsech ";
       if (!extractAll) result+="dokumentovanych ";
       result+="souboru s kratkymi popisy:";
       return result;
     }
-    QString trCompoundListDescription()
+    QCString trCompoundListDescription()
     { return "Zde jsou tridy, struktury a "
              "unie s kratkymi popisy:";
     }
-    QString trCompoundMembersDescription(bool extractAll)
+    QCString trCompoundMembersDescription(bool extractAll)
     {
-      QString result="Zde je seznam vsech ";
+      QCString result="Zde je seznam vsech ";
       if (!extractAll) result+="dokumentovanych ";
       result+="clenu tridy (metod a datovych slozek) s odkazy na ";
       if (extractAll) result+="dokumentaci tridy pro kazdo polozku:";
       else result+="tridy, kam patri:";
       return result;
     }
-    QString trFileMembersDescription(bool extractAll)
+    QCString trFileMembersDescription(bool extractAll)
     {
-      QString result="Zde je seznam vsech ";
+      QCString result="Zde je seznam vsech ";
       if (!extractAll) result+="zdokumentovanych ";
       result+="globalnich deklaraci s odkazy ";
       if (extractAll) result+="na dokumentaci k souboru pro kazdou deklaraci:";
       else result+="na soubory, kde jsou umisteny:";
       return result;
     }
-    QString trHeaderFilesDescription()
+    QCString trHeaderFilesDescription()
     {return "Zde jsou hlavickove soubory ktere tvori programove"
             " rozhrani aplikace(API):";
     }
-    QString trExamplesDescription()
+    QCString trExamplesDescription()
     { return "Zde je seznam vsech prikladu:"; }
-    QString trRelatedPagesDescription()
+    QCString trRelatedPagesDescription()
     { return "Zde je seznam vsech souvisejicich stranek dokumentace:"; }
-    QString trModulesDescription()
+    QCString trModulesDescription()
     { return "Zde je seznam vsech modulu:"; }
-    QString trNoDescriptionAvailable()
+    QCString trNoDescriptionAvailable()
     { return "Zadny popis neni k dispozici."; }
 
-    QString trDocumentation()
+    QCString trDocumentation()
     { return "Dokumentace"; }
-    QString trModuleIndex()
+    QCString trModuleIndex()
     { return "Index modulu"; }
-    QString trHierarchicalIndex()
+    QCString trHierarchicalIndex()
     { return "Index Hierarchie"; }
-    QString trCompoundIndex()
+    QCString trCompoundIndex()
     { return "Index objektovych typu"; }
-    QString trFileIndex() 
+    QCString trFileIndex() 
     { return "Index souboru"; }
-    QString trModuleDocumentation()
+    QCString trModuleDocumentation()
     { return "Dokumentace modulu"; }
-    QString trClassDocumentation()
+    QCString trClassDocumentation()
     { return "Dokumentace tridy"; }
-    QString trFileDocumentation()
+    QCString trFileDocumentation()
     { return "Dokumentace souboru"; }
-    QString trExampleDocumentation()
+    QCString trExampleDocumentation()
     { return "Dokumentace prikladu"; }
-    QString trPageDocumentation()
+    QCString trPageDocumentation()
     { return "Dokumentace stranek"; }
-    QString trReferenceManual()
+    QCString trReferenceManual()
     { return "Referencni manual"; }
 
-    QString trDefines()
+    QCString trDefines()
     { return "Definice"; }
-    QString trFuncProtos()
+    QCString trFuncProtos()
     { return "Prototypy funkci"; }
-    QString trTypedefs()
+    QCString trTypedefs()
     { return "Deklarace datovych typu(typedefs)"; }
-    QString trEnumerations()
+    QCString trEnumerations()
     { return "Vyctove typy (enumerations)"; }
-    QString trFunctions()
+    QCString trFunctions()
     { return "Funkce"; }
-    QString trVariables()
+    QCString trVariables()
     { return "Promenne"; }
-    QString trEnumerationValues()
+    QCString trEnumerationValues()
     { return "Hodnoty vyctovych typu"; }
-    QString trReimplementedFrom()
+    QCString trReimplementedFrom()
     { return "Je znovu implementovan z"; }
-    QString trReimplementedIn()
+    QCString trReimplementedIn()
     { return "Je znovu implementovan v"; }
-    QString trAuthor()
+    QCString trAuthor()
     { return "Autor"; }
-    QString trDefineDocumentation()
+    QCString trDefineDocumentation()
     { return "Dokumentace definic pomoci maker"; }
-    QString trFunctionPrototypeDocumentation()
+    QCString trFunctionPrototypeDocumentation()
     { return "Dokumentace prototypu funkci"; }
-    QString trTypedefDocumentation()
+    QCString trTypedefDocumentation()
     { return "Dokumentace deklaraci datovych typu(typedefs)"; }
-    QString trEnumerationTypeDocumentation()
+    QCString trEnumerationTypeDocumentation()
     { return "Dokumentace vyctovych typu"; }
-    QString trFunctionDocumentation()
+    QCString trFunctionDocumentation()
     { return "Dokumentace funkci"; }
-    QString trVariableDocumentation()
+    QCString trVariableDocumentation()
     { return "Dokumentace promennych"; }
-    QString trCompounds()
+    QCString trCompounds()
     { return "Polozky objektovych typu"; }
-    QString trFiles()
+    QCString trFiles()
     { return "Soubory:"; }
-    QString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QString result=(QString)"Gegenerovany v "+date;
-      if (projName) result+=(QString)" pro "+projName;
-      result+=(QString)" ";
+      QCString result=(QCString)"Gegenerovany v "+date;
+      if (projName) result+=(QCString)" pro "+projName;
+      result+=(QCString)" ";
       return result;
     }
-    QString trWrittenBy()
+    QCString trWrittenBy()
     {
       return "napsany  ";
     }
-    QString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const char *clName)
     {
-      return (QString)"Diagram trid pro "+clName;
+      return (QCString)"Diagram trid pro "+clName;
     }
-    QString trForInternalUseOnly()
+    QCString trForInternalUseOnly()
     { return "Jen pro interni pouziti."; }
-    QString trReimplementedForInternalReasons()
+    QCString trReimplementedForInternalReasons()
     {
       return "Znovu implementovany z internich duvodu; programove rozhrani"
              " aplikace(API) neni zmeneno.";
     }
-    QString trWarning()
+    QCString trWarning()
     { return "Upozorneni"; }
-    QString trBugsAndLimitations()
+    QCString trBugsAndLimitations()
     { return "Chyby a omezeni"; }
-    QString trVersion()
+    QCString trVersion()
     { return "Verze"; }
-    QString trDate()
+    QCString trDate()
     { return "Datum"; }
-    QString trAuthors()
+    QCString trAuthors()
     { return "Autor(i)"; }
-    QString trReturns()
+    QCString trReturns()
     { return "ma navratovou hodnotu"; }
-    QString trSeeAlso()
+    QCString trSeeAlso()
     { return "Podivej se take na"; }
-    QString trParameters()
+    QCString trParameters()
     { return "Parametry"; }
-    QString trExceptions()
+    QCString trExceptions()
     { return "Vyjimky"; }
-    QString trGeneratedBy()
+    QCString trGeneratedBy()
     { return "Gegenerovan podle"; }
     
     // new since 0.49-990307 
     
-    QString trNamespaces()
+    QCString trNamespaces()
     { return "Prostory jmen"; }
-    QString trNamespaceList()
+    QCString trNamespaceList()
     { return "Seznam prostoru jmen"; }
-    QString trNamespaceListDescription(bool extractAll)
+    QCString trNamespaceListDescription(bool extractAll)
     {
-      QString result="Zde jsou vsechny ";
+      QCString result="Zde jsou vsechny ";
       if (!extractAll) result+="dokumentovane ";
       result+="prostory jem s kratkymi popisy:";
       return result;
     }
-    QString trFriends()
+    QCString trFriends()
     { return "Spratelene tridy, funkce a metody"; }
 };
 

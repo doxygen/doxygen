@@ -24,17 +24,36 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qstring.h>  
 #include <qfileinf.h>
 #include <qdir.h>
 #include <qtstream.h>
   
-#include "doxygen.h"
 #include "config.h"
+#include "version.h"
+  
+#ifdef DOXYWIZARD  
+#include <stdarg.h>
+void err(const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args); 
+}
+void warn(const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args);
+}
+#else
+#include "doxygen.h"
 #include "message.h"
 #include "pre.h"
 #include "version.h"
 #include "language.h"
+#endif
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -43,62 +62,65 @@
  *	exported variables
  */
   
-QString  projectName;          
-QString  projectNumber;          
-QString  outputDir;          
-QString  htmlOutputDir;          
-QString  latexOutputDir;          
-QString  manOutputDir;          
-QString  headerFile;          
-QString  footerFile;          
-QString  cgiName;          
-QString  cgiURL;          
-QString  docURL;          
-QString  binAbsPath;          
-QString  docAbsPath;          
-QString  perlPath;          
-QString  genTagFile;
-QString  inputFilter;
-QString  paperType;
-QString  outputLanguage;
-QString  stripFromPath;
-QString  manExtension;
-QStrList includePath;                
-QStrList examplePath;
-QStrList inputSources;               
-QStrList excludeSources;
-QStrList filePatternList;            
-QStrList excludePatternList;
-QStrList tagFileList;                
-QStrList extDocPathList;             
-QStrList predefined;
-QStrList extraPackageList;
-bool     quietFlag           = FALSE; 
-bool     warningFlag         = FALSE; 
-bool     recursiveFlag       = FALSE; 
-bool     allExtFlag          = FALSE; 
-bool     searchEngineFlag    = FALSE; 
-bool     extractAllFlag      = FALSE; 
-bool     extractPrivateFlag  = FALSE; 
-bool     noIndexFlag         = FALSE;
-bool     hideMemberFlag      = FALSE;
-bool     hideClassFlag       = FALSE;
-bool     macroExpansionFlag  = FALSE;
-bool     onlyPredefinedFlag  = FALSE;
-bool     fullPathNameFlag    = FALSE;
-bool     compactLatexFlag    = FALSE;
-bool     internalDocsFlag    = FALSE;
-bool     caseSensitiveNames  = FALSE;
-bool     generateHtml        = TRUE;
-bool     generateLatex       = TRUE;
-bool     generateMan         = TRUE;
-bool     preprocessingFlag   = TRUE;
-bool     briefMemDescFlag    = TRUE;
-bool     searchIncludeFlag   = TRUE;
-bool     classDiagramFlag    = TRUE;
-bool     repeatBriefFlag     = TRUE;
-bool     verbatimHeaderFlag  = TRUE;
-bool     htmlAlignMemberFlag = TRUE;
+
+QCString Config::projectName;          
+QCString Config::projectNumber;          
+QCString Config::outputDir;          
+QCString Config::htmlOutputDir;          
+QCString Config::latexOutputDir;          
+QCString Config::manOutputDir;          
+QCString Config::outputLanguage;
+QCString Config::headerFile;          
+QCString Config::footerFile;          
+QCString Config::cgiName;          
+QCString Config::cgiURL;          
+QCString Config::docURL;          
+QCString Config::binAbsPath;          
+QCString Config::docAbsPath;          
+QCString Config::perlPath;          
+QCString Config::genTagFile;
+QCString Config::inputFilter;
+QCString Config::paperType;
+QCString Config::stripFromPath;
+QCString Config::manExtension;
+QStrList Config::includePath;                
+QStrList Config::examplePath;
+QStrList Config::inputSources;               
+QStrList Config::excludeSources;
+QStrList Config::filePatternList;            
+QStrList Config::excludePatternList;
+QStrList Config::tagFileList;                
+QStrList Config::extDocPathList;             
+QStrList Config::predefined;
+QStrList Config::extraPackageList;
+bool     Config::quietFlag           = FALSE; 
+bool     Config::recursiveFlag       = FALSE; 
+bool     Config::allExtFlag          = FALSE; 
+bool     Config::searchEngineFlag    = FALSE; 
+bool     Config::extractAllFlag      = FALSE; 
+bool     Config::extractPrivateFlag  = FALSE; 
+bool     Config::noIndexFlag         = FALSE;
+bool     Config::hideMemberFlag      = FALSE;
+bool     Config::hideClassFlag       = FALSE;
+bool     Config::macroExpansionFlag  = FALSE;
+bool     Config::onlyPredefinedFlag  = FALSE;
+bool     Config::fullPathNameFlag    = FALSE;
+bool     Config::compactLatexFlag    = FALSE;
+bool     Config::internalDocsFlag    = FALSE;
+bool     Config::caseSensitiveNames  = FALSE;
+bool     Config::includeSourceFlag   = FALSE;
+bool     Config::autoBriefFlag       = TRUE;
+bool     Config::warningFlag         = TRUE; 
+bool     Config::generateHtml        = TRUE;
+bool     Config::generateLatex       = TRUE;
+bool     Config::generateMan         = TRUE;
+bool     Config::preprocessingFlag   = TRUE;
+bool     Config::briefMemDescFlag    = TRUE;
+bool     Config::searchIncludeFlag   = TRUE;
+bool     Config::classDiagramFlag    = TRUE;
+bool     Config::repeatBriefFlag     = TRUE;
+bool     Config::verbatimHeaderFlag  = TRUE;
+bool     Config::htmlAlignMemberFlag = TRUE;
   
 /* -----------------------------------------------------------------
  *
@@ -108,13 +130,13 @@ bool     htmlAlignMemberFlag = TRUE;
 static const char * inputString;
 static int	    inputPosition;
 static int          yyLineNr;
-static QString      tmpString;
-static QString *    s=0;
+static QCString      tmpString;
+static QCString *    s=0;
 static bool    *    b=0;
 static QStrList *   l=0;
 static int          lastState;
 static int          lastEnvState;
-static QString      elemStr;
+static QCString      elemStr;
 
 /* -----------------------------------------------------------------
  */
@@ -134,6 +156,8 @@ static int yyread(char *buf,int max_size)
 
 %}
 
+%option noyywrap
+
 %x      Start
 %x	SkipComment
 %x      GetString
@@ -146,62 +170,64 @@ static int yyread(char *buf,int max_size)
 
 <*>\0x0d
 <Start,GetString,GetStrList,GetBool>"#"	{ BEGIN(SkipComment); }
-<Start>"PROJECT_NAME"[ \t]*"="		{ BEGIN(GetString);  s=&projectName;      }
-<Start>"PROJECT_NUMBER"[ \t]*"="	{ BEGIN(GetString);  s=&projectNumber;    }
-<Start>"OUTPUT_DIRECTORY"[ \t]*"="	{ BEGIN(GetString);  s=&outputDir;        }
-<Start>"HTML_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&htmlOutputDir;    }
-<Start>"MAN_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&manOutputDir;     }
-<Start>"LATEX_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&latexOutputDir;   }
-<Start>"HTML_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&headerFile;       }
-<Start>"HTML_FOOTER"[ \t]*"="	        { BEGIN(GetString);  s=&footerFile;       }
-<Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString);  s=&cgiName;          }
-<Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString);  s=&cgiURL;           }
-<Start>"DOC_URL"[ \t]*"="		{ BEGIN(GetString);  s=&docURL;           }
-<Start>"BIN_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&binAbsPath;       }
-<Start>"DOC_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&docAbsPath;       }
-<Start>"PERL_PATH"[ \t]*"="		{ BEGIN(GetString);  s=&perlPath;         }
-<Start>"GENERATE_TAGFILE"[ \t]*"="	{ BEGIN(GetString);  s=&genTagFile;       }
-<Start>"INPUT_FILTER"[ \t]*"="		{ BEGIN(GetString);  s=&inputFilter;      }
-<Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&paperType;        }
-<Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&outputLanguage;   }
-<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetString);  s=&stripFromPath;    }
-<Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&manExtension;     }
-<Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&includePath;        elemStr=""; }
-<Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&examplePath;        elemStr=""; }
-<Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&inputSources;       elemStr=""; }
-<Start>"EXCLUDE"[ \t]*"="		{ BEGIN(GetStrList); l=&excludeSources;     elemStr=""; }
-<Start>"FILE_PATTERNS"[ \t]*"="		{ BEGIN(GetStrList); l=&filePatternList;    elemStr=""; }
-<Start>"EXCLUDE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&excludePatternList; elemStr=""; }
-<Start>"TAGFILES"[ \t]*"="		{ BEGIN(GetStrList); l=&tagFileList;        elemStr=""; }
-<Start>"EXT_DOC_PATHS"[ \t]*"="		{ BEGIN(GetStrList); l=&extDocPathList;     elemStr=""; }
-<Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&predefined;         elemStr=""; }
-<Start>"EXTRA_PACKAGES"[ \t]*"="	{ BEGIN(GetStrList); l=&extraPackageList;   elemStr=""; }
-<Start>"QUIET"[ \t]*"="			{ BEGIN(GetBool);    b=&quietFlag;        }
-<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool);    b=&warningFlag;      }
-<Start>"RECURSIVE"[ \t]*"="		{ BEGIN(GetBool);    b=&recursiveFlag;    }
-<Start>"ALLEXTERNALS"[ \t]*"="		{ BEGIN(GetBool);    b=&allExtFlag;       }
-<Start>"SEARCHENGINE"[ \t]*"="          { BEGIN(GetBool);    b=&searchEngineFlag; }
-<Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool);    b=&extractAllFlag;   }
-<Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool);    b=&extractPrivateFlag;   }
-<Start>"DISABLE_INDEX"[ \t]*"="	        { BEGIN(GetBool);    b=&noIndexFlag; }
-<Start>"GENERATE_LATEX"[ \t]*"="	{ BEGIN(GetBool);    b=&generateLatex; }
-<Start>"GENERATE_HTML"[ \t]*"="		{ BEGIN(GetBool);    b=&generateHtml; }
-<Start>"GENERATE_MAN"[ \t]*"="		{ BEGIN(GetBool);    b=&generateMan; }
-<Start>"ENABLE_PREPROCESSING"[ \t]*"="  { BEGIN(GetBool);    b=&preprocessingFlag; }
-<Start>"MACRO_EXPANSION"[ \t]*"="	{ BEGIN(GetBool);    b=&macroExpansionFlag; }
-<Start>"SEARCH_INCLUDES"[ \t]*"="	{ BEGIN(GetBool);    b=&searchIncludeFlag; }
-<Start>"BRIEF_MEMBER_DESC"[ \t]*"="     { BEGIN(GetBool);    b=&briefMemDescFlag; }
-<Start>"HIDE_UNDOC_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&hideMemberFlag; }
-<Start>"HIDE_UNDOC_CLASSES"[ \t]*"="    { BEGIN(GetBool);    b=&hideClassFlag; }
-<Start>"EXPAND_ONLY_PREDEF"[ \t]*"="    { BEGIN(GetBool);    b=&onlyPredefinedFlag; }
-<Start>"FULL_PATH_NAMES"[ \t]*"="	{ BEGIN(GetBool);    b=&fullPathNameFlag; }
-<Start>"CLASS_DIAGRAMS"[ \t]*"="	{ BEGIN(GetBool);    b=&classDiagramFlag; }
-<Start>"COMPACT_LATEX"[ \t]*"="		{ BEGIN(GetBool);    b=&compactLatexFlag; }
-<Start>"REPEAT_BRIEF"[ \t]*"="		{ BEGIN(GetBool);    b=&repeatBriefFlag; }
-<Start>"INTERNAL_DOCS"[ \t]*"="		{ BEGIN(GetBool);    b=&internalDocsFlag; }
-<Start>"CASE_SENSE_NAMES"[ \t]*"="      { BEGIN(GetBool);    b=&caseSensitiveNames; }
-<Start>"VERBATIM_HEADERS"[ \t]*"="      { BEGIN(GetBool);    b=&verbatimHeaderFlag; }
-<Start>"HTML_ALIGN_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&htmlAlignMemberFlag; }
+<Start>"PROJECT_NAME"[ \t]*"="		{ BEGIN(GetString);  s=&Config::projectName;      }
+<Start>"PROJECT_NUMBER"[ \t]*"="	{ BEGIN(GetString);  s=&Config::projectNumber;    }
+<Start>"OUTPUT_DIRECTORY"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputDir;        }
+<Start>"HTML_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::htmlOutputDir;    }
+<Start>"MAN_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manOutputDir;     }
+<Start>"LATEX_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::latexOutputDir;   }
+<Start>"HTML_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::headerFile;       }
+<Start>"HTML_FOOTER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::footerFile;       }
+<Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString);  s=&Config::cgiName;          }
+<Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString);  s=&Config::cgiURL;           }
+<Start>"DOC_URL"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docURL;           }
+<Start>"BIN_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::binAbsPath;       }
+<Start>"DOC_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docAbsPath;       }
+<Start>"PERL_PATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::perlPath;         }
+<Start>"GENERATE_TAGFILE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::genTagFile;       }
+<Start>"INPUT_FILTER"[ \t]*"="		{ BEGIN(GetString);  s=&Config::inputFilter;      }
+<Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&Config::paperType;        }
+<Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputLanguage;   }
+<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetString);  s=&Config::stripFromPath;    }
+<Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manExtension;     }
+<Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::includePath;        elemStr=""; }
+<Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::examplePath;        elemStr=""; }
+<Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&Config::inputSources;       elemStr=""; }
+<Start>"EXCLUDE"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::excludeSources;     elemStr=""; }
+<Start>"FILE_PATTERNS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::filePatternList;    elemStr=""; }
+<Start>"EXCLUDE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::excludePatternList; elemStr=""; }
+<Start>"TAGFILES"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::tagFileList;        elemStr=""; }
+<Start>"EXT_DOC_PATHS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::extDocPathList;     elemStr=""; }
+<Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined;         elemStr=""; }
+<Start>"EXTRA_PACKAGES"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::extraPackageList;   elemStr=""; }
+<Start>"QUIET"[ \t]*"="			{ BEGIN(GetBool);    b=&Config::quietFlag;        }
+<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool);    b=&Config::warningFlag;      }
+<Start>"RECURSIVE"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::recursiveFlag;    }
+<Start>"ALLEXTERNALS"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::allExtFlag;       }
+<Start>"SEARCHENGINE"[ \t]*"="          { BEGIN(GetBool);    b=&Config::searchEngineFlag; }
+<Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool);    b=&Config::extractAllFlag;   }
+<Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool);    b=&Config::extractPrivateFlag;   }
+<Start>"DISABLE_INDEX"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::noIndexFlag; }
+<Start>"GENERATE_LATEX"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::generateLatex; }
+<Start>"GENERATE_HTML"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::generateHtml; }
+<Start>"GENERATE_MAN"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::generateMan; }
+<Start>"ENABLE_PREPROCESSING"[ \t]*"="  { BEGIN(GetBool);    b=&Config::preprocessingFlag; }
+<Start>"MACRO_EXPANSION"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::macroExpansionFlag; }
+<Start>"SEARCH_INCLUDES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::searchIncludeFlag; }
+<Start>"BRIEF_MEMBER_DESC"[ \t]*"="     { BEGIN(GetBool);    b=&Config::briefMemDescFlag; }
+<Start>"HIDE_UNDOC_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&Config::hideMemberFlag; }
+<Start>"HIDE_UNDOC_CLASSES"[ \t]*"="    { BEGIN(GetBool);    b=&Config::hideClassFlag; }
+<Start>"EXPAND_ONLY_PREDEF"[ \t]*"="    { BEGIN(GetBool);    b=&Config::onlyPredefinedFlag; }
+<Start>"FULL_PATH_NAMES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::fullPathNameFlag; }
+<Start>"CLASS_DIAGRAMS"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::classDiagramFlag; }
+<Start>"COMPACT_LATEX"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::compactLatexFlag; }
+<Start>"REPEAT_BRIEF"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::repeatBriefFlag; }
+<Start>"INTERNAL_DOCS"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::internalDocsFlag; }
+<Start>"CASE_SENSE_NAMES"[ \t]*"="      { BEGIN(GetBool);    b=&Config::caseSensitiveNames; }
+<Start>"VERBATIM_HEADERS"[ \t]*"="      { BEGIN(GetBool);    b=&Config::verbatimHeaderFlag; }
+<Start>"HTML_ALIGN_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&Config::htmlAlignMemberFlag; }
+<Start>"SOURCE_BROWSER"[ \t]*"="        { BEGIN(GetBool);    b=&Config::includeSourceFlag; }
+<Start>"JAVADOC_AUTOBRIEF"[ \t]*"="     { BEGIN(GetBool);    b=&Config::autoBriefFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -258,7 +284,7 @@ static int yyread(char *buf,int max_size)
   					}
 <GetQuotedString>.			{ tmpString+=*yytext; }
 <GetBool>[a-zA-Z]+			{ 
-  					  QString bs=yytext; 
+  					  QCString bs=yytext; 
   					  bs=bs.upper();
   					  if (bs=="YES")
 					    *b=TRUE;
@@ -272,11 +298,6 @@ static int yyread(char *buf,int max_size)
 						 bs.data(),yyLineNr);
 					  }
 					}
-  /*
-<GetStrList>[a-z_A-Z.*:?~0-9/\\\-]+	{ 
-  					  elemStr+=yytext;
-  					}
-  */
 <GetStrList>[^ \#\"\$\t\r\n]+		{
   					  elemStr+=yytext;
   					}
@@ -294,56 +315,122 @@ static int yyread(char *buf,int max_size)
 
 void dumpConfig()
 {
-  printf("projectName=`%s'\n",projectName.data());
-  printf("outputDir=`%s'\n",  outputDir.data());
-  printf("headerFile=`%s'\n", headerFile.data());
-  printf("footerFile=`%s'\n", footerFile.data());
-  char *ip=includePath.first();
+  printf("projectName=`%s'\n",Config::projectName.data());
+  printf("outputDir=`%s'\n",  Config::outputDir.data());
+  printf("headerFile=`%s'\n", Config::headerFile.data());
+  printf("footerFile=`%s'\n", Config::footerFile.data());
+  char *ip=Config::includePath.first();
   while (ip)
   {
     printf("includePath=`%s'\n",ip);
-    ip=includePath.next();
+    ip=Config::includePath.next();
   }
-  printf("quiet=`%d'\n",      quietFlag);
-  printf("warnings=`%d'\n",   warningFlag);
-  char *is=inputSources.first();
+  printf("quiet=`%d'\n",      Config::quietFlag);
+  printf("warnings=`%d'\n",   Config::warningFlag);
+  char *is=Config::inputSources.first();
   while (is)
   {
     printf("inputSources=`%s'\n",is);
-    is=inputSources.next();
+    is=Config::inputSources.next();
   }
-  char *fp=filePatternList.first();
+  char *fp=Config::filePatternList.first();
   while (fp)
   {
     printf("filePattern=`%s'\n",fp);
-    fp=filePatternList.next();
+    fp=Config::filePatternList.next();
   }
-  printf("recusive=`%d'\n",recursiveFlag);
-  printf("inputFilter=`%s'\n",inputFilter.data());
-  char *tf=tagFileList.first();
+  printf("recusive=`%d'\n",Config::recursiveFlag);
+  printf("inputFilter=`%s'\n",Config::inputFilter.data());
+  char *tf=Config::tagFileList.first();
   while (tf)
   {
     printf("tagFile=`%s'\n",tf);
-    tf=tagFileList.next();
+    tf=Config::tagFileList.next();
   }
-  printf("allExternals=`%d'\n",allExtFlag);
-  printf("searchEngine=`%d'\n",searchEngineFlag);
-  printf("cgiName=`%s'\n",cgiName.data());
-  printf("cgiURL=`%s'\n",cgiURL.data());
-  printf("docURL=`%s'\n",docURL.data());
-  printf("binAbsPath=`%s'\n",binAbsPath.data());
-  char *ed=extDocPathList.first();
+  printf("allExternals=`%d'\n",Config::allExtFlag);
+  printf("searchEngine=`%d'\n",Config::searchEngineFlag);
+  printf("cgiName=`%s'\n",Config::cgiName.data());
+  printf("cgiURL=`%s'\n",Config::cgiURL.data());
+  printf("docURL=`%s'\n",Config::docURL.data());
+  printf("binAbsPath=`%s'\n",Config::binAbsPath.data());
+  char *ed=Config::extDocPathList.first();
   while (ed)
   {
     printf("binAbsPathFile=`%s'\n",ed);
-    ed=extDocPathList.next();
+    ed=Config::extDocPathList.next();
   }
+}
+
+void Config::init()
+{
+  Config::projectName.resize(0);          
+  Config::projectNumber.resize(0);          
+  Config::outputDir.resize(0);
+  Config::htmlOutputDir = "html";          
+  Config::latexOutputDir ="latex";          
+  Config::manOutputDir ="man";          
+  Config::outputLanguage = "English";
+  Config::headerFile.resize(0);          
+  Config::footerFile.resize(0);          
+  Config::cgiName = "search.cgi";          
+  Config::cgiURL.resize(0);          
+  Config::docURL.resize(0);          
+  Config::binAbsPath = "/usr/local/bin/";          
+  Config::docAbsPath.resize(0);          
+  Config::perlPath = "/usr/bin/perl";          
+  Config::genTagFile.resize(0);
+  Config::inputFilter.resize(0);
+  Config::paperType = "a4wide";
+  Config::stripFromPath.resize(0);
+  Config::manExtension = ".3";
+  Config::includePath.clear();                
+  Config::examplePath.clear();
+  Config::inputSources.clear();               
+  Config::excludeSources.clear();
+  Config::filePatternList.clear();            
+  Config::excludePatternList.clear();
+  Config::tagFileList.clear();                
+  Config::extDocPathList.clear();             
+  Config::predefined.clear();
+  Config::extraPackageList.clear();
+  Config::quietFlag           = FALSE; 
+  Config::recursiveFlag       = FALSE; 
+  Config::allExtFlag          = FALSE; 
+  Config::searchEngineFlag    = FALSE; 
+  Config::extractAllFlag      = FALSE; 
+  Config::extractPrivateFlag  = FALSE; 
+  Config::noIndexFlag         = FALSE;
+  Config::hideMemberFlag      = FALSE;
+  Config::hideClassFlag       = FALSE;
+  Config::macroExpansionFlag  = FALSE;
+  Config::onlyPredefinedFlag  = FALSE;
+  Config::fullPathNameFlag    = FALSE;
+  Config::compactLatexFlag    = FALSE;
+  Config::internalDocsFlag    = FALSE;
+  Config::caseSensitiveNames  = FALSE;
+  Config::includeSourceFlag   = FALSE;
+  Config::warningFlag         = TRUE; 
+  Config::generateHtml        = TRUE;
+  Config::generateLatex       = TRUE;
+  Config::generateMan         = TRUE;
+  Config::preprocessingFlag   = TRUE;
+  Config::briefMemDescFlag    = TRUE;
+  Config::searchIncludeFlag   = TRUE;
+  Config::classDiagramFlag    = TRUE;
+  Config::repeatBriefFlag     = TRUE;
+  Config::verbatimHeaderFlag  = TRUE;
+  Config::htmlAlignMemberFlag = TRUE;
+  Config::autoBriefFlag       = TRUE;
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
 {
   QTextStream t(f);
+#ifdef DOXYWIZARD
+  t << "# Doxygen configuration generated by Doxywizard version " << versionString << endl;
+#else
   t << "# Doxyfile " << versionString << endl;
+#endif
   if (!sl)
   {
     t << "# This file describes the settings to be used by doxygen for a project\n";
@@ -387,7 +474,8 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# The OUTPUT_LANGUAGE tag is used to specify the language in which all\n";
     t << "# documentation generated by doxygen is written. Doxygen will use this\n";
     t << "# information to generate all constant output in the proper language.\n";
-    t << "# The default language is English, other supported languages are: Dutch\n";
+    t << "# The default language is English, other supported languages are: \n";
+    t << "# Dutch, French, Italian, Czech, Swedish, German and Japanese\n";
     t << "\n";
   }
   t << "OUTPUT_LANGUAGE      = English\n";
@@ -516,16 +604,35 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# supports case sensitive file names.\n";
     t << "\n";
   }
+  t << "SOURCE_BROWSER       = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the SOURCE_BROWSER tag is set to YES than the body of a member or\n";
+    t << "# function will be appended as a block of code to the documentation of.\n";
+    t << "# that member or function.\n";
+    t << "\n";
+  }
   t << "CASE_SENSE_NAMES     = NO\n";
   if (!sl)
   {
     t << "\n";
-    t << "# If the VERBATIM_HEADERS tag is set the YES (the default) then Doxygen\n";
+    t << "# If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen\n";
     t << "# will generate a verbatim copy of the header file for each class for\n";
     t << "# which an include is specified. Set to NO to disable this.\n";
     t << "\n";
   }
   t << "VERBATIM_HEADERS     = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the JAVADOC_NO_AUTOBRIEF is set to YES (the default) then Doxygen\n";
+    t << "# will interpret the first line (until the first dot) of a JavaDoc-style\n";
+    t << "# comment as the brief description. If set to NO, the Javadoc-style will\n";
+    t << "# behave just like the Qt-style comments.\n";
+    t << "\n";
+  }
+  t << "JAVADOC_AUTOBRIEF    = YES\n";
   if (!sl)
   {
     t << "\n";
@@ -817,7 +924,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# interpreter (i.e. the result of `which perl').\n";
     t << "\n";
   }
-  t << "PERL_PATH            = /usr/local/bin/perl\n";
+  t << "PERL_PATH            = /usr/bin/perl\n";
   if (!sl)
   {
     t << "\n";
@@ -893,147 +1000,154 @@ void checkConfig()
   //}
   
   // set default man page extension if non is given by the user
-  if (manExtension.isEmpty())
+  if (Config::manExtension.isEmpty())
   {
-    manExtension=".3";
+    Config::manExtension=".3";
   }
   
-  paperType = paperType.lower().stripWhiteSpace(); 
-  if (paperType.isEmpty())
+  Config::paperType = Config::paperType.lower().stripWhiteSpace(); 
+  if (Config::paperType.isEmpty())
   {
-    paperType = "a4wide";
+    Config::paperType = "a4wide";
   }
-  if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
-      paperType!="legal" && paperType!="executive")
+  if (Config::paperType!="a4" && Config::paperType!="a4wide" && Config::paperType!="letter" && 
+      Config::paperType!="legal" && Config::paperType!="executive")
   {
     err("Error: Unknown page type specified");
   }
   
-  outputLanguage=outputLanguage.stripWhiteSpace();
-  if (outputLanguage.isEmpty())
+  Config::outputLanguage=Config::outputLanguage.stripWhiteSpace();
+  if (Config::outputLanguage.isEmpty())
   {
+    Config::outputLanguage = "English";
+#ifndef DOXYWIZARD
     setTranslator("English");
+#endif
   }
   else
   {
-    if (!setTranslator(outputLanguage))
+#ifndef DOXYWIZARD
+    if (!setTranslator(Config::outputLanguage))
     {
-      err("Error: Output language %s not supported! Using english instead.\n",
-	  outputLanguage.data());
+      err("Error: Output language %s not supported! Using English instead.\n",
+	  Config::outputLanguage.data());
     }
+#endif
   }
   
   // Test to see if output directory is valid
-  if (outputDir.isEmpty()) 
-    outputDir=QDir::currentDirPath();
+  if (Config::outputDir.isEmpty()) 
+    Config::outputDir=QDir::currentDirPath();
   else
   {
-    QDir dir(outputDir);
+    QDir dir(Config::outputDir);
     if (!dir.exists())
     {
       dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDir))
+      if (!dir.mkdir(Config::outputDir))
       {
         err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
-	    "exist and cannot be created\n",outputDir.data());
+	    "exist and cannot be created\n",Config::outputDir.data());
         exit(1);
       }
-      else if (!quietFlag)
+      else if (!Config::quietFlag)
       {
 	err("Notice: Output directory `%s' does not exist. "
-	    "I have created it for you.\n", outputDir.data());
+	    "I have created it for you.\n", Config::outputDir.data());
       }
-      dir.cd(outputDir);
+      dir.cd(Config::outputDir);
     }
-    outputDir=dir.absPath();
+    Config::outputDir=dir.absPath();
   }
 
-  if (htmlOutputDir.isEmpty() && generateHtml)
+  if (Config::htmlOutputDir.isEmpty() && Config::generateHtml)
   {
-    htmlOutputDir=outputDir+"/html";
+    Config::htmlOutputDir=Config::outputDir+"/html";
   }
-  else if (htmlOutputDir && htmlOutputDir[0]!='/')
+  else if (Config::htmlOutputDir && Config::htmlOutputDir[0]!='/')
   {
-    htmlOutputDir.prepend(outputDir+'/');
+    Config::htmlOutputDir.prepend(Config::outputDir+'/');
   }
-  QDir htmlDir(htmlOutputDir);
-  if (!htmlDir.exists() && !htmlDir.mkdir(htmlOutputDir))
+  QDir htmlDir(Config::htmlOutputDir);
+  if (!htmlDir.exists() && !htmlDir.mkdir(Config::htmlOutputDir))
   {
-    err("Could not create output directory %s\n",htmlOutputDir.data());
+    err("Could not create output directory %s\n",Config::htmlOutputDir.data());
     exit(1);
   }
   
-  if (latexOutputDir.isEmpty() && generateLatex)
+  if (Config::latexOutputDir.isEmpty() && Config::generateLatex)
   {
-    latexOutputDir=outputDir+"/latex";
+    Config::latexOutputDir=Config::outputDir+"/latex";
   }
-  else if (latexOutputDir && latexOutputDir[0]!='/')
+  else if (Config::latexOutputDir && Config::latexOutputDir[0]!='/')
   {
-    latexOutputDir.prepend(outputDir+'/');
+    Config::latexOutputDir.prepend(Config::outputDir+'/');
   }
-  QDir latexDir(latexOutputDir);
-  if (!latexDir.exists() && !latexDir.mkdir(latexOutputDir))
+  QDir latexDir(Config::latexOutputDir);
+  if (!latexDir.exists() && !latexDir.mkdir(Config::latexOutputDir))
   {
-    err("Could not create output directory %s\n",latexOutputDir.data());
+    err("Could not create output directory %s\n",Config::latexOutputDir.data());
     exit(1);
   }
   
-  if (manOutputDir.isEmpty() && generateMan)
+  if (Config::manOutputDir.isEmpty() && Config::generateMan)
   {
-    manOutputDir=outputDir+"/man";
+    Config::manOutputDir=Config::outputDir+"/man";
   }
-  else if (manOutputDir && manOutputDir[0]!='/')
+  else if (Config::manOutputDir && Config::manOutputDir[0]!='/')
   {
-    manOutputDir.prepend(outputDir+'/');
+    Config::manOutputDir.prepend(Config::outputDir+'/');
   }
-  QDir manDir(manOutputDir);
-  if (!manDir.exists() && !manDir.mkdir(manOutputDir))
+  QDir manDir(Config::manOutputDir);
+  if (!manDir.exists() && !manDir.mkdir(Config::manOutputDir))
   {
-    err("Could not create output directory %s\n",manOutputDir.data());
+    err("Could not create output directory %s\n",Config::manOutputDir.data());
     exit(1);
   }
   
   // Test to see if HTML header is valid
-  if (headerFile.length()>0)
+  if (Config::headerFile.length()>0)
   {
-    QFileInfo fi(headerFile);
+    QFileInfo fi(Config::headerFile);
     if (!fi.exists())
     {
       err("Error: tag HTML_HEADER: header file `%s' "
-	  "does not exist\n",headerFile.data());
+	  "does not exist\n",Config::headerFile.data());
       exit(1);
     }
   }
   // Test to see if HTML footer is valid
-  if (footerFile.length()>0)
+  if (Config::footerFile.length()>0)
   {
-    QFileInfo fi(footerFile);
+    QFileInfo fi(Config::footerFile);
     if (!fi.exists())
     {
       err("Error: tag HTML_FOOTER: footer file `%s' "
-	  "does not exist\n",footerFile.data());
+	  "does not exist\n",Config::footerFile.data());
       exit(1);
     }
   }
   // check include path
-  char *s=includePath.first();
+  char *s=Config::includePath.first();
   while (s)
   {
     QFileInfo fi(s);
     if (!fi.exists()) err("Warning: tag INCLUDE_PATH: include path `%s' "
 	                  "does not exist\n",s);
+#ifndef DOXYWIZARD
     addSearchDir(fi.absFilePath());
-    s=includePath.next();
+#endif
+    s=Config::includePath.next();
   }
   // check input
-  if (inputSources.count()==0)
+  if (Config::inputSources.count()==0)
   {
     err("Error: tag INPUT: no input files specified after the INPUT tag.\n");
     exit(1);
   }
   else
   {
-    s=inputSources.first();
+    s=Config::inputSources.first();
     while (s)
     {
       QFileInfo fi(s);
@@ -1042,89 +1156,105 @@ void checkConfig()
 	err("Error: tag INPUT: input source `%s' does not exist\n",s);
 	exit(1);
       }
-      s=inputSources.next();
+      s=Config::inputSources.next();
     }
   }
   // add default pattern if needed
-  if (filePatternList.count()==0)
+  if (Config::filePatternList.count()==0)
   {
-    filePatternList.append("*");
+    Config::filePatternList.append("*");
   }
   
   // more checks needed if and only if the search engine is enabled.
-  if (searchEngineFlag)
+  if (Config::searchEngineFlag)
   {
     // check cgi name
-    if (cgiName.length()==0)
+    if (Config::cgiName.length()==0)
     {
       err("Error: tag CGI_NAME: no cgi script name after the CGI_NAME tag.\n");
       exit(1);
     }
     // check cgi URL
-    if (cgiURL.length()==0)
+    if (Config::cgiURL.length()==0)
     {
       err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
       exit(1);
     }
-    else if (cgiURL.left(7)!="http://")
+    else if (Config::cgiURL.left(7)!="http://")
     {
       err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
 	  "start with http://).\n");
       exit(1);
     }
     // check documentation URL
-    if (docURL.length()==0)
+    if (Config::docURL.length()==0)
     {
-      docURL = outputDir.copy().prepend("file://").append("html");
+      Config::docURL = Config::outputDir.copy().prepend("file://").append("html");
     }
-    else if (docURL.left(7)!="http://" && docURL.left(7)!="file://")
+    else if (Config::docURL.left(7)!="http://" && Config::docURL.left(7)!="file://")
     {
       err("Error: tag DOC_URL: URL to documentation is invalid or "
 	  "not absolute.\n"); 
       exit(1);
     }
     // check absolute documentation path
-    if (docAbsPath.length()==0)
+    if (Config::docAbsPath.length()==0)
     {
-      docAbsPath = outputDir+"/html"; 
+      Config::docAbsPath = Config::outputDir+"/html"; 
     }
-    else if (docAbsPath && docAbsPath[0]!='/')
+    else if (Config::docAbsPath[0]!='/' && Config::docAbsPath[1]!=':')
     {
-      err("Error: tag DOC_ABSPATH: path is not absolute\n");
+      err("Error: tag DOC_ABSPATH: path is not absolute!\n");
       exit(1);
     }
     // check path to doxysearch
-    if (binAbsPath.length()==0)
+    if (Config::binAbsPath.length()==0)
     {
       err("Error: tag BIN_ABSPATH: no absolute path to doxysearch "
 	  "specified.\n");
       exit(1);
     }
-    else
+    else if (Config::binAbsPath[0]!='/' && Config::binAbsPath[1]!=':')
     {
-      if (binAbsPath && binAbsPath[0]!='/')
+      err("Error: tag BIN_ABSPATH: path is not absolute!\n");
+      exit(1);
+    }
+
+    // check perl path
+    bool found=FALSE;
+    if (Config::perlPath.length()==0)
+    {
+      QFileInfo fi;
+      fi.setFile("/usr/bin/perl");
+      if (fi.exists()) 
       {
-	err("Error: tag BIN_ABSPATH: path is not absolute "
-	    "(must start with /).\n");
-	exit(1);
+	Config::perlPath="/usr/bin/perl";
+        found=TRUE;
+      }
+      else
+      {
+	fi.setFile("/usr/local/bin/perl");
+	if (fi.exists())
+        {
+  	  Config::perlPath="/usr/local/bin/perl";
+          found=TRUE;
+        }
       }
     }
-    // check perl path
-    if (perlPath.length()==0)
+    if (!found)
     {
-      perlPath="/usr/local/bin/perl";
-    }
-    QFileInfo fi(perlPath);
-    if (!fi.exists())
-    {
-      err("Error: tag PERL_PATH: perl interpreter not found at `%s'\n",
-	  perlPath.data());
-      exit(1);
+      QFileInfo fi(Config::perlPath);
+      if (!fi.exists())
+      {
+        warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
+            "user specified (%s) location\n",
+        Config::perlPath.data());
+      }
     }
   }
 }
 
-void parseConfig(const QString &s)
+void parseConfig(const QCString &s)
 {
   inputString   = s;
   inputPosition = 0;
@@ -1132,9 +1262,8 @@ void parseConfig(const QString &s)
   configYYrestart( configYYin );
   BEGIN( Start );
   configYYlex();
-  checkConfig();
 }
 
-extern "C" { // some bogus code to keep the compiler happy
-  int  configYYwrap() { return 1 ; }
-}
+//extern "C" { // some bogus code to keep the compiler happy
+//  int  configYYwrap() { return 1 ; }
+//}

@@ -25,8 +25,8 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "qtbc.h"
 #include <qarray.h>
-#include <qstring.h>  
 #include <qstack.h>
 #include <qregexp.h>
   
@@ -51,14 +51,14 @@
  *	statics
  */
 static bool             insideArgumentList;
-static QString          className;
-static QString          memberName;
-static QString          refName;
+static QCString         className;
+static QCString         memberName;
+static QCString         refName;
 static OutputList *     outDoc;
-static QString          code;
-static QString          linkRef;
-static QString          linkText;
-static QString          codeBlock;
+static QCString         code;
+static QCString         linkRef;
+static QCString         linkText;
+static QCString         codeBlock;
 static const char *     inputString;
 static int		inputPosition;
 static int		lastContext;
@@ -78,6 +78,7 @@ static int              lastGroupContext;
 static int              lastFormulaContext;
 static int              lastAnchorContext;
 static int              nextDefContext;
+static int              overloadContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		bracketCount = 0 ;
@@ -87,6 +88,8 @@ static int              ifCount      = 0 ;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
+static Entry*		previous     = 0 ;
+static Entry*		tempEntry    = 0 ;
 static int		yyLineNr     = 0 ;
 static int              anonCount    = 0 ;        
 static char		yyFileName[2048] ;
@@ -97,10 +100,10 @@ static bool             removeSlashes;
 static Specifier 	virt;
 static Specifier 	baseVirt;
 static bool             exampleDoc;
-static QString          exampleName;
-static QString          htmlUrl,htmlText;
-static QString          currentIncludeFile;
-static QString          msType,msName,msArgs;
+static QCString         exampleName;
+static QCString         htmlUrl,htmlText;
+static QCString         currentIncludeFile;
+static QCString         msType,msName,msArgs;
 static int              includeFileOffset = 0;
 static int              includeFileLength = 0;
 static bool             firstLine;
@@ -119,16 +122,16 @@ static bool             firstSeeArg;
 static bool             javaDocSee;
 static char             afterDocTerminator;
 static int              tmpDocType;
-static QString          sectionLabel;
-static QString		sectionTitle;
+static QCString         sectionLabel;
+static QCString		sectionTitle;
 static SectionInfo::SectionType      
                         sectionType;
-static QString          funcPtrType;
-static QString          templateStr;
-static QString          baseName;
-static QString         *specName;
-static QString          formulaText;
-static QString          sectionRef;
+static QCString         funcPtrType;
+static QCString         templateStr;
+static QCString         baseName;
+static QCString         *specName;
+static QCString         formulaText;
+static QCString         sectionRef;
 
 // state variable for reading the argument list of a function
 static int              argRoundCount;
@@ -136,7 +139,7 @@ static int              argSharpCount;
 static int              currentArgumentContext;
 static int              lastCopyArgStringContext;
 static int              lastCopyArgContext;
-static QString         *copyArgString;
+static QCString         *copyArgString;
 
 
 
@@ -404,9 +407,9 @@ static void verbIncludeFile(OutputList &ol,const char *name)
 }
 
 
-static QString stripQuotes(const char *s)
+static QCString stripQuotes(const char *s)
 {
-  QString name;
+  QCString name;
   if (s==0 || *s==0) return name;
   name=s;
   if (name.at(0)=='"' && name.at(name.length()-1)=='"')
@@ -416,9 +419,9 @@ static QString stripQuotes(const char *s)
   return name;
 }
 
-static QString stripKnownExtensions(const char *text)
+static QCString stripKnownExtensions(const char *text)
 {
-  QString result=text;
+  QCString result=text;
   if (result.right(4)==".tex")       result=result.left(result.length()-4);
   else if (result.right(5)==".html") result=result.left(result.length()-5);
   //printf("%s stripKnowExtensions(%s)\n",result.data(),text); 
@@ -430,7 +433,7 @@ static void skipLine(OutputList &ol,const char *key)
   bool found=FALSE;
   while (!found)
   {
-    QString s;
+    QCString s;
     char c;
     while ( includeFileOffset<includeFileLength && 
 	    (c=currentIncludeFile[includeFileOffset++])!='\n' && c!=0
@@ -451,7 +454,7 @@ static void skipUntil(const char *key)
   bool found=FALSE;
   while (!found)
   {
-    QString s;
+    QCString s;
     int i=includeFileOffset;
     char c;
     while ( i<includeFileLength &&
@@ -470,7 +473,7 @@ static void skipUntil(const char *key)
 
 static void showLine(OutputList &ol,const char *key)
 {
-  QString s;
+  QCString s;
   char c;
   bool found=FALSE;
   while (!found)
@@ -494,7 +497,7 @@ static void showUntil(OutputList &ol,const char *key)
   bool found=FALSE;
   while (!found)
   {
-    QString s;
+    QCString s;
     char c;
     while ( includeFileOffset<includeFileLength && 
 	    (c=currentIncludeFile[includeFileOffset++])!='\n' && c!=0
@@ -537,8 +540,9 @@ static void addSection()
   if (sectionDict[sectionLabel]==0)
   {
     SectionInfo *si=new SectionInfo(sectionLabel,sectionTitle,sectionType);
+    //printf("Adding section addr=%p label=`%s' sectionTitle=`%s' fileName=%s\n",si,sectionLabel.data(),sectionTitle.data(),si->fileName.data());
     sectionDict.insert(sectionLabel,si);
-    current->anchors->append(new QString(sectionLabel));
+    current->anchors->append(new QCString(sectionLabel));
   }
   else
   {
@@ -548,10 +552,10 @@ static void addSection()
 
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
-static QString addFormula()
+static QCString addFormula()
 {
-  QString formLabel;
-  QString fText=formulaText.simplifyWhiteSpace();
+  QCString formLabel;
+  QCString fText=formulaText.simplifyWhiteSpace();
   Formula *f=0;
   if ((f=formulaDict[fText])==0)
   {
@@ -568,8 +572,17 @@ static QString addFormula()
   return formLabel;
 }
 
-/* -----------------------------------------------------------------
- */
+static bool nameIsOperator(QCString &name)
+{
+  return name.right(8)=="operator" &&
+         (name.length()==8 || !isId(name.at(name.length()-9)));
+}
+
+/* ----------------------------------------------------------------- */
+
+static void addToBody(const char *text);
+static void addToBodyCond(const char *text);
+/* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
@@ -641,6 +654,8 @@ TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
 
+%option noyywrap
+
 %x	Define
 %x      DefineArg
 %x	DefineEnd
@@ -664,13 +679,15 @@ VAR	  [vV][aA][rR]
 %x	NameSpaceDocArg1
 %x	SkipCurly
 %x	SkipCurlyCpp
+%x	SkipCurlyEndDoc
 %x      SkipString
 %x	SkipInits
 %x	SkipCPP
 %x	SkipCPPBlock
 %x	SkipComment
 %x	SkipCxxComment
-%x      SkipBlock
+%x      SkipCurlyBlock
+%x      SkipRoundBlock
 %x	SkipCode
 %x	Sharp
 %x      SkipSharp
@@ -688,6 +705,7 @@ VAR	  [vV][aA][rR]
 %x      ClassDocFunc
 %x      ClassDocFuncPtr
 %x      ClassDocFuncQual
+%x      ClassDocFuncSkipLine
 %x      ClassDocFuncExc
 %x	ClassDocDefine
 %x      ClassDocRelates
@@ -818,7 +836,7 @@ VAR	  [vV][aA][rR]
 <DocScan,Text>"&"[AEIOUaeiou]"circ;"	{ outDoc->writeCirc(yytext[1]);   }
 <DocScan,Text>"&"[ANOano]"tilde;"	{ outDoc->writeTilde(yytext[1]);  }
 <DocScan,DocHtmlScan,DocLatexScan>"$("[a-z_A-Z]+")"	{ 
-  					  QString envvar=&yytext[2];
+  					  QCString envvar=&yytext[2];
   					  envvar=envvar.left(envvar.length()-1);
 					  outDoc->docify(getenv(envvar));
 					}
@@ -879,7 +897,7 @@ VAR	  [vV][aA][rR]
   					  outDoc->codify(c);
   					}
 <DocScan>("\\"|"@")"internal"/{BN}      { 
-					  if (!internalDocsFlag)
+					  if (!Config::internalDocsFlag)
 					  {
 					    outDoc->newParagraph();
 					    scanString(theTranslator->trForInternalUseOnly()+"\n");
@@ -921,7 +939,7 @@ VAR	  [vV][aA][rR]
   					  Formula *formula=formulaNameDict[yytext];
 					  if (formula)
 					  {
-					    QString formName;
+					    QCString formName;
 					    formName.sprintf("form-%d.gif",formula->getId());
 					    outDoc->writeFormula(formName,formula->getFormulaText());
 					  }
@@ -952,7 +970,7 @@ VAR	  [vV][aA][rR]
 					  inParBlock=TRUE;
   					  outDoc->startDescList();
 					  outDoc->startBold();
-					  outDoc->docify(((QString)yytext).stripWhiteSpace());
+					  outDoc->docify(((QCString)yytext).stripWhiteSpace());
 					  outDoc->endBold();
 					  outDoc->endDescTitle();
 					  outDoc->writeDescItem();
@@ -1137,7 +1155,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocScan);
   					}
 <DocScan>"\\section "{ID}"\n"		{
-  					  QString secName=&yytext[9];               // skip "\section "
+  					  QCString secName=&yytext[9];               // skip "\section "
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
 					  SectionInfo *sec;
@@ -1149,7 +1167,7 @@ VAR	  [vV][aA][rR]
 					  }
   					}
 <DocScan>"\\anchor "{ID}"\n"		{
-  					  QString secName=&yytext[8];
+  					  QCString secName=&yytext[8];
 					  secName=secName.left(secName.length()-1);
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[secName]))
@@ -1164,11 +1182,11 @@ VAR	  [vV][aA][rR]
   					  BEGIN(DocRefItem);
   					}
 <DocRefName>{ID}			{
-  					  QString ref=yytext;
+  					  QCString ref=yytext;
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[ref]))
 					  {
-					    QString text;
+					    QCString text;
 					    if (sec->title.isEmpty()) 
 					      text=sec->label;
 					    else
@@ -1179,6 +1197,7 @@ VAR	  [vV][aA][rR]
 					    }
 					    else
 					    {
+					      //printf("  ref sec=%p sec->fileName=%s\n",sec,sec->fileName.data());
 					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
 					    }
 					  }
@@ -1198,7 +1217,7 @@ VAR	  [vV][aA][rR]
   					}
 <DocRefArg>[^\"\n]+[\n\"]		{
   					  yytext[yyleng-1]='\0';
-					  QString text=substitute(yytext,"\\\\","\\");
+					  QCString text=substitute(yytext,"\\\\","\\");
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[sectionRef]))
 					  {
@@ -1250,13 +1269,13 @@ VAR	  [vV][aA][rR]
 <DocScan>{SCOPEMASK}(("()")?)          	{ 
 					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					} 
-<DocScan>({SCOPEMASK}"::")?"operator"[^(\r\n.,]*"("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
-    					  QString oName=yytext;
+<DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
+				          QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
-<DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
-				          QString oName=yytext;
+<DocScan>({SCOPEMASK}"::")?"operator"[^(\r\n.,]*"("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
+    					  QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
@@ -1532,9 +1551,28 @@ VAR	  [vV][aA][rR]
 <DocCode,DocEmphasis,DocBold,DocScan,Text>.  { 
 					  outDoc->writeChar(*yytext);
 					}
-<NextSemi>"{"				{ BEGIN(SkipBlock); }
-<SkipBlock>"{"				{ ++bracketCount ; }
-<SkipBlock>"}"				{ if( bracketCount )
+<NextSemi>"{"				{
+  					  bracketCount=0;
+  					  BEGIN(SkipCurlyBlock); 
+					}
+<NextSemi>"("				{
+  				 	  roundCount=0;
+  					  BEGIN(SkipRoundBlock);
+  					}
+<SkipRoundBlock>"("			{
+					  ++roundCount;
+  					}
+<SkipRoundBlock>")"			{
+  					  if (roundCount )
+					    --roundCount ;
+					  else
+					    BEGIN( NextSemi ) ;
+  					}
+<SkipCurlyBlock>"{"			{
+  					  ++bracketCount ; 
+					}
+<SkipCurlyBlock>"}"			{ 
+  				          if( bracketCount )
 					    --bracketCount ;
 					  else
 					    BEGIN( NextSemi ) ;
@@ -1653,7 +1691,7 @@ VAR	  [vV][aA][rR]
   					  BEGIN( ClassName ); 
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"class"{BN}+ { 
-					  isTypedef=((QString)yytext).find("typedef")!=-1;
+					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC ;
 					  addType( current ) ;
 					  current->type += " class" ;
@@ -1663,7 +1701,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( ClassName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"struct"{BN}+ { 
-					  isTypedef=((QString)yytext).find("typedef")!=-1;
+					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::STRUCT_SEC ;
 					  addType( current ) ;
 					  current->type += " struct" ;
@@ -1673,7 +1711,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( ClassName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"union"{BN}+ { 
-					  isTypedef=((QString)yytext).find("typedef")!=-1;
+					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::UNION_SEC ;
 					  addType( current ) ;
 					  current->type += " union" ;
@@ -1683,7 +1721,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( ClassName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"enum"{BN}+	{ 
-					  isTypedef=((QString)yytext).find("typedef")!=-1;
+					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::ENUM_SEC ;
 					  addType( current ) ;
 					  current->type += " enum" ;
@@ -1751,7 +1789,7 @@ VAR	  [vV][aA][rR]
 <FindMembers>"using"{BN}+		{ lineCount(); BEGIN(Using); }
 <Using>";"				{ BEGIN(FindMembers); }
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
-					  QString n=yytext;
+					  QCString n=yytext;
 					  addType( current );
 					  current->name=n.left(n.length()-2);
 					}
@@ -1761,7 +1799,7 @@ VAR	  [vV][aA][rR]
 					  addType( current );
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
-					  if (current->name.right(8)=="operator") 
+					  if (nameIsOperator(current->name))
 					    BEGIN( Operator );
 					  else
 					    BEGIN( EndTemplate );
@@ -1813,7 +1851,7 @@ VAR	  [vV][aA][rR]
 					  {
 					    current->name += yytext;
 					  }
-				          QString tmp=yytext;
+				          QCString tmp=yytext;
 					  if (tmp.right(8)=="operator") 
 					    BEGIN( Operator );
 					  else
@@ -1868,7 +1906,7 @@ VAR	  [vV][aA][rR]
 <DefineEnd>.				
 					
 <FindMembers>[*&]+			{ current->name += yytext ; }
-<FindMembers,MemberSpec,Function,NextSemi>";"{BN}*("/**"|"//!"|"/*!")"<" {
+<FindMembers,MemberSpec,Function,NextSemi>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  current->doc.resize(0);
 					  current->brief.resize(0);
@@ -1876,12 +1914,12 @@ VAR	  [vV][aA][rR]
 					  afterDocTerminator = ';';
 					  if (yytext[yyleng-3]=='/')
 					    BEGIN(AfterDocLine);
-					  else if (yytext[yyleng-2]=='*')
+					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
 					    BEGIN(AfterDocBrief);
 					  else
 					    BEGIN(AfterDoc);
   					}
-<MemberSpec,FindFields,FindMembers,NextSemi>","{BN}*("/**"|"//!"|"/*!")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  current->doc.resize(0);
 					  current->brief.resize(0);
@@ -1889,12 +1927,12 @@ VAR	  [vV][aA][rR]
 					  afterDocTerminator = ',';
 					  if (yytext[yyleng-3]=='/')
 					    BEGIN(AfterDocLine);
-					  else if (yytext[yyleng-2]=='*')
+					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
 					    BEGIN(AfterDocBrief);
 					  else
 					    BEGIN(AfterDoc);
   					}
-<DefineEnd,FindFields,FindFieldArg>{BN}*("/**"|"//!"|"/*!")"<" {
+<DefineEnd,FindFields,FindFieldArg>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  current->doc.resize(0);
 					  current->brief.resize(0);
@@ -1905,7 +1943,7 @@ VAR	  [vV][aA][rR]
 					    afterDocTerminator = 0;
 					  if (yytext[yyleng-3]=='/')
 					    BEGIN(AfterDocLine);
-					  else if (yytext[yyleng-2]=='*')
+					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
 					    BEGIN(AfterDocBrief);
 					  else
 					    BEGIN(AfterDoc);
@@ -1914,8 +1952,10 @@ VAR	  [vV][aA][rR]
   					  BEGIN(NextSemi);
   					}
 <FindMembers>[:;,]			{ 
-  					  QString oldType = current->type.copy();
-					  QString oldDocs = current->doc.copy();
+  					  QCString oldType = current->type.copy();
+					  QCString oldDocs = current->doc.copy();
+  					  if ( *yytext != ':')
+					  {
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
   					  current->name=current->name.stripWhiteSpace();
@@ -1931,9 +1971,12 @@ VAR	  [vV][aA][rR]
 					  current->sig = sig = FALSE;
 					  current->virt = Normal; 
 					  current->stat = gstat;
+					  }
 					  // skip expression or bitfield if needed
 					  if ( *yytext == ':') 
+					  {
 					    BEGIN( NextSemi );
+					  }
 					  else 
 					  {
 					    if ( *yytext == ',' )
@@ -2004,7 +2047,7 @@ VAR	  [vV][aA][rR]
 					  current->slot       = slot;
   					}
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
-<Curly>[^\r\n{}"/]*			{ current->program += yytext ; }
+<Curly>[^\r\n{}"'/]*			{ current->program += yytext ; }
 <Curly>"//".*				{ current->program += yytext ; }
 <Curly>\"[^\r\n"]*\"			{ current->program += yytext ; }
 <Curly>"/*"{B}*				{ current->program += yytext ;
@@ -2016,6 +2059,9 @@ VAR	  [vV][aA][rR]
 					  lastContext = Curly ;
 					  BEGIN( Comment ) ;
 					}
+<Curly>"'"\\[0-7]{1,3}"'"               { current->program += yytext; }
+<Curly>"'"\\."'"                        { current->program += yytext; }
+<Curly>"'"."'"                          { current->program += yytext; }
 <Curly>"{"				{ current->program += yytext ;
 					  ++bracketCount ;
 					}
@@ -2026,16 +2072,15 @@ VAR	  [vV][aA][rR]
 					  }
 					  else
 					  {
-					    QString &cn = current->name;
-					    QString &rn = current_root->name;
-					    //printf("current->name=`%s' current_root->name=`%s'\n",
-					    //	   cn.data(),rn.data());
-					    if (cn && cn[0]!='@' &&  
+					    QCString &cn = current->name;
+					    QCString rn = stripAnnonymousScope(current_root->name);
+					    //printf("cn=`%s' rn=`%s'\n",cn.data(),rn.data());
+					    if (!cn.isEmpty() && !rn.isEmpty() && 
 					      (current_root->section & Entry::SCOPE_MASK))
 					    {
 					      cn.prepend(rn+"::");
 					    }
-					    if (isTypedef && cn.length()==0)
+					    if (isTypedef && cn.isEmpty())
 					    {
 					      //printf("Typedef Name\n");
 					      BEGIN( TypedefName );
@@ -2150,6 +2195,7 @@ VAR	  [vV][aA][rR]
 <MemberSpecSkip>"{"			{
   					  bracketCount=0;
 					  lastCurlyContext = MemberSpecSkip;
+					  previous = current;
   					  BEGIN(SkipCurly);
   					}
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
@@ -2392,8 +2438,8 @@ VAR	  [vV][aA][rR]
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
-					  QString &cn=current->name;
-					  QString &rn=current_root->name;
+					  QCString &cn=current->name;
+					  QCString &rn=current_root->name;
 					  //printf("current_root->name=`%s'\n",rn.data());
   					  //printf("Function: `%s' `%s' `%s'\n",current->type.data(),cn.data(),current->args.data());
 					  int i;
@@ -2415,7 +2461,7 @@ VAR	  [vV][aA][rR]
 					  if (*yytext!=';' || (current_root->section&Entry::SCOPE_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
-					    QString tempName;
+					    QCString tempName;
 					    if (tempArg==-1) 
 					      tempName=current->name;
 					    else
@@ -2437,7 +2483,7 @@ VAR	  [vV][aA][rR]
 					  else // a global function prototype or function variable
 					  {
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
-					    QRegExp re("([^)])");
+					    QRegExp re("([^)]*)");
 					    if (!current->type.isNull() && current->type.find(re,0)!=-1)
 					    {
 					      //printf("Scanner.l: found function variable!\n");
@@ -2450,6 +2496,7 @@ VAR	  [vV][aA][rR]
 					      current->proto = TRUE;
 					    }
 					  }
+					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
 					  current->protection = protection;
@@ -2459,46 +2506,127 @@ VAR	  [vV][aA][rR]
 					  current->slot = slot;
 					  lastCurlyContext = FindMembers;
 					  if( *yytext == '{' )
-					      BEGIN( SkipCurly ) ;
+					  {
+					    addToBody(yytext);
+					    BEGIN( SkipCurly ) ;
+					  }
 					  else if( *yytext == ':' )
-					      BEGIN( SkipInits ) ;
+					  {
+					    addToBody(yytext);
+					    BEGIN( SkipInits ) ;
+					  }
 					  else
-					      BEGIN( FindMembers ) ;
+					    BEGIN( FindMembers ) ;
 					}
 
 <SkipInits>"{"				{ 
+  				          addToBody(yytext);
   				          lastCurlyContext = FindMembers;
   					  BEGIN( SkipCurly ) ; 
 					}
-<SkipCurly,SkipCurlyCpp>"{"		{ ++bracketCount ; }
-<SkipCurly,SkipCurlyCpp>"}"		{ if( bracketCount )
+<SkipCurly>"{"				{ 
+  				          addToBody(yytext);
+  					  ++bracketCount ; 
+					}
+<SkipCurly>"}"				{ 
+  				          addToBody(yytext);
+  					  if( bracketCount )
 					    --bracketCount ;
 					  else
-					    //BEGIN( FindMembers ) ;
 					    BEGIN( lastCurlyContext ) ;
 					}
-<SkipCurly>"'"\\[0-7]{1,3}"'"            
-<SkipCurly>"'"\\."'"                     
-<SkipCurly>"'"."'"                       
+<SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
+  					  if ( bracketCount )
+					  {
+					    addToBody(yytext);
+					    --bracketCount ;
+					  }
+					  else
+					  {
+					    lineCount();
+					    tempEntry = current; // temporarily switch to the previous entry
+					    current = previous;
+					    current->doc.resize(0);
+					    current->brief.resize(0);
+					    lastAfterDocContext = SkipCurlyEndDoc;
+					    afterDocTerminator = '}';
+					    if (yytext[yyleng-3]=='/')
+					      BEGIN(AfterDocLine);
+					    else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					      BEGIN(AfterDocBrief);
+					    else
+					      BEGIN(AfterDoc);
+					  }
+					}
+<SkipCurlyEndDoc>"}"			{
+  				          addToBody("}");
+					  current = tempEntry;
+  					  BEGIN( lastCurlyContext );
+  					}
+<SkipCurly>"'"\\[0-7]{1,3}"'"           {
+  				          addToBody(yytext);
+  					}
+<SkipCurly>"'"\\."'"                    {
+  				          addToBody(yytext);
+  					}
+<SkipCurly>"'"."'"                      {
+  				          addToBody(yytext);
+  					}
 <SkipCurly>\"			        { 
+  				          addToBody(yytext);
   					  lastStringContext=SkipCurly;
   				          BEGIN( SkipString ); 
 					}
-<SkipCurly>^{B}*"#"			{ BEGIN( SkipCurlyCpp ); }
-<SkipCurlyCpp>\n			{ yyLineNr++; 
+<SkipCurly>^{B}*"#"			{ 
+  				          addToBody(yytext);
+  					  BEGIN( SkipCurlyCpp ); 
+					}
+<SkipCurly,SkipInits>\n			{
+  					  yyLineNr++;
+  				          addToBody(yytext);
+  					}
+<SkipCurly,SkipCurlyCpp>.		{
+  				          addToBody(yytext);
+  					}
+<SkipCurlyCpp>\n			{ 
+  				          addToBody(yytext);
+  					  yyLineNr++; 
   					  lastCurlyContext = FindMembers;
   					  BEGIN( SkipCurly ); 
 					}
-<SkipCurlyCpp>\\[\r]*"\n"[\r]*		{ yyLineNr++; }
-<SkipCurlyCpp>"/*"
-<SkipCurlyCpp>"*/"
-<SkipCurlyCpp>"//"                      
-<SkipString>\\.
-<SkipString>\"				{ BEGIN( lastStringContext ); }
-<SkipString>"/*"
-<SkipString>"*/"
-<SkipString>"//"                        
-
+<SkipCurlyCpp>\\[\r]*"\n"[\r]*		{ 
+  				          addToBody(yytext);
+  					  yyLineNr++; 
+					}
+<SkipInits,SkipCurly,SkipCurlyCpp>"/*"		{
+  				          addToBody(yytext);
+  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>"*/"		{
+  				          addToBody(yytext);
+  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>"//".*        {
+  				          addToBody(yytext);
+  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>.		{
+  				          addToBody(yytext);
+  					}
+<SkipString>\\.				{
+  				          addToBodyCond(yytext);
+  					}
+<SkipString>\"				{ 
+  				          addToBodyCond(yytext);
+  					  BEGIN( lastStringContext ); 
+					}
+<SkipString>"/*"|"*/"|"//"		{
+  				          addToBodyCond(yytext);
+  					}
+<SkipString>\n				{
+  					  yyLineNr++;
+  				          addToBodyCond(yytext);
+  					}
+<SkipString>.				{
+  				          addToBodyCond(yytext);
+  					}
 <Bases,ClassName>";"			{ 
 					  current->section = Entry::EMPTY_SEC ;
 					  current->type.resize(0) ;
@@ -2507,7 +2635,7 @@ VAR	  [vV][aA][rR]
 					  current->argList->clear();
 					  BEGIN( FindMembers ) ;
 					}
-<ClassName>{ID}				{ 
+<ClassName>{SCOPENAME}			{ 
 					  current->name = yytext ;
 					  BEGIN( ClassVar );
 					}
@@ -2522,7 +2650,7 @@ VAR	  [vV][aA][rR]
 <ClassVar>{ID}				{
 					  if (isTypedef)
 					  {
-					    typedefDict.insert(yytext,new QString(current->name));
+					    typedefDict.insert(yytext,new QCString(current->name));
 					    current->type.prepend("typedef ");
 					  }
   					  current->type += ' ' ;
@@ -2638,22 +2766,34 @@ VAR	  [vV][aA][rR]
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
+					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
 					    current->inside = current_root->name+"::";
-					  if (YY_START==Curly)
+					  if (!Config::autoBriefFlag) // use the Qt style
 					  {
 					    tmpDocType=-1;
-					    current->doc+="\n\n";
-					    lastDocContext = Curly;
+					    if (YY_START==Curly)
+					      current->doc+="\n\n";
+					    else
+  					      current->doc.resize(0);
 					    BEGIN( Doc );
 					  }
-					  else
-					  {  
-					    tmpDocType=Doc;
-					    current->doc.resize(0);
-					    current->brief.resize(0);
-					    lastDocContext = YY_START;
-					    BEGIN( JavaDoc );
+					  else // Use the javadoc style
+					  {
+					    if (YY_START==Curly)
+					    {
+					      tmpDocType=-1;
+					      current->doc+="\n\n";
+					      lastDocContext = Curly;
+					      BEGIN( Doc );
+					    }
+					    else
+					    {  
+					      tmpDocType=Doc;
+					      current->doc.resize(0);
+					      current->brief.resize(0);
+					      BEGIN( JavaDoc );
+					    }
 					  }
   					}
 <FindMembers,FindFields,MemberSpec,FuncQual,Operator>"//!" { 
@@ -2679,7 +2819,7 @@ VAR	  [vV][aA][rR]
   					  current->args.resize(0);
 					  current->argList->clear();
 					  bracketCount=0;
-					  BEGIN( SkipBlock );
+					  BEGIN( SkipCurlyBlock );
 					  	
   					}
 <JavaDoc>"@short"{B}+			{
@@ -2728,24 +2868,31 @@ VAR	  [vV][aA][rR]
 					  current->startLine = yyLineNr;
   					  BEGIN( ClassDocFunc ); 
 					}
-<LineDoc,Doc,JavaDoc>{B}*("\\"|"@")"def"{B}*	{
+<Doc,JavaDoc>{B}*("\\"|"@")"def"{B}+	{
   					  nextDefContext = YY_START==LineDoc ? DefLineDoc : ClassDoc;
   					  current->section = Entry::DEFINEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
   					  BEGIN( ClassDocDefine );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"overload"{B}* { 
+<LineDoc,Doc,JavaDoc>{B}*("\\"|"@")"overload"{B}* { 
+  					  overloadContext = YY_START;
   					  BEGIN( ClassDocOverload ); 
 					}
-<ClassDocOverload>{B}*"\n"	        {
-					  QString orgDoc = current->doc;
+<ClassDocOverload>{B}*/"\n"	        {
+					  QCString orgDoc = current->doc;
 					  current->doc = getOverloadDocs();
 					  current->doc += "\n\n";
 					  current->doc += orgDoc;
-  					  yyLineNr++;
-  					  BEGIN( Doc );
+  					  BEGIN( overloadContext  );
   				        }
+<ClassDocOverload>{B}*/"*/"		{
+					  QCString orgDoc = current->doc;
+					  current->doc = getOverloadDocs();
+					  current->doc += "\n\n";
+					  current->doc += orgDoc;
+  					  BEGIN( overloadContext );
+  					}
 <ClassDocOverload>.                     { unput(*yytext);
   					  current->section = Entry::OVERLOADDOC_SEC;
 					  current->fileName = yyFileName;
@@ -3104,7 +3251,7 @@ VAR	  [vV][aA][rR]
 					}
 <GroupName>{ID}				{
   					  current->groups->append(
-					    new QString(yytext)
+					    new QCString(yytext)
 					  );
   					}
 <GroupName>\n				{
@@ -3177,6 +3324,9 @@ VAR	  [vV][aA][rR]
 					    current->section = Entry::VARIABLEDOC_SEC;
 					  newDocState();
 					}
+<ClassDocFunc>"operator"{B}*"("{B}*")"	{
+  					  current->name+=yytext;
+  					}
 <ClassDocFunc>"("			{
   					  current->args+=*yytext;
 					  currentArgumentContext = ClassDocFuncQual;
@@ -3193,6 +3343,9 @@ VAR	  [vV][aA][rR]
 <ClassDocFuncPtr>")"			{
   					  current->name+=')';
   					  BEGIN( ClassDocFunc );
+  					}
+<ClassDocFuncQual>"{"			{
+  					  BEGIN( ClassDocFuncSkipLine);
   					}
 <ClassDocFuncQual>{B}*"const"{B}*    	{ 
   					  current->args += " const "; 
@@ -3221,7 +3374,7 @@ VAR	  [vV][aA][rR]
 <ClassDocFunc,ClassDocFuncQual>.	{
   					  current->name += *yytext;
   					}
-<ClassDocFuncQual>"\n"			{
+<ClassDocFuncQual,ClassDocFuncSkipLine>"\n"	{
   					  yyLineNr++; 
 					  current->name = current->name.stripWhiteSpace();
 					  newDocState();
@@ -3229,6 +3382,7 @@ VAR	  [vV][aA][rR]
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }
+<LineDoc>[\n\r]{B}*"//"[!/]
 <LineDoc>\n				{ 
 					  yyLineNr++;  
 					  BEGIN( lastDocContext );
@@ -3303,6 +3457,20 @@ VAR	  [vV][aA][rR]
 					  BEGIN( SkipCxxComment ) ;
 					}
 %%
+
+//----------------------------------------------------------------------------
+
+static void addToBody(const char *text)
+{
+  if (Config::includeSourceFlag)
+    previous->body+=text;
+}
+
+static void addToBodyCond(const char *text)
+{
+  if (Config::includeSourceFlag && lastStringContext==SkipCurly)
+    previous->body+=text;
+}
 
 //----------------------------------------------------------------------------
 
@@ -3414,7 +3582,7 @@ void parseMain(Entry *rt)
 
 //----------------------------------------------------------------------------
 
-void parseDocument(OutputList &ol,const QString &docString)
+void parseDocument(OutputList &ol,const QCString &docString)
 {
   //inParamBlock=inSeeBlock=inReturnBlock=FALSE;
   curTable = 0;
@@ -3441,7 +3609,7 @@ void parseDocument(OutputList &ol,const QString &docString)
 //----------------------------------------------------------------------------
 
 void parseDoc(OutputList &ol,const char *clName,
-              const char *memName,const QString &docString)
+              const char *memName,const QCString &docString)
 {
   initParser();
   initParseCodeContext();
@@ -3461,7 +3629,7 @@ void parseDoc(OutputList &ol,const char *clName,
 
 //----------------------------------------------------------------------------
 
-void parseText(OutputList &ol,const QString &txtString)
+void parseText(OutputList &ol,const QCString &txtString)
 {
   inputString = txtString;
   outDoc = new OutputList(&ol);
@@ -3476,7 +3644,7 @@ void parseText(OutputList &ol,const QString &txtString)
 
 //----------------------------------------------------------------------------
 
-void parseExample(OutputList &ol,const QString &docString, 
+void parseExample(OutputList &ol,const QCString &docString, 
                   const char *fileName)
 {
   initParser();
@@ -3487,9 +3655,3 @@ void parseExample(OutputList &ol,const QString &docString,
 }
 
 //----------------------------------------------------------------------------
-
-extern "C" { // some sillyness to keep the compiler happy
-int	scanYYwrap()	{ return 1 ; }
-void    bogus() { yy_flex_realloc(0,0); }
-}
-

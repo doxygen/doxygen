@@ -58,6 +58,7 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   enumFields=0;
   enumScope=0;
   enumDeclList=0;
+  scopeTAL=0;
   type=substituteClassNames(t);
   args=substituteClassNames(a);
   if (type.isNull()) decl=name()+args; else decl=type+" "+name()+args;
@@ -107,7 +108,6 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   {
     argList=0;
   }
-
 }
 
 MemberDef::~MemberDef()
@@ -180,7 +180,7 @@ void MemberDef::writeExample(OutputList &ol)
 }
 #endif
 
-QString MemberDef::getOutputFileBase() const
+QCString MemberDef::getOutputFileBase() const
 {
   if (classDef)
   {
@@ -201,4 +201,51 @@ QString MemberDef::getOutputFileBase() const
   warn("Warning: Internal inconsistency: member %s does not belong to any\n"
        " container!\n",name().data());
   return "dummy";
+}
+
+void MemberDef::setScopeTemplateArguments(ArgumentList *tal)
+{
+  // copy function arguments (if any)
+  if (tal)
+  {
+    scopeTAL = new ArgumentList;
+    scopeTAL->setAutoDelete(TRUE);
+    ArgumentListIterator tali(*tal);
+    Argument *a;
+    for (;(a=tali.current());++tali)
+    {
+      scopeTAL->append(new Argument(*a));
+    }
+    scopeTAL->constSpecifier    = tal->constSpecifier;
+    scopeTAL->volatileSpecifier = tal->volatileSpecifier;
+    scopeTAL->pureSpecifier     = tal->pureSpecifier;
+  }
+}
+
+QCString MemberDef::getScopeTemplateNameString()
+{
+  QCString result;
+  if (!scopeTAL || scopeTAL->count()==0) return result;
+  result="<";
+  Argument *a=scopeTAL->first();
+  while (a)
+  {
+    if (a->name.length()>0) // add template argument name
+    {
+      result+=a->name;
+    }
+    else // extract name from type
+    {
+      int i=a->type.length()-1;
+      while (i>=0 && isId(a->type.at(i))) i--;
+      if (i>0)
+      {
+        result+=a->type.right(a->type.length()-i-1);
+      }
+    }
+    a=scopeTAL->next();
+    if (a) result+=", ";
+  }
+  result+=">";
+  return result;
 }

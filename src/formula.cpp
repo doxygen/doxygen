@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "qtbc.h"
 #include <qfile.h>
 #include <qtstream.h>
 #include <qfileinf.h>
@@ -49,12 +50,12 @@ void FormulaList::generateBitmaps(const char *path)
   QDir d(path);
   // store the original directory
   if (!d.exists()) { err("Error: Output dir %s does not exist!\n",path); exit(1); }
-  QString oldDir = QDir::currentDirPath().copy();
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
   // goto the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
   // generate a latex file containing one formula per page.
-  QString texName="_formulas.tex";
+  QCString texName="_formulas.tex";
   QList<int> pagesToGenerate;
   pagesToGenerate.setAutoDelete(TRUE);
   FormulaListIterator fli(*this);
@@ -70,7 +71,7 @@ void FormulaList::generateBitmaps(const char *path)
     int page=0;
     for (fli.toFirst();(formula=fli.current());++fli)
     {
-      QString resultName;
+      QCString resultName;
       resultName.sprintf("form-%d.gif",formula->getId());
       // only formulas for which no image exists are generated
       QFileInfo fi(resultName);
@@ -99,7 +100,7 @@ void FormulaList::generateBitmaps(const char *path)
       int pageNum=*pagePtr;
       msg("Generating image form-%d.gif for formula\n",pageNum);
       char dviCmd[256];
-      QString formBase;
+      QCString formBase;
       formBase.sprintf("_form%d",pageNum);
       // run dvips to convert the page with number pageIndex to an
       // encapsulated postscript.
@@ -110,7 +111,7 @@ void FormulaList::generateBitmaps(const char *path)
       QFileInfo fi(formBase+".eps");
       if (fi.exists())
       {
-        QString eps = fileToString(formBase+".eps");
+        QCString eps = fileToString(formBase+".eps");
         int i=eps.find("%%BoundingBox:");
         if (i!=-1)
         {
@@ -162,7 +163,7 @@ void FormulaList::generateBitmaps(const char *path)
       if (f.open(IO_ReadOnly))
       {
         QTextStream t(&f);
-        QString s;
+        QCString s;
         if (!t.eof())
           s=t.readLine();
         if (s.length()<2 || s.left(2)!="P6")
@@ -233,7 +234,7 @@ void FormulaList::generateBitmaps(const char *path)
             }
           }
           // save the result as a gif
-          QString resultName;
+          QCString resultName;
           resultName.sprintf("form-%d.gif",pageNum);
           // the option parameter 1 is used here as a temporary hack
           // to select the right color palette! 

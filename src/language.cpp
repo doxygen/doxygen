@@ -20,7 +20,9 @@
 #include "translator_cz.h"
 #include "translator_fr.h"
 #include "translator_it.h"
-#include <qstring.h>
+#include "translator_de.h"
+#include "translator_jp.h"
+#include "translator_es.h"
 
 #define L_EQUAL(a) !stricmp(langName,a)
 
@@ -51,6 +53,18 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("italian"))
   {
     theTranslator=new TranslatorItalian;
+  }
+  else if (L_EQUAL("german"))
+  {
+    theTranslator=new TranslatorGerman;
+  }
+  else if (L_EQUAL("japanese"))
+  {
+    theTranslator=new TranslatorJapanese;
+  }
+  else if (L_EQUAL("spanish"))
+  {
+    theTranslator=new TranslatorSpanish;
   }
   else // use the default language (i.e. english)
   {

@@ -14,22 +14,29 @@
  *
  */
 
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef QTBC_H
+#define QTBC_H
 
-#include "qtbc.h"
-#include <stdio.h>
-#include <qlist.h>
+/*! This file contains some hacks to make Doxygen work with 
+ *  Qt version 2.00 and Qt version 1.xx 
+ */
 
-#include "entry.h"
-#include "code.h"
+#include <qglobal.h>
 
-class OutputList;
+#if QT_VERSION >= 200
 
-extern void parseMain(Entry *);
-extern void parseDoc(OutputList &ol,const char *clName, const char *memName,
-                           const QCString &docString);
-extern void parseExample(OutputList &ol,const QCString &docString, 
-                           const char *fileName);
-extern void parseText(OutputList &ol,const QCString &txtString);
+#define GCI QCollection::Item
+
+#include <qcstring.h>
+#include <qstring.h>
+inline QCString convertToQCString(const QString &s) { return s.local8Bit(); }
+
+#else /* QT_VERSION < 200 */
+
+#include <qstring.h>
+#define QCString QString
+inline QCString convertToQCString(const QCString &s) { return s; }
+
+#endif
+
 #endif

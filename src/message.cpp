@@ -20,7 +20,7 @@
 
 void msg(const char *fmt, ...)
 {
-  if (!quietFlag)
+  if (!Config::quietFlag)
   {
     va_list args;
     va_start(args, fmt);
@@ -31,7 +31,7 @@ void msg(const char *fmt, ...)
 
 void warn(const char *fmt, ...)
 {
-  if (warningFlag)
+  if (Config::warningFlag)
   {
     va_list args;
     va_start(args, fmt);

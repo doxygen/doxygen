@@ -17,16 +17,16 @@
 #ifndef DECLINFO_H
 #define DECLINFO_H
 
+#include "qtbc.h"
 #include <stdio.h>
-#include <qstring.h>
 
-extern void parseFuncDecl(const QString &decl,
-                          QString &clName,
-                          QString &classTempList,
-                          QString &type,
-                          QString &name,
-                          QString &args,
-                          QString &funcTempList,
-                          QString &exceptions
+extern void parseFuncDecl(const QCString &decl,
+                          QCString &clName,
+                          QCString &classTempList,
+                          QCString &type,
+                          QCString &name,
+                          QCString &args,
+                          QCString &funcTempList,
+                          QCString &exceptions
                          );
 #endif

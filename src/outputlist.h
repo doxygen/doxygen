@@ -17,8 +17,8 @@
 #ifndef OUTPUTLIST_H
 #define OUTPUTLIST_H
 
+#include "qtbc.h"
 #include <qlist.h>
-#include <qstring.h>
 #include "index.h" // for IndexSections
 #include "outputgen.h"
 
@@ -137,6 +137,10 @@ class OutputList
     { forall(&OutputGenerator::startMemberHeader); }
     void endMemberHeader()
     { forall(&OutputGenerator::endMemberHeader); }
+    void startMemberSubtitle()
+    { forall(&OutputGenerator::startMemberSubtitle); }
+    void endMemberSubtitle()
+    { forall(&OutputGenerator::endMemberSubtitle); }
     void startMemberList() 
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 

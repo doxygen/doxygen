@@ -18,9 +18,9 @@
 #ifndef SECTION_H
 #define SECTION_H
 
+#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
-#include <qstring.h>
 
 class Definition;
 
@@ -29,11 +29,11 @@ struct SectionInfo
   enum SectionType { Section, Subsection, Anchor };
   SectionInfo(const char *l,const char *t,SectionType st)
     { label=l; title=t; type=st; definition=0; }
-  QString fileName;
-  QString label; 
-  QString title;
+  QCString label; 
+  QCString title;
   SectionType type;
   Definition *definition;
+  QCString fileName;
 };
 
 class SectionList : public QList<SectionInfo>

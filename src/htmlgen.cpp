@@ -14,8 +14,10 @@
  *
  */
 
-#include <qdir.h>
 #include <stdlib.h>
+
+#include "qtbc.h"
+#include <qdir.h>
 #include "message.h"
 #include "htmlgen.h"
 #include "config.h"
@@ -26,9 +28,9 @@
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
-  if (headerFile.length()>0) header=fileToString(headerFile);
-  if (footerFile.length()>0) footer=fileToString(footerFile);
-  dir=htmlOutputDir;
+  if (Config::headerFile.length()>0) header=fileToString(Config::headerFile);
+  if (Config::footerFile.length()>0) footer=fileToString(Config::footerFile);
+  dir=Config::htmlOutputDir;
 }
 
 HtmlGenerator::~HtmlGenerator()
@@ -42,18 +44,18 @@ void HtmlGenerator::append(const OutputGenerator *g)
 
 void HtmlGenerator::init()
 {
-  QDir d(htmlOutputDir);
-  if (!d.exists() && !d.mkdir(htmlOutputDir))
+  QDir d(Config::htmlOutputDir);
+  if (!d.exists() && !d.mkdir(Config::htmlOutputDir))
   {
-    err("Could not create output directory %s\n",htmlOutputDir.data());
+    err("Could not create output directory %s\n",Config::htmlOutputDir.data());
     exit(1);
   }
-  writeLogo(htmlOutputDir);
+  writeLogo(Config::htmlOutputDir);
 }
 
 void HtmlGenerator::startFile(const char *name,const char *title,bool external)
 {
-  QString fileName=name;
+  QCString fileName=name;
   lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
@@ -156,7 +158,9 @@ void HtmlGenerator::writeStyleInfo(int part)
   if (part==0)
   {
     startPlainFile("doxygen.css"); 
-    t << "H1 { border-width: thin; border: solid; text-align: center }" << endl
+    t 
+      //<< "H1 { border-width: thin; border: solid; text-align: center }" << endl
+      << "H1 { text-align: center }" << endl
       << "A.el { text-decoration: none; font-weight: bold }" << endl
       << "DL.el { margin-left: -1cm }" << endl
       << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl
@@ -274,7 +278,7 @@ void HtmlGenerator::writeSection(const char *lab,const char *title,bool sub)
 void HtmlGenerator::writeSectionRef(const char *name,const char *lab,
                                     const char *title)
 {
-  QString refName=name;
+  QCString refName=name;
   if (refName.right(5)!=".html") refName+=".html";
   t << "<a href=\"" << refName << "#" << lab << "\">";
   docify(title);
@@ -284,7 +288,7 @@ void HtmlGenerator::writeSectionRef(const char *name,const char *lab,
 void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
                                     const char *title)
 {
-  QString refName=name;
+  QCString refName=name;
   if (refName.right(5)!=".html") refName+=".html";
   t << "<a href=\"" << refName << "#" << lab << "\">";
   docify(title);
@@ -356,7 +360,7 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
 
 void HtmlGenerator::startColorFont(uchar red,uchar green,uchar blue)
 {
-  QString colorString;
+  QCString colorString;
   colorString.sprintf("%02x%02x%02x",red,green,blue);
   t << "<font color=\"#" << colorString << "\">";
 }
@@ -370,12 +374,12 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
 {
   if (text && text[0]=='\\') t << "<p><center>" << endl;
   t << "<img align=\"top\" src=\"" << n << "\">" << endl;
-  if (text && text[0]=='\\') t << "</center></p>" << endl;
+  if (text && text[0]=='\\') t << "</center><p>" << endl;
 }
 
 void HtmlGenerator::startMemberList()  
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     //t << endl << "<p><table border=0 cellspacing=2 cellpadding=0>" << endl; 
   }
@@ -387,7 +391,7 @@ void HtmlGenerator::startMemberList()
 
 void HtmlGenerator::endMemberList()    
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     //t << "</table>" << endl; 
   }
@@ -399,7 +403,7 @@ void HtmlGenerator::endMemberList()
 
 void HtmlGenerator::startMemberItem() 
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "<tr><td align=right valign=top>"; 
   }
@@ -411,15 +415,15 @@ void HtmlGenerator::startMemberItem()
 
 void HtmlGenerator::insertMemberAlign() 
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
-    t << "</td><td valign=top>"; 
+    t << "&nbsp;</td><td valign=top>"; 
   }
 }
 
 void HtmlGenerator::endMemberItem() 
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "</td></tr>"; 
   }
@@ -428,7 +432,7 @@ void HtmlGenerator::endMemberItem()
 
 void HtmlGenerator::startMemberDescription() 
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "<tr><td></td><td><font size=-1><em>"; 
   }
@@ -440,7 +444,7 @@ void HtmlGenerator::startMemberDescription()
 
 void HtmlGenerator::endMemberDescription()   
 { 
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "</em></font><br><br></td></tr>" << endl; 
   }
@@ -452,7 +456,7 @@ void HtmlGenerator::endMemberDescription()
 
 void HtmlGenerator::startMemberSections()
 {
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "<table border=0 cellpadding=0 cellspacing=1>" << endl;
   }
@@ -460,7 +464,7 @@ void HtmlGenerator::startMemberSections()
 
 void HtmlGenerator::endMemberSections()
 {
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "</table>" << endl;
   }
@@ -468,7 +472,7 @@ void HtmlGenerator::endMemberSections()
 
 void HtmlGenerator::startMemberHeader()
 {
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "<tr><td colspan=2><br><h2>";
   }
@@ -480,7 +484,7 @@ void HtmlGenerator::startMemberHeader()
 
 void HtmlGenerator::endMemberHeader()
 {
-  if (htmlAlignMemberFlag)
+  if (Config::htmlAlignMemberFlag)
   {
     t << "</h2></td></tr>" << endl;
   }
@@ -488,5 +492,15 @@ void HtmlGenerator::endMemberHeader()
   {
     endGroupHeader();
   }
+}
+
+void HtmlGenerator::startMemberSubtitle()
+{
+  if (Config::htmlAlignMemberFlag) t << "<tr><td colspan=2>";
+}
+
+void HtmlGenerator::endMemberSubtitle()
+{
+  if (Config::htmlAlignMemberFlag) t << "<br><br></td></tr>" << endl;
 }
 

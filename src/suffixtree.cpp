@@ -15,6 +15,8 @@
  */
 
 #include <stdio.h>
+
+#include "qtbc.h"
 #include "suffixtree.h"
 
 #define MAXWORDLEN 1024
@@ -112,7 +114,7 @@ int SuffixNode::insert(const char *word,int refId,int inName,int fullWord)
   SuffixNode *sn=children->first();
   while (sn)
   {
-    char *lab=sn->label.data();
+    const char *lab=sn->label.data();
     char w=word[0],l=lab[0],i=0;
     while (w!=0 && l!=0 && w==l) { i++; w=word[i]; l=lab[i]; }
     if (w==0 && l==0) // match found
@@ -320,7 +322,7 @@ SuffixTree::~SuffixTree()
 
 void SuffixTree::insertWord(const char *word,int index,bool inName)
 {
-  QString suffix=word;
+  QCString suffix=word;
   uint i;
   for (i=2;i<suffix.length()-1;i++) 
   {

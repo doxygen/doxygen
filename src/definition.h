@@ -17,7 +17,7 @@
 #ifndef DEFINITION_H
 #define DEFINITION_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qlist.h>
 #include "config.h"
 #include "section.h"
@@ -31,13 +31,13 @@ class Definition
     //! destroys the definition
     virtual ~Definition();
     //! returns the name of the definition
-    QString name() const { return n; }
+    QCString name() const { return n; }
     //! returns the base name of the output file that contains this definition.
-    virtual QString getOutputFileBase() const = 0;
+    virtual QCString getOutputFileBase() const = 0;
     //! returns the detailed description of this definition
-    QString documentation() const { return doc; }
+    QCString documentation() const { return doc; }
     //! returns the brief description of this definition
-    QString briefDescription() const { return brief; }
+    QCString briefDescription() const { return brief; }
     //! sets a new name for the definition
     void setName(const char *name) { n=name; }
     //! sets the documentation of this definition
@@ -54,16 +54,16 @@ class Definition
             brief.at(bl-1)!='?') brief+='.'; 
       }
     //! returns TRUE iff the definition is documented
-    bool hasDocumentation() 
-      { return !doc.isNull() || !brief.isNull() || extractAllFlag; }
-    QString nameToFile(const char *name);
+    virtual bool hasDocumentation() 
+      { return !doc.isNull() || !brief.isNull() || Config::extractAllFlag; }
+    QCString nameToFile(const char *name);
 
-    void addSectionsToDefinition(QList<QString> *anchorList);
+    void addSectionsToDefinition(QList<QCString> *anchorList);
 
   private: 
-    QString n;     // name of the definition
-    QString brief; // brief description
-    QString doc;   // detailed description
+    QCString n;     // name of the definition
+    QCString brief; // brief description
+    QCString doc;   // detailed description
     SectionList *sectionList; // list of all sections
 };
 

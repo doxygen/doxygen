@@ -14,9 +14,10 @@
  *
  */
 
-#include <qstring.h>
-#include <qfile.h>
 #include <stdio.h>
+
+#include "qtbc.h"
+#include <qfile.h>
 
 unsigned char logo_data[] = {
   0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x76, 0x00, 0x35, 0x00, 0xf7, 0x00,
@@ -492,7 +493,7 @@ unsigned int search_len = 2010;
 
 void writeLogo(const char *dir)
 {
-  QString fileName=(QString)dir+"/doxygen.gif";
+  QCString fileName=(QCString)dir+"/doxygen.gif";
   QFile f(fileName);
   if (f.open(IO_WriteOnly)) 
     f.writeBlock((char *)logo_data,logo_len);
@@ -505,7 +506,7 @@ void writeLogo(const char *dir)
 
 void writeSearchButton(const char *dir)
 {
-  QString fileName=(QString)dir+"/search.gif";
+  QCString fileName=(QCString)dir+"/search.gif";
   QFile f(fileName);
   if (f.open(IO_WriteOnly)) 
     f.writeBlock((char *)search_data,search_len);
