@@ -85,13 +85,13 @@ static const char *defaultStyleSheet =
 "   margin-top     : 2px; \n"
 "   margin-bottom  : 2px  \n"
 "}\n"
-"FONT.keyword       { color: #008000 }\n"
-"FONT.keywordtype   { color: #604020 }\n"
-"FONT.keywordflow   { color: #e08000 }\n"
-"FONT.comment       { color: #800000 }\n"
-"FONT.preprocessor  { color: #806020 }\n"
-"FONT.stringliteral { color: #002080 }\n"
-"FONT.charliteral   { color: #008080 }\n";
+"span.keyword       { color: #008000 }\n"
+"span.keywordtype   { color: #604020 }\n"
+"span.keywordflow   { color: #e08000 }\n"
+"span.comment       { color: #800000 }\n"
+"span.preprocessor  { color: #806020 }\n"
+"span.stringliteral { color: #002080 }\n"
+"span.charliteral   { color: #008080 }\n";
 
 
 static QCString g_header;
@@ -181,7 +181,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr><address align=\"right\"><small>\n";
+  t << "<hr><address style=\"align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << " <a href=\"http://www.doxygen.org/index.html\">\n"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
@@ -257,7 +257,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
   {
     case 0:
       if (g_footer.isEmpty())
-        t << "<hr><address align=\"right\"><small>";
+        t << "<hr><address style=\"align: right;\"><small>";
       else
         t << substituteKeywords(g_footer,convertToHtml(lastTitle));
       break;
@@ -519,14 +519,14 @@ void HtmlGenerator::endGroupHeader()
 
 void HtmlGenerator::startSection(const char *lab,const char *,bool sub)
 {
-  t << "<a name=\"" << lab << "\">";
   if (sub) t << "<h3>"; else t << "<h2>";
+  t << "<a name=\"" << lab << "\">";
 }
 
 void HtmlGenerator::endSection(const char *,bool sub)
 {
-  if (sub) t << "</h3>"; else t << "</h2>";
   t << "</a>" << endl;
+  if (sub) t << "</h3>"; else t << "</h2>";
 }
 
 void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
@@ -654,7 +654,7 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
 {
   t << "\n<p><center><img src=\""
     << fileName << ".png\" usemap=\"#" << name << "_map\""
-    << " border=\"0\"></center>" << endl
+    << " border=\"0\" alt=\"\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
 
   d.writeImage(t,dir,fileName);
@@ -786,6 +786,8 @@ void HtmlGenerator::startMemberSections()
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "<table border=0 cellpadding=0 cellspacing=0>" << endl;
+    // HTML is not recursively decomposable, sorry
+    t << "<tr><td></td></tr>" << endl;
   }
 }
 

@@ -100,6 +100,7 @@ MainHandler::MainHandler() : m_compoundDict(2999), m_compoundNameDict(2999),
   addStartHandler("name",this,&MainHandler::startName);
   addEndHandler("name",this,&MainHandler::endName);
   m_curCompound = 0;
+  m_insideMember = FALSE;
 }
 
 MainHandler::~MainHandler()
@@ -110,7 +111,7 @@ MainHandler::~MainHandler()
 void MainHandler::startCompound(const QXmlAttributes& attrib)
 {
   m_curCompound = new CompoundEntry(257);
-  m_curCompound->id = attrib.value("id");
+  m_curCompound->id = attrib.value("refid");
   m_compounds.append(m_curCompound);
   m_compoundDict.insert(m_curCompound->id,m_curCompound);
 }
@@ -122,21 +123,27 @@ void MainHandler::startName(const QXmlAttributes& /*attrib*/)
 
 void MainHandler::endName()
 {
-  m_curCompound->name = m_curString;
+  if (m_insideMember)
+  {
+    m_curMember->name = m_curString;
+  }
+  else
+  {
+    m_curCompound->name = m_curString;
+  }
 }
 
 void MainHandler::startMember(const QXmlAttributes& attrib)
 {
-  m_curString = "";
+  m_insideMember = TRUE;
   m_curMember = new MemberEntry;
-  m_curMember->id = attrib.value("id");
+  m_curMember->id = attrib.value("refid");
   m_curMember->compound = m_curCompound;
   m_memberDict.insert(m_curMember->id,m_curMember);
 }
 
 void MainHandler::endMember()
 {
-  m_curMember->name = m_curString;
   m_curCompound->memberDict.insert(m_curString,m_curMember);
   QList<CompoundEntry> *cel=0;
   if ((cel=m_memberNameDict.find(m_curString))==0)
@@ -145,6 +152,7 @@ void MainHandler::endMember()
     m_memberNameDict.insert(m_curString,cel);
   }
   cel->append(m_curCompound);
+  m_insideMember = FALSE;
 }
 
 void MainHandler::setDebugLevel(int level)

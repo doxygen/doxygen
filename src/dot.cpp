@@ -769,11 +769,11 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       return;
     }
     QCString mapLabel = convertNameToFile(n->m_label);
-    out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" usemap=\"#" 
-      << mapLabel << "_map\"></td></tr>" << endl;
+    out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#" 
+      << mapLabel << "_map\">" << endl;
     out << "<map name=\"" << mapLabel << "_map\">" << endl;
     convertMapFile(out,mapName);
-    out << "</map>" << endl;
+    out << "</map></td></tr>" << endl;
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
     thisDir.remove(mapName);
   }
@@ -1378,9 +1378,15 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
           break;
       }
       out << "\"></center>" << endl;
-      out << "<map name=\"" << mapLabel << "\">" << endl;
-      convertMapFile(out,baseName+".map");
-      out << "</map>" << endl;
+      QString tmpstr;
+      QTextOStream tmpout(&tmpstr);
+      convertMapFile(tmpout,baseName+".map");
+      if (!tmpstr.isEmpty())
+      {
+        out << "<map name=\"" << mapLabel << "\">" << endl;
+        out << tmpstr;
+        out << "</map>" << endl;
+      }
       thisDir.remove(baseName+".map");
     }
   }
@@ -1601,9 +1607,15 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
       out << "\">";
       out << "</center>" << endl;
-      out << "<map name=\"" << mapName << "_map\">" << endl;
-      convertMapFile(out,baseName+".map");
-      out << "</map>" << endl;
+      QString tmpstr;
+      QTextOStream tmpout(&tmpstr);
+      convertMapFile(tmpout,baseName+".map");
+      if (!tmpstr.isEmpty())
+      {
+        out << "<map name=\"" << mapName << "\">" << endl;
+        out << tmpstr;
+        out << "</map>" << endl;
+      }
       thisDir.remove(baseName+".map");
     }
   }
