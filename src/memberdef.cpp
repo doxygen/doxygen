@@ -654,7 +654,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
 
   // hide members whose brief section should not be visible
-  if (!isBriefSectionVisible()) return;
+  //if (!isBriefSectionVisible()) return;
 
   // write tag file information of this member
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())

@@ -769,7 +769,8 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                          processSection();
                          BEGIN(St_Sections);
                        }
-<St_SecLabel2>{LABELID}{BLANK}+ { 
+<St_SecLabel2>{LABELID}{BLANK}+ | 
+<St_SecLabel2>{LABELID}         { 
                          g_secLabel = yytext;
 			 g_secLabel = g_secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
@@ -780,6 +781,9 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                          processSection();
                          BEGIN(St_Sections);
 		       }
+<St_SecTitle,St_SecLabel1,St_SecLabel2>. {
+                         warn(g_fileName,yylineno,"Error: Unexpected character `%s' while looking for section label or title",yytext); 
+                       }
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 

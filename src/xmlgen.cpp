@@ -528,8 +528,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),typeStr);
     t << "</type>" << endl;
-    t << "        <definition>" << md->definition() << "</definition>" << endl;
-    t << "        <argsstring>" << md->argsString() << "</argsstring>" << endl;
+    t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
+    t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
   }
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;

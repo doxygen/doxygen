@@ -1226,6 +1226,37 @@ static void findUsingDeclImports(Entry *root)
 
 //----------------------------------------------------------------------
 
+static void findIncludedUsingDirectives()
+{
+  // first mark all files as not visited
+  FileNameListIterator fnli(Doxygen::inputNameList); 
+  FileName *fn;
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      fd->visited=FALSE;
+    }
+    fn=Doxygen::inputNameList.next();
+  }
+  // then recursively add using directives found in #include files
+  // to files that have not been visited.
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      if (!fd->visited) fd->addIncludedUsingDirectives();
+    }
+    fn=Doxygen::inputNameList.next();
+  }
+}
+
+//----------------------------------------------------------------------
+
 static MemberDef *addVariableToClass(
     Entry *root,
     ClassDef *cd,
@@ -7796,6 +7827,9 @@ void parseInput()
   msg("Building file list...\n");
   buildFileList(root);
   
+  msg("Searching for included using directives...\n");
+  findIncludedUsingDirectives();
+
   msg("Building class list...\n");
   buildClassList(root);
   buildClassDocList(root);

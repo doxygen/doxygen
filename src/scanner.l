@@ -355,7 +355,7 @@ static void addSpecialItem(const char *listName)
     //sectionLabel=anchorLabel;
     //addSection();
     //current->name = tmpName;
-    //printf("%s: text %s doc %s\n",listName,item->text.data(),cmdString.data());
+    //printf("%s: text `%s' doc %s\n",listName,item->text.data(),cmdString.data());
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -4127,7 +4127,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
 <ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
-  					  current->brief=current->brief.stripWhiteSpace();
 					  //if (!current->doc.isEmpty()) current->doc+=" <p>";
 					  if (lastBriefContext==TodoParam || 
 					      lastBriefContext==TestParam || 
@@ -4139,6 +4138,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
+  					    current->brief=current->brief.stripWhiteSpace();
 					    if (yytext[yyleng-1]=='\n') yyLineNr++;
 					  }
 					  BEGIN( lastBriefContext );
@@ -4186,7 +4186,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-					    current->brief += " "; 
+					    current->brief += "\n"; 
 					    if (!current->doc.isEmpty())
 					    {
 					      current->doc += "<p>";
