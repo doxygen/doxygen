@@ -24,4 +24,4 @@
 # character to interpose another module into the current module.  This
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
-doxygen -a addon bin doc examples html lib objects packages qtools src tmake wintools libpng
+doxygen -a addon bin doc examples html lib objects packages qtools src tmake wintools libpng libmd5
