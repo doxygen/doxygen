@@ -279,7 +279,7 @@ OPTSTARS ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
 ENDLIST  {BLANK}*{OPTSTARS}"."{BLANK}*\n
 ATTRIB   {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
-URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
+URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))([({]{URLCHAR}*[)}])?
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
@@ -675,7 +675,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*{ID}{FUNCARG}?
   			 unput(' ');
   			 return 0;
                        }
-<St_Ref>{BLANK}+"\""   {
+<St_Ref>{WS}+"\""      {
   			 BEGIN(St_Ref2);
                        }
 <St_Ref>\n	       {
