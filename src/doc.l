@@ -143,6 +143,7 @@ static void initParser()
 //-----------------------------------------------------------------------------
 
 void scanString(const char *s);
+void scanDoc(const char *s);
 void internalParseDocument(const char *s);
 
 //-----------------------------------------------------------------------------
@@ -324,7 +325,7 @@ static void verbIncludeFile(OutputDocInterface &od,const char *name)
   if ((fd=findFileDef(Doxygen::exampleNameDict,name,ambig)))
   {
     od.startCodeFragment();
-    od.codify(fileToString(fd->absFilePath()));
+    od.codify(fileToString(fd->absFilePath())+"\n");
     od.endCodeFragment();
   }
   else if (ambig)
@@ -909,7 +910,7 @@ TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
 BLOCKQUOTE [bB][lL][oO][cC][kK][qQ][uU][oO][tT][eE]
-DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
+DOCPARAM  ("#")?([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 OPNEW     {B}+"new"({B}*"[]")?
 OPDEL     {B}+"delete"({B}*"[]")?
 OPARG     "("[a-z_A-Z0-9,\<\> \t\*\&]*")"
@@ -1567,14 +1568,14 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"\\capt".*
 <DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BSEP}* {
 					  outDoc->startDescTableTitle();
-  					  outDoc->docify(substitute(yytext,"\"","").stripWhiteSpace()); 
+					  scanDoc(substitute(yytext,"\"","").stripWhiteSpace());
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
 <DocException>{SCOPENAME}		{
 					  outDoc->startDescTableTitle();
-  					  outDoc->docify(yytext); 
+  					  generateRef(*outDoc,className,yytext,FALSE);
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
@@ -1938,6 +1939,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 					}
 <DocCodeBlock>{BN}*{CMD}"endcode"/[^a-z_A-Z0-9]  { // needed to match things like \endcode. (note the dot)
+  					  codeBlock+="\n";
 				          parseCode(*outDoc,className,codeBlock,exampleDoc,exampleName);
 					  //printf("Code block\n-------------\n%s\n--------------\n",codeBlock.data());
 					  outDoc->endCodeFragment();
@@ -2441,6 +2443,24 @@ void scanString(const char *s)
   inputString  = s;
   inputPosition = 0;
   BEGIN( Text );
+  docYYlex();
+  yy_delete_buffer(YY_CURRENT_BUFFER);
+  yy_switch_to_buffer(oldBuffer);
+  inputString = oldInputString;
+  inputPosition = oldInputPosition;
+  BEGIN( oldRule );
+}
+
+void scanDoc(const char *s)
+{
+  const char *oldInputString = inputString;
+  int oldInputPosition = inputPosition;
+  int oldRule = YY_START;
+  YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
+  yy_switch_to_buffer(yy_create_buffer(docYYin, YY_BUF_SIZE));  
+  inputString  = s;
+  inputPosition = 0;
+  BEGIN( DocScan );
   docYYlex();
   yy_delete_buffer(YY_CURRENT_BUFFER);
   yy_switch_to_buffer(oldBuffer);

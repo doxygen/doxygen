@@ -160,16 +160,17 @@ void LatexGenerator::init()
     << endl
     << "refman.ps: refman.dvi" << endl
     << "\tdvips -o refman.ps refman.dvi" << endl
-    << endl
-    << "refman.pdf: refman.ps" << endl;
+    << endl;
     if (Config_getBool("USE_PDFLATEX")) // use pdflatex instead of latex
     {
+      t << "refman.pdf: refman.tex" << endl;
       t << "\tpdflatex refman.tex" << endl;
       t << "\tmakeindex refman.idx" << endl;
       t << "\tpdflatex refman.tex" << endl << endl;
     }
     else // otherwise use ps2pdf: not as nice :(
     {
+      t << "refman.pdf: refman.ps" << endl;
 #if defined(_MSC_VER)
       // ps2pdf.bat does not work properly from a makefile using GNU make!
       t << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "

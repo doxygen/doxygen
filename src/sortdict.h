@@ -23,6 +23,45 @@
 #include <qlist.h>
 #include <qdict.h>
 
+#define AUTORESIZE 1
+
+#if AUTORESIZE
+const uint SDict_primes[] = 
+{
+  17,
+  29,
+  47,
+  71,
+  113,
+  179,
+  293,
+  457,
+  733,
+  1171,
+  1871,
+  2999,
+  4787,
+  7669,
+  12251,
+  19603,
+  31379,
+  50177,
+  80287,
+  128449,
+  205519,
+  328829,
+  526139,
+  841801,
+  1346881,
+  2155007,
+  3448033,
+  5516827,
+  8826919,
+  14123059,
+  0xffffffff
+};
+#endif
+
 template<class T> class SDict;
 
 /*! internal wrapper class that redirects compareItems() to the 
@@ -51,16 +90,22 @@ class SDict
   private:
     SList<T> *m_list;
     QDict<T> *m_dict;
+    int m_sizeIndex;
     
   public:
     /*! Create an ordered dictionary.
      *  \param size The size of the dictionary. Should be a prime number for
      *              best distribution of elements.
      */
-    SDict(int size) 
+    SDict(int size) : m_sizeIndex(0)
     {
       m_list = new SList<T>(this);
+#if AUTORESIZE
+      while ((uint)size>SDict_primes[m_sizeIndex]) m_sizeIndex++;
+      m_dict = new QDict<T>(SDict_primes[m_sizeIndex]);
+#else
       m_dict = new QDict<T>(size);
+#endif
     }
     /*! Destroys the dictionary */
     virtual ~SDict() 
@@ -78,6 +123,12 @@ class SDict
     {
       m_list->append(d);
       m_dict->insert(key,d);
+#if AUTORESIZE
+      if (m_dict->size()>SDict_primes[m_sizeIndex])
+      {
+        m_dict->resize(SDict_primes[++m_sizeIndex]);
+      }
+#endif
     }
     /*! Sorts the members of the dictionary. First appending a number
      *  of members and then sorting them is faster (O(NlogN) than using 
@@ -96,6 +147,12 @@ class SDict
     {
       m_list->inSort(d);
       m_dict->insert(key,d);
+#if AUTORESIZE
+      if (m_dict->size()>SDict_primes[m_sizeIndex])
+      {
+        m_dict->resize(SDict_primes[++m_sizeIndex]);
+      }
+#endif
     }
     /*! Indicates whether or not the dictionary owns its elements */
     void setAutoDelete(bool val)

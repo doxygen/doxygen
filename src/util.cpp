@@ -891,26 +891,29 @@ void setAnchors(char id,MemberList *ml,int groupId)
 
 //----------------------------------------------------------------------------
 
+/*! takes the \a buf of the given lenght \a len and converts CR LF (DOS)
+ * or CR (MAC) line ending to LF (Unix).  Returns the length of the
+ * converted content (i.e. the same as \a len (Unix, MAC) or
+ * smaller (DOS).
+ */
 int filterCRLF(char *buf,int len)
 {
-  char *ps=buf;
-  char *pd=buf;
-  char c;
-  int i;
-  for (i=0;i<len;i++)
+  int src = 0;    // source index
+  int dest = 0;   // destination index
+  char c;         // current character
+
+  while (src<len)
   {
-    c=*ps++;
-    if (c=='\r')
+    c = buf[src++];            // Remember the processed character.
+    if (c == '\r')             // CR to be solved (MAC, DOS)
     {
-      if (*ps=='\n') ps++; // DOS: CR+LF -> LF
-      *pd++='\n'; // MAC: CR -> LF
+      c = '\n';                // each CR to LF
+      if (src<len && buf[src] == '\n')
+        ++src;                 // skip LF just after CR (DOS) 
     }
-    else
-    {
-      *pd++=c;
-    }
+    buf[dest++] = c;           // copy the (modified) character to dest
   }
-  return len+pd-ps;
+  return dest;                 // length of the valid part of the buf
 }
 
 /*! reads a file with name \a name and returns it as a string. If \a filter

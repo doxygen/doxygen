@@ -12,7 +12,7 @@ class C2 {};
 /** function in group 1 */
 void func() {}
 
-/** @} end of group1 */
+/** @} */ // end of group1
 
 /**
  *  @defgroup group2 The Second Group
@@ -70,7 +70,7 @@ namespace N1 {};
  *  Text of the second section
  */
 
-/** @} */
+/** @} */ // end of group5
 
 /** @addtogroup group1
  *  
@@ -84,5 +84,5 @@ void func2() {}
 /** yet another function in group 1 */
 void func3() {}
 
-/** @} */
+/** @} */ // end of group1
 
