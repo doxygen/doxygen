@@ -48,7 +48,7 @@
  *	statics
  */
   
-static OutputDocInterface * g_code;
+static BaseCodeDocInterface * g_code;
 
 static ClassSDict    g_codeClassSDict(17);
 static ClassDef     *g_curClassDef;
@@ -414,7 +414,7 @@ static void codifyLines(char *text)
  * line numbers for each line. If \a text contains newlines, the link will be 
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(OutputDocInterface &ol,
+static void writeMultiLineCodeLink(BaseCodeDocInterface &ol,
                   const char *ref,const char *file,
                   const char *anchor,const char *text)
 {
@@ -610,7 +610,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 
 }
 
-static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
+static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
   if (*clName=='~') // correct for matching negated values i.s.o. destructors.
@@ -642,11 +642,7 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
       //                                   g_exampleFile.data());
       if (cd->addExample(anchor,g_exampleName,g_exampleFile))
       {
-	ol.pushGeneratorState();
-	ol.disable(OutputGenerator::Latex);
-	ol.disable(OutputGenerator::RTF);
-	ol.writeAnchor(0,anchor);
-	ol.popGeneratorState();
+	ol.writeCodeAnchor(anchor);
 	g_anchorCount++;
       }
     }
@@ -681,7 +677,8 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
 }
 
 static bool getLink(const char *className,
-                    const char *memberName,OutputDocInterface &result,
+                    const char *memberName,
+		    BaseCodeDocInterface &ol,
 		    const char *text=0)
 {
   MemberDef    *md;
@@ -704,13 +701,7 @@ static bool getLink(const char *className,
       //                                  g_exampleFile.data());
       if (md->addExample(anchor,g_exampleName,g_exampleFile))
       {
-	//bool latexEnabled = result.isEnabled(OutputGenerator::Latex);
-	result.pushGeneratorState();
-	//if (latexEnabled) result.disable(OutputGenerator::Latex);
-	result.disable(OutputGenerator::Latex);
-	result.writeAnchor(0,anchor);
-	result.popGeneratorState();
-	//if (latexEnabled) result.enable(OutputGenerator::Latex);
+	ol.writeCodeAnchor(anchor);
 	g_anchorCount++;
       }
     }
@@ -733,7 +724,7 @@ static bool getLink(const char *className,
       }
       //printf("d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
-      writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
+      writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),
 	                       md->getBodyAnchor(),text ? text : memberName);
       return TRUE;
     } 
@@ -741,7 +732,7 @@ static bool getLink(const char *className,
   return FALSE;
 }
 
-static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const char *memName)
+static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const char *memName)
 {
   if (mcd)
   {
@@ -764,10 +755,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 	//                                  g_exampleFile.data());
 	if (xmd->addExample(anchor,g_exampleName,g_exampleFile))
 	{
-	  ol.pushGeneratorState();
-	  ol.disable(OutputGenerator::Latex);
-	  ol.writeAnchor(0,anchor);
-	  ol.popGeneratorState();
+	  ol.writeCodeAnchor(anchor);
 	  g_anchorCount++;
 	}
       }
@@ -799,7 +787,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
   return FALSE;
 }
 
-static void generateMemberLink(OutputDocInterface &ol,const QCString &varName,
+static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
             char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
@@ -812,23 +800,17 @@ static void generateMemberLink(OutputDocInterface &ol,const QCString &varName,
   if (vcd) 
   {
     //printf("Class found!\n");
-    OutputDocInterface *result = ol.clone();
-    if (getLink(vcd->name(),memName,*result)) 
+    if (getLink(vcd->name(),memName,ol)) 
     {
       //printf("Found result!\n");
-      ol.append(result);
-      delete result;
       return;
     }
     BaseClassListIterator bcli(*vcd->baseClasses());
     for ( ; bcli.current() ; ++bcli)
     {
-      OutputDocInterface *result = ol.clone();
-      if (getLink(bcli.current()->classDef->name(),memName,*result)) 
+      if (getLink(bcli.current()->classDef->name(),memName,ol)) 
       {
 	//printf("Found result!\n");
-	ol.append(result);
-	delete result;
 	return;
       }
     }
@@ -896,9 +878,8 @@ static void generateMemberLink(OutputDocInterface &ol,const QCString &varName,
   return;
 }
 
-static void generateFunctionLink(OutputDocInterface &ol,char *funcName)
+static void generateFunctionLink(BaseCodeDocInterface &ol,char *funcName)
 {
-  OutputDocInterface *result = ol.clone();
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
   QCString locScope=g_classScope.copy();
@@ -924,24 +905,16 @@ static void generateFunctionLink(OutputDocInterface &ol,char *funcName)
     BaseClassListIterator bcli(*ccd->baseClasses());
     for ( ; bcli.current() ; ++bcli)
     {
-      if (getLink(bcli.current()->classDef->name(),locFunc,*result,funcName)) 
+      if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
       {
-	ol.append(result);
-	delete result;
 	return;
       }
     }
   }
-  if (getLink(locScope,locFunc,*result,funcName))
+  if (!getLink(locScope,locFunc,ol,funcName))
   {
-    ol.append(result);
-  }
-  else
-  {
-    //codifyLines(funcName);
     generateClassOrGlobalLink(ol,funcName);
   }
-  delete result;
   return;
 }
 
@@ -2008,12 +1981,12 @@ void initParseCodeContext()
   g_anchorCount = 0;
 }
 
-void parseCode(OutputDocInterface &od,const char *className,const QCString &s, 
+void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment)
 {
   if (s.isEmpty()) return;
-  g_code = od.clone();
+  g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
   g_currentFontClass = 0;
@@ -2060,8 +2033,6 @@ void parseCode(OutputDocInterface &od,const char *className,const QCString &s,
     endFontClass();
     g_code->endCodeLine();
   }
-  od.append(g_code);
-  delete g_code;
   return;
 }
 

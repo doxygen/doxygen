@@ -83,6 +83,7 @@ const char *tokToString(int token)
   {
     case 0:              return "TK_EOF";
     case TK_WORD:        return "TK_WORD";
+    case TK_LNKWORD:     return "TK_LNKWORD";
     case TK_WHITESPACE:  return "TK_WHITESPACE";
     case TK_LISTITEM:    return "TK_LISTITEM";
     case TK_ENDLIST:     return "TK_ENDLIST";
@@ -221,8 +222,20 @@ LINKMASK  [^ \t\n\r\\@<&$]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"))?
 SPCMD1    {CMD}[a-z_A-Z0-9]+ 
 SPCMD2    {CMD}[\\@<>&$#%~]
 SPCMD3    {CMD}form#[0-9]+
-WORD1     [^ \t\n\r\\@<&$]+ 
-WORD2     [^ \t\n\r\\@<&$]+"("[^\n)]*")"({BLANK}*("const"|"volatile"))? 
+TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
+FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
+SCOPESEP  "::"|"#"|"."
+SCOPEPRE  {ID}("<"{TEMPCHAR}*">")?{SCOPESEP}
+SCOPEMASK {SCOPEPRE}*(~)?{ID}
+FUNCARG   "("{FUNCCHAR}*")"
+OPNEW     {BLANK}+"new"({BLANK}*"[]")?
+OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
+OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
+OPCAST    {BLANK}+[^(\r\n.,]+
+OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
+LNKWORD1  {SCOPEMASK}({FUNCARG}({BLANK}*("const"|"volatile"))?)?
+LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
+WORD      [^ \t\n\r\\@<>&$#,.]+ 
 
 %option noyywrap
 %option yylineno
@@ -241,6 +254,7 @@ WORD2     [^ \t\n\r\\@<&$]+"("[^\n)]*")"({BLANK}*("const"|"volatile"))?
 %x St_Link
 %x St_Ref
 %x St_Ref2
+%x St_IntRef
 
 %%
    /* TODO: \~lang_id */
@@ -330,12 +344,24 @@ WORD2     [^ \t\n\r\\@<&$]+"("[^\n)]*")"({BLANK}*("const"|"volatile"))?
                          g_token->name = yytext;
                          return TK_SYMBOL;
                        }
-<St_Para>{WORD1}       | /* word, #word, or %word */ 
-<St_Para>{WORD2}       { /* function call */ 
+<St_Para>{LNKWORD1}    |
+<St_Para>{LNKWORD2}    {
+                         g_token->name = yytext;
+                         return TK_LNKWORD;
+  		       }
+<St_Para>"."|","       {
                          g_token->name = yytext;
                          return TK_WORD;
-			 /* dummy code to please the compiler, removing this
-			    results in a warning on my machine */ goto find_rule;
+  		       }
+<St_Para>{WORD}        { /* function call */ 
+                         g_token->name = yytext;
+                         return TK_WORD;
+
+			 /* the following is dummy code to please the 
+			  * compiler, removing this results in a warning 
+			  * on my machine 
+			  */ 
+			 goto find_rule;
                        }
 <St_Para>{BLANK}+      |
 <St_Para>{BLANK}*\n{BLANK}* { /* white space */ 
@@ -387,8 +413,7 @@ WORD2     [^ \t\n\r\\@<&$]+"("[^\n)]*")"({BLANK}*("const"|"volatile"))?
                          g_token->name = yytext+1;
                          return TK_COMMAND;
                        }
-<St_Title>{WORD1}      |
-<St_Title>{WORD2}      { /* word */
+<St_Title>{WORD}       { /* word */
                          g_token->name = yytext;
 			 return TK_WORD;
                        }
@@ -417,6 +442,13 @@ WORD2     [^ \t\n\r\\@<&$]+"("[^\n)]*")"({BLANK}*("const"|"volatile"))?
                          unput(*yytext);
   			 return 0;
   		       }
+<St_IntRef>[A-Z_a-z0-9.:#\-\+]+ {
+                         g_token->name = yytext;
+			 return TK_WORD;
+  		       }
+<St_IntRef>{BLANK}+"\"" {
+                         BEGIN(St_Ref2);
+                       }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
@@ -565,6 +597,11 @@ void doctokenizerYYsetStateLink()
 void doctokenizerYYsetStateRef()
 {
   BEGIN(St_Ref);
+}
+
+void doctokenizerYYsetStateInternalRef()
+{
+  BEGIN(St_IntRef);
 }
 
 void doctokenizerYYcleanup()

@@ -62,7 +62,7 @@
   <li><tt>(\<className\>"::")<sup>n</sup>\<functionName\>"()"</tt>
   <li><tt>(\<className\>"::")<sup>n</sup>\<functionName\></tt>
   </ol>
-  where n>0. 
+  where n\>0. 
 
   \par Note 1: 
     The patterns above should not contain spaces, tabs or newlines. 

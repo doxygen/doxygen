@@ -784,12 +784,12 @@ void LatexGenerator::endIndexSection(IndexSections is)
         PageInfo *pi=pdi.toFirst();
         if (pi)
         {
-          t << "\\input{" << convertNameToFile(pi->name+"-example") << "}\n";
+          t << "\\input{" << pi->getOutputFileBase() << "}\n";
         }
         for (++pdi;(pi=pdi.current());++pdi)
         {
           if (compactLatex) t << "\\input" ; else t << "\\include";
-          t << "{" << convertNameToFile(pi->name+"-example") << "}\n";
+          t << "{" << pi->getOutputFileBase() << "}\n";
         }
       }
       break;
@@ -803,13 +803,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (!pi->getGroupDef() && !pi->isReference())
           {
-            QCString pageName;
-            if (Config_getBool("CASE_SENSE_NAMES"))
-              pageName=pi->name.copy();
-            else
-              pageName=pi->name.lower();
             if (compactLatex || first) t << "\\input" ; else t << "\\include";
-            t << "{" << pageName << "}\n";
+            t << "{" << pi->getOutputFileBase() << "}\n";
             first=FALSE;
           }
         }

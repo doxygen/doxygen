@@ -1704,7 +1704,7 @@ void MemberDef::addListReference(Definition *d)
   }
   //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
   addRefItem(specialListItems(),memLabel,
-      d->getOutputFileBase()+":"+anchor(),memName,argsString());
+      d->getOutputFileBase()+"#"+anchor(),memName,argsString());
 }
 
 MemberList *MemberDef::getSectionList(Definition *d) const 

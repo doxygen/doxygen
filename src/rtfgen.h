@@ -254,6 +254,8 @@ class RTFGenerator : public OutputGenerator
     void startSectionRefList() {}
     void endSectionRefList() {}
 
+    void writeCodeAnchor(const char *) {}
+
     static bool preProcessFileInplace(const char *path,const char *name);
     
   private:
@@ -273,7 +275,7 @@ class RTFGenerator : public OutputGenerator
     bool m_bstartedBody;  // has startbody been called yet?
     int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.
     bool m_omitParagraph; // should a the next paragraph command be ignored?
-    int  m_columnNumbers; // number of columns in a table
+    int  m_numCols; // number of columns in a table
 
     void beginRTFDocument();
     void beginRTFChapter();

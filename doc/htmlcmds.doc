@@ -23,73 +23,73 @@ documentation. Note that all attributes of a HTML tag are ignored
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a HTML hyper-link (HTML only). 
 <li><tt>\<A NAME="..."\></tt> Starts an named anchor (HTML only).
-<li><tt>\</A></tt>    Ends a link or anchor (HTML only).
-<li><tt>\<B></tt>     Starts a piece of text displayed in a bold font.
-<li><tt>\</B></tt>    Ends a <tt>\<B\></tt> section.
-<li><tt>\<BODY></tt>  Does not generate any output.
-<li><tt>\</BODY></tt> Does not generate any output.
-<li><tt>\<BR></tt>    Forces a line break.
-<li><tt>\<CENTER></tt> starts a section of centered text.
-<li><tt>\</CENTER></tt> ends a section of centered text.
-<li><tt>\<CAPTION></tt> Starts a caption. Use within a table only.
-<li><tt>\</CAPTION></tt> Ends a caption. Use within a table only.
-<li><tt>\<CODE></tt>  Starts a piece of text displayed in a typewriter font.
-<li><tt>\</CODE></tt> End a <tt>\<CODE\></tt> section.
-<li><tt>\<DD></tt>    Starts an item description.
-<li><tt>\<DFN></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\</DFN></tt>  Ends a <tt>\<DFN\></tt> section.
-<li><tt>\<DL></tt>    Starts a description list.
-<li><tt>\</DL></tt>   Ends a description list.
-<li><tt>\<DT></tt>    Starts an item title.
-<li><tt>\</DT></tt>   Ends an item title.
-<li><tt>\<EM></tt>    Starts a piece of text displayed in an italic font.
-<li><tt>\</EM></tt>   Ends a <tt>\<EM\></tt> section.
-<li><tt>\<FORM></tt>  Does not generate any output.
-<li><tt>\</FORM></tt> Does not generate any output.
-<li><tt>\<HR></tt>    Writes a horizontal ruler.
-<li><tt>\<H1></tt>    Starts an unnumbered section.
-<li><tt>\</H1></tt>   Ends an unnumberd section.
-<li><tt>\<H2></tt>    Starts an unnumbered subsection.
-<li><tt>\</H2></tt>   Ends an unnumbered subsection.
-<li><tt>\<H3></tt>    Starts an unnumbered subsubsection.
-<li><tt>\</H3></tt>   Ends an unnumbered subsubsection.
-<li><tt>\<I></tt>     Starts a piece of text displayed in an italic font.
-<li><tt>\<INPUT></tt> Does not generate any output.
-<li><tt>\</I></tt>    Ends a <tt>\<I\></tt> section.
-<li><tt>\<IMG></tt>   This command is written with attributes to the HTML output only.
-<li><tt>\<LI></tt>    Starts a new list item.
-<li><tt>\</LI></tt>   Ends a list item.
-<li><tt>\<META></tt>  Does not generate any output.
-<li><tt>\<MULTICOL></tt> ignored by doxygen.
-<li><tt>\</MUTLICOL></tt> ignored by doxygen.
-<li><tt>\<OL></tt>    Starts a numbered item list.
-<li><tt>\</OL></tt>   Ends a numbered item list.
-<li><tt>\<P></tt>     Starts a new paragraph.
-<li><tt>\</P></tt>    Ends a paragraph.
-<li><tt>\<PRE></tt>   Starts a preformatted fragment.
-<li><tt>\</PRE></tt>  Ends a preformatted fragment.
-<li><tt>\<SMALL></tt> Starts a section of text displayed in a smaller font.
-<li><tt>\</SMALL></tt> Ends a <tt>\<SMALL\></tt> section.
-<li><tt>\<STRONG></tt> Starts a section of bold text.
-<li><tt>\</STRONG></tt> Ends a section of bold text.
-<li><tt>\<SUB></tt>   Starts a piece of text displayed in subscript.
-<li><tt>\</SUB></tt>  Ends a <tt>\<SUB\></tt> section.
-<li><tt>\<SUP></tt>   Starts a piece of text displayed in superscript.
-<li><tt>\</SUP></tt>  Ends a <tt>\</SUP\></tt> section.
-<li><tt>\<TABLE></tt> starts a table.
-<li><tt>\</TABLE></tt> ends a table.
-<li><tt>\<TD></tt>    Starts a new table data element.
-<li><tt>\</TD></tt>   Ends a table data element.
-<li><tt>\<TR></tt>    Starts a new table row.
-<li><tt>\</TR></tt>   Ends a table row.
-<li><tt>\<TT></tt>    Starts a piece of text displayed in a typewriter font.
-<li><tt>\</TT></tt>   Ends a <tt>\<TT\></tt> section.
-<li><tt>\<KBD></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\</KBD></tt>  Ends a <tt>\<KBD\></tt> section.
-<li><tt>\<UL></tt>    Starts an unnumbered item list.
-<li><tt>\</UL></tt>   Ends an unnumbered item list.
-<li><tt>\<VAR></tt>   Starts a piece of text displayed in an italic font.
-<li><tt>\</VAR></tt>  Ends a <tt>\</VAR\></tt> section.
+<li><tt>\</A\></tt>    Ends a link or anchor (HTML only).
+<li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
+<li><tt>\</B\></tt>    Ends a <tt>\<B\></tt> section.
+<li><tt>\<BODY\></tt>  Does not generate any output.
+<li><tt>\</BODY\></tt> Does not generate any output.
+<li><tt>\<BR\></tt>    Forces a line break.
+<li><tt>\<CENTER\></tt> starts a section of centered text.
+<li><tt>\</CENTER\></tt> ends a section of centered text.
+<li><tt>\<CAPTION\></tt> Starts a caption. Use within a table only.
+<li><tt>\</CAPTION\></tt> Ends a caption. Use within a table only.
+<li><tt>\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
+<li><tt>\</CODE\></tt> End a <tt>\<CODE\></tt> section.
+<li><tt>\<DD\></tt>    Starts an item description.
+<li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
+<li><tt>\<DL\></tt>    Starts a description list.
+<li><tt>\</DL\></tt>   Ends a description list.
+<li><tt>\<DT\></tt>    Starts an item title.
+<li><tt>\</DT\></tt>   Ends an item title.
+<li><tt>\<EM\></tt>    Starts a piece of text displayed in an italic font.
+<li><tt>\</EM\></tt>   Ends a <tt>\<EM\></tt> section.
+<li><tt>\<FORM\></tt>  Does not generate any output.
+<li><tt>\</FORM\></tt> Does not generate any output.
+<li><tt>\<HR\></tt>    Writes a horizontal ruler.
+<li><tt>\<H1\></tt>    Starts an unnumbered section.
+<li><tt>\</H1\></tt>   Ends an unnumberd section.
+<li><tt>\<H2\></tt>    Starts an unnumbered subsection.
+<li><tt>\</H2\></tt>   Ends an unnumbered subsection.
+<li><tt>\<H3\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\</H3\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\<I\></tt>     Starts a piece of text displayed in an italic font.
+<li><tt>\<INPUT\></tt> Does not generate any output.
+<li><tt>\</I\></tt>    Ends a <tt>\<I\></tt> section.
+<li><tt>\<IMG\></tt>   This command is written with attributes to the HTML output only.
+<li><tt>\<LI\></tt>    Starts a new list item.
+<li><tt>\</LI\></tt>   Ends a list item.
+<li><tt>\<META\></tt>  Does not generate any output.
+<li><tt>\<MULTICOL\></tt> ignored by doxygen.
+<li><tt>\</MUTLICOL\></tt> ignored by doxygen.
+<li><tt>\<OL\></tt>    Starts a numbered item list.
+<li><tt>\</OL\></tt>   Ends a numbered item list.
+<li><tt>\<P\></tt>     Starts a new paragraph.
+<li><tt>\</P\></tt>    Ends a paragraph.
+<li><tt>\<PRE\></tt>   Starts a preformatted fragment.
+<li><tt>\</PRE\></tt>  Ends a preformatted fragment.
+<li><tt>\<SMALL\></tt> Starts a section of text displayed in a smaller font.
+<li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
+<li><tt>\<STRONG\></tt> Starts a section of bold text.
+<li><tt>\</STRONG\></tt> Ends a section of bold text.
+<li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.
+<li><tt>\</SUB\></tt>  Ends a <tt>\<SUB\></tt> section.
+<li><tt>\<SUP\></tt>   Starts a piece of text displayed in superscript.
+<li><tt>\</SUP\></tt>  Ends a <tt>\</SUP\></tt> section.
+<li><tt>\<TABLE\></tt> starts a table.
+<li><tt>\</TABLE\></tt> ends a table.
+<li><tt>\<TD\></tt>    Starts a new table data element.
+<li><tt>\</TD\></tt>   Ends a table data element.
+<li><tt>\<TR\></tt>    Starts a new table row.
+<li><tt>\</TR\></tt>   Ends a table row.
+<li><tt>\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
+<li><tt>\</TT\></tt>   Ends a <tt>\<TT\></tt> section.
+<li><tt>\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\</KBD\></tt>  Ends a <tt>\<KBD\></tt> section.
+<li><tt>\<UL\></tt>    Starts an unnumbered item list.
+<li><tt>\</UL\></tt>   Ends an unnumbered item list.
+<li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
+<li><tt>\</VAR\></tt>  Ends a <tt>\</VAR\></tt> section.
 </ul>
 
 The special HTML character entities that are recognized by Doxygen:

@@ -39,7 +39,10 @@
 static QCString stripExtension(const char *fName)
 {
   QCString result=fName;
-  if (result.right(htmlFileExtensionLength)==htmlFileExtension) result=result.left(result.length()-htmlFileExtensionLength);
+  if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+  {
+    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+  }
   return result;
 }
 
@@ -853,7 +856,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
     if (m_tempArgs)
     {
       ArgumentListIterator ali(*m_tempArgs);
@@ -993,7 +996,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend"+htmlFileExtension);
+        ol.startHtmlLink("graph_legend"+Doxygen::htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");
@@ -1028,7 +1031,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend"+htmlFileExtension);
+        ol.startHtmlLink("graph_legend"+Doxygen::htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");

@@ -284,6 +284,8 @@ class LatexGenerator : public OutputGenerator
     void startSectionRefList();
     void endSectionRefList();
 
+    void writeCodeAnchor(const char *) {}
+
   private:
     void latin2ToLatex(unsigned char);
     LatexGenerator(const LatexGenerator &);

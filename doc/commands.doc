@@ -90,6 +90,7 @@ documentation:
 \refitem cmdline \\line
 \refitem cmdlink \\link
 \refitem cmdmainpage \\mainpage
+\refitem cmdn \\n
 \refitem cmdname \\name
 \refitem cmdnamespace \\namespace
 \refitem cmdnosubgrouping \\nosubgrouping
@@ -205,7 +206,7 @@ doxygen. Unrecognized commands are treated as normal text.
 
   \addindex \\def
   Indicates that a comment block contains documentation for a 
-  \c #define macro. 
+  \c \#define macro. 
 
   \par Example:
   \verbinclude define.h  
@@ -1625,6 +1626,13 @@ ALIASES  = "english=\if english" \
   For nested lists, HTML commands should be used.
 
   Equivalent to \ref cmdarg "\\arg"
+
+<hr>
+\section cmdn \n 
+  
+  \addindex \\n
+  Forces a new line. Equivalent to \<br\> and inspired by
+  the printf function.
 
 <hr>
 \section cmdp \p <word>

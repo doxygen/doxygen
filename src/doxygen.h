@@ -51,8 +51,6 @@ class StringDict : public QDict<QCString>
 };
 
 
-extern QCString htmlFileExtension;
-extern int htmlFileExtensionLength;
 extern QCString spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -94,6 +92,7 @@ class Doxygen
     static QDict<void> expandAsDefinedDict;
     static NamespaceDef *globalScope;
     static QDict<RefList> *specialLists; // array of special lists: todo, test, bug, deprecated ...
+    static QCString htmlFileExtension;
 };
 
 void initDoxygen();

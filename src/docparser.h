@@ -26,10 +26,21 @@
 #include "docvisitor.h"
 #include "doctokenizer.h"
 
+class DocNode;
+
 //---------------------------------------------------------------------------
 
-/*! Main entry point */
-void validatingParseDoc(const char *fileName,int startLine,const char *input);
+/*! Main entry point for the documentation parser.
+ *  @param fileName  File in which the documentation block is found.
+ *  @param startLine Line at which the documentation block is found.
+ *  @param context   Class or namespace in which of the item to which this
+ *                   block belongs.
+ *  @param input     String representation of the documentation block.
+ *  @returns         Root node of the abstract syntax tree. Ownership of the
+ *                   pointer is handed over to the caller.
+ */
+DocNode *validatingParseDoc(const char *fileName,int startLine,
+                            const char *context, const char *input);
 
 //---------------------------------------------------------------------------
 
@@ -37,6 +48,7 @@ void validatingParseDoc(const char *fileName,int startLine,const char *input);
 class DocNode
 {
   public:
+    /*! Available node types. */
     enum Kind { Kind_Root           = 0, 
                 Kind_Word           = 1, 
                 Kind_WhiteSpace     = 2, 
@@ -80,12 +92,22 @@ class DocNode
                 Kind_Formula        = 40,
                 Kind_SecRefItem     = 41,
                 Kind_SecRefList     = 42,
-                Kind_Language       = 43
+                Kind_Language       = 43,
+                Kind_LinkedWord     = 44,
+                Kind_ParamSect      = 45,
+                Kind_ParamList      = 46,
+                Kind_InternalRef    = 47
               };
+    /*! Destructor. */
     virtual ~DocNode() {}
+    /*! Returns the kind of node. Provides runtime type information */
     virtual Kind kind() const = 0;
+    /*! Returns the parent of this node or 0 for the root node. */
     virtual DocNode *parent() const = 0;
-    virtual void accept(DocVisitor *) = 0;
+    /*! Acceptor function for node visitors. Part of the visitor pattern. 
+     *  @param v Abstract visitor.
+     */
+    virtual void accept(DocVisitor *v) = 0;
 };
 
 /*! Default accept implementation for compound nodes in the abstract
@@ -111,7 +133,6 @@ template<class T> class CompAccept
 
 /*! Node representing a word 
  */
-// TODO: check for word starting \# or having () and try to link to them
 class DocWord : public DocNode
 {
   public:
@@ -125,6 +146,32 @@ class DocWord : public DocNode
   private:
     DocNode *m_parent;
     QCString m_word;
+};
+
+/*! Node representing a word that can be linked to something
+ */
+class DocLinkedWord : public DocNode
+{
+  public:
+    DocLinkedWord(DocNode *parent,const QCString &word,
+                  const QCString &ref,const QCString &file,
+                  const QCString &anchor) : 
+      m_parent(parent), m_word(word), m_ref(ref), 
+      m_file(file), m_anchor(anchor) {}
+    QCString word() const      { return m_word; }
+    Kind kind() const          { return Kind_Word; }
+    DocNode *parent() const    { return m_parent; }
+    QCString file() const      { return m_file; }
+    QCString ref() const       { return m_ref; }
+    QCString anchor() const    { return m_anchor; }
+    void accept(DocVisitor *v) { v->visit(this); }
+
+  private:
+    DocNode *m_parent;
+    QCString m_word;
+    QCString m_ref;
+    QCString m_file;
+    QCString m_anchor;
 };
 
 /*! Node representing an URL (or email address) */
@@ -250,20 +297,24 @@ class DocWhiteSpace : public DocNode
 };
 
 /*! Verbatim, unparsed text fragment */
+// TODO: parse code
 class DocVerbatim : public DocNode
 {
   public:
     enum Type { Code, HtmlOnly, LatexOnly, Verbatim };
-    DocVerbatim(DocNode *parent,const QCString &text, Type t) : 
-      m_parent(parent), m_text(text), m_type(t) {}
+    DocVerbatim(DocNode *parent,const QCString &context,
+                const QCString &text, Type t) : 
+      m_parent(parent), m_context(context), m_text(text), m_type(t) {}
     Kind kind() const { return Kind_Verbatim; }
     Type type() const { return m_type; }
     QCString text() const { return m_text; }
+    QCString context() const { return m_context; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
 
   private:
     DocNode *m_parent;
+    QCString m_context;
     QCString m_text;
     Type m_type;
 };
@@ -327,43 +378,25 @@ class DocIncOperator : public DocNode
 };
 
 /*! Item of a cross-referenced list */
-// TODO: lookup id and insert parsed documentation 
-// (second pass to avoid context saving in the scanner?)
-class DocXRefItem : public DocNode
-{
-  public:
-    enum Type { Bug, Test, Todo, Deprecated };
-    DocXRefItem(DocNode *parent,int id,Type t) : 
-      m_parent(parent), m_id(id), m_type(t) {}
-    Kind kind() const { return Kind_XRefItem; }
-    Type type() const { return m_type; }
-    int id() const { return m_id; }
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v) { v->visit(this); }
-
-  private:
-    DocNode *m_parent;
-    int  m_id;
-    Type m_type;
-};
-
-/*! Item of a cross-referenced list */
 class DocFormula : public DocNode
 {
   public:
-    DocFormula(DocNode *parent,int id) : 
-      m_parent(parent), m_id(id) {}
+    DocFormula(DocNode *parent,int id);
     Kind kind() const { return Kind_Formula; }
-    int id() const { return m_id; }
+    QCString name() const { return m_name; }
+    QCString text() const { return m_text; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
 
   private:
     DocNode *m_parent;
-    int  m_id;
+    QCString m_name;
+    QCString m_text;
 };
 
-/*! Node representing a entry in the index */
+//-----------------------------------------------------------------------
+
+/*! Node representing a entry in the index. */
 class DocIndexEntry : public CompAccept<DocIndexEntry>, public DocNode
 {
   public:
@@ -411,6 +444,31 @@ class DocTitle : public CompAccept<DocTitle>, public DocNode
     DocNode *m_parent;
 };
 
+/*! Item of a cross-referenced list */
+class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
+{
+  public:
+    enum Type { Bug, Test, Todo, Deprecated };
+    DocXRefItem(DocNode *parent,int id,Type t) : 
+      m_parent(parent), m_id(id), m_type(t) {}
+    Kind kind() const { return Kind_XRefItem; }
+    Type type() const { return m_type; }
+    QCString file() const { return m_file; }
+    QCString anchor() const { return m_anchor; }
+    QCString title() const { return m_title; }
+    void parse();
+    DocNode *parent() const { return m_parent; }
+    void accept(DocVisitor *v) { CompAccept<DocXRefItem>::accept(this,v); }
+
+  private:
+    DocNode *m_parent;
+    int  m_id;
+    Type m_type;
+    QCString m_file;
+    QCString m_anchor;
+    QCString m_title;
+};
+
 /*! Image */
 class DocImage : public CompAccept<DocImage>, public DocNode
 {
@@ -449,67 +507,68 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
 };
 
 /*! Node representing a link to some item */
-// TODO: resolve link
 class DocLink : public CompAccept<DocLink>, public DocNode
 {
   public:
-    DocLink(DocNode *parent,const QCString &target) : 
-      m_parent(parent), m_target(target) {}
+    DocLink(DocNode *parent,const QCString &target);
     QCString parse(bool);
     Kind kind() const { return Kind_Link; }
-    QCString target() const { return m_target; }
+    QCString file() const { return m_file; }
+    QCString ref() const { return m_ref; }
+    QCString anchor() const { return m_anchor; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocLink>::accept(this,v); }
 
   private:
     DocNode  *m_parent;
-    QCString  m_target;
+    QCString  m_file;
+    QCString  m_ref;
+    QCString  m_anchor;
 };
 
 /*! Node representing a reference to some item */
-// TODO: resolve reference
 class DocRef : public CompAccept<DocRef>, public DocNode
 {
   public:
-    DocRef(DocNode *parent,const QCString &target) : 
-      m_parent(parent), m_target(target) {}
+    DocRef(DocNode *parent,const QCString &target);
     void parse();
-    Kind kind() const       { return Kind_Ref; }
-    QCString target() const { return m_target; }
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v) { CompAccept<DocRef>::accept(this,v); }
+    Kind kind() const            { return Kind_Ref; }
+    QCString file() const        { return m_file; }
+    QCString ref() const         { return m_ref; }
+    QCString anchor() const      { return m_anchor; }
+    QCString targetTitle() const { return m_text; }
+    DocNode *parent() const      { return m_parent; }
+    bool hasLinkText() const     { return !m_children.isEmpty(); }
+    bool refToAnchor() const     { return m_refToAnchor; }
+    bool refToSection() const    { return m_refToSection; }
+    void accept(DocVisitor *v)   { CompAccept<DocRef>::accept(this,v); }
 
   private:
     DocNode *      m_parent;
-    QCString       m_target;
+    bool           m_refToSection;
+    bool           m_refToAnchor;
+    QCString       m_file;
+    QCString       m_ref;
+    QCString       m_anchor;
+    QCString       m_text;
 };
 
-/*! Simple section */
-class DocSimpleSect : public DocNode
+/*! Node representing an internal reference to some item */
+class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
 {
   public:
-    enum Type 
-    {  
-       Unknown, See, Return, Author, Version, Since, Date,
-       Note, Warning, Pre, Post, Invar, Remark, Attention, User,
-       Param, RetVal, Exception 
-    };
-    DocSimpleSect(DocNode *parent,Type t); 
-    virtual ~DocSimpleSect();
-    int parse(bool userTitle);
-    Kind kind() const { return Kind_SimpleSect; }
-    void addParam(const QCString &name);
-    const QStrList &parameters() const { return m_params; }
-    Type sectionType() const { return m_type; }
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v);
+    DocInternalRef(DocNode *parent,const QCString &target);
+    void parse();
+    Kind kind() const            { return Kind_Ref; }
+    QCString file() const        { return m_file; }
+    QCString anchor() const      { return m_anchor; }
+    DocNode *parent() const      { return m_parent; }
+    void accept(DocVisitor *v)   { CompAccept<DocInternalRef>::accept(this,v); }
 
   private:
-    DocNode *       m_parent;
-    DocPara *       m_paragraph;
-    Type            m_type;
-    DocTitle *      m_title;
-    QStrList        m_params;
+    DocNode * m_parent;
+    QCString  m_file;
+    QCString  m_anchor;
 };
 
 /*! Language specific node */
@@ -688,26 +747,71 @@ class DocHtmlList : public CompAccept<DocHtmlList>, public DocNode
     Type m_type;
 };
 
+/*! Simple section */
+class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
+{
+  public:
+    enum Type 
+    {  
+       Unknown, See, Return, Author, Authors, Version, Since, Date,
+       Note, Warning, Pre, Post, Invar, Remark, Attention, User
+    };
+    DocSimpleSect(DocNode *parent,Type t);
+    virtual ~DocSimpleSect();
+    int parse(bool userTitle);
+    Kind kind() const { return Kind_SimpleSect; }
+    Type type() const { return m_type; }
+    DocNode *parent() const { return m_parent; }
+    void accept(DocVisitor *v);
+
+  private:
+    DocNode *       m_parent;
+    Type            m_type;
+    DocTitle *      m_title;
+};
+
+/*! Parameter section */
+class DocParamSect : public CompAccept<DocParamSect>, public DocNode
+{
+  public:
+    enum Type 
+    {  
+       Unknown, Param, RetVal, Exception 
+    };
+    DocParamSect(DocNode *parent,Type t) : m_parent(parent), m_type(t) {}
+    int parse(const QCString &cmdName);
+    Kind kind() const { return Kind_ParamSect; }
+    Type type() const { return m_type; }
+    DocNode *parent() const { return m_parent; }
+    void accept(DocVisitor *v) { CompAccept<DocParamSect>::accept(this,v); }
+
+  private:
+    DocNode *       m_parent;
+    Type            m_type;
+};
+
 /*! Paragraph in the documentation tree */
 class DocPara : public CompAccept<DocPara>, public DocNode
 {
   public:
-    DocPara(DocNode *parent) : m_parent(parent) {}
+    DocPara(DocNode *parent) : m_parent(parent), 
+             m_isFirst(FALSE), m_isLast(FALSE) {}
     int parse();
     Kind kind() const { return Kind_Para; }
     DocNode *parent() const { return m_parent; }
     bool isEmpty() const { return m_children.isEmpty(); }
     void accept(DocVisitor *v) { CompAccept<DocPara>::accept(this,v); }
+    void markFirst(bool v=TRUE) { m_isFirst=v; }
+    void markLast(bool v=TRUE)  { m_isLast=v; }
+    bool isFirst() const { return m_isFirst; }
+    bool isLast() const { return m_isLast; }
 
     int handleCommand(const QCString &cmdName);
     int handleHtmlStartTag(const QCString &tagName,const QList<Option> &tagOptions);
     int handleHtmlEndTag(const QCString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t);
     int handleXRefItem(DocXRefItem::Type t);
-    int handleParamSection(const QCString &cmdName,DocSimpleSect::Type t);
-    //void handleStyleEnter(DocStyleChange::Style t);
-    //void handleStyleLeave(DocStyleChange::Style t,const char *tagName);
-    //void handlePendingStyleCommands();
+    int handleParamSection(const QCString &cmdName,DocParamSect::Type t);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     void handleImage(const QCString &cmdName);
     void handleDotFile(const QCString &cmdName);
@@ -720,6 +824,33 @@ class DocPara : public CompAccept<DocPara>, public DocNode
   private:
     DocNode *m_parent;
     QCString m_sectionId;
+    bool     m_isFirst;
+    bool     m_isLast;
+};
+
+/*! Node representing a parameter list. */
+class DocParamList : public DocNode
+{
+  public:
+    DocParamList(DocNode *parent) : m_parent(parent) 
+    { m_paragraph=new DocPara(this); }
+    virtual ~DocParamList()
+    { delete m_paragraph; }
+    int parse(const QCString &cmdName);
+    Kind kind() const { return Kind_ParamList; }
+    DocNode *parent() const { return m_parent; }
+    const QStrList &parameters() { return m_params; }
+    void accept(DocVisitor *v)
+    { 
+      v->visitPre(this); 
+      m_paragraph->accept(v);
+      v->visitPost(this); 
+    }
+
+  private:
+    DocNode   *m_parent;
+    DocPara   *m_paragraph;
+    QStrList   m_params;
 };
 
 /*! Node representing an item of a auto list */
@@ -728,8 +859,8 @@ class DocAutoListItem : public DocNode
   public:
     DocAutoListItem(DocNode *parent) : m_parent(parent) 
     { m_paragraph=new DocPara(this); }
-    int parse();
     virtual ~DocAutoListItem() { delete m_paragraph; }
+    int parse();
     Kind kind() const { return Kind_AutoListItem; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) 

@@ -34,6 +34,11 @@ class PrintDocVisitor : public DocVisitor
       indent_leaf();
       printf("%s",w->word().data());
     }
+    void visit(DocLinkedWord *w)
+    {
+      indent_leaf();
+      printf("%s",w->word().data());
+    }
     void visit(DocWhiteSpace *w)
     {
       indent_leaf();
@@ -137,11 +142,6 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::LatexOnly: printf("</latexonly>"); break;
       }
     }
-    void visit(DocXRefItem *x)
-    {
-      indent_leaf();
-      printf("<xrefitem id=\"%d\"/>",x->id());
-    }
     void visit(DocAnchor *a)
     {
       indent_leaf();
@@ -181,7 +181,7 @@ class PrintDocVisitor : public DocVisitor
     void visit(DocFormula *f)
     {
       indent_leaf();
-      printf("<formula id=%d/>",f->id());
+      printf("<formula name=%s test=%s/>",f->name().data(),f->text().data());
     }
 
     //--------------------------------------
@@ -244,11 +244,12 @@ class PrintDocVisitor : public DocVisitor
     {
       indent_pre();
       printf("<simplesect type=");
-      switch(s->sectionType())
+      switch(s->type())
       {
 	case DocSimpleSect::See: printf("see"); break;
 	case DocSimpleSect::Return: printf("return"); break;
 	case DocSimpleSect::Author: printf("author"); break;
+	case DocSimpleSect::Authors: printf("authors"); break;
 	case DocSimpleSect::Version: printf("version"); break;
 	case DocSimpleSect::Since: printf("since"); break;
 	case DocSimpleSect::Date: printf("date"); break;
@@ -260,48 +261,6 @@ class PrintDocVisitor : public DocVisitor
 	case DocSimpleSect::Remark: printf("remark"); break;
 	case DocSimpleSect::Attention: printf("attention"); break;
 	case DocSimpleSect::User: printf("user"); break;
-	case DocSimpleSect::Param: 
-          {
-            printf("param["); 
-            QStrListIterator li(s->parameters());
-            const char *s;
-            bool first=TRUE;
-            for (li.toFirst();(s=li.current());++li)
-            {
-              if (!first) printf(","); else first=FALSE;
-              printf("%s",s);
-            }
-            printf("]");
-          }
-          break;
-	case DocSimpleSect::RetVal: 
-          {
-            printf("retval["); 
-            QStrListIterator li(s->parameters());
-            const char *s;
-            bool first=TRUE;
-            for (li.toFirst();(s=li.current());++li)
-            {
-              if (!first) printf(","); else first=FALSE;
-              printf("%s",s);
-            }
-            printf("]");
-          }
-          break;
-	case DocSimpleSect::Exception: printf("exception"); break;
-          {
-            printf("exception["); 
-            QStrListIterator li(s->parameters());
-            const char *s;
-            bool first=TRUE;
-            for (li.toFirst();(s=li.current());++li)
-            {
-              if (!first) printf(","); else first=FALSE;
-              printf("%s",s);
-            }
-            printf("]");
-          }
-          break;
 	case DocSimpleSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");
@@ -517,7 +476,8 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocLink *lnk)
     {
       indent_pre();
-      printf("<link target=\"%s\">\n",lnk->target().data());
+      printf("<link ref=\"%s\" file=\"%s\" anchor=\"%s\">\n",
+          lnk->ref().data(),lnk->file().data(),lnk->anchor().data());
     }
     void visitPost(DocLink *) 
     {
@@ -527,7 +487,12 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocRef *ref)
     {
       indent_pre();
-      printf("<ref target=\"%s\">\n",ref->target().data());
+      printf("<ref ref=\"%s\" file=\"%s\" "
+             "anchor=\"%s\" targetTitle=\"%s\""
+             " hasLinkText=\"%s\" refToAnchor=\"%s\" refToSection=\"%s\">\n",
+             ref->ref().data(),ref->file().data(),ref->anchor().data(),
+             ref->targetTitle().data(),ref->hasLinkText()?"yes":"no",
+             ref->refToAnchor()?"yes":"no", ref->refToSection()?"yes":"no");
     }
     void visitPost(DocRef *) 
     {
@@ -563,6 +528,61 @@ class PrintDocVisitor : public DocVisitor
     {
       indent_post();
       printf("</language>\n");
+    }
+    void visitPre(DocParamList *pl)
+    {
+      indent_pre();
+      QStrListIterator sli(pl->parameters());
+      const char *s;
+      printf("<parameters>");
+      for (sli.toFirst();(s=sli.current());++sli)
+      {
+        printf("<param>%s</param>",s);
+      }
+    }
+    void visitPost(DocParamList *)
+    {
+      indent_post();
+      printf("</parameters>");
+    }
+    void visitPre(DocParamSect *ps)
+    {
+      indent_pre();
+      printf("<paramsect type=");
+      switch (ps->type())
+      {
+	case DocParamSect::Param: printf("param"); break;
+	case DocParamSect::RetVal: printf("retval"); break;
+	case DocParamSect::Exception: printf("exception"); break;
+	case DocParamSect::Unknown: printf("unknown"); break;
+      }
+      printf(">");
+    }
+    void visitPost(DocParamSect *)
+    {
+      indent_post();
+      printf("</paramsect>");
+    }
+    void visitPre(DocXRefItem *x)
+    {
+      indent_pre();
+      printf("<xrefitem file=\"%s\" anchor=\"%s\" title=\"%s\"/>",
+          x->file().data(),x->anchor().data(),x->title().data());
+    }
+    void visitPost(DocXRefItem *)
+    {
+      indent_post();
+      printf("<xrefitem/>");
+    }
+    void visitPre(DocInternalRef *r)
+    {
+      indent_pre();
+      printf("<internalref file=%s anchor=%s>\n",r->file().data(),r->anchor().data());
+    }
+    void visitPost(DocInternalRef *)
+    {
+      indent_post();
+      printf("</internalref>\n");
     }
 
   private:

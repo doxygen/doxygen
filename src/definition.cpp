@@ -408,6 +408,9 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
             name.prepend(scope+"::");
           }
         }
+        if (md->isFunction() || md->isSlot() || 
+            md->isPrototype() || md->isSignal()
+           ) name+="()";
         Definition *d = md->getOuterScope();
         if (d==Doxygen::globalScope) d=md->getBodyDef();
         if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
@@ -447,7 +450,6 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         {
           ol.docify(name);
         }
-        if (md->isFunction() || md->isSlot() || md->isPrototype() || md->isSignal()) ol.docify("()");
       }
       index=newIndex+matchLen;
     } 

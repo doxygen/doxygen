@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2002/08: translated new items used since version 1.2.17
  *  2002/07: translated new items used since version 1.2.16
  *  2002/06: modified trRelatedPagesDescription() method
  *           correct typo in trInclByDepGraph() method
@@ -65,7 +66,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_17
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1358,6 +1359,17 @@ class TranslatorItalian : public TranslatorAdapter_1_2_17
       return "Sommario";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Lista degli elementi deprecati";
+    }
 };
 
 #endif

@@ -116,6 +116,7 @@ RTFGenerator::RTFGenerator() : OutputGenerator()
   m_listLevel = 0;
   m_bstartedBody = FALSE;
   m_omitParagraph = FALSE;
+  m_numCols = 0;
 }
 
 RTFGenerator::~RTFGenerator()
@@ -129,7 +130,6 @@ void RTFGenerator::append(const OutputGenerator *g)
   //insideTabbing=insideTabbing || ((RTFGenerator *)g)->insideTabbing;
   m_listLevel=((RTFGenerator *)g)->m_listLevel;
   m_omitParagraph=((RTFGenerator *)g)->m_omitParagraph;
-  m_columnNumbers=((RTFGenerator *)g)->m_columnNumbers;
   //printf("RTFGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
   //    insideTabbing ? "TRUE" : "FALSE" );
 }
@@ -1336,7 +1336,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           t << "\\par " << Rtf_Style_Reset << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertNameToFile(pi->name+"-example");
+          t << pi->getOutputFileBase();
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
         for (++pdi;(pi=pdi.current());++pdi)
@@ -1344,7 +1344,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << "\\par " << Rtf_Style_Reset << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertNameToFile(pi->name+"-example");
+          t << pi->getOutputFileBase();
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
       }
@@ -1359,14 +1359,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (!pi->getGroupDef() && !pi->isReference())
           {
-            QCString pageName;
-            if (Config_getBool("CASE_SENSE_NAMES"))
-              pageName=pi->name.copy();
-            else
-              pageName=pi->name.lower();
             if (first) t << "\\par " << Rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << pageName;
+            t << pi->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             first=FALSE;
           }
@@ -1667,8 +1662,8 @@ void RTFGenerator::endSubsubsection()
 
 void RTFGenerator::startTable(bool,int colNumbers) 
 {
-  m_columnNumbers=colNumbers;
-  t<<"\\par\n";
+  m_numCols=colNumbers;
+  t << "\\par\n";
 }
 
 void RTFGenerator::endTable(bool hasCaption) 
@@ -1681,8 +1676,8 @@ void RTFGenerator::endTable(bool hasCaption)
 void  RTFGenerator::startCaption() 
 {
   endTableRow();
-  t<<"\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10"<<endl;
-  t<<"\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<PAGEWIDTH<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright "<<endl;
+  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10" << endl;
+  t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<PAGEWIDTH<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright " << endl;
   nextTableColumn();
 }
 
@@ -1694,28 +1689,34 @@ void  RTFGenerator::endCaption()
 
 void RTFGenerator::nextTableRow() 
 {  
-  unsigned long columnWidth=PAGEWIDTH/m_columnNumbers;
-  t<<"\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10 "<<endl;
-  for (int i=1;i<=m_columnNumbers;i++) 
+  ASSERT(m_numCols>0 && m_numCols<25);
+  uint columnWidth=PAGEWIDTH/m_numCols;
+  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 "
+       "\\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 "
+       "\\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 "
+       "\\trbrdrv\\brdrs\\brdrw10 "<<endl;
+  for (int i=0;i<m_numCols;i++) 
   {
-    t<<"\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<i*columnWidth<<endl;
+    t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 "
+         "\\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb "
+         "\\cellx" << (i*columnWidth) << endl;
   }
-  t<<"\\pard \\widctlpar\\intbl\\adjustright\n{";
+  t << "\\pard \\widctlpar\\intbl\\adjustright\n{";
 }
  
 void RTFGenerator::endTableRow() 
 { 
-  t<<"\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
+  t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
 }
  
 void RTFGenerator::nextTableColumn() 
 {
-  t<<"{ ";
+  t << "{ ";
 }
 
 void RTFGenerator::endTableColumn() 
 { 
-  t<<" \\cell }";
+  t << " \\cell }";
 }
 
 void RTFGenerator::startTextLink(const char *f,const char *anchor)

@@ -41,8 +41,7 @@ class PageInfo
     QCString fileName;
 
     // functions to get a uniform interface with Definitions
-    QCString getOutputFileBase() const 
-    { return fileName; }
+    QCString getOutputFileBase() const { return fileName; }
     bool isReference() const { return !reference.isEmpty(); }
     QCString getReference() const { return reference; }
     

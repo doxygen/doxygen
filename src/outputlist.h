@@ -46,6 +46,7 @@ class OutputList : public OutputDocInterface
     OutputList &operator=(const OutputList &ol);
     OutputList &operator+=(const OutputList &ol);
 
+
     void add(const OutputGenerator *);
     
     void disableAllBut(OutputGenerator::OutputType o);
@@ -57,10 +58,14 @@ class OutputList : public OutputDocInterface
     void pushGeneratorState();
     void popGeneratorState();
 
+
     //////////////////////////////////////////////////
     // OutputDocInterface implementation
     //////////////////////////////////////////////////
 
+    void parseDoc(const char *fileName,int startLine,
+                  const char *clName,MemberDef *md,const QCString &docStr);
+    
     OutputDocInterface *clone()
     {
       return new OutputList(this);
@@ -457,6 +462,8 @@ class OutputList : public OutputDocInterface
     void endSectionRefList()
     { forall(&OutputGenerator::endSectionRefList); }
 
+    void writeCodeAnchor(const char *name)
+    { forall(&OutputGenerator::writeCodeAnchor,name); }
 #if 0
     void startPlainFile(const char *name)
     { forall(&OutputGenerator::startPlainFile,name); }

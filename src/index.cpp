@@ -181,11 +181,11 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   if (!compact) ol.writeListItem();
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
-    ol.startQuickIndexItem(extLink,"main"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"main"+Doxygen::htmlFileExtension);
   }
   else
   {
-    ol.startQuickIndexItem(extLink,"index"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"index"+Doxygen::htmlFileExtension);
   }
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
@@ -193,21 +193,21 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   //if (documentedPackages>0)
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"packages"+htmlFileExtension);
+  //  ol.startQuickIndexItem(extLink,"packages"+Doxygen::htmlFileExtension);
   //  parseText(ol,theTranslator->trPackages());
   //  ol.endQuickIndexItem();
   //}
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"modules"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"modules"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trModules());
     ol.endQuickIndexItem();
   } 
   if (documentedNamespaces>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespaces"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"namespaces"+Doxygen::htmlFileExtension);
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
       parseText(ol,theTranslator->trPackages());
@@ -221,7 +221,7 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   if (hierarchyClasses>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"hierarchy"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"hierarchy"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trClassHierarchy());
     ol.endQuickIndexItem();
   } 
@@ -230,68 +230,68 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
     if (Config_getBool("ALPHABETICAL_INDEX"))
     {
       if (!compact) ol.writeListItem();
-      ol.startQuickIndexItem(extLink,"classes"+htmlFileExtension);
+      ol.startQuickIndexItem(extLink,"classes"+Doxygen::htmlFileExtension);
       parseText(ol,theTranslator->trAlphabeticalList());
       ol.endQuickIndexItem();
     }
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"annotated"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"annotated"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trCompoundList());
     ol.endQuickIndexItem();
   } 
   if (documentedHtmlFiles>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"files"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"files"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
   //if (documentedIncludeFiles>0 && Config_getBool("VERBATIM_HEADERS"))
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"headers"+htmlFileExtension);
+  //  ol.startQuickIndexItem(extLink,"headers"+Doxygen::htmlFileExtension);
   //  parseText(ol,theTranslator->trHeaderFiles());
   //  ol.endQuickIndexItem();
   //}
   //if (Config_getBool("SOURCE_BROWSER")) 
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"sources"+htmlFileExtension);
+  //  ol.startQuickIndexItem(extLink,"sources"+Doxygen::htmlFileExtension);
   //  parseText(ol,theTranslator->trSources());
   //  ol.endQuickIndexItem();
   //}
   if (documentedNamespaceMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespacemembers"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"namespacemembers"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trNamespaceMembers());
     ol.endQuickIndexItem();
   }
   if (documentedMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"functions"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"functions"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trCompoundMembers());
     ol.endQuickIndexItem();
   } 
   if (documentedFunctions>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"globals"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"globals"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
   if (indexedPages>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"pages"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"pages"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trRelatedPages());
     ol.endQuickIndexItem();
   } 
   if (Doxygen::exampleSDict->count()>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"examples"+htmlFileExtension);
+    ol.startQuickIndexItem(extLink,"examples"+Doxygen::htmlFileExtension);
     parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
@@ -1430,7 +1430,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"classes"+htmlFileExtension,0,"Alphabetical index");
+  startFile(ol,"classes"+Doxygen::htmlFileExtension,0,"Alphabetical index");
   startTitle(ol,0);
   parseText(ol,Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
@@ -2065,7 +2065,7 @@ void writeExampleIndex(OutputList &ol)
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     ol.writeListItem();
-    QCString n=convertNameToFile(pi->name+"-example");
+    QCString n=pi->getOutputFileBase();
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
@@ -2529,11 +2529,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         {
           if(htmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name+"-example")); 
+            htmlHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase()); 
           }
           if(ftvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,pi->getReference(),convertToHtml(pi->name+"-example"),0,convertNameToFile(pi->name)); 
+            ftvHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase(),0,pi->name); 
           }
           pi=++eli;
         }

@@ -25,15 +25,16 @@
 enum Tokens
 {
   TK_WORD          = 1,
-  TK_WHITESPACE    = 2,
-  TK_LISTITEM      = 3,
-  TK_ENDLIST       = 4,
-  TK_COMMAND       = 5,
-  TK_HTMLTAG       = 6,
-  TK_SYMBOL        = 7,
-  TK_NEWPARA       = 8,
-  TK_RCSTAG        = 9,
-  TK_URL           = 10,
+  TK_LNKWORD       = 2,
+  TK_WHITESPACE    = 3,
+  TK_LISTITEM      = 4,
+  TK_ENDLIST       = 5,
+  TK_COMMAND       = 6,
+  TK_HTMLTAG       = 7,
+  TK_SYMBOL        = 8,
+  TK_NEWPARA       = 9,
+  TK_RCSTAG        = 10,
+  TK_URL           = 11,
 
   RetVal_OK           = 0x10000,
   RetVal_SimpleSec    = 0x10001,
@@ -123,5 +124,6 @@ void doctokenizerYYsetStateFile();
 void doctokenizerYYsetStatePattern();
 void doctokenizerYYsetStateLink();
 void doctokenizerYYsetStateRef();
+void doctokenizerYYsetStateInternalRef();
 
 #endif

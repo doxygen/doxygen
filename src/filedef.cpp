@@ -321,13 +321,6 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.enableAll();
   }
   
-  //ol.disableAllBut(OutputGenerator::Html);
-  //ol.writeString((QCString)"<p>Interface collaboration diagram for "
-  //               "<a href=\"usage_intf_graph_"+name()+htmlFileExtension+"\">here</a>");
-  //ol.writeString((QCString)"<p>Include dependency diagram for "+fn+" can be found "+
-  //               "<a href=\""+diskname+"_incldep+htmlFileExtension+"\">here</a>.");
-  //ol.enableAll();
-
   ol.endTextBlock();
   
   ol.startMemberSections();

@@ -2274,6 +2274,121 @@ static bool isLowerCase(QCString &s)
   return TRUE; 
 }
 
+
+
+/*! Returns an object to reference to given its name and context 
+ *  @post return value TRUE implies *resContext!=0 or *resMember!=0
+ */
+bool resolveRef(/* in */  const char *scName,
+                /* in */  const char *name,
+                /* in */  bool inSeeBlock,
+                /* out */ Definition **resContext,
+                /* out */ MemberDef  **resMember
+               )
+{
+  //printf("resolveRef(scName=%s,name=%s,inSeeBlock=%d,rt=%s)\n",scName,name,inSeeBlock,rt);
+  
+  QCString tsName = name;
+  bool memberScopeFirst = tsName.find('#')!=-1;
+  QCString fullName = substitute(tsName,"#","::");
+  int scopePos=fullName.findRev("::");
+  int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
+
+  // default result values
+  *resContext=0;
+  *resMember=0;
+
+  if (bracePos==-1) // simple name
+  {
+    ClassDef *cd=0;
+    NamespaceDef *nd=0;
+
+    if (scopePos==-1 && isLowerCase(tsName))
+    { // link to lower case only name => do not try to autolink 
+      return FALSE;
+    }
+
+    //printf("scName=%s tmpName=%s\n",scName,tmpName.data());
+    
+    // check if this is a class or namespace reference
+    if (scName!=fullName && getScopeDefs(scName,name,cd,nd))
+    {
+      if (cd) // scope matches that of a class
+      {
+        *resContext = cd;
+      }
+      else // scope matches that of a namespace
+      {
+        ASSERT(nd!=0);
+        *resContext = nd;
+      }
+      return TRUE;
+    }
+    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
+    {
+      return FALSE;
+    }
+    // continue search...
+  }
+  
+  // extract scope
+  QCString scopeStr=scName;
+
+  //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
+
+  // extract userscope+name
+  int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
+  QCString nameStr=fullName.left(endNamePos);
+
+  // extract arguments
+  QCString argsStr;
+  if (bracePos!=-1) argsStr=fullName.right(fullName.length()-bracePos);
+  
+  //printf("scope=`%s' name=`%s' arg=`%s'\n",
+  //       scopeStr.data(),nameStr.data(),argsStr.data());
+  
+  // strip template specifier
+  // TODO: match against the correct partial template instantiation 
+  int templPos=nameStr.find('<');
+  if (templPos!=-1 && nameStr.find("operator")==-1)
+  {
+    int endTemplPos=nameStr.findRev('>');
+    nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+  }
+
+  MemberDef    *md = 0;
+  ClassDef     *cd = 0;
+  FileDef      *fd = 0;
+  NamespaceDef *nd = 0;
+  GroupDef     *gd = 0;
+
+  // check if nameStr is a member or global.
+  if (getDefs(scopeStr,nameStr,argsStr,
+              md,cd,fd,nd,gd,
+              scopePos==0 && !memberScopeFirst,
+              0,
+              TRUE
+             )
+     )
+  {
+    //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
+    *resMember=md;
+    if      (cd) *resContext=cd;
+    else if (nd) *resContext=nd;
+    else if (fd) *resContext=fd;
+    else if (gd) *resContext=gd;
+    else         { *resContext=0; *resMember=0; return FALSE; }
+    return TRUE;
+  }
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict[nameStr]))
+  { // group link
+    *resContext=gd;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 /*!
  * generate a reference to a class, namespace or member.
  * `scName' is the name of the scope that contains the documentation 
@@ -2298,207 +2413,121 @@ bool generateRef(OutputDocInterface &od,const char *scName,
 {
   //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
   
-  QCString tsName = name;
-  bool memberScopeFirst = tsName.find('#')!=-1;
-  QCString tmpName = substitute(tsName,"#","::");
+  Definition *compound;
+  MemberDef *md;
+
+  // create default link text
   QCString linkText = rt;
-  int scopePos=tmpName.findRev("::");
-  int bracePos=tmpName.findRev('('); // reverse is needed for operator()(...)
-  if (bracePos==-1) // simple name
-  {
-    ClassDef *cd=0;
-    NamespaceDef *nd=0;
-
-    if (linkText.isEmpty())
-    {
-      linkText=tmpName;
-      // strip :: prefix if present
-      if (linkText.at(0)==':' && linkText.at(1)==':')
-      {
-        linkText=linkText.right(linkText.length()-2);
-      }
-    }
-
-    if (scopePos==-1 && isLowerCase(tsName))
-    { // link to lower case only name => do not try to autolink 
-      od.docify(linkText);
-      // text has been written, stop now.
-      return FALSE;
-    }
-
-    //printf("scName=%s tmpName=%s\n",scName,tmpName.data());
-    
-    // check if this is a class or namespace reference
-    if (scName!=tmpName && getScopeDefs(scName,name,cd,nd))
-    {
-      if (cd) // scope matches that of a class
-      {
-        od.writeObjectLink(cd->getReference(),
-            cd->getOutputFileBase(),0,linkText);
-        if (!cd->isReference() /*&& !Config_getBool("PDF_HYPERLINKS")*/) 
-        {
-          writePageRef(od,cd->getOutputFileBase(),0);
-        }
-      }
-      else // scope matches that of a namespace
-      {
-        od.writeObjectLink(nd->getReference(),
-            nd->getOutputFileBase(),0,linkText);
-        if (!nd->getReference() /*&& !Config_getBool("PDF_HYPERLINKS")*/) 
-        {
-          writePageRef(od,nd->getOutputFileBase(),0);
-        }
-      }
-      // link has been written, stop now.
-      return TRUE;
-    }
-    else if (scName==tmpName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
-    {
-      od.docify(linkText);
-      // text has been written, stop now.
-      return FALSE;
-    }
-    // continue search...
-    linkText = rt; 
-  }
-  
-  // extract scope
-  QCString scopeStr=scName;
-
-  //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
-
-  // extract userscope+name
-  int endNamePos=bracePos!=-1 ? bracePos : tmpName.length();
-  QCString nameStr=tmpName.left(endNamePos);
-
-  // extract arguments
-  QCString argsStr;
-  if (bracePos!=-1) argsStr=tmpName.right(tmpName.length()-bracePos);
-  
-  // create a default link text if none was explicitly given
   if (linkText.isEmpty())
   {
-    //if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
-    linkText=nameStr;
-    if (linkText.left(2)=="::") linkText=linkText.right(linkText.length()-2);
-  } 
-  //printf("scope=`%s' name=`%s' arg=`%s' linkText=`%s'\n",
-  //       scopeStr.data(),nameStr.data(),argsStr.data(),linkText.data());
-  
-  // strip template specifier
-  // TODO: match against the correct partial template instantiation 
-  int templPos=nameStr.find('<');
-  if (templPos!=-1 && nameStr.find("operator")==-1)
-  {
-    int endTemplPos=nameStr.findRev('>');
-    nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+    linkText=substitute(name,"#","::");
+    // strip :: prefix if present
+    if (linkText.at(0)==':' && linkText.at(1)==':')
+    {
+      linkText=linkText.right(linkText.length()-2);
+    }
   }
 
-  MemberDef *md    = 0;
-  ClassDef *cd     = 0;
-  FileDef *fd      = 0;
-  NamespaceDef *nd = 0;
-  GroupDef *gd     = 0;
-
-  //printf("Try with scName=`%s' nameStr=`%s' argsStr=`%s'\n",
-  //        scopeStr.data(),nameStr.data(),argsStr.data());
-
-  // check if nameStr is a member or global.
-  if (getDefs(scopeStr,nameStr,argsStr,
-              md,cd,fd,nd,gd,
-              scopePos==0 && !memberScopeFirst,
-              0,
-              TRUE
-             )
-     )
+  if (resolveRef(scName,name,inSeeBlock,&compound,&md))
   {
-    //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
-    QCString anchor;
-    if (md->isLinkable()) anchor = md->anchor();
-    QCString cName,aName;
-    if (cd) // nameStr is a member of cd
+    if (md) // link to member
     {
-      //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
-      //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
-      od.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-          anchor,linkText.stripWhiteSpace());
-      cName=cd->getOutputFileBase();
-      aName=md->anchor();
+      od.writeObjectLink(compound->getReference(),
+                         compound->getOutputFileBase(),
+                         md->anchor(),linkText);
+      // generate the page reference (for LaTeX)
+      if (!compound->isReference() && !md->anchor().isEmpty() && 
+          md->isLinkableInProject())
+      {
+        writePageRef(od,compound->getOutputFileBase(),md->anchor());
+      }
     }
-    else if (nd) // nameStr is a member of nd
+    else // link to compound
     {
-      //printf("writing namespace link\n");
-      od.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
-          anchor,linkText.stripWhiteSpace());
-      cName=nd->getOutputFileBase();
-      aName=md->anchor();
-    }
-    else if (fd) // nameStr is a global in file fd
-    {
-      //printf("addFileLink(%s,%s,%s)\n",fd->getOutputFileBase(),anchor.data(),
-      //        resultName.stripWhiteSpace().data());
-      od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
-          anchor,linkText.stripWhiteSpace());
-      cName=fd->getOutputFileBase();
-      aName=md->anchor();
-    }
-    else if (gd)
-    {
-      //printf("addGroupLink(%s,%s,%s)\n",fd->getOutputFileBase().data(),anchor.data(),
-      //        gd->name().data());
-      od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),
-          anchor,linkText.stripWhiteSpace());
-      cName=gd->getOutputFileBase();
-      aName=md->anchor();
-    }
-    else // should not be reached
-    {
-      //printf("add no link fd=cd=0\n");
-      od.docify(linkText);
-    }
-
-    // for functions we add the arguments if explicitly specified or else "()"
-    if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
-    {
-      if (argsStr.isEmpty() && (!md->isDefine() || md->argsString()!=0))
-      //  od.writeString("()")
-        ;
-      else
-        od.docify(argsStr);
-    }
-
-    // generate the page reference (for LaTeX)
-    if ((!cName.isEmpty() || !aName.isEmpty()) && md->isLinkableInProject())
-    {
-      writePageRef(od,cName,aName);
+      if (rt==0 && compound->definitionType()==Definition::TypeGroup)
+      {
+        linkText=((GroupDef *)compound)->groupTitle();
+      }
+      od.writeObjectLink(compound->getReference(),
+                         compound->getOutputFileBase(),
+                         0,linkText);
+      if (!compound->isReference())
+      {
+        writePageRef(od,compound->getOutputFileBase(),0);
+      }
     }
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict[nameStr]))
-  { // group link
-    od.startTextLink(gd->getOutputFileBase(),0);
-    if (rt) // explict link text
-    {
-      od.docify(rt);
-    }
-    else // use group title as the default link text
-    {
-      od.docify(gd->groupTitle());
-    }
-    od.endTextLink();
-    return TRUE;
-  }
-
-  // nothing found
-  if (rt) 
-    od.docify(rt); 
-  else 
+  else // no link possible
   {
     od.docify(linkText);
-    if (!argsStr.isEmpty()) od.docify(argsStr);
+    return FALSE;
   }
-  return FALSE;
 }
+
+bool resolveLink(/* in */ const char *scName,
+                 /* in */ const char *lr,
+                 /* in */ bool inSeeBlock,
+                 /* out */ Definition **resContext,
+                 /* out */ PageInfo **resPageInfo,
+                 /* out */ QCString &resAnchor
+                )
+{
+  //printf("resolveLink clName=`%s' lr=`%s' lt=`%s'\n",clName,lr,lt);
+
+  *resContext=0;
+  *resPageInfo=0;
+  
+  QCString linkRef=lr;
+  FileDef  *fd;
+  GroupDef *gd;
+  PageInfo *pi;
+  bool ambig;
+  if (linkRef.isEmpty()) // no reference name!
+  {
+    return FALSE;
+  }
+  else if ((pi=Doxygen::pageSDict->find(linkRef))) // link to a page
+  {
+    GroupDef *gd = pi->getGroupDef();
+    if (gd)
+    {
+      SectionInfo *si=0;
+      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
+      *resContext=gd;
+      if (si) resAnchor = si->label;
+    }
+    else
+    {
+      *resPageInfo=pi;
+    }
+    return TRUE;
+  }
+  else if ((pi=Doxygen::exampleSDict->find(linkRef))) // link to an example
+  {
+    *resPageInfo=pi;
+    return TRUE;
+  }
+  else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
+  {
+    *resContext=gd;
+    return TRUE;
+  }
+  else if ((fd=findFileDef(Doxygen::inputNameDict,linkRef,ambig)) // file link
+      && fd->isLinkable())
+  {
+    *resContext=fd;
+    return TRUE;
+  }
+  else // probably a class or member reference
+  {
+    MemberDef *md;
+    bool res = resolveRef(scName,lr,inSeeBlock,resContext,&md);
+    if (md) resAnchor=md->anchor();
+    return res;
+  }
+}
+
 
 //----------------------------------------------------------------------
 // General function that generates the HTML code for a reference to some
@@ -2510,80 +2539,39 @@ bool generateRef(OutputDocInterface &od,const char *scName,
 bool generateLink(OutputDocInterface &od,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
-  //printf("generateLink clName=`%s' lr=`%s' lt=`%s'\n",clName,lr,lt);
-  QCString linkRef=lr;
-  FileDef *fd;
-  GroupDef *gd;
-  PageInfo *pi;
-  bool ambig;
-  if (linkRef.isEmpty()) // no reference name!
+  Definition *compound;
+  PageInfo *pageInfo;
+  QCString anchor,linkText=lt;
+  if (resolveLink(clName,lr,inSeeBlock,&compound,&pageInfo,anchor))
   {
-    od.docify(lt);
+    if (pageInfo) // link to page
+    {
+      od.writeObjectLink(pageInfo->getReference(),
+                         pageInfo->getOutputFileBase(),anchor,linkText);
+      if (!pageInfo->isReference())
+      {
+        writePageRef(od,pageInfo->getOutputFileBase(),anchor);
+      }
+    }
+    else if (compound) // link to compound
+    {
+      if (lt==0 && compound->definitionType()==Definition::TypeGroup)
+      {
+        linkText=((GroupDef *)compound)->groupTitle();
+      }
+      od.writeObjectLink(compound->getReference(),
+                         compound->getOutputFileBase(),anchor,linkText);
+      if (!compound->isReference())
+      {
+        writePageRef(od,compound->getOutputFileBase(),anchor);
+      }
+    }
+    return TRUE;
+  }
+  else // link could not be found
+  {
+    od.docify(linkText);
     return FALSE;
-  }
-  else if ((pi=Doxygen::pageSDict->find(linkRef))) // link to a page
-  {
-    GroupDef *gd = pi->getGroupDef();
-    if (gd)
-    {
-      SectionInfo *si=0;
-      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
-      od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
-      if (gd->isLinkableInProject())
-      {
-        writePageRef(od,gd->getOutputFileBase(),si ? si->label.data() : 0);
-      }
-    }
-    else
-    {
-      od.writeObjectLink(pi->getReference(),pi->getOutputFileBase(),0,lt);  
-      if (!pi->isReference())
-      {
-        writePageRef(od,pi->name,0);
-      }
-    }
-    return TRUE;
-  }
-  else if ((pi=Doxygen::exampleSDict->find(linkRef))) // link to an example
-  {
-    od.writeObjectLink(0,convertNameToFile(pi->name+"-example"),0,lt);
-    if (!pi->isReference())
-    {
-      writePageRef(od,convertNameToFile(pi->name+"-example"),0);
-    }
-    return TRUE;
-  }
-  else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
-  {
-    //od.startTextLink(gd->getOutputFileBase(),0);
-    //if (lt)
-    //  od.docify(lt);
-    //else
-    //  od.docify(gd->groupTitle());
-    //od.endTextLink();
-    QCString title;
-    if (lt) title=lt; else title=gd->groupTitle();
-    od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,title);  
-    if (gd->isLinkableInProject())
-    {
-      writePageRef(od,gd->getOutputFileBase(),0);
-    }
-    return TRUE;
-  }
-  else if ((fd=findFileDef(Doxygen::inputNameDict,linkRef,ambig))
-       && fd->isLinkable())
-  {
-        // link to documented input file
-    od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
-    if (fd->isLinkableInProject())
-    {
-      writePageRef(od,fd->getOutputFileBase(),0);
-    }
-    return TRUE;
-  }
-  else // probably a class or member reference
-  {
-    return generateRef(od,clName,lr,inSeeBlock,lt);
   }
 }
 
@@ -3408,8 +3396,8 @@ void addRelatedPage(const char *name,const QCString &ptitle,
     QCString baseName=name;
     if (baseName.right(4)==".tex") 
       baseName=baseName.left(baseName.length()-4);
-    else if (baseName.right(htmlFileExtensionLength)==htmlFileExtension)
-      baseName=baseName.left(baseName.length()-htmlFileExtensionLength);
+    else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+      baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
     
     QCString title=ptitle.stripWhiteSpace();
     pi=new PageInfo(fileName,startLine,baseName,doc,title);

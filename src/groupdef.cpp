@@ -403,7 +403,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"group\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
   
   ol.startMemberSections();
