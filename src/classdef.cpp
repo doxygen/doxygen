@@ -1591,6 +1591,7 @@ bool ClassDef::isVisibleInHierarchy()
       // documented or shown anyway or documentation is external 
       (hasDocumentation() || 
        !Config_getBool("HIDE_UNDOC_CLASSES") || 
+       (m_templateMaster && m_templateMaster->hasDocumentation()) || 
        isReference()
       ) &&
       // is not part of an unnamed namespace or shown anyway

@@ -35,6 +35,8 @@
 #include <qfile.h>
 #include <qtextstream.h>
 
+#define XML_DB(x)
+
 QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
 {
   switch (t)
@@ -147,6 +149,10 @@ template<class T> class ValStack
     {
       return m_sp==0;
     }
+    uint count() const
+    {
+      return m_sp;
+    }
     
   private:
     QArray<T> m_values;
@@ -170,11 +176,13 @@ class XMLGenerator : public OutputDocInterface
       {
         m_inParStack.top() = TRUE;
         m_t << "<para>" << endl;
+        XML_DB(("start par at level=%d\n",m_inParStack.count());)
       }
       else if (m_inParStack.isEmpty())
       {
         m_inParStack.push(TRUE);
         m_t << "<para>" << endl;
+        XML_DB(("start par at level=%d\n",m_inParStack.count());)
       }
     }
     void endParMode()
@@ -183,17 +191,24 @@ class XMLGenerator : public OutputDocInterface
       {
         m_inParStack.top() = FALSE;
         m_t << "</para>" << endl;
+        XML_DB(("end par at level=%d\n",m_inParStack.count());)
       }
     }
     void startNestedPar()
     {
       m_inParStack.push(FALSE);
+      XML_DB(("enter par level=%d\n",m_inParStack.count());)
     }
     void endNestedPar()
     {
+      XML_DB(("leave par level=%d\n",m_inParStack.count());)
       if (m_inParStack.pop())
       {
         m_t << "</para>" << endl;
+      }
+      else
+      {
+        XML_DB(("ILLEGAL par level!\n");)
       }
     }
   
@@ -503,27 +518,47 @@ class XMLGenerator : public OutputDocInterface
     }
     void startTable(int cols) 
     {
+      XML_DB(("startTable\n");)
       startParMode();
-      m_t << "<table><tgroup cols=\"" << cols << "\"><tbody>\n";
+      m_t << "<table cols=\"" << cols << "\">\n";
     }
     void endTable() 
     {
-      m_t << "</row>\n</tbody></tgroup></table>";
+      XML_DB(("endTable\n");)
+      m_t << "</row>\n</table>";
     }
     void nextTableRow() 
     {
+      XML_DB(("nextTableRow\n");)
       m_t << "<row><entry>";
+
+      // we need manually add a para here because cells are
+      // parsed before the table is generated, and thus
+      // are already parsed as if they are inside a paragraph.
+      m_t << "<para>";
     }
     void endTableRow() 
     {
+      XML_DB(("endTableRow\n");)
       m_t << "</row>" << endl;
     }
     void nextTableColumn() 
     {
+      XML_DB(("nextTableColumn\n");)
       m_t << "<entry>";
+      
+      // we need manually add a para here because cells are
+      // parsed before the table is generated, and thus
+      // are already parsed as if they are inside a paragraph.
+      m_t << "<para>";
     }
     void endTableColumn() 
     {
+      XML_DB(("endTableColumn\n");)
+      // we need manually add a para here because cells are
+      // parsed before the table is generated, and thus
+      // are already parsed as if they are inside a paragraph.
+      m_t << "</para>";
       m_t << "</entry>";
     }
 
@@ -614,13 +649,16 @@ class XMLGenerator : public OutputDocInterface
     void endPageRef(const char *,const char *) 
     {
     }
-    void startLineNumber()
+    void writeLineNumber(const char *,const char *file, // TODO: support external references
+                         const char *anchor,int l)
     {
-      m_t << "<linenumber>";
-    }
-    void endLineNumber()
-    {
-      m_t << "</linenumber>";
+      m_t << "<linenumber";
+      m_t << " line=\"" << l << "\"";
+      if (file)
+      {
+        m_t << " refid=\"" << file << "_1" << anchor << "\"";
+      }
+      m_t << "/>";
     }
     void startCodeLine() 
     {
@@ -665,15 +703,7 @@ class XMLGenerator : public OutputDocInterface
     {
       const XMLGenerator *xg = (const XMLGenerator *)g;
 
-      //if (m_inPar && !mifgen->m_inParStart)
-      //{
-      //  endParMode();
-      //}
-      //else if (!m_inPar && mifgen->m_inParStart)
-      //{
-      //  startParMode();
-      //}
-      //printf("Appending \n>>>>\n`%s'\n<<<<\n and \n>>>>\n`%s'\n<<<<\n",getContents().data(),mifgen->getContents().data());
+      //printf("Appending \n>>>>\n`%s'\n<<<<\n and \n>>>>\n`%s'\n<<<<\n",getContents().data(),xg->getContents().data());
       m_t << xg->getContents();
       m_inParStack  = xg->m_inParStack;
       m_inListStack = xg->m_inListStack;
@@ -697,6 +727,9 @@ class XMLGenerator : public OutputDocInterface
       m_t.setDevice(&m_b);
       m_t.setEncoding(QTextStream::Latin1);
 
+      //printf("Cloning >>%s<< m_parStack.count()=%d\n",
+      //    xg->getContents().data(),xg->m_inParStack.count());
+       
       // copy state variables
       m_inParStack  = xg->m_inParStack;
       m_inListStack = xg->m_inListStack;
@@ -779,6 +812,18 @@ void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
 
 void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
 {
+
+  // + declaration
+  // - reimplements
+  // - reimplementedBy
+  // - exceptions
+  // - const/volatile specifiers
+  // - examples
+  // + source definition
+  // - source references
+  // - source referenced by
+  // - include code 
+  
   if (md->memberType()==MemberDef::EnumValue) return;
 
   QCString scopeName;
@@ -942,9 +987,67 @@ void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   t << "        <detaileddescription>" << endl;
   writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->documentation());
   t << "        </detaileddescription>" << endl;
-  t << "        <location file=\"" 
-    << md->getDefFileName() << "\" line=\"" 
-    << md->getDefLine() << "\"/>" << endl;
+  if (md->getDefLine()!=-1)
+  {
+    t << "        <location file=\"" 
+      << md->getDefFileName() << "\" line=\"" 
+      << md->getDefLine() << "\"/>" << endl;
+  }
+
+  printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
+  if (md->getReferencesMembers())
+  {
+    MemberSDict::Iterator mdi(*md->getReferencesMembers());
+    MemberDef *rmd;
+    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    {
+      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      {
+        t << "        <references id=\"";
+        t << rmd->getBodyDef()->getOutputFileBase()
+          << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+          << rmd->anchor()
+          << "\" line=\""
+          << rmd->getStartBodyLine()
+          << "\">";
+        QCString scope = rmd->getScopeString();
+        QCString name = rmd->name();
+        if (!scope.isEmpty() && scope!=def->name())
+        {
+          name.prepend(scope+"::");
+        }
+        writeXMLString(t,name);
+        t << "</references>" << endl;
+      }
+    }
+  }
+  if (md->getReferencedByMembers())
+  {
+    MemberSDict::Iterator mdi(*md->getReferencedByMembers());
+    MemberDef *rmd;
+    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    {
+      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      {
+        t << "        <referencedby id=\"";
+        t << rmd->getBodyDef()->getOutputFileBase()
+          << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+          << rmd->anchor()
+          << "\" line=\""
+          << rmd->getStartBodyLine()
+          << "\">";
+        QCString scope = rmd->getScopeString();
+        QCString name = rmd->name();
+        if (!scope.isEmpty() && scope!=def->name())
+        {
+          name.prepend(scope+"::");
+        }
+        writeXMLString(t,name);
+        t << "</referencedby>" << endl;
+      }
+    }
+  }
+  
   t << "      </memberdef>" << endl;
 }
 
@@ -980,6 +1083,7 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
   // + user defined member sections
   // + standard member sections
   // + detailed member documentation
+  // - examples
   
   if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.

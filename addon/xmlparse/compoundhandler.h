@@ -23,6 +23,7 @@
 #include "sectionhandler.h"
 #include "doxmlintf.h"
 
+class MainHandler;
 class DocHandler;
 class ProgramListingHandler;
 
@@ -48,6 +49,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     QString id()   const { return m_id;   }
     QString kind() const { return m_kind; }
     QListIterator<ISection> getSectionIterator() const { return m_sections; }
+    void initialize(MainHandler *m);
 
   private:
     struct SuperClass
@@ -68,18 +70,18 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
       QString m_protection;
       QString m_virtualness;
     };
-    QList<SuperClass>     m_superClasses;
-    QList<SubClass>       m_subClasses;
-    QList<ISection>       m_sections;
-    IBaseHandler *m_parent;
-    DocHandler  *m_brief;
-    DocHandler  *m_detailed;
+    QList<SuperClass>       m_superClasses;
+    QList<SubClass>         m_subClasses;
+    QList<ISection>         m_sections;
+    IBaseHandler           *m_parent;
+    DocHandler             *m_brief;
+    DocHandler             *m_detailed;
     ProgramListingHandler  *m_programListing;
-    QString m_id;
-    QString m_kind;
-    QString m_name;
-    QString m_defFile;
-    int m_defLine;
+    QString                 m_id;
+    QString                 m_kind;
+    QString                 m_name;
+    QString                 m_defFile;
+    int                     m_defLine;
 };
 
 #endif

@@ -123,6 +123,9 @@ class Definition
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d) { m_outerScope = d; }
 
+    MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
+    MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }
+
   protected:
     int      m_startBodyLine;   // line number of the start of the definition
     int      m_endBodyLine;     // line number of the end of the definition
@@ -147,9 +150,6 @@ class Definition
     QCString m_doc;   // detailed description
     QCString m_ref;   // reference to external documentation
     SectionDict *m_sectionDict;  // dictionary of all sections
-    //MemberList  *m_sourceRefList;  // list of entities that refer to this
-    //                             // entity in their definition 
-    //MemberDict *m_sourceRefDict;
     MemberSDict *m_sourceRefByDict;
     MemberSDict *m_sourceRefsDict;
     int m_testId;     // id for test list item

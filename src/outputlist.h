@@ -214,10 +214,13 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 
     { forall(&OutputGenerator::endCodeLine); }
-    void startLineNumber() 
-    { forall(&OutputGenerator::startLineNumber); }
-    void endLineNumber() 
-    { forall(&OutputGenerator::endLineNumber); }
+    //void startLineNumber() 
+    //{ forall(&OutputGenerator::startLineNumber); }
+    //void endLineNumber() 
+    //{ forall(&OutputGenerator::endLineNumber); }
+    void writeLineNumber(const char *ref,const char *file,const char *anchor,
+                         int lineNumber) 
+    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
     void startEmphasis() 
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis() 
@@ -485,6 +488,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);
+    FORALLPROTO4(const char *,const char *,const char *,int);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

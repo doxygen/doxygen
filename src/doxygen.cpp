@@ -1385,7 +1385,6 @@ static MemberDef *addVariableToFile(
     }
   }
 
-  //printf("Adding member=%s\n",md->name().data());
   // add member definition to the list of globals 
   if (mn)
   {
@@ -1395,8 +1394,6 @@ static MemberDef *addVariableToFile(
   {
     mn = new MemberName(name);
     mn->append(md);
-    //Doxygen::functionNameDict.insert(name,mn);
-    //Doxygen::functionNameList.append(mn);
     Doxygen::functionNameSDict.append(name,mn);
   }
   root->section = Entry::EMPTY_SEC;
@@ -5805,7 +5802,7 @@ static bool openOutputFile(const char *outFile,QFile &f)
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     } 
     f.setName(outFile);
-    fileOpened = f.open(IO_WriteOnly);
+    fileOpened = f.open(IO_WriteOnly|IO_Translate);
   }
   return fileOpened;
 }

@@ -16,15 +16,7 @@
 #include <qxml.h>
 #include "mainhandler.h"
 
-void MainHandler::startCompound(const QXmlAttributes& attrib)
-{
-  CompoundHandler *compHandler = new CompoundHandler(this);
-  compHandler->startCompound(attrib);
-  m_compounds.append(compHandler);
-  m_compoundDict.insert(compHandler->id(),compHandler);
-}
-
-MainHandler::MainHandler() : m_compoundDict(10007)
+MainHandler::MainHandler() : m_compoundDict(10007), m_compoundNameDict(10007)
 {
   m_compounds.setAutoDelete(TRUE);
   addStartHandler("doxygen"); 
@@ -38,6 +30,44 @@ MainHandler::~MainHandler()
   printf("MainHandler::~MainHandler()\n");
 }
 
+void MainHandler::startCompound(const QXmlAttributes& attrib)
+{
+  CompoundHandler *compHandler = new CompoundHandler(this);
+  compHandler->startCompound(attrib);
+  m_compounds.append(compHandler);
+}
+
+void MainHandler::insertMemberById(const QString &id,IMember *h)
+{
+  m_memberDict.insert(id,h);
+}
+
+void MainHandler::insertMemberByName(const QString &name,IMember *h)
+{
+  QList<IMember> *ml = m_memberNameDict[name];
+  if (ml)
+  {
+    ml->append(h);
+  }
+  else
+  {
+    ml = new QList<IMember>;
+    ml->append(h);
+    m_memberNameDict.insert(name,ml);
+  }
+}
+
+void MainHandler::initialize()
+{
+  QListIterator<ICompound> mci(m_compounds);
+  CompoundHandler *compHandler;
+  for (;(compHandler=(CompoundHandler *)mci.current());++mci)
+  {
+    compHandler->initialize(this);
+    m_compoundNameDict.insert(compHandler->name(),compHandler);
+    m_compoundDict.insert(compHandler->id(),compHandler);
+  }
+}
 
 class ErrorHandler : public QXmlErrorHandler
 {
@@ -74,6 +104,7 @@ IDoxygen *createObjectModelFromXML(const char * xmlFileName)
   reader.setContentHandler( handler );
   reader.setErrorHandler( &errorHandler );
   reader.parse( source );
+  handler->initialize();
   return handler;
 }
 

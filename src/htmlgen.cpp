@@ -1113,3 +1113,23 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
     t << "&nbsp;";
   }
 }
+
+void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
+                                    const char *anchor,int l)
+{
+  QCString lineNumber,lineAnchor;
+  lineNumber.sprintf("%05d",l);
+  lineAnchor.sprintf("l%05d",l);
+
+  if (file)
+  {
+    startCodeAnchor(lineAnchor);
+    writeCodeLink(ref,file,anchor,lineNumber);
+    endCodeAnchor();
+  }
+  else
+  {
+    codify(lineNumber);
+  }
+  codify(" ");
+}

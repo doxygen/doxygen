@@ -70,7 +70,10 @@ class DocNode
       Formula,
       Image,
       DotFile,
-      IndexEntry
+      IndexEntry,
+      Table,
+      Row,
+      Entry
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -412,6 +415,9 @@ class SimpleSectHandler : public DocNode,
 
 //-----------------------------------------------------------------------------
 
+/* \brief Node representing an named item of a VariableList.
+ *
+ */
 class VariableListEntryHandler : public DocNode, public BaseHandler<VariableListEntryHandler>
 {
   public:
@@ -457,28 +463,6 @@ class VariableListHandler : public DocNode, public BaseHandler<VariableListHandl
 
 //-----------------------------------------------------------------------------
 
-/*! \brief Node representing a text anchor
- *
- */
-// children: ref
-class AnchorHandler : public DocNode, public BaseHandler<AnchorHandler>
-{
-  public:
-    AnchorHandler(IBaseHandler *parent);
-    virtual ~AnchorHandler();
-    void startAnchor(const QXmlAttributes& attrib);
-    void endAnchor();
-    void startRef(const QXmlAttributes& attrib);
-
-  private:
-    void addTextNode();
-    IBaseHandler   *m_parent;
-    QList<DocNode> m_children;
-    QString        m_id;
-};
-
-//-----------------------------------------------------------------------------
-
 /*! \brief Node representing a highlighted text fragment.
  *
  */
@@ -512,7 +496,6 @@ class CodeLineHandler : public DocNode, public BaseHandler<CodeLineHandler>
     virtual void startLineNumber(const QXmlAttributes&);
     virtual void endLineNumber();
     virtual void startHighlight(const QXmlAttributes&);
-    virtual void startAnchor(const QXmlAttributes&);
     virtual void startRef(const QXmlAttributes&);
     
     CodeLineHandler(IBaseHandler *parent);
@@ -523,8 +506,7 @@ class CodeLineHandler : public DocNode, public BaseHandler<CodeLineHandler>
 
     IBaseHandler   *m_parent;
     int            m_lineNumber;
-    QString        m_anchor;
-    QString        m_ref;
+    QString        m_refId;
     QList<DocNode> m_children;
 };
 
@@ -636,18 +618,79 @@ class IndexEntryHandler : public DocNode, public BaseHandler<IndexEntryHandler>
 
 //-----------------------------------------------------------------------------
 
+/*! \brief Node representing an entry in the table entry.
+ *
+ */
+// children: para
+class EntryHandler : public DocNode, public BaseHandler<EntryHandler>
+{
+  public:
+    EntryHandler(IBaseHandler *parent);
+    virtual ~EntryHandler();
+    void startEntry(const QXmlAttributes& attrib);
+    void endEntry();
+    void startParagraph(const QXmlAttributes& attrib);
+
+  private:
+    IBaseHandler   *m_parent;
+    QList<DocNode>  m_children;
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing an entry in the table row.
+ *
+ */
+// children: entry
+class RowHandler : public DocNode, public BaseHandler<RowHandler>
+{
+  public:
+    RowHandler(IBaseHandler *parent);
+    virtual ~RowHandler();
+    void startRow(const QXmlAttributes& attrib);
+    void endRow();
+    void startEntry(const QXmlAttributes& attrib);
+
+  private:
+    IBaseHandler        *m_parent;
+    QList<EntryHandler>  m_children;
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing an entry in the table.
+ *
+ */
+// children: row
+class TableHandler : public DocNode, public BaseHandler<TableHandler>
+{
+  public:
+    TableHandler(IBaseHandler *parent);
+    virtual ~TableHandler();
+    void startTable(const QXmlAttributes& attrib);
+    void endTable();
+    void startRow(const QXmlAttributes& attrib);
+
+  private:
+    IBaseHandler      *m_parent;
+    QList<RowHandler>  m_children;
+    int                m_numColumns;
+};
+
+//-----------------------------------------------------------------------------
+
 /*! \brief Node representing a paragraph of text and commands.
  *
  */
 // children: itemizedlist, orderedlist, parameterlist, simplesect, ref,
 //           variablelist, hruler, linebreak, ulink, email, link
-//           programlisting, formula, image, dotfile, indexentry
+//           programlisting, formula, image, dotfile, indexentry,
+//           table
 //
 // children handled by MarkupHandler: 
 //           bold, computeroutput, emphasis, center,
 //           small, subscript, superscript. 
-// TODO:
-//           table
+//
 class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
 {
   public:
@@ -669,6 +712,7 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     virtual void startImage(const QXmlAttributes& attrib);
     virtual void startDotFile(const QXmlAttributes& attrib);
     virtual void startIndexEntry(const QXmlAttributes& attrib);
+    virtual void startTable(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();

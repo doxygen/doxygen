@@ -37,7 +37,15 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addStartHandler("location",this,&MemberHandler::startLocation);
   addEndHandler("location");
 
+  addStartHandler("references",this,&MemberHandler::startReferences);
+  addEndHandler("references",this,&MemberHandler::endReferences);
+  
+  addStartHandler("referencedby",this,&MemberHandler::startReferencedBy);
+  addEndHandler("referencedby",this,&MemberHandler::endReferencedBy);
+
   m_params.setAutoDelete(TRUE);
+  m_references.setAutoDelete(TRUE);
+  m_referencedBy.setAutoDelete(TRUE);
   
 }
 
@@ -76,6 +84,32 @@ void MemberHandler::startLocation(const QXmlAttributes& attrib)
 {
   m_defFile = attrib.value("file");
   m_defLine = attrib.value("line").toInt();
+}
+
+void MemberHandler::startReferences(const QXmlAttributes& attrib)
+{
+  MemberReference *mr = new MemberReference;
+  mr->m_memId = attrib.value("id");
+  m_references.append(mr);
+  m_curString="";
+}
+
+void MemberHandler::endReferences()
+{
+  m_references.getLast()->m_name = m_curString;
+}
+
+void MemberHandler::startReferencedBy(const QXmlAttributes& attrib)
+{
+  MemberReference *mr = new MemberReference;
+  mr->m_memId = attrib.value("id");
+  m_referencedBy.append(mr);
+  m_curString="";
+}
+
+void MemberHandler::endReferencedBy()
+{
+  m_referencedBy.getLast()->m_name = m_curString;
 }
 
 void MemberHandler::endMember()

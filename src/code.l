@@ -330,12 +330,12 @@ static void startCodeLine()
   //if (g_currentFontClass) { g_code->endFontClass(); }
   if (g_sourceFileDef)
   {
-    QCString lineNumber,lineAnchor;
-    lineNumber.sprintf("%05d",g_yyLineNr);
-    lineAnchor.sprintf("l%05d",g_yyLineNr);
+    //QCString lineNumber,lineAnchor;
+    //lineNumber.sprintf("%05d",g_yyLineNr);
+    //lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    g_code->startLineNumber();
+    //g_code->startLineNumber();
     if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
       g_currentDefinition = d;
@@ -347,16 +347,19 @@ static void startCodeLine()
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       if (g_currentMemberDef) anchor=g_currentMemberDef->getBodyAnchor();
-      g_code->startCodeAnchor(lineAnchor);
-      g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	               anchor,lineNumber);
-      g_code->endCodeAnchor();
+      //g_code->startCodeAnchor(lineAnchor);
+      //g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
+      // 	               anchor,lineNumber);
+      //g_code->endCodeAnchor();
+      g_code->writeLineNumber(d->getReference(),d->getOutputFileBase(),
+	                      anchor,g_yyLineNr);
     }
     else
     {
-      g_code->codify(lineNumber);
+      //g_code->codify(lineNumber);
+      g_code->writeLineNumber(0,0,0,g_yyLineNr);
     }
-    g_code->endLineNumber();
+    //g_code->endLineNumber();
   }
   g_code->startCodeLine(); 
   if (g_currentFontClass)
@@ -556,12 +559,32 @@ static MemberDef *setCallContextForVar(const QCString &name)
   if ((mn=Doxygen::functionNameSDict[name]))
   {
     //printf("global var `%s'\n",name.data());
-    if (mn->count()>=1) 
-      // TODO: if count>1 link to static members in the same file only
+    if (mn->count()==1) // global defined only once
     {
       MemberDef *md=mn->getFirst();
-      g_theCallContext.setClass(stripClassName(md->typeString()));
-      return md;
+      if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
+      {
+        g_theCallContext.setClass(stripClassName(md->typeString()));
+        return md;
+      }
+      return 0;
+    }
+    else if (mn->count()>1) // global defined more than once
+    {
+      MemberDef *md=mn->first();
+      while (md)
+      {
+	//printf("mn=%p md=%p md->getBodyDef()=%p g_sourceFileDef=%p\n",
+	//    mn,md,
+	//    md->getBodyDef(),g_sourceFileDef);
+        if (md->getBodyDef()==g_sourceFileDef)
+        {
+          g_theCallContext.setClass(stripClassName(md->typeString()));
+          return md;
+        }
+	md=mn->next();
+      }
+      return 0;
     }
   }
   return 0;

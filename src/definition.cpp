@@ -334,6 +334,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       initParseCodeContext();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       if (definitionType()==TypeMember) setParameterList((MemberDef *)this);
+      ol.newParagraph();
       ol.startCodeFragment();
       parseCode(ol,scopeName,codeFragment,FALSE,0,
           m_bodyDef,actualStart,actualEnd,TRUE);
@@ -418,7 +419,6 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
     } 
     parseText(ol,ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
-    ol.newParagraph();
   }
   ol.popGeneratorState();
 }

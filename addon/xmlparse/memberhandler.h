@@ -37,6 +37,10 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
     virtual void startLocation(const QXmlAttributes& attrib);
+    virtual void startReferences(const QXmlAttributes& attrib);
+    virtual void endReferences();
+    virtual void startReferencedBy(const QXmlAttributes& attrib);
+    virtual void endReferencedBy();
 
     MemberHandler(IBaseHandler *parent);
     virtual ~MemberHandler();
@@ -51,6 +55,13 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual QListIterator<IParam> getParamIterator() const { return m_params; }
 
   private:
+    struct MemberReference
+    {
+      QString m_memId;
+      QString m_name;
+      int line;
+    };
+    
     IBaseHandler *m_parent;
     QString m_kind;
     QString m_id;
@@ -61,6 +72,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
     QList<IParam> m_params;
+    QList<MemberReference> m_references;
+    QList<MemberReference> m_referencedBy;
     QString m_defFile;
     int m_defLine;
 };

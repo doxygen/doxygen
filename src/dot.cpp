@@ -837,6 +837,8 @@ int DotClassGraph::m_curNodeNumber;
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     const char *label,int distance,const char *usedName,const char *templSpec,bool base)
 {
+  if (Config_getBool("HIDE_UNDOC_CLASSES") && !cd->isLinkable()) return;
+
   int edgeStyle = (label || prot==EdgeInfo::Orange) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   if (usedName) // name is a typedef
