@@ -17,8 +17,10 @@
 
 #include "message.h"
 #include "language.h"
+#include "translator.h"
 #include "translator_en.h"
 #if !defined(ENGLISH_ONLY)
+#include "translator_adapter.h"
 #include "translator_nl.h"
 #include "translator_se.h"
 #include "translator_cz.h"

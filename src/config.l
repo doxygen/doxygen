@@ -555,7 +555,8 @@ void Config::writeTemplate(QFile *f,bool sl)
 #endif
   if (!sl)
   {
-    t << "# This file describes the settings to be used by doxygen for a project\n";
+    t << "# This file describes the settings to be used by the documentation system\n";
+    t << "# doxygen (www.doxygen.org) for a project\n";
     t << "#\n";
     t << "# All text after a hash (#) is considered a comment and will be ignored\n";
     t << "# The format is:\n";
@@ -1728,7 +1729,7 @@ void Config::create()
                     "If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output \n"
                     "The RTF output is optimised for Word 97 and may not look very pretty with \n"
                     "other RTF readers or editors.\n",
-                    TRUE
+                    FALSE
                  );
   cs = addString(
                     "RTF_OUTPUT",
@@ -1781,7 +1782,7 @@ void Config::create()
                     "GENERATE_MAN",
                     "If the GENERATE_MAN tag is set to YES (the default) Doxygen will \n"
                     "generate man pages \n",
-                    TRUE
+                    FALSE
                    );
   cs = addString(
                     "MAN_OUTPUT",
@@ -1799,6 +1800,16 @@ void Config::create()
                    );
   cs->setDefaultValue(".3");
   cs->addDependency("GENERATE_MAN");
+  cb = addBool(
+                    "MAN_LINKS",
+                    "If the MAN_LINKS tag is set to YES and Doxygen generates man output,\n"
+                    "then it will generate one additional man file for each entity\n"
+                    "documented in the real man page(s). These additional files\n"
+                    "only source the real man page, but without them the man command\n"
+                    "would be unable to find the correct page. The default is NO.\n",
+                    FALSE
+                   );
+  cb->addDependency("GENERATE_MAN");
   //-----------------------------------------------------------------------------------------------
   //addInfo(  "XML","configuration options related to the XML output");
   //-----------------------------------------------------------------------------------------------
@@ -1938,18 +1949,19 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "INCLUDE_GRAPH",
-                    "If the ENABLE_PREPROCESSING, INCLUDE_GRAPH, and HAVE_DOT tags are set to \n"
-                    "YES then doxygen will generate a graph for each documented file showing \n"
-                    "the direct and indirect include dependencies of the file with other \n"
-                    "documented files. \n",
+                    "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDE_GRAPH, and HAVE_DOT \n"
+                    "tags are set to YES then doxygen will generate a graph for each documented \n"
+                    "file showing the direct and indirect include dependencies of the file with \n"
+                    "other documented files. \n",
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "INCLUDED_BY_GRAPH",
-                    "If the ENABLE_PREPROCESSING, INCLUDED_BY_GRAPH, and HAVE_DOT tags are set to \n"
-                    "YES then doxygen will generate a graph for each documented header file showing \n"
-                    "the documented files that directly or indirectly include this file \n",
+                    "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDED_BY_GRAPH, and \n"
+                    "HAVE_DOT tags are set to YES then doxygen will generate a graph for each \n"
+                    "documented header file showing the documented files that directly or \n"
+                    "indirectly include this file. \n",
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");

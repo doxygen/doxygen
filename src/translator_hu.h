@@ -24,7 +24,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
 {
   public:
 
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
     QCString idLanguage()
     { return "hungarian"; }
     /*! Used to get the command(s) for the language support. This method
@@ -543,9 +543,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
+    /* these are for the member sections of a class, struct or union */
     QCString trPublicMembers()
     { return "Publikus metódusok"; }
     QCString trPublicSlots()
@@ -566,7 +564,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
     { return "Privát adatok"; }
     QCString trStaticPrivateMembers()
     { return "Statikus privát metódusok"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -769,17 +766,17 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
     {
       return "Ugrás a fájl dokumentációjához.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Elõfeltétel";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Utófeltétel";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invariáns";

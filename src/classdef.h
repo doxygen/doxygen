@@ -228,7 +228,7 @@ class ClassDef : public Definition
     void determineIntfUsageRelation();
     void setSubGrouping(bool enabled) { m_subGrouping = enabled; }
     void setProtection(Protection p) { m_prot=p; }
-    void setGroupDefForAllMembers(GroupDef *g);
+    void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
     void setIsTemplateBaseClass(int num) { m_isTemplBaseClass = num; }
     void initTemplateMapping();

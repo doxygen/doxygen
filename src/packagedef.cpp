@@ -53,7 +53,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
   QCString title = theTranslator->trPackage(name());
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,getOutputFileBase(),title);
+  startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);
   endTitle(ol,getOutputFileBase(),title);

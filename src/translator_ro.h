@@ -38,7 +38,7 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_1
 {
   public:
 
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
     
     /*! Used for identification of the language. May resemble 
      * the string returned by latexBabelPackage(), but it is not used
@@ -571,9 +571,7 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_1
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
+    /* these are for the member sections of a class, struct or union */
     virtual QCString trPublicMembers()
     { return "Metode Publice"; }
     virtual QCString trPublicSlots()
@@ -594,7 +592,6 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_1
     { return "Sloturi Private"; }
     virtual QCString trStaticPrivateMembers()
     { return "Metode Statice Private"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -797,17 +794,17 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_1
     {
       return "Vezi documentaþia.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return "Precondiþie";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return "Postcondiþie";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return "Invariant";

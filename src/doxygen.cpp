@@ -270,11 +270,11 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
 static void addRelatedPage(Entry *root)
 {
   GroupDef *gd=0;
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s])) break;
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname])) break;
   }
   addRelatedPage(root->name,root->args,root->doc,root->anchors,
       root->fileName,root->startLine,root->todoId,
@@ -393,10 +393,30 @@ static void buildGroupList(Entry *root)
     
     if ((gd=Doxygen::groupDict[root->name]))
     {
-      warn(root->fileName,root->startLine,
-           "Warning: group %s already documented. "
-           "Skipping documentation.",
-           root->name.data());
+      if ( root->groupdoctype==Entry::GROUPDOC_NORMAL )
+      {
+        warn(root->fileName,root->startLine,
+             "Warning: group %s already documented. "
+             "Skipping documentation.",
+             root->name.data());
+      }
+      else
+      {
+	if ( !gd->hasGroupTitle() )
+          gd->setGroupTitle( root->type );
+        else if ( root->type.length() > 0 && root->name != root->type && gd->groupTitle() != root->type )
+          warn( root->fileName,root->startLine,
+		"group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
+		root->name.data(), root->type.data(), gd->groupTitle() );
+        if ( gd->briefDescription().isEmpty() )
+	  gd->setBriefDescription(root->brief);
+        if ( !root->doc.stripWhiteSpace().isEmpty() )
+	  gd->setDocumentation( gd->documentation().isEmpty() ? root->doc :
+				gd->documentation() + "\n\n" + root->doc );
+        gd->addSectionsToDefinition(root->anchors);
+        gd->setRefItems(root->todoId,root->testId,root->bugId);
+        addGroupToGroups(root,gd);
+      }
     }
     else
     {
@@ -440,30 +460,6 @@ static void organizeSubGroups(Entry *root)
   }
 }
 
-static void addToGroupSections(Entry *root)
-{
-  if (root->section==Entry::ADDGRPDOC_SEC && !root->name.isEmpty())
-  {
-    GroupDef *gd = Doxygen::groupDict[root->name];
-    if (gd)
-    {
-      gd->setDocumentation(gd->documentation()+"<p>"+root->brief+root->doc);
-    }
-    else
-    {
-      warn(root->fileName,root->startLine,
-           "Warning: ignoring addtogroup command for undefined "
-           "group `%s'.",root->name.data());
-    }
-  }
-  EntryListIterator eli(*root->sublist);
-  Entry *e;
-  for (;(e=eli.current());++eli)
-  {
-    addToGroupSections(e);
-  }
-}
-
 //----------------------------------------------------------------------
 
 static void buildFileList(Entry *root)
@@ -496,12 +492,12 @@ static void buildFileList(Entry *root)
         fd->setBriefDescription(root->brief); 
         fd->addSectionsToDefinition(root->anchors);
         fd->setRefItems(root->todoId,root->testId,root->bugId);
-        QListIterator<QCString> sli(*root->groups);
-        QCString *s;
-        for (;(s=sli.current());++sli)
+        QListIterator<Grouping> gli(*root->groups);
+        Grouping *g;
+        for (;(g=gli.current());++gli)
         {
           GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+          if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
           {
             gd->addFile(fd);
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
@@ -709,7 +705,7 @@ static void buildClassList(Entry *root)
        !root->name.isEmpty()
      )
   {
-    QCString fullName=root->name.copy();
+    QCString fullName=removeRedundantWhiteSpace(root->name);
     if (fullName.isEmpty())
     {
       // this should not be called
@@ -1103,12 +1099,12 @@ static void findUsingDirectives(Entry *root)
         nd->setBriefDescription(root->brief);
         nd->addSectionsToDefinition(root->anchors);
 
-        QListIterator<QCString> sli(*root->groups);
-        QCString *s;
-        for (;(s=sli.current());++sli)
+        QListIterator<Grouping> gli(*root->groups);
+        Grouping *g;
+        for (;(g=gli.current());++gli)
         {
           GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+          if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
             gd->addNamespace(nd);
         }
 
@@ -1448,12 +1444,12 @@ static MemberDef *addVariableToFile(
         // merge ingroup specifiers
         if (md->getGroupDef()==0 && root->groups->first())
         {
-          GroupDef *gd=Doxygen::groupDict[root->groups->first()->data()];
-          md->setGroupDef(gd);
+          GroupDef *gd=Doxygen::groupDict[root->groups->first()->groupname.data()];
+          md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, root->doc.length() != 0);
         }
         else if (md->getGroupDef()!=0 && root->groups->count()==0)
         {
-          root->groups->append(new QCString(md->getGroupDef()->name()));
+          root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
         }
       }
     } 
@@ -1999,12 +1995,12 @@ static void buildMemberList(Entry *root)
               // merge ingroup specifiers
               if (md->getGroupDef()==0 && root->groups->first())
               {
-                GroupDef *gd=Doxygen::groupDict[root->groups->first()->data()];
-                md->setGroupDef(gd);
+                GroupDef *gd=Doxygen::groupDict[root->groups->first()->groupname.data()];
+                md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, root->doc.length() != 0);
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
               {
-                root->groups->append(new QCString(md->getGroupDef()->name()));
+                root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
               }
             }
           }
@@ -5103,9 +5099,7 @@ static void generatePageDocs()
       else
         pageName=pi->name.lower();
 
-      startFile(*outputList,pageName,pi->title);
-
-      startFile(*outputList,pageName,pi->title);
+      startFile(*outputList,pageName,pageName,pi->title);
  
       // save old generator state and write title only to Man generator
       outputList->pushGeneratorState();
@@ -5190,7 +5184,7 @@ static void generateExampleDocs()
   {
     msg("Generating docs for example %s...\n",pi->name.data());
     QCString n=convertNameToFile(pi->name+"-example");
-    startFile(*outputList,n,"Example Documentation");
+    startFile(*outputList,n,n,"Example Documentation");
     startTitle(*outputList,n);
     outputList->docify(pi->name);
     endTitle(*outputList,n,0);
@@ -5380,7 +5374,7 @@ static void generateSearchIndex()
     //outputList->generateExternalIndex();
     outputList->pushGeneratorState();
     outputList->disableAllBut(OutputGenerator::Html);
-    startFile(*outputList,"header.html","Search Engine",TRUE);
+    startFile(*outputList,"header.html",0,"Search Engine",TRUE);
     outputList->endPlainFile();
     outputList->startPlainFile("footer.html");
     endFile(*outputList,TRUE);
@@ -6483,7 +6477,6 @@ void parseInput()
   msg("Building group list...\n");
   buildGroupList(root);
   organizeSubGroups(root);
-  addToGroupSections(root);
 
   msg("Building namespace list...\n");
   buildNamespaceList(root);

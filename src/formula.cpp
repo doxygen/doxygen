@@ -174,7 +174,7 @@ void FormulaList::generateBitmaps(const char *path)
 #ifdef _WIN32
       char gsArgs[256];
       sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
-                     "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
+                     "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
                      gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                      formBase.data(),formBase.data()
              );
@@ -210,7 +210,7 @@ void FormulaList::generateBitmaps(const char *path)
 #else
       char gsArgs[4096];
       sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
-                    "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
+                    "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );

@@ -86,7 +86,8 @@ extern int documentedPackages;
 
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
-void startFile(OutputList &ol,const char *name,const char *title,bool external=FALSE);
+void startFile(OutputList &ol,const char *name,const char *manName,
+               const char *title,bool external=FALSE);
 void endFile(OutputList &ol,bool external=FALSE);
 
 #endif

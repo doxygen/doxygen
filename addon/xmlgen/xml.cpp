@@ -493,10 +493,10 @@ void generateXML()
   t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>" << endl;
   t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
   t << "<doxygen>" << endl;
-  if (Doxygen::classList.count()+Doxygen::inputNameList.count()>0)
+  if (Doxygen::classSDict.count()+Doxygen::inputNameList.count()>0)
   {
     t << "  <compoundlist>" << endl;
-    ClassListIterator cli(Doxygen::classList);
+    ClassSDict::Iterator cli(Doxygen::classSDict);
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {

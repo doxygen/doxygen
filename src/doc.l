@@ -1432,7 +1432,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  outDoc->endDescList();
 					  currentListIndent.pop();
   					}
-<DocScan>{CMD}"author"{BN}+		{
+<DocScan>{CMD}"author"[s]?{BN}+		{
   				          endArgumentList();
   					  if (!inAuthorBlock)
 					  {
@@ -1441,7 +1441,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
-					    scanString(theTranslator->trAuthors()+": ");
+					    bool singular = ((QString)yytext).find('s')==-1;
+					    scanString(theTranslator->trAuthor(TRUE,singular)+": ");
 					    outDoc->endBold();
 					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();

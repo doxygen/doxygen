@@ -24,7 +24,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
 {
   public:
 
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
     
     /*! Used for identification of the language. May resemble 
      * the string returned by latexBabelPackage(), but it is not used
@@ -545,9 +545,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
+    /* these are for the member sections of a class, struct or union */
     QCString trPublicMembers()
     { return "Metody Publiczne"; }
     QCString trPublicSlots()
@@ -568,7 +566,6 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     { return "Sloty Prywatne"; }
     QCString trStaticPrivateMembers()
     { return "Statyczne Metody Prywatne"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -770,17 +767,17 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     {
       return "Id¼ do dokumentacji tego pliku.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Warunek wstêpny";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Warunek koñcowy";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Inwariant";

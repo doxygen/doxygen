@@ -29,7 +29,7 @@ Entry::Entry()
   sublist->setAutoDelete(TRUE);
   extends = new QList<BaseInfo>;
   extends->setAutoDelete(TRUE);
-  groups = new QList<QCString>;
+  groups = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
   anchors = new QList<QCString>;
   anchors->setAutoDelete(TRUE);
@@ -40,6 +40,7 @@ Entry::Entry()
   mtArgList = 0;
   mGrpId = -1;
   tagInfo = 0;
+  groupdoctype = GROUPDOC_NORMAL;
   reset();
 }
 
@@ -82,7 +83,7 @@ Entry::Entry(const Entry &e)
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
   extends->setAutoDelete(TRUE);
-  groups      = new QList<QCString>;
+  groups      = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
   anchors     = new QList<QCString>;
   anchors->setAutoDelete(TRUE);
@@ -91,6 +92,7 @@ Entry::Entry(const Entry &e)
   //printf("Entry::Entry(copy) tArgList=0\n");
   tArgList = 0;
   mtArgList = 0;
+  groupdoctype = e.groupdoctype;
 
   // deep copy of the child entry list
   QListIterator<Entry> eli(*e.sublist);
@@ -109,14 +111,15 @@ Entry::Entry(const Entry &e)
   }
   
   // deep copy group list
-  QListIterator<QCString> sli(*e.groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*e.groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
-    groups->append(new QCString(*s));
+    groups->append(new Grouping(*g));
   }
   
   QListIterator<QCString> sli2(*e.anchors);
+  QCString *s;
   for (;(s=sli2.current());++sli2)
   {
     anchors->append(new QCString(*s));
@@ -234,6 +237,7 @@ void Entry::reset()
   memSpec  = 0;
   subGrouping = TRUE;
   protection = Public;
+  groupdoctype = GROUPDOC_NORMAL;
   sublist->clear();
   extends->clear();
   groups->clear();
@@ -270,14 +274,15 @@ int Entry::getSize()
     size+=bi->name.length()+1+sizeof(bi->prot)+sizeof(bi->virt);
     bi=extends->next(); 
   }
-  QCString *s=groups->first();
-  while (s)
+  Grouping *g=groups->first();
+  while (g)
   {
     size+=sizeof(QLNode);
-    size+=s->length()+1;
-    s=groups->next();
+    size+=g->groupname.length()+1;
+    size+=sizeof(g->pri);
+    g=groups->next();
   }
-  s=anchors->first();
+  QCString *s=anchors->first();
   while (s)
   {
     size+=sizeof(QLNode);

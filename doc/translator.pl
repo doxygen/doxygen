@@ -4,6 +4,8 @@
 # This is a Perl script for Doxygen developers.  
 # Its main purpose is to extract the information from sources
 # related to internationalization (the translator classes).
+# It uses the information to generate documentation (language.doc,
+# translator_report.txt) from templates (language.tpl, maintainers.txt).
 #
 #                              Petr Prikryl (prikrylp@skil.cz)
 # History:
@@ -11,9 +13,25 @@
 # 2001/04/27
 #  - First version of the script.
 #
-# 2002/05/02
+# 2001/05/02
 #  - Update to accept updateNeededMessage() in the Translator class.
 #  - First version that generates doc/language.doc.
+#
+# 2001/05/07
+#  - Environment variable $doxygenrootdir now points to the
+#    Doxygen's root directory.
+#
+# 2001/05/11
+#  - Updated to reflect using TranslatorAdapterCVS as the base
+#    class for "almost up-to-date" translators.
+#  - $doxygenrootdir and other global variables for storing 
+#    directories determined from DOXYGEN_DOCDIR environment 
+#    variable. The change was done because the DOXYGEN_DOCDIR 
+#    was already used before.
+#  - $version mark can be used in the language.tpl template.
+#
+# 2001/05/18
+#  - Character entity &oslash; recognized in maintainers.txt.
 #
 ################################################################
 
@@ -23,14 +41,21 @@ use Carp;
 
 # Global variables
 #
-my $doxygenrootdir = "..";
-my $srcdir = "$doxygenrootdir/src";  
-my $docdir = "$doxygenrootdir/doc";  
+my $doxygenrootdir = 'directory set at the beginning of the body';
+my $srcdir =         'directory set at the beginning of the body';
+my $docdir =         'directory set at the beginning of the body';
+
+my $doxversion =     'set at the beginning of the body';
 
 # Names of the output files.
 #
-my $ftxt = "translator_report.txt";
-my $fdoc = "language.doc";
+my $ftranslatortxt = "translator_report.txt";
+my $flangdoc = "language.doc";
+
+# Names of the template files and other intput files.
+#
+my $flangtpl = "language.tpl";         # template for language.doc
+my $fmaintainers = "maintainers.txt";  # database of local lang. maintainers
 
 
 ################################################################
@@ -199,7 +224,7 @@ sub GetInfoFrom  ##{{{
 
 ################################################################
 # GenerateLanguageDoc takes document templates and code sources
-# generates the content as expected in the language.doc file (the
+# generates the content as expected in the $flangdoc file (the
 # part of the Doxygen documentation), and returns the result as a
 # string.
 #
@@ -250,7 +275,8 @@ xxxTABLE_FOOTxxx
 \latexonly
 \begin{tabular}{|l|l|l|l|}
   \hline 
-  {\bf Language} & {\bf Maintainer} & {Contact address} & {Status} \\
+  {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
+  \hline
 xxxTABLE_HEADxxx
   
     my $latexTableRow = <<'xxxTABLE_ROWxxx';
@@ -267,7 +293,7 @@ xxxTABLE_FOOTxxx
     # Read the template of the documentation, and join the content
     # to a single string. #{{{
     #
-    my $fin = "$docdir/language.tpl";
+    my $fin = "$docdir/$flangtpl";
     open(FIN, "< $fin") or die "\nError when open < $fin: $!";
     my @content = <FIN>;
     close FIN;
@@ -304,7 +330,7 @@ xxxTABLE_FOOTxxx
     # Read the information related to maintainers into the
     # string using suitable separators -- one line, one language. #{{{
     #
-    $fin = "$docdir/maintainers.txt";
+    $fin = "$docdir/$fmaintainers";
     open(FIN, "< $fin") or die "\nError when open < $fin: $!";
     my @maintainers = <FIN>;
     close FIN;
@@ -374,12 +400,16 @@ xxxTABLE_FOOTxxx
     foreach my $lang (sort keys %language) {
         
         # Read the line with info for the language and separate 
-        # the information of status. #{{{
+        # the status. #{{{
         #
         my @list = split(/<msep\/>/, $language{$lang});
         my $status = shift @list;
         
         my $i = $status =~ s{^Translator$}{up-to-date};
+        
+        if ($i == 0) { 
+            $i = $status =~ s{^TranslatorAdapterCVS}{almost up-to-date};
+        }
         
         if ($i == 0) { 
             $i = $status =~ s{^TranslatorAdapter_(\d)_(\d)_(\d)}
@@ -479,9 +509,9 @@ xxxTABLE_FOOTxxx
     ##}}}
     
     # Finish the tables, and substitute the mark in the doc
-    # template by the contatenation of the tables. Add NOSPAM to
-    # email addresses in the HTML table.  Replace the special
-    # character sequences. #{{{
+    # template by the contatenation of the tables and the notice
+    # about $ftranslatortxt.  Add NOSPAM to email addresses in the
+    # HTML table.  Replace the special character sequences. #{{{
     #
     $tableHTML .= $htmlTableFoot;
     $tableLATEX .= $latexTableFoot;
@@ -493,16 +523,26 @@ xxxTABLE_FOOTxxx
     $tableLATEX =~ s/&aacute;/\\'{a}/sg;
     $tableLATEX =~ s/&auml;/\\"{a}/sg;
     $tableLATEX =~ s/&ouml;/\\"{o}/sg;
+    $tableLATEX =~ s/&oslash;/\\o{}/sg;
     $tableLATEX =~ s/_/\\_/sg;
     
-    $output =~ s{\$information_table}{$tableHTML$tableLATEX};    
+    my $notice = "\nHave a look at <a href=\"../doc/$ftranslatortxt\"\n>"
+               . "<code>doxygen/doc/$ftranslatortxt</code></a> "
+               . "for more details.";
+
+    $output =~ s{\$information_table}{$tableHTML$tableLATEX$notice};
+
+    $output =~ s{\$version}{$doxversion};
+
     ##}}}
 
     # Replace the introduction notice in the output. #{{{
     #
     $output =~ s{<notice>.+?</notice>}
-{Warning: this file was generated from the language.tpl template
- *          Do not edit this file.  Edit the template!}sx;
+{Warning: this file was generated from the $flangtpl template
+ *          and the $fmaintainers files by the $0 script.  
+ *
+ *          Do not edit this file.  Edit the above mentioned files!}sx;
     ##}}}
 
     # Return the content of the generated output file.
@@ -516,6 +556,24 @@ xxxTABLE_FOOTxxx
 # Body
 #
 {
+    # Set the content of global variables using the environment
+    # variables. #{{{
+    #
+    $docdir = (defined $ENV{'DOXYGEN_DOCDIR'}) 
+                ? $ENV{'DOXYGEN_DOCDIR'} : '.';
+    
+    $docdir =~ s{\\}{/}g;
+    $docdir =~ s{/$}{};
+    
+    $doxygenrootdir = ($docdir eq '.') ? '..' : $docdir;
+    $doxygenrootdir =~ s{/doc$}{};
+
+    $srcdir = "$doxygenrootdir/src";
+
+    $doxversion = (defined $ENV{'VERSION'}) ? $ENV{'VERSION'} : 'unknown';
+
+    ##}}}
+    
     # The translator base class must be present.  Exit otherwise. #{{{
     #
     if (!-f "$srcdir/translator.h")
@@ -635,7 +693,7 @@ xxxTABLE_FOOTxxx
     
     # Generate the textual output file.
     #
-    my $fout = "$docdir/$ftxt";
+    my $fout = "$docdir/$ftranslatortxt";
     
     # Open it first.
     #
@@ -655,24 +713,37 @@ xxxTABLE_FOOTxxx
 
     # If there are up-to-date translators, list them.  #{{{
     #
-    my @list = sort grep { $cb{$_} =~ m/^Translator$/ } keys %cb;
+    my @list = sort grep { $cb{$_} =~ m/^Translator(AdapterCVS)?$/ } keys %cb;
     
     if (@list) {
         print FOUT "\n" .'-' x 70 . "\n";
         print FOUT "The following translator classes are up-to-date " 
                  . "(sorted alphabetically).\n"
                  . "This means that they derive from the Translator class.  "
-                 . "However, there still\n" 
-                 . "may be some details listed below "
-                 . "for them.  Please, check it.\n\n";
+                 . "If the translator\n"
+                 . "derives from TranslatorAdapterCVS, it is considered "
+                 . "to be almost up-to-date.\n"
+                 . "In other words, it is newer than the last official "
+                 . "release.  Anyway, there\n"
+                 . "still may be some details listed even for "
+                 . "the up-to-date translators.\n"
+                 . "Please, check the text below.\n\n";
         
-        foreach (@list) { print FOUT "  $_\n"; }
+        foreach (@list) { 
+            print FOUT "  $_";
+            
+            # For almost up-to-date translators, show also the base class.
+            #
+            if ($cb{$_} ne 'Translator') { print FOUT "\t($cb{$_})"; }
+            
+            print FOUT "\n"; 
+        }
     }
     ##}}}
 
     # If there are obsolete translators, list them.  #{{{
     #
-    @list = sort grep { $cb{$_} =~ m/^TranslatorAdapter/ } keys %cb;
+    @list = sort grep { $cb{$_} =~ m/^TranslatorAdapter_/ } keys %cb;
 
     if (@list) {
         print FOUT "\n" .'-' x 70 . "\n";
@@ -732,7 +803,7 @@ xxxTABLE_FOOTxxx
 
     # Generate the language.doc file.  
     #
-    $fout = "$docdir/$fdoc";
+    $fout = "$docdir/$flangdoc";
     
     # Open it first for the output.
     #

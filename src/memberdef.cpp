@@ -1468,8 +1468,12 @@ QCString MemberDef::anchor() const
   return anc;
 }
 
-void MemberDef::setGroupDef(GroupDef *gd)
+void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs)
 {
-  printf("%s MemberDef::setGroupDef(%s)\n",name().data(),gd->name().data());
+  //printf("%s MemberDef::setGroupDef(%s)\n",name().data(),gd->name().data());
   group=gd;
+  grouppri=pri;
+  groupFileName=fileName;
+  groupStartLine=startLine;
+  groupHasDocs=hasDocs;
 }

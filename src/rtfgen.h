@@ -42,7 +42,8 @@ class RTFGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==RTF && active); } 
     OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
-    void startFile(const char *name,const char *title, bool external);
+    void startFile(const char *name,const char *manName,
+                   const char *title, bool external);
     void writeFooter(int,bool) {}
     void endFile();
     void clearBuffer();

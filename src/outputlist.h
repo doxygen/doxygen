@@ -82,8 +82,9 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endProjectNumber); }
     void writeStyleInfo(int part) 
     { forall(&OutputGenerator::writeStyleInfo,part); }
-    void startFile(const char *name,const char *title,bool external)
-    { forall(&OutputGenerator::startFile,name,title,external); }
+    void startFile(const char *name,const char *manName,
+                   const char *title,bool external)
+    { forall(&OutputGenerator::startFile,name,manName,title,external); }
     void writeFooter(int fase,bool external)
     { forall(&OutputGenerator::writeFooter,fase,external); }
     void endFile() 
@@ -458,6 +459,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
+    FORALLPROTO4(const char *,const char *,const char *,bool);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

@@ -37,9 +37,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-#include "translator.h"
-
-class TranslatorDanish : public Translator
+class TranslatorDanish : public TranslatorAdapterCVS
 {
   public:
 
@@ -879,17 +877,17 @@ class TranslatorDanish : public Translator
     {
       return "Hop til denne fils dokumentation.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return "Precondition";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return "Postcondition";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return "Invariant";

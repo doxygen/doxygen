@@ -535,17 +535,17 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     {
       return "Dokumenacija za ovu datoteku.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Preduvjeti";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Postuvjeti";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invarijanta";

@@ -75,7 +75,7 @@ void MemberGroup::insertMember(MemberDef *md)
   GroupDef *gd;
   if (firstMd && (gd=firstMd->getGroupDef()))
   {
-    md->setGroupDef(gd);
+    md->setGroupDef(gd, firstMd->getGroupPri(), firstMd->getGroupFileName(), firstMd->getGroupStartLine(), firstMd->getGroupHasDocs());
     gd->insertMember(md);
   }
 }

@@ -1,14 +1,14 @@
 Name: doxygen
-Version: 1.2.7_20010517
+Version: 1.2.7_20010524
 Summary: documentation system for C, C++ and IDL
-Release: 2
-Source: doxygen_%{version}.src.tar.gz
+Release: 3
+Source: doxygen-%{version}.src.tar.gz
 
 Copyright: GPL
 Group: unsorted
 URL: http://www.stack.nl/~dimitri/doxygen
 Packager: Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
-BuildRoot: /var/tmp/doxygen_%{version}.root
+BuildRoot: /var/tmp/doxygen-%{version}.root
 
 # requires Perl for tmake (Troll's make)
 BuildPrereq: perl tetex
@@ -33,7 +33,7 @@ den Quellen extrahiert. Doxygen wird auf einer Linux-Plattform
 entwickelt, funktioniert aber genauso auf den meisten andern Unix
 Dialekten. Das Programm ist auch für Windows 95/NT erhältlich.
 
-Author:
+Autor:
 --------
     Dimitri van Heesch <dimitri@stack.nl>
 
@@ -41,13 +41,14 @@ Author:
 %setup -n doxygen-%{version}
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix /do_we_need_this_usr --with-doxywizard
+CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install INSTALL=$RPM_BUILD_ROOT/usr DOCDIR=$RPM_BUILD_ROOT%{_docdir}/doxygen
 install -m 644 LICENSE LANGUAGE.HOWTO PLATFORMS README VERSION $RPM_BUILD_ROOT%{_docdir}/doxygen
+find $RPM_BUILD_ROOT -name CVS -type d -depth -exec rm -r {} \;
 
 %files
 %defattr(-,root,root)

@@ -24,7 +24,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_6
 {
   public:
 
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
 
     /*! Used for identification of the language. May resemble
      * the string returned by latexBabelPackage(), but it is not used
@@ -630,9 +630,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_6
       return result;
     }
 
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union
-     */
+    /* these are for the member sections of a class, struct or union */
     virtual QCString trPublicMembers()
     { return "Métodos Públicos"; }
     virtual QCString trPublicSlots()
@@ -653,7 +651,6 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_6
     { return "Slots Privados"; }
     virtual QCString trStaticPrivateMembers()
     { return "Métodos Privados Estáticos"; }
-    /*! \endmgroup */
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -858,17 +855,17 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_6
     {
       return "Vá para a documentação deste arquivo.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return "Pré-Condição";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return "Pós-Condição";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return "Invariável";

@@ -8,16 +8,32 @@
 #include <qlist.h>
 #include <qtextstream.h>
 
-
 /*! \brief Abstract base class for any configuration option.
  *
  */
 class ConfigOption
 {
+    friend class Config;
+
   public:
 
-    enum OptionType { O_Info, O_List, O_Enum, O_String, O_Int, O_Bool };
-    enum { MAX_OPTION_LENGTH = 23 };
+    /*! The type of option */
+    enum OptionType 
+    { 
+      O_Info,      //<! A section header
+      O_List,      //<! A list of items
+      O_Enum,      //<! A fixed set of items
+      O_String,    //<! A single item
+      O_Int,       //<! An integer value
+      O_Bool       //<! A boolean value
+    };
+    enum 
+    { 
+     /*! Maximum length of an option in the config file. Used for 
+      *  alignment purposes.
+      */
+      MAX_OPTION_LENGTH = 23  
+    };
     ConfigOption(OptionType t) : m_kind(t) 
     {
       m_spaces.fill(' ',40);
@@ -25,20 +41,23 @@ class ConfigOption
     virtual ~ConfigOption()
     {
     }
+
+    /*! returns the kind of option this is. */
+    OptionType kind() const { return m_kind; }
+    QCString name() const { return m_name; }
+    QCString docs() const { return m_doc; }
+
+    QCString dependsOn() const { return m_dependency; }
     void addDependency(const char *dep)
     {
       m_dependency = dep;
     }
-    OptionType kind() const { return m_kind; }
+
+  protected:
     virtual void writeTemplate(QTextStream &t,bool sl) = 0;
     virtual void convertStrToVal() {}
     virtual void substEnvVars() {}
     virtual void init() {}
-    QCString name() const { return m_name; }
-    QCString docs() const { return m_doc; }
-    QCString dependsOn() const { return m_dependency; }
-
-  protected:
 
     QCString convertToComment(const QCString &s)
     {
@@ -340,48 +359,90 @@ class ConfigBool : public ConfigOption
  *  The static member instance() can be used to get
  *  a pointer to the one and only instance.
  */
-struct Config
+class Config
 {
   public:
+    /////////////////////////////
+    // public API
+    /////////////////////////////
+
+    /*! Returns the one and only instance of this class */
     static Config *instance()
     {
       if (m_instance==0) m_instance = new Config;
       return m_instance;
     }
     
-    void writeTemplate(QFile *f,bool shortIndex);
-    void convertStrToVal();
-    void substituteEnvironmentVars();
-    void check();
-    void init();
-    void parse(const QCString &config,const char *fn);
+    /*! Returns an iterator that can by used to iterate over the 
+     *  configuration options.
+     */
     QListIterator<ConfigOption> iterator()
     {
       return QListIterator<ConfigOption>(*m_options);
     }
 
-    ////////////////////////
-    // get functions
-    ////////////////////////
+    /*! 
+     *  @name Getting configuration values.
+     *  @{
+     */
+
+    /*! Returns the value of the string option with name \a fileName. 
+     *  The arguments \a num and \a name are for debugging purposes only.
+     *  There is a convenience function Config_getString() for this.
+     */
     QCString &getString(const char *fileName,int num,const char *name) const;
+
+    /*! Returns the value of the list option with name \a fileName. 
+     *  The arguments \a num and \a name are for debugging purposes only.
+     *  There is a convenience function Config_getList() for this.
+     */
     QStrList &getList(const char *fileName,int num,const char *name) const;
+
+    /*! Returns the value of the enum option with name \a fileName. 
+     *  The arguments \a num and \a name are for debugging purposes only.
+     *  There is a convenience function Config_getEnum() for this.
+     */
     QCString &getEnum(const char *fileName,int num,const char *name) const;
+
+    /*! Returns the value of the integer option with name \a fileName. 
+     *  The arguments \a num and \a name are for debugging purposes only.
+     *  There is a convenience function Config_getInt() for this.
+     */
     int      &getInt(const char *fileName,int num,const char *name) const;
+
+    /*! Returns the value of the boolean option with name \a fileName. 
+     *  The arguments \a num and \a name are for debugging purposes only.
+     *  There is a convenience function Config_getBool() for this.
+     */
     bool     &getBool(const char *fileName,int num,const char *name) const;
+
+    /*! Returns the ConfigOption corresponding with \a name or 0 if
+     *  the option is not supported.
+     */
     ConfigOption *get(const char *name) const
     {
       return m_dict->find(name); 
     }
+    /* @} */
 
-    ////////////////////////
-    // add functions
-    ////////////////////////
+    /*! 
+     *  @name Adding configuration options. 
+     *  @{
+     */
+
+    /*! Starts a new configuration section with \a name and description \a doc.
+     *  \returns An object representing the option.
+     */
     ConfigInfo   *addInfo(const char *name,const char *doc)
     {
       ConfigInfo *result = new ConfigInfo(name,doc);
       m_options->append(result);
       return result;
     }
+
+    /*! Adds a new string option with \a name and documentation \a doc.
+     *  \returns An object representing the option.
+     */
     ConfigString *addString(const char *name,
                             const char *doc)
     {
@@ -390,6 +451,11 @@ struct Config
       m_dict->insert(name,result);
       return result;
     }
+
+    /*! Adds a new enumeration option with \a name and documentation \a doc
+     *  and initial value \a defVal. 
+     *  \returns An object representing the option.
+     */
     ConfigEnum   *addEnum(const char *name,
                           const char *doc,
                           const char *defVal)
@@ -399,6 +465,10 @@ struct Config
       m_dict->insert(name,result);
       return result;
     }
+
+    /*! Adds a new string option with \a name and documentation \a doc.
+     *  \returns An object representing the option.
+     */
     ConfigList   *addList(const char *name,
                           const char *doc)
     {
@@ -407,6 +477,12 @@ struct Config
       m_dict->insert(name,result);
       return result;
     }
+
+    /*! Adds a new integer option with \a name and documentation \a doc.
+     *  The integer has a range between \a minVal and \a maxVal and a
+     *  default value of \a defVal.
+     *  \returns An object representing the option.
+     */
     ConfigInt    *addInt(const char *name,
                          const char *doc,
                          int minVal,int maxVal,int defVal)
@@ -416,6 +492,11 @@ struct Config
       m_dict->insert(name,result);
       return result;
     }
+
+    /*! Adds a new boolean option with \a name and documentation \a doc.
+     *  The boolean has a default value of \a defVal.
+     *  \returns An object representing the option.
+     */
     ConfigBool   *addBool(const char *name,
                           const char *doc,
                           bool defVal)
@@ -425,6 +506,23 @@ struct Config
       m_dict->insert(name,result);
       return result;
     }
+    /*! @} */
+
+    /*! Writes a template configuration file to \a f. If \a shortIndex
+     *  is \c TRUE the description of each configuration option will
+     *  be omitted.
+     */
+    void writeTemplate(QFile *f,bool shortIndex);
+
+    /////////////////////////////
+    // internal API
+    /////////////////////////////
+
+    void convertStrToVal();
+    void substituteEnvironmentVars();
+    void check();
+    void init();
+    void parse(const QCString &config,const char *fn);
   protected:
     Config()
     { 

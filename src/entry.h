@@ -121,6 +121,53 @@ struct TagInfo
   QCString anchor;
 };
 
+struct Grouping {
+    typedef enum {
+	GROUPING_LOWEST,
+	GROUPING_AUTO_WEAK =
+	   GROUPING_LOWEST,   //!< membership in group was defined via @weakgroup @{ @}
+	GROUPING_AUTO_ADD,    //!< membership in group was defined via @add[to]group @{ @}
+	GROUPING_AUTO_DEF,    //!< membership in group was defined via @defgroup @{ @}
+        GROUPING_AUTO_HIGHEST =
+           GROUPING_AUTO_DEF,
+	GROUPING_INGROUP,      //!< membership in group was defined by @ingroup
+        GROUPING_HIGHEST =
+	   GROUPING_INGROUP
+    } GroupPri_t;
+
+    static const char *getGroupPriName( GroupPri_t priority )
+    {
+	switch( priority )
+        {
+	case GROUPING_AUTO_WEAK:
+	    return "@weakgroup";
+	    break;
+	case GROUPING_AUTO_ADD:
+	    return "@addtogroup";
+	    break;
+	case GROUPING_AUTO_DEF:
+	    return "@defgroup";
+	    break;
+	case GROUPING_INGROUP:
+	    return "@ingroup";
+	    break;
+	default:
+	    return "???";
+	    break;
+        }	    
+    }
+
+    Grouping( const char *gn, GroupPri_t p ) :
+	groupname(gn),
+            pri(p) {}
+    Grouping( const Grouping &g ) :
+	groupname(g.groupname),
+            pri(g.pri) {}
+    QCString groupname;   //!< name of the group
+    GroupPri_t pri;       //!< priority of this definition
+
+};
+
 /*! \brief Represents an unstructured piece of information, about an
  *         entity found in the sources. 
  *
@@ -176,8 +223,7 @@ class Entry
       MAINPAGEDOC_SEC  = 0x01200000,
       MEMBERGRP_SEC    = 0x01300000,
       USINGDECL_SEC    = 0x01400000,
-      PACKAGE_SEC      = 0x01500000,
-      ADDGRPDOC_SEC    = 0x01600000
+      PACKAGE_SEC      = 0x01500000
     };
     enum MemberSpecifier
     {
@@ -231,8 +277,8 @@ class Entry
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
     QList<Entry>    *sublist; //!< entries that are children of this one
-    QList<BaseInfo> *extends; //!< list of base classes
-    QList<QCString> *groups;  //!< list of groups this entry belongs to
+    QList<BaseInfo> *extends; //!< list of base classes    
+    QList<Grouping> *groups;  //!< list of groups this entry belongs to
     QList<QCString> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
@@ -241,6 +287,47 @@ class Entry
     int         bugId;        //!< id of the bug list item of this entry
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
+    enum {
+	GROUPDOC_NORMAL,      //<! @defgroup
+	GROUPDOC_ADD,         //<! @addgroup
+	GROUPDOC_WEAK         //<! @weakgroup
+    } groupdoctype;           //!< kind of group
+    /// return the command name used to define GROUPDOC_SEC
+    const char *groupdoccmd() const
+    {
+	switch( this->groupdoctype ) {
+	case GROUPDOC_NORMAL:
+	    return "\\defgroup";
+	    break;
+	case GROUPDOC_ADD:
+	    return "\\addgroup";
+	    break;
+	case GROUPDOC_WEAK:
+	    return "\\weakgroup";
+	    break;
+	default:
+	    return "unknown group command";
+	}
+    }
+    Grouping::GroupPri_t groupingpri() const
+    {
+	if( this->section != GROUPDOC_SEC ) {
+	    return Grouping::GROUPING_LOWEST;
+	}
+        switch( this->groupdoctype ) {
+	case GROUPDOC_NORMAL:
+	    return Grouping::GROUPING_AUTO_DEF;
+	    break;
+	case GROUPDOC_ADD:
+	    return Grouping::GROUPING_AUTO_ADD;
+	    break;
+	case GROUPDOC_WEAK:
+	    return Grouping::GROUPING_AUTO_WEAK;
+	    break;
+	default:
+	    return Grouping::GROUPING_LOWEST;
+	}
+    }
   private:
     Entry &operator=(const Entry &); 
 } ;

@@ -1,4 +1,1 @@
-:start
-call perl -w translator.pl
-pause
-goto start
+@call perl -w translator.pl

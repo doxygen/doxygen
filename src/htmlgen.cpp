@@ -101,7 +101,7 @@ static void writeDefaultHeaderFile(QTextStream &t,const char *title,
                                    bool external)
 {
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
-    "<html><head><meta name=\"robots\" content=\"noindex\">\n"
+    "<html><head>" /*"<meta name=\"robots\" content=\"noindex\">\n"*/
     "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
          << theTranslator->idLanguageCharset() << "\">\n"
     "<title>" << title << "</title>\n";
@@ -151,7 +151,8 @@ void HtmlGenerator::writeFooterFile(QFile &file)
 }
 
 
-void HtmlGenerator::startFile(const char *name,const char *title,bool external)
+void HtmlGenerator::startFile(const char *name,const char *,
+                              const char *title,bool external)
 {
   QCString fileName=name;
   lastTitle=title;

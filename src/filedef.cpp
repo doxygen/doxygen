@@ -117,7 +117,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   //printf("WriteDocumentation diskname=%s\n",diskname.data());
   
   QCString pageTitle=name()+" File Reference";
-  startFile(ol,getOutputFileBase(),pageTitle);
+  startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trFileReference(docname));
   endTitle(ol,getOutputFileBase(),docName());
@@ -393,7 +393,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   // write Author section (Man only)
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
   ol.enableAll();
@@ -411,7 +411,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 void FileDef::writeSource(OutputList &ol)
 {
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,getSourceFileBase(),docname+" Source File");
+  startFile(ol,getSourceFileBase(),0,docname+" Source File");
   startTitle(ol,0);
   parseText(ol,docname);
   endTitle(ol,0,0);
