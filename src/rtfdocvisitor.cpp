@@ -25,6 +25,7 @@
 #include "dot.h"
 #include "util.h"
 #include "rtfstyle.h"
+#include "message.h"
 
 RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(0) 
@@ -38,6 +39,16 @@ QCString RTFDocVisitor::getStyle(const char *name)
   StyleData *sd = rtf_Style[n];
   ASSERT(sd!=0);
   return sd->reference;
+}
+
+void RTFDocVisitor::incIndentLevel()
+{
+  if (m_indentLevel<rtf_maxIndentLevels-1) m_indentLevel++;
+}
+
+void RTFDocVisitor::decIndentLevel()
+{
+  if (m_indentLevel>0) m_indentLevel--;
 }
 
   //--------------------------------------
@@ -179,7 +190,7 @@ void RTFDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Szlig:   m_t << "\337"; break;
     case DocSymbol::Nbsp:    m_t << "\\~ "; break;
     default:
-                             printf("Error: unknown symbol found\n");
+                             err("Error: unknown symbol found\n");
   }
 }
 
@@ -188,12 +199,19 @@ void RTFDocVisitor::visit(DocURL *u)
   if (m_hide) return;
   if (Config_getBool("RTF_HYPERLINKS"))
   {
-    m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
+    m_t << "{\\field "
+             "{\\*\\fldinst "
+               "{ HYPERLINK  \\\\l \"";
     m_t << u->url();
-    m_t << "\" }{}";
-    m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
+    m_t <<  "\" }"
+               "{}";
+    m_t <<   "}"
+             "{\\fldrslt "
+               "{\\cs37\\ul\\cf2 ";
     filter(u->url());
-    m_t << "}}}" << endl;
+    m_t <<     "}"
+             "}"
+           "}" << endl;
   }
   else
   {
@@ -277,12 +295,21 @@ void RTFDocVisitor::visit(DocVerbatim *s)
 void RTFDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "\\label{" << anc->anchor() << "}" << endl;
-  if (!anc->file().isEmpty() && Config_getBool("PDF_HYPERLINKS")) 
+  QCString anchor;
+  if (!anc->file().isEmpty())
   {
-    m_t << "\\hypertarget{" << anc->file() << "_" << anc->anchor() 
-      << "}{}" << endl;
-  }    
+    anchor+=anc->file();
+  }
+  if (!anc->file().isEmpty() && !anc->anchor().isEmpty())
+  {
+    anchor+="_";
+  }
+  if (!anc->anchor().isEmpty())
+  {
+    anchor+=anc->anchor();
+  }
+  m_t << "{\\bkmkstart " << rtfFormatBmkStr(anchor) << "}" << endl;
+  m_t << "{\\bkmkend " << rtfFormatBmkStr(anchor) << "}" << endl;
 }
 
 void RTFDocVisitor::visit(DocInclude *inc)
@@ -291,18 +318,24 @@ void RTFDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::Include: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "{" << endl;
+      m_t << "\\par" << endl;
+      m_t << rtf_Style_Reset << getStyle("CodeExample");
       parseCode(m_ci,inc->context(),inc->text(),FALSE,0);
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\par" << endl; 
+      m_t << "}" << endl;
       break;
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "{" << endl;
+      m_t << "\\par" << endl;
+      m_t << rtf_Style_Reset << getStyle("CodeExample");
       m_t << inc->text();
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\par" << endl; 
+      m_t << "}" << endl;
       break;
   }
 }
@@ -313,7 +346,9 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+    m_t << "{" << endl;
+    m_t << "\\par" << endl;
+    m_t << rtf_Style_Reset << getStyle("CodeExample");
     m_hide = TRUE;
   }
   if (op->type()!=DocIncOperator::Skip) 
@@ -323,7 +358,8 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     m_hide = FALSE;
-    m_t << "\\end{verbatim}\\normalsize" << endl; 
+    m_t << "\\par" << endl; 
+    m_t << "}" << endl;
   }
   else
   {
@@ -334,7 +370,13 @@ void RTFDocVisitor::visit(DocIncOperator *op)
 void RTFDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
+  // TODO: do something sensible here, like including a bitmap
   m_t << f->text();
+}
+
+void RTFDocVisitor::visit(DocIndexEntry *i)
+{
+  m_t << "{\\xe \\v " << i->entry() << "}" << endl;
 }
 
 //--------------------------------------
@@ -343,31 +385,33 @@ void RTFDocVisitor::visit(DocFormula *f)
 
 void RTFDocVisitor::visitPre(DocAutoList *l)
 {
-  if (l->isEnumList())
-  {
-    m_t << "\\begin{enumerate}" << endl;
-  }
-  else
-  {
-    m_t << "\\begin{itemize}" << endl;
-  }
+  m_t << "{" << endl;
+  incIndentLevel();
+  rtf_listItemInfo[m_indentLevel].isEnum = l->isEnumList();
+  rtf_listItemInfo[m_indentLevel].number = 1;
 }
 
-void RTFDocVisitor::visitPost(DocAutoList *l)
+void RTFDocVisitor::visitPost(DocAutoList *)
 {
-  if (l->isEnumList())
-  {
-    m_t << "\\end{enumerate}" << endl;
-  }
-  else
-  {
-    m_t << "\\end{itemize}" << endl;
-  }
+  m_t << "\\par" << endl;
+  m_t << "}" << endl;
+  decIndentLevel();
 }
 
 void RTFDocVisitor::visitPre(DocAutoListItem *)
 {
-  m_t << "\\item ";
+  m_t << "\\par" << endl;
+  m_t << rtf_Style_Reset;
+  if (rtf_listItemInfo[m_indentLevel].isEnum)
+  {
+    m_t << getStyle("ListEnum") << endl;
+    m_t << rtf_listItemInfo[m_indentLevel].number << ".\\tab ";
+    rtf_listItemInfo[m_indentLevel].number++;
+  }
+  else
+  {
+    m_t << getStyle("ListBullet") << endl;
+  }
 }
 
 void RTFDocVisitor::visitPost(DocAutoListItem *) 
@@ -384,7 +428,7 @@ void RTFDocVisitor::visitPost(DocPara *p)
       !(p->parent() &&           // and for parameter sections
         p->parent()->kind()==DocNode::Kind_ParamSect
        )
-     ) m_t << endl << endl;
+     ) m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocRoot *)
@@ -397,7 +441,8 @@ void RTFDocVisitor::visitPost(DocRoot *)
 
 void RTFDocVisitor::visitPre(DocSimpleSect *s)
 {
-  m_t << "\\begin{Desc}\n\\item[";
+  m_t << "{"; // start desc
+  m_t << "{\\b "; // start bold
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -435,13 +480,18 @@ void RTFDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User)
   {
-    m_t << ":]";
+    m_t << ":}"; // end bold
+    m_t << "\\par" << endl;
+    incIndentLevel();
+    m_t << rtf_Style_Reset << getStyle("DescContinue");
   }
 }
 
 void RTFDocVisitor::visitPost(DocSimpleSect *)
 {
-  m_t << "\\end{Desc}" << endl;
+  m_t << "\\par" << endl;
+  decIndentLevel();
+  m_t << "}"; // end desc
 }
 
 void RTFDocVisitor::visitPre(DocTitle *)
@@ -450,22 +500,29 @@ void RTFDocVisitor::visitPre(DocTitle *)
 
 void RTFDocVisitor::visitPost(DocTitle *)
 {
-  m_t << "]";
+  m_t << "}"; // end bold
+  m_t << "\\par" << endl;
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue");
 }
 
 void RTFDocVisitor::visitPre(DocSimpleList *)
 {
-  m_t << "\\begin{itemize}" << endl;
+  m_t << "{" << endl;
+  incIndentLevel();
+  rtf_listItemInfo[m_indentLevel].isEnum = FALSE;
 }
 
 void RTFDocVisitor::visitPost(DocSimpleList *)
 {
-  m_t << "\\end{itemize}" << endl;
+  decIndentLevel();
+  m_t << "\\par" << endl;
+  m_t << "}" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocSimpleListItem *)
 {
-  m_t << "\\item ";
+  m_t << "\\par" << rtf_Style_Reset << getStyle("ListBullet") << endl;
 }
 
 void RTFDocVisitor::visitPost(DocSimpleListItem *) 
@@ -474,59 +531,53 @@ void RTFDocVisitor::visitPost(DocSimpleListItem *)
 
 void RTFDocVisitor::visitPre(DocSection *s)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
-  }
-  if (s->level()==1)
-  {
-    if (Config_getBool("COMPACT_LATEX"))
-    {
-      m_t << "\\subsubsection{";
-    }
-    else
-    {
-      m_t << "\\subsection{";
-    }
-  }
-  else if (s->level()==2)
-  {
-    if (Config_getBool("COMPACT_LATEX"))
-    {
-      m_t << "\\paragraph{";
-    }
-    else
-    {
-      m_t << "\\subsubsection{";
-    }
-  }
+  m_t << "{" // start section
+      << rtf_Style_Reset;
+  QCString heading;
+  int level = QMIN(s->level()+2,4);
+  heading.sprintf("Heading%d",level);
+  // set style
+  m_t << rtf_Style[heading]->reference;
+  // make table of contents entry
+  m_t << "{\\tc\\tcl" << level << " \\v ";
   filter(s->title());
-  m_t << "}\\label{" << s->anchor() << "}" << endl;
+  m_t << "}" << endl;
 }
 
 void RTFDocVisitor::visitPost(DocSection *) 
 {
+  m_t << "\\par" << endl;
+  m_t << "}"; // end section
 }
 
-void RTFDocVisitor::visitPre(DocHtmlList *s)
+void RTFDocVisitor::visitPre(DocHtmlList *l)
 {
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\begin{enumerate}" << endl; 
-  else 
-    m_t << "\\begin{itemize}" << endl;
+  m_t << "{" << endl;
+  incIndentLevel();
+  rtf_listItemInfo[m_indentLevel].isEnum = l->type()==DocHtmlList::Ordered; 
+  rtf_listItemInfo[m_indentLevel].number = 1;
 }
 
-void RTFDocVisitor::visitPost(DocHtmlList *s) 
+void RTFDocVisitor::visitPost(DocHtmlList *) 
 {
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\end{enumerate}" << endl; 
-  else 
-    m_t << "\\end{itemize}" << endl;
+  m_t << "\\par" << endl << "}" << endl;
+  decIndentLevel();
 }
 
 void RTFDocVisitor::visitPre(DocHtmlListItem *)
 {
-  m_t << "\\item ";
+  m_t << "\\par" << endl;
+  m_t << rtf_Style_Reset;
+  if (rtf_listItemInfo[m_indentLevel].isEnum)
+  {
+    m_t << getStyle("ListEnum") << endl;
+    m_t << rtf_listItemInfo[m_indentLevel].number << ".\\tab ";
+    rtf_listItemInfo[m_indentLevel].number++;
+  }
+  else
+  {
+    m_t << getStyle("ListBullet") << endl;
+  }
 }
 
 void RTFDocVisitor::visitPost(DocHtmlListItem *) 
@@ -535,34 +586,41 @@ void RTFDocVisitor::visitPost(DocHtmlListItem *)
 
 void RTFDocVisitor::visitPre(DocHtmlPre *)
 {
-  m_t << "\\small\\begin{alltt}";
+  m_t << "{" << endl;
+  m_t << "\\par" << endl;
+  m_t << rtf_Style_Reset << getStyle("CodeExample");
   m_insidePre=TRUE;
 }
 
 void RTFDocVisitor::visitPost(DocHtmlPre *) 
 {
   m_insidePre=FALSE;
-  m_t << "\\end{alltt}\\normalsize " << endl;
+  m_t << "\\par" << endl; 
+  m_t << "}" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocHtmlDescList *)
 {
-  m_t << "\\begin{description}" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset << getStyle("ListContinue");
 }
 
 void RTFDocVisitor::visitPost(DocHtmlDescList *) 
 {
-  m_t << "\\end{description}" << endl;
+  m_t << "}" << endl;
+  m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocHtmlDescTitle *)
 {
-  m_t << "\\item[";
+  m_t << "\\par" << endl;
+  m_t << "{\\b ";
 }
 
 void RTFDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
-  m_t << "]";
+  m_t << "}" << endl;
+  m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocHtmlDescData *)
@@ -573,173 +631,163 @@ void RTFDocVisitor::visitPost(DocHtmlDescData *)
 {
 }
 
-void RTFDocVisitor::visitPre(DocHtmlTable *t)
+void RTFDocVisitor::visitPre(DocHtmlTable *)
 {
-  if (t->hasCaption()) 
-  {
-    m_t << "\\begin{table}[h]";
-  }
-  m_t << "\\begin{TabularC}{" << t->numCols() << "}\n\\hline\n";
+  m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPost(DocHtmlTable *t) 
 {
-  if (t->hasCaption())
+  if (!t->hasCaption())
   {
-    m_t << "\\end{table}\n";
+    m_t << endl; 
+    m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
+    m_t << "{\\row }" << endl;
   }
-  else
-  {
-    m_t << "\\\\\\hline\n\\end{TabularC}\n";
-  }
+  m_t << "\\pard" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocHtmlCaption *)
 {
-  m_t << "\\\\\\hline\n\\end{TabularC}\n\\centering\n\\caption{";
 }
 
 void RTFDocVisitor::visitPost(DocHtmlCaption *) 
 {
-  m_t << "}\n";
 }
 
-void RTFDocVisitor::visitPre(DocHtmlRow *)
+void RTFDocVisitor::visitPre(DocHtmlRow *r)
 {
+  uint i,columnWidth=rtf_pageWidth/r->numCells();
+  m_t << "\\trowd \\trgaph108\\trleft-108"
+         "\\trbrdrt\\brdrs\\brdrw10 "
+         "\\trbrdrl\\brdrs\\brdrw10 "
+         "\\trbrdrb\\brdrs\\brdrw10 "
+         "\\trbrdrr\\brdrs\\brdrw10 "
+         "\\trbrdrh\\brdrs\\brdrw10 "
+         "\\trbrdrv\\brdrs\\brdrw10 "<< endl;
+  for (i=0;i<r->numCells();i++)
+  {
+    m_t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 "
+           "\\clbrdrl\\brdrs\\brdrw10 "
+           "\\clbrdrb\\brdrs\\brdrw10 "
+           "\\clbrdrr \\brdrs\\brdrw10 "
+           "\\cltxlrtb "
+           "\\cellx" << (i*columnWidth) << endl;
+  }
+  m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
 }
 
 void RTFDocVisitor::visitPost(DocHtmlRow *) 
 {
-  m_t << "\\\\\\hline\n";
+  m_t << endl;
+  m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
+  m_t << "{\\row }" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocHtmlCell *)
 {
+  m_t << "{";
 }
 
-void RTFDocVisitor::visitPost(DocHtmlCell *c) 
+void RTFDocVisitor::visitPost(DocHtmlCell *) 
 {
-  if (!c->isLast()) m_t << "&";
-}
-
-void RTFDocVisitor::visitPre(DocIndexEntry *)
-{
-  m_hide = TRUE;
-}
-
-void RTFDocVisitor::visitPost(DocIndexEntry *) 
-{
-  m_hide = FALSE;
+  m_t << "\\cell }";
 }
 
 void RTFDocVisitor::visitPre(DocInternal *)
 {
-  m_t << "\\begin{Desc}" << endl 
-    << "\\item[" << theTranslator->trForInternalUseOnly() << "]" << endl;
+  m_t << "{"; // start desc
+  m_t << "{\\b "; // start bold
+  m_t << theTranslator->trForInternalUseOnly();
+  m_t << "}"; // end bold
+  m_t << "\\par" << endl;
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue");
 }
 
 void RTFDocVisitor::visitPost(DocInternal *) 
 {
-  m_t << "\\end{Desc}" << endl;
+  m_t << "\\par" << endl;
+  decIndentLevel();
+  m_t << "}"; // end desc
 }
 
 void RTFDocVisitor::visitPre(DocHRef *href)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
-    m_t << "\\href{";
-    m_t << href->url();
-    m_t << "}";
+    m_t << "{\\field "
+             "{\\*\\fldinst "
+               "{ HYPERLINK  \\\\l \"" << href->url() << "\" "
+               "}{}"
+             "}"
+             "{\\fldrslt "
+               "{\\cs37\\ul\\cf2 ";
+
   }
-  m_t << "{\\tt ";
+  else
+  {
+    m_t << "{\\f2 ";
+  }
 }
 
 void RTFDocVisitor::visitPost(DocHRef *) 
 {
-  m_t << "}";
+  if (Config_getBool("RTF_HYPERLINKS"))
+  { 
+    m_t <<     "}"
+             "}"
+           "}";
+  }
+  else
+  {
+    m_t << "}";
+  }
 }
 
 void RTFDocVisitor::visitPre(DocHtmlHeader *header)
 {
-  if (Config_getBool("COMPACT_LATEX"))
-  {
-    switch(header->level())
-    {
-      case 1: m_t << "\\subsection{"; break;
-      case 2: m_t << "\\subsubsection{"; break;
-      case 3: m_t << "\\paragraph{"; break;
-    }
-  }
-  else
-  {
-    switch(header->level())
-    {
-      case 1: m_t << "\\section{"; break;
-      case 2: m_t << "\\subsection{"; break;
-      case 3: m_t << "\\subsubsection{"; break;
-    }
-  }
+  m_t << "{" // start section
+      << rtf_Style_Reset;
+  QCString heading;
+  int level = QMIN(header->level()+2,4);
+  heading.sprintf("Heading%d",level);
+  // set style
+  m_t << rtf_Style[heading]->reference;
+  // make table of contents entry
+  m_t << "{\\tc\\tcl \\v " << level << "}";
+  
 }
 
 void RTFDocVisitor::visitPost(DocHtmlHeader *) 
 {
-  m_t << "}";
+  m_t << "\\par" << endl;
+  m_t << "}" << endl; // end section
 }
 
 void RTFDocVisitor::visitPre(DocImage *img)
 {
-  if (img->type()==DocImage::Latex)
+  if (img->type()==DocImage::Rtf)
   {
-    if (img->hasCaption())
-    {
-      m_t << "\\begin{figure}[H]" << endl;
-      m_t << "\\begin{center}" << endl;
-    }
-    else
-    {
-      m_t << "\\mbox{";
-    }
-    QCString gfxName = img->name();
-    if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
-    {
-      gfxName=gfxName.left(gfxName.length()-4);
-    }
-    m_t << "\\includegraphics";
-    if (!img->width().isEmpty())
-    {
-      m_t << "[width=" << img->width() << "]";
-    }
-    else if (!img->height().isEmpty())
-    {
-      m_t << "[height=" << img->height() << "]";
-    }
-    m_t << "{" << gfxName << "}";
-    if (img->hasCaption())
-    {
-      m_t << "\\caption{";
-    }
+    m_t << "\\par" << endl;
+    m_t << "{" << endl;
+    m_t << rtf_Style_Reset << endl;
+    m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+    m_t << img->name();
+    m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+    m_t << "}" << endl;
+
   }
   else // other format -> skip
   {
-    m_hide=TRUE;
   }
+  // hide caption since it is not supported at the moment
+  m_hide=TRUE;
 }
 
-void RTFDocVisitor::visitPost(DocImage *img) 
+void RTFDocVisitor::visitPost(DocImage *) 
 {
-  if (img->type()==DocImage::Latex)
-  {
-    m_t << "}" << endl; // end mbox or caption
-    if (img->hasCaption())
-    {
-      m_t << "\\end{center}" << endl;
-      m_t << "\\end{figure}" << endl;
-    }
-  }
-  else // other format
-  {
-    m_hide=FALSE;
-  }
+  m_hide=FALSE;
 }
 
 void RTFDocVisitor::visitPre(DocDotFile *df)
@@ -750,46 +798,23 @@ void RTFDocVisitor::visitPre(DocDotFile *df)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
-  QCString outDir = Config_getString("LATEX_OUTPUT");
-  writeDotGraphFromFile(df->file(),outDir,baseName,EPS);
-  if (df->hasCaption())
-  {
-    m_t << "\\begin{figure}[H]" << endl;
-    m_t << "\\begin{center}" << endl;
-  }
-  else
-  {
-    m_t << "\\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!df->width().isEmpty())
-  {
-    m_t << "[width=" << df->width() << "]";
-  }
-  else if (!df->height().isEmpty())
-  {
-    m_t << "[height=" << df->height() << "]";
-  }
-  m_t << "{" << baseName << "}";
+  QCString outDir = Config_getString("RTF_OUTPUT");
+  writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
+  m_t << "\\par" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset << endl;
+  m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  m_t << outDir << "\\" << baseName;
+  m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "}" << endl;
 
-  if (df->hasCaption())
-  {
-    m_t << "\\caption{";
-  }
+  // hide caption since it is not supported at the moment
+  m_hide=TRUE;
 }
 
-void RTFDocVisitor::visitPost(DocDotFile *df) 
+void RTFDocVisitor::visitPost(DocDotFile *) 
 {
-  m_t << "}" << endl; // end mbox or caption
-  if (df->hasCaption())
-  {
-    m_t << "\\end{center}" << endl;
-    m_t << "\\end{figure}" << endl;
-  }
+  m_hide=FALSE;
 }
 
 void RTFDocVisitor::visitPre(DocLink *lnk)
@@ -814,28 +839,28 @@ void RTFDocVisitor::visitPost(DocRef *ref)
   m_t << " ";
 }
 
+
 void RTFDocVisitor::visitPre(DocSecRefItem *)
 {
-  m_t << "\\item \\contentsline{section}{";
 }
 
-void RTFDocVisitor::visitPost(DocSecRefItem *ref) 
+void RTFDocVisitor::visitPost(DocSecRefItem *) 
 {
-  m_t << "}{\\ref{" << ref->anchor() << "}}{}" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocSecRefList *)
 {
-  m_t << "\\footnotesize" << endl;
-  m_t << "\\begin{multicols}{2}" << endl;
-  m_t << "\\begin{CompactList}" << endl;
+  m_t << "{" << endl;
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("LatexTOC") << endl;
+  m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPost(DocSecRefList *) 
 {
-  m_t << "\\end{CompactList}" << endl;
-  m_t << "\\end{multicols}" << endl;
-  m_t << "\\normalsize" << endl;
+  decIndentLevel();
+  m_t << "\\par" << endl;
+  m_t << "}";
 }
 
 void RTFDocVisitor::visitPre(DocLanguage *)
@@ -848,8 +873,9 @@ void RTFDocVisitor::visitPost(DocLanguage *)
 
 void RTFDocVisitor::visitPre(DocParamSect *s)
 {
-  m_t << "\\begin{Desc}" << endl;
-  m_t << "\\item[";
+  m_t << "{"; // start param list
+  m_t << "{\\b "; // start bold
+  m_t << "\\par" << endl;
   switch(s->type())
   {
     case DocParamSect::Param: 
@@ -861,19 +887,22 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << ":]" << endl;
-  m_t << "\\begin{description}" << endl;
+  m_t << ":}" << endl;
+  m_t << "\\par" << endl;
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue");
 }
 
 void RTFDocVisitor::visitPost(DocParamSect *)
 {
-  m_t << "\\end{description}" << endl;
-  m_t << "\\end{Desc}" << endl;
+  m_t << "\\par" << endl;
+  decIndentLevel();
+  m_t << "}" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocParamList *pl)
 {
-  m_t << "\\item[{\\em ";
+  m_t << "{\\i ";
   QStrListIterator li(pl->parameters());
   const char *s;
   bool first=TRUE;
@@ -882,32 +911,60 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     m_t << s;
   }
-  m_t << "}]";
+  m_t << "} ";
 }
 
 void RTFDocVisitor::visitPost(DocParamList *)
 {
+  m_t << "\\par" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocXRefItem *x)
 {
-  m_t << "\\begin{Desc}" << endl;
-  m_t << "\\item[";
-  if (Config_getBool("PDF_HYPERLINKS"))
+  m_t << "{"; // start param list
+  m_t << "{\\b "; // start bold
+  m_t << "\\par" << endl;
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
-    m_t << "\\hyperlink{" << x->file() << "_" << x->anchor() << "}{";
+    QCString refName;
+    if (!x->file().isEmpty())
+    {
+      refName+=x->file();
+    }
+    if (!x->file().isEmpty() && !x->anchor().isEmpty())
+    {
+      refName+="_";
+    }
+    if (!x->anchor().isEmpty())
+    {
+      refName+=x->anchor();
+    }
+
+    m_t << "{\\field "
+             "{\\*\\fldinst "
+               "{ HYPERLINK  \\\\l \"" << refName << "\" "
+               "}{}"
+             "}"
+             "{\\fldrslt "
+               "{\\cs37\\ul\\cf2 ";
+    filter(x->title());
+    m_t <<     "}"
+             "}"
+           "}";
   }
   else
   {
-    m_t << "{\\bf ";
+    filter(x->title());
   }
-  filter(x->title());
-  m_t << "}]";
+  m_t << "}"; // end bold
+  m_t << "\\par" << endl;
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue");
 }
 
 void RTFDocVisitor::visitPost(DocXRefItem *)
 {
-  m_t << "\\end{Desc}" << endl;
+  m_t << "}" << endl; // end param list
 }
 
 void RTFDocVisitor::visitPre(DocInternalRef *ref)

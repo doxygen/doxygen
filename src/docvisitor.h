@@ -87,6 +87,7 @@ class DocVisitor
     virtual void visit(DocIncOperator *) = 0;
     virtual void visit(DocFormula *) = 0;
     virtual void visit(DocLinkedWord *) = 0;
+    virtual void visit(DocIndexEntry *) = 0;
 
     /*! @name Visitor functions for internal nodes */
     virtual void visitPre(DocAutoList *) = 0;
@@ -127,8 +128,6 @@ class DocVisitor
     virtual void visitPost(DocHtmlTable *) = 0;
     virtual void visitPre(DocHtmlCaption *) = 0;
     virtual void visitPost(DocHtmlCaption *) = 0;
-    virtual void visitPre(DocIndexEntry *) = 0;
-    virtual void visitPost(DocIndexEntry *) = 0;
     virtual void visitPre(DocInternal *) = 0;
     virtual void visitPost(DocInternal *) = 0;
     virtual void visitPre(DocHRef *) = 0;

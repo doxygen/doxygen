@@ -33,6 +33,8 @@
 #include "page.h"
 #include "filename.h"
 #include "version.h"
+#include "xmldocvisitor.h"
+#include "docparser.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -47,39 +49,59 @@
 // debug inside output
 //#define XML_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
-QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
-{
-  switch (t)
-  {
-    case BaseOutputDocInterface::See:         return "see";
-    case BaseOutputDocInterface::Return:      return "return";
-    case BaseOutputDocInterface::Author:      return "author";
-    case BaseOutputDocInterface::Version:     return "version";
-    case BaseOutputDocInterface::Since:       return "since";
-    case BaseOutputDocInterface::Date:        return "date";
-    case BaseOutputDocInterface::Bug:         return "bug";
-    case BaseOutputDocInterface::Note:        return "note";
-    case BaseOutputDocInterface::Warning:     return "warning";
-    case BaseOutputDocInterface::Par:         return "par";
-    case BaseOutputDocInterface::Deprecated:  return "deprecated";
-    case BaseOutputDocInterface::Pre:         return "pre";
-    case BaseOutputDocInterface::Post:        return "post";
-    case BaseOutputDocInterface::Invar:       return "invariant";
-    case BaseOutputDocInterface::Remark:      return "remark";
-    case BaseOutputDocInterface::Attention:   return "attention";
-    case BaseOutputDocInterface::Todo:        return "todo";
-    case BaseOutputDocInterface::Test:        return "test";
-    case BaseOutputDocInterface::RCS:         return "rcs";
-    case BaseOutputDocInterface::EnumValues:  return "enumvalues";
-    case BaseOutputDocInterface::Examples:    return "examples";
-  }
-  return "illegal";
-}
+// static QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
+// {
+//   switch (t)
+//   {
+//     case BaseOutputDocInterface::See:         return "see";
+//     case BaseOutputDocInterface::Return:      return "return";
+//     case BaseOutputDocInterface::Author:      return "author";
+//     case BaseOutputDocInterface::Version:     return "version";
+//     case BaseOutputDocInterface::Since:       return "since";
+//     case BaseOutputDocInterface::Date:        return "date";
+//     case BaseOutputDocInterface::Bug:         return "bug";
+//     case BaseOutputDocInterface::Note:        return "note";
+//     case BaseOutputDocInterface::Warning:     return "warning";
+//     case BaseOutputDocInterface::Par:         return "par";
+//     case BaseOutputDocInterface::Deprecated:  return "deprecated";
+//     case BaseOutputDocInterface::Pre:         return "pre";
+//     case BaseOutputDocInterface::Post:        return "post";
+//     case BaseOutputDocInterface::Invar:       return "invariant";
+//     case BaseOutputDocInterface::Remark:      return "remark";
+//     case BaseOutputDocInterface::Attention:   return "attention";
+//     case BaseOutputDocInterface::Todo:        return "todo";
+//     case BaseOutputDocInterface::Test:        return "test";
+//     case BaseOutputDocInterface::RCS:         return "rcs";
+//     case BaseOutputDocInterface::EnumValues:  return "enumvalues";
+//     case BaseOutputDocInterface::Examples:    return "examples";
+//   }
+//   return "illegal";
+// }
 
 
 inline void writeXMLString(QTextStream &t,const char *s)
 {
   t << convertToXML(s);
+}
+
+static void writeXMLHeader(QTextStream &t)
+{
+  QCString dtdName = Config_getString("XML_DTD");
+  QCString schemaName = Config_getString("XML_SCHEMA");
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='";
+  if (dtdName.isEmpty() && schemaName.isEmpty()) t << "yes"; else t << "no";
+  t << "'?>" << endl;
+  if (!dtdName.isEmpty())
+  {
+    t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
+  }
+  t << "<doxygen ";
+  if (!schemaName.isEmpty())
+  {
+    t << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+    t << "xsi:noNamespaceSchemaLocation=\"doxygen.xsd\" ";
+  }
+  t << "version=\"" << versionString << "\">" << endl;
 }
 
 void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
@@ -168,683 +190,86 @@ template<class T> class ValStack
     int m_size;
 };
 
-/*! This class is used by the documentation parser.
- *  Its methods are called when some XML text or markup
- *  needs to be written.
- */
-class XMLGenerator : public OutputDocInterface
+
+class XMLCodeGenerator : public BaseCodeDocInterface
 {
   public:
 
-    // helper functions
+    XMLCodeGenerator(QTextStream &t) : m_t(t), m_lineNumber(-1),
+      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), 
+      m_insideSpecialHL(FALSE) {}
+    virtual ~XMLCodeGenerator() {}
     
-    void startParMode()
+    void codify(const char *text) 
     {
-      if (!m_inParStack.isEmpty() && !m_inParStack.top())
+      XML_DB(("(codify \"%s\")\n",text));
+      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
       {
-        m_inParStack.top() = TRUE;
-        m_t << "<para>";
-        XML_DB(("start par at level=%d\n",m_inParStack.count()));
+        m_t << "<highlight class=\"normal\">";
+        m_normalHLNeedStartTag=FALSE;
       }
-      else if (m_inParStack.isEmpty())
-      {
-        m_inParStack.push(TRUE);
-        m_t << "<para>";
-        XML_DB(("start par at level=%d\n",m_inParStack.count()));
-      }
-    }
-    void endParMode()
-    {
-      if (!m_inParStack.isEmpty() && m_inParStack.top())
-      {
-        m_inParStack.top() = FALSE;
-        m_t << "</para>" << endl;
-        XML_DB(("end par at level=%d\n",m_inParStack.count()));
-      }
-    }
-    void startNestedPar()
-    {
-      m_inParStack.push(FALSE);
-      XML_DB(("enter par level=%d\n",m_inParStack.count()));
-    }
-    void endNestedPar()
-    {
-      XML_DB(("leave par level=%d\n",m_inParStack.count()));
-      if (m_inParStack.pop())
-      {
-        m_t << "</para>" << endl;
-      }
-      else
-      {
-        //XML_DB(("ILLEGAL par level!\n"));
-      }
-    }
-  
-    // Standard generator functions to be implemented by all generators
-
-    void docify(const char *s) 
-    {
-      if (m_outputEnabled)
-      {
-        XML_DB(("(docify \"%s\")\n",s));
-        startParMode();
-        writeXMLString(m_t,s);
-      }
-    }
-    void writeChar(char c) 
-    {
-      char s[2];s[0]=c;s[1]=0;
-      docify(s);
-    }
-    void writeString(const char *text) 
-    {
-      //m_t << text;
-      docify(text);
-    }
-    void startItemList()       
-    { 
-      XML_DB(("(startItemList)\n"));
-      startParMode();
-      m_t << "<itemizedlist>" << endl;; 
-      m_inListStack.push(TRUE);
-    }
-    void startEnumList()       
-    { 
-      XML_DB(("(startEnumList)\n"));
-      startParMode();
-      m_t << "<orderedlist>"; 
-      m_inListStack.push(TRUE);
-    }
-    void writeListItem()       
-    { 
-      XML_DB(("(writeListItem)\n"));
-      if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
-      {
-        m_inListStack.top()=FALSE;
-      }
-      else // not first element, end previous element first
-      {
-        endParMode();
-        endNestedPar();
-        m_t << "</listitem>" << endl; 
-      }
-      m_t << "<listitem>"; 
-      startNestedPar();
-    }
-    void endItemList()         
-    {
-      XML_DB(("(endItemList)\n"));
-      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
-      {
-        endParMode(); 
-        endNestedPar();
-        m_t << "</listitem>" << endl; 
-      }
-      m_t << "</itemizedlist>" << endl; 
-    }
-    void endEnumList()         
-    { 
-      XML_DB(("(endEnumList)\n"));
-      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
-      {
-        endParMode(); 
-        m_t << "</listitem>" << endl; 
-        endNestedPar(); 
-      }
-      m_t << "</orderedlist>" << endl; 
-    }
-    void newParagraph()        
-    { 
-      XML_DB(("(newParagraph)\n"));
-      endParMode();
-      startParMode();
-    }
-    void startBold()           
-    { 
-      XML_DB(("(startBold)\n"));
-      startParMode();
-      m_t << "<bold>"; // non DocBook
-    }
-    void endBold()             
-    { 
-      XML_DB(("(endBold)\n"));
-      m_t << "</bold>"; // non DocBook
-    }
-    void startTypewriter()     
-    { 
-      XML_DB(("(startTypewriter)\n"));
-      startParMode();
-      m_t << "<computeroutput>";
-    }
-    void endTypewriter()       
-    { 
-      XML_DB(("(endTypewriter)\n"));
-      m_t << "</computeroutput>";
-    }
-    void startEmphasis()       
-    { 
-      XML_DB(("(startEmphasis)\n"));
-      startParMode();
-      m_t << "<emphasis>";
-    }
-    void endEmphasis()         
-    { 
-      XML_DB(("(endEmphasis)\n"));
-      m_t << "</emphasis>";
-    }
-    void startCodeFragment()   
-    { 
-      XML_DB(("(startCodeFragment)\n"));
-      startParMode();
-      m_t << "<programlisting>";
-    }
-    void endCodeFragment()     
-    { 
-      XML_DB(("(endCodeFragment)\n"));
-      m_t << "</programlisting>"; 
-    }
-    void startPreFragment()    
-    { 
-      XML_DB(("(startPreFragment)\n"));
-      startParMode();
-      m_t << "<preformatted>";
-    }
-    void endPreFragment()      
-    { 
-      XML_DB(("(endPreFragment)\n"));
-      m_t << "</preformatted>"; 
-    }
-    void startVerbatimFragment()    
-    { 
-      XML_DB(("(startVerbatimFragment)\n"));
-      startParMode();
-      m_t << "<preformatted>";
-    }
-    void endVerbatimFragment()      
-    { 
-      XML_DB(("(endVerbatimFragment)\n"));
-      m_t << "</preformatted>"; 
-    }
-    void writeRuler()          
-    { 
-      XML_DB(("(startParMode)\n"));
-      startParMode();
-      m_t << "<hruler/>"; 
-    }
-    void startDescription()    
-    { 
-      XML_DB(("(startDescription)\n"));
-      startParMode();
-      m_t << "<variablelist>"; 
-      m_inListStack.push(TRUE);
-    }
-    void endDescription()      
-    { 
-      XML_DB(("(endDescription)\n"));
-      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
-      {
-        endNestedPar(); 
-        m_t << "</listitem>" << endl; 
-      }
-      m_t << "</variablelist>"; 
-      if (!m_inListStack.isEmpty()) m_inListStack.pop();
-    }
-    void startDescItem()       
-    { 
-      XML_DB(("(startDescItem)\n"));
-      if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
-      {
-        m_inListStack.top()=FALSE;
-      }
-      else // not first element, end previous element first
-      {
-        endNestedPar();
-        m_t << "</listitem>"; 
-      }
-      m_t << "<varlistentry><term>"; 
-    }
-    void endDescItem()         
-    { 
-      XML_DB(("(endDescItem)\n"));
-      m_t << "</term></varlistentry><listitem>"; 
-      startNestedPar();
-    }
-    void startDescList(SectionTypes st)       
-    { 
-      XML_DB(("(startDescList)\n"));
-      endParMode();
-      m_t << "<simplesect kind=\"" << sectionTypeToString(st);
-      m_t << "\"><title>"; 
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-    }
-    void endDescList()         
-    { 
-      XML_DB(("(endDescList)\n"));
-      endNestedPar();
-      m_t << "</simplesect>";
-    }
-    void startSimpleSect(SectionTypes st,const char *,const char *,const char *)
-    {
-      XML_DB(("(startSimpleSect)\n"));
-      m_t << "<simplesect kind=\"" << sectionTypeToString(st) << "\">"; 
-      startNestedPar();
-    }
-    void endSimpleSect()         
-    {
-      XML_DB(("(endSimpleSect)\n"));
-      endNestedPar();
-      m_t << "</simplesect>";
-    }
-    void startParamList(ParamListTypes t,const char *)      
-    { 
-      XML_DB(("(startParamList)\n"));
-      startParMode();
-      QCString kind;
-      switch(t)
-      {
-        case Param:       kind="param";     break;
-        case RetVal:      kind="retval";    break;
-        case Exception:   kind="exception"; break;
-      }
-      m_t << "<parameterlist kind=\"" << kind << "\">"; // non DocBook
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-      m_inParamList = TRUE;
-    }
-    void endParamList()        
-    { 
-      XML_DB(("(endParamList)\n"));
-      m_inParamList = FALSE;
-      m_t << "</parameterlist>";
-    }
-    void endDescTitle()        
-    { 
-      m_inParStack.top() = FALSE;
-      endNestedPar();
-      XML_DB(("(endDescTitle)\n"));
-      m_t << "</title>"; 
-      if (!m_inParamList) startNestedPar();
-    }
-    void writeDescItem()       
-    { 
-      XML_DB(("(writeDescItem)\n"));
-    }
-    void startDescTable()      
-    { 
-      XML_DB(("(startDescTable)\n"));
-    }
-    void endDescTable()        
-    { 
-      XML_DB(("(endDescTable)\n"));
-    }
-    void startDescTableTitle() 
-    { 
-      XML_DB(("(startDescTableTitle)\n"));
-      m_t << "<parametername>"; // non docbook
-    }
-    void endDescTableTitle()   
-    { 
-      XML_DB(("(endDescTableTitle)\n"));
-      m_t << "</parametername>"; // non docbook
-    }
-    void startDescTableData()  
-    { 
-      XML_DB(("(startDescTableData)\n"));
-      m_t << "<parameterdescription>"; // non docbook
-      startNestedPar();
-    }
-    void endDescTableData()    
-    { 
-      XML_DB(("(endDescTableData)\n"));
-      endNestedPar();
-      m_t << "</parameterdescription>"; // non docbook
-    }
-    void lineBreak()           
-    { 
-      XML_DB(("(lineBreak)\n"));
-      startParMode();
-      m_t << "<linebreak/>"; // non docbook
-    }
-    void writeNonBreakableSpace(int num) 
-    { 
-      XML_DB(("(writeNonBreakableSpace)\n"));
-      int i;for (i=0;i<num;i++) m_t << "&nbsp;"; 
-    }
-    
-    void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor, const char *text) 
-    {
-      XML_DB(("(writeObjectLink)\n"));
-      startParMode();
-      writeXMLLink(m_t,ref,file,anchor,text);
+      writeXMLString(m_t,text);
     }
     void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *text) 
     {
       XML_DB(("(writeCodeLink)\n"));
+      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+      {
+        m_t << "<highlight class=\"normal\">";
+        m_normalHLNeedStartTag=FALSE;
+      }
       writeXMLLink(m_t,ref,file,anchor,text);
-    }
-    void startHtmlLink(const char *url)
-    {
-      XML_DB(("(startHtmlLink)\n"));
-      startParMode();
-      m_t << "<ulink url=\"" << url << "\">";
-    }
-    void endHtmlLink()
-    {
-      XML_DB(("(endHtmlLink)\n"));
-      m_t << "</ulink>";
-    }
-    void writeMailLink(const char *url) 
-    {
-      XML_DB(("(writeMailLink)\n"));
-      startParMode();
-      m_t << "<email>";
-      docify(url); 
-      m_t << "</email>";
-    }
-    void startSection(const char *id,const char *,SectionInfo::SectionType type) 
-    {
-      XML_DB(("(startSection)\n"));
-      endParMode();
-      m_t << "<sect";
-      switch(type)
-      {
-        case SectionInfo::Page:       m_t << "1"; break;
-        case SectionInfo::Section:    m_t << "2"; break;
-        case SectionInfo::Subsection: m_t << "3"; break;
-        default: ASSERT(0); break;
-      }
-      m_t << " id=\"" << id << "\">";
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-    }
-    void endSection(const char *,SectionInfo::SectionType type)
-    {
-      XML_DB(("(endSection)\n"));
-      m_t << "</sect";
-      switch(type)
-      {
-        case SectionInfo::Page:       m_t << "1"; break;
-        case SectionInfo::Section:    m_t << "2"; break;
-        case SectionInfo::Subsection: m_t << "3"; break;
-        default: ASSERT(0); break;
-      }
-      m_t << ">";
-      m_inParStack.top() = FALSE;
-      endNestedPar();
-    }
-    void startSubsection() 
-    {
-      XML_DB(("(startSubsection)\n"));
-      endParMode();
-      m_t << "<sect2>";
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-    }
-    void endSubsection() 
-    {
-      XML_DB(("(endSubsection)\n"));
-      m_t << "</sect2>";
-      m_inParStack.top() = FALSE;
-      endNestedPar();
-    }
-    void startSubsubsection() 
-    {
-      XML_DB(("(startSubsubsection)\n"));
-      endParMode();
-      m_t << "<sect3>";
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-    }
-    void endSubsubsection() 
-    {
-      XML_DB(("(endSubsubsection)\n"));
-      m_t << "</sect3>";
-      m_inParStack.top() = FALSE;
-      endNestedPar();
-    }
-    void startCenter() 
-    {
-      XML_DB(("(startCenter)\n"));
-      startParMode();
-      m_t << "<center>"; // non docbook
-    }
-    void endCenter() 
-    {
-      XML_DB(("(endCenter)\n"));
-      m_t << "</center>"; // non docbook
-    }
-    void startSmall() 
-    {
-      XML_DB(("(startSmall)\n"));
-      startParMode();
-      m_t << "<small>"; // non docbook
-    }
-    void endSmall() 
-    {
-      XML_DB(("(endSmall)\n"));
-      m_t << "</small>"; // non docbook
-    }
-    void startSubscript() 
-    {
-      XML_DB(("(startSubscript)\n"));
-      startParMode();
-      m_t << "<subscript>";
-    }
-    void endSubscript() 
-    {
-      XML_DB(("(endSubscript)\n"));
-      m_t << "</subscript>";
-    }
-    void startSuperscript() 
-    {
-      XML_DB(("(startSuperscript)\n"));
-      startParMode();
-      m_t << "<superscript>";
-    }
-    void endSuperscript() 
-    {
-      XML_DB(("(endSuperscript)\n"));
-      m_t << "</superscript>";
-    }
-    void startTable(bool,int cols) 
-    {
-      XML_DB(("startTable\n"));
-      startParMode();
-      m_t << "<table cols=\"" << cols << "\">\n";
-    }
-    void endTable(bool hasCaption) 
-    {
-      XML_DB(("endTable\n"));
-      if (!hasCaption) m_t << "</row>\n";
-      m_t << "</table>";
-    }
-    void startCaption()
-    {
-      XML_DB(("startCaption"));
-      m_t << "</row><caption>";
-    }
-    void endCaption()
-    {
-      XML_DB(("encCaption"));
-      m_t << "</caption>";
-    }
-    void nextTableRow() 
-    {
-      XML_DB(("(nextTableRow)\n"));
-      m_t << "<row><entry>";
-
-      // we need manually add a para here because cells are
-      // parsed before the table is generated, and thus
-      // are already parsed as if they are inside a paragraph.
-      m_t << "<para>";
-    }
-    void endTableRow() 
-    {
-      XML_DB(("(endTableRow)\n"));
-      m_t << "</row>" << endl;
-    }
-    void nextTableColumn() 
-    {
-      XML_DB(("(nextTableColumn)\n"));
-      m_t << "<entry>";
-      
-      // we need manually add a para here because cells are
-      // parsed before the table is generated, and thus
-      // are already parsed as if they are inside a paragraph.
-      m_t << "<para>";
-    }
-    void endTableColumn() 
-    {
-      XML_DB(("(endTableColumn)\n"));
-      // we need manually add a para here because cells are
-      // parsed before the table is generated, and thus
-      // are already parsed as if they are inside a paragraph.
-      m_t << "</para>";
-      m_t << "</entry>";
-    }
-
-    void writeQuote()         { m_t << "\""; }
-    void writeCopyright()     { m_t << "&copy;"; }
-    void writeUmlaut(char c)  { m_t << "&" << c << "uml;"; }
-    void writeAcute(char c)   { m_t << "&" << c << "acute;"; }
-    void writeGrave(char c)   { m_t << "&" << c << "grave;"; }
-    void writeCirc(char c)    { m_t << "&" << c << "circ;"; }
-    void writeTilde(char c)   { m_t << "&" << c << "tilde;"; }
-    void writeRing(char c)    { m_t << "&" << c << "ring;"; }
-    void writeSharpS()        { m_t << "&szlig;"; }
-    void writeCCedil(char c)  { m_t << "&" << c << "cedil;"; }
-
-    void startTitle() 
-    {
-      XML_DB(("(startTitle)\n"));
-      m_t << "<title>";
-      startNestedPar();
-      m_inParStack.top() = TRUE;
-    }
-    void endTitle()   
-    {
-      m_inParStack.top() = FALSE;
-      endNestedPar();
-      XML_DB(("(endTitle)\n"));
-      m_t << "</title>" << endl;
-    }
-    void writeAnchor(const char *id,const char *name) 
-    {
-      XML_DB(("(writeAnchor)\n"));
-      startParMode();
-      m_t << "<anchor id=\"" << id << "_1" << name << "\"/>";
-    }
-    void writeSectionRef(const char *,const char *id,
-                         const char *name,const char *text) 
-    {
-      XML_DB(("(writeSectionRef)\n"));
-      startParMode();
-      m_t << "<link linkend=\"" << id << "_1" << name << "\">";
-      docify(text);
-      m_t << "</link>";
-    }
-    void writeSectionRefItem(const char *,const char *,const char *) 
-    {
-      m_t << "(writeSectionRefItem)";
-    }
-    void addIndexItem(const char *primaryie,const char *secondaryie) 
-    {
-      XML_DB(("(addIndexItem)\n"));
-      startParMode();
-      m_t << "<indexentry><primaryie>";
-      docify(primaryie);
-      m_t << "</primaryie><secondaryie>";
-      docify(secondaryie);
-      m_t << "</secondaryie></indexentry>";
-    }
-    void writeFormula(const char *id,const char *text) 
-    {
-      XML_DB(("(writeFormula)\n"));
-      startParMode();
-      m_t << "<formula id=\"" << id << "\">"; // non Docbook
-      docify(text);
-      m_t << "</formula>";
-    }
-    void startImage(const char *name,const char *size,bool /*caption*/) 
-    {
-      XML_DB(("(startImage)\n"));
-      startParMode();
-      m_t << "<image name=\"" << name << "\"";
-      if (size) m_t << " size=\"" << size << "\"";
-      m_t << ">"; // non docbook 
-    }
-    void endImage(bool) 
-    {
-      XML_DB(("(endImage)\n"));
-      m_t << "</image>";
-    }
-    void startDotFile(const char *name,bool /*caption*/) 
-    {
-      XML_DB(("(startDotFile)\n"));
-      startParMode();
-      m_t << "<dotfile name=\"" << name << "\">"; // non docbook 
-    }
-    void endDotFile(bool) 
-    {
-      XML_DB(("(endDotFile)\n"));
-      m_t << "</dotfile>";
-    }
-    void startTextLink(const char *name,const char *anchor) 
-    {
-      XML_DB(("(startTextLink)\n"));
-      startParMode();
-      m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
-    }
-    void endTextLink() 
-    {
-      XML_DB(("(endTextLink)\n"));
-      m_t << "</ulink>";
-    }
-    void startPageRef() 
-    {
-      XML_DB(("(startPageRef)\n"));
-      m_outputEnabled = FALSE;
-    }
-    void endPageRef(const char *,const char *) 
-    {
-      XML_DB(("(endPageRef)\n"));
-      m_outputEnabled = TRUE;
-    }
-    void writeLineNumber(const char *extRef,const char *compId,
-                         const char *anchorId,int l)
-    {
-      XML_DB(("(writeLineNumber)\n"));
-      m_t << "<linenumber";
-      m_t << " line=\"" << l << "\"";
-      if (compId)
-      {
-        m_t << " refid=\"" << compId;
-        if (anchorId) m_t << "_1" << anchorId; 
-        m_t << "\" kindref=\"";
-        if (anchorId) m_t << "member"; else m_t << "compound"; 
-        m_t << "\"";
-        if (extRef) m_t << " external=\"" << extRef << "\"";
-      }
-      m_t << "/>";
     }
     void startCodeLine() 
     {
       XML_DB(("(startCodeLine)\n"));
-      startParMode();
-      m_t << "<codeline>"; // non DocBook
+      m_t << "<codeline";
+      if (m_lineNumber!=-1)
+      {
+        m_t << " lineno=\"" << m_lineNumber << "\"";
+        if (!m_refId.isEmpty())
+        {
+          m_t << " refid=\"" << m_refId << "\"";
+          if (m_isMemberRef)
+          {
+            m_t << " refkind=\"member\"";
+          }
+          else
+          {
+            m_t << " refkind=\"compound\"";
+          }
+        }
+        if (!m_external.isEmpty())
+        {
+          m_t << " external=\"" << m_external << "\"";
+        }
+      }
+      m_t << ">"; 
+      m_insideCodeLine=TRUE;
     }
     void endCodeLine() 
     {
       XML_DB(("(endCodeLine)\n"));
+      if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
+      {
+        m_t << "</highlight>";
+        m_normalHLNeedStartTag=TRUE;
+      }
       m_t << "</codeline>" << endl; // non DocBook
+      m_lineNumber = -1;
+      m_refId.resize(0);
+      m_external.resize(0);
+      m_insideCodeLine=FALSE;
     }
     void startCodeAnchor(const char *id) 
     {
       XML_DB(("(startCodeAnchor)\n"));
-      startParMode();
+      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
+      {
+        m_t << "<highlight class=\"normal\">";
+        m_normalHLNeedStartTag=FALSE;
+      }
       m_t << "<anchor id=\"" << id << "\">";
     }
     void endCodeAnchor() 
@@ -855,133 +280,866 @@ class XMLGenerator : public OutputDocInterface
     void startFontClass(const char *colorClass) 
     {
       XML_DB(("(startFontClass)\n"));
+      if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
+      {
+        m_t << "</highlight>";
+        m_normalHLNeedStartTag=TRUE;
+      }
       m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
+      m_insideSpecialHL=TRUE;
     }
     void endFontClass()
     {
       XML_DB(("(endFontClass)\n"));
       m_t << "</highlight>"; // non DocBook
-    }
-    void codify(const char *text) 
-    {
-      XML_DB(("(codify \"%s\")\n",text));
-      docify(text);
-    }
-    void startHtmlOnly()  
-    {
-      XML_DB(("(startHtmlOnly)\n"));
-      m_t << "<htmlonly>" << endl;
-    }
-    void endHtmlOnly()    
-    {
-      XML_DB(("(endHtmlOnly)\n"));
-      m_t << "</htmlonly>" << endl;
-    }
-    void startLatexOnly() 
-    {
-      XML_DB(("(startLatexOnly)\n"));
-      m_t << "<latexonly>" << endl;
-    }
-    void endLatexOnly()   
-    {
-      XML_DB(("(endLatexOnly)\n"));
-      m_t << "</latexonly>" << endl;
-    }
-    void startSectionRefList()
-    {
-      XML_DB(("(startSectionRefList)\n"));
-    }
-    void endSectionRefList()
-    {
-      XML_DB(("(endSectionRefList)\n"));
+      m_insideSpecialHL=FALSE;
     }
     void writeCodeAnchor(const char *)
     {
       XML_DB(("(writeCodeAnchor)\n"));
     }
-    
-    // Generator specific functions
-    
-    /*! Create a clone of this generator. Uses the copy constructor */
-    OutputDocInterface *clone() 
+    void writeLineNumber(const char *extRef,const char *compId,
+                         const char *anchorId,int l)
     {
-      return new XMLGenerator(this);
+      XML_DB(("(writeLineNumber)\n"));
+      // we remember the information provided here to use it 
+      // at the <codeline> start tag.
+      m_lineNumber = l;
+      if (compId)
+      {
+        m_refId=compId;
+        if (anchorId) m_refId+=(QCString)"_1"+anchorId;
+        m_isMemberRef = anchorId!=0;
+        if (extRef) m_external=extRef;
+      }
     }
-    /*! Append the output written to generator \a g to this generator */
-    void append(const OutputDocInterface *g) 
-    {
-      const XMLGenerator *xg = (const XMLGenerator *)g;
 
-      //printf("Appending \n>>>>\n`%s'\n<<<<\n and \n>>>>\n`%s'\n<<<<\n",getContents().data(),xg->getContents().data());
-      m_t << xg->getContents();
-      m_inParStack  = xg->m_inParStack;
-      m_inListStack = xg->m_inListStack;
-      m_inParamList = xg->m_inParamList;
-    }
-    /*! constructor. 
-     */
-    XMLGenerator() 
-    {
-      m_b.setBuffer(m_a);
-      m_b.open( IO_WriteOnly );
-      m_t.setDevice(&m_b);
-      m_t.setEncoding(QTextStream::Latin1);
-      m_inParamList = FALSE;
-      m_outputEnabled = TRUE;
-    }
-    /*! copy constructor */
-    XMLGenerator(const XMLGenerator *xg)
-    {
-      m_b.setBuffer(m_a);
-      m_b.open( IO_WriteOnly );
-      m_t.setDevice(&m_b);
-      m_t.setEncoding(QTextStream::Latin1);
-
-      //printf("Cloning >>%s<< m_parStack.count()=%d\n",
-      //    xg->getContents().data(),xg->m_inParStack.count());
-       
-      // copy state variables
-      m_inParStack  = xg->m_inParStack;
-      m_inListStack = xg->m_inListStack;
-      m_inParamList = xg->m_inParamList;
-      m_outputEnabled = xg->m_outputEnabled;
-    } 
-    /*! destructor */
-    virtual ~XMLGenerator()
-    {
-    }
-    /*! Returns the output written to this generator as a string */
-    QCString getContents() const
-    {
-      QCString s;
-      s.resize(m_a.size()+1);
-      memcpy(s.data(),m_a.data(),m_a.size());
-      s.at(m_a.size())='\0';
-      return s;
-    }
-    
   private:
-    // only one destination stream, so these do not have to be implemented
-    void pushGeneratorState() {}
-    void popGeneratorState() {}
-    void disableAllBut(OutputGenerator::OutputType) {}
-    void enableAll() {}
-    void disableAll() {}
-    void disable(OutputGenerator::OutputType) {}
-    void enable(OutputGenerator::OutputType) {}
-    bool isEnabled(OutputGenerator::OutputType) { return TRUE; }
+    QTextStream &m_t;  
+    QCString m_refId;
+    QCString m_external;
+    int m_lineNumber;
+    bool m_isMemberRef;
 
-    QTextStream m_t;  
-    QByteArray m_a;
-    QBuffer m_b;
-    
-    ValStack<bool> m_inParStack;  
-    ValStack<bool> m_inListStack;
-    bool m_inParamList;
-    bool m_outputEnabled;
-    
-    friend void writeXMLCodeBlock(QTextStream &t,FileDef *fd);
+    bool m_insideCodeLine;
+    bool m_normalHLNeedStartTag;
+    bool m_insideSpecialHL;
 };
+
+// /*! This class is used by the documentation parser.
+//  *  Its methods are called when some XML text or markup
+//  *  needs to be written.
+//  */
+// class XMLGenerator : public OutputDocInterface
+// {
+//   public:
+// 
+//     // helper functions
+//     
+//     void startParMode()
+//     {
+//       if (!m_inParStack.isEmpty() && !m_inParStack.top())
+//       {
+//         m_inParStack.top() = TRUE;
+//         m_t << "<para>";
+//         XML_DB(("start par at level=%d\n",m_inParStack.count()));
+//       }
+//       else if (m_inParStack.isEmpty())
+//       {
+//         m_inParStack.push(TRUE);
+//         m_t << "<para>";
+//         XML_DB(("start par at level=%d\n",m_inParStack.count()));
+//       }
+//     }
+//     void endParMode()
+//     {
+//       if (!m_inParStack.isEmpty() && m_inParStack.top())
+//       {
+//         m_inParStack.top() = FALSE;
+//         m_t << "</para>" << endl;
+//         XML_DB(("end par at level=%d\n",m_inParStack.count()));
+//       }
+//     }
+//     void startNestedPar()
+//     {
+//       m_inParStack.push(FALSE);
+//       XML_DB(("enter par level=%d\n",m_inParStack.count()));
+//     }
+//     void endNestedPar()
+//     {
+//       XML_DB(("leave par level=%d\n",m_inParStack.count()));
+//       if (m_inParStack.pop())
+//       {
+//         m_t << "</para>" << endl;
+//       }
+//       else
+//       {
+//         //XML_DB(("ILLEGAL par level!\n"));
+//       }
+//     }
+//   
+//     // Standard generator functions to be implemented by all generators
+// 
+//     void docify(const char *s) 
+//     {
+//       if (m_outputEnabled)
+//       {
+//         XML_DB(("(docify \"%s\")\n",s));
+//         startParMode();
+//         writeXMLString(m_t,s);
+//       }
+//     }
+//     void writeChar(char c) 
+//     {
+//       char s[2];s[0]=c;s[1]=0;
+//       docify(s);
+//     }
+//     void writeString(const char *text) 
+//     {
+//       //m_t << text;
+//       docify(text);
+//     }
+//     void startItemList()       
+//     { 
+//       XML_DB(("(startItemList)\n"));
+//       startParMode();
+//       m_t << "<itemizedlist>" << endl;; 
+//       m_inListStack.push(TRUE);
+//     }
+//     void startEnumList()       
+//     { 
+//       XML_DB(("(startEnumList)\n"));
+//       startParMode();
+//       m_t << "<orderedlist>"; 
+//       m_inListStack.push(TRUE);
+//     }
+//     void writeListItem()       
+//     { 
+//       XML_DB(("(writeListItem)\n"));
+//       if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
+//       {
+//         m_inListStack.top()=FALSE;
+//       }
+//       else // not first element, end previous element first
+//       {
+//         endParMode();
+//         endNestedPar();
+//         m_t << "</listitem>" << endl; 
+//       }
+//       m_t << "<listitem>"; 
+//       startNestedPar();
+//     }
+//     void endItemList()         
+//     {
+//       XML_DB(("(endItemList)\n"));
+//       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+//       {
+//         endParMode(); 
+//         endNestedPar();
+//         m_t << "</listitem>" << endl; 
+//       }
+//       m_t << "</itemizedlist>" << endl; 
+//     }
+//     void endEnumList()         
+//     { 
+//       XML_DB(("(endEnumList)\n"));
+//       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+//       {
+//         endParMode(); 
+//         m_t << "</listitem>" << endl; 
+//         endNestedPar(); 
+//       }
+//       m_t << "</orderedlist>" << endl; 
+//     }
+//     void newParagraph()        
+//     { 
+//       XML_DB(("(newParagraph)\n"));
+//       endParMode();
+//       startParMode();
+//     }
+//     void startBold()           
+//     { 
+//       XML_DB(("(startBold)\n"));
+//       startParMode();
+//       m_t << "<bold>"; // non DocBook
+//     }
+//     void endBold()             
+//     { 
+//       XML_DB(("(endBold)\n"));
+//       m_t << "</bold>"; // non DocBook
+//     }
+//     void startTypewriter()     
+//     { 
+//       XML_DB(("(startTypewriter)\n"));
+//       startParMode();
+//       m_t << "<computeroutput>";
+//     }
+//     void endTypewriter()       
+//     { 
+//       XML_DB(("(endTypewriter)\n"));
+//       m_t << "</computeroutput>";
+//     }
+//     void startEmphasis()       
+//     { 
+//       XML_DB(("(startEmphasis)\n"));
+//       startParMode();
+//       m_t << "<emphasis>";
+//     }
+//     void endEmphasis()         
+//     { 
+//       XML_DB(("(endEmphasis)\n"));
+//       m_t << "</emphasis>";
+//     }
+//     void startCodeFragment()   
+//     { 
+//       XML_DB(("(startCodeFragment)\n"));
+//       startParMode();
+//       m_t << "<programlisting>";
+//     }
+//     void endCodeFragment()     
+//     { 
+//       XML_DB(("(endCodeFragment)\n"));
+//       m_t << "</programlisting>"; 
+//     }
+//     void startPreFragment()    
+//     { 
+//       XML_DB(("(startPreFragment)\n"));
+//       startParMode();
+//       m_t << "<preformatted>";
+//     }
+//     void endPreFragment()      
+//     { 
+//       XML_DB(("(endPreFragment)\n"));
+//       m_t << "</preformatted>"; 
+//     }
+//     void startVerbatimFragment()    
+//     { 
+//       XML_DB(("(startVerbatimFragment)\n"));
+//       startParMode();
+//       m_t << "<preformatted>";
+//     }
+//     void endVerbatimFragment()      
+//     { 
+//       XML_DB(("(endVerbatimFragment)\n"));
+//       m_t << "</preformatted>"; 
+//     }
+//     void writeRuler()          
+//     { 
+//       XML_DB(("(startParMode)\n"));
+//       startParMode();
+//       m_t << "<hruler/>"; 
+//     }
+//     void startDescription()    
+//     { 
+//       XML_DB(("(startDescription)\n"));
+//       startParMode();
+//       m_t << "<variablelist>"; 
+//       m_inListStack.push(TRUE);
+//     }
+//     void endDescription()      
+//     { 
+//       XML_DB(("(endDescription)\n"));
+//       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+//       {
+//         endNestedPar(); 
+//         m_t << "</listitem>" << endl; 
+//       }
+//       m_t << "</variablelist>"; 
+//       if (!m_inListStack.isEmpty()) m_inListStack.pop();
+//     }
+//     void startDescItem()       
+//     { 
+//       XML_DB(("(startDescItem)\n"));
+//       if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
+//       {
+//         m_inListStack.top()=FALSE;
+//       }
+//       else // not first element, end previous element first
+//       {
+//         endNestedPar();
+//         m_t << "</listitem>"; 
+//       }
+//       m_t << "<varlistentry><term>"; 
+//     }
+//     void endDescItem()         
+//     { 
+//       XML_DB(("(endDescItem)\n"));
+//       m_t << "</term></varlistentry><listitem>"; 
+//       startNestedPar();
+//     }
+//     void startDescList(SectionTypes st)       
+//     { 
+//       XML_DB(("(startDescList)\n"));
+//       endParMode();
+//       m_t << "<simplesect kind=\"" << sectionTypeToString(st);
+//       m_t << "\"><title>"; 
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//     }
+//     void endDescList()         
+//     { 
+//       XML_DB(("(endDescList)\n"));
+//       endNestedPar();
+//       m_t << "</simplesect>";
+//     }
+//     void startSimpleSect(SectionTypes st,const char *,const char *,const char *)
+//     {
+//       XML_DB(("(startSimpleSect)\n"));
+//       m_t << "<simplesect kind=\"" << sectionTypeToString(st) << "\">"; 
+//       startNestedPar();
+//     }
+//     void endSimpleSect()         
+//     {
+//       XML_DB(("(endSimpleSect)\n"));
+//       endNestedPar();
+//       m_t << "</simplesect>";
+//     }
+//     void startParamList(ParamListTypes t,const char *)      
+//     { 
+//       XML_DB(("(startParamList)\n"));
+//       startParMode();
+//       QCString kind;
+//       switch(t)
+//       {
+//         case Param:       kind="param";     break;
+//         case RetVal:      kind="retval";    break;
+//         case Exception:   kind="exception"; break;
+//       }
+//       m_t << "<parameterlist kind=\"" << kind << "\">"; // non DocBook
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//       m_inParamList = TRUE;
+//     }
+//     void endParamList()        
+//     { 
+//       XML_DB(("(endParamList)\n"));
+//       m_inParamList = FALSE;
+//       m_t << "</parameterlist>";
+//     }
+//     void endDescTitle()        
+//     { 
+//       m_inParStack.top() = FALSE;
+//       endNestedPar();
+//       XML_DB(("(endDescTitle)\n"));
+//       m_t << "</title>"; 
+//       if (!m_inParamList) startNestedPar();
+//     }
+//     void writeDescItem()       
+//     { 
+//       XML_DB(("(writeDescItem)\n"));
+//     }
+//     void startDescTable()      
+//     { 
+//       XML_DB(("(startDescTable)\n"));
+//     }
+//     void endDescTable()        
+//     { 
+//       XML_DB(("(endDescTable)\n"));
+//     }
+//     void startDescTableTitle() 
+//     { 
+//       XML_DB(("(startDescTableTitle)\n"));
+//       m_t << "<parametername>"; // non docbook
+//     }
+//     void endDescTableTitle()   
+//     { 
+//       XML_DB(("(endDescTableTitle)\n"));
+//       m_t << "</parametername>"; // non docbook
+//     }
+//     void startDescTableData()  
+//     { 
+//       XML_DB(("(startDescTableData)\n"));
+//       m_t << "<parameterdescription>"; // non docbook
+//       startNestedPar();
+//     }
+//     void endDescTableData()    
+//     { 
+//       XML_DB(("(endDescTableData)\n"));
+//       endNestedPar();
+//       m_t << "</parameterdescription>"; // non docbook
+//     }
+//     void lineBreak()           
+//     { 
+//       XML_DB(("(lineBreak)\n"));
+//       startParMode();
+//       m_t << "<linebreak/>"; // non docbook
+//     }
+//     void writeNonBreakableSpace(int num) 
+//     { 
+//       XML_DB(("(writeNonBreakableSpace)\n"));
+//       int i;for (i=0;i<num;i++) m_t << "&nbsp;"; 
+//     }
+//     
+//     void writeObjectLink(const char *ref,const char *file,
+//                          const char *anchor, const char *text) 
+//     {
+//       XML_DB(("(writeObjectLink)\n"));
+//       startParMode();
+//       writeXMLLink(m_t,ref,file,anchor,text);
+//     }
+//     void writeCodeLink(const char *ref,const char *file,
+//                                const char *anchor,const char *text) 
+//     {
+//       XML_DB(("(writeCodeLink)\n"));
+//       writeXMLLink(m_t,ref,file,anchor,text);
+//     }
+//     void startHtmlLink(const char *url)
+//     {
+//       XML_DB(("(startHtmlLink)\n"));
+//       startParMode();
+//       m_t << "<ulink url=\"" << url << "\">";
+//     }
+//     void endHtmlLink()
+//     {
+//       XML_DB(("(endHtmlLink)\n"));
+//       m_t << "</ulink>";
+//     }
+//     void writeMailLink(const char *url) 
+//     {
+//       XML_DB(("(writeMailLink)\n"));
+//       startParMode();
+//       m_t << "<email>";
+//       docify(url); 
+//       m_t << "</email>";
+//     }
+//     void startSection(const char *id,const char *,SectionInfo::SectionType type) 
+//     {
+//       XML_DB(("(startSection)\n"));
+//       endParMode();
+//       m_t << "<sect";
+//       switch(type)
+//       {
+//         case SectionInfo::Page:       m_t << "1"; break;
+//         case SectionInfo::Section:    m_t << "2"; break;
+//         case SectionInfo::Subsection: m_t << "3"; break;
+//         default: ASSERT(0); break;
+//       }
+//       m_t << " id=\"" << id << "\">";
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//     }
+//     void endSection(const char *,SectionInfo::SectionType type)
+//     {
+//       XML_DB(("(endSection)\n"));
+//       m_t << "</sect";
+//       switch(type)
+//       {
+//         case SectionInfo::Page:       m_t << "1"; break;
+//         case SectionInfo::Section:    m_t << "2"; break;
+//         case SectionInfo::Subsection: m_t << "3"; break;
+//         default: ASSERT(0); break;
+//       }
+//       m_t << ">";
+//       m_inParStack.top() = FALSE;
+//       endNestedPar();
+//     }
+//     void startSubsection() 
+//     {
+//       XML_DB(("(startSubsection)\n"));
+//       endParMode();
+//       m_t << "<sect2>";
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//     }
+//     void endSubsection() 
+//     {
+//       XML_DB(("(endSubsection)\n"));
+//       m_t << "</sect2>";
+//       m_inParStack.top() = FALSE;
+//       endNestedPar();
+//     }
+//     void startSubsubsection() 
+//     {
+//       XML_DB(("(startSubsubsection)\n"));
+//       endParMode();
+//       m_t << "<sect3>";
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//     }
+//     void endSubsubsection() 
+//     {
+//       XML_DB(("(endSubsubsection)\n"));
+//       m_t << "</sect3>";
+//       m_inParStack.top() = FALSE;
+//       endNestedPar();
+//     }
+//     void startCenter() 
+//     {
+//       XML_DB(("(startCenter)\n"));
+//       startParMode();
+//       m_t << "<center>"; // non docbook
+//     }
+//     void endCenter() 
+//     {
+//       XML_DB(("(endCenter)\n"));
+//       m_t << "</center>"; // non docbook
+//     }
+//     void startSmall() 
+//     {
+//       XML_DB(("(startSmall)\n"));
+//       startParMode();
+//       m_t << "<small>"; // non docbook
+//     }
+//     void endSmall() 
+//     {
+//       XML_DB(("(endSmall)\n"));
+//       m_t << "</small>"; // non docbook
+//     }
+//     void startSubscript() 
+//     {
+//       XML_DB(("(startSubscript)\n"));
+//       startParMode();
+//       m_t << "<subscript>";
+//     }
+//     void endSubscript() 
+//     {
+//       XML_DB(("(endSubscript)\n"));
+//       m_t << "</subscript>";
+//     }
+//     void startSuperscript() 
+//     {
+//       XML_DB(("(startSuperscript)\n"));
+//       startParMode();
+//       m_t << "<superscript>";
+//     }
+//     void endSuperscript() 
+//     {
+//       XML_DB(("(endSuperscript)\n"));
+//       m_t << "</superscript>";
+//     }
+//     void startTable(bool,int cols) 
+//     {
+//       XML_DB(("startTable\n"));
+//       startParMode();
+//       m_t << "<table cols=\"" << cols << "\">\n";
+//     }
+//     void endTable(bool hasCaption) 
+//     {
+//       XML_DB(("endTable\n"));
+//       if (!hasCaption) m_t << "</row>\n";
+//       m_t << "</table>";
+//     }
+//     void startCaption()
+//     {
+//       XML_DB(("startCaption"));
+//       m_t << "</row><caption>";
+//     }
+//     void endCaption()
+//     {
+//       XML_DB(("encCaption"));
+//       m_t << "</caption>";
+//     }
+//     void nextTableRow() 
+//     {
+//       XML_DB(("(nextTableRow)\n"));
+//       m_t << "<row><entry>";
+// 
+//       // we need manually add a para here because cells are
+//       // parsed before the table is generated, and thus
+//       // are already parsed as if they are inside a paragraph.
+//       m_t << "<para>";
+//     }
+//     void endTableRow() 
+//     {
+//       XML_DB(("(endTableRow)\n"));
+//       m_t << "</row>" << endl;
+//     }
+//     void nextTableColumn() 
+//     {
+//       XML_DB(("(nextTableColumn)\n"));
+//       m_t << "<entry>";
+//       
+//       // we need manually add a para here because cells are
+//       // parsed before the table is generated, and thus
+//       // are already parsed as if they are inside a paragraph.
+//       m_t << "<para>";
+//     }
+//     void endTableColumn() 
+//     {
+//       XML_DB(("(endTableColumn)\n"));
+//       // we need manually add a para here because cells are
+//       // parsed before the table is generated, and thus
+//       // are already parsed as if they are inside a paragraph.
+//       m_t << "</para>";
+//       m_t << "</entry>";
+//     }
+// 
+//     void writeQuote()         { m_t << "\""; }
+//     void writeCopyright()     { m_t << "&copy;"; }
+//     void writeUmlaut(char c)  { m_t << "&" << c << "uml;"; }
+//     void writeAcute(char c)   { m_t << "&" << c << "acute;"; }
+//     void writeGrave(char c)   { m_t << "&" << c << "grave;"; }
+//     void writeCirc(char c)    { m_t << "&" << c << "circ;"; }
+//     void writeTilde(char c)   { m_t << "&" << c << "tilde;"; }
+//     void writeRing(char c)    { m_t << "&" << c << "ring;"; }
+//     void writeSharpS()        { m_t << "&szlig;"; }
+//     void writeCCedil(char c)  { m_t << "&" << c << "cedil;"; }
+// 
+//     void startTitle() 
+//     {
+//       XML_DB(("(startTitle)\n"));
+//       m_t << "<title>";
+//       startNestedPar();
+//       m_inParStack.top() = TRUE;
+//     }
+//     void endTitle()   
+//     {
+//       m_inParStack.top() = FALSE;
+//       endNestedPar();
+//       XML_DB(("(endTitle)\n"));
+//       m_t << "</title>" << endl;
+//     }
+//     void writeAnchor(const char *id,const char *name) 
+//     {
+//       XML_DB(("(writeAnchor)\n"));
+//       startParMode();
+//       m_t << "<anchor id=\"" << id << "_1" << name << "\"/>";
+//     }
+//     void writeSectionRef(const char *,const char *id,
+//                          const char *name,const char *text) 
+//     {
+//       XML_DB(("(writeSectionRef)\n"));
+//       startParMode();
+//       m_t << "<link linkend=\"" << id << "_1" << name << "\">";
+//       docify(text);
+//       m_t << "</link>";
+//     }
+//     void writeSectionRefItem(const char *,const char *,const char *) 
+//     {
+//       m_t << "(writeSectionRefItem)";
+//     }
+//     void addIndexItem(const char *primaryie,const char *secondaryie) 
+//     {
+//       XML_DB(("(addIndexItem)\n"));
+//       startParMode();
+//       m_t << "<indexentry><primaryie>";
+//       docify(primaryie);
+//       m_t << "</primaryie><secondaryie>";
+//       docify(secondaryie);
+//       m_t << "</secondaryie></indexentry>";
+//     }
+//     void writeFormula(const char *id,const char *text) 
+//     {
+//       XML_DB(("(writeFormula)\n"));
+//       startParMode();
+//       m_t << "<formula id=\"" << id << "\">"; // non Docbook
+//       docify(text);
+//       m_t << "</formula>";
+//     }
+//     void startImage(const char *name,const char *size,bool /*caption*/) 
+//     {
+//       XML_DB(("(startImage)\n"));
+//       startParMode();
+//       m_t << "<image name=\"" << name << "\"";
+//       if (size) m_t << " size=\"" << size << "\"";
+//       m_t << ">"; // non docbook 
+//     }
+//     void endImage(bool) 
+//     {
+//       XML_DB(("(endImage)\n"));
+//       m_t << "</image>";
+//     }
+//     void startDotFile(const char *name,bool /*caption*/) 
+//     {
+//       XML_DB(("(startDotFile)\n"));
+//       startParMode();
+//       m_t << "<dotfile name=\"" << name << "\">"; // non docbook 
+//     }
+//     void endDotFile(bool) 
+//     {
+//       XML_DB(("(endDotFile)\n"));
+//       m_t << "</dotfile>";
+//     }
+//     void startTextLink(const char *name,const char *anchor) 
+//     {
+//       XML_DB(("(startTextLink)\n"));
+//       startParMode();
+//       m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
+//     }
+//     void endTextLink() 
+//     {
+//       XML_DB(("(endTextLink)\n"));
+//       m_t << "</ulink>";
+//     }
+//     void startPageRef() 
+//     {
+//       XML_DB(("(startPageRef)\n"));
+//       m_outputEnabled = FALSE;
+//     }
+//     void endPageRef(const char *,const char *) 
+//     {
+//       XML_DB(("(endPageRef)\n"));
+//       m_outputEnabled = TRUE;
+//     }
+//     void writeLineNumber(const char *extRef,const char *compId,
+//                          const char *anchorId,int l)
+//     {
+//       XML_DB(("(writeLineNumber)\n"));
+//       m_t << "<linenumber";
+//       m_t << " line=\"" << l << "\"";
+//       if (compId)
+//       {
+//         m_t << " refid=\"" << compId;
+//         if (anchorId) m_t << "_1" << anchorId; 
+//         m_t << "\" kindref=\"";
+//         if (anchorId) m_t << "member"; else m_t << "compound"; 
+//         m_t << "\"";
+//         if (extRef) m_t << " external=\"" << extRef << "\"";
+//       }
+//       m_t << "/>";
+//     }
+//     void startCodeLine() 
+//     {
+//       XML_DB(("(startCodeLine)\n"));
+//       startParMode();
+//       m_t << "<codeline>"; // non DocBook
+//     }
+//     void endCodeLine() 
+//     {
+//       XML_DB(("(endCodeLine)\n"));
+//       m_t << "</codeline>" << endl; // non DocBook
+//     }
+//     void startCodeAnchor(const char *id) 
+//     {
+//       XML_DB(("(startCodeAnchor)\n"));
+//       startParMode();
+//       m_t << "<anchor id=\"" << id << "\">";
+//     }
+//     void endCodeAnchor() 
+//     {
+//       XML_DB(("(endCodeAnchor)\n"));
+//       m_t << "</anchor>";
+//     }
+//     void startFontClass(const char *colorClass) 
+//     {
+//       XML_DB(("(startFontClass)\n"));
+//       m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
+//     }
+//     void endFontClass()
+//     {
+//       XML_DB(("(endFontClass)\n"));
+//       m_t << "</highlight>"; // non DocBook
+//     }
+//     void codify(const char *text) 
+//     {
+//       XML_DB(("(codify \"%s\")\n",text));
+//       docify(text);
+//     }
+//     void startHtmlOnly()  
+//     {
+//       XML_DB(("(startHtmlOnly)\n"));
+//       m_t << "<htmlonly>" << endl;
+//     }
+//     void endHtmlOnly()    
+//     {
+//       XML_DB(("(endHtmlOnly)\n"));
+//       m_t << "</htmlonly>" << endl;
+//     }
+//     void startLatexOnly() 
+//     {
+//       XML_DB(("(startLatexOnly)\n"));
+//       m_t << "<latexonly>" << endl;
+//     }
+//     void endLatexOnly()   
+//     {
+//       XML_DB(("(endLatexOnly)\n"));
+//       m_t << "</latexonly>" << endl;
+//     }
+//     void startSectionRefList()
+//     {
+//       XML_DB(("(startSectionRefList)\n"));
+//     }
+//     void endSectionRefList()
+//     {
+//       XML_DB(("(endSectionRefList)\n"));
+//     }
+//     void writeCodeAnchor(const char *)
+//     {
+//       XML_DB(("(writeCodeAnchor)\n"));
+//     }
+//     
+//     // Generator specific functions
+//     
+//     /*! Create a clone of this generator. Uses the copy constructor */
+//     OutputDocInterface *clone() 
+//     {
+//       return new XMLGenerator(this);
+//     }
+//     /*! Append the output written to generator \a g to this generator */
+//     void append(const OutputDocInterface *g) 
+//     {
+//       const XMLGenerator *xg = (const XMLGenerator *)g;
+// 
+//       //printf("Appending \n>>>>\n`%s'\n<<<<\n and \n>>>>\n`%s'\n<<<<\n",getContents().data(),xg->getContents().data());
+//       m_t << xg->getContents();
+//       m_inParStack  = xg->m_inParStack;
+//       m_inListStack = xg->m_inListStack;
+//       m_inParamList = xg->m_inParamList;
+//     }
+//     /*! constructor. 
+//      */
+//     XMLGenerator() 
+//     {
+//       m_b.setBuffer(m_a);
+//       m_b.open( IO_WriteOnly );
+//       m_t.setDevice(&m_b);
+//       m_t.setEncoding(QTextStream::Latin1);
+//       m_inParamList = FALSE;
+//       m_outputEnabled = TRUE;
+//     }
+//     /*! copy constructor */
+//     XMLGenerator(const XMLGenerator *xg)
+//     {
+//       m_b.setBuffer(m_a);
+//       m_b.open( IO_WriteOnly );
+//       m_t.setDevice(&m_b);
+//       m_t.setEncoding(QTextStream::Latin1);
+// 
+//       //printf("Cloning >>%s<< m_parStack.count()=%d\n",
+//       //    xg->getContents().data(),xg->m_inParStack.count());
+//        
+//       // copy state variables
+//       m_inParStack  = xg->m_inParStack;
+//       m_inListStack = xg->m_inListStack;
+//       m_inParamList = xg->m_inParamList;
+//       m_outputEnabled = xg->m_outputEnabled;
+//     } 
+//     /*! destructor */
+//     virtual ~XMLGenerator()
+//     {
+//     }
+//     /*! Returns the output written to this generator as a string */
+//     QCString getContents() const
+//     {
+//       QCString s;
+//       s.resize(m_a.size()+1);
+//       memcpy(s.data(),m_a.data(),m_a.size());
+//       s.at(m_a.size())='\0';
+//       return s;
+//     }
+//     
+//   private:
+//     // only one destination stream, so these do not have to be implemented
+//     void pushGeneratorState() {}
+//     void popGeneratorState() {}
+//     void disableAllBut(OutputGenerator::OutputType) {}
+//     void enableAll() {}
+//     void disableAll() {}
+//     void disable(OutputGenerator::OutputType) {}
+//     void enable(OutputGenerator::OutputType) {}
+//     bool isEnabled(OutputGenerator::OutputType) { return TRUE; }
+// 
+//     QTextStream m_t;  
+//     QByteArray m_a;
+//     QBuffer m_b;
+//     
+//     ValStack<bool> m_inParStack;  
+//     ValStack<bool> m_inListStack;
+//     bool m_inParamList;
+//     bool m_outputEnabled;
+//     
+//     friend void writeXMLCodeBlock(QTextStream &t,FileDef *fd);
+// };
 
 static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char *name,int indent)
 {
@@ -1037,11 +1195,25 @@ static void writeXMLDocBlock(QTextStream &t,
                       const QCString &fileName,
                       int lineNr,
                       const QCString &scope,
-                      MemberDef *md,
+                      MemberDef * md,
                       const QCString &text)
 {
   QCString stext = text.stripWhiteSpace();
   if (text.isEmpty()) return;
+  // convert the documentation string into an abstract syntax tree
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext);
+  // create a code generator
+  XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
+  // create a parse tree visitor for XML
+  XmlDocVisitor *visitor = new XmlDocVisitor(t,*xmlCodeGen);
+  // visit all nodes
+  root->accept(visitor);
+  // clean up
+  delete visitor;
+  delete xmlCodeGen;
+  delete root;
+  
+/* 
   XMLGenerator *xmlGen = new XMLGenerator;
   //xmlGen->startParMode();
   parseDoc(*xmlGen,
@@ -1054,20 +1226,21 @@ static void writeXMLDocBlock(QTextStream &t,
   xmlGen->endParMode();
   t << xmlGen->getContents();
   delete xmlGen;
+*/
 }
 
 void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
 {
   initParseCodeContext();
-  XMLGenerator *xmlGen = new XMLGenerator;
-  xmlGen->m_inParStack.push(TRUE);
+  XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
+  //xmlGen->m_inParStack.push(TRUE);
   parseCode(*xmlGen,
             0,
             fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,
             0,
             fd);
-  t << xmlGen->getContents();
+  //t << xmlGen->getContents();
   delete xmlGen;
 }
 
@@ -1466,8 +1639,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   }
   QTextStream t(&f);
 
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << cd->getOutputFileBase() << "\" kind=\"" 
     << cd->compoundTypeString() << "\">" << endl;
@@ -1652,8 +1824,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   }
   QTextStream t(&f);
   
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << nd->getOutputFileBase() << "\" kind=\"namespace\">" << endl;
   t << "    <compoundname>";
@@ -1743,8 +1914,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   }
   QTextStream t(&f);
 
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << fd->getOutputFileBase() << "\" kind=\"file\">" << endl;
   t << "    <compoundname>";
@@ -1876,8 +2046,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   }
 
   QTextStream t(&f);
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
   t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>" << endl;
@@ -1975,11 +2144,14 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
 
   if (pi->isReference()) return;
   
-  ti << "  <compound refid=\"" << pi->getOutputFileBase() 
+  QCString pageName = pi->getOutputFileBase();
+  if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
+  
+  ti << "  <compound refid=\"" << pageName
      << "\" kind=\"page\"><name>" << convertToXML(pi->name) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+pi->getOutputFileBase()+".xml";
+  QCString fileName=outputDirectory+"/xml/"+pageName+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1988,8 +2160,7 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
   }
 
   QTextStream t(&f);
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  writeXMLHeader(t);
   t << "  <compounddef id=\"";
   if (Config_getBool("CASE_SENSE_NAMES")) t << pi->name; else t << pi->name.lower();
   t << "\" kind=\"page\">" << endl;
@@ -2071,10 +2242,7 @@ void generateXML()
     return;
   }
   QTextStream t(&f);
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
-  //t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
-  t << "<doxygen version=\"" << versionString << "\">" << endl;
-  //t << "  <compoundlist>" << endl;
+  writeXMLHeader(t);
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
@@ -2109,6 +2277,10 @@ void generateXML()
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     generateXMLForPage(pi,t);
+  }
+  if (Doxygen::mainPage)
+  {
+    generateXMLForPage(Doxygen::mainPage,t);
   }
 
   //t << "  </compoundlist>" << endl;

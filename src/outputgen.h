@@ -323,7 +323,7 @@ class OutputGenerator : public BaseOutputDocInterface
     void pushGeneratorState();
     void popGeneratorState();
 
-    virtual void printDoc(DocNode *) {}
+    virtual void printDoc(DocNode *) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

@@ -23,6 +23,7 @@
 #include "outputgen.h"
 #include "code.h"
 #include "dot.h"
+#include "message.h"
 
 HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -82,18 +83,20 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Circ:    m_t << "&" << s->letter() << "circ;"; break;
     case DocSymbol::Tilde:   m_t << "&" << s->letter() << "tilde;"; break;
     case DocSymbol::Szlig:   m_t << "&szlig;"; break;
-    case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedul;"; break;
+    case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedil;"; break;
     case DocSymbol::Ring:    m_t << "&" << s->letter() << "ring;"; break;
     case DocSymbol::Nbsp:    m_t << "&nbsp;"; break;
     default:
-                             printf("Error: unknown symbol found\n");
+                             err("Error: unknown symbol found\n");
   }
 }
 
 void HtmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  m_t << "<a href=\"" << u->url() << "\">" << u->url() << "</a>";
+  m_t << "<a href=\"" << u->url() << "\">";
+  filter(u->url());
+  m_t << "</a>";
 }
 
 void HtmlDocVisitor::visit(DocLineBreak *)
@@ -161,10 +164,10 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   }
 }
 
-void HtmlDocVisitor::visit(DocAnchor *)
+void HtmlDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "<a name=\"%s\"/></a>";
+  m_t << "<a name=\"" /*<< anc->file() << "#"*/ << anc->anchor() << "\"/></a>";
 }
 
 void HtmlDocVisitor::visit(DocInclude *inc)
@@ -231,6 +234,10 @@ void HtmlDocVisitor::visit(DocFormula *f)
     m_t << endl << "</center><p>" << endl;
   else
     m_t << " ";
+}
+
+void HtmlDocVisitor::visit(DocIndexEntry *)
+{
 }
 
 //--------------------------------------
@@ -376,8 +383,8 @@ void HtmlDocVisitor::visitPre(DocSection *s)
 {
   m_t << "<h" << s->level()+1 << ">";
   m_t << "<a name=\"" << s->anchor();
+  m_t << "\"></a>" << endl;
   filter(s->title());
-  m_t << "\"</a>" << endl;
   m_t << "</h" << s->level()+1 << ">\n";
 }
 
@@ -491,16 +498,6 @@ void HtmlDocVisitor::visitPre(DocHtmlCaption *)
 void HtmlDocVisitor::visitPost(DocHtmlCaption *) 
 {
   m_t << "</caption>\n";
-}
-
-void HtmlDocVisitor::visitPre(DocIndexEntry *)
-{
-  m_hide = TRUE;
-}
-
-void HtmlDocVisitor::visitPost(DocIndexEntry *) 
-{
-  m_hide = FALSE;
 }
 
 void HtmlDocVisitor::visitPre(DocInternal *)

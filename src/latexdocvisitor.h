@@ -48,6 +48,7 @@ class LatexDocVisitor : public DocVisitor
     void visit(DocInclude *);
     void visit(DocIncOperator *);
     void visit(DocFormula *);
+    void visit(DocIndexEntry *);
 
     //--------------------------------------
     // visitor functions for compound nodes
@@ -91,8 +92,6 @@ class LatexDocVisitor : public DocVisitor
     void visitPost(DocHtmlRow *) ;
     void visitPre(DocHtmlCell *);
     void visitPost(DocHtmlCell *);
-    void visitPre(DocIndexEntry *);
-    void visitPost(DocIndexEntry *);
     void visitPre(DocInternal *);
     void visitPost(DocInternal *);
     void visitPre(DocHRef *);
@@ -134,6 +133,7 @@ class LatexDocVisitor : public DocVisitor
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();
+    QCString escapeMakeIndexChars(const char *s);
 
     //--------------------------------------
     // state variables

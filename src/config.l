@@ -1186,12 +1186,31 @@ void Config::check()
   }
 
 #undef PUTENV
+#undef GETENV
+#undef SEP
 #if defined(_WIN32) && !defined(__GNUC__) && (__BORLANDC__ < 0x0550)
 #define PUTENV _putenv
-#else
+#define GETENV _getenv
+#define SEP ";"
+#else 
 #define PUTENV putenv
+#define GETENV getenv
+#define SEP ":"
 #endif
-  if (Config_getBool("HAVE_DOT")) PUTENV("DOTFONTPATH=.");
+  if (Config_getBool("HAVE_DOT")) 
+  {
+    char *curFontPath = GETENV("DOTFONTPATH");
+    int l=curFontPath ? strlen(curFontPath)+1 : 0;
+    static char *buf = 0;
+    buf = (char *)realloc(buf,strlen("DOTFONTPATH=.")+l+1);
+    strcpy(buf,"DOTFONTPATH=.");
+    if (l>0)
+    {
+      strcat(buf,SEP);
+      strcat(buf,curFontPath);
+    }
+    PUTENV(buf);
+  }
   
 }
 
@@ -2147,6 +2166,18 @@ void Config::create()
 		    "feature is still experimental and incomplete at the \n"
 		    "moment. \n",
 		    FALSE
+                 );
+  cs = addString(
+                    "XML_SCHEMA",
+		    "The XML_SCHEMA file can be used to specify an XML schema, \n"
+		    "which can be used by a validating XML parser to check the \n"
+		    "syntax of the XML files. \n"
+                 );
+  cs = addString(
+                    "XML_DTD",
+		    "The XML_DTD file can be used to specify an XML DTD, \n"
+		    "which can be used by a validating XML parser to check the \n"
+		    "syntax of the XML files. \n"
                  );
   //--------------------------------------------------------------------------
   addInfo(  "DEF","configuration options for the AutoGen Definitions output");

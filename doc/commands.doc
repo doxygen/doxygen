@@ -116,6 +116,7 @@ documentation:
 \refitem cmdskipline \\skipline
 \refitem cmdstruct \\struct
 \refitem cmdsubsection \\subsection
+\refitem cmdsubsubsection \\subsubsection
 \refitem cmdtest \\test
 \refitem cmdthrow \\throw
 \refitem cmdtodo \\todo
@@ -1106,12 +1107,45 @@ ALIASES  = "english=\if english" \
   subsection should be specified as the second argument of the \\subsection
   command.
 
-  \warning This command only works inside related page documentation and
+  \warning This command only works inside a section of a related page 
+           documentation block and
            \e not in other documentation blocks!
 
   \sa
    Section \ref cmdpage "\\page" for an example of the 
            \ref cmdsubsection "\\subsection" command.
+
+<hr>
+\section cmdsubsubsection \subsubsection <subsubsection-name> (subsubsection title)
+
+  \addindex \\subsubsection
+  Creates a subsubsection with name \<subsubsection-name\>. The title of the
+  subsubsection should be specified as the second argument of the 
+  \\subsubsection command.
+
+  \warning This command only works inside a subsection of a 
+           related page documentation block and
+           \e not in other documentation blocks!
+
+  \sa
+   Section \ref cmdpage "\\page" for an example of the 
+           \ref cmdsubsubsection "\\subsubsection" command.
+
+<hr>
+\section cmdparagraph \paragraph <paragraph-name> (paragraph title)
+
+  \addindex \\paragraph
+  Creates a named paragraph with name \<paragraph-name\>. The title of the
+  paragraph should be specified as the second argument of the 
+  \\paragraph command.
+
+  \warning This command only works inside a subsubsection of a 
+           related page documentation block and
+           \e not in other documentation blocks!
+
+  \sa
+   Section \ref cmdpage "\\page" for an example of the 
+           \ref cmdparagraph "\\paragraph" command.
 
 <hr>
 

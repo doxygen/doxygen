@@ -48,6 +48,7 @@ class HtmlDocVisitor : public DocVisitor
     void visit(DocInclude *);
     void visit(DocIncOperator *);
     void visit(DocFormula *);
+    void visit(DocIndexEntry *);
 
     //--------------------------------------
     // visitor functions for compound nodes
@@ -91,8 +92,6 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocHtmlCell *);
     void visitPre(DocHtmlCaption *);
     void visitPost(DocHtmlCaption *);
-    void visitPre(DocIndexEntry *);
-    void visitPost(DocIndexEntry *);
     void visitPre(DocInternal *);
     void visitPost(DocInternal *);
     void visitPre(DocHRef *);

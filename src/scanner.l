@@ -282,10 +282,10 @@ static void addSection()
 {
   //printf("New section pageName=%s label=%s title=%s\n",
   //    current->name.data(),sectionLabel.data(),sectionTitle.data());
-  if (current->name.isEmpty() || current->section != Entry::PAGEDOC_SEC)
+  if (current->name.isEmpty() /*|| current->section != Entry::PAGEDOC_SEC */)
   {
-    warn(yyFileName,yyLineNr,"Warning: found section or anchor with label `%s' "
-	                     "outside of \\page context!\n",sectionLabel.data());
+    //warn(yyFileName,yyLineNr,"Warning: found section or anchor with label `%s' "
+    //                     "outside of \\page context!\n",sectionLabel.data());
     return;
   }
   if (sectionLabel.isEmpty()) return;
@@ -453,6 +453,7 @@ static void addSpecialItem(const char *listName)
     ASSERT(item!=0);
     item->text += " <p>";
     item->text += current->brief;
+    //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
   {
@@ -473,6 +474,7 @@ static void addSpecialItem(const char *listName)
     sectionLabel=anchorLabel;
     addSection();
     current->name = tmpName;
+    //printf("%s: text %s doc %s\n",listName,item->text.data(),cmdString.data());
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -3223,6 +3225,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->section = Entry::MAINPAGEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->name = "mainpage";
 					  BEGIN( PageDocArg2 );
   					}
 <Doc,JavaDoc>{B}*{CMD}"file"{B}*	{
@@ -3515,6 +3518,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <PageDoc>{CMD}"subsection"{B}+		{
   					  sectionType=SectionInfo::Subsection;
+  					  BEGIN(SectionLabel);
+  					}
+<PageDoc>{CMD}"subsubsection"{B}+	{
+  					  sectionType=SectionInfo::Subsubsection;
+  					  BEGIN(SectionLabel);
+  					}
+<PageDoc>{CMD}"paragraph"{B}+		{
+  					  sectionType=SectionInfo::Paragraph;
   					  BEGIN(SectionLabel);
   					}
 <GroupHeader>.				{ memberGroupHeader+=*yytext; }
@@ -3970,7 +3981,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
 <ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
-					  if (!current->doc.isEmpty()) current->doc+=" <p>";
+					  //if (!current->doc.isEmpty()) current->doc+=" <p>";
 					  if (lastBriefContext==TodoParam || 
 					      lastBriefContext==TestParam || 
 					      lastBriefContext==BugParam ||

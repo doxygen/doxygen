@@ -1777,6 +1777,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QCString oldDir = convertToQCString(QDir::currentDirPath());
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
+  //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
   //{ // copy input file to output dir.
   //  QFile inf(inFile,IO_ReadOnly);

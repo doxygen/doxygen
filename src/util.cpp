@@ -3519,7 +3519,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         doc += "</dt>\n<dd>";
         doc += item->text;
         doc += "</dd></dl>\n";
-        addRelatedPage(refList->listName(),refList->pageTitle(),doc,0,"generated",1,0,0,0);
+        addRelatedPage(refList->listName(),refList->pageTitle(),doc,0,refList->listName(),1,0,0,0);
         item->written=TRUE;
       }
     }
@@ -3937,7 +3937,7 @@ QCString rtfFormatBmkStr(const char *name)
      {
          if ( ( ++(*nxtTag) ) > 'Z' )
          {
-            (*nxtTag) = 'A';
+            *nxtTag = 'A';
          }
          else
          {

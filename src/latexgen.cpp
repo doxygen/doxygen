@@ -1209,9 +1209,11 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
   {
     switch(type)
     {
-      case SectionInfo::Page:       t << "subsection"; break;
-      case SectionInfo::Section:    t << "subsubsection"; break;
-      case SectionInfo::Subsection: t << "paragraph"; break;
+      case SectionInfo::Page:          t << "subsection"; break;
+      case SectionInfo::Section:       t << "subsubsection"; break;
+      case SectionInfo::Subsection:    t << "paragraph"; break;
+      case SectionInfo::Subsubsection: t << "subparagraph"; break;
+      case SectionInfo::Paragraph:     t << "subparagraph"; break;
       default: ASSERT(0); break;
     }
     t << "{";
@@ -1220,9 +1222,11 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
   {
     switch(type)
     {
-      case SectionInfo::Page:       t << "section"; break;
-      case SectionInfo::Section:    t << "subsection"; break;
-      case SectionInfo::Subsection: t << "subsubsection"; break;
+      case SectionInfo::Page:          t << "section"; break;
+      case SectionInfo::Section:       t << "subsection"; break;
+      case SectionInfo::Subsection:    t << "subsubsection"; break;
+      case SectionInfo::Subsubsection: t << "paragraph"; break;
+      case SectionInfo::Paragraph:     t << "subparagraph"; break;
       default: ASSERT(0); break;
     }
     t << "{";

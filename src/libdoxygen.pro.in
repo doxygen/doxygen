@@ -114,7 +114,8 @@ HEADERS      =	bufstr.h \
 		unistd.h \
 		util.h \
 		version.h \
-                xmlgen.h 
+		xmldocvisitor.h \
+                xmlgen.h
 SOURCES      =	ce_lex.cpp \
                 ce_parse.cpp \
 		classdef.cpp \
@@ -174,6 +175,7 @@ SOURCES      =	ce_lex.cpp \
 		translator.cpp \
 		util.cpp \
 		version.cpp \
+		xmldocvisitor.cpp \
                 xmlgen.cpp 
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 

@@ -23,6 +23,9 @@
 #include <qregexp.h>
 #include <qdict.h>
 
+// used for table column width calculation
+const int rtf_pageWidth = 8748;
+
 extern QCString rtf_title;
 extern QCString rtf_subject;
 extern QCString rtf_comments;
@@ -40,9 +43,9 @@ struct RTFListItemInfo
   int number;
 };
 
-const int indentLevels = 10;
+const int rtf_maxIndentLevels = 10;
 
-extern RTFListItemInfo listItemInfo[indentLevels];
+extern RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
 
 struct Rtf_Style_Default
 {

@@ -113,6 +113,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_testlist GENERATE_TESTLIST
 \refitem cfg_generate_todolist GENERATE_TODOLIST
 \refitem cfg_generate_treeview GENERATE_TREEVIEW
+\refitem cfg_generate_xml GENERATE_XML
 \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
@@ -190,6 +191,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
 \refitem cfg_warn_logfile WARN_LOGFILE
 \refitem cfg_warnings WARNINGS
+\refitem cfg_xml_dtd XML_DTD
+\refitem cfg_xml_schema XML_SCHEMA
 \endsecreflist
 
 \section config_general General options
@@ -1129,6 +1132,32 @@ EXTRA_PACKAGES = times
  the real man page(s). These additional files only source the real man page, 
  but without them the man command would be unable to find the correct page. 
  The default is \c NO.
+
+</dl>
+
+\section xml_output XML related options
+\anchor cfg_generate_xml
+<dl>
+
+<dt>\c GENERATE_XML <dd>
+ \addindex GENERATE_XML
+ If the GENERATE_XML tag is set to YES Doxygen will
+ generate an XML file that captures the structure of
+ the code including all documentation. 
+
+\anchor cfg_xml_schema
+<dt>\c XML_SCHEMA <dd>
+ \addindex XML_SCHEMA
+ The XML_SCHEMA file can be used to specify an XML schema,
+ which can be used by a validating XML parser to check the
+ syntax of the XML files.
+
+\anchor cfg_xml_dtd
+<dt>\c XML_DTD <dd>
+ \addindex XML_DTD
+ The XML_DTD file can be used to specify an XML DTD,
+ which can be used by a validating XML parser to check the
+ syntax of the XML files.
 
 </dl>
 

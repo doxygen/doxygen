@@ -25,7 +25,7 @@
 #include "message.h"
 
 
-RTFListItemInfo listItemInfo[indentLevels];
+RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
 
 QCString rtf_title;
 QCString rtf_subject;

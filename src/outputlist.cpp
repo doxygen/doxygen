@@ -192,12 +192,21 @@ void OutputList::popGeneratorState()
 }
 
 void OutputList::parseDoc(const char *fileName,int startLine,
-                  const char * clName,MemberDef * /*md*/,
+                  const char * clName,MemberDef * md,
                   const QCString &docStr)
 {
-  DocNode *root = validatingParseDoc(fileName,startLine,clName,docStr);
-
+  int count=0;
   OutputGenerator *og=outputs->first();
+  while (og)
+  {
+    if (og->isEnabled()) count++;
+    og=outputs->next();
+  }
+  if (count==0) return; // no output formats enabled.
+
+  DocNode *root = validatingParseDoc(fileName,startLine,clName,md,docStr);
+
+  og=outputs->first();
   while (og)
   {
     if (og->isEnabled()) og->printDoc(root);
