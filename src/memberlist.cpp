@@ -43,7 +43,10 @@ void MemberList::countDecMembers()
     if ((!hideMemberFlag || md->hasDocumentation()) &&
         (!hideMemberFlag || !md->documentation().isEmpty() || 
          briefMemDescFlag || repeatBriefFlag
-        ) || extractAllFlag
+        ) || extractAllFlag || 
+        (md->isEnumerate() &&
+         md->hasDocumentedEnumValues()
+        )
        )
     {
       switch(md->memberType())

@@ -77,8 +77,11 @@ class ManGenerator : public OutputGenerator
     void endTypewriter()   { t << "\\fR"; firstCol=FALSE; }
     void startGroupHeader();
     void endGroupHeader();
+    void startMemberSections() {}
+    void endMemberSections() {}
     void startMemberHeader();
     void endMemberHeader();
+    void insertMemberAlign() {}
     void writeListItem();
     void startMemberList() { t << "\n.in +1c"; firstCol=FALSE; }
     void endMemberList() { t << "\n.in -1c"; firstCol=FALSE; }
@@ -107,6 +110,7 @@ class ManGenerator : public OutputGenerator
     void endMemberDoc() {}
     void writeDoxyAnchor(const char *clName,const char *anchor,const char *name);
     void writeLatexSpacing() {}
+    void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
@@ -144,6 +148,7 @@ class ManGenerator : public OutputGenerator
     void writeSection(const char *,const char *,bool) {}
     void writeSectionRef(const char *,const char *,const char *) {}
     void writeSectionRefItem(const char *,const char *,const char *) {}
+    void writeSectionRefAnchor(const char *,const char *,const char *) {}
     void addToIndex(const char *,const char *) {}
     void startIndent()        {}
     void endIndent()          {}

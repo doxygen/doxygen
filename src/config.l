@@ -62,6 +62,7 @@ QString  inputFilter;
 QString  paperType;
 QString  outputLanguage;
 QString  stripFromPath;
+QString  manExtension;
 QStrList includePath;                
 QStrList examplePath;
 QStrList inputSources;               
@@ -72,31 +73,32 @@ QStrList tagFileList;
 QStrList extDocPathList;             
 QStrList predefined;
 QStrList extraPackageList;
-bool     quietFlag          = FALSE; 
-bool     warningFlag        = FALSE; 
-bool     recursiveFlag      = FALSE; 
-bool     allExtFlag         = FALSE; 
-bool     searchEngineFlag   = FALSE; 
-bool     extractAllFlag     = FALSE; 
-bool     extractPrivateFlag = FALSE; 
-bool     noIndexFlag        = FALSE;
-bool     hideMemberFlag     = FALSE;
-bool     hideClassFlag      = FALSE;
-bool     macroExpansionFlag = FALSE;
-bool     onlyPredefinedFlag = FALSE;
-bool     fullPathNameFlag   = FALSE;
-bool     compactLatexFlag   = FALSE;
-bool     internalDocsFlag   = FALSE;
-bool     caseSensitiveNames = FALSE;
-bool     generateHtml       = TRUE;
-bool     generateLatex      = TRUE;
-bool     generateMan        = TRUE;
-bool     preprocessingFlag  = TRUE;
-bool     briefMemDescFlag   = TRUE;
-bool     searchIncludeFlag  = TRUE;
-bool     classDiagramFlag   = TRUE;
-bool     repeatBriefFlag    = TRUE;
-bool     verbatimHeaderFlag = TRUE;
+bool     quietFlag           = FALSE; 
+bool     warningFlag         = FALSE; 
+bool     recursiveFlag       = FALSE; 
+bool     allExtFlag          = FALSE; 
+bool     searchEngineFlag    = FALSE; 
+bool     extractAllFlag      = FALSE; 
+bool     extractPrivateFlag  = FALSE; 
+bool     noIndexFlag         = FALSE;
+bool     hideMemberFlag      = FALSE;
+bool     hideClassFlag       = FALSE;
+bool     macroExpansionFlag  = FALSE;
+bool     onlyPredefinedFlag  = FALSE;
+bool     fullPathNameFlag    = FALSE;
+bool     compactLatexFlag    = FALSE;
+bool     internalDocsFlag    = FALSE;
+bool     caseSensitiveNames  = FALSE;
+bool     generateHtml        = TRUE;
+bool     generateLatex       = TRUE;
+bool     generateMan         = TRUE;
+bool     preprocessingFlag   = TRUE;
+bool     briefMemDescFlag    = TRUE;
+bool     searchIncludeFlag   = TRUE;
+bool     classDiagramFlag    = TRUE;
+bool     repeatBriefFlag     = TRUE;
+bool     verbatimHeaderFlag  = TRUE;
+bool     htmlAlignMemberFlag = TRUE;
   
 /* -----------------------------------------------------------------
  *
@@ -162,7 +164,8 @@ static int yyread(char *buf,int max_size)
 <Start>"INPUT_FILTER"[ \t]*"="		{ BEGIN(GetString);  s=&inputFilter;      }
 <Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&paperType;        }
 <Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&outputLanguage;   }
-<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetString);  s=&stripFromPath;   }
+<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetString);  s=&stripFromPath;    }
+<Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&manExtension;     }
 <Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&includePath;        elemStr=""; }
 <Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&examplePath;        elemStr=""; }
 <Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&inputSources;       elemStr=""; }
@@ -198,6 +201,7 @@ static int yyread(char *buf,int max_size)
 <Start>"INTERNAL_DOCS"[ \t]*"="		{ BEGIN(GetBool);    b=&internalDocsFlag; }
 <Start>"CASE_SENSE_NAMES"[ \t]*"="      { BEGIN(GetBool);    b=&caseSensitiveNames; }
 <Start>"VERBATIM_HEADERS"[ \t]*"="      { BEGIN(GetBool);    b=&verbatimHeaderFlag; }
+<Start>"HTML_ALIGN_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&htmlAlignMemberFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -636,6 +640,15 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes,\n";
+    t << "# files or namespaces will be aligned in HTML using tables. If set to\n";
+    t << "# NO a bullet list will be used.\n";
+    t << "\n";
+  }
+  t << "HTML_ALIGN_MEMBERS   = YES\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "#---------------------------------------------------------------------------\n";
     t << "# configuration options related to the LaTeX output\n";
     t << "#---------------------------------------------------------------------------\n";
@@ -701,6 +714,15 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "MAN_OUTPUT           =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The MAN_EXTENSION tag determines the extension that is added to\n";
+    t << "# the generated man pages (default is the subroutine's section .3)\n";
+    t << "\n";
+  }
+  t << "MAN_EXTENSION        = .3\n";
+ 
   if (!sl)
   {
     t << "\n";
@@ -869,6 +891,12 @@ void checkConfig()
   //{
   //  projectName[0]=toupper(projectName[0]);
   //}
+  
+  // set default man page extension if non is given by the user
+  if (manExtension.isEmpty())
+  {
+    manExtension=".3";
+  }
   
   paperType = paperType.lower().stripWhiteSpace(); 
   if (paperType.isEmpty())

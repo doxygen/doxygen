@@ -84,12 +84,15 @@ class OutputGenerator
     virtual void endGroupHeader() = 0;
     virtual void writeListItem() = 0;
 
+    virtual void startMemberSections() = 0;
+    virtual void endMemberSections() = 0;
     virtual void startMemberHeader() = 0;
     virtual void endMemberHeader() = 0;
     virtual void startMemberList()  = 0;
     virtual void endMemberList()    = 0;
     virtual void startMemberItem() = 0;
     virtual void endMemberItem() = 0;
+    virtual void insertMemberAlign() = 0;
 
     virtual void writeRuler() = 0;
     virtual void writeAnchor(const char *name) = 0;
@@ -103,6 +106,7 @@ class OutputGenerator
     virtual void endMemberDoc() = 0;
     virtual void writeDoxyAnchor(const char *clName,const char *anchor,const char *name) = 0;
     virtual void writeLatexSpacing() = 0;
+    virtual void writeLatexLabel(const char *clName,const char *anchor) = 0;
     virtual void writeStartAnnoItem(const char *type,const char *file,
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
@@ -144,6 +148,7 @@ class OutputGenerator
     virtual void writeSection(const char *,const char *,bool) = 0;
     virtual void writeSectionRef(const char *,const char *,const char *) = 0;
     virtual void writeSectionRefItem(const char *,const char *,const char *) = 0;
+    virtual void writeSectionRefAnchor(const char *,const char *,const char *) = 0;
     virtual void lineBreak() = 0;
     virtual void addToIndex(const char *s1,const char *s2) = 0;
     virtual void startIndent() = 0;

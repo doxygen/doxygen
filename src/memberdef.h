@@ -55,6 +55,7 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     
+    QString getOutputFileBase() const;
     const char *declaration() const      { return decl; }
     const char *definition() const       { return def; }
     const char *typeString() const       { return type; }
@@ -72,6 +73,7 @@ class MemberDef : public Definition
     void setFileDef(FileDef *fd)         { fileDef=fd; }
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { ref=a; }
+    void setProtection(Protection p)     { prot=p; }
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
@@ -105,8 +107,9 @@ class MemberDef : public Definition
     
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
-    void writeExample(OutputList &ol);
+    //void writeExample(OutputList &ol);
     bool hasExamples();
+    ExampleList *getExampleList() const { return exampleList; }
 
     // prototype related members
     const char *getDefFile()        { return defFile; }

@@ -90,20 +90,20 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.disable(OutputGenerator::Latex);
-    ol.startTextLink(0,"details");
-    parseDoc(ol,0,0,theTranslator->trMore());
+    ol.startTextLink(0,"_details");
+    parseText(ol,theTranslator->trMore());
     ol.enable(OutputGenerator::Latex);
   }
   if (fileList->count()>0)
   {
     ol.startMemberHeader();
-    parseDoc(ol,0,0,theTranslator->trFiles());
+    parseText(ol,theTranslator->trFiles());
     ol.endMemberHeader();
     ol.startIndexList();
     FileDef *fd=fileList->first();
     while (fd)
     {
-      ol.writeStartAnnoItem("file ",fd->diskName(),0,fd->name());
+      ol.writeStartAnnoItem("file ",fd->getOutputFileBase(),0,fd->name());
       ol.writeEndAnnoItem(fd->name());
       fd=fileList->next();
     }
@@ -112,7 +112,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (classList->count()>0)
   {
     ol.startMemberHeader();
-    parseDoc(ol,0,0,theTranslator->trCompounds());
+    parseText(ol,theTranslator->trCompounds());
     ol.endMemberHeader();
     ol.startIndexList();
     ClassDef *cd=classList->first();
@@ -125,7 +125,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
         case ClassDef::Struct: type="struct"; break;
         case ClassDef::Union:  type="union";  break;
       }
-      ol.writeStartAnnoItem(type,cd->classFile(),0,cd->name());
+      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
       ol.writeEndAnnoItem(cd->name());
       cd=classList->next();
     }
@@ -136,9 +136,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
-    ol.writeAnchor("details");
+    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.writeAnchor("_details");
+    if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trDetailedDescription());
+    parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     // repeat brief description
     if (!briefDescription().isEmpty())

@@ -152,7 +152,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
   {
     t << "<area ";
     if (cd->getReference()) t << "doxygen=\"" << cd->getReference() << ":\" ";
-    t << "href=\"" << cd->classFile() << ".html\" ";
+    t << "href=\"" << cd->getOutputFileBase() << ".html\" ";
     t << "ALT=\"" << cd->name(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
     t << x+w << "," << y+h << "\">" << endl;
@@ -187,7 +187,7 @@ QString DiagramItem::label() const
 
 QString DiagramItem::fileName() const
 {
-  return classDef->classFile();
+  return classDef->getOutputFileBase();
 }
 
 int DiagramItem::avgChildPos() const

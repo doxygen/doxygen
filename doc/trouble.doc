@@ -62,6 +62,11 @@ Furthermore, I would appreciate a mail if you have found
 a bug, or if you have ideas (or even better some code or a patch) 
 how to fix existing bugs and limitations. 
 
+The easiest way for me to solve bugs is if you can send me a small example
+demonstrating the problem you have (make sure the example compiles!). It is
+usually a good idea to send along the configuation file as well, but please 
+use doxygen with the <code>-s</code> flag while generating it. 
+
 My email address: <a href="mailto:dimitri@stack.nl">dimitri@stack.nl</a> 
 */
 

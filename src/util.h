@@ -46,7 +46,8 @@ extern QString dateToString(bool);
 //extern OutputList linkifyText(const char *clName,const char *name,
 //                        const char *text);
 extern bool getDefs(const QString &memberName,const QString &className, 
-                    const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd);
+                    const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd,
+                    NamespaceDef *&nd);
 extern void generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);
 extern void generateLink(OutputList &ol,const char *,
@@ -78,5 +79,8 @@ void startFile(OutputList &ol,const char *name,
 void endFile(OutputList &ol,bool external=FALSE);
 void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
 QString argListToString(ArgumentList *al);
+QString generateMarker(int id);
+void writeExample(OutputList &ol,ExampleList *el);
+void setFileNameForSections(QList<QString> *anchorList,const char *fileName);
 
 #endif

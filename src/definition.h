@@ -18,19 +18,22 @@
 #define DEFINITION_H
 
 #include <qstring.h>
+#include <qlist.h>
 #include "config.h"
+#include "section.h"
 
 /*! The common base class of all definitions. */
 class Definition
 {
   public:
     //! create a new definition
-    Definition(const char *name,const char *b=0,const char *d=0)
-      { n=name; brief=b; doc=d; }
+    Definition(const char *name,const char *b=0,const char *d=0);
     //! destroys the definition
-    virtual ~Definition() {}
+    virtual ~Definition();
     //! returns the name of the definition
     QString name() const { return n; }
+    //! returns the base name of the output file that contains this definition.
+    virtual QString getOutputFileBase() const = 0;
     //! returns the detailed description of this definition
     QString documentation() const { return doc; }
     //! returns the brief description of this definition
@@ -55,10 +58,13 @@ class Definition
       { return !doc.isNull() || !brief.isNull() || extractAllFlag; }
     QString nameToFile(const char *name);
 
+    void addSectionsToDefinition(QList<QString> *anchorList);
+
   private: 
     QString n;     // name of the definition
     QString brief; // brief description
     QString doc;   // detailed description
+    SectionList *sectionList; // list of all sections
 };
 
 #endif

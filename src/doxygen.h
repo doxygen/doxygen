@@ -28,6 +28,7 @@
 #include "define.h"
 #include "namespacedef.h"
 #include "formula.h"
+#include "section.h"
 
 struct PageInfo
 {
@@ -72,23 +73,12 @@ class BufStr : public QString
     const int spareRoom; // 10Kb extra room to avoid frequent resizing
 };
 
-struct SectionInfo
-{
-  SectionInfo(const char *n,const char *l,const char *t,bool sub)
-    { pageName=n; label=l; title=t; isSubsection=sub; }
-  QString pageName;
-  QString label; 
-  QString title;
-  bool isSubsection;
-};
-
 typedef QList<QString>     StringList;
 typedef QDict<MemberDef>   MemberDict;
 typedef QDict<ClassDef>    ClassDict;
 typedef QDict<FileDef>     FileDict;
 typedef QDict<QString>     StringDict;
 typedef QDict<PageInfo>    PageDict;
-typedef QDict<SectionInfo> SectionDict;
 typedef QDict<GroupDef>    GroupDict;
 
 extern const char * getOverloadDocs();
@@ -118,6 +108,7 @@ extern FileList includeFiles;
 extern StringDict typedefDict;
 extern GroupList groupList;
 extern NamespaceList namespaceList;
+extern NamespaceDict namespaceDict;
 extern FormulaList formulaList;
 extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
@@ -130,5 +121,6 @@ extern int documentedDefines;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
+extern int documentedNamespaceMembers;
 
 #endif

@@ -129,6 +129,10 @@ class OutputList
     { forall(&OutputGenerator::endGroupHeader); }
     void writeListItem() 
     { forall(&OutputGenerator::writeListItem); }
+    void startMemberSections()
+    { forall(&OutputGenerator::startMemberSections); }
+    void endMemberSections()
+    { forall(&OutputGenerator::endMemberSections); }
     void startMemberHeader()
     { forall(&OutputGenerator::startMemberHeader); }
     void endMemberHeader()
@@ -141,6 +145,8 @@ class OutputList
     { forall(&OutputGenerator::startMemberItem); }
     void endMemberItem() 
     { forall(&OutputGenerator::endMemberItem); }
+    void insertMemberAlign() 
+    { forall(&OutputGenerator::insertMemberAlign); }
     void writeRuler() 
     { forall(&OutputGenerator::writeRuler); }
     void writeAnchor(const char *name)
@@ -165,6 +171,8 @@ class OutputList
     { forall(&OutputGenerator::writeDoxyAnchor,clName,anchor,name); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
+    void writeLatexLabel(const char *scope,const char *anchor) 
+    { forall(&OutputGenerator::writeLatexLabel,scope,anchor); }
     void startDescription() 
     { forall(&OutputGenerator::startDescription); }
     void endDescription() 
@@ -251,6 +259,8 @@ class OutputList
     { forall(&OutputGenerator::writeSectionRef,page,lab,title); }
     void writeSectionRefItem(const char *page,const char *lab, const char *title)
     { forall(&OutputGenerator::writeSectionRefItem,page,lab,title); }
+    void writeSectionRefAnchor(const char *page,const char *lab, const char *title)
+    { forall(&OutputGenerator::writeSectionRefAnchor,page,lab,title); }
     void addToIndex(const char *s1,const char *s2)
     { forall(&OutputGenerator::addToIndex,s1,s2); }
     void writeSynopsis() 

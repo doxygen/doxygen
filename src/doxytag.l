@@ -251,7 +251,8 @@ QString unhtmlify(const char *str)
   				   }
 <SearchWords>[a-z_A-Z0-9]+	   {
   				     docAnchor = yytext;
-				     if (docAnchor=="details")
+				     if (docAnchor=="details" || 
+					 docAnchor=="_details")
 				     {
 				       docRefName=className.copy();
 				       addReference();

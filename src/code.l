@@ -173,16 +173,19 @@ static void generateClassLink(OutputList &ol,const char *clName)
     if (exampleBlock)
     {
       QString anchor;
-      anchor.sprintf("a%d",anchorCount);
+      anchor.sprintf("_a%d",anchorCount);
       //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),exampleName.data(),
       //                                   exampleFile.data());
       if (cd->addExample(anchor,exampleName,exampleFile))
       {
+	bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+	if (latexOn) ol.disable(OutputGenerator::Latex);
 	ol.writeAnchor(anchor);
+	if (latexOn) ol.enable(OutputGenerator::Latex);
 	anchorCount++;
       }
     }
-    ol.writeCodeLink(cd->getReference(),cd->classFile(),0,className);
+    ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
   }
   else
   {
@@ -193,13 +196,14 @@ static void generateClassLink(OutputList &ol,const char *clName)
 static bool getLink(const char *className,
                     const char *memberName,OutputList &result)
 {
-  MemberDef *md;
-  ClassDef  *cd;
-  FileDef   *fd;
+  MemberDef    *md;
+  ClassDef     *cd;
+  FileDef      *fd;
+  NamespaceDef *nd;
   QString m=memberName;
   QString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
-  if (getDefs(m,c,"()",md,cd,fd) &&
+  if (getDefs(m,c,"()",md,cd,fd,nd) &&
       (md->hasDocumentation() || md->isReference()))
   {
     //printf("Found!\n");
@@ -217,13 +221,19 @@ static bool getLink(const char *className,
     }
     if (cd)
     {
-      result.writeCodeLink(cd->getReference(),cd->classFile(),
+      result.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),
+	                        md->anchor(),memberName);
+      return TRUE;
+    }
+    else if (nd)
+    {
+      result.writeCodeLink(nd->getReference(),nd->getOutputFileBase(),
 	                        md->anchor(),memberName);
       return TRUE;
     }
     else if (fd)
     {
-      result.writeCodeLink(fd->getReference(),fd->diskName(),
+      result.writeCodeLink(fd->getReference(),fd->getOutputFileBase(),
 	                        md->anchor(),memberName);
       return TRUE;
     }
@@ -363,7 +373,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  if ((fd=findFileDef(&inputNameDict,yytext,ambig)) &&
 					      fd->hasDocumentation())
 					  {
-					    code->writeCodeLink(0,fd->diskName(),0,yytext);
+					    code->writeCodeLink(0,fd->getOutputFileBase(),0,yytext);
 					  }
 					  else
 					  {

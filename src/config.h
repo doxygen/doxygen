@@ -41,6 +41,7 @@ extern QString  genTagFile;         // the tag file to generate
 extern QString  inputFilter;        // a filter command that is applied to input files
 extern QString  paperType;          // the page type to generate docs for
 extern QString  stripFromPath;      // the string to strip from the file path
+extern QString  manExtension;       // extension the man page files
 extern QStrList includePath;        // list of include paths                
 extern QStrList examplePath;        // list of example paths                
 extern QStrList inputSources;       // list of input files                  
@@ -76,5 +77,6 @@ extern bool     repeatBriefFlag;    // repeat brief descriptions.
 extern bool     internalDocsFlag;   // determines what happens to internal docs.
 extern bool     caseSensitiveNames; // determines if output can be mixed case.
 extern bool     verbatimHeaderFlag; // enable/disable generation of verb headers.
+extern bool     htmlAlignMemberFlag; // align members in HTML using tables.
 
 #endif

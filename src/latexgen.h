@@ -79,17 +79,20 @@ class LatexGenerator : public OutputGenerator
     void endGroupHeader();
     void writeListItem() { t << "\\item " << endl; }
 
+    void startMemberSections() {}
+    void endMemberSections() {} 
     void startMemberHeader() { startGroupHeader(); }
     void endMemberHeader() { endGroupHeader(); }
     void startMemberList()  { t << "\\begin{CompactItemize}" << endl; }
     void endMemberList()    { t << "\\end{CompactItemize}"   << endl; }
     void startMemberItem() { t << "\\item " << endl; }
     void endMemberItem() { t << endl; }
+    void insertMemberAlign() {}
 
     void writeRuler() { t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}"; }
-    void writeAnchor(const char *) {}
+    void writeAnchor(const char *name) { t << "\\label{" << name << "}" << endl; }
     void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
-    void endCodeFragment()   { t << "\\end{verbatim}\\normalsize "; }
+    void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
     void writeBoldString(const char *text) 
                          { t << "{\\bf "; docify(text); t << "}"; }
     void startEmphasis() { t << "{\\em ";  }
@@ -99,13 +102,14 @@ class LatexGenerator : public OutputGenerator
     void startDescription() { t << "\\begin{description}" << endl; }
     void endDescription()   { t << "\\end{description}" << endl; }
     void startDescItem()    { t << "\\item["; }
-    void endDescItem()      { t << "]"; }
+    void endDescItem()      { t << "]" << endl; }
     void lineBreak() { t << "\\par\n"; }
     void startMemberDoc(const char *,const char *,const char *);
     void endMemberDoc() { t << "}"; }
     void writeDoxyAnchor(const char *,const char *,const char *);
     void writeChar(char c);
     void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
+    void writeLatexLabel(const char *scope,const char *anchor);
     void writeStartAnnoItem(const char *type,const char *file, 
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
@@ -148,11 +152,12 @@ class LatexGenerator : public OutputGenerator
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList()     { t << "\\begin{Desc}\\item["; }
     void endDescTitle()      { t << "]"; }
-    void writeDescItem()     { t << "\\par "; }
+    void writeDescItem()     { t << "\\par" << endl; }
     void endDescList()       { t << "\\end{Desc}"; }
     void writeSection(const char *,const char *,bool);
     void writeSectionRef(const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
+    void writeSectionRefAnchor(const char *,const char *,const char *);
     void addToIndex(const char *,const char *);
     void startIndent()       {}
     void endIndent()         {}

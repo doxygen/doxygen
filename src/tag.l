@@ -25,6 +25,7 @@
   
 #include "classdef.h"
 #include "filedef.h"
+#include "namespacedef.h"
 #include "memberdef.h"
 #include "doxygen.h"
 #include "util.h"
@@ -36,12 +37,14 @@
 static int yyLineNr;
 static QString className;
 static QString fileName;
+static QString namespaceName;
 static QString tagName;
 static QString memberName;
 static QString anchorName;
 static QString argString;
 static ClassDef *cd;
 static FileDef *fd;
+static NamespaceDef *nd;
 
 static void addClass(const char *name,const char *fileName)
 {
@@ -50,6 +53,7 @@ static void addClass(const char *name,const char *fileName)
   {
     cd = new ClassDef(name,ClassDef::Class,tagName,fileName);
     fd = 0;
+    nd = 0;
     classList.inSort(cd);
     classDict.insert(className,cd);
   }
@@ -72,8 +76,25 @@ static void addFile(const char *name)
     inputNameDict.insert(name,mn);
   }
   cd = 0;
+  nd = 0;
   //fileList.inSort(fd);
   //fileDict.insert(fileName,fd);
+}
+
+static void addNamespace(const char *name)
+{
+  if ((nd=namespaceDict[name])==0)
+  {
+    // TODO: we assume that each namespace is limited to a single tagfile.
+    // since namespace are open, this need not to be the case. As a result
+    // namespace may contain members that are located in 
+    // different namespaces!
+    nd = new NamespaceDef(name,tagName);
+    namespaceList.inSort(nd);
+    namespaceDict.insert(name,nd);
+  }
+  cd = 0;
+  fd = 0;
 }
 
 static void addMember(const char *name,const char *anchor,const char *args)
@@ -87,21 +108,24 @@ static void addMember(const char *name,const char *anchor,const char *args)
     md=new MemberDef(0,name,args,0,Public,Normal,FALSE,FALSE,
                        MemberDef::Function,0,0); 
     md->setReference(anchor);
-    if (cd)
+    if (cd) // member of a class
     {
-      //md=new MemberDef(cd,name,args,anchor,tagName);
       md->setMemberClass(cd);
       cd->insertMember(md); 
-      //printf("Adding member %s %s to class\n",name,args);
       mnd=&memberNameDict;
       mnl=&memberNameList;
     }
-    else
+    else if (nd) // member of a namespace
     {
-      //md=new MemberDef(&unrelatedClass,name,args,anchor,tagName);
+      md->setNamespace(nd);
+      nd->insertMember(md);
+      mnd=&functionNameDict;
+      mnl=&functionNameList;
+    }
+    else // member of a file
+    {
       md->setFileDef(fd);
       fd->insertMember(md);
-      //printf("Adding global member %s %s\n",name,args);
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }
@@ -130,6 +154,7 @@ static void addMember(const char *name,const char *anchor,const char *args)
 
 ID [a-z_A-Z][a-z_A-Z0-9]*
 FILE [a-z_A-Z0-9\.\-\+\:\\\/]+
+SCOPE ({ID}"::")*{ID}
 
 %x Pass1
 %x Pass2
@@ -139,17 +164,21 @@ FILE [a-z_A-Z0-9\.\-\+\:\\\/]+
 %x ClassName1
 %x ClassName2
 %x FileName
+%x NamespaceName
 %x BaseClasses
 %x ClassFile1
 %x ClassFile2
 
 %%
 
-<Pass1>^">"				{
+<Pass1>^">"				{ // start of a class
   					  BEGIN(ClassName1);
   					}
-<Pass1>^"&"				{
+<Pass1>^"&"				{ // start of a file
   					  BEGIN(FileName);
+  					}
+<Pass1>^"%"				{ // start of a namespace
+  					  BEGIN(NamespaceName);
   					}
 <Pass1>^[~a-z_A-Z][^ \n]*/" "		{
   					  memberName=yytext;
@@ -175,7 +204,12 @@ FILE [a-z_A-Z0-9\.\-\+\:\\\/]+
 					  addFile(yytext);
 					  BEGIN(Pass1);
   					}
-<ClassName1>{ID}/":"			{
+<NamespaceName>{SCOPE}/":"		{
+  					  namespaceName=yytext;
+					  addNamespace(yytext);
+					  BEGIN(Pass1);
+  					}
+<ClassName1>{SCOPE}/":"			{
   					  className=yytext;		  
 					  BEGIN(ClassFile1);
   					}

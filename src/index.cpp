@@ -147,7 +147,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
       //printf("Passed...\n");
       if (cd->hasDocumentation() || cd->isReference())
       {
-        ol.writeIndexItem(cd->getReference(),cd->classFile(),cd->name());
+        ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
         if (cd->isReference()) 
         { 
           ol.startTypewriter(); 
@@ -191,7 +191,7 @@ void writeClassHierarchy(OutputList &ol)
         }
         if (cd->hasDocumentation() || cd->isReference())
         {
-          ol.writeIndexItem(cd->getReference(),cd->classFile(),cd->name());
+          ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
           if (cd->isReference()) 
           {
             ol.startTypewriter(); 
@@ -236,9 +236,9 @@ void writeHierarchicalIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"hierarchy","Hierarchical Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trClassHierarchy());
+  parseText(ol,projectName+" "+theTranslator->trClassHierarchy());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trClassHierarchyDescription());
+  parseText(ol,theTranslator->trClassHierarchyDescription());
   ol.newParagraph();
   writeClassHierarchy(ol);
   endFile(ol);
@@ -247,7 +247,7 @@ void writeHierarchicalIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countFileList()
+int countFiles()
 {
   int count=0;
   FileNameListIterator fnli(inputNameList);
@@ -272,10 +272,10 @@ void writeFileIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"files","File Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trFileList());
+  parseText(ol,projectName+" "+theTranslator->trFileList());
   endTitle(ol,0);
   ol.newParagraph();
-  parseDoc(ol,0,0,theTranslator->trFileListDescription(extractAllFlag));
+  parseText(ol,theTranslator->trFileListDescription(extractAllFlag));
   ol.newParagraph();
 
   ol.startIndexList();
@@ -299,7 +299,7 @@ void writeFileIndex(OutputList &ol)
         }
 
         ol.writeStartAnnoItem("file",
-                              fd->diskName(),
+                              fd->getOutputFileBase(),
                               path,
                               fd->name()
                              );
@@ -314,7 +314,7 @@ void writeFileIndex(OutputList &ol)
         else
         {
           ol.startEmphasis();
-          parseDoc(ol,0,0,theTranslator->trNoDescriptionAvailable());
+          parseText(ol,theTranslator->trNoDescriptionAvailable());
           ol.endEmphasis();
         }
         ol.docify(")");
@@ -330,15 +330,14 @@ void writeFileIndex(OutputList &ol)
 }
 
 //----------------------------------------------------------------------------
-
-int countNamespaceList()
+int countNamespaces()
 {
   int count=0;
   NamespaceListIterator nli(namespaceList);
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->hasDocumentation()) count++;
+    if (!nd->getReference() && nd->hasDocumentation()) count++;
   }
   return count;
 }
@@ -351,19 +350,19 @@ void writeNamespaceIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"namespaces","Namespace Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trNamespaceList());
+  parseText(ol,projectName+" "+theTranslator->trNamespaceList());
   endTitle(ol,0);
   ol.newParagraph();
-  parseDoc(ol,0,0,theTranslator->trNamespaceListDescription(extractAllFlag));
+  parseText(ol,theTranslator->trNamespaceListDescription(extractAllFlag));
   ol.newParagraph();
 
   ol.startIndexList();
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->hasDocumentation())
+    if (!nd->getReference() && nd->hasDocumentation())
     {
-      ol.writeStartAnnoItem("namespace",nd->namespaceFile(),0,nd->name());
+      ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
       if (nd->briefDescription())
       {
@@ -375,7 +374,7 @@ void writeNamespaceIndex(OutputList &ol)
       else
       {
         ol.startEmphasis();
-        parseDoc(ol,0,0,theTranslator->trNoDescriptionAvailable());
+        parseText(ol,theTranslator->trNoDescriptionAvailable());
         ol.endEmphasis();
       }
       ol.docify(")");
@@ -433,7 +432,7 @@ void writeAnnotatedClassList(OutputList &ol)
         case ClassDef::Union:  type="union";   break;
         default:               type="unknown"; break; // an error
       }
-      ol.writeStartAnnoItem(type,cd->classFile(),0,cd->name());
+      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
       ol.docify(" (");
       if (cd->briefDescription())
       {
@@ -445,7 +444,7 @@ void writeAnnotatedClassList(OutputList &ol)
       else
       {
         ol.startEmphasis();
-        parseDoc(ol,0,0,theTranslator->trNoDescriptionAvailable());
+        parseText(ol,theTranslator->trNoDescriptionAvailable());
         ol.endEmphasis();
       }
       ol.docify(")");
@@ -466,9 +465,9 @@ void writeAnnotatedIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"annotated","Annotated Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trCompoundList());
+  parseText(ol,projectName+" "+theTranslator->trCompoundList());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trCompoundListDescription());
+  parseText(ol,theTranslator->trCompoundListDescription());
   writeAnnotatedClassList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Man);
@@ -522,7 +521,7 @@ void writeMemberList(OutputList &ol)
             ol.docify(": ");
           else 
             ol.docify(", ");
-          ol.writeObjectLink(cd->getReference(),cd->classFile(),md->anchor(),
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),md->anchor(),
                             cd->name());
           count++;
           prevName=cd->name();
@@ -537,7 +536,7 @@ void writeMemberList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countMemberList()
+int countClassMembers()
 {
   int count=0;
   MemberName *mn=memberNameList.first();
@@ -575,9 +574,9 @@ void writeMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"functions","Compound Member Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trCompoundMembers());
+  parseText(ol,projectName+" "+theTranslator->trCompoundMembers());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trCompoundMembersDescription(extractAllFlag));
+  parseText(ol,theTranslator->trCompoundMembersDescription(extractAllFlag));
   writeMemberList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
@@ -586,7 +585,7 @@ void writeMemberIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writeFunctionList(OutputList &ol)
+void writeFileMemberList(OutputList &ol)
 {
   ol.startItemList();
   MemberName *mn=functionNameList.first();
@@ -639,7 +638,7 @@ void writeFunctionList(OutputList &ol)
           //if ((s=baseName.findRev("/"))!=-1) 
           //  baseName=baseName.right(baseName.length()-s-1);
           ol.writeObjectLink(fd->getReference(),
-              fd->diskName(),md->anchor(), baseName);
+              fd->getOutputFileBase(),md->anchor(), baseName);
           count++;
           prevName=fd->name();
         }
@@ -653,7 +652,89 @@ void writeFunctionList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countFunctionList()
+void writeNamespaceMemberList(OutputList &ol)
+{
+  ol.startItemList();
+  MemberName *mn=functionNameList.first();
+  while (mn)
+  {
+    MemberDef *md=mn->first();
+    bool found=FALSE;
+    while (md && !found)
+    {
+      NamespaceDef *nd=md->getNamespace();
+      if (nd && nd->hasDocumentation() && 
+          !md->isReference() && 
+          md->hasDocumentation() && 
+          !md->name().isEmpty() && 
+          md->name()[0]!='@') found=TRUE;
+      else
+        md=mn->next();
+    }
+    if (found) // member is documented and in a documented namespace
+    {
+      ol.writeListItem();
+      ol.docify(md->name());
+      if (md->isFunction()) ol.docify("()");
+      ol.writeString("\n");
+
+      int count=0;
+      md=mn->first();
+      QString prevName;
+      while (md)
+      {
+        NamespaceDef *nd=md->getNamespace();
+        if (nd && nd->hasDocumentation() && 
+            !md->isReference() && 
+            md->hasDocumentation() && 
+            !md->name().isEmpty() && md->name()[0]!='@'
+            )
+        {
+          if (count==0) 
+            ol.docify(": ");
+          else 
+            ol.docify(", ");
+          ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+                             md->anchor(),nd->name());
+          count++;
+        }
+        md=mn->next();
+      }
+    }
+    mn=functionNameList.next();
+  }
+  ol.endItemList();
+}
+
+//----------------------------------------------------------------------------
+
+int countNamespaceMembers()
+{
+  int count=0;
+  MemberName *mn=functionNameList.first();
+  while (mn)
+  {
+    MemberDef *md=mn->first();
+    bool found=FALSE;
+    while (md && !found)
+    {
+      if (md->getNamespace() &&
+          !md->isReference() && md->hasDocumentation() && 
+          !md->name().isEmpty() && md->name()[0]!='@'
+         ) 
+        found=TRUE;
+      else
+        md=mn->next();
+    }
+    if (found) count++;
+    mn=functionNameList.next();
+  }
+  return count;
+}
+
+//----------------------------------------------------------------------------
+
+int countFileMembers()
 {
   int count=0;
   MemberName *mn=functionNameList.first();
@@ -665,7 +746,7 @@ int countFunctionList()
     while (md && !found)
     {
       if (!md->isReference() && md->hasDocumentation() && 
-          md->name()[0]!='@' && 
+          !md->name().isEmpty() && md->name()[0]!='@' && 
           (((fd=md->getFileDef()) && fd->hasDocumentation())
             || 
            ((fd=md->getFileDec()) && fd->hasDocumentation())
@@ -683,17 +764,35 @@ int countFunctionList()
 
 //----------------------------------------------------------------------------
 
-void writeFunctionIndex(OutputList &ol)
+void writeFileMemberIndex(OutputList &ol)
 {
   if (documentedFunctions==0) return;
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"globals","File Member Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trFileMembers());
+  parseText(ol,projectName+" "+theTranslator->trFileMembers());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trFileMembersDescription(extractAllFlag));
-  writeFunctionList(ol);
+  parseText(ol,theTranslator->trFileMembersDescription(extractAllFlag));
+  writeFileMemberList(ol);
+  endFile(ol);
+  ol.enable(OutputGenerator::Latex);
+  ol.enable(OutputGenerator::Man);
+}
+
+//----------------------------------------------------------------------------
+
+void writeNamespaceMemberIndex(OutputList &ol)
+{
+  if (documentedNamespaceMembers==0) return;
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::Latex);
+  startFile(ol,"namespacemembers","Namespace Member Index");
+  startTitle(ol);
+  parseText(ol,projectName+" "+theTranslator->trNamespaceMembers());
+  endTitle(ol,0);
+  parseText(ol,theTranslator->trNamespaceMemberDescription(extractAllFlag));
+  writeNamespaceMemberList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::Man);
@@ -736,9 +835,9 @@ void writeHeaderIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"headers","Header File Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trHeaderFiles());
+  parseText(ol,projectName+" "+theTranslator->trHeaderFiles());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trHeaderFilesDescription());
+  parseText(ol,theTranslator->trHeaderFilesDescription());
   writeHeaderFileList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
@@ -753,9 +852,9 @@ void writeExampleIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trExamples());
+  parseText(ol,projectName+" "+theTranslator->trExamples());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trExamplesDescription());
+  parseText(ol,theTranslator->trExamplesDescription());
   ol.startIndexList();
   PageInfo *pi=exampleList.first();
   while (pi)
@@ -788,18 +887,25 @@ void writePageIndex(OutputList &ol)
   startTitle(ol);
   ol.docify(projectName+" "+theTranslator->trRelatedPages());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trRelatedPagesDescription());
+  parseText(ol,theTranslator->trRelatedPagesDescription());
   ol.startIndexList();
   PageInfo *pi=pageList.first();
   while (pi)
   {
-    QString pageName;
+    QString pageName,pageTitle;
+    
     if (caseSensitiveNames)
       pageName=pi->name.copy();
     else
       pageName=pi->name.lower();
+    
+    if (pi->title.isEmpty())
+      pageTitle=pi->name;
+    else
+      pageTitle=pi->title;
+    
     ol.writeListItem();
-    ol.writeObjectLink(0,pageName,0,pi->name);
+    ol.writeObjectLink(0,pageName,0,pageTitle);
     ol.writeString("\n");
     pi=pageList.next();
   }
@@ -810,7 +916,7 @@ void writePageIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countGroupList()
+int countGroups()
 {
   int count=0;
   GroupListIterator gli(groupList);
@@ -835,7 +941,7 @@ void writeGroupList(OutputList &ol)
     if (gd->countMembers()>0)
     {
       ol.startDescItem();
-      ol.startTextLink(gd->groupFile(),0);
+      ol.startTextLink(gd->getOutputFileBase(),0);
       parseDoc(ol,0,0,gd->groupTitle());
       ol.endTextLink();
       ol.endDescItem();
@@ -854,9 +960,9 @@ void writeGroupIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"modules","Module Index");
   startTitle(ol);
-  parseDoc(ol,0,0,projectName+" "+theTranslator->trModules());
+  parseText(ol,projectName+" "+theTranslator->trModules());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trModulesDescription());
+  parseText(ol,theTranslator->trModulesDescription());
   writeGroupList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Man);
@@ -880,7 +986,7 @@ void writeIndex(OutputList &ol)
   ol.startFile("index","Main Index",FALSE);
   if (!noIndexFlag) writeQuickLinks(ol,TRUE);
   ol.startTitleHead();
-  parseDoc(ol,0,0,projPrefix+theTranslator->trDocumentation());
+  parseText(ol,projPrefix+theTranslator->trDocumentation());
   ol.endTitleHead(0);
   ol.newParagraph();
   if (!projectNumber.isEmpty())
@@ -897,7 +1003,7 @@ void writeIndex(OutputList &ol)
   ol.enable(OutputGenerator::Latex);
   ol.startFile("refman",0,FALSE);
   ol.startIndexSection(isTitlePageStart);
-  parseDoc(ol,0,0,projPrefix+theTranslator->trReferenceManual());
+  parseText(ol,projPrefix+theTranslator->trReferenceManual());
   if (!projectNumber.isEmpty())
   {
     ol.startProjectNumber(); 
@@ -906,60 +1012,72 @@ void writeIndex(OutputList &ol)
   }
   ol.endIndexSection(isTitlePageStart);
   ol.startIndexSection(isTitlePageAuthor);
-  parseDoc(ol,0,0,theTranslator->trGeneratedBy());
+  parseText(ol,theTranslator->trGeneratedBy());
   ol.endIndexSection(isTitlePageAuthor);
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleIndex);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trModuleIndex());
+    parseText(ol,projPrefix+theTranslator->trModuleIndex());
     ol.endIndexSection(isModuleIndex);
+  }
+  if (documentedNamespaces>0)
+  {
+    ol.startIndexSection(isNamespaceIndex);
+    parseText(ol,projPrefix+theTranslator->trNamespaceIndex());
+    ol.endIndexSection(isNamespaceIndex);
   }
   if (hierarchyClasses>0)
   {
     ol.startIndexSection(isClassHierarchyIndex);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trHierarchicalIndex());
+    parseText(ol,projPrefix+theTranslator->trHierarchicalIndex());
     ol.endIndexSection(isClassHierarchyIndex);
   }
   if (annotatedClasses>0)
   {
     ol.startIndexSection(isCompoundIndex);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trCompoundIndex());
+    parseText(ol,projPrefix+theTranslator->trCompoundIndex());
     ol.endIndexSection(isCompoundIndex);
   }
   if (documentedFiles>0)
   {
     ol.startIndexSection(isFileIndex);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trFileIndex());
+    parseText(ol,projPrefix+theTranslator->trFileIndex());
     ol.endIndexSection(isFileIndex);
   }
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleDocumentation);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trModuleDocumentation());
+    parseText(ol,projPrefix+theTranslator->trModuleDocumentation());
     ol.endIndexSection(isModuleDocumentation);
+  }
+  if (documentedNamespaces>0)
+  {
+    ol.startIndexSection(isNamespaceDocumentation);
+    parseText(ol,projPrefix+theTranslator->trNamespaceDocumentation());
+    ol.endIndexSection(isNamespaceDocumentation);
   }
   if (annotatedClasses>0)
   {
     ol.startIndexSection(isClassDocumentation);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trClassDocumentation());
+    parseText(ol,projPrefix+theTranslator->trClassDocumentation());
     ol.endIndexSection(isClassDocumentation);
   }
   if (documentedFiles>0)
   {
     ol.startIndexSection(isFileDocumentation);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trFileDocumentation());
+    parseText(ol,projPrefix+theTranslator->trFileDocumentation());
     ol.endIndexSection(isFileDocumentation);
   }
   if (exampleList.count()>0)
   {
     ol.startIndexSection(isExampleDocumentation);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trExampleDocumentation());
+    parseText(ol,projPrefix+theTranslator->trExampleDocumentation());
     ol.endIndexSection(isExampleDocumentation);
   }
   if (pageList.count()>0)
   {
     ol.startIndexSection(isPageDocumentation);
-    parseDoc(ol,0,0,projPrefix+theTranslator->trPageDocumentation());
+    parseText(ol,projPrefix+theTranslator->trPageDocumentation());
     ol.endIndexSection(isPageDocumentation);
   }
   ol.endIndexSection(isEndIndex);

@@ -2,6 +2,7 @@
  *
  * $Id$
  *
+ *
  * Copyright (C) 1997-1999 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -14,22 +15,35 @@
  *
  */
 
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef SECTION_H
+#define SECTION_H
 
-#include <stdio.h>
 #include <qlist.h>
+#include <qdict.h>
 #include <qstring.h>
 
-#include "entry.h"
-#include "code.h"
+class Definition;
 
-class OutputList;
+struct SectionInfo
+{
+  enum SectionType { Section, Subsection, Anchor };
+  SectionInfo(const char *l,const char *t,SectionType st)
+    { label=l; title=t; type=st; definition=0; }
+  QString fileName;
+  QString label; 
+  QString title;
+  SectionType type;
+  Definition *definition;
+};
 
-extern void parseMain(Entry *);
-extern void parseDoc(OutputList &ol,const char *clName, const char *memName,
-                           const QString &docString);
-extern void parseExample(OutputList &ol,const QString &docString, 
-                           const char *fileName);
-extern void parseText(OutputList &ol,const QString &txtString);
+class SectionList : public QList<SectionInfo>
+{
+};
+
+class SectionDict : public QDict<SectionInfo>
+{
+  public:
+    SectionDict(int size) : QDict<SectionInfo>(size) {}
+};
+
 #endif

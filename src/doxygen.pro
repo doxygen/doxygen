@@ -14,7 +14,7 @@
 # TMake project file for doxygen
 
 TEMPLATE     =	doxygen.t
-CONFIG       =	console qt warn_on release #debug
+CONFIG       =	console qt warn_on release #debug  
 HEADERS      =	doxygen.h scanner.h classdef.h classlist.h memberdef.h \
                 membername.h index.h memberlist.h definition.h \
                 entry.h logos.h instdox.h message.h code.h \

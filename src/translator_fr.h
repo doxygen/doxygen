@@ -255,7 +255,7 @@ class TranslatorFrench : public Translator
     virtual QString trNamespaces()
     { return "Namespaces"; }
     virtual QString trNamespaceList()
-    { return "List des Namespaces"; }
+    { return "Liste des Namespaces"; }
     virtual QString trNamespaceListDescription(bool extractAll)
     {
       QString result="Liste de tous les namespaces ";
@@ -265,6 +265,11 @@ class TranslatorFrench : public Translator
     }
     virtual QString trFriends()
     { return "Friends"; }
+    
+    // new since 0.49-990405
+    
+    virtual QString trRelatedFunctionDocumentation()
+    { return "Documentation des fonctions amies et associées"; }
 };
 
 #endif

@@ -14,6 +14,14 @@
  *
  */
 
+/*-------------------------------------------------------------------------
+Svensk översättning av:
+Samuel Hägglund      <sahag96@ite.mh.se>
+Xet Erixon           <xet@xeqt.com>
+
+Skicka gärna synpunkter. 
+--------------------------------------------------------------------------*/
+
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
@@ -35,34 +43,32 @@ class TranslatorSwedish : public Translator
     QString trRelatedSubscript()
     { return "(Observera att dessa inte är medlemsfunktioner)"; }
     QString trDetailedDescription()
-    { return "Utökad beskrivning"; }
+    { return "Detaljerad beskrivning"; }
     QString trMemberTypedefDocumentation()
-    { return "Har inte en aning..."; }
+    { return "Dokumentation över typdefinierade medlemmar"; }
     QString trMemberEnumerationDocumentation()
-    { return "Uppräknad dokumentation???"; }
-    QString trEnumerationValueDocumentation()
-    { return "Documentatie van enumeratie waarden"; }
+    { return "Dokumentation över egenuppräknande medlemmar"; }
     QString trMemberFunctionDocumentation()
-    { return "Dokumentation av medlemsfunktioner"; }
+    { return "Dokumentation över medlemsfunktioner"; }
     QString trMemberDataDocumentation()
-    { return "Dokumentation av datamedlemmar"; }
+    { return "Dokumentation över datamedlemmar"; }
     QString trGeneratedFrom(const char *s,bool single)
     { 
-      QString result=(QString)"Dokumentationen för detta"+s+
-                     " är skapad ur följande fil";
-      if (single) result+=":";   else result+="s:";
+      QString result=(QString)"Dokumentationen för denna"+s+
+                     " är skapad utifrån följande fil";
+      if (single) result+=":";   else result+="er:";
       return result;
     }
     QString trMore()
-    { return "Fler..."; }
+    { return "Mer..."; }
     QString trReference()
-    { return "Hänvisning?"; }
+    { return "Referens"; }
     QString trListOfAllMembers()
     { return "Lista över alla medlemmar."; }
     QString trMemberList()
     { return "Medlemslista"; }
     QString trThisIsTheListOfAllMembers()
-    { return "Det här är en fullständig lista av medlemmar för?"; }
+    { return "Det här är en fullständig lista över medlemmar för"; }
     QString trIncludingInheritedMembers()
     { return "med alla ärvda medlemmar."; }
     QString trGeneratedAutomatically(const char *s)
@@ -72,29 +78,29 @@ class TranslatorSwedish : public Translator
       return result;
     }
     QString trEnumName()
-    { return "enum namn?"; }
+    { return "enum namn"; }
     QString trEnumValue()
-    { return "enum värde?"; }
+    { return "enum värde"; }
     QString trDefinedIn()
     { return "deklarerad i"; }
     QString trIncludeFile()
-    { return "Include Fil"; }
+    { return "Inkluderingsfil"; }
     QString trVerbatimText(const char *f)
-    { return (QString)"Detta är den ordagranna texten av "+f+" include fil."; }
+    { return (QString)"Detta är den ordagranna texten från inkluderingsfilen"+f; }
     QString trModules()
-    { return "Moduler?"; }
+    { return "Moduler"; }
     QString trClassHierarchy()
-    { return "Klasshierarki?"; }
+    { return "Klasshierarki"; }
     QString trCompoundList()
-    { return "Inhägnad lista???"; }
+    { return "Sammansatt klasslista"; }
     QString trFileList()
     { return "Fillista"; }
     QString trHeaderFiles()
     { return "Headerfiler"; }
     QString trCompoundMembers()
-    { return "Inhägnade medlemmar??"; }
+    { return "Sammansatta klassmedlemmar"; }
     QString trFileMembers()
-    { return "Filmedlemmar???"; }
+    { return "Filmedlemmar"; }
     QString trRelatedPages()
     { return "Besläktade sidor"; }
     QString trExamples()
@@ -102,8 +108,8 @@ class TranslatorSwedish : public Translator
     QString trSearch()
     { return "Sök"; }
     QString trClassHierarchyDescription()
-    { return "Denna lista över arv är grovsorterad, men inte helt "
-             "i alfabetisk ordning:";
+    { return "Denna lista över arv är grovt, men inte helt, "
+             "sorterad i alfabetisk ordning:";
     }
     QString trFileListDescription(bool extractAll)
     {
@@ -113,8 +119,8 @@ class TranslatorSwedish : public Translator
       return result;
     }
     QString trCompoundListDescription()
-     { return "Här följer klasserna, structs och "
-             "unions? med en kort beskrivning:"; 
+     { return "Här följer klasserna, structerna och "
+             "unionerna med en kort beskrivning:"; 
     }
     QString trCompoundMembersDescription(bool extractAll)
     {
@@ -129,18 +135,18 @@ class TranslatorSwedish : public Translator
     {
       QString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
-      result+="filmedlemmar? med länkar till ";
+      result+="filmedlemmar med länkar till ";
       if (extractAll) result+="dokumentationsfilen för varje medlem:";
       else result+="filerna som de tillhör:";
       return result;
     }
     QString trHeaderFilesDescription()
-    { return "Här följer headerfilerna som API:n består av???:"; }
+    { return "Här följer headerfilerna som API:n består av:"; }
     QString trExamplesDescription()
     { return "Här följer en lista med alla exempel:"; }
     QString trRelatedPagesDescription()
-    { return "Här följer en lista med alla relevanta? dokumentationssidor:"; }
-    QString trModulesDescription()
+    { return "Här följer en lista över alla relaterade dokumentationssidor:";
+}     QString trModulesDescription()
     { return "Här följer en lista över alla moduler:"; }
     QString trNoDescriptionAvailable()
     { return "Beskrivning saknas"; }
@@ -148,11 +154,11 @@ class TranslatorSwedish : public Translator
     QString trDocumentation()
     { return "Dokumentation"; }
     QString trModuleIndex()
-    { return "Module Index"; }
+    { return "Modul Index"; }
     QString trHierarchicalIndex()
     { return "Hierarkiskt Index"; }
     QString trCompoundIndex()
-    { return "Compound Index"; }
+    { return "Sammansatt Index"; }
     QString trFileIndex() 
     { return "Fil Index"; }
     QString trModuleDocumentation()
@@ -169,39 +175,41 @@ class TranslatorSwedish : public Translator
     { return "Uppslagsbok"; }
 
     QString trDefines()
-    { return "Definerar"; }
+    { return "Definitioner"; }
     QString trFuncProtos()
     { return "Funktionsprototyper"; }
     QString trTypedefs()
-    { return "Typedefs"; }
+    { return "Typdefinitioner"; }
     QString trEnumerations()
-    { return "Uppräkning???"; }
+    { return "Egenuppräknande typer"; }
     QString trFunctions()
     { return "Funktioner"; }
     QString trVariables()
     { return "Variabler"; }
     QString trEnumerationValues()
-    { return "Enum värden??"; }
+    { return "Egenuppräknade värden"; }
     QString trReimplementedFrom()
-    { return "Återanvänd från???"; }
+    { return "Återanvänd från"; }
     QString trReimplementedIn()
-    { return "Återanvänd i??"; }
+    { return "Återanvänd i"; }
     QString trAuthor()
     { return "Författare"; }
     QString trDefineDocumentation()
-    { return "Definiera dokumentation"; }
+    { return "Dokumentation över definitioner"; }
     QString trFunctionPrototypeDocumentation()
     { return "Dokumentation över funktionsprototyper"; }
     QString trTypedefDocumentation()
-    { return "Dokumentation över typedefs"; }
+    { return "Dokumentation över typdefinitioner"; }
     QString trEnumerationTypeDocumentation()
-    { return "Dokumentation över enum typer"; }
+    { return "Dokumentation över egenuppräknande typer (enum)"; }
+    QString trEnumerationValueDocumentation()
+    { return "Dokumentation över egenuppräknande typers värden"; }
     QString trFunctionDocumentation()
     { return "Dokumentation över funktioner"; }
     QString trVariableDocumentation()
     { return "Dokumentation över variabler"; }
     QString trCompounds()
-    { return "Compounds??"; }
+    { return "Sammansättning"; }
     QString trFiles()
     { return "Filer"; }
     QString trGeneratedAt(const char *date,const char *projName)
@@ -217,12 +225,12 @@ class TranslatorSwedish : public Translator
     }
     QString trClassDiagram(const char *clName)
     {
-      return (QString)"Klass diagram för "+clName;
+      return (QString)"Klass-diagram för "+clName;
     }
     QString trForInternalUseOnly()
     { return "Endast för internt bruk."; }
     QString trReimplementedForInternalReasons()
-    { return "Omskriven av interna orsaker???; "
+    { return "Omskriven av intern anledning ; "
              "API:n påverkas inte."; 
     }
     QString trWarning()

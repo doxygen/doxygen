@@ -49,10 +49,11 @@ class ClassDef : public Definition
                         Union=Entry::UNION_SEC 
                       };
     
-    ClassDef(const char *name,int ct,const char *ref=0,const char *fName=0);
+    ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
    ~ClassDef();
-    QString classFile() const { return fileName; }
-    int compoundType() const { return compType; } 
+    //QString classFile() const { return fileName; }
+    QString getOutputFileBase() const { return fileName; }
+    CompoundType compoundType() const { return compType; } 
     const char *memberListFileName() const { return memListFileName; }
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
@@ -75,7 +76,7 @@ class ClassDef : public Definition
     void writeIncludeFile(OutputList &ol);
     bool addExample(const char *anchor,const char *name, const char *file);
     bool hasExamples();
-    void writeExample(OutputList &ol);
+    //void writeExample(OutputList &ol);
     void setProtection(Protection p) { prot=p; }
     Protection protection() const { return prot; }
     bool isVisible() 
@@ -130,7 +131,7 @@ class ClassDef : public Definition
     QString           reference;
     ExampleList      *exampleList;
     ExampleDict      *exampleDict;
-    int               compType;
+    CompoundType      compType;
     Protection        prot;
 };
 

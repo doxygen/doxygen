@@ -25,10 +25,12 @@ enum IndexSections
   isTitlePageStart,
   isTitlePageAuthor,
   isModuleIndex,
+  isNamespaceIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
   isModuleDocumentation,
+  isNamespaceDocumentation,
   isClassDocumentation,
   isFileDocumentation,
   isExampleDocumentation,
@@ -50,16 +52,18 @@ void writeHeaderIndex(OutputList &ol);
 void writeHeaderFileList(OutputList &ol);
 void writeExampleIndex(OutputList &ol);
 void writePageIndex(OutputList &ol);
-void writeFunctionIndex(OutputList &ol);
+void writeFileMemberIndex(OutputList &ol);
 void writeGroupIndex(OutputList &ol);
 void writeNamespaceIndex(OutputList &ol);
+void writeNamespaceMemberIndex(OutputList &ol);
 
 int countClassHierarchy();
-int countMemberList();
-int countFunctionList();
-int countFileList();
-int countGroupList();
-int countNamespaceList();
+int countClassMembers();
+int countFileMembers();
+int countFiles();
+int countGroups();
+int countNamespaces();
 int countAnnotatedClasses();
+int countNamespaceMembers();
 
 #endif

@@ -29,6 +29,8 @@ Entry::Entry()
   extends->setAutoDelete(TRUE);
   groups = new QList<QString>;
   groups->setAutoDelete(TRUE);
+  anchors = new QList<QString>;
+  anchors->setAutoDelete(TRUE);
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
@@ -66,6 +68,8 @@ Entry::Entry(const Entry &e)
   extends->setAutoDelete(TRUE);
   groups      = new QList<QString>;
   groups->setAutoDelete(TRUE);
+  anchors     = new QList<QString>;
+  anchors->setAutoDelete(TRUE);
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry(copy) tArgList=0\n");
@@ -93,6 +97,12 @@ Entry::Entry(const Entry &e)
   for (;(s=sli.current());++sli)
   {
     groups->append(new QString(*s));
+  }
+  
+  QListIterator<QString> sli2(*e.anchors);
+  for (;(s=sli2.current());++sli2)
+  {
+    anchors->append(new QString(*s));
   }
 
   // deep copy argument list
@@ -128,6 +138,7 @@ Entry::~Entry()
   delete sublist;
   delete extends;
   delete groups;
+  delete anchors;
   delete argList;
   //printf("Entry::~Entry() tArgList=%p\n",tArgList);
   delete tArgList;
@@ -177,6 +188,7 @@ void Entry::reset()
   sublist->clear();
   extends->clear();
   groups->clear();
+  anchors->clear();
   argList->clear();
   if (tArgList) { delete tArgList; tArgList=0; }
 }
@@ -210,6 +222,13 @@ int Entry::getSize()
     size+=sizeof(QLNode);
     size+=s->length()+1;
     s=groups->next();
+  }
+  s=anchors->first();
+  while (s)
+  {
+    size+=sizeof(QLNode);
+    size+=s->length()+1;
+    s=anchors->next();
   }
   Entry *e=sublist->first();
   while (e)

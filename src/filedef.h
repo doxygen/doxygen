@@ -62,7 +62,8 @@ class FileDef : public Definition
     } 
     
     /*! Returns nameString with all slashes replaced by underscores. */
-    const char *diskName() const { return diskname; }
+    //const char *diskName() const { return diskname; }
+    QString getOutputFileBase() const { return diskname; }
     
     /*! Returns the absolute path including the file name. */
     QString absFilePath() const { return filepath; }

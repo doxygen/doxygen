@@ -1,12 +1,12 @@
-DOXYGEN Version 0.49-990425
+DOXYGEN Version 0.49-990522
 
 INSTALLATION INSTRUCTIONS FOR UNIX:
 -----------------------------------
 
 1.  Unpack the archive, unless you already have:
    
-    gunzip doxygen-0.49-990425.src.tar.gz    # uncompress the archive
-    tar xf doxygen-0.49-990425.src.tar       # unpack it
+    gunzip doxygen-0.49-990522.src.tar.gz    # uncompress the archive
+    tar xf doxygen-0.49-990522.src.tar       # unpack it
 
 2.  Make sure Qt is installed properly (check the environment variable $QTDIR)
 
@@ -80,6 +80,10 @@ You will need to install the windows/dos versions of following tools:
       X-windows version as well!)
 - Microsoft Visual C++ version 5.0, use the vcvars32.bat to set the environment
   variables.
+- If you used WinZip to extract the tar archive it will (apparently) not 
+  create empty folders, so you have to add the folders
+  `objects' and `bin' manually in the root of the distribution before 
+  compiling.
 
 Make sure all tools are accessible from the command-line.
 
@@ -96,6 +100,11 @@ nmake -f Makefile.windows examples
 
 -----------------------------------------------------------------------------
 KNOWN CONFIGURATION PROBLEMS
+
+HTML RELATED PROBLEMS:
+- the indent continuously increases.
+  This seems to be a problem that can be observed with Netscape 4.01.
+  It is not present in many later and earlier versions.
 
 LATEX RELATED PROBLEMS:
 
@@ -129,4 +138,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (25 April 1999)
+Dimitri van Heesch (22 May 1999)

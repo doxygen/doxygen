@@ -169,7 +169,7 @@ Below is a list of tags that are recognized for each category.
   If the VERBATIM_HEADERS tag is set the YES (the default) then Doxygen\n";
   will generate a verbatim copy of the header file for each class for\n";
   which an include is specified. Set to NO to disable this.\n";
-  \sa Section \ref cmdclass.
+  \sa Section \ref cmdclass "\\class".
 
 </dl>
 
@@ -216,7 +216,7 @@ Below is a list of tags that are recognized for each category.
  \addindex EXAMPLE_PATH
  The \c EXAMPLE_PATH tag can be used to specify one or more files or
  directories that contain example code fragments that are included (see
- the \\include command in section \ref cmdinclude).
+ the \\include command in section \ref cmdinclude "\\include").
 
 <dt>\c INCLUDE_PATH <dd>
  \addindex INCLUDE_PATH
@@ -262,6 +262,7 @@ Below is a list of tags that are recognized for each category.
   <HTML>
     <HEAD>
       <TITLE>My title</TITLE>
+      <LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
     </HEAD>
     <BODY BGCOLOR="#FFFFFF">
 \endverbatim
@@ -341,6 +342,10 @@ EXTRA_PACKAGES = times
  A directory man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
 
+<dt>\c MAN_EXTENSION <dd>
+ \addindex MAX_EXTENSION
+ The MAN_EXTENSION tag determines the extension that is added to
+ the generated man pages (default is the subroutine's section .3)
 </dl>
 
 \subsection config_prepro Preprocessor related options
