@@ -31,6 +31,7 @@ class GraphHandler;
 class MemberHandler;
 class CompoundHandler;
 class SectionHandler;
+class ParamHandler;
 
 
 class RelatedCompound : public IRelatedCompound
@@ -92,6 +93,10 @@ class CompoundHandler : public IClass,
     virtual void startIncludeDependencyGraph(const QXmlAttributes& attrib);
     virtual void startIncludedByDependencyGraph(const QXmlAttributes& attrib);
     virtual void startInnerClass(const QXmlAttributes& attrib);
+    virtual void startInnerNamespace(const QXmlAttributes& attrib);
+    virtual void startInnerFile(const QXmlAttributes& attrib);
+    virtual void startInnerGroup(const QXmlAttributes& attrib);
+    virtual void startParam(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
@@ -111,14 +116,16 @@ class CompoundHandler : public IClass,
     IDocRoot *detailedDescription() const;
     IMember *memberById(const char *id) const;
     IMemberIterator *memberByName(const char *name) const;
+    IParamIterator *templateParameters() const;
     void release();
 
     // IClass implementation
     IGraph *inheritanceGraph() const;
     IGraph *collaborationGraph() const;
-    IRelatedCompoundIterator *baseClasses() const;
-    IRelatedCompoundIterator *derivedClasses() const;
-    ICompoundIterator *nestedClasses() const;
+    IRelatedCompoundIterator *baseCompounds() const;
+    IRelatedCompoundIterator *derivedCompounds() const;
+    ICompoundIterator *nestedCompounds() const;
+    ICompoundIterator *nestedGroup() const;
 
     // IFile implementation
     IGraph *includeDependencyGraph() const; 
@@ -129,6 +136,7 @@ class CompoundHandler : public IClass,
     QList<RelatedCompound>  m_superClasses;
     QList<RelatedCompound>  m_subClasses;
     QList<SectionHandler>   m_sections;
+    QList<ParamHandler>     m_templateParams;
     DocHandler             *m_brief;
     DocHandler             *m_detailed;
     ProgramListingHandler  *m_programListing;
@@ -147,8 +155,9 @@ class CompoundHandler : public IClass,
     GraphHandler           *m_collaborationGraph;
     GraphHandler           *m_includeDependencyGraph;
     GraphHandler           *m_includedByDependencyGraph;
-    QList<QString>          m_innerClasses;
+    QList<QString>          m_innerCompounds;
     ProgramListingHandler  *m_source;
+    bool                    m_hasTemplateParams;
 
 };
 

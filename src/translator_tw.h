@@ -292,11 +292,11 @@ class TranslatorChinesetraditional : public Translator
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="這些結構/聯合型態是屬於:";
+          result+="這些結構/聯合型態所屬:";
         }
         else
         {
-          result+="這些類別是屬於:";
+          result+="這些類別所屬:";
         }
       }
       return result;
@@ -647,7 +647,7 @@ class TranslatorChinesetraditional : public Translator
         case ClassDef::Exception:  result+=" 例外"; break;
       }
       if (isTemplate) result+=" 樣版";
-      result+=" 參考";
+      result+=" 參考文件";
       return result;
     }
 
@@ -1192,7 +1192,7 @@ class TranslatorChinesetraditional : public Translator
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "值:";
+      return "巨集內容:";
     }
     
 //////////////////////////////////////////////////////////////////////////

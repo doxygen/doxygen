@@ -72,6 +72,19 @@ void NamespaceDef::insertUsedFile(const char *f)
   }
 }
 
+void NamespaceDef::addInnerCompound(Definition *d)
+{
+  m_innerCompounds->append(d->localName(),d);
+  if (d->definitionType()==Definition::TypeNamespace)
+  {
+    insertNamespace((NamespaceDef *)d);
+  }
+  else if (d->definitionType()==Definition::TypeClass)
+  {
+    insertClass((ClassDef *)d);
+  }
+}
+
 void NamespaceDef::insertClass(ClassDef *cd)
 {
   if (classSDict->find(cd->name())==0)
@@ -170,6 +183,41 @@ void NamespaceDef::computeAnchors()
   setAnchors(0,'a',&allMemberList);
 }
 
+void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
+{
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+      !documentation().isEmpty())
+  {
+    ol.writeRuler();
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.writeAnchor(0,"_details"); 
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trDetailedDescription());
+    ol.endGroupHeader();
+    ol.startTextBlock();
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
+    {
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+    }
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
+        !documentation().isEmpty())
+    {
+      ol.newParagraph();
+    }
+    if (!documentation().isEmpty())
+    {
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+      ol.newParagraph();
+    }
+    ol.endTextBlock();
+  }
+}
+  
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   QCString pageTitle=name()+" Namespace Reference";
@@ -196,11 +244,13 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   
   ol.startTextBlock();
     
-  OutputList briefOutput(&ol); 
-  if (!briefDescription().isEmpty()) 
+  if (Config_getBool("DETAILS_AT_TOP"))
   {
-    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
-    ol+=briefOutput;
+    writeDetailedDocumentation(ol);
+  }
+  else if (!briefDescription().isEmpty()) 
+  {
+    parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -226,7 +276,6 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     mg->writeDeclarations(ol,0,this,0,0);
   }
-  
 
   //allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
   decDefineMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trDefines(),0);
@@ -237,36 +286,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   decVarMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trVariables(),0);
   ol.endMemberSections();
   
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty())
+  if (!Config_getBool("DETAILS_AT_TOP"))
   {
-    ol.writeRuler();
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    //if (latexOn) ol.disable(OutputGenerator::Latex);
-    ol.writeAnchor(0,"_details"); 
-    //if (latexOn) ol.enable(OutputGenerator::Latex);
-    ol.popGeneratorState();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
-    ol.endGroupHeader();
-    ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-    {
-      ol+=briefOutput;
-    }
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
-        !documentation().isEmpty())
-    {
-      ol.newParagraph();
-    }
-    if (!documentation().isEmpty())
-    {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
-      ol.newParagraph();
-    }
-    ol.endTextBlock();
+    writeDetailedDocumentation(ol);
   }
 
   docDefineMembers.writeDocumentation(ol,name(),this,
@@ -338,11 +360,6 @@ Definition *NamespaceDef::findInnerCompound(const char *n)
 {
   if (n==0) return 0;
   return m_innerCompounds->find(n);
-}
-
-void NamespaceDef::addInnerCompound(Definition *d)
-{
-  m_innerCompounds->append(d->localName(),d);
 }
 
 void NamespaceDef::addListReferences()

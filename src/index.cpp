@@ -36,7 +36,7 @@
 #include "ftvhelp.h"
 #include "dot.h"
 #include "page.h"
-#include "packagedef.h"
+//#include "packagedef.h"
 
 int annotatedClasses;
 int hierarchyClasses;
@@ -50,7 +50,7 @@ int documentedNamespaceMembers;
 int documentedIncludeFiles;
 int documentedPages;
 int indexedPages;
-int documentedPackages;
+//int documentedPackages;
 
 int countClassHierarchy();
 int countClassMembers();
@@ -62,7 +62,7 @@ int countAnnotatedClasses();
 int countNamespaceMembers();
 int countIncludeFiles();
 void countRelatedPages(int &docPages,int &indexPages);
-int countPackages();
+//int countPackages();
 
 void countDataStructures()
 {
@@ -75,7 +75,7 @@ void countDataStructures()
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();
-  documentedPackages         = countPackages();
+  //documentedPackages         = countPackages();
 }
 
 static void startIndexHierarchy(OutputList &ol,int level)
@@ -2116,20 +2116,20 @@ void countRelatedPages(int &docPages,int &indexPages)
 
 //----------------------------------------------------------------------------
 
-int countPackages()
-{
-  int count=0;
-  PackageSDict::Iterator pdi(Doxygen::packageDict);
-  PackageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
-  {
-    if (!pd->isReference())
-    {
-      count++;
-    }
-  }
-  return count;
-}
+//int countPackages()
+//{
+//  int count=0;
+//  PackageSDict::Iterator pdi(Doxygen::packageDict);
+//  PackageDef *pd=0;
+//  for (pdi.toFirst();(pd=pdi.current());++pdi)
+//  {
+//    if (!pd->isReference())
+//    {
+//      count++;
+//    }
+//  }
+//  return count;
+//}
 
 //----------------------------------------------------------------------------
 
@@ -2808,12 +2808,12 @@ void writeIndex(OutputList &ol)
   }
 
   
-  if (documentedPackages>0)
-  {
-    ol.startIndexSection(isPackageIndex);
-    parseText(ol,projPrefix+theTranslator->trPackageList());
-    ol.endIndexSection(isPackageIndex);
-  }
+  //if (documentedPackages>0)
+  //{
+  //  ol.startIndexSection(isPackageIndex);
+  //  parseText(ol,projPrefix+theTranslator->trPackageList());
+  //  ol.endIndexSection(isPackageIndex);
+  //}
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleIndex);
@@ -2851,12 +2851,12 @@ void writeIndex(OutputList &ol)
     ol.endIndexSection(isPageIndex);
   }
   ol.lastIndexPage();
-  if (documentedPackages>0)
-  {
-    ol.startIndexSection(isPackageDocumentation);
-    parseText(ol,projPrefix+theTranslator->trPackageDocumentation());
-    ol.endIndexSection(isPackageDocumentation);
-  }
+  //if (documentedPackages>0)
+  //{
+  //  ol.startIndexSection(isPackageDocumentation);
+  //  parseText(ol,projPrefix+theTranslator->trPackageDocumentation());
+  //  ol.endIndexSection(isPackageDocumentation);
+  //}
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleDocumentation);

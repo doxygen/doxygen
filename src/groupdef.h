@@ -58,6 +58,7 @@ class GroupDef : public Definition
     void insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
+    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject() const

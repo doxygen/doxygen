@@ -32,7 +32,7 @@
 #include "formula.h"
 #include "section.h"
 #include "membergroup.h"
-#include "packagedef.h"
+//#include "packagedef.h"
 
 class PageSList;
 class PageSDict;
@@ -92,7 +92,7 @@ class Doxygen
     static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
     static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
     static QDict<void> expandAsDefinedDict;
-    static PackageSDict packageDict;
+    //static PackageSDict packageDict;
     static NamespaceDef *globalScope;
 };
 

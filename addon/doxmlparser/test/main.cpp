@@ -432,6 +432,27 @@ void DumpGraph(IGraph *graph)
 
 }
 
+void DumpParamList(IParamIterator *pli,int indent)
+{
+  QString indentStr;
+  indentStr.fill(' ',indent);
+  IParam *par;
+  for (pli->toFirst();(par=pli->current());pli->toNext())
+  {
+    ILinkedTextIterator *lti = par->type();
+    QString parType = linkedTextToString(lti);
+    lti->release();
+    lti = par->defaultValue();
+    QString defVal =  linkedTextToString(lti);
+    lti->release();
+    printf("%sParam type=%s decl_name=%s def_name=%s defvalue=%s\n",
+        indentStr.data(), parType.latin1(), 
+        par->declarationName()->latin1(),
+        par->definitionName()->latin1(),
+        defVal.latin1());
+  }
+}
+
 int main(int argc,char **argv)
 {
   if (argc!=2)
@@ -471,19 +492,8 @@ int main(int argc,char **argv)
             linkedTextToString(lti).latin1(),mem->name()->latin1());
         lti->release();
 
-        IParamIterator *pli = mem->params();
-        IParam *par;
-        for (pli->toFirst();(par=pli->current());pli->toNext())
-        {
-          lti = par->type();
-          QString parType = linkedTextToString(lti);
-          lti->release();
-          lti = par->defaultValue();
-          QString defVal =  linkedTextToString(lti);
-          lti->release();
-          printf("      Param type=%s name=%s defvalue=%s\n",
-              parType.latin1(), par->definitionName()->latin1(),defVal.latin1());
-        }
+        IParamIterator *pli = mem->parameters();
+        DumpParamList(pli,6);
         pli->release();
         IMemberReferenceIterator *mri = mem->references();
         IMemberReference *mr;
@@ -512,6 +522,14 @@ int main(int argc,char **argv)
               ev->name()->latin1(),ev->initializer()->latin1());
         }
         evi->release();
+
+        pli = mem->templateParameters();
+        if (pli)
+        {
+          printf("      Template parameters\n");
+          DumpParamList(pli,8);
+          pli->release();
+        }
 
         IDoc *doc = mem->briefDescription();
         if (doc)
@@ -557,7 +575,7 @@ int main(int argc,char **argv)
       DumpGraph(cls->collaborationGraph());
 
       printf("==== base classes ==== \n");
-      IRelatedCompoundIterator *bcli = cls->baseClasses();
+      IRelatedCompoundIterator *bcli = cls->baseCompounds();
       IRelatedCompound *bClass;
       for (bcli->toFirst();(bClass=bcli->current());bcli->toNext())
       {
@@ -568,7 +586,7 @@ int main(int argc,char **argv)
       bcli->release();
 
       printf("==== derived classes ==== \n");
-      IRelatedCompoundIterator *dcli = cls->derivedClasses();
+      IRelatedCompoundIterator *dcli = cls->derivedCompounds();
       IRelatedCompound *dClass;
       for (dcli->toFirst();(dClass=dcli->current());dcli->toNext())
       {

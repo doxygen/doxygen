@@ -336,6 +336,40 @@ void GroupDef::computeAnchors()
   setAnchors(0,'a',allMemberList);
 }
 
+void GroupDef::writeDetailedDocumentation(OutputList &ol)
+{
+  if (!briefDescription().isEmpty() || !documentation().isEmpty())
+  {
+    
+    if (pageDict->count()!=countMembers()) // classical layout
+    {
+      ol.writeRuler();
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
+      ol.writeAnchor(0,"_details");
+      ol.popGeneratorState();
+      ol.startGroupHeader();
+      parseText(ol,theTranslator->trDetailedDescription());
+      ol.endGroupHeader();
+
+      // repeat brief description
+      if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
+      {
+        parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+        ol.newParagraph();
+      }
+    }
+
+    // write documentation
+    if (!documentation().isEmpty())
+    {
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+    }
+  }
+}
+
+
 void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
@@ -346,13 +380,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
 
-  //brief=brief.stripWhiteSpace();
-  //int bl=brief.length();
-  OutputList briefOutput(&ol);
-  if (!briefDescription().isEmpty())
+  if (Config_getBool("DETAILS_AT_TOP"))
   {
-    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
-    ol+=briefOutput;
+    writeDetailedDocumentation(ol);
+  }
+  else if (!briefDescription().isEmpty())
+  {
+    parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
@@ -490,36 +524,11 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   ol.endMemberSections();
 
-
-  if (!briefDescription().isEmpty() || !documentation().isEmpty())
+  if (!Config_getBool("DETAILS_AT_TOP"))
   {
-    
-    if (pageDict->count()!=countMembers()) // classical layout
-    {
-      ol.writeRuler();
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-      ol.writeAnchor(0,"_details");
-      ol.popGeneratorState();
-      ol.startGroupHeader();
-      parseText(ol,theTranslator->trDetailedDescription());
-      ol.endGroupHeader();
-
-      // repeat brief description
-      if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-      {
-        ol+=briefOutput;
-        ol.newParagraph();
-      }
-    }
-
-    // write documentation
-    if (!documentation().isEmpty())
-    {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
-    }
+    writeDetailedDocumentation(ol);
   }
+
   PageInfo *pi=0;
   PageSDict::Iterator pdi(*pageDict);
   for (pdi.toFirst();(pi=pdi.current());++pdi)

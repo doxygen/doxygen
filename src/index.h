@@ -26,14 +26,14 @@ enum IndexSections
   isTitlePageStart,
   isTitlePageAuthor,
   isMainPage,
-  isPackageIndex,
+//  isPackageIndex,
   isModuleIndex,
   isNamespaceIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
   isPageIndex,
-  isPackageDocumentation,
+//  isPackageDocumentation,
   isModuleDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
@@ -82,7 +82,7 @@ extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
 extern int documentedPages;
 extern int indexedPages;
-extern int documentedPackages;
+//extern int documentedPackages;
 
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);

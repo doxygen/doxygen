@@ -102,6 +102,7 @@ class ClassDef : public Definition
     void writeDocumentationForInnerClasses(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
+    void writeDetailedDescription(OutputList &ol,OutputList &briefOutput,const QCString &pageType,bool exampleFlag);
 
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.
@@ -129,7 +130,7 @@ class ClassDef : public Definition
      *  from its outer class (doxygen assumes there is only one!). 
      *  Will return 0 if not applicable.
      */
-    ArgumentList *outerTemplateArguments() const;
+    //ArgumentList *outerTemplateArguments() const;
     
     /*! Returns the namespace this compound is in, or 0 if it has a global
      *  scope.

@@ -167,6 +167,26 @@ static FILE *checkAndOpenFile(const QCString &absName)
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
+    // check include stack for absFileName
+
+    QStack<FileState> tmpStack;
+    g_includeStack.setAutoDelete(FALSE);
+    FileState *fs;
+    bool alreadyIncluded=FALSE;
+    while ((fs=g_includeStack.pop()))
+    {
+      if (fs->fileName==absName) alreadyIncluded=TRUE;
+      tmpStack.push(fs);
+    }
+    while ((fs=tmpStack.pop()))
+    {
+      g_includeStack.push(fs);
+    }
+    g_includeStack.setAutoDelete(TRUE);
+
+    if (alreadyIncluded) return 0; 
+
+    
     if (!Config_getString("INPUT_FILTER").isEmpty())
     {
       QCString cmd = Config_getString("INPUT_FILTER")+" "+absName;
@@ -934,6 +954,7 @@ static void readIncludeFile(const QCString &inc)
 	// add included by dependency
         if (g_yyFileDef)
         {
+	  //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
   	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
         }
       }
@@ -952,6 +973,7 @@ static void readIncludeFile(const QCString &inc)
       //lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
       //outputArray(lineStr.data(),lineStr.length());
       
+      //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
       preYYin=f;
       yy_switch_to_buffer(yy_create_buffer(preYYin, YY_BUF_SIZE));
     } 
@@ -966,12 +988,13 @@ static void readIncludeFile(const QCString &inc)
 	// add included by dependency
         if (fd)
         {
+          //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
   	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
         }
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
-        msg("#include %s: not found! skipping...\n",incFileName.data());
+        msg("#include %s: not found or already included! skipping...\n",incFileName.data());
         //printf("Error: include file %s not found\n",yytext);
       }
     }
@@ -1751,11 +1774,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipSingleQuote>.			{ g_defText += *yytext; g_defLitText+=yytext; }
 <DefineText>.				{ g_defText += *yytext; g_defLitText+=yytext; }
 <<EOF>>					{
-                                          //printf("End of include file\n");
+                                          //fprintf(stderr,"End of include file\n");
 					  //printf("Include stack depth=%d\n",g_includeStack.count());
   					  if (g_includeStack.isEmpty())
 					  {
-					    //printf("Terminating scanner!\n");
+					    //fprintf(stderr,"Terminating scanner!\n");
 					    yyterminate();
 					  }
 					  else
@@ -1771,7 +1794,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    yy_delete_buffer( oldBuf );
 					    g_yyLineNr=fs->lineNr;
 					    setFileName(fs->fileName.copy());
-					    //printf("######## FileName %s\n",g_yyFileName.data());
+					    //fprintf(stderr,"######## FileName %s\n",g_yyFileName.data());
 					    
                                             // TODO: Enable this to deal with file changes due to 
                                             // #include's within { .. } blocks
@@ -1780,8 +1803,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             //outputArray(lineStr.data(),lineStr.length());
 					    
 					    delete fs; fs=0;
-
-					    
 					  }
   					}
 <*>"/*"					{

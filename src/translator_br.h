@@ -13,7 +13,12 @@
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@icmc.sc.usp.br>
  *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.2.13 (2002/01/24)
+ *   Version: 1.2.13.2 (2002/05/10)
+ *
+ * History:
+ *   1.2.13.2 (2002/05/10):
+ *      - Latex Babel package language name fixed.
+ *      - "Estrura" bug identified and fixed (Thanks to Jorge Ramos).
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
@@ -33,9 +38,7 @@ class TranslatorBrazilian: public Translator
      */
     virtual QCString idLanguage()
     {
-      /* I'm not sure if it is correct. I did not found the documentation
-      of BabelPackage. If you know the right string, please contact me. */
-      return "portuges";
+      return "brazil";
     }
 
     /*! Used to get the command(s) for the language support. This method
@@ -737,7 +740,7 @@ class TranslatorBrazilian: public Translator
       switch(compType)
       {
         case ClassDef::Class:      result+="classe "; break;
-        case ClassDef::Struct:     result+="estrura "; break;
+        case ClassDef::Struct:     result+="estrutura "; break;
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;
         case ClassDef::Exception:  result+="exceção "; break;

@@ -58,7 +58,7 @@
 #include "defgen.h"
 #include "reflist.h"
 #include "page.h"
-#include "packagedef.h"
+//#include "packagedef.h"
 #include "bufstr.h"
 #include "commentcnv.h"
 
@@ -88,7 +88,7 @@ FormulaList    Doxygen::formulaList;             // all formulas
 FormulaDict    Doxygen::formulaDict(1009);       // all formulas
 FormulaDict    Doxygen::formulaNameDict(1009);   // the label name of all formulas
 
-PackageSDict   Doxygen::packageDict(257);         // java packages
+//PackageSDict   Doxygen::packageDict(257);         // java packages
 
 PageSDict      *Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
 PageSDict      *Doxygen::exampleSDict = new PageSDict(1009);       // all examples
@@ -889,6 +889,7 @@ static void buildNamespaceList(Entry *root)
 
         // also add namespace to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+        //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"none");
         if (d==0)
         {
           // TODO: Due to the order in which the tag file is written
@@ -5646,16 +5647,16 @@ static void findMainPage(Entry *root)
 //----------------------------------------------------------------------------
 
 /*! Add Java classes to their respective packages */
-static void addClassesToPackages()
-{
-  ClassDef *cd;
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  for (;(cd=cli.current());++cli)
-  {
-    PackageDef *pd = cd->packageDef();
-    if (pd) pd->addClass(cd);
-  }
-}
+//static void addClassesToPackages()
+//{
+//  ClassDef *cd;
+//  ClassSDict::Iterator cli(Doxygen::classSDict);
+//  for (;(cd=cli.current());++cli)
+//  {
+//    PackageDef *pd = cd->packageDef();
+//    if (pd) pd->addClass(cd);
+//  }
+//}
 
 //----------------------------------------------------------------------------
 
@@ -7336,8 +7337,8 @@ void parseInput()
   msg("Computing member relations...\n");
   computeMemberRelations();
 
-  msg("Adding classes to their packages...\n");
-  addClassesToPackages();
+  //msg("Adding classes to their packages...\n");
+  //addClassesToPackages();
 
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();

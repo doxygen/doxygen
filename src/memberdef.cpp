@@ -872,7 +872,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         ol.startTextLink(0,anchor());
       }
-      parseText(ol,theTranslator->trMore());
       ol.endTextLink();
       ol.startEmphasis();
       ol.popGeneratorState();
@@ -1049,7 +1048,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         bool first=TRUE;
         if (m_defTmpArgLists) 
-          // definition has explicate template parameter declarations
+          // definition has explicit template parameter declarations
         {
           QListIterator<ArgumentList> ali(*m_defTmpArgLists);
           ArgumentList *tal;
@@ -1064,7 +1063,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
           }
         }
-        else
+        else // definition gets it template parameters from its class
+             // (since no definition was found)
         {
           if (cd)
           {

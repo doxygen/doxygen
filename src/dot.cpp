@@ -1753,6 +1753,18 @@ void writeDotGraphFromFile(const char *inFile,const char *outFile,
   {
     err("Problems running dot. Check your installation!\n");
   }
+  // Added by Nils Strom
+  if ( (format==EPS) && (Config_getBool("USE_PDFLATEX")) )
+  {
+    QCString epstopdfArgs(4096);
+    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
+                         outFile,outFile);
+    if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+    {
+      err("Error: Problems running epstopdf. Check your TeX installation!\n");
+    }
+  }
+
   if (format==BITMAP) checkDotResult(imgName);
 }
 
