@@ -1309,6 +1309,50 @@ static void writeTemplateLists(Definition *d,QTextStream &t)
   }
 }
 
+static void writeListOfAllMember(ClassDef *cd,QTextStream &t)
+{
+  t << "    <listofallmembers>" << endl;
+  MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
+  MemberNameInfo *mni;
+  for (mnii.toFirst();(mni=mnii.current());++mnii)
+  {
+    MemberNameInfoIterator mii(*mni);
+    MemberInfo *mi;
+    for (mii.toFirst();(mi=mii.current());++mii)
+    {
+      MemberDef *md=mi->memberDef;
+      ClassDef  *cd=md->getClassDef();
+      Definition *d=md->getGroupDef();
+      if (d==0) d = cd;
+      Protection prot = mi->prot;
+      Specifier virt=md->virtualness();
+      t << "      <member refid=\"" << d->getOutputFileBase() << "_" <<
+        md->anchor() << "\" prot=\"";
+      switch (prot)
+      {
+        case Public:    t << "public";    break;
+        case Protected: t << "protected"; break;
+        case Private:   t << "private";   break;
+      }
+      t << "\" virt=\"";
+      switch(virt)
+      {
+        case Normal:  t << "non-virtual";  break;
+        case Virtual: t << "virtual";      break;
+        case Pure:    t << "pure-virtual"; break;
+      }
+      t << "\"";
+      if (!mi->ambiguityResolutionScope.isEmpty())
+      {
+        t << " ambiguityscope=\"" << mi->ambiguityResolutionScope << "\"";
+      }
+      t << "><scope>" << cd->name() << "</scope><name>" << 
+           md->name() << "</name></member>" << endl;
+    }
+  }
+  t << "    </listofallmembers>" << endl;
+}
+
 static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
 {
   // + brief description
@@ -1415,6 +1459,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
   writeTemplateLists(cd,t);
+  writeListOfAllMember(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

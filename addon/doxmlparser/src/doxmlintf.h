@@ -249,10 +249,15 @@ class IDocRef : public IDoc
 
 class IDocVariableList : public IDoc
 {
+  public:
+    virtual IDocIterator *entries() const = 0;
 };
 
 class IDocVariableListEntry : public IDoc
 {
+  public:
+    virtual QString term() const = 0;
+    virtual IDocPara *description() const = 0;
 };
 
 class IDocHRuler : public IDoc

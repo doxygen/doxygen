@@ -3180,7 +3180,7 @@ void writeSearchButton(const char *dir)
 
 void writeDoxFont(const char *dir)
 {
-  QCString fileName=(QCString)dir+"/doxfont.ttf";
+  QCString fileName=(QCString)dir+"/Helvetica.ttf";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
     f.writeBlock((char *)doxfont_data,doxfont_len);
@@ -3194,5 +3194,5 @@ void writeDoxFont(const char *dir)
 void removeDoxFont(const char *dir)
 {
   QDir d(dir);
-  d.remove("doxfont.ttf");
+  d.remove("Helvetica.ttf");
 }

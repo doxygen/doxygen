@@ -116,9 +116,7 @@ void DumpDoc(IDoc *doc)
       {
         IDocParameterList *list = dynamic_cast<IDocParameterList*>(doc);
         printf("     --- parameter list type=%d --- \n",list->listType());
-        IDocListItem *li = dynamic_cast<IDocListItem*>(doc);
-        ASSERT(li!=0);
-        IDocIterator *di = li->contents();
+        IDocIterator *di = list->params();
         IDoc *pdoc;
         for (di->toFirst();(pdoc=di->current());di->toNext())
         {
@@ -166,14 +164,26 @@ void DumpDoc(IDoc *doc)
       break;
     case IDoc::VariableList:
       {
-        IDocVariableList *vl = dynamic_cast<IDocVariableList*>(vl);
+        printf("     --- start variablelist --- \n");
+        IDocVariableList *vl = dynamic_cast<IDocVariableList*>(doc);
         ASSERT(vl!=0);
+        IDocIterator *di = vl->entries();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc);
+        }
+        di->release();
+        printf("     --- end variablelist --- \n");
       }
       break;
     case IDoc::VariableListEntry:
       {
-        IDocVariableListEntry *vle = dynamic_cast<IDocVariableListEntry*>(vle);
+        IDocVariableListEntry *vle = dynamic_cast<IDocVariableListEntry*>(doc);
         ASSERT(vle!=0);
+        printf("     --- start variablelistentry term=%s --- \n",vle->term().data());
+        DumpDoc(vle->description());
+        printf("     --- end variablelistentry --- \n");
       }
       break;
     case IDoc::HRuler:

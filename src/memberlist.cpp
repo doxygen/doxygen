@@ -449,7 +449,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        parseDoc(ol,"<generated>",1,0,0,mg->documentation());
+        parseDoc(ol,"<generated>",1,0,0,mg->documentation()+"\n");
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();

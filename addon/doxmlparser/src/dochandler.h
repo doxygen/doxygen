@@ -533,7 +533,8 @@ class SimpleSectHandler : public IDocSimpleSect,
 /* \brief Node representing an named item of a VariableList.
  *
  */
-class VariableListEntryHandler : public IDocVariableListEntry, public BaseHandler<VariableListEntryHandler>
+class VariableListEntryHandler : public IDocVariableListEntry, 
+                                 public BaseHandler<VariableListEntryHandler>
 {
   public:
     virtual void startVarListEntry(const QXmlAttributes& attrib);
@@ -549,6 +550,8 @@ class VariableListEntryHandler : public IDocVariableListEntry, public BaseHandle
 
     // IDocVariableListEntry
     virtual Kind kind() const { return VariableListEntry; }
+    virtual QString term() const { return m_term; }
+    virtual IDocPara *description() const { return m_description; }
 
   private:
     IBaseHandler     *m_parent;
@@ -562,8 +565,11 @@ class VariableListEntryHandler : public IDocVariableListEntry, public BaseHandle
  *
  */
 // children: varlistentry, listitem
-class VariableListHandler : public IDocVariableList, public BaseHandler<VariableListHandler>
+class VariableListHandler : public IDocVariableList, 
+                            public BaseHandler<VariableListHandler>
 {
+    friend class VariableListIterator;
+    
   public:
     virtual void startVariableList(const QXmlAttributes& attrib);
     virtual void endVariableList();
@@ -575,11 +581,19 @@ class VariableListHandler : public IDocVariableList, public BaseHandler<Variable
 
     // IDocVariableList
     virtual Kind kind() const { return VariableList; }
+    virtual IDocIterator *entries() const;
 
   private:
     IBaseHandler   *m_parent;
     QList<VariableListEntryHandler> m_entries;
     VariableListEntryHandler *m_curEntry;
+};
+
+class VariableListIterator : public BaseIterator<IDocIterator,IDoc,VariableListEntryHandler>
+{
+  public:
+    VariableListIterator(const VariableListHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,VariableListEntryHandler>(handler.m_entries) {}
 };
 
 //-----------------------------------------------------------------------------

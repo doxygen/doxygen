@@ -755,8 +755,6 @@ void HtmlGenerator::startMemberDescription()
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    //t << "<tr><td><img src=null.gif></td><td><img src=null.gif></td>"
-    //     "<td></td><td><font size=-1><em>"; 
     t << "<tr><td>&nbsp;</td><td><font size=-1><em>"; 
   }
   else
@@ -922,9 +920,11 @@ void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
     "/"
 #endif
     +baseName;
-  writeDotGraphFromFile(name,outName,GIF);
+  writeDotGraphFromFile(name,outName,BITMAP);
   t << "<div align=\"center\">" << endl;
-  t << "<img src=\"" << baseName << ".gif\" alt=\"" << baseName << "\">" << endl;
+  t << "<img src=\"" << baseName << "." 
+    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\"" 
+    << baseName << "\">" << endl;
   if (hasCaption)
   {
     t << "<p><strong>";
@@ -1068,7 +1068,7 @@ void HtmlGenerator::startDotGraph()
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,GIF,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
 }
 
 void HtmlGenerator::startInclDepGraph()
@@ -1077,7 +1077,7 @@ void HtmlGenerator::startInclDepGraph()
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,GIF,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)

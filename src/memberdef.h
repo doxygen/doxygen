@@ -99,7 +99,7 @@ class MemberDef : public Definition
 
     // direct kind info 
     Protection protection() const         { return prot; }
-    Specifier virtualness() const         { return virt; }
+    Specifier virtualness() const;
     MemberType memberType() const         { return mtype; }
 
     // convenience methods

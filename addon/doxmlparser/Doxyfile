@@ -151,7 +151,7 @@ PERL_PATH              =
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = NO
-HAVE_DOT               = YES
+HAVE_DOT               = NO
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 TEMPLATE_RELATIONS     = YES

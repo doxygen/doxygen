@@ -313,7 +313,7 @@ void Wizard::about()
                       "<qt><center>A tool to create and edit configuration files "
                       "that can be read by doxygen.</center><p>"
                       "<center>Written by Dimitri van Heesch</center><p>"
-                      "<center>(c) 2000-2001</center></qt>"
+                      "<center>(c) 2000-2002</center></qt>"
                     );
 }
 

@@ -2090,6 +2090,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      BEGIN( CopyArgComment );
 					  }
   					}
+<CopyArgComment>^{B}*"*"+/{BN}+		
 <CopyArgComment>[^\n\*]+		{ fullArgString+=yytext; }
 <CopyArgComment>"*/"			{ fullArgString+=yytext; 
   					  if (lastCopyArgChar!=0)
@@ -3445,7 +3446,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCode>"//"				{
   					  *pSkipDoc+=yytext;
   					}
-<SkipCode>"/*"				{
+<SkipCode>"/*"|"*/"			{
   					  *pSkipDoc+=yytext;
   					}
 <SkipCode>[^ \<\*\t\/\\\n]+		{
@@ -3571,7 +3572,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 							  BEGIN(lastFormulaContext);
   							}
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
-<ExampleDoc,PageDoc,ClassDocBrief,SkipCode,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
+<ExampleDoc,PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
   					  checkDocs();
 					  //printf("current->section=%x\n",current->section);
 					  if (YY_START==SkipCode) // premature end of code block

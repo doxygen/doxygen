@@ -336,7 +336,7 @@ void DotNode::writeBox(QTextStream &t,
   t << "  Node" << m_number << " [shape=\"box\",label=\""
     << convertLabel(m_label)    
     << "\",fontsize=10,height=0.2,width=0.4";
-  if (format==GIF) t << ",fontname=\"doxfont\"";
+  if (format==BITMAP) t << ",fontname=\"Helvetica\"";
   t << ",color=\"" << labCol << "\"";
   if (m_isRoot)
   {
@@ -369,7 +369,7 @@ void DotNode::writeArrow(QTextStream &t,
   {
     t << ",label=\"" << ei->m_label << "\"";
   }
-  if (format==GIF) t << ",fontname=\"doxfont\"";
+  if (format==BITMAP) t << ",fontname=\"Helvetica\"";
   t << "];" << endl; 
 }
 
@@ -687,10 +687,11 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   for (dnli.toFirst();(n=dnli.current());++dnli)
   {
     QCString baseName;
+    QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
     baseName.sprintf("inherit_graph_%d",count++);
     baseName = convertNameToFile(baseName);
     QCString dotName=baseName+".dot";
-    QCString gifName=baseName+".gif";
+    QCString imgName=baseName+"."+ imgExt;
     QCString mapName=baseName+".map";
 
     QFile f(dotName);
@@ -703,14 +704,15 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
     for (;(node=dnli2.current());++dnli2)
     {
-      if (node->m_subgraphId==n->m_subgraphId) node->write(t,GIF,FALSE,TRUE);
+      if (node->m_subgraphId==n->m_subgraphId) node->write(t,BITMAP,FALSE,TRUE);
     }
     t << "}" << endl;
     f.close();
 
     QCString dotArgs(4096);
-    dotArgs.sprintf("-Tgif \"%s\" -o \"%s\"",dotName.data(),gifName.data());
-    //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
+    dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",
+           imgExt.data(), dotName.data(),imgName.data());
+    //printf("Running: dot -T%s %s -o %s\n",imgExt.data(),dotName.data(),imgName.data());
     if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -726,7 +728,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       return;
     }
     QCString mapLabel = convertNameToFile(n->m_label);
-    out << "<tr><td><img src=\"" << gifName << "\" border=\"0\" usemap=\"#" 
+    out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" usemap=\"#" 
       << mapLabel << "_map\"></td></tr>" << endl;
     out << "<map name=\"" << mapLabel << "_map\">" << endl;
     convertMapFile(out,mapName);
@@ -1294,11 +1296,12 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   findMaximalDotGraph(m_startNode,m_maxDistance,baseName,
                       thisDir,format,!isTBRank,m_graphType==Inheritance);
 
-  if (format==GIF) // run dot to create a .gif image
+  if (format==BITMAP) // run dot to create a bitmap image
   {
     QCString dotArgs(4096);
-    dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
-                   baseName.data(),baseName.data());
+    QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+    dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s.%s\"",
+                   imgExt.data(),baseName.data(),baseName.data(),imgExt.data());
     if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
@@ -1316,7 +1319,8 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         return baseName;
       }
       QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
-      out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
+      out << "<p><center><img src=\"" << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
           << mapLabel << "\" alt=\"";
       switch (m_graphType)
       {
@@ -1520,12 +1524,13 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,format,
                       FALSE,FALSE,!m_inverse);
 
-  if (format==GIF)
+  if (format==BITMAP)
   {
-    // run dot to create a .gif image
+    // run dot to create a bitmap image
     QCString dotArgs(4096);
-    dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
-                   baseName.data(),baseName.data());
+    QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+    dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s.%s\"",
+                   imgExt.data(),baseName.data(),baseName.data(),imgExt.data());
     if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -1545,8 +1550,9 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         return baseName;
       }
 
-      out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-        << mapName << "_map\" alt=\"";
+      out << "<p><center><img src=\"" << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
+          << mapName << "_map\" alt=\"";
       if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
       out << "\">";
       out << "</center>" << endl;
@@ -1633,43 +1639,25 @@ void generateGraphLegend(const char *path)
     return;
   }
   QTextStream dotText(&dotFile); 
-#if 0
   dotText << "digraph inheritance\n";
   dotText << "{\n";
-  dotText << "  Node7 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
-  dotText << "  Node8 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node8 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_publicbase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node9 -> Node8 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node9 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"red\",URL=\"$class_truncated" << htmlFileExtension << "\"];\n";
-  dotText << "  Node11 -> Node7 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_protectedbase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node12 -> Node7 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node12 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_privatebase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node13 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey75\"];\n";
-  dotText << "  Node14 -> Node7 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_used" << htmlFileExtension << "\"];\n";
-  dotText << "}\n";
-#endif
-  dotText << "digraph inheritance\n";
-  dotText << "{\n";
-  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
-  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classPublicBase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"red\",URL=\"$classTruncated" << htmlFileExtension << "\"];\n";
-  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classProtectedBase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classPrivateBase" << htmlFileExtension << "\"];\n";
-  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey75\"];\n";
-  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
-  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"doxfont\"];\n";
-  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
-  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
-  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classUsed" << htmlFileExtension << "\"];\n";
+  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
+  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPublicBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"red\",URL=\"$classTruncated" << htmlFileExtension << "\"];\n";
+  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classProtectedBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPrivateBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"grey75\"];\n";
+  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
+  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
+  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"Helvetica\"];\n";
+  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classUsed" << htmlFileExtension << "\"];\n";
   dotText << "}\n";
   dotFile.close();
 
@@ -1683,9 +1671,10 @@ void generateGraphLegend(const char *path)
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
 
-  // run dot to generate the a .gif image from the graph
+  // run dot to generate the a bitmap image from the graph
   QCString dotArgs(4096);
-  dotArgs.sprintf("-Tgif graph_legend.dot -o graph_legend.gif");
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  dotArgs.sprintf("-T%s graph_legend.dot -o graph_legend.%s",imgExt.data(),imgExt.data());
   if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
   {
       err("Problems running dot. Check your installation!\n");
@@ -1700,9 +1689,11 @@ void writeDotGraphFromFile(const char *inFile,const char *outFile,
                       GraphOutputFormat format)
 {
   QCString dotArgs(4096);
-  if (format==GIF)
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  if (format==BITMAP)
   {
-    dotArgs.sprintf("-Tgif \"%s\" -o \"%s.gif\"",inFile,outFile);
+    dotArgs.sprintf("-T%s \"%s\" -o \"%s.%s\"",imgExt.data(),
+        inFile,outFile,imgExt.data());
   }
   else // format==EPS
   {

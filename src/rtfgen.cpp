@@ -2275,7 +2275,7 @@ void RTFGenerator::startDotFile(const char *name,bool)
     "/"
 #endif
     +baseName;
-  writeDotGraphFromFile(name,outName,GIF);
+  writeDotGraphFromFile(name,outName,BITMAP);
   newParagraph();
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
@@ -2631,13 +2631,13 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   newParagraph();
 
   QCString fileName = 
-    g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
+    g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << fileName << ".gif";
+  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
@@ -2650,13 +2650,13 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),FALSE);
+  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),FALSE);
 
   // display the file
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << fileName << ".gif";
+  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }

@@ -805,6 +805,11 @@ void VariableListHandler::startListItem(const QXmlAttributes& attrib)
   m_curEntry->startListItem(attrib);
 }
 
+IDocIterator *VariableListHandler::entries() const
+{
+  return new VariableListIterator(*this);
+}
+
 //----------------------------------------------------------------------
 // HighlightHandler
 //----------------------------------------------------------------------

@@ -95,7 +95,7 @@ IGNORE_PREFIX          =
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------
-GENERATE_HTML          = NO
+GENERATE_HTML          = YES
 HTML_OUTPUT            = 
 HTML_HEADER            = 
 HTML_FOOTER            = 
@@ -140,7 +140,7 @@ MAN_LINKS              = NO
 #---------------------------------------------------------------------------
 # configuration options related to the XML output
 #---------------------------------------------------------------------------
-GENERATE_XML           = YES
+GENERATE_XML           = NO
 #---------------------------------------------------------------------------
 # configuration options for the AutoGen Definitions output
 #---------------------------------------------------------------------------
@@ -168,7 +168,7 @@ PERL_PATH              = /usr/bin/perl
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = NO
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 TEMPLATE_RELATIONS     = YES
@@ -176,6 +176,7 @@ HIDE_UNDOC_RELATIONS   = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = NO
 GRAPHICAL_HIERARCHY    = YES
+DOT_IMAGE_FORMAT       = png
 DOT_PATH               = 
 DOTFILE_DIRS           = 
 MAX_DOT_GRAPH_WIDTH    = 1024
