@@ -19,6 +19,8 @@
  *
  * VERSION HISTORY
  * ---------------
+ * 007 09 june 2003
+ *   ! Updated for doxygen v1.3.1
  * 006 30 july 2002
  *   ! Updated for doxygen v1.2.17
  * 005 10 july 2002
@@ -38,7 +40,7 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_2_18
+class TranslatorPortuguese : public TranslatorAdapter_1_3_1
 {
   public:
 
@@ -127,7 +129,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers()
-    { return "Esta é a lista completa dos membros de "; }
+    { return "Lista completa de todos os membros de "; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers()
@@ -268,7 +270,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
       {
         result+=" documentadas";
       }
-      result+=" com links para ";
+      result+=" com referência para ";
       if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
@@ -297,20 +299,20 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Lista de todas as ";
+      QCString result="Lista de ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="funções, variáveis, definições, enumerações e definições de tipo ";
+        result+="todas as funções, variáveis, definições, enumerações e definições de tipo ";
         if (!extractAll) result+="documentadas ";
       }
       else
       {
-        result+="ficheiros membro";
+        result+="todos os ficheiros membro ";
         if (!extractAll) result+="documentados ";
       }
-      result+="com links para ";
+      result+="com referência para ";
       if (extractAll) 
-        result+="os ficheiro a que pertecem:";
+        result+="o ficheiro a que pertecem:";
       else 
         result+="a respectiva documentação:";
       return result;
@@ -416,7 +418,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
      *  list of defines
      */
     QCString trDefines()
-    { return "Definição de macros"; }
+    { return "Macros"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
@@ -740,7 +742,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
       QCString result="Lista ";
       if (extractAll) result+="de todos os ";
       else result+="de toda a documentação dos ";
-      result+="membros do namespace com links para ";
+      result+="membros do namespace com referência para ";
       if (extractAll)
         result+="a documentação de cada membro:";
       else
@@ -1394,6 +1396,79 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
     virtual QCString trDeprecatedList()
     {
       return "Lista de Deprecados";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Eventos";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Documentação dos eventos";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Tipos do Pacote";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Funções do Pacote";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Funções Estáticas do Pacote";
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Atributos do Pacote";
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return "Atributos Estáticos do Pacote";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Tudo";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Grafo de chamadas desta função:";
     }
 
 };

@@ -1411,9 +1411,9 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
  generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
  super classes. Setting the tag to \c NO turns the diagrams off.
- Note that this option is superseded by the HAVE_DOT option below. 
+ Note that this option is superceded by the HAVE_DOT option below. 
  This is only a fallback. It is recommended to install and use dot, 
- since it yield more powerful graphs. 
+ since it yields more powerful graphs. 
 
 \anchor cfg_have_dot
 <dt>\c HAVE_DOT <dd>

@@ -3435,6 +3435,13 @@ void DocPara::handleSection(const QString &cmdName)
   doctokenizerYYsetStatePara();
 }
 
+int DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
+{
+  DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,level);
+  m_children.append(header);
+  int retval = header->parse();
+  return (retval==RetVal_OK) ? TK_NEWPARA : retval;
+}
 
 int DocPara::handleCommand(const QString &cmdName)
 {
@@ -3930,46 +3937,22 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       }
       break;
     case HTML_H1:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,1);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,1);
       break;
     case HTML_H2:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,2);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,2);
       break;
     case HTML_H3:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,3);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,3);
       break;
     case HTML_H4:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,4);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,4);
       break;
     case HTML_H5:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,5);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,5);
       break;
     case HTML_H6:
-      {
-        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,6);
-        m_children.append(header);
-        retval = header->parse();
-      }
+      retval=handleHtmlHeader(tagHtmlAttribs,6);
       break;
     case HTML_IMG:
       {

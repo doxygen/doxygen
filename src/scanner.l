@@ -3367,14 +3367,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->groupDocType = Entry::GROUPDOC_NORMAL;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
+<Doc,PageDoc,ExampleDoc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->groupDocType = Entry::GROUPDOC_ADD;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
+<Doc,PageDoc,ExampleDoc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;

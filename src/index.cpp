@@ -358,7 +358,7 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
     ol.parseText(fixSpaces(theTranslator->trNamespaceMembers()));
     endQuickIndexItem(ol);
   }
-  if (documentedClassMembers>0)
+  if (documentedClassMembers[CMHL_All]>0)
   {
     if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"functions"+Doxygen::htmlFileExtension,
@@ -1900,29 +1900,31 @@ static void writeMemberIndexFiltered(OutputList &ol,
     ol.writeString(fixSpaces(theTranslator->trRelatedFunctions()));
     endQuickIndexItem(ol);
   }
-  ol.writeString("</div><p>\n");
-  
-  
+  ol.writeString("</div>\n");
   
   bool quickIndex = documentedClassMembers[hl]>maxItemsBeforeQuickIndex;
   if (quickIndex)
   {
     writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl]);
   }
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  ol.newParagraph();
+  if (hl==CMHL_All) 
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"functions"); 
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"functions"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"functions",0,ftvHelpTitle); 
+    }
+    ol.parseText(theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
   }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"functions",0,ftvHelpTitle); 
-  }
-  if (hl==CMHL_All) ol.parseText(theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
   writeMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();
@@ -2262,7 +2264,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol,
     ol.writeString(fixSpaces(theTranslator->trDefines()));
     endQuickIndexItem(ol);
   }
-  ol.writeString("</div><p>\n");
+  ol.writeString("</div>\n");
   
 
   bool quickIndex = documentedFileMembers[hl]>maxItemsBeforeQuickIndex;
@@ -2270,20 +2272,24 @@ static void writeFileMemberIndexFiltered(OutputList &ol,
   {
     writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl]);
   }
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  ol.newParagraph();
+  if (hl==FMHL_All) 
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"globals"); 
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"globals"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"globals",0,ftvHelpTitle); 
+    }
+    ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
   }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"globals",0,ftvHelpTitle); 
-  }
-  if (hl==FMHL_All) ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
   writeFileMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();
@@ -2363,27 +2369,31 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     ol.writeString(fixSpaces(theTranslator->trEnumerationValues()));
     endQuickIndexItem(ol);
   }
-  ol.writeString("</div><p>\n");
+  ol.writeString("</div>\n");
   
   bool quickIndex = documentedNamespaceMembers[hl]>maxItemsBeforeQuickIndex;
   if (quickIndex)
   {
     writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl]);
   }
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  ol.newParagraph();
+  if (hl==NMHL_All) 
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"namespacemembers"); 
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"namespacemembers"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,ftvHelpTitle); 
+    }
+    ol.parseText(theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
   }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,ftvHelpTitle); 
-  }
-  if (hl==NMHL_All) ol.parseText(theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
   writeNamespaceMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();

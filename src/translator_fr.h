@@ -16,8 +16,7 @@
  * The translation into French was provided by
  *   Christophe Bordeux (bordeux@lig.di.epfl.ch)
  *   and after version 1.2.0 by Xavier Outhier (xouthier@yahoo.fr)
- *   member of the non for profit association D2SET (http://www.d2set.org,
- *   d2set@d2set.org).
+ *   member of the non for profit association D2SET (http://d2set.free.fr)
  */
 
 /******************************************************************************
@@ -45,11 +44,17 @@
  * -------------+------------------------------------------------------------
  *  2003-03-29  | Update for new since 1.3
  * -------------+------------------------------------------------------------
+ *  2003-03-29  | Changed fonction into méthode. 
+ * -------------+------------------------------------------------------------
+ *  2003-06-06  | Fixed code page problem appeared between 1.42 and 1.43 in CVS
+ * -------------+------------------------------------------------------------
+ *  2003-06-10  | Update for new since 1.3.1
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public TranslatorAdapter_1_3_1
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
@@ -1320,14 +1325,14 @@ class TranslatorFrench : public TranslatorAdapter_1_3_1
      */
     virtual QCString trPackageMembers()
     { 
-      return "Fonctions de paquetage";
+      return "Méthodes de paquetage";
     }
     /*! Used as a heading for a list of static Java class functions with 
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     { 
-      return "Fonctions statiques de paquetage";
+      return "Méthodes statiques de paquetage";
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
@@ -1343,7 +1348,23 @@ class TranslatorFrench : public TranslatorAdapter_1_3_1
     { 
       return "Attributs statiques de paquetage";
     }
-    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Tout";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Voici le graphique d'appel pour cette fonction:";
+    }
 
 };
 

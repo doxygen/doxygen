@@ -757,7 +757,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 
 void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*name*/,const char *text,bool autoBreak,bool external)
 {
-  //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
+  //printf("`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
   QCString txtStr=text;
   QCString scopeName;
@@ -774,6 +774,13 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
   {
     // add non-word part to the result
     floatingIndex+=newIndex-skipIndex;
+    bool insideString=FALSE; 
+    int i;
+    for (i=index;i<newIndex;i++) 
+    { 
+      if (txtStr.at(i)=='"') insideString=!insideString; 
+    }
+    
     if (strLen>30 && floatingIndex>25 && autoBreak) // try to insert a split point
     {
       QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
@@ -800,41 +807,35 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
-    ClassDef     *cd=0;
-    FileDef      *fd=0;
-    MemberDef    *md=0;
-    NamespaceDef *nd=0;
-    GroupDef     *gd=0;
-
-    //QCString searchName=name;
-    //printf("word=`%s' scope=`%s'\n",
-    //        word.data(),scope ? scope->name().data() : "<none>"
-    //      );
-    Definition *curScope = scope;
-    // check if `word' is a documented class name
-    if (
-        1
-        /* !rightScopeMatch(word,searchName) && 
-        !rightScopeMatch(scopeName,word) */
-       )
+    bool found=FALSE;
+    if (!insideString)
     {
+      ClassDef     *cd=0;
+      FileDef      *fd=0;
+      MemberDef    *md=0;
+      NamespaceDef *nd=0;
+      GroupDef     *gd=0;
+
+      //QCString searchName=name;
+      //printf("word=`%s' scope=`%s'\n",
+      //        word.data(),scope ? scope->name().data() : "<none>"
+      //      );
+      Definition *curScope = scope;
+      // check if `word' is a documented class name
       //printf("Searching...\n");
       //int scopeOffset=scopeName.length();
-      bool found=FALSE;
       do // for each scope (starting with full scope and going to empty scope)
       {
         QCString fullName = word;
         QCString prefix;
         replaceNamespaceAliases(fullName,fullName.length());
         //if (scopeOffset>0)
-        if (curScope)
+        if (curScope && curScope!=Doxygen::globalScope)
         {
-          //prefix = scopeName.left(scopeOffset);
           prefix = curScope->name();
           replaceNamespaceAliases(prefix,prefix.length());
           fullName.prepend(prefix+"::");
         }
-        //printf("Trying class %s\n",fullName.data());
 
         bool isTypeDef=FALSE;
         if ((cd=getResolvedClass(scope,fullName,&isTypeDef)))
@@ -842,7 +843,6 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
           // add link to the result
           if (external ? cd->isLinkable() : cd->isLinkableInProject())
           {
-            //ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             found=TRUE;
           }
@@ -851,24 +851,16 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
         {
           goto endloop;
         }
-        
-        //if (scopeOffset==0)
-        //{
-        //  scopeOffset=-1;
-        //}
-        //else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
-        //{
-        //  scopeOffset=0;
-        //}
+
         if (curScope) curScope = curScope->getOuterScope();
       } //while (!found && scopeOffset>=0);
       while (!found && curScope);
 
 endloop:      
       if (scope && 
-           (scope->definitionType()==Definition::TypeClass || 
-            scope->definitionType()==Definition::TypeNamespace
-           ) 
+          (scope->definitionType()==Definition::TypeClass || 
+           scope->definitionType()==Definition::TypeNamespace
+          ) 
          )
       {
         scopeName=scope->name();
@@ -890,18 +882,13 @@ endloop:
           //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
           //                       md->anchor(),word);
           out.writeLink(d->getReference(),d->getOutputFileBase(),
-                                 md->anchor(),word);
+              md->anchor(),word);
           found=TRUE;
         }
       }
-
-      if (!found) // add word to the result
-      {
-        //ol.docify(word);
-        out.writeString(word);
-      }
     }
-    else
+
+    if (!found) // add word to the result
     {
       //ol.docify(word);
       out.writeString(word);
