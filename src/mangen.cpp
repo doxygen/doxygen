@@ -320,16 +320,6 @@ void ManGenerator::startDescList(SectionTypes)
   startBold();
 }
 
-void ManGenerator::startParamList(ParamListTypes)      
-{
-  if (!firstCol) 
-  { t << endl << ".PP" << endl; 
-    firstCol=TRUE; paragraph=TRUE; 
-    col=0;
-  }
-  paragraph=FALSE;
-}
-
 void ManGenerator::startTitle() 
 { 
   if (!firstCol) t << endl; 
@@ -582,4 +572,40 @@ void ManGenerator::endSection(const char *,bool sub)
   }
 }
 
+void ManGenerator::startSimpleSect(SectionTypes,const char *,
+                                   const char *,const char *title)
+{
+  if (!firstCol) 
+  { t << endl << ".PP" << endl; 
+    firstCol=TRUE; paragraph=TRUE; 
+    col=0;
+  }
+  paragraph=FALSE;
+  startBold();
+  docify(title);
+  endBold();
+  paragraph=TRUE;
+}
+
+void ManGenerator::endSimpleSect()
+{
+}
+
+void ManGenerator::startParamList(ParamListTypes,const char *title)
+{
+  if (!firstCol) 
+  { t << endl << ".PP" << endl; 
+    firstCol=TRUE; paragraph=TRUE; 
+    col=0;
+  }
+  paragraph=FALSE;
+  startBold();
+  docify(title);
+  endBold();
+  paragraph=TRUE;
+}
+
+void ManGenerator::endParamList()
+{
+}
 

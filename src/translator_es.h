@@ -50,7 +50,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      return "\\usepackage[spanish]{babel}";
     }
 
     /*! return the language charset. This will be used for the HTML output */

@@ -424,7 +424,20 @@ class XMLGenerator : public OutputDocInterface
       endNestedPar();
       m_t << "</simplesect>";
     }
-    void startParamList(ParamListTypes t)      
+    void startSimpleSect(SectionTypes st,const char *,const char *,const char *)
+    {
+      XML_DB(("(startSimpleSect)\n"));
+      m_t << "<simplesect kind=\"" << sectionTypeToString(st) << "\">"; 
+      startNestedPar();
+      m_inParStack.top() = TRUE;
+    }
+    void endSimpleSect()         
+    {
+      XML_DB(("(endSimpleSect)\n"));
+      endNestedPar();
+      m_t << "</simplesect>";
+    }
+    void startParamList(ParamListTypes t,const char *)      
     { 
       XML_DB(("(startParamList)\n"));
       startParMode();
@@ -435,7 +448,7 @@ class XMLGenerator : public OutputDocInterface
         case RetVal:      kind="retval";    break;
         case Exception:   kind="exception"; break;
       }
-      m_t << "<parameterlist kind=\"" << kind << "\"><title>"; // non DocBook
+      m_t << "<parameterlist kind=\"" << kind << "\">"; // non DocBook
       startNestedPar();
       m_inParStack.top() = TRUE;
       m_inParamList = TRUE;

@@ -1221,66 +1221,67 @@ static void findMaximalDotGraph(DotNode *root,
                                 bool backArrows=TRUE
                                )
 {
-  bool lastFit;
-  int minDistance=1;
-  int maxDistance=maxDist;
-  int curDistance=maxDistance;
+  int minDistance=1; // min distance that shows only direct children.
+  int curDistance=2; // current distance to try
+  int maxDistance=maxDist; // max distance that show whole graph
   int width=0;
   int height=0;
+  int maxDotGraphWidth  = Config_getInt("MAX_DOT_GRAPH_WIDTH");
+  int maxDotGraphHeight = Config_getInt("MAX_DOT_GRAPH_HEIGHT");
 
   // binary search for the maximal inheritance depth that fits in a reasonable
   // sized image (dimensions: Config_getInt("MAX_DOT_GRAPH_WIDTH"), Config_getInt("MAX_DOT_GRAPH_HEIGHT"))
-  do
+  if (maxDistance>1)
   {
-    writeDotGraph(root,format,baseName,lrRank,renderParents,
-                  curDistance,backArrows);
-
-    QCString dotArgs(4096);
-    // create annotated dot file
-    dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
-    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    do
     {
-      err("Problems running dot. Check your installation!\n");
-      return;
-    }
+      writeDotGraph(root,format,baseName,lrRank,renderParents,
+          curDistance,backArrows);
 
-    // extract bounding box from the result
-    readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
-    width  = width *96/72; // 96 pixels/inch, 72 points/inch
-    height = height*96/72; // 96 pixels/inch, 72 points/inch
-    //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
-    //    Config_getInt("MAX_DOT_GRAPH_WIDTH"),Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
-    
-    lastFit=(width<Config_getInt("MAX_DOT_GRAPH_WIDTH") && height<Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
-    if (lastFit) // image is small enough
-    {
-      minDistance=curDistance;
-      //printf("Image fits [%d-%d]\n",minDistance,maxDistance);
-    }
-    else
-    {
-      maxDistance=curDistance;
-      //printf("Image does not fit [%d-%d]\n",minDistance,maxDistance);
-    }
-    curDistance=minDistance+(maxDistance-minDistance)/2;
-    //printf("curDistance=%d\n",curDistance);
-    
-    // remove temporary dot file
-    thisDir.remove(baseName+"_tmp.dot");
-    
-  } while ((maxDistance-minDistance)>1);
+      QCString dotArgs(4096);
+      // create annotated dot file
+      dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+        return;
+      }
 
-  if (!lastFit)
-  {
-    writeDotGraph(root,
+      // extract bounding box from the result
+      readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
+      width  = width *96/72; // 96 pixels/inch, 72 points/inch
+      height = height*96/72; // 96 pixels/inch, 72 points/inch
+      //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
+      //    Config_getInt("MAX_DOT_GRAPH_WIDTH"),Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
+
+      // remove temporary dot file
+      thisDir.remove(baseName+"_tmp.dot");
+
+      bool graphFits=(width<maxDotGraphWidth && height<maxDotGraphHeight);
+      if (graphFits) // graph is small enough
+      {
+        minDistance=curDistance;
+        //printf("Image fits [%d-%d]\n",minDistance,maxDistance);
+      }
+      else // graph does not fit anymore with curDistance
+      {
+        //printf("Image does not fit [%d-%d]\n",minDistance,maxDistance);
+        maxDistance=curDistance;
+      }
+      curDistance=minDistance+(maxDistance-curDistance)/2;
+      //printf("curDistance=%d\n",curDistance);
+
+    } while ((maxDistance-minDistance)>1);
+  }
+
+  writeDotGraph(root,
                   format,
                   baseName,
-                  lrRank || (curDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
+                  lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
                   renderParents,
                   minDistance,
                   backArrows
                  );
-  }
 }
 
 QCString DotClassGraph::diskName() const

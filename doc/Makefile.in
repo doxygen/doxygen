@@ -23,7 +23,7 @@ all: language FORCE
 	@cp Makefile.latex ../latex/Makefile
 	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen_manual.tex >../latex/doxygen_manual.tex
 	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen.sty >../latex/doxygen.sty 
-	@cp doxygen_logo.eps ../latex
+	@epstopdf doxygen_logo.eps -o=../latex/doxygen_logo.pdf
 
 clean: 
 	rm -rf ../html ../latex *.bak translator_report.txt

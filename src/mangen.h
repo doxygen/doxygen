@@ -181,8 +181,10 @@ class ManGenerator : public OutputGenerator
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
     void startDescList(SectionTypes);
     void endDescList()        {}
-    void startParamList(ParamListTypes);
-    void endParamList()       {}
+    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
+    void endSimpleSect();
+    void startParamList(ParamListTypes,const char *title);
+    void endParamList();
     void endDescTitle();
     void writeDescItem();
     void startSection(const char *,const char *,bool);

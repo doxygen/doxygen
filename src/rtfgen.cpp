@@ -502,7 +502,8 @@ bool StyleData::setStyle(const char* s, const char* styleName)
   static const QRegExp subgroup("^{[^}]*}\\s*");
   static const QRegExp any_clause("^\\\\[a-z][a-z0-9-]*\\s*");
 
-  int len;
+  int len = 0;     // length of a particular RTF formatting control
+  int ref_len = 0; // length of the whole formatting section of a style
   int start = s_clause.match(s, 0, &len);
   if (start < 0)
   {
@@ -514,6 +515,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
 
   // search for the end of pure formatting codes
   const char* end = s + len;
+  ref_len = len;
   bool haveNewDefinition = TRUE;
   for(;;)
   {
@@ -523,7 +525,10 @@ bool StyleData::setStyle(const char* s, const char* styleName)
       if (0 != subgroup.match(end, 0, &len))
         break;
       else
+      {
         end += len;
+        ref_len += len;
+      }
     }
     else if (*end == '\\')
     {
@@ -534,6 +539,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
       if (0 != any_clause.match(end, 0, &len))
         break;
       end += len;
+      ref_len += len;
     }
     else if (*end == 0)
     { // no style-definition part, keep default value
@@ -544,8 +550,9 @@ bool StyleData::setStyle(const char* s, const char* styleName)
       break;
   }
   delete[] reference;
-  reference = new char[len + 1];
-  memcpy(reference, s, len); reference[len] = 0;
+  reference = new char[ref_len + 1];
+  memcpy(reference, s, ref_len); 
+  reference[ref_len] = 0;
   if (haveNewDefinition)
   {
     delete[] definition;
@@ -2047,24 +2054,6 @@ void RTFGenerator::endDescList()
   t << "}";
 }
 
-void RTFGenerator::startParamList(ParamListTypes)
-{
-  DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
-  t << "{"; // ends at endParamList
-  t << "{"; // ends at endDescTitle
-  startBold();
-  newParagraph();
-}
-
-void RTFGenerator::endParamList()
-{
-  DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
-  newParagraph();
-  decrementIndentLevel();
-  m_omitParagraph = TRUE;
-  t << "}";
-}
-
 
 void RTFGenerator::startSection(const char *,const char *title,bool sub)
 {
@@ -2893,6 +2882,61 @@ void RTFGenerator::endMemberGroup(bool hasHeader)
 {
   DBG_RTF(t << "{\\comment endMemberGroup}" << endl)
   if (hasHeader) decrementIndentLevel();
+  t << "}";
+}
+
+void RTFGenerator::startSimpleSect(SectionTypes,const char *file,const char *anchor,const char *title)
+{
+  DBG_RTF(t << "{\\comment (startSimpleSect)}"    << endl)
+  t << "{"; // ends at endDescList
+  t << "{"; // ends at endDescTitle
+  startBold();
+  newParagraph();
+  if (file)
+  {
+    writeObjectLink(0,file,anchor,title);
+  }
+  else
+  {
+    docify(title);
+  }
+  endBold();
+  t << "}";
+  newParagraph();
+  incrementIndentLevel();
+  t << Rtf_Style_Reset << Rtf_DList_DepthStyle();
+}
+
+void RTFGenerator::endSimpleSect()
+{
+  DBG_RTF(t << "{\\comment (endSimpleSect)}"    << endl)
+  newParagraph();
+  decrementIndentLevel();
+  m_omitParagraph = TRUE;
+  t << "}";
+}
+
+void RTFGenerator::startParamList(ParamListTypes,const char *title)
+{
+  DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
+  t << "{"; // ends at endParamList
+  t << "{"; // ends at endDescTitle
+  startBold();
+  newParagraph();
+  docify(title);
+  endBold();
+  t << "}";
+  newParagraph();
+  incrementIndentLevel();
+  t << Rtf_Style_Reset << Rtf_DList_DepthStyle();
+}
+
+void RTFGenerator::endParamList()
+{
+  DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
+  newParagraph();
+  decrementIndentLevel();
+  m_omitParagraph = TRUE;
   t << "}";
 }
 

@@ -27,6 +27,7 @@
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include "language.h"
 
 //----------------------------------------------------------------------------
 
@@ -248,6 +249,8 @@ HtmlHelp *HtmlHelp::getInstance()
   return theInstance;
 }
 
+static QDict<QCString> s_languageDict;
+
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files. 
  *  It also creates a project file (index.hhp)
@@ -294,7 +297,79 @@ void HtmlHelp::initialize()
          "<param name=\"FrameName\" value=\"right\">\n"
          "</OBJECT>\n"
          "<UL>\n";
+
+  /* language codes for Html help
+     0x405 Czech
+     0x406 Danish
+     0x413 Dutch
+     0xC09 English (Australia)
+     0x809 English (Britain)
+     0x1009 English (Canada)
+     0x1809 English (Ireland)
+     0x1409 English (New Zealand)
+     0x1C09 English (South Africa)
+     0x409 English (United States)
+     0x40B Finnish
+     0x40C French
+     0x407 German
+     0x408 Greece
+     0x40E Hungarian
+     0x410 Italian
+     0x814 Norwegian
+     0x415 Polish
+     0x816 Portuguese(Portugal)
+     0x416 Portuguese(Brazil)
+     0x419 Russian
+     0x80A Spanish(Mexico)
+     0xC0A Spanish(Modern Sort)
+     0x40A Spanish(Traditional Sort)
+     0x41D Swedish
+     0x41F Turkey
+     0x411 Japanese
+     0x412 Korean
+     0x804 Chinese (PRC)
+     0x404 Chinese (Taiwan)
+  */
+  s_languageDict.setAutoDelete(TRUE);
+  s_languageDict.clear();
+  s_languageDict.insert("czech",    new QCString("0x405 Czech"));
+  s_languageDict.insert("danish",   new QCString("0x406 Danish"));
+  s_languageDict.insert("dutch",    new QCString("0x413 Dutch"));
+  s_languageDict.insert("finnish",  new QCString("0x40B Finnish"));
+  s_languageDict.insert("french",   new QCString("0x40C French"));
+  s_languageDict.insert("german",   new QCString("0x40C German"));
+  s_languageDict.insert("greece",   new QCString("0x408 Greece"));
+  s_languageDict.insert("hungarian",new QCString("0x40E Hungarian"));
+  s_languageDict.insert("italian",  new QCString("0x410 Italian"));
+  s_languageDict.insert("norwegian",new QCString("0x814 Norwegian"));
+  s_languageDict.insert("polish",   new QCString("0x815 Polish"));
+  s_languageDict.insert("portugese",new QCString("0x815 Portuguese(Portugal)"));
+  s_languageDict.insert("brazil",   new QCString("0x416 Portuguese(Brazil)"));
+  s_languageDict.insert("russian",  new QCString("0x419 Russian"));
+  s_languageDict.insert("spanish",  new QCString("0x40A Spannish(Traditional Sort)"));
+  s_languageDict.insert("swedish",  new QCString("0x41D Swedish"));
+  s_languageDict.insert("turkey",   new QCString("0x41F Turkey"));
+  s_languageDict.insert("japanese", new QCString("0x411 Japanese"));
+  s_languageDict.insert("korean",   new QCString("0x412 Korean"));
+  s_languageDict.insert("chinese",  new QCString("0x804 Chinese (PRC)"));
 }
+
+
+static QCString getLanguageString()
+{
+  if (!theTranslator->idLanguage().isEmpty())
+  {
+    QCString *s = s_languageDict[theTranslator->idLanguage()];
+    if (s)
+    {
+      return *s;
+    }
+  }
+  // default language
+  return "0x409 English (United States)";
+}
+  
+
 
 void HtmlHelp::createProjectFile()
 {
@@ -308,6 +383,8 @@ void HtmlHelp::createProjectFile()
     t.setEncoding(QTextStream::Latin1);
 #endif
 
+   
+    
     QCString indexName="index"+htmlFileExtension;
     if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+htmlFileExtension;
     t << "[OPTIONS]\n"
@@ -317,7 +394,7 @@ void HtmlHelp::createProjectFile()
          "Default Window=main\n"
          "Default topic=" << indexName << "\n"
          "Index file=index.hhk\n"
-         "Language=0x409 English (United States)\n";
+         "Language=" << getLanguageString() << endl;
     if (Config_getBool("BINARY_TOC")) t << "Binary TOC=YES\n";
     if (Config_getBool("GENERATE_CHI")) t << "Create CHI file=YES\n";
     t << "Title=" << Config_getString("PROJECT_NAME") << endl << endl;
@@ -372,6 +449,7 @@ void HtmlHelp::finalize()
   delete kf;
 
   createProjectFile();
+  s_languageDict.clear();
 }
 
 /*! Increase the level of the contents hierarchy. 

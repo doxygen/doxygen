@@ -208,8 +208,10 @@ class LatexGenerator : public OutputGenerator
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
-    void startParamList(ParamListTypes) { t << "\\begin{Desc}\n\\item["; }   
-    void endParamList()      { t << "\\end{Desc}" << endl; }
+    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
+    void endSimpleSect();
+    void startParamList(ParamListTypes,const char *title);
+    void endParamList();
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
     void startSection(const char *,const char *,bool);
