@@ -1043,7 +1043,7 @@ static void findMaximalDotGraph(DotNode *root,
 
 QCString DotClassGraph::diskName() const
 {
-  QString result=m_diskName.copy();
+  QCString result=m_diskName.copy();
   switch (m_graphType)
   {
     case Implementation:
