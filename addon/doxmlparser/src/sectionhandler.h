@@ -46,8 +46,8 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
     virtual ~SectionHandler();
 
     // ISection
-    virtual QString kindString() const 
-    { return m_kindString; }
+    virtual const IString *kindString() const 
+    { return &m_kindString; }
     virtual SectionKind kind() const 
     { return m_kind; }
     virtual IMemberIterator *members() const 
@@ -78,7 +78,7 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
   private:
     IBaseHandler *m_parent;
     SectionKind m_kind;
-    QString m_kindString;
+    StringImpl m_kindString;
     QList<MemberHandler> m_members;
 };
 

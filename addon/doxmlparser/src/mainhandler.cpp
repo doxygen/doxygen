@@ -194,16 +194,17 @@ ICompoundIterator *MainHandler::compounds() const
   return new CompoundEntryIterator(this,m_compounds);
 }
 
-ICompound *MainHandler::compoundById(const QString &id) const
+ICompound *MainHandler::compoundById(const char *id) const
 {
-  if (id.isEmpty()) return 0;
-  CompoundHandler *ch = m_compoundsLoaded[id];
+  QString ids = id;
+  if (ids.isEmpty()) return 0;
+  CompoundHandler *ch = m_compoundsLoaded[ids];
   if (ch) // compound already in memory
   {
     ch->addref(); // returning alias -> increase reference counter
     return ch->toICompound(); 
   }
-  CompoundEntry *ce = m_compoundDict.find(id);
+  CompoundEntry *ce = m_compoundDict.find(ids);
   if (ce==0) return 0; // id not found
   // create and load a new compound
   ch = new CompoundHandler(m_xmlDirName);
@@ -224,28 +225,31 @@ ICompound *MainHandler::compoundById(const QString &id) const
 
 void MainHandler::unloadCompound(CompoundHandler *ch)
 {
-  m_compoundsLoaded.remove(ch->id()); 
+  m_compoundsLoaded.remove(ch->id()->latin1()); 
 }
 
-ICompound *MainHandler::compoundByName(const QString &name) const
+ICompound *MainHandler::compoundByName(const char *name) const
 {
-  if (name.isEmpty()) return 0;
+  QString nameStr = name;
+  if (nameStr.isEmpty()) return 0;
   CompoundEntry *ce = m_compoundNameDict[name];
   if (ce==0) return 0; // name not found
   return compoundById(ce->id);
 }
 
-ICompound *MainHandler::memberById(const QString &id) const
+ICompound *MainHandler::memberById(const char *id) const
 {
-  if (id.isEmpty()) return 0;
+  QString ids = id;
+  if (ids.isEmpty()) return 0;
   MemberEntry *me = m_memberDict[id];
   if (me==0) return 0; // id not found
   return compoundById(me->id);
 }
 
-ICompoundIterator *MainHandler::memberByName(const QString &name) const
+ICompoundIterator *MainHandler::memberByName(const char *name) const
 {
-  if (name.isEmpty()) return 0;
+  QString nameStr = name;
+  if (nameStr.isEmpty()) return 0;
   QList<CompoundEntry> *cel = m_memberNameDict[name];
   if (cel==0) return 0; // name not found
   return new CompoundEntryIterator(this,*cel);
@@ -267,7 +271,7 @@ void MainHandler::release()
   CompoundHandler *ch;
   for (chi.toFirst();(ch=chi.current());++chi)
   {
-    debug(1,"Compound %s not released\n",ch->name().data());
+    debug(1,"Compound %s not released\n",ch->name()->latin1());
   }
   graphhandler_exit();
   dochandler_exit();

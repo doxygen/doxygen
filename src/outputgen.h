@@ -163,11 +163,19 @@ class BaseOutputDocInterface
     /*! Starts a fragment of preformatted text. This means that
      *  spacing, tabs and newlines should be kept in the output
      */
-
     virtual void startPreFragment() = 0;
-    /*! Ens a preformatted text fragment. */
-
+    
+    /*! Ends a preformatted text fragment. */
     virtual void endPreFragment() = 0;
+    
+    /*! Starts a fragment of verbatim test. This is preformatted text,
+     *  without any special internal structure.
+     */
+    virtual void startVerbatimFragment() = 0;
+
+    /*! Ends a verbatim text fragment. */
+    virtual void endVerbatimFragment() = 0;
+    
     /*! Writes a horizontal ruler to the output */
     virtual void writeRuler() = 0;
     

@@ -122,6 +122,8 @@ class LatexGenerator : public OutputGenerator
     void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; 
                                insidePre=FALSE; 
                              }
+    void startVerbatimFragment() { t << endl << endl << "\\footnotesize\\begin{verbatim}"; }
+    void endVerbatimFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }

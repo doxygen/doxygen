@@ -1161,12 +1161,12 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  BEGIN( DocScan );
   					}
 <DocScan>{CMD}"verbatim"/[^a-z_A-Z0-9]	{
-  					  outDoc->startCodeFragment();
+  					  outDoc->startVerbatimFragment();
 					  insideVerbatim=TRUE;
 					  BEGIN(DocVerbatim);
   					}
 <DocVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9]	{
-  					  outDoc->endCodeFragment();
+  					  outDoc->endVerbatimFragment();
 					  insideVerbatim=FALSE;
   					  BEGIN(DocScan);
   					}
@@ -1225,7 +1225,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  BEGIN( DocLinkText ); 
 					}
 <DocJavaLink>([a-z_A-Z0-9]+".")+	{ /* Skip scope prefix (TODO: fix) */ }
-<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\[\]]*")")?({B}*("const"|"volatile"))? {  // TODO: support operators as well!
+<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\ \[\]]*")")?({B}*("const"|"volatile"))? {  // TODO: support operators as well!
   					  linkRef  = yytext;
 					  linkText = "";
 					  BEGIN( DocJavaLinkText );
@@ -1272,6 +1272,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}("arg"|"li")/{BN}	        { 
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   					  if (insideArgumentList)
 					  {
 					    outDoc->writeListItem();

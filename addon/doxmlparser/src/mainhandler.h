@@ -55,10 +55,10 @@ class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
 
     // IDoxygen
     ICompoundIterator *compounds() const;
-    ICompound *compoundById(const QString &id) const;
-    virtual ICompound *compoundByName(const QString &name) const;
-    virtual ICompound *memberById(const QString &id) const;
-    virtual ICompoundIterator *memberByName(const QString &name) const;
+    ICompound *compoundById(const char *id) const;
+    virtual ICompound *compoundByName(const char *name) const;
+    virtual ICompound *memberById(const char *id) const;
+    virtual ICompoundIterator *memberByName(const char *name) const;
 
     virtual void release();
     void setDebugLevel(int level);

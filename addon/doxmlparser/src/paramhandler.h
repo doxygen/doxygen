@@ -21,6 +21,7 @@
 #include <qxml.h>
 #include <doxmlintf.h>
 
+#include "stringimpl.h"
 #include "basehandler.h"
 #include "baseiterator.h"
 #include "linkedtexthandler.h"
@@ -43,20 +44,20 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
     // IParam
     virtual ILinkedTextIterator *type() const 
     { return new LinkedTextIterator(m_type); }
-    virtual QString declarationName() const { return m_declName; }
-    virtual QString definitionName() const { return m_defName; }
-    virtual QString attrib() const { return m_attrib; } 
-    virtual QString arraySpecifier() const { return m_array; }
+    virtual const IString * declarationName() const { return &m_declName; }
+    virtual const IString * definitionName() const { return &m_defName; }
+    virtual const IString * attrib() const { return &m_attrib; } 
+    virtual const IString * arraySpecifier() const { return &m_array; }
     virtual ILinkedTextIterator *defaultValue() const 
     { return new LinkedTextIterator(m_defVal); }
 
   private:
     IBaseHandler *m_parent;
     QList<LinkedTextImpl> m_type;
-    QString m_declName;
-    QString m_defName;
-    QString m_attrib;
-    QString m_array;
+    StringImpl m_declName;
+    StringImpl m_defName;
+    StringImpl m_attrib;
+    StringImpl m_array;
     QList<LinkedTextImpl> m_defVal;
     LinkedTextHandler *m_linkedTextHandler;
 };

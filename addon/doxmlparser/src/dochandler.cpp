@@ -117,6 +117,9 @@ MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
 
   addStartHandler("superscript",this,&MarkupHandler::startSuperscript);
   addEndHandler("superscript",this,&MarkupHandler::endSuperscript);
+
+  addStartHandler("preformatted",this,&MarkupHandler::startPreformatted);
+  addEndHandler("preformatted",this,&MarkupHandler::endPreformatted);
 }
 
 MarkupHandler::~MarkupHandler()
@@ -229,6 +232,20 @@ void MarkupHandler::endSuperscript()
   addTextNode();
   m_children.append(new MarkupModifierNode(IDocMarkup::Superscript,FALSE));
   m_curMarkup &= ~IDocMarkup::Superscript;
+}
+
+void MarkupHandler::startPreformatted(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,TRUE));
+  m_curMarkup |= IDocMarkup::Preformatted;
+}
+
+void MarkupHandler::endPreformatted()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,FALSE));
+  m_curMarkup &= ~IDocMarkup::Preformatted;
 }
 
 //----------------------------------------------------------------------

@@ -112,8 +112,10 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
-    void startPreFragment() { startCodeFragment(); }
-    void endPreFragment() { endCodeFragment(); }
+    void startPreFragment()      { startCodeFragment(); }
+    void endPreFragment()        { endCodeFragment(); }
+    void startVerbatimFragment() { startVerbatimFragment(); }
+    void endVerbatimFragment()   { endVerbatimFragment(); }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }
@@ -275,6 +277,7 @@ class RTFGenerator : public OutputGenerator
     void RtfwriteRuler_thick() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
     void RtfwriteRuler_thin() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
     void WriteRTFReference(const char *label);
+    char *getMultiByte(int c);
 };
 
 #endif

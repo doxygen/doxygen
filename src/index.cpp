@@ -1230,48 +1230,48 @@ void writeAnnotatedClassList(OutputList &ol)
 //----------------------------------------------------------------------------
 
 // OBSOLETE
-void writePackageList(OutputList &ol)
-{
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  ol.startIndexList(); 
-  PackageSDict::Iterator pdi(Doxygen::packageDict);
-  PackageDef *pd;
-  for (;(pd=pdi.current());++pdi)
-  {
-    if (!pd->isReference())
-    {
-      //ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
-      ol.startIndexKey();
-      ol.writeObjectLink(0,pd->getOutputFileBase(),0,pd->name());
-      ol.endIndexKey();
-      bool hasBrief = !pd->briefDescription().isEmpty();
-      ol.startIndexValue(hasBrief);
-      if (hasBrief)
-      {
-        //ol.docify(" (");
-        parseDoc(ol,
-            pd->getDefFileName(),pd->getDefLine(),
-            pd->name(),0,
-            abbreviate(pd->briefDescription(),pd->name()));
-        //ol.docify(")");
-      }
-      ol.endIndexValue(pd->getOutputFileBase(),hasBrief);
-      
-      //ol.writeEndAnnoItem(pd->getOutputFileBase());
-      if (hasHtmlHelp)
-      {
-        HtmlHelp::getInstance()->addContentsItem(FALSE,pd->name(),pd->getOutputFileBase());
-      }
-      if (hasFtvHelp)
-      {
-        FTVHelp::getInstance()->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name());
-      }
-    }
-  }
-  ol.endIndexList();
-}
+//void writePackageList(OutputList &ol)
+//{
+//  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+//  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+//  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+//  ol.startIndexList(); 
+//  PackageSDict::Iterator pdi(Doxygen::packageDict);
+//  PackageDef *pd;
+//  for (;(pd=pdi.current());++pdi)
+//  {
+//    if (!pd->isReference())
+//    {
+//      //ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
+//      ol.startIndexKey();
+//      ol.writeObjectLink(0,pd->getOutputFileBase(),0,pd->name());
+//      ol.endIndexKey();
+//      bool hasBrief = !pd->briefDescription().isEmpty();
+//      ol.startIndexValue(hasBrief);
+//      if (hasBrief)
+//      {
+//        //ol.docify(" (");
+//        parseDoc(ol,
+//            pd->getDefFileName(),pd->getDefLine(),
+//            pd->name(),0,
+//            abbreviate(pd->briefDescription(),pd->name()));
+//        //ol.docify(")");
+//      }
+//      ol.endIndexValue(pd->getOutputFileBase(),hasBrief);
+//      
+//      //ol.writeEndAnnoItem(pd->getOutputFileBase());
+//      if (hasHtmlHelp)
+//      {
+//        HtmlHelp::getInstance()->addContentsItem(FALSE,pd->name(),pd->getOutputFileBase());
+//      }
+//      if (hasFtvHelp)
+//      {
+//        FTVHelp::getInstance()->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name());
+//      }
+//    }
+//  }
+//  ol.endIndexList();
+//}
 
 //----------------------------------------------------------------------------
 
@@ -1496,54 +1496,54 @@ void writeAnnotatedIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writePackageIndex(OutputList &ol)
-{
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-
-  if (documentedPackages==0) return;
-  
-  ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
-  startFile(ol,"packages",0,"Package Index");
-  startTitle(ol,0);
-  QCString title = theTranslator->trPackageList();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle =  title;
-  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
-  parseText(ol,title);
-  endTitle(ol,0,0);
-  ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"packages"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"packages",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
-  parseText(ol,theTranslator->trPackageListDescription());
-  ol.endTextBlock();
-  writePackageList(ol);
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
-  
-  endFile(ol);
-  ol.popGeneratorState();
-}
+//void writePackageIndex(OutputList &ol)
+//{
+//  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+//  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+//  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+//
+//  if (documentedPackages==0) return;
+//  
+//  ol.pushGeneratorState();
+//  ol.disable(OutputGenerator::Man);
+//  startFile(ol,"packages",0,"Package Index");
+//  startTitle(ol,0);
+//  QCString title = theTranslator->trPackageList();
+//  QCString htmlHelpTitle = title;
+//  QCString ftvHelpTitle =  title;
+//  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
+//  parseText(ol,title);
+//  endTitle(ol,0,0);
+//  ol.startTextBlock();
+//  HtmlHelp *htmlHelp = 0;
+//  FTVHelp  *ftvHelp = 0;
+//  if (hasHtmlHelp)
+//  {
+//    htmlHelp = HtmlHelp::getInstance();
+//    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"packages"); 
+//    htmlHelp->incContentsDepth();
+//  }
+//  if (hasFtvHelp)
+//  {
+//    ftvHelp = FTVHelp::getInstance();
+//    ftvHelp->addContentsItem(TRUE,0,"packages",0,ftvHelpTitle); 
+//    ftvHelp->incContentsDepth();
+//  }
+//  parseText(ol,theTranslator->trPackageListDescription());
+//  ol.endTextBlock();
+//  writePackageList(ol);
+//  if (hasHtmlHelp)
+//  {
+//    htmlHelp->decContentsDepth();
+//  }
+//  if (hasFtvHelp)
+//  {
+//    ftvHelp->decContentsDepth();
+//  }
+//  
+//  endFile(ol);
+//  ol.popGeneratorState();
+//}
 
 //----------------------------------------------------------------------------
 

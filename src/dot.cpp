@@ -468,7 +468,7 @@ void DotNode::write(QTextStream &t,
   }
 }
 
-void DotNode::writeXML(QTextStream &t)
+void DotNode::writeXML(QTextStream &t,bool isClassGraph)
 {
   t << "      <node id=\"" << m_number << "\">" << endl;
   t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
@@ -498,14 +498,21 @@ void DotNode::writeXML(QTextStream &t)
     {
       edgeInfo=eli.current();
       t << "        <childnode id=\"" << childNode->m_number << "\" relation=\"";
-      switch(edgeInfo->m_color)
+      if (isClassGraph)
       {
-        case EdgeInfo::Blue:    t << "public-inheritance"; break;
-        case EdgeInfo::Green:   t << "protected-inheritance"; break;
-        case EdgeInfo::Red:     t << "private-inheritance"; break;
-        case EdgeInfo::Purple:  t << "usage"; break;
-        case EdgeInfo::Orange:  t << "template-instance"; break;
-        case EdgeInfo::Grey:    ASSERT(0); break;
+        switch(edgeInfo->m_color)
+        {
+          case EdgeInfo::Blue:    t << "public-inheritance"; break;
+          case EdgeInfo::Green:   t << "protected-inheritance"; break;
+          case EdgeInfo::Red:     t << "private-inheritance"; break;
+          case EdgeInfo::Purple:  t << "usage"; break;
+          case EdgeInfo::Orange:  t << "template-instance"; break;
+          case EdgeInfo::Grey:    ASSERT(0); break;
+        }
+      }
+      else // include graph
+      {
+        t << "include"; 
       }
       t << "\">" << endl;
       if (!edgeInfo->m_label.isEmpty()) 
@@ -1430,7 +1437,7 @@ void DotClassGraph::writeXML(QTextStream &t)
   DotNode *node;
   for (;(node=dni.current());++dni)
   {
-    node->writeXML(t);
+    node->writeXML(t,TRUE);
   }
 }
 
@@ -1661,7 +1668,7 @@ void DotInclDepGraph::writeXML(QTextStream &t)
   DotNode *node;
   for (;(node=dni.current());++dni)
   {
-    node->writeXML(t);
+    node->writeXML(t,FALSE);
   }
 }
 

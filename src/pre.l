@@ -1518,7 +1518,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defVarArgs = FALSE;
 					  if ( g_defName!=g_lastGuardName )
 					  { // define may appear in the output
-					    QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
+					    QCString tmp=(QCString)"#define "+g_defName;
 					    outputArray(tmp.data(),tmp.length());
 					    g_quoteArg=FALSE;
 					    BEGIN(DefineText);
@@ -1527,10 +1527,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    //printf("Found a guard %s\n",yytext);
   					    Define *def=0;
-					    //if (g_includeStack.isEmpty()) 
-					    //{
-					    //  addDefine();
-					    //}
+					    if (g_includeStack.isEmpty()) 
+					    {
+					      addDefine();
+					    }
 					    if ((def=g_fileDefineDict->find(g_defName))==0)
 					    {
 					      g_fileDefineDict->insert(g_defName,newDefine());
@@ -1551,6 +1551,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					        //printf("Error: define %s is defined more than once!\n",g_defName.data());
 					      }
 					    }
+					    QCString tmp=(QCString)"#define "+g_defName;
+					    outputArray(tmp.data(),tmp.length());
   					    //outputChar('\n');
 					    g_lastGuardName.resize(0);
 					    BEGIN(Start);

@@ -112,8 +112,10 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
-    void startPreFragment() { startCodeFragment(); }
-    void endPreFragment() { endCodeFragment(); }
+    void startPreFragment()      { startCodeFragment(); }
+    void endPreFragment()        { endCodeFragment(); }
+    void startVerbatimFragment() { startCodeFragment(); }
+    void endVerbatimFragment()   { endCodeFragment(); }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() {}
     void endCodeLine() { codify("\n"); col=0; }

@@ -21,7 +21,7 @@
 #define TRANSLATOR_SI_H
 
 
-class TranslatorSlovene : public TranslatorAdapter_1_2_13
+class TranslatorSlovene : public Translator
 {
   public:
     QCString idLanguage()
@@ -991,6 +991,26 @@ class TranslatorSlovene : public TranslatorAdapter_1_2_13
     {
       return "Reference";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementira "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementirano v "+trWriteList(numEntries)+".";
+    }
+
 };
 
 #endif
