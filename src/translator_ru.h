@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_2_11
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -146,7 +146,7 @@ class TranslatorRussian : public TranslatorAdapter_1_2_11
     /*! this is the first part of a sentence that is followed by a class name */
     /* Dosn't use when optimization for C is on. */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode("Полный список членов класса"); }
+    { return decode("Полный список членов класса "); }
 
     /*! this is the remainder of the sentence after the class name */
     /* Dosn't use when optimization for C is on. */
@@ -628,7 +628,7 @@ class TranslatorRussian : public TranslatorAdapter_1_2_11
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return decode("Документация по друзьям класса и функциям отноносящихся"
-        "к классу"); }
+        " к классу"); }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -1357,6 +1357,27 @@ class TranslatorRussian : public TranslatorAdapter_1_2_11
       if (!singular) result+="ы";
       return decode(result); 
     }
+
+    /*! This text is generated when the \\requirements command is used
+    */
+    virtual QCString trRequirements(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Требовани" : "требовани"));
+      if (!singular)  result+="я"; else result+="е";
+      return decode(result); 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Перекрестные ссылки";
+    }
+
 };
 
 #endif

@@ -24,6 +24,7 @@
 #include "doxmlintf.h"
 
 class DocHandler;
+class ProgramListingHandler;
 
 class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 {
@@ -37,6 +38,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
     virtual void startLocation(const QXmlAttributes& attrib);
+    virtual void startProgramListing(const QXmlAttributes& attrib);
 
     CompoundHandler(IBaseHandler *parent);
     virtual ~CompoundHandler();
@@ -72,6 +74,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     IBaseHandler *m_parent;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
+    ProgramListingHandler  *m_programListing;
     QString m_id;
     QString m_kind;
     QString m_name;

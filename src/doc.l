@@ -1135,7 +1135,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  if (formula)
 					  {
 					    QCString formName;
-					    formName.sprintf("form-%d.gif",formula->getId());
+					    formName.sprintf("form_%d",formula->getId());
 					    outDoc->writeFormula(formName,formula->getFormulaText());
 					  }
   					}

@@ -141,7 +141,7 @@ class Definition
 
   private: 
     void writeSourceRefList(OutputList &ol,const char *scopeName,
-                       const QCString &text,MemberSDict *members);
+                       const QCString &text,MemberSDict *members,bool);
     //QCString m_qualifiedName;  // name of the definition
     QCString m_brief; // brief description
     QCString m_doc;   // detailed description

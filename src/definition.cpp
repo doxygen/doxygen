@@ -347,7 +347,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
  *  definition is used.
  */
 void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
-    const QCString &text,MemberSDict *members)
+    const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
   ol.pushGeneratorState();
   if (Config_getBool("SOURCE_BROWSER") && members)
@@ -425,12 +425,12 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
 
 void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
 {
-  writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_sourceRefByDict);
+  writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_sourceRefByDict,FALSE);
 }
 
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
-  writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_sourceRefsDict);
+  writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_sourceRefsDict,TRUE);
 }
 
 bool Definition::hasDocumentation() const

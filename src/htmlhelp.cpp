@@ -315,7 +315,8 @@ void HtmlHelp::createProjectFile()
          "Contents file=index.hhc\n"
          "Default Window=main\n"
          "Default topic=" << indexName << "\n"
-         "Index file=index.hhk\n";
+         "Index file=index.hhk\n"
+         "Language=0x409 English (United States)\n";
     if (Config_getBool("BINARY_TOC")) t << "Binary TOC=YES\n";
     if (Config_getBool("GENERATE_CHI")) t << "Create CHI file=YES\n";
     t << "Title=" << Config_getString("PROJECT_NAME") << endl << endl;
@@ -323,7 +324,7 @@ void HtmlHelp::createProjectFile()
     t << "[WINDOWS]" << endl;
     t << "main=\"" << Config_getString("PROJECT_NAME") << "\",\"index.hhc\","
          "\"index.hhk\",\"" << indexName << "\",\"" << 
-         indexName << "\",,,,,0x23520,,0x3006,,,,,,,,0" << endl << endl;
+         indexName << "\",,,,,0x23520,,0x387e,,,,,,,,0" << endl << endl;
     
     t << "[FILES]" << endl;
     char *s = indexFiles.first();

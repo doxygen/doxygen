@@ -231,6 +231,12 @@ class MemberDef : public Definition
                ArgumentList *actualArgs);
     void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
     void addListReference(Definition *d);
+
+    QCString getBodyAnchor() const 
+    { 
+      return bodyMemb ? bodyMemb->anchor() : anchor(); 
+    }
+    void setBodyMember(MemberDef *md) { bodyMemb = md; }
         
     bool visited;
     
@@ -260,6 +266,7 @@ class MemberDef : public Definition
     //int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
+    MemberDef *bodyMemb;      // Member containing the definition
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class

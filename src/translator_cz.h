@@ -128,6 +128,9 @@
 // 2001/07/16
 //  - trClassDocumentation() updated as in the English translator.
 //    
+// 2001/11/06
+//  - trReferences() implemented.
+//    
 //  
 // Todo
 // ----
@@ -148,7 +151,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public TranslatorAdapter_1_2_11
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1463,6 +1466,17 @@ class TranslatorCzech : public TranslatorAdapter_1_2_11
       QCString result((first_capital ? "Auto" : "auto"));
       result += (singular) ? "r" : "øi";
       return decode(result); 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return decode("Odkazuje se na");
     }
 
 };

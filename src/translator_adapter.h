@@ -5,10 +5,12 @@
 
 /*! \brief Base of the translator adapter tree
  *
- *  This class provides access to the english translations, to be used
- *  as a substitute for not implemented local translations.
+ 
+ *  This abstract class provides access to the english
+ *  translations, to be used as a substitute for not implemented
+ *  local translations. 
  */
-class TranslatorAdapterCVS : public Translator
+class TranslatorAdapterBase : public Translator
 {
   protected:
     TranslatorEnglish english;
@@ -27,35 +29,17 @@ class TranslatorAdapterCVS : public Translator
     }
   
   public:
-    /*! A method to generate a warning message to signal the user
-     *  that the translation of his/her language of choice needs
-     *  updating. 
+    /*! This method is used to generate a warning message to signal
+     *  the user that the translation of his/her language of choice
+     *  needs updating.  It must be implemented by the translator
+     *  adapter class (pure virtual).
+     * 
+     *  \sa createUpdateNeededMessage()
      */
-    virtual QCString updateNeededMessage() 
-    { 
-        QCString vs("CVS release ");
-        vs += versionString;  // the one from the version.cpp
-        return createUpdateNeededMessage(idLanguage(), vs);
-    }
-//-----------------------------------------------------------------------
-// The things below this line should go to the new
-// TranslatorAdapter_1_2_x, as public methods.  The things above
-// should stay in TranslatorAdapterCVS and need not to be touched.
-// The first five lines below should be uncommented, and the
-// release number at the fifth of those lines should be set.
-
-// class TranslatorAdapter_1_2_x : public TranslatorAdapterCVS
-// {
-//   public:
-//     virtual QCString updateNeededMessage() 
-//     { return createUpdateNeededMessage(idLanguage(),"release 1.2.x"); }
-   
-    // Put new adapter methods below...
-    // 
-    
+    virtual QCString updateNeededMessage() = 0;
 };
 
-class TranslatorAdapter_1_2_11 : public TranslatorAdapterCVS
+class TranslatorAdapter_1_2_11 : public TranslatorAdapterBase
 {
   public:
     virtual QCString updateNeededMessage() 

@@ -18,7 +18,7 @@
 #include "dochandler.h"
 
 CompoundHandler::CompoundHandler(IBaseHandler *parent) 
-  : m_parent(parent), m_brief(0), m_detailed(0)
+  : m_parent(parent), m_brief(0), m_detailed(0), m_programListing(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
@@ -43,12 +43,15 @@ CompoundHandler::CompoundHandler(IBaseHandler *parent)
   
   addStartHandler("location",this,&CompoundHandler::startLocation);
   addEndHandler("location");
+
+  addStartHandler("programlisting",this,&CompoundHandler::startProgramListing);
 }
 
 CompoundHandler::~CompoundHandler()
 {
   delete m_brief;
   delete m_detailed;
+  delete m_programListing;
 }
 
 void CompoundHandler::startSection(const QXmlAttributes& attrib)
@@ -70,6 +73,13 @@ void CompoundHandler::startDetailedDesc(const QXmlAttributes& attrib)
   DocHandler *docHandler = new DocHandler(this);
   docHandler->startDoc(attrib);
   m_detailed = docHandler;
+}
+
+void CompoundHandler::startProgramListing(const QXmlAttributes& attrib)
+{
+  ProgramListingHandler *plHandler = new ProgramListingHandler(this);
+  plHandler->startProgramListing(attrib);
+  m_programListing = plHandler;
 }
 
 void CompoundHandler::startCompound(const QXmlAttributes& attrib)
