@@ -17,6 +17,7 @@
 
 #include "qtbc.h"
 #include "searchindex.h"
+#include "config.h"
 #include <qfile.h>
 
 
@@ -59,8 +60,10 @@ SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlInd
   for (i=0;i<numIndexEntries;i++) m_index.insert(i,new QList<IndexWord>);
 }
 
-void SearchIndex::setCurrentDoc(const char *name,const char *url)
+void SearchIndex::setCurrentDoc(const char *name,const char *baseName,const char *anchor)
 {
+  QCString url=baseName+Config_getString("HTML_FILE_EXTENSION");
+  if (anchor) url+=(QCString)"#"+anchor;  
   m_urlIndex++;
   m_urls.insert(m_urlIndex,new URL(name,url));
 }
@@ -84,7 +87,7 @@ void SearchIndex::addWord(const char *word)
     int idx=charsToIndex(word);
     if (idx<0) return;
     w = new IndexWord(word);
-    //printf("addWord(%s) at index %d\n",word,idx);
+    //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx]->append(w);
     m_words.insert(word,w);
   }

@@ -817,7 +817,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // write search index info
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION")+"#"+anchor());
+    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
     Doxygen::searchIndex->addWord(localName().lower());
     Doxygen::searchIndex->addWord(qualifiedName().lower());
   }

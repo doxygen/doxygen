@@ -34,6 +34,7 @@
 #include "outputlist.h"
 #include "util.h"
 #include "membername.h"
+#include "searchindex.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -78,7 +79,8 @@ static QCString      g_name;
 static QCString      g_args;
 static QCString      g_classScope;
 static QCString      g_realScope;
-static QStack<int>   g_scopeStack;      //!< 1 if bracket starts a scope, 2 for internal blocks 
+static QStack<int>   g_scopeStack;      //!< 1 if bracket starts a scope, 
+                                        //   2 for internal blocks 
 static int           g_anchorCount;
 static FileDef *     g_sourceFileDef;
 static Definition *  g_currentDefinition;
@@ -318,6 +320,24 @@ static void popScope()
   //printf("popScope() result: `%s'\n",g_classScope.data());
 }
 
+static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
+{
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  if (searchEngineEnabled)
+  {
+    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  }
+}
+
+static void addToSearchIndex(const char *text)
+{
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  if (searchEngineEnabled)
+  {
+    Doxygen::searchIndex->addWord(text);
+  }
+}
+
 static void setClassScope(const QCString &name)
 {
   //printf("setClassScope(%s)\n",name.data());
@@ -360,17 +380,27 @@ static void startCodeLine()
       g_realScope = d->name().copy();
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
+      QCString lineAnchor;
+      lineAnchor.sprintf("l%05d",g_yyLineNr);
       if (g_currentMemberDef)
       {
         g_code->writeLineNumber(g_currentMemberDef->getReference(),
 	                        g_currentMemberDef->getOutputFileBase(),
 	                        g_currentMemberDef->anchor(),g_yyLineNr);
+        setCurrentDoc(
+                                g_currentMemberDef->qualifiedName(),
+	                        g_sourceFileDef->getSourceFileBase(),
+	                        lineAnchor);
       }
       else
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),
 	                        0,g_yyLineNr);
+        setCurrentDoc(
+                                d->qualifiedName(),
+	                        g_sourceFileDef->getSourceFileBase(),
+	                        lineAnchor);
       }
     }
     else
@@ -683,6 +713,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       }
     }
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
+    addToSearchIndex(className);
     if (md)
     {
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
@@ -717,6 +748,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
 	if (md->isLinkable())
 	{
 	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
+          addToSearchIndex(clName);
 	  if (g_currentMemberDef)
 	  {
 	    addDocCrossReference(g_currentMemberDef,md);
@@ -727,6 +759,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
     }
     
     codifyLines(clName);
+    addToSearchIndex(clName);
   }
 }
 
@@ -782,6 +815,7 @@ static bool getLink(const char *className,
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
 				text ? text : memberName);
+      addToSearchIndex(text ? text : memberName);
       return TRUE;
     } 
   }
@@ -834,6 +868,7 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
 	// write the actual link
 	writeMultiLineCodeLink(ol,xmd->getReference(),
 	    xmd->getOutputFileBase(),xmd->anchor(),memName);
+        addToSearchIndex(memName);
 	return TRUE;
       }
 
@@ -934,6 +969,7 @@ static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
     }
   }
   codifyLines(memName);
+  addToSearchIndex(memName);
   return;
 }
 
@@ -1499,12 +1535,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
 					      g_code->codify(yytext);
+					      addToSearchIndex(yytext);
 					    }
   					    g_name.resize(0);
 					  }
 					  else
 					  {
   					    g_code->codify(yytext);
+					    addToSearchIndex(yytext);
   					    g_name.resize(0);
 					  }
 					  g_type.resize(0);
@@ -1524,12 +1562,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
 					      g_code->codify(yytext);
+					      addToSearchIndex(yytext);
 					    }
   					    g_name.resize(0);
 					  }
 					  else
 					  {
   					    g_code->codify(yytext);
+					    addToSearchIndex(yytext);
   					    g_name.resize(0);
 					  }
 					  g_type.resize(0);
@@ -2104,6 +2144,10 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
+  if (fd) 
+  {
+    setCurrentDoc(fd->name(),fd->getSourceFileBase());
+  }
   g_currentDefinition = 0;
   g_currentMemberDef = 0;
   g_searchingForBody = FALSE;

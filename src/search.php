@@ -276,7 +276,7 @@ function main()
   $requiredWords = array();
   $forbiddenWords = array();
   $foundWords = array();
-  $word=strtolower(strtok($query," "));
+  $word=strtok($query," ");
   while ($word) // for each word in the search query
   {
     if (($word{0}=='+')) { $word=substr($word,1); $requiredWords[]=$word; }
@@ -286,7 +286,7 @@ function main()
       $foundWords[]=$word;
       search($file,$word,$results);
     }
-    $word=strtolower(strtok(" "));
+    $word=strtok(" ");
   }
   $docs = array();
   combine_results($results,$docs);

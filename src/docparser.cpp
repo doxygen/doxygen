@@ -4782,16 +4782,15 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   if (indexWords && md && Config_getBool("SEARCHENGINE"))
   {
-    g_searchUrl=md->getOutputFileBase()+
-      Config_getString("HTML_FILE_EXTENSION")+"#"+md->anchor();
+    g_searchUrl=md->getOutputFileBase();
     Doxygen::searchIndex->setCurrentDoc(
         theTranslator->trMember(TRUE,TRUE)+" "+md->qualifiedName(),
-        g_searchUrl);
+        g_searchUrl,
+        md->anchor());
   }
   else if (indexWords && ctx && Config_getBool("SEARCHENGINE"))
   {
-    g_searchUrl=ctx->getOutputFileBase()+
-      Config_getString("HTML_FILE_EXTENSION");
+    g_searchUrl=ctx->getOutputFileBase();
     QCString name = ctx->qualifiedName();
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {

@@ -8155,6 +8155,11 @@ void parseInput()
     inheritDocumentation();
   }
 
+  // compute the shortest possible names of all files
+  // without loosing the uniqueness of the file names.
+  msg("Generating disk names...\n");
+  Doxygen::inputNameList.generateDiskNames();
+  
   msg("Adding source references...\n");
   addSourceReferences();
 
@@ -8269,11 +8274,6 @@ void generateOutput()
   msg("Counting data structures...\n");
   countDataStructures();
  
-  // compute the shortest possible names of all files
-  // without loosing the uniqueness of the file names.
-  msg("Generating disk names...\n");
-  Doxygen::inputNameList.generateDiskNames();
-  
   msg("Resolving user defined references...\n");
   resolveUserReferences();
 
