@@ -1099,6 +1099,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ClassDef  *bcd=0; 
     if (bmd && (bcd=bmd->memberClass()))
     {
+#if 0
       if (virt!=Normal) // search for virtual member of the deepest base class
       {
         MemberDef *lastBmd=bmd;
@@ -1112,6 +1113,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           lastBmd=lastBmd->reimplements();
         }
       }
+#endif
       // write class that contains a member that is reimplemented by this one
       if (bcd->isLinkable())
       {

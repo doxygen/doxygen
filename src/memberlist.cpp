@@ -36,7 +36,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 {
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
-  return strcmp(c1->name(),c2->name());
+  return strcasecmp(c1->name(),c2->name());
 }
 
 void MemberList::countDecMembers()

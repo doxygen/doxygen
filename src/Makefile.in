@@ -27,12 +27,12 @@ Makefile.doxytag: doxytag.pro doxytag.t
 Makefile.doxysearch: doxysearch.pro
 	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
 
-tmake:
+tmake: 
 	$(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
 	$(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
 	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
 
-clean: 
+clean: Makefile.doxygen Makefile.doxytag Makefile.doxysearch
 	$(MAKE) -f Makefile.doxygen    clean 
 	$(MAKE) -f Makefile.doxytag    clean
 	$(MAKE) -f Makefile.doxysearch clean

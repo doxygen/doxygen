@@ -59,13 +59,15 @@ class DotNode
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int  number() const { return m_number; }
-    void write(QTextStream &t,int maxDistance=1000);
+    void write(QTextStream &t,bool topDown,int maxDistance=1000);
     int  m_subgraphId;
     void clearWriteFlag();
 
   private:
     void colorConnectedNodes(int curColor);
-    const DotNode   *findRoot() const; // only works for acyclic graphs!
+    void writeBox(QTextStream &t,bool hasNonReachableChildren);
+    void writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown);
+    const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
     QCString         m_label;     //!< label text
     QCString         m_url;       //!< url of the node (format: remove$local)
@@ -74,6 +76,7 @@ class DotNode
     QList<EdgeInfo> *m_edgeInfo;  //!< edge info for each child
     bool             m_deleted;   //!< used to mark a node as deleted
     bool             m_written;   //!< used to mark a node as written
+    bool             m_hasDoc;    //!< used to mark a node as documented
     int              m_distance;  //!< distance to the root node
     bool             m_isRoot;    //!< indicates if this is a root node
 };
@@ -86,7 +89,7 @@ class DotGfxHierarchyTable
     void writeGraph(QTextStream &t,const char *path);
   
   private:
-    void addHierarchy(DotNode *n,ClassDef *cd);
+    void addHierarchy(DotNode *n,ClassDef *cd,bool hide);
 
     QList<DotNode> *m_rootNodes; 
     QDict<DotNode> *m_usedNodes; 

@@ -442,7 +442,7 @@ class TranslatorDutch : public Translator
 
     QCString trSources()
     {
-      return "Sources";
+      return "Broncode";
     }
     QCString trDefinedAtLineInSourceFile()
     {
@@ -457,9 +457,80 @@ class TranslatorDutch : public Translator
 // new since 1.0.0
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDeprecated()
+    QCString trDeprecated()
     {
       return "Verouderd";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! this text is put before a collaboration diagram */
+    QCString trCollaborationDiagram(const char *clName)
+    {
+      return (QCString)"Collaboratie diagram voor "+clName+":";
+    }
+    /*! this text is put before an include dependency graph */
+    QCString trInclDepGraph(const char *fName)
+    {
+      return (QCString)"Include afhankelijkheidsgraaf voor "+fName+":";
+    }
+    /*! header that is put before the list of constructor/destructors. */
+    QCString trConstructorDocumentation()
+    {
+      return "Constructor & Destructor Documentatie"; 
+    }
+    /*! Used in the file documentation to point to the corresponding sources. */
+    QCString trGotoSourceCode()
+    {
+      return "Ga naar de bron code van deze file.";
+    }
+    /*! Used in the file sources to point to the corresponding documentation. */
+    QCString trGotoDocumentation()
+    {
+      return "Ga naar de documentatie van deze file.";
+    }
+    /*! Text for the \pre command */
+    QCString trPrecondition()
+    {
+      return "Preconditie";
+    }
+    /*! Text for the \post command */
+    QCString trPostcondition()
+    {
+      return "Postconditie";
+    }
+    /*! Text for the \invariant command */
+    QCString trInvariant()
+    {
+      return "Invariant";
+    }
+    /*! Text shown before a multi-line variable/enum initialization */
+    QCString trInitialValue()
+    {
+      return "Initi&euml;le waarde:";
+    }
+    /*! Text used the source code in the file index */
+    QCString trCode()
+    {
+      return "code";
+    }
+    QCString trGraphicalHierarchy()
+    {
+      return "Grafische Klasse Hierarchie";
+    }
+    QCString trGotoGraphicalHierarchy()
+    {
+      return "Ga naar de grafische klasse hierarchie";
+    }
+    QCString trGotoTextualHierarchy()
+    {
+      return "Ga naar de tekstu&euml;le klasse hierarchie";
+    }
+    QCString trPageIndex()
+    {
+      return "Pagina Index";
     }
 };
 

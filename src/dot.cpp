@@ -20,6 +20,7 @@
 #include "dot.h"
 #include "doxygen.h"
 #include "message.h"
+#include "util.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -158,7 +159,7 @@ class DotNodeList : public QList<DotNode>
    ~DotNodeList() {}
    int compareItems(GCI item1,GCI item2)
    {
-     return strcmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
+     return strcasecmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
    }
 };
 
@@ -173,6 +174,7 @@ DotNode::DotNode(int n,const char *lab,const char *url,int distance,bool isRoot)
   m_subgraphId=-1;
   m_deleted=FALSE;
   m_written=FALSE;
+  m_hasDoc=FALSE;
   m_distance = distance;
 }
 
@@ -269,20 +271,8 @@ void DotNode::deleteNode()
   delete this;
 }
 
-void DotNode::write(QTextStream &t,int distance)
+void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
 {
-  if (m_written) return; // node already written to the output
-  if (m_distance>distance) return;
-  bool hasNonReachableChildren=FALSE;
-  if (m_distance==distance && m_children)
-  {
-    QListIterator<DotNode> dnli(*m_children);
-    DotNode *cn;
-    for (dnli.toFirst();(cn=dnli.current());++dnli)
-    {
-      if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
-    }
-  }
   const char *labCol = (hasNonReachableChildren) ? "red" : 
                           (m_url.isEmpty() ? "grey" : "black");
   t << "  Node" << m_number << " [shape=\"box\",label=\"" << m_label    
@@ -297,6 +287,42 @@ void DotNode::write(QTextStream &t,int distance)
     t << ",URL=\"" << m_url << ".html\"";
   }
   t << "];" << endl; 
+}
+
+void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown)
+{
+  t << "  Node";
+  if (topDown) t << cn->number(); else t << m_number;
+  t << " -> Node";
+  if (topDown) t << m_number; else t << cn->number();
+  t << " [";
+  t << "dir=back,";
+  t << "color=\"" << edgeColorMap[ei->m_color] 
+    << "\",fontsize=10,style=\"" << edgeStyleMap[ei->m_style] << "\"";
+  if (!ei->m_label.isEmpty())
+  {
+    t << ",label=\"" << ei->m_label << "\"";
+  }
+  t << ",fontname=\"doxfont\"";
+  t << "];" << endl; 
+}
+
+void DotNode::write(QTextStream &t,bool topDown,int distance)
+{
+  //printf("DotNode::write(%d) name=%s\n",distance,m_label.data());
+  if (m_written) return; // node already written to the output
+  if (m_distance>distance) return;
+  bool hasNonReachableChildren=FALSE;
+  if (m_distance==distance && m_children)
+  {
+    QListIterator<DotNode> dnli(*m_children);
+    DotNode *cn;
+    for (dnli.toFirst();(cn=dnli.current());++dnli)
+    {
+      if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
+    }
+  }
+  writeBox(t,hasNonReachableChildren);
   m_written=TRUE;
   if (m_children)
   {
@@ -305,19 +331,8 @@ void DotNode::write(QTextStream &t,int distance)
     DotNode *cn;
     for (dnli1.toFirst();(cn=dnli1.current());++dnli1,++dnli2)
     {
-      if (cn->m_distance<=distance)
-      {
-      EdgeInfo *ei=dnli2.current();
-      t << "  Node" << cn->number() << " -> Node" << m_number 
-        << " [dir=back,color=\"" << edgeColorMap[ei->m_color] 
-        << "\",fontsize=10,style=\"" << edgeStyleMap[ei->m_style] << "\"";
-      if (!ei->m_label.isEmpty())
-      {
-        t << ",label=\"" << ei->m_label << "\",fontname=\"doxfont\"";
-      }
-      t << "];" << endl; 
-      }
-      cn->write(t,distance);
+      if (cn->m_distance<=distance) writeArrow(t,cn,dnli2.current(),topDown);
+      cn->write(t,topDown,distance);
     }
   }
 }
@@ -352,7 +367,7 @@ void DotNode::clearWriteFlag()
 }
 
 void DotNode::colorConnectedNodes(int curColor)
-{
+{ 
   if (m_children)
   {
     QListIterator<DotNode> dnlic(*m_children);
@@ -363,6 +378,7 @@ void DotNode::colorConnectedNodes(int curColor)
       {
         cn->m_subgraphId=curColor;
         cn->colorConnectedNodes(curColor);
+        //printf("coloring node %s (%p): %d\n",cn->m_label.data(),cn,cn->m_subgraphId);
       }
     }
   }
@@ -377,22 +393,45 @@ void DotNode::colorConnectedNodes(int curColor)
       {
         pn->m_subgraphId=curColor;
         pn->colorConnectedNodes(curColor);
+        //printf("coloring node %s (%p): %d\n",pn->m_label.data(),pn,pn->m_subgraphId);
       }
     }
   }
 }
 
-const DotNode *DotNode::findRoot() const
+const DotNode *DotNode::findDocNode() const
 {
-  if (m_children==0 || m_children->count()==0)
+  if (!m_url.isEmpty()) return this;
+  //printf("findDocNode(): `%s'\n",m_label.data());
+  if (m_parents)
   {
-    return this;
+    QListIterator<DotNode> dnli(*m_parents);
+    DotNode *pn;
+    for (dnli.toFirst();(pn=dnli.current());++dnli)
+    {
+      if (!pn->m_hasDoc)
+      {
+        pn->m_hasDoc=TRUE;
+        const DotNode *dn = pn->findDocNode();
+        if (dn) return dn;
+      }
+    }
   }
-  else
+  if (m_children)
   {
-    DotNode *cn = m_children->first();
-    return cn->findRoot();
+    QListIterator<DotNode> dnli(*m_children);
+    DotNode *cn;
+    for (dnli.toFirst();(cn=dnli.current());++dnli)
+    {
+      if (!cn->m_hasDoc)
+      {
+        cn->m_hasDoc=TRUE;
+        const DotNode *dn = cn->findDocNode();
+        if (dn) return dn;
+      }
+    }
   }
+  return 0;
 }
 
 //--------------------------------------------------------------------
@@ -425,7 +464,8 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     QCString baseName;
     QCString diskName=n->m_url.copy();
     int i=diskName.find('$'); /* should not return -1 */
-    if (i!=-1) diskName=diskName.right(diskName.length()-i-1);
+    ASSERT(i!=-1);
+    diskName=diskName.right(diskName.length()-i-1);
     baseName.sprintf("inherit_graph_%s",diskName.data());
     QCString dotName=baseName+".dot";
     QCString gifName=baseName+".gif";
@@ -441,7 +481,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
     for (;(node=dnli2.current());++dnli2)
     {
-      if (node->m_subgraphId==n->m_subgraphId) node->write(t);
+      if (node->m_subgraphId==n->m_subgraphId) node->write(t,FALSE);
     }
     t << "}" << endl;
     f.close();
@@ -476,41 +516,57 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   QDir::setCurrent(oldDir);
 }
 
-void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd)
+void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
 {
-  BaseClassListIterator bcli(*cd->baseClasses());
+  //printf("addHierarchy `%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
+  BaseClassListIterator bcli(*cd->superClasses());
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
     ClassDef *bClass=bcd->classDef; 
-    DotNode *bn;
-    if ((bn=m_usedNodes->find(bClass->name()))) // node already used => make reference node to it
+    //printf("Trying super class=`%s'\n",bClass->name().data());
+    if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
-      n->addChild(bn,bcd->prot);
-      bn->addParent(n);
-      //printf("Adding node %s to existing base node %s (c=%d,p=%d)\n",
-      //       n->m_label.data(),
-      //       bn->m_label.data(),
-      //       bn->m_children ? bn->m_children->count() : 0,
-      //       bn->m_parents  ? bn->m_parents->count()  : 0
-      //      );
-    }
-    else // add new node
-    {
-      DotNode *newNode = new DotNode(m_curNodeNumber++,
-                                     bClass->name(),
-                                     bClass->getReference()+"$"+bClass->getOutputFileBase()
-                                    );
-      n->addChild(newNode,bcd->prot);
-      newNode->addParent(n);
-      m_usedNodes->insert(bClass->name(),newNode); // add node to the used list
-      //printf("Adding node %s to new base node %s (c=%d,p=%d)\n",
-      //       n->m_label.data(),
-      //       newNode->m_label.data(),
-      //       newNode->m_children ? newNode->m_children->count() : 0,
-      //       newNode->m_parents  ? newNode->m_parents->count()  : 0
-      //      );
-      addHierarchy(newNode,bClass);
+      DotNode *bn;
+      //printf("Found visible class=`%s'\n",bClass->name().data());
+      if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
+      {
+        if (n->m_children==0 || n->m_children->findRef(bn)==0) // no arrow yet
+        {
+          n->addChild(bn,bcd->prot);
+          bn->addParent(n);
+          //printf("Adding node %s to existing base node %s (c=%d,p=%d)\n",
+          //       n->m_label.data(),
+          //       bn->m_label.data(),
+          //       bn->m_children ? bn->m_children->count() : 0,
+          //       bn->m_parents  ? bn->m_parents->count()  : 0
+          //     );
+        }
+      }
+      else 
+      {
+        bn = new DotNode(m_curNodeNumber++,
+             bClass->name(),
+             bClass->isLinkable() ? 
+              (bClass->getReference()+"$"+bClass->getOutputFileBase()).data() : 
+              0
+           );
+        //printf("Adding node %s to new base node %s (c=%d,p=%d)\n",
+        //   n->m_label.data(),
+        //   bn->m_label.data(),
+        //   bn->m_children ? bn->m_children->count() : 0,
+        //   bn->m_parents  ? bn->m_parents->count()  : 0
+        //  );
+        n->addChild(bn,bcd->prot);
+        bn->addParent(n);
+        m_usedNodes->insert(bClass->name(),bn); // add node to the used list
+      }
+      if (!bClass->visited && !hideSuper && bClass->superClasses()->count()>0)
+      {
+        bool wasVisited=bClass->visited;
+        bClass->visited=TRUE;
+        addHierarchy(bn,bClass,wasVisited);
+      }
     }
   }
 }
@@ -525,27 +581,32 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   
   // build a graph with each class as a node and the inheritance relations
   // as edges
+  initClassHierarchy(&classList);
   ClassListIterator cli(classList);
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     //printf("Trying %s superClasses=%d\n",cd->name().data(),cd->superClasses()->count());
-    if (isLeaf(cd) &&
-        (
-         (!Config::allExtFlag && cd->isLinkableInProject()) ||
-         (Config::allExtFlag && cd->isLinkable())
-        )
-       ) // root class in the graph
+    if (!hasVisibleRoot(cd->baseClasses()))
     {
-      //printf("Inserting root class %s\n",cd->name().data());
-      DotNode *n = new DotNode(m_curNodeNumber++,
-                               cd->name(),
-                               cd->getReference()+"$"+cd->getOutputFileBase()
-                              );
-      //m_usedNodes->clear();
-      m_usedNodes->insert(cd->name(),n);
-      addHierarchy(n,cd);
-      m_rootNodes->insert(0,n);   
+      if (cd->isVisibleInHierarchy()) // root class in the graph
+      {
+        //printf("Inserting root class %s\n",cd->name().data());
+        DotNode *n = new DotNode(m_curNodeNumber++,
+                cd->name(),
+                cd->isLinkable() ?
+                  (cd->getReference()+"$"+cd->getOutputFileBase()).data() :
+                  0
+               );
+        //m_usedNodes->clear();
+        m_usedNodes->insert(cd->name(),n);
+        m_rootNodes->insert(0,n);   
+        if (!cd->visited && cd->superClasses()->count()>0)
+        {
+          addHierarchy(n,cd,cd->visited);
+          cd->visited=TRUE;
+        }
+      }
     }
   }
   // m_usedNodes now contains all nodes in the graph
@@ -562,12 +623,14 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
     {
       if (n->m_subgraphId==-1) // not yet colored
       {
-        //printf("Starting at node %s\n",n->m_label.data());
+        //printf("Starting at node %s (%p): %d\n",n->m_label.data(),n,curColor);
         done=FALSE; // still uncolored nodes
         n->m_subgraphId=curColor;
         n->colorConnectedNodes(curColor);
         curColor++;
-        m_rootSubgraphs->inSort(n->findRoot());
+        const DotNode *dn=n->findDocNode();
+        ASSERT(dn!=0);
+        if (dn!=0) m_rootSubgraphs->inSort(dn);
       }
     }
   }
@@ -603,38 +666,33 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 int DotGfxUsageGraph::m_curNodeNumber;
 
 void DotGfxUsageGraph::addClass(ClassDef *cd,DotNode *n,int prot,
-                                const char *label,int distance)
+    const char *label,int distance)
 {
-  if (
-      (!Config::allExtFlag && cd->isLinkableInProject()) ||
-      (Config::allExtFlag && cd->isLinkable())
-     )
+  //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
+  //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
+  int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
+  DotNode *bn = m_usedNodes->find(cd->name());
+  if (bn) // class already inserted
   {
-    //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
-    //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
-    int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
-    DotNode *bn = m_usedNodes->find(cd->name());
-    if (bn) // class already inserted
-    {
-      n->addChild(bn,prot,edgeStyle,label);
-      bn->addParent(n);
-      bn->setDistance(distance);
-      //printf(" add exiting node %s of %s\n",bn->m_label.data(),n->m_label.data());
-    }
-    else // new class
-    {
-      bn = new DotNode(m_curNodeNumber++,
-                       cd->name(),
-                       cd->getReference()+"$"+cd->getOutputFileBase(),
-                       distance
-                      );
-      if (distance>m_maxDistance) m_maxDistance=distance;
-      n->addChild(bn,prot,edgeStyle,label);
-      bn->addParent(n);
-      m_usedNodes->insert(cd->name(),bn);
-      //printf(" add used node %s of %s\n",cd->name().data(),n->m_label.data());
-      if (distance<m_recDepth) buildGraph(cd,bn,distance+1);
-    }
+    n->addChild(bn,prot,edgeStyle,label);
+    bn->addParent(n);
+    bn->setDistance(distance);
+    //printf(" add exiting node %s of %s\n",bn->m_label.data(),n->m_label.data());
+  }
+  else // new class
+  {
+    bn = new DotNode(m_curNodeNumber++,
+        cd->name(),
+        cd->isLinkable() ? 
+          (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
+        distance
+       );
+    if (distance>m_maxDistance) m_maxDistance=distance;
+    n->addChild(bn,prot,edgeStyle,label);
+    bn->addParent(n);
+    m_usedNodes->insert(cd->name(),bn);
+    //printf(" add used node %s of %s\n",cd->name().data(),n->m_label.data());
+    if (distance<m_recDepth) buildGraph(cd,bn,distance+1);
   }
 }
 
@@ -685,7 +743,8 @@ DotGfxUsageGraph::DotGfxUsageGraph(ClassDef *cd,bool impl,int maxRecursionDepth)
   m_recDepth = maxRecursionDepth;
   m_startNode = new DotNode(m_curNodeNumber++,
                             cd->name(),
-                            cd->getReference()+"$"+cd->getOutputFileBase(),
+                            cd->isLinkable() ? 
+                              (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
                             0,                         // distance
                             TRUE                       // is a root node
                            );
@@ -723,7 +782,7 @@ static void writeDotGraph(DotNode *root,const QCString &baseName,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,distance);
+    root->write(t,TRUE,distance);
     t << "}" << endl;
     f.close();
   }
@@ -864,6 +923,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
   {
     FileDef *bfd = ii->fileDef;
     QCString in  = ii->includeName;
+    //printf(">>>> in=`%s' bfd=%p\n",ii->includeName.data(),bfd);
     bool doc=TRUE,src=FALSE;
     if (bfd)
     {

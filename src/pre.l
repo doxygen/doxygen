@@ -818,6 +818,7 @@ static void readIncludeFile(const QCString &inc)
     FILE *f;
     QCString oldFileName = g_yyFileName.copy();
     FileDef *oldFileDef  = g_yyFileDef;
+    //printf("Searching for `%s'\n",incFileName.data());
     if ((f=findFile(incFileName))) // see if the include file can be found
     {
 #if SHOW_INCLUDES
@@ -845,8 +846,10 @@ static void readIncludeFile(const QCString &inc)
     {
       if (oldFileDef) 
       {
+	bool ambig;
+	FileDef *fd = findFileDef(&inputNameDict,incFileName,ambig);
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(0,incFileName,localInclude);
+	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
       }
 #if SHOW_INCLUDES
       msg("#include %s: not found! skipping...\n",incFileName.data());
