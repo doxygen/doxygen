@@ -2236,6 +2236,14 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   DBG_RTF(t << "{\\comment (endInclDepGraph)}"    << endl)
 }
 
+void RTFGenerator::startGroupCollaboration()
+{
+}
+
+void RTFGenerator::endGroupCollaboration(DotGroupCollaboration &)
+{
+}
+
 void RTFGenerator::startCallGraph()
 {
   DBG_RTF(t << "{\\comment (startCallGraph)}"    << endl)

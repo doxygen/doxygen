@@ -376,7 +376,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
-    current->anchors->append(new SectionInfo(*si));
+    current->anchors->append(si);
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -2303,6 +2303,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->startLine = yyLineNr;
 					    current_root->addSubEntry( current ) ;
 					  }
+					  else
+					  {
+					    delete current;
+					  }
 					  if ( *yytext == ',')
 					  {
 					    current = new Entry(*current);
@@ -3665,6 +3669,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  else
 					  {
+					    if (current->section == Entry::ENUM_SEC)
+					    { // found "enum a b" -> variable
+					      current->section = Entry::VARIABLE_SEC ;
+					    }
 					    current->type += ' ' ;
 					    current->type += current->name ;
 					    current->name = yytext ;
@@ -5983,6 +5991,7 @@ static void parseCompounds(Entry *rt)
       insideObjC = ce->objc;
       //printf("---> Inner block starts at line %d\n",yyLineNr);
       //current->reset();
+      if (current) delete current;
       current = new Entry;
       gstat = FALSE;
       int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;

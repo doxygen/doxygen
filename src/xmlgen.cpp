@@ -888,6 +888,102 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
   t << "    </listofallmembers>" << endl;
 }
 
+static void writeInnerClasses(const ClassSDict *cl,QTextStream &t)
+{
+  if (cl)
+  {
+    ClassSDict::Iterator cli(*cl);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      if (cd->name().find('@')!=-1) // skip anonymous scopes
+      {
+        t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+          << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+      }
+    }
+  }
+}
+
+static void writeInnerNamespaces(const NamespaceSDict *nl,QTextStream &t)
+{
+  if (nl)
+  {
+    NamespaceSDict::Iterator nli(*nl);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      if (nd->name().find('@')!=-1) // skip anonymouse scopes
+      {
+        t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
+          << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+      }
+    }
+  }
+}
+
+static void writeInnerFiles(const FileList *fl,QTextStream &t)
+{
+  if (fl)
+  {
+    QListIterator<FileDef> fli(*fl);
+    FileDef *fd;
+    for (fli.toFirst();(fd=fli.current());++fli)
+    {
+      t << "    <innerfile refid=\"" << fd->getOutputFileBase() 
+        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
+    }
+  }
+}
+
+static void writeInnerPages(const PageSDict *pl,QTextStream &t)
+{
+  if (pl)
+  {
+    PageSDict::Iterator pli(*pl);
+    PageDef *pd;
+    for (pli.toFirst();(pd=pli.current());++pli)
+    {
+      t << "    <innerpage refid=\"" << pd->getOutputFileBase();
+      if (pd->getGroupDef())
+      {
+        t << "_" << pd->name();
+      }
+      t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
+    }
+  }
+}
+
+static void writeInnerGroups(const GroupList *gl,QTextStream &t)
+{
+  if (gl)
+  {
+    GroupListIterator gli(*gl);
+    GroupDef *sgd;
+    for (gli.toFirst();(sgd=gli.current());++gli)
+    {
+      t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
+        << "\">" << convertToXML(sgd->groupTitle()) 
+        << "</innergroup>" << endl;
+    }
+  }
+}
+
+static void writeInnerDirs(const DirList *dl,QTextStream &t)
+{
+  if (dl)
+  {
+    QListIterator<DirDef> subdirs(*dl);
+    DirDef *subdir;
+    for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
+    {
+      t << "    <innerdir refid=\"" << subdir->getOutputFileBase() 
+        << "\">" << convertToXML(subdir->displayName()) << "</innerdir>" << endl;
+    }
+  }
+}
+  
+
 static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
 {
   // + brief description
@@ -1027,18 +1123,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
 
-  ClassSDict *cl = cd->getInnerClasses();
-  if (cl)
-  {
-    ClassSDict::Iterator cli(*cl);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
-        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
-    }
-  }
-
+  writeInnerClasses(cd->getInnerClasses(),t);
 
   writeTemplateList(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
@@ -1152,28 +1237,9 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   writeXMLString(t,nd->name());
   t << "</compoundname>" << endl;
 
-  ClassSDict *cl = nd->classSDict;
-  if (cl)
-  {
-    ClassSDict::Iterator cli(*cl);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
-        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
-    }
-  }
-  NamespaceSDict *nl = nd->namespaceSDict;
-  if (nl)
-  {
-    NamespaceSDict::Iterator nli(*nl);
-    NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
-    {
-      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
-    }
-  }
+  writeInnerClasses(nd->classSDict,t);
+  writeInnerNamespaces(nd->namespaceSDict,t);
+
   MemberGroupSDict::Iterator mgli(*nd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1287,28 +1353,8 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    </invincdepgraph>" << endl;
   }
 
-  ClassSDict *cl = fd->classSDict;
-  if (cl)
-  {
-    ClassSDict::Iterator cli(*cl);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
-        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
-    }
-  }
-  NamespaceSDict *nl = fd->namespaceSDict;
-  if (nl)
-  {
-    NamespaceSDict::Iterator nli(*nl);
-    NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
-    {
-      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
-    }
-  }
+  writeInnerClasses(fd->classSDict,t);
+  writeInnerNamespaces(fd->namespaceSDict,t);
 
   MemberGroupSDict::Iterator mgli(*fd->memberGroupSDict);
   MemberGroup *mg;
@@ -1380,67 +1426,11 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>" << endl;
   t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>" << endl;
 
-  FileList *fl = gd->getFiles();
-  if (fl)
-  {
-    QListIterator<FileDef> fli(*fl);
-    FileDef *fd = fl->first();
-    for (fli.toFirst();(fd=fli.current());++fli)
-    {
-      t << "    <innerfile refid=\"" << fd->getOutputFileBase() 
-        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
-    }
-  }
-  ClassSDict *cl = gd->getClasses();
-  if (cl)
-  {
-    ClassSDict::Iterator cli(*cl);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
-        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
-    }
-  }
-  NamespaceSDict *nl = gd->getNamespaces();
-  if (nl)
-  {
-    NamespaceSDict::Iterator nli(*nl);
-    NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
-    {
-      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
-    }
-  }
-  PageSDict *pl = gd->getPages();
-  if (pl)
-  {
-    PageSDict::Iterator pli(*pl);
-    PageDef *pd;
-    for (pli.toFirst();(pd=pli.current());++pli)
-    {
-      t << "    <innerpage refid=\"" << pd->getOutputFileBase();
-      if (pd->getGroupDef())
-      {
-        t << "_" << pd->name();
-      }
-      t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
-    }
-  }
-
-  GroupList *gl = gd->getSubGroups();
-  if (gl)
-  {
-    GroupListIterator gli(*gl);
-    GroupDef *sgd;
-    for (gli.toFirst();(sgd=gli.current());++gli)
-    {
-      t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
-        << "\">" << convertToXML(sgd->groupTitle()) 
-        << "</innergroup>" << endl;
-    }
-  }
+  writeInnerFiles(gd->getFiles(),t);
+  writeInnerClasses(gd->getClasses(),t);
+  writeInnerNamespaces(gd->getNamespaces(),t);
+  writeInnerPages(gd->getPages(),t);
+  writeInnerGroups(gd->getSubGroups(),t);
 
   MemberGroupSDict::Iterator mgli(*gd->memberGroupSDict);
   MemberGroup *mg;
@@ -1492,25 +1482,9 @@ static void generateXMLForDir(DirDef *dd,QTextStream &ti)
     << dd->getOutputFileBase() << "\" kind=\"dir\">" << endl;
   t << "    <compoundname>" << convertToXML(dd->displayName()) << "</compoundname>" << endl;
 
-  QListIterator<DirDef> subdirs(dd->subDirs());
-  DirDef *subdir;
-  for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
-  {
-    t << "    <innerdir refid=\"" << subdir->getOutputFileBase() 
-      << "\">" << convertToXML(subdir->displayName()) << "</innerdir>" << endl;
-  }
-  
-  FileList *fl = dd->getFiles();
-  if (fl)
-  {
-    QListIterator<FileDef> fli(*fl);
-    FileDef *fd = fl->first();
-    for (fli.toFirst();(fd=fli.current());++fli)
-    {
-      t << "    <innerfile refid=\"" << fd->getOutputFileBase() 
-        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
-    }
-  }
+  writeInnerDirs(&dd->subDirs(),t);
+  writeInnerFiles(dd->getFiles(),t);
+
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,dd->briefFile(),dd->briefLine(),dd,0,dd->briefDescription());
   t << "    </briefdescription>" << endl;

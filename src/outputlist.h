@@ -38,6 +38,7 @@ class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class SectionDict;
+class DotGroupCollaboration;
 
 class OutputList : public OutputDocInterface
 {
@@ -327,6 +328,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDirDepGraph); }
     void endDirDepGraph(DotDirDeps &g)
     { forall(&OutputGenerator::endDirDepGraph,g); }
+    void startGroupCollaboration()
+    { forall(&OutputGenerator::startGroupCollaboration); }
+    void endGroupCollaboration(DotGroupCollaboration &g)
+    { forall(&OutputGenerator::endGroupCollaboration,g); }
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
     { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
     void startTextBlock(bool dense=FALSE)
@@ -392,6 +397,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotCallGraph &);
+    FORALLPROTO1(DotGroupCollaboration &);
     FORALLPROTO1(DotDirDeps &);
     FORALLPROTO1(DotGfxHierarchyTable &);
     FORALLPROTO1(SectionTypes);

@@ -229,6 +229,8 @@ class ManGenerator : public OutputGenerator
     void endDotGraph(DotClassGraph &) {}
     void startInclDepGraph() {}
     void endInclDepGraph(DotInclDepGraph &) {}
+    void startGroupCollaboration() {}
+    void endGroupCollaboration(DotGroupCollaboration &) {}
     void startCallGraph() {}
     void endCallGraph(DotCallGraph &) {}
     void startDirDepGraph() {} 

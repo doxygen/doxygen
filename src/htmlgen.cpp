@@ -1260,6 +1260,17 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
   g.writeGraph(t,BITMAP,dir,relPath);
 }
 
+
+void HtmlGenerator::startGroupCollaboration()
+{
+}
+
+void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
+{
+  g.writeGraph(t,BITMAP,dir,relPath);
+}
+
+
 void HtmlGenerator::startCallGraph()
 {
 }

@@ -8470,6 +8470,7 @@ void parseInput()
   if (fi.size()==0)
   {
     err("No input read, no output generated!\n");
+    QDir().remove(tmpName);
     delete root;
     cleanUpDoxygen();
     exit(1);

@@ -144,6 +144,7 @@ inline void SCString::duplicate( const char *str)
 }
 inline SCString &SCString::duplicate( const char *str, int)
 {
+  if (m_data) free(m_data);
   duplicate(str);
   return *this;
 }

@@ -34,7 +34,7 @@ SCString::SCString(int size)
     m_data = (char *)malloc(size);
     if (m_data)
     {
-      m_data[0]='\0';
+      if (size>1) memset(m_data,' ',size-1);
       m_data[size-1]='\0';
     }
   }

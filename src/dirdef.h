@@ -57,9 +57,8 @@ class DirDef : public Definition
     QCString shortName() const { return m_shortName; }
     void addSubDir(DirDef *subdir);
     FileList *   getFiles() const        { return m_fileList; }
-    ClassSDict * getClasses() const      { return m_classSDict; }
     void addFile(FileDef *fd);
-    const QList<DirDef> &subDirs() const { return m_subdirs; }
+    const DirList &subDirs() const { return m_subdirs; }
     bool isCluster() const { return m_subdirs.count()>0; }
     int level() const { return m_level; }
     DirDef *parent() const { return m_parent; }
@@ -90,7 +89,6 @@ class DirDef : public Definition
     QCString m_dispName;
     QCString m_shortName;
     FileList *m_fileList;                 // list of files in the group
-    ClassSDict *m_classSDict;             // list of classes in the group
     int m_dirCount;
     int m_level;
     DirDef *m_parent;
