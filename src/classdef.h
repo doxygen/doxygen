@@ -163,6 +163,8 @@ class ClassDef : public Definition
      */
     ClassDef *templateMaster() const { return m_templateMaster; } 
 
+    IncludeInfo *includeInfo() const { return m_incInfo; }
+    
     UsesClassDict *usedImplementationClasses() const 
     { 
       return m_usesImplClassDict; 

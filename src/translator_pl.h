@@ -22,7 +22,7 @@
 
 #include "translator_adapter.h"
 
-class TranslatorPolish : public Translator
+class TranslatorPolish : public TranslatorAdapter_1_2_16
 {
   public:
 

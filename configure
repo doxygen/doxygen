@@ -240,6 +240,10 @@ if test "$f_wizard" = YES; then
       echo "QTDIR is set, but include directory does not exist!"
       exit 2
     fi
+    if test ! -x "$QTDIR/bin/moc"; then
+      echo "QTDIR is set, but the moc tool could not be found in $QTDIR/bin!"
+      exit 2
+    fi
     echo " headers $QTDIR/include,"
     echo "                     libraries $QTDIR/lib"  
   fi
@@ -411,6 +415,12 @@ EOF
 EOF
   fi
 fi
+if test "$f_wizard" = YES; then
+  cat >> .tmakeconfig <<EOF
+TMAKE_MOC = $QTDIR/bin/moc
+EOF
+fi
+
 
 #if test "$f_platform" = "win32-g++"; then
 #  cat >> .tmakeconfig <<EOF

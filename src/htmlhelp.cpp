@@ -387,8 +387,12 @@ void HtmlHelp::createProjectFile()
     
     QCString indexName="index"+htmlFileExtension;
     if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+htmlFileExtension;
-    t << "[OPTIONS]\n"
-         "Compatibility=1.1\n"
+    t << "[OPTIONS]\n";
+    if (!Config_getString("CHM_FILE").isEmpty())
+    {
+      t << "Compiled file=" << Config_getString("CHM_FILE") << "\n";
+    }
+    t << "Compatibility=1.1\n"
          "Full-text search=Yes\n"
          "Contents file=index.hhc\n"
          "Default Window=main\n"

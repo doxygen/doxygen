@@ -371,6 +371,12 @@ class Translator
     virtual QCString trImplementedFromList(int numEntries) = 0;
     virtual QCString trImplementedInList(int numEntries) = 0;
     
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trRTFTableOfContents() = 0;
+    
 };
 
 #endif

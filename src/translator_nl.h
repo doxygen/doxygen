@@ -272,7 +272,7 @@ class TranslatorDutch : public Translator
                                  bool isTemplate)
       // used as the title of the HTML page of a class/struct/union
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=(QCString)clName;
       if (isTemplate) result+=" Template";
       switch(compType)
       {
@@ -975,6 +975,10 @@ class TranslatorDutch : public Translator
       return "Gebruikt";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
     /*! used in member documentation blocks to produce a list of 
      *  members that are implemented by this one.
      */
@@ -990,6 +994,14 @@ class TranslatorDutch : public Translator
     {
       return "Wordt ge&iuml;mplementeerd door "+trWriteList(numEntries)+".";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trRTFTableOfContents()
+    { return "Inhoudsopgave"; }
+
 };
 
 #endif

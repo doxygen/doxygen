@@ -1508,6 +1508,25 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
     }
   }
+
+  IncludeInfo *ii=cd->includeInfo();
+  if (ii)
+  {
+    QCString nm = ii->includeName;
+    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.isEmpty())
+    {
+      t << "    <includes";
+      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
+      {
+        t << " id=\"" << ii->fileDef->getOutputFileBase() << "\"";
+      }
+      t << " local=\"" << (ii->local ? "yes" : "no") << "\"";
+      t << nm;
+      t << "</includes>" << endl;
+    }
+  }
+
   writeTemplateList(cd,t);
   writeListOfAllMembers(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);

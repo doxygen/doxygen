@@ -1857,6 +1857,22 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "CHM_FILE",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the CHM_FILE tag can \n"
+                    "be used to specify the file name of the resulting .chm file. You \n"
+		    "can add a path in front of the file if the result should not be \n"
+		    "written to the html output dir. \n"
+                   );
+  cs->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "HHC_LOCATION",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the HHC_LOCATION tag can \n"
+                    "be used to specify the location (absolute path including file name) of \n"
+		    "the HTML help compiler (hhc.exe). If non empty doxygen will try to run \n"
+		    "the html help compiler on the generated index.hhp.\n"
+                   );
+  cs->addDependency("GENERATE_HTML");
   cb = addBool(
                     "GENERATE_CHI",
                     "If the GENERATE_HTMLHELP tag is set to YES, the GENERATE_CHI flag \n"

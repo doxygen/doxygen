@@ -43,7 +43,7 @@ class MemberGroupSDict;
 class Definition;
 struct TagInfo;
 class MemberNameInfoSDict;
-class ListItemInfo;
+struct ListItemInfo;
 
 //--------------------------------------------------------------------
 

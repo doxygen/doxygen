@@ -662,6 +662,7 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
       {
         Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                md->getBodyDef() : md->getOuterScope();
+        if (md->getGroupDef()) d = md->getGroupDef();
 	if (d && d->isLinkable() && md->isLinkable())
 	{
 	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->getBodyAnchor(),clName);
@@ -718,6 +719,7 @@ static bool getLink(const char *className,
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
+    if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));
@@ -774,6 +776,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 
       Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
 	               xmd->getBodyDef() : xmd->getOuterScope();
+      if (xmd->getGroupDef()) xd = xmd->getGroupDef();
       if (xd)
       {
 

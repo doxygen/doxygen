@@ -73,6 +73,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 <li> \refitem cfg_cgi_name CGI_NAME 
 <li> \refitem cfg_cgi_url CGI_URL 
+<li> \refitem cfg_chm_file CHM_FILE
 <li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
 <li> \refitem cfg_class_graph CLASS_GRAPH
 <li> \refitem cfg_collaboration_graph COLLABORATION_GRAPH
@@ -122,6 +123,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_generate_treeview GENERATE_TREEVIEW
 <li> \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
 <li> \refitem cfg_have_dot HAVE_DOT
+<li> \refitem cfg_hhc_location HHC_LOCATION
 <li> \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
 <li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 <li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
@@ -863,6 +865,22 @@ followed by the descriptions of the tags grouped by category.
  and you can search for words in the documentation 
  (which basically renders \c doxysearch obsolete on Windows). 
  The HTML workshop also contains a viewer for compressed HTML files.
+
+\anchor cfg_chm_file 
+<dt>\c CHM_FILE <dd>
+ \addindex CHM_FILE
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c CHM_FILE tag can
+  be used to specify the file name of the resulting .chm file. You
+  can add a path in front of the file if the result should not be
+  written to the html output dir.
+
+\anchor cfg_hhc_location 
+<dt>\c HHC_LOCATION <dd>
+ \addindex HHC_LOCATION
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c HHC_LOCATION tag can
+  be used to specify the location (absolute path including file name) of 
+  the HTML help compiler (hhc.exe). If non empty doxygen will try to run
+  the html help compiler on the generated index.hhp.
 
 \anchor cfg_generate_chi
 <dt>\c GENERATE_CHI <dd>

@@ -30,7 +30,7 @@ class MemberSDict;
 class MemberDef;
 class GroupDef;
 class GroupList;
-class ListItemInfo;
+struct ListItemInfo;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition

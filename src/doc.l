@@ -940,6 +940,7 @@ static void checkArgName(const QCString &name,bool isParam)
     for (ali.toFirst();(a=ali.current());++ali)
     {
       QCString argName = memberDef->isDefine() ? a->type : a->name;
+      if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName) 
       {
 	//printf("adding `%s'\n",aName.data());
@@ -2938,6 +2939,7 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
       for (ali.toFirst();(a=ali.current());++ali)
       {
         QCString argName = memberDef->isDefine() ? a->type : a->name;
+        if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
 	if (!argName.isEmpty() && paramsFound.find(argName)==0) 
 	{
 	   found = TRUE;

@@ -20,6 +20,7 @@
 #include "graphhandler.h"
 #include "debug.h"
 
+
 class ErrorHandler : public QXmlErrorHandler
 {
     public:
