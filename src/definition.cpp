@@ -24,7 +24,6 @@
 #include "language.h"
 #include "message.h"
 #include "outputlist.h"
-#include "doc.h"
 #include "code.h"
 #include "util.h"
 #include "groupdef.h"
@@ -55,6 +54,9 @@ Definition::Definition(const char *df,int dl,
   m_partOfGroups=0;
   m_specialListItems=0;
   m_briefLine=1;
+  m_briefFile=(QCString)"<"+name+">";
+  m_docLine=1;
+  m_docFile=(QCString)"<"+name+">";
 }
 
 Definition::~Definition()
@@ -69,6 +71,7 @@ Definition::~Definition()
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 {
   if (!anchorList) return;
+  //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
   QCString *s=anchorList->first();
   while (s)
   {
@@ -87,6 +90,10 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
       }
       si->definition = this;
     }
+    else
+    {
+      //printf("Section `%s' not found!\n",s->data());
+    }
     s=anchorList->next();
   }
 }
@@ -95,12 +102,14 @@ void Definition::writeDocAnchorsToTagFile()
 {
   if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_sectionDict)
   {
+    //printf("%s: writeDocAnchors(%d)\n",name().data(),m_sectionDict->count());
     QDictIterator<SectionInfo> sdi(*m_sectionDict);
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
       if (!si->generated)
       {
+        //printf("write an entry!\n");
         if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
         Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
       }
@@ -265,7 +274,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
         // write text left from linePos marker
-        parseText(ol,refText.left(lineMarkerPos)); 
+        ol.parseText(refText.left(lineMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
         ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
@@ -277,7 +286,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.enableAll();
         
         // write text between markers
-        parseText(ol,refText.mid(lineMarkerPos+2,
+        ol.parseText(refText.mid(lineMarkerPos+2,
               fileMarkerPos-lineMarkerPos-2));
 
         ol.disableAllBut(OutputGenerator::Html); 
@@ -291,13 +300,13 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.enableAll();
         
         // write text right from file marker
-        parseText(ol,refText.right(
+        ol.parseText(refText.right(
               refText.length()-fileMarkerPos-2)); 
       }
       else // file marker before line marker
       {
         // write text left from file marker
-        parseText(ol,refText.left(fileMarkerPos)); 
+        ol.parseText(refText.left(fileMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
         ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
@@ -309,7 +318,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.enableAll();
         
         // write text between markers
-        parseText(ol,refText.mid(fileMarkerPos+2,
+        ol.parseText(refText.mid(fileMarkerPos+2,
               lineMarkerPos-fileMarkerPos-2)); 
 
         ol.disableAllBut(OutputGenerator::Html); 
@@ -323,7 +332,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.enableAll();
 
         // write text right from linePos marker
-        parseText(ol,refText.right(
+        ol.parseText(refText.right(
               refText.length()-lineMarkerPos-2)); 
       }
     }
@@ -377,7 +386,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
   if (Config_getBool("SOURCE_BROWSER") && members)
   {
     ol.newParagraph();
-    parseText(ol,text);
+    ol.parseText(text);
     ol.docify(" ");
 
     QCString ldefLine=theTranslator->trWriteList(members->count());
@@ -388,7 +397,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
     while ((newIndex=marker.match(ldefLine,index,&matchLen))!=-1)
     {
       bool ok;
-      parseText(ol,ldefLine.mid(index,newIndex-index));
+      ol.parseText(ldefLine.mid(index,newIndex-index));
       uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
       MemberDef *md=members->at(entryIndex);
       if (ok && md)
@@ -452,7 +461,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
       }
       index=newIndex+matchLen;
     } 
-    parseText(ol,ldefLine.right(ldefLine.length()-index));
+    ol.parseText(ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
   }
   ol.popGeneratorState();

@@ -28,7 +28,6 @@
 #include "outputlist.h"
 #include "example.h"
 #include "membergroup.h"
-#include "doc.h"
 #include "groupdef.h"
 #include "defargs.h"
 //#include "xml.h"
@@ -904,7 +903,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       !annMemb)
   {
     ol.startMemberDescription();
-    parseDoc(ol,briefFile(),briefLine(),cname,this,briefDescription());
+    ol.parseDoc(briefFile(),briefLine(),cname,this,briefDescription(),FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -1225,9 +1224,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //printf("md=%s initLines=%d init=`%s'\n",name().data(),initLines,init.data());
       ol.startBold();
       if (mtype==Define)
-        parseText(ol,theTranslator->trDefineValue());
+        ol.parseText(theTranslator->trDefineValue());
       else
-        parseText(ol,theTranslator->trInitialValue());
+        ol.parseText(theTranslator->trInitialValue());
       ol.endBold();
       initParseCodeContext();
       ol.startCodeFragment();
@@ -1249,14 +1248,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) 
        )  
     { 
-      parseDoc(ol,briefFile(),briefLine(),scopeName,this,brief);
+      ol.parseDoc(briefFile(),briefLine(),scopeName,this,brief,FALSE);
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!detailed.isEmpty())
     { 
-      parseDoc(ol,docFile(),docLine(),scopeName,this,detailed+"\n");
+      ol.parseDoc(docFile(),docLine(),scopeName,this,detailed+"\n",FALSE);
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1282,7 +1281,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.docify(a->name);
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,docFile(),docLine(),scopeName,this,a->docs+"\n");
+          ol.parseDoc(docFile(),docLine(),scopeName,this,a->docs+"\n",FALSE);
           ol.endDescTableData();
         }
       }
@@ -1333,7 +1332,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              parseDoc(ol,fmd->briefFile(),fmd->briefLine(),scopeName,fmd,fmd->briefDescription());
+              ol.parseDoc(fmd->briefFile(),fmd->briefLine(),scopeName,fmd,fmd->briefDescription(),FALSE);
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1343,7 +1342,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              parseDoc(ol,fmd->docFile(),fmd->docLine(),scopeName,fmd,fmd->documentation()+"\n");
+              ol.parseDoc(fmd->docFile(),fmd->docLine(),scopeName,fmd,fmd->documentation()+"\n",FALSE);
             }
             ol.endDescTableData();
           }
@@ -1380,7 +1379,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         int markerPos = reimplFromLine.find("@0");
         if (markerPos!=-1) // should always pass this.
         {
-          parseText(ol,reimplFromLine.left(markerPos)); //text left from marker
+          ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
           if (bmd->isLinkable()) // replace marker with link
           {
             Definition *bd=bmd->group;
@@ -1404,7 +1403,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
               writePageRef(ol,bcd->getOutputFileBase(),0);
             }
           }
-          parseText(ol,reimplFromLine.right(
+          ol.parseText(reimplFromLine.right(
                 reimplFromLine.length()-markerPos-2)); // text right from marker
 
           ol.disableAllBut(OutputGenerator::RTF);
@@ -1456,7 +1455,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         // now replace all markers in reimplInLine with links to the classes
         while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
         {
-          parseText(ol,reimplInLine.mid(index,newIndex-index));
+          ol.parseText(reimplInLine.mid(index,newIndex-index));
           bool ok;
           uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
           //bmd=bml->at(entryIndex);
@@ -1490,7 +1489,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ++mli;
           index=newIndex+matchLen;
         } 
-        parseText(ol,reimplInLine.right(reimplInLine.length()-index));
+        ol.parseText(reimplInLine.right(reimplInLine.length()-index));
         ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
         ol.enableAll();

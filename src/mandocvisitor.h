@@ -122,6 +122,8 @@ class ManDocVisitor : public DocVisitor
     void visitPost(DocInternalRef *);
     void visitPre(DocCopy *);
     void visitPost(DocCopy *);
+    void visitPre(DocText *);
+    void visitPost(DocText *);
 
   private:
 
@@ -139,6 +141,8 @@ class ManDocVisitor : public DocVisitor
     BaseCodeDocInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
+    bool m_firstCol;
+    int  m_indent;
 };
 
 #endif

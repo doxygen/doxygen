@@ -27,7 +27,6 @@
 #include "util.h"
 #include "defargs.h"
 #include "outputgen.h"
-#include "doc.h"
 #include "dot.h"
 #include "code.h"
 
@@ -407,36 +406,36 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
   }
 
   int numMembers = 
-    cd->pubTypes.count()+cd->pubMembers.count()+cd->pubAttribs.count()+
+    cd->pubTypes.count()+cd->pubMethods.count()+cd->pubAttribs.count()+
     cd->pubSlots.count()+cd->signals.count()+cd->dcopMethods.count()+
-    cd->pubStaticMembers.count()+
-    cd->pubStaticAttribs.count()+cd->proTypes.count()+cd->proMembers.count()+
-    cd->proAttribs.count()+cd->proSlots.count()+cd->proStaticMembers.count()+
-    cd->proStaticAttribs.count()+cd->priTypes.count()+cd->priMembers.count()+
-    cd->priAttribs.count()+cd->priSlots.count()+cd->priStaticMembers.count()+
+    cd->pubStaticMethods.count()+
+    cd->pubStaticAttribs.count()+cd->proTypes.count()+cd->proMethods.count()+
+    cd->proAttribs.count()+cd->proSlots.count()+cd->proStaticMethods.count()+
+    cd->proStaticAttribs.count()+cd->priTypes.count()+cd->priMethods.count()+
+    cd->priAttribs.count()+cd->priSlots.count()+cd->priStaticMethods.count()+
     cd->priStaticAttribs.count()+cd->friends.count()+cd->related.count();
   if (numMembers>0)
   {
     generateDEFClassSection(cd,t,&cd->pubTypes,"public-type");
-    generateDEFClassSection(cd,t,&cd->pubMembers,"public-func");
+    generateDEFClassSection(cd,t,&cd->pubMethods,"public-func");
     generateDEFClassSection(cd,t,&cd->pubAttribs,"public-attrib");
     generateDEFClassSection(cd,t,&cd->pubSlots,"public-slot");
     generateDEFClassSection(cd,t,&cd->signals,"signal");
     generateDEFClassSection(cd,t,&cd->dcopMethods,"dcop-func");
     generateDEFClassSection(cd,t,&cd->properties,"property");
-    generateDEFClassSection(cd,t,&cd->pubStaticMembers,"public-static-func");
+    generateDEFClassSection(cd,t,&cd->pubStaticMethods,"public-static-func");
     generateDEFClassSection(cd,t,&cd->pubStaticAttribs,"public-static-attrib");
     generateDEFClassSection(cd,t,&cd->proTypes,"protected-type");
-    generateDEFClassSection(cd,t,&cd->proMembers,"protected-func");
+    generateDEFClassSection(cd,t,&cd->proMethods,"protected-func");
     generateDEFClassSection(cd,t,&cd->proAttribs,"protected-attrib");
     generateDEFClassSection(cd,t,&cd->proSlots,"protected-slot");
-    generateDEFClassSection(cd,t,&cd->proStaticMembers,"protected-static-func");
+    generateDEFClassSection(cd,t,&cd->proStaticMethods,"protected-static-func");
     generateDEFClassSection(cd,t,&cd->proStaticAttribs,"protected-static-attrib");
     generateDEFClassSection(cd,t,&cd->priTypes,"private-type");
-    generateDEFClassSection(cd,t,&cd->priMembers,"private-func");
+    generateDEFClassSection(cd,t,&cd->priMethods,"private-func");
     generateDEFClassSection(cd,t,&cd->priAttribs,"private-attrib");
     generateDEFClassSection(cd,t,&cd->priSlots,"private-slot");
-    generateDEFClassSection(cd,t,&cd->priStaticMembers,"private-static-func");
+    generateDEFClassSection(cd,t,&cd->priStaticMethods,"private-static-func");
     generateDEFClassSection(cd,t,&cd->priStaticAttribs,"private-static-attrib");
     generateDEFClassSection(cd,t,&cd->friends,"signal");
     generateDEFClassSection(cd,t,&cd->related,"related");

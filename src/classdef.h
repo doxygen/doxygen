@@ -102,7 +102,7 @@ class ClassDef : public Definition
     void writeDocumentationForInnerClasses(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
-    void writeDetailedDescription(OutputList &ol,OutputList &briefOutput,const QCString &pageType,bool exampleFlag);
+    void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
 
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.
@@ -203,12 +203,12 @@ class ClassDef : public Definition
     QCString className() const;
 
     /* member lists by protection */
-    MemberList pubMembers;
-    MemberList proMembers;
-    MemberList priMembers;
-    MemberList pubStaticMembers;
-    MemberList proStaticMembers;
-    MemberList priStaticMembers;
+    MemberList pubMethods;
+    MemberList proMethods;
+    MemberList priMethods;
+    MemberList pubStaticMethods;
+    MemberList proStaticMethods;
+    MemberList priStaticMethods;
     MemberList pubSlots;
     MemberList proSlots;
     MemberList priSlots;

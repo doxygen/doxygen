@@ -118,5 +118,6 @@ void doctokenizerYYsetStatePattern();
 void doctokenizerYYsetStateLink();
 void doctokenizerYYsetStateRef();
 void doctokenizerYYsetStateInternalRef();
+void doctokenizerYYsetStateText();
 
 #endif

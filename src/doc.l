@@ -347,7 +347,7 @@ static void includeFile(OutputDocInterface &od,const char *fileName,bool quiet)
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,fileName,ambig)))
   {
-    currentIncludeFile=fileToString(fd->absFilePath());
+    currentIncludeFile=fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"));
     includeFileOffset=0;
     includeFileLength=currentIncludeFile.length();
     OutputDocInterface *codeFrag = od.clone();
@@ -384,7 +384,7 @@ static void verbIncludeFile(OutputDocInterface &od,const char *name)
   if ((fd=findFileDef(Doxygen::exampleNameDict,name,ambig)))
   {
     od.startCodeFragment();
-    od.codify(fileToString(fd->absFilePath())+"\n");
+    od.codify(fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"))+"\n");
     od.endCodeFragment();
   }
   else if (ambig)
@@ -2959,7 +2959,7 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
   
   if (Debug::isFlagSet(Debug::Validate))
   {
-    od.parseDoc(fileName,startLine,clName,md,docStr);
+    od.parseDoc(fileName,startLine,clName,md,docStr,FALSE);
   }
   else
   {
@@ -3029,15 +3029,22 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
 void parseText(OutputDocInterface &od,const QCString &txtString)
 {
   if (txtString.isEmpty()) return;
-  inputString = txtString;
-  outDoc = od.clone();
-  inputPosition = 0;
-  docYYrestart( docYYin ); 
-  BEGIN( Text );
-  docYYlex();
-  od.append(outDoc);
-  delete outDoc; outDoc=0;
-  return;
+  if (Debug::isFlagSet(Debug::Validate))
+  {
+    od.parseText(txtString);
+  }
+  else
+  {
+    inputString = txtString;
+    outDoc = od.clone();
+    inputPosition = 0;
+    docYYrestart( docYYin ); 
+    BEGIN( Text );
+    docYYlex();
+    od.append(outDoc);
+    delete outDoc; outDoc=0;
+    return;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -3045,12 +3052,19 @@ void parseText(OutputDocInterface &od,const QCString &txtString)
 void parseExample(OutputDocInterface &od,const QCString &docString, 
                   const char *fileName)
 {
-  initParser();
-  initParseCodeContext();
-  exampleDoc=TRUE;            // cross reference with member docs
-  exampleName=fileName;
-  strcpy(yyFileName,fileName);
-  parseDocument(od,docString); 
+  if (Debug::isFlagSet(Debug::Validate))
+  {
+    od.parseDoc(fileName,/*startLine*/1,/*clName*/0,/*md*/0,docString,TRUE);
+  }
+  else
+  {
+    initParser();
+    initParseCodeContext();
+    exampleDoc=TRUE;            // cross reference with member docs
+    exampleName=fileName;
+    strcpy(yyFileName,fileName);
+    parseDocument(od,docString); 
+  }
 }
 
 //----------------------------------------------------------------------------

@@ -171,7 +171,7 @@ void FormulaList::generateBitmaps(const char *path)
       // Then we run ghostscript to convert the postscript to a pixmap
       // The pixmap is a truecolor image, where only black and white are
       // used.  
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
       char gsArgs[256];
       sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                      "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",

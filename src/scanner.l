@@ -2298,6 +2298,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN( ReadFuncArgType );
   					}
 <CopyArgCommentLine>[^\\\@\n]+		{ fullArgString+=yytext; }
+<CopyArgCommentLine>.			{ fullArgString+=*yytext; }
 <CopyArgComment>\n			{ fullArgString+=*yytext; yyLineNr++; }
 <CopyArgComment>.			{ fullArgString+=*yytext; }
 <ReadTempArgs>"<"			{
@@ -3969,6 +3970,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <ClassDoc,Doc>{B}*{CMD}("brief"|"short")	{ 
   					  lastBriefContext=YY_START;
+					  current->briefFile = yyFileName;
+					  current->briefLine = yyLineNr;
   					  BEGIN( ClassDocBrief ); 
 					}
 <ClassDoc>{B}*"\\inherit"{B}+	        { BEGIN( DocBaseClass ); }
@@ -4306,6 +4309,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      }
 					    }
                                           }
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
+					    if (YY_START==CopyArgComment)
+					      fullArgString+=yytext;
+					    else
+  					      current->doc+=yytext;
+                                          }
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
                                           bool handled=FALSE;
                                           if ( useOverrideCommands)
@@ -4370,6 +4379,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->brief+=yytext;
   					}
 <LineDoc,AfterDocLine,CopyArgCommentLine>{CMD}("brief"|"short") {}
+<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
+					  if (YY_START==CopyArgCommentLine)
+					    fullArgString+=yytext;
+					  else
+  					    current->brief+=yytext;
+                                        }
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)

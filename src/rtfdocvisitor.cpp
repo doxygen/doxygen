@@ -271,7 +271,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -321,7 +321,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -353,7 +353,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
@@ -986,6 +986,14 @@ void RTFDocVisitor::visitPre(DocCopy *)
 }
 
 void RTFDocVisitor::visitPost(DocCopy *)
+{
+}
+
+void RTFDocVisitor::visitPre(DocText *)
+{
+}
+
+void RTFDocVisitor::visitPost(DocText *)
 {
 }
 

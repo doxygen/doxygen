@@ -20,7 +20,6 @@
 #include "util.h"
 #include "outputlist.h"
 #include "language.h"
-#include "doc.h"
 #include "doxygen.h"
 
 ClassList::ClassList() : QList<ClassDef>()
@@ -79,11 +78,11 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.startMemberHeader();
             if (header)
             {
-              parseText(ol,header);
+              ol.parseText(header);
             }
             else
             {
-              parseText(ol,theTranslator->trCompounds());
+              ol.parseText(theTranslator->trCompounds());
             }
             ol.endMemberHeader();
             ol.startMemberList();
@@ -117,7 +116,8 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           if (!cd->briefDescription().isEmpty())
           {
             ol.startMemberDescription();
-            parseDoc(ol,cd->briefFile(),cd->briefLine(),cd->name(),0,cd->briefDescription());
+            ol.parseDoc(cd->briefFile(),cd->briefLine(),cd->name(),0,
+                        cd->briefDescription(),FALSE);
             if ((!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
                 !cd->documentation().isEmpty())
             {
@@ -126,7 +126,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
               ol.endEmphasis();
               ol.docify(" ");
               ol.startTextLink(cd->getOutputFileBase(),"_details");
-              parseText(ol,theTranslator->trMore());
+              ol.parseText(theTranslator->trMore());
               ol.endTextLink();
               ol.startEmphasis();
               ol.popGeneratorState();

@@ -27,7 +27,8 @@
 #include "message.h"
 
 ManDocVisitor::ManDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
+    m_indent(0)
 {
 }
 
@@ -39,6 +40,7 @@ void ManDocVisitor::visit(DocWord *w)
 {
   if (m_hide) return;
   filter(w->word());
+  m_firstCol=FALSE;
 }
 
 void ManDocVisitor::visit(DocLinkedWord *w)
@@ -47,6 +49,7 @@ void ManDocVisitor::visit(DocLinkedWord *w)
   m_t << "\\fB";
   filter(w->word());
   m_t << "\\fP";
+  m_firstCol=FALSE;
 }
 
 void ManDocVisitor::visit(DocWhiteSpace *w)
@@ -55,10 +58,12 @@ void ManDocVisitor::visit(DocWhiteSpace *w)
   if (m_insidePre)
   {
     m_t << w->chars();
+    m_firstCol=w->chars().at(w->chars().length()-1)=='\n';
   }
   else
   {
     m_t << " ";
+    m_firstCol=FALSE;
   }
 }
 
@@ -67,71 +72,52 @@ void ManDocVisitor::visit(DocSymbol *s)
   if (m_hide) return;
   switch(s->symbol())
   {
-    case DocSymbol::BSlash:  m_t << "$\\backslash$"; break;
+    case DocSymbol::BSlash:  m_t << "\\\\"; break;
     case DocSymbol::At:      m_t << "@"; break;
-    case DocSymbol::Less:    m_t << "$<$"; break;
-    case DocSymbol::Greater: m_t << "$>$"; break;
-    case DocSymbol::Amp:     m_t << "\\&"; break;
-    case DocSymbol::Dollar:  m_t << "\\$"; break;
-    case DocSymbol::Hash:    m_t << "\\#"; break;
-    case DocSymbol::Percent: m_t << "\\%"; break;
-    case DocSymbol::Copy:    m_t << "\\copyright"; break;
+    case DocSymbol::Less:    m_t << "<"; break;
+    case DocSymbol::Greater: m_t << ">"; break;
+    case DocSymbol::Amp:     m_t << "&"; break;
+    case DocSymbol::Dollar:  m_t << "$"; break;
+    case DocSymbol::Hash:    m_t << "#"; break;
+    case DocSymbol::Percent: m_t << "%"; break;
+    case DocSymbol::Copy:    m_t << "(c)"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "''"; break;
-    case DocSymbol::Uml:     
-                             if (s->letter()=='i') 
-                               m_t << "\\\"{\\i}"; 
-                             else                  
-                               m_t << "\\\"{" << s->letter() << "}"; 
-                             break;
-    case DocSymbol::Acute:   
-                             if (s->letter()=='i') 
-                               m_t << "\\'{\\i}"; 
-                             else                  
-                               m_t << "\\'{" << s->letter() << "}"; 
-                             break;
-    case DocSymbol::Grave:   
-                             if (s->letter()=='i') 
-                               m_t << "\\`{\\i}"; 
-                             else                  
-                               m_t << "\\`{" << s->letter() << "}"; 
-                             break;
-    case DocSymbol::Circ:    
-                             if (s->letter()=='i') 
-                               m_t << "\\^{\\i}"; 
-                             else                  
-                               m_t << "\\^{" << s->letter() << "}"; 
-                             break;
-    case DocSymbol::Tilde:   m_t << "\\~{"  << s->letter() << "}"; break;
-    case DocSymbol::Szlig:   m_t << "\"s"; break;
-    case DocSymbol::Cedil:   m_t << "\\c{" << s->letter() << "}"; break;
-    case DocSymbol::Ring:    m_t << "\\" << s->letter() << s->letter(); break;
-    case DocSymbol::Nbsp:    m_t << "\\ "; break;
+    case DocSymbol::Uml:     m_t << s->letter() << "\\*(4"; break;
+    case DocSymbol::Acute:   m_t << s->letter() << "\\*(`"; break;
+    case DocSymbol::Grave:   m_t << s->letter() << "\\*:"; break;
+    case DocSymbol::Circ:    m_t << s->letter() << "\\*^"; break;
+    case DocSymbol::Tilde:   m_t << s->letter() << "\\*~"; break;
+    case DocSymbol::Szlig:   m_t << "s\\*:"; break;
+    case DocSymbol::Cedil:   m_t << s->letter() << "\\*,"; break;
+    case DocSymbol::Ring:    m_t << s->letter() << "\\*o"; break;
+    case DocSymbol::Nbsp:    m_t << " "; break;
     default:
                              err("Error: unknown symbol found\n");
   }
+  m_firstCol=FALSE;
 }
 
 void ManDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    m_t << "\\href{" << u->url() << "}";
-  }
-  m_t << "{\\tt " << u->url() << "}";
+  m_t << u->url();
+  m_firstCol=FALSE;
 }
 
 void ManDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  m_t << "\\par\n";
+  m_t << endl << ".br" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visit(DocHorRuler *)
 {
   if (m_hide) return;
-  m_t << "\n\n";
+  if (!m_firstCol) m_t << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visit(DocStyleChange *s)
@@ -140,25 +126,30 @@ void ManDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "{\\bf ";      else m_t << "} ";
+      if (s->enable()) m_t << "\\fB";      else m_t << "\\fP";
+      m_firstCol=FALSE;
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\em ";     else m_t << "} ";
+      if (s->enable()) m_t << "\\fI";     else m_t << "\\fP";
+      m_firstCol=FALSE;
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\tt ";   else m_t << "} ";
+      if (s->enable()) m_t << "\\fC";   else m_t << "\\fP";
+      m_firstCol=FALSE;
       break;
     case DocStyleChange::Subscript:
-      if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
+      if (s->enable()) m_t << "\\*<";    else m_t << "\\*> ";
+      m_firstCol=FALSE;
       break;
     case DocStyleChange::Superscript:
-      if (s->enable()) m_t << "$^{\\mbox{";    else m_t << "}}$ ";
+      if (s->enable()) m_t << "\\*{";    else m_t << "\\*} ";
+      m_firstCol=FALSE;
       break;
     case DocStyleChange::Center:
-      if (s->enable()) m_t << "\\begin{center}"; else m_t << "\\end{center} ";
+      /* not supported */
       break;
     case DocStyleChange::Small:
-      if (s->enable()) m_t << "\\footnotesize ";  else m_t << "\\normalsize ";
+      /* not supported */
       break;
   }
 }
@@ -169,14 +160,22 @@ void ManDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_t << ".nf" << endl;
+      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_firstCol=TRUE;
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_t << ".nf" << endl;
       m_t << s->text();
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_firstCol=TRUE;
       break;
     case DocVerbatim::HtmlOnly: 
       /* nothing */ 
@@ -187,15 +186,9 @@ void ManDocVisitor::visit(DocVerbatim *s)
   }
 }
 
-void ManDocVisitor::visit(DocAnchor *anc)
+void ManDocVisitor::visit(DocAnchor *)
 {
-  if (m_hide) return;
-  m_t << "\\label{" << anc->anchor() << "}" << endl;
-  if (!anc->file().isEmpty() && Config_getBool("PDF_HYPERLINKS")) 
-  {
-    m_t << "\\hypertarget{" << anc->file() << "_" << anc->anchor() 
-      << "}{}" << endl;
-  }    
+  /* no support for anchors in man pages */
 }
 
 void ManDocVisitor::visit(DocInclude *inc)
@@ -204,18 +197,26 @@ void ManDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::Include: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_t << ".nf" << endl;
+      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_firstCol=TRUE;
       break;
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_t << ".nf" << endl;
       m_t << inc->text();
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_firstCol=TRUE;
       break;
   }
 }
@@ -226,17 +227,21 @@ void ManDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+    if (!m_firstCol) m_t << endl;
+    m_t << ".PP" << endl;
+    m_t << ".nf" << endl;
     m_hide = TRUE;
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
     m_hide = FALSE;
-    m_t << "\\end{verbatim}\\normalsize" << endl; 
+    if (!m_firstCol) m_t << endl;
+    m_t << ".PP" << endl;
+    m_firstCol=TRUE;
   }
   else
   {
@@ -250,47 +255,47 @@ void ManDocVisitor::visit(DocFormula *f)
   m_t << f->text();
 }
 
-void ManDocVisitor::visit(DocIndexEntry *i)
+void ManDocVisitor::visit(DocIndexEntry *)
 {
-  m_t << "\\index{" << i->entry() << "@{";
-  m_t << "}}";
 }
 
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
 
-void ManDocVisitor::visitPre(DocAutoList *l)
+void ManDocVisitor::visitPre(DocAutoList *)
 {
-  if (l->isEnumList())
-  {
-    m_t << "\\begin{enumerate}" << endl;
-  }
-  else
-  {
-    m_t << "\\begin{itemize}" << endl;
-  }
+  m_indent+=2;
 }
 
-void ManDocVisitor::visitPost(DocAutoList *l)
+void ManDocVisitor::visitPost(DocAutoList *)
 {
-  if (l->isEnumList())
-  {
-    m_t << "\\end{enumerate}" << endl;
-  }
-  else
-  {
-    m_t << "\\end{itemize}" << endl;
-  }
+  m_indent-=2;
+  m_t << ".PP" << endl;
 }
 
-void ManDocVisitor::visitPre(DocAutoListItem *)
+void ManDocVisitor::visitPre(DocAutoListItem *li)
 {
-  m_t << "\\item ";
+  QCString ws;
+  ws.fill(' ',m_indent-2);
+  if (!m_firstCol) m_t << endl;
+  m_t << ".IP \"" << ws; 
+  if (((DocAutoList *)li->parent())->isEnumList())
+  {
+    m_t << li->itemNumber() << ".\" " << m_indent+2;
+  }
+  else // bullet list
+  {
+    m_t << "\\(bu\" " << m_indent;
+  }
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocAutoListItem *) 
 {
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocPara *) 
@@ -303,7 +308,12 @@ void ManDocVisitor::visitPost(DocPara *p)
       !(p->parent() &&           // and for parameter sections
         p->parent()->kind()==DocNode::Kind_ParamSect
        )
-     ) m_t << endl << endl;
+     ) 
+  {
+    if (!m_firstCol) m_t << endl;
+    m_t << ".PP" << endl;
+    m_firstCol=TRUE;
+  }
 }
 
 void ManDocVisitor::visitPre(DocRoot *)
@@ -316,7 +326,12 @@ void ManDocVisitor::visitPost(DocRoot *)
 
 void ManDocVisitor::visitPre(DocSimpleSect *s)
 {
-  m_t << "\\begin{Desc}\n\\item[";
+  if (!m_firstCol)
+  { 
+    m_t << endl;
+    m_t << ".PP" << endl;
+  }
+  m_t << "\\fB";
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -354,13 +369,17 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User)
   {
-    m_t << ":]";
+    m_t << ":\\fP" << endl;
+    m_t << ".RS 4" << endl;
   }
 }
 
 void ManDocVisitor::visitPost(DocSimpleSect *)
 {
-  m_t << "\\end{Desc}" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".RE" << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocTitle *)
@@ -369,117 +388,124 @@ void ManDocVisitor::visitPre(DocTitle *)
 
 void ManDocVisitor::visitPost(DocTitle *)
 {
-  m_t << "]";
+  m_t << "\\fP";
+  m_t << ".RS 4" << endl;
 }
 
 void ManDocVisitor::visitPre(DocSimpleList *)
 {
-  m_t << "\\begin{itemize}" << endl;
+  m_indent+=2;
 }
 
 void ManDocVisitor::visitPost(DocSimpleList *)
 {
-  m_t << "\\end{itemize}" << endl;
+  m_indent-=2;
+  m_t << ".PP" << endl;
 }
 
 void ManDocVisitor::visitPre(DocSimpleListItem *)
 {
-  m_t << "\\item ";
+  QCString ws;
+  ws.fill(' ',m_indent-2);
+  if (!m_firstCol) m_t << endl;
+  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocSimpleListItem *) 
 {
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocSection *s)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
-  }
-  if (Config_getBool("COMPACT_LATEX"))
-  {
-    switch(s->level())
-    {
-      case 1: m_t << "\\subsubsection{"; break;
-      case 2: m_t << "\\paragraph{";     break;
-      case 3: m_t << "\\subparagraph{";  break;
-      case 4: m_t << "\\subparagraph{";  break;
-    }
-  }
-  else
-  {
-    switch(s->level())
-    {
-      case 1: m_t << "\\subsection{";    break;
-      case 2: m_t << "\\subsubsection{"; break;
-      case 3: m_t << "\\paragraph{";     break;
-      case 4: m_t << "\\subparagraph{";  break;
-    }
-  }
+  if (!m_firstCol) m_t << endl;
+  if (s->level()==1) m_t << ".SH"; else m_t << ".SS";
+  m_t << " \"";
   filter(s->title());
-  m_t << "}\\label{" << s->anchor() << "}" << endl;
+  m_t << "\"" << endl;
+  if (s->level()==1) m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocSection *) 
 {
 }
 
-void ManDocVisitor::visitPre(DocHtmlList *s)
+void ManDocVisitor::visitPre(DocHtmlList *)
 {
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\begin{enumerate}" << endl; 
-  else 
-    m_t << "\\begin{itemize}" << endl;
+  m_indent+=2;
 }
 
-void ManDocVisitor::visitPost(DocHtmlList *s) 
+void ManDocVisitor::visitPost(DocHtmlList *) 
 {
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\end{enumerate}" << endl; 
-  else 
-    m_t << "\\end{itemize}" << endl;
+  m_indent-=2;
+  m_t << ".PP" << endl;
 }
 
-void ManDocVisitor::visitPre(DocHtmlListItem *)
+void ManDocVisitor::visitPre(DocHtmlListItem *li)
 {
-  m_t << "\\item ";
+  QCString ws;
+  ws.fill(' ',m_indent-2);
+  if (!m_firstCol) m_t << endl;
+  m_t << ".IP \"" << ws; 
+  if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
+  {
+    m_t << li->itemNumber() << ".\" " << m_indent+2;
+  }
+  else // bullet list
+  {
+    m_t << "\\(bu\" " << m_indent;
+  }
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocHtmlListItem *) 
 {
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHtmlPre *)
 {
-  m_t << "\\small\\begin{alltt}";
+  if (!m_firstCol) m_t << endl;
+  m_t << ".PP" << endl;
+  m_t << ".nf" << endl;
   m_insidePre=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocHtmlPre *) 
 {
   m_insidePre=FALSE;
-  m_t << "\\end{alltt}\\normalsize " << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHtmlDescList *)
 {
-  m_t << "\\begin{description}" << endl;
 }
 
 void ManDocVisitor::visitPost(DocHtmlDescList *) 
 {
-  m_t << "\\end{description}" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHtmlDescTitle *)
 {
-  m_t << "\\item[";
+  if (!m_firstCol) m_t << endl;
+  m_t << ".IP \"\\fB";
+  m_firstCol=FALSE;
 }
 
 void ManDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
-  m_t << "]";
+  m_t << "\\fP\" 1c" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHtmlDescData *)
@@ -490,35 +516,20 @@ void ManDocVisitor::visitPost(DocHtmlDescData *)
 {
 }
 
-void ManDocVisitor::visitPre(DocHtmlTable *t)
+void ManDocVisitor::visitPre(DocHtmlTable *)
 {
-  if (t->hasCaption()) 
-  {
-    m_t << "\\begin{table}[h]";
-  }
-  m_t << "\\begin{TabularC}{" << t->numCols() << "}\n\\hline\n";
 }
 
-void ManDocVisitor::visitPost(DocHtmlTable *t) 
+void ManDocVisitor::visitPost(DocHtmlTable *) 
 {
-  if (t->hasCaption())
-  {
-    m_t << "\\end{table}\n";
-  }
-  else
-  {
-    m_t << "\\\\\\hline\n\\end{TabularC}\n";
-  }
 }
 
 void ManDocVisitor::visitPre(DocHtmlCaption *)
 {
-  m_t << "\\\\\\hline\n\\end{TabularC}\n\\centering\n\\caption{";
 }
 
 void ManDocVisitor::visitPost(DocHtmlCaption *) 
 {
-  m_t << "}\n";
 }
 
 void ManDocVisitor::visitPre(DocHtmlRow *)
@@ -527,221 +538,117 @@ void ManDocVisitor::visitPre(DocHtmlRow *)
 
 void ManDocVisitor::visitPost(DocHtmlRow *) 
 {
-  m_t << "\\\\\\hline\n";
 }
 
 void ManDocVisitor::visitPre(DocHtmlCell *)
 {
 }
 
-void ManDocVisitor::visitPost(DocHtmlCell *c) 
+void ManDocVisitor::visitPost(DocHtmlCell *) 
 {
-  if (!c->isLast()) m_t << "&";
 }
 
 void ManDocVisitor::visitPre(DocInternal *)
 {
-  m_t << "\\begin{Desc}" << endl 
-    << "\\item[" << theTranslator->trForInternalUseOnly() << "]" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".PP" << endl;
+  m_t << "\\fB" << theTranslator->trForInternalUseOnly() << "\\fP" << endl;
+  m_t << ".RS 4" << endl;
 }
 
 void ManDocVisitor::visitPost(DocInternal *) 
 {
-  m_t << "\\end{Desc}" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".RE" << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
-void ManDocVisitor::visitPre(DocHRef *href)
+void ManDocVisitor::visitPre(DocHRef *)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    m_t << "\\href{";
-    m_t << href->url();
-    m_t << "}";
-  }
-  m_t << "{\\tt ";
+  m_t << "\\fC";
 }
 
 void ManDocVisitor::visitPost(DocHRef *) 
 {
-  m_t << "}";
+  m_t << "\\fP";
 }
 
 void ManDocVisitor::visitPre(DocHtmlHeader *header)
 {
-  if (Config_getBool("COMPACT_LATEX"))
-  {
-    switch(header->level())
-    {
-      case 1: m_t << "\\subsection*{"; break;
-      case 2: m_t << "\\subsubsection*{"; break;
-      case 3: m_t << "\\paragraph*{"; break;
-    }
-  }
-  else
-  {
-    switch(header->level())
-    {
-      case 1: m_t << "\\section*{"; break;
-      case 2: m_t << "\\subsection*{"; break;
-      case 3: m_t << "\\subsubsection*{"; break;
-    }
-  }
+  if (!m_firstCol) m_t << endl;
+  if (header->level()==1) m_t << ".SH"; else m_t << ".SS";
+  m_t << " \"";
 }
 
-void ManDocVisitor::visitPost(DocHtmlHeader *) 
+void ManDocVisitor::visitPost(DocHtmlHeader *header) 
 {
-  m_t << "}";
+  m_t << "\"" << endl;
+  if (header->level()==1) m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
-void ManDocVisitor::visitPre(DocImage *img)
+void ManDocVisitor::visitPre(DocImage *)
 {
-  if (img->type()==DocImage::Latex)
-  {
-    if (img->hasCaption())
-    {
-      m_t << "\\begin{figure}[H]" << endl;
-      m_t << "\\begin{center}" << endl;
-    }
-    else
-    {
-      m_t << "\\mbox{";
-    }
-    QString gfxName = img->name();
-    if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
-    {
-      gfxName=gfxName.left(gfxName.length()-4);
-    }
-    m_t << "\\includegraphics";
-    if (!img->width().isEmpty())
-    {
-      m_t << "[width=" << img->width() << "]";
-    }
-    else if (!img->height().isEmpty())
-    {
-      m_t << "[height=" << img->height() << "]";
-    }
-    m_t << "{" << gfxName << "}";
-    if (img->hasCaption())
-    {
-      m_t << "\\caption{";
-    }
-  }
-  else // other format -> skip
-  {
-    m_hide=TRUE;
-  }
 }
 
-void ManDocVisitor::visitPost(DocImage *img) 
+void ManDocVisitor::visitPost(DocImage *) 
 {
-  if (img->type()==DocImage::Latex)
-  {
-    m_t << "}" << endl; // end mbox or caption
-    if (img->hasCaption())
-    {
-      m_t << "\\end{center}" << endl;
-      m_t << "\\end{figure}" << endl;
-    }
-  }
-  else // other format
-  {
-    m_hide=FALSE;
-  }
 }
 
-void ManDocVisitor::visitPre(DocDotFile *df)
+void ManDocVisitor::visitPre(DocDotFile *)
 {
-  QString baseName=df->file();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  } 
-  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
-  QString outDir = Config_getString("LATEX_OUTPUT");
-  writeDotGraphFromFile(df->file(),outDir,baseName,EPS);
-  if (df->hasCaption())
-  {
-    m_t << "\\begin{figure}[H]" << endl;
-    m_t << "\\begin{center}" << endl;
-  }
-  else
-  {
-    m_t << "\\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!df->width().isEmpty())
-  {
-    m_t << "[width=" << df->width() << "]";
-  }
-  else if (!df->height().isEmpty())
-  {
-    m_t << "[height=" << df->height() << "]";
-  }
-  m_t << "{" << baseName << "}";
-
-  if (df->hasCaption())
-  {
-    m_t << "\\caption{";
-  }
 }
 
-void ManDocVisitor::visitPost(DocDotFile *df) 
+void ManDocVisitor::visitPost(DocDotFile *) 
 {
-  m_t << "}" << endl; // end mbox or caption
-  if (df->hasCaption())
-  {
-    m_t << "\\end{center}" << endl;
-    m_t << "\\end{figure}" << endl;
-  }
 }
 
 void ManDocVisitor::visitPre(DocLink *)
 {
-  m_t << "\\fB ";
+  m_t << "\\fB";
 }
 
 void ManDocVisitor::visitPost(DocLink *) 
 {
-  m_t << "\\fP ";
+  m_t << "\\fP";
 }
 
 void ManDocVisitor::visitPre(DocRef *ref)
 {
-  m_t << "\\fB ";
+  m_t << "\\fB";
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void ManDocVisitor::visitPost(DocRef *) 
 {
-  m_t << "\\fP ";
+  m_t << "\\fP";
 }
 
 void ManDocVisitor::visitPre(DocSecRefItem *)
 {
-  m_t << "\\item \\contentsline{section}{";
+  QCString ws;
+  ws.fill(' ',m_indent-2);
+  if (!m_firstCol) m_t << endl;
+  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << endl;
+  m_firstCol=TRUE;
 }
 
-void ManDocVisitor::visitPost(DocSecRefItem *ref) 
+void ManDocVisitor::visitPost(DocSecRefItem *) 
 {
-  m_t << "}{\\ref{" << ref->anchor() << "}}{}" << endl;
+  m_t << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocSecRefList *)
 {
-  m_t << "\\footnotesize" << endl;
-  m_t << "\\begin{multicols}{2}" << endl;
-  m_t << "\\begin{CompactList}" << endl;
+  m_indent+=2;
 }
 
 void ManDocVisitor::visitPost(DocSecRefList *) 
 {
-  m_t << "\\end{CompactList}" << endl;
-  m_t << "\\end{multicols}" << endl;
-  m_t << "\\normalsize" << endl;
+  m_indent-=2;
+  m_t << ".PP" << endl;
 }
 
 void ManDocVisitor::visitPre(DocLanguage *)
@@ -754,8 +661,12 @@ void ManDocVisitor::visitPost(DocLanguage *)
 
 void ManDocVisitor::visitPre(DocParamSect *s)
 {
-  m_t << "\\begin{Desc}" << endl;
-  m_t << "\\item[";
+  if (!m_firstCol)
+  { 
+    m_t << endl;
+    m_t << ".PP" << endl;
+  }
+  m_t << "\\fB";
   switch(s->type())
   {
     case DocParamSect::Param: 
@@ -767,19 +678,21 @@ void ManDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << ":]" << endl;
-  m_t << "\\begin{description}" << endl;
+  m_t << ":\\fP" << endl;
+  m_t << ".RS 4" << endl;
 }
 
 void ManDocVisitor::visitPost(DocParamSect *)
 {
-  m_t << "\\end{description}" << endl;
-  m_t << "\\end{Desc}" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".RE" << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocParamList *pl)
 {
-  m_t << "\\item[{\\em ";
+  m_t << "\\fI";
   QStrListIterator li(pl->parameters());
   const char *s;
   bool first=TRUE;
@@ -788,42 +701,47 @@ void ManDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     m_t << s;
   }
-  m_t << "}]";
+  m_t << "\\fP ";
 }
 
-void ManDocVisitor::visitPost(DocParamList *)
+void ManDocVisitor::visitPost(DocParamList *pl)
 {
+  if (!pl->isLast())
+  {
+    if (!m_firstCol) m_t << endl;
+    m_t << ".br" << endl;
+  }
 }
 
 void ManDocVisitor::visitPre(DocXRefItem *x)
 {
-  m_t << "\\begin{Desc}" << endl;
-  m_t << "\\item[";
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    m_t << "\\hyperlink{" << x->file() << "_" << x->anchor() << "}{";
+  if (!m_firstCol)
+  { 
+    m_t << endl;
+    m_t << ".PP" << endl;
   }
-  else
-  {
-    m_t << "{\\bf ";
-  }
+  m_t << "\\fB";
   filter(x->title());
-  m_t << "}]";
+  m_t << "\\fP" << endl;
+  m_t << ".RS 4" << endl;
 }
 
 void ManDocVisitor::visitPost(DocXRefItem *)
 {
-  m_t << "\\end{Desc}" << endl;
+  if (!m_firstCol) m_t << endl;
+  m_t << ".RE" << endl;
+  m_t << ".PP" << endl;
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocInternalRef *)
 {
-  m_t << "\\fB ";
+  m_t << "\\fB";
 }
 
 void ManDocVisitor::visitPost(DocInternalRef *) 
 {
-  m_t << "\\fP ";
+  m_t << "\\fP";
 }
 
 void ManDocVisitor::visitPre(DocCopy *)
@@ -831,6 +749,14 @@ void ManDocVisitor::visitPre(DocCopy *)
 }
 
 void ManDocVisitor::visitPost(DocCopy *)
+{
+}
+
+void ManDocVisitor::visitPre(DocText *)
+{
+}
+
+void ManDocVisitor::visitPost(DocText *)
 {
 }
 

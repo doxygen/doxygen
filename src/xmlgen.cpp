@@ -27,7 +27,6 @@
 #include "util.h"
 #include "defargs.h"
 #include "outputgen.h"
-#include "doc.h"
 #include "dot.h"
 #include "code.h"
 #include "page.h"
@@ -1201,7 +1200,7 @@ static void writeXMLDocBlock(QTextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext);
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE);
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML
@@ -1739,25 +1738,25 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   }
 
   generateXMLSection(cd,ti,t,&cd->pubTypes,"public-type");
-  generateXMLSection(cd,ti,t,&cd->pubMembers,"public-func");
+  generateXMLSection(cd,ti,t,&cd->pubMethods,"public-func");
   generateXMLSection(cd,ti,t,&cd->pubAttribs,"public-attrib");
   generateXMLSection(cd,ti,t,&cd->pubSlots,"public-slot");
   generateXMLSection(cd,ti,t,&cd->signals,"signal");
   generateXMLSection(cd,ti,t,&cd->dcopMethods,"dcop-func");
   generateXMLSection(cd,ti,t,&cd->properties,"property");
-  generateXMLSection(cd,ti,t,&cd->pubStaticMembers,"public-static-func");
+  generateXMLSection(cd,ti,t,&cd->pubStaticMethods,"public-static-func");
   generateXMLSection(cd,ti,t,&cd->pubStaticAttribs,"public-static-attrib");
   generateXMLSection(cd,ti,t,&cd->proTypes,"protected-type");
-  generateXMLSection(cd,ti,t,&cd->proMembers,"protected-func");
+  generateXMLSection(cd,ti,t,&cd->proMethods,"protected-func");
   generateXMLSection(cd,ti,t,&cd->proAttribs,"protected-attrib");
   generateXMLSection(cd,ti,t,&cd->proSlots,"protected-slot");
-  generateXMLSection(cd,ti,t,&cd->proStaticMembers,"protected-static-func");
+  generateXMLSection(cd,ti,t,&cd->proStaticMethods,"protected-static-func");
   generateXMLSection(cd,ti,t,&cd->proStaticAttribs,"protected-static-attrib");
   generateXMLSection(cd,ti,t,&cd->priTypes,"private-type");
-  generateXMLSection(cd,ti,t,&cd->priMembers,"private-func");
+  generateXMLSection(cd,ti,t,&cd->priMethods,"private-func");
   generateXMLSection(cd,ti,t,&cd->priAttribs,"private-attrib");
   generateXMLSection(cd,ti,t,&cd->priSlots,"private-slot");
-  generateXMLSection(cd,ti,t,&cd->priStaticMembers,"private-static-func");
+  generateXMLSection(cd,ti,t,&cd->priStaticMethods,"private-static-func");
   generateXMLSection(cd,ti,t,&cd->priStaticAttribs,"private-static-attrib");
   generateXMLSection(cd,ti,t,&cd->friends,"friend");
   generateXMLSection(cd,ti,t,&cd->related,"related");

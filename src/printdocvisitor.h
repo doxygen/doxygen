@@ -592,6 +592,16 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</copy>\n");
     }
+    void visitPre(DocText *)
+    {
+      indent_pre();
+      printf("<text>\n");
+    }
+    void visitPost(DocText *)
+    {
+      indent_post();
+      printf("</text>\n");
+    }
 
   private:
     // helper functions

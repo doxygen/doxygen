@@ -21,7 +21,6 @@
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
-#include "doc.h"
 #include "doxygen.h"
 #include "membername.h"
 #include "message.h"
@@ -160,24 +159,24 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
 void ClassDef::addMembersToMemberGroup()
 {
   ::addMembersToMemberGroup(&pubTypes,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&pubMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&pubAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&pubSlots,memberGroupSDict,this);
   ::addMembersToMemberGroup(&signals,memberGroupSDict,this);
   ::addMembersToMemberGroup(&dcopMethods,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubStaticMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proTypes,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&proMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proSlots,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&proStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proStaticMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proStaticAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&priTypes,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&priMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&priAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&priSlots,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&priStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priStaticMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&priStaticAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&friends,memberGroupSDict,this);
   ::addMembersToMemberGroup(&related,memberGroupSDict,this);
@@ -278,16 +277,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proStaticMembers.append(md); 
-                  md->setSectionList(this,&proStaticMembers);
+                  proStaticMethods.append(md); 
+                  md->setSectionList(this,&proStaticMethods);
                   break;
                 case Public:    
-                  pubStaticMembers.append(md); 
-                  md->setSectionList(this,&pubStaticMembers);
+                  pubStaticMethods.append(md); 
+                  md->setSectionList(this,&pubStaticMethods);
                   break;
                 case Private:   
-                  priStaticMembers.append(md); 
-                  md->setSectionList(this,&priStaticMembers);
+                  priStaticMethods.append(md); 
+                  md->setSectionList(this,&priStaticMethods);
                   break;
               }
             }
@@ -335,16 +334,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proMembers.append(md); 
-                  md->setSectionList(this,&proMembers); 
+                  proMethods.append(md); 
+                  md->setSectionList(this,&proMethods); 
                   break;
                 case Public:    
-                  pubMembers.append(md); 
-                  md->setSectionList(this,&pubMembers); 
+                  pubMethods.append(md); 
+                  md->setSectionList(this,&pubMethods); 
                   break;
                 case Private:   
-                  priMembers.append(md); 
-                  md->setSectionList(this,&priMembers); 
+                  priMethods.append(md); 
+                  md->setSectionList(this,&priMethods); 
                   break;
               }
             }
@@ -500,12 +499,12 @@ void ClassDef::insertMember(MemberDef *md)
 void ClassDef::computeAnchors()
 {
   ClassDef *context = Config_getBool("INLINE_INHERITED_MEMB") ? this : 0;
-  setAnchors(context,'a',&pubMembers);
-  setAnchors(context,'b',&proMembers);
-  setAnchors(context,'c',&priMembers);
-  setAnchors(context,'d',&pubStaticMembers);
-  setAnchors(context,'e',&proStaticMembers);
-  setAnchors(context,'f',&priStaticMembers);
+  setAnchors(context,'a',&pubMethods);
+  setAnchors(context,'b',&proMethods);
+  setAnchors(context,'c',&priMethods);
+  setAnchors(context,'d',&pubStaticMethods);
+  setAnchors(context,'e',&proStaticMethods);
+  setAnchors(context,'f',&priStaticMethods);
   setAnchors(context,'g',&pubSlots);
   setAnchors(context,'h',&proSlots);
   setAnchors(context,'i',&priSlots);
@@ -687,7 +686,7 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
 }
 
 // write the detailed description for this class
-void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput, const QCString &pageType, bool exampleFlag)
+void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType, bool exampleFlag)
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
@@ -701,7 +700,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
       ol.writeAnchor(0,"_details");
     ol.popGeneratorState();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
+    ol.parseText(theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     ol.startTextBlock();
     
@@ -710,7 +709,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol+=briefOutput;
+      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -724,7 +723,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
         ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
       ol.popGeneratorState();
-      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
+      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
     }
     // write examples
     if (exampleFlag)
@@ -759,7 +758,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (m_tempArgs) pageTitle.prepend(" Template");
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trCompoundReference(displayName(),m_compType,m_tempArgs!=0));
+  ol.parseText(theTranslator->trCompoundReference(displayName(),m_compType,m_tempArgs!=0));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
@@ -769,13 +768,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   bool exampleFlag=hasExamples();
   // write brief description
-  OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,briefFile(),briefLine(),name(),0,briefDescription());
     if (!Config_getBool("DETAILS_AT_TOP")) 
     {
-      ol+=briefOutput;
+      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
       ol.writeString(" \n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
@@ -786,7 +783,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
           exampleFlag
          )
       {
-        parseText(ol,theTranslator->trMore());
+        ol.parseText(theTranslator->trMore());
       }
       ol.endTextLink();
       ol.popGeneratorState();
@@ -878,7 +875,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     // now replace all markers in inheritLine with links to the classes
     while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
     {
-      parseText(ol,inheritLine.mid(index,newIndex-index));
+      ol.parseText(inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
       BaseClassDef *bcd=m_inherits->at(entryIndex);
@@ -917,7 +914,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
       index=newIndex+matchLen;
     } 
-    parseText(ol,inheritLine.right(inheritLine.length()-index));
+    ol.parseText(inheritLine.right(inheritLine.length()-index));
     ol.newParagraph();
   }
 
@@ -930,7 +927,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     // now replace all markers in inheritLine with links to the classes
     while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
     {
-      parseText(ol,inheritLine.mid(index,newIndex-index));
+      ol.parseText(inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
       BaseClassDef *bcd=m_inheritedBy->at(entryIndex);
@@ -949,7 +946,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
       index=newIndex+matchLen;
     } 
-    parseText(ol,inheritLine.right(inheritLine.length()-index));
+    ol.parseText(inheritLine.right(inheritLine.length()-index));
     ol.newParagraph();
   }
 
@@ -983,7 +980,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
-      parseText(ol,theTranslator->trClassDiagram(displayName()));
+      ol.parseText(theTranslator->trClassDiagram(displayName()));
       ol.endDotGraph(inheritanceGraph);
       if (Config_getBool("GENERATE_LEGEND"))
       {
@@ -1005,7 +1002,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
     ol.disable(OutputGenerator::Man);
-    parseText(ol,theTranslator->trClassDiagram(displayName()));
+    ol.parseText(theTranslator->trClassDiagram(displayName()));
     ol.enable(OutputGenerator::Man);
     ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
   } 
@@ -1018,7 +1015,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
-      parseText(ol,theTranslator->trCollaborationDiagram(displayName()));
+      ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
       if (Config_getBool("GENERATE_LEGEND"))
       {
@@ -1043,7 +1040,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(m_memListFileName,0);
-    parseText(ol,theTranslator->trListOfAllMembers());
+    ol.parseText(theTranslator->trListOfAllMembers());
     ol.endTextLink();
     ol.enableAll();
   }
@@ -1052,7 +1049,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   // write detailed description if the user wants it near the top
   if (Config_getBool("DETAILS_AT_TOP")) {
-    writeDetailedDescription(ol,briefOutput,pageType,exampleFlag);
+    writeDetailedDescription(ol,pageType,exampleFlag);
   }
 
   // write member groups
@@ -1082,8 +1079,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
   signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
   dcopMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
   properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
-  pubMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
-  pubStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
+  pubMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
+  pubStaticMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
 
   // public attribs
   pubAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
@@ -1094,8 +1091,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   // protected methods
   proSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedSlots(),0); 
-  proMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
-  proStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
+  proMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
+  proStaticMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
 
   // protected attribs
   proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
@@ -1108,8 +1105,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
     // private members
     priSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateSlots(),0); 
-    priMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
-    priStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
+    priMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
+    priStaticMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
 
     // private attribs
     priAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
@@ -1128,7 +1125,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     
   // write detailed description
   if (!Config_getBool("DETAILS_AT_TOP")) {
-    writeDetailedDescription(ol,briefOutput,pageType,exampleFlag);
+    writeDetailedDescription(ol,pageType,exampleFlag);
   }
   
   
@@ -1162,7 +1159,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.disable(OutputGenerator::Man);
     ol.writeRuler();
-    parseText(ol,theTranslator->trGeneratedFromFiles(m_compType,m_files.count()==1));
+    ol.parseText(theTranslator->trGeneratedFromFiles(m_compType,m_files.count()==1));
 
     bool first=TRUE;
     const char *file = m_files.first();
@@ -1230,9 +1227,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Man);
   ol.writeString("\n");
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
   ol.popGeneratorState();
 
   ol.endTextBlock();
@@ -1282,11 +1279,11 @@ void ClassDef::writeMemberList(OutputList &ol)
   startFile(ol,m_memListFileName,m_memListFileName,
             theTranslator->trMemberList());
   startTitle(ol,0);
-  parseText(ol,displayName()+" "+theTranslator->trMemberList());
+  ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
-  parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
+  ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
   ol.writeObjectLink(getReference(),getOutputFileBase(),0,displayName());
-  parseText(ol,theTranslator->trIncludingInheritedMembers());
+  ol.parseText(theTranslator->trIncludingInheritedMembers());
   
   //ol.startItemList();
   ol.writeString("<table>\n");
@@ -1326,9 +1323,9 @@ void ClassDef::writeMemberList(OutputList &ol)
                (md->isFriend() && md->argsString())) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
-            parseText(ol," "+theTranslator->trEnumName());
+            ol.parseText(" "+theTranslator->trEnumName());
           else if (md->isEnumValue())
-            parseText(ol," "+theTranslator->trEnumValue());
+            ol.parseText(" "+theTranslator->trEnumValue());
           else if (md->isTypedef())
             ol.docify(" typedef");
           else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
@@ -1350,13 +1347,13 @@ void ClassDef::writeMemberList(OutputList &ol)
           if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
-            parseText(ol," "+theTranslator->trEnumName());
+            ol.parseText(" "+theTranslator->trEnumName());
           else if (md->isEnumValue())
-            parseText(ol," "+theTranslator->trEnumValue());
+            ol.parseText(" "+theTranslator->trEnumValue());
           else if (md->isTypedef())
             ol.docify(" typedef");
           ol.writeString(" (");
-          parseText(ol,theTranslator->trDefinedIn()+" ");
+          ol.parseText(theTranslator->trDefinedIn()+" ");
           if (cd->isLinkable())
           {
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
@@ -1547,8 +1544,8 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 
   pubTypes.setInGroup(inGroup);
   pubTypes.writePlainDeclarations(ol,this,0,0,0); 
-  pubMembers.setInGroup(inGroup);
-  pubMembers.writePlainDeclarations(ol,this,0,0,0); 
+  pubMethods.setInGroup(inGroup);
+  pubMethods.writePlainDeclarations(ol,this,0,0,0); 
   pubAttribs.setInGroup(inGroup);
   pubAttribs.writePlainDeclarations(ol,this,0,0,0); 
   pubSlots.setInGroup(inGroup);
@@ -1559,34 +1556,34 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
   properties.setInGroup(inGroup);
   properties.writePlainDeclarations(ol,this,0,0,0); 
-  pubStaticMembers.setInGroup(inGroup);
-  pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+  pubStaticMethods.setInGroup(inGroup);
+  pubStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
   pubStaticAttribs.setInGroup(inGroup);
   pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
   proTypes.setInGroup(inGroup);
   proTypes.writePlainDeclarations(ol,this,0,0,0); 
-  proMembers.setInGroup(inGroup);
-  proMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proMethods.setInGroup(inGroup);
+  proMethods.writePlainDeclarations(ol,this,0,0,0); 
   proAttribs.setInGroup(inGroup);
   proAttribs.writePlainDeclarations(ol,this,0,0,0); 
   proSlots.setInGroup(inGroup);
   proSlots.writePlainDeclarations(ol,this,0,0,0); 
-  proStaticMembers.setInGroup(inGroup);
-  proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proStaticMethods.setInGroup(inGroup);
+  proStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
   proStaticAttribs.setInGroup(inGroup);
   proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
     priTypes.setInGroup(inGroup);
     priTypes.writePlainDeclarations(ol,this,0,0,0); 
-    priMembers.setInGroup(inGroup);
-    priMembers.writePlainDeclarations(ol,this,0,0,0); 
+    priMethods.setInGroup(inGroup);
+    priMethods.writePlainDeclarations(ol,this,0,0,0); 
     priAttribs.setInGroup(inGroup); 
     priAttribs.writePlainDeclarations(ol,this,0,0,0); 
     priSlots.setInGroup(inGroup); 
     priSlots.writePlainDeclarations(ol,this,0,0,0); 
-    priStaticMembers.setInGroup(inGroup); 
-    priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+    priStaticMethods.setInGroup(inGroup); 
+    priStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
     priStaticAttribs.setInGroup(inGroup); 
     priStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
   }

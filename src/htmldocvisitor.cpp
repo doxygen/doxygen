@@ -32,8 +32,6 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
   HtmlAttrib *att;
   for (li.toFirst();(att=li.current());++li)
   {
-    printf("Found attion name=`%s' value=`%s'\n",
-        att->name.data(),att->value.data());
     result+=" ";
     result+=att->name;
     if (!att->value.isEmpty()) result+="=\""+att->value+"\"";
@@ -165,7 +163,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "<div class=\"fragment\"><pre>"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "</pre></div>"; 
       break;
     case DocVerbatim::Verbatim: 
@@ -195,7 +193,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << "<div class=\"fragment\"><pre>";
-      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "</pre></div>"; 
       break;
     case DocInclude::DontInclude: 
@@ -222,7 +220,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
@@ -783,6 +781,14 @@ void HtmlDocVisitor::visitPre(DocCopy *)
 }
 
 void HtmlDocVisitor::visitPost(DocCopy *)
+{
+}
+
+void HtmlDocVisitor::visitPre(DocText *)
+{
+}
+
+void HtmlDocVisitor::visitPost(DocText *)
 {
 }
 
