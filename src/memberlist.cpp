@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -166,13 +166,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
-  countDecMembers(/*inGroup,countSubGroups,sectionPerType*/);
+  countDecMembers();
   if (numDecMembers()==0) return; // no members in this list
-  //printf("----> writePlainDeclaration() inGroup=%d totalCount()=%d\n",inGroup,totalCount());
+  //printf("----> writePlainDeclaration() numDecMembers()=%d\n",
+  //     numDecMembers());
   
   ol.pushGeneratorState();
 
-  ol.startMemberList();
+  bool first=TRUE;
   MemberDef *md;
   MemberListIterator mli(*this);
   for ( ; (md=mli.current()); ++mli )
@@ -189,10 +190,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       case MemberDef::Slot:      // fall through
       case MemberDef::DCOP:      // fall through
       case MemberDef::Property:  
+      {
+        if (first) ol.startMemberList(),first=FALSE;
         md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         break;
+      }
       case MemberDef::Enumeration: 
       {
+        if (first) ol.startMemberList(),first=FALSE;
         OutputList typeDecl(&ol);
         QCString name(md->name());
         int i=name.findRev("::");
@@ -340,6 +345,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         bool isFriendClass = type=="friend class";
         if (!isFriendClass)
         {
+          if (first) ol.startMemberList(),first=FALSE;
           md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         }
         else // isFriendClass
@@ -349,6 +355,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           ClassDef *cd=getClass(md->name());
           if (md->hasDocumentation()) // friend is documented
           {
+            if (first) ol.startMemberList(),first=FALSE;
             ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
@@ -357,6 +364,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
           else if (cd && cd->isLinkable()) // class is documented
           {
+            if (first) ol.startMemberList(),first=FALSE;
             ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
@@ -365,6 +373,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
           else if (!Config_getBool("HIDE_UNDOC_MEMBERS")) // no documentation
           {
+            if (first) ol.startMemberList(),first=FALSE;
             ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
@@ -391,6 +400,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
         //printf("anonymous compound members\n");
+        if (first) ol.startMemberList(),first=FALSE;
         md->setFromAnonymousScope(FALSE);
         md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         md->setFromAnonymousScope(TRUE);
@@ -398,7 +408,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     }
   }
  
-  ol.endMemberList(); 
+  if (!first) ol.endMemberList(); 
 
   ol.popGeneratorState();
   //printf("----- end writePlainDeclaration() ----\n");
@@ -454,6 +464,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();
+      //printf("--- mg->writePlainDeclarations ---\n");
       mg->writePlainDeclarations(ol,cd,nd,fd,gd);
       ol.endMemberGroup(hasHeader);
       ++mgli;
