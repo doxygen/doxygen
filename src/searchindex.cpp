@@ -81,12 +81,14 @@ static int charsToIndex(const char *word)
 
 void SearchIndex::addWord(const char *word)
 {
-  IndexWord *w = m_words[word];
+  QString wStr=QString(word).lower();
+  if (wStr.isEmpty()) return;
+  IndexWord *w = m_words[wStr];
   if (w==0)
   {
-    int idx=charsToIndex(word);
+    int idx=charsToIndex(wStr);
     if (idx<0) return;
-    w = new IndexWord(word);
+    w = new IndexWord(wStr);
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx]->append(w);
     m_words.insert(word,w);

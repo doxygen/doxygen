@@ -33,7 +33,7 @@ TranslatorCzech
 Petr P&rcaron;ikryl: prikrylp@skil.cz
 
 TranslatorDanish
-Erik S&oslash;e S&oslash;rensen: erik@mail.nu
+Erik S&oslash;e S&oslash;rensen: eriksoe+doxygen@daimi.au.dk
 
 TranslatorDutch 
 Dimitri van Heesch: dimitri@stack.nl
@@ -42,7 +42,7 @@ TranslatorEnglish
 Dimitri van Heesch: dimitri@stack.nl
 
 TranslatorFinnish
-Olli Korhonen: Olli.Korhonen@ccc.fi
+Olli Korhonen: olli.korhonen lost@cyberspace
 
 TranslatorFrench
 Xavier Outhier: xouthier@yahoo.fr
@@ -54,7 +54,7 @@ TranslatorGreek
 Harry Kalogirou: harkal@rainbow.cs.unipi.gr
 
 TranslatorHungarian
-F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari@diatronltd.com
+F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari lost@cyberspace
 &Aacute;kos Kiss: akiss@users.sourceforge.net
 
 TranslatorItalian 
@@ -97,7 +97,7 @@ TranslatorSlovak
 Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
 
 TranslatorSlovene
-Matjaz Ostroversnik: matjaz.ostroversnik@zrs-tk.si
+Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ztm.si
 
 TranslatorSpanish 
 Francisco Oltra Thennet: foltra@puc.cl
@@ -106,5 +106,6 @@ TranslatorSwedish
 Mikael Hallin: mikaelhallin@yahoo.se
 
 TranslatorUkrainian
-Olexij Tkatchenko: olexij.tkatchenko@gmx.de
+Olexij Tkatchenko: olexij.tkatchenko@parcs.de
+
 

@@ -14,9 +14,9 @@ function readString($file)
 
 function readHeader($file)
 {
-    $header =fgetc($file); $header.=fgetc($file);
-    $header.=fgetc($file); $header.=fgetc($file);
-    return $header;
+  $header =fgetc($file); $header.=fgetc($file);
+  $header.=fgetc($file); $header.=fgetc($file);
+  return $header;
 }
 
 function computeIndex($word)
@@ -284,7 +284,7 @@ function main()
     if (!in_array($word,$foundWords))
     {
       $foundWords[]=$word;
-      search($file,$word,$results);
+      search($file,strtolower($word),$results);
     }
     $word=strtok(" ");
   }

@@ -190,7 +190,8 @@ QCString substituteTemplateArgumentsInString(
 ArgumentList *copyArgumentList(const ArgumentList *src);
 QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
-                                          bool parentOnly=TRUE);
+                                          bool parentOnly=TRUE,
+                                          QCString *lastScopeStripped=0);
 QCString resolveTypeDef(Definition *d,const QCString &name,
                         Definition **typedefContext=0);
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);

@@ -1903,15 +1903,6 @@ static void buildVarList(Entry *root)
       }
       p=p->parent;
     }
-    // scope annonymous scope name at the end to determine the scope
-    // where we can put this variable
-
-    //while ((i=scope.findRev("::"))!=-1 && (int)scope.length()>i+2 && 
-    //       scope.at(i+2)=='@'
-    //      ) 
-    //{
-    //  scope=scope.left(i);
-    //}
     
     MemberDef::MemberType mtype;
     QCString type=root->type.stripWhiteSpace();
@@ -4340,6 +4331,7 @@ static void findMember(Entry *root,
   QCString funcArgs;
   QCString funcTempList;
   QCString exceptions;
+  QCString funcSpec;
   bool isRelated=FALSE;
   bool isFriend=FALSE;
   bool done;
@@ -4449,7 +4441,7 @@ static void findMember(Entry *root,
     }
   }
   scopeName=stripTemplateSpecifiersFromScope(
-      removeRedundantWhiteSpace(scopeName),FALSE); 
+      removeRedundantWhiteSpace(scopeName),FALSE,&funcSpec); 
   
   // split scope into a namespace and a class part
   extractNamespaceName(scopeName,className,namespaceName,TRUE);
@@ -4482,7 +4474,14 @@ static void findMember(Entry *root,
   if (cd)
   {
     if (root->tArgLists) root->tArgLists->first();
-    tempScopeName=cd->qualifiedNameWithTemplateParameters(root->tArgLists);
+    if (funcSpec.isEmpty())
+    {
+      tempScopeName=cd->qualifiedNameWithTemplateParameters(root->tArgLists);
+    }
+    else
+    {
+      tempScopeName=scopeName+funcSpec;
+    }
   }
   //printf("scopeName=%s cd=%p root->tArgLists=%p result=%s\n",
   //    scopeName.data(),cd,root->tArgLists,tempScopeName.data());
@@ -4551,6 +4550,7 @@ static void findMember(Entry *root,
            "  namespaceName=`%s'\n"
            "  className=`%s`\n"
            "  funcType=`%s'\n"
+           "  funcSpec=`%s'\n"
            "  funcName=`%s'\n"
            "  funcArgs=`%s'\n"
            "  funcTempList=`%s'\n"
@@ -4561,7 +4561,7 @@ static void findMember(Entry *root,
            "  isFriend=%d\n"
            "  isFunc=%d\n\n",
            namespaceName.data(),className.data(),
-           funcType.data(),funcName.data(),funcArgs.data(),funcTempList.data(),
+           funcType.data(),funcSpec.data(),funcName.data(),funcArgs.data(),funcTempList.data(),
            funcDecl.data(),root->relates.data(),exceptions.data(),isRelated,isFriend,
            isFunc
           );
@@ -4589,261 +4589,299 @@ static void findMember(Entry *root,
                    "2. member name exists (%d members with this name)\n",mn->count());
       if (!className.isEmpty()) // class name is valid
       {
-        int count=0;
-        MemberNameIterator mni(*mn);
-        MemberDef *md;
-        bool memFound=FALSE;
-        for (mni.toFirst();!memFound && (md=mni.current());++mni)
+        if (funcSpec.isEmpty()) // not a member specialization
         {
-          ClassDef *cd=md->getClassDef();
-          Debug::print(Debug::FindMembers,0,
-                 "3. member definition found, "
-                 "scope needed=`%s' scope=`%s' args=`%s'\n",
-                 scopeName.data(),cd ? cd->name().data() : "<none>",
-                 md->argsString());
-          //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
-          bool ambig;
-          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-          NamespaceDef *nd=0;
-          if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
-
-          ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
-
-          if (cd && tcd==cd) // member's classes match
+          int count=0;
+          MemberNameIterator mni(*mn);
+          MemberDef *md;
+          bool memFound=FALSE;
+          for (mni.toFirst();!memFound && (md=mni.current());++mni)
           {
+            ClassDef *cd=md->getClassDef();
             Debug::print(Debug::FindMembers,0,
-                         "4. class definition %s found\n",cd->name().data());
-            //int ci;
-            //ArgumentList *classTemplArgs = cd->templateArguments();
-            //ArgumentList *funcTemplArgs  = md->memberDefTemplateArguments();
-            //if ((ci=cd->name().find("::"))!=-1) // nested class
-            //{
-            //  ClassDef *parentClass = getClass(cd->name().left(ci));
-            //  if (parentClass) 
-            //    classTemplArgs = parentClass->templateArguments();
-            //}
-            ////printf("cd->name=%s classTemplArgs=%s\n",cd->name().data(),
-            ////     argListToString(classTemplArgs).data());
-
-
-            // get the template parameter lists found at the member declaration
-            QList<ArgumentList> declTemplArgs;
-            cd->getTemplateParameterLists(declTemplArgs);
-            if (md->templateArguments())
-            {
-              declTemplArgs.append(md->templateArguments());
-            }
-
-            // get the template parameter lists found at the member definition
-            QList<ArgumentList> *defTemplArgs = root->tArgLists;
-            //printf("defTemplArgs=%p\n",defTemplArgs);
-
-            // do we replace the decl argument lists with the def argument lists?
-            bool substDone=FALSE;
-            ArgumentList *argList=0;
-            
-            /* substitute the occurrences of class template names in the 
-             * argument list before matching 
-             */
-            if (declTemplArgs.count()>0 && defTemplArgs &&
-                declTemplArgs.count()==defTemplArgs->count() &&
-                md->argumentList()
-               )
-            {
-              /* the function definition has template arguments
-               * and the class definition also has template arguments, so
-               * we must substitute the template names of the class by that
-               * of the function definition before matching.
-               */
-              argList = new ArgumentList;
-              substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
-                                           md->argumentList(),argList);
-
-              substDone=TRUE;
-            }
-            else /* no template arguments, compare argument lists directly */
-            {
-              argList = md->argumentList();
-            }
-
-            Debug::print(Debug::FindMembers,0,
-                 "5. matching `%s'<=>`%s' className=%s namespaceName=%s\n",
-                 argListToString(argList).data(),argListToString(root->argList).data(),
-                 className.data(),namespaceName.data()
-                );
-            
-            // TODO: match loop for all possible scopes
-
+                "3. member definition found, "
+                "scope needed=`%s' scope=`%s' args=`%s'\n",
+                scopeName.data(),cd ? cd->name().data() : "<none>",
+                md->argsString());
+            //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
             bool ambig;
             FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+            NamespaceDef *nd=0;
+            if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
-            // list of namespaces using in the file/namespace that this 
-            // member definition is part of
-            NamespaceSDict *nl = new NamespaceSDict;
-            if (nd) 
-            {
-              NamespaceSDict *nnl = nd->getUsedNamespaces();
-              if (nnl)
-              {
-                NamespaceDef *nnd;
-                NamespaceSDict::Iterator nsdi(*nnl);
-                for (nsdi.toFirst();(nnd=nsdi.current());++nsdi)
-                {
-                  nl->append(nnd->qualifiedName(),nnd);
-                }
-              }
-            }
-            if (fd)
-            {
-              NamespaceSDict *fnl = fd->getUsedNamespaces();
-              if (fnl)
-              {
-                NamespaceDef *fnd;
-                NamespaceSDict::Iterator nsdi(*fnl);
-                for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
-                {
-                  nl->append(fnd->qualifiedName(),fnd);
-                }
-              }
-            }
+            ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
 
-            SDict<Definition> *cl = new SDict<Definition>(17);
-            if (nd) 
+            if (cd && tcd==cd) // member's classes match
             {
-              SDict<Definition> *ncl = nd->getUsedClasses();
-              if (ncl)
-              {
-                SDict<Definition>::Iterator csdi(*ncl);
-                Definition *ncd;
-                for (csdi.toFirst();(ncd=csdi.current());++csdi)
-                {
-                  cl->append(ncd->qualifiedName(),ncd);
-                }
-              }
-            }
-            if (fd) 
-            {
-              SDict<Definition> *fcl = fd->getUsedClasses();
-              if (fcl)
-              {
-                SDict<Definition>::Iterator csdi(*fcl);
-                Definition *fcd;
-                for (csdi.toFirst();(fcd=csdi.current());++csdi)
-                {
-                  cl->append(fcd->qualifiedName(),fcd);
-                }
-              }
-            }
-            
-            bool matching=
-              md->isVariable() || md->isTypedef() || // needed for function pointers
-              (md->argumentList()==0 && root->argList->count()==0) || 
-              matchArguments(argList, root->argList,className,namespaceName,
-              TRUE,nl,cl);
+              Debug::print(Debug::FindMembers,0,
+                  "4. class definition %s found\n",cd->name().data());
+              //int ci;
+              //ArgumentList *classTemplArgs = cd->templateArguments();
+              //ArgumentList *funcTemplArgs  = md->memberDefTemplateArguments();
+              //if ((ci=cd->name().find("::"))!=-1) // nested class
+              //{
+              //  ClassDef *parentClass = getClass(cd->name().left(ci));
+              //  if (parentClass) 
+              //    classTemplArgs = parentClass->templateArguments();
+              //}
+              ////printf("cd->name=%s classTemplArgs=%s\n",cd->name().data(),
+              ////     argListToString(classTemplArgs).data());
 
 
-            Debug::print(Debug::FindMembers,0,
-                         "6. match results = %d\n",matching);
-            
-            if (substDone) // found a new argument list
-            {
-              //printf("root->tArgList=`%s'\n",argListToString(root->tArgList).data());
-              if (matching) // replace member's argument list
+              // get the template parameter lists found at the member declaration
+              QList<ArgumentList> declTemplArgs;
+              cd->getTemplateParameterLists(declTemplArgs);
+              if (md->templateArguments())
               {
-                //printf("Setting scope template argument of member %s to %s\n",
-                //    md->name().data(), argListToString(root->tArgList).data()
-                //    );
-                //printf("Setting member template argument of member %s to %s\n",
-                //    md->name().data(), argListToString(root->mtArgList).data()
-                //    );
-                
-                md->setDefinitionTemplateParameterLists(root->tArgLists);
-                md->setArgumentList(argList);
+                declTemplArgs.append(md->templateArguments());
               }
-              else // no match -> delete argument list
+
+              // get the template parameter lists found at the member definition
+              QList<ArgumentList> *defTemplArgs = root->tArgLists;
+              //printf("defTemplArgs=%p\n",defTemplArgs);
+
+              // do we replace the decl argument lists with the def argument lists?
+              bool substDone=FALSE;
+              ArgumentList *argList=0;
+
+              /* substitute the occurrences of class template names in the 
+               * argument list before matching 
+               */
+              if (declTemplArgs.count()>0 && defTemplArgs &&
+                  declTemplArgs.count()==defTemplArgs->count() &&
+                  md->argumentList()
+                 )
               {
-                delete argList;
+                /* the function definition has template arguments
+                 * and the class definition also has template arguments, so
+                 * we must substitute the template names of the class by that
+                 * of the function definition before matching.
+                 */
+                argList = new ArgumentList;
+                substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
+                    md->argumentList(),argList);
+
+                substDone=TRUE;
               }
-            }
-            if (matching) 
-            {
-              //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
-              //         root->inLine,md->isInline());
-              addMemberDocs(root,md,funcDecl,0,overloaded,nl);
-              count++;
-              memFound=TRUE;
-            }
-            delete cl;
-            delete nl;
+              else /* no template arguments, compare argument lists directly */
+              {
+                argList = md->argumentList();
+              }
+
+              Debug::print(Debug::FindMembers,0,
+                  "5. matching `%s'<=>`%s' className=%s namespaceName=%s\n",
+                  argListToString(argList).data(),argListToString(root->argList).data(),
+                  className.data(),namespaceName.data()
+                  );
+
+              // TODO: match loop for all possible scopes
+
+              bool ambig;
+              FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+
+              // list of namespaces using in the file/namespace that this 
+              // member definition is part of
+              NamespaceSDict *nl = new NamespaceSDict;
+              if (nd) 
+              {
+                NamespaceSDict *nnl = nd->getUsedNamespaces();
+                if (nnl)
+                {
+                  NamespaceDef *nnd;
+                  NamespaceSDict::Iterator nsdi(*nnl);
+                  for (nsdi.toFirst();(nnd=nsdi.current());++nsdi)
+                  {
+                    nl->append(nnd->qualifiedName(),nnd);
+                  }
+                }
+              }
+              if (fd)
+              {
+                NamespaceSDict *fnl = fd->getUsedNamespaces();
+                if (fnl)
+                {
+                  NamespaceDef *fnd;
+                  NamespaceSDict::Iterator nsdi(*fnl);
+                  for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
+                  {
+                    nl->append(fnd->qualifiedName(),fnd);
+                  }
+                }
+              }
+
+              SDict<Definition> *cl = new SDict<Definition>(17);
+              if (nd) 
+              {
+                SDict<Definition> *ncl = nd->getUsedClasses();
+                if (ncl)
+                {
+                  SDict<Definition>::Iterator csdi(*ncl);
+                  Definition *ncd;
+                  for (csdi.toFirst();(ncd=csdi.current());++csdi)
+                  {
+                    cl->append(ncd->qualifiedName(),ncd);
+                  }
+                }
+              }
+              if (fd) 
+              {
+                SDict<Definition> *fcl = fd->getUsedClasses();
+                if (fcl)
+                {
+                  SDict<Definition>::Iterator csdi(*fcl);
+                  Definition *fcd;
+                  for (csdi.toFirst();(fcd=csdi.current());++csdi)
+                  {
+                    cl->append(fcd->qualifiedName(),fcd);
+                  }
+                }
+              }
+
+              bool matching=
+                md->isVariable() || md->isTypedef() || // needed for function pointers
+                (md->argumentList()==0 && root->argList->count()==0) || 
+                matchArguments(argList, root->argList,className,namespaceName,
+                    TRUE,nl,cl);
+
+
+              Debug::print(Debug::FindMembers,0,
+                  "6. match results = %d\n",matching);
+
+              if (substDone) // found a new argument list
+              {
+                //printf("root->tArgList=`%s'\n",argListToString(root->tArgList).data());
+                if (matching) // replace member's argument list
+                {
+                  //printf("Setting scope template argument of member %s to %s\n",
+                  //    md->name().data(), argListToString(root->tArgList).data()
+                  //    );
+                  //printf("Setting member template argument of member %s to %s\n",
+                  //    md->name().data(), argListToString(root->mtArgList).data()
+                  //    );
+
+                  md->setDefinitionTemplateParameterLists(root->tArgLists);
+                  md->setArgumentList(argList);
+                }
+                else // no match -> delete argument list
+                {
+                  delete argList;
+                }
+              }
+              if (matching) 
+              {
+                //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
+                //         root->inLine,md->isInline());
+                addMemberDocs(root,md,funcDecl,0,overloaded,nl);
+                count++;
+                memFound=TRUE;
+              }
+              delete cl;
+              delete nl;
+            } 
           } 
-        } 
-        if (count==0 && root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
-        {
-          goto localObjCMethod;
+          if (count==0 && root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
+          {
+            goto localObjCMethod;
+          }
+          if (count==0 && !(isFriend && funcType=="class"))
+          {
+            int candidates=0;
+            if (mn->count()>0)
+            {
+              for (mni.toFirst();(md=mni.current());++mni)
+              {
+                ClassDef *cd=md->getClassDef();
+                if (cd!=0 && cd->name()==className) 
+                {
+                  if (root->tArgLists && md->templateArguments() &&
+                      root->tArgLists->getLast()->count()<=md->templateArguments()->count())
+                  { // assume we have found a template specialization
+                    // for which there is only a definition, no declaration in
+                    // the class. TODO: we should actually check whether
+                    // the arguments match!
+                    addMethodToClass(root,cd,md->name(),/*cd->name(),*/isFriend);
+                    return;
+                  }
+                  candidates++;
+                }
+              }
+            }
+
+            warn(root->fileName,root->startLine,
+                "Warning: no matching class member found for"
+                );   
+
+            if (root->tArgLists)
+            {
+              QListIterator<ArgumentList> alli(*root->tArgLists);
+              ArgumentList *al;
+              for (;(al=alli.current());++alli)
+              {
+                warn_cont("  template %s\n",tempArgListToString(al).data());
+              }
+            }
+            warn_cont("  %s\n",fullFuncDecl.data());
+
+            if (candidates>0)
+            {
+              warn_cont("Possible candidates:\n");
+              for (mni.toFirst();(md=mni.current());++mni)
+              {
+                ClassDef *cd=md->getClassDef();
+                if (cd!=0 && cd->name()==className)
+                {
+                  if (md->templateArguments())
+                  {
+                    warn_cont("  template %s\n",tempArgListToString(md->templateArguments()).data());
+                  }
+                  warn_cont("  ");
+                  if (md->typeString()) 
+                  {
+                    warn_cont("%s ",md->typeString());
+                  }
+                  QCString qScope = cd->qualifiedNameWithTemplateParameters();
+                  if (!qScope.isEmpty()) warn_cont("%s::%s",qScope.data(),md->name().data());
+                  if (md->argsString()) warn_cont("%s",md->argsString());
+                  warn_cont("\n");
+                }
+              }
+            }
+          }
         }
-        if (count==0 && !(isFriend && funcType=="class"))
+        else // member specialization
         {
-          int candidates=0;
-          if (mn->count()>0)
+          MemberDef::MemberType mtype=MemberDef::Function;
+          ArgumentList *tArgList = new ArgumentList;
+          //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
+          MemberDef *md=new MemberDef(
+              root->fileName,root->startLine,
+              funcType,funcName,funcArgs,exceptions,
+              root->protection,root->virt,root->stat,FALSE,
+              mtype,tArgList,root->argList);
+          //printf("new specialized member %s args=`%s'\n",md->name().data(),funcArgs.data());
+          if (root->tagInfo) 
           {
-            for (mni.toFirst();(md=mni.current());++mni)
-            {
-              ClassDef *cd=md->getClassDef();
-              if (cd!=0 && cd->name()==className) 
-              {
-                if (root->tArgLists && md->templateArguments() &&
-                    root->tArgLists->getLast()->count()<=md->templateArguments()->count())
-                { // assume we have found a template specialization
-                  // for which there is only a definition, no declaration in
-                  // the class. TODO: we should actually check whether
-                  // the arguments match!
-                  addMethodToClass(root,cd,md->name(),/*cd->name(),*/isFriend);
-                  return;
-                }
-                candidates++;
-              }
-            }
+            md->setAnchor(root->tagInfo->anchor);
+            md->setReference(root->tagInfo->tagName);
           }
-
-          warn(root->fileName,root->startLine,
-               "Warning: no matching class member found for"
-              );   
-
-          if (root->tArgLists)
-          {
-            QListIterator<ArgumentList> alli(*root->tArgLists);
-            ArgumentList *al;
-            for (;(al=alli.current());++alli)
-            {
-              warn_cont("  template %s\n",tempArgListToString(al).data());
-            }
-          }
-          warn_cont("  %s\n",fullFuncDecl.data());
-
-          if (candidates>0)
-          {
-            warn_cont("Possible candidates:\n");
-            for (mni.toFirst();(md=mni.current());++mni)
-            {
-              ClassDef *cd=md->getClassDef();
-              if (cd!=0 && cd->name()==className)
-              {
-                if (md->templateArguments())
-                {
-                  warn_cont("  template %s\n",tempArgListToString(md->templateArguments()).data());
-                }
-                warn_cont("  ");
-                if (md->typeString()) 
-                {
-                  warn_cont("%s ",md->typeString());
-                }
-                QCString qScope = cd->qualifiedNameWithTemplateParameters();
-                if (!qScope.isEmpty()) warn_cont("%s::%s",qScope.data(),md->name().data());
-                if (md->argsString()) warn_cont("%s",md->argsString());
-                warn_cont("\n");
-              }
-            }
-          }
+          md->setMemberClass(cd);
+          md->setTemplateSpecialization(TRUE);
+          md->setDefinition(funcDecl);
+          md->enableCallGraph(root->callGraph);
+          md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+          md->setDocsForDefinition(!root->proto);
+          md->setPrototype(root->proto);
+          md->addSectionsToDefinition(root->anchors);
+          md->setBodySegment(root->bodyLine,root->endBodyLine);
+          bool ambig;
+          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+          md->setBodyDef(fd);
+          md->setMemberSpecifiers(root->memSpec);
+          md->setMemberGroupId(root->mGrpId);
+          mn->append(md);
+          cd->insertMember(md);
+          md->setRefItems(root->sli);
         }
       }
       else if (overloaded) // check if the function belongs to only one class 
@@ -6683,7 +6721,7 @@ static void generateExampleDocs()
                          pd->docLine(),                            // startLine
                          pd,                                       // context
                          0,                                        // memberDef
-                         pd->documentation()+"\n\\include "+pd->name(),          // docs
+                         pd->documentation()+"\n\n\\include "+pd->name(),          // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
                          pd->name()
@@ -7073,7 +7111,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    QCString cmd=filterName+" "+fileName;
+    QCString cmd=filterName+" \""+fileName+"\"";
     FILE *f=popen(cmd,"r");
     if (!f)
     {
@@ -7214,7 +7252,7 @@ static int readDir(QFileInfo *fi,
            )
 {
   QDir dir((const char *)fi->absFilePath());
-  dir.setFilter( QDir::Files | QDir::Dirs );
+  dir.setFilter( QDir::Files | QDir::Dirs | QDir::Hidden );
   int totalSize=0;
   //printf("readDir `%s'\n",fi->absFilePath().data());
   //printf("killDict=%p count=%d\n",killDict,killDict->count());
@@ -7837,41 +7875,6 @@ void readConfiguration(int argc, char **argv)
   setPerlModDoxyfile(configFileInfo.absFilePath());
 
   Doxygen::xrefLists->setAutoDelete(TRUE);
-#if 0
-  /* init the special lists */
-  Doxygen::specialLists->insert("todo",
-      new RefList("todo",
-                  "GENERATE_TODOLIST",
-                  theTranslator->trTodoList(),
-                  theTranslator->trTodo()
-                  //,BaseOutputDocInterface::Todo
-                 )
-  );
-  Doxygen::specialLists->insert("test",
-      new RefList("test",
-                  "GENERATE_TESTLIST",
-                  theTranslator->trTestList(),
-                  theTranslator->trTest()
-                  //,BaseOutputDocInterface::Test
-                 )
-  );
-  Doxygen::specialLists->insert("bug", 
-      new RefList("bug", 
-                  "GENERATE_BUGLIST", 
-                  theTranslator->trBugList(),
-                  theTranslator->trBug()
-                  //,BaseOutputDocInterface::Bug
-                 )
-  );
-  Doxygen::specialLists->insert("deprecated", 
-      new RefList("deprecated", 
-                  "GENERATE_DEPRECATEDLIST", 
-                  theTranslator->trDeprecatedList(),
-                  theTranslator->trDeprecated()
-                  //,BaseOutputDocInterface::Deprecated
-                 )
-  );
-#endif
 
 }
 
@@ -7883,15 +7886,6 @@ void parseInput()
   Doxygen::exampleNameDict   = new FileNameDict(1009);
   Doxygen::imageNameDict     = new FileNameDict(257);
   Doxygen::dotFileNameDict   = new FileNameDict(257);
-
-  //if (!Config_getString("DOC_URL").isEmpty())
-  //{
-  //  Doxygen::tagDestinationDict.insert("_doc",new QCString(Config_getString("DOC_URL")));
-  //}
-  //if (!Config_getString("CGI_URL").isEmpty())
-  //{
-  //  Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config_getString("CGI_URL")+"/"+Config_getString("CGI_NAME")));
-  //}
 
   /**************************************************************************
    *            Initialize some global constants
@@ -8313,16 +8307,16 @@ void parseInput()
   findEnums(root);
   findEnumDocumentation(root);
   
+  msg("Searching for members imported via using declarations...\n");
+  findUsingDeclImports(root);
+  findUsingDeclarations(root);
+
   msg("Searching for member function documentation...\n");
   findObjCMethodDefinitions(root);
   findMemberDocumentation(root); // may introduce new members !
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
   
-  msg("Searching for members imported via using declarations...\n");
-  findUsingDeclImports(root);
-  findUsingDeclarations(root);
-
   msg("Building page list...\n");
   buildPageList(root);
 

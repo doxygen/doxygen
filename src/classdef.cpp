@@ -955,7 +955,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName().lower());
+    Doxygen::searchIndex->addWord(localName());
   }
 
   ol.startTextBlock();
@@ -2823,6 +2823,8 @@ QCString ClassDef::className() const
 
 void ClassDef::addListReferences()
 {
+  if (!isLinkableInProject()) return;
+  //printf("ClassDef(%s)::addListReferences()\n",name().data());
   addRefItem(xrefListItems(),
              theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),displayName()

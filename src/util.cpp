@@ -2012,6 +2012,7 @@ void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
   }
 }
 
+#if 0
 /*! if either t1 or t2 contains a namespace scope, then remove that
  *  scope. If neither or both have a namespace scope, t1 and t2 remain
  *  unchanged.
@@ -2086,6 +2087,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
     p2 = QMAX(i2-2,0);
   }
 }
+#endif
 
 /*! According to the C++ spec and Ivan Vecerina:
 
@@ -2227,7 +2229,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
   //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
 
-  //printf("srcA=%s:%s dstA=%s:%s\n",srcAType.data(),srcA->name.data(),
+  //printf("srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcA->name.data(),
   //      dstAType.data(),dstA->name.data());
 
   if (srcA->array!=dstA->array) // nomatch for char[] against char
@@ -2240,7 +2242,9 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
 
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
-    trimNamespaceScope(srcAType,dstAType,namespaceName);
+    //printf("Trimming %s<->%s: %s\n",srcAType.data(),dstAType.data(),namespaceName.data());
+    //trimNamespaceScope(srcAType,dstAType,namespaceName);
+    //printf("After Trimming %s<->%s\n",srcAType.data(),dstAType.data());
   
     //QCString srcScope;
     //QCString dstScope;
@@ -2268,6 +2272,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       srcAType=trimScope(namespaceName,srcAType);
       dstAType=trimScope(namespaceName,dstAType);
     }
+    //printf("#usingNamespace=%d\n",usingNamespaces->count());
     if (usingNamespaces && usingNamespaces->count()>0)
     {
       NamespaceSDict::Iterator nli(*usingNamespaces);
@@ -2278,6 +2283,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         dstAType=trimScope(nd->name(),dstAType);
       }
     }
+    //printf("#usingClasses=%d\n",usingClasses->count());
     if (usingClasses && usingClasses->count()>0)
     {
       SDict<Definition>::Iterator cli(*usingClasses);
@@ -2289,7 +2295,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       }
     }
 
-    //printf("2. srcA=%s:%s dstA=%s:%s\n",srcAType.data(),srcA->name.data(),
+    //printf("2. srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcA->name.data(),
     //    dstAType.data(),dstA->name.data());
     
     if (!srcA->name.isEmpty() && !dstA->type.isEmpty() &&
@@ -4200,7 +4206,8 @@ QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
  *  strip both unless A<T> or B<S> are specialized template classes. 
  */
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
-                                          bool parentOnly)
+                                          bool parentOnly,
+                                          QCString *pLastScopeStripped)
 {
   QCString result;
   int p=0;
@@ -4236,6 +4243,10 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     {
       result+=fullName.mid(i,e-i);
       //printf("2:result+=%s\n",fullName.mid(i,e-i-1).data());
+    }
+    else if (pLastScopeStripped)
+    {
+      *pLastScopeStripped=fullName.mid(i,e-i);
     }
     p=e;
     i=fullName.find('<',p);
@@ -4420,7 +4431,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
                 const char *prefix,
                 const char *name,const char *title,const char *args)
 {
-  //printf("addRefItem(%s,%s,%s,%s)\n",prefix,name,title,args);
+  //printf("addRefItem(prefix=%s,name=%s,title=%s,args=%s)\n",prefix,name,title,args);
   if (sli)
   {
     QListIterator<ListItemInfo> slii(*sli);
@@ -4440,8 +4451,8 @@ void addRefItem(const QList<ListItemInfo> *sli,
       {
         RefItem *item = refList->getRefItem(lii->itemId);
         ASSERT(item!=0);
-        if (item->written) return;
         //printf("anchor=%s\n",item->listAnchor.data());
+        if (item->written) return;
 
         QCString doc(1000);
         doc =  "\\anchor ";

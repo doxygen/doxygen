@@ -275,15 +275,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  //ol.docify(pageTitle);
-  //ol.parseText(pageTitle);
+  ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName().lower());
+    Doxygen::searchIndex->addWord(localName());
   }
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())

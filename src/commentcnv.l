@@ -243,12 +243,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
   				   }
-<SComment>^[ \t]*"//!"/.*\n        {  
+<SComment>^[ \t]*"//!"             |    // just //!
+<SComment>^[ \t]*"//!<"/.*\n       |    // or   //!< something
+<SComment>^[ \t]*"//!"[^<]/.*\n    {    // or   //!something
   				     replaceComment(0);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<SComment>\n[ \t]*"//!"/.*\n       { 
+<SComment>\n[ \t]*"//!"            |
+<SComment>\n[ \t]*"//!<"/.*\n      |
+<SComment>\n[ \t]*"//!"[^<]/.*\n   { 
                                      replaceComment(1); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
@@ -297,6 +301,7 @@ void replaceComment(int offset)
   }                                                           
   else                                                        
   {                                                           
+    //printf("replaceComment(%s)\n",yytext);
     int i=computeIndent(&yytext[offset]);                     
     if (i==g_blockHeadCol)                                    
     {                                                         

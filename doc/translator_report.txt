@@ -1,1047 +1,495 @@
-Doxygen supports the following (23) languages (sorted alphabetically):
+(1.3.8-20040803)
 
-  Brazilian
-  Chinese
-  Croatian
-  Czech
-  Danish
-  Dutch
-  English
-  Finnish
-  French
-  German
-  Hungarian
-  Italian
-  Japanese
-  Korean
-  Norwegian
-  Polish
-  Portuguese
-  Romanian
-  Russian
-  Slovak
-  Slovene
-  Spanish
-  Swedish
+Doxygen supports the following 30 languages (sorted alphabetically):
+
+Afrikaans, Brazilian Portuguese, Catalan, Chinese, Chinese
+Traditional, Croatian, Czech, Danish, Dutch, English, Finnish, French,
+German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
+Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
+Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+
+Of them, 13 translators are up-to-date, 17 translators are based on
+some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
-The following translator classes are up-to-date (sorted alphabetically).
-This means that they derive from the Translator class.  If the translator
-derives from TranslatorAdapterCVS, it is considered to be almost up-to-date.
-In other words, it is newer than the last official release.  Anyway, there
-still may be some details listed even for the up-to-date translators.
-Please, check the text below.
+The following translator classes are up-to-date (sorted
+alphabetically). This means that they derive from the Translator class
+and they implement all 195 of the required methods. Anyway, there
+still may be some details listed even for them:
 
+  TranslatorAfrikaans
+  TranslatorBrazilian
+  TranslatorChinese
   TranslatorCroatian
   TranslatorCzech
-  TranslatorDanish	(TranslatorAdapterCVS)
+  TranslatorDanish
+  TranslatorDutch
   TranslatorEnglish
   TranslatorGerman
-  TranslatorItalian	(TranslatorAdapterCVS)
+  TranslatorItalian
+  TranslatorJapanese
+  TranslatorNorwegian
   TranslatorRussian
-  TranslatorSlovak	(TranslatorAdapterCVS)
-  TranslatorSpanish	(TranslatorAdapterCVS)
 
 ----------------------------------------------------------------------
-The following translator classes are obsolete (sorted alphabetically).
-This means that they derive from some of the adapter classes.
+The following translator classes need some maintenance (the most
+obsolete at the end). The other info shows the estimation of Doxygen
+version when the class was last updated and number of methods that
+must be implemented to become up-to-date:
 
-  TranslatorBrazilian	(TranslatorAdapter_1_2_6)
-  TranslatorChinese	(TranslatorAdapter_1_2_1)
-  TranslatorDutch	(TranslatorAdapter_1_2_6)
-  TranslatorFinnish	(TranslatorAdapter_1_0_0)
-  TranslatorFrench	(TranslatorAdapter_1_2_0)
-  TranslatorHungarian	(TranslatorAdapter_1_2_1)
-  TranslatorJapanese	(TranslatorAdapter_1_2_5)
-  TranslatorKorean	(TranslatorAdapter_1_1_0)
-  TranslatorNorwegian	(TranslatorAdapter_1_2_2)
-  TranslatorPolish	(TranslatorAdapter_1_2_1)
-  TranslatorPortuguese	(TranslatorAdapter_1_1_5)
-  TranslatorRomanian	(TranslatorAdapter_1_2_1)
-  TranslatorSlovene	(TranslatorAdapter_1_1_5)
-  TranslatorSwedish	(TranslatorAdapter_1_0_0)
-
-
-----------------------------------------------------------------------
-Localized translators are expected to implement the following methods
-(prototypes sorted aplhabetically):
-
-QCString idLanguage()
-QCString idLanguageCharset()
-QCString latexLanguageSupportCommand()
-QCString trAlphabeticalList()
-QCString trAttention()
-QCString trAuthor(bool first_capital, bool singular)
-QCString trBug()
-QCString trBugList()
-QCString trBugsAndLimitations()
-QCString trClass(bool first_capital, bool singular)
-QCString trClassDiagram(const char *clName)
-QCString trClassDocumentation()
-QCString trClassHierarchy()
-QCString trClassHierarchyDescription()
-QCString trClasses()
-QCString trCode()
-QCString trCollaborationDiagram(const char *clName)
-QCString trCompoundIndex()
-QCString trCompoundList()
-QCString trCompoundListDescription()
-QCString trCompoundMembers()
-QCString trCompoundMembersDescription(bool extractAll)
-QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-QCString trCompounds()
-QCString trConstructorDocumentation()
-QCString trDCOPMethods()
-QCString trDate()
-QCString trDefineDocumentation()
-QCString trDefineValue()
-QCString trDefinedAtLineInSourceFile()
-QCString trDefinedIn()
-QCString trDefinedInSourceFile()
-QCString trDefines()
-QCString trDeprecated()
-QCString trDetailedDescription()
-QCString trDocumentation()
-QCString trEnumName()
-QCString trEnumValue()
-QCString trEnumerationTypeDocumentation()
-QCString trEnumerationValueDocumentation()
-QCString trEnumerationValues()
-QCString trEnumerations()
-QCString trExampleDocumentation()
-QCString trExamples()
-QCString trExamplesDescription()
-QCString trExceptions()
-QCString trField(bool first_capital, bool singular)
-QCString trFile(bool first_capital, bool singular)
-QCString trFileDocumentation()
-QCString trFileIndex()
-QCString trFileList()
-QCString trFileListDescription(bool extractAll)
-QCString trFileMembers()
-QCString trFileMembersDescription(bool extractAll)
-QCString trFileReference(const char *fileName)
-QCString trForInternalUseOnly()
-QCString trFriends()
-QCString trFuncProtos()
-QCString trFunctionDocumentation()
-QCString trFunctionPrototypeDocumentation()
-QCString trFunctions()
-QCString trGeneratedAt(const char *date,const char *projName)
-QCString trGeneratedAutomatically(const char *s)
-QCString trGeneratedBy()
-QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
-QCString trGlobal(bool first_capital, bool singular)
-QCString trGotoDocumentation()
-QCString trGotoGraphicalHierarchy()
-QCString trGotoSourceCode()
-QCString trGotoTextualHierarchy()
-QCString trGraphicalHierarchy()
-QCString trGroup(bool first_capital, bool singular)
-QCString trHeaderFiles()
-QCString trHeaderFilesDescription()
-QCString trHierarchicalIndex()
-QCString trInclByDepGraph()
-QCString trInclDepGraph(const char *fName)
-QCString trIncludingInheritedMembers()
-QCString trInheritedByList(int numEntries)
-QCString trInheritsList(int numEntries)
-QCString trInitialValue()
-QCString trInterfaces()
-QCString trInvariant()
-QCString trLegend()
-QCString trLegendDocs()
-QCString trLegendTitle()
-QCString trListOfAllMembers()
-QCString trMainPage()
-QCString trMember(bool first_capital, bool singular)
-QCString trMemberDataDocumentation()
-QCString trMemberEnumerationDocumentation()
-QCString trMemberFunctionDocumentation()
-QCString trMemberList()
-QCString trMemberTypedefDocumentation()
-QCString trModuleDocumentation()
-QCString trModuleIndex()
-QCString trModules()
-QCString trModulesDescription()
-QCString trMore()
-QCString trNamespace(bool first_capital, bool singular)
-QCString trNamespaceDocumentation()
-QCString trNamespaceIndex()
-QCString trNamespaceList()
-QCString trNamespaceListDescription(bool extractAll)
-QCString trNamespaceMemberDescription(bool extractAll)
-QCString trNamespaceMembers()
-QCString trNamespaceReference(const char *namespaceName)
-QCString trNamespaces()
-QCString trNoDescriptionAvailable()
-QCString trNote()
-QCString trPackage(const char *name)
-QCString trPackageDocumentation()
-QCString trPackageList()
-QCString trPackageListDescription()
-QCString trPackages()
-QCString trPage(bool first_capital, bool singular)
-QCString trPageAbbreviation()
-QCString trPageDocumentation()
-QCString trPageIndex()
-QCString trParameters()
-QCString trPostcondition()
-QCString trPrecondition()
-QCString trPrivateAttribs()
-QCString trPrivateMembers()
-QCString trPrivateSlots()
-QCString trPrivateTypes()
-QCString trProperties()
-QCString trPropertyDocumentation()
-QCString trProtectedAttribs()
-QCString trProtectedMembers()
-QCString trProtectedSlots()
-QCString trProtectedTypes()
-QCString trPublicAttribs()
-QCString trPublicMembers()
-QCString trPublicSlots()
-QCString trPublicTypes()
-QCString trRTFCharSet()
-QCString trRTFGeneralIndex()
-QCString trRTFansicp()
-QCString trReferenceManual()
-QCString trReferencedBy()
-QCString trReimplementedForInternalReasons()
-QCString trReimplementedFromList(int numEntries)
-QCString trReimplementedInList(int numEntries)
-QCString trRelatedFunctionDocumentation()
-QCString trRelatedFunctions()
-QCString trRelatedPages()
-QCString trRelatedPagesDescription()
-QCString trRelatedSubscript()
-QCString trRemarks()
-QCString trReturnValues()
-QCString trReturns()
-QCString trSearch()
-QCString trSeeAlso()
-QCString trSignals()
-QCString trSince()
-QCString trSources()
-QCString trStaticPrivateAttribs()
-QCString trStaticPrivateMembers()
-QCString trStaticProtectedAttribs()
-QCString trStaticProtectedMembers()
-QCString trStaticPublicAttribs()
-QCString trStaticPublicMembers()
-QCString trTest()
-QCString trTestList()
-QCString trThisIsTheListOfAllMembers()
-QCString trTodo()
-QCString trTodoList()
-QCString trTypedefDocumentation()
-QCString trTypedefs()
-QCString trVariableDocumentation()
-QCString trVariables()
-QCString trVersion()
-QCString trWarning()
-QCString trWriteList(int numEntries)
-QCString trWrittenBy()
-
+  TranslatorSwedish               1.3.8 	 1 method to implement
+  TranslatorSpanish               1.3.8 	 1 method to implement
+  TranslatorSerbian               1.3.8 	 1 method to implement
+  TranslatorLithuanian            1.3.8 	 1 method to implement
+  TranslatorKorean                1.3.8 	 1 method to implement
+  TranslatorHungarian             1.3.8 	 1 method to implement
+  TranslatorFrench                1.3.8 	 1 method to implement
+  TranslatorChinesetraditional    1.3.8 	 1 method to implement
+  TranslatorPortuguese            1.3.3 	 5 methods to implement
+  TranslatorPolish                1.3   	12 methods to implement
+  TranslatorSlovak                1.2.18	14 methods to implement
+  TranslatorCatalan               1.2.17	15 methods to implement
+  TranslatorSlovene               1.2.16	16 methods to implement
+  TranslatorRomanian              1.2.16	16 methods to implement
+  TranslatorUkrainian             1.2.11	19 methods to implement
+  TranslatorGreek                 1.2.11	19 methods to implement
+  TranslatorFinnish               obsolete	92 methods to implement
 
 ----------------------------------------------------------------------
-Details related to specific translator classes follows.
-Notice that the prototypes are recognized only when they
-are the same as in the Translator class.
+The following translator classes derive directly from the
+TranslatorEnglish. The class identifier has the suffix 'En' that says
+that this is intentional. Usually, there is also a non-English based
+version of the translator for the language:
 
+  TranslatorJapaneseEn	implements 5 methods
+  TranslatorKoreanEn	implements 5 methods
 
-TranslatorBrazilian (TranslatorAdapter_1_2_6)
--------------------
-
-Missing methods (should be implemented):
-
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trFile(bool first_capital, bool singular)
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trClass(bool first_capital, bool singular)
-  QCString trRTFCharSet()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trAuthor(bool first_capital, bool singular)
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
+======================================================================
+Details for translators (classes sorted alphabetically):
 
 
 
-TranslatorChinese (TranslatorAdapter_1_2_1)
+TranslatorCatalan   (TranslatorAdapter_1_2_17)  15 methods to implement
 -----------------
 
-Missing methods (should be implemented):
+  Implements 180 of the required methods.
 
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool)
-  QCString trVerbatimText(const char *f)
+    virtual QCString trEventDocumentation()
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trDeprecatedList()
+    virtual QCString trPackageTypes()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
 
 
+TranslatorChinesetraditional   (TranslatorAdapter_1_3_8)  1 method to implement
+----------------------------
 
-TranslatorGerman (Translator)
-----------------
+  Implements 194 of the required methods.
 
-Missing methods (should be implemented):
+  Missing methods (should be implemented):
 
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trPage(bool first_capital, bool singular)
-  QCString trFile(bool first_capital, bool singular)
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trClass(bool first_capital, bool singular)
-  QCString trMember(bool first_capital, bool singular)
-  QCString trAuthor(bool first_capital, bool singular)
-
-Obsolete methods (should be removed):
-
-  QCString trAuthor(bool, bool singular)
-  QCString trClass(bool, bool singular)
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trField(bool, bool singular)
-  QCString trFile(bool, bool singular)
-  QCString trGroup(bool, bool singular)
-  QCString trMember(bool, bool singular)
-  QCString trNamespace(bool, bool singular)
-  QCString trPage(bool, bool singular)
+    virtual QCString trSourceFile(QCString & filename)
 
 
-
-TranslatorDanish (TranslatorAdapterCVS)
-----------------
-
-Missing methods (should be implemented):
-
-  QCString trAuthor(bool first_capital, bool singular)
-
-Obsolete methods (should be removed):
-
-  QCString trAuthor()
-  QCString trAuthors()
-
-
-
-TranslatorSpanish (TranslatorAdapterCVS)
+TranslatorFinnish   (TranslatorEnglish)  92 methods to implement
 -----------------
 
-Missing methods (should be implemented):
+  Implements 103 of the required methods.
 
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trAuthor(bool first_capital, bool singular)
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
+    virtual QCString trPublicAttribs()
+    virtual QCString trPropertyDocumentation()
+    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trPageIndex()
+    virtual QCString trSince()
+    virtual QCString trEventDocumentation()
+    virtual QCString trRemarks()
+    virtual QCString trProtectedTypes()
+    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trPackages()
+    virtual QCString trInclByDepGraph()
+    virtual QCString trField(bool first_capital, bool singular)
+    virtual QCString trRTFansicp()
+    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trCollaborationDiagram(const char * clName)
+    virtual QCString trPackageListDescription()
+    virtual QCString trDefineValue()
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trPackage(const char * name)
+    virtual QCString trPublicTypes()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trTest()
+    virtual QCString trInvariant()
+    virtual QCString trPackageDocumentation()
+    virtual QCString trGraphicalHierarchy()
+    virtual QCString trSources()
+    virtual QCString trPostcondition()
+    virtual QCString trGotoGraphicalHierarchy()
+    virtual QCString trPageAbbreviation()
+    virtual QCString trGotoSourceCode()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trStaticPublicAttribs()
+    virtual QCString trCode()
+    virtual QCString trTodo()
+    virtual QCString trDeprecatedList()
+    virtual QCString trRTFCharSet()
+    virtual QCString trInitialValue()
+    virtual QCString trAlphabeticalList()
+    virtual QCString trBug()
+    virtual QCString trNote()
+    virtual QCString trStaticPrivateAttribs()
+    virtual QCString trAttention()
+    virtual QCString trGotoTextualHierarchy()
+    virtual QCString trPackageTypes()
+    virtual QCString trMainPage()
+    virtual QCString trDeprecated()
+    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trPrivateTypes()
+    virtual QCString trInclDepGraph(const char * fName)
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
+    virtual QCString trNamespaces()
+    virtual QCString trPrivateAttribs()
+    virtual QCString latexLanguageSupportCommand()
+    virtual QCString trInterfaces()
+    virtual QCString trDefinedInSourceFile()
+    virtual QCString trConstructorDocumentation()
+    virtual QCString trLegend()
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trClasses()
+    virtual QCString trProtectedAttribs()
+    virtual QCString trLegendTitle()
+    virtual QCString idLanguageCharset()
+    virtual QCString trEvents()
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trDCOPMethods()
+    virtual QCString trBugList()
+    virtual QCString trRTFGeneralIndex()
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trTestList()
+    virtual QCString trPrecondition()
+    virtual QCString trReturnValues()
+    virtual QCString trReferences()
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trLegendDocs()
+    virtual QCString trPackageList()
+    virtual QCString trTodoList()
+    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trGotoDocumentation()
+    virtual QCString trDefinedAtLineInSourceFile()
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+    virtual QCString trRTFTableOfContents()
+    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trReferencedBy()
+    virtual QCString trStaticProtectedAttribs()
+    virtual QCString trProperties()
 
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
+  Obsolete methods (should be removed, never used):
+
+    QCString trGeneratedFrom(const char * s, bool single)
+    QCString trVerbatimText(const char * f)
+    QCString trFiles()
+    virtual QCString updateNeededMessage()
+    QCString trAuthors()
+    QCString latexBabelPackage()
+    QCString trAuthor()
 
 
-
-TranslatorFinnish (TranslatorAdapter_1_0_0)
------------------
-
-Missing methods (should be implemented):
-
-  QCString trGotoTextualHierarchy()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trSources()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trPrivateTypes()
-  QCString trDeprecated()
-  QCString trNote()
-  QCString trAlphabeticalList()
-  QCString trDefinedInSourceFile()
-  QCString trCode()
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trInitialValue()
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trDefinedAtLineInSourceFile()
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProtectedTypes()
-  QCString trTest()
-  QCString trConstructorDocumentation()
-  QCString trProtectedAttribs()
-  QCString trProperties()
-  QCString trReferencedBy()
-  QCString trPrecondition()
-  QCString trPrivateAttribs()
-  QCString trRemarks()
-  QCString trTodo()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trStaticPublicAttribs()
-  QCString trMainPage()
-  QCString trGotoGraphicalHierarchy()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trPostcondition()
-  QCString trLegend()
-  QCString trPageAbbreviation()
-  QCString trPageIndex()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trCollaborationDiagram(const char *clName)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInvariant()
-  QCString trTodoList()
-  QCString trPublicTypes()
-  QCString idLanguageCharset()
-  QCString trAttention()
-  QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
-  QCString trInterfaces()
-  QCString trGotoSourceCode()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trNamespaces()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trInclDepGraph(const char *fName)
-  QCString trDefineValue()
-  QCString trStaticProtectedAttribs()
-  QCString trInclByDepGraph()
-  QCString trReturnValues()
-  QCString trLegendTitle()
-  QCString trSince()
-  QCString trGotoDocumentation()
-  QCString trPublicAttribs()
-  QCString trLegendDocs()
-  QCString trStaticPrivateAttribs()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trGraphicalHierarchy()
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trGeneratedFrom(const char *s,bool single)
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorFrench (TranslatorAdapter_1_2_0)
+TranslatorFrench   (TranslatorAdapter_1_3_8)  1 method to implement
 ----------------
 
-Missing methods (should be implemented):
+  Implements 194 of the required methods.
 
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trTest()
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trIncludeFile()
-  QCString trVerbatimText(const char *f)
+    virtual QCString trSourceFile(QCString & filename)
 
 
-
-TranslatorCroatian (Translator)
-------------------
-
-Missing methods (should be implemented):
-
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-
-Obsolete methods (should be removed):
-
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-
-
-
-TranslatorHungarian (TranslatorAdapter_1_2_1)
--------------------
-
-Missing methods (should be implemented):
-
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorItalian (TranslatorAdapterCVS)
------------------
-
-Missing methods (should be implemented):
-
-  QCString trFile(bool first_capital, bool singular)
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trAuthor(bool first_capital, bool singular)
-
-Obsolete methods (should be removed):
-
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFile(bool first_capital, bool)
-  QCString trFiles()
-  QCString trNamespace(bool first_capital, bool)
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorJapanese (TranslatorAdapter_1_2_5)
-------------------
-
-Missing methods (should be implemented):
-
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trBugList()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trClass(bool first_capital, bool singular)
-  QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trAuthor(bool first_capital, bool singular)
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool)
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorKorean (TranslatorAdapter_1_1_0)
-----------------
-
-Missing methods (should be implemented):
-
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trPrivateTypes()
-  QCString trNote()
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProtectedTypes()
-  QCString trTest()
-  QCString trProtectedAttribs()
-  QCString trProperties()
-  QCString trReferencedBy()
-  QCString trPrivateAttribs()
-  QCString trRemarks()
-  QCString trTodo()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trStaticPublicAttribs()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trLegend()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trTodoList()
-  QCString trPublicTypes()
-  QCString trAttention()
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trStaticProtectedAttribs()
-  QCString trInclByDepGraph()
-  QCString trLegendTitle()
-  QCString trSince()
-  QCString trPublicAttribs()
-  QCString trLegendDocs()
-  QCString trStaticPrivateAttribs()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorDutch (TranslatorAdapter_1_2_6)
+TranslatorGreek   (TranslatorAdapter_1_2_11)  19 methods to implement
 ---------------
 
-Missing methods (should be implemented):
+  Implements 176 of the required methods.
 
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trFile(bool first_capital, bool singular)
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trClass(bool first_capital, bool singular)
-  QCString idLanguageCharset()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trAuthor(bool first_capital, bool singular)
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
+    virtual QCString trEventDocumentation()
+    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trDeprecatedList()
+    virtual QCString trPackageTypes()
+    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trReferences()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+    virtual QCString trRTFTableOfContents()
 
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
+  Obsolete methods (should be removed, never used):
+
+    virtual QCString latexBabelPackage()
 
 
-
-TranslatorNorwegian (TranslatorAdapter_1_2_2)
+TranslatorHungarian   (TranslatorAdapter_1_3_8)  1 method to implement
 -------------------
 
-Missing methods (should be implemented):
+  Implements 194 of the required methods.
 
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProperties()
-  QCString trBugList()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString idLanguageCharset()
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
+    virtual QCString trSourceFile(QCString & filename)
 
 
-
-TranslatorPolish (TranslatorAdapter_1_2_1)
-----------------
-
-Missing methods (should be implemented):
-
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString idLanguageCharset()
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorPortuguese (TranslatorAdapter_1_1_5)
+TranslatorJapaneseEn   (TranslatorEnglish)  190 methods to implement
 --------------------
 
-Missing methods (should be implemented):
+  Implements 5 of the required methods.
 
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trTest()
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trLegend()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString idLanguageCharset()
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trLegendTitle()
-  QCString trLegendDocs()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
+  This English-based translator implements the following methods:
 
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trIncludeFile()
-  QCString trVerbatimText(const char *f)
+    virtual QCString trRTFansicp()
+    virtual QCString idLanguage()
+    virtual QCString trRTFCharSet()
+    virtual QCString latexLanguageSupportCommand()
+    virtual QCString idLanguageCharset()
 
 
-
-TranslatorRomanian (TranslatorAdapter_1_2_1)
-------------------
-
-Missing methods (should be implemented):
-
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorSwedish (TranslatorAdapter_1_0_0)
------------------
-
-Missing methods (should be implemented):
-
-  QCString trGotoTextualHierarchy()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trPrivateTypes()
-  QCString trDeprecated()
-  QCString trNote()
-  QCString trCode()
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trInitialValue()
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trProtectedTypes()
-  QCString trTest()
-  QCString trConstructorDocumentation()
-  QCString trProtectedAttribs()
-  QCString trProperties()
-  QCString trReferencedBy()
-  QCString trPrecondition()
-  QCString trPrivateAttribs()
-  QCString trRemarks()
-  QCString trTodo()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trStaticPublicAttribs()
-  QCString trGotoGraphicalHierarchy()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trPostcondition()
-  QCString trLegend()
-  QCString trPageIndex()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trCollaborationDiagram(const char *clName)
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInvariant()
-  QCString trTodoList()
-  QCString trPublicTypes()
-  QCString idLanguageCharset()
-  QCString trAttention()
-  QCString trInterfaces()
-  QCString trGotoSourceCode()
-  QCString trRTFCharSet()
-  QCString latexLanguageSupportCommand()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trInclDepGraph(const char *fName)
-  QCString trDefineValue()
-  QCString trStaticProtectedAttribs()
-  QCString trInclByDepGraph()
-  QCString trLegendTitle()
-  QCString trSince()
-  QCString trGotoDocumentation()
-  QCString trPublicAttribs()
-  QCString trLegendDocs()
-  QCString trStaticPrivateAttribs()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trGraphicalHierarchy()
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorSlovene (TranslatorAdapter_1_1_5)
------------------
-
-Missing methods (should be implemented):
-
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool isTemplate)
-  QCString trRTFGeneralIndex()
-  QCString trPage(bool first_capital, bool singular)
-  QCString trPackageListDescription()
-  QCString trFile(bool first_capital, bool singular)
-  QCString trBug()
-  QCString trGlobal(bool first_capital, bool singular)
-  QCString trPackageList()
-  QCString trField(bool first_capital, bool singular)
-  QCString trGroup(bool first_capital, bool singular)
-  QCString trPackage(const char *name)
-  QCString trTest()
-  QCString trProperties()
-  QCString trBugList()
-  QCString trDCOPMethods()
-  QCString trPackageDocumentation()
-  QCString trRTFansicp()
-  QCString trLegend()
-  QCString trNamespace(bool first_capital, bool singular)
-  QCString trTestList()
-  QCString trPropertyDocumentation()
-  QCString trClass(bool first_capital, bool singular)
-  QCString trInterfaces()
-  QCString trRTFCharSet()
-  QCString trPackages()
-  QCString trMember(bool first_capital, bool singular)
-  QCString trDefineValue()
-  QCString trLegendTitle()
-  QCString trLegendDocs()
-  QCString trAuthor(bool first_capital, bool singular)
-  QCString trClasses()
-
-Obsolete methods (should be removed):
-
-  QCString latexBabelPackage()
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trCompoundReference(const char *clName, ClassDef::CompoundType compType, bool )
-  QCString trFiles()
-  QCString trVerbatimText(const char *f)
-
-
-
-TranslatorSlovak (TranslatorAdapterCVS)
+TranslatorKorean   (TranslatorAdapter_1_3_8)  1 method to implement
 ----------------
 
-Missing methods (should be implemented):
+  Implements 194 of the required methods.
 
-  QCString trAuthor(bool first_capital, bool singular)
+  Missing methods (should be implemented):
 
-Obsolete methods (should be removed):
+    virtual QCString trSourceFile(QCString & filename)
 
-  QCString trAuthor()
-  QCString trAuthors()
-  QCString trFiles()
 
+TranslatorKoreanEn   (TranslatorEnglish)  190 methods to implement
+------------------
+
+  Implements 5 of the required methods.
+
+  This English-based translator implements the following methods:
+
+    virtual QCString trRTFansicp()
+    virtual QCString idLanguage()
+    virtual QCString trRTFCharSet()
+    virtual QCString latexLanguageSupportCommand()
+    virtual QCString idLanguageCharset()
+
+
+TranslatorLithuanian   (TranslatorAdapter_1_3_8)  1 method to implement
+--------------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trSourceFile(QCString & filename)
+
+
+TranslatorPolish   (TranslatorAdapter_1_3)  12 methods to implement
+----------------
+
+  Implements 183 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trPackageTypes()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+
+  Obsolete methods (should be removed, never used):
+
+    QCString trVerbatimText(const char * f)
+    QCString trFiles()
+    QCString trAuthors()
+    QCString latexBabelPackage()
+    QCString trAuthor()
+
+
+TranslatorPortuguese   (TranslatorAdapter_1_3_3)  5 methods to implement
+--------------------
+
+  Implements 190 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trSearchMatches()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+
+
+TranslatorRomanian   (TranslatorAdapter_1_2_16)  16 methods to implement
+------------------
+
+  Implements 179 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trEventDocumentation()
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trDeprecatedList()
+    virtual QCString trPackageTypes()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+    virtual QCString trRTFTableOfContents()
+
+
+TranslatorSerbian   (TranslatorAdapter_1_3_8)  1 method to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trSourceFile(QCString & filename)
+
+
+TranslatorSlovak   (TranslatorAdapter_1_2_18)  14 methods to implement
+----------------
+
+  Implements 181 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trEventDocumentation()
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trPackageTypes()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+
+
+TranslatorSlovene   (TranslatorAdapter_1_2_16)  16 methods to implement
+-----------------
+
+  Implements 179 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trEventDocumentation()
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trDeprecatedList()
+    virtual QCString trPackageTypes()
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+    virtual QCString trRTFTableOfContents()
+
+
+TranslatorSpanish   (TranslatorAdapter_1_3_8)  1 method to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trSourceFile(QCString & filename)
+
+  Obsolete methods (should be removed, never used):
+
+    virtual QCString trVerbatimText(const char * f)
+    virtual QCString trFiles()
+    virtual QCString trAuthors()
+    virtual QCString latexBabelPackage()
+
+
+TranslatorSwedish   (TranslatorAdapter_1_3_8)  1 method to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trSourceFile(QCString & filename)
+
+
+TranslatorUkrainian   (TranslatorAdapter_1_2_11)  19 methods to implement
+-------------------
+
+  Implements 176 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trEventDocumentation()
+    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trPackageMembers()
+    virtual QCString trStaticPackageMembers()
+    virtual QCString trSearchResultsTitle()
+    virtual QCString trStaticPackageAttribs()
+    virtual QCString trCallGraph()
+    virtual QCString trDeprecatedList()
+    virtual QCString trPackageTypes()
+    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trSearchResults(int numDocuments)
+    virtual QCString trPackageAttribs()
+    virtual QCString trSearchMatches()
+    virtual QCString trEvents()
+    virtual QCString trReferences()
+    virtual QCString trSourceFile(QCString & filename)
+    virtual QCString trSearchForIndex()
+    virtual QCString trAll()
+    virtual QCString trRTFTableOfContents()

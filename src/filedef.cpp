@@ -222,7 +222,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName().lower());
+    Doxygen::searchIndex->addWord(localName());
   }
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 

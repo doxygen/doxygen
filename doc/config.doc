@@ -932,7 +932,7 @@ function's detailed documentation block.
 <dt>\c HTML_FOOTER <dd>
  \addindex HTML_FOOTER
  The \c HTML_FOOTER tag can be used to specify a user-defined HTML footer for 
- each generated HTML page. To get valid HTML the header file should contain
+ each generated HTML page. To get valid HTML the footer file should contain
  at least a \c \</BODY\> and a \c \</HTML\> tag. A minimal example:
 \verbatim
     </BODY>
@@ -940,7 +940,7 @@ function's detailed documentation block.
 \endverbatim
  If the tag is left blank doxygen will generate a standard footer.
 
- The following commands have a special meaning inside the header:
+ The following commands have a special meaning inside the footer:
  <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
  <code>\$doxygenversion</code>, <code>\$projectname</code>, 
  <code>\$projectnumber</code>. 
@@ -1412,7 +1412,9 @@ EXTRA_PACKAGES = times
  are defined before the preprocessor is started (similar to the -D option of
  gcc). The argument of the tag is a list of macros of the form:
  <code>name</code> or <code>name=definition</code> (no spaces). 
- If the definition and the "=" are omitted,  "=1" is assumed.
+ If the definition and the "=" are omitted,  "=1" is assumed. To prevent
+ a macro definition from being undefined via #undef or recursively expanded
+ use the := operator instead of the = operator.
 
 \anchor cfg_expand_as_defined
 <dt>\c EXPAND_AS_DEFINED <dd>

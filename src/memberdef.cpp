@@ -343,6 +343,7 @@ MemberDef::MemberDef(const char *df,int dl,
   section=0;
   groupAlias=0;
   explExt=FALSE;
+  tspec=FALSE;
   cachedAnonymousType=0;
   maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
   userInitLines=-1;
@@ -834,8 +835,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
-    Doxygen::searchIndex->addWord(localName().lower());
-    Doxygen::searchIndex->addWord(qualifiedName().lower());
+    Doxygen::searchIndex->addWord(localName());
+    Doxygen::searchIndex->addWord(qualifiedName());
   }
 
   Definition *d=0;
@@ -1248,7 +1249,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           htmlHelp->addIndexItem(cname,name(),cfname,anchor());
         }
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
-        //ol+=*vmd->enumDecl();
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-i-l));
 
@@ -1310,7 +1310,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       else // definition gets it template parameters from its class
         // (since no definition was found)
       {
-        if (cd)
+        if (cd && !isTemplateSpecialization())
         {
           QList<ArgumentList> tempParamLists;
           cd->getTemplateParameterLists(tempParamLists);
@@ -1670,7 +1670,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.parseText(reimplFromLine.right(
               reimplFromLine.length()-markerPos-2)); // text right from marker
 
-        ol.newParagraph();
       }
       else
       {
@@ -1751,7 +1750,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         index=newIndex+matchLen;
       } 
       ol.parseText(reimplInLine.right(reimplInLine.length()-index));
-      ol.newParagraph();
     }
   }
   // write the list of examples that use this member
@@ -2003,9 +2001,14 @@ void MemberDef::addListReference(Definition *)
       }
     }
   }
-  //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
-  addRefItem(xrefListItems(),memLabel,
-      getOutputFileBase()+"#"+anchor(),memName,argsString());
+  if (xrefListItems())
+  {
+    addRefItem(xrefListItems(),memLabel,
+        getOutputFileBase()+"#"+anchor(),memName,argsString());
+  }
+  else 
+  {
+  }
 }
 
 MemberList *MemberDef::getSectionList(Definition *d) const 

@@ -37,8 +37,8 @@
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 
-#define DBG_RTF(x) x;
-//#define DBG_RTF(x)
+//#define DBG_RTF(x) x;
+#define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {

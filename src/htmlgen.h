@@ -21,6 +21,9 @@
 #include "qtbc.h"
 #include "outputgen.h"
 
+#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
+#define PREFRAG_END   "</pre></div>"
+
 class QFile;
 
 class HtmlGenerator : public OutputGenerator
@@ -112,8 +115,8 @@ class HtmlGenerator : public OutputGenerator
     void writeRuler()    { t << "<hr>"; }
     void writeAnchor(const char *,const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
-    void startCodeFragment() { t << "<pre class=\"fragment\"><div>"; }
-    void endCodeFragment()   { t << "</div></pre>"; } 
+    void startCodeFragment() { t << PREFRAG_START; }
+    void endCodeFragment()   { t << PREFRAG_END; } 
     void writeLineNumber(const char *,const char *,const char *,int);
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }

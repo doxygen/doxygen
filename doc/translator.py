@@ -41,7 +41,8 @@
              - Plural not used for reporting a single missing method.
              - Removal of not used translator adapters is suggested only
                when the report is not restricted to selected languages
-               explicitly via script arguments
+               explicitly via script arguments.
+  2004/07/26 - Better reporting of not-needed adapters.
   """                               
 
 from __future__ import generators
@@ -1440,10 +1441,24 @@ class TrManager:
             # i.e. all languages were checked against the needed translator 
             # adapters. 
             if not self.script_argLst:
+                to_remove = {}
                 for version, adaptClassId in self.adaptMethodsDic.values():
                     if version < adaptMinVersion:
-                        f.write('\nNote: The %s class ' % adaptClassId)
-                        f.write('is not used and can be removed.\n')
+                        to_remove[adaptClassId] = True
+                
+                if to_remove:
+                    lst = to_remove.keys()
+                    lst.sort()
+                    plural = len(lst) > 1
+                    note = 'Note: The adapter class'
+                    if plural: note += 'es'
+                    note += ' ' + ', '.join(lst)    
+                    if not plural: 
+                        note += ' is'
+                    else:
+                        note += ' are'
+                    note += ' not used and can be removed.'
+                    f.write('\n' + fill(note) + '\n')
                 
         # Write the list of the English-based classes.
         if self.EnBasedIdLst:

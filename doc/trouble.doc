@@ -71,6 +71,8 @@
 <li>Version 1.8.6 of dot (and maybe earlier versions too) do not 
     generate proper map files, causing the graphs that doxygen generates
     not to be properly clickable.
+<li>PHP only: Doxygen requires that all PHP statements (i.e. code) is 
+    wrapped in a functions/methods, otherwise you may run into parse problems.
 </ul>
 
 
