@@ -1100,6 +1100,8 @@ void Config::check()
     filePatternList.append("*.php");
     filePatternList.append("*.php3");
     filePatternList.append("*.inc");
+    filePatternList.append("*.m");
+    filePatternList.append("*.mm");
   }
 
   // add default pattern if needed
@@ -1819,7 +1821,7 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
-		    "*.h++ *.idl *.odl *.cs *.php *.php3 *.inc\n"
+		    "*.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm\n"
                  );
   cb = addBool(
                     "RECURSIVE",

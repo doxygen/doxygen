@@ -43,7 +43,7 @@
 static const char *defaultStyleSheet = 
 "H1 {\n"
 "	text-align: center;\n"
-"	font-family: Arial, Helvetica, sans-serif;\n"
+"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "}\n"
 "H2 {\n"
 "	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
@@ -56,6 +56,7 @@ static const char *defaultStyleSheet =
 "	text-align: center;\n"
 "	margin: 2px;\n"
 "	padding: 2px;\n"
+"	line-height: 120%;\n"
 "}\n"
 "A.qindex {\n"
 "       text-decoration: none;\n"
@@ -79,9 +80,9 @@ static const char *defaultStyleSheet =
 "	font-weight: bold;\n"
 "	background-color: #6666cc;\n"
 "	color: #ffffff;\n"
-"	padding: 2 6px;\n"
+"	padding: 2px 6px;\n"
 "	border: 1px double #9295C2;\n"
-"           }\n"
+"}\n"
 "A.qindexHL:hover {\n"
 "	text-decoration: none;\n"
 "	background-color: #6666cc;\n"
@@ -116,7 +117,13 @@ static const char *defaultStyleSheet =
 "TD.md { background-color: #F4F4FB; font-weight: bold; }\n"
 "TD.mdname1 { background-color: #F4F4FB; font-weight: bold; color: #602020; }\n"
 "TD.mdname { background-color: #F4F4FB; font-weight: bold; color: #602020; width: 600px; }\n"
-"DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
+"DIV.groupHeader {\n"
+"       margin-left: 16px;\n"
+"       margin-top: 12px;\n"
+"       margin-bottom: 6px;\n"
+"       font-weight: bold;\n"
+"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
+"}\n"
 "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
 "BODY {\n"
 "	background: white;\n"
@@ -172,7 +179,7 @@ static const char *defaultStyleSheet =
 "}\n"
 ".mdescLeft {\n"
 "	font-size: smaller;\n"
-"	font-family: Arial, Helvetica, sans-serif;\n"
+"	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
 "	padding-left: 8px;\n"
 "	border-top: 1px none #E0E0E0;\n"
@@ -183,7 +190,6 @@ static const char *defaultStyleSheet =
 "}\n"
 ".mdescRight {\n"
 "	font-size: smaller;\n"
-"	font-family: Arial, Helvetica, sans-serif;\n"
 "	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
 "	padding-left: 4px;\n"
@@ -282,8 +288,16 @@ void HtmlGenerator::init()
     exit(1);
   }
   writeLogo(dname);
-  if (!Config_getString("HTML_HEADER").isEmpty()) g_header=fileToString(Config_getString("HTML_HEADER"));
-  if (!Config_getString("HTML_FOOTER").isEmpty()) g_footer=fileToString(Config_getString("HTML_FOOTER"));
+  if (!Config_getString("HTML_HEADER").isEmpty()) 
+  {
+    g_header=fileToString(Config_getString("HTML_HEADER"));
+    //printf("g_header='%s'\n",g_header.data());
+  }
+  if (!Config_getString("HTML_FOOTER").isEmpty()) 
+  {
+    g_footer=fileToString(Config_getString("HTML_FOOTER"));
+    //printf("g_footer='%s'\n",g_footer.data());
+  }
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
@@ -422,8 +436,7 @@ static void writePageFooter(QTextStream &t,const QCString lastTitle)
         );
     t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
     t << endl << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-      << "align=\"middle\" border=0 > " << endl << 
-      "</a>" << versionString <<" ";
+      << "align=\"middle\" border=0 > " << "</a>" << versionString << " ";
     t << "</small></address>\n</body>\n</html>\n";
   }
   else

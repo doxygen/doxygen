@@ -103,7 +103,9 @@ enum CommandType
   CMD_XREFITEM     = 69 | SIMPLESECT_BIT,
   CMD_XMLONLY      = 70,
   CMD_DOT          = 71,
-  CMD_ENDDOT       = 72
+  CMD_ENDDOT       = 72,
+  CMD_MANONLY      = 73,
+  CMD_ENDMANONLY   = 74
 };
 
 enum HtmlTagType

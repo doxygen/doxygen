@@ -826,6 +826,15 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_MANONLY:
+          {
+            doctokenizerYYsetStateManOnly();
+            tok = doctokenizerYYlex();
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: manonly section ended without end marker");
+            doctokenizerYYsetStatePara();
+          }
+          break;
         case CMD_LATEXONLY:
           {
             doctokenizerYYsetStateLatexOnly();
@@ -3664,6 +3673,15 @@ int DocPara::handleCommand(const QString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_MANONLY:
+      {
+        doctokenizerYYsetStateManOnly();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: manonly section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_LATEXONLY:
       {
         doctokenizerYYsetStateLatexOnly();
@@ -3702,6 +3720,7 @@ int DocPara::handleCommand(const QString &cmdName)
       break;
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
+    case CMD_ENDMANONLY:
     case CMD_ENDLATEXONLY:
     case CMD_ENDXMLONLY:
     case CMD_ENDLINK:

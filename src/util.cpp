@@ -557,6 +557,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
 }
 
 static QDict<MemberDef> g_resolvedTypedefs;
+static QDict<Definition> g_visitedNamespaces;
 
 // forward declaration
 ClassDef *getResolvedClassRec(Definition *scope,
@@ -746,11 +747,12 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
       //printf("Trying via used namespace %s\n",und->name().data());
       Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,fileScope,explicitScopePart);
       if (sc && item->getOuterScope()==sc) return TRUE; 
-      //printf("Try via used namespac done\n");
+      //printf("Try via used namespace done\n");
     }
   }
   return FALSE;
 }
+
 
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
  * if item in not inside scope. 
@@ -857,6 +859,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
       int i=-1;
       if (newScope->definitionType()==Definition::TypeNamespace)
       {
+        g_visitedNamespaces.insert(newScope->name(),newScope);
         // this part deals with the case where item is a class
         // A::B::C but is explicit referenced as A::C, where B is imported
         // in A via a using directive.
@@ -884,11 +887,14 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
           NamespaceDef *nd;
           for (nli.toFirst();(nd=nli.current());++nli)
           {
-            i = isAccessibleFrom(scope,fileScope,item,nd->name());
-            if (i!=-1)
+            if (g_visitedNamespaces.find(nd->name())==0)
             {
-              //printf("> found via explicit scope of used namespace\n");
-              goto done;
+              i = isAccessibleFrom(scope,fileScope,item,nd->name());
+              if (i!=-1)
+              {
+                //printf("> found via explicit scope of used namespace\n");
+                goto done;
+              }
             }
           }
         }
@@ -1009,6 +1015,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     if (d->definitionType()==Definition::TypeClass ||
         d->definitionType()==Definition::TypeMember)
     {
+      g_visitedNamespaces.clear();
       // test accessibility of definition within scope.
       int distance = isAccessibleFrom(scope,fileScope,d,explicitScopePart);
       if (distance!=-1) // definition is accessible
@@ -1524,6 +1531,10 @@ int filterCRLF(char *buf,int len)
       c = '\n';                // each CR to LF
       if (src<len && buf[src] == '\n')
         ++src;                 // skip LF just after CR (DOS) 
+    }
+    else if ( c == '\0' && src<len-1) // filter out internal \0 characters, as it will confuse the parser
+    {
+      c = ' ';                 // turn into a space
     }
     buf[dest++] = c;           // copy the (modified) character to dest
   }

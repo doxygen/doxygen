@@ -128,6 +128,9 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 				  }
 				  name.resize(0);
   				}
+<Start>":"			{ // Objective-C argument separator
+  				  name+=yytext;
+  				}
 <Start>[*&]+			{
   				  addType();
   				  type+=yytext;

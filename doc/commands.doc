@@ -68,6 +68,7 @@ documentation:
 \refitem cmdendif \\endif
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
+\refitem cmdendmanonly \\endmanonly
 \refitem cmdendverbatim \\endverbatim
 \refitem cmdendxmlonly \\endxmlonly
 \refitem cmdenum \\enum
@@ -94,6 +95,7 @@ documentation:
 \refitem cmdline \\line
 \refitem cmdlink \\link
 \refitem cmdmainpage \\mainpage
+\refitem cmdmanonly \\manonly
 \refitem cmdn \\n
 \refitem cmdname \\name
 \refitem cmdnamespace \\namespace
@@ -1627,6 +1629,14 @@ class C {};
   \sa section \ref cmdlatexonly "\\latexonly".
 
 <hr>
+\section cmdendmanonly \endmanonly
+
+  \addindex \\endmanonly
+  Ends a block of text that was started with a \\manonly command.
+
+  \sa section \ref cmdmanonly "\\manonly".
+
+<hr>
 \section cmdendverbatim \endverbatim
 
   \addindex \\endverbatim
@@ -1685,7 +1695,7 @@ class C {};
     environment variables (like \$(HOME) ) are resolved inside a 
     HTML-only block.
 
-  \sa section \ref cmdhtmlonly "\\htmlonly" and section 
+  \sa section \ref cmdmanonly "\\manonly" and section 
               \ref cmdlatexonly "\\latexonly".
 
 <hr>
@@ -1762,6 +1772,22 @@ class C {};
 
   \sa section \ref cmdlatexonly "\\latexonly" 
   and section \ref cmdhtmlonly "\\htmlonly".
+
+<hr>
+\section cmdmanonly \manonly
+
+  \addindex \\manonly
+  Starts a block of text that will be verbatim included in the
+  generated MAN documentation only. The block ends with a
+  endmanonly command.
+
+  This command can be used to include groff code directly into
+  MAN pages. You can use the \\htmlonly and \\latexonly and 
+  \\endhtmlonly and \\endlatexonly pairs to provide proper 
+  HTML and \f$\mbox{\LaTeX}\f$ alternatives.
+
+  \sa section \ref cmdhtmlonly "\\htmlonly" and section 
+              \ref cmdlatexonly "\\latexonly".
 
 <hr>
 \section cmdli \li { item-description }

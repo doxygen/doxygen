@@ -349,7 +349,7 @@ class DocWhiteSpace : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, LatexOnly, XmlOnly, Verbatim, Dot };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, XmlOnly, Verbatim, Dot };
     DocVerbatim(DocNode *parent,const QString &context,
                 const QString &text, Type t,bool isExample,
                 const QString &exampleFile) : 

@@ -141,6 +141,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::Code: printf("<code>"); break;
         case DocVerbatim::Verbatim: printf("<verbatim>"); break;
         case DocVerbatim::HtmlOnly: printf("<htmlonly>"); break;
+        case DocVerbatim::ManOnly: printf("<manonly>"); break;
         case DocVerbatim::LatexOnly: printf("<latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("<xmlonly>"); break;
         case DocVerbatim::Dot: printf("<dot>"); break;
@@ -151,6 +152,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::Code: printf("</code>"); break;
         case DocVerbatim::Verbatim: printf("</verbatim>"); break;
         case DocVerbatim::HtmlOnly: printf("</htmlonly>"); break;
+        case DocVerbatim::ManOnly: printf("</manonly>"); break;
         case DocVerbatim::LatexOnly: printf("</latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("</xmlonly>"); break;
         case DocVerbatim::Dot: printf("</dot>"); break;

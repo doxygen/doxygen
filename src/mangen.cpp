@@ -153,6 +153,8 @@ void ManGenerator::endTitleHead(const char *,const char *name)
 {
   t << ".TH \"" << name << "\" " << getExtension() << " \"" 
     << dateToString(FALSE) << "\" \"";
+  if (!Config_getString("PROJECT_NUMBER").isEmpty())
+    t << "Version " << Config_getString("PROJECT_NUMBER") << "\" \"";
   if (Config_getString("PROJECT_NAME").isEmpty()) 
     t << "Doxygen";
   else

@@ -224,30 +224,33 @@ fi
 #- check for qt --------------------------------------------------------------
  
 if test "$f_wizard" = YES; then
-  echo -n "  Checking for Qt..."
-  if test -d "/usr/lib/qt3/lib"; then
-    if test -d "/usr/lib/qt3/include"; then
-      if test -x "/usr/lib/qt3/bin/moc"; then
-        QTDIR="/usr/lib/qt3";
+  if test -z "$QTDIR"; then
+    echo "  QTDIR environment variable not set!"
+    echo -n "  Checking for Qt..."
+    if test -d "/usr/lib/qt3/lib"; then
+      if test -d "/usr/lib/qt3/include"; then
+        if test -x "/usr/lib/qt3/bin/moc"; then
+          QTDIR="/usr/lib/qt3";
+        fi
       fi
     fi
-  fi
-  if test -d "/usr/lib/qt2/lib"; then
-    if test -d "/usr/lib/qt2/include"; then
-      if test -x "/usr/lib/qt2/bin/moc"; then
-        QTDIR="/usr/lib/qt2";
+    if test -d "/usr/lib/qt2/lib"; then
+      if test -d "/usr/lib/qt2/include"; then
+        if test -x "/usr/lib/qt2/bin/moc"; then
+          QTDIR="/usr/lib/qt2";
+        fi
       fi
     fi
-  fi
-  if test -d "/usr/lib/qt/lib"; then
-    if test -d "/usr/lib/qt/include"; then
-      if test -x "/usr/lib/qt/bin/moc"; then
-        QTDIR="/usr/lib/qt";
+    if test -d "/usr/lib/qt/lib"; then
+      if test -d "/usr/lib/qt/include"; then
+        if test -x "/usr/lib/qt/bin/moc"; then
+          QTDIR="/usr/lib/qt";
+        fi
       fi
     fi
   fi
   if test -z "$QTDIR"; then
-    echo "QTDIR not set!"
+    echo "QTDIR not set and Qt not found at standard locations!"
     echo
     echo "tmake requires the QTDIR environment variable to be set."
     echo "check your Qt installation!"

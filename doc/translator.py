@@ -14,1106 +14,1651 @@
     python translator.py en nl cz
   
   Originally, the script was written in Perl and was known as translator.pl.
-  The last Perl version was dated 2002/05/21
- 
-                               Petr Prikryl (prikrylp@skil.cz)
-"""                               
+  The last Perl version was dated 2002/05/21 (plus some later corrections)
+
+  $Id$
+  
+                                         Petr Prikryl (prikrylp@skil.cz)
                                
-# History:
-# --------
-# 2002/05/21
-#  - This was the last Perl version. 
-# 2003/05/16
-#  - If the script is given list of languages, only the translator report
-#    is generated and only for those languages.
-# 
-################################################################
+  History:
+  --------
+  2002/05/21
+   - This was the last Perl version. 
+  2003/05/16
+   - If the script is given list of languages, only the translator report
+     is generated and only for those languages.
+  2004/01/24
+   - Total reimplementation just started: classes TrManager, and Transl.
+  2004/02/05
+   - First version that produces translator report. The documentation 
+     in the language.doc is not generated yet.
+  2004/02/10
+   - First fully functional version that generates both the translator
+     report and the documentation. It is a bit slower than the Perl version,
+     but is much less tricky and much more flexible. It also solves some
+     problems that were not solved by the Perl version. The translator report
+     content should be more useful for developers.
+  2004/02/11
+   - Some tuning-up to provide more useful information.
+  """                               
 
-import os, re, sys
+import os, re, sys, textwrap
 
-# Global informations are stored in the global 'info' dictionary.
-# This dictionary should be accessed only via GetInfo() because the first
-# call initializes the empty dictionary. (I was too lazy to create 
-# a singleton.)
-#
-info = {}
 
-def GetInfo():
-    """Returns reference to the info dictionary.
+def fill(s):
+    """Returns string formated to the wrapped paragraph multiline string.
     
-    If the dictionary is empty, it will be filled with some initial values.
-    """
+    Replaces whitespaces by one space and then uses he textwrap.fill()."""
+    rexWS = re.compile(r'\s+')
+    return textwrap.fill(rexWS.sub(' ', s))
     
-    global info
-    
-    # If the dictionary with globally shared information is empty, then
-    # fill the static values.
-    if not info:
-        # Get the name of the script without the path and the path without name.
-        scriptpath, scriptname = os.path.split(os.path.abspath(sys.argv[0]))
-        info['scriptname'] = scriptname
 
-        # Determine the Doxygen's doc directory. If the DOXYGEN_DOCDIR
-        # environment variable is defined, then it says where the directory
-        # is. If it is not, then it will be directory where this script is
-        # placed.
-        docdir = os.getenv('DOXYGEN_DOCDIR', '*')
-        if docdir == '*':
-            docdir = scriptpath
+class Transl:
+    """One instance is build for each translator.
+    
+    The abbreviation of the source file--part after 'translator_'--is used as
+    the identification of the object. The empty string is used for the
+    abstract Translator class from translator.h. The other information is
+    extracted from inside the source file."""
+    
+    def __init__(self, fname, manager):
+        """Bind to the manager and initialize."""
+        
+        # Store the filename and the reference to the manager object.
+        self.fname = fname
+        self.manager = manager
+        
+        # The instance is responsible for loading the source file, so it checks
+        # for its existence and quits if something goes wrong.
+        if not os.path.isfile(fname):
+            sys.stderr.write("\a\nFile '%s' not found!\n" % fname)
+            sys.exit(1)
             
-        docdir = os.path.abspath(docdir)
-        info['docdir'] = docdir
-
-        # Doxygen's root directory is just one above the docdir.
-        doxygenrootdir = os.path.abspath(os.path.join(docdir, '..'))
-        info['doxygenrootdir'] = doxygenrootdir
-        
-        # Doxygen's src directory is just below its root.
-        info['srcdir'] = os.path.join(doxygenrootdir, 'src')
-        
-        # Doxygen's current version is read from the 'version' file in the root.
-        try:
-            fver = file(os.path.join(doxygenrootdir, 'version'))
-            doxversion = fver.readline().strip()
-            fver.close()
-            info['doxversion'] = doxversion
-        except IOError:
-            info['doxversion'] = 'unknown'
+        # Initialize the other collected information.
+        self.classId = None
+        self.baseClassId = None
+        self.readableStatus = None  # 'up-to-date', '1.2.3', '1.3', etc.
+        self.status = None          # '', '1.2.03', '1.3.00', etc.
+        self.lang = None            # like 'Brasilian'
+        self.langReadable = None    # like 'Brasilian Portuguese'
+        self.note = None            # like 'should be cleaned up'
+        self.prototypeDic = {}      # uniPrototype -> prototype
+        self.obsoleteMethods = None # list of prototypes to be removed
+        self.missingMethods = None  # list of prototypes to be implemented
+        self.implementedMethods = None  # list of implemented required methods
+        self.adaptMinClass = None   # The newest adapter class that can be used
             
+    def __tokenGenerator(self):
+        """Generator that reads the file and yields tokens as 4-tuples.
         
-        # Names of the template files and other intput files (template for 
-        # language.doc and the database of local language maintainers).
-        info['flangtplname'] = 'language.tpl'
-        info['flangtpl'] = os.path.join(docdir, info['flangtplname'])  
-        info['fmaintainersname'] = 'maintainers.txt' 
-        info['fmaintainers'] = os.path.join(docdir, info['fmaintainersname']) 
+        The tokens have the form (tokenId, tokenString, lineNo). The
+        last returned token has the form ('eof', None, None). When trying
+        to access next token afer that, the exception would be raised."""
 
-        # Names of the output files.
-        info['ftranslatortxtname'] = 'translator_rep.txt'
-        info['ftranslatortxt'] = os.path.join(docdir, info['ftranslatortxtname'])
-        info['flangdocname'] = 'language.doc'
-        info['flangdoc'] = os.path.join(docdir, info['flangdocname'])
+        # Set the dictionary for recognizing tokenId for keywords, separators
+        # and the similar categories. The key is the string to be recognized,
+        # the value says its token identification.
+        tokenDic = { 'class':     'class',
+                     'const':     'const',
+                     'public':    'public',
+                     'protected': 'protected',
+                     'private':   'private',
+                     'static':    'static',
+                     'virtual':   'virtual',
+                     ':':         'colon',    
+                     ';':         'semic',
+                     ',':         'comma',
+                     '[':         'lsqbra',   
+                     ']':         'rsqbra',
+                     '(':         'lpar',    
+                     ')':         'rpar',
+                     '{':         'lcurly',    
+                     '}':         'rcurly',
+                     '=':         'assign',
+                     '*':         'star',
+                     '&':         'amp',
+                     '+':         'plus',
+                     '-':         'minus',
+                     '!':         'excl',
+                     '?':         'qmark',
+                     '<':         'lt',
+                     '>':         'gt',
+                     "'":         'quot',
+                     '"':         'dquot',
+                     '.':         'dot',
+                     '%':         'perc',
+                   }
         
-        # If the script is given one or more arguments, they should be codes
-        # of languages (two letters). Convert them into lower case and
-        # build the list of them. Empty list will be interpreted as the request
-        # for processing all languages.
-        langlist = []
-        if len(sys.argv) > 1:
-            langlist = sys.argv[1:]
-        info['languages'] = langlist
+        # Regular expression for recognizing identifiers.
+        rexId = re.compile(r'^[a-zA-Z]\w*$')
+
+        # Open the file for reading and extracting tokens until the eof.
+        # Initialize the finite automaton.
+        f = file(self.fname)
+        lineNo = 0
+        line = ''         # init -- see the pos initialization below
+        linelen = 0       # init
+        pos = 100         # init -- pos after the end of line
+        status = 0     
+        
+        tokenId = None    # init
+        tokenStr = ''     # init -- the characters will be appended.
+        tokenLineNo = 0
+
+        while status != 777:
             
-        # Create the dictionary of the required method. Keys will be the unified
-        # method prototypes, values will be True (for easy testing).
-        info['required_methods'] = {}
-            
-    return info
-
-    
-def CopyTemplateToLanguageDoc():
-    """'flangtpl' + no src --> 'flangdoc' 
-    
-    The function takes the 'flangtpl' template and generates 'flangdoc'
-    without using information from other sources. This function is called
-    when source files were not found. The marks inside the template are
-    replaced by warning-like explanations that something could not be done
-    because sources were not available. Writes directly to the file, returns
-    nothing.
-    
-    If the script was called only for selected languages, the documentation
-    is not generated.
-    """
-
-    # Get the reference to the initialized info dictionary. If the script was
-    # called for selected languages, return immediately.
-    info = GetInfo()
-    if not info['langlist']:
-        return
-    
-    # Read the content of the template file.
-    fin = file(info['flangtpl'])
-    cont = fin.read()
-    fin.close()
-            
-    # Replace the template marks by some notices.
-    cont = re.sub(r'(?s)<notice>.+?</notice>', 
-           """Warning: this file was generated from the %(flangtplname)s template
- *          by the %(scriptname)s script.  As doxygen sources were not available 
- *          in that time, some information could not be extracted 
- *          and inserted into this file.
- *
- *          Do not edit this file.  Edit the above mentioned files!""", cont)
-    
-    cont = re.sub(r'(?s)\$version', '%(doxversion)s', cont)
-    cont = re.sub(r'(?s)\$numlang', 
-        '<b>[number of supported languages could not be extracted -- no sources]</b>',
-        cont)
-            
-    cont = re.sub(r'(?s)\$languages', 
-        '<b>[names of languages could not be extracted -- no sources]</b>', cont)
-            
-    cont = re.sub(r'(?s)\$information_table',
-        '<b>[Information table could not be extracted -- no sources.]</b>', cont)
-            
-    cont = re.sub(r'(?s)\$translator_report_file_name',
-        '%(ftranslatortxt)s <b>[translator report could not be generated -- no sources]</b>',
-        cont)
-            
-    cont = re.sub(r'(?s)\$translator_report_link',
-        '<b>[no sources, no link]</b>', cont)
-
-    # Replace the generated marks by the info from the info dictionary.
-    #
-    cont = cont % info
-       
-    # Write the template with replacements to the output doc.
-    fout = file(info['flangdoc'], 'w')
-    fout.write(cont)
-    fout.close()
-
-    
-def GetPureVirtualFrom(filename):
-    """Returns the list of pure virtual method prototypes from the filename.
-    
-    Each method prototype is returned as one string, one line, one list item).
-    The input argument is the full name of the source file."""
-
-    # Read the content of the file to one string and remove C comments, 
-    # one line comments, leading text to the first 'virtual' keyword, 
-    # text behind the class, and finally empty lines.  
-    f = file(filename)
-    cont = f.read()
-    f.close()
-    
-    cont = re.sub(r'(?s)/\*.+?\*/', '', cont)   # C comments
-    cont = re.sub(r'(?m)//.*$', '', cont)       # C++ comments
-    cont = 'virtual ' + re.sub(r'(?s)^.+?virtual\s', '', cont) # prefix
-    cont = re.sub(r'(?s)};.+$', '', cont)       # suffix
-    cont = re.sub(r'(?s)\n\s*\n', r'\n', cont)  # empty lines
-    
-    # Remove the empty implementation of the updateNeededMessage() method
-    # which is to be implemented by adapters only, not by translators.
-    cont = re.sub(r'(?s)\s*virtual\s+QCString\s+updateNeededMessage.+?}.*?\n',
-                  '', cont)
-
-    # Erase anything between "=0;" and "virtual". Only the pure virtual 
-    # methods will remain.  Remove also the text behind the last "= 0;"
-    cont = re.sub(r'(?s)(=\s*0\s*;).*?(?P<vir>virtual)', r'=0;\n\g<vir>', cont)
-    cont = re.sub(r'(?s)^(?P<x>.+=\s*0\s*;).*$', r'\g<x>', cont)
-
-    # Replace all consequent white spaces (including \n) by a single 
-    # space. Strip also the leading and the trailing space.
-    cont = re.sub(r'(?s)\s+', ' ', cont)
-    cont = cont.strip()
-    
-    # Split internally the string into lines by replacing the '= 0;' by '\n'.
-    # Keep the string stil as one multiline string.
-    cont = re.sub(r'(?s)\s*=\s*0\s*;\s*', r'\n', cont)
-
-    # Remove the keyword 'virtual' because the derived classes may not use it.
-    cont = re.sub(r'(?m)^virtual\s+', '', cont)
-
-    # Split the string to the list of striped lines. Do strip the string 
-    # first so that no empty line list item is generated.
-    L = cont.strip().split('\n')
-    
-    # Build the list of unified prototypes and return it. 
-    return L 
-    
-def StripArgIdentifiers(prototype):
-    """Returns the method prototype without argument identifiers.
-    
-    The goal of the function is to get only the necessary, single form 
-    of the method prototype. This way the prototypes from derived classes
-    can be compared one by one with the methods in the base class."""
-    
-    # Parse the prototype, and split the string of arguments it can be empty).
-    m = re.match(r'^(?P<prefix>.+?)\((?P<args>.*?)\)(?P<suffix>.*)$', prototype)
-    str_prefix = m.group('prefix')
-    str_args = m.group('args')
-    str_suffix = m.group('suffix')
-    args = str_args.split(',')
-        
-    # Each argument will be stripped and put to the new list. Only the types
-    # are important. Using the spaces has to be normalized because people
-    # differ in opinion where to put spaces. Let's prepare regular 
-    # expressions for the tasks.
-    rex_type = re.compile(r'''^(?P<type>        # name of the type group
-                                \s*             # there can be spaces behind comma,
-                                (const\s+)?     # possibly const at the beginning
-                                [A-Za-z0-9_:]+  # type identifier can be qualified
-                                (\s*[*&])?      # could be reference or pointer
-                               )                # ... the above is important,
-                              .*$''',           # the rest contains the identifier
-                          re.VERBOSE)
-                          
-    # People may differ in opinion whether a space should or should not 
-    # be written between a type identifier and  the '*' or '&' (when 
-    # the argument is a pointer or a reference).
-    rex_norm = re.compile(r'\s*(?P<x>[*&])')
-                                  
-    # Strip each of the arguments and put them to the 'stripped' list.
-    # Only the type of the identifier is important. Extract it, normalize 
-    # the using of spaces, and append the result to the list of striped
-    # arguments. (Sequence of more than one space is solved later.)
-    stripped = []
-    for arg in args:
-        arg = rex_type.sub(r'\g<type>', arg)
-        arg = rex_norm.sub(r' \g<x>', arg)
-        stripped.append(arg)
-    
-    # Join the stripped arguments into one line again, and build the striped
-    # form of the prototype. Remove the duplicit spaces.
-    result = re.sub(r'\s+', ' ', 
-                    str_prefix + '(' + ', '.join(stripped) + ')' + str_suffix) 
-
-    return result
-
-def GetInfoFrom(input_filename):
-    """Returns list of info related to the parsed file.
-    
-    GetInfoFrom returns the list of information related to the
-    parsed source file.  The input argument is the name of the 
-    translator_xx.h file including path. 
-    
-    The output list contains the following items:
-     - class identifier
-     - base class identifier
-     - method prototypes (each in a separate item)"""
-     
-    # Let's open the file and read it into a single string.
-    f = file(input_filename)
-    cont = f.read()
-    f.close()
-    
-    # Remove comments and empty lines.
-    cont = re.sub(r'(?m)//.*$', '', cont)       # C++ comments
-    cont = re.sub(r'(?s)/\*.+?\*/', '', cont)   # C comments
-    cont = re.sub(r'(?s)\n\s*\n', r'\n', cont)  # empty lines
-
-    # Extract the class and base class identifiers.
-    rex = re.compile(r'''^.*class\s+
-                         (?P<class>Translator\w+?)\s*:
-                         \s*public\s+(?P<base>\w+)\b
-                         ''', re.VERBOSE | re.DOTALL)
-    m = rex.match(cont)
-    assert(m)
-    assert(m.group('class'))
-    assert(m.group('base'))
-    
-    # Put the class and the base class into the output list.
-    result = [m.group('class'), m.group('base')]
-    
-    # Remove the opening curly brace.  Remove also the first "public:"
-    cont = re.sub(r'(?s)^.*?{', '', cont)
-    cont = re.sub(r'(?s)(^.*\spublic:\s+)?', '', cont)
-    
-    # Cut the things after the class.
-    cont = re.sub(r'(?s)}\s*;\s*#endif\s*$', '', cont)
-    
-    # Remove the "virtual" keyword, because the derived class is not forced 
-    # to use it.
-    cont = re.sub(r'\bvirtual\s+', '', cont)
-
-    # Remove all strings from lines.
-    cont = re.sub(r'(?s)".*?"', '', cont)
-    
-    # Remove all bodies of methods
-    while cont.find('{') >= 0:
-        cont = re.sub(r'(?s){[^{}]+?}', '', cont)
-    
-    # Remove all private methods, i.e. from "private:" to "public:"
-    # included.  Later, remove also all from "private:" to the end.
-    cont = re.sub(r'(?s)\bprivate\s*:.*?\bpublic\s*:', '', cont)
-    cont = re.sub(r'(?s)\bprivate\s*:.*$', '', cont)
-
-    # Some of the translators use conditional compilation where 
-    # the branches define the body of the method twice.  Remove
-    # the ifdef/endif block content.
-    cont = re.sub(r'(?s)#ifdef.*?#endif', '', cont)
-    
-    # Now the string should containt only method prototypes. Let's unify
-    # their format by removing all spaces that are not necessary.
-    cont = re.sub(r'\s+', ' ', cont)
-    cont = re.sub(r'^\s+', '', cont)
-    cont = re.sub(r'\s+$', '', cont)
-    
-    # Then let's put all of them on separate lines (one protototype -- 
-    # one line; no empty lines).
-    cont = re.sub(r'\s+\(', '(', cont)
-    cont = re.sub(r'(?s)\)\s*', ')\n', cont)
-
-    # Split the string, add it to the output list, and return the result.
-    result.extend(cont.strip().split('\n'))
-    return result
-    
-    
-def GetAdapterClassesInfo(required):
-    """Returns the list of strings with information  related to the adapter classes.
-    
-    Each one-line string contains the identifier of the adapter class and
-    the number of required methods that are implemented by the adapter.
-    
-    The function takes one agument -- the reference to the hash with
-    stripped prototypes of the required methods."""
-
-    # Let's open the file with the translator adapter classes.
-    info = GetInfo()
-    filename = os.path.join(info['srcdir'], 'translator_adapter.h')
-    f = file(filename)
-    cont = f.read()
-    f.close()
-
-    # Remove the preprocessor directives.
-    cont = re.sub(r'(?m)^\s*#\w+.+$', '', cont)
-    
-    # Remove comments and empty lines.
-    cont = re.sub(r'(?m)//.*$', '', cont)       # C++ comments
-    cont = re.sub(r'(?s)/\*.+?\*/', '', cont)   # C comments
-    cont = re.sub(r'(?s)\n\s*\n', r'\n', cont)  # empty lines
-
-    # Place delimiters to separate the classes, and remove 
-    # the TranslatorAdapterBase class.
-    #
-    cont = re.sub(r'(?s)};\s*class\s+', '<class>', cont)
-    cont = re.sub(r'(?s)class\s+TranslatorAdapterBase\s+.+?<class>', '<class>', cont)
-    cont = re.sub(r'(?s)};', '', cont)
-    
-    # Remove the base classes and the beginning of the the class definitions.
-    cont = re.sub(r'(?s)(TranslatorAdapter[_0-9]+)\s*:.+?{\s*(public\s*:)?', 
-                  '\g<1>', cont)
-
-    # Remove all bodies of methods
-    while cont.find('{') >= 0:
-        cont = re.sub(r'(?s){[^{}]+?}', '', cont)
-
-    # Remove the "virtual" keywords.
-    cont = re.sub(r'(?m)^\s*virtual\s+', '', cont)
-
-    # Remove the empty lines.
-    cont = re.sub(r'(?s)\n\s*\n', '\n', cont)
-
-    # Trim the spaces.
-    cont = re.sub(r'(?m)^\s+', '', cont)
-    cont = re.sub(r'(?m)\s+$', '', cont)
-    
-    # Split the string into the lines again.
-    content = cont.split('\n')
-
-    # Now the list contains only two kinds of lines.  The first
-    # kind of lines starts with the <class> tag and contains the
-    # identifier of the class.  The following lines list the
-    # non-stripped prototypes of implemented methods without the
-    # "virtual" keyword.
-    #
-    # Now we will produce the result by looping through all the
-    # lines and counting the prototypes of the required methods
-    # that are implemented by the adapter class.
-    #
-    cinfo = ''
-    cnt = 0
-    methods = ''
-    result = []
-
-    rex_class = re.compile(r'^<class>(?P<class>\w+)\s*$')     
-    for line in content:
-        m = rex_class.match(line)
-        if m:
-            # Another adapter class found. 
-            adapter_class = m.group('class')
-            
-            # If the cinfo is not empty then it contains partial
-            # information about the previously processed adapter. 
-            if cinfo !=  '':
-                # Complete the cinfo and push it into the result.
-                s = ''
-                if cnt != 1: 
-                    s = 's'
-                cinfo += '\timplements %2d required method%s...\n' % (cnt, s)
-                result.append(cinfo + methods)
-            
-            # Initialize the counter and store the adapter class identifier
-            # in the cinfo.
-            #
-            cinfo = adapter_class
-            cnt = 0;
-            methods = ''
-        else:
-            # The line contains the prototype of the implemented method.
-            # If it is the required method, count it, and add it to the 
-            # string of methods.
-            stripped_prototype = StripArgIdentifiers(line)
-
-            if required.has_key(stripped_prototype): 
-                cnt += 1
-                methods += '    %s\n' % line
-    
-    # If the cinfo is not empty then it contains partial
-    # information about the last processed adapter. 
-    if cinfo != '':
-        # Complete the cinfo and push it into the @result.
-        s = ''
-        if cnt != 1: 
-            s = 's'
-        cinfo += '\timplements %2d required method%s...\n' % (cnt, s)
-        result.append(cinfo + methods)
-
-    # Return the result list.
-    return result
-
-
-def GetLanguagesInfo(seq_or_dic):
-    """Returns (numlang, langlst, formated langstr).
-    
-    The numlang is the number of supported languages. The langlst is the 
-    list of pairs like ('TranslatorBrazilian', 'Brazilian Portuguese')
-    """
-    
-    languages = []               
-    for k in seq_or_dic:
-        # Remove the 'Translator' prefix from the class name to obtain
-        # the brief name of the language.
-        assert(k[:len('Translator')] == 'Translator')
-        lang = k[len('Translator'):]
-        
-        # Do correction of the language name for the selected languages.
-        if lang == 'Brazilian':           lang = 'Brazilian Portuguese'
-        if lang == 'Chinesetraditional':  lang = 'Chinese Traditional'
-
-        # Append the language to the list.
-        languages.append((k, lang))
-        
-    # Sort the languages and construct the output string. Insert new line
-    # after each line. Add the 'and' before the last language
-    languages.sort()
-    count = 0
-    output = ''
-    for L in languages:
-        output += L[1]                     # readable form of the language
-        count += 1
-        
-        if count < len(languages) - 1:     # separate by comma
-            output += ', '
-        elif count == len(languages) - 1:  # separate by comma and 'and'
-            output += ', and '
-        
-        if count % 5 == 0:
-            output += '\n'
-
-    return (len(languages), languages, output)
-    
-    
-def GenerateLanguageDoc(cb):
-    """Generates the content as expected in the 'flangdoc' file.
-    
-    GenerateLanguageDoc takes document templates and code sources
-    generates the content as expected in the 'flangdoc' file (the
-    part of the Doxygen documentation), and returns the result as a
-    string.
-    
-    The input parameter is the reference to the class/base dictionary."""
-    
-    # Define templates for HTML table parts of the documentation.
-    htmlTableHead = r'''\htmlonly
-<TABLE ALIGN=center CELLSPACING=0 CELLPADDING=0 BORDER=0>
-<TR BGCOLOR="#000000">
-<TD>
-  <TABLE CELLSPACING=1 CELLPADDING=2 BORDER=0>
-  <TR BGCOLOR="#4040c0">
-  <TD ><b><font size=+1 color="#ffffff"> Language </font></b></TD>
-  <TD ><b><font size=+1 color="#ffffff"> Maintainer </font></b></TD>
-  <TD ><b><font size=+1 color="#ffffff"> Contact address </font>
-          <font size=-2 color="#ffffff">(remove the NOSPAM.)</font></b></TD>
-  <TD ><b><font size=+1 color="#ffffff"> Status </font></b></TD>
-  </TR>
-'''
-  
-    htmlTableRow = r'''  <TR BGCOLOR="#ffffff">
-      <TD>$lang</TD>  
-      <TD>$maintainer</TD>
-      <TD>$email</TD>
-      <TD>$status</TD>
-  </TR>
-'''
-
-    htmlTableFoot = r'''  </TABLE>
-</TD>
-</TR>
-</TABLE>
-\endhtmlonly
-'''
-    
-    # Define templates for LaTeX table parts of the documentation.
-    latexTableHead = r'''\latexonly
-\begin{tabular}{|l|l|l|l|}
-  \hline 
-  {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
-  \hline
-'''
-  
-    latexTableRow = r'''  $lang & $maintainer & {\tt $email} & $status \\
-'''
-
-    latexTableFoot = r'''  \hline
-\end{tabular}
-\endlatexonly
-'''
-
-    # Read the template of the documentation, and join the content
-    # to a single string.
-    info = GetInfo()
-    filename = os.path.join(info['docdir'], info['flangtpl'])
-    f = file(filename)
-    output = f.read()
-    f.close()
-    
-    # Get the number of languages, list of their names and formated string
-    # with the list in human readable English form.
-    (numlang, langlst, langstr) = GetLanguagesInfo(cb)
-    
-    # Substitute the marks inside the template.
-    output = re.sub(r'(?s)\$version', info['doxversion'], output)
-    output = re.sub(r'(?s)\$numlang', str(numlang), output)
-    output = re.sub(r'(?s)\$languages', langstr, output)
-
-    # Create the dictionary for info for each language.
-    langinfo = {}
-    for (trClass, langname) in langlst:
-        langinfo[langname] = cb[trClass] + '<msep/>unknown: unknown'
-
-    # Read the information related to maintainers into the
-    # string using suitable separators -- one line, one language. #{{{
-    filename = os.path.join(info['docdir'], info['fmaintainers'])
-    print filename
-    f = file(filename)
-    maintainers = f.read()
-    f.close()
-    
-    # Trim the spaces on the lines.  Strip the comment lines that
-    # start with % sign.
-    maintainers = re.sub(r'(?m)^[ \t]+', '', maintainers)    
-    maintainers = re.sub(r'(?m)[ \t]+$', '', maintainers)    
-    maintainers = re.sub(r'(?m)^%.*$', '', maintainers)    
-    
-    # Join the information for one language into one line,
-    # and remove empty lines.
-    maintainers = re.sub(r'(?s)\b\n\b', '<sep/>', maintainers)
-    maintainers = re.sub(r'(?s)\n{2,}', '\n', maintainers)
-    maintainers = re.sub(r'(?s)^\n+', '', maintainers)
-    maintainers = re.sub(r'(?s)\n+$', '', maintainers)
-    
-    # Split the string back to the list, and update the information
-    # in the hash with information for languages.
-    lst = maintainers.split('\n')
-    lst.sort()
-    for line in lst:
-        # Split the line for one language to separate lines for
-        # the language and one or more maintainers.  Ensure that the language
-        # starts with uppercase and continues with lowercase. (It will be used
-        # for reconstructing the translator class identifier.)
-        linfo = line.split('<sep/>')
-        lang = linfo[0].capitalize()
-        del linfo[0]
-        
-        # Add information to the langinfo dictionary.  If the language
-        # was not defined in sources, add the question mark to the
-        # language identifier.
-        # 
-        if langinfo.has_key(lang): 
-            langinfo[lang] = cb['Translator' + lang] + '<msep/>' + \
-                             '<sep/>'.join(linfo)
-        else:
-            lang += ' (?)'
-            langinfo[lang] = 'unknown<msep/>' + '<sep/>'.join(linfo)
-
-    # Now, the langinfo dictionary contains all the information needed for
-    # generating the tables (HTML and LaTeX).  Define string variables
-    # for each of the tables, and initialize them.
-    #
-    tableHTML = htmlTableHead
-    tableLATEX = latexTableHead
-    
-    # Loop through sorted keys for the languages, parse the
-    # information, and add it to the tables.
-    langs = langinfo.keys()
-    langs.sort()
-    for lang in langs:
-        # Transform the key for the language into more human readable
-        # form.  Basically, only languages with two words are going to be
-        # corrected.
-        if lang == 'Brazilian':
-            lang_readable = 'Brazilian Portuguese'
-        elif lang == 'Chinesetraditional':
-            lang_readable = 'Chinese Traditional'
-        else:
-            lang_readable = lang
-            
-        print lang, lang_readable            
-    """
-        
-        # Read the line with info for the language and separate 
-        # the status. #{{{
-        #
-        my @list = split(/<msep\/>/, $language{$lang});
-        my $status = shift @list;
-        
-        my $i = $status =~ s{^Translator$}{up-to-date};
-
-        if ($i == 0) { 
-            $i = $status =~ s{^TranslatorAdapter_(\d)_(\d)_(\d)}
-                             {$1.$2.$3}x;
-        }
-        
-        if ($i == 0) { 
-            $i = $status =~ s{^TranslatorEnglish$}
-                             {obsolete}x;
-        }
-        
-        if ($i == 0) { $status = 'strange'; }
-        
-        ##}}}
-        
-        # Split the rest of the list (should be a single item) into
-        # the list with one or more maintainers -- one line, one
-        # maintainer. #{{{
-        #
-        my $rest = shift @list;
-        @list = split(/<sep\/>/, $rest);
-        ##}}}
-        
-        # In HTML table, maintainer names are placed in the same
-        # cell.  Also their e-mails are placed in a single cell.
-        # Extract the string with concatenated names and the string
-        # with concatenated e-mails.  Add the row to the HTML
-        # table. #{{{
-        #
-        my $name = '';
-        my $email = '';
-
-        foreach my $maintainer (@list) {
-        
-            if ($name ne '') { $name .= '<br>'; }
-            if ($email ne '') { $email .= '<br>'; }
-
-            $maintainer =~ m{^\s*(.+?)\s*:\s*(.+?)\s*$};
-        
-            $name .= $1;
-            $email .= $2;
-        }
-        
-        # Prepare the HTML row template, modify it, and add the
-        # result to the HTML table.
-        #
-        my $item = $htmlTableRow;
-        
-        $item =~ s{\$lang}{$lang_readable};
-        $item =~ s{\$maintainer}{$name};
-        $item =~ s{\$email}{$email};
-        $item =~ s{\$status}{$status};
-        
-        $tableHTML .= $item;        
-        
-        ##}}}
-        
-        # For LaTeX, more maintainers for the same language are
-        # placed on separate rows in the table.  The line separator
-        # in the table is placed explicitly above the first
-        # maintainer.  Add rows for all maintainers to the LaTeX
-        # table. #{{{
-        #
-        # Prepare the LATEX row template, modify it, and add the
-        # result to the LATEX table.
-        #
-        $item = $latexTableRow;
-
-        my $first = shift @list;  # the first maintainer.
-        $first =~ m{^\s*(.+?)\s*:\s*(.+?)\s*$};
-        
-        $name = $1;
-        $email = $2;
-        
-        $item =~ s{\$lang}{$lang_readable};
-        $item =~ s{\$maintainer}{$name};
-        $item =~ s{\$email}{$email};
-        $item =~ s{\$status}{$status};
-        
-        $tableLATEX .= "  \\hline\n" . $item;        
-        
-        # List the other maintainers for the language. Do not set
-        # lang and status for them.
-        #
-        while (@list) {
-            my $next = shift @list;
-            $next =~ m{^\s*(.+?)\s*:\s*(.+?)\s*$};
-        
-            my $name = $1;
-            my $email = $2;
-            my $item = $latexTableRow;
-        
-            $item =~ s{\$lang}{};
-            $item =~ s{\$maintainer}{$name};
-            $item =~ s{\$email}{$email};
-            $item =~ s{\$status}{};
-        
-            $tableLATEX .= $item;        
-        }
-        ##}}}
-    }
-    ##}}}
-    
-    # Finish the tables, and substitute the mark in the doc
-    # template by the concatenation of the tables.  Add NOSPAM to
-    # email addresses in the HTML table.  Replace the special
-    # character sequences. #{{{
-    #
-    $tableHTML .= $htmlTableFoot;
-    $tableLATEX .= $latexTableFoot;
-
-    $tableHTML =~ s{@}{\@NOSPAM.}sg; 
-    $tableHTML =~ s{&ccaron;}{&#x010d;}sg; 
-    $tableHTML =~ s{&rcaron;}{&#x0159;}sg; 
-    
-    $tableLATEX =~ s/&aacute;/\\'{a}/sg;
-    $tableLATEX =~ s/&auml;/\\"{a}/sg;
-    $tableLATEX =~ s/&ouml;/\\"{o}/sg;
-    $tableLATEX =~ s/&oslash;/\\o{}/sg;
-    $tableLATEX =~ s/&ccaron;/\\v{c}/sg;
-    $tableLATEX =~ s/&rcaron;/\\v{r}/sg;
-    $tableLATEX =~ s/_/\\_/sg;
-    
-    $output =~ s{\$information_table}{$tableHTML$tableLATEX};
-
-    ##}}}
-
-    # Replace the other symbols in the template by the expected
-    # information. ##{{{
-    #
-    $output =~ s{\$version}{$doxversion};
-
-    $output =~ s{\$translator_report_file_name}
-                {<code>doxygen/doc/$ftranslatortxt</code>}x;
-
-    $output =~ s{\$translator_report_link}
-                {<a href=\"../doc/$ftranslatortxt\">
-                 <code>doxygen/doc/$ftranslatortxt</code></a>}x;
-    ##}}}
-
-    # Replace the introduction notice in the output. #{{{
-    #
-    $output =~ s{<notice>.+?</notice>}
-{Warning: this file was generated from the $flangtpl template
- *          and the $fmaintainers files by the $0 script.  
- *
- *          Do not edit this file.  Edit the above mentioned files!}sx;
-    ##}}}
-
-    # Return the content of the generated output file.
-    #
-    return $output;
-}
-"""
-    return output
-    
-    
-################################################################# Body
-if __name__ == '__main__':
-    # Get the reference to the initialized dictionary with the shared info. 
-    info = GetInfo()
-    
-    # File with the translator base class must be present.  Exit otherwise,
-    # but be kind to those who already have the documentation
-    # generated by this script ready, but who do not have sources. 
-    # If no 'flangdoc' is present, copy the template to it.
-    if not os.path.isfile(os.path.join(info['srcdir'], 'translator.h')):
-        sys.stderr.write(('\nThe %(scriptname)s warning:\n' +
-                         '\tThe translator.h not found in %(srcdir)s.\n' +
-                         '\tThe %(ftranslatortxtname)s will not be ' +
-                         "generated (you don't need it).\n") % info)
-
-        # $flangdoc is not present, copy the template to it, and do the simplified
-        # replacement of the markers inside the template. Generate the warning
-        # about 'flangdoc' content.
-        if not os.path.isfile(info['flangdoc']):
-            CopyTemplateToLanguageDoc();
-            sys.stderr.write(('\nThe %(scriptname)s warning:\n' +
-                  "\tThe %(flangdoc)s not found in the '%(docdir)s' directory.\n" +
-                  '\tThe %(flangtpl)s template content copied into it.\n' +
-                  '\tAs the sources are not available, some information\n' +
-                  '\tcould not be extracted and inserted into %(flangdoc)s.\n') % info)
-
-        # Exit as if nothing happened.
-        sys.exit(0)
-
-    # Create the list of all translator_xxxx.h file names. If the script was
-    # given a list of languages (two letters for each language), then fill
-    # the list only by the translator files for the languages.
-    directory = info['srcdir']
-    langlist = info['languages']
-    if langlist:
-        files = [os.path.join(directory, 'translator_%s.h' % lang)
-                 for lang in langlist
-                 if os.path.isfile(os.path.join(directory, 
-                                                'translator_%s.h' % lang))]
-    else:
-        rex_tr = re.compile(r'^translator_\w\w\w?\.h$', re.IGNORECASE)
-        files = [os.path.join(directory, f) 
-                 for f in os.listdir(directory) 
-                 if os.path.isfile(os.path.join(directory, f)) 
-                    and rex_tr.match(f)]
-
-    # Get only the pure virtual methods from the Translator class
-    # into a list for later testing present/not present.
-    expected_lst = GetPureVirtualFrom(os.path.join(info['srcdir'], 
-                                                   'translator.h'))
-    # Fill the 'required_methods' dictionary for unified form 
-    # of the prototypes.
-    required = info['required_methods']
-    for method in expected_lst:
-        prototype = StripArgIdentifiers(method)
-        required[prototype] = True
-
-    # The details for translators will be collected into the output
-    # string. If some details are listed for a translator, the flag
-    # will be set to produce possible warning to the list of
-    # up-to-date translators.
-    output = ''
-    details = {}
-    
-    # Collect base classes of translators in the hash. CB stands
-    # for Class and Base.
-    cb = {}
-        
-    # Loop through all translator files.  Extract the implemented
-    # virtual methods and compare it with the requirements. Prepare
-    # the output.
-    rex_trAdapter = re.compile(r'^TranslatorAdapter_')
-    rex_trEN = re.compile(r'^TranslatorEnglish$')
-    
-    for filename in files:
-        # Get the information from the sources.  Remember the base
-        # class for each of the classes.  Clear the flag for
-        # details for the class.
-        finfo = GetInfoFrom(filename)
-        (class_, base_) = finfo[0:2]
-        cb[class_] = base_
-        details[class_] = False
-        
-        # Set the value of the required methods to 1 (true).  Let
-        # this indicate that the method was not defined in the
-        # translator class.
-        for method in required:
-            required[method] = True
-
-        # Loop through all items and compare the prototypes. Mark
-        # the implemented method and collect the old ones.
-        old_methods = []
-        for method in finfo[2:]:
-            # Get only the necessary form of the prototype.
-            prototype = StripArgIdentifiers(method)
-            
-            # Mark as recognized when the prototype is required.
-            # Otherwise, remember it as old method which is
-            # implemented, but not required.
-            if (required.has_key(prototype)): 
-                required[prototype] = False       # satisfaction
+            # Get the next character. Read next line first, if necessary.
+            if pos < linelen:
+                c = line[pos]
             else:
-                old_methods.append(method)
-        
-        # Loop through the list of expected methods and collect 
-        # the missing (new) methods.  Do this only when it derives
-        # from Translator or TranslatorAdapter classes (i.e. ignore
-        # any unusual kind of TranslatorXxxx implementation). 
-        # Accept also deriving from TranslatorEnglish, that can
-        # be done by doxygen developers to solve problems with
-        # some really outdated translators.
-        missing_methods = []
-        if rex_trAdapter.match(base_) or rex_trEN.match(base_):
-            
-            for method in expected_lst:
-                # Get the stripped version of the prototype.
-                prototype = StripArgIdentifiers(method) 
+                lineNo += 1
+                line = f.readline()
+                linelen = len(line)
+                pos = 0
+                if line == '':   # eof
+                    status = 777
+                else:
+                    c = line[pos]
                 
-                # If the prototype is stored in the required
-                # table, and if it was not marked as implemented,
-                # then it should be.  It is a missing method.
-                #try:
-                if required[prototype]:
-                    missing_methods.append(method)
+            # Consume the character based on the status
 
-        # The detailed output will be produced only when it is needed.
-        if old_methods or missing_methods or rex_trAdapter.match(base_):
-            output += '\n\n\n'
-            output += '%s (%s)\n%s\n' % (class_, base_, '-' * len(class_))
-            
-            if rex_trEN.match(base_):
-                output += '''
-This translator is implemented via deriving from the English translator.
-This should be done only in the case when the language maintainer
-or the doxygen developers need to update some really old-dated translator.
-Otherwise, deriving from the translator adapter classes should be used
-for obsolete translators.  If you still want some texts to be in English
-copy the sources of the English translator.
-
-The obsolete and missing method lists (below) reflect what have to be done
-to derive directly from the Translator class (i.e. to reach up-to-date status).
-'''
-
-            elif not rex_trAdapter.match(base_):
-                output += '''
-This is some unusual implementation of the translator class.  It is derived
-from the %s base class. The usual translator class derives
-or from the Translator class or from some TranslatorAdapter_x_x_x classes.
-Because of that, nothing can be guessed about missing or obsolete methods.
-''' % base_
+            if status == 0:     # basic status
                 
-            if missing_methods:
-                output += '\nMissing methods (should be implemented):\n\n'
-                for m in missing_methods:
-                    output += '  ' + m + '\n'
-
-            if old_methods:
-                output += '\nObsolete methods (should be removed):\n\n'
-                old_methods.sort()
-                for m in old_methods:
-                    output += '  ' + m + '\n'
+                # This is the initial status. If tokenId is set, yield the
+                # token here and only here (except when eof is found).
+                # Initialize the token variables after the yield.
+                if tokenId:
+                    # If it is an unknown item, it can still be recognized
+                    # here. Keywords and separators are the example.
+                    if tokenId == 'unknown': 
+                        if tokenDic.has_key(tokenStr):
+                            tokenId = tokenDic[tokenStr]
+                        elif tokenStr.isdigit():
+                            tokenId = 'num'
+                        elif rexId.match(tokenStr):
+                            tokenId = 'id'
+                        else:
+                            msg = '\aWarning: unknown token "' + tokenStr + '"'
+                            msg += '\tfound on line %d' % tokenLineNo 
+                            msg += 'in "' + self.fname + '".\n'
+                            sys.stderr.write(msg)
+                    
+                    yield (tokenId, tokenStr, tokenLineNo)
+                    tokenId = None
+                    tokenStr = ''
+                    tokenLineNo = 0 
                 
-            # Some details were listed, set the details flag for the class.
-            details[class_] = 1;
+                # Now process the character. When we just skip it (spaces),
+                # stay in this status. All characters that will be part of
+                # some token cause moving to the specific status. And only
+                # when moving to the status == 0 (or the final state 777), 
+                # the token is yielded. With respect to that the automaton
+                # behaves as Moore's one (output bound to status). When 
+                # collecting tokens, the automaton is the Mealy's one 
+                # (actions bound to transitions).
+                if c.isspace():
+                    pass                 # just skip whitespace characters
+                elif c == '/':           # Possibly comment starts here, but
+                    tokenId = 'unknown'  # it could be only a slash in code.
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    status = 1
+                elif c == '#':
+                    tokenId = 'preproc'  # preprocessor directive
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    status = 5
+                elif c == '"':           # string starts here
+                    tokenId = 'string'
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    status = 6
+                elif c == "'":           # char literal starts here
+                    tokenId = 'charlit'
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    status = 8
+                elif tokenDic.has_key(c):  # known one-char token 
+                    tokenId = tokenDic[c]
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    # stay in this state to yield token immediately
+                else:
+                    tokenId = 'unknown'  # totally unknown
+                    tokenStr = c
+                    tokenLineNo = lineNo
+                    status = 333
+                
+                pos += 1                 # move position in any case
+                    
+            elif status == 1:            # possibly a comment
+                if c == '/':             # ... definitely the C++ comment
+                    tokenId = 'comment'
+                    tokenStr += c
+                    pos += 1            
+                    status = 2
+                elif c == '*':           # ... definitely the C comment
+                    tokenId = 'comment'
+                    tokenStr += c
+                    pos += 1            
+                    status = 3
+                else:
+                    status = 0           # unrecognized, don't move pos
+                    
+            elif status == 2:            # inside the C++ comment
+                if c == '\n':            # the end of C++ comment
+                    status = 0           # yield the token
+                else:
+                    tokenStr += c        # collect the C++ comment
+                pos += 1
+                
+            elif status == 3:            # inside the C comment
+                if c == '*':             # possibly the end of the C comment
+                    tokenStr += c
+                    status = 4
+                else:
+                    tokenStr += c        # collect the C comment
+                pos += 1
 
+            elif status == 4:            # possibly the end of the C comment
+                if c == '/':             # definitely the end of the C comment
+                    tokenStr += c
+                    status = 0           # yield the token
+                elif c == '*':           # more stars inside the comment
+                    tokenStr += c
+                else:
+                    tokenStr += c        # this cannot be the end of comment
+                    status = 3
+                pos += 1
 
-    # Generate the ASCII output file.
-    fout_name = info['ftranslatortxt']
-    
-    # Open it first, and output the version information.
-    fout = file(fout_name, 'w')
-    fout.write('(version %s)\n\n' % info['doxversion'])
+            elif status == 5:            # inside the preprocessor directive
+                if c == '\n':            # the end of the preproc. command
+                    status = 0           # yield the token
+                else:
+                    tokenStr += c        # collect the preproc
+                pos += 1
+                
+            elif status == 6:            # inside the string
+                if c == '\\':            # escaped char inside the string
+                    tokenStr += c
+                    status = 7
+                elif c == '"':           # end of the string
+                    tokenStr += c
+                    status = 0
+                else:
+                    tokenStr += c        # collect the chars of the string
+                pos += 1
+                
+            elif status == 7:            # escaped char inside the string
+                tokenStr += c            # collect the char of the string
+                status = 6
+                pos += 1
+                
+            elif status == 8:            # inside the char literal
+                tokenStr += c            # collect the char of the literal
+                status = 9
+                pos += 1
+                
+            elif status == 9:            # end of char literal expected
+                if c == "'":             # ... and found
+                    tokenStr += c
+                    status = 0
+                    pos += 1
+                else:
+                    tokenId = 'error'    # end of literal was expected
+                    tokenStr += c
+                    status = 0
 
-    # List the supported languages.
-    (numlang, langlst, langstr) = GetLanguagesInfo(cb)
-    fout.write('Doxygen supports the following (' + str(numlang) +
-               ') languages (sorted alphabetically):\n\n')
-    fout.write(langstr + '.\n')
-    
-    # If there are up-to-date translators, list them.
-    L = [k for k in cb if cb[k] == 'Translator']
-    L.sort()
-    
-    if L:
-        fout.write('\n' + '-' * 70 + '\n')
-        fout.write('''The \
-following translator classes are up-to-date (sorted alphabetically).
-This means that they derive from the Translator class.  Anyway, there still
-may be some details listed even for the up-to-date translators.
-Please, check the text below if the translator is marked so.
+            elif status == 333:          # start of the unknown token
+                if c.isspace():
+                    pos += 1
+                    status = 0           # tokenId may be determined later
+                elif tokenDic.has_key(c):  # separator, don't move pos
+                    status = 0
+                else:
+                    tokenStr += c        # collect
+                    pos += 1
+                    
+        # We should have finished in the final status. If some token 
+        # have been extracted, yield it first.
+        assert(status == 777)
+        if tokenId:
+            yield (tokenId, tokenStr, tokenLineNo)
+            tokenId = None
+            tokenStr = ''
+            tokenLineNo = 0 
 
-''')
-        for tr in L: 
-            # Print the class name.  If some details were listed for 
-            # the translator class, add a notice.
-            fout.write('  ' + tr)
-            if details[tr]:
-                fout.write('\t-- see details below in the report') 
-            fout.write('\n')
+        # The file content is processed. Close the file. Then always yield 
+        # the eof token.
+        f.close()
+        yield ('eof', None, None)
             
-    # If there are obsolete translators, list them.
-    L = [k for k in cb if rex_trAdapter.match(cb[k])]
-    L.sort()
-
-    if L:
-        fout.write('\n' + '-' * 70 + '\n')
-        fout.write('''The \
-following translator classes are obsolete (sorted alphabetically).
-This means that they derive from some of the adapter classes.
-
-''')
-        for tr in L:
-            fout.write('  %s\t(%s)\n' % (tr, cb[tr]))        
-
-    # If there are translators derived from TranslatorEnglish, list them
-    # and name them as really obsolete.
-    L = [k for k in cb if cb[k] == 'TranslatorEnglish']
-    L.sort()
-    if L:
-        fout.write('\n' + '-' * 70 + '\n')
-        fout.write('''The \
-following translator classes are implemented via deriving
-from the English translator.  This should be done only in the case
-when the language maintainer or the doxygen developers need to update
-some really outdated translator.  Otherwise, deriving from
-the translator adapter classes should be prefered for obsolete translators.
-See details below in the report.
-
-''')
-        for tr in L:
-            fout.write('  %s\t(%s)\n' % (tr, cb[tr]))        
-
-    # If there are other translators, list them. #{{{
-    #
-    L = [k for k in cb 
-         if not rex_trAdapter.match(cb[k])
-            and cb[k] != 'TranslatorEnglish'
-            and cb[k] != 'Translator'
-        ]
-    L.sort()
-    
-    if L:
-        fout.write('\n' + '-' * 70 + '\n')
-        fout.write('''The \
-following translator classes are somehow different
-(sorted alphabetically).  This means that they do not derive from
-the Translator class, nor from some of the adapter classes,
-nor from the TranslatorEnglish.  Nothing can be guessed about the methods.
-
-''')
-        for tr in L:
-            fout.write('  %s\t(%s)\n' % (tr, cb[tr]))        
-
-    # List all the translator adapter classes to show for which versions
-    # the adapters had to be created.  Show, how many and what new methods
-    # are implemented by the adapters.
-    #
-    fout.write('\n' + '-' * 70 + '\n')
-    fout.write('''The \
-following translator adapter classes are implemented -- the older (with
-lower number) are always derived from the newer. They implement the
-listed required methods. Notice that some versions of doxygen did not
-introduce any changes related to the language translators.  From here you may
-guess how much work should be done to update your translator:
-
-''')
-    adapter_info = GetAdapterClassesInfo(required)
-    
-    for ad in adapter_info:
-        fout.write('  %s\n' % ad)
-    
-    # List the methods that are expected to be implemented.
-    fout.write('\n' + '-' * 70 + '\n')
-    fout.write('''Localized \
-translators are expected to implement the following methods
-(prototypes sorted aplhabetically):
-
-''')
-
-    expected_lst.sort()
-    for m in expected_lst:
-        fout.write('%s\n' % m)
-
-    # If there are some details for the translators, show them.
-    if output != '':
-        fout.write('\n\n' + '=' * 70 + '\n')
-        fout.write('Details related to specific translator classes follow.\n')
-        fout.write(output + '\n')
-
-    # Close the ASCII output file
-    fout.close()
         
-    # Generate the same using the original perl script.
-    os.system('translator.pl')    
+    def __collectClassInfo(self, tokenIterator):
+        """Collect the information about the class and base class.
         
-    # Generate the language.doc file.  
-    filename = os.path.join(info['docdir'], info['flangdoc'])
-    f = file(filename, 'w')
-    f.write(GenerateLanguageDoc(cb))
-    f.close()
+        The tokens including the opening left curly brace of the class are
+        consumed."""
+        
+        status = 0  # initial state
+        
+        while status != 777:   # final state
+            
+            # Always assume that the previous tokens were processed. Get
+            # the next one.
+            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
 
-    sys.exit(0)
+            # Process the token and never return back.
+            if status == 0:    # waiting for the 'class' keyword.
+                if tokenId == 'class':
+                    status = 1
+                    
+            elif status == 1:  # expecting the class identification
+                if tokenId == 'id':
+                    self.classId = tokenStr
+                    status = 2
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+            elif status == 2:  # expecting the curly brace or base class info
+                if tokenId == 'lcurly':
+                    status = 777        # correctly finished
+                elif tokenId == 'colon':
+                    status = 3
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 3:  # expecting the 'public' in front of base class id
+                if tokenId == 'public':
+                    status = 4
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+            elif status == 4:  # expecting the base class id
+                if tokenId == 'id':
+                    self.baseClassId = tokenStr
+                    status = 5
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+            elif status == 5:  # expecting the curly brace and quitting
+                if tokenId == 'lcurly':
+                    status = 777        # correctly finished
+                elif tokenId == 'comment':
+                    pass
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+        # Extract the status of the TranslatorXxxx class. The readable form
+        # will be used in reports the status form is a string that can be
+        # compared lexically (unified length, padding with zeros, etc.).
+        if self.baseClassId:
+            lst = self.baseClassId.split('_')
+            if lst[0] == 'Translator':
+                self.readableStatus = 'up-to-date'
+                self.status = ''
+            elif lst[0] == 'TranslatorAdapter':
+                self.status = lst[1] + '.' + lst[2]
+                self.readableStatus = self.status
+                if len(lst) > 3:        # add the last part of the number
+                    self.status += '.' + ('%02d' % int(lst[3]))
+                    self.readableStatus += '.' + lst[3]
+                else:
+                    self.status += '.00'
+            elif lst[0] == 'TranslatorEnglish':
+                # Obsolete or Based on English.
+                if self.classId[-2:] == 'En':
+                    self.readableStatus = 'English based'
+                    self.status = 'En'
+                else:
+                    self.readableStatus = 'obsolete'
+                    self.status = '0.0.00'
+                    
+            # Check whether status was set, or set 'strange'.
+            if self.status == None: 
+                self.status = 'strange'
+            if not self.readableStatus: 
+                self.readableStatus = 'strange'
+                
+            # Extract the name of the language and the readable form.
+            self.lang = self.classId[10:]  # without 'Translator'
+            if self.lang == 'Brazilian':
+                self.langReadable = 'Brazilian Portuguese'
+            elif self.lang == 'Chinesetraditional':
+                self.langReadable = 'Chinese Traditional'
+            else:
+                self.langReadable = self.lang
+                
+                
+
+    def __unexpectedToken(self, status, tokenId, tokenLineNo):
+        """Reports unexpected token and quits with exit code 1."""
+    
+        import inspect
+        calledFrom = inspect.stack()[1][3]
+        msg = "\a\nUnexpected token '%s' on the line %d in '%s'.\n"
+        msg = msg % (tokenId, tokenLineNo, self.fname)
+        msg += 'status = %d in %s()\n' % (status, calledFrom)
+        sys.stderr.write(msg)
+        sys.exit(1)
+        
+                
+    def collectPureVirtualPrototypes(self):
+        """Returns dictionary 'unified prototype' -> 'full prototype'.
+
+        The method is expected to be called only for the translator.h. It
+        extracts only the pure virtual method and build the dictionary where
+        key is the unified prototype without argument identifiers."""
+        
+        # Prepare empty dictionary that will be returned.
+        resultDic = {}
+        
+        # Start the token generator which parses the class source file.
+        tokenIterator = self.__tokenGenerator()
+
+        # Collect the class and the base class identifiers.
+        self.__collectClassInfo(tokenIterator)
+        assert(self.classId == 'Translator')
+        
+        # Let's collect readable form of the public virtual pure method
+        # prototypes in the readable form -- as defined in translator.h.
+        # Let's collect also unified form of the same prototype that omits
+        # everything that can be omitted, namely 'virtual' and argument
+        # identifiers.
+        prototype = ''    # readable prototype (with everything)
+        uniPrototype = '' # unified prototype (without arg. identifiers)
+        
+        # Collect the pure virtual method prototypes. Stop on the closing
+        # curly brace followed by the semicolon (end of class).
+        status = 0
+        curlyCnt = 0      # counter for the level of curly braces
+
+        # Loop until the final state 777 is reached. The errors are processed
+        # immediately. In this implementation, it always quits the application.
+        while status != 777:     
+            
+            # Get the next token.
+            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            
+            if status == 0:      # waiting for 'public:'
+                if tokenId == 'public':
+                    status = 1
+                
+            elif status == 1:    # colon after the 'public'
+                if tokenId == 'colon':
+                    status = 2
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+            elif status == 2:    # waiting for 'virtual'
+                if tokenId == 'virtual':
+                    prototype = tokenStr  # but not to unified prototype
+                    status = 3
+                elif tokenId == 'comment':
+                    pass
+                elif tokenId == 'rcurly':
+                    status = 11         # expected end of class
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 3:    # return type of the method expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype = tokenStr  # start collecting the unified prototype
+                    status = 4
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 4:    # method identifier expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 5
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 5:    # left bracket of the argument list expected
+                if tokenId == 'lpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 6
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 6:    # collecting arguments of the method
+                if tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                elif tokenId == 'const':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 12
+                elif tokenId == 'id':           # type identifier
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 7:    # assignment expected or left curly brace
+                if tokenId == 'assign':
+                    status = 8
+                elif tokenId == 'lcurly':
+                    curlyCnt = 1      # method body entered 
+                    status = 10
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 8:    # zero expected
+                if tokenId == 'num' and tokenStr == '0':
+                    status = 9
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 9:    # after semicolon, produce the dic item
+                if tokenId == 'semic':
+                    assert(not resultDic.has_key(uniPrototype))
+                    resultDic[uniPrototype] = prototype
+                    status = 2
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 10:   # consuming the body of the method
+                if tokenId == 'rcurly':
+                    curlyCnt -= 1
+                    if curlyCnt == 0:
+                        status = 2     # body consumed
+                elif tokenId == 'lcurly':
+                    curlyCnt += 1
+                        
+            elif status == 11:   # probably the end of class
+                if tokenId == 'semic':
+                    status = 777
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 12:   # type id for argument expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 13:   # namespace qualification or * or & expected
+                if tokenId == 'colon':        # was namespace id
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 14
+                elif tokenId == 'star' or tokenId == 'amp':  # pointer or reference
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 16
+                elif tokenId == 'id':         # argument identifier
+                    prototype += ' ' + tokenStr
+                    # don't put this into unified prototype
+                    status = 17
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 14:   # second colon for namespace:: expected
+                if tokenId == 'colon':        
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 15
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 15:   # type after namespace:: expected
+                if tokenId == 'id':        
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 16:   # argument identifier expected
+                if tokenId == 'id':        
+                    prototype += ' ' + tokenStr
+                    # don't put this into unified prototype
+                    status = 17
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 17:   # comma or ')' after argument identifier expected
+                if tokenId == 'comma':        
+                    prototype += ', '
+                    uniPrototype += ', '
+                    status = 6
+                elif tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+ 
+        # Eat the rest of the source to cause closing the file.
+        while tokenId != 'eof':
+            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            
+        # Return the resulting dictionary with 'uniPrototype -> prototype'.
+        return resultDic
+            
+        
+    def __collectPublicMethodPrototypes(self, tokenIterator):    
+        """Collects prototypes of public methods and fills self.prototypeDic.
+        
+        The dictionary is filled by items: uniPrototype -> prototype. 
+        The method is expected to be called only for TranslatorXxxx classes,
+        i.e. for the classes that implement translation to some language.
+        It assumes that the openning curly brace of the class was already
+        consumed. The source is consumed until the end of the class. 
+        The caller should consume the source until the eof to cause closing 
+        the source file."""
+        
+        assert(self.classId != 'Translator')
+        assert(self.baseClassId != None)
+
+        # The following finite automaton slightly differs from the one
+        # inside self.collectPureVirtualPrototypes(). It produces the
+        # dictionary item just after consuming the body of the method
+        # (transition from from state 10 to state 2). It also does not allow
+        # definitions of public pure virtual methods, except for
+        # TranslatorAdapterBase (states 8 and 9). Argument identifier inside
+        # method argument lists can be omitted or commented.
+        #
+        # Let's collect readable form of all public method prototypes in 
+        # the readable form -- as defined in the source file.
+        # Let's collect also unified form of the same prototype that omits
+        # everything that can be omitted, namely 'virtual' and argument
+        # identifiers.
+        prototype = ''    # readable prototype (with everything)
+        uniPrototype = '' # unified prototype (without arg. identifiers)
+        
+        # Collect the method prototypes. Stop on the closing
+        # curly brace followed by the semicolon (end of class).
+        status = 0
+        curlyCnt = 0      # counter for the level of curly braces
+
+        # Loop until the final state 777 is reached. The errors are processed
+        # immediately. In this implementation, it always quits the application.
+        while status != 777:     
+            
+            # Get the next token.
+            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            
+            if status == 0:      # waiting for 'public:'
+                if tokenId == 'public':
+                    status = 1
+                elif tokenId == 'eof':  # non-public things until the eof
+                    status = 777
+                
+            elif status == 1:    # colon after the 'public'
+                if tokenId == 'colon':
+                    status = 2
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                
+            elif status == 2:    # waiting for 'virtual' (can be omitted)
+                if tokenId == 'virtual':
+                    prototype = tokenStr  # but not to unified prototype
+                    status = 3
+                elif tokenId == 'id':     # 'virtual' was omitted
+                    prototype = tokenStr
+                    uniPrototype = tokenStr  # start collecting the unified prototype
+                    status = 4
+                elif tokenId == 'comment':
+                    pass
+                elif tokenId == 'protected' or tokenId == 'private':
+                    status = 0
+                elif tokenId == 'rcurly':
+                    status = 11         # expected end of class
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 3:    # return type of the method expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype = tokenStr  # start collecting the unified prototype
+                    status = 4
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 4:    # method identifier expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 5
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 5:    # left bracket of the argument list expected
+                if tokenId == 'lpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 6
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 6:    # collecting arguments of the method
+                if tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                elif tokenId == 'const':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 12
+                elif tokenId == 'id':           # type identifier
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 7:    # left curly brace expected 
+                if tokenId == 'lcurly':
+                    curlyCnt = 1      # method body entered 
+                    status = 10
+                elif tokenId == 'comment':
+                    pass
+                elif tokenId == 'assign': # allowed only for TranslatorAdapterBase
+                    assert(self.classId == 'TranslatorAdapterBase')
+                    status = 8
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 8:    # zero expected (TranslatorAdapterBase)
+                assert(self.classId == 'TranslatorAdapterBase')
+                if tokenId == 'num' and tokenStr == '0':
+                    status = 9
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                    
+            elif status == 9:    # after semicolon (TranslatorAdapterBase)
+                assert(self.classId == 'TranslatorAdapterBase')
+                if tokenId == 'semic':
+                    status = 2
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+
+            elif status == 10:   # consuming the body of the method, then dic item
+                if tokenId == 'rcurly':
+                    curlyCnt -= 1
+                    if curlyCnt == 0:
+                        # Insert new dictionary item.
+                        assert(not self.prototypeDic.has_key(uniPrototype))
+                        self.prototypeDic[uniPrototype] = prototype
+                        status = 2     # body consumed
+                elif tokenId == 'lcurly':
+                    curlyCnt += 1
+            elif status == 11:   # probably the end of class
+                if tokenId == 'semic':
+                    status = 777
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 12:   # type id for argument expected
+                if tokenId == 'id':
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 13:   # :: or * or & or id or ) expected
+                if tokenId == 'colon':        # was namespace id
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 14
+                elif tokenId == 'star' or tokenId == 'amp':  # pointer or reference
+                    prototype += ' ' + tokenStr
+                    uniPrototype += ' ' + tokenStr
+                    status = 16
+                elif tokenId == 'id':         # argument identifier
+                    prototype += ' ' + tokenStr
+                    # don't put this into unified prototype
+                    status = 17
+                elif tokenId == 'comment':    # probably commented-out identifier
+                    prototype += tokenStr
+                elif tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                elif tokenId == 'comma':        
+                    prototype += ', '
+                    uniPrototype += ', '
+                    status = 6
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 14:   # second colon for namespace:: expected
+                if tokenId == 'colon':        
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 15
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 15:   # type after namespace:: expected
+                if tokenId == 'id':        
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 13
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 16:   # argument identifier or ) expected
+                if tokenId == 'id':        
+                    prototype += ' ' + tokenStr
+                    # don't put this into unified prototype
+                    status = 17
+                elif tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                elif tokenId == 'comment':
+                    prototype += tokenStr
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+            elif status == 17:   # comma or ')' after argument identifier expected
+                if tokenId == 'comma':        
+                    prototype += ', '
+                    uniPrototype += ', '
+                    status = 6
+                elif tokenId == 'rpar':
+                    prototype += tokenStr
+                    uniPrototype += tokenStr
+                    status = 7
+                else:
+                    self.__unexpectedToken(status, tokenId, tokenLineNo)
+                   
+        
+
+    def collectAdapterPrototypes(self):
+        """Returns the dictionary of prototypes implemented by adapters.
+        
+        It is created to process the translator_adapter.h. The returned 
+        dictionary has the form: unifiedPrototype -> (version, classId)
+        thus by looking for the prototype, we get the information what is 
+        the newest (least adapting) adapter that is sufficient for 
+        implementing the method."""            
+
+        # Start the token generator which parses the class source file.
+        assert(os.path.split(self.fname)[1] == 'translator_adapter.h')
+        tokenIterator = self.__tokenGenerator()
+
+        # Get the references to the involved dictionaries.
+        reqDic = self.manager.requiredMethodsDic
+
+        # Create the empty dictionary that will be returned.
+        adaptDic = {}
+        
+        
+        # Loop through the source of the adapter file until no other adapter
+        # class is found.
+        while True:
+            try:
+                # Collect the class and the base class identifiers.
+                self.__collectClassInfo(tokenIterator)
+
+                # Extract the comparable version of the adapter class.
+                # Note: The self.status as set by self.__collectClassInfo()
+                # contains similar version, but is related to the base class,
+                # not to the class itself.
+                lst = self.classId.split('_')
+                version = ''
+                if lst[0] == 'TranslatorAdapter': # TranslatorAdapterBase otherwise
+                    version = lst[1] + '.' + lst[2]
+                    if len(lst) > 3:        # add the last part of the number
+                        version += '.' + ('%02d' % int(lst[3]))
+                    else:
+                        version += '.00'
+                
+                # Collect the prototypes of implemented public methods.
+                self.__collectPublicMethodPrototypes(tokenIterator)
+        
+                # For the required methods, update the dictionary of methods 
+                # implemented by the adapter.
+                for protoUni in self.prototypeDic:
+                    if reqDic.has_key(protoUni):
+                        # This required method will be marked as implemented
+                        # by this adapter class. This implementation assumes 
+                        # that newer adapters do not reimplement any required
+                        # methods already implemented by older adapters.
+                        assert(not adaptDic.has_key(protoUni))
+                        adaptDic[protoUni] = (version, self.classId)
+
+                # Clear the dictionary object and the information related
+                # to the class as the next adapter class is to be processed.
+                self.prototypeDic.clear()
+                self.classId = None
+                self.baseClassId = None
+                
+            except StopIteration:
+                break
+
+        # Return the result dictionary.
+        return adaptDic    
+
+        
+    def processing(self):
+        """Processing of the source file -- only for TranslatorXxxx classes."""            
+
+        # Start the token generator which parses the class source file.
+        tokenIterator = self.__tokenGenerator()
+
+        # Collect the class and the base class identifiers.
+        self.__collectClassInfo(tokenIterator)
+        assert(self.classId != 'Translator')
+        assert(self.classId[:17] != 'TranslatorAdapter')
+        
+        # Collect the prototypes of implemented public methods.
+        self.__collectPublicMethodPrototypes(tokenIterator)
+        
+        # Eat the rest of the source to cause closing the file.
+        while True:
+            try:
+                t = tokenIterator.next()
+            except StopIteration:
+                break
+
+        # Shorthands for the used dictionaries.
+        reqDic = self.manager.requiredMethodsDic
+        adaptDic = self.manager.adaptMethodsDic
+        myDic = self.prototypeDic
+        
+        # Build the list of obsolete methods.
+        self.obsoleteMethods = []
+        for p in myDic:
+            if not reqDic.has_key(p):
+                self.obsoleteMethods.append(p)
+        
+        # Build the list of missing methods and the list of implemented
+        # required methods.
+        self.missingMethods = []
+        self.implementedMethods = []
+        for p in reqDic:
+            if myDic.has_key(p):
+                self.implementedMethods.append(p)
+            else:
+                self.missingMethods.append(p)
+
+        # Check whether adapter must be used or suggest the newest one.
+        # Change the status and set the note accordingly.
+        if self.baseClassId != 'Translator':
+            if not self.missingMethods: 
+                self.note = 'Change the base class to Translator.'
+                self.status = ''
+                self.readableStatus = 'up-to-date'
+            elif self.baseClassId != 'TranslatorEnglish':
+                # The translator uses some of the adapters.
+                # Look at the missing methods and check what adapter 
+                # implements them. Remember the one with the lowest version.
+                adaptMinVersion = '9.9.99'
+                adaptMinClass = 'TranslatorAdapter_9_9_99'
+                for uniProto in self.missingMethods:
+                    if adaptDic.has_key(uniProto):
+                        version, cls = adaptDic[uniProto]
+                        if version < adaptMinVersion:
+                            adaptMinVersion = version
+                            adaptMinClass = cls
+                
+                # Test against the current status -- preserve the self.status.
+                # Possibly, the translator implements enough methods to 
+                # use some newer adapter.
+                status = self.status
+                    
+                # If the version of the used adapter is smaller than
+                # the required, set the note and update the status as if
+                # the newer adapter was used.
+                if adaptMinVersion > status:
+                    self.note = 'Change the base class to %s.' % adaptMinClass
+                    self.status = adaptMinVersion
+                    self.adaptMinClass = adaptMinClass
+                    self.readableStatus = adaptMinVersion # simplified
+        
+        # If everything seems OK, but there are obsolete methods, set 
+        # the note to clean-up source. This note will be used only when
+        # the previous code did not set another note (priority).
+        if not self.note and self.status == '' and self.obsoleteMethods:
+            self.note = 'Remove the obsolete methods (never used).'
+                
+    def report(self, fout):
+        """Returns the report part for the source as a multiline string.
+        
+        No output for up-to-date translators without problem."""
+        
+        # If there is nothing to report, return immediately.
+        if self.status == '' and not self.note:
+            return
+            
+        # Report the number of not implemented methods.
+        fout.write('\n\n\n')
+        fout.write(self.classId + '   (' + self.baseClassId + ')')
+        if self.missingMethods:
+            fout.write('  %d' % len(self.missingMethods))
+            fout.write(' methods to implement')
+        fout.write('\n' + '-' * len(self.classId))
+        
+        # Write the info about the implemented required methods.
+        fout.write('\n\n  Implements %d' % len(self.implementedMethods))
+        fout.write(' of the required methods.')
+        
+        # Report the missing method, but only when it is not English-based
+        # translator.
+        if self.missingMethods and self.status != 'En':
+            fout.write('\n\n  Missing methods (should be implemented):\n')
+            reqDic = self.manager.requiredMethodsDic
+            for p in self.missingMethods:
+                fout.write('\n    ' + reqDic[p])
+
+        # Always report obsolete methods.
+        if self.obsoleteMethods:
+            fout.write('\n\n  Obsolete methods (should be removed, never used):\n')
+            myDic = self.prototypeDic
+            for p in self.obsoleteMethods:
+                fout.write('\n    ' + myDic[p])
+
+        # For English-based translator, report the implemented methods.
+        if self.status == 'En' and self.implementedMethods:
+            fout.write('\n\n  This English-based translator implements ')
+            fout.write('the following methods:\n')
+            reqDic = self.manager.requiredMethodsDic
+            for p in self.implementedMethods:
+                fout.write('\n    ' + reqDic[p])
+
+                
+    def getmtime(self):
+        """Returns the last modification time of the source file."""
+        assert(os.path.isfile(self.fname))
+        return os.path.getmtime(self.fname)
+        
+                
+class TrManager:
+    """Collects basic info and builds subordinate Transl objects."""
+    
+    def __init__(self):                                
+        """Determines paths, creates and initializes structures.
+        
+        The arguments of the script may explicitly say what languages should 
+        be processed. Write the two letter identifications that are used
+        for composing the source filenames, so...
+            
+            python translator.py cz
+            
+        this will process only translator_cz.h source.
+        """
+        
+        # Determine the path to the script and the absolute path to the
+        # Doxygen's root subdirectory.
+        self.script = os.path.abspath(sys.argv[0]) 
+        self.script_path, self.script_name = os.path.split(self.script) 
+        self.script_path = os.path.abspath(self.script_path)
+        self.doxy_path = os.path.abspath(os.path.join(self.script_path, '..'))    
+        
+        # Get the explicit arguments of the script.
+        self.script_argLst = sys.argv[1:]
+        
+        # Build the path names based on the Doxygen's root knowledge.
+        self.doc_path = os.path.join(self.doxy_path, 'doc')
+        self.src_path = os.path.join(self.doxy_path, 'src')
+        
+        # Create the empty dictionary for Transl object identitied by the
+        # class identifier of the translator. 
+        self.__translDic = {}
+
+        # Create the None dictionary of required methods. The key is the
+        # unified prototype, the value is the full prototype. Set inside
+        # the self.__build().
+        self.requiredMethodsDic = None
+        
+        # Create the empty dictionary that says what method is implemented
+        # by what adapter.
+        self.adaptMethodsDic = {}
+        
+        # The last modification time will capture the modification of this
+        # script, of the translator.h, of the translator_adapter.h (see the 
+        # self.__build() for the last two) of all the translator_xx.h files
+        # and of the template for generating the documentation. So, this
+        # time can compared with modification time of the generated 
+        # documentation to decide, whether the doc should be re-generated.
+        self.lastModificationTime = os.path.getmtime(self.script)
+        
+        # Set the names of the translator report text file, of the template
+        # for generating "Internationalization" document, for the generated
+        # file itself, and for the maintainers list.
+        self.translatorReportFileName = 'translator_report.txt'
+        self.maintainersFileName = 'maintainers.txt'
+        self.languageTplFileName = 'language.tpl'
+        self.languageDocFileName = 'language.doc'
+        
+        # The information about the maintainers will be stored 
+        # in the dictionary with the following name.
+        self.__maintainersDic = None
+        
+        # Define the other used structures and variables for information.
+        self.langLst = None                   # including English based
+        self.supportedLangReadableStr = None  # coupled En-based as a note
+        self.numLang = None                   # excluding coupled En-based
+        self.doxVersion = None                # Doxygen version
+        
+        # Build objects where each one is responsible for one translator.
+        self.__build()
+        
+        
+    def __build(self):
+        """Find the translator files and build the objects for translators."""
+        
+        # The translator.h must exist (the Transl object will check it),
+        # create the object for it and let it build the dictionary of
+        # required methods.
+        tr = Transl(os.path.join(self.src_path, 'translator.h'), self)
+        self.requiredMethodsDic = tr.collectPureVirtualPrototypes()
+        tim = tr.getmtime()
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+        
+        # The translator_adapter.h must exist (the Transl object will check it),
+        # create the object for it and store the reference in the dictionary.
+        tr = Transl(os.path.join(self.src_path, 'translator_adapter.h'), self)
+        self.adaptMethodsDic = tr.collectAdapterPrototypes()
+        tim = tr.getmtime()
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+            
+        # Create the list of the filenames with language translator sources.
+        # If the explicit arguments of the script were typed, process only
+        # those files.
+        if self.script_argLst:
+            lst = ['translator_' + x + '.h' for x in self.script_argLst]
+            for fname in lst:
+                if not os.path.isfile(os.path.join(self.src_path, fname)):
+                    sys.stderr.write("\a\nFile '%s' not found!\n" % fname)
+                    sys.exit(1)
+        else:                    
+            lst = os.listdir(self.src_path)
+            lst = filter(lambda x: x[:11] == 'translator_'
+                                   and x[-2:] == '.h'
+                                   and x != 'translator_adapter.h', lst)
+    
+        # Build the object for the translator_xx.h files, and process the 
+        # content of the file. Then insert the object to the dictionary
+        # accessed via classId.
+        for fname in lst:
+            fullname = os.path.join(self.src_path, fname)
+            tr = Transl(fullname, self)
+            tr.processing()
+            assert(tr.classId != 'Translator')
+            self.__translDic[tr.classId] = tr
+
+        # Extract the global information of the processed info. 
+        self.__extractProcessedInfo()
+        
+    
+    def __extractProcessedInfo(self):
+        """Build lists and strings of the processed info."""        
+
+        # Build the auxiliary list with strings compound of the status,
+        # readable form of the language, and classId.
+        statLst = []
+        for obj in self.__translDic.values():
+            assert(obj.classId != 'Translator')
+            s = obj.status + '|' + obj.langReadable + '|' + obj.classId
+            statLst.append(s)
+        
+        # Sort the list and extract the object identifiers (classId's) for
+        # the up-to-date translators and English-based translators.
+        statLst.sort()
+        self.upToDateIdLst = [x.split('|')[2] for x in statLst if x[0] == '|']
+        self.EnBasedIdLst = [x.split('|')[2] for x in statLst if x[:2] == 'En']
+
+        # Reverse the list and extract the TranslatorAdapter based translators.
+        statLst.reverse()
+        self.adaptIdLst = [x.split('|')[2] for x in statLst if x[0].isdigit()]
+
+        # Build the list of tuples that contain (langReadable, obj). 
+        # Sort it by readable name.
+        self.langLst = []
+        for obj in self.__translDic.values():
+            self.langLst.append((obj.langReadable, obj))
+        self.langLst.sort(lambda a, b: cmp(a[0], b[0]))
+            
+        # Create the list with readable language names. If the language has
+        # also the English-based version, modify the item by appending
+        # the note. Number of the supported languages is equal to the length
+        # of the list.
+        langReadableLst = []
+        for name, obj in self.langLst:
+            if obj.status == 'En': continue
+            
+            # Append the 'En' to the classId to possibly obtain the classId
+            # of the English-based object. If the object exists, modify the
+            # name for the readable list of supported languages.
+            classIdEn = obj.classId + 'En'
+            if self.__translDic.has_key(classIdEn):
+                name += ' (+En)'
+            
+            # Append the result name of the language, possibly with note.
+            langReadableLst.append(name)
+
+        # Create the multiline string of readable language names, 
+        # with punctuation, wrapped to paragraph.
+        if len(langReadableLst) == 1:
+            s = langReadableLst[0]
+        elif len(langReadableLst) == 2:
+            s = ' and '.join(langReadableLst) 
+        else:    
+            s = ', '.join(langReadableLst[:-1]) + ', and ' 
+            s += langReadableLst[-1]
+        
+        self.supportedLangReadableStr = fill(s + '.') 
+
+        # Find the number of the supported languages. The English based
+        # languages are not counted if the non-English based also exists.
+        self.numLang = len(self.langLst)
+        for name, obj in self.langLst:
+            if obj.status == 'En':
+                classId = obj.classId[:-2]
+                if self.__translDic.has_key(classId):
+                    self.numLang -= 1    # the couple will be counted as one
+        
+        # Extract the version of Doxygen.
+        f = file(os.path.join(self.doxy_path, 'version'))
+        self.doxVersion = f.readline().strip()
+        f.close()
+        
+        # Update the last modification time.
+        for tr in self.__translDic.values():
+            tim = tr.getmtime()
+            if tim > self.lastModificationTime:
+                self.lastModificationTime = tim
+                
+        
+        
+    def generateTranslatorReport(self):
+        """Generates the translator report."""
+
+        output = os.path.join(self.doc_path, self.translatorReportFileName)
+        
+        # Open the textual report file for the output.
+        f = file(output, 'w')
+
+        # Output the information about the version.
+        f.write('(' + self.doxVersion + ')\n\n')
+        
+        # Output the information about the number of the supported languages
+        # and the list of the languages, or only the note about the explicitly
+        # given languages to process.
+        if self.script_argLst:
+            f.write('The report was generated for the following, explicitly')
+            f.write(' identified languages:\n\n')
+            f.write(self.supportedLangReadableStr + '\n\n')
+        else:
+            f.write('Doxygen supports the following ')
+            f.write(str(self.numLang))
+            f.write(' languages (sorted alphabetically):\n\n')
+            f.write(self.supportedLangReadableStr + '\n\n')
+        
+            # Write the summary about the status of language translators (how 
+            # many translators) are up-to-date, etc.
+            s = 'Of them, %d translators are up-to-date, ' % len(self.upToDateIdLst)
+            s += '%d translators are based on some adapter class, ' % len(self.adaptIdLst)  
+            s += 'and %d are English based.' % len(self.EnBasedIdLst)
+            f.write(fill(s) + '\n\n')
+        
+        # Write the list of up-to-date translator classes.
+        if self.upToDateIdLst:
+            s = '''The following translator classes are up-to-date (sorted
+                alphabetically). This means that they derive from the
+                Translator class and they implement all %d of the required
+                methods. Anyway, there still may be some details listed even 
+                for them. Please, see the details for them:'''
+            s = s % len(self.requiredMethodsDic)    
+            f.write('-' * 70 + '\n')
+            f.write(fill(s) + '\n\n')
+            for x in self.upToDateIdLst:
+                obj = self.__translDic[x]
+                f.write('  ' + obj.classId)
+                if obj.note:
+                    f.write(' -- ' + obj.note)
+                f.write('\n')
+
+        # Write the list of the adapter based classes. The very obsolete
+        # translators that derive from TranslatorEnglish are included.
+        if self.adaptIdLst:
+            s = '''The following translator classes need some maintenance 
+                (the most obsolete at the end). The other info shows the
+                estimation of Doxygen version when the class was last
+                updated and number of methods that must be implemented to
+                become up-to-date:'''
+            f.write('\n' + '-' * 70 + '\n')
+            f.write(fill(s) + '\n\n')
+    
+            # Find also whether some adapter classes may be removed.
+            adaptMinVersion = '9.9.99'
+            
+            for x in self.adaptIdLst:
+                obj = self.__translDic[x]
+                f.write('  %-30s' % obj.classId)
+                f.write('  %-6s' % obj.readableStatus)
+                f.write('\t%2d methods to implement' % len(obj.missingMethods))
+                if obj.note:
+                    f.write('\n\tNote: ' + obj.note + '\n')
+                f.write('\n')
+                
+                # Check the level of required adapter classes.
+                if obj.status != '0.0.00' and obj.status < adaptMinVersion:
+                    adaptMinVersion = obj.status
+                
+            # Set the note if some old translator adapters are not needed 
+            # any more.
+            for version, adaptClassId in self.adaptMethodsDic.values():
+                if version < adaptMinVersion:
+                    f.write('\nNote: The %s class ' % adaptClassId)
+                    f.write('is not used and can be removed.\n')
+                
+        # Write the list of the English-based classes.
+        if self.EnBasedIdLst:
+            s = '''The following translator classes derive directly from the 
+                TranslatorEnglish. The class identifier has the suffix 'En' 
+                that says that this is intentional. Usually, there is also 
+                a non-English based version of the translator for 
+                the language:'''
+            f.write('\n' + '-' * 70 + '\n')
+            f.write(fill(s) + '\n\n')
+    
+            for x in self.EnBasedIdLst:
+                obj = self.__translDic[x]
+                f.write('  ' + obj.classId)
+                f.write('\timplements %d methods' % len(obj.implementedMethods))
+                if obj.note:
+                    f.write(' -- ' + obj.note)
+                f.write('\n')
+            
+        # Write the details for the translators.
+        f.write('\n' + '=' * 70)
+        f.write('\nDetails for translators (classes sorted alphabetically):\n')
+        
+        cls = self.__translDic.keys()
+        cls.sort()
+        
+        for c in cls:
+            obj = self.__translDic[c]
+            assert(obj.classId != 'Translator') 
+            obj.report(f)
+                
+        # Close the report file.        
+        f.close()
+        
+            
+
+
+    def __loadMaintainers(self):
+        """Load and process the file with the maintainers.
+        
+        Fills the dictionary classId -> [(name, e-mail), ...]."""
+        
+        fname = os.path.join(self.script_path, self.maintainersFileName)
+
+        # Include the maintainers file to the checked group of files with
+        # respect to the modification time.
+        tim = os.path.getmtime(fname)
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+        
+        # Process the content of the maintainers file.
+        f = file(fname)
+        inside = False  # inside the record for the language
+        lineReady = True
+        classId = None
+        maintainersLst = None
+        self.__maintainersDic = {}
+        while lineReady:
+            line = f.readline()            # next line
+            lineReady = line != ''         # when eof, then line == ''
+                
+            line = line.strip()            # eof should also behave as separator
+            if line != '' and line[0] == '%':    # skip the comment line
+                continue           
+        
+            if not inside:                 # if outside of the record
+                if line != '':             # should be language identifier
+                    classId = line
+                    maintainersLst = []
+                    inside = True
+                # Otherwise skip empty line that do not act as separators.
+                
+            else:                          # if inside the record                       
+                if line == '':             # separator found
+                    inside = False
+                else:
+                    # If it is the first maintainer, create the empty list.
+                    if not self.__maintainersDic.has_key(classId):
+                        self.__maintainersDic[classId] = []
+                    
+                    # Split the information about the maintainer and append
+                    # the tuple.
+                    lst = line.split(':', 1)
+                    assert(len(lst) == 2)
+                    t = (lst[0].strip(), lst[1].strip())
+                    self.__maintainersDic[classId].append(t)
+        f.close()            
+                    
+    def generateLanguageDoc(self):
+        """Checks the modtime of files and generates language.doc."""
+        self.__loadMaintainers()
+        
+        # Check the last modification time of the template file. It is the
+        # last file from the group that decide whether the documentation
+        # should or should not be generated.
+        fTplName = os.path.join(self.script_path, self.languageTplFileName)
+        tim = os.path.getmtime(fTplName)
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+
+        # If the generated documentation exists and is newer than any of 
+        # the source files from the group, do not generate it and quit 
+        # quietly.
+        fDocName = os.path.join(self.doc_path, self.languageDocFileName)
+        if os.path.isfile(fDocName): 
+            if os.path.getmtime(fDocName) > self.lastModificationTime:
+                return
+            
+        # The document or does not exist or is older than some of the
+        # sources. It must be generated again.
+        #
+        # Read the template of the documentation, and remove the first
+        # attention lines.
+        f = file(fTplName)
+        line = f.readline()
+        while line[0] != '/':
+            line = f.readline()
+        doctpl = line + f.read()    
+        f.close()
+
+        # Fill the tplDic by symbols that will be inserted into the 
+        # document template.
+        tplDic = {}
+        
+        s = 'Do not edit this file. It was generated by the %s script.' % self.script_name
+        tplDic['editnote'] = s
+        
+        tplDic['doxVersion'] = self.doxVersion
+        tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr 
+        tplDic['translatorReportFileName'] = self.translatorReportFileName
+
+        ahref = '<a href="../doc/' + self.translatorReportFileName
+        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
+        ahref += '</code></a>'
+        tplDic['translatorReportLink'] = ahref
+        tplDic['numLangStr'] = str(self.numLang)
+        
+        # Define templates for HTML table parts of the documentation.
+        htmlTableTpl = '''\
+            \\htmlonly
+            <table align=center cellspacing=0 cellpadding=0 border=0>
+            <tr bgcolor="#000000">
+            <td>
+              <table cellspacing=1 cellpadding=2 border=0>
+              <tr bgcolor="#4040c0">
+              <td ><b><font size=+1 color="#ffffff"> Language </font></b></td>
+              <td ><b><font size=+1 color="#ffffff"> Maintainer </font></b></td>
+              <td ><b><font size=+1 color="#ffffff"> Contact address </font>
+                      <font size=-2 color="#ffffff">(remove the NOSPAM.)</font></b></td>
+              <td ><b><font size=+1 color="#ffffff"> Status </font></b></td>
+              </tr>
+              <!-- table content begin -->
+            %s
+              <!-- table content end -->
+              </table>
+            </td>
+            </tr>
+            </table>
+            \\endhtmlonly
+            '''
+        htmlTableTpl = textwrap.dedent(htmlTableTpl)    
+        htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
+        htmlTdTpl = '\n    <td>%s</td>'
+
+        # Loop through transl objects in the order of sorted readable names
+        # and add generate the content of the HTML table.
+        trlst = []
+        for name, obj in self.langLst:
+            # Fill the table data elements for one row. The first element
+            # contains the readable name of the language.
+            lst = [ htmlTdTpl % obj.langReadable ]
+            
+            # The next two elements contain the list of maintainers 
+            # and the list of their mangled e-mails. For English-based
+            # translators that are coupled with the non-English based, 
+            # insert the 'see' note.
+            mm = None  # init
+            ee = None  # init
+            if obj.status == 'En':
+                # Check whether there is the coupled non-English.
+                classId = obj.classId[:-2]
+                if self.__translDic.has_key(classId):
+                    lang = self.__translDic[classId].langReadable
+                    mm = 'see the %s language' % lang
+                    ee = '&nbsp;'
+            
+            if not mm and self.__maintainersDic.has_key(obj.classId):
+                lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
+                mm = '<br>'.join(lm)
+                le = [ m[1] for m in self.__maintainersDic[obj.classId] ]
+                ee = '<br>'.join(le)
+            
+            # Mangle the e-mail and replace the entity references.
+            if ee:
+                ee = ee.replace('@', '@NOSPAM.')
+            if mm:
+                mm = mm.replace('&ccaron;', '&#x010d;')
+                mm = mm.replace('&rcaron;', '&#x0159;')
+            
+            # Append the maintainer and e-mail elements.
+            lst.append(htmlTdTpl % mm)
+            lst.append(htmlTdTpl % ee)
+            
+            # The last element contains the readable form of the status.
+            lst.append(htmlTdTpl % obj.readableStatus)
+            
+            # Join the table data to one table row. 
+            trlst.append(htmlTrTpl % (''.join(lst)))
+             
+        # Join the table rows and insert into the template.
+        htmlTable = htmlTableTpl % (''.join(trlst))
+        
+        # Define templates for LaTeX table parts of the documentation.
+        latexTableTpl = r'''
+            \latexonly
+            \begin{tabular}{|l|l|l|l|}
+              \hline 
+              {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
+              \hline
+            %s
+              \hline
+            \end{tabular}
+            \endlatexonly
+            '''
+        latexTableTpl = textwrap.dedent(latexTableTpl)    
+        latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
+
+        # Loop through transl objects in the order of sorted readable names
+        # and add generate the content of the LaTeX table.
+        trlst = []
+        for name, obj in self.langLst:
+            # For LaTeX, more maintainers for the same language are
+            # placed on separate rows in the table.  The line separator
+            # in the table is placed explicitly above the first
+            # maintainer. Prepare the arguments for the LaTeX row template.
+            maintainers = []
+            if self.__maintainersDic.has_key(obj.classId):
+                maintainers = self.__maintainersDic[obj.classId]
+
+            lang = obj.langReadable
+            maintainer = None  # init
+            email = None       # init
+            if obj.status == 'En':
+                # Check whether there is the coupled non-English.
+                classId = obj.classId[:-2]
+                if self.__translDic.has_key(classId):
+                    langNE = self.__translDic[classId].langReadable
+                    maintainer = 'see the %s language' % langNE
+                    email = '~'
+            
+            if not maintainer and self.__maintainersDic.has_key(obj.classId):
+                lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
+                maintainer = maintainers[0][0]
+                email = maintainers[0][1]
+
+            status = obj.readableStatus
+
+            # Use the template to produce the line of the table and insert
+            # the hline plus the constructed line into the table content.
+            trlst.append('\n  \\hline')
+            trlst.append(latexLineTpl % (lang, maintainer, email, status))
+                        
+            # List the other maintainers for the language. Do not set
+            # lang and status for them.
+            lang = '~'
+            status = '~'
+            for m in maintainers[1:]:
+                maintainer = m[0]
+                email = m[1]
+                trlst.append(latexLineTpl % (lang, maintainer, email, status))
+            
+        # Join the table lines and insert into the template.
+        latexTable = latexTableTpl % (''.join(trlst))
+            
+        # Do the LaTeX replacements.
+        latexTable = latexTable.replace('&aacute;', "\\'{a}")
+        latexTable = latexTable.replace('&Aacute;', "\\'{A}")
+        latexTable = latexTable.replace('&auml;',   '\\"{a}')
+        latexTable = latexTable.replace('&ouml;',   '\\"{o}')
+        latexTable = latexTable.replace('&oslash;', '\\o{}')
+        latexTable = latexTable.replace('&ccaron;', '\\v{c}')
+        latexTable = latexTable.replace('&rcaron;', '\\v{r}')
+        latexTable = latexTable.replace('_',        '\\_')
+        
+        # Put the HTML and LaTeX parts together and define the dic item.
+        tplDic['informationTable'] = htmlTable + '\n' + latexTable 
+
+        # Insert the symbols into the document template and write it down.
+        f = file(fDocName, 'w')
+        f.write(doctpl % tplDic)
+        f.close()
+                    
+if __name__ == '__main__':
+    
+    # Create the manager, build the transl objects, and parse the related
+    # sources.
+    trMan = TrManager()
+
+    # Generate the language.doc.
+    trMan.generateLanguageDoc()
+    
+    # Generate the translator report.
+    trMan.generateTranslatorReport()

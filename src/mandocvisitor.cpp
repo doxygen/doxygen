@@ -198,6 +198,9 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
+    case DocVerbatim::ManOnly: 
+      m_t << s->text(); 
+      break;
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
     case DocVerbatim::LatexOnly: 

@@ -167,6 +167,7 @@ static QCString         oldStyleArgType;
 static QCString         docBackup;
 static QCString         briefBackup;
 
+
 //-----------------------------------------------------------------------------
 
 static void initParser()
@@ -439,11 +440,12 @@ static void setContext()
   insideIDL  = fileName.right(4)==".idl" || fileName.right(5)==".pidl" || 
                fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
-  insideCS   = fileName.right(3)==".cs";
-  insideD    = fileName.right(3)==".d";
+  insideCS   = fileName.right(3)==".cs"; // for normal keywords add colon
+  insideD    = fileName.right(3)==".d"; // for normal keywords add colon
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
                fileName.right(4)==".inc" || fileName.right(6)==".phtml";
-  insideObjC = fileName.right(2)==".m";
+  insideObjC = fileName.right(2)==".m" || fileName.right(2)==".M" ||
+               fileName.right(3)==".mm";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -1024,6 +1026,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  else
 					  {
+  					    lineCount();
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+					    current->section = Entry::FUNCTION_SEC;
 					    current->protection = protection = Public ;
 					    current->stat=yytext[0]=='+';
 					    current->mtype = mtype = Method;
@@ -1044,7 +1051,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  current->name = yytext;
   					}
-<ObjCMethod>":"				{ // start of parameter list
+<ObjCMethod>":"{B}*			{ // start of parameter list
   					  current->name += ':';
   					  Argument *a = new Argument;
 					  current->argList->append(a);
@@ -1060,11 +1067,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->argList->getLast()->attrib=(QCString)"["+yytext+"]";
 					  current->name += yytext;
   					}
-<ObjCParams>{ID}			{ // name of parameter
-  					  current->argList->getLast()->name=yytext;
+<ObjCParams>{ID}{BN}*			{ // name of parameter
+  					  lineCount();
+  					  current->argList->getLast()->name=QCString(yytext).stripWhiteSpace();
   					}
 <ObjCParams>"..."			{ // name of parameter
-  					  current->argList->getLast()->name=yytext;
+  					  current->argList->getLast()->attrib="[,]";
+  					  current->argList->getLast()->type="...";
   					}
 <ObjCParams>":"				{ 
 					  current->name += ':';
@@ -1084,13 +1093,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ObjCParamType>[^)]*			{
   					  current->argList->last()->type=yytext;
   					}
-<ObjCParamType>")"			{
+<ObjCParamType>")"{B}*			{
   					  BEGIN( ObjCParams );
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
   					  current->args = argListToString(current->argList);
 					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
+  					  BEGIN( Function );
+  					}
+<ObjCMethod,ObjCParams>"{"		{ // start of a method body
+                                          unput('{');
   					  BEGIN( Function );
   					}
 <FindMembers>{BN}{1,80}			{
@@ -1226,7 +1239,20 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
   					}
-<FindMembers>{B}*"@interface"{BN}+	{ // Objective-C interface
+<FindMembers>{B}*"@implementation"{BN}+	{ // Objective-C class implementation
+					  lineCount();
+  					  isTypedef=FALSE;
+					  current->section = Entry::OBJCIMPL_SEC;
+					  current->objc = insideObjC = TRUE;
+					  current->protection = protection = Public ;
+					  addType( current ) ;
+					  current->type += " implementation" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  BEGIN( CompoundName );
+  					}
+<FindMembers>{B}*"@interface"{BN}+	{ // Objective-C class interface
 					  lineCount();
   					  isTypedef=FALSE;
 					  current->section = Entry::INTERFACE_SEC;
@@ -3327,10 +3353,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ClassTemplSpec>.			{
   					  current->name += yytext;
 					}
+<CompoundName>{SCOPENAME}{BN}*";"	{ // forward declaration
+    					  unput(';');
+					  if (isTypedef) // typedef of a class, put typedef keyword back
+					  {
+					    current->type.prepend("typedef");
+					  }
+					  BEGIN( FindMembers );
+					}
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
-					  if (current->section == Entry::PROTOCOL_SEC)
+					  if (current->section == Entry::PROTOCOL_SEC || 
+					      current->section == Entry::OBJCIMPL_SEC)
 					  {
 					    unput('{'); // fake start of body
 					  }
@@ -3454,16 +3489,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->name.sprintf("@%d",anonCount++);
 					  }
 					  curlyCount=0;
-					  if (current->section==Entry::PROTOCOL_SEC)
-					  {
+					  if (current->section==Entry::PROTOCOL_SEC ||
+					      current->section==Entry::OBJCIMPL_SEC)
+					  { // ObjC body that ends with @end
 					    BEGIN( ReadBodyIntf );
 					  }
 					  else if (current->section==Entry::NAMESPACE_SEC)
-					  {
+					  { // namespace body
 					    BEGIN( ReadNSBody );
 					  }
 					  else
-					  {
+					  { // class body
 					    BEGIN( ReadBody ) ;
 					  }
 					}
