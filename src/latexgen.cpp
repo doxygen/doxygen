@@ -166,16 +166,27 @@ void LatexGenerator::init()
       t << "\tpdflatex refman.tex" << endl << endl;
     }
     else // otherwise use ps2pdf: not as nice :(
-         // especially from the font point of view
     {
+#if defined(_MSC_VER)
+      // ps2pdf.bat does not work properly from a makefile using GNU make!
+      t << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+           "-sOutputFile=refman.pdf -c save pop -f refman.ps" << endl << endl;
+#else
       t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
+#endif
     }
     
   t << "refman_2on1.ps: refman.ps" << endl
     << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
     << endl
     << "refman_2on1.pdf: refman_2on1.ps" << endl
+#if defined(_MSC_VER)
+    // ps2pdf.bat does not work properly from a makefile using GNU make!
+    << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+           "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl
+#else
     << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl
+#endif
     << endl
     << "refman.dvi: refman.tex doxygen.sty" << endl
     << "\techo \"Running latex...\"" << endl
@@ -1069,7 +1080,7 @@ void LatexGenerator::addToIndex(const char *s1,const char *s2)
   }
 }
 
-void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
+void LatexGenerator::startSection(const char *lab,const char *,bool sub)
 {
   if (Config::pdfHyperFlag)
   {
@@ -1077,7 +1088,10 @@ void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
   }
   t << "\\";
   if (sub) t << "subsection{"; else t << "section{";
-  docify(title);
+}
+
+void LatexGenerator::endSection(const char *lab,bool)
+{
   t << "}\\label{" << lab << "}" << endl;
 }
 

@@ -972,7 +972,9 @@ void writeMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.writeSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,TRUE);
+          ol.docify(title);
+          ol.endSection(anchor,TRUE);
           ol.startItemList();
           first=FALSE;
         }
@@ -1135,7 +1137,9 @@ void writeFileMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.writeSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,TRUE);
+          ol.docify(title);
+          ol.endSection(anchor,TRUE);
           ol.startItemList();
           first=FALSE;
         }
@@ -1212,7 +1216,9 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.writeSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,TRUE);
+          ol.docify(title);
+          ol.endSection(anchor,TRUE);
           ol.startItemList();
           first=FALSE;
         }
@@ -1842,7 +1848,9 @@ void writeIndex(OutputList &ol)
     if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
         (si=sectionDict[mainPage->name])!=0)
     {
-      ol.writeSection(si->label,si->title,FALSE);
+      ol.startSection(si->label,si->title,FALSE);
+      ol.docify(si->title);
+      ol.endSection(si->label,FALSE);
     }
     ol.startTextBlock();
     parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);

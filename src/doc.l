@@ -1432,8 +1432,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if ((sec=sectionDict[secName]))
 					  {
 					    //printf("Title %s\n",sec->title.data());
-					    outDoc->writeSection(sec->label,sec->title,
+					    outDoc->startSection(sec->label,sec->title,
 						                 sec->type==SectionInfo::Subsection);
+					    scanString(sec->title);
+					    outDoc->endSection(sec->label,
+						               sec->type==SectionInfo::Subsection);
 					  }
   					}
 <DocScan>{CMD}"anchor "{ID}"\n"		{
@@ -1510,7 +1513,6 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      text=sec->title;
 					    if (sec->type==SectionInfo::Anchor)
 					    {
-					      //outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
 					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
 					      writePageRef(*outDoc,sec->label,0);
 					    }

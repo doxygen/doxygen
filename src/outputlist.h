@@ -303,8 +303,10 @@ class OutputList
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 
     { forall(&OutputGenerator::endIndent); }
-    void writeSection(const char *lab,const char *title,bool sub)
-    { forall(&OutputGenerator::writeSection,lab,title,sub); }
+    void startSection(const char *lab,const char *title,bool sub)
+    { forall(&OutputGenerator::startSection,lab,title,sub); }
+    void endSection(const char *lab,bool sub)
+    { forall(&OutputGenerator::endSection,lab,sub); }
     void writeSectionRef(const char *page,const char *lab, const char *title)
     { forall(&OutputGenerator::writeSectionRef,page,lab,title); }
     void writeSectionRefItem(const char *page,const char *lab, const char *title)
@@ -406,6 +408,7 @@ class OutputList
 #endif
     FORALLPROTO2(int,bool);
     FORALLPROTO2(const char *,const char *);
+    FORALLPROTO2(const char *,bool);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);

@@ -120,6 +120,8 @@ static bool          g_searchingForBody;
 static bool          g_insideBody;
 static int           g_bodyCurlyCount;
 static ClassDef *    g_classVar;
+static QCString      g_saveName;
+static QCString      g_saveType;
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef
  * is TRUE. If a definition starts at the current line, then the line
@@ -574,18 +576,21 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	  vn=vn.right(vn.length()-vi-2);
 	  vmn=memberNameDict[vn];
 	  //printf("Trying name `%s' scope=%s\n",vn.data(),scope.data());
-	  MemberNameIterator vmni(*vmn);
-	  MemberDef *vmd;
-	  for (;(vmd=vmni.current());++vmni)
+	  if (vmn)
 	  {
-	    if ((vmd->isVariable() || vmd->isFunction()) && 
-		vmd->getClassDef()==jcd)
+	    MemberNameIterator vmni(*vmn);
+	    MemberDef *vmd;
+	    for (;(vmd=vmni.current());++vmni)
 	    {
-	      //printf("Found variable type=%s\n",vmd->typeString());
-	      ClassDef *mcd=stripClassName(vmd->typeString());
-	      if (mcd && mcd->isLinkable())
+	      if ((vmd->isVariable() || vmd->isFunction()) && 
+		  vmd->getClassDef()==jcd)
 	      {
-		if (generateClassMemberLink(ol,mcd,memName)) return;
+		//printf("Found variable type=%s\n",vmd->typeString());
+		ClassDef *mcd=stripClassName(vmd->typeString());
+		if (mcd && mcd->isLinkable())
+		{
+		  if (generateClassMemberLink(ol,mcd,memName)) return;
+		}
 	      }
 	    }
 	  }
@@ -626,7 +631,7 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
   if (i>0)
   {
     locScope=locFunc.left(i);
-    locFunc=locFunc.right(locFunc.length()-i-2);
+    locFunc=locFunc.right(locFunc.length()-i-2).stripWhiteSpace();
     int ts=locScope.find('<'); // start of template
     int te=locScope.findRev('>'); // end of template
     //printf("ts=%d te=%d\n",ts,te);
@@ -636,7 +641,7 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
       locScope=locScope.left(ts)+locScope.right(locScope.length()-te-1);
     }
   }
-  //printf("generateFunctionLink(%s) classScope=%s\n",locFunc.data(),locScope.data());
+  //printf("generateFunctionLink(%s) classScope=`%s'\n",locFunc.data(),locScope.data());
   if (!locScope.isEmpty() && (ccd=g_codeClassDict[locScope]))
   {
     //printf("using classScope %s\n",g_classScope.data());
@@ -1067,12 +1072,22 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <Body>[,=;\[]				{
   					  g_code->codify(yytext);
+					  g_saveName = g_name.copy();
+					  g_saveType = g_name.copy();
   					  if (!g_type.isEmpty()) 
+					  {
 					    addVariable();
-					  g_name.resize(0);
+					    g_name.resize(0);
+					  }
 					  if (*yytext!=',') g_type.resize(0);
 					  g_args.resize(0);
   					}
+<Body>"]"				{
+  					  g_code->codify(yytext);
+					  // TODO: nested arrays like: a[b[0]->func()]->func()
+					  g_name = g_saveName.copy();
+					  g_type = g_saveType.copy();
+					}
 <Body>[0-9]+				{
 					  g_code->codify(yytext);
 					}
@@ -1121,7 +1136,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>")"[ \t\n]*[;:]	{
   					  codifyLines(yytext);
   					  g_bracketCount=0;
-					  g_searchingForBody=FALSE; 
+					  if (yytext[yyleng-1]==';') g_searchingForBody=FALSE; 
 					  if (!g_inClass && !g_type.isEmpty())
 					    addVariable();
 					  g_parmType.resize(0);g_parmName.resize(0);

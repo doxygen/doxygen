@@ -4606,7 +4606,9 @@ static void generatePageDocs()
     if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
         (si=sectionDict[pi->name])!=0)
     {
-      outputList->writeSection(si->label,si->title,FALSE);
+      outputList->startSection(si->label,si->title,FALSE);
+      outputList->docify(si->title);
+      outputList->endSection(si->label,FALSE);
     }
     outputList->startTextBlock();
     parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
