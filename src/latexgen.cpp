@@ -113,24 +113,24 @@ LatexGenerator::~LatexGenerator()
 //  col=g.col;
 //}
 
-void LatexGenerator::append(const OutputGenerator *g)
-{
-  t << g->getContents();
-  col+=((LatexGenerator *)g)->col;
-  insideTabbing=insideTabbing || ((LatexGenerator *)g)->insideTabbing;
-  firstDescItem = ((LatexGenerator *)g)->firstDescItem;
-  insidePre = insidePre || ((LatexGenerator *)g)->insidePre;
-  //printf("LatexGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
-  //    insideTabbing ? "TRUE" : "FALSE" );
-}
+//void LatexGenerator::append(const OutputGenerator *g)
+//{
+//  t << g->getContents();
+//  col+=((LatexGenerator *)g)->col;
+//  insideTabbing=insideTabbing || ((LatexGenerator *)g)->insideTabbing;
+//  firstDescItem = ((LatexGenerator *)g)->firstDescItem;
+//  insidePre = insidePre || ((LatexGenerator *)g)->insidePre;
+//  //printf("LatexGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
+//  //    insideTabbing ? "TRUE" : "FALSE" );
+//}
 
-OutputGenerator *LatexGenerator::copy()
-{
-  LatexGenerator *result = new LatexGenerator;
-  result->insideTabbing=insideTabbing;
-  result->insidePre=insidePre;
-  return result;
-}
+//OutputGenerator *LatexGenerator::copy()
+//{
+//  LatexGenerator *result = new LatexGenerator;
+//  result->insideTabbing=insideTabbing;
+//  result->insidePre=insidePre;
+//  return result;
+//}
 
 void LatexGenerator::init()
 {
@@ -1295,62 +1295,6 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
-#if 0
-  //static bool isCzech         = theTranslator->idLanguage()=="czech";
-  static bool isJapanese      = theTranslator->idLanguage()=="japanese";
-  //static bool isKorean        = theTranslator->idLanguage()=="korean";
-  //static bool isRussian       = theTranslator->idLanguage()=="russian";
-  //static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
-  //static bool isChinese       = theTranslator->idLanguage()=="chinese" || 
-  //                              theTranslator->idLanguage()=="chinese-traditional";
-  //static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
-  //static bool isGreek         = theTranslator->idLanguage()=="greek";
-  if (str)
-  {
-    const unsigned char *p=(const unsigned char *)str;
-    unsigned char c;
-    unsigned char pc='\0';
-    bool multiByte = FALSE;
-    while (*p)
-    {
-      c=*p++;
-
-      if( isJapanese)
-      {
-        if (multiByte)
-        {
-          t << (char)c;
-          multiByte = FALSE;
-          pc = c;
-          continue;
-        }
-        if (c>=0x80)
-        {
-          multiByte = TRUE;
-          t << (char)c;
-          pc = c;
-          continue;
-        }
-      }
-
-      if (insidePre)
-      {
-        switch(c)
-        {
-          case '\\': t << "\\(\\backslash\\)"; break;
-          case '{':  t << "\\{"; break;
-          case '}':  t << "\\}"; break;
-          default: t << (char)c; break;
-        }
-      }
-      else
-      {
-        filterLatexChar(t,c,insideTabbing);
-      }
-      pc = c;
-    }
-  }
-#endif
   filterLatexString(t,str,insideTabbing,insidePre);
 }
 
@@ -1377,7 +1321,7 @@ void LatexGenerator::codify(const char *str)
           MultiByte = FALSE;
           continue;
         }
-        if ( c<0 ) // char in range [0x80..0xff]
+        if ( (uchar)c>=0x80 || (uchar)c<=0xff) // char in range [0x80..0xff]
         {
           t << (char)c;
           MultiByte = TRUE;

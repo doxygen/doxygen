@@ -31,9 +31,9 @@ class LatexGenerator : public OutputGenerator
     static void writeStyleSheetFile(QFile &f);
     static void writeHeaderFile(QFile &f);
 
-    OutputGenerator *copy();
+    //OutputGenerator *copy();
     //OutputGenerator *clone() { return new LatexGenerator(*this); }
-    void append(const OutputGenerator *o);
+    //void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==Latex) active=TRUE;  }

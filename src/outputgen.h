@@ -254,8 +254,6 @@ class OutputGenerator : public BaseOutputDocInterface
     ///////////////////////////////////////////////////////////////
     // generic generator methods
     ///////////////////////////////////////////////////////////////
-    virtual OutputGenerator *copy() = 0;
-    //virtual void append(const OutputGenerator *) = 0;
     virtual void enable() = 0;
     virtual void disable() = 0;
     virtual void enableIf(OutputType o) = 0;
@@ -263,8 +261,6 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void disableIfNot(OutputType o) = 0;
     virtual bool isEnabled(OutputType o) = 0;
     virtual OutputGenerator *get(OutputType o) = 0;
-    //void clear() { b.close(); a.resize(0); b.setBuffer(a); 
-    //               b.open(IO_WriteOnly); t.setDevice(&b); }
     void startPlainFile(const char *name);
     void endPlainFile();
     QCString getContents() const;
@@ -370,8 +366,8 @@ class OutputGenerator : public BaseOutputDocInterface
 
 /*! \brief Interface used for generating documentation.
  *
- *  This abstract class is used by the documentation block
- *  parser to generate the output for a specific format. 
+ *  This abstract class is used by several functions
+ *  to generate the output for a specific format. 
  *  This interface contains some state saving and changing
  *  functions for dealing with format specific output.
  */
@@ -383,7 +379,7 @@ class OutputDocInterface : public BaseOutputDocInterface
     /*! Create a new output generator. This can later by appended
      *  to the current one using append().
      */
-    virtual OutputDocInterface *clone() = 0;
+    //virtual OutputDocInterface *clone() = 0;
 
     /*! Disables all output formats except format \a o 
      *  (useful for OutputList only) 

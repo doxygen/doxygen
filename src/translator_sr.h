@@ -272,7 +272,7 @@ private:
         result+="èlanova klasa";
       }
       result+=" sa linkovima na ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

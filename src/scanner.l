@@ -2552,7 +2552,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    if ( *yytext == '{' )
 					    {
 					      if ( !insidePHP && (current_root->section & Entry::COMPOUND_MASK) )
-						previous->memSpec = previous->memSpec | Entry::Inline;
+					      {
+						previous->memSpec |= Entry::Inline;
+					      }
 					      //addToBody(yytext);
 					      curlyCount=0;
 					      BEGIN( SkipCurly ) ;
@@ -2932,7 +2934,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Comment>"/*"				{ current->program += yytext ; } 
 <Comment>"//"				{ current->program += yytext ; }
 <Comment>[^\n\*]+			{ current->program += yytext ; }
-<Comment>.*"*/"				{ current->program += yytext ;
+<Comment>"*/"				{ current->program += yytext ;
 					  BEGIN( lastContext ) ;
 					}
 <Comment>.				{ current->program += *yytext ; }

@@ -251,7 +251,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         result+="κλάσεων";
       }
       result+=" με συνδέσμους ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

@@ -117,9 +117,6 @@ MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
 
   addStartHandler("superscript",this,&MarkupHandler::startSuperscript);
   addEndHandler("superscript",this,&MarkupHandler::endSuperscript);
-
-  addStartHandler("preformatted",this,&MarkupHandler::startPreformatted);
-  addEndHandler("preformatted",this,&MarkupHandler::endPreformatted);
 }
 
 MarkupHandler::~MarkupHandler()
@@ -232,20 +229,6 @@ void MarkupHandler::endSuperscript()
   addTextNode();
   m_children.append(new MarkupModifierNode(IDocMarkup::Superscript,FALSE));
   m_curMarkup &= ~IDocMarkup::Superscript;
-}
-
-void MarkupHandler::startPreformatted(const QXmlAttributes & /*attrib*/)
-{
-  addTextNode();
-  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,TRUE));
-  m_curMarkup |= IDocMarkup::Preformatted;
-}
-
-void MarkupHandler::endPreformatted()
-{
-  addTextNode();
-  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,FALSE));
-  m_curMarkup &= ~IDocMarkup::Preformatted;
 }
 
 //----------------------------------------------------------------------
@@ -1314,6 +1297,69 @@ IDocIterator *TableHandler::rows() const
   return new TableIterator(*this);
 }
 
+//----------------------------------------------------------------------
+// PreformattedHandler
+//----------------------------------------------------------------------
+
+PreformattedHandler::PreformattedHandler(IBaseHandler *parent)
+  :  m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("preformatted",this,&PreformattedHandler::endPreformatted);
+}
+
+PreformattedHandler::~PreformattedHandler()
+{
+}
+
+void PreformattedHandler::startPreformatted(const QXmlAttributes&)
+{
+  m_parent->setDelegate(this);
+}
+
+void PreformattedHandler::endPreformatted()
+{
+  m_parent->setDelegate(0);
+}
+
+IDocIterator *PreformattedHandler::contents() const
+{
+  return new PreformattedIterator(*this);
+}
+
+//----------------------------------------------------------------------
+// SymbolHandler
+//----------------------------------------------------------------------
+
+SymbolHandler::SymbolHandler(IBaseHandler *parent,Types type)
+  :  m_parent(parent), m_letter('\0'), m_type(type)
+{
+  addEndHandler("symbol");
+  switch (type)
+  {
+    case IDocSymbol::Invalid: m_typeString="invalid"; break;
+    case IDocSymbol::Umlaut:  m_typeString="umlaut"; break;
+    case IDocSymbol::Acute:   m_typeString="acute"; break;
+    case IDocSymbol::Grave:   m_typeString="grave"; break;
+    case IDocSymbol::Circ:    m_typeString="circ"; break;
+    case IDocSymbol::Tilde:   m_typeString="tilde"; break;
+    case IDocSymbol::Szlig:   m_typeString="szlig"; break;
+    case IDocSymbol::Cedil:   m_typeString="cedil"; break;
+    case IDocSymbol::Ring:    m_typeString="ring"; break;
+    case IDocSymbol::Nbsp:    m_typeString="nbsp"; break;
+    case IDocSymbol::Copy:    m_typeString="copy"; break;
+  }
+}
+
+SymbolHandler::~SymbolHandler()
+{
+}
+
+void SymbolHandler::startSymbol(const QXmlAttributes& attrib)
+{
+  QString ls = attrib.value("char");
+  if (!ls.isEmpty()) m_letter = ls.latin1()[0];
+}
 
 //----------------------------------------------------------------------
 // ParagraphHandler
@@ -1346,6 +1392,17 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("dotfile",this,&ParagraphHandler::startDotFile);
   addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
   addStartHandler("table",this,&ParagraphHandler::startTable);
+  addStartHandler("preformatted",this,&ParagraphHandler::startPreformatted);
+  addStartHandler("umlaut",this,&ParagraphHandler::startUmlaut);
+  addStartHandler("acute",this,&ParagraphHandler::startAcute);
+  addStartHandler("grave",this,&ParagraphHandler::startGrave);
+  addStartHandler("circ",this,&ParagraphHandler::startCirc);
+  addStartHandler("tilde",this,&ParagraphHandler::startTilde);
+  addStartHandler("szlig",this,&ParagraphHandler::startSzlig);
+  addStartHandler("cedil",this,&ParagraphHandler::startCedil);
+  addStartHandler("ring",this,&ParagraphHandler::startRing);
+  addStartHandler("nbsp",this,&ParagraphHandler::startNbsp);
+  addStartHandler("copy",this,&ParagraphHandler::startCopy);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -1502,6 +1559,94 @@ void ParagraphHandler::startTable(const QXmlAttributes& attrib)
   m_children.append(th);
 }
 
+void ParagraphHandler::startPreformatted(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  PreformattedHandler *ph = new PreformattedHandler(this);
+  ph->startPreformatted(attrib);
+  m_children.append(ph);
+}
+
+void ParagraphHandler::startUmlaut(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Umlaut);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startAcute(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Acute);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startGrave(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Grave);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startCirc(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Circ);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startTilde(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Tilde);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startSzlig(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Szlig);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startCedil(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Cedil);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startRing(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Ring);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startNbsp(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Nbsp);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
+void ParagraphHandler::startCopy(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SymbolHandler *sh = new SymbolHandler(this,IDocSymbol::Copy);
+  sh->startSymbol(attrib);
+  m_children.append(sh);
+}
+
 void ParagraphHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
@@ -1587,12 +1732,17 @@ DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
 
   addEndHandler("briefdescription",this,&DocHandler::endDoc);
   addEndHandler("detaileddescription",this,&DocHandler::endDoc);
+  addEndHandler("internal");
 
   addStartHandler("para",this,&DocHandler::startParagraph);
   addStartHandler("sect1",this,&DocHandler::startSect1);
   addStartHandler("sect2",this,&DocHandler::startSect2);
   addStartHandler("sect3",this,&DocHandler::startSect3);
+  addStartHandler("sect4",this,&DocHandler::startSect4);
+  addStartHandler("sect5",this,&DocHandler::startSect5);
+  addStartHandler("sect6",this,&DocHandler::startSect6);
   addStartHandler("title",this,&DocHandler::startTitle);
+  addStartHandler("internal");
 }
 
 DocHandler::~DocHandler()
@@ -1635,6 +1785,27 @@ void DocHandler::startSect2(const QXmlAttributes& attrib)
 void DocHandler::startSect3(const QXmlAttributes& attrib)
 {
   DocSectionHandler *secHandler = new DocSectionHandler(this,3);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startSect4(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,4);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startSect5(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,5);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startSect6(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,6);
   secHandler->startDocSection(attrib);
   m_children.append(secHandler);
 }

@@ -172,7 +172,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_18
 	  else
 		  result+="èlanova struktura s linkovima na ";
 		  
-      if (extractAll)
+      if (!extractAll)
 	  {
 		  result+="dokumentaciju svakog èlana:";
       }

@@ -17,6 +17,39 @@
 #include "memberhandler.h"
 #include "debug.h"
 
+TemplateParamListHandler::TemplateParamListHandler(IBaseHandler *parent) : m_parent(parent)
+{
+  addStartHandler("param",this,&TemplateParamListHandler::startParam);
+  //addEndHandler("param",this,&TemplateParamListHandler::endParam);
+
+  addEndHandler("templateparamlist",this,&TemplateParamListHandler::endTemplateParamList);
+
+}
+
+void TemplateParamListHandler::startParam(const QXmlAttributes& attrib)
+{
+  ParamHandler *ph = new ParamHandler(this);
+  ph->startParam(attrib);
+  m_templateParams.append(ph);
+}
+
+void TemplateParamListHandler::endParam()
+{
+}
+
+void TemplateParamListHandler::startTemplateParamList(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  debug(2,"templateparamlist\n");
+}
+
+void TemplateParamListHandler::endTemplateParamList()
+{
+  m_parent->setDelegate(0);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
 {
   addEndHandler("param",this,&ParamHandler::endParam);

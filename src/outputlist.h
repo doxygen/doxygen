@@ -42,10 +42,6 @@ class OutputList : public OutputDocInterface
   public:
     OutputList(bool);
     virtual ~OutputList();
-    OutputList(const OutputList *ol);
-    OutputList &operator=(const OutputList &ol);
-    //OutputList &operator+=(const OutputList &ol);
-
 
     void add(const OutputGenerator *);
     
@@ -68,17 +64,7 @@ class OutputList : public OutputDocInterface
                   bool isExample);
     void parseText(const QCString &textStr);
     
-    OutputDocInterface *clone()
-    {
-      return new OutputList(this);
-    }
-    //void append(const OutputDocInterface *g)
-    //{
-    //  operator+=(*(OutputList *)g);
-    //}
 
-    //void writeIndex() 
-    //{ forall(&OutputGenerator::writeIndex); }
     void startIndexSection(IndexSections is)
     { forall(&OutputGenerator::startIndexSection,is); }
     void endIndexSection(IndexSections is)
@@ -124,16 +110,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startItemList); }
     void endItemList() 
     { forall(&OutputGenerator::endItemList); }
-    //void startEnumList() 
-    //{ forall(&OutputGenerator::startEnumList); }
-    //void endEnumList() 
-    //{ forall(&OutputGenerator::endEnumList); }
-    //void startAlphabeticalIndexList()
-    //{ forall(&OutputGenerator::startAlphabeticalIndexList); }
-    //void endAlphabeticalIndexList()
-    //{ forall(&OutputGenerator::endAlphabeticalIndexList); }
-    //void writeIndexHeading(const char *s)
-    //{ forall(&OutputGenerator::writeIndexHeading,s); }
     void writeIndexItem(const char *ref,const char *file,const char *text)
     { forall(&OutputGenerator::writeIndexItem,ref,file,text); }
     void docify(const char *s)
@@ -154,8 +130,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startHtmlLink,url); }
     void endHtmlLink()
     { forall(&OutputGenerator::endHtmlLink); }
-    //void writeMailLink(const char *url)
-    //{ forall(&OutputGenerator::writeMailLink,url); } 
     void writeStartAnnoItem(const char *type,const char *file, 
                             const char *path,const char *name)
     { forall(&OutputGenerator::writeStartAnnoItem,type,file,path,name); }
@@ -213,22 +187,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startCodeFragment); }
     void endCodeFragment() 
     { forall(&OutputGenerator::endCodeFragment); }
-    //void startPreFragment() 
-    //{ forall(&OutputGenerator::startPreFragment); }
-    //void endPreFragment() 
-    //{ forall(&OutputGenerator::endPreFragment); }
-    //void startVerbatimFragment() 
-    //{ forall(&OutputGenerator::startVerbatimFragment); }
-    //void endVerbatimFragment() 
-    //{ forall(&OutputGenerator::endVerbatimFragment); }
     void startCodeLine() 
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 
     { forall(&OutputGenerator::endCodeLine); }
-    //void startLineNumber() 
-    //{ forall(&OutputGenerator::startLineNumber); }
-    //void endLineNumber() 
-    //{ forall(&OutputGenerator::endLineNumber); }
     void writeLineNumber(const char *ref,const char *file,const char *anchor,
                          int lineNumber) 
     { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
@@ -254,8 +216,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endCodeAnchor); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
-    //void writeLatexLabel(const char *scope,const char *anchor) 
-    //{ forall(&OutputGenerator::writeLatexLabel,scope,anchor); }
     void startDescription() 
     { forall(&OutputGenerator::startDescription); }
     void endDescription() 
@@ -280,56 +240,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startSmall); }
     void endSmall() 
     { forall(&OutputGenerator::endSmall); }
-    //void startSubscript() 
-    //{ forall(&OutputGenerator::startSubscript); }
-    //void endSubscript() 
-    //{ forall(&OutputGenerator::endSubscript); }
-    //void startSuperscript() 
-    //{ forall(&OutputGenerator::startSuperscript); }
-    //void endSuperscript() 
-    //{ forall(&OutputGenerator::endSuperscript); }
-    //void startTable(bool hasCaption,int cols)
-    //{ forall(&OutputGenerator::startTable,hasCaption,cols); }
-    //void endTable(bool hasCaption) 
-    //{ forall(&OutputGenerator::endTable,hasCaption); }
-    //void startCaption()
-    //{ forall(&OutputGenerator::startCaption); }
-    //void endCaption() 
-    //{ forall(&OutputGenerator::endCaption); }
-    //void nextTableRow() 
-    //{ forall(&OutputGenerator::nextTableRow); }
-    //void endTableRow() 
-    //{ forall(&OutputGenerator::endTableRow); }
-    //void nextTableColumn() 
-    //{ forall(&OutputGenerator::nextTableColumn); }
-    //void endTableColumn() 
-    //{ forall(&OutputGenerator::endTableColumn); }
     void lineBreak() 
     { forall(&OutputGenerator::lineBreak); }
     void startBold() 
     { forall(&OutputGenerator::startBold); }
     void endBold() 
     { forall(&OutputGenerator::endBold); }
-    //void writeCopyright() 
-    //{ forall(&OutputGenerator::writeCopyright); }
-    //void writeQuote() 
-    //{ forall(&OutputGenerator::writeQuote); }
-    //void writeUmlaut(char c)
-    //{ forall(&OutputGenerator::writeUmlaut,c); }
-    //void writeAcute(char c)
-    //{ forall(&OutputGenerator::writeAcute,c); }
-    //void writeGrave(char c)
-    //{ forall(&OutputGenerator::writeGrave,c); }
-    //void writeCirc(char c)
-    //{ forall(&OutputGenerator::writeCirc,c); }
-    //void writeTilde(char c)
-    //{ forall(&OutputGenerator::writeTilde,c); }
-    //void writeRing(char c)
-    //{ forall(&OutputGenerator::writeRing,c); }
-    //void writeSharpS()
-    //{ forall(&OutputGenerator::writeSharpS); }
-    //void writeCCedil(char c)
-    //{ forall(&OutputGenerator::writeCCedil,c); }
     void startMemberDescription() 
     { forall(&OutputGenerator::startMemberDescription); }
     void endMemberDescription() 
@@ -343,8 +259,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 
     { forall(&OutputGenerator::endParamList); }
-    //void endDescTitle() 
-    //{ forall(&OutputGenerator::endDescTitle); }
     void writeDescItem() 
     { forall(&OutputGenerator::writeDescItem); }
     void startIndent() 
@@ -355,13 +269,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startSection,lab,title,t); }
     void endSection(const char *lab,SectionInfo::SectionType t)
     { forall(&OutputGenerator::endSection,lab,t); }
-    //void writeSectionRef(const char *ref,const char *file,
-    //                     const char *anchor, const char *title)
-    //{ forall(&OutputGenerator::writeSectionRef,ref,file,anchor,title); }
-    //void writeSectionRefItem(const char *page,const char *lab, const char *title)
-    //{ forall(&OutputGenerator::writeSectionRefItem,page,lab,title); }
-    //void writeSectionRefAnchor(const char *page,const char *lab, const char *title)
-    //{ forall(&OutputGenerator::writeSectionRefAnchor,page,lab,title); }
     void addIndexItem(const char *s1,const char *s2)
     { forall(&OutputGenerator::addIndexItem,s1,s2); }
     void writeSynopsis() 
@@ -370,10 +277,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startClassDiagram); }
     void endClassDiagram(ClassDiagram &d,const char *f,const char *n)
     { forall(&OutputGenerator::endClassDiagram,d,f,n); }
-    //void startColorFont(uchar r,uchar g,uchar b)
-    //{ forall(&OutputGenerator::startColorFont,r,g,b); }
-    //void endColorFont()
-    //{ forall(&OutputGenerator::endColorFont); }
     void startPageRef()
     { forall(&OutputGenerator::startPageRef); }
     void endPageRef(const char *c,const char *a)
@@ -382,19 +285,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startQuickIndexItem,s,l); }
     void endQuickIndexItem()
     { forall(&OutputGenerator::endQuickIndexItem); }
-    //void writeFormula(const char *n,const char *t)
-    //{ forall(&OutputGenerator::writeFormula,n,t); }
     void writeNonBreakableSpace(int num)
     { forall(&OutputGenerator::writeNonBreakableSpace,num); }
-    //void startImage(const char *n,const char *s,bool c)
-    //{ forall(&OutputGenerator::startImage,n,s,c); }
-    //void endImage(bool c)
-    //{ forall(&OutputGenerator::endImage,c); }
-    //void startDotFile(const char *n,bool c)
-    //{ forall(&OutputGenerator::startDotFile,n,c); }
-    //void endDotFile(bool c)
-    //{ forall(&OutputGenerator::endDotFile,c); }
-
     void startDescTable()
     { forall(&OutputGenerator::startDescTable); }
     void endDescTable()
@@ -423,7 +315,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endTextBlock); }
     void lastIndexPage()
     { forall(&OutputGenerator::lastIndexPage); }
-
     void startMemberDocPrefixItem()
     { forall(&OutputGenerator::startMemberDocPrefixItem); }
     void endMemberDocPrefixItem()
@@ -444,34 +335,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParameterList); }
     void endParameterList()
     { forall(&OutputGenerator::endParameterList); }
-
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()
     { forall(&OutputGenerator::endFontClass); }
-
-    //void startHtmlOnly()
-    //{ forall(&OutputGenerator::startHtmlOnly); }
-    //void endHtmlOnly()
-    //{ forall(&OutputGenerator::endHtmlOnly); }
-    //void startLatexOnly()
-    //{ forall(&OutputGenerator::startLatexOnly); }
-    //void endLatexOnly()
-    //{ forall(&OutputGenerator::endLatexOnly); }
-
-    //void startSectionRefList()
-    //{ forall(&OutputGenerator::startSectionRefList); }
-    //void endSectionRefList()
-    //{ forall(&OutputGenerator::endSectionRefList); }
-
     void writeCodeAnchor(const char *name)
     { forall(&OutputGenerator::writeCodeAnchor,name); }
-#if 0
-    void startPlainFile(const char *name)
-    { forall(&OutputGenerator::startPlainFile,name); }
-    void endPlainFile() 
-    { forall(&OutputGenerator::endPlainFile); }
-#else // this is to work around a bug in the SGI MipsPro compiler
     void startPlainFile(const char *name)
     { 
       OutputGenerator *og=outputs->first();
@@ -490,7 +359,6 @@ class OutputList : public OutputDocInterface
         og=outputs->next();
       }
     }
-#endif
 
   private:
     void debug();

@@ -30,6 +30,7 @@
 class MainHandler;
 class CompoundHandler;
 class SectionHandler;
+class ParamHandler;
 
 struct MemberReference : public IMemberReference
 {
@@ -59,6 +60,8 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
     virtual void endInitializer();
     virtual void startEnumValue(const QXmlAttributes& attrib);
     virtual void endEnumValue();
+    virtual void startBriefDesc(const QXmlAttributes& attrib);
+    virtual void startDetailedDesc(const QXmlAttributes& attrib);
 
     // IEnumValue
     virtual const IString *name() const { return &m_name; }
@@ -67,13 +70,20 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
     void setName(const QString &name) { m_name=name; }
     void setInitializer(const QString &init) { m_initializer=init; }
     
-    virtual ~EnumValueHandler() {}
+    virtual ~EnumValueHandler() {  delete m_brief;  delete m_detailed; }
     EnumValueHandler(IBaseHandler *parent);
+
+    virtual IDocRoot *briefDescription() const
+    { return m_brief; }
+    virtual IDocRoot *detailedDescription() const
+    { return m_detailed; }
 
   private:
     StringImpl m_name;
     StringImpl m_initializer;
     IBaseHandler *m_parent;
+    DocHandler  *m_brief;
+    DocHandler  *m_detailed;
 };
 
 class EnumValueIterator : public BaseIterator<IEnumValueIterator,IEnumValue,EnumValueHandler>

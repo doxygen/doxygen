@@ -228,13 +228,16 @@ ICompound *MainHandler::compoundById(const char *id) const
   // unchanged.
   MainHandler *that = (MainHandler *)this;
   ch->initialize(that);
+  printf("loading compound %s in memory\n",id);
   that->m_compoundsLoaded.insert(id,ch);
   return ch->toICompound();
 }
 
 void MainHandler::unloadCompound(CompoundHandler *ch)
 {
-  m_compoundsLoaded.remove(ch->id()->latin1()); 
+  printf("unloading compound %s from memory\n",ch->id()->latin1());
+  bool result = m_compoundsLoaded.remove(ch->id()->latin1()); 
+  if (!result) printf("Failed to unload!\n");
 }
 
 ICompound *MainHandler::compoundByName(const char *name) const
@@ -276,6 +279,7 @@ IDoxygen *createObjectModel()
 
 void MainHandler::release()
 {
+  //printf("MainHandler::release()\n");
   QDictIterator<CompoundHandler> chi(m_compoundsLoaded);
   CompoundHandler *ch;
   for (chi.toFirst();(ch=chi.current());++chi)

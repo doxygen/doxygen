@@ -265,7 +265,7 @@ class TranslatorDanish : public TranslatorAdapter_1_2_7
         result+="klassemedlemmer";
       }
       result+=" med links til ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

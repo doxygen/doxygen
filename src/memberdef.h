@@ -200,16 +200,8 @@ class MemberDef : public Definition
     // argument related members
     ArgumentList *argumentList() const { return defArgList; }
     ArgumentList *declArgumentList() const { return declArgList; }
-    void setArgumentList(ArgumentList *al) 
-    { 
-      if (defArgList) delete defArgList;
-      defArgList = al;
-    }
-    void setDeclArgumentList(ArgumentList *al)
-    {
-      if (declArgList) delete declArgList;
-      declArgList = al;
-    }
+    void setArgumentList(ArgumentList *al);
+    void setDeclArgumentList(ArgumentList *al);
     ArgumentList *templateArguments() const { return tArgList; }
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
     QList<ArgumentList> *definitionTemplateParameterLists() const 

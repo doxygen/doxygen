@@ -262,7 +262,8 @@ MemberDef::MemberDef(const char *df,int dl,
                      const ArgumentList *tal,const ArgumentList *al
                     ) : Definition(df,dl,na)
 {
-  //printf("++++++ MemberDef(%s file=%s,line=%d static=%d) ++++++ \n",na,df,dl,s);
+  //printf("++++++ MemberDef(%s file=%s,line=%d static=%d) ++++++ \n",
+  //    na,df,dl,s);
   classDef=0;
   fileDef=0;
   redefines=0;
@@ -345,6 +346,7 @@ MemberDef::MemberDef(const char *df,int dl,
     defArgList->constSpecifier    = al->constSpecifier;
     defArgList->volatileSpecifier = al->volatileSpecifier;
     defArgList->pureSpecifier     = al->pureSpecifier;
+    //printf("defArgList(%p)->constSpecifier=%d\n",defArgList,defArgList->constSpecifier);
   }
   else
   {
@@ -355,6 +357,8 @@ MemberDef::MemberDef(const char *df,int dl,
   {
     declArgList = new ArgumentList;
     stringToArgumentList(args,declArgList);
+    //printf("setDeclArgList %s to %p const=%d\n",args.data(),
+    //    declArgList,declArgList->constSpecifier);
   }
   else
   {
@@ -1922,3 +1926,13 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
   }
 }
 
+void MemberDef::setArgumentList(ArgumentList *al) 
+{ 
+  if (defArgList) delete defArgList;
+  defArgList = al;
+}
+void MemberDef::setDeclArgumentList(ArgumentList *al)
+{
+  if (declArgList) delete declArgList;
+  declArgList = al;
+}

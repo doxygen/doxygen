@@ -131,7 +131,10 @@ enum HtmlTagType
   HTML_P        = 24,
   HTML_H1       = 25,
   HTML_H2       = 26,
-  HTML_H3       = 27
+  HTML_H3       = 27,
+  HTML_H4       = 28,
+  HTML_H5       = 29,
+  HTML_H6       = 30
 };
 
 class CmdMapper

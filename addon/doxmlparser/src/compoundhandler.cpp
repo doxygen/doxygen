@@ -145,15 +145,15 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   : m_brief(0), m_detailed(0), m_programListing(0),
     m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
     m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0),
-    m_includeDependencyGraph(0), m_includedByDependencyGraph(0),
-    m_hasTemplateParams(FALSE)
+    m_includeDependencyGraph(0), m_includedByDependencyGraph(0), m_templateParamList(0),
+    m_titleHandler(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
   m_sections.setAutoDelete(TRUE);
   m_memberNameDict.setAutoDelete(TRUE);
   m_innerCompounds.setAutoDelete(TRUE);
-  m_templateParams.setAutoDelete(TRUE);
+  m_params.setAutoDelete(TRUE);
 
   addStartHandler("doxygen");
   addEndHandler("doxygen");
@@ -201,16 +201,19 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("innergroup",this,&CompoundHandler::startInnerGroup);
   addEndHandler("innergroup");
 
-  addStartHandler("templateparamlist");
+  addStartHandler("templateparamlist",this,&CompoundHandler::startTemplateParamList);
   addEndHandler("templateparamlist");
 
   addStartHandler("param",this,&CompoundHandler::startParam);
   addEndHandler("param");
+
+  addStartHandler("title",this,&CompoundHandler::startTitle);
 }
 
 CompoundHandler::~CompoundHandler()
 {
   debug(2,"CompoundHandler::~CompoundHandler()\n");
+  delete m_titleHandler;
   delete m_brief;
   delete m_detailed;
   delete m_programListing;
@@ -265,6 +268,8 @@ void CompoundHandler::startLocation(const QXmlAttributes& attrib)
 {
   m_defFile = attrib.value("file");
   m_defLine = attrib.value("line").toInt();
+  m_defBodyStart = attrib.value("bodystart").toInt();
+  m_defBodyEnd = attrib.value("bodyend").toInt();
 }
 
 void CompoundHandler::endCompoundName()
@@ -295,10 +300,15 @@ void CompoundHandler::startInnerGroup(const QXmlAttributes& attrib)
 
 void CompoundHandler::startParam(const QXmlAttributes& attrib)
 {
-  m_hasTemplateParams = TRUE;
   ParamHandler *ph = new ParamHandler(this);
   ph->startParam(attrib);
-  m_templateParams.append(ph);
+  m_params.append(ph);
+}
+
+void CompoundHandler::startTemplateParamList(const QXmlAttributes& attrib)
+{
+  m_templateParamList = new TemplateParamListHandler(this);
+  m_templateParamList->startParam(attrib);
 }
 
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
@@ -347,6 +357,13 @@ void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
       protString.data(),
       kindString.data());
   m_subClasses.append(sc);
+}
+
+void CompoundHandler::startTitle(const QXmlAttributes& attrib)
+{
+  ASSERT(m_titleHandler==0);
+  m_titleHandler = new TitleHandler(this);
+  m_titleHandler->startTitle(attrib);
 }
 
 bool CompoundHandler::parseXML(const char *compId)
@@ -506,6 +523,10 @@ IDocProgramListing *CompoundHandler::source() const
 
 IParamIterator *CompoundHandler::templateParameters() const
 {
-  return m_hasTemplateParams ? new ParamIterator(m_templateParams) : 0;
+  return m_templateParamList ? m_templateParamList->templateParams() : 0;
 }
 
+const IDocTitle *CompoundHandler::title() const
+{
+  return m_titleHandler;
+}

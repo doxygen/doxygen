@@ -144,6 +144,9 @@
 // 2002/07/29
 //  - The new trDeprecatedList() implemented.
 //
+// 2002/10/15
+//  - The new trEvents() and trEventDocumentation() implemented.
+//  
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -163,7 +166,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public TranslatorAdapter_1_2_18
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1534,6 +1537,24 @@ class TranslatorCzech : public TranslatorAdapter_1_2_18
     {
       return decode("Seznam zastaralých prvkù");
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Události";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Dokumentace událostí";
+    }
+
 };
 
 #endif // TRANSLATOR_CZ_H

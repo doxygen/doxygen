@@ -895,7 +895,6 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
 }
 
 
-
 QCString argListToString(ArgumentList *al)
 {
   QCString result;

@@ -263,7 +263,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_18
 
 	  result += "s odkazmi na ";
 
-	  if (extractAll)
+	  if (!extractAll)
 	  {
 		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 		{

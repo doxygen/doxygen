@@ -65,25 +65,25 @@ RTFGenerator::~RTFGenerator()
 {
 }
 
-void RTFGenerator::append(const OutputGenerator *g)
-{
-  t << g->getContents();
-  col+=((RTFGenerator *)g)->col;
-  //insideTabbing=insideTabbing || ((RTFGenerator *)g)->insideTabbing;
-  m_listLevel=((RTFGenerator *)g)->m_listLevel;
-  m_omitParagraph=((RTFGenerator *)g)->m_omitParagraph;
-  //printf("RTFGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
-  //    insideTabbing ? "TRUE" : "FALSE" );
-}
+//void RTFGenerator::append(const OutputGenerator *g)
+//{
+//  t << g->getContents();
+//  col+=((RTFGenerator *)g)->col;
+//  //insideTabbing=insideTabbing || ((RTFGenerator *)g)->insideTabbing;
+//  m_listLevel=((RTFGenerator *)g)->m_listLevel;
+//  m_omitParagraph=((RTFGenerator *)g)->m_omitParagraph;
+//  //printf("RTFGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
+//  //    insideTabbing ? "TRUE" : "FALSE" );
+//}
 
-OutputGenerator *RTFGenerator::copy()
-{
-  RTFGenerator *result = new RTFGenerator;
-  //result->insideTabbing=insideTabbing;
-  result->m_listLevel=m_listLevel;
-  result->m_omitParagraph=m_omitParagraph;
-  return result;
-}
+//OutputGenerator *RTFGenerator::copy()
+//{
+//  RTFGenerator *result = new RTFGenerator;
+//  //result->insideTabbing=insideTabbing;
+//  result->m_listLevel=m_listLevel;
+//  result->m_omitParagraph=m_omitParagraph;
+//  return result;
+//}
 
 void RTFGenerator::writeStyleSheetFile(QFile &file)
 {

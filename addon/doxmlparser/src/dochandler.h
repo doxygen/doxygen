@@ -64,6 +64,8 @@ DEFINE_CLS_IMPL(DocTable);
 DEFINE_CLS_IMPL(DocRow);
 DEFINE_CLS_IMPL(DocEntry);
 DEFINE_CLS_IMPL(DocSection);
+DEFINE_CLS_IMPL(DocPreformatted);
+DEFINE_CLS_IMPL(DocSymbol);
 DEFINE_CLS_IMPL(DocRoot);
 
 //-----------------------------------------------------------------------------
@@ -138,8 +140,6 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     virtual void endSubscript();
     virtual void startSuperscript(const QXmlAttributes &attrib);
     virtual void endSuperscript();
-    virtual void startPreformatted(const QXmlAttributes &attrib);
-    virtual void endPreformatted();
 
 
   private:
@@ -189,6 +189,17 @@ class ParagraphHandler : public DocParaImpl,
     virtual void startDotFile(const QXmlAttributes& attrib);
     virtual void startIndexEntry(const QXmlAttributes& attrib);
     virtual void startTable(const QXmlAttributes& attrib);
+    virtual void startPreformatted(const QXmlAttributes& attrib);
+    virtual void startUmlaut(const QXmlAttributes& attrib);
+    virtual void startAcute(const QXmlAttributes& attrib);
+    virtual void startGrave(const QXmlAttributes& attrib);
+    virtual void startCirc(const QXmlAttributes& attrib);
+    virtual void startTilde(const QXmlAttributes& attrib);
+    virtual void startSzlig(const QXmlAttributes& attrib);
+    virtual void startCedil(const QXmlAttributes& attrib);
+    virtual void startRing(const QXmlAttributes& attrib);
+    virtual void startNbsp(const QXmlAttributes& attrib);
+    virtual void startCopy(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();
@@ -975,6 +986,64 @@ class TableIterator : public BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImp
       BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImpl>(handler.m_children) {}
 };
 
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing an preformatted section
+ */
+class PreformattedHandler : public DocPreformattedImpl, 
+                            public BaseHandler<PreformattedHandler>
+{
+    friend class PreformattedIterator;
+  public:
+    PreformattedHandler(IBaseHandler *parent);
+    virtual ~PreformattedHandler();
+    void startPreformatted(const QXmlAttributes& attrib);
+    void endPreformatted();
+
+    // IDocPreformatted
+    virtual IDocIterator *contents() const;
+    virtual Kind kind() const { return DocImpl::Preformatted; }
+
+  private:
+    IBaseHandler   *m_parent;
+    QList<DocImpl>  m_children;
+};
+
+class PreformattedIterator : 
+   public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+{
+  public:
+    PreformattedIterator(const PreformattedHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing an special symbol.
+ *
+ */
+// children: -
+class SymbolHandler : public DocSymbolImpl, public BaseHandler<SymbolHandler>
+{
+  public:
+    SymbolHandler(IBaseHandler *parent,Types type);
+    virtual ~SymbolHandler();
+    void startSymbol(const QXmlAttributes& attrib);
+    void endSymbol();
+
+    // IDocSymbol
+    virtual Kind kind() const   { return DocImpl::Symbol; }
+    virtual Types type() const  { return m_type; }
+    virtual const IString *typeString() const { return &m_typeString; }
+    virtual char letter() const { return m_letter; }
+
+  private:
+    IBaseHandler  *m_parent;
+    char           m_letter;
+    Types          m_type;
+    StringImpl     m_typeString;
+};
+
 
 //-----------------------------------------------------------------------------
 
@@ -1033,6 +1102,9 @@ class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
     virtual void startSect1(const QXmlAttributes& attrib);
     virtual void startSect2(const QXmlAttributes& attrib);
     virtual void startSect3(const QXmlAttributes& attrib);
+    virtual void startSect4(const QXmlAttributes& attrib);
+    virtual void startSect5(const QXmlAttributes& attrib);
+    virtual void startSect6(const QXmlAttributes& attrib);
     virtual void startTitle(const QXmlAttributes& attrib);
 
     DocHandler(IBaseHandler *parent);
@@ -1053,6 +1125,8 @@ class DocIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
     DocIterator(const DocHandler &handler) : 
       BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
+
+//-----------------------------------------------------------------------------
 
 void dochandler_init();
 void dochandler_exit();

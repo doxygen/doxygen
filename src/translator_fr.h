@@ -213,7 +213,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
       QCString result="Liste de tous les membres de classe ";
       if (!extractAll) result+="documentés ";
       result+="avec les liens vers ";
-      if (extractAll) result+="la documentation de la classe correspondante :";
+      if (!extractAll) result+="la documentation de la classe correspondante :";
       else result+="les classes auxquelles ils appartiennent :";
       return result;
     }

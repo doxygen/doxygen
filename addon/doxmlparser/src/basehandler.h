@@ -75,11 +75,11 @@ template<class T> class ElementMapper
         Handler m_handler;
     };
 
+  public:
     typedef StartElementHandler StartElementHandlerT;
     typedef EndElementHandler   EndElementHandlerT;
-  
-  public:
-    ElementMapper() : m_startHandlers(67), m_endHandlers(67)
+	  
+	ElementMapper() : m_startHandlers(67), m_endHandlers(67)
     {
       m_startHandlers.setAutoDelete(TRUE);
       m_endHandlers.setAutoDelete(TRUE);

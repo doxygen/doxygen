@@ -26,6 +26,7 @@
 #include "baseiterator.h"
 #include "linkedtexthandler.h"
 
+
 class ParamHandler : public IParam, public BaseHandler<ParamHandler>
 {
   public:
@@ -67,6 +68,26 @@ class ParamIterator : public BaseIterator<IParamIterator,IParam,ParamHandler>
   public:
     ParamIterator(const QList<ParamHandler> &list) : 
       BaseIterator<IParamIterator,IParam,ParamHandler>(list) {}
+};
+
+class TemplateParamListHandler : public BaseHandler<TemplateParamListHandler>
+{
+  public:
+
+    virtual void startParam(const QXmlAttributes& attrib);
+    virtual void endParam();
+
+    virtual void startTemplateParamList(const QXmlAttributes& attrib);
+    virtual void endTemplateParamList();
+
+    TemplateParamListHandler(IBaseHandler *parent);
+	virtual ~TemplateParamListHandler() {}
+
+	ParamIterator* templateParams() { return new ParamIterator(m_templateParams); }
+
+  protected:
+    IBaseHandler *m_parent;
+    QList<ParamHandler> m_templateParams;
 };
 
 
