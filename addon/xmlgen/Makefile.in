@@ -1,0 +1,12 @@
+all clean depend: Makefile.xmlgen 
+	$(MAKE) -f Makefile.xmlgen $@
+
+distclean: clean
+	$(RM) -f Makefile.xmlgen
+
+tmake:
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
+
+Makefile.xmlgen: xmlgen.pro
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
+

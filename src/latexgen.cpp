@@ -494,7 +494,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isPackageDocumentation:
       {
-        PackageSDict::Iterator pdi(packageDict);
+        PackageSDict::Iterator pdi(Doxygen::packageDict);
         PackageDef *pd=pdi.toFirst();
         bool found=FALSE;
         while (pd && !found)
@@ -509,7 +509,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=groupList.first();
+        GroupDef *gd=Doxygen::groupList.first();
         bool found=FALSE;
         while (gd && !found)
         {
@@ -519,13 +519,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; //Module Documentation}\n";
             found=TRUE;
           }
-          gd=groupList.next();
+          gd=Doxygen::groupList.next();
         }
       }
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=namespaceList.first();
+        NamespaceDef *nd=Doxygen::namespaceList.first();
         bool found=FALSE;
         while (nd && !found)
         {
@@ -535,13 +535,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; // Namespace Documentation}\n":
             found=TRUE;
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         } 
       }
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=classList.first();
+        ClassDef *cd=Doxygen::classList.first();
         bool found=FALSE;
         while (cd && !found)
         {
@@ -551,14 +551,14 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; //Compound Documentation}\n";
             found=TRUE;
           }
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
       }
       break;
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=inputNameList.first();
+        FileName *fn=Doxygen::inputNameList.first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -576,7 +576,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=inputNameList.next();
+          fn=Doxygen::inputNameList.next();
         }
       }
       break;
@@ -637,7 +637,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isPackageDocumentation:
       {
-        PackageSDict::Iterator pdi(packageDict);
+        PackageSDict::Iterator pdi(Doxygen::packageDict);
         PackageDef *pd=pdi.toFirst();
         bool found=FALSE;
         while (pd && !found)
@@ -658,7 +658,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=groupList.first();
+        GroupDef *gd=Doxygen::groupList.first();
         bool found=FALSE;
         while (gd && !found)
         {
@@ -667,7 +667,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
             t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          gd=groupList.next();
+          gd=Doxygen::groupList.next();
         }
         while (gd)
         {
@@ -676,13 +676,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
           }
-          gd=groupList.next();
+          gd=Doxygen::groupList.next();
         }
       }
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=namespaceList.first();
+        NamespaceDef *nd=Doxygen::namespaceList.first();
         bool found=FALSE;
         while (nd && !found)
         {
@@ -691,7 +691,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
             t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         }
         while (nd)
         {
@@ -700,13 +700,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << nd->getOutputFileBase() << "}\n";
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         }
       }
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=classList.first();
+        ClassDef *cd=Doxygen::classList.first();
         bool found=FALSE;
         while (cd && !found)
         {
@@ -715,7 +715,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
         while (cd)
         {
@@ -724,14 +724,14 @@ void LatexGenerator::endIndexSection(IndexSections is)
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << cd->getOutputFileBase() << "}\n";
           } 
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
       }
       break;
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=inputNameList.first();
+        FileName *fn=Doxygen::inputNameList.first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -752,14 +752,14 @@ void LatexGenerator::endIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=inputNameList.next();
+          fn=Doxygen::inputNameList.next();
         }
       }
       break;
     case isExampleDocumentation:
       {
         t << "}\n";
-        PageSDictIterator pdi(*exampleSDict);
+        PageSDictIterator pdi(*Doxygen::exampleSDict);
         PageInfo *pi=pdi.toFirst();
         if (pi)
         {
@@ -775,12 +775,12 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation:
       {
         t << "}\n";
-        PageSDictIterator pdi(*pageSDict);
+        PageSDictIterator pdi(*Doxygen::pageSDict);
         PageInfo *pi=pdi.toFirst();
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          if (!pi->inGroup)
+          if (!pi->inGroup && !pi->isReference())
           {
             QCString pageName;
             if (Config::caseSensitiveNames)
@@ -1135,30 +1135,37 @@ void LatexGenerator::endSection(const char *lab,bool)
   t << "}\\label{" << lab << "}" << endl;
 }
 
-void LatexGenerator::writeSectionRef(const char *,const char *lab,
-                                     const char *text)
+void LatexGenerator::writeSectionRef(const char *ref,const char *,
+                                     const char *lab,const char *text)
 {
-  if (text && Config::pdfHyperFlag)
+  if (ref) // external reference
   {
-    t << "\\hyperlink{";
-    if (lab) t << lab; 
-    t << "}{";
     docify(text);
-    t << "}";
-    //t << " {\\rm (p.\\,\\pageref{" << lab << "})}";
   }
-  else
+  else // local reference
   {
-    if (strcmp(lab,text)!=0) // lab!=text
+    if (text && Config::pdfHyperFlag)
     {
-      // todo: don't hardcode p. here!
-      t << "{\\bf ";
+      t << "\\hyperlink{";
+      if (lab) t << lab; 
+      t << "}{";
       docify(text);
-      t << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
+      t << "}";
+      //t << " {\\rm (p.\\,\\pageref{" << lab << "})}";
     }
     else
     {
-      t << "\\ref{" << lab << "}";
+      if (strcmp(lab,text)!=0) // lab!=text
+      {
+        // todo: don't hardcode p. here!
+        t << "{\\bf ";
+        docify(text);
+        t << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
+      }
+      else
+      {
+        t << "\\ref{" << lab << "}";
+      }
     }
   }
 }
@@ -1172,14 +1179,14 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
 }
 
 // TODO: remove this function
-void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
-                                     const char *title)
-{
-  startBold();
-  docify(title);
-  endBold();
-  t << " (p.\\,\\pageref{" << lab << "})" << endl;
-}
+//void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
+//                                     const char *title)
+//{
+//  startBold();
+//  docify(title);
+//  endBold();
+//  t << " (p.\\,\\pageref{" << lab << "})" << endl;
+//}
 
 //void LatexGenerator::docify(const char *str)
 //{

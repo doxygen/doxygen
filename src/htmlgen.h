@@ -44,7 +44,6 @@ class HtmlGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
     
-    
     //void generateExternalIndex();
     void startFile(const char *name,const char *title,bool external);
     void writeFooter(int,bool);
@@ -127,8 +126,8 @@ class HtmlGenerator : public OutputGenerator
     void endPreFragment()   { t << "</pre>"; }
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }
-    void writeBoldString(const char *text) 
-                         { t << "<b>"; docify(text); t << "</b>"; }
+    //void writeBoldString(const char *text) 
+    //                     { t << "<b>"; docify(text); t << "</b>"; }
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
@@ -185,17 +184,17 @@ class HtmlGenerator : public OutputGenerator
     void endDescList()        { t << "</dl>"; }
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
-    void writeSectionRef(const char *,const char *,const char *);
+    void writeSectionRef(const char *,const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
-    void writeSectionRefAnchor(const char *,const char *,const char *);
+    //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *) {}
     void startIndent();
     void endIndent();
     void writeSynopsis() {}
     void startClassDiagram();
     void endClassDiagram(ClassDiagram &,const char *,const char *);
-    void startColorFont(uchar r,uchar g,uchar b);
-    void endColorFont();
+    //void startColorFont(uchar r,uchar g,uchar b);
+    //void endColorFont();
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
     void startQuickIndexItem(const char *,const char *);

@@ -292,17 +292,19 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               if (!Config::genTagFile.isEmpty())
               {
-                tagFile << "    <member kind=\"enumeration\">" << endl;
-                tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
-                tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
-                tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
-                tagFile << "    </member>" << endl;
+                Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
+                Doxygen::tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
+                Doxygen::tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
+                Doxygen::tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
+                Doxygen::tagFile << "    </member>" << endl;
               }
               md->writeLink(typeDecl,cd,nd,fd,gd);
             }
             else
             {
-              typeDecl.writeBoldString(name);
+              typeDecl.startBold();
+              typeDecl.docify(name);
+              typeDecl.endBold();
             }
             typeDecl.writeChar(' ');
           }
@@ -332,17 +334,19 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               {
               if (!Config::genTagFile.isEmpty())
               {
-                tagFile << "    <member kind=\"enumvalue\">" << endl;
-                tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
-                tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
-                tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
-                tagFile << "    </member>" << endl;
+                Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
+                Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+                Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
+                Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
+                Doxygen::tagFile << "    </member>" << endl;
               }
                 fmd->writeLink(typeDecl,cd,nd,fd,gd);
               }
               else // no docs for this enum value
               {
-                typeDecl.writeBoldString(fmd->name());
+                typeDecl.startBold();
+                typeDecl.docify(fmd->name());
+                typeDecl.endBold();
               }
               if (!fmd->initializer().isEmpty()) // enum value has initializer
               {
@@ -485,7 +489,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
-            ol.writeBoldString(md->name());
+            ol.startBold();
+            ol.docify(md->name());
+            ol.endBold();
             ol.endMemberItem(FALSE);
           }
         }

@@ -29,6 +29,7 @@ type doc\Makefile.win_%MAKE%.in >>doc\Makefile
 
 REM build in release or debug mode 
 type qtools\qtools.pro.in | sed "s/\$extraopts/%MODE%/g" >qtools\qtools.pro
+type src\libdoxygen.pro.in | sed "s/\$extraopts/%MODE%/g" >src\libdoxygen.pro
 type src\doxygen.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxygen.pro
 type src\doxytag.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxytag.pro
 type src\doxysearch.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxysearch.pro

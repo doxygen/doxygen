@@ -30,6 +30,7 @@
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
+#include <unistd.h>
   
 #include "scanner.h"
 #include "entry.h"
@@ -45,9 +46,6 @@
 #include "reflist.h"
 #include "code.h"
 
-#ifndef WIN32
-#include <unistd.h>
-#endif
   
 #define YY_NEVER_INTERACTIVE 1
   
@@ -263,11 +261,11 @@ static void addSection()
   //printf("New section pageName=%s label=%s title=%s\n",
   //    current->name.data(),sectionLabel.data(),sectionTitle.data());
   if (sectionLabel.isEmpty()) return;
-  if (sectionDict[sectionLabel]==0)
+  if (Doxygen::sectionDict.find(sectionLabel)==0)
   {
     SectionInfo *si=new SectionInfo(sectionLabel,sectionTitle,sectionType);
     //printf("Adding section addr=%p label=`%s' sectionTitle=`%s' fileName=%s\n",si,sectionLabel.data(),sectionTitle.data(),si->fileName.data());
-    sectionDict.insert(sectionLabel,si);
+    Doxygen::sectionDict.insert(sectionLabel,si);
     current->anchors->append(new QCString(sectionLabel));
   }
   else
@@ -284,13 +282,13 @@ static QCString addFormula()
   QCString formLabel;
   QCString fText=formulaText.simplifyWhiteSpace();
   Formula *f=0;
-  if ((f=formulaDict[fText])==0)
+  if ((f=Doxygen::formulaDict[fText])==0)
   {
     f = new Formula(fText);
-    formulaList.append(f);
-    formulaDict.insert(fText,f);
+    Doxygen::formulaList.append(f);
+    Doxygen::formulaDict.insert(fText,f);
     formLabel.sprintf("\\form#%d",f->getId());
-    formulaNameDict.insert(formLabel,f);
+    Doxygen::formulaNameDict.insert(formLabel,f);
   }
   else
   {
@@ -888,11 +886,11 @@ TITLE     [tT][iI][tT][lL][eE]
   					  //printf("Inserting namespace alias %s::%s->%s\n",current_root->name.data(),aliasName.data(),yytext);
 					  if (current_root->name.isEmpty())
 					  {
-					    namespaceAliasDict.insert(aliasName,new QCString(yytext));
+                                            Doxygen::namespaceAliasDict.insert(aliasName,new QCString(yytext));
 					  }
 					  else
 					  {
-					    namespaceAliasDict.insert(current_root->name+"::"+aliasName,
+                                            Doxygen::namespaceAliasDict.insert(current_root->name+"::"+aliasName,
 						new QCString(current_root->name+"::"+yytext));
 					  }
   					}
@@ -1370,10 +1368,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    // add typedef to dictionary
 					    QCString dest = extractName(current->type.right(current->type.length()-8));
-					    if (typedefDict[current->name]==0 && !dest.isEmpty())
+					    if (Doxygen::typedefDict[current->name]==0 && !dest.isEmpty())
 					    {		
 					      //printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
-					      typedefDict.insert(current->name, new QCString(dest));
+                                              Doxygen::typedefDict.insert(current->name, new QCString(dest));
 					    }
 					  }
 					  current->section = Entry::VARIABLE_SEC ;
@@ -1629,7 +1627,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					      if (!current->name.isEmpty() && current->name.at(0)!='@')
 					      {
 						//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
-						typedefDict.insert(msName,new QCString(current->name));
+                                                Doxygen::typedefDict.insert(msName,new QCString(current->name));
 					      }
 					    }
 					    varEntry->type+=current->name+msType;
@@ -2284,7 +2282,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    {
 					      //QCString dest = extractName(current->name);
 				   	      //printf("3>>>>>>>>>> adding %s->%s\n",yytext,current->name.data());
-					      typedefDict.insert(yytext,new QCString(current->name));
+                                              Doxygen::typedefDict.insert(yytext,new QCString(current->name));
 					      //current->extends->append(
 					      //   new BaseInfo(yytext,Public,Normal)
 					      //		      );
@@ -3518,7 +3516,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->doc+=yytext;
   					}
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  QCString *pValue=aliasDict[yytext+1];
+  					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {
 					    int i,l=pValue->length();
@@ -3536,7 +3534,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->brief+=yytext;
   					}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  QCString *pValue=aliasDict[yytext+1];
+  					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {
 					    int i,l=pValue->length();
@@ -3612,10 +3610,10 @@ static void endGroup()
   }
   else if (memberGroupId!=NOGROUP) // end of member group
   {
-    memberHeaderDict.insert(memberGroupId,
+    Doxygen::memberHeaderDict.insert(memberGroupId,
 	new QCString(memberGroupHeader.stripWhiteSpace())
 			   );
-    memberDocDict.insert(memberGroupId,
+    Doxygen::memberDocDict.insert(memberGroupId,
 	new QCString(memberGroupDocs)
 			);
     memberGroupId=NOGROUP;

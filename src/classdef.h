@@ -126,25 +126,11 @@ class ClassDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
 
-    void generateXML(QTextStream &t);
-    void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
+    //void generateXML(QTextStream &t);
+    //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
 
     PackageDef *packageDef() const;
    
-  protected:
-    void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    void addMemberListToGroup(MemberList *);
-
-  private: 
-    QCString fileName;                   // HTML containing the class docs
-    IncludeInfo *incInfo;                // header file to refer to
-    QCString incName;                    // alternative include file name
-    QCString memListFileName;            
-    QCString scopelessName;              // name without any scopes
-    BaseClassList *inherits;
-    BaseClassList *inheritedBy;
-    NamespaceDef  *nspace;              // the namespace this class is in
-
     /* member lists by protection */
     MemberList pubMembers;
     MemberList proMembers;
@@ -179,6 +165,21 @@ class ClassDef : public Definition
     MemberList relatedMembers;
     MemberList variableMembers;
     MemberList propertyMembers;
+
+  protected:
+    void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
+    void addMemberListToGroup(MemberList *);
+
+  private: 
+    QCString fileName;                   // HTML containing the class docs
+    IncludeInfo *incInfo;                // header file to refer to
+    QCString incName;                    // alternative include file name
+    QCString memListFileName;            
+    QCString scopelessName;              // name without any scopes
+    BaseClassList *inherits;
+    BaseClassList *inheritedBy;
+    NamespaceDef  *nspace;              // the namespace this class is in
+
 
     /* user defined member groups */
     MemberGroupList    *memberGroupList;

@@ -38,63 +38,60 @@ class PageSList;
 class PageSDict;
 class PageInfo;
 
-extern PageSDict *exampleSDict;
-extern PageSDict *pageSDict;
-extern PageInfo *mainPage;
-extern FileNameDict *includeNameDict;
-extern FileNameDict *exampleNameDict;
-extern FileNameDict *inputNameDict;
-extern FileNameDict *imageNameDict;
-
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
 typedef QDict<QCString>    StringDict;
 typedef QDict<GroupDef>    GroupDict;
 
-extern ClassList classList;
-extern ClassDict classDict;
-extern QStrList tagfileList;
-extern MemberNameList memberNameList;
-extern MemberNameList functionNameList;
-extern MemberNameDict memberNameDict;
-extern MemberNameDict functionNameDict;
-extern FileList fileList;
-extern FileDict fileDict;
-extern ClassDef unrelatedClass; 
-extern QTextStream tagFile;
-extern SectionDict sectionDict;
-extern FileNameList inputNameList;
-extern StringDict typedefDict;
-extern StringDict namespaceAliasDict;
-extern GroupList groupList;
-extern GroupDict groupDict;
-extern NamespaceList namespaceList;
-extern NamespaceDict namespaceDict;
-extern FormulaList formulaList;
-extern FormulaDict formulaDict;
-extern FormulaDict formulaNameDict;
-extern StringDict tagDestinationDict; 
-extern StringDict aliasDict; 
-extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
-extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
-extern QDict<void> expandAsDefinedDict;
-extern PackageSDict packageDict;
-
-extern int annotatedClasses;
-extern int hierarchyClasses;
-extern int documentedFunctions;
-extern int documentedMembers;
-extern int documentedDefines;
-extern int documentedFiles;
-extern int documentedHtmlFiles;
-extern int documentedGroups;
-extern int documentedNamespaces;
-extern int documentedNamespaceMembers;
-extern int documentedIncludeFiles;
-extern int documentedPages;
-extern int documentedPackages;
 extern QCString spaces;
 
-extern const char * getOverloadDocs();
+/*! \brief This class serves as a namespace for global variables used by doxygen.
+ *
+ *  All fields in this class are public and static, so they can be used directly.
+ */
+class Doxygen
+{
+  public:
+    static ClassList classList;
+    static ClassDict classDict;
+    static PageSDict *exampleSDict;
+    static PageSDict *pageSDict;
+    static PageInfo  *mainPage;
+    static FileNameDict *includeNameDict;
+    static FileNameDict *exampleNameDict;
+    static FileNameDict *inputNameDict;
+    static FileNameDict *imageNameDict;
+    static QStrList tagfileList;
+    static MemberNameList memberNameList;
+    static MemberNameList functionNameList;
+    static MemberNameDict memberNameDict;
+    static MemberNameDict functionNameDict;
+    static FileList fileList;
+    static FileDict fileDict;
+    static ClassDef unrelatedClass; 
+    static QTextStream tagFile;
+    static SectionDict sectionDict;
+    static FileNameList inputNameList;
+    static StringDict typedefDict;
+    static StringDict namespaceAliasDict;
+    static GroupList groupList;
+    static GroupDict groupDict;
+    static NamespaceList namespaceList;
+    static NamespaceDict namespaceDict;
+    static FormulaList formulaList;
+    static FormulaDict formulaDict;
+    static FormulaDict formulaNameDict;
+    static StringDict tagDestinationDict; 
+    static StringDict aliasDict; 
+    static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
+    static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
+    static QDict<void> expandAsDefinedDict;
+    static PackageSDict packageDict;
+};
+
+void initDoxygen();
+void readConfiguration(int argc, char **argv);
+void parseInput();
+void generateOutput();
 
 #endif

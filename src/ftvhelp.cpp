@@ -433,7 +433,7 @@ void FTVHelp::addContentsItem(bool isDir,
   if (ref)
   {
     tagName += ":";
-    QCString *s = tagDestinationDict[ref];
+    QCString *s = Doxygen::tagDestinationDict[ref];
     if (s)
     {
       tagDir = *s + "/";

@@ -54,7 +54,7 @@
 #include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
-#include "xml.h"
+//#include "xml.h"
 #include "reflist.h"
 #include "page.h"
 #include "packagedef.h"
@@ -65,140 +65,131 @@
 #define pclose _pclose
 #endif
 
-// lists
-ClassList      classList;          // all documented classes
-NamespaceList  namespaceList;      // all namespaces
-MemberNameList memberNameList;     // class member + related functions
-MemberNameList functionNameList;   // all unrelated functions
-FileNameList   inputNameList;      // all input files
-StringList     inputFiles;         
-GroupList      groupList;          // all groups
-FormulaList    formulaList;        // all formulas
+ClassList      Doxygen::classList;               // all documented classes
+ClassDict      Doxygen::classDict(1009);         
 
-// dictionaries
-PageSDict      *pageSDict = new PageSDict(1009);          // all doc pages
-PageSDict      *exampleSDict = new PageSDict(1009);       // all examples
-ClassDict      classDict(1009);         // all documented classes
-NamespaceDict  namespaceDict(257);      // all documented namespaces
-MemberNameDict memberNameDict(10007);   // all class member names
-MemberNameDict functionNameDict(10007); // all functions
-//StringDict     substituteDict(1009);  // class name substitutes
-SectionDict    sectionDict(257);        // all page sections
-StringDict     excludeNameDict(1009);   // sections
-StringDict     aliasDict(257);          // aliases
-FileNameDict   *inputNameDict;          // sections
-FileNameDict   *includeNameDict;        // include names
-FileNameDict   *exampleNameDict;        // examples
-FileNameDict   *imageNameDict;          // images
-StringDict     typedefDict(1009);       // all typedefs
-StringDict     namespaceAliasDict(257); // all namespace aliases
-GroupDict      groupDict(257);          // all groups
-FormulaDict    formulaDict(1009);       // all formulas
-FormulaDict    formulaNameDict(1009);   // the label name of all formulas
-StringDict     tagDestinationDict(257); // all tag locations
+NamespaceList  Doxygen::namespaceList;           // all namespaces
+NamespaceDict  Doxygen::namespaceDict(257);      
+
+MemberNameList Doxygen::memberNameList;          // class member + related functions
+MemberNameDict Doxygen::memberNameDict(10007);   
+
+MemberNameList Doxygen::functionNameList;        // all global function/namespace members
+MemberNameDict Doxygen::functionNameDict(10007); 
+
+FileNameList   Doxygen::inputNameList;           // all input files
+FileNameDict  *Doxygen::inputNameDict;          
+
+GroupList      Doxygen::groupList;               // all groups
+GroupDict      Doxygen::groupDict(257);          
+
+FormulaList    Doxygen::formulaList;             // all formulas
+FormulaDict    Doxygen::formulaDict(1009);       // all formulas
+FormulaDict    Doxygen::formulaNameDict(1009);   // the label name of all formulas
+
+PackageSDict   Doxygen::packageDict(257);         // java packages
+
+PageSDict      *Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
+PageSDict      *Doxygen::exampleSDict = new PageSDict(1009);       // all examples
+SectionDict    Doxygen::sectionDict(257);        // all page sections
+StringDict     Doxygen::aliasDict(257);          // aliases
+FileNameDict   *Doxygen::includeNameDict;        // include names
+FileNameDict   *Doxygen::exampleNameDict;        // examples
+FileNameDict   *Doxygen::imageNameDict;          // images
+StringDict     Doxygen::typedefDict(1009);       // all typedefs
+StringDict     Doxygen::namespaceAliasDict(257); // all namespace aliases
+StringDict     Doxygen::tagDestinationDict(257); // all tag locations
                                         // a member group
-QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
-QDict<void>    expandAsDefinedDict(257); // all macros that should be expanded
-OutputList     *outputList = 0;         // list of output generating objects
+QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
 
-PageInfo       *mainPage = 0;
-QIntDict<QCString> memberHeaderDict(1009); // dictionary of the member groups heading
-QIntDict<QCString> memberDocDict(1009);    // dictionary of the member groups heading
+QIntDict<QCString> Doxygen::memberHeaderDict(1009); // dictionary of the member groups heading
+QIntDict<QCString> Doxygen::memberDocDict(1009);    // dictionary of the member groups heading
 
-PackageSDict   packageDict(257);         // java packages
+PageInfo      *Doxygen::mainPage = 0;           
+QTextStream    Doxygen::tagFile;
   
+static StringList     inputFiles;         
+static StringDict     excludeNameDict(1009);   // sections
+static QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
+static OutputList     *outputList = 0;         // list of output generating objects
 
 void clearAll()
 {
-  classList.clear();       
-  namespaceList.clear();   
-  pageSDict->clear();         
-  exampleSDict->clear();      
-  memberNameList.clear();  
-  functionNameList.clear();
-  inputNameList.clear();   
   inputFiles.clear();      
-  groupList.clear();       
-  formulaList.clear();     
-  classDict.clear();        
-  namespaceDict.clear();     
-  memberNameDict.clear();  
-  functionNameDict.clear();
-  sectionDict.clear();       
-  inputNameDict->clear();    
   excludeNameDict.clear();  
-  includeNameDict->clear();  
-  exampleNameDict->clear();  
-  imageNameDict->clear();     
-  typedefDict.clear();      
-  groupDict.clear();         
-  formulaDict.clear();      
-  formulaNameDict.clear();  
-  tagDestinationDict.clear();
   delete outputList; outputList=0;
-  delete mainPage; mainPage=0;
+
+  Doxygen::classList.clear();       
+  Doxygen::namespaceList.clear();   
+  Doxygen::pageSDict->clear();         
+  Doxygen::exampleSDict->clear();      
+  Doxygen::memberNameList.clear();  
+  Doxygen::functionNameList.clear();
+  Doxygen::inputNameList.clear();   
+  Doxygen::groupList.clear();       
+  Doxygen::formulaList.clear();     
+  Doxygen::classDict.clear();        
+  Doxygen::namespaceDict.clear();     
+  Doxygen::memberNameDict.clear();  
+  Doxygen::functionNameDict.clear();
+  Doxygen::sectionDict.clear();       
+  Doxygen::inputNameDict->clear();    
+  Doxygen::includeNameDict->clear();  
+  Doxygen::exampleNameDict->clear();  
+  Doxygen::imageNameDict->clear();     
+  Doxygen::typedefDict.clear();      
+  Doxygen::groupDict.clear();         
+  Doxygen::formulaDict.clear();      
+  Doxygen::formulaNameDict.clear();  
+  Doxygen::tagDestinationDict.clear();
+  delete Doxygen::mainPage; Doxygen::mainPage=0;
 }
 
 void statistics()
 {
   fprintf(stderr,"--- inputNameDict stats ----\n");
-  inputNameDict->statistics();
+  Doxygen::inputNameDict->statistics();
   fprintf(stderr,"--- includeNameDict stats ----\n");
-  includeNameDict->statistics();
+  Doxygen::includeNameDict->statistics();
   fprintf(stderr,"--- exampleNameDict stats ----\n");
-  exampleNameDict->statistics();
+  Doxygen::exampleNameDict->statistics();
   fprintf(stderr,"--- imageNameDict stats ----\n");
-  imageNameDict->statistics();
+  Doxygen::imageNameDict->statistics();
   fprintf(stderr,"--- classDict stats ----\n");
-  classDict.statistics();
+  Doxygen::classDict.statistics();
   fprintf(stderr,"--- namespaceDict stats ----\n");
-  namespaceDict.statistics();
+  Doxygen::namespaceDict.statistics();
   fprintf(stderr,"--- memberNameDict stats ----\n");
-  memberNameDict.statistics();
+  Doxygen::memberNameDict.statistics();
   fprintf(stderr,"--- functionNameDict stats ----\n");
-  functionNameDict.statistics();
-  fprintf(stderr,"--- sectionDict stats ----\n");
-  sectionDict.statistics();
+  Doxygen::functionNameDict.statistics();
   fprintf(stderr,"--- excludeNameDict stats ----\n");
   excludeNameDict.statistics();
   fprintf(stderr,"--- aliasDict stats ----\n");
-  aliasDict.statistics();
+  Doxygen::aliasDict.statistics();
   fprintf(stderr,"--- typedefDict stats ----\n");
-  typedefDict.statistics();
+  Doxygen::typedefDict.statistics();
   fprintf(stderr,"--- namespaceAliasDict stats ----\n");
-  namespaceAliasDict.statistics();
+  Doxygen::namespaceAliasDict.statistics();
   fprintf(stderr,"--- groupDict stats ----\n");
-  groupDict.statistics();
+  Doxygen::groupDict.statistics();
   fprintf(stderr,"--- formulaDict stats ----\n");
-  formulaDict.statistics();
+  Doxygen::formulaDict.statistics();
   fprintf(stderr,"--- formulaNameDict stats ----\n");
-  formulaNameDict.statistics();
+  Doxygen::formulaNameDict.statistics();
   fprintf(stderr,"--- tagDestinationDict stats ----\n");
-  tagDestinationDict.statistics();
+  Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- compoundKeywordDict stats ----\n");
   compoundKeywordDict.statistics();
   fprintf(stderr,"--- expandAsDefinedDict stats ----\n");
-  expandAsDefinedDict.statistics();
+  Doxygen::expandAsDefinedDict.statistics();
   fprintf(stderr,"--- memberHeaderDict stats ----\n");
-  memberHeaderDict.statistics();
+  Doxygen::memberHeaderDict.statistics();
   fprintf(stderr,"--- memberDocDict stats ----\n");
-  memberDocDict.statistics();
+  Doxygen::memberDocDict.statistics();
 }
 
-int annotatedClasses;
-int hierarchyClasses;
-int documentedFunctions;
-int documentedMembers;
-int documentedHtmlFiles;
-int documentedFiles;
-int documentedGroups;
-int documentedNamespaces;
-int documentedNamespaceMembers;
-int documentedIncludeFiles;
-int documentedPages;
-int documentedPackages;
 
-QTextStream tagFile;
 
 static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
                    ArgumentList *al,bool over_load,NamespaceList *nl=0);
@@ -206,27 +197,17 @@ static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
 const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
 
-//----------------------------------------------------------------------
-// Returns the standard string that is generated when the \overload
-// command is used.
-
-const char *getOverloadDocs()
-{
-  return "This is an overloaded member function, "
-         "provided for convenience. It differs from the above "
-         "function only in what argument(s) it accepts.";
-}
-      
 //----------------------------------------------------------------------------
 
 static void addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
-                           int todoId,int testId,GroupDef *gd=0
+                           int todoId,int testId,GroupDef *gd=0,
+                           TagInfo *tagInfo=0
                           )
 {
   PageInfo *pi=0;
-  if ((pi=pageSDict->find(name)))
+  if ((pi=Doxygen::pageSDict->find(name)))
   {
     // append documentation block to the page.
     pi->doc+="\n\n"+doc;
@@ -238,19 +219,26 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-4);
     else if (baseName.right(5)==".html")
       baseName=baseName.left(baseName.length()-5);
-
+    
     QCString title=ptitle.stripWhiteSpace();
     pi=new PageInfo(fileName,startLine,baseName,doc,title);
     pi->todoId=todoId;
     pi->testId=testId;
+    if (tagInfo)
+    {
+      pi->reference = tagInfo->tagName;
+    }
+
     QCString pageName;
     if (Config::caseSensitiveNames)
       pageName=pi->name.copy();
     else
       pageName=pi->name.lower();
-    setFileNameForSections(anchors,pageName);
+    //setFileNameForSections(anchors,pageName,pi);
+    pi->fileName = pageName;
+    pi->addSections(anchors);
 
-    pageSDict->append(baseName,pi);
+    Doxygen::pageSDict->append(baseName,pi);
 
     if (gd) gd->addPage(pi);
     
@@ -260,7 +248,7 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
 
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
-          pi->name,pi->title,SectionInfo::Section);
+          pi->name,pi->title,SectionInfo::Section,pi->reference);
       if (gd)
       {
         si->fileName=gd->getOutputFileBase();
@@ -271,7 +259,7 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
       }
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section info %s\n",pi->name.data());
-      sectionDict.insert(pageName,si);
+      Doxygen::sectionDict.insert(pageName,si);
     }
   }
 }
@@ -283,10 +271,10 @@ static void addRelatedPage(Entry *root)
   QCString *s;
   for (;(s=sli.current());++sli)
   {
-    if (!s->isEmpty() && (gd=groupDict[*s])) break;
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s])) break;
   }
   addRelatedPage(root->name,root->args,root->doc,root->anchors,
-      root->fileName,root->startLine,root->todoId,root->testId,gd
+      root->fileName,root->startLine,root->todoId,root->testId,gd,root->tagInfo
      );
 }
 
@@ -322,6 +310,7 @@ static void addRefItem(int todoId,int testId,const char *prefix,
     doc += "</dt>\n<dd>";
     doc += item->text;
     doc += "</dd></dl>\n";
+    //printf("Todo page: %s\n",doc.data());
     addRelatedPage("todo",theTranslator->trTodoList(),doc,0,"generated",1,0,0);
 
     item->written=TRUE;
@@ -368,7 +357,7 @@ static void buildGroupList(Entry *root)
     
     GroupDef *gd;
     
-    if ((gd=groupDict[root->name]))
+    if ((gd=Doxygen::groupDict[root->name]))
     {
       warn(root->fileName,root->startLine,
            "Warning: group %s already documented. "
@@ -385,8 +374,8 @@ static void buildGroupList(Entry *root)
       gd->setBriefDescription(root->brief);
       gd->setDocumentation(root->doc);
       gd->addSectionsToDefinition(root->anchors);
-      groupList.append(gd);
-      groupDict.insert(root->name,gd);
+      Doxygen::groupList.append(gd);
+      Doxygen::groupDict.insert(root->name,gd);
       addGroupToGroups(root,gd);
       gd->setRefItems(root->todoId,root->testId);
     }
@@ -401,37 +390,6 @@ static void buildGroupList(Entry *root)
 
 //----------------------------------------------------------------------
 
-//void computeGroupRelations(Entry *root)
-//{
-//  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
-//  {
-//    GroupDef *gd;
-//    
-//    if ((gd=groupDict[root->name]))
-//    {
-//      QListIterator<QCString> sli(*root->groups);
-//      QCString *s;
-//      for (;(s=sli.current());++sli)
-//      {
-//        GroupDef *pgd;
-//        if (!s->isEmpty() && (pgd=groupDict[*s]))
-//        {
-//          pgd->addGroup(gd);
-//          printf("Group %s: in group %s\n",gd->groupName(),s->data());
-//        }
-//      }
-//    }
-//  }
-//  EntryListIterator eli(*root->sublist);
-//  Entry *e;
-//  for (;(e=eli.current());++eli)
-//  {
-//    computeGroupRelations(e);
-//  }
-//}
-
-//----------------------------------------------------------------------
-
 static void buildFileList(Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
@@ -440,7 +398,7 @@ static void buildFileList(Entry *root)
      )
   {
     bool ambig;
-    FileDef *fd=findFileDef(inputNameDict,root->name,ambig);
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,root->name,ambig);
     if (fd && !ambig)
     {
       if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
@@ -467,7 +425,7 @@ static void buildFileList(Entry *root)
         for (;(s=sli.current());++sli)
         {
           GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=groupDict[*s]))
+          if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
           {
             gd->addFile(fd);
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
@@ -486,7 +444,7 @@ static void buildFileList(Entry *root)
       if (ambig) // name is ambigious
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(inputNameDict,root->name);
+        text+=showFileDefMatches(Doxygen::inputNameDict,root->name);
         text+="Please use a more specific name by "
               "including a (larger) part of the path!";
       }
@@ -521,7 +479,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",root->includeFile.data());
     if (!root->includeFile.isEmpty() && 
-        (fd=findFileDef(inputNameDict,root->includeFile,ambig))==0
+        (fd=findFileDef(Doxygen::inputNameDict,root->includeFile,ambig))==0
        )
     { // explicit request
       QCString text;
@@ -532,7 +490,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       if (ambig) // name is ambigious
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(inputNameDict,root->includeFile);
+        text+=showFileDefMatches(Doxygen::inputNameDict,root->includeFile);
         text+="Please use a more specific name by "
             "including a (larger) part of the path!";
       }
@@ -635,7 +593,7 @@ static void buildClassList(Entry *root)
       bool ambig;
       ClassDef *cd;
       //printf("findFileDef(%s)\n",root->fileName.data());
-      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
       if ((cd=getClass(fullName))) 
       {
@@ -679,7 +637,7 @@ static void buildClassList(Entry *root)
           if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
           {
             cd->setBodySegment(root->bodyLine,root->endBodyLine);
-            cd->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+            cd->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
           }
           cd->addSectionsToDefinition(root->anchors);
           cd->setName(fullName); // change name to match docs
@@ -790,10 +748,10 @@ static void buildClassList(Entry *root)
 
         
         // add class to the list
-        classList.inSort(cd);
+        Doxygen::classList.inSort(cd);
         //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
         //classDict.insert(resolveDefines(fullName),cd);
-        classDict.insert(fullName,cd);
+        Doxygen::classDict.insert(fullName,cd);
       }
     }
   }
@@ -822,7 +780,7 @@ static void buildNamespaceList(Entry *root)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDef *nd;
-      if ((nd=namespaceDict[fullName])) 
+      if ((nd=Doxygen::namespaceDict[fullName])) 
       {
         if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
@@ -857,7 +815,7 @@ static void buildNamespaceList(Entry *root)
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
         addNamespaceToGroups(root,nd);
@@ -885,7 +843,7 @@ static void buildNamespaceList(Entry *root)
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
 
@@ -895,8 +853,8 @@ static void buildNamespaceList(Entry *root)
         nd->setBodySegment(root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
         // add class to the list
-        namespaceList.inSort(nd);
-        namespaceDict.insert(fullName,nd);
+        Doxygen::namespaceList.inSort(nd);
+        Doxygen::namespaceDict.insert(fullName,nd);
 
       }
     }
@@ -922,7 +880,7 @@ static void findUsingDirectives(Entry *root)
     {
       NamespaceDef *usingNd = 0;
       NamespaceDef *nd = 0;
-      FileDef      *fd = findFileDef(inputNameDict,root->fileName,ambig);
+      FileDef      *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       QCString nsName;
 
       // see if the using statement was found inside a namespace or inside
@@ -986,13 +944,13 @@ static void findUsingDirectives(Entry *root)
         for (;(s=sli.current());++sli)
         {
           GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=groupDict[*s]))
+          if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
             gd->addNamespace(nd);
         }
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) 
         {
@@ -1004,8 +962,8 @@ static void findUsingDirectives(Entry *root)
         nd->setBriefDescription(root->brief);
         nd->insertUsedFile(root->fileName);
         // add class to the list
-        namespaceList.inSort(nd);
-        namespaceDict.insert(root->name,nd);
+        Doxygen::namespaceList.inSort(nd);
+        Doxygen::namespaceDict.insert(root->name,nd);
         nd->setRefItems(root->todoId,root->testId);
       }
     }
@@ -1031,7 +989,7 @@ static void findUsingDeclarations(Entry *root)
     {
       ClassDef *usingCd = 0;
       NamespaceDef *nd = 0;
-      FileDef      *fd = findFileDef(inputNameDict,root->fileName,ambig);
+      FileDef      *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       QCString scName;
 
       // see if the using statement was found inside a namespace or inside
@@ -1160,7 +1118,7 @@ static MemberDef *addVariableToClass(
   // see if the member is already found in the same scope
   // (this may be the case for a static member that is initialized
   //  outside the class)
-  MemberName *mn=memberNameDict[name];
+  MemberName *mn=Doxygen::memberNameDict[name];
   if (mn)
   {
     MemberNameIterator mni(*mn);
@@ -1207,7 +1165,7 @@ static MemberDef *addVariableToClass(
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
   //
   bool ambig;
-  md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+  md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
 
   // add the member to the global list
   if (mn)
@@ -1219,8 +1177,8 @@ static MemberDef *addVariableToClass(
     mn = new MemberName(name);
     mn->append(md);
     //printf("Adding memberName=%s\n",mn->memberName());
-    memberNameDict.insert(name,mn);
-    memberNameList.append(mn);
+    Doxygen::memberNameDict.insert(name,mn);
+    Doxygen::memberNameList.append(mn);
     // add the member to the class
   }
   cd->insertMember(md);
@@ -1253,7 +1211,7 @@ static MemberDef *addVariableToFile(
               );
 
   bool ambig;
-  FileDef *fd = findFileDef(inputNameDict,root->fileName,ambig);
+  FileDef *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
@@ -1297,7 +1255,7 @@ static MemberDef *addVariableToFile(
   }
   if (def.left(7)=="static ") def=def.right(def.length()-7);
 
-  MemberName *mn=functionNameDict[name];
+  MemberName *mn=Doxygen::functionNameDict[name];
   if (mn)
   {
     QCString nscope=removeAnonymousScopes(scope);
@@ -1325,7 +1283,7 @@ static MemberDef *addVariableToFile(
         // merge ingroup specifiers
         if (md->getGroupDef()==0 && root->groups->first())
         {
-          GroupDef *gd=groupDict[root->groups->first()->data()];
+          GroupDef *gd=Doxygen::groupDict[root->groups->first()->data()];
           md->setGroupDef(gd);
         }
         else if (md->getGroupDef()!=0 && root->groups->count()==0)
@@ -1391,8 +1349,8 @@ static MemberDef *addVariableToFile(
   {
     mn = new MemberName(name);
     mn->append(md);
-    functionNameDict.insert(name,mn);
-    functionNameList.append(mn);
+    Doxygen::functionNameDict.insert(name,mn);
+    Doxygen::functionNameList.append(mn);
   }
   return md;
 }
@@ -1699,7 +1657,7 @@ static void buildMemberList(Entry *root)
         md->setMemberSpecifiers(root->memSpec);
         md->setMemberGroupId(root->mGrpId);
         bool ambig;
-        md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+        md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
         //md->setScopeTemplateArguments(root->tArgList);
         md->addSectionsToDefinition(root->anchors);
         QCString def;
@@ -1770,7 +1728,7 @@ static void buildMemberList(Entry *root)
 
         // add member to the global list of all members
         MemberName *mn;
-        if ((mn=memberNameDict[name]))
+        if ((mn=Doxygen::memberNameDict[name]))
         {
           mn->append(md);
         }
@@ -1779,8 +1737,8 @@ static void buildMemberList(Entry *root)
           mn = new MemberName(name);
           mn->append(md);
           //printf("Adding memberName=%s\n",mn->memberName());
-          memberNameDict.insert(name,mn);
-          memberNameList.append(mn);
+          Doxygen::memberNameDict.insert(name,mn);
+          Doxygen::memberNameList.append(mn);
         }
 
         // add member to the class cd
@@ -1806,7 +1764,7 @@ static void buildMemberList(Entry *root)
         bool found=FALSE;
         MemberName *mn;
         //MemberDef *fmd;
-        if ((mn=functionNameDict[rname]))
+        if ((mn=Doxygen::functionNameDict[rname]))
         {
           //printf("--> function %s already found!\n",rname.data());
           MemberNameIterator mni(*mn);
@@ -1854,14 +1812,14 @@ static void buildMemberList(Entry *root)
               {
                 md->setBodySegment(root->bodyLine,root->endBodyLine);
                 bool ambig;
-                md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+                md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
               } 
               md->addSectionsToDefinition(root->anchors);
 
               // merge ingroup specifiers
               if (md->getGroupDef()==0 && root->groups->first())
               {
-                GroupDef *gd=groupDict[root->groups->first()->data()];
+                GroupDef *gd=Doxygen::groupDict[root->groups->first()->data()];
                 md->setGroupDef(gd);
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
@@ -1896,7 +1854,7 @@ static void buildMemberList(Entry *root)
           //md->setBody(root->body);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
-          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->memSpec);
@@ -1969,7 +1927,7 @@ static void buildMemberList(Entry *root)
 
           // add member to the list of file members
           MemberName *mn;
-          if ((mn=functionNameDict[name]))
+          if ((mn=Doxygen::functionNameDict[name]))
           {
             mn->append(md);
           }
@@ -1977,8 +1935,8 @@ static void buildMemberList(Entry *root)
           {
             mn = new MemberName(name);
             mn->append(md);
-            functionNameDict.insert(name,mn);
-            functionNameList.append(mn);
+            Doxygen::functionNameDict.insert(name,mn);
+            Doxygen::functionNameList.append(mn);
           }
           addMemberToGroups(root,md);
         }
@@ -2011,13 +1969,13 @@ static void buildMemberList(Entry *root)
 static void findFriends()
 {
   //printf("findFriends()\n");
-  MemberNameListIterator fnli(functionNameList);
+  MemberNameListIterator fnli(Doxygen::functionNameList);
   MemberName *fn;
   for (;(fn=fnli.current());++fnli) // for each global function name
   {
     //printf("Function name=`%s'\n",fn->memberName());
     MemberName *mn;
-    if ((mn=memberNameDict[fn->memberName()]))
+    if ((mn=Doxygen::memberNameDict[fn->memberName()]))
     { // there are members with the same name
       //printf("Function name is also a member name\n");
       MemberNameIterator fni(*fn);
@@ -2074,7 +2032,7 @@ static void transferFunctionDocumentation()
   //printf("transferFunctionDocumentation()\n");
 
   // find matching function declaration and definitions.
-  MemberNameListIterator mnli(functionNameList);
+  MemberNameListIterator mnli(Doxygen::functionNameList);
   MemberName *mn;
   for (;(mn=mnli.current());++mnli)
   {
@@ -2153,7 +2111,7 @@ static void transferRelatedFunctionDocumentation()
 {
   // find match between function declaration and definition for 
   // related functions
-  MemberNameListIterator mnli(functionNameList);
+  MemberNameListIterator mnli(Doxygen::functionNameList);
   MemberName *mn;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -2164,7 +2122,7 @@ static void transferRelatedFunctionDocumentation()
     {
       //printf("  Function `%s'\n",md->name().data());
       MemberName *rmn;
-      if ((rmn=memberNameDict[md->name()])) // check if there is a member with the same name
+      if ((rmn=Doxygen::memberNameDict[md->name()])) // check if there is a member with the same name
       {
         //printf("  Member name found\n");
         MemberDef *rmd;
@@ -2191,7 +2149,7 @@ static void replaceNamespaceAliases(QCString &scope,int i)
   //printf("replaceNamespaceAliases(%s,%d)\n",scope.data(),i);
   while (i>0)
   {
-    QCString *s = namespaceAliasDict[scope.left(i)];
+    QCString *s = Doxygen::namespaceAliasDict[scope.left(i)];
     if (s)
     {
       scope=*s+scope.right(scope.length()-i);
@@ -2396,10 +2354,10 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           baseClass->insertUsedFile(root->fileName);
           // add class to the list
           //classList.inSort(baseClass);
-          classList.inSort(baseClass);
+          Doxygen::classList.inSort(baseClass);
           //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
           //classDict.insert(resolveDefines(bi->name),baseClass);
-          classDict.insert(baseClassName,baseClass);
+          Doxygen::classDict.insert(baseClassName,baseClass);
           return TRUE;
         }
         else
@@ -2503,13 +2461,13 @@ static void computeClassRelations(Entry *root)
 
 static void computeMemberReferences()
 {
-  ClassDef *cd=classList.first();
+  ClassDef *cd=Doxygen::classList.first();
   while (cd)
   {
     cd->computeAnchors();
-    cd=classList.next();
+    cd=Doxygen::classList.next();
   } 
-  FileName *fn=inputNameList.first();
+  FileName *fn=Doxygen::inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -2518,19 +2476,19 @@ static void computeMemberReferences()
       fd->computeAnchors();
       fd=fn->next();
     }
-    fn=inputNameList.next();
+    fn=Doxygen::inputNameList.next();
   }
-  NamespaceDef *nd=namespaceList.first();
+  NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
     nd->computeAnchors();
-    nd=namespaceList.next();
+    nd=Doxygen::namespaceList.next();
   }
-  GroupDef *gd=groupList.first();
+  GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
     gd->computeAnchors();
-    gd=groupList.next();
+    gd=Doxygen::groupList.next();
   }
 }
 
@@ -2538,13 +2496,13 @@ static void computeMemberReferences()
 
 static void addTodoTestReferences()
 {
-  ClassDef *cd=classList.first();
+  ClassDef *cd=Doxygen::classList.first();
   while (cd)
   {
     addRefItem(cd->todoId(),cd->testId(),"class",cd->getOutputFileBase(),cd->name());
-    cd=classList.next();
+    cd=Doxygen::classList.next();
   } 
-  FileName *fn=inputNameList.first();
+  FileName *fn=Doxygen::inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -2553,27 +2511,27 @@ static void addTodoTestReferences()
       addRefItem(fd->todoId(),fd->testId(),"file",fd->getOutputFileBase(),fd->name());
       fd=fn->next();
     }
-    fn=inputNameList.next();
+    fn=Doxygen::inputNameList.next();
   }
-  NamespaceDef *nd=namespaceList.first();
+  NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
     addRefItem(nd->todoId(),nd->testId(),"namespace",nd->getOutputFileBase(),nd->name());
-    nd=namespaceList.next();
+    nd=Doxygen::namespaceList.next();
   }
-  GroupDef *gd=groupList.first();
+  GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
     addRefItem(gd->todoId(),gd->testId(),"group",gd->getOutputFileBase(),gd->name());
-    gd=groupList.next();
+    gd=Doxygen::groupList.next();
   }
-  PageSDictIterator pdi(*pageSDict);
+  PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     addRefItem(pi->todoId,pi->testId,"page",pi->name,pi->title);
   }
-  MemberNameListIterator mnli(memberNameList);
+  MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -2592,7 +2550,7 @@ static void addTodoTestReferences()
       }
     }
   }
-  MemberNameListIterator fnli(functionNameList);
+  MemberNameListIterator fnli(Doxygen::functionNameList);
   for (fnli.toFirst();(mn=fnli.current());++fnli)
   {
     MemberNameIterator mni(*mn);
@@ -2706,7 +2664,7 @@ static void addMemberDocs(Entry *root,
     //  md->setBody(root->body);
     //}
     bool ambig;
-    FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
     if (fd)
     {
 
@@ -2854,10 +2812,10 @@ static bool findUnrelatedFunction(Entry *root,
   Debug::print(Debug::FindMembers,0,
        "2. findUnrelatedFunction(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
           namespaceName.data(),name,tempArg,decl);
-  MemberName *mn=functionNameDict[n+tempArg]; // look in function dictionary
+  MemberName *mn=Doxygen::functionNameDict[n+tempArg]; // look in function dictionary
   if (mn==0)
   {
-    mn=functionNameDict[n]; // try without template arguments
+    mn=Doxygen::functionNameDict[n]; // try without template arguments
   }
   if (mn) // function name defined
   {
@@ -2872,7 +2830,7 @@ static bool findUnrelatedFunction(Entry *root,
       NamespaceDef *nd=md->getNamespaceDef();
       //printf("Namespace namespaceName=%s nd=%s\n",
       //    namespaceName.data(),nd ? nd->name().data() : "<none>");
-      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
       //printf("NamespaceList %p\n",nl);
@@ -3355,11 +3313,11 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
                  "1. funcName=`%s'\n",funcName.data());
     if (!funcTempList.isEmpty()) // try with member specialization
     {
-      mn=memberNameDict[funcName+funcTempList];
+      mn=Doxygen::memberNameDict[funcName+funcTempList];
     }
     if (mn==0) // try without specialization
     {
-      mn=memberNameDict[funcName];
+      mn=Doxygen::memberNameDict[funcName];
     }
     if (!isRelated && mn) // function name already found
     {
@@ -3379,7 +3337,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           ClassDef *tcd=0;
           
           bool ambig;
-          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
           NamespaceDef *nd=0;
           if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
           tcd = findClassDefinition(fd,nd,scopeName,classTempList);
@@ -3463,7 +3421,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
             // TODO: match loop for all possible scopes
 
             bool ambig;
-            FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+            FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
             // list of namespaces using in the file that this member definition is part of
             NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
             
@@ -3580,7 +3538,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           md->addSectionsToDefinition(root->anchors);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
-          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->memSpec);
           md->setMemberGroupId(root->mGrpId);
@@ -3609,7 +3567,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
       {
         bool newMember=TRUE; // assume we have a new member
         bool newMemberName=FALSE; 
-        if ((mn=memberNameDict[funcName])==0)
+        if ((mn=Doxygen::memberNameDict[funcName])==0)
         {
           mn=new MemberName(funcName);
           newMemberName=TRUE; // we create a new member name
@@ -3662,7 +3620,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           bool found=FALSE;
           if (root->bodyLine==-1)
           {
-            MemberName *rmn=functionNameDict[funcName];
+            MemberName *rmn=Doxygen::functionNameDict[funcName];
             if (rmn)
             {
               MemberDef *rmd=rmn->first();
@@ -3691,7 +3649,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           {
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
-            FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+            FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
             md->setBodyDef(fd);
           }
 
@@ -3715,8 +3673,8 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           if (newMemberName)
           {
             //printf("Adding memberName=%s\n",mn->memberName());
-            memberNameList.append(mn);
-            memberNameDict.insert(funcName,mn);
+            Doxygen::memberNameList.append(mn);
+            Doxygen::memberNameDict.insert(funcName,mn);
           }
         }
       }
@@ -3896,22 +3854,22 @@ static void findEnums(Entry *root)
     {
       //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
       fd=0;
-      mnd=&memberNameDict;
-      mnl=&memberNameList;
+      mnd=&Doxygen::memberNameDict;
+      mnl=&Doxygen::memberNameList;
       isGlobal=FALSE;
     }
     else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
     {
-      mnd=&functionNameDict;
-      mnl=&functionNameList;
+      mnd=&Doxygen::functionNameDict;
+      mnl=&Doxygen::functionNameList;
       isGlobal=TRUE;
     }
     else // found a global enum
     {
       bool ambig;
-      fd=findFileDef(inputNameDict,root->fileName,ambig);
-      mnd=&functionNameDict;
-      mnl=&functionNameList;
+      fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+      mnd=&Doxygen::functionNameDict;
+      mnl=&Doxygen::functionNameList;
       isGlobal=TRUE;
     }
     if (!name.isEmpty())
@@ -3931,7 +3889,7 @@ static void findEnums(Entry *root)
       //md->setDefLine(root->startLine);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
-      md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+      md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
       //printf("Enum %s definition at line %d of %s: protection=%d\n",
       //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
       md->addSectionsToDefinition(root->anchors);
@@ -3961,7 +3919,7 @@ static void findEnums(Entry *root)
         {
           bool ambig;
           QCString filePathName = root->parent->fileName;
-          fd=findFileDef(inputNameDict,filePathName,ambig);
+          fd=findFileDef(Doxygen::inputNameDict,filePathName,ambig);
         }
         if (fd) 
         {
@@ -4098,7 +4056,7 @@ static void findEnumDocumentation(Entry *root)
       {
         //printf("Enum: scope=`%s' name=`%s'\n",cd->name(),name.data());
         QCString className=cd->name().copy();
-        MemberName *mn=memberNameDict[name];
+        MemberName *mn=Doxygen::memberNameDict[name];
         if (mn)
         {
           MemberNameIterator mni(*mn);
@@ -4139,7 +4097,7 @@ static void findEnumDocumentation(Entry *root)
       else // enum outside class 
       {
         MemberDef  *md;
-        MemberName *mn=functionNameDict[name];
+        MemberName *mn=Doxygen::functionNameDict[name];
         if (mn && (md=mn->getFirst()))
         {
           md->setDocumentation(root->doc);
@@ -4205,8 +4163,8 @@ static void findDEV(const MemberNameList &mnl)
 // values.
 static void findDocumentedEnumValues()
 {
-  findDEV(memberNameList);
-  findDEV(functionNameList); 
+  findDEV(Doxygen::memberNameList);
+  findDEV(Doxygen::functionNameList); 
 }
 
 
@@ -4217,7 +4175,7 @@ static void findDocumentedEnumValues()
 
 static void computeMemberRelations()
 {
-  MemberNameListIterator mnli(memberNameList);
+  MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn;
   for ( ; (mn=mnli.current()) ; ++mnli ) // for each member name
   {
@@ -4270,7 +4228,7 @@ static void computeMemberRelations()
 static void computeClassImplUsageRelations()
 {
   ClassDef *cd;
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for (;(cd=cli.current());++cli)
   {
     cd->determineImplUsageRelation();
@@ -4285,7 +4243,7 @@ static void buildCompleteMemberLists()
 {
   ClassDef *cd;
   // merge the member list of base classes into the inherited classes.
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (!cd->isReference() && // not an external class
@@ -4308,9 +4266,9 @@ static void generateFileSources()
 {
   if (documentedHtmlFiles==0) return;
   
-  if (inputNameList.count()>0)
+  if (Doxygen::inputNameList.count()>0)
   {
-    FileNameListIterator fnli(inputNameList); 
+    FileNameListIterator fnli(Doxygen::inputNameList); 
     FileName *fn;
     for (;(fn=fnli.current());++fnli)
     {
@@ -4334,9 +4292,9 @@ static void generateFileDocs()
 {
   if (documentedHtmlFiles==0) return;
   
-  if (inputNameList.count()>0)
+  if (Doxygen::inputNameList.count()>0)
   {
-    FileNameListIterator fnli(inputNameList);
+    FileNameListIterator fnli(Doxygen::inputNameList);
     FileName *fn;
     for (fnli.toFirst();(fn=fnli.current());++fnli)
     {
@@ -4361,7 +4319,7 @@ static void generateFileDocs()
 static void addSourceReferences()
 {
   // add source references for class definitions
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
@@ -4372,7 +4330,7 @@ static void addSourceReferences()
     }
   }
   // add source references for namespace definitions
-  NamespaceListIterator nli(namespaceList);
+  NamespaceListIterator nli(Doxygen::namespaceList);
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
@@ -4384,7 +4342,7 @@ static void addSourceReferences()
   }
   
   // add source references for member names
-  MemberNameListIterator mnli(memberNameList);
+  MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -4404,7 +4362,7 @@ static void addSourceReferences()
       }
     }
   }
-  MemberNameListIterator fnli(functionNameList);
+  MemberNameListIterator fnli(Doxygen::functionNameList);
   for (fnli.toFirst();(mn=fnli.current());++fnli)
   {
     MemberNameIterator mni(*mn);
@@ -4456,12 +4414,12 @@ static void generateClassDocs()
   msg("Generating member index...\n");
   writeMemberIndex(*outputList);
 
-  if (exampleSDict->count()>0)
+  if (Doxygen::exampleSDict->count()>0)
   {
     msg("Generating example index...\n");
   }
 
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for ( ; cli.current() ; ++cli )
   {
     ClassDef *cd=cli.current();
@@ -4480,7 +4438,7 @@ static void generateClassDocs()
 
 static void inheritDocumentation()
 {
-  MemberNameListIterator mnli(memberNameList);
+  MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn;
   //int count=0;
   for (;(mn=mnli.current());++mnli)
@@ -4514,14 +4472,14 @@ static void inheritDocumentation()
 static void addMembersToMemberGroup()
 {
   // for each class
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
     cd->addMembersToMemberGroup();
   }
   // for each file
-  FileName *fn=inputNameList.first();
+  FileName *fn=Doxygen::inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -4530,21 +4488,21 @@ static void addMembersToMemberGroup()
       fd->addMembersToMemberGroup();
       fd=fn->next();
     }
-    fn=inputNameList.next();
+    fn=Doxygen::inputNameList.next();
   }
   // for each namespace
-  NamespaceDef *nd=namespaceList.first();
+  NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
     nd->addMembersToMemberGroup();
-    nd=namespaceList.next();
+    nd=Doxygen::namespaceList.next();
   }
   // for each group
-  GroupDef *gd=groupList.first();
+  GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
     gd->addMembersToMemberGroup();
-    gd=groupList.next();
+    gd=Doxygen::groupList.next();
   }
 }
 
@@ -4553,14 +4511,14 @@ static void addMembersToMemberGroup()
 static void distributeMemberGroupDocumentation()
 {
   // for each class
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
     cd->distributeMemberGroupDocumentation();
   }
   // for each file
-  FileName *fn=inputNameList.first();
+  FileName *fn=Doxygen::inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -4569,21 +4527,21 @@ static void distributeMemberGroupDocumentation()
       fd->distributeMemberGroupDocumentation();
       fd=fn->next();
     }
-    fn=inputNameList.next();
+    fn=Doxygen::inputNameList.next();
   }
   // for each namespace
-  NamespaceDef *nd=namespaceList.first();
+  NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
     nd->distributeMemberGroupDocumentation();
-    nd=namespaceList.next();
+    nd=Doxygen::namespaceList.next();
   }
   // for each group
-  GroupDef *gd=groupList.first();
+  GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
     gd->distributeMemberGroupDocumentation();
-    gd=groupList.next();
+    gd=Doxygen::groupList.next();
   }
 }
 
@@ -4607,11 +4565,11 @@ static void findDefineDocumentation(Entry *root)
       md->setReference(root->tagInfo->tagName);
       bool ambig;
       QCString filePathName = root->parent->fileName;
-      FileDef *fd=findFileDef(inputNameDict,filePathName,ambig);
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,filePathName,ambig);
       //printf("Searching for `%s' fd=%p\n",filePathName.data(),fd);
       md->setFileDef(fd);
       MemberName *mn;
-      if ((mn=functionNameDict[root->name]))
+      if ((mn=Doxygen::functionNameDict[root->name]))
       {
         mn->append(md);
       }
@@ -4619,11 +4577,11 @@ static void findDefineDocumentation(Entry *root)
       {
         mn = new MemberName(root->name);
         mn->append(md);
-        functionNameDict.insert(root->name,mn);
-        functionNameList.append(mn);
+        Doxygen::functionNameDict.insert(root->name,mn);
+        Doxygen::functionNameList.append(mn);
       }
     }
-    MemberName *mn=functionNameDict[root->name];
+    MemberName *mn=Doxygen::functionNameDict[root->name];
     if (mn)
     {
       int count=0;
@@ -4646,7 +4604,7 @@ static void findDefineDocumentation(Entry *root)
               md->setBriefDescription(root->brief);
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
-            md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+            md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
             md->setMaxInitLines(root->initLines);
             if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
@@ -4679,7 +4637,7 @@ static void findDefineDocumentation(Entry *root)
                 md->setBriefDescription(root->brief);
               md->setBodySegment(root->bodyLine,root->endBodyLine);
               bool ambig;
-              md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
+              md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
               if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
               addMemberToGroups(root,md);
@@ -4739,19 +4697,21 @@ static void findMainPage(Entry *root)
 {
   if (root->section == Entry::MAINPAGEDOC_SEC)
   {
-    if (mainPage==0)
+    if (Doxygen::mainPage==0)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
-      mainPage = new PageInfo(root->fileName,root->startLine,
+      Doxygen::mainPage = new PageInfo(root->fileName,root->startLine,
                               "index", root->doc,title);
-      setFileNameForSections(root->anchors,"index");
+      //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
+      Doxygen::mainPage->fileName = "index";
+      Doxygen::mainPage->addSections(root->anchors);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
-          mainPage->name,mainPage->title,SectionInfo::Section);
+          Doxygen::mainPage->name,Doxygen::mainPage->title,SectionInfo::Section);
       si->fileName="index";
-      sectionDict.insert("index",si);
+      Doxygen::sectionDict.insert("index",si);
     }
     else
     {
@@ -4778,15 +4738,15 @@ static void buildPackageList(Entry *root)
   if (root->section == Entry::PACKAGE_SEC)
   {
     PackageDef *pd=0;
-    if (!root->name.isEmpty() && (pd=packageDict.find(root->name))==0)
+    if (!root->name.isEmpty() && (pd=Doxygen::packageDict.find(root->name))==0)
     {
       pd = new PackageDef(root->fileName,root->startLine,root->name);
-      packageDict.inSort(root->name,pd);
+      Doxygen::packageDict.inSort(root->name,pd);
     } 
     if (pd)
     {
       bool ambig;
-      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       if (fd)
       {
         fd->setPackageDef(pd);
@@ -4807,7 +4767,7 @@ static void buildPackageList(Entry *root)
 static void addClassesToPackages()
 {
   ClassDef *cd;
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for (;(cd=cli.current());++cli)
   {
     PackageDef *pd = cd->packageDef();
@@ -4819,7 +4779,7 @@ static void addClassesToPackages()
 
 static void resolveUserReferences()
 {
-  QDictIterator<SectionInfo> sdi(sectionDict);
+  QDictIterator<SectionInfo> sdi(Doxygen::sectionDict);
   SectionInfo *si;
   for (;(si=sdi.current());++sdi)
   {
@@ -4846,29 +4806,11 @@ static void resolveUserReferences()
 //----------------------------------------------------------------------------
 // generate all separate documentation pages
 
-//void generateMainPageDocs()
-//{
-//  if (mainPage)
-//  {
-//    msg("Generating docs for the main page\n",mainPage->name.data());
-//    outputList->disable(OutputGenerator::Man);
-//   startFile(*outputList,mainPage->name,mainPage->title);
-//    SectionInfo *si=0;
-//    if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
-//        (si=sectionDict[mainPage->name])!=0)
-//    {
-//      outputList->writeSection(si->label,si->title,FALSE);
-//    }
-//    parseDoc(*outputList,0,0,mainPage->doc);
-//    endFile(*outputList);
-//    outputList->enable(OutputGenerator::Man);
-//  }
-//}
 
 static void generatePageDocs()
 {
   if (documentedPages==0) return;
-  PageSDictIterator pdi(*pageSDict);
+  PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -4885,7 +4827,7 @@ static void generatePageDocs()
       startFile(*outputList,pageName,pi->title);
       SectionInfo *si=0;
       if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-          (si=sectionDict[pi->name])!=0)
+          (si=Doxygen::sectionDict.find(pi->name))!=0)
       {
         outputList->startSection(si->label,si->title,FALSE);
         outputList->docify(si->title);
@@ -4899,11 +4841,12 @@ static void generatePageDocs()
 
       if (!Config::genTagFile.isEmpty())
       {
-        tagFile << "  <compound kind=\"page\">" << endl;
-        tagFile << "    <name>" << pi->name << "</name>" << endl;
-        tagFile << "    <title>" << pi->title << "</title>" << endl;
-        tagFile << "    <filename>" << pi->name << "</filename>" << endl;
-        tagFile << "  </compound>" << endl;
+        Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
+        Doxygen::tagFile << "    <name>" << pi->name << "</name>" << endl;
+        Doxygen::tagFile << "    <title>" << pi->title << "</title>" << endl;
+        Doxygen::tagFile << "    <filename>" << pi->name << "</filename>" << endl;
+        pi->writeDocAnchorsToTagFile();
+        Doxygen::tagFile << "  </compound>" << endl;
       }
     }
   }
@@ -4918,7 +4861,7 @@ static void buildExampleList(Entry *root)
   {
     if (!root->name.isEmpty()) 
     {
-      if (exampleSDict->find(root->name))
+      if (Doxygen::exampleSDict->find(root->name))
       {
         warn(root->fileName,root->startLine,
              "Warning: Example %s was already documented. Ignoring "
@@ -4930,10 +4873,14 @@ static void buildExampleList(Entry *root)
       {
         PageInfo *pi=new PageInfo(root->fileName,root->startLine,
                                   root->name,root->doc,root->args);
-        setFileNameForSections(root->anchors,
-                               convertFileName(pi->name)+"-example"
-                              );
-        exampleSDict->inSort(root->name,pi);
+        //setFileNameForSections(root->anchors,
+        //                       convertFileName(pi->name)+"-example",
+        //                       pi
+        //                      );
+        pi->fileName = convertFileName(pi->name)+"-example";
+        pi->addSections(root->anchors);
+        
+        Doxygen::exampleSDict->inSort(root->name,pi);
         addExampleToGroups(root,pi);
       }
     }
@@ -4959,7 +4906,7 @@ static void buildExampleList(Entry *root)
 static void generateExampleDocs()
 {
   outputList->disable(OutputGenerator::Man);
-  PageSDictIterator pdi(*exampleSDict);
+  PageSDictIterator pdi(*Doxygen::exampleSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -4980,7 +4927,7 @@ static void generateExampleDocs()
 
 static void generateGroupDocs()
 {
-  GroupListIterator gli(groupList);
+  GroupListIterator gli(Doxygen::groupList);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
@@ -4997,9 +4944,9 @@ static void generatePackageDocs()
 {
   writePackageIndex(*outputList);
   
-  if (packageDict.count()>0)
+  if (Doxygen::packageDict.count()>0)
   {
-    PackageSDict::Iterator pdi(packageDict);
+    PackageSDict::Iterator pdi(Doxygen::packageDict);
     PackageDef *pd;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
@@ -5015,7 +4962,7 @@ static void generateNamespaceDocs()
 {
   writeNamespaceIndex(*outputList);
   
-  NamespaceListIterator nli(namespaceList);
+  NamespaceListIterator nli(Doxygen::namespaceList);
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
@@ -5243,7 +5190,7 @@ static void readTagFile(Entry *root,const char *tl)
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     QFileInfo fi(fileName);
-    tagDestinationDict.insert(fi.fileName(),new QCString(destName));
+    Doxygen::tagDestinationDict.insert(fi.fileName(),new QCString(destName));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
@@ -5627,9 +5574,9 @@ static void readFormulaRepository()
         QCString formName = line.left(se);
         QCString formText = line.right(line.length()-se-1); 
         Formula *f=new Formula(formText);
-        formulaList.append(f);
-        formulaDict.insert(formText,f);
-        formulaNameDict.insert(formName,f);
+        Doxygen::formulaList.append(f);
+        Doxygen::formulaDict.insert(formText,f);
+        Doxygen::formulaNameDict.insert(formName,f);
       }
     }
   }
@@ -5676,19 +5623,21 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 //----------------------------------------------------------------------------
 
-int main(int argc,char **argv)
+void initDoxygen()
 {
 #if QT_VERSION >= 200
   setlocale(LC_ALL,"");
 #endif
   
   initPreprocessor();
+}
 
+void readConfiguration(int argc, char **argv)
+{
   /**************************************************************************
    *             Handle arguments                                           *
    **************************************************************************/
 
-  char *s;
   int optind=1;
   const char *configName=0;
   const char *debugLabel;
@@ -5894,19 +5843,22 @@ int main(int argc,char **argv)
   
   substituteEnvironmentVars();
   checkConfig();
+}
 
-  inputNameDict = new FileNameDict(1009);
-  includeNameDict = new FileNameDict(1009);
-  exampleNameDict = new FileNameDict(1009);
-  imageNameDict = new FileNameDict(257);
+void parseInput()
+{
+  Doxygen::inputNameDict = new FileNameDict(1009);
+  Doxygen::includeNameDict = new FileNameDict(1009);
+  Doxygen::exampleNameDict = new FileNameDict(1009);
+  Doxygen::imageNameDict = new FileNameDict(257);
 
   if (!Config::docURL.isEmpty())
   {
-    tagDestinationDict.insert("_doc",new QCString(Config::docURL));
+    Doxygen::tagDestinationDict.insert("_doc",new QCString(Config::docURL));
   }
   if (!Config::cgiURL.isEmpty())
   {
-    tagDestinationDict.insert("_cgi",new QCString(Config::cgiURL+"/"+Config::cgiName));
+    Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config::cgiURL+"/"+Config::cgiName));
   }
 
   /**************************************************************************
@@ -5924,46 +5876,17 @@ int main(int argc,char **argv)
   compoundKeywordDict.insert("exception",(void *)8);
   
   /**************************************************************************
-   *            Initialize output generators                                *
-   **************************************************************************/
-
-  outputList = new OutputList(TRUE);
-  if (Config::generateHtml)  
-  {
-    outputList->add(new HtmlGenerator);
-    HtmlGenerator::init();
-    if (Config::htmlHelpFlag) HtmlHelp::getInstance()->initialize();
-    if (Config::ftvHelpFlag) FTVHelp::getInstance()->initialize();
-    copyStyleSheet();
-  }
-  if (Config::generateLatex) 
-  {
-    outputList->add(new LatexGenerator);
-    LatexGenerator::init();
-  }
-  if (Config::generateMan)
-  {
-    outputList->add(new ManGenerator);
-    ManGenerator::init();
-  }
-  if (Config::generateRTF)
-  {
-    outputList->add(new RTFGenerator);
-    RTFGenerator::init();
-  }
-  
-  /**************************************************************************
    *             Read and preprocess input                                  *
    **************************************************************************/
 
   // gather names of all files in the include path
   msg("Searching for include files...\n");
-  s=Config::includePath.first();
+  char *s=Config::includePath.first();
   while (s)
   {
     QStrList *pl = &Config::includeFilePatternList;
     if (pl->count()==0) pl = &Config::filePatternList;
-    readFileOrDirectory(s,0,includeNameDict,0,pl,
+    readFileOrDirectory(s,0,Doxygen::includeNameDict,0,pl,
                         &Config::excludePatternList,0,0);
     s=Config::includePath.next(); 
   }
@@ -5972,7 +5895,7 @@ int main(int argc,char **argv)
   s=Config::examplePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,exampleNameDict,0,&Config::examplePatternList,
+    readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,&Config::examplePatternList,
                         0,0,0);
     s=Config::examplePath.next(); 
   }
@@ -5981,7 +5904,7 @@ int main(int argc,char **argv)
   s=Config::imagePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,imageNameDict,0,0,
+    readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
                         0,0,0);
     s=Config::imagePath.next(); 
   }
@@ -6000,8 +5923,8 @@ int main(int argc,char **argv)
   s=Config::inputSources.first();
   while (s)
   {
-    inputSize+=readFileOrDirectory(s,&inputNameList,
-                                   inputNameDict,&excludeNameDict,
+    inputSize+=readFileOrDirectory(s,&Doxygen::inputNameList,
+        Doxygen::inputNameDict,&excludeNameDict,
                                    &Config::filePatternList,
                                    &Config::excludePatternList,
                                    &inputFiles,0);
@@ -6012,19 +5935,19 @@ int main(int argc,char **argv)
   s=Config::expandAsDefinedList.first();
   while (s)
   {
-    if (expandAsDefinedDict[s]==0)
+    if (Doxygen::expandAsDefinedDict[s]==0)
     {
-      expandAsDefinedDict.insert(s,(void *)666);
+      Doxygen::expandAsDefinedDict.insert(s,(void *)666);
     }
     s=Config::expandAsDefinedList.next();
   }
 
   // add aliases to a dictionary
-  aliasDict.setAutoDelete(TRUE);
+  Doxygen::aliasDict.setAutoDelete(TRUE);
   s=Config::aliasList.first();
   while (s)
   {
-    if (aliasDict[s]==0)
+    if (Doxygen::aliasDict[s]==0)
     {
       QCString alias=s;
       int i=alias.find('=');
@@ -6058,10 +5981,10 @@ int main(int argc,char **argv)
         //printf("Alias: found name=`%s' value=`%s'\n",name.data(),value.data()); 
         if (!name.isEmpty())
         {
-          QCString *dn=aliasDict[name];
+          QCString *dn=Doxygen::aliasDict[name];
           if (dn==0) // insert new alias
           {
-            aliasDict.insert(name,new QCString(value));
+            Doxygen::aliasDict.insert(name,new QCString(value));
           }
           else // overwrite previous alias
           {
@@ -6113,20 +6036,6 @@ int main(int argc,char **argv)
     s=Config::tagFileList.next();
   }
   
-  QFile *tag=0;
-  if (!Config::genTagFile.isEmpty())
-  {
-    tag=new QFile(Config::genTagFile);
-    if (!tag->open(IO_WriteOnly))
-    {
-      err("Error: cannot open tag file %s for writing\n",
-          Config::genTagFile.data()
-         );
-      exit(1);
-    }
-    tagFile.setDevice(tag);
-    tagFile << "<tagfile>" << endl;
-  }
   
   /**************************************************************************
    *             Gather information                                         * 
@@ -6144,9 +6053,6 @@ int main(int argc,char **argv)
   msg("Building namespace list...\n");
   buildNamespaceList(root);
   findUsingDirectives(root);
-  
-  //msg("Computing group relations...\n");
-  //computeGroupRelations(root); 
   
   msg("Building file list...\n");
   buildFileList(root);
@@ -6192,8 +6098,8 @@ int main(int argc,char **argv)
   findMainPage(root);
 
   msg("Sorting member lists...\n");
-  memberNameList.sort();
-  functionNameList.sort();
+  Doxygen::memberNameList.sort();
+  Doxygen::functionNameList.sort();
   
   msg("Freeing entry tree\n");
   delete root;
@@ -6228,22 +6134,11 @@ int main(int argc,char **argv)
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
   
-  //msg("Computing class interface usage relations...\n");
-  //computeClassIntfUsageRelations();
-
-  //msg("Determining member group documentation...\n");
-  //computeMemberGroupDocumentation();
-
-  //unrelatedFunctionsUsed=hasUnrelatedFunctions();
-
   if (Config::inheritDocsFlag)
   {
     msg("Inheriting documentation...\n");
     inheritDocumentation();
   }
-
-  //msg("Computing member groups...\n");
-  //computeMemberGroups();
 
   msg("Adding source references...\n");
   addSourceReferences();
@@ -6251,9 +6146,148 @@ int main(int argc,char **argv)
   msg("Adding todo/test references...\n");
   addTodoTestReferences();
   
+}
+
+void generateOutput()
+{
+  /**************************************************************************
+   *            Check/create output directorties                            *
+   **************************************************************************/
+  if (Config::outputDir.isEmpty()) 
+    Config::outputDir=QDir::currentDirPath();
+  else
+  {
+    QDir dir(Config::outputDir);
+    if (!dir.exists())
+    {
+      dir.setPath(QDir::currentDirPath());
+      if (!dir.mkdir(Config::outputDir))
+      {
+        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+	    "exist and cannot be created\n",Config::outputDir.data());
+        exit(1);
+      }
+      else if (!Config::quietFlag)
+      {
+	err("Notice: Output directory `%s' does not exist. "
+	    "I have created it for you.\n", Config::outputDir.data());
+      }
+      dir.cd(Config::outputDir);
+    }
+    Config::outputDir=dir.absPath();
+  }
+
+  if (Config::htmlOutputDir.isEmpty() && Config::generateHtml)
+  {
+    Config::htmlOutputDir=Config::outputDir+"/html";
+  }
+  else if (Config::htmlOutputDir && Config::htmlOutputDir[0]!='/')
+  {
+    Config::htmlOutputDir.prepend(Config::outputDir+'/');
+  }
+  QDir htmlDir(Config::htmlOutputDir);
+  if (Config::generateHtml && !htmlDir.exists() && 
+      !htmlDir.mkdir(Config::htmlOutputDir))
+  {
+    err("Could not create output directory %s\n",Config::htmlOutputDir.data());
+    exit(1);
+  }
+  
+  if (Config::latexOutputDir.isEmpty() && Config::generateLatex)
+  {
+    Config::latexOutputDir=Config::outputDir+"/latex";
+  }
+  else if (Config::latexOutputDir && Config::latexOutputDir[0]!='/')
+  {
+    Config::latexOutputDir.prepend(Config::outputDir+'/');
+  }
+  QDir latexDir(Config::latexOutputDir);
+  if (Config::generateLatex && !latexDir.exists() && 
+      !latexDir.mkdir(Config::latexOutputDir))
+  {
+    err("Could not create output directory %s\n",Config::latexOutputDir.data());
+    exit(1);
+  }
+  
+  if (Config::rtfOutputDir.isEmpty() && Config::generateRTF)
+  {
+    Config::rtfOutputDir=Config::outputDir+"/rtf";
+  }
+  else if (Config::rtfOutputDir && Config::rtfOutputDir[0]!='/')
+  {
+    Config::rtfOutputDir.prepend(Config::outputDir+'/');
+  }
+  QDir rtfDir(Config::rtfOutputDir);
+  if (Config::generateRTF && !rtfDir.exists() && 
+      !rtfDir.mkdir(Config::rtfOutputDir))
+  {
+    err("Could not create output directory %s\n",Config::rtfOutputDir.data());
+    exit(1);
+  }
+
+  if (Config::manOutputDir.isEmpty() && Config::generateMan)
+  {
+    Config::manOutputDir=Config::outputDir+"/man";
+  }
+  else if (Config::manOutputDir && Config::manOutputDir[0]!='/')
+  {
+    Config::manOutputDir.prepend(Config::outputDir+'/');
+  }
+  QDir manDir(Config::manOutputDir);
+  if (Config::generateMan && !manDir.exists() && 
+      !manDir.mkdir(Config::manOutputDir))
+  {
+    err("Could not create output directory %s\n",Config::manOutputDir.data());
+    exit(1);
+  }
+
+  /**************************************************************************
+   *            Initialize output generators                                *
+   **************************************************************************/
+
+  outputList = new OutputList(TRUE);
+  if (Config::generateHtml)  
+  {
+    outputList->add(new HtmlGenerator);
+    HtmlGenerator::init();
+    if (Config::htmlHelpFlag) HtmlHelp::getInstance()->initialize();
+    if (Config::ftvHelpFlag) FTVHelp::getInstance()->initialize();
+    copyStyleSheet();
+  }
+  if (Config::generateLatex) 
+  {
+    outputList->add(new LatexGenerator);
+    LatexGenerator::init();
+  }
+  if (Config::generateMan)
+  {
+    outputList->add(new ManGenerator);
+    ManGenerator::init();
+  }
+  if (Config::generateRTF)
+  {
+    outputList->add(new RTFGenerator);
+    RTFGenerator::init();
+  }
+  
   /**************************************************************************
    *                        Generate documentation                          *
    **************************************************************************/
+
+  QFile *tag=0;
+  if (!Config::genTagFile.isEmpty())
+  {
+    tag=new QFile(Config::genTagFile);
+    if (!tag->open(IO_WriteOnly))
+    {
+      err("Error: cannot open tag file %s for writing\n",
+          Config::genTagFile.data()
+         );
+      exit(1);
+    }
+    Doxygen::tagFile.setDevice(tag);
+    Doxygen::tagFile << "<tagfile>" << endl;
+  }
 
   if (Config::generateHtml) writeDoxFont(Config::htmlOutputDir);
   if (Config::generateRTF)  writeDoxFont(Config::rtfOutputDir);
@@ -6264,21 +6298,12 @@ int main(int argc,char **argv)
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.
   msg("Counting data structures...\n");
-  annotatedClasses           = countAnnotatedClasses();
-  hierarchyClasses           = countClassHierarchy();
-  documentedMembers          = countClassMembers();
-  documentedFunctions        = countFileMembers();
-  countFiles(documentedHtmlFiles,documentedFiles);
-  documentedGroups           = countGroups();
-  documentedNamespaces       = countNamespaces();
-  documentedNamespaceMembers = countNamespaceMembers();
-  documentedPages            = countRelatedPages();
-  documentedPackages         = countPackages();
+  countDataStructures();
  
   // compute the shortest possible names of all files
   // without loosing the uniqueness of the file names.
   msg("Generating disk names...\n");
-  inputNameList.generateDiskNames();
+  Doxygen::inputNameList.generateDiskNames();
   
   msg("Resolving user defined references...\n");
   resolveUserReferences();
@@ -6369,16 +6394,16 @@ int main(int argc,char **argv)
     writeGraphicalClassHierarchy(*outputList);
   }
 
-  if (Config::generateXML) 
-  {
-    msg("Generating XML output\n");
-    generateXML();
-  }
+  //if (Config::generateXML) 
+  //{
+  //  msg("Generating XML output\n");
+  //  generateXML();
+  //}
 
-  if (formulaList.count()>0 && Config::generateHtml)
+  if (Doxygen::formulaList.count()>0 && Config::generateHtml)
   {
     msg("Generating bitmaps for formulas in HTML...\n");
-    formulaList.generateBitmaps(Config::htmlOutputDir);
+    Doxygen::formulaList.generateBitmaps(Config::htmlOutputDir);
   }
   
   if (Config::searchEngineFlag || Config::tagFileList.count()>0)
@@ -6399,14 +6424,12 @@ int main(int argc,char **argv)
   }
   if (!Config::genTagFile.isEmpty())
   {
-    tagFile << "</tagfile>" << endl;
+    Doxygen::tagFile << "</tagfile>" << endl;
     delete tag;
   }
 
 
   if (Config::generateHtml) removeDoxFont(Config::htmlOutputDir);
   if (Config::generateRTF)  removeDoxFont(Config::rtfOutputDir);
-
-
-  return 0;
 }
+

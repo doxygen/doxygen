@@ -42,6 +42,7 @@ class TagMemberInfo
     QString anchor;
     QString arglist;
     QString kind;
+    QStrList docAnchors;
     Protection prot;
     Specifier virt;
     bool isStatic; 
@@ -56,6 +57,7 @@ class TagClassInfo
    ~TagClassInfo() { delete bases; }
     QString name;
     QString filename;
+    QStrList docAnchors;
     QList<BaseInfo> *bases;
     QList<TagMemberInfo> members;
     Kind kind;
@@ -68,6 +70,7 @@ class TagNamespaceInfo
     TagNamespaceInfo() { members.setAutoDelete(TRUE); }
     QString name;
     QString filename;
+    QStrList docAnchors;
     QList<TagMemberInfo> members;
     QStringList classList;
 };
@@ -80,6 +83,7 @@ class TagFileInfo
     QString name;
     QString path;
     QString filename;
+    QStrList docAnchors;
     QList<TagMemberInfo> members;
     QStringList classList;
     QStringList namespaceList;
@@ -93,6 +97,7 @@ class TagGroupInfo
     QString name;
     QString title;
     QString filename;
+    QStrList docAnchors;
     QList<TagMemberInfo> members;
     QStringList subgroupList;
     QStringList classList;
@@ -108,6 +113,7 @@ class TagPageInfo
     QString name;
     QString title;
     QString filename;
+    QStrList docAnchors;
 };
 
 
@@ -271,6 +277,19 @@ class TagFileParser : public QXmlDefaultHandler
         case InFile:      m_curFile->members.append(m_curMember); break;
         case InNamespace: m_curNamespace->members.append(m_curMember); break;
         case InGroup:     m_curGroup->members.append(m_curMember); break;
+        default:   err("Error: Unexpected tag `member' found\n"); break; 
+      }
+    }
+    void endDocAnchor()
+    {
+      switch(m_state)
+      {
+        case InClass:     m_curClass->docAnchors.append(m_curString); break;
+        case InFile:      m_curFile->docAnchors.append(m_curString); break;
+        case InNamespace: m_curNamespace->docAnchors.append(m_curString); break;
+        case InGroup:     m_curGroup->docAnchors.append(m_curString); break;
+        case InPage:      m_curPage->docAnchors.append(m_curString); break;
+        case InMember:    m_curMember->docAnchors.append(m_curString); break;
         default:   err("Error: Unexpected tag `member' found\n"); break; 
       }
     }
@@ -463,6 +482,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("namespace", new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("file",      new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("page",      new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("docanchor", new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("tagfile",   new StartElementHandler(this,&TagFileParser::startIgnoreElement));
       m_endElementHandlers.insert("compound",    new EndElementHandler(this,&TagFileParser::endCompound));
       m_endElementHandlers.insert("member",      new EndElementHandler(this,&TagFileParser::endMember));
@@ -478,6 +498,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_endElementHandlers.insert("namespace",   new EndElementHandler(this,&TagFileParser::endNamespace));
       m_endElementHandlers.insert("file",        new EndElementHandler(this,&TagFileParser::endFile));
       m_endElementHandlers.insert("page",        new EndElementHandler(this,&TagFileParser::endPage));
+      m_endElementHandlers.insert("docanchor",   new EndElementHandler(this,&TagFileParser::endDocAnchor));
       m_endElementHandlers.insert("tagfile",     new EndElementHandler(this,&TagFileParser::endIgnoreElement));
       return TRUE;
     }
@@ -520,6 +541,7 @@ class TagFileParser : public QXmlDefaultHandler
     
   private:
     void buildMemberList(Entry *ce,QList<TagMemberInfo> &members);
+    void addDocAnchors(Entry *e,QStrList &l);
     QList<TagClassInfo>        m_tagFileClasses;
     QList<TagFileInfo>         m_tagFileFiles;
     QList<TagNamespaceInfo>    m_tagFileNamespaces;
@@ -712,6 +734,27 @@ void TagFileParser::dump()
   }
 }
 
+void TagFileParser::addDocAnchors(Entry *e,QStrList &l)
+{
+  char *s=l.first();
+  while (s)
+  {
+    QCString *anchorName = new QCString(s);
+    if (Doxygen::sectionDict.find(*anchorName)==0)
+    {
+      SectionInfo *si=new SectionInfo(*anchorName,*anchorName,
+                                      SectionInfo::Anchor,m_tagName);
+      Doxygen::sectionDict.insert(*anchorName,si);
+      e->anchors->append(anchorName);
+    }
+    else
+    {
+      err("Duplicate anchor %s found\n",anchorName->data());
+    }
+    s=l.next();
+  }
+}
+
 void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
 {
   QListIterator<TagMemberInfo> mii(members);
@@ -725,6 +768,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     me->virt       = tmi->virt;
     me->stat       = tmi->isStatic;
     me->fileName   = ce->fileName;
+    addDocAnchors(me,tmi->docAnchors);
     TagInfo *ti    = new TagInfo;
     ti->tagName    = m_tagName;
     ti->anchor     = tmi->anchor;
@@ -809,6 +853,7 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Exception: ce->section = Entry::EXCEPTION_SEC; break;
     }
     ce->name     = tci->name;
+    addDocAnchors(ce,tci->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;
     ti->fileName = tci->filename;
@@ -831,6 +876,7 @@ void TagFileParser::buildLists(Entry *root)
     Entry *fe = new Entry;
     fe->section = guessSection(tfi->name);
     fe->name     = tfi->name;
+    addDocAnchors(fe,tfi->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;
     ti->fileName = tfi->filename;
@@ -840,7 +886,7 @@ void TagFileParser::buildLists(Entry *root)
     fe->fileName = fullName;
     FileDef *fd = new FileDef(m_tagName+":"+tfi->path,tfi->name,m_tagName);
     FileName *mn;
-    if ((mn=inputNameDict->find(tfi->name)))
+    if ((mn=Doxygen::inputNameDict->find(tfi->name)))
     {
       mn->append(fd);
     }
@@ -848,8 +894,8 @@ void TagFileParser::buildLists(Entry *root)
     {
       mn = new FileName(fullName,tfi->name);
       mn->append(fd);
-      inputNameList.inSort(mn);
-      inputNameDict->insert(tfi->name,mn);
+      Doxygen::inputNameList.inSort(mn);
+      Doxygen::inputNameDict->insert(tfi->name,mn);
     }
     buildMemberList(fe,tfi->members);
     root->addSubEntry(fe);
@@ -863,6 +909,7 @@ void TagFileParser::buildLists(Entry *root)
     Entry *ne    = new Entry;
     ne->section  = Entry::NAMESPACE_SEC;
     ne->name     = tni->name;
+    addDocAnchors(ne,tni->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;
     ti->fileName = tni->filename;
@@ -881,6 +928,7 @@ void TagFileParser::buildLists(Entry *root)
     ge->section  = Entry::GROUPDOC_SEC;
     ge->name     = tgi->name;
     ge->type     = tgi->title;
+    addDocAnchors(ge,tgi->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;
     ti->fileName = tgi->filename;
@@ -899,6 +947,7 @@ void TagFileParser::buildLists(Entry *root)
     pe->section  = Entry::PAGEDOC_SEC;
     pe->name     = tpi->name;
     pe->args     = tpi->title;
+    addDocAnchors(pe,tpi->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;
     ti->fileName = tpi->filename;

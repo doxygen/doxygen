@@ -99,7 +99,7 @@ static void setFileName(const char *name)
 {
   bool ambig;
   g_yyFileName=name;
-  g_yyFileDef=findFileDef(inputNameDict,g_yyFileName,ambig);
+  g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
 }
 
 static void incrLevel()
@@ -799,7 +799,7 @@ Define *newDefine()
   def->lineNr = g_yyLineNr;
   def->varArgs = g_defVarArgs;
   //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
-  if (!def->name.isEmpty() && expandAsDefinedDict[def->name])
+  if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
   {
     def->isPredefined=TRUE;
   }
@@ -828,12 +828,12 @@ void addDefine()
   md->setFileDef(g_yyFileDef);
   md->setDefinition("#define "+g_defName);
 
-  MemberName *mn=functionNameDict[g_defName];
+  MemberName *mn=Doxygen::functionNameDict[g_defName];
   if (mn==0)
   {
     mn = new MemberName(g_defName);
-    functionNameList.append(mn);
-    functionNameDict.insert(g_defName,mn);
+    Doxygen::functionNameList.append(mn);
+    Doxygen::functionNameDict.insert(g_defName,mn);
   }
   mn->append(md);
   if (g_yyFileDef) g_yyFileDef->insertMember(md);
@@ -912,7 +912,7 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef) 
       {
 	bool ambig;
-	FileDef *fd = findFileDef(inputNameDict,incFileName,ambig);
+	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
 	// add included by dependency

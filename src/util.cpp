@@ -39,7 +39,7 @@
 #include "example.h"
 #include "version.h"
 #include "groupdef.h"
-#include "xml.h"
+//#include "xml.h"
 #include "page.h"
 
 #ifndef _WIN32
@@ -60,53 +60,28 @@ extern char **environ;
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
 
-TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol) {}
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od) 
+{
+}
 
 void TextGeneratorOLImpl::writeString(const char *s) const
 { 
-  m_ol.docify(s); 
+  m_od.docify(s); 
 }
 
 void TextGeneratorOLImpl::writeBreak() const
 { 
-  m_ol.pushGeneratorState();
-  m_ol.disableAllBut(OutputGenerator::Html);
-  m_ol.lineBreak();
-  m_ol.popGeneratorState();
+  m_od.pushGeneratorState();
+  m_od.disableAllBut(OutputGenerator::Html);
+  m_od.lineBreak();
+  m_od.popGeneratorState();
 }
 
 void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
                                     const char *anchor,const char *text
                                    ) const
 {
-  m_ol.writeObjectLink(extRef,file,anchor,text);
-}
-
-//------------------------------------------------------------------------
-// TextGeneratorXMLImpl implementation
-//------------------------------------------------------------------------
-
-TextGeneratorXMLImpl::TextGeneratorXMLImpl(QTextStream &t) : m_t(t) 
-{
-}
-
-void TextGeneratorXMLImpl::writeString(const char *s) const
-{ 
-  writeXMLString(m_t,s); 
-}
-
-void TextGeneratorXMLImpl::writeBreak() const 
-{
-}
-
-void TextGeneratorXMLImpl::writeLink(const char *extRef,const char *file,
-                                     const char *anchor,const char *text
-                                    ) const
-{
-  if (extRef==0) 
-  { writeXMLLink(m_t,file,anchor,text); } 
-  else // external references are not supported for XML
-  { writeXMLString(m_t,text); }
+  m_od.writeObjectLink(extRef,file,anchor,text);
 }
 
 //------------------------------------------------------------------------
@@ -284,7 +259,7 @@ QCString stripAnnonymousNamespaceScope(const QCString &s)
   int oi=0,i=0,p=0;
   if (s.isEmpty()) return s;
   while (s.at(p)=='@' && (i=s.find("::",p))!=-1 && 
-         namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
+         Doxygen::namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
   if (oi==0) 
   {
     //printf("stripAnnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.data());
@@ -297,19 +272,19 @@ QCString stripAnnonymousNamespaceScope(const QCString &s)
   }
 }
 
-void writePageRef(OutputList &ol,const char *cn,const char *mn)
+void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
 {
-  ol.pushGeneratorState();
+  od.pushGeneratorState();
   
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
-  if (Config::pdfHyperFlag) ol.disable(OutputGenerator::Latex);
-  if (Config::rtfHyperFlag) ol.disable(OutputGenerator::RTF);
-  ol.startPageRef();
-  ol.docify(theTranslator->trPageAbbreviation());
-  ol.endPageRef(cn,mn);
+  od.disable(OutputGenerator::Html);
+  od.disable(OutputGenerator::Man);
+  if (Config::pdfHyperFlag) od.disable(OutputGenerator::Latex);
+  if (Config::rtfHyperFlag) od.disable(OutputGenerator::RTF);
+  od.startPageRef();
+  od.docify(theTranslator->trPageAbbreviation());
+  od.endPageRef(cn,mn);
 
-  ol.popGeneratorState();
+  od.popGeneratorState();
 }
 
 /*! Generate a place holder for a position in a list. Used for
@@ -374,18 +349,18 @@ int guessSection(const char *name)
 ClassDef *getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  return classDict[name];
+  return Doxygen::classDict[name];
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  QCString *subst = namespaceAliasDict[name];
+  QCString *subst = Doxygen::namespaceAliasDict[name];
   if (subst)
   {
     int count=0; // recursion detection guard
     QCString *newSubst;
-    while ((newSubst=namespaceAliasDict[*subst]) && count<10)
+    while ((newSubst=Doxygen::namespaceAliasDict[*subst]) && count<10)
     {
       subst=newSubst;
       count++;
@@ -394,46 +369,46 @@ NamespaceDef *getResolvedNamespace(const char *name)
     {
       warn_cont("Warning: possible recursive namespace alias detected for %s!\n",name);
     }
-    return namespaceDict[subst->data()];
+    return Doxygen::namespaceDict[subst->data()];
   }
   else
   {
-    return namespaceDict[name];
+    return Doxygen::namespaceDict[name];
   }
 }
 
 ClassDef *getResolvedClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  QCString *subst = typedefDict[name];
+  QCString *subst = Doxygen::typedefDict[name];
   if (subst) // there is a typedef with this name
   {
     //printf("getResolvedClass `%s'->`%s'\n",name,subst->data());
     if (*subst==name) // avoid resolving typedef struct foo foo; 
     {
-      return classDict[name];
+      return Doxygen::classDict[name];
     }
     int count=0; // recursion detection guard
     QCString *newSubst;
-    while ((newSubst=typedefDict[*subst]) && count<10)
+    while ((newSubst=Doxygen::typedefDict[*subst]) && count<10)
     {
-      if (*subst==*newSubst) return classDict[subst->data()]; // for breaking typedef struct A A; 
+      if (*subst==*newSubst) return Doxygen::classDict[subst->data()]; // for breaking typedef struct A A; 
       subst=newSubst;
       count++;
     }
     if (count==10)
     {
       warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",name);
-      return classDict[name];
+      return Doxygen::classDict[name];
     }
     else
     {
       //printf("getClass: subst %s->%s\n",name,subst->data());
       int i;
-      ClassDef *cd = classDict[subst->data()];
+      ClassDef *cd = Doxygen::classDict[subst->data()];
       if (cd==0 && (i=subst->find('<'))>0) // try unspecialized version as well
       {
-        return classDict[subst->left(i)];
+        return Doxygen::classDict[subst->left(i)];
       }
       else
       {
@@ -443,7 +418,7 @@ ClassDef *getResolvedClass(const char *name)
   }
   else
   {
-    return classDict[name];
+    return Doxygen::classDict[name];
   }
 }
 
@@ -484,6 +459,10 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=" >"; // insert extra space for layouting (nested) templates
     }
+    else if (i>0 && i<l-1 && c==',' && isId(s.at(i-1)) && isId(s.at(i+1)))
+    {
+      result+=", ";
+    }
     else if (i>0 && isId(s.at(i)) && s.at(i-1)==')')
     {
       result+=' ';
@@ -491,7 +470,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     }
     else if (c!=' ' ||
 	      ( i!=0 && i!=l-1 && 
-                (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',') && 
+                (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
                 isId(s.at(i+1))
               ) 
             )
@@ -730,7 +709,7 @@ QCString argListToString(ArgumentList *al)
       result+="="+a->defval;
     }
     a = al->next();
-    if (a) result+=","; 
+    if (a) result+=", "; 
   }
   result+=")";
   if (al->constSpecifier) result+=" const";
@@ -766,197 +745,6 @@ QCString tempArgListToString(ArgumentList *al)
   return result;
 }
 
-static bool manIsEnabled;
-
-void startTitle(OutputList &ol,const char *fileName)
-{
-  ol.startTitleHead(fileName);
-  manIsEnabled=ol.isEnabled(OutputGenerator::Man);
-  if (manIsEnabled) ol.disable(OutputGenerator::Man);
-}
-
-void endTitle(OutputList &ol,const char *fileName,const char *name)
-{
-  if (manIsEnabled) ol.enable(OutputGenerator::Man); 
-  ol.endTitleHead(fileName,name);
-}
-
-void writeQuickLinks(OutputList &ol,bool compact,bool ext)
-{
-  ol.pushGeneratorState();
-  //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
-  //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
-  ol.disableAllBut(OutputGenerator::Html);
-  QCString extLink;
-  if (ext) { extLink="_doc"; }
-  //if (manEnabled) ol.disable(OutputGenerator::Man);
-  //if (texEnabled) ol.disable(OutputGenerator::Latex);
-  if (compact) ol.startCenter(); else ol.startItemList();
-
-  if (!compact) ol.writeListItem();
-  if (Config::ftvHelpFlag)
-  {
-    ol.startQuickIndexItem(extLink,"main.html");
-  }
-  else
-  {
-    ol.startQuickIndexItem(extLink,"index.html");
-  }
-  parseText(ol,theTranslator->trMainPage());
-  ol.endQuickIndexItem();
-
-  if (documentedPackages>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"packages.html");
-    parseText(ol,theTranslator->trPackages());
-    ol.endQuickIndexItem();
-  }
-  if (documentedGroups>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"modules.html");
-    parseText(ol,theTranslator->trModules());
-    ol.endQuickIndexItem();
-  } 
-  if (documentedNamespaces>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespaces.html");
-    parseText(ol,theTranslator->trNamespaceList());
-    ol.endQuickIndexItem();
-  }
-  if (hierarchyClasses>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"hierarchy.html");
-    parseText(ol,theTranslator->trClassHierarchy());
-    ol.endQuickIndexItem();
-  } 
-  if (annotatedClasses>0)
-  {
-    if (Config::alphaIndexFlag)
-    {
-      if (!compact) ol.writeListItem();
-      ol.startQuickIndexItem(extLink,"classes.html");
-      parseText(ol,theTranslator->trAlphabeticalList());
-      ol.endQuickIndexItem();
-    }
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"annotated.html");
-    parseText(ol,theTranslator->trCompoundList());
-    ol.endQuickIndexItem();
-  } 
-  if (documentedHtmlFiles>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"files.html");
-    parseText(ol,theTranslator->trFileList());
-    ol.endQuickIndexItem();
-  } 
-  //if (documentedIncludeFiles>0 && Config::verbatimHeaderFlag)
-  //{
-  //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"headers.html");
-  //  parseText(ol,theTranslator->trHeaderFiles());
-  //  ol.endQuickIndexItem();
-  //}
-  //if (Config::sourceBrowseFlag) 
-  //{
-  //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"sources.html");
-  //  parseText(ol,theTranslator->trSources());
-  //  ol.endQuickIndexItem();
-  //}
-  if (documentedNamespaceMembers>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespacemembers.html");
-    parseText(ol,theTranslator->trNamespaceMembers());
-    ol.endQuickIndexItem();
-  }
-  if (documentedMembers>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"functions.html");
-    parseText(ol,theTranslator->trCompoundMembers());
-    ol.endQuickIndexItem();
-  } 
-  if (documentedFunctions>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"globals.html");
-    parseText(ol,theTranslator->trFileMembers());
-    ol.endQuickIndexItem();
-  } 
-  if (documentedPages>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"pages.html");
-    parseText(ol,theTranslator->trRelatedPages());
-    ol.endQuickIndexItem();
-  } 
-  if (exampleSDict->count()>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"examples.html");
-    parseText(ol,theTranslator->trExamples());
-    ol.endQuickIndexItem();
-  } 
-  if (Config::searchEngineFlag)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem("_cgi","");
-    parseText(ol,theTranslator->trSearch());
-    ol.endQuickIndexItem();
-  } 
-  if (compact) 
-  {
-    ol.endCenter(); 
-    ol.writeRuler();
-  }
-  else 
-  {
-    ol.endItemList();
-  }
-  //if (manEnabled) ol.enable(OutputGenerator::Man);
-  //if (texEnabled) ol.enable(OutputGenerator::Latex);
-  ol.popGeneratorState();
-}
-
-void startFile(OutputList &ol,const char *name,const char *title,bool external)
-{
-  ol.startFile(name,title,external);
-  if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE,external);
-}
-
-void endFile(OutputList &ol,bool external)
-{
-  //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-  //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
-  //if (latexEnabled) ol.disable(OutputGenerator::Latex);
-  //if (manEnabled)   ol.disable(OutputGenerator::Man);
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  ol.writeFooter(0,external); // write the footer
-  if (Config::footerFile.isEmpty())
-  {
-    parseText(ol,theTranslator->trGeneratedAt(
-              dateToString(TRUE),
-              Config::projectName
-             ));
-  }
-  ol.writeFooter(1,external); // write the link to the picture
-  if (Config::footerFile.isEmpty())
-  {
-    parseText(ol,theTranslator->trWrittenBy());
-  }
-  ol.writeFooter(2,external); // end the footer
-  //if (latexEnabled) ol.enable(OutputGenerator::Latex);
-  //if (manEnabled)   ol.enable(OutputGenerator::Man);
-  ol.popGeneratorState();
-  ol.endFile();
-}
 
 // compute the HTML anchors for a list of members
 void setAnchors(char id,MemberList *ml,int groupId)
@@ -1236,7 +1024,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
     if (i1!=-1 && i2==-1) // only t1 has a scope
     {
       QCString scope=t1.left(i1);
-      if (!scope.isEmpty() && namespaceDict[scope]!=0) // scope is a namespace
+      if (!scope.isEmpty() && Doxygen::namespaceDict[scope]!=0) // scope is a namespace
       {
         t1 = t1.right(t1.length()-i1-2);
         return;
@@ -1245,7 +1033,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
     else if (i1==-1 && i2!=-1) // only t2 has a scope
     {
       QCString scope=t2.left(i2);
-      if (!scope.isEmpty() && namespaceDict[scope]!=0) // scope is a namespace
+      if (!scope.isEmpty() && Doxygen::namespaceDict[scope]!=0) // scope is a namespace
       {
         t2 = t2.right(t2.length()-i2-2);
         return;
@@ -1904,7 +1692,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
-  MemberName *mn = memberNameDict[mName];
+  MemberName *mn = Doxygen::memberNameDict[mName];
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name found\n");
@@ -2014,7 +1802,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  if ((mn=functionNameDict[mName])) // name is known
+  if ((mn=Doxygen::functionNameDict[mName])) // name is known
   {
     //printf("  >function name found\n");
     NamespaceDef *fnd=0;
@@ -2031,7 +1819,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         namespaceName=mScope.copy();
       }
       if (!namespaceName.isEmpty() && 
-          (fnd=namespaceDict[namespaceName]) &&
+          (fnd=Doxygen::namespaceDict[namespaceName]) &&
           fnd->isLinkable()
          )
       {
@@ -2219,7 +2007,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
     {
       return TRUE; // class link written => quit 
     }
-    else if ((nd=namespaceDict[fullName]) && nd->isLinkable())
+    else if ((nd=Doxygen::namespaceDict[fullName]) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit 
     }
@@ -2255,7 +2043,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
  * instead of :: the # symbol may also be used.
  */
 
-bool generateRef(OutputList &ol,const char *scName,
+bool generateRef(OutputDocInterface &od,const char *scName,
                  const char *name,bool inSeeBlock,const char *rt)
 {
   //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
@@ -2276,20 +2064,20 @@ bool generateRef(OutputList &ol,const char *scName,
     {
       if (cd) // scope matches that of a class
       {
-        ol.writeObjectLink(cd->getReference(),
+        od.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),0,linkText);
         if (!cd->isReference() /*&& !Config::pdfHyperFlag*/) 
         {
-          writePageRef(ol,cd->getOutputFileBase(),0);
+          writePageRef(od,cd->getOutputFileBase(),0);
         }
       }
       else // scope matches that of a namespace
       {
-        ol.writeObjectLink(nd->getReference(),
+        od.writeObjectLink(nd->getReference(),
             nd->getOutputFileBase(),0,linkText);
         if (!nd->getReference() /*&& !Config::pdfHyperFlag*/) 
         {
-          writePageRef(ol,nd->getOutputFileBase(),0);
+          writePageRef(od,nd->getOutputFileBase(),0);
         }
       }
       // link has been written, stop now.
@@ -2297,7 +2085,7 @@ bool generateRef(OutputList &ol,const char *scName,
     }
     else if (scName==tmpName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
     {
-      ol.docify(linkText);
+      od.docify(linkText);
       // text has been written, stop now.
       return FALSE;
     }
@@ -2358,7 +2146,7 @@ bool generateRef(OutputList &ol,const char *scName,
     {
       //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
       //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
-      ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+      od.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
       cName=cd->getOutputFileBase();
       aName=md->anchor();
@@ -2366,7 +2154,7 @@ bool generateRef(OutputList &ol,const char *scName,
     else if (nd) // nameStr is a member of nd
     {
       //printf("writing namespace link\n");
-      ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+      od.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
       cName=nd->getOutputFileBase();
       aName=md->anchor();
@@ -2375,7 +2163,7 @@ bool generateRef(OutputList &ol,const char *scName,
     {
       //printf("addFileLink(%s,%s,%s)\n",fd->getOutputFileBase(),anchor.data(),
       //        resultName.stripWhiteSpace().data());
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
+      od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
       cName=fd->getOutputFileBase();
       aName=md->anchor();
@@ -2384,7 +2172,7 @@ bool generateRef(OutputList &ol,const char *scName,
     {
       //printf("addGroupLink(%s,%s,%s)\n",fd->getOutputFileBase().data(),anchor.data(),
       //        gd->name().data());
-      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),
+      od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
       cName=gd->getOutputFileBase();
       aName=md->anchor();
@@ -2392,46 +2180,48 @@ bool generateRef(OutputList &ol,const char *scName,
     else // should not be reached
     {
       //printf("add no link fd=cd=0\n");
-      ol.docify(linkText);
+      od.docify(linkText);
     }
 
     // for functions we add the arguments if explicitly specified or else "()"
     if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
     {
       if (argsStr.isEmpty() && (!md->isDefine() || md->argsString()!=0))
-      //  ol.writeString("()")
+      //  od.writeString("()")
         ;
       else
-        ol.docify(argsStr);
+        od.docify(argsStr);
     }
 
     // generate the page reference (for LaTeX)
-    if (!cName.isEmpty() || !aName.isEmpty())
+    if ((!cName.isEmpty() || !aName.isEmpty()) && md->isLinkableInProject())
     {
-      writePageRef(ol,cName,aName);
+      writePageRef(od,cName,aName);
     }
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=groupDict[nameStr]))
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupDict[nameStr]))
   { // group link
-    ol.startTextLink(gd->getOutputFileBase(),0);
+    od.startTextLink(gd->getOutputFileBase(),0);
     if (rt) // explict link text
-      ol.docify(rt);
+    {
+      od.docify(rt);
+    }
     else // use group title as the default link text
     {
-      ol.docify(gd->groupTitle());
+      od.docify(gd->groupTitle());
     }
-    ol.endTextLink();
+    od.endTextLink();
     return TRUE;
   }
 
   // nothing found
   if (rt) 
-    ol.docify(rt); 
+    od.docify(rt); 
   else 
   {
-    ol.docify(linkText);
-    if (!argsStr.isEmpty()) ol.docify(argsStr);
+    od.docify(linkText);
+    if (!argsStr.isEmpty()) od.docify(argsStr);
   }
   return FALSE;
 }
@@ -2443,7 +2233,7 @@ bool generateRef(OutputList &ol,const char *scName,
 // basis for the link's text.
 // returns TRUE if a link could be generated.
 
-bool generateLink(OutputList &ol,const char *clName,
+bool generateLink(OutputDocInterface &od,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
   //printf("generateLink clName=`%s' lr=`%s' lt=`%s'\n",clName,lr,lt);
@@ -2454,69 +2244,84 @@ bool generateLink(OutputList &ol,const char *clName,
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
-    ol.docify(lt);
+    od.docify(lt);
     return FALSE;
   }
-  else if ((pi=pageSDict->find(linkRef))) // link to a page
+  else if ((pi=Doxygen::pageSDict->find(linkRef))) // link to a page
   {
     GroupDef *gd = pi->inGroup;
     if (gd)
     {
       SectionInfo *si=0;
-      if (!pi->name.isEmpty()) si=sectionDict[pi->name];
-      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
-      writePageRef(ol,gd->getOutputFileBase(),si ? si->label.data() : 0);
+      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
+      od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
+      if (gd->isLinkableInProject())
+      {
+        writePageRef(od,gd->getOutputFileBase(),si ? si->label.data() : 0);
+      }
     }
     else
     {
-      ol.writeObjectLink(pi->getReference(),pi->getOutputFileBase(),0,lt);  
-      writePageRef(ol,pi->name,0);
+      od.writeObjectLink(pi->getReference(),pi->getOutputFileBase(),0,lt);  
+      if (!pi->isReference())
+      {
+        writePageRef(od,pi->name,0);
+      }
     }
     return TRUE;
   }
-  else if ((pi=exampleSDict->find(linkRef))) // link to an example
+  else if ((pi=Doxygen::exampleSDict->find(linkRef))) // link to an example
   {
-    ol.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
-    writePageRef(ol,convertFileName(pi->name)+"-example",0);
+    od.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
+    if (!pi->isReference())
+    {
+      writePageRef(od,convertFileName(pi->name)+"-example",0);
+    }
     return TRUE;
   }
-  else if ((gd=groupDict[linkRef])) // link to a group
+  else if ((gd=Doxygen::groupDict[linkRef])) // link to a group
   {
-    ol.startTextLink(gd->getOutputFileBase(),0);
+    od.startTextLink(gd->getOutputFileBase(),0);
     if (lt)
-      ol.docify(lt);
+      od.docify(lt);
     else
-      ol.docify(gd->groupTitle());
-    ol.endTextLink();
-    writePageRef(ol,gd->getOutputFileBase(),0);
+      od.docify(gd->groupTitle());
+    od.endTextLink();
+    if (gd->isLinkableInProject())
+    {
+      writePageRef(od,gd->getOutputFileBase(),0);
+    }
     return TRUE;
   }
-  else if ((fd=findFileDef(inputNameDict,linkRef,ambig))
+  else if ((fd=findFileDef(Doxygen::inputNameDict,linkRef,ambig))
        && fd->isLinkable())
   {
         // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
-    writePageRef(ol,fd->getOutputFileBase(),0);
+    od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
+    if (fd->isLinkableInProject())
+    {
+      writePageRef(od,fd->getOutputFileBase(),0);
+    }
     return TRUE;
   }
   else // probably a class or member reference
   {
-    return generateRef(ol,clName,lr,inSeeBlock,lt);
+    return generateRef(od,clName,lr,inSeeBlock,lt);
   }
 }
 
-void generateFileRef(OutputList &ol,const char *name,const char *text)
+void generateFileRef(OutputDocInterface &od,const char *name,const char *text)
 {
   QCString linkText = text ? text : name;
   //FileInfo *fi;
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(inputNameDict,name,ambig)) && 
+  if ((fd=findFileDef(Doxygen::inputNameDict,name,ambig)) && 
       fd->isLinkable()) 
     // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);
+    od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);
   else
-    ol.docify(linkText); 
+    od.docify(linkText); 
 }
 
 //----------------------------------------------------------------------
@@ -2664,20 +2469,6 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
     }
   }
   return result;
-}
-
-//----------------------------------------------------------------------
-
-void setFileNameForSections(QList<QCString> *anchorList,const char *fileName)
-{
-  if (!anchorList) return;
-  QCString *s=anchorList->first();
-  while (s)
-  {
-    SectionInfo *si=0;
-    if (!s->isEmpty() && (si=sectionDict[*s])) si->fileName=fileName;
-    s=anchorList->next();
-  }
 }
 
 //----------------------------------------------------------------------
@@ -2902,3 +2693,13 @@ QCString convertToHtml(const char *s)
   return convertToXML(s);
 }
 
+/*! Returns the standard string that is generated when the \\overload
+ * command is used.
+ */
+const char *getOverloadDocs()
+{
+  return "This is an overloaded member function, "
+         "provided for convenience. It differs from the above "
+         "function only in what argument(s) it accepts.";
+}
+      

@@ -49,8 +49,8 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </H1>   Ends an unnumberd section.
 <li>\c <H2>    Starts an unnumbered subsection.
 <li>\c </H2>   Ends an unnumbered subsection.
-<li>\c <H?>    Where ? is one of {3,4,5,6}, starts an unnumbered subsubsection.
-<li>\c </H?>   Where ? is one of {3,4,5,6}, ends an unnumbered subsubsection.
+<li>\c <H?>    Where ? is one of {3,4,5,6}, starts an unnumbered subsubsection using \c <H3> in HTML.
+<li>\c </H?>   Where ? is one of {3,4,5,6}, ends an unnumbered subsubsection using \c <H3> in HTML.
 <li>\c <I>     Starts a piece of text displayed in an italic font.
 <li>\c <INPUT> Does not generated any output.
 <li>\c </I>    Ends a \c <I> section.

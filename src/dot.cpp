@@ -87,13 +87,13 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
         if (*refPtr!='\0')
         {
           t << "doxygen=\"" << refPtr << ":";
-          if ((dest=tagDestinationDict[refPtr])) t << *dest << "/";
+          if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
           t << "\" ";
         }
         t << "href=\""; 
         if (*refPtr!='\0')
         {
-          if ((dest=tagDestinationDict[refPtr])) t << *dest << "/";
+          if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
         }
         t << urlPtr << "\" shape=\"rect\" coords=\"" 
           << x1 << "," << y1 << "," << x2 << "," << y2 << "\">" << endl;
@@ -693,8 +693,8 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   
   // build a graph with each class as a node and the inheritance relations
   // as edges
-  initClassHierarchy(&classList);
-  ClassListIterator cli(classList);
+  initClassHierarchy(&Doxygen::classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for (cli.toLast();(cd=cli.current());--cli)
   {

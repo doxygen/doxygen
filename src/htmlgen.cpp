@@ -181,7 +181,7 @@ void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
   {
     t << "<a class=\"qindexRef\" ";
     t << "doxygen=\"" << s << ":";
-    if ((dest=tagDestinationDict[s])) t << *dest;
+    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
     if (strcmp(s,"_cgi")!=0) t << "/"; // small hack to get the cgi binary link right
     t << "\" ";
   }
@@ -192,7 +192,7 @@ void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
   t << "href=\""; 
   if (s)
   {
-    if ((dest=tagDestinationDict[s])) t << *dest;
+    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
     if (strcmp(s,"_cgi")!=0) t << "/";
   }
   t << l << "\">";
@@ -313,7 +313,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
     {
       t << "<a class=\"elRef\" ";
       t << "doxygen=\"" << ref << ":";
-      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
       t << "\" ";
     }
     else
@@ -323,7 +323,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
     t << "href=\"";
     if (ref)
     {
-      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
     if (f) t << f << ".html\">";
   }
@@ -368,7 +368,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   {
     t << "<a class=\"elRef\" ";
     t << "doxygen=\"" << ref << ":";
-    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     t << "\" ";
   }
   else
@@ -378,7 +378,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   t << "href=\"";
   if (ref)
   {
-    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
   if (f) t << f << ".html";
   if (anchor) t << "#" << anchor;
@@ -395,7 +395,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   {
     t << "<a class=\"codeRef\" ";
     t << "doxygen=\"" << ref << ":";
-    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     t << "\" ";
   }
   else
@@ -405,7 +405,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   t << "href=\"";
   if (ref)
   {
-    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
   if (f) t << f << ".html";
   if (anchor) t << "#" << anchor;
@@ -468,12 +468,26 @@ void HtmlGenerator::endSection(const char *,bool sub)
   t << "</a>" << endl;
 }
 
-void HtmlGenerator::writeSectionRef(const char *name,const char *lab,
-                                    const char *title)
+void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
+                                    const char *anchor,const char *title)
 {
+  QCString *dest;
+  //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
   QCString refName=name;
   if (refName.right(5)!=".html") refName+=".html";
-  t << "<a href=\"" << refName << "#" << lab << "\">";
+  t << "<a "; 
+  if (ref) 
+  {
+    t << "doxygen=\"" << ref << ":";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+    t << "\" ";
+  }
+  t << "href=\""; 
+  if (ref)
+  {
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+  }
+  t << refName << "#" << anchor << "\">";
   docify(title);
   t << "</a>";
 }
@@ -486,12 +500,6 @@ void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
   t << "<a href=\"" << refName << "#" << lab << "\">";
   docify(title);
   t << "</a>";
-}
-
-void HtmlGenerator::writeSectionRefAnchor(const char *name,const char *lab,
-                                          const char *title)
-{
-  writeSectionRef(name,lab,title);
 }
 
 void HtmlGenerator::docify(const char *str)
@@ -591,17 +599,17 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
   d.writeImage(t,dir,fileName);
 }
 
-void HtmlGenerator::startColorFont(uchar red,uchar green,uchar blue)
-{
-  QCString colorString;
-  colorString.sprintf("%02x%02x%02x",red,green,blue);
-  t << "<font color=\"#" << colorString << "\">";
-}
-
-void HtmlGenerator::endColorFont()
-{
-  t << "</font>";
-}
+//void HtmlGenerator::startColorFont(uchar red,uchar green,uchar blue)
+//{
+//  QCString colorString;
+//  colorString.sprintf("%02x%02x%02x",red,green,blue);
+//  t << "<font color=\"#" << colorString << "\">";
+//}
+//
+//void HtmlGenerator::endColorFont()
+//{
+//  t << "</font>";
+//}
 
 void HtmlGenerator::writeFormula(const char *n,const char *text)
 {

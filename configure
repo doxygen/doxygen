@@ -28,6 +28,7 @@ f_insttool=install
 f_english=NO
 f_configgen=NO
 f_wizard=NO
+f_xmlgen=NO
 
 while test -n "$1";  do
   case $1 in
@@ -70,6 +71,9 @@ while test -n "$1";  do
     --with-doxywizard)
        f_wizard=YES
        ;;
+    --with-xmlgen)
+       f_xmlgen=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -87,7 +91,7 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--make name] [--dot name] [--platform target] 
           [--prefix dir] [--install name] [--english-only] 
-          [--with-configgen] [--with-doxywizard]
+          [--with-configgen] [--with-doxywizard] [--with-xmlgen]
 
 Options: 
 
@@ -126,6 +130,9 @@ Options:
 
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt 2.x.x
+
+  --with-xmlgen         Builds a separate doxygen executable that 
+                        generates XML output.
 
 EOF
   test "$f_error" = y && exit 1
@@ -373,7 +380,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
+f_inmakefiles="Makefile.in addon/xmlgen/Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -385,25 +392,32 @@ for i in $f_inmakefiles ; do
 #
 
 EOF
-     cat .makeconfig $SRC >> $DST
+     cat .makeconfig >> $DST
      if test $i = Makefile.in; then
-       echo "configgen:" >> $DST
+       echo "" >> $DST
+       echo "all: src/version.cpp " >> $DST
+       echo "	\$(MAKE) -C qtools" >> $DST
+       echo "	\$(MAKE) -C src" >> $DST
        if test $f_configgen = YES; then
          echo "	\$(MAKE) -C addon/configgen" >> $DST
        fi
-       echo "doxywizard:" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard" >> $DST
        fi
+       if test $f_xmlgen = YES; then
+         echo "	\$(MAKE) -C addon/xmlgen" >> $DST
+       fi
+       echo "" >> $DST
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard install" >> $DST
        fi
      fi
+     cat $SRC >> $DST
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in addon/xmlgen/xmlgen.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

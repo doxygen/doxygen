@@ -30,7 +30,7 @@
 #include "dot.h"
 #include "message.h"
 #include "code.h"
-#include "xml.h"
+//#include "xml.h"
 
 /*! create a new file definition, where \a p is the file path, 
     \a the file name, and \a ref is an HTML anchor name if the
@@ -125,10 +125,10 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  <compound kind=\"file\">" << endl;
-    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-    tagFile << "    <filename>" << convertToXML(diskname) << ".html</filename>" << endl;
+    Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(diskname) << ".html</filename>" << endl;
   }
   
   ol.startTextBlock();
@@ -282,7 +282,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           );
           if (!Config::genTagFile.isEmpty()) 
           {
-             tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+            Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
           }
         }
         else
@@ -436,7 +436,8 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  </compound>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
 
   endFile(ol);
@@ -481,8 +482,8 @@ void FileDef::addMemberListToGroup(MemberList *ml,
     int groupId=md->getMemberGroupId();
     if ((md->*func)() && groupId!=-1)
     {
-      QCString *pGrpHeader = memberHeaderDict[groupId];
-      QCString *pDocs      = memberDocDict[groupId];
+      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      QCString *pDocs      = Doxygen::memberDocDict[groupId];
       //printf("Member `%s' pGrpHeader=%p\n",md->name().data(),pGrpHeader);
       if (pGrpHeader)
       {
@@ -663,47 +664,6 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
     includedByList->append(ii);
     includedByDict->insert(iName,ii);
   }
-}
-
-void FileDef::generateXMLSection(QTextStream &t,MemberList *ml,const char *type)
-{
-  if (ml->count()>0)
-  {
-    t << "        <sectiondef type=\"" << type << "\">" << endl;
-    t << "          <memberlist>" << endl;
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
-    {
-      md->generateXML(t,this);
-    }
-    t << "          </memberlist>" << endl;
-    t << "        </sectiondef>" << endl;
-  }
-}
-
-void FileDef::generateXML(QTextStream &t)
-{
-  t << "    <compounddef id=\"" 
-    << getOutputFileBase() << "\" type=\"file\">" << endl;
-  t << "      <compoundname>";
-  writeXMLString(t,name());
-  t << "</compoundname>" << endl;
-  int numMembers = defineMembers.count()+protoMembers.count()+
-                   typedefMembers.count()+enumMembers.count()+
-                   funcMembers.count()+varMembers.count();
-  if (numMembers>0)
-  {
-    t << "      <sectionlist>" << endl;
-    generateXMLSection(t,&defineMembers,"define");
-    generateXMLSection(t,&protoMembers,"prototype");
-    generateXMLSection(t,&typedefMembers,"typedef");
-    generateXMLSection(t,&enumMembers,"enum");
-    generateXMLSection(t,&funcMembers,"func");
-    generateXMLSection(t,&varMembers,"var");
-    t << "      </sectionlist>" << endl;
-  }
-  t << "    </compounddef>" << endl;
 }
 
 bool FileDef::generateSourceFile() const 

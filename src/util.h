@@ -31,13 +31,13 @@ class NamespaceDef;
 class FileNameDict;
 class ArgumentList;
 class OutputList;
+class OutputDocInterface;
 class MemberDef;
 class ExampleList;
 class ClassList;
 class BaseClassList;
 class GroupDef;
 class NamespaceList;
-class OutputList;
 
 //--------------------------------------------------------------------
 
@@ -54,27 +54,14 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorOLImpl(OutputList &ol);
+    TextGeneratorOLImpl(OutputDocInterface &od);
     void writeString(const char *s) const;
     void writeBreak() const;
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
                   ) const;
   private:
-    OutputList &m_ol;
-};
-
-class TextGeneratorXMLImpl : public TextGeneratorIntf
-{
-  public:
-    TextGeneratorXMLImpl(QTextStream &t);
-    void writeString(const char *s) const;
-    void writeBreak() const;
-    void writeLink(const char *extRef,const char *file,
-                   const char *anchor,const char *text
-                  ) const;
-  private:
-    QTextStream &m_t;
+    OutputDocInterface &m_od;
 };
 
 //--------------------------------------------------------------------
@@ -96,12 +83,15 @@ extern bool getDefs(const QCString &scopeName,
                     bool forceEmptyScope=FALSE,
                     FileDef *currentFile=0
                    );
-extern bool generateRef(OutputList &ol,const char *,
+
+extern bool generateRef(OutputDocInterface &od,const char *,
                         const char *,bool inSeeBlock,const char * =0);
-extern bool generateLink(OutputList &ol,const char *,
+extern bool generateLink(OutputDocInterface &od,const char *,
                          const char *,bool inSeeBlock,const char *);
-extern void generateFileRef(OutputList &ol,const char *,
+extern void generateFileRef(OutputDocInterface &od,const char *,
                              const char *linkTxt=0);
+void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
+
 extern bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceList *usingList=0);
@@ -119,23 +109,23 @@ extern QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
 extern int guessSection(const char *name);
 extern bool isId(char c);
 extern QCString removeRedundantWhiteSpace(const QCString &s);
-extern void startTitle(OutputList &ol,const char *fileName);
-extern void endTitle(OutputList &ol,const char *fileName,const char *name);
-void startFile(OutputList &ol,const char *name,
-               const char *title,bool external=FALSE);
-void endFile(OutputList &ol,bool external=FALSE);
-void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
+//extern void startTitle(OutputList &ol,const char *fileName);
+//extern void endTitle(OutputList &ol,const char *fileName,const char *name);
+//void startFile(OutputList &ol,const char *name,
+//               const char *title,bool external=FALSE);
+//void endFile(OutputList &ol,bool external=FALSE);
+//void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
 QCString argListToString(ArgumentList *al);
 QCString tempArgListToString(ArgumentList *al);
 QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleList *el);
-void setFileNameForSections(QList<QCString> *anchorList,const char *fileName);
+//void setFileNameForSections(QList<QCString> *anchorList,const char *fileName,
+//                            PageInfo *pi=0);
 QCString stripAnnonymousScope(const QCString &s);
 QCString stripAnnonymousNamespaceScope(const QCString &s);
 QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
-void writePageRef(OutputList &ol,const char *cn,const char *mn);
 QCString substituteKeywords(const QCString &s,const char *title);
 int getPrefixIndex(const QCString &name);
 QCString removeAnonymousScopes(const QCString &s);
@@ -151,6 +141,7 @@ QCString stripScope(const char *name);
 int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
 QCString convertToHtml(const char *s);
 QCString convertToXML(const char *s);
+const char * getOverloadDocs();
 
 #endif
 

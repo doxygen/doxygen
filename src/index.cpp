@@ -38,6 +38,45 @@
 #include "page.h"
 #include "packagedef.h"
 
+int annotatedClasses;
+int hierarchyClasses;
+int documentedFunctions;
+int documentedMembers;
+int documentedHtmlFiles;
+int documentedFiles;
+int documentedGroups;
+int documentedNamespaces;
+int documentedNamespaceMembers;
+int documentedIncludeFiles;
+int documentedPages;
+int documentedPackages;
+
+int countClassHierarchy();
+int countClassMembers();
+int countFileMembers();
+void countFiles(int &htmlFiles,int &files);
+int countGroups();
+int countNamespaces();
+int countAnnotatedClasses();
+int countNamespaceMembers();
+int countIncludeFiles();
+int countRelatedPages();
+int countPackages();
+
+void countDataStructures()
+{
+  annotatedClasses           = countAnnotatedClasses();
+  hierarchyClasses           = countClassHierarchy();
+  documentedMembers          = countClassMembers();
+  documentedFunctions        = countFileMembers();
+  countFiles(documentedHtmlFiles,documentedFiles);
+  documentedGroups           = countGroups();
+  documentedNamespaces       = countNamespaces();
+  documentedNamespaceMembers = countNamespaceMembers();
+  documentedPages            = countRelatedPages();
+  documentedPackages         = countPackages();
+}
+
 //----------------------------------------------------------------------------
 
 static bool g_memberIndexLetterUsed[256];
@@ -98,6 +137,194 @@ QCString abbreviate(const char *s,const char *name)
     result[0]=c;
   }
   return result;
+}
+
+//----------------------------------------------------------------------------
+
+void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
+{
+  ol.pushGeneratorState();
+  //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
+  //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
+  ol.disableAllBut(OutputGenerator::Html);
+  QCString extLink;
+  if (ext) { extLink="_doc"; }
+  //if (manEnabled) ol.disable(OutputGenerator::Man);
+  //if (texEnabled) ol.disable(OutputGenerator::Latex);
+  if (compact) ol.startCenter(); else ol.startItemList();
+
+  if (!compact) ol.writeListItem();
+  if (Config::ftvHelpFlag)
+  {
+    ol.startQuickIndexItem(extLink,"main.html");
+  }
+  else
+  {
+    ol.startQuickIndexItem(extLink,"index.html");
+  }
+  parseText(ol,theTranslator->trMainPage());
+  ol.endQuickIndexItem();
+
+  if (documentedPackages>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"packages.html");
+    parseText(ol,theTranslator->trPackages());
+    ol.endQuickIndexItem();
+  }
+  if (documentedGroups>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"modules.html");
+    parseText(ol,theTranslator->trModules());
+    ol.endQuickIndexItem();
+  } 
+  if (documentedNamespaces>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"namespaces.html");
+    parseText(ol,theTranslator->trNamespaceList());
+    ol.endQuickIndexItem();
+  }
+  if (hierarchyClasses>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"hierarchy.html");
+    parseText(ol,theTranslator->trClassHierarchy());
+    ol.endQuickIndexItem();
+  } 
+  if (annotatedClasses>0)
+  {
+    if (Config::alphaIndexFlag)
+    {
+      if (!compact) ol.writeListItem();
+      ol.startQuickIndexItem(extLink,"classes.html");
+      parseText(ol,theTranslator->trAlphabeticalList());
+      ol.endQuickIndexItem();
+    }
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"annotated.html");
+    parseText(ol,theTranslator->trCompoundList());
+    ol.endQuickIndexItem();
+  } 
+  if (documentedHtmlFiles>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"files.html");
+    parseText(ol,theTranslator->trFileList());
+    ol.endQuickIndexItem();
+  } 
+  //if (documentedIncludeFiles>0 && Config::verbatimHeaderFlag)
+  //{
+  //  if (!compact) ol.writeListItem();
+  //  ol.startQuickIndexItem(extLink,"headers.html");
+  //  parseText(ol,theTranslator->trHeaderFiles());
+  //  ol.endQuickIndexItem();
+  //}
+  //if (Config::sourceBrowseFlag) 
+  //{
+  //  if (!compact) ol.writeListItem();
+  //  ol.startQuickIndexItem(extLink,"sources.html");
+  //  parseText(ol,theTranslator->trSources());
+  //  ol.endQuickIndexItem();
+  //}
+  if (documentedNamespaceMembers>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"namespacemembers.html");
+    parseText(ol,theTranslator->trNamespaceMembers());
+    ol.endQuickIndexItem();
+  }
+  if (documentedMembers>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"functions.html");
+    parseText(ol,theTranslator->trCompoundMembers());
+    ol.endQuickIndexItem();
+  } 
+  if (documentedFunctions>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"globals.html");
+    parseText(ol,theTranslator->trFileMembers());
+    ol.endQuickIndexItem();
+  } 
+  if (documentedPages>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"pages.html");
+    parseText(ol,theTranslator->trRelatedPages());
+    ol.endQuickIndexItem();
+  } 
+  if (Doxygen::exampleSDict->count()>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"examples.html");
+    parseText(ol,theTranslator->trExamples());
+    ol.endQuickIndexItem();
+  } 
+  if (Config::searchEngineFlag)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem("_cgi","");
+    parseText(ol,theTranslator->trSearch());
+    ol.endQuickIndexItem();
+  } 
+  if (compact) 
+  {
+    ol.endCenter(); 
+    ol.writeRuler();
+  }
+  else 
+  {
+    ol.endItemList();
+  }
+  //if (manEnabled) ol.enable(OutputGenerator::Man);
+  //if (texEnabled) ol.enable(OutputGenerator::Latex);
+  ol.popGeneratorState();
+}
+
+static bool manIsEnabled;
+
+void startTitle(OutputList &ol,const char *fileName)
+{
+  ol.startTitleHead(fileName);
+  manIsEnabled=ol.isEnabled(OutputGenerator::Man);
+  if (manIsEnabled) ol.disable(OutputGenerator::Man);
+}
+
+void endTitle(OutputList &ol,const char *fileName,const char *name)
+{
+  if (manIsEnabled) ol.enable(OutputGenerator::Man); 
+  ol.endTitleHead(fileName,name);
+}
+
+void startFile(OutputList &ol,const char *name,const char *title,bool external)
+{
+  ol.startFile(name,title,external);
+  if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE,external);
+}
+
+void endFile(OutputList &ol,bool external)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.writeFooter(0,external); // write the footer
+  if (Config::footerFile.isEmpty())
+  {
+    parseText(ol,theTranslator->trGeneratedAt(
+              dateToString(TRUE),
+              Config::projectName
+             ));
+  }
+  ol.writeFooter(1,external); // write the link to the picture
+  if (Config::footerFile.isEmpty())
+  {
+    parseText(ol,theTranslator->trWrittenBy());
+  }
+  ol.writeFooter(2,external); // end the footer
+  ol.popGeneratorState();
+  ol.endFile();
 }
 
 //----------------------------------------------------------------------------
@@ -291,7 +518,7 @@ void writeClassTree(ClassList *cl)
 
 void writeClassHierarchy(OutputList &ol)
 {
-  initClassHierarchy(&classList);
+  initClassHierarchy(&Doxygen::classList);
 
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
@@ -307,7 +534,7 @@ void writeClassHierarchy(OutputList &ol)
   }
 
   bool started=FALSE;
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for (;cli.current(); ++cli)
   {
     ClassDef *cd=cli.current();
@@ -379,9 +606,9 @@ void writeClassHierarchy(OutputList &ol)
 // TODO: let this function return the real number of items in the hierarchy.
 int countClassHierarchy()
 {
-  initClassHierarchy(&classList);
+  initClassHierarchy(&Doxygen::classList);
   int count=0;
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   for ( ; cli.current(); ++cli)
   {
     if (cli.current()->superClasses()->count()>0) count++;
@@ -484,7 +711,7 @@ void countFiles(int &htmlFiles,int &files)
 {
   htmlFiles=0;
   files=0;
-  FileNameListIterator fnli(inputNameList);
+  FileNameListIterator fnli(Doxygen::inputNameList);
   FileName *fn;
   for (;(fn=fnli.current());++fnli)
   {
@@ -554,7 +781,7 @@ void writeFileIndex(OutputList &ol)
   outputNameList.setAutoDelete(TRUE);
   
   // re-sort input files in (dir,file) output order instead of (file,dir) input order 
-  FileName *fn=inputNameList.first();
+  FileName *fn=Doxygen::inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -578,7 +805,7 @@ void writeFileIndex(OutputList &ol)
       }
       fd=fn->next();
     }
-    fn=inputNameList.next();
+    fn=Doxygen::inputNameList.next();
   }
   
   ol.startIndexList();
@@ -703,7 +930,7 @@ void writeFileIndex(OutputList &ol)
 int countNamespaces()
 {
   int count=0;
-  NamespaceListIterator nli(namespaceList);
+  NamespaceListIterator nli(Doxygen::namespaceList);
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
@@ -750,7 +977,7 @@ void writeNamespaceIndex(OutputList &ol)
   ol.endTextBlock();
 
   bool first=TRUE;
-  NamespaceDef *nd=namespaceList.first();
+  NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
     if (nd->isLinkableInProject())
@@ -782,7 +1009,7 @@ void writeNamespaceIndex(OutputList &ol)
         ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->name());
       }
     }
-    nd=namespaceList.next();
+    nd=Doxygen::namespaceList.next();
   }
   if (!first) ol.endIndexList();
   if (hasHtmlHelp)
@@ -803,8 +1030,8 @@ void writeNamespaceIndex(OutputList &ol)
 int countAnnotatedClasses()
 {
   int count=0;
-  //ClassDef *cd=classList.first();
-  ClassListIterator cli(classList);
+  //ClassDef *cd=Doxygen::classList.first();
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
@@ -824,9 +1051,9 @@ void writeAnnotatedClassList(OutputList &ol)
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
   bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   ol.startIndexList(); 
-  //ClassDef *cd=classList.first();
+  //ClassDef *cd=Doxygen::classList.first();
   //while (cd)
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
@@ -866,30 +1093,33 @@ void writePackageList(OutputList &ol)
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
   bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   ol.startIndexList(); 
-  PackageSDict::Iterator pdi(packageDict);
+  PackageSDict::Iterator pdi(Doxygen::packageDict);
   PackageDef *pd;
   for (;(pd=pdi.current());++pdi)
   {
-    ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
-    if (!pd->briefDescription().isEmpty())
+    if (!pd->isReference())
     {
-      ol.docify(" (");
-      OutputList briefOutput(&ol);
-      parseDoc(briefOutput,
-          pd->getDefFileName(),pd->getDefLine(),
-          pd->name(),0,
-          abbreviate(pd->briefDescription(),pd->name()));
-      ol+=briefOutput;
-      ol.docify(")");
-    }
-    ol.writeEndAnnoItem(pd->getOutputFileBase());
-    if (hasHtmlHelp)
-    {
-      HtmlHelp::getInstance()->addContentsItem(FALSE,pd->name(),pd->getOutputFileBase());
-    }
-    if (hasFtvHelp)
-    {
-      FTVHelp::getInstance()->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name());
+      ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
+      if (!pd->briefDescription().isEmpty())
+      {
+        ol.docify(" (");
+        OutputList briefOutput(&ol);
+        parseDoc(briefOutput,
+            pd->getDefFileName(),pd->getDefLine(),
+            pd->name(),0,
+            abbreviate(pd->briefDescription(),pd->name()));
+        ol+=briefOutput;
+        ol.docify(")");
+      }
+      ol.writeEndAnnoItem(pd->getOutputFileBase());
+      if (hasHtmlHelp)
+      {
+        HtmlHelp::getInstance()->addContentsItem(FALSE,pd->name(),pd->getOutputFileBase());
+      }
+      if (hasFtvHelp)
+      {
+        FTVHelp::getInstance()->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name());
+      }
     }
   }
   ol.endIndexList();
@@ -903,7 +1133,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   ol.startAlphabeticalIndexList(); 
 
   // first count the number of headers
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   char startLetter=0;
   int headerItems=0;
@@ -1170,7 +1400,7 @@ void writeMemberList(OutputList &ol,bool useSections)
 {
   bool first = TRUE;
   char lastChar = 0;
-  MemberName *mn=memberNameList.first();
+  MemberName *mn=Doxygen::memberNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1243,7 +1473,7 @@ void writeMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=memberNameList.next();
+    mn=Doxygen::memberNameList.next();
   }
   ol.endItemList();
 }
@@ -1254,7 +1484,7 @@ int countClassMembers()
 {
   int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=memberNameList.first();
+  MemberName *mn=Doxygen::memberNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1278,7 +1508,7 @@ int countClassMembers()
       if (!n.isEmpty()) g_memberIndexLetterUsed[tolower(n.at(0))]=TRUE;
       count++;
     }
-    mn=memberNameList.next();
+    mn=Doxygen::memberNameList.next();
   }
   return count;
 }
@@ -1354,7 +1584,7 @@ void writeFileMemberList(OutputList &ol,bool useSections)
 {
   char lastChar=0;
   bool first=TRUE;
-  MemberName *mn=functionNameList.first();
+  MemberName *mn=Doxygen::functionNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1425,7 +1655,7 @@ void writeFileMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=functionNameList.next();
+    mn=Doxygen::functionNameList.next();
   }
   ol.endItemList();
 }
@@ -1436,7 +1666,7 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
 {
   char lastChar=0;
   bool first=TRUE;
-  MemberName *mn=functionNameList.first();
+  MemberName *mn=Doxygen::functionNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1500,7 +1730,7 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=functionNameList.next();
+    mn=Doxygen::functionNameList.next();
   }
   if (!first) ol.endItemList();
 }
@@ -1511,7 +1741,7 @@ int countNamespaceMembers()
 {
   int i=0;for (i=0;i<256;i++) g_namespaceIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=functionNameList.first();
+  MemberName *mn=Doxygen::functionNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1529,7 +1759,7 @@ int countNamespaceMembers()
         md=mn->next();
     }
     if (found) count++;
-    mn=functionNameList.next();
+    mn=Doxygen::functionNameList.next();
   }
   return count;
 }
@@ -1540,7 +1770,7 @@ int countFileMembers()
 {
   int i=0;for (i=0;i<256;i++) g_fileIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=functionNameList.first();
+  MemberName *mn=Doxygen::functionNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
@@ -1561,7 +1791,7 @@ int countFileMembers()
         md=mn->next();
     }
     if (found) count++;
-    mn=functionNameList.next();
+    mn=Doxygen::functionNameList.next();
   }
   return count;
 }
@@ -1646,7 +1876,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
 
 void writeExampleIndex(OutputList &ol)
 {
-  if (exampleSDict->count()==0) return;
+  if (Doxygen::exampleSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
@@ -1678,7 +1908,7 @@ void writeExampleIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startIndexList();
-  PageSDictIterator pdi(*exampleSDict);
+  PageSDictIterator pdi(*Doxygen::exampleSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -1717,11 +1947,11 @@ void writeExampleIndex(OutputList &ol)
 int countRelatedPages()
 {
   int count=0;
-  PageSDictIterator pdi(*pageSDict);
+  PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup) count++;
+    if (!pi->inGroup && !pi->isReference()) count++;
   }
   return count;
 }
@@ -1731,11 +1961,14 @@ int countRelatedPages()
 int countPackages()
 {
   int count=0;
-  PackageSDict::Iterator pdi(packageDict);
+  PackageSDict::Iterator pdi(Doxygen::packageDict);
   PackageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    count++;
+    if (!pd->isReference())
+    {
+      count++;
+    }
   }
   return count;
 }
@@ -1776,11 +2009,11 @@ void writePageIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startIndexList();
-  PageSDictIterator pdi(*pageSDict);
+  PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup)
+    if (!pi->inGroup && !pi->isReference())
     {
       QCString pageName,pageTitle;
 
@@ -1822,7 +2055,7 @@ void writePageIndex(OutputList &ol)
 int countGroups()
 {
   int count=0;
-  GroupListIterator gli(groupList);
+  GroupListIterator gli(Doxygen::groupList);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
@@ -1921,7 +2154,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
     for (pli.toFirst();(pi=pli.current());++pli)
     {
       SectionInfo *si=0;
-      if (!pi->name.isEmpty()) si=sectionDict[pi->name];
+      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
       if(htmlHelp) htmlHelp->addContentsItem(FALSE,
                                    convertToHtml(pi->title),
                                    gd->getOutputFileBase(),
@@ -2032,7 +2265,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
 void writeGroupHierarchy(OutputList &ol)
 {
   ol.startIndexList();
-  GroupListIterator gli(groupList);
+  GroupListIterator gli(Doxygen::groupList);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
@@ -2053,7 +2286,7 @@ void writeGroupList(OutputList &ol)
   if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
   if (hasFtvHelp) ftvHelp = FTVHelp::getInstance();
   ol.startDescription();
-  GroupListIterator gli(groupList);
+  GroupListIterator gli(Doxygen::groupList);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
@@ -2171,18 +2404,18 @@ void writeIndex(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString defFileName = 
-    mainPage ? mainPage->defFileName.data() : "<generated>";
+    Doxygen::mainPage ? Doxygen::mainPage->defFileName.data() : "<generated>";
   int defLine =
-    mainPage ? mainPage->defLine : 1;
+    Doxygen::mainPage ? Doxygen::mainPage->defLine : 1;
 
   QCString title;
-  if (!mainPage || mainPage->title.isEmpty())
+  if (!Doxygen::mainPage || Doxygen::mainPage->title.isEmpty())
   {
     title = theTranslator->trMainPage();
   }
   else 
   {
-    title = substitute(mainPage->title,"%","");
+    title = substitute(Doxygen::mainPage->title,"%","");
   }
 
   QCString indexName="index";
@@ -2200,9 +2433,9 @@ void writeIndex(OutputList &ol)
 
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
   ol.startTitleHead(0);
-  if (mainPage && !mainPage->title.isEmpty())
+  if (Doxygen::mainPage && !Doxygen::mainPage->title.isEmpty())
   {
-    parseDoc(ol,defFileName,defLine,0,0,mainPage->title);
+    parseDoc(ol,defFileName,defLine,0,0,Doxygen::mainPage->title);
   }
   else
   {
@@ -2216,11 +2449,11 @@ void writeIndex(OutputList &ol)
     parseDoc(ol,defFileName,defLine,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
-  if (Config::noIndexFlag && mainPage==0) writeQuickLinks(ol,FALSE);
+  if (Config::noIndexFlag && Doxygen::mainPage==0) writeQuickLinks(ol,FALSE);
 
-  if (mainPage)
+  if (Doxygen::mainPage)
   {
-    parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);
+    parseDoc(ol,defFileName,defLine,0,0,Doxygen::mainPage->doc);
   }
   
   endFile(ol);
@@ -2250,12 +2483,12 @@ void writeIndex(OutputList &ol)
   ol.startIndexSection(isTitlePageAuthor);
   parseText(ol,theTranslator->trGeneratedBy());
   ol.endIndexSection(isTitlePageAuthor);
-  if (mainPage)
+  if (Doxygen::mainPage)
   {
     ol.startIndexSection(isMainPage);
-    if (!mainPage->title.isEmpty())
+    if (!Doxygen::mainPage->title.isEmpty())
     {
-      parseDoc(ol,defFileName,defLine,0,0,mainPage->title);
+      parseDoc(ol,defFileName,defLine,0,0,Doxygen::mainPage->title);
     }
     else
     {
@@ -2339,13 +2572,13 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trFileDocumentation());
     ol.endIndexSection(isFileDocumentation);
   }
-  if (exampleSDict->count()>0)
+  if (Doxygen::exampleSDict->count()>0)
   {
     ol.startIndexSection(isExampleDocumentation);
     parseText(ol,projPrefix+theTranslator->trExampleDocumentation());
     ol.endIndexSection(isExampleDocumentation);
   }
-  if (pageSDict->count()>0)
+  if (Doxygen::pageSDict->count()>0)
   {
     ol.startIndexSection(isPageDocumentation);
     parseText(ol,projPrefix+theTranslator->trPageDocumentation());
@@ -2354,20 +2587,20 @@ void writeIndex(OutputList &ol)
   ol.endIndexSection(isEndIndex);
   endFile(ol);
 
-  if (mainPage)
+  if (Doxygen::mainPage)
   {
     ol.disable(OutputGenerator::Man);
-    startFile(ol,mainPage->name,mainPage->title);
+    startFile(ol,Doxygen::mainPage->name,Doxygen::mainPage->title);
     //SectionInfo *si=0;
-    //if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
-    //    (si=sectionDict[mainPage->name])!=0)
+    //if (!Doxygen::mainPage->title.isEmpty() && !Doxygen::mainPage->name.isEmpty() &&
+    //    (si=Doxygen::sectionDict[Doxygen::mainPage->name])!=0)
     //{
     //  ol.startSection(si->label,si->title,FALSE);
     //  ol.docify(si->title);
     //  ol.endSection(si->label,FALSE);
     //}
     ol.startTextBlock();
-    parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);
+    parseDoc(ol,defFileName,defLine,0,0,Doxygen::mainPage->doc);
     ol.endTextBlock();
     endFile(ol);
     ol.enable(OutputGenerator::Man);

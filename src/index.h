@@ -67,16 +67,25 @@ void writeGraphicalClassHierarchy(OutputList &ol);
 void writeGraphInfo(OutputList &ol);
 void writePackageIndex(OutputList &ol);
 
-int countClassHierarchy();
-int countClassMembers();
-int countFileMembers();
-void countFiles(int &htmlFiles,int &files);
-int countGroups();
-int countNamespaces();
-int countAnnotatedClasses();
-int countNamespaceMembers();
-int countIncludeFiles();
-int countRelatedPages();
-int countPackages();
+void countDataStructures();
+
+extern int annotatedClasses;
+extern int hierarchyClasses;
+extern int documentedFunctions;
+extern int documentedMembers;
+extern int documentedDefines;
+extern int documentedFiles;
+extern int documentedHtmlFiles;
+extern int documentedGroups;
+extern int documentedNamespaces;
+extern int documentedNamespaceMembers;
+extern int documentedIncludeFiles;
+extern int documentedPages;
+extern int documentedPackages;
+
+void startTitle(OutputList &ol,const char *fileName);
+void endTitle(OutputList &ol,const char *fileName,const char *name);
+void startFile(OutputList &ol,const char *name,const char *title,bool external=FALSE);
+void endFile(OutputList &ol,bool external=FALSE);
 
 #endif

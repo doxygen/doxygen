@@ -51,10 +51,10 @@
  *
  * scanner's state variables
  */
+static OutputDocInterface * outDoc;
 static bool             insideArgumentList;
 static QCString         className;
 static QCString         memberName;
-static OutputList *     outDoc;
 static QCString         linkRef;
 static QCString         linkText;
 static QCString         codeBlock;
@@ -150,10 +150,10 @@ class TableElem
    ~TableElem();
     int getRow() { return row; }
     int getCol() { return col; }
-    OutputList *outputList() { return ol; }
+    OutputDocInterface *outputDocInterface() { return od; }
    
   private:
-    OutputList *ol;
+    OutputDocInterface *od;
     int row;
     int col;
 };
@@ -161,8 +161,8 @@ class TableElem
 TableElem::TableElem(int r,int c)
 {
   //printf("TableElem::TableElem(%d,%d)\n",r,c);
-  ol=new OutputList(outDoc);
-  outDoc=ol;
+  od=outDoc->clone();
+  outDoc=od;
   row=r;
   col=c;
 }
@@ -170,7 +170,7 @@ TableElem::TableElem(int r,int c)
 TableElem::~TableElem()
 {
   //printf("TableElem::~TableElem(%d,%d)\n",row,col);
-  delete ol; ol=0;
+  delete od; od=0;
 }
 
 class Table
@@ -182,7 +182,7 @@ class Table
     void newElem();
     
   private:
-    OutputList *parentDoc;
+    OutputDocInterface *parentDoc;
     QList<TableElem> *elemList;
     int curRow;
     int curCol;
@@ -219,7 +219,7 @@ Table::~Table()
 	{
 	  parentDoc->nextTableColumn();
 	}
-	*parentDoc+=*e->outputList();
+	parentDoc->append(e->outputDocInterface());
 	parentDoc->endTableColumn();
       }
       e=elemList->next();
@@ -286,30 +286,31 @@ static void endArgumentList()
   }
 }
 
-static void includeFile(OutputList &ol,const char *fileName,bool quiet)
+static void includeFile(OutputDocInterface &od,const char *fileName,bool quiet)
 {
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(exampleNameDict,fileName,ambig)))
+  if ((fd=findFileDef(Doxygen::exampleNameDict,fileName,ambig)))
   {
     currentIncludeFile=fileToString(fd->absFilePath());
     includeFileOffset=0;
     includeFileLength=currentIncludeFile.length();
-    OutputList codeFrag(&ol);
-    parseCode(codeFrag,0,currentIncludeFile,exampleDoc,exampleName);
+    OutputDocInterface *codeFrag = od.clone();
+    parseCode(*codeFrag,0,currentIncludeFile,exampleDoc,exampleName);
     if (!quiet)
     {
-      ol.startCodeFragment();
-      ol+=codeFrag;
-      ol.endCodeFragment();
+      od.startCodeFragment();
+      od.append(codeFrag);
+      od.endCodeFragment();
     }
+    delete codeFrag;
   }
   else if (ambig)
   {
     QCString text;
     text.sprintf("Include file name %s is ambigious.\n",fileName);
     text+="Possible candidates:\n";
-    text+=showFileDefMatches(exampleNameDict,fileName);
+    text+=showFileDefMatches(Doxygen::exampleNameDict,fileName);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -321,22 +322,22 @@ static void includeFile(OutputList &ol,const char *fileName,bool quiet)
   }
 }
 
-static void verbIncludeFile(OutputList &ol,const char *name)
+static void verbIncludeFile(OutputDocInterface &od,const char *name)
 {
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(exampleNameDict,name,ambig)))
+  if ((fd=findFileDef(Doxygen::exampleNameDict,name,ambig)))
   {
-    ol.startCodeFragment();
-    ol.codify(fileToString(fd->absFilePath()));
-    ol.endCodeFragment();
+    od.startCodeFragment();
+    od.codify(fileToString(fd->absFilePath()));
+    od.endCodeFragment();
   }
   else if (ambig)
   {
     QCString text;
     text.sprintf("Include file name %s is ambigious.\n",name);
     text+=("Possible candidates:\n");
-    text+=showFileDefMatches(exampleNameDict,name);
+    text+=showFileDefMatches(Doxygen::exampleNameDict,name);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -369,7 +370,7 @@ static QCString stripKnownExtensions(const char *text)
   return result;
 }
 
-static void skipLine(OutputList &ol,const char *key)
+static void skipLine(OutputDocInterface &od,const char *key)
 {
   bool found=FALSE;
   while (!found)
@@ -382,9 +383,9 @@ static void skipLine(OutputList &ol,const char *key)
     if (s.find(key)!=-1)
     {
       found=TRUE;
-      ol.writeString("    ");
-      parseCode(ol,className,s,exampleDoc,exampleName);
-      ol.writeString("\n");
+      od.writeString("    ");
+      parseCode(od,className,s,exampleDoc,exampleName);
+      od.writeString("\n");
     }
     else if (includeFileOffset==includeFileLength) found=TRUE;
   }
@@ -412,7 +413,7 @@ static void skipUntil(const char *key)
   }
 }
 
-static void showLine(OutputList &ol,const char *key)
+static void showLine(OutputDocInterface &od,const char *key)
 {
   QCString s;
   char c;
@@ -427,13 +428,13 @@ static void showLine(OutputList &ol,const char *key)
   }
   if (s.find(key)!=-1)
   {
-    ol.writeString("    ");
-    parseCode(ol,className,s,exampleDoc,exampleName);
-    ol.writeString("\n");
+    od.writeString("    ");
+    parseCode(od,className,s,exampleDoc,exampleName);
+    od.writeString("\n");
   }
 }
 
-static void showUntil(OutputList &ol,const char *key)
+static void showUntil(OutputDocInterface &od,const char *key)
 {
   bool found=FALSE;
   while (!found)
@@ -445,9 +446,9 @@ static void showUntil(OutputList &ol,const char *key)
 	  ) s+=c;
     if (!s.stripWhiteSpace().isEmpty())
     {
-      ol.writeString("    ");
-      parseCode(ol,className,s,exampleDoc,exampleName);
-      ol.writeString("\n");
+      od.writeString("    ");
+      parseCode(od,className,s,exampleDoc,exampleName);
+      od.writeString("\n");
       if (s.find(key)!=-1) found=TRUE; 
     }
     if (includeFileOffset==includeFileLength) found=TRUE;
@@ -630,7 +631,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   bool ambig;
   FileDef *fd;
   //printf("Search for %s\n",fileName);
-  if ((fd=findFileDef(imageNameDict,fileName,ambig)))
+  if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)))
   {
     QFile inImage(QString(fd->absFilePath().data()));
     if (inImage.open(IO_ReadOnly))
@@ -678,7 +679,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
     QCString text;
     text.sprintf("Warning: image file name %s is ambigious.\n",fileName);
     text+="Possible candidates:\n";
-    text+=showFileDefMatches(imageNameDict,fileName);
+    text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -806,6 +807,12 @@ UL	  [uU][lL]
 VAR	  [vV][aA][rR]
 BLOCKQUOTE [bB][lL][oO][cC][kK][qQ][uU][oO][tT][eE]
 DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
+OPNEW     {B}+"new"({B}*"[]")?
+OPDEL     {B}+"delete"({B}*"[]")?
+OPARG     "("[a-z_A-Z0-9,\<\> \t\*\&]*")"
+OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
+OPCAST    {B}+[^(\r\n.,]+
+OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 
 %option noyywrap
 
@@ -885,23 +892,20 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->docify(getenv(envvar));
 					}
 <DocScan>{CMD}"htmlonly"/[^a-z_A-Z0-9]	{
-  				          outDoc->pushGeneratorState(); /*storeOutputListState();*/
+  				          outDoc->pushGeneratorState(); 
   					  outDoc->disableAllBut(OutputGenerator::Html); 
 					  BEGIN(DocHtmlScan);
   					}
 <DocHtmlScan>{CMD}"endhtmlonly"/[^a-z_A-Z0-9] {
-  					  /*restoreOutputListState();*/
   					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
-  				          /*storeOutputListState();*/
   					  outDoc->pushGeneratorState();
   					  outDoc->disableAllBut(OutputGenerator::Latex);
 					  BEGIN(DocLatexScan);
   					}
 <DocLatexScan>{CMD}"endlatexonly"/[^a-z_A-Z0-9] {
-  					  /*restoreOutputListState();*/
   					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
@@ -914,17 +918,17 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->writeString(c);
   					}
 <DocScan>"\\postheader"/{BN}
-<DocScan>"\\functionindex"/{BN}		{ writeMemberList(*outDoc,FALSE); }
-<DocScan>"\\classhierarchy"/{BN}	{ writeClassHierarchy(*outDoc); }
-<DocScan>"\\annotatedclasslist"/{BN}	{ writeAnnotatedClassList(*outDoc); }
-<DocScan>"\\headerfilelist"/{BN}	{ /*TODO: fix this writeHeaderFileList(*outDoc); */ }
+<DocScan>"\\functionindex"/{BN}		{ /* writeMemberList(*outDoc,FALSE);*/ }
+<DocScan>"\\classhierarchy"/{BN}	{ /* writeClassHierarchy(*outDoc); */ }
+<DocScan>"\\annotatedclasslist"/{BN}	{ /* writeAnnotatedClassList(*outDoc); */ }
+<DocScan>"\\headerfilelist"/{BN}	{ /* writeHeaderFileList(*outDoc); */ }
 <DocScan>"\\header"/{BN}                { BEGIN( DocSkipWord ); }
 <DocScan>"\\define"/{BN}	        { BEGIN( DocSkipWord ); }
 <DocScan>{CMD}"verbinclude"/{BN}	{ BEGIN( DocVerbInc ); }
 <DocVerbInc>{FILE}			{
   					  verbIncludeFile(*outDoc,stripQuotes(yytext));
 					  BEGIN( DocScan ); 
-  					}
+					}
 <DocScan>{CMD}"verbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->startCodeFragment();
 					  insideVerbatim=TRUE;
@@ -1000,7 +1004,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  BEGIN(DocIndexWord);
   					}
 <DocScan>"\\form#"[0-9]+		{
-  					  Formula *formula=formulaNameDict[yytext];
+  					  Formula *formula=Doxygen::formulaNameDict[yytext];
 					  if (formula)
 					  {
 					    QCString formName;
@@ -1501,7 +1505,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
 					  SectionInfo *sec;
-					  if ((sec=sectionDict[secName]))
+					  if ((sec=Doxygen::sectionDict[secName]))
 					  {
 					    //printf("Title %s\n",sec->title.data());
 					    outDoc->startSection(sec->label,sec->title,
@@ -1515,7 +1519,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  QCString secName=&yytext[8];
 					  secName=secName.left(secName.length()-1);
 					  SectionInfo *sec;
-					  if ((sec=sectionDict[secName]))
+					  if ((sec=Doxygen::sectionDict[secName]))
 					  {
 					    //printf("writeAnchor %s_%s\n",sec->fileName.data(),sec->label.data());
 					    outDoc->writeAnchor(sec->fileName,sec->label);
@@ -1576,7 +1580,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocRefName>{SCOPENAME}|{FILE}		{
   					  QCString ref=yytext;
 					  SectionInfo *sec;
-					  if ((sec=sectionDict[ref]))
+					  if ((sec=Doxygen::sectionDict[ref]))
 					  {
 					    QCString text;
 					    if (sec->title.isEmpty()) 
@@ -1585,19 +1589,21 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      text=sec->title;
 					    if (sec->type==SectionInfo::Anchor)
 					    {
-					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
-					      writePageRef(*outDoc,sec->label,0);
+					      outDoc->writeObjectLink(sec->ref,sec->fileName,sec->label,text);
+					      if (sec->ref.isEmpty())
+					      {
+					        writePageRef(*outDoc,sec->label,0);
+					      }
 					    }
 					    else
 					    {
 					      //printf("  ref sec=%p sec->fileName=%s text=%s\n",sec,sec->fileName.data(),text.data());
-					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
+					      outDoc->writeSectionRef(sec->fileName,sec->label,text,sec->ref);
 					    }
 					  }
 					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",yytext);
-					    //outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1613,24 +1619,27 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  yytext[yyleng-1]='\0';
 					  QCString text=substitute(yytext,"\\\\","\\");
 					  SectionInfo *sec;
-					  if ((sec=sectionDict[sectionRef]))
+					  if ((sec=Doxygen::sectionDict[sectionRef]))
 					  {
 					    if (sec->type==SectionInfo::Anchor)
 					    {
-					      //outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
-					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
-					      //printf("Writing page ref `%s'\n",sec->label.data());
-					      writePageRef(*outDoc,sec->label,0);
+					      outDoc->writeObjectLink(sec->ref,sec->fileName,sec->label,text);
+					      if (sec->ref.isEmpty())
+					      {
+					        writePageRef(*outDoc,sec->label,0);
+					      }
 					    }
 					    else
 					    {
-					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
+					      outDoc->writeSectionRef(sec->fileName,sec->label,text,sec->ref);
 					    }
 					  }
 					  else if (!generateLink(*outDoc,className,sectionRef,TRUE,text))
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",sectionRef.data());
-					    outDoc->writeBoldString(" unknown reference! ");
+					    outDoc->startBold();
+					    outDoc->writeString(" unknown reference! ");
+					    outDoc->endBold();
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1641,14 +1650,16 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocRefItemName>.*/"\n"			{
 					  SectionInfo *sec;
 					  QCString text=yytext;
-					  if ((sec=sectionDict[sectionRef]))
+					  if ((sec=Doxygen::sectionDict[sectionRef]))
 					  {
 					    outDoc->writeSectionRefItem(sec->fileName,sec->label,text.stripWhiteSpace());
 					  }
 					  else
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",sectionRef.data());
-					    outDoc->writeBoldString(" unknown reference! ");
+					    outDoc->startBold();
+					    outDoc->writeString(" unknown reference! ");
+					    outDoc->endBold();
 					  }
 					  BEGIN(DocScan);
   					}
@@ -2212,12 +2223,12 @@ void internalParseDocument(const char *s)
 
 //----------------------------------------------------------------------------
 
-void parseDocument(OutputList &ol,const QCString &docString)
+void parseDocument(OutputDocInterface &od,const QCString &docString)
 {
   //inParamBlock=inSeeBlock=inReturnBlock=FALSE;
   curTable = 0;
   depthIf = 0;
-  outDoc = new OutputList(&ol);
+  outDoc = od.clone();
   currentIncludeFile.resize(0);
   includeFileOffset=0;
   includeFileLength=0;
@@ -2268,14 +2279,14 @@ void parseDocument(OutputList &ol,const QCString &docString)
          "Warning: file ended inside a \\verbatim block!"
         );
   }
-  ol+=*outDoc;
+  od.append(outDoc);
   delete outDoc; outDoc=0;
   return;
 }
 
 //----------------------------------------------------------------------------
 
-void parseDoc(OutputList &ol,const char *fileName,int startLine,
+void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
               const char *clName,const char *memName,const QCString &docString)
 {
   //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
@@ -2286,29 +2297,29 @@ void parseDoc(OutputList &ol,const char *fileName,int startLine,
   memberName=memName;
   strcpy(yyFileName,fileName);
   yyLineNr = startLine;
-  parseDocument(ol,docString);
+  parseDocument(od,docString);
 
 }
 
 //----------------------------------------------------------------------------
 
-void parseText(OutputList &ol,const QCString &txtString)
+void parseText(OutputDocInterface &od,const QCString &txtString)
 {
   if (txtString.isEmpty()) return;
   inputString = txtString;
-  outDoc = new OutputList(&ol);
+  outDoc = od.clone();
   inputPosition = 0;
   docYYrestart( docYYin ); 
   BEGIN( Text );
   docYYlex();
-  ol+=*outDoc;
+  od.append(outDoc);
   delete outDoc; outDoc=0;
   return;
 }
 
 //----------------------------------------------------------------------------
 
-void parseExample(OutputList &ol,const QCString &docString, 
+void parseExample(OutputDocInterface &od,const QCString &docString, 
                   const char *fileName)
 {
   initParser();
@@ -2316,7 +2327,7 @@ void parseExample(OutputList &ol,const QCString &docString,
   exampleDoc=TRUE;            // cross reference with member docs
   exampleName=fileName;
   strcpy(yyFileName,fileName);
-  parseDocument(ol,docString); 
+  parseDocument(od,docString); 
 }
 
 //----------------------------------------------------------------------------

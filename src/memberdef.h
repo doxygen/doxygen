@@ -220,7 +220,7 @@ class MemberDef : public Definition
 
     QCString getScopeString() const;
     
-    void generateXML(QTextStream &t,Definition *def);
+    //void generateXML(QTextStream &t,Definition *def);
     
   private:
     ClassDef   *classDef;     // member of or related to 

@@ -128,8 +128,8 @@ void GroupDef::addMemberListToGroup(MemberList *ml,
     int groupId=md->getMemberGroupId();
     if ((md->*func)() && groupId!=-1)
     {
-      QCString *pGrpHeader = memberHeaderDict[groupId];
-      QCString *pDocs      = memberDocDict[groupId];
+      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      QCString *pDocs      = Doxygen::memberDocDict[groupId];
       if (pGrpHeader)
       {
         MemberGroup *mg = memberGroupDict->find(groupId);
@@ -271,10 +271,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  <compound kind=\"group\">" << endl;
-    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
-    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "  <compound kind=\"group\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
   }
   
   ol.startMemberSections();
@@ -293,7 +293,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
       if (!Config::genTagFile.isEmpty()) 
       {
-        tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+        Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
       }
       ol.endMemberItem(FALSE);
       if (!fd->briefDescription().isEmpty() && Config::briefMemDescFlag)
@@ -322,7 +322,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
       if (!Config::genTagFile.isEmpty()) 
       {
-        tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+        Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
       }
       ol.endMemberItem(FALSE);
       if (!nd->briefDescription().isEmpty() && Config::briefMemDescFlag)
@@ -350,7 +350,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
       if (!Config::genTagFile.isEmpty()) 
       {
-        tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
+        Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
       }
       ol.endMemberItem(FALSE);
       if (!gd->briefDescription().isEmpty() && Config::briefMemDescFlag)
@@ -421,12 +421,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
       if (!Config::genTagFile.isEmpty()) 
       {
-        tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
+        Doxygen::tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
       }
 
       SectionInfo *si=0;
       if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-          (si=sectionDict[pi->name])!=0)
+          (si=Doxygen::sectionDict[pi->name])!=0)
       {
         ol.startSection(si->label,si->title,TRUE);
         ol.docify(si->title);
@@ -500,7 +500,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  </compound>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
 
   endFile(ol); 
@@ -516,7 +517,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
   for (;(s=sli.current());++sli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       gd->addClass(cd);
       //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
@@ -533,7 +534,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
   {
     GroupDef *gd=0;
     //printf("group `%s'\n",s->data());
-    if (!s->isEmpty() && (gd=groupDict[*s]))
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       gd->addNamespace(nd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
@@ -548,7 +549,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   for (;(s=sli.current());++sli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       gd->addGroup(subGroup);
     }
@@ -563,7 +564,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   for (;(s=sli.current());++sli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       GroupDef *mgd = md->getGroupDef();
       if (mgd==0)
@@ -592,7 +593,7 @@ void addExampleToGroups(Entry *root,PageInfo *eg)
   for (;(s=sli.current());++sli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
+    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       gd->addExample(eg);
       //printf("Example %s: in group %s\n",eg->name().data(),s->data());

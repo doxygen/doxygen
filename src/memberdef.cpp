@@ -31,7 +31,7 @@
 #include "doc.h"
 #include "groupdef.h"
 #include "defargs.h"
-#include "xml.h"
+//#include "xml.h"
 
 //-----------------------------------------------------------------------------
 
@@ -509,43 +509,44 @@ void MemberDef::writeDeclaration(OutputList &ol,
     
     if (!Config::genTagFile.isEmpty())
     {
-      tagFile << "    <member kind=\"";
+      Doxygen::tagFile << "    <member kind=\"";
       switch (mtype)
       {
-        case Define:      tagFile << "define";      break;
-        case EnumValue:   tagFile << "enumvalue";   break;
-        case Property:    tagFile << "property";    break;
-        case Variable:    tagFile << "variable";    break;
-        case Typedef:     tagFile << "typedef";     break;
-        case Enumeration: tagFile << "enumeration"; break;
-        case Function:    tagFile << "function";    break;
-        case Signal:      tagFile << "signal";      break;
-        case Prototype:   tagFile << "prototype";   break;
-        case Friend:      tagFile << "friend";      break;
-        case DCOP:        tagFile << "dcop";        break;
-        case Slot:        tagFile << "slot";        break;
+        case Define:      Doxygen::tagFile << "define";      break;
+        case EnumValue:   Doxygen::tagFile << "enumvalue";   break;
+        case Property:    Doxygen::tagFile << "property";    break;
+        case Variable:    Doxygen::tagFile << "variable";    break;
+        case Typedef:     Doxygen::tagFile << "typedef";     break;
+        case Enumeration: Doxygen::tagFile << "enumeration"; break;
+        case Function:    Doxygen::tagFile << "function";    break;
+        case Signal:      Doxygen::tagFile << "signal";      break;
+        case Prototype:   Doxygen::tagFile << "prototype";   break;
+        case Friend:      Doxygen::tagFile << "friend";      break;
+        case DCOP:        Doxygen::tagFile << "dcop";        break;
+        case Slot:        Doxygen::tagFile << "slot";        break;
       }
       if (prot!=Public)
       {
-        tagFile << "\" protection=\"";
-        if (prot==Protected) tagFile << "public";
-        else /* Private */   tagFile << "protected"; 
+        Doxygen::tagFile << "\" protection=\"";
+        if (prot==Protected) Doxygen::tagFile << "public";
+        else /* Private */   Doxygen::tagFile << "protected"; 
       }
       if (virt!=Normal)
       {
-        tagFile << "\" virtualness=\"";
-        if (virt==Virtual) tagFile << "virtual";
-        else /* Pure */    tagFile << "pure"; 
+        Doxygen::tagFile << "\" virtualness=\"";
+        if (virt==Virtual) Doxygen::tagFile << "virtual";
+        else /* Pure */    Doxygen::tagFile << "pure"; 
       }
       if (isStatic())
       {
-        tagFile << "\" static=\"yes";
+        Doxygen::tagFile << "\" static=\"yes";
       }
-      tagFile << "\">" << endl;
-      tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
-      tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
-      tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
-      tagFile << "    </member>" << endl;
+      Doxygen::tagFile << "\">" << endl;
+      Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
+      Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+      Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
+      writeDocAnchorsToTagFile();
+      Doxygen::tagFile << "    </member>" << endl;
     }
       
     Definition *d=0;
@@ -761,7 +762,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
         // descriptions are enabled or there is no detailed description.
       {
         if (annMemb) annMemb->annUsed=annUsed=TRUE;
-        ol.writeBoldString(name());
+        ol.startBold();
+        ol.docify(name());
+        ol.endBold();
       }
     }
 
@@ -819,6 +822,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       parseDoc(ol,defFileName,defLine,cname,name(),briefDescription());
       if (/*!documentation().isEmpty()*/ detailsAreVisible()) 
       {
+        ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.endEmphasis();
         ol.docify(" ");
@@ -833,7 +837,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
         parseText(ol,theTranslator->trMore());
         ol.endTextLink();
         ol.startEmphasis();
-        ol.enableAll();
+        ol.popGeneratorState();
       }
       //ol.newParagraph();
       ol.endMemberDescription();
@@ -1449,187 +1453,6 @@ QCString MemberDef::getScopeString() const
   return result;
 }
 
-void MemberDef::generateXML(QTextStream &t,Definition *def)
-{
-  if (mtype==EnumValue) return;
-
-  QCString scopeName;
-  if (getClassDef()) 
-    scopeName=getClassDef()->name();
-  else if (getNamespaceDef()) 
-    scopeName=getNamespaceDef()->name();
-    
-  t << "            <";
-  enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
-  switch (mtype)
-  {
-    case Define:      t << "definedef";   xmlType=define_t;   break;
-    case EnumValue:   // fall through
-    case Property:    // fall through
-    case Variable:    t << "variabledef"; xmlType=variable_t; break;
-    case Typedef:     t << "typedef";     xmlType=typedef_t;  break;
-    case Enumeration: t << "enumdef";     xmlType=enum_t;     break;
-    case Function:    // fall through
-    case Signal:      // fall through
-    case Prototype:   // fall through
-    case Friend:      // fall through
-    case DCOP:        // fall through
-    case Slot:        t << "functiondef"; xmlType=function_t; break;
-  }
-  t << " id=\"";
-  t << def->getOutputFileBase()
-    << "__"      // can we change this to a non ID char? 
-                 // : do not seem allowed for some parsers!
-    << anchor();
-  t << "\"";
-  if (xmlType==function_t && virtualness()!=Normal) 
-    // functions has an extra "virt" attribute
-  {
-    t << " virt=\"";
-    switch (virtualness())
-    {
-      case Virtual: t << "virtual";      break;
-      case Pure:    t << "pure-virtual"; break;
-      default: ASSERT(0);
-    }
-    t << "\"";
-  }
-  t << ">" << endl;
-  
-  if (xmlType!=define_t && xmlType!=enum_t &&    // These don't have types.
-      (xmlType!=function_t || !type.isEmpty()) // Type is optional here.
-     )
-  {
-    QCString typeStr = replaceAnonymousScopes(type);
-    if (xmlType==typedef_t && typeStr.left(8)=="typedef ") 
-      typeStr=typeStr.right(typeStr.length()-8);
-    if (xmlType==function_t && typeStr.left(8)=="virtual ") 
-      typeStr=typeStr.right(typeStr.length()-8);
-    t << "              <type>";
-    linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),typeStr);
-    t << "</type>" << endl;
-  }
-
-  t << "              <name>";
-  writeXMLString(t,name());
-  t << "</name>" << endl;
-  if (xmlType==function_t) //function
-  {
-    t << "              <paramlist>" << endl;
-    ArgumentList *declAl = new ArgumentList;
-    ArgumentList *defAl = argList;
-    stringToArgumentList(args,declAl);
-    if (declAl->count()>0)
-    {
-      ArgumentListIterator declAli(*declAl);
-      ArgumentListIterator defAli(*defAl);
-      Argument *a;
-      for (declAli.toFirst();(a=declAli.current());++declAli)
-      {
-        Argument *defArg = defAli.current();
-        t << "                <param>" << endl;
-        if (!a->attrib.isEmpty())
-        {
-          t << "                  <attributes>";
-          writeXMLString(t,a->attrib);
-          t << "</attributes>" << endl;
-        }
-        if (!a->type.isEmpty())
-        {
-          t << "                  <type>";
-          linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),a->type);
-          t << "</type>" << endl;
-        }
-        if (!a->name.isEmpty())
-        {
-          t << "                  <declname>";
-          writeXMLString(t,a->name); 
-          t << "</declname>" << endl;
-        }
-        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
-        {
-          t << "                  <defname>";
-          writeXMLString(t,defArg->name);
-          t << "</defname>" << endl;
-        }
-        if (!a->array.isEmpty())
-        {
-          t << "                  <array>"; 
-          writeXMLString(t,a->array); 
-          t << "</array>" << endl;
-        }
-        if (!a->defval.isEmpty())
-        {
-          t << "                  <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),a->defval);
-          t << "</defval>" << endl;
-        }
-        t << "                </param>" << endl;
-        if (defArg) ++defAli;
-      }
-    }
-    delete declAl;
-    t << "              </paramlist>" << endl;
-  }
-  else if (xmlType==define_t && !args.isEmpty()) // define
-  {
-    t << "              <defparamlist>" << endl;
-    ArgumentListIterator ali(*argList);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
-    {
-      t << "                <defarg>" << a->type << "</defarg>" << endl;
-    }
-    t << "              </defparamlist>" << endl;
-    if (!init.isEmpty())
-    {
-      t << "             <initializer>";
-      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),init);
-      t << "</initializer>" << endl;
-    }
-  }
-  else if (xmlType==enum_t) // enum
-  {
-    t << "              <enumvaluelist>" << endl;
-    if (enumFields)
-    {
-      MemberListIterator emli(*enumFields);
-      MemberDef *emd;
-      for (emli.toFirst();(emd=emli.current());++emli)
-      {
-        t << "                <enumvalue>" << endl;
-        t << "                  <name>";
-        writeXMLString(t,emd->name());
-        t << "</name>" << endl;
-        if (!emd->init.isEmpty())
-        {
-          t << "                  <initializer>";
-          writeXMLString(t,emd->init);
-          t << "</initializer>" << endl;
-        }
-        t << "                </enumvalue>" << endl;
-      }
-    }
-    t << "              </enumvaluelist>" << endl;
-  }
-  t << "            </";
-  switch (mtype)
-  {
-    case Define:      t << "definedef";   break;
-    case EnumValue:   // fall through
-    case Property:    // fall through
-    case Variable:    t << "variabledef"; break;
-    case Typedef:     t << "typedef";     break;
-    case Enumeration: t << "enumdef";     break;
-    case Function:    // fall through
-    case Signal:      // fall through
-    case Prototype:   // fall through
-    case Friend:      // fall through
-    case DCOP:        // fall through
-    case Slot:        t << "functiondef"; break;
-  }
-  t << ">" << endl;
-}
 
 Definition *MemberDef::getCompoundDef() const
 {
