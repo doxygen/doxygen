@@ -1136,7 +1136,9 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <DefineEnd>.				
 					
-<FindMembers>[*&]+			{ current->name += yytext ; }
+<FindMembers>[*&]+			{ current->name += yytext ; 
+  					  addType( current );
+					}
 <FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
@@ -1677,7 +1679,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <ReadBody>.				{ current->program += yytext ; }
 
-<FindMembers>"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ {
+<FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -1769,13 +1771,17 @@ TITLE     [tT][iI][tT][lL][eE]
 <FuncFuncType>.				{
   					  current->type += *yytext;
   					}
-<FindMembers>"("			{ current->args = yytext;
-  					  current->bodyLine = yyLineNr;
-					  currentArgumentContext = FuncQual;
-					  fullArgString=current->args.copy();
-					  copyArgString=&current->args;
-					  BEGIN( ReadFuncArgType ) ;
-					  //printf(">>> Read function arguments!\n");
+<FindMembers>"("			{ 
+                                          if (!current->name.isEmpty())
+					  {
+					    current->args = yytext;
+					    current->bodyLine = yyLineNr;
+					    currentArgumentContext = FuncQual;
+					    fullArgString=current->args.copy();
+					    copyArgString=&current->args;
+					    BEGIN( ReadFuncArgType ) ;
+					    //printf(">>> Read function arguments!\n");
+					  }
 					}
   /*
 <FindMembers>"("{BN}*("void"{BN}*)?")"	{

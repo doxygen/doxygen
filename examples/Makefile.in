@@ -77,10 +77,10 @@ structcmd/html/index.html: structcmd.h structcmd.cfg
 autolink/html/index.html: autolink.cpp autolink.cfg 
 	$(DOXYGEN)/bin/doxygen autolink.cfg
 
-tag/html/index.html: tag.cpp tag.cfg 
+tag/html/index.html: tag.cpp tag.cfg example/html/index.html
 	$(DOXYGEN)/bin/doxygen tag.cfg
-	sed -e "1,1s#perl#$(PERL)#g" tag/html/installdox >tag/html/installdox.perl
-	cd tag/html ; $(PERL) installdox.perl -lexample.tag@../../example/html
+#	sed -e "1,1s#perl#$(PERL)#g" tag/html/installdox >tag/html/installdox.perl
+#	cd tag/html ; $(PERL) installdox.perl -lexample.tag@../../example/html
 
 restypedef/html/index.html: restypedef.cpp restypedef.cfg 
 	$(DOXYGEN)/bin/doxygen restypedef.cfg

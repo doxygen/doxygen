@@ -1786,6 +1786,9 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					}
 <DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
+<DocScan>{FILESCHAR}*{FILEECHAR}+/".\\n" { // special exception that is otherwise matches by FILEMASK
+  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					}
 <DocScan>{FILEMASK}			{
 					  generateFileRef(*outDoc,yytext);
 					}

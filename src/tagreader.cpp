@@ -857,6 +857,19 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
   }
 }
 
+static QString stripPath(const QString &s)
+{
+  int i=s.findRev('/');
+  if (i!=-1)
+  {
+    return s.right(s.length()-i-1);
+  }
+  else
+  {
+    return s;
+  }
+}
+
 void TagFileParser::buildLists(Entry *root)
 {
   // build class list
@@ -902,7 +915,7 @@ void TagFileParser::buildLists(Entry *root)
     ti->fileName = tfi->filename;
     fe->tagInfo  = ti;
     
-    QString fullName = m_tagName+":"+tfi->path+tfi->name;
+    QString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
     FileDef *fd = new FileDef(m_tagName+":"+tfi->path,tfi->name,m_tagName);
     FileName *mn;

@@ -88,7 +88,7 @@ class MemberDef : public Definition
     GroupDef *getGroupDef() const         { return group; }
     FileDef  *getFileDef() const          { return fileDef; }
     NamespaceDef* getNamespaceDef() const { return nspace; }
-    Definition *getCompoundDef() const;
+    //Definition *getCompoundDef() const;
 
     // direct kind info 
     Protection protection() const         { return prot; }

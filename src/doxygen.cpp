@@ -424,8 +424,8 @@ static void buildGroupList(Entry *root)
 static void buildFileList(Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
-      ((root->section & Entry::FILE_MASK) && Config::extractAllFlag)) &&
-      !root->name.isEmpty()
+        ((root->section & Entry::FILE_MASK) && Config::extractAllFlag)) &&
+      !root->name.isEmpty() && !root->tagInfo // skip any file coming from tag files
      )
   {
     bool ambig;
@@ -436,10 +436,10 @@ static void buildFileList(Entry *root)
           (!root->brief.isEmpty() && !fd->briefDescription().isEmpty()))
       {
         warn(
-             root->fileName,root->startLine,
-             "Warning: file %s already documented. "
-             "Skipping documentation.",
-             root->name.data()
+            root->fileName,root->startLine,
+            "Warning: file %s already documented. "
+            "Skipping documentation.",
+            root->name.data()
             );
       }
       else
@@ -469,15 +469,15 @@ static void buildFileList(Entry *root)
       const char *fn = root->fileName.data();
       QCString text;
       text.sprintf("Warning: the name `%s' supplied as "
-                   "the second argument in the \\file statement ",
-                    root->name.data()
+          "the second argument in the \\file statement ",
+          root->name.data()
                   );
       if (ambig) // name is ambigious
       {
         text+="matches the following input files:\n";
         text+=showFileDefMatches(Doxygen::inputNameDict,root->name);
         text+="Please use a more specific name by "
-              "including a (larger) part of the path!";
+          "including a (larger) part of the path!";
       }
       else // name is not an input file
       {
@@ -811,7 +811,7 @@ static void buildNamespaceList(Entry *root)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDef *nd;
-      if ((nd=Doxygen::namespaceDict[fullName])) 
+      if ((nd=Doxygen::namespaceDict[fullName])) // existing namespace
       {
         if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
@@ -852,11 +852,7 @@ static void buildNamespaceList(Entry *root)
         addNamespaceToGroups(root,nd);
         nd->setRefItems(root->todoId,root->testId,root->bugId);
       }
-      else /* if (!root->doc.isEmpty() || 
-                  !root->brief.isEmpty() || 
-               Config::extractAllFlag
-              )
-           */ 
+      else // fresh namespace
       {
         QCString tagName;
         if (root->tagInfo)
@@ -1390,16 +1386,17 @@ static MemberDef *addVariableToFile(
  *  \returns -1 if this is not a function pointer variable or
  *           the index at which the brace of (...*name) was found.
  */
-static int findFunctionPtr(const QCString &type)
+static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]*)");
-  int i=-1;
+  static const QRegExp re("([^)]*");
+  int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
-      (i=type.find(re,0))!=-1 &&     // contains a (*
+      (i=re.match(type,0,&l))!=-1 &&     // contains a (*
       type.find("operator")==-1 &&   // not an operator
       type.find(")(")==-1            // not a function pointer return type
      )
   {
+    if (pLength) *pLength=l;
     return i;
   }
   else
@@ -1414,18 +1411,13 @@ static int findFunctionPtr(const QCString &type)
 
 void buildVarList(Entry *root)
 {
-  int i=-1;
   if (!root->name.isEmpty() &&
       (root->type.isEmpty() || compoundKeywordDict.find(root->type)==0) &&
       (
        (root->section==Entry::VARIABLE_SEC    // it's a variable
        ) ||
        (root->section==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
-        (i=findFunctionPtr(root->type))!=-1
-        //!root->type.isEmpty() &&              // return type is non-empty
-        // root->type.find(re,0)!=-1 &&         // contains a (*
-        // /root->type.find("operator")==-1 &&  // not an operator
-        // root->type.find(")(")==-1            // not a function pointer return type
+        findFunctionPtr(root->type)!=-1
        )
       ) 
      ) // documented variable
@@ -1444,11 +1436,14 @@ void buildVarList(Entry *root)
     if (root->type.isEmpty() && root->name.find("operator")==-1 &&
         (root->name.find('*')!=-1 || root->name.find('&')!=-1))
     {
-      // recover from parse error caused by redundant braces
+      // recover from parse error caused by redundant braces 
+      // like in "int *(var[10]);", which is parsed as
+      // type="" name="int *" args="(var[10])"
+
       root->type=root->name;
       static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
       int l;
-      i=root->args.isEmpty() ? -1 : reName.match(root->args,0,&l);
+      int i=root->args.isEmpty() ? -1 : reName.match(root->args,0,&l);
       root->name=root->args.mid(i,l);
       root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
       //printf("new: type=`%s' name=`%s' args=`%s'\n",
@@ -1456,6 +1451,7 @@ void buildVarList(Entry *root)
     }
     else
     {
+      int i=findFunctionPtr(root->type);
       if (i!=-1) // function pointer
       {
         int ai = root->type.find('[',i);
@@ -1464,7 +1460,7 @@ void buildVarList(Entry *root)
           root->args.prepend(root->type.right(root->type.length()-ai));
           root->type=root->type.left(ai);
         }
-        else
+        else if (root->type.find(')',i)!=-1) // function ptr, not variable like "int (*bla)[10]"
         {
           root->type=root->type.left(root->type.length()-1);
           root->args.prepend(")");
@@ -1473,12 +1469,6 @@ void buildVarList(Entry *root)
     }
     
     QCString scope,name=root->name.copy();
-    //int si;
-    //if ((si=name.findRev("::"))!=-1)
-    //{
-    //  scope=name.left(si);
-    //  name=name.right(name.length()-si-2);
-    //}
 
     // find the scope of this variable 
     Entry *p = root->parent;
@@ -3781,31 +3771,26 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
 static void findMemberDocumentation(Entry *root)
 {
   int i=-1,l;
-  //QRegExp re("([a-z_A-Z0-9: ]*\\*+[ \\*]*");
   Debug::print(Debug::FindMembers,0,
          "root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d root->mGrpId=%d\n",
           root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
          );
   bool isFunc=TRUE;
-  if (
-      findFunctionPtr(root->type)!=-1 // func variable/typedef to func ptr
-      //!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1
+  if ( // detect func variable/typedef to func ptr
+      (i=findFunctionPtr(root->type,&l))!=-1 
      )
   {
+    // fix type and argument
     root->args+=root->type.right(root->type.length()-i-l);
     root->type=root->type.left(i+l);
     isFunc=FALSE;
   }
-  //else if (root->name.find(re)!=-1 && root->name.find("operator")==-1) 
-  //  // func ptr entered with \fn, \var or \typedef
-  //{
-  //  isFunc=FALSE;
-  //}
-  else if ((root->type.isEmpty() && root->name.left(8)=="typedef ")
-           || root->args.find('(')==-1)
+  else if ((root->type.left(8)=="typedef " && root->args.find('(')!=-1)) 
+       // detect function types marked as functions
   {
     isFunc=FALSE;
   }
+
   //printf("Member %s isFunc=%d\n",root->name.data(),isFunc);
   if (root->section==Entry::MEMBERDOC_SEC)
   {
@@ -3820,15 +3805,18 @@ static void findMemberDocumentation(Entry *root)
     findMember(root,root->name,root->relates,TRUE,isFunc);
   }
   else if 
-    ((root->section==Entry::FUNCTION_SEC // function
+    ((root->section==Entry::FUNCTION_SEC      // function
       ||   
-      (root->section==Entry::VARIABLE_SEC && // variable
-      !root->type.isEmpty() && /*root->type.left(8)!="typedef " &&*/
-       compoundKeywordDict.find(root->type)==0
+      (root->section==Entry::VARIABLE_SEC &&  // variable
+      !root->type.isEmpty() &&                // with a type
+      compoundKeywordDict.find(root->type)==0 // that is not a keyword 
+                                              // (to skip forward declaration of class etc.)
       )
-     ) && !root->stat &&
-     (!root->doc.isEmpty() || !root->brief.isEmpty() || /*root->bodyLine!=-1 ||*/ 
-      (root->memSpec&Entry::Inline) || root->mGrpId!=-1 
+     ) && !root->stat &&               // not static
+     (!root->doc.isEmpty() ||          // has detailed docs
+      !root->brief.isEmpty() ||        // has brief docs
+      (root->memSpec&Entry::Inline) || // is inline
+      root->mGrpId!=-1                 // is part of a group
      )
     )
   {
