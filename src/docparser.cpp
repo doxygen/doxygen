@@ -217,7 +217,7 @@ static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
  * @retval FALSE     The token was not handled.
  */
 static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children,bool
-    handleWord=TRUE)
+    handleWord)
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
   if (tok==TK_WORD || tok==TK_SYMBOL || tok==TK_URL || 
