@@ -203,11 +203,10 @@ class OutputList
     { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title); }
     void endMemberDoc() 
     { forall(&OutputGenerator::endMemberDoc); }
-    void startDoxyAnchor(const char *fn,    const char *cn,
-                         const char *anchor,const char *name)
-    { forall(&OutputGenerator::startDoxyAnchor,fn,cn,anchor,name); }
-    void endDoxyAnchor()
-    { forall(&OutputGenerator::endDoxyAnchor); }
+    void startDoxyAnchor(const char *fName,const char *anchor, const char *name)
+    { forall(&OutputGenerator::startDoxyAnchor,fName,anchor,name); }
+    void endDoxyAnchor(const char *fn,const char *anchor)
+    { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
     void startCodeAnchor(const char *label)
     { forall(&OutputGenerator::startCodeAnchor,label); }
     void endCodeAnchor()
@@ -332,8 +331,10 @@ class OutputList
     { forall(&OutputGenerator::writeFormula,n,t); }
     void writeNonBreakableSpace()
     { forall(&OutputGenerator::writeNonBreakableSpace); }
-    void writeImage(const char *n,const char *w,const char *h)
-    { forall(&OutputGenerator::writeImage,n,w,h); }
+    void startImage(const char *n,const char *s,bool c)
+    { forall(&OutputGenerator::startImage,n,s,c); }
+    void endImage(bool c)
+    { forall(&OutputGenerator::endImage,c); }
 
     void startDescTable()
     { forall(&OutputGenerator::startDescTable); }

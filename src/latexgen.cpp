@@ -800,7 +800,7 @@ void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
   {
     t << "\\contentsline{section}{";
     docify(name);
-    t << "}{\\pageref{" << name << "}}{}" << endl;
+    t << "}{\\pageref{" << fn << "}}{}" << endl;
   }
   else
     docify(name);
@@ -871,14 +871,15 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
     if (anchor) t << "_" << anchor; 
     t << "}{";
   }
+  else
+  {
+    t << "{\\bf ";
+  }
 }
 
 void LatexGenerator::endTextLink()
 {
-  if (Config::pdfHyperFlag)
-  {
-    t << "}";
-  }
+  t << "}";
 }
 
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
@@ -936,7 +937,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   t << "}" << endl;
   if (name)
   {
-    t << "\\label{" << name << "}\\index{" 
+    t << "\\label{" << fileName << "}\\index{" 
       << name << "@{";
     docify(name);
     t << "}}" << endl;
@@ -1012,13 +1013,9 @@ void LatexGenerator::endMemberDoc()
   if (Config::compactLatexFlag) t << "\\hfill";
 }
 
-void LatexGenerator::startDoxyAnchor(const char *fName,const char *clname,
-                                     const char *anchor,const char *)
+void LatexGenerator::startDoxyAnchor(const char *fName,const char *anchor,
+                                     const char *)
 {
-  t << "\\label{";
-  if (clname) t << clname;
-  if (anchor) t << "_" << anchor;
-  t << "}" << endl;
   if (Config::pdfHyperFlag)
   {
     t << "\\hypertarget{";
@@ -1028,12 +1025,16 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *clname,
   }
 }
 
-void LatexGenerator::endDoxyAnchor()
+void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
   if (Config::pdfHyperFlag)
   {
     t << "}" << endl;
   }
+  t << "\\label{";
+  if (fName) t << fName;
+  if (anchor) t << "_" << anchor;
+  t << "}" << endl;
 }
 
 void LatexGenerator::writeAnchor(const char *fName,const char *name)
@@ -1406,19 +1407,33 @@ void LatexGenerator::endMemberList()
     t << "\\end{CompactItemize}"   << endl; 
 }
 
-void LatexGenerator::writeImage(const char *name,const char *w,const char *h)
+void LatexGenerator::startImage(const char *name,const char *size,bool hasCaption)
 {
-  t << "\\mbox{";
+  if (hasCaption)
+    t << "\\begin{figure}[H]" << endl;
+  else
+    t << "\\mbox{";
   QCString gfxName = name;
   if (gfxName.right(4)==".eps") gfxName.left(gfxName.length()-4);
   //     "\\epsfig{file=" << name;
   t << "\\includegraphics";
-  if (w || h) t << "[";
-  if (w) t << "width=" << w; else if (h) t << "height=" << h;
-  if (w || h) t << "]";
+  if (size) t << "[" << size << "]";
   t << "{" << gfxName << "}";
-  t << "}" << endl;
+  if (hasCaption) 
+    t << "\\caption{";
+  else
+    t << "}" << endl;
 }
+
+void LatexGenerator::endImage(bool hasCaption)
+{
+  if (hasCaption)
+  {
+    t << "}" << endl;
+    t << "\\end{figure}" << endl;
+  }
+}
+
 
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {

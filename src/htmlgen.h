@@ -142,9 +142,8 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDoc(); 
     //void writeDoxyAnchor(const char *fName,const char *clName,
     //                     const char *anchor,const char *name);
-    void startDoxyAnchor(const char *fName,const char *clName,
-                         const char *anchor,const char *name);
-    void endDoxyAnchor();
+    void startDoxyAnchor(const char *fName,const char *anchor,const char *name);
+    void endDoxyAnchor(const char *fName,const char *anchor);
     void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\"></a>"; }
     void endCodeAnchor() { }
     void writeLatexSpacing() {}
@@ -201,7 +200,8 @@ class HtmlGenerator : public OutputGenerator
     void endQuickIndexItem();
     void writeFormula(const char *,const char *);
     void writeNonBreakableSpace() { t << "&nbsp;&nbsp;&nbsp;"; }
-    void writeImage(const char *,const char *,const char *);
+    void startImage(const char *,const char *,bool);
+    void endImage(bool);
     
     void startDescTable()
     { t << "<table border=0 cellspacing=2 cellpadding=0>" << endl; }

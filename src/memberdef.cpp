@@ -21,13 +21,14 @@
 #include "membername.h"
 #include "doxygen.h"
 #include "util.h"
+#include "code.h"
 #include "message.h"
 #include "htmlhelp.h"
 #include "language.h"
 #include "outputlist.h"
 #include "example.h"
 #include "membergroup.h"
-#include "scanner.h"
+#include "doc.h"
 #include "groupdef.h"
 #include "defargs.h"
 #include "xml.h"
@@ -583,7 +584,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       QCString doxyName=name().copy();
       if (!cname.isEmpty()) doxyName.prepend(cname+"::");
-      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+      ol.startDoxyAnchor(cfname,anchor(),doxyName);
       ol.addToIndex(name(),cname);
       ol.addToIndex(cname,name());
       if (hasHtmlHelp)
@@ -763,7 +764,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
     if (!detailsVisible && !Config::extractAllFlag && !annMemb)
     {
-      ol.endDoxyAnchor();
+      ol.endDoxyAnchor(cfname,anchor());
     }
 
     ol.endMemberItem((annoClassDef!=0 && indDepth==0) || annEnumType);
@@ -796,7 +797,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
  *  all active output formats.
  */
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
-                                   const char *scopeName)
+                                   const char *scopeName,Definition *container)
 {
   if (getClassDef()==0 && isStatic() && !Config::extractStaticFlag) return;
   bool hasDocs = detailsAreVisible();
@@ -809,16 +810,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
        (!hasDocs && !briefDescription().isEmpty() && annUsed)
      )
   {
-    // get definition. TODO: make a method of this
-    NamespaceDef *nd=getNamespaceDef();
-    ClassDef     *cd=getClassDef();
-    FileDef      *fd=getFileDef();
-    Definition   *d = 0;
-    if (cd) d=cd; else if (nd) d=nd; else d=fd;
-    ASSERT(d!=0);
-
-    QCString cname  = d->name();
-    QCString cfname = d->getOutputFileBase();  
+    // get definition. 
+    QCString cname  = container->name();
+    QCString cfname = container->getOutputFileBase();  
 
     // get member name
     QCString doxyName=name().copy();
@@ -858,7 +852,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
         {
-          ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+          ol.startDoxyAnchor(cfname,anchor(),doxyName);
           ol.startMemberDoc(cname,name(),anchor(),name());
           if (hasHtmlHelp)
           {
@@ -874,7 +868,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (!found) // anonymous compound
       {
         //printf("Annonymous compound `%s'\n",cname.data());
-        ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+        ol.startDoxyAnchor(cfname,anchor(),doxyName);
         ol.startMemberDoc(cname,name(),anchor(),name());
         if (hasHtmlHelp)
         {
@@ -895,13 +889,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+      ol.startDoxyAnchor(cfname,anchor(),doxyName);
       ol.startMemberDoc(cname,name(),anchor(),name());
       if (hasHtmlHelp)
       {
         htmlHelp->addIndexItem(cname,name(),cfname,anchor());
       }
 
+      ClassDef *cd=getClassDef();
       ArgumentList *scopeAl=scopeDefTemplateArguments();
       if (scopeAl==0 && cd) scopeAl=cd->templateArguments(); 
 
@@ -1016,7 +1011,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     if (!isDefine()) ol.endParameter(TRUE);
     ol.endMemberDoc();
-    ol.endDoxyAnchor();
+    ol.endDoxyAnchor(cfname,anchor());
     ol.startIndent();
     
     ol.pushGeneratorState();
@@ -1121,7 +1116,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             //ol.writeListItem();
             ol.startDescTableTitle();
-            ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
+            ol.startDoxyAnchor(cfname,fmd->anchor(),fmd->name());
             first=FALSE;
             ol.startEmphasis();
             ol.docify(fmd->name());
@@ -1129,7 +1124,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             ol.disableAllBut(OutputGenerator::Man);
             ol.writeString(" ");
             ol.enableAll();
-            ol.endDoxyAnchor();
+            ol.endDoxyAnchor(cfname,fmd->anchor());
             ol.endDescTableTitle();
             //ol.newParagraph();
             ol.startDescTableData();
@@ -1324,10 +1319,10 @@ void MemberDef::warnIfUndocumented()
     t="class", d=cd; 
   else if (nd) 
     t="namespace", d=nd; 
-  else if (fd)
-    t="file", d=fd;
-  else
+  else if (gd)
     t="group", d=gd;
+  else
+    t="file", d=fd;
 
   if (d && d->isLinkable() && !isLinkable() && name().find('@')==-1)
    warn_undoc(defFileName,defLine,"Warning: Member %s of %s %s is not documented.",
@@ -1570,3 +1565,20 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
   t << ">" << endl;
 }
 
+Definition *MemberDef::getCompoundDef() const
+{
+    NamespaceDef *nd=getNamespaceDef();
+    ClassDef     *cd=getClassDef();
+    FileDef      *fd=getFileDef();
+    GroupDef     *gd=getGroupDef();
+    Definition   *d = 0;
+    if (cd) d=cd; else if (nd) d=nd; else if (gd) d=gd; else d=fd;
+    ASSERT(d!=0);
+    return d;
+}
+
+QCString MemberDef::anchor() const
+{
+  if (enumScope) return enumScope->anchor()+anc;
+  return anc;
+}

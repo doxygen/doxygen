@@ -23,7 +23,8 @@
 #include "language.h"
 #include "message.h"
 #include "outputlist.h"
-#include "scanner.h"
+#include "doc.h"
+#include "code.h"
 #include <qregexp.h>
 
 Definition::Definition(const char *df,int dl,
@@ -39,6 +40,8 @@ Definition::Definition(const char *df,int dl,
   bodyDef=0;
   sourceRefList=0;
   sourceRefDict=0;
+  m_todoId=0;
+  m_testId=0;
 }
 
 Definition::~Definition()

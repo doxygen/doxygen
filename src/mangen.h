@@ -122,9 +122,8 @@ class ManGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc() {}
-    void startDoxyAnchor(const char *,const char *,
-                         const char *,const char *) {}
-    void endDoxyAnchor() {}
+    void startDoxyAnchor(const char *,const char *,const char *) {}
+    void endDoxyAnchor(const char *,const char *) {}
     void startCodeAnchor(const char *) {}
     void endCodeAnchor() {}
     void writeLatexSpacing() {}
@@ -188,7 +187,8 @@ class ManGenerator : public OutputGenerator
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *) {}
     void writeNonBreakableSpace() { t << "  "; }
-    void writeImage(const char *,const char *,const char *) {}
+    void startImage(const char *,const char *,bool) {}
+    void endImage(bool) {}
     
     void startDescTable() {}
     void endDescTable() {}

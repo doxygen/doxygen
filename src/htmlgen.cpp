@@ -277,13 +277,13 @@ void HtmlGenerator::writeStyleInfo(int part)
   }
 }
 
-void HtmlGenerator::startDoxyAnchor(const char *,const char *,
+void HtmlGenerator::startDoxyAnchor(const char *,
                                     const char *anchor, const char *name)
 {
   t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
 }
 
-void HtmlGenerator::endDoxyAnchor()
+void HtmlGenerator::endDoxyAnchor(const char *,const char *)
 {
 }
 
@@ -789,12 +789,11 @@ void HtmlGenerator::endAlphabeticalIndexList()
 
 void HtmlGenerator::writeIndexHeading(const char *s)
 {
-  //t << "<dt><b><big>" << s << "</big></b><dd>" << endl;
   t << "<div class=\"ah\"><font color=\"white\"><b>&nbsp;&nbsp;" << s 
     << "&nbsp;&nbsp;</b></font></div>";
 }
 
-void HtmlGenerator::writeImage(const char *name,const char *,const char *)
+void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)
 {
   QCString baseName=name;
   int i;
@@ -802,7 +801,21 @@ void HtmlGenerator::writeImage(const char *name,const char *,const char *)
   {
     baseName=baseName.right(baseName.length()-i-1); 
   }
+  t << "<div align=\"center\">" << endl;
   t << "<img src=\"" << name << "\" alt=\"" << baseName << "\">" << endl;
+  if (hasCaption)
+  {
+    t << "<p><strong>";
+  } 
+}
+
+void HtmlGenerator::endImage(bool hasCaption)
+{
+  if (hasCaption)
+  {
+    t << "</strong></p>" << endl;
+  }
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 

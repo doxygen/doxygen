@@ -22,7 +22,7 @@
 #include "filedef.h"
 #include "classlist.h"
 #include "outputlist.h"
-#include "scanner.h"
+#include "doc.h"
 #include "namespacedef.h"
 #include "language.h"
 #include "util.h"
@@ -373,7 +373,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDefineDocumentation());
     ol.endGroupHeader();
-    defineMembers.writeDocumentation(ol,name());
+    defineMembers.writeDocumentation(ol,name(),this);
   }
   
   protoMembers.countDocMembers(); 
@@ -383,7 +383,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    protoMembers.writeDocumentation(ol,name());
+    protoMembers.writeDocumentation(ol,name(),this);
   }
 
   typedefMembers.countDocMembers();
@@ -393,7 +393,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name());
+    typedefMembers.writeDocumentation(ol,name(),this);
   }
   
   enumMembers.countDocMembers();
@@ -403,7 +403,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name());
+    enumMembers.writeDocumentation(ol,name(),this);
   }
 
   //enumValMembers.countDocMembers();
@@ -423,7 +423,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
-    funcMembers.writeDocumentation(ol,name());
+    funcMembers.writeDocumentation(ol,name(),this);
   }
   
   varMembers.countDocMembers();
@@ -433,7 +433,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    varMembers.writeDocumentation(ol,name());
+    varMembers.writeDocumentation(ol,name(),this);
   }
 
   endFile(ol); 

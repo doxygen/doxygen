@@ -19,7 +19,7 @@
 #include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
-#include "scanner.h"
+#include "doc.h"
 #include "language.h"
 #include "classdef.h"
 #include "classlist.h"
@@ -272,7 +272,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDefineDocumentation());
     ol.endGroupHeader();
-    defineMembers.writeDocumentation(ol,name());
+    defineMembers.writeDocumentation(ol,name(),this);
   }
   
   protoMembers.countDocMembers(); 
@@ -282,7 +282,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    protoMembers.writeDocumentation(ol,name());
+    protoMembers.writeDocumentation(ol,name(),this);
   }
 
   typedefMembers.countDocMembers();
@@ -292,7 +292,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name());
+    typedefMembers.writeDocumentation(ol,name(),this);
   }
   
   enumMembers.countDocMembers();
@@ -302,7 +302,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name());
+    enumMembers.writeDocumentation(ol,name(),this);
   }
 
   //enumValMembers.countDocMembers();
@@ -322,7 +322,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
-    funcMembers.writeDocumentation(ol,name());
+    funcMembers.writeDocumentation(ol,name(),this);
   }
   
   varMembers.countDocMembers();
@@ -332,7 +332,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    varMembers.writeDocumentation(ol,name());
+    varMembers.writeDocumentation(ol,name(),this);
   }
 
   // write Author section (Man only)

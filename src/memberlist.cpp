@@ -24,7 +24,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputlist.h"
-#include "scanner.h"
+#include "doc.h"
 #include "groupdef.h"
 
 MemberList::MemberList() : QList<MemberDef>()
@@ -583,13 +583,13 @@ void MemberList::writeDeclarations(OutputList &ol,
 }
 
 void MemberList::writeDocumentation(OutputList &ol,
-                     const char *scopeName/*, MemberDef::MemberType m*/)
+                     const char *scopeName, Definition *container)
 {
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName);
+    md->writeDocumentation(this,ol,scopeName,container);
   }
 }
 

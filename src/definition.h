@@ -101,6 +101,10 @@ class Definition
     void writeSourceRefs(OutputList &ol,const char *scopeName);
     void addSourceReference(MemberDef *d);
 
+    void setRefItems(int todoId,int testId) { m_todoId=todoId; m_testId=testId; }
+    int todoId() const { return m_todoId; }
+    int testId() const { return m_testId; }
+
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return defFileName; }
     /*! returns the line number at which the definition was found */
@@ -124,6 +128,8 @@ class Definition
     MemberList  *sourceRefList;  // list of entities that refer to this
                                  // entity in their definition 
     MemberDict *sourceRefDict;
+    int m_testId;     // id for test case
+    int m_todoId;     // id for todo case
 
 };
 

@@ -27,7 +27,7 @@
 #include "classdef.h"
 #include "filedef.h"
 #include "doxygen.h"
-#include "scanner.h"
+#include "doc.h"
 #include "outputlist.h"
 #include "defargs.h"
 #include "language.h"
@@ -36,6 +36,7 @@
 #include "example.h"
 #include "version.h"
 #include "groupdef.h"
+#include "xml.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -46,6 +47,63 @@
 extern char **environ;
 #endif
 
+//------------------------------------------------------------------------
+// TextGeneratorOLImpl implementation
+//------------------------------------------------------------------------
+
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol) {}
+
+void TextGeneratorOLImpl::writeString(const char *s) const
+{ 
+  m_ol.docify(s); 
+}
+
+void TextGeneratorOLImpl::writeBreak() const
+{ 
+  m_ol.pushGeneratorState();
+  m_ol.disableAllBut(OutputGenerator::Html);
+  m_ol.lineBreak();
+  m_ol.popGeneratorState();
+}
+
+void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
+                                    const char *anchor,const char *text
+                                   ) const
+{
+  m_ol.writeObjectLink(extRef,file,anchor,text);
+}
+
+//------------------------------------------------------------------------
+// TextGeneratorXMLImpl implementation
+//------------------------------------------------------------------------
+
+TextGeneratorXMLImpl::TextGeneratorXMLImpl(QTextStream &t) : m_t(t) 
+{
+}
+
+void TextGeneratorXMLImpl::writeString(const char *s) const
+{ 
+  writeXMLString(m_t,s); 
+}
+
+void TextGeneratorXMLImpl::writeBreak() const 
+{
+}
+
+void TextGeneratorXMLImpl::writeLink(const char *extRef,const char *file,
+                                     const char *anchor,const char *text
+                                    ) const
+{
+  if (extRef==0) 
+  { writeXMLLink(m_t,file,anchor,text); } 
+  else // external references are not supported for XML
+  { writeXMLString(m_t,text); }
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+
+    
 /*! Implements an interruptable system call on Unix */
 int iSystem(const char *command)
 {
@@ -1483,7 +1541,8 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
 bool getDefs(const QCString &scName,const QCString &memberName, 
              const char *args,
              MemberDef *&md, 
-             ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd)
+             ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd,
+             bool forceEmptyScope)
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
@@ -1522,7 +1581,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
   MemberName *mn = memberNameDict[mName];
-  if (mn && !(scopeName.isEmpty() && mScope.isEmpty()))
+  if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name found\n");
     int scopeOffset=scopeName.length();
@@ -1581,7 +1640,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
-          mmd=mn->last();
+          mmd=mn->first();
           while (mmd)
           {
             if (//(mmd->protection()!=Private || Config::extractPrivateFlag) &&
@@ -1604,7 +1663,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 md=mmd;
               }
             }
-            mmd=mn->prev();
+            mmd=mn->next();
           }
         }
         //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
@@ -1624,164 +1683,160 @@ bool getDefs(const QCString &scName,const QCString &memberName,
     
     // unknown or undocumented scope 
   }
-  else // maybe an namespace, file or group member ?
+
+  // maybe an namespace, file or group member ?
+  //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
+  //              scopeName.data(),mScope.data(),mName.data());
+  //printf("  >member name found\n");
+  if ((mn=functionNameDict[mName])) // name is known
   {
-    //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
-    //              scopeName.data(),mScope.data(),mName.data());
-    //printf("  >member name found\n");
-    if ((mn=functionNameDict[mName])) // name is known
+    NamespaceDef *fnd=0;
+    int scopeOffset=scopeName.length();
+    do
     {
-      NamespaceDef *fnd=0;
-      int scopeOffset=scopeName.length();
-      do
+      QCString namespaceName = scopeName.left(scopeOffset);
+      if (!namespaceName.isEmpty() && !mScope.isEmpty())
       {
-        QCString namespaceName = scopeName.left(scopeOffset);
-        if (!namespaceName.isEmpty() && !mScope.isEmpty())
+        namespaceName+="::"+mScope;
+      }
+      else if (!mScope.isEmpty())
+      {
+        namespaceName=mScope.copy();
+      }
+      if (!namespaceName.isEmpty() && 
+          (fnd=namespaceDict[namespaceName]) &&
+          fnd->isLinkable()
+         )
+      {
+        //printf("Function inside existing namespace `%s'\n",namespaceName.data());
+        bool found=FALSE;
+        MemberDef *mmd=mn->first();
+        while (mmd && !found)
         {
-          namespaceName+="::"+mScope;
+          //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
+          //    mmd->getNamespaceDef(),fnd);
+          if (mmd->getNamespaceDef()==fnd && 
+              //(mmd->isReference() || mmd->hasDocumentation())
+              mmd->isLinkable()
+             )
+          { // namespace is found
+            bool match=TRUE;
+            ArgumentList *argList=0;
+            if (args)
+            {
+              argList=new ArgumentList;
+              stringToArgumentList(args,argList);
+              match=matchArguments(mmd->argumentList(),argList,0,namespaceName,FALSE); 
+            }
+            if (match)
+            {
+              nd=fnd;
+              md=mmd;
+              found=TRUE;
+            }
+            if (args)
+            {
+              delete argList; argList=0;
+            }
+          }
+          mmd=mn->next();
         }
-        else if (!mScope.isEmpty())
+        if (!found && !strcmp(args,"()")) 
+          // no exact match found, but if args="()" an arbitrary 
+          // member will do
         {
-          namespaceName=mScope.copy();
-        }
-        if (!namespaceName.isEmpty() && 
-            (fnd=namespaceDict[namespaceName]) &&
-            fnd->isLinkable()
-           )
-        {
-          //printf("Function inside existing namespace `%s'\n",namespaceName.data());
-          bool found=FALSE;
-          MemberDef *mmd=mn->first();
+          MemberDef *mmd=mn->first(); 
           while (mmd && !found)
           {
-            //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
-            //    mmd->getNamespaceDef(),fnd);
             if (mmd->getNamespaceDef()==fnd && 
                 //(mmd->isReference() || mmd->hasDocumentation())
                 mmd->isLinkable()
                )
-            { // namespace is found
-              bool match=TRUE;
-              ArgumentList *argList=0;
-              if (args)
-              {
-                argList=new ArgumentList;
-                stringToArgumentList(args,argList);
-                match=matchArguments(mmd->argumentList(),argList,0,namespaceName,FALSE); 
-              }
-              if (match)
-              {
-                nd=fnd;
-                md=mmd;
-                found=TRUE;
-              }
-              if (args)
-              {
-                delete argList; argList=0;
-              }
+            {
+              nd=fnd;
+              md=mmd;
+              found=TRUE;
             }
             mmd=mn->next();
           }
-          if (!found && !strcmp(args,"()")) 
-            // no exact match found, but if args="()" an arbitrary 
-            // member will do
+        }
+        if (found) return TRUE;
+      }
+      else // no scope => global function
+      {
+        //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
+        md=mn->first();
+        while (md)
+        {
+          if (md->isLinkable())
           {
-            MemberDef *mmd=mn->last(); // searching backward will get 
-            // the first defined!
-            while (mmd && !found)
+            fd=md->getFileDef();
+            gd=md->getGroupDef();
+            //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
+            //    md->name().data(),args,fd,gd);
+            bool inGroup=FALSE;
+            if ((fd && fd->isLinkable()) || 
+                (inGroup=(gd && gd->isLinkable()))
+               )
             {
-              if (mmd->getNamespaceDef()==fnd && 
-                  //(mmd->isReference() || mmd->hasDocumentation())
-                  mmd->isLinkable()
-                 )
+              if (inGroup) fd=0;
+              //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
+              bool match=TRUE;
+              ArgumentList *argList=0;
+              if (args && !md->isDefine())
               {
-                nd=fnd;
-                md=mmd;
-                found=TRUE;
+                argList=new ArgumentList;
+                stringToArgumentList(args,argList);
+                match=matchArguments(md->argumentList(),argList); 
+                delete argList; argList=0;
               }
-              mmd=mn->prev();
+              if (match) 
+              {
+                //printf("Found match!\n");
+                return TRUE;
+              }
             }
           }
-          if (found) return TRUE;
+          md=mn->next();
         }
-        else // no scope => global function
+        if (!strcmp(args,"()"))
         {
-          //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
-          md=mn->first();
+          // no exact match found, but if args="()" an arbitrary 
+          // member will do
+          md=mn->last();
           while (md)
           {
-            if (md->isLinkable())
+            //printf("Found member `%s'\n",md->name().data());
+            if (1 /* md->isLinkable() */)
             {
+              //printf("member is linkable md->name()=`%s'\n",md->name().data());
               fd=md->getFileDef();
               gd=md->getGroupDef();
-              //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
-              //    md->name().data(),args,fd,gd);
               bool inGroup=FALSE;
-              if ((fd && fd->isLinkable()) || 
+              if ((fd && fd->isLinkable()) ||
                   (inGroup=(gd && gd->isLinkable()))
                  )
               {
                 if (inGroup) fd=0;
-                //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
-                bool match=TRUE;
-                ArgumentList *argList=0;
-                if (args && !md->isDefine())
-                {
-                  argList=new ArgumentList;
-                  stringToArgumentList(args,argList);
-                  match=matchArguments(md->argumentList(),argList); 
-                  delete argList; argList=0;
-                }
-                if (match) 
-                {
-                  //printf("Found match!\n");
-                  return TRUE;
-                }
+                return TRUE;
               }
             }
-            md=mn->next();
-          }
-          if (!strcmp(args,"()"))
-          {
-            // no exact match found, but if args="()" an arbitrary 
-            // member will do
-            md=mn->last();
-            while (md)
-            {
-              //printf("Found member `%s'\n",md->name().data());
-              if (1 /* md->isLinkable() */)
-              {
-                //printf("member is linkable md->name()=`%s'\n",md->name().data());
-                fd=md->getFileDef();
-                gd=md->getGroupDef();
-                bool inGroup=FALSE;
-                if ((fd && fd->isLinkable()) ||
-                    (inGroup=(gd && gd->isLinkable()))
-                   )
-                {
-                  if (inGroup) fd=0;
-                  return TRUE;
-                }
-              }
-              md=mn->prev();
-            }
+            md=mn->prev();
           }
         }
-        if (scopeOffset==0)
-        {
-          scopeOffset=-1;
-        }
-        else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
-        {
-          scopeOffset=0;
-        }
-      } while (scopeOffset>=0);
-    }
-    else
-    {
-      //printf("Unknown function `%s'\n",mName.data());
-    }
+      }
+      if (scopeOffset==0)
+      {
+        scopeOffset=-1;
+      }
+      else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+      {
+        scopeOffset=0;
+      }
+    } while (scopeOffset>=0);
   }
+  
+  // no nothing found
   return FALSE;
 }
 
@@ -1878,7 +1933,7 @@ bool generateRef(OutputList &ol,const char *scName,
             cd->getOutputFileBase(),0,linkText);
         if (!cd->isReference() /*&& !Config::pdfHyperFlag*/) 
         {
-          writePageRef(ol,cd->name(),0);
+          writePageRef(ol,cd->getOutputFileBase(),0);
         }
       }
       else // scope matches that of a namespace
@@ -1887,7 +1942,7 @@ bool generateRef(OutputList &ol,const char *scName,
             nd->getOutputFileBase(),0,linkText);
         if (!nd->getReference() /*&& !Config::pdfHyperFlag*/) 
         {
-          writePageRef(ol,nd->name(),0);
+          writePageRef(ol,nd->getOutputFileBase(),0);
         }
       }
       // link has been written, stop now.
@@ -1947,10 +2002,11 @@ bool generateRef(OutputList &ol,const char *scName,
   //        scopeStr.data(),nameStr.data(),argsStr.data());
 
   // check if nameStr is a member or global.
-  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd))
+  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd,scopePos==0))
   {
     //printf("after getDefs nd=%p\n",nd);
-    QCString anchor = md->isLinkable() ? md->anchor() : 0;
+    QCString anchor;
+    if (md->isLinkable()) anchor = md->anchor();
     QCString cName,aName;
     if (cd) // nameStr is a member of cd
     {
@@ -1958,7 +2014,7 @@ bool generateRef(OutputList &ol,const char *scName,
       //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
       ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
-      cName=cd->name();
+      cName=cd->getOutputFileBase();
       aName=md->anchor();
     }
     else if (nd) // nameStr is a member of nd
@@ -1966,7 +2022,7 @@ bool generateRef(OutputList &ol,const char *scName,
       //printf("writing namespace link\n");
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
-      cName=nd->name();
+      cName=nd->getOutputFileBase();
       aName=md->anchor();
     }
     else if (fd) // nameStr is a global in file fd
@@ -1975,7 +2031,7 @@ bool generateRef(OutputList &ol,const char *scName,
       //        resultName.stripWhiteSpace().data());
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
-      cName=fd->name();
+      cName=fd->getOutputFileBase();
       aName=md->anchor();
     }
     else if (gd)
@@ -1984,7 +2040,7 @@ bool generateRef(OutputList &ol,const char *scName,
       //        gd->name().data());
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
-      cName=gd->name();
+      cName=gd->getOutputFileBase();
       aName=md->anchor();
     }
     else // should not be reached
@@ -2003,16 +2059,9 @@ bool generateRef(OutputList &ol,const char *scName,
     }
 
     // generate the page reference (for LaTeX)
-    if (/*!Config::pdfHyperFlag && */(!cName.isEmpty() || !aName.isEmpty()))
+    if (!cName.isEmpty() || !aName.isEmpty())
     {
-      if (
-          (cd && cd->isLinkableInProject()) || 
-          (fd && !fd->isReference()) ||
-          (nd && !nd->isReference()) 
-         ) 
-      {
-        writePageRef(ol,cName,aName);
-      }
+      writePageRef(ol,cName,aName);
     }
     return TRUE;
   }
@@ -2051,9 +2100,6 @@ bool generateLink(OutputList &ol,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
   QCString linkRef=lr;
-  //PageInfo *pi=0;
-  //printf("generateLink(%s,%s,%s) inSeeBlock=%d\n",clName,lr,lt,inSeeBlock);
-  //FileInfo *fi=0;
   FileDef *fd;
   GroupDef *gd;
   PageInfo *pi;
@@ -2066,11 +2112,13 @@ bool generateLink(OutputList &ol,const char *clName,
   else if ((pi=pageDict[linkRef])) // link to a page
   {
     ol.writeObjectLink(0,pi->name,0,lt);  
+    writePageRef(ol,pi->name,0);
     return TRUE;
   }
   else if ((pi=exampleDict[linkRef])) // link to an example
   {
     ol.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
+    writePageRef(ol,convertFileName(pi->name)+"-example",0);
     return TRUE;
   }
   else if ((gd=groupDict[linkRef])) // link to a group
@@ -2081,6 +2129,7 @@ bool generateLink(OutputList &ol,const char *clName,
     else
       ol.docify(gd->groupTitle());
     ol.endTextLink();
+    writePageRef(ol,gd->getOutputFileBase(),0);
     return TRUE;
   }
   else if ((fd=findFileDef(inputNameDict,linkRef,ambig))

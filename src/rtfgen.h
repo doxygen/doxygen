@@ -120,8 +120,8 @@ class RTFGenerator : public OutputGenerator
     void lineBreak();
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc();
-    void startDoxyAnchor(const char *,const char *,const char *,const char *);
-    void endDoxyAnchor();
+    void startDoxyAnchor(const char *,const char *,const char *);
+    void endDoxyAnchor(const char *,const char *);
     void startCodeAnchor(const char *) {};
     void endCodeAnchor() {};
     void writeChar(char c);
@@ -183,7 +183,8 @@ class RTFGenerator : public OutputGenerator
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *);
     void writeNonBreakableSpace();
-    void writeImage(const char *,const char *,const char *);
+    void startImage(const char *,const char *,bool);
+    void endImage(bool);
 	
     void startDescTable();
     void endDescTable();

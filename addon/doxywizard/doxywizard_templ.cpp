@@ -78,7 +78,7 @@ static bool loadConfig( QString loadFile )
 
   // parse the config file
   // this will initialize the various Config data members
-  parseConfig(contents);
+  parseConfig(contents,loadFile);
   configStrToVal();
 
   f.close();

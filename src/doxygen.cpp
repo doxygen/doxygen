@@ -30,6 +30,7 @@
 #include "version.h"
 #include "doxygen.h"
 #include "scanner.h"
+#include "doc.h"
 #include "entry.h"
 #include "index.h"
 #include "logos.h"
@@ -172,74 +173,123 @@ const char *getOverloadDocs()
       
 //----------------------------------------------------------------------------
 
-static void addTodoItem(Entry *root,const char *prefix,
-                        const char *name,const char *title=0)
+static void addRelatedPage(const char *name,const QCString &ptitle,
+                           const QCString &doc,QList<QCString> *anchors,
+                           const char *fileName,int startLine,
+                           int todoId,int testId
+                          )
 {
-  //printf("addTodoItem(%s) todoId=%d\n",name,root->todoId);
-  if (root->todoId==0 || !Config::generateTodoList) return;
-  RefItem *item = todoList.getRefItem(root->todoId);
-  ASSERT(item!=0);
-  if (item->written) return;
-  
-  Entry *page = new Entry;
-  page->section = Entry::PAGEDOC_SEC;
-  page->fileName = "generated";
-  page->startLine = 1;
-  page->name = "todo";
-  page->args = theTranslator->trTodoList();
-  page->doc += "<dl><dt>\\anchor ";
-  page->doc += item->listAnchor;
-  page->doc += "\n";
-  page->doc += prefix;
-  page->doc += " \\ref ";
-  page->doc += name;
-  page->doc += " \"";
-  if (title && title[0]!='\0')
-    page->doc += title;
-  else
-    page->doc += name;
-  page->doc += "\":</dt>\n<dd>";
-  page->doc += item->text;
-  page->doc += "</dd></dl>\n";
-  root->addSubEntry(page);
+  PageInfo *pi=0;
+  if ((pi=pageDict[name]))
+  {
+    //warn("Warning: Page %s was already documented. Ignoring documentation "
+    //     "at line %d of %s\n",root->name.data(),root->startLine,
+    //                          root->fileName.data());
 
-  item->written=TRUE;
+    // append documentation block to the page.
+    pi->doc+="\n\n"+doc;
+  }
+  else
+  {
+    QCString baseName=name;
+    if (baseName.right(4)==".tex") 
+      baseName=baseName.left(baseName.length()-4);
+    else if (baseName.right(5)==".html")
+      baseName=baseName.left(baseName.length()-5);
+
+    QCString title=ptitle.stripWhiteSpace();
+    pi=new PageInfo(fileName,startLine,baseName,doc,title);
+    pi->todoId=todoId;
+    pi->testId=testId;
+    QCString pageName;
+    if (Config::caseSensitiveNames)
+      pageName=pi->name.copy();
+    else
+      pageName=pi->name.lower();
+    setFileNameForSections(anchors,pageName);
+
+    pageList.append(pi);
+    pageDict.insert(baseName,pi);
+    if (!pi->title.isEmpty())
+    {
+      //outputList->writeTitle(pi->name,pi->title);
+
+      // a page name is a label as well!
+      SectionInfo *si=new SectionInfo(
+          pi->name,pi->title,SectionInfo::Section);
+      si->fileName=pageName;
+      //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
+      //printf("Adding section info %s\n",pi->name.data());
+      sectionDict.insert(pageName,si);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
 
-static void addTestItem(Entry *root,const char *prefix,
-                        const char *name,const char *title=0)
+static void addRefItem(int todoId,int testId,const char *prefix,
+                        const char *name,const char *title,const char *args=0)
 {
-  //printf("addTestItem(%s) testId=%d\n",name,root->testId);
-  if (root->testId==0 || !Config::generateTestList) return;
-  RefItem *item = testList.getRefItem(root->testId);
-  ASSERT(item!=0);
-  if (item->written) return;
-  
-  Entry *page = new Entry;
-  page->section = Entry::PAGEDOC_SEC;
-  page->fileName = "generated";
-  page->startLine = 1;
-  page->name = "test";
-  page->args = theTranslator->trTestList();
-  page->doc += "<dl><dt>\\anchor ";
-  page->doc += item->listAnchor;
-  page->doc += "\n";
-  page->doc += prefix;
-  page->doc += " \\ref ";
-  page->doc += name;
-  page->doc += " \"";
-  if (title && title[0]!='\0')
-    page->doc += title;
-  else
-    page->doc += name;
-  page->doc += "\":</dt>\n<dd>";
-  page->doc += item->text;
-  page->doc += "</dd></dl>\n";
-  root->addSubEntry(page);
 
-  item->written=TRUE;
+  //printf("addRefItem(%s) todoId=%d testId\n",name,todoId,testId);
+
+  ////////////////////////////////////////////////////////////
+  // add item to the todo list
+  ////////////////////////////////////////////////////////////
+
+  if (todoId>0 && Config::generateTodoList)
+  {
+    RefItem *item = todoList.getRefItem(todoId);
+    ASSERT(item!=0);
+    if (item->written) return;
+
+    QCString doc;
+    doc += "<dl><dt>\\anchor ";
+    doc += item->listAnchor;
+    doc += "\n";
+    doc += prefix;
+    doc += " \\_internalref ";
+    doc += name;
+    doc += " \"";
+    doc += title;
+    doc += "\"";
+    if (args) doc += args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    doc += "</dd></dl>\n";
+    addRelatedPage("todo",theTranslator->trTodoList(),doc,0,"generated",1,0,0);
+
+    item->written=TRUE;
+  }
+
+  ////////////////////////////////////////////////////////////
+  // add item to the test list
+  ////////////////////////////////////////////////////////////
+
+  if (testId>0 && Config::generateTestList)
+  {
+    RefItem *item = testList.getRefItem(testId);
+    ASSERT(item!=0);
+    if (item->written) return;
+
+    QCString doc;
+    doc += "<dl><dt>\\anchor ";
+    doc += item->listAnchor;
+    doc += "\n";
+    doc += prefix;
+    doc += " \\_internalref ";
+    doc += name;
+    doc += " \"";
+    doc += title;
+    doc += "\"";
+    if (args) doc += args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    doc += "</dd></dl>\n";
+    addRelatedPage("test",theTranslator->trTestList(),doc,0,"generated",1,0,0);
+
+    item->written=TRUE;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -269,8 +319,7 @@ static void buildGroupList(Entry *root)
       groupList.append(gd);
       groupDict.insert(root->name,gd);
       addGroupToGroups(root,gd);
-      addTodoItem(root,"group",gd->name());
-      addTestItem(root,"group",gd->name());
+      gd->setRefItems(root->todoId,root->testId);
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -343,6 +392,7 @@ static void buildFileList(Entry *root)
         fd->setDocumentation(root->doc,FALSE);
         fd->setBriefDescription(root->brief); 
         fd->addSectionsToDefinition(root->anchors);
+        fd->setRefItems(root->todoId,root->testId);
         QListIterator<QCString> sli(*root->groups);
         QCString *s;
         for (;(s=sli.current());++sli)
@@ -354,8 +404,6 @@ static void buildFileList(Entry *root)
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
           }
         }
-        addTodoItem(root,"file",fd->name());
-        addTestItem(root,"file",fd->name());
       }
     }
     else
@@ -585,8 +633,7 @@ static void buildClassList(Entry *root)
           fd->insertClass(cd);
         }
         addClassToGroups(root,cd);
-        addTodoItem(root,"class",cd->name());
-        addTestItem(root,"class",cd->name());
+        cd->setRefItems(root->todoId,root->testId);
         if (!root->subGrouping) cd->setSubGrouping(FALSE);
       }
       else // new class
@@ -627,8 +674,7 @@ static void buildClassList(Entry *root)
         if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
         addClassToGroups(root,cd);
-        addTodoItem(root,"class",cd->name());
-        addTestItem(root,"class",cd->name());
+        cd->setRefItems(root->todoId,root->testId);
 
         // see if the class is found inside a namespace 
         bool found=addNamespace(root,cd);
@@ -740,8 +786,7 @@ static void buildNamespaceList(Entry *root)
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
         addNamespaceToGroups(root,nd);
-        addTodoItem(root,"namespace",nd->name());
-        addTestItem(root,"namespace",nd->name());
+        nd->setRefItems(root->todoId,root->testId);
       }
       else /* if (!root->doc.isEmpty() || 
                   !root->brief.isEmpty() || 
@@ -756,8 +801,7 @@ static void buildNamespaceList(Entry *root)
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
-        addTodoItem(root,"namespace",nd->name());
-        addTestItem(root,"namespace",nd->name());
+        nd->setRefItems(root->todoId,root->testId);
 
         bool ambig;
         // file definition containing the namespace nd
@@ -880,8 +924,7 @@ static void findUsingDirectives(Entry *root)
         // add class to the list
         namespaceList.inSort(nd);
         namespaceDict.insert(root->name,nd);
-        addTodoItem(root,"namespace",nd->name());
-        addTestItem(root,"namespace",nd->name());
+        nd->setRefItems(root->todoId,root->testId);
       }
     }
   }
@@ -1082,20 +1125,19 @@ static MemberDef *addVariableToClass(
   // add the member to the global list
   if (mn)
   {
-    mn->inSort(md);
+    mn->append(md);
   }
   else // new variable name
   {
     mn = new MemberName(name);
-    mn->inSort(md);
+    mn->append(md);
     //printf("Adding memberName=%s\n",mn->memberName());
     memberNameDict.insert(name,mn);
     memberNameList.inSort(mn);
     // add the member to the class
   }
   cd->insertMember(md);
-  addTodoItem(root,"member",cd->name()+"::"+md->name());
-  addTestItem(root,"member",cd->name()+"::"+md->name());
+  md->setRefItems(root->todoId,root->testId);
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileName);
@@ -1122,6 +1164,9 @@ static MemberDef *addVariableToFile(
       root->args.data(),
       root->protection
               );
+
+  bool ambig;
+  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
@@ -1181,16 +1226,7 @@ static MemberDef *addVariableToFile(
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
-        if (nscope.isEmpty())
-        {
-          addTodoItem(root,"member",md->name());
-          addTestItem(root,"member",md->name());
-        }
-        else
-        {
-          addTodoItem(root,"member",nscope+"::"+md->name());
-          addTestItem(root,"member",nscope+"::"+md->name());
-        }
+        md->setRefItems(root->todoId,root->testId);
         return md;
       }
       md=mn->next();
@@ -1214,8 +1250,6 @@ static MemberDef *addVariableToFile(
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
-  bool ambig;
-  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
   md->setDefinition(def);
   //if (root->mGrpId!=-1) 
@@ -1223,12 +1257,11 @@ static MemberDef *addVariableToFile(
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
   //}
 
+  md->setRefItems(root->todoId,root->testId);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
     nd->insertMember(md); 
     md->setNamespace(nd);
-    addTodoItem(root,"member",nd->name()+"::"+md->name());
-    addTestItem(root,"member",nd->name()+"::"+md->name());
   }
   else
   {
@@ -1237,20 +1270,18 @@ static MemberDef *addVariableToFile(
     {
       fd->insertMember(md);
       md->setFileDef(fd); 
-      addTodoItem(root,"member",md->name());
-      addTestItem(root,"member",md->name());
     }
   }
 
   // add member definition to the list of globals 
   if (mn)
   {
-    mn->inSort(md);
+    mn->append(md);
   }
   else
   {
     mn = new MemberName(name);
-    mn->inSort(md);
+    mn->append(md);
     functionNameDict.insert(name,mn);
     functionNameList.inSort(mn);
   }
@@ -1617,12 +1648,12 @@ static void buildMemberList(Entry *root)
         MemberName *mn;
         if ((mn=memberNameDict[name]))
         {
-          mn->inSort(md);
+          mn->append(md);
         }
         else
         {
           mn = new MemberName(name);
-          mn->inSort(md);
+          mn->append(md);
           //printf("Adding memberName=%s\n",mn->memberName());
           memberNameDict.insert(name,mn);
           memberNameList.inSort(mn);
@@ -1632,8 +1663,6 @@ static void buildMemberList(Entry *root)
         cd->insertMember(md);
         // add file to list of used files
         cd->insertUsedFile(root->fileName);
-        addTodoItem(root,"member",cd->name()+"::"+md->name());
-        addTestItem(root,"member",cd->name()+"::"+md->name());
 
         addMemberToGroups(root,md);
       }
@@ -1790,8 +1819,7 @@ static void buildMemberList(Entry *root)
           {
             nd->insertMember(md); 
             md->setNamespace(nd);
-            addTodoItem(root,"member",nd->name()+"::"+md->name());
-            addTestItem(root,"member",nd->name()+"::"+md->name());
+            md->setRefItems(root->todoId,root->testId);
           }
           else
           {
@@ -1806,8 +1834,7 @@ static void buildMemberList(Entry *root)
               // add member to the file
               fd->insertMember(md);
               md->setFileDef(fd); 
-              addTodoItem(root,"member",md->name());
-              addTestItem(root,"member",md->name());
+              md->setRefItems(root->todoId,root->testId);
             }
           }
 
@@ -1815,12 +1842,12 @@ static void buildMemberList(Entry *root)
           MemberName *mn;
           if ((mn=functionNameDict[name]))
           {
-            mn->inSort(md);
+            mn->append(md);
           }
           else 
           {
             mn = new MemberName(name);
-            mn->inSort(md);
+            mn->append(md);
             functionNameDict.insert(name,mn);
             functionNameList.inSort(mn);
           }
@@ -2274,6 +2301,84 @@ static void computeMemberReferences()
   }
 }
 
+//----------------------------------------------------------------------
+
+static void addTodoTestReferences()
+{
+  ClassDef *cd=classList.first();
+  while (cd)
+  {
+    addRefItem(cd->todoId(),cd->testId(),"class",cd->getOutputFileBase(),cd->name());
+    cd=classList.next();
+  } 
+  FileName *fn=inputNameList.first();
+  while (fn)
+  {
+    FileDef *fd=fn->first();
+    while (fd)
+    {
+      addRefItem(fd->todoId(),fd->testId(),"file",fd->getOutputFileBase(),fd->name());
+      fd=fn->next();
+    }
+    fn=inputNameList.next();
+  }
+  NamespaceDef *nd=namespaceList.first();
+  while (nd)
+  {
+    addRefItem(nd->todoId(),nd->testId(),"namespace",nd->getOutputFileBase(),nd->name());
+    nd=namespaceList.next();
+  }
+  GroupDef *gd=groupList.first();
+  while (gd)
+  {
+    addRefItem(gd->todoId(),gd->testId(),"group",gd->getOutputFileBase(),gd->name());
+    gd=groupList.next();
+  }
+  PageInfo *pi=pageList.first();
+  while (pi)
+  {
+    addRefItem(pi->todoId,pi->testId,"page",pi->name,pi->title);
+    pi=pageList.next();
+  }
+  MemberNameListIterator mnli(memberNameList);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberNameIterator mni(*mn);
+    MemberDef *md=0;
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      Definition *d=md->getClassDef();
+      QCString scopeName;
+      if (d) scopeName=d->name();
+      if (d==0) d=md->getFileDef();
+      if (d==0) d=md->getGroupDef();
+      if (d)
+      {
+        addRefItem(md->todoId(),md->testId(),"member",d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
+      }
+    }
+  }
+  MemberNameListIterator fnli(functionNameList);
+  for (fnli.toFirst();(mn=fnli.current());++fnli)
+  {
+    MemberNameIterator mni(*mn);
+    MemberDef *md=0;
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      Definition *d=md->getNamespaceDef();
+      QCString scopeName;
+      if (d) scopeName=d->name();
+      if (d==0) d=md->getBodyDef();
+      if (d==0) d=md->getGroupDef();
+      if (d)
+      {
+        addRefItem(md->todoId(),md->testId(),"member",d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
+      }  
+    }
+  }
+}
+
 
 
 //----------------------------------------------------------------------
@@ -2327,8 +2432,6 @@ static void addMemberDocs(Entry *root,
       doc+=root->doc;
     }
     md->setDocumentation(doc); 
-    addTodoItem(root,"member",fullName);
-    addTestItem(root,"member",fullName);
   }
   else  
   {
@@ -2367,17 +2470,20 @@ static void addMemberDocs(Entry *root,
     //{
     //  md->setBody(root->body);
     //}
-    if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) || 
-        (md->isVariable() && !root->explicitExternal))
+    bool ambig;
+    FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+    if (fd)
     {
-      md->setBodySegment(root->bodyLine,root->endBodyLine);
-      bool ambig;
-      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
-      md->setBodyDef(fd);
-    }
 
-    addTodoItem(root,"member",fullName);
-    addTestItem(root,"member",fullName);
+      if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) || 
+          (md->isVariable() && !root->explicitExternal))
+      {
+        md->setBodySegment(root->bodyLine,root->endBodyLine);
+        md->setBodyDef(fd);
+      }
+
+      md->setRefItems(root->todoId,root->testId);
+    }
     
   }
   //md->setDefFile(root->fileName);
@@ -3250,11 +3356,10 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->memSpec);
           md->setMemberGroupId(root->mGrpId);
-          mn->inSort(md);
+          mn->append(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
-          addTodoItem(root,"member",cd->name()+"::"+md->name());
-          addTestItem(root,"member",cd->name()+"::"+md->name());
+          md->setRefItems(root->todoId,root->testId);
         }
       }
       else // unrelated function with the same name as a member
@@ -3368,11 +3473,10 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           md->setBriefDescription(root->brief);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
-          mn->inSort(md);
+          mn->append(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
-          addTodoItem(root,"member",cd->name()+"::"+md->name());
-          addTestItem(root,"member",cd->name()+"::"+md->name());
+          md->setRefItems(root->todoId,root->testId);
           if (newMemberName)
           {
             //printf("Adding memberName=%s\n",mn->memberName());
@@ -3596,6 +3700,7 @@ static void findEnums(Entry *root)
       //{
       //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
       //}
+      md->setRefItems(root->todoId,root->testId);
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
         if (Config::hideScopeNames)
@@ -3608,15 +3713,11 @@ static void findEnums(Entry *root)
         }
         nd->insertMember(md);
         md->setNamespace(nd);
-        addTodoItem(root,"member",nd->name()+"::"+md->name());
-        addTestItem(root,"member",nd->name()+"::"+md->name());
       }
       else if (isGlobal)
       {
         md->setDefinition(name);
         fd->insertMember(md);
-        addTodoItem(root,"member",md->name());
-        addTestItem(root,"member",md->name());
       }
       else if (cd)
       {
@@ -3630,8 +3731,6 @@ static void findEnums(Entry *root)
         }
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
-        addTodoItem(root,"member",cd->name()+"::"+md->name());
-        addTestItem(root,"member",cd->name()+"::"+md->name());
       }
       md->setDocumentation(root->doc);
       md->setBriefDescription(root->brief);
@@ -3640,12 +3739,12 @@ static void findEnums(Entry *root)
       if ((mn=(*mnd)[name]))
       {
         // this is used if the same enum is in multiple namespaces/classes
-        mn->inSort(md);
+        mn->append(md);
       }
       else // new enum name
       {
         mn = new MemberName(name);
-        mn->inSort(md);
+        mn->append(md);
         mnd->insert(name,mn);
         mnl->inSort(mn);
         //printf("add %s to new memberName. Now %d members\n",
@@ -3924,31 +4023,6 @@ static void computeClassImplUsageRelations()
     cd->determineImplUsageRelation();
   }
 }
-
-//----------------------------------------------------------------------------
-//static void computeMemberGroups()
-//{
-//  ClassDef *cd;
-//  ClassListIterator cli(classList);
-//  for (;(cd=cli.current());++cli)
-//  {
-//    cd->computeMemberGroups();
-//  }
-//}
-
-
-//----------------------------------------------------------------------------
-#if 0
-void computeClassIntfUsageRelations()
-{
-  ClassDef *cd;
-  ClassListIterator cli(classList);
-  for (;(cd=cli.current());++cli)
-  {
-    cd->determineIntfUsageRelation();
-  }
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -4357,8 +4431,6 @@ static void findDefineDocumentation(Entry *root)
 }
 
 //----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
 // create a (sorted) list of separate documentation pages
 
 static void buildPageList(Entry *root)
@@ -4367,59 +4439,16 @@ static void buildPageList(Entry *root)
   {
     if (!root->name.isEmpty())
     {
-      PageInfo *pi=0;
-      if ((pi=pageDict[root->name]))
-      {
-        //warn("Warning: Page %s was already documented. Ignoring documentation "
-        //     "at line %d of %s\n",root->name.data(),root->startLine,
-        //                          root->fileName.data());
-        
-        // append documentation block to the page.
-        pi->doc+="\n\n"+root->doc;
-      }
-      else
-      {
-        QCString baseName=root->name.copy();
-        if (baseName.right(4)==".tex") 
-          baseName=baseName.left(baseName.length()-4);
-        else if (baseName.right(5)==".html")
-          baseName=baseName.left(baseName.length()-5);
-
-        QCString title=root->args.stripWhiteSpace();
-        pi=new PageInfo(root->fileName,root->startLine,
-                        baseName, root->doc,title);
-        QCString pageName;
-        if (Config::caseSensitiveNames)
-          pageName=pi->name.copy();
-        else
-          pageName=pi->name.lower();
-        setFileNameForSections(root->anchors,pageName);
-        addTodoItem(root,"page",pageName,title);
-        addTestItem(root,"page",pageName,title);
-
-        pageList.append(pi);
-        pageDict.insert(baseName,pi);
-        if (!pi->title.isEmpty())
-        {
-          //outputList->writeTitle(pi->name,pi->title);
-          
-          // a page name is a label as well!
-          SectionInfo *si=new SectionInfo(
-              pi->name,pi->title,SectionInfo::Section);
-          si->fileName=pageName;
-          //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
-          //printf("Adding section info %s\n",pi->name.data());
-          sectionDict.insert(pageName,si);
-        }
-      }
+      addRelatedPage(root->name,root->args,root->doc,root->anchors,
+                     root->fileName,root->startLine,root->todoId,root->testId
+                    );
     }
   }
   else if (root->section == Entry::MAINPAGEDOC_SEC)
   {
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    addTodoItem(root,"page","index",title);
-    addTestItem(root,"page","index",title);
+    addRefItem(root->todoId,root->testId,"page","index",title);
   }
   EntryListIterator eli(*root->sublist);
   Entry *e;
@@ -4627,34 +4656,6 @@ static void generateGroupDocs()
     }
   }
 }
-
-//----------------------------------------------------------------------------
-// create member group documentation based on the documentation of the
-// group's members.
-
-//void computeMemberGroupDocumentation()
-//{
-//  MemberGroupDictIterator mgdi(memberGroupDict);
-//  MemberGroup *mg;
-//  for (;(mg=mgdi.current());++mgdi)
-//  {
-//    mg->addDocumentation(); 
-//  }
-//}
-
-//----------------------------------------------------------------------------
-// generate member group pages
-
-//void generateMemberGroupDocs()
-//{
-//  MemberGroupDictIterator mgdi(memberGroupDict);
-//  MemberGroup *mg;
-//  for (;(mg=mgdi.current());++mgdi)
-//  {
-//    mg->writeDocumentation(*outputList); 
-//  }
-//}
-
 
 //----------------------------------------------------------------------------
 // generate module pages
@@ -5404,7 +5405,7 @@ int main(int argc,char **argv)
           {
             QCString configFile=fileToString(argv[optind+4]);
             if (configFile.isEmpty()) exit(1);
-            parseConfig(fileToString(argv[optind+4])); 
+            parseConfig(fileToString(argv[optind+4]),argv[optind+4]); 
             configStrToVal();
             substituteEnvironmentVars();
             checkConfig();
@@ -5442,7 +5443,7 @@ int main(int argc,char **argv)
           {
             QCString configFile=fileToString(argv[optind+3]);
             if (configFile.isEmpty()) exit(1);
-            parseConfig(fileToString(argv[optind+3])); 
+            parseConfig(fileToString(argv[optind+3]),argv[optind+3]); 
             configStrToVal();
             substituteEnvironmentVars();
             checkConfig();
@@ -5542,7 +5543,7 @@ int main(int argc,char **argv)
     }
   }
 
-  parseConfig(config); 
+  parseConfig(config,configName); 
   configStrToVal();
 
   if (updateConfig)
@@ -5838,6 +5839,9 @@ int main(int argc,char **argv)
 
   msg("Adding source references...\n");
   addSourceReferences();
+
+  msg("Adding todo/test references...\n");
+  addTodoTestReferences();
   
   /**************************************************************************
    *                        Generate documentation                          *
@@ -5917,7 +5921,6 @@ int main(int argc,char **argv)
   generateSearchIndex();
   
   msg("Generating style sheet...\n");
-  //outputList->enable(OutputGenerator::Latex);
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
   parseText(*outputList,

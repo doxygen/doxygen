@@ -701,12 +701,12 @@ class TranslatorDutch : public Translator
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
     
-    /*! Used as a marker that is put before a todo item */
+    /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
       return "Test";
     }
-    /*! Used as the header of the todo list */
+    /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
       return "Test Lijst";
