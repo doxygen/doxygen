@@ -1699,6 +1699,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    }
 					  }
 					}
+<ReadBody>"}"{BN}+"typedef"{BN}+	{ //err("ReadBody count=%d\n",curlyCount);
+  					  if ( curlyCount>0 )
+					  {
+					    current->program += yytext ;
+					    --curlyCount ;
+					  }
+					  else
+					  {
+					    lineCount();
+					    isTypedef = TRUE;
+					    current->endBodyLine = yyLineNr;
+					    QCString &cn = current->name;
+					    QCString rn = current_root->name.copy();
+					    if (!cn.isEmpty() && !rn.isEmpty())
+					    {
+					      prependScope();
+					    }
+					    BEGIN( TypedefName );
+					  }
+					}
 <TypedefName>{ID}			{
   					  if (current->section == Entry::ENUM_SEC)
 					  {

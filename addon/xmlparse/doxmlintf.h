@@ -51,6 +51,20 @@ class IDoxygen
      *  of compounds found in the project.
      */
     virtual QListIterator<ICompound> getCompoundIterator() const = 0;
+
+    /*! Returns a compound given its unique \a id. If you have a
+     *  compound id this function is much more efficient than iterating
+     *  over the compound list. Returns 0 if the id is not valid.
+     */
+    virtual ICompound *getCompoundById(const QString &id) const = 0;
+
+    /*! Returns a compound given its name (including the scope). 
+     *  Returns 0 if the name is not found in the project.
+     */
+    virtual ICompound *getCompoundByName(const QString &name) const = 0;
+
+    virtual IMember *getMemberById(const QString &id) const = 0;
+    virtual QList<IMember> *getMemberByName(const QString &name) const = 0;
 };
 
 /*! Factory method that creates an object model given an XML file generated

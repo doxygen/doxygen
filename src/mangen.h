@@ -114,8 +114,7 @@ class ManGenerator : public OutputGenerator
     void endCodeFragment();
     void startPreFragment() { startCodeFragment(); }
     void endPreFragment() { endCodeFragment(); }
-    void startLineNumber() {}
-    void endLineNumber() { t << " "; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() {}
     void endCodeLine() { codify("\n"); col=0; }
     //void writeBoldString(const char *text) 

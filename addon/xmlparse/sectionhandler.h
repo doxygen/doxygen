@@ -24,6 +24,8 @@
 #include "memberhandler.h"
 #include "doxmlintf.h"
 
+class MainHandler;
+
 class SectionHandler : public ISection, public BaseHandler<SectionHandler>
 {
   public:
@@ -37,6 +39,8 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
     // ISection
     virtual QString kind() const { return m_kind; }
     virtual QListIterator<IMember> getMemberIterator() const { return m_members; }
+
+    void initialize(MainHandler *m);
 
   private:
     IBaseHandler *m_parent;

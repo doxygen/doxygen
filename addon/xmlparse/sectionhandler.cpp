@@ -13,6 +13,7 @@
  *
  */
 
+#include "mainhandler.h"
 #include "compoundhandler.h"
 #include "sectionhandler.h"
 
@@ -44,6 +45,17 @@ void SectionHandler::startMember(const QXmlAttributes& attrib)
   MemberHandler *memHandler = new MemberHandler(this);
   memHandler->startMember(attrib);
   m_members.append(memHandler);
+}
+
+void SectionHandler::initialize(MainHandler *m)
+{
+  QListIterator<IMember> mli(m_members);
+  MemberHandler *mh;
+  for (;(mh=(MemberHandler *)mli.current());++mli)
+  {
+    m->insertMemberById(mh->name(),mh);
+    m->insertMemberByName(mh->name(),mh);
+  }
 }
 
 

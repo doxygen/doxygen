@@ -248,8 +248,8 @@ class BaseOutputDocInterface
     virtual void endPageRef(const char *,const char *) = 0;
 
 
-    virtual void startLineNumber() = 0;
-    virtual void endLineNumber() = 0;
+    virtual void writeLineNumber(const char *ref,const char *file,
+                                 const char *anchor,int lineNumber) = 0;
     virtual void startCodeLine() = 0;
     virtual void endCodeLine() = 0;
     virtual void startCodeAnchor(const char *label) = 0;

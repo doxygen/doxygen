@@ -406,7 +406,7 @@ static void skipLine(OutputDocInterface &od,const char *key)
       found=TRUE;
       od.writeString("    ");
       parseCode(od,className,s,exampleDoc,exampleName);
-      od.writeString("\n");
+      //od.writeString("\n");
     }
     else if (includeFileOffset==includeFileLength) found=TRUE;
   }
@@ -451,7 +451,7 @@ static void showLine(OutputDocInterface &od,const char *key)
   {
     od.writeString("    ");
     parseCode(od,className,s,exampleDoc,exampleName);
-    od.writeString("\n");
+    //od.writeString("\n");
   }
 }
 
@@ -469,7 +469,7 @@ static void showUntil(OutputDocInterface &od,const char *key)
     {
       od.writeString("    ");
       parseCode(od,className,s,exampleDoc,exampleName);
-      od.writeString("\n");
+      //od.writeString("\n");
       if (s.find(key)!=-1) found=TRUE; 
     }
     if (includeFileOffset==includeFileLength) found=TRUE;

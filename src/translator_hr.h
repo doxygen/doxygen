@@ -39,10 +39,16 @@
 // - Removed obsolete method trVerbatimHeadert()
 // - Method latexBabelPackage() removed, ude latexLanguageSupportCommand
 //
+// 2001/11/13
+// - inherits from Translator 
+// - Added strings for 1.2.11
+// - better output for C documentation (trCompoundMembersDescription(), trClassDocumentation()) 
+//
+
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_2_11
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -156,19 +162,37 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_11
     QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Popis svih ";
-      if (!extractAll) result+="dokumentiranih ";
-      result+="èlanova klasa s linkovima na ";
-      if (extractAll) result+="dokumentaciju svakog èlana:";
-      else result+="dokumentaciju klase :";
+      if (!extractAll)
+		  result+="dokumentiranih ";
+
+	  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		  result+="èlanova klasa s linkovima na ";
+	  else
+		  result+="èlanova struktura s linkovima na ";
+		  
+      if (extractAll)
+	  {
+		  result+="dokumentaciju svakog èlana:";
+      }
+	  else
+	  {
+		  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+			  result+="dokumentaciju klase :";
+		  else
+			  result +="dokumentaciju strukture";
+	  }
       return decode(result);
     }
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Popis svih ";
-      if (!extractAll) result+="dokumentiranih ";
+      if (!extractAll)
+		  result+="dokumentiranih ";
       result+="èlanova s linkovima na ";
-      if (extractAll) result+="dokumentaciju datoteke u kojima se nalaze:";
-      else result+="datoteke u kojima se nalaze:";
+      if (extractAll)
+		  result+="dokumentaciju datoteke u kojima se nalaze:";
+      else
+		  result+="datoteke u kojima se nalaze:";
       return decode(result);
     }
     QCString trHeaderFilesDescription()
@@ -189,13 +213,31 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_11
     QCString trHierarchicalIndex()
     { return "Hijerarhijsko kazalo"; }
     QCString trCompoundIndex()
-    { return "Skupno kazalo "; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      { 
+        return "Kazalo struktura podataka";
+      }
+      else
+      {
+		return "Skupno kazalo ";
+      }
+	}
     QCString trFileIndex() 
     { return "Kazalo datoteka"; }
     QCString trModuleDocumentation()
     { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
-    { return "Dokumentacija klasa"; }
+    {
+		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		{
+			return "Dokumentacija struktura podataka"; 
+		}
+		else
+		{
+			return "Dokumentacija klasa";
+		}
+	}
     QCString trFileDocumentation()
     { return "Dokumentacija datoteka"; }
     QCString trExampleDocumentation()
@@ -967,6 +1009,16 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_11
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Reference";
+    }
 };
 
 #endif

@@ -136,3 +136,13 @@ void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
   m_subClasses.append(sc);
 }
 
+void CompoundHandler::initialize(MainHandler *m)
+{
+  QListIterator<ISection> msi(m_sections);
+  SectionHandler *sec;
+  for (;(sec=(SectionHandler *)msi.current());++msi)
+  {
+    sec->initialize(m);
+  }
+}
+

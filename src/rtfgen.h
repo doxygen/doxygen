@@ -114,8 +114,7 @@ class RTFGenerator : public OutputGenerator
     void endCodeFragment();
     void startPreFragment() { startCodeFragment(); }
     void endPreFragment() { endCodeFragment(); }
-    void startLineNumber() {}
-    void endLineNumber() { t << " "; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }
     //void writeBoldString(const char *text) 

@@ -28,7 +28,6 @@ class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
     MainHandler();
     virtual ~MainHandler();
 
-    // IDoxygen
     QListIterator<ICompound> getCompoundIterator() const
     {
       return m_compounds;
@@ -37,10 +36,29 @@ class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
     {
       return m_compoundDict[id];
     }
+    virtual ICompound *getCompoundByName(const QString &name) const
+    {
+      return name.isEmpty() ? 0 : m_compoundNameDict[name]; 
+    }
+    virtual IMember *getMemberById(const QString &id) const
+    {
+      return m_memberDict[id];
+    }
+    virtual QList<IMember> *getMemberByName(const QString &name) const
+    {
+      return m_memberNameDict[name]; 
+    }
+    void insertMemberById(const QString &id,IMember *h);
+    void insertMemberByName(const QString &name,IMember *h);
+
+    void initialize();
 
   private:
-    QList<ICompound> m_compounds;
-    QDict<ICompound> m_compoundDict;
+    QList<ICompound>       m_compounds;
+    QDict<ICompound>       m_compoundDict;
+    QDict<ICompound>       m_compoundNameDict;
+    QDict<IMember>         m_memberDict;
+    QDict<QList<IMember> > m_memberNameDict;
 };
 
 #endif

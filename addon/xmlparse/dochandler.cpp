@@ -745,55 +745,6 @@ void VariableListHandler::startListItem(const QXmlAttributes& attrib)
 }
 
 //----------------------------------------------------------------------
-// AnchorHandler
-//----------------------------------------------------------------------
-
-AnchorHandler::AnchorHandler(IBaseHandler *parent)
-  : DocNode(Anchor), m_parent(parent)
-{
-  m_children.setAutoDelete(TRUE);
-  addEndHandler("anchor",this,&AnchorHandler::endAnchor);
-  addStartHandler("ref",this,&AnchorHandler::startRef);
-}
-
-AnchorHandler::~AnchorHandler()
-{
-}
-
-void AnchorHandler::startAnchor(const QXmlAttributes& attrib)
-{
-  m_id = attrib.value("id");
-  m_curString="";
-  m_parent->setDelegate(this);
-}
-
-void AnchorHandler::endAnchor()
-{
-  addTextNode();
-  printf("anchor id=`%s'\n",m_id.data());
-  m_parent->setDelegate(0);
-}
-
-void AnchorHandler::startRef(const QXmlAttributes& attrib)
-{
-  addTextNode();
-  RefHandler *rh = new RefHandler(this);
-  m_children.append(rh);
-  rh->startRef(attrib);
-}
-
-void AnchorHandler::addTextNode()
-{
-  if (!m_curString.isEmpty())
-  {
-    m_children.append(new TextNode(m_curString,DocNode::Normal));
-    printf("addTextNode() text=\"%s\"\n",
-        m_curString.data());
-    m_curString="";
-  }
-}
-
-//----------------------------------------------------------------------
 // HighlightHandler
 //----------------------------------------------------------------------
 
@@ -833,7 +784,7 @@ CodeLineHandler::CodeLineHandler(IBaseHandler *parent)
   addEndHandler("linenumber",this,&CodeLineHandler::endLineNumber);
   addStartHandler("highlight",this,&CodeLineHandler::startHighlight);
   addStartHandler("ref",this,&CodeLineHandler::startRef);
-  addStartHandler("anchor",this,&CodeLineHandler::startAnchor);
+  m_lineNumber = 0;
 }
 
 CodeLineHandler::~CodeLineHandler()
@@ -853,16 +804,16 @@ void CodeLineHandler::endCodeLine()
   m_parent->setDelegate(0);
 }
 
-void CodeLineHandler::startLineNumber(const QXmlAttributes& /*attrib*/)
+void CodeLineHandler::startLineNumber(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   printf("start linenumber\n");
+  m_lineNumber = attrib.value("line").toInt();
+  m_refId = attrib.value("refid");
 }
 
 void CodeLineHandler::endLineNumber()
 {
-  addTextNode();
-  printf("end linenumber\n");
   m_parent->setDelegate(0);
 }
 
@@ -872,14 +823,6 @@ void CodeLineHandler::startHighlight(const QXmlAttributes& attrib)
   HighlightHandler *hlh = new HighlightHandler(this);
   m_children.append(hlh);
   hlh->startHighlight(attrib);
-}
-
-void CodeLineHandler::startAnchor(const QXmlAttributes& attrib)
-{
-  addTextNode();
-  AnchorHandler *ah = new AnchorHandler(this);
-  m_children.append(ah);
-  ah->startAnchor(attrib);
 }
 
 void CodeLineHandler::startRef(const QXmlAttributes& attrib)
@@ -1092,6 +1035,106 @@ void IndexEntryHandler::endSecondaryIE()
   m_secondary = m_curString;
 }
 
+//----------------------------------------------------------------------
+// EntryHandler
+//----------------------------------------------------------------------
+
+EntryHandler::EntryHandler(IBaseHandler *parent)
+  : DocNode(Entry), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("entry",this,&EntryHandler::endEntry);
+  addStartHandler("para",this,&EntryHandler::startParagraph);
+}
+
+EntryHandler::~EntryHandler()
+{
+}
+
+void EntryHandler::startEntry(const QXmlAttributes&)
+{
+  m_parent->setDelegate(this);
+}
+
+void EntryHandler::endEntry()
+{
+  m_parent->setDelegate(0);
+}
+
+void EntryHandler::startParagraph(const QXmlAttributes& attrib)
+{
+  ParagraphHandler *ph = new ParagraphHandler(this);
+  ph->startParagraph(attrib);
+  m_children.append(ph);
+}
+
+//----------------------------------------------------------------------
+// RowHandler
+//----------------------------------------------------------------------
+
+RowHandler::RowHandler(IBaseHandler *parent)
+  : DocNode(Row), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("row",this,&RowHandler::endRow);
+  addStartHandler("entry",this,&RowHandler::startEntry);
+}
+
+RowHandler::~RowHandler()
+{
+}
+
+void RowHandler::startRow(const QXmlAttributes&)
+{
+  m_parent->setDelegate(this);
+}
+
+void RowHandler::endRow()
+{
+  m_parent->setDelegate(0);
+}
+
+void RowHandler::startEntry(const QXmlAttributes& attrib)
+{
+  EntryHandler *eh = new EntryHandler(this);
+  eh->startEntry(attrib);
+  m_children.append(eh);
+}
+
+//----------------------------------------------------------------------
+// TableHandler
+//----------------------------------------------------------------------
+
+TableHandler::TableHandler(IBaseHandler *parent)
+  : DocNode(Table), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("table",this,&TableHandler::endTable);
+  addStartHandler("row",this,&TableHandler::startRow);
+}
+
+TableHandler::~TableHandler()
+{
+}
+
+void TableHandler::startTable(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  m_numColumns = attrib.value("cols").toInt();
+  printf("table cols=%d\n",m_numColumns);
+}
+
+void TableHandler::endTable()
+{
+  m_parent->setDelegate(0);
+}
+
+void TableHandler::startRow(const QXmlAttributes& attrib)
+{
+  RowHandler *rh = new RowHandler(this);
+  rh->startRow(attrib);
+  m_children.append(rh);
+}
 
 //----------------------------------------------------------------------
 // ParagraphHandler
@@ -1123,6 +1166,7 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("image",this,&ParagraphHandler::startImage);
   addStartHandler("dotfile",this,&ParagraphHandler::startDotFile);
   addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
+  addStartHandler("table",this,&ParagraphHandler::startTable);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -1177,6 +1221,7 @@ void ParagraphHandler::startSimpleSect(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startRef(const QXmlAttributes& attrib)
 {
+  addTextNode();
   RefHandler *ref = new RefHandler(this);
   ref->startRef(attrib);
   m_children.append(ref);
@@ -1184,6 +1229,7 @@ void ParagraphHandler::startRef(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startVariableList(const QXmlAttributes& attrib)
 {
+  addTextNode();
   VariableListHandler *vl = new VariableListHandler(this);
   vl->startVariableList(attrib);
   m_children.append(vl);
@@ -1191,6 +1237,7 @@ void ParagraphHandler::startVariableList(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startHRuler(const QXmlAttributes& attrib)
 {
+  addTextNode();
   HRulerHandler *hr = new HRulerHandler(this);
   hr->startHRuler(attrib);
   m_children.append(hr);
@@ -1198,6 +1245,7 @@ void ParagraphHandler::startHRuler(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startLineBreak(const QXmlAttributes& attrib)
 {
+  addTextNode();
   LineBreakHandler *lb = new LineBreakHandler(this);
   lb->startLineBreak(attrib);
   m_children.append(lb);
@@ -1205,6 +1253,7 @@ void ParagraphHandler::startLineBreak(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startULink(const QXmlAttributes& attrib)
 {
+  addTextNode();
   ULinkHandler *uh = new ULinkHandler(this);
   uh->startULink(attrib);
   m_children.append(uh);
@@ -1212,6 +1261,7 @@ void ParagraphHandler::startULink(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startEMail(const QXmlAttributes& attrib)
 {
+  addTextNode();
   EMailHandler *eh = new EMailHandler(this);
   eh->startEMail(attrib);
   m_children.append(eh);
@@ -1219,6 +1269,7 @@ void ParagraphHandler::startEMail(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startLink(const QXmlAttributes& attrib)
 {
+  addTextNode();
   LinkHandler *lh = new LinkHandler(this);
   lh->startLink(attrib);
   m_children.append(lh);
@@ -1226,6 +1277,7 @@ void ParagraphHandler::startLink(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startProgramListing(const QXmlAttributes& attrib)
 {
+  addTextNode();
   ProgramListingHandler *pl = new ProgramListingHandler(this);
   pl->startProgramListing(attrib);
   m_children.append(pl);
@@ -1233,6 +1285,7 @@ void ParagraphHandler::startProgramListing(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startFormula(const QXmlAttributes& attrib)
 {
+  addTextNode();
   FormulaHandler *fh = new FormulaHandler(this);
   fh->startFormula(attrib);
   m_children.append(fh);
@@ -1240,6 +1293,7 @@ void ParagraphHandler::startFormula(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startImage(const QXmlAttributes& attrib)
 {
+  addTextNode();
   ImageHandler *ih = new ImageHandler(this);
   ih->startImage(attrib);
   m_children.append(ih);
@@ -1247,6 +1301,7 @@ void ParagraphHandler::startImage(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startDotFile(const QXmlAttributes& attrib)
 {
+  addTextNode();
   DotFileHandler *df = new DotFileHandler(this);
   df->startDotFile(attrib);
   m_children.append(df);
@@ -1254,9 +1309,18 @@ void ParagraphHandler::startDotFile(const QXmlAttributes& attrib)
 
 void ParagraphHandler::startIndexEntry(const QXmlAttributes& attrib)
 {
+  addTextNode();
   IndexEntryHandler *df = new IndexEntryHandler(this);
   df->startIndexEntry(attrib);
   m_children.append(df);
+}
+
+void ParagraphHandler::startTable(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  TableHandler *th = new TableHandler(this);
+  th->startTable(attrib);
+  m_children.append(th);
 }
 
 void ParagraphHandler::addTextNode()
