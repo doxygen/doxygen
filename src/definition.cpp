@@ -126,7 +126,7 @@ void Definition::writeDocAnchorsToTagFile()
 void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
 { 
   if (d==0) return;
-  //printf("Definition::setDocumentation(%s,%s,%d)\n",d,docFile,docLine);
+  //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
   if (stripWhiteSpace)
   {
     // strip leading empty lines in front of the text, but not the 
@@ -141,6 +141,7 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
       p++;
       s++;
     }
+    if (c=='\0') return;
     m_doc=d+so;
     // zero any trailing whitespace
     int e=m_doc.length()-1;
@@ -150,8 +151,11 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
       e--;
     }
   }
-  else
+  else // don't strip whitespace
+  {
     m_doc=d;
+  }
+  //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
   m_docFile = docFile;
   m_docLine = docLine;
 }

@@ -35,46 +35,88 @@
 #include "ftvhelp.h"
 #include "dot.h"
 #include "pagedef.h"
-//#include "packagedef.h"
 
-int annotatedClasses;
-int hierarchyClasses;
-int documentedFunctions;
-int documentedMembers;
+enum ClassMemberHighlight
+{
+  CMHL_All = 0,
+  CMHL_Functions,
+  CMHL_Variables,
+  CMHL_Typedefs,
+  CMHL_Enums,
+  CMHL_EnumValues,
+  CMHL_Related,
+  CMHL_Properties,
+  CMHL_Events,
+  CMHL_Total = CMHL_Events+1
+};
+
+enum FileMemberHighlight
+{
+  FMHL_All = 0,
+  FMHL_Functions,
+  FMHL_Variables,
+  FMHL_Typedefs,
+  FMHL_Enums,
+  FMHL_EnumValues,
+  FMHL_Defines,
+  FMHL_Total = FMHL_Defines+1
+};
+
+enum NamespaceMemberHighlight
+{
+  NMHL_All = 0,
+  NMHL_Functions,
+  NMHL_Variables,
+  NMHL_Typedefs,
+  NMHL_Enums,
+  NMHL_EnumValues,
+  NMHL_Total = FMHL_EnumValues+1
+};
+
+static int annotatedClasses;
+static int hierarchyClasses;
+static int documentedFiles;
+static int documentedGroups;
+static int documentedNamespaces;
+static int indexedPages;
+static int documentedClassMembers[CMHL_Total];
+static int documentedFileMembers[FMHL_Total];
+static int documentedNamespaceMembers[NMHL_Total];
 int documentedHtmlFiles;
-int documentedFiles;
-int documentedGroups;
-int documentedNamespaces;
-int documentedNamespaceMembers;
-int documentedIncludeFiles;
 int documentedPages;
-int indexedPages;
-//int documentedPackages;
 
 int countClassHierarchy();
-int countClassMembers();
-int countFileMembers();
+int countClassMembers(int filter=CMHL_All);
+int countFileMembers(int filter=FMHL_All);
 void countFiles(int &htmlFiles,int &files);
 int countGroups();
 int countNamespaces();
 int countAnnotatedClasses();
-int countNamespaceMembers();
+int countNamespaceMembers(int filter=NMHL_All);
 int countIncludeFiles();
 void countRelatedPages(int &docPages,int &indexPages);
-//int countPackages();
 
 void countDataStructures()
 {
   annotatedClasses           = countAnnotatedClasses();
   hierarchyClasses           = countClassHierarchy();
-  documentedMembers          = countClassMembers();
-  documentedFunctions        = countFileMembers();
   countFiles(documentedHtmlFiles,documentedFiles);
   countRelatedPages(documentedPages,indexedPages);
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
-  documentedNamespaceMembers = countNamespaceMembers();
-  //documentedPackages         = countPackages();
+  int i;
+  for (i=0;i<(int)CMHL_Total;i++)
+  {
+    documentedClassMembers[i] = countClassMembers(i);
+  }
+  for (i=0;i<(int)FMHL_Total;i++)
+  {
+    documentedFileMembers[i] = countFileMembers(i);
+  }
+  for (i=0;i<(int)NMHL_Total;i++)
+  {
+    documentedNamespaceMembers[i] = countNamespaceMembers(i);
+  }
 }
 
 static void startIndexHierarchy(OutputList &ol,int level)
@@ -107,11 +149,11 @@ static void endIndexHierarchy(OutputList &ol,int level)
 
 //----------------------------------------------------------------------------
 
-static bool g_memberIndexLetterUsed[256];
-static bool g_fileIndexLetterUsed[256];
-static bool g_namespaceIndexLetterUsed[256];
+static bool g_memberIndexLetterUsed[CMHL_Total][256];
+static bool g_fileIndexLetterUsed[FMHL_Total][256];
+static bool g_namespaceIndexLetterUsed[NMHL_Total][256];
 
-const int maxItemsBeforeQuickIndex = 50;
+const int maxItemsBeforeQuickIndex = 30;
 
 //----------------------------------------------------------------------------
 
@@ -169,142 +211,195 @@ QCString abbreviate(const char *s,const char *name)
 
 //----------------------------------------------------------------------------
 
-void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
+static void startQuickIndexItem(OutputList &ol,const char *s,const char *l,
+                                bool hl,bool compact,bool &first)
 {
+  if (!first) ol.writeString(" | ");
+  first=FALSE;
+  if (!compact) ol.writeString("<li>");
+  QCString *dest;
+  if (s) // external link
+  {
+    if (hl && compact)
+    {
+      ol.writeString("<a class=\"qindexRefHL\" doxygen=\"");
+    }
+    else
+    {
+      ol.writeString("<a class=\"qindexRef\" doxygen=\"");
+    }
+    ol.writeString(s);
+    ol.writeString(":");
+    if ((dest=Doxygen::tagDestinationDict[s])) ol.writeString(*dest);
+    if (strcmp(s,"_cgi")!=0) ol.writeString("/"); // small hack to get the cgi binary link right
+    ol.writeString("\" ");
+  }
+  else // local link
+  {
+    if (hl && compact)
+    {
+      ol.writeString("<a class=\"qindexHL\" ");
+    }
+    else
+    {
+      ol.writeString("<a class=\"qindex\" ");
+    }
+  }
+  ol.writeString("href=\""); 
+  if (s) // external link
+  {
+    if ((dest=Doxygen::tagDestinationDict[s])) ol.writeString(*dest);
+    if (strcmp(s,"_cgi")!=0) ol.writeString("/");
+  }
+  ol.writeString(l);
+  ol.writeString("\">");
+}
+
+static void endQuickIndexItem(OutputList &ol)
+{
+  ol.writeString("</a>");
+}
+
+static QCString fixSpaces(const QCString &s)
+{
+  return substitute(s," ","&nbsp;");
+}
+
+void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FALSE)
+{
+  bool first=TRUE;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   QCString extLink;
   if (ext) { extLink="_doc"; }
-  if (compact) ol.startCenter(); else ol.startItemList();
+  if (compact) 
+  {
+    ol.writeString("<div class=\"qindex\">"); 
+  }
+  else 
+  {
+    ol.startItemList();
+  }
 
   if (!compact) ol.writeListItem();
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
-    ol.startQuickIndexItem(extLink,"main"+Doxygen::htmlFileExtension);
+    startQuickIndexItem(ol,extLink,"main"+Doxygen::htmlFileExtension,
+                        hli==HLI_Main,compact,first);
   }
   else
   {
-    ol.startQuickIndexItem(extLink,"index"+Doxygen::htmlFileExtension);
+    startQuickIndexItem(ol,extLink,"index"+Doxygen::htmlFileExtension,
+                        hli==HLI_Main,compact,first);
   }
-  ol.parseText(theTranslator->trMainPage());
-  ol.endQuickIndexItem();
+  ol.parseText(fixSpaces(theTranslator->trMainPage()));
+  endQuickIndexItem(ol);
 
-  //if (documentedPackages>0)
-  //{
-  //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"packages"+Doxygen::htmlFileExtension);
-  //  parseText(ol,theTranslator->trPackages());
-  //  ol.endQuickIndexItem();
-  //}
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"modules"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trModules());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"modules"+Doxygen::htmlFileExtension,
+                        hli==HLI_Modules,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trModules()));
+    endQuickIndexItem(ol);
   } 
   if (documentedNamespaces>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespaces"+Doxygen::htmlFileExtension);
+    startQuickIndexItem(ol,extLink,"namespaces"+Doxygen::htmlFileExtension,
+                        hli==HLI_Namespaces,compact,first);
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
-      ol.parseText(theTranslator->trPackages());
+      ol.parseText(fixSpaces(theTranslator->trPackages()));
     }
     else
     {
       ol.parseText(theTranslator->trNamespaceList());
     }
-    ol.endQuickIndexItem();
+    endQuickIndexItem(ol);
   }
   if (hierarchyClasses>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"hierarchy"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trClassHierarchy());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"hierarchy"+Doxygen::htmlFileExtension,
+                           hli==HLI_Hierarchy,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trClassHierarchy()));
+    endQuickIndexItem(ol);
   } 
   if (annotatedClasses>0)
   {
     if (Config_getBool("ALPHABETICAL_INDEX"))
     {
       if (!compact) ol.writeListItem();
-      ol.startQuickIndexItem(extLink,"classes"+Doxygen::htmlFileExtension);
-      ol.parseText(theTranslator->trAlphabeticalList());
-      ol.endQuickIndexItem();
+      startQuickIndexItem(ol,extLink,"classes"+Doxygen::htmlFileExtension,
+                          hli==HLI_Classes,compact,first);
+      ol.parseText(fixSpaces(theTranslator->trAlphabeticalList()));
+      endQuickIndexItem(ol);
     }
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"annotated"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trCompoundList());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"annotated"+Doxygen::htmlFileExtension,
+                        hli==HLI_Annotated,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trCompoundList()));
+    endQuickIndexItem(ol);
   } 
   if (documentedHtmlFiles>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"files"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trFileList());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"files"+Doxygen::htmlFileExtension,
+                        hli==HLI_Files,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trFileList()));
+    endQuickIndexItem(ol);
   } 
-  //if (documentedIncludeFiles>0 && Config_getBool("VERBATIM_HEADERS"))
-  //{
-  //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"headers"+Doxygen::htmlFileExtension);
-  //  parseText(ol,theTranslator->trHeaderFiles());
-  //  ol.endQuickIndexItem();
-  //}
-  //if (Config_getBool("SOURCE_BROWSER")) 
-  //{
-  //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"sources"+Doxygen::htmlFileExtension);
-  //  parseText(ol,theTranslator->trSources());
-  //  ol.endQuickIndexItem();
-  //}
-  if (documentedNamespaceMembers>0)
+  if (documentedNamespaceMembers[NMHL_All]>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespacemembers"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trNamespaceMembers());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"namespacemembers"+Doxygen::htmlFileExtension,
+                        hli==HLI_NamespaceMembers,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trNamespaceMembers()));
+    endQuickIndexItem(ol);
   }
-  if (documentedMembers>0)
+  if (documentedClassMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"functions"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trCompoundMembers());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"functions"+Doxygen::htmlFileExtension,
+                        hli==HLI_Functions,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trCompoundMembers()));
+    endQuickIndexItem(ol);
   } 
-  if (documentedFunctions>0)
+  if (documentedFileMembers[FMHL_All]>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"globals"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trFileMembers());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"globals"+Doxygen::htmlFileExtension,
+                        hli==HLI_Globals,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trFileMembers()));
+    endQuickIndexItem(ol);
   } 
   if (indexedPages>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"pages"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trRelatedPages());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"pages"+Doxygen::htmlFileExtension,
+                        hli==HLI_Pages,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trRelatedPages()));
+    endQuickIndexItem(ol);
   } 
   if (Doxygen::exampleSDict->count()>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"examples"+Doxygen::htmlFileExtension);
-    ol.parseText(theTranslator->trExamples());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,extLink,"examples"+Doxygen::htmlFileExtension,
+                        hli==HLI_Examples,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trExamples()));
+    endQuickIndexItem(ol);
   } 
   if (Config_getBool("SEARCHENGINE"))
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem("_cgi","");
-    ol.parseText(theTranslator->trSearch());
-    ol.endQuickIndexItem();
+    startQuickIndexItem(ol,"_cgi","",hli==HLI_Search,compact,first);
+    ol.parseText(fixSpaces(theTranslator->trSearch()));
+    endQuickIndexItem(ol);
   } 
   if (compact) 
   {
-    ol.endCenter(); 
-    ol.writeRuler();
+    ol.writeString("</div>\n");
   }
   else 
   {
@@ -327,10 +422,10 @@ void endTitle(OutputList &ol,const char *fileName,const char *name)
 }
 
 void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,bool external)
+               const char *title,bool external,HighlightedItem hli)
 {
   ol.startFile(name,manName,title,external);
-  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,external);
+  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,hli,external);
 }
 
 void endFile(OutputList &ol,bool external)
@@ -704,7 +799,7 @@ void writeHierarchicalIndex(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"hierarchy",0,"Hierarchical Index");
+  startFile(ol,"hierarchy",0,"Hierarchical Index",FALSE,HLI_Hierarchy);
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
@@ -834,7 +929,7 @@ void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"files",0,"File Index");
+  startFile(ol,"files",0,"File Index",FALSE,HLI_Files);
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
   QCString htmlHelpTitle = title;
@@ -1069,12 +1164,12 @@ void writeNamespaceIndex(OutputList &ol)
   QCString title;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
-    startFile(ol,"namespaces",0,"Package Index");
+    startFile(ol,"namespaces",0,"Package Index",FALSE,HLI_Namespaces);
     title = theTranslator->trPackageList();
   }
   else
   {
-    startFile(ol,"namespaces",0,"Namespace Index");
+    startFile(ol,"namespaces",0,"Namespace Index",FALSE,HLI_Namespaces);
     title = theTranslator->trNamespaceList();
   }
   startTitle(ol,0);
@@ -1450,7 +1545,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"classes"+Doxygen::htmlFileExtension,0,"Alphabetical index");
+  startFile(ol,"classes"+Doxygen::htmlFileExtension,0,"Alphabetical index",FALSE,HLI_Classes);
   startTitle(ol,0);
   ol.parseText(Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
@@ -1471,7 +1566,7 @@ void writeAnnotatedIndex(OutputList &ol)
   
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"annotated",0,"Annotated Index");
+  startFile(ol,"annotated",0,"Annotated Index",FALSE,HLI_Annotated);
   startTitle(ol,0);
   QCString title = theTranslator->trCompoundList();
   QCString htmlHelpTitle = title;
@@ -1563,7 +1658,7 @@ void writeAnnotatedIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writeMemberList(OutputList &ol,bool useSections)
+void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter)
 {
   bool first = TRUE;
   char lastChar = 0;
@@ -1581,11 +1676,21 @@ void writeMemberList(OutputList &ol,bool useSections)
       if (
            md->isLinkableInProject() &&
            (cd=md->getClassDef()) &&
-           cd->isLinkableInProject() && cd->templateMaster()==0
+           cd->isLinkableInProject() && cd->templateMaster()==0 &&
+           ( filter==CMHL_All ||
+            (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
+            (filter==CMHL_Variables  && md->isVariable())  ||
+            (filter==CMHL_Typedefs   && md->isTypedef())   ||
+            (filter==CMHL_Enums      && md->isEnumerate()) ||
+            (filter==CMHL_EnumValues && md->isEnumValue()) ||
+            (filter==CMHL_Properties && md->isProperty())  ||
+            (filter==CMHL_Events     && md->isEvent())     ||
+            (filter==CMHL_Related    && (md->isRelated() || md->isFriend()))
+           )
          ) 
       { 
         found=TRUE; 
-        isFunc=md->isFunction(); 
+        isFunc=md->isFunction() || md->isSlot() || md->isSignal(); 
       }
       md=mn->next();
     }
@@ -1648,9 +1753,9 @@ void writeMemberList(OutputList &ol,bool useSections)
 
 //----------------------------------------------------------------------------
 
-int countClassMembers()
+int countClassMembers(int filter)
 {
-  int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[i]=FALSE;
+  int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[filter][i]=FALSE;
   int count=0;
   MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
   MemberName *mn=0;
@@ -1664,7 +1769,17 @@ int countClassMembers()
       if (
           md->isLinkableInProject() && 
           (cd=md->getClassDef()) && 
-          cd->isLinkableInProject()
+          cd->isLinkableInProject() &&
+          ( filter==CMHL_All ||
+           (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
+           (filter==CMHL_Variables  && md->isVariable())  ||
+           (filter==CMHL_Typedefs   && md->isTypedef())   ||
+           (filter==CMHL_Enums      && md->isEnumerate()) ||
+           (filter==CMHL_EnumValues && md->isEnumValue()) ||
+           (filter==CMHL_Properties && md->isProperty())  ||
+           (filter==CMHL_Events     && md->isEvent())     ||
+           (filter==CMHL_Related    && (md->isRelated() || md->isFriend()))
+          )
          )
       {
         found=TRUE;
@@ -1674,7 +1789,7 @@ int countClassMembers()
     if (found)
     {
       QCString n = mn->memberName();
-      if (!n.isEmpty()) g_memberIndexLetterUsed[tolower(n.at(0))]=TRUE;
+      if (!n.isEmpty()) g_memberIndexLetterUsed[filter][tolower(n.at(0))]=TRUE;
       count++;
     }
   }
@@ -1687,46 +1802,112 @@ void writeQuickMemberIndex(OutputList &ol,bool *charUsed)
 {
   bool first=TRUE;
   int i;
-  ol.startCenter();
+  ol.writeString("<div class=\"qindex\">"); 
   for (i=33;i<127;i++)
   {
-    QCString anchor="index_";
+    QCString anchor="#index_";
     char is[2];is[0]=(char)i;is[1]='\0';
     if (charUsed[i])
     {
-      if (!first) 
-      {
-        ol.writeString("&nbsp;|&nbsp;");
-      }
-      ol.startTextLink(0,anchor+is);
+      startQuickIndexItem(ol,0,anchor+is,FALSE,TRUE,first);
       ol.writeString(is);
-      ol.endTextLink();
+      endQuickIndexItem(ol);
       first=FALSE;
     }
   }
-  ol.endCenter();
+  ol.writeString("</div>\n");
   ol.newParagraph();
 }
 
 //----------------------------------------------------------------------------
 
-void writeMemberIndex(OutputList &ol)
+static void writeMemberIndexFiltered(OutputList &ol,
+                       const char *fileName,ClassMemberHighlight hl)
 {
-  if (documentedMembers==0) return;
+  if (documentedClassMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"functions",0,"Compound Member Index");
+  startFile(ol,fileName,0,"Compound Member Index",FALSE,HLI_Functions);
   QCString title = theTranslator->trCompoundMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
-  startTitle(ol,0);
-  ol.parseText(title);
-  endTitle(ol,0,0);
-  bool quickIndex = documentedMembers>maxItemsBeforeQuickIndex;
+  //if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
+  //startTitle(ol,0);
+  //ol.parseText(title);
+  //endTitle(ol,0,0);
+  
+  ol.writeString("<div class=\"qindex\">"); 
+
+  bool first=TRUE;
+  startQuickIndexItem(ol,0,
+       "functions"+Doxygen::htmlFileExtension,hl==CMHL_All,TRUE,first);
+  ol.writeString(fixSpaces(theTranslator->trAll()));
+  endQuickIndexItem(ol);
+  
+  if (documentedClassMembers[CMHL_Functions]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_func"+Doxygen::htmlFileExtension,hl==CMHL_Functions,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trFunctions()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Variables]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_vars"+Doxygen::htmlFileExtension,hl==CMHL_Variables,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trVariables()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Typedefs]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_type"+Doxygen::htmlFileExtension,hl==CMHL_Typedefs,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trTypedefs()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Enums]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_enum"+Doxygen::htmlFileExtension,hl==CMHL_Enums,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerations()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_EnumValues]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_eval"+Doxygen::htmlFileExtension,hl==CMHL_EnumValues,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerationValues()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Properties]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_prop"+Doxygen::htmlFileExtension,hl==CMHL_Properties,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trProperties()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Events]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_evnt"+Doxygen::htmlFileExtension,hl==CMHL_Events,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEvents()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedClassMembers[CMHL_Related]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "functions_rela"+Doxygen::htmlFileExtension,hl==CMHL_Related,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trRelatedFunctions()));
+    endQuickIndexItem(ol);
+  }
+  ol.writeString("</div><p>\n");
+  
+  
+  
+  bool quickIndex = documentedClassMembers[hl]>maxItemsBeforeQuickIndex;
   if (quickIndex)
   {
-    writeQuickMemberIndex(ol,g_memberIndexLetterUsed);
+    writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl]);
   }
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -1741,15 +1922,31 @@ void writeMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"functions",0,ftvHelpTitle); 
   }
-  ol.parseText(theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
-  writeMemberList(ol,quickIndex);
+  if (hl==CMHL_All) ol.parseText(theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
+  writeMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();
 }
 
+void writeMemberIndex(OutputList &ol)
+{
+  QCString ext=Doxygen::htmlFileExtension;
+  writeMemberIndexFiltered(ol,"functions"+ext,CMHL_All);
+  writeMemberIndexFiltered(ol,"functions_func"+ext,CMHL_Functions);
+  writeMemberIndexFiltered(ol,"functions_vars"+ext,CMHL_Variables);
+  writeMemberIndexFiltered(ol,"functions_type"+ext,CMHL_Typedefs);
+  writeMemberIndexFiltered(ol,"functions_enum"+ext,CMHL_Enums);
+  writeMemberIndexFiltered(ol,"functions_eval"+ext,CMHL_EnumValues);
+  writeMemberIndexFiltered(ol,"functions_prop"+ext,CMHL_Properties);
+  writeMemberIndexFiltered(ol,"functions_evnt"+ext,CMHL_Events);
+  writeMemberIndexFiltered(ol,"functions_rela"+ext,CMHL_Related);
+}
+
 //----------------------------------------------------------------------------
 
-void writeFileMemberList(OutputList &ol,bool useSections)
+static void writeFileMemberList(OutputList &ol,
+                                bool useSections,
+                                FileMemberHighlight filter)
 {
   char lastChar=0;
   bool first=TRUE;
@@ -1766,10 +1963,23 @@ void writeFileMemberList(OutputList &ol,bool useSections)
                      md->getFileDef()->isLinkableInProject();
       
       if (fd && hasDocs && 
-          md->isLinkableInProject()
-         ) found=TRUE;
+          md->isLinkableInProject() &&
+          ( filter==FMHL_All ||
+           (filter==FMHL_Functions  && md->isFunction())  ||
+           (filter==FMHL_Variables  && md->isVariable())  ||
+           (filter==FMHL_Typedefs   && md->isTypedef())   ||
+           (filter==FMHL_Enums      && md->isEnumerate()) ||
+           (filter==FMHL_EnumValues && md->isEnumValue()) ||
+           (filter==FMHL_Defines    && md->isDefine())
+          )
+         ) 
+      {
+        found=TRUE;
+      }
       else
+      {
         md=mn->next();
+      }
     }
     if (found) // function is documented
     {
@@ -1831,7 +2041,8 @@ void writeFileMemberList(OutputList &ol,bool useSections)
 
 //----------------------------------------------------------------------------
 
-void writeNamespaceMemberList(OutputList &ol,bool useSections)
+void writeNamespaceMemberList(OutputList &ol,bool useSections,
+                              NamespaceMemberHighlight filter)
 {
   char lastChar=0;
   bool first=TRUE;
@@ -1844,10 +2055,22 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
     while (md && !found)
     {
       NamespaceDef *nd=md->getNamespaceDef();
-      if (nd && nd->isLinkableInProject() && md->isLinkableInProject()) 
+      if (nd && nd->isLinkableInProject() && md->isLinkableInProject() &&
+          ( filter==NMHL_All ||
+           (filter==NMHL_Functions  && md->isFunction())  ||
+           (filter==NMHL_Variables  && md->isVariable())  ||
+           (filter==NMHL_Typedefs   && md->isTypedef())   ||
+           (filter==NMHL_Enums      && md->isEnumerate()) ||
+           (filter==NMHL_EnumValues && md->isEnumValue())
+          )
+         ) 
+      {
         found=TRUE;
+      }
       else
+      {
         md=mn->next();
+      }
     }
     if (found) // member is documented and in a documented namespace
     {
@@ -1906,9 +2129,9 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
 
 //----------------------------------------------------------------------------
 
-int countNamespaceMembers()
+int countNamespaceMembers(int filter)
 {
-  int i=0;for (i=0;i<256;i++) g_namespaceIndexLetterUsed[i]=FALSE;
+  int i=0;for (i=0;i<256;i++) g_namespaceIndexLetterUsed[filter][i]=FALSE;
   int count=0;
   MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
   MemberName *mn=0;
@@ -1922,7 +2145,7 @@ int countNamespaceMembers()
       if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
       {
         QCString n = mn->memberName();
-        if (!n.isEmpty()) g_namespaceIndexLetterUsed[tolower(n.at(0))]=TRUE;
+        if (!n.isEmpty()) g_namespaceIndexLetterUsed[filter][tolower(n.at(0))]=TRUE;
         found=TRUE;
       }
       else
@@ -1935,9 +2158,9 @@ int countNamespaceMembers()
 
 //----------------------------------------------------------------------------
 
-int countFileMembers()
+int countFileMembers(int filter)
 {
-  int i=0;for (i=0;i<256;i++) g_fileIndexLetterUsed[i]=FALSE;
+  int i=0;for (i=0;i<256;i++) g_fileIndexLetterUsed[filter][i]=FALSE;
   int count=0;
   MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
   MemberName *mn=0;
@@ -1950,11 +2173,22 @@ int countFileMembers()
     {
       if (md->isLinkableInProject() && 
           (fd=md->getFileDef()) && 
-          fd->isLinkableInProject()
+          fd->isLinkableInProject() &&
+          ( filter==FMHL_All ||
+           (filter==FMHL_Functions  && md->isFunction())  ||
+           (filter==FMHL_Variables  && md->isVariable())  ||
+           (filter==FMHL_Typedefs   && md->isTypedef())   ||
+           (filter==FMHL_Enums      && md->isEnumerate()) ||
+           (filter==FMHL_EnumValues && md->isEnumValue()) ||
+           (filter==FMHL_Defines    && md->isDefine())
+          )
          ) 
       {
         QCString n = mn->memberName();
-        if (!n.isEmpty()) g_fileIndexLetterUsed[tolower(n.at(0))]=TRUE;
+        if (!n.isEmpty()) 
+        {
+          g_fileIndexLetterUsed[filter][tolower(n.at(0))]=TRUE;
+        }
         found=TRUE;
       }
       else
@@ -1967,23 +2201,74 @@ int countFileMembers()
 
 //----------------------------------------------------------------------------
 
-void writeFileMemberIndex(OutputList &ol)
+static void writeFileMemberIndexFiltered(OutputList &ol,
+    const char *fileName,FileMemberHighlight hl)
 {
-  if (documentedFunctions==0) return;
+  if (documentedFileMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"globals",0,"File Member Index");
+  startFile(ol,fileName,0,"File Member Index",FALSE,HLI_Globals);
   QCString title = theTranslator->trFileMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
-  startTitle(ol,0);
-  ol.parseText(title);
-  endTitle(ol,0,0);
-  bool quickIndex = documentedMembers>maxItemsBeforeQuickIndex;
+
+  ol.writeString("<div class=\"qindex\">"); 
+
+  bool first=TRUE;
+  startQuickIndexItem(ol,0,
+       "globals"+Doxygen::htmlFileExtension,hl==FMHL_All,TRUE,first);
+  ol.writeString(fixSpaces(theTranslator->trAll()));
+  endQuickIndexItem(ol);
+  
+  if (documentedFileMembers[FMHL_Functions]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_func"+Doxygen::htmlFileExtension,hl==FMHL_Functions,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trFunctions()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedFileMembers[FMHL_Variables]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_vars"+Doxygen::htmlFileExtension,hl==FMHL_Variables,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trVariables()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedFileMembers[FMHL_Typedefs]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_type"+Doxygen::htmlFileExtension,hl==FMHL_Typedefs,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trTypedefs()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedFileMembers[FMHL_Enums]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_enum"+Doxygen::htmlFileExtension,hl==FMHL_Enums,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerations()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedFileMembers[FMHL_EnumValues]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_eval"+Doxygen::htmlFileExtension,hl==FMHL_EnumValues,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerationValues()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedFileMembers[FMHL_Defines]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "globals_defs"+Doxygen::htmlFileExtension,hl==FMHL_Defines,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trDefines()));
+    endQuickIndexItem(ol);
+  }
+  ol.writeString("</div><p>\n");
+  
+
+  bool quickIndex = documentedFileMembers[hl]>maxItemsBeforeQuickIndex;
   if (quickIndex)
   {
-    writeQuickMemberIndex(ol,g_fileIndexLetterUsed);
+    writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl]);
   }
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -1998,31 +2283,92 @@ void writeFileMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"globals",0,ftvHelpTitle); 
   }
-  ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
-  writeFileMemberList(ol,quickIndex);
+  if (hl==FMHL_All) ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
+  writeFileMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();
 }
 
+void writeFileMemberIndex(OutputList &ol)
+{
+  QCString ext=Doxygen::htmlFileExtension;
+  writeFileMemberIndexFiltered(ol,"globals"+ext,FMHL_All);
+  writeFileMemberIndexFiltered(ol,"globals_func"+ext,FMHL_Functions);
+  writeFileMemberIndexFiltered(ol,"globals_vars"+ext,FMHL_Variables);
+  writeFileMemberIndexFiltered(ol,"globals_type"+ext,FMHL_Typedefs);
+  writeFileMemberIndexFiltered(ol,"globals_enum"+ext,FMHL_Enums);
+  writeFileMemberIndexFiltered(ol,"globals_eval"+ext,FMHL_EnumValues);
+  writeFileMemberIndexFiltered(ol,"globals_defs"+ext,FMHL_Defines);
+}
+
+
 //----------------------------------------------------------------------------
 
-void writeNamespaceMemberIndex(OutputList &ol)
+static void writeNamespaceMemberIndexFiltered(OutputList &ol,
+                                        const char *fileName,
+                                        NamespaceMemberHighlight hl)
 {
-  if (documentedNamespaceMembers==0) return;
+  if (documentedNamespaceMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"namespacemembers",0,"Namespace Member Index");
+  startFile(ol,fileName,0,"Namespace Member Index",FALSE,HLI_NamespaceMembers);
   QCString title = theTranslator->trNamespaceMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
-  startTitle(ol,0);
-  ol.parseText(title);
-  endTitle(ol,0,0);
-  bool quickIndex = documentedMembers>maxItemsBeforeQuickIndex;
+  //if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
+  //startTitle(ol,0);
+  //ol.parseText(title);
+  //endTitle(ol,0,0);
+ 
+  ol.writeString("<div class=\"qindex\">"); 
+
+  bool first=TRUE;
+  startQuickIndexItem(ol,0,
+       "namespacemembers"+Doxygen::htmlFileExtension,hl==NMHL_All,TRUE,first);
+  ol.writeString(fixSpaces(theTranslator->trAll()));
+  endQuickIndexItem(ol);
+  
+  if (documentedNamespaceMembers[NMHL_Functions]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "namespacemembers_func"+Doxygen::htmlFileExtension,hl==NMHL_Functions,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trFunctions()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedNamespaceMembers[NMHL_Variables]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "namespacemembers_vars"+Doxygen::htmlFileExtension,hl==NMHL_Variables,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trVariables()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedNamespaceMembers[NMHL_Typedefs]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "namespacemembers_type"+Doxygen::htmlFileExtension,hl==NMHL_Typedefs,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trTypedefs()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedNamespaceMembers[NMHL_Enums]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "namespacemembers_enum"+Doxygen::htmlFileExtension,hl==NMHL_Enums,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerations()));
+    endQuickIndexItem(ol);
+  }
+  if (documentedNamespaceMembers[NMHL_EnumValues]>0)
+  {
+    startQuickIndexItem(ol,0,
+        "namespacemembers_eval"+Doxygen::htmlFileExtension,hl==NMHL_EnumValues,TRUE,first);
+    ol.writeString(fixSpaces(theTranslator->trEnumerationValues()));
+    endQuickIndexItem(ol);
+  }
+  ol.writeString("</div><p>\n");
+  
+  bool quickIndex = documentedNamespaceMembers[hl]>maxItemsBeforeQuickIndex;
   if (quickIndex)
   {
-    writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed);
+    writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl]);
   }
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -2037,10 +2383,21 @@ void writeNamespaceMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,ftvHelpTitle); 
   }
-  ol.parseText(theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
-  writeNamespaceMemberList(ol,quickIndex);
+  if (hl==NMHL_All) ol.parseText(theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
+  writeNamespaceMemberList(ol,quickIndex,hl);
   endFile(ol);
   ol.popGeneratorState();
+}
+
+void writeNamespaceMemberIndex(OutputList &ol)
+{
+  QCString ext=Doxygen::htmlFileExtension;
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers"+ext,NMHL_All);
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_func"+ext,NMHL_Functions);
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_vars"+ext,NMHL_Variables);
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_type"+ext,NMHL_Typedefs);
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_enum"+ext,NMHL_Enums);
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_eval"+ext,NMHL_EnumValues);
 }
 
 //----------------------------------------------------------------------------
@@ -2050,7 +2407,7 @@ void writeExampleIndex(OutputList &ol)
   if (Doxygen::exampleSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"examples",0,"Example Index");
+  startFile(ol,"examples",0,"Example Index",FALSE,HLI_Examples);
   startTitle(ol,0);
   QCString title = theTranslator->trExamples();
   QCString htmlHelpTitle = title;
@@ -2132,29 +2489,13 @@ void countRelatedPages(int &docPages,int &indexPages)
 
 //----------------------------------------------------------------------------
 
-//int countPackages()
-//{
-//  int count=0;
-//  PackageSDict::Iterator pdi(Doxygen::packageDict);
-//  PackageDef *pd=0;
-//  for (pdi.toFirst();(pd=pdi.current());++pdi)
-//  {
-//    if (!pd->isReference())
-//    {
-//      count++;
-//    }
-//  }
-//  return count;
-//}
-
-//----------------------------------------------------------------------------
 
 void writePageIndex(OutputList &ol)
 {
   if (indexedPages==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"pages",0,"Page Index");
+  startFile(ol,"pages",0,"Page Index",FALSE,HLI_Pages);
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
   QCString htmlHelpTitle = title;
@@ -2655,7 +2996,7 @@ void writeGroupIndex(OutputList &ol)
   if (documentedGroups==0) return; 
   ol.pushGeneratorState(); 
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"modules",0,"Module Index");
+  startFile(ol,"modules",0,"Module Index",FALSE,HLI_Modules);
   startTitle(ol,0);
   QCString title = theTranslator->trModules();
   QCString htmlHelpTitle = title;
@@ -2724,7 +3065,7 @@ void writeIndex(OutputList &ol)
   {
     title = theTranslator->trMainPage();
   }
-  else 
+  else if (Doxygen::mainPage)
   {
     title = substitute(Doxygen::mainPage->title(),"%","");
   }
@@ -2745,15 +3086,21 @@ void writeIndex(OutputList &ol)
     FTVHelp::getInstance()->addContentsItem(FALSE,0,indexName,0,title); 
   }
 
-  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE);
+  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,HLI_Main);
   ol.startTitleHead(0);
   if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
   {
-    ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title(),FALSE);
+    if (Doxygen::mainPage->title().lower()!="notitle")
+    {
+      ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title(),FALSE);
+    }
   }
   else
   {
-    ol.parseText(projPrefix+theTranslator->trDocumentation());
+    if (!Config_getString("PROJECT_NAME").isEmpty())
+    {
+      ol.parseText(projPrefix+theTranslator->trDocumentation());
+    }
   }
   ol.endTitleHead(0,0);
   ol.newParagraph();
@@ -2763,7 +3110,7 @@ void writeIndex(OutputList &ol)
     ol.parseDoc(defFileName,defLine,0,0,Config_getString("PROJECT_NUMBER"),FALSE);
     ol.endProjectNumber();
   }
-  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) writeQuickLinks(ol,FALSE);
+  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) writeQuickLinks(ol,FALSE,HLI_Main);
 
   if (Doxygen::mainPage)
   {
@@ -2837,13 +3184,6 @@ void writeIndex(OutputList &ol)
     ol.endIndexSection(isMainPage);
   }
 
-  
-  //if (documentedPackages>0)
-  //{
-  //  ol.startIndexSection(isPackageIndex);
-  //  parseText(ol,projPrefix+theTranslator->trPackageList());
-  //  ol.endIndexSection(isPackageIndex);
-  //}
   if (!Config_getBool("LATEX_HIDE_INDICES"))
   {
     if (documentedGroups>0)
@@ -2884,12 +3224,6 @@ void writeIndex(OutputList &ol)
     }
   }
   ol.lastIndexPage();
-  //if (documentedPackages>0)
-  //{
-  //  ol.startIndexSection(isPackageDocumentation);
-  //  parseText(ol,projPrefix+theTranslator->trPackageDocumentation());
-  //  ol.endIndexSection(isPackageDocumentation);
-  //}
   if (documentedGroups>0)
   {
     ol.startIndexSection(isModuleDocumentation);
@@ -2934,14 +3268,6 @@ void writeIndex(OutputList &ol)
     Doxygen::insideMainPage=TRUE;
     ol.disable(OutputGenerator::Man);
     startFile(ol,Doxygen::mainPage->name(),0,Doxygen::mainPage->title());
-    //SectionInfo *si=0;
-    //if (!Doxygen::mainPage->title.isEmpty() && !Doxygen::mainPage->name.isEmpty() &&
-    //    (si=Doxygen::sectionDict[Doxygen::mainPage->name])!=0)
-    //{
-    //  ol.startSection(si->label,si->title,FALSE);
-    //  ol.docify(si->title);
-    //  ol.endSection(si->label,FALSE);
-    //}
     ol.startTextBlock();
     ol.parseDoc(defFileName,defLine,0,0,
                 Doxygen::mainPage->documentation(),FALSE

@@ -492,7 +492,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"typedef"|"def"|"overload")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -3448,6 +3448,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->startLine = yyLineNr;
  					  BEGIN( ExampleDocArg1 );
 					}
+<Doc>{B}*{CMD}"details"{B}+		{ /* nop */
+					}
 <LineDoc>{CMD}"name"[^\n]*\n		{
   					  lastDefGroup.groupname.resize(0);
   					  memberGroupHeader=&yytext[5];
@@ -4139,6 +4141,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
+					    //printf("Add docs %s\n",current->doc.data());
   					    current->doc += "\n\n";
   					    BEGIN( lastDocContext ); 
 					  }
@@ -4150,7 +4153,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					  {
   					    current->doc += "\n\n";
-					    //printf("Add docs for class %s\n",current->name.data());
+					    //printf("Add docs for %s\n",current->name.data());
 					    current_root->addSubEntry(current);
 					    current = new Entry ;
 					    initEntry();
@@ -4379,7 +4382,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					  {
 					    current->brief += "\n"; 
-					    if (!current->doc.isEmpty())
+					    if (!current->doc.stripWhiteSpace().isEmpty())
 					    {
 					      current->doc += "<p>";
 					    }

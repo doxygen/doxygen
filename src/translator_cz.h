@@ -168,7 +168,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_3_1
 {
   private:
     /*! The decode() inline assumes the source written in the 

@@ -406,7 +406,8 @@ doxygen. Unrecognized commands are treated as normal text.
   the first chapter (in \f$\mbox{\LaTeX}\f$). 
 
   The title argument is optional and replaces the default title that
-  doxygen normally generates.
+  doxygen normally generates. If you do not want any title you can
+  specify \c notitle as the argument of \\mainpage.
 
   Here is an example:
 \verbatim

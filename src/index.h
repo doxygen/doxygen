@@ -69,25 +69,44 @@ void writePackageIndex(OutputList &ol);
 
 void countDataStructures();
 
+#if 0
 extern int annotatedClasses;
 extern int hierarchyClasses;
 extern int documentedFunctions;
 extern int documentedMembers;
 extern int documentedDefines;
 extern int documentedFiles;
-extern int documentedHtmlFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
-extern int documentedPages;
 extern int indexedPages;
-//extern int documentedPackages;
+#endif
+extern int documentedHtmlFiles;
+extern int documentedPages;
+
+enum HighlightedItem
+{
+  HLI_None=0,
+  HLI_Main,
+  HLI_Modules,
+  HLI_Namespaces,
+  HLI_Hierarchy,
+  HLI_Classes,
+  HLI_Annotated,
+  HLI_Files,
+  HLI_NamespaceMembers,
+  HLI_Functions,
+  HLI_Globals,
+  HLI_Pages,
+  HLI_Examples,
+  HLI_Search
+};
 
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,bool external=FALSE);
+               const char *title,bool external=FALSE,HighlightedItem hli=HLI_None);
 void endFile(OutputList &ol,bool external=FALSE);
 
 #endif

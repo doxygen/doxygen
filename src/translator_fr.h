@@ -49,7 +49,7 @@
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public Translator
+class TranslatorFrench : public TranslatorAdapter_1_3_1
 {
   public:
     QCString idLanguage()

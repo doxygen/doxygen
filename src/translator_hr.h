@@ -56,7 +56,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public Translator
+class TranslatorCroatian : public TranslatorAdapter_1_3_1
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
