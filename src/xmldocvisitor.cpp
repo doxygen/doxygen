@@ -26,6 +26,7 @@
 #include "dot.h"
 #include "message.h"
 #include "util.h"
+#include <qfileinfo.h> 
 
 XmlDocVisitor::XmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -213,6 +214,15 @@ void XmlDocVisitor::visit(DocInclude *inc)
   if (m_hide) return;
   switch(inc->type())
   {
+    case DocInclude::IncWithLines:
+      { 
+         m_t << "<programlisting>";
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         m_t << "</programlisting>"; 
+      }
+      break;    
     case DocInclude::Include: 
       m_t << "<programlisting>";
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());

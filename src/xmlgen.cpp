@@ -590,6 +590,15 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 
     t << "\"";
   }
+  else if (md->memberType() == MemberDef::Property)
+  {
+    t << " readable=\"";
+    if (md->isReadable()) t << "yes"; else t << "no";
+    t << "\" writable=\"";
+    if (md->isWritable()) t << "yes"; else t << "no";
+    t << "\"";
+  }
+
 
   t << ">" << endl;
 

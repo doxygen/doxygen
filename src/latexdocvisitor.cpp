@@ -15,7 +15,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+#include <qfileinfo.h> 
 #include "latexdocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -308,6 +308,15 @@ void LatexDocVisitor::visit(DocInclude *inc)
   if (m_hide) return;
   switch(inc->type())
   {
+    case DocInclude::IncWithLines:
+      { 
+         m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+      }
+      break;    
     case DocInclude::Include: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());

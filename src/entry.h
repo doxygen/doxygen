@@ -38,7 +38,8 @@ struct ListItemInfo
 struct BaseInfo 
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) : name(n),prot(p),virt(v) {}
+  BaseInfo(const char *n,Protection p,Specifier v) : 
+    name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
   Specifier  virt; //!< virtualness

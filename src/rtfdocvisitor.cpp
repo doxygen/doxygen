@@ -26,6 +26,7 @@
 #include "util.h"
 #include "rtfstyle.h"
 #include "message.h"
+#include <qfileinfo.h> 
 
 RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(1) 
@@ -366,7 +367,19 @@ void RTFDocVisitor::visit(DocInclude *inc)
   if (m_hide) return;
   switch(inc->type())
   {
-    case DocInclude::Include: 
+   case DocInclude::IncWithLines:
+      { 
+         m_t << "{" << endl;
+         m_t << "\\par" << endl;
+         m_t << rtf_Style_Reset << getStyle("CodeExample");
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         m_t << "\\par" << endl; 
+         m_t << "}" << endl;
+      }
+      break;
+   case DocInclude::Include: 
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");

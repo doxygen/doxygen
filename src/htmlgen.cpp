@@ -34,11 +34,12 @@
 #include "htmldocvisitor.h"
 #include "index.h"
 #include "pagedef.h"
+#include "debug.h"
 
 // #define GROUP_COLOR "#ff8080"
 
-#define DBG_HTML(x) x;
-//#define DBG_HTML(x) 
+//#define DBG_HTML(x) x;
+#define DBG_HTML(x) 
 
 static const char *defaultStyleSheet = 
 "H1 {\n"
@@ -308,7 +309,7 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
 }
 
 static void writeDefaultHeaderFile(QTextStream &t, const char *title,
-                                   const char *relPath)
+                                   const char *relPath,bool usePathCmd)
 {
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
     "<html><head>" 
@@ -321,7 +322,11 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
   {
-    t << relPath << "doxygen.css";
+    if (usePathCmd) 
+      t << "$relpath$";
+    else
+      t << relPath;
+    t << "doxygen.css";
   }
   else
   {
@@ -344,7 +349,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 #if QT_VERSION >= 200
   t.setEncoding(QTextStream::Latin1);
 #endif
-  writeDefaultHeaderFile(t,"$title",relativePathToRoot(0));
+  writeDefaultHeaderFile(t,"$title",relativePathToRoot(0),TRUE);
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
@@ -390,11 +395,11 @@ void HtmlGenerator::startFile(const char *name,const char *,
   lastFile = fileName;
   if (g_header.isEmpty()) 
   {
-    writeDefaultHeaderFile(t,dispTitle,relPath);
+    writeDefaultHeaderFile(t,dispTitle,relPath,FALSE);
   }
   else
   {
-    t << substituteKeywords(g_header,convertToHtml(lastTitle));
+    t << substituteKeywords(g_header,convertToHtml(lastTitle),relPath);
   }
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
@@ -442,11 +447,22 @@ static void writePageFooter(QTextStream &t,const QCString &lastTitle,
     t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
     t << endl << "<img src=\"" << relPath << "doxygen.png\" alt=\"doxygen\" " 
       << "align=\"middle\" border=0 >" << "</a> " << versionString << " ";
-    t << "</small></address>\n</body>\n</html>\n";
+    t << "</small></address>";
+    if (Debug::isFlagSet(Debug::Validate))
+    {
+      t << "<p><a href=\"http://validator.w3.org/check/referer\">"
+           "<img border=\"0\" src=\"http://www.w3.org/Icons/valid-html401\""
+           " height=\"31\" width=\"88\" alt=\"This page is Valid HTML 4.01 "
+           "Transitional!\"></a><a href=\"http://jigsaw.w3.org/css-validator/\">"
+           "<img style=\"border:0;width:88px;height:31px\" "
+           "src=\"http://jigsaw.w3.org/css-validator/images/vcss\" "
+           "alt=\"This page uses valid CSS!\"></a></p>";
+    }
+    t << "\n</body>\n</html>\n";
   }
   else
   {
-    t << substituteKeywords(g_footer,convertToHtml(lastTitle));
+    t << substituteKeywords(g_footer,convertToHtml(lastTitle),relPath);
   }
 }
 
@@ -1482,11 +1498,11 @@ void HtmlGenerator::writeSearchPage()
 #endif
       if (g_header.isEmpty()) 
       {
-        writeDefaultHeaderFile(t,"Search",0);
+        writeDefaultHeaderFile(t,"Search",0,FALSE);
       }
       else
       {
-        t << substituteKeywords(g_header,"Search");
+        t << substituteKeywords(g_header,"Search","");
       }
       t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
         << versionString << " -->" << endl;

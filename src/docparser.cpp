@@ -1247,6 +1247,8 @@ void DocInclude::parse()
   DBG(("DocInclude::parse(file=%s,text=%s)\n",m_file.data(),m_text.data()));
   switch(m_type)
   {
+    case IncWithLines:
+      // fall through
     case Include:
       // fall through
     case DontInclude:
@@ -3818,6 +3820,9 @@ int DocPara::handleCommand(const QString &cmdName)
       break;
     case CMD_INCLUDE:
       handleInclude(cmdName,DocInclude::Include);
+      break;
+    case CMD_INCWITHLINES:
+      handleInclude(cmdName,DocInclude::IncWithLines);
       break;
     case CMD_DONTINCLUDE:
       handleInclude(cmdName,DocInclude::DontInclude);

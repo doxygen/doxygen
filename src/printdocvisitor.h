@@ -170,6 +170,7 @@ class PrintDocVisitor : public DocVisitor
       switch(inc->type())
       {
         case DocInclude::Include: printf("include"); break;
+        case DocInclude::IncWithLines: printf("incwithlines"); break;
         case DocInclude::DontInclude: printf("dontinclude"); break;
         case DocInclude::HtmlInclude: printf("htmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;

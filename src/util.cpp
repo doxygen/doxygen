@@ -368,12 +368,8 @@ QCString generateMarker(int id)
   return result;
 }
 
-/*! strip part of \a path if it matches
- *  one of the paths in the Config_getList("STRIP_FROM_PATH") list
- */
-QCString stripFromPath(const QCString &path)
+static QCString stripFromPath(const QCString &path,QStrList &l)
 {
-  QStrList &l = Config_getList("STRIP_FROM_PATH");
   const char *s=l.first();
   while (s)
   {
@@ -385,6 +381,22 @@ QCString stripFromPath(const QCString &path)
     s = l.next();
   }
   return path;
+}
+
+/*! strip part of \a path if it matches
+ *  one of the paths in the Config_getList("STRIP_FROM_PATH") list
+ */
+QCString stripFromPath(const QCString &path)
+{
+  return stripFromPath(path,Config_getList("STRIP_FROM_PATH"));
+}
+
+/*! strip part of \a path if it matches
+ *  one of the paths in the Config_getList("INCLUDE_PATH") list
+ */
+QCString stripFromIncludePath(const QCString &path)
+{
+  return stripFromPath(path,Config_getList("STRIP_FROM_INC_PATH"));
 }
 
 /*! try to determine if \a name is a source or a header file name by looking
@@ -759,19 +771,20 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
  */
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
 {
-  //printf("<isAccesibleFrom(%s,%s)\n",scope->name().data(),item->name().data());
-  QCString key=scope->name()+"+"+item->name();
+  //fprintf(stderr,"<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
+  //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
+  QCString key=scope->name()+"+"+item->qualifiedName();
   int *pval=g_accessibilityCache.find(key);
   int result=0; // assume we found it
   int i;
   if (pval) // value was cached
   {
-    //printf("> found cached value=%d\n",*pval);
+    //fprintf(stderr,"> found cached value=%d\n",*pval);
     return *pval; 
   }
   if (item->getOuterScope()==scope) 
   {
-    //printf("> found it\n");
+    //fprintf(stderr,"> found it\n");
   }
   else if (scope==Doxygen::globalScope)
   {
@@ -780,17 +793,17 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
       ClassSDict *cl = fileScope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item)) 
       {
-        //printf("> found via used class\n");
+        //fprintf(stderr,"> found via used class\n");
         goto done;
       }
       NamespaceSDict *nl = fileScope->getUsedNamespaces();
       if (accessibleViaUsingNamespace(nl,fileScope,item)) 
       {
-        //printf("> found via used namespace\n");
+        //fprintf(stderr,"> found via used namespace\n");
         goto done;
       }
     }
-    //printf("> reached global scope\n");
+    //fprintf(stderr,"> reached global scope\n");
     result=-1; // not found in path to globalScope
   }
   else // keep searching
@@ -802,19 +815,19 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
       ClassSDict *cl = nscope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item)) 
       {
-        //printf("> found via used class\n");
+        //fprintf(stderr,"> found via used class\n");
         goto done;
       }
       NamespaceSDict *nl = nscope->getUsedNamespaces();
       if (accessibleViaUsingNamespace(nl,fileScope,item)) 
       {
-        //printf("> found via used namespace\n");
+        //fprintf(stderr,"> found via used namespace\n");
         goto done;
       }
     }
     // repeat for the parent scope
     i=isAccessibleFrom(scope->getOuterScope(),fileScope,item);
-    //printf("> result=%d\n",i);
+    //fprintf(stderr,"> result=%d\n",i);
     result= (i==-1) ? -1 : i+1;
   }
 done:
@@ -838,7 +851,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
   //printf("<isAccesibleFrom(%s,%s,%s)\n",scope?scope->name().data():"<global>",
   //                                      item?item->name().data():"<none>",
   //                                      explicitScopePart.data());
-  QCString key=scope->name()+"+"+item->name()+"+"+explicitScopePart;
+  QCString key=scope->name()+"+"+item->qualifiedName()+"+"+explicitScopePart;
   int *pval=g_accessibilityCache.find(key);
   int result=0; // assume we found it
   if (pval) // value was cached
@@ -1019,6 +1032,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   {
     //printf("  found type %x name=%s\n",
     //       d->definitionType(),d->name().data());
+
     // only look at classes and members
     if (d->definitionType()==Definition::TypeClass ||
         d->definitionType()==Definition::TypeMember)
@@ -1042,9 +1056,10 @@ ClassDef *getResolvedClassRec(Definition *scope,
         else if (d->definitionType()==Definition::TypeMember)
         {
           MemberDef *md = (MemberDef *)d;
+          //printf("  member isTypedef()=%d\n",md->isTypedef());
           if (md->isTypedef()) // d is a typedef
           {
-            //printf("found typedef!\n");
+            //printf("    found typedef!\n");
             QCString spec;
             ClassDef *typedefClass = newResolveTypedef(fileScope,md,&spec);
 
@@ -1056,13 +1071,17 @@ ClassDef *getResolvedClassRec(Definition *scope,
             {
               minDistance=distance;
               bestMatch = typedefClass; 
-              //printf("bestTypeDef=%p\n",md);
+              //printf("      bestTypeDef=%p\n",md);
               bestTypedef = md;
               bestTemplSpec = spec;
             }
           }
         }
       } // if definition accessible
+      else
+      {
+        //printf("  Not accessible!\n");
+      }
     } // if definition is a class or member
   } // foreach definition
   if (pTypeDef) 
@@ -1683,6 +1702,11 @@ QCString yearToString()
 
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 {
+  if (bcd->categoryOf()) // use class that is being extended in case of 
+                         // an Objective-C category
+  {
+    bcd=bcd->categoryOf();
+  }
   if (cd==bcd) return level; 
   if (level==256)
   {
@@ -3425,7 +3449,7 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &s,const char *title)
+QCString substituteKeywords(const QCString &s,const char *title,const QCString &relPath)
 {
   QCString result = s.copy();
   if (title) result = substitute(result,"$title",title);
@@ -3435,6 +3459,7 @@ QCString substituteKeywords(const QCString &s,const char *title)
   result = substitute(result,"$doxygenversion",versionString);
   result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
   result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
+  result = substitute(result,"$relpath$",relPath);
   return result;
 }
     

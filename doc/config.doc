@@ -188,6 +188,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 \refitem cfg_source_browser SOURCE_BROWSER
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
+\refitem cfg_strip_from_inc_path STRIP_FROM_INC_PATH
 \refitem cfg_strip_from_path STRIP_FROM_PATH
 \refitem cfg_subgrouping SUBGROUPING
 \refitem cfg_tab_size TAB_SIZE
@@ -326,16 +327,30 @@ followed by the descriptions of the tags grouped by category.
  If the \c FULL_PATH_NAMES tag is set to \c YES then the \c STRIP_FROM_PATH tag
  can be used to strip a user-defined part of the path. Stripping is
  only done if one of the specified strings matches the left-hand part of the 
- path.
+ path. The tag can be used to show relative paths in the file list.
+ If left blank the directory from which doxygen is run is used as the
+ path to strip.
+
+\anchor cfg_strip_from_inc_path
+<dt>\c STRIP_FROM_INC_PATH
+ The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
+ the path mentioned in the documentation of a class, which tells
+ the reader which header file to include in order to use a class. 
+ If left blank only the name of the header file containing the class
+ definition is used. Otherwise one should specify the include paths that 
+ are normally passed to the compiler using the -I flag.
+
+
 
 \anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
  \addindex CASE_SENSE_NAMES
- If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then doxygen
+ If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen
  will only generate file names in lower-case letters. If set to
  \c YES upper-case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
- supports case sensitive file names.
+ supports case sensitive file names. Windows users are advised to set this
+ option to NO.
 
 \anchor cfg_short_names
 <dt>\c SHORT_NAMES <dd>
@@ -888,12 +903,16 @@ function's detailed documentation block.
 
  The following commands have a special meaning inside the header:
  <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
- <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, and
  <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, only the current date,
  the version number of doxygen, the project name (see \c PROJECT_NAME), or the
- project number (see \c PROJECT_NUMBER).
+ project number (see \c PROJECT_NUMBER). 
+
+ If \c CREATE_SUBDIRS is enabled, the command <code>\$relpath\$</code> can be 
+ used to produce a relative path to the root of the HTML output directory,
+ e.g. use \$relpath\$doxygen.css, to refer to the standard style sheet.
    
  See also section \ref doxygen_usage for information on how to generate
  the default header that doxygen normally uses.

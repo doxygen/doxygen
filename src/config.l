@@ -829,6 +829,41 @@ void Config::substituteEnvironmentVars()
   }
 }
 
+static void cleanUpPaths(QStrList &str)
+{
+  char *sfp = str.first();
+  while (sfp)
+  {
+    register char *p = sfp;
+    if (p)
+    {
+      char c;
+      while ((c=*p))
+      {
+	if (c=='\\') *p='/';
+	p++;
+      }
+    }
+    QCString path = sfp;
+    if ((path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':')) ||
+	path.at(path.length()-1)!='/'
+       )
+    {
+      QFileInfo fi(path);
+      if (fi.exists() && fi.isDir())
+      {
+	int i = str.at();
+	str.remove();
+	if (str.at()==i) // did not remove last item
+	  str.insert(i,fi.absFilePath()+"/");
+	else
+	  str.append(fi.absFilePath()+"/");
+      }
+    }
+    sfp = str.next();
+  }
+}
+
 void Config::check()
 {
   //if (!projectName.isEmpty())
@@ -903,36 +938,12 @@ void Config::check()
   }
   else
   {
-    while (sfp)
-    {
-      register char *p = sfp;
-      if (p)
-      {
-	char c;
-	while ((c=*p))
-	{
-	  if (c=='\\') *p='/';
-	  p++;
-	}
-      }
-      QCString path = sfp;
-      if (path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':'))
-      {
-	QFileInfo fi(path);
-	if (fi.exists() && fi.isDir())
-	{
-	  int i = stripFromPath.at();
-	  stripFromPath.remove();
-	  if (stripFromPath.at()==i) // did not remove last item
-	    stripFromPath.insert(i,fi.absFilePath()+"/");
-	  else
-	    stripFromPath.append(fi.absFilePath()+"/");
-	}
-      }
-      sfp = stripFromPath.next();
-    }
+    cleanUpPaths(stripFromPath);
   }
-  
+
+  // expand the relative stripFromPath values
+  QStrList &stripFromIncPath = Config_getList("STRIP_FROM_INC_PATH");
+  cleanUpPaths(stripFromIncPath);
   
   // Test to see if HTML header is valid
   QCString &headerFile = Config_getString("HTML_HEADER");
@@ -1102,6 +1113,22 @@ void Config::check()
     filePatternList.append("*.inc");
     filePatternList.append("*.m");
     filePatternList.append("*.mm");
+#if !defined(_WIN32)
+    // unix => case sensitive match => also include useful uppercase versions
+    filePatternList.append("*.C");
+    filePatternList.append("*.CC"); 
+    filePatternList.append("*.C++");
+    filePatternList.append("*.II");
+    filePatternList.append("*.I++");
+    filePatternList.append("*.H");
+    filePatternList.append("*.HH");
+    filePatternList.append("*.H++");
+    filePatternList.append("*.CS");
+    filePatternList.append("*.PHP");
+    filePatternList.append("*.PHP3");
+    filePatternList.append("*.M");
+    filePatternList.append("*.MM");
+#endif
   }
 
   // add default pattern if needed
@@ -1495,11 +1522,20 @@ void Config::create()
                     "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
                     "can be used to strip a user-defined part of the path. Stripping is \n"
                     "only done if one of the specified strings matches the left-hand part of \n"
-                    "the path. It is allowed to use relative paths in the argument list. \n"
+                    "the path. The tag can be used to show relative paths in the file list. \n"
 		    "If left blank the directory from which doxygen is run is used as the \n"
 		    "path to strip. \n"
                  );
   cl->addDependency("FULL_PATH_NAMES");
+  cl = addList(
+                    "STRIP_FROM_INC_PATH",
+                    "The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of \n"
+		    "the path mentioned in the documentation of a class, which tells \n"
+		    "the reader which header file to include in order to use a class. \n"
+		    "If left blank only the name of the header file containing the class \n"
+		    "definition is used. Otherwise one should specify the include paths that \n"
+		    "are normally passed to the compiler using the -I flag.\n"
+                 );
   cb = addBool(
                     "SHORT_NAMES",
 		    "If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter \n"
@@ -2454,7 +2490,7 @@ void Config::create()
                     "INCLUDE_PATH",
                     "The INCLUDE_PATH tag can be used to specify one or more directories that \n"
                     "contain include files that are not input files but should be processed by \n"
-                    "the preprocessor. \n"
+                    "the preprocessor.\n"
                  );
   cl->setWidgetType(ConfigList::Dir);
   cl->addDependency("ENABLE_PREPROCESSING");

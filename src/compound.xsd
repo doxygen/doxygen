@@ -121,6 +121,8 @@
     <xsd:attribute name="virt" type="DoxVirtualKind" />
     <xsd:attribute name="volatile" type="DoxBool" />
     <xsd:attribute name="mutable" type="DoxBool" />
+    <xsd:attribute name="readable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="writable" type="DoxBool" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="descriptionType" mixed="true">
