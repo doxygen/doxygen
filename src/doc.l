@@ -2161,7 +2161,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
                                             insideHtmlLink=FALSE;
                                           }
                                         }
-<DocScan>"<"{A}				{ BEGIN(DocHtmlLink); }
+<DocScan>"<"{A}{BN}+			{ BEGIN(DocHtmlLink); }
 <DocScan>"<"{BOLD}{ATTR}">"		{ outDoc->startBold(); }
 <DocScan>"</"{BOLD}{ATTR}">"		{ outDoc->endBold(); }
 <DocScan>"<"{P}{ATTR}">"		{ 

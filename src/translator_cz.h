@@ -18,7 +18,6 @@
 #ifndef TRANSLATOR_CZ_H
 #define TRANSLATOR_CZ_H
 
-#include "translator.h"
 
 // The first translation from English to Czech was started by
 // Vlastimil Havran. He wrote:
@@ -32,76 +31,83 @@
 // The prototype version of Czech strings with diacritics was
 // implemented by Petr Prikryl (prikrylp@skil.cz), 2000/06/20. As
 // Vlastimil was quite busy at the time, he agreed that Petr be the
-// second maintainer.
+// maintainer for a while (from 2000/06/20).
 //
 // Updates:
 // --------
-// 2000/06/20 (Petr Prikryl)
+// 2000/06/20
 //  - The prototype version of Czech strings with diacritics. The
 //    translation was based on translator.h of Doxygen version
 //    1.1.4 (from scratch).
 //
-// 2000/07/10 (Petr Prikryl)
+// 2000/07/10
 //  - Updated version based on 1.1.5 sources (including important updates
 //    of the up-to-1.1.4 strings). Czech strings in this file were written
 //    in windows-1250 encoding. On-line decoding into iso-8859-2 ensured
 //    via conditional compilation if the sources are compiled under UNIX.
 //
-// 2000/07/19 (Petr Prikryl)
+// 2000/07/19
 //  - Encoding conversion tables moved to the methods that use them.
 //  - Updates for "new since 1.1.5".
 //
 // 2000/08/02 (Petr Prikryl)
 //  - Updated for 1.2.0
 //
-// 2000/08/24 (Petr Prikryl)
+// 2000/08/24
 //  - Changed trTodo() text from "Udelat" to "Planovane upravy"
 //    which seems more appropriate in the document context.
 //  - Typo corrected in trMemberTypedefDocumentation().
 //
-// 2000/08/30 (Petr Prikryl)
+// 2000/08/30
 //  - Macro DECODE replaced by the inline Decode() (proposed by
 //    Boris Bralo <boris.bralo@zg.tel.hr> in translator_hr.h).
 //
-// 2000/08/31 (Petr Prikryl)
+// 2000/08/31
 //  - Methods ISOToWin() and WinToISO() renamed and moved to the
 //    base class (in translator.h) to be shared with the Croatian
 //    translator.
 //
-// 2000/09/06 (Petr Prikryl)
+// 2000/09/06
 //  - Reimplementation of the method trInheritsList() which takes 
 //    into account quantity of base classes.
 //
-// 2000/09/11 (Petr Prikryl)
+// 2000/09/11
 //  - Update for "new since 1.2.1" version. The text of trDCOPMethods()
 //    was translated rather blindly (not knowing what exactly
 //    the DCOP means).
 //    
-// 2000/10/17 (Petr Prikryl)
+// 2000/10/17
 //  - Update for "new since 1.2.2" version. 
 //
-// 2001/01/09 (Petr Prikryl)
+// 2001/01/09
 //  - Update for "new since 1.2.4" version. As I do not use Java,
 //    I tried my best to guess the Czech terminology for the Java.
 //    Let me know if some wording should be changed/improved.
 //         
-// 2001/02/15 (Petr Prikryl)
+// 2001/02/15
 //  - trMore() now returns only "..." (ellipsis).  The Czech replacement
 //    of "(more)" was too much visible.  The previous "(...)" did not 
 //    look well.
 //    
-// 2001/02/26 (Petr Prikryl)
+// 2001/02/26
 //  - Update for "new since 1.2.5" version (trBug(), trBugList()).
 //         
-// 2001/03/12 (Petr Prikryl)
+// 2001/03/12
 //  - Minor correction of comments which copied the same
 //    corrections in translator.h (doubled backslash) just after 
 //    1.2.6 release.
 //    
-// 2001/04/10 (Petr Prikryl)
+// 2001/04/10
 //  - Update for OPTIMIZE_OUTPUT_FOR_C (1.2.6-20010408).
 //  - Removed implementation of latexBabelPackage().
 //  - Removed implementation of trVerbatimText().
+//  
+// 2001/04/20
+//  - Update for "new since 1.2.6-20010422". Experimental version
+//    introducing TranslatorAdapter class and the abstract base
+//    class Translator.  The English translator is now on the same
+//    level as other translators.
+//
 //         
 // Notices:
 // -------- 
@@ -114,7 +120,9 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public Translator
+#include "translator_adapter.h"
+
+class TranslatorCzech : public TranslatorAdapterBase
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -291,7 +299,7 @@ class TranslatorCzech : public Translator
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return Decode("Související stránky"); }
+    { return Decode("Ostatní stránky"); }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
@@ -416,8 +424,9 @@ class TranslatorCzech : public Translator
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return Decode("Zde naleznete seznam všech souvisejících stránek "
-                    "dokumentace:"); }
+    { return Decode("Následující seznam odkazuje na další stránky projektu, "
+                    "které mají charakter uspoøádaných seznamù informací, "
+                    "posbíraných z rùzných míst ve zdrojových souborech:"); }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
@@ -1314,6 +1323,115 @@ class TranslatorCzech : public Translator
       return Decode("Seznam chyb");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6-20010422
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file */
+    virtual QCString trRTFansicp()
+    {
+      return "1250";
+    }
+    
+    /*! Used as ansicpg for RTF fcharset */
+    virtual QCString trRTFCharSet()
+    {
+      return "0"; //???
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Index"; //???
+    }
+                                                                          
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Tøíd" : "tøíd"));
+      result+=(singular ? "a" : "y");
+      return Decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Soubor" : "soubor"));
+      if (!singular)  result+="y";
+      return Decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Prostor" : "prostor"));
+      if (!singular)  result+="y";
+      result+=" jmen";
+      return Decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Skupin" : "skupin"));
+      result+=(singular ? "a" : "y");
+      return Decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Stránk" : "stránk"));
+      result+=(singular ? "a" : "y");
+      return Decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Èlen" : "èlen"));
+      if (!singular)  result+="y";
+      return Decode(result); 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Položk" : "položk"));
+      result+=(singular ? "a" : "y");
+      return Decode(result); 
+    }
+
+    /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo,
+     * kdo to pouziva.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Global" : "global"));
+      if (!singular)  result+="s";  
+      return result; 
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

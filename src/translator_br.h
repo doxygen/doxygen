@@ -18,9 +18,9 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorBrazilian: public Translator
+class TranslatorBrazilian: public TranslatorAdapter_1_2_6
 {
   public:
 

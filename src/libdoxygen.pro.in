@@ -16,30 +16,135 @@
 
 TEMPLATE     =	libdoxygen.t
 CONFIG       =	console warn_on staticlib $extraopts
-HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
-                membername.h index.h memberlist.h definition.h \
-                entry.h logos.h instdox.h message.h code.h \
-                filedef.h util.h cppvalue.h constexp.h \
-		outputgen.h outputlist.h htmlgen.h latexgen.h \
-	        filename.h defargs.h groupdef.h gifenc.h diagram.h image.h \
-		namespacedef.h version.h language.h translator.h \
-		translator_nl.h translator_se.h translator_cz.h translator_fr.h \
-		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
-                translator_ru.h translator_pl.h dot.h rtfgen.h \
-                reflist.h page.h sortdict.h translator_hu.h translator_kr.h \
-                translator_ro.h translator_si.h translator_cn.h ftvhelp.h \
-                treeview.h tagreader.h packagedef.h
-SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
-                memberdef.cpp membername.cpp index.cpp memberlist.cpp \
-		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
-                filedef.cpp util.cpp groupdef.cpp \
-                outputgen.cpp outputlist.cpp htmlgen.cpp latexgen.cpp mangen.cpp \
-	        cppvalue.cpp ce_lex.cpp ce_parse.cpp pre.cpp \
-		filename.cpp declinfo.cpp defargs.cpp define.cpp \
-		diagram.cpp gifenc.cpp image.cpp namespacedef.cpp \
-		version.cpp language.cpp definition.cpp formula.cpp debug.cpp \
-		membergroup.cpp htmlhelp.cpp dot.cpp rtfgen.cpp \
-                reflist.cpp ftvhelp.cpp tagreader.cpp packagedef.cpp
+HEADERS      =	bufstr.h \
+                classdef.h \
+                classlist.h \
+                code.h \
+		config.h \
+		constexp.h \
+		cppvalue.h \
+		debug.h \
+		doxygen.h \
+		scanner.h \
+		doc.h \
+		dot.h \
+		doxygen.h \
+		entry.h \
+		example.h \
+		filedef.h \
+		filename.h \
+		formula.h \
+		ftvhelp.h \
+		gifenc.h \
+		groupdef.h \
+		htmlgen.h \
+		htmlhelp.h \
+		image.h \
+		index.h \
+		instdox.h \
+		language.h \
+		latexgen.h \
+		logos.h \
+		mangen.h \
+		memberdef.h \
+		membergroup.h \
+		memberlist.h \
+		membername.h \
+		message.h \
+		namespacedef.h \
+		outputgen.h \
+		outputlist.h \
+		packagedef.h \
+		page.h \
+		pre.h \
+		qtbc.h \
+		reflist.h \
+		rtfgen.h \
+		scanner.h \
+		searchindex.h \
+		section.h \
+		sortdict.h \
+		suffixtree.h \
+		tagreader.h \
+		translator.h \
+		translator_adapter.h \
+		translator_br.h \
+		translator_cn.h \
+		translator_cz.h \
+		translator_de.h \
+		translator_en.h \
+		translator_es.h \
+		translator_fi.h \
+		translator_fr.h \
+		translator_hr.h \
+		translator_hu.h \
+		translator_it.h \
+		translator_jp.h \
+		translator_kr.h \
+		translator_nl.h \
+		translator_no.h \
+		translator_pl.h \
+		translator_pt.h \
+		translator_ro.h \
+		translator_ru.h \
+		translator_se.h \
+		translator_si.h \
+		treeview.h \
+		unistd.h \
+		util.h \
+		version.h
+SOURCES      =	ce_lex.cpp \
+                ce_parse.cpp \
+		classdef.cpp \
+		classlist.cpp \
+		code.cpp \
+		config.cpp \
+		cppvalue.cpp \
+		debug.cpp \
+		declinfo.cpp \
+		defargs.cpp \
+		define.cpp \
+		definition.cpp \
+		diagram.cpp \
+		doc.cpp \
+		dot.cpp \
+		doxygen.cpp \
+		entry.cpp \
+		filedef.cpp \
+		filename.cpp \
+		formula.cpp \
+		ftvhelp.cpp \
+		gifenc.cpp \
+		groupdef.cpp \
+		htmlgen.cpp \
+		htmlhelp.cpp \
+		image.cpp \
+		index.cpp \
+		instdox.cpp \
+		language.cpp \
+		latexgen.cpp \
+		logos.cpp \
+		main.cpp \
+		mangen.cpp \
+		memberdef.cpp \
+		membergroup.cpp \
+		memberlist.cpp \
+		membername.cpp \
+		message.cpp \
+		namespacedef.cpp \
+		outputgen.cpp \
+		outputlist.cpp \
+		packagedef.cpp \
+		pre.cpp \
+		reflist.cpp \
+		rtfgen.cpp \
+		scanner.cpp \
+		searchindex.cpp \
+		suffixtree.cpp \
+		tagreader.cpp \
+		util.cpp \
+		version.cpp
+
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 INCLUDEPATH                += ../qtools
 win32:INCLUDEPATH          += .

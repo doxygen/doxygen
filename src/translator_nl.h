@@ -18,9 +18,9 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorDutch : public Translator
+class TranslatorDutch : public TranslatorAdapter_1_2_6
 {
   public:
     QCString idLanguage()
@@ -383,6 +383,18 @@ class TranslatorDutch : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Namespace Documentatie"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    QCString trNamespaces()
+    {
+      return "Namespaces";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -779,7 +791,7 @@ class TranslatorDutch : public Translator
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
     
-    /*! Used as a marker that is put before a \bug item */
+    /*! Used as a marker that is put before a \\bug item */
     QCString trBug()
     {
       return "Bug";

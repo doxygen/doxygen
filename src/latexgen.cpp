@@ -249,20 +249,9 @@ static void writeDefaultHeaderPart1(QTextStream &t)
 
   if (!sLanguageSupportCommand.isEmpty())
   {
-    // The command is not empty. The language does
-    // not want to use the babel package. Use this
-    // command instead.
+    // The command is not empty.  Put it to the output.
+    // if the command is empty, no output is needed.
     t << sLanguageSupportCommand;
-  }
-  else
-  {
-    if (!theTranslator->latexBabelPackage().isEmpty())
-    {
-      // The result of the LatexLanguageSupportCommand()
-      // is empty, which means that the language prefers
-      // the babel package, or no package is needed at all.
-      t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
-    }
   }
 
   QStrList &extraPackages = Config_getList("EXTRA_PACKAGES");
@@ -280,7 +269,6 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\vspace*{7cm}\n"
     "\\begin{center}\n"
     "{\\Large ";
-
 }
 
 static void writeDefaultHeaderPart2(QTextStream &t)

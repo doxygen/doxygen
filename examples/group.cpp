@@ -72,3 +72,17 @@ namespace N1 {};
 
 /** @} */
 
+/** @addtogroup group1
+ *  
+ *  More documentation for the first group.
+ *  @{
+ */
+
+/** another function in group 1 */
+void func2() {}
+
+/** yet another function in group 1 */
+void func3() {}
+
+/** @} */
+

@@ -30,9 +30,9 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorItalian : public Translator
+class TranslatorItalian : public TranslatorAdapter_1_2_5
 {
   public:
     QCString idLanguage()
@@ -418,47 +418,47 @@ class TranslatorItalian : public Translator
       return (QCString)"Diagramma delle classi per "+clName;
     }
 
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     QCString trForInternalUseOnly()
     { return "Solo per uso interno."; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     QCString trReimplementedForInternalReasons()
     { return "Reimplementato per motivi interni; l'API non è stata modificata.";}
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Avvertimento"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     QCString trBugsAndLimitations()
     { return "Bugs e limitazioni"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     QCString trVersion()
     { return "Versione"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Data"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     QCString trAuthors()
     { return "Autore(i)"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     QCString trReturns()
     { return "Restituisce"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
     { return "Vedi anche"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     QCString trParameters()
     { return "Parametri"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     QCString trExceptions()
     { return "Eccezioni"; }
 

@@ -55,11 +55,12 @@
 
 struct FileInfo
 {
-  FileInfo() { f=0; url=0; }
+  FileInfo() { name[0]='\0'; f=0; url=0; }
  ~FileInfo() { if (f) fclose(f); 
                delete[] url;
              }
   FILE *f;
+  char name[MAXSTRLEN];
   int index;
   int refOffset;
   char *url;
@@ -396,8 +397,11 @@ void searchIndex(const char *word,SearchResults *results)
   FileInfo *fi=fileList.first;
   while (fi)
   {
+    fi->f = fopen(fi->name, "rb");
     fseek(fi->f,8,SEEK_SET);
     searchRecursive(results,fi,word);
+    fclose(fi->f);
+    fi->f=0;
     fi=fi->next;
   }
 
@@ -516,6 +520,10 @@ void generateResults(SearchResults *sr)
       if (skipEntries == 0)
       {
         SearchDoc *d=docPtrArray[i];
+        if (d->fileInfo->f == 0)
+        {
+          d->fileInfo->f = fopen(d->fileInfo->name, "rb");
+        }
         FILE *f=d->fileInfo->f;
         fseek(f,d->fileInfo->refOffset+d->index*4,SEEK_SET);
         int offset=readInt(f);
@@ -531,6 +539,11 @@ void generateResults(SearchResults *sr)
                rank*2+55, 255-rank*2, rank, 
                d->fileInfo->url, htmlName, linkName);
         pageEntries--;
+        if (d->fileInfo->f != 0)
+        {
+          fclose(d->fileInfo->f);
+          d->fileInfo->f = 0;
+        }
       }
       else 
       {
@@ -946,6 +959,7 @@ int main(int argc,char **argv)
     FileInfo *fi=fileList.add();
     FILE *g;
     
+    strcpy(fi->name,indexFile);
     if ((fi->f=fopen(indexFile,"rb"))==NULL)
     {
       message("Error: could not open index file %s\n",indexFile);
@@ -982,6 +996,8 @@ int main(int argc,char **argv)
     }
     // read and store the offset to the link index
     fi->refOffset=readInt(fi->f);
+    fclose(fi->f);
+    fi->f = 0;
   }
 
   char *word;

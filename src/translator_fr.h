@@ -20,9 +20,9 @@
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorFrench : public Translator
+class TranslatorFrench : public TranslatorAdapter_1_2_0
 {
   public:
     QCString idLanguage()
@@ -413,49 +413,49 @@ class TranslatorFrench : public Translator
       return (QCString)"Graphe d'héritage de la classe "+clName;
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     QCString trForInternalUseOnly()
     { return "À usage interne uniquement."; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     QCString trReimplementedForInternalReasons()
     { return "Redéfini pour des raisons internes; "
              "l'interface n'est pas modifiée"; 
     }
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Avertissement"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     QCString trBugsAndLimitations()
     { return "Bogues et limitations"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     QCString trVersion()
     { return "Version"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Date"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     QCString trAuthors()
     { return "Auteur(s)"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     QCString trReturns()
     { return "Renvoie"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
     { return "Voir également"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     QCString trParameters()
     { return "Paramètres"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     QCString trExceptions()
     { return "Exceptions"; }
     

@@ -18,9 +18,9 @@
 #ifndef TRANSLATOR_KR_H
 #define TRANSLATOR_KR_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorKorean : public Translator
+class TranslatorKorean : public TranslatorAdapter_1_1_0
 {
   public:
     QCString idLanguage()
@@ -411,48 +411,48 @@ class TranslatorKorean : public Translator
       return (QCString)clName+"에 대한 상속 도표"; // "Inheritance diagram for "+clName
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     QCString trForInternalUseOnly()
     { return "내부 사용만을 위해"; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     QCString trReimplementedForInternalReasons()
     { return "내부적 이유를 위해 재구현된: API가 영향을 받지않았다."; }
     // "Reimplemented for internal reasons; the API is not affected."
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "경고"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     QCString trBugsAndLimitations()
     { return "버그들과 한계들"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     QCString trVersion()
     { return "버전"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "날짜"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     QCString trAuthors()
     { return "저자(들)"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     QCString trReturns()
     { return "반환"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
     { return "참조하시요"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     QCString trParameters()
     { return "매개변수들"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     QCString trExceptions()
     { return "예외들"; }
     
@@ -720,7 +720,7 @@ class TranslatorKorean : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
+// new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated()
@@ -729,7 +729,7 @@ class TranslatorKorean : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
+// new since 1.0.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */

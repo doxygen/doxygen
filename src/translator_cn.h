@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_CN_H
 #define TRANSLATOR_CN_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
 /*!
    If you want insert a space whenever Chinese meets English charactors, set
@@ -26,7 +26,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_2_1
 {
   public:
     QCString idLanguage()
@@ -387,6 +387,18 @@ class TranslatorChinese : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "ÃüÃû¿Õ¼äÎÄµµ"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    QCString trNamespaces()
+    {
+      return "Namespaces";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728

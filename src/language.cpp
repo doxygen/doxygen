@@ -17,6 +17,7 @@
 
 #include "message.h"
 #include "language.h"
+#include "translator_en.h"
 #if !defined(ENGLISH_ONLY)
 #include "translator_nl.h"
 #include "translator_se.h"
@@ -48,7 +49,7 @@ bool setTranslator(const char *langName)
 {
   if (L_EQUAL("english"))
   {
-    theTranslator=new Translator;
+    theTranslator=new TranslatorEnglish;
   }
 #if !defined(ENGLISH_ONLY)
   else if (L_EQUAL("dutch"))
@@ -134,8 +135,11 @@ bool setTranslator(const char *langName)
 #endif
   else // use the default language (i.e. english)
   {
-    theTranslator=new Translator;
+    theTranslator=new TranslatorEnglish;
     return FALSE;
   }
+  
+  QCString msg = theTranslator->updateNeededMessage();
+  if (!msg.isEmpty()) warn_cont(msg);
   return TRUE;
 }

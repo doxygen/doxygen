@@ -18,13 +18,12 @@
 
 <h3>Support for multiple languages</h3>
 
-Doxygen has support for multiple languages. This means that the text fragments that 
-doxygen generates can changed into languages other than English 
-(the default) at configuration time.
+Doxygen has support for multiple languages. This means 
+that the text fragments that doxygen generates can changed into languages 
+other than English (the default) at configuration time.
 <p>
-Currently, supported languages are English, French, Czech, Dutch, Spannish,
-Swedish, Russian, Czech, Croatian, Italian, Hungarian, Finnish, German and Japanese, 
-and Korean. 
+Currently, supported for over 20 languages is available.
+
 Here is a list of the languages and their current maintainers:
 <p>
 
@@ -269,7 +268,7 @@ let them (or me) know.
 If you want to add support for a language that is not yet listed 
 please see the next section.
 
-<h3>Language HOWTO</h3>
+<h3>Adding a new language to doxygen</h3>
 
 This short HOWTO explains how to add support for a new language to Doxygen:
 
@@ -278,7 +277,7 @@ Just follow these steps:
 <li>Tell me for which language you want to add support. If no one else
     is already working on support for that language, you will be 
     assigned as the maintainer for the language. 
-<li>Create a copy of translator_nl.h and name it 
+<li>Create a copy of translator_en.h and name it 
     translator_<your_2_letter_counter_code>.h
     I'll use xx in the rest of this document.
 <li>Edit language.cpp:
@@ -294,35 +293,63 @@ Just follow these steps:
     }
 \endverbatim
     after the <code>if { ... }</code>
-<li>Edit doxygen.pro and add \c translator_xx.h to 
+<li>Edit libdoxygen.pro.in and add \c translator_xx.h to 
     the \c HEADERS line in the file doxygen.pro.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
-   <li>Rename <code>TRANSLATOR_NL_H</code> to <code>TRANSLATOR_XX_H</code> twice.
-   <li>Rename TranslatorDutch to TranslatorYourLanguage 
-   <li>In the member <code>latexBabelPackage()</code> change "dutch" into the name of the
-     latex package that adds support for your language. 
-   <li>Edit all the strings that are returned by the members that start
-     with tr. 
-     Look at the corresponding member in translator.h for the english text 
-     that is returned and translate that into your language. 
+   <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> twice.
+   <li>Rename TranslatorEnglish to TranslatorYourLanguage 
+   <li>In the member <code>idLanguage()</code> change "english" into the 
+     name of the your language (use lower case characters only). Depending
+     on the language you may also wish to change the member functions 
+     latexLanguageSupportCommand() and idLanguageCharset().
+   <li>Edit all the strings that are returned by the member functions that 
+     start with tr. 
      Try to match punctuation and capitals!
      To enter special characters (with accents) you can:
      <ul>
      <li>  Enter them directly if your keyboard supports that and you are 
            using a Latin-1 font.
            Doxygen will translate the characters to proper Latex and
-           leave the Html and man output for what it is.
+           leave the Html and man output for what it is (which is fine, if
+           idLanguageCharset() is set correctly).
      <li>  Use html codes like \&auml; for an a with an umlaut (i.e. &auml;).
            See the HTML specification for the codes.
      </ul>
    </ul>
-<li>Recompile everything (do this from the root of the distribution, 
-    because the Makefile.dox* have to be regenerated!)
+<li>Run configure and make again from the root of the distribution, 
+    in order to regenerated the Makefiles.
 <li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code> 
     in the config file to generate output in your language.
-<li>Send <code>translator_xx.h</code> or a <code>diff -u</code> of the changes 
-    to me so I can add it to doxygen.
+<li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
 </ol>
+
+<h3>Maintaining a language</h3>
+
+As new versions of doxygen appear, new sentences will be
+added to the Translator interface class. Of course these need to be translated
+as well (otherwise doxygen wouldn't even compile!). 
+
+Waiting until all language maintainers have translated these new sentences
+and sent the results would not be very practical for me.
+
+Instead, a new class TranslatorAdapter_x_y_z will be added to 
+translator_adapter.h (here x,y, and z correspond to the current
+version of doxygen). And all translators that previous derived from 
+Translator will now derive from this adapter class.
+
+The Adapter class contains the new sentences with
+default translations using the English translator (which is always up to date). 
+Instead of deriving your TranslatorXX class directly from Translator it will 
+derive from the intermediate class TranslatorAdapter_x_y_z. 
+
+Thus, if a translator class inherits from a adapter class 
+maintenance is needed. By looking at the adapter class itself (and its base
+classes) you can easily see which methods need to be updated.
+
+To update a language simply make your translator class derive from
+TranslatorAdapterBase and provide translations for the methods that
+were previously provided by the adapter class (and its base classes).
+
 */
 

@@ -50,9 +50,9 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorGerman : public Translator
+class TranslatorGerman : public TranslatorAdapter_1_2_6
 {
   public:
     QCString idLanguage()

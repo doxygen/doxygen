@@ -474,6 +474,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	DocBaseClass
 %x	CppQuote
 %x	EndCppQuote
+%x	AddGroupDocArg1
 %x	GroupDocArg1
 %x	GroupDocArg2
 %x	GroupName
@@ -2686,6 +2687,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr;
 					  BEGIN( GroupDocArg1 );
   					}
+<Doc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
+  					  current->section = Entry::ADDGRPDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( AddGroupDocArg1 );
+  					}
 <Doc,JavaDoc>{B}*{CMD}"namespace"{B}+	{
   					  current->section = Entry::NAMESPACEDOC_SEC;
 					  current->fileName = yyFileName;
@@ -2939,6 +2946,27 @@ TITLE     [tT][iI][tT][lL][eE]
                                               );
   					  yyLineNr++;
 					  
+  					}
+<AddGroupDocArg1>{ID}			{ 
+  					  current->name = yytext;
+					  lastDefGroup = yytext;
+					  newDocState();
+  					}
+<AddGroupDocArg1>"\n"			{
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\addtogroup."
+                                              );
+					  yyLineNr++;
+					  BEGIN( Doc );
+  					}
+<GroupDocArg2>"*/"			{ 
+  					  unput('/');unput('*');
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\addtogroup."
+                                              );
+					  BEGIN( Doc );
   					}
 <GroupDocArg1>{ID}(".html"?)		{ 
   					  current->name = yytext;
@@ -3213,7 +3241,9 @@ TITLE     [tT][iI][tT][lL][eE]
 							  BEGIN( GroupName );
   							}
 <ClassDoc,Doc,JavaDoc>{CMD}"{"				{
-  							  if (current->section == Entry::GROUPDOC_SEC)
+  							  if (current->section==Entry::GROUPDOC_SEC || 
+							      current->section==Entry::ADDGRPDOC_SEC
+							     )
 							  {
 							    autoGroupNameStack.push(new QCString(current->name));
 							  }
@@ -3636,8 +3666,11 @@ TITLE     [tT][iI][tT][lL][eE]
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->doc += yytext; 
+					}
+<ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
+  				         current->brief += "-"; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 

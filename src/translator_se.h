@@ -62,9 +62,9 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_0_0
 {
   public:
     QCString idLanguage()

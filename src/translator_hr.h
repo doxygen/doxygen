@@ -34,9 +34,9 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorCroatian : public Translator
+class TranslatorCroatian : public TranslatorAdapter_1_2_6
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -417,6 +417,18 @@ class TranslatorCroatian : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Dokumentacija namespace-a"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    QCString trNamespaces()
+    {
+      return "Namespaces";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -800,6 +812,36 @@ class TranslatorCroatian : public Translator
     virtual QCString trDefineValue()
     {
       return "Vrijednost:";
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.5
+    //////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a \\bug item */
+    virtual QCString trBug()
+    {
+      return decode("Gre¹ka");
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return decode("Popis gre¹aka");
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.6
+    //////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+    /*! Used as ansicpg for RTF fcharset */
+    virtual QCString trRTFCharSet()
+    {
+      return "238";
     }
 };
 
