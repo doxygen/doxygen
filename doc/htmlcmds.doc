@@ -64,10 +64,8 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </OL>   Ends a numbered item list.
 <li>\c <P>     Starts a new paragraph.
 <li>\c </P>    Does not generate any output.
-<li>\c <PRE> starts a code fragment, 
-             equivalent to the command \\code (see section \ref cmdcode).
-<li>\c </PRE> ends a code fragment,
-             equivalent to the command \\endcode (see section \ref cmdendcode).
+<li>\c <PRE> starts a preformatted fragment.
+<li>\c </PRE> ends a preformatted fragment.
 <li>\c <SMALL> starts a section of text displayed in a smaller font.
 <li>\c </SMALL> ends a \c <SMALL> section.
 <li>\c <STRONG> starts a section of bold text.

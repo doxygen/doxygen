@@ -48,92 +48,10 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapter_1_2_5
 {
-  protected:
-    /*! Returns the string converted from koi8-r to windows-1251. */
-    /* The method was designed initially for translator_cz.h. 
-       It is used for on-line encoding conversion related to conditional
-       compilation in Unix/MS Windows environments (both use different
-       encoding). 
-       Encoding table got from QT:qtextcodec.cpp
-     */
-    QCString Koi8RToWindows1251( const QCString sInput )
-    {
-      static Q_UINT16 koi8_r[128] = 
-      { 0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
-        0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
-        0x2591, 0x2592, 0x2593, 0x2320, 0x25A0, 0x2219/**/, 0x221A, 0x2248,
-        0x2264, 0x2265, 0x00A0, 0x2321, 0x00B0, 0x00B2, 0x00B7, 0x00F7,
-        0x2550, 0x2551, 0x2552, 0x0451, 0x2553, 0x2554, 0x2555, 0x2556,
-        0x2557, 0x2558, 0x2559, 0x255A, 0x255B, 0x255C, 0x255D, 0x255E,
-        0x255F, 0x2560, 0x2561, 0x0401, 0x2562, 0x2563, 0x2564, 0x2565,
-        0x2566, 0x2567, 0x2568, 0x2569, 0x256A, 0x256B, 0x256C, 0x00A9,
-        0x044E, 0x0430, 0x0431, 0x0446, 0x0434, 0x0435, 0x0444, 0x0433,
-        0x0445, 0x0438, 0x0439, 0x043A, 0x043B, 0x043C, 0x043D, 0x043E,
-        0x043F, 0x044F, 0x0440, 0x0441, 0x0442, 0x0443, 0x0436, 0x0432,
-        0x044C, 0x044B, 0x0437, 0x0448, 0x044D, 0x0449, 0x0447, 0x044A,
-        0x042E, 0x0410, 0x0411, 0x0426, 0x0414, 0x0415, 0x0424, 0x0413,
-        0x0425, 0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E,
-        0x041F, 0x042F, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412,
-        0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A 
-      };
-
-      QString result;
-      int len = sInput.length();
-
-      result.setUnicode(0, len);
-      QChar* uc = (QChar*)result.unicode(); // const_cast
-      const unsigned char * c = (const unsigned char *)(const char*)sInput;
-      for( int i=0; i<len; i++ ) {
-        if ( c[i] > 127 )
-	  uc[i] = koi8_r[c[i]-128];
-        else
-	  uc[i] = c[i];
-      }
-      return result.local8Bit();
-    }
-    /*! returns the string converted from Windows-1251 to koi8-r */
-    /* See the comments of the Koi8RToWindows1251() method for details.
-       Encoding table got from QT:qtextcodec.cpp */
-    QCString Windows1251ToKoi8R( const QCString sInput )
-    {
-      static Q_UINT16 windows_1251[128] = 
-      { 0x0402, 0x0403, 0x201A, 0x0453, 0x201E, 0x2026, 0x2020, 0x2021,
-        0x20AC, 0x2030, 0x0409, 0x2039, 0x040A, 0x040C, 0x040B, 0x040F,
-        0x0452, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
-        0xFFFD, 0x2122, 0x0459, 0x203A, 0x045A, 0x045C, 0x045B, 0x045F,
-        0x00A0, 0x040E, 0x045E, 0x0408, 0x00A4, 0x0490, 0x00A6, 0x00A7,
-        0x0401, 0x00A9, 0x0404, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x0407,
-        0x00B0, 0x00B1, 0x0406, 0x0456, 0x0491, 0x00B5, 0x00B6, 0x00B7,
-        0x0451, 0x2116, 0x0454, 0x00BB, 0x0458, 0x0405, 0x0455, 0x0457,
-        0x0410, 0x0411, 0x0412, 0x0413, 0x0414, 0x0415, 0x0416, 0x0417,
-        0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E, 0x041F,
-        0x0420, 0x0421, 0x0422, 0x0423, 0x0424, 0x0425, 0x0426, 0x0427,
-        0x0428, 0x0429, 0x042A, 0x042B, 0x042C, 0x042D, 0x042E, 0x042F,
-        0x0430, 0x0431, 0x0432, 0x0433, 0x0434, 0x0435, 0x0436, 0x0437,
-        0x0438, 0x0439, 0x043A, 0x043B, 0x043C, 0x043D, 0x043E, 0x043F,
-        0x0440, 0x0441, 0x0442, 0x0443, 0x0444, 0x0445, 0x0446, 0x0447,
-        0x0448, 0x0449, 0x044A, 0x044B, 0x044C, 0x044D, 0x044E, 0x044F
-      };
-
-      QString result;
-      int len = sInput.length();
-
-      result.setUnicode(0, len);
-      QChar* uc = (QChar*)result.unicode(); // const_cast
-      const unsigned char * c = (const unsigned char *)(const char*)sInput;
-      for( int i=0; i<len; i++ ) {
-        if ( c[i] > 127 )
-	  uc[i] = windows_1251[c[i]-128];
-        else
-	  uc[i] = c[i];
-      }
-      return result.local8Bit();
-    }
-
   private:
     /*! The Decode() inline assumes the source written in the 
         Koi8-R encoding (maintainer dependent). 
@@ -153,20 +71,13 @@ class TranslatorRussian : public Translator
     { return "russian"; }
 
     /* Used to get the command(s) for the language support. */
-    // virtual QCString latexLanguageSupportCommand()
-
-    /*! Used to get the command(s) for the language support. This method
-     *  was designed for languages which do not prefer babel package.
-     *  If this methods returns empty string, then the latexBabelPackage()
-     *  method is used to generate the command for using the babel package.
-     */
-    virtual QCString latexBabelPackage()
-    { return "russianb"; }
+    virtual QCString latexLanguageSupportCommand()
+    { return "\\usepackage[russianb]{babel}\n"; }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
 #ifdef _WIN32
-    { return "Windows-1215"; }
+    { return "Windows-1251"; }
 #else
     { return "koi8-r"; }
 #endif
@@ -356,35 +267,35 @@ class TranslatorRussian : public Translator
       }
       else
       {
-	return decode( "Классы с их кратким описанием." );
+        return decode( "Классы с их кратким описанием." );
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-	QCString result="Список всех ";
-	if(!extractAll) result+="документированных ";
+        QCString result="Список всех ";
+        if(!extractAll) result+="документированных ";
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	  result+="членов структур данных со ссылками на ";
-	else
-	  result+="членов классов со ссылками на ";
-	if(extractAll)
-	{
+          result+="членов структур данных со ссылками на ";
+        else
+          result+="членов классов со ссылками на ";
+        if(extractAll)
+        {
           if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	    result+="документацию по структуре для каждого члена.";
-	  else
-	    result+="документацию по классу для каждого члена.";
-	}
-	else
-	{
+            result+="документацию по структуре для каждого члена.";
+          else
+            result+="документацию по классу для каждого члена.";
+        }
+        else
+        {
           if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	    result += "структуры";
-	  else
-	    result += "классы";
-	  result+=", к которым они принадлежат.";
-	}
-	return decode( result );
+            result += "структуры";
+          else
+            result += "классы";
+          result+=", к которым они принадлежат.";
+        }
+        return decode( result );
     }
 
     /*! This is an introduction to the page with all file members. */
@@ -731,7 +642,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return decode("Документация по друзьям класса и функциям отноносящихся"
-	"к классу"); }
+        "к классу"); }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -745,26 +656,26 @@ class TranslatorRussian : public Translator
       QCString result;
       if (isTemplate) 
       {
-	result="Шаблон ";
-	switch(compType)
-	{
-	  case ClassDef::Class:  result+="класса"; break;
-	  case ClassDef::Struct: result+="структуры"; break;
-	  case ClassDef::Union:  result+="объединения"; break;
-	  case ClassDef::Interface:  result+="интерфейса"; break;
-	  case ClassDef::Exception:  result+="исключения"; break;
-	}
+        result="Шаблон ";
+        switch(compType)
+        {
+          case ClassDef::Class:  result+="класса"; break;
+          case ClassDef::Struct: result+="структуры"; break;
+          case ClassDef::Union:  result+="объединения"; break;
+          case ClassDef::Interface:  result+="интерфейса"; break;
+          case ClassDef::Exception:  result+="исключения"; break;
+        }
       }
       else
       {
-	switch(compType)
-	{
-	  case ClassDef::Class:  result+="Класс"; break;
-	  case ClassDef::Struct: result+="Структура"; break;
-	  case ClassDef::Union:  result+="Объединение"; break;
-	  case ClassDef::Interface:  result+="Интерфейс"; break;
-	  case ClassDef::Exception:  result+="Исключение"; break;
-	}
+        switch(compType)
+        {
+          case ClassDef::Class:  result+="Класс"; break;
+          case ClassDef::Struct: result+="Структура"; break;
+          case ClassDef::Union:  result+="Объединение"; break;
+          case ClassDef::Interface:  result+="Интерфейс"; break;
+          case ClassDef::Exception:  result+="Исключение"; break;
+        }
       }
       result+=" ";
       return decode(result)+clName;
@@ -910,20 +821,20 @@ class TranslatorRussian : public Translator
       switch(compType)
       {
         case ClassDef::Class:      result+="класс"; 
-	  if (single) result+='а'; else result+="ов";
-	  break;
+          if (single) result+='а'; else result+="ов";
+          break;
         case ClassDef::Struct:     result+="структур"; 
-	  if (single) result+='ы';
-	  break;
+          if (single) result+='ы';
+          break;
         case ClassDef::Union:      result+="объединени";
-	  if (single) result+='я'; else result+='й';
-	  break;
+          if (single) result+='я'; else result+='й';
+          break;
         case ClassDef::Interface:  result+="интерфейс";
-	  if (single) result+='а'; else result+="ов";
-	  break;
+          if (single) result+='а'; else result+="ов";
+          break;
         case ClassDef::Exception:  result+="исключени";
-	  if (single) result+='я'; else result+='й';
-	  break;
+          if (single) result+='я'; else result+='й';
+          break;
       }
       result+=" находятся в файл";
       if (single) result+="е:"; else result+="ах:";
@@ -1072,7 +983,7 @@ class TranslatorRussian : public Translator
       }
       else
       {
-	return decode( "Открытые атрибуты" );
+        return decode( "Открытые атрибуты" );
       }
     }
     virtual QCString trStaticPublicAttribs()
@@ -1195,7 +1106,7 @@ class TranslatorRussian : public Translator
         "Прямоугольники в этом графе имеют следующее значение:\n"
         "<ul>\n"
         "<li>Заполненный чернный прямоугольник представляет структуру или класс, "
-	"для которого создан граф.\n"
+        "для которого создан граф.\n"
         "<li>Прямоугольник с черной границей обозначает документированную структуру или класс.\n"
         "<li>Прямоугольник с серой границей обозначает недокументированную структуру или класс.\n"
         "<li>Прямоугольник с красной границей обозначает документированную структуру или класс, для которого\n"
@@ -1209,7 +1120,7 @@ class TranslatorRussian : public Translator
         "<li>Темнозеленая стрелка используется при защищенном наследовании.\n"
         "<li>Темнокрасная стрелка используется при приватном наследовании.\n"
         "<li>Фиолетовая стрелка используется, если класс содержится в"
-	"другом класе или используется другим классом."
+        "другом класе или используется другим классом."
         "Со стрелкой указывается переменная, "
         "через которую доступен указываемый класс или структура. \n"
         "</ul>\n");
@@ -1306,7 +1217,7 @@ class TranslatorRussian : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.2.?
+// new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
     /*! Used as ansicpg for RTF file */
     virtual QCString trRTFansicp()

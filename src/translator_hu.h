@@ -20,7 +20,7 @@
 
 #include "translator.h"
 
-class TranslatorHungarian : public Translator
+class TranslatorHungarian : public TranslatorAdapter_1_2_1
 {
   public:
 
@@ -425,47 +425,47 @@ class TranslatorHungarian : public Translator
       return clName+(QCString)" osztály származtatási diagramja";
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     QCString trForInternalUseOnly()
     { return "CSAK BELSÕ HASZNÁLATRA!"; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     QCString trReimplementedForInternalReasons()
     { return "Belsõ okok miatt újraimplementálva, az API-t nem érinti."; }
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Figyelmeztetés"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     QCString trBugsAndLimitations()
     { return "Hibák és korlátozások"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     QCString trVersion()
     { return "Verzió"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Dátum"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     QCString trAuthors()
     { return "Szerzõ(k)"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     QCString trReturns()
     { return "Visszaadott érték"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
     { return "Lásd még"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     QCString trParameters()
     { return "Paraméterek"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     QCString trExceptions()
     { return "Kivételek"; }
     

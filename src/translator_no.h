@@ -24,9 +24,9 @@
 #ifndef TRANSLATOR_NO_H
 #define TRANSLATOR_NO_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorNorwegian : public Translator
+class TranslatorNorwegian : public TranslatorAdapter_1_2_2
 {
   public:
     QCString idLanguage()
@@ -120,7 +120,7 @@ class TranslatorNorwegian : public Translator
     QCString trSearch()
     { return "Søk"; }
 
-    QCString trClassHierarchyDescripsjon()
+    QCString trClassHierarchyDescription()
     { return "Denne listen over arv er grovt, men ikke helt, "
              "sortert i alfabetisk rekkefølge:";
     }
@@ -171,7 +171,7 @@ class TranslatorNorwegian : public Translator
     QCString trModulesDescription()
     { return "Her følger en liste over alle moduler:"; }
 
-    QCString trNoDescripsjonAvailable()
+    QCString trNoDescriptionAvailable()
     { return "Beskrivelse mangler"; }
 
     QCString trDocumentation()
@@ -221,7 +221,7 @@ class TranslatorNorwegian : public Translator
     QCString trVariables()
     { return "Variable"; }
 
-    QCString trEnumerasjonValues()
+    QCString trEnumerationValues()
     { return "Enumererte typers verdier"; }
 
     QCString trAuthor()
@@ -230,19 +230,19 @@ class TranslatorNorwegian : public Translator
     QCString trDefineDocumentation()
     { return "Dokumentasjon over definisjoner"; }
 
-    QCString trFuncsjonPrototypeDocumentation()
+    QCString trFunctionPrototypeDocumentation()
     { return "Dokumentasjon over funksjonsprototyper"; }
 
     QCString trTypedefDocumentation()
     { return "Dokumentasjon over typedefinisjoner"; }
 
-    QCString trEnumerasjonTypeDocumentation()
+    QCString trEnumerationTypeDocumentation()
     { return "Dokumentasjon over enumererte typer"; }
 
-    QCString trEnumerasjonValueDocumentation()
+    QCString trEnumerationValueDocumentation()
     { return "Dokumentasjon over enumererte typers verdier"; }
 
-    QCString trFuncsjonDocumentation()
+    QCString trFunctionDocumentation()
     { return "Dokumentasjon over funksjoner"; }
 
     QCString trVariableDocumentation()
@@ -328,7 +328,7 @@ class TranslatorNorwegian : public Translator
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trRelatedFuncsjonDocumentation()
+    virtual QCString trRelatedFunctionDocumentation()
     { return "Venners och beslektede funksjoners dokumentasjon"; }
 
 //////////////////////////////////////////////////////////////////////////

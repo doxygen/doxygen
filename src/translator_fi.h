@@ -74,9 +74,9 @@ positiiviset kommentit otetaan ilolla vastaan.
 #ifndef TRANSLATOR_SF_H
 #define TRANSLATOR_SF_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorFinnish : public Translator
+class TranslatorFinnish : public TranslatorAdapter_1_0_0
 {
   public:
     QCString idLanguage()

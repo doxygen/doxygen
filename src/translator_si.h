@@ -20,9 +20,9 @@
 #ifndef TRANSLATOR_SI_H
 #define TRANSLATOR_SI_H
 
-#include "translator.h"
+#include "translator_adapter.h"
 
-class TranslatorSlovene : public Translator
+class TranslatorSlovene : public TranslatorAdapter_1_1_5
 {
   public:
     QCString idLanguage()
@@ -402,6 +402,18 @@ class TranslatorSlovene : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Podati o imenskih prostorih"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    QCString trNamespaces()
+    {
+      return "Namespaces";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728

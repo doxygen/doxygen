@@ -54,16 +54,16 @@ class ManGenerator : public OutputGenerator
     void startTitleHead(const char *) {}
     void endTitleHead(const char *,const char *);
     void startTitle();
-    void endTitle() {}
+    void endTitle();
     
     void newParagraph();
     void writeString(const char *text);
     void startIndexList() {}
-    void endIndexList()   {} 
+    void endIndexList()   { newParagraph(); } 
     void startItemList()  {}
-    void endItemList()    {}
+    void endItemList()    { newParagraph(); }
     void startEnumList()  {}
-    void endEnumList()    {}
+    void endEnumList()    { newParagraph(); }
     void startAlphabeticalIndexList() {}
     void endAlphabeticalIndexList() {} 
     void writeIndexHeading(const char *) {}
@@ -80,7 +80,7 @@ class ManGenerator : public OutputGenerator
     void endHtmlLink();
     void writeMailLink(const char *url);
     void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
-    void endTypewriter()   { t << "\\fR"; firstCol=FALSE; }
+    void endTypewriter()   { t << "\\fP"; firstCol=FALSE; }
     void startGroupHeader();
     void endGroupHeader();
     void startMemberSections() {}
@@ -112,11 +112,11 @@ class ManGenerator : public OutputGenerator
     void startCodeLine() {}
     void endCodeLine() { codify("\n"); col=0; }
     //void writeBoldString(const char *text) 
-    //                     { t << "\\fB"; docify(text); t << "\\fR"; firstCol=FALSE; }
+    //                     { t << "\\fB"; docify(text); t << "\\fP"; firstCol=FALSE; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
-    void endEmphasis()   { t << "\\fR"; firstCol=FALSE; }
+    void endEmphasis()   { t << "\\fP"; firstCol=FALSE; }
     void startBold()     { t << "\\fB"; firstCol=FALSE; }
-    void endBold()       { t << "\\fR"; firstCol=FALSE; }
+    void endBold()       { t << "\\fP"; firstCol=FALSE; }
     void startDescription() {}
     void endDescription()   {}
     void startDescItem();
@@ -124,7 +124,7 @@ class ManGenerator : public OutputGenerator
     void lineBreak() { t << "\n.br" << endl; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
-    void endMemberDoc() {}
+    void endMemberDoc();
     void startDoxyAnchor(const char *,const char *,const char *) {}
     void endDoxyAnchor(const char *,const char *) {}
     void startCodeAnchor(const char *) {}
@@ -135,9 +135,9 @@ class ManGenerator : public OutputGenerator
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
     void startSubsection();
-    void endSubsection()      {}
+    void endSubsection();
     void startSubsubsection();
-    void endSubsubsection()   {}
+    void endSubsubsection();
     void startCenter()        {}
     void endCenter()          {}
     void startSmall()         {}
@@ -153,7 +153,7 @@ class ManGenerator : public OutputGenerator
     void nextTableColumn()    {}
     void endTableColumn()     {}
     void writeCopyright()     { t << "(c)"; firstCol=FALSE; }
-    void writeQuote()         { t << "\""; firstCol=FALSE; }
+    void writeQuote()         { t << "`"; firstCol=FALSE; }
     void writeUmlaut(char c)  { t << c << "\\*'"; firstCol=FALSE; }
     void writeAcute(char c)   { t << c << "\\*`"; firstCol=FALSE; }
     void writeGrave(char c)   { t << c << "\\*:"; firstCol=FALSE; }
@@ -168,7 +168,7 @@ class ManGenerator : public OutputGenerator
     void writeCCedil(char c)  { t << c;           /* TODO: fix this */
                                 firstCol=FALSE; }
     void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
-    void endMemberDescription()   { t << "\\fR\""; firstCol=FALSE; }
+    void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
     void startDescList();
     void endDescList()        {}
     void startParamList()     { startDescList(); }

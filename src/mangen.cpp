@@ -15,6 +15,9 @@
  *
  */
 
+/* http://www.cubic.org/source/archive/fileform/txt/man/ has some
+   nice introductions to groff and man pages. */
+
 #include <stdlib.h>
 
 #include "qtbc.h"
@@ -187,14 +190,14 @@ void ManGenerator::writeMailLink(const char *url)
 void ManGenerator::startGroupHeader()
 {
   if (!firstCol) t << endl;
-  t << ".SH ";
+  t << ".SH \"";
   upperCase=TRUE;
   firstCol=FALSE;
 }
 
 void ManGenerator::endGroupHeader()
 {
-  t << "\n.PP " << endl;
+  t << "\"\n.PP " << endl;
   firstCol=TRUE;
   paragraph=TRUE;
   upperCase=FALSE;
@@ -203,12 +206,12 @@ void ManGenerator::endGroupHeader()
 void ManGenerator::startMemberHeader()
 {
   if (!firstCol) t << endl;
-  t << ".SS ";
+  t << ".SS \"";
 }
 
 void ManGenerator::endMemberHeader()
 {
-  t << "\n";
+  t << "\"\n";
   firstCol=TRUE;
   paragraph=FALSE;
 }
@@ -225,6 +228,7 @@ void ManGenerator::docify(const char *str)
       {
         case '\\': t << "\\\\"; col++; break;
         case '\n': t << "\n"; col=0; break;
+        case '\"':  c = '\''; // no break!
         default: t << c; col++; break;
       }
     }
@@ -254,6 +258,7 @@ void ManGenerator::codify(const char *str)
                     break;
         case '\n':  t << "\n"; firstCol=TRUE; col=0; break;
         case '\\':  t << "\\"; col++; break;
+        case '\"':  c = '\''; // no break!
         default:    t << c; firstCol=FALSE; col++; break;
       }
     }
@@ -269,6 +274,7 @@ void ManGenerator::writeChar(char c)
   switch (c)
   {
     case '\\': t << "\\\\"; break;
+  case '\"': c = '\''; // no break!
     default:   t << c; break;
   }
   //printf("%c",c);fflush(stdout);
@@ -288,9 +294,14 @@ void ManGenerator::startDescList()
 void ManGenerator::startTitle() 
 { 
   if (!firstCol) t << endl; 
-  t << ".SH "; 
+  t << ".SH \""; 
   firstCol=FALSE;
   paragraph=FALSE;
+}
+
+void ManGenerator::endTitle()
+{
+    t << "\"";
 }
 
 void ManGenerator::writeListItem() 
@@ -322,25 +333,41 @@ void ManGenerator::endCodeFragment()
 void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   if (!firstCol) t << endl;
-  t << ".SS "; 
+  t << ".SS \""; 
   firstCol=FALSE;
   paragraph=FALSE;
+}
+
+void ManGenerator::endMemberDoc()
+{
+    t << "\"";
 }
 
 void ManGenerator::startSubsection()    
 { 
   if (!firstCol) t << endl;
-  t << ".SS "; 
+  t << ".SS \""; 
   firstCol=FALSE;
   paragraph=FALSE;
 }
 
+void ManGenerator::endSubsection()
+{
+  t << "\"";
+}
+
+
 void ManGenerator::startSubsubsection() 
 { 
   if (!firstCol) t << endl;
-  t << "\n.SS "; 
+  t << "\n.SS \""; 
   firstCol=FALSE;
   paragraph=FALSE;
+}
+
+void ManGenerator::endSubsubsection()
+{
+  t << "\"";
 }
 
 void ManGenerator::writeSynopsis()      
@@ -420,7 +447,7 @@ void ManGenerator::startMemberGroupHeader(bool)
 
 void ManGenerator::endMemberGroupHeader()
 {
-  t << "\\fR\"\n.br\n";
+  t << "\\fP\"\n.br\n";
   firstCol=TRUE;
 }
 

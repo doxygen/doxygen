@@ -758,10 +758,10 @@ followed by the descriptions of the tags grouped by category.
  doxygen generates three additional HTML index files: 
  \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
  project file that can be read by 
- <a href="http://msdn.microsoft.com/workshop/author/htmlhelp">
+ <a href="http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download_main.htm">
  Microsoft HTML help workshop</a>
  \latexonly
- (see http://msdn.microsoft.com/workshop/author/htmlhelp)
+ (see http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download\_main.htm)
  \endlatexonly
  on Windows.
 

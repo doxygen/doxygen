@@ -425,7 +425,7 @@ Here is what is required:
     (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
     config file, then you need the Microsoft HTML help workshop. 
     You can download it at: 
-    http://msdn.microsoft.com/workshop/author/htmlhelp
+    http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download_main.htm
 
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders

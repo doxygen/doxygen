@@ -32,10 +32,9 @@
 #ifndef TRANSLATOR_RO_H
 #define TRANSLATOR_RO_H
 
-#include "classdef.h"
-#include "util.h"
+#include "translator_adapter.h"
 
-class TranslatorRomanian: public Translator
+class TranslatorRomanian: public TranslatorAdapter_1_2_1
 {
   public:
 
@@ -452,47 +451,47 @@ class TranslatorRomanian: public Translator
       return (QCString)"Diagrama de relaþii pentru "+clName;
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "Doar pentru uz intern."; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
     { return "Reimplementat din motive interne; API-ul nu este afectat."; }
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Atenþie"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
     { return "Buguri ºi limitãri"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
     { return "Versiunea"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return "Data"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     virtual QCString trAuthors()
     { return "Autorul/Autorii"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
     { return "Întoarce"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
     { return "Vezi ºi"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
     { return "Parametri"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Excepþii"; }
     

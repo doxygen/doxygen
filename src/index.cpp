@@ -2350,14 +2350,18 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
       {
         if(htmlHelp)
         {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trFiles()), gd->getOutputFileBase(), 0);
+          htmlHelp->addContentsItem(TRUE, 
+              convertToHtml(theTranslator->trFile(TRUE,FALSE)), 
+              gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
         if(ftvHelp)
         {
 
-          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trFiles());
+          ftvHelp->addContentsItem(TRUE, gd->getReference(), 
+              gd->getOutputFileBase(), 0, 
+              theTranslator->trFile(TRUE,FALSE));
           ftvHelp->incContentsDepth();
         }
 

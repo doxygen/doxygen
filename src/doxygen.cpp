@@ -438,6 +438,30 @@ static void organizeSubGroups(Entry *root)
   }
 }
 
+static void addToGroupSections(Entry *root)
+{
+  if (root->section==Entry::ADDGRPDOC_SEC && !root->name.isEmpty())
+  {
+    GroupDef *gd = Doxygen::groupDict[root->name];
+    if (gd)
+    {
+      gd->setDocumentation(gd->documentation()+"<p>"+root->brief+root->doc);
+    }
+    else
+    {
+      warn(root->fileName,root->startLine,
+           "Warning: ignoring addtogroup command for undefined "
+           "group `%s'.",root->name.data());
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    addToGroupSections(e);
+  }
+}
+
 //----------------------------------------------------------------------
 
 static void buildFileList(Entry *root)
@@ -2564,7 +2588,10 @@ static void addTodoTestBugReferences()
   ClassDef *cd=Doxygen::classList.first();
   while (cd)
   {
-    addRefItem(cd->todoId(),cd->testId(),cd->bugId(),"class",cd->getOutputFileBase(),cd->name());
+    addRefItem(cd->todoId(),cd->testId(),cd->bugId(),
+               theTranslator->trClass(TRUE,TRUE),
+               cd->getOutputFileBase(),cd->name()
+              );
     cd=Doxygen::classList.next();
   } 
   FileName *fn=Doxygen::inputNameList.first();
@@ -2573,7 +2600,9 @@ static void addTodoTestBugReferences()
     FileDef *fd=fn->first();
     while (fd)
     {
-      addRefItem(fd->todoId(),fd->testId(),fd->bugId(),"file",fd->getOutputFileBase(),fd->name());
+      addRefItem(fd->todoId(),fd->testId(),fd->bugId(),
+                 theTranslator->trFile(TRUE,TRUE),
+                 fd->getOutputFileBase(),fd->name());
       fd=fn->next();
     }
     fn=Doxygen::inputNameList.next();
@@ -2581,20 +2610,26 @@ static void addTodoTestBugReferences()
   NamespaceDef *nd=Doxygen::namespaceList.first();
   while (nd)
   {
-    addRefItem(nd->todoId(),nd->testId(),nd->bugId(),"namespace",nd->getOutputFileBase(),nd->name());
+    addRefItem(nd->todoId(),nd->testId(),nd->bugId(),
+               theTranslator->trNamespace(TRUE,TRUE),
+               nd->getOutputFileBase(),nd->name());
     nd=Doxygen::namespaceList.next();
   }
   GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
-    addRefItem(gd->todoId(),gd->testId(),gd->bugId(),"group",gd->getOutputFileBase(),gd->groupTitle());
+    addRefItem(gd->todoId(),gd->testId(),gd->bugId(),
+               theTranslator->trGroup(TRUE,TRUE),
+               gd->getOutputFileBase(),gd->groupTitle());
     gd=Doxygen::groupList.next();
   }
   PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    addRefItem(pi->todoId,pi->testId,pi->bugId,"page",pi->name,pi->title);
+    addRefItem(pi->todoId,pi->testId,pi->bugId,
+               theTranslator->trPage(TRUE,TRUE),
+               pi->name,pi->title);
   }
   MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn=0;
@@ -2610,8 +2645,15 @@ static void addTodoTestBugReferences()
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
       // TODO: i18n this
-      QCString memLabel="member";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) memLabel="field";
+      QCString memLabel;
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+      {
+        memLabel=theTranslator->trField(TRUE,TRUE);
+      }
+      else
+      {
+        memLabel=theTranslator->trMember(TRUE,TRUE);
+      }
       if (d)
       {
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
@@ -2631,8 +2673,15 @@ static void addTodoTestBugReferences()
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
       // TODO: i18n this
-      QCString memLabel="member";
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) memLabel="global";
+      QCString memLabel;
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+      {
+        memLabel=theTranslator->trGlobal(TRUE,TRUE);
+      }
+      else
+      {
+        memLabel=theTranslator->trMember(TRUE,TRUE);
+      }
       if (d)
       {
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),md->name(),md->argsString());
@@ -6294,6 +6343,7 @@ void parseInput()
   msg("Building group list...\n");
   buildGroupList(root);
   organizeSubGroups(root);
+  addToGroupSections(root);
 
   msg("Building namespace list...\n");
   buildNamespaceList(root);

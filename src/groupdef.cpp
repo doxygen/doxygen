@@ -357,7 +357,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (fileList->count()>0)
   {
     ol.startMemberHeader();
-    parseText(ol,theTranslator->trFiles());
+    parseText(ol,theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
     FileDef *fd=fileList->first();

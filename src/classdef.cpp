@@ -1842,7 +1842,14 @@ QCString ClassDef::compoundTypeString() const
 
 QCString ClassDef::getOutputFileBase() const 
 { 
-  return convertNameToFile(fileName); 
+  if (isReference())
+  {
+    return fileName;
+  }
+  else
+  {
+    return convertNameToFile(fileName); 
+  }
 }
 
 QCString ClassDef::getFileBase() const 
