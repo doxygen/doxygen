@@ -274,6 +274,9 @@ class Entry
     QCString     brief;       //!< brief description (doc block)
     int          briefLine;   //!< line number at which the brief desc. was found
     QCString     briefFile;   //!< file in which the brief desc. was found
+    QCString     inbodyDocs;  //!< documentation inside the body of a function
+    int          inbodyLine;  //!< line number at which the body doc was found
+    QCString     inbodyFile;  //!< file in which the body doc was found
     QCString     relates;     //!< related class (doc block)
     bool         relatesDup;  //!< keep duplicate doc in original file also
     QCString     inside;      //!< name of the class in which documents are found

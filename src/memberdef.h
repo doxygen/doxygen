@@ -74,13 +74,14 @@ class MemberDef : public Definition
     DefType definitionType() { return TypeMember; }
     
     QCString getOutputFileBase() const;
+    QCString getReference() const;
+    QCString anchor() const;
     const char *declaration() const       { return decl; }
     const char *definition() const        { return def; }
     const char *typeString() const        { return type; }
     const char *argsString() const        { return args; }
     const char *excpString() const        { return exception; }     
     const char *bitfieldString() const    { return bitfields; }     
-    QCString anchor() const;
     const QCString &initializer() const   { return init; }
     int initializerLines() const          { return initLines; }
     int  getMemberSpecifiers() const      { return memSpec; }
@@ -175,6 +176,12 @@ class MemberDef : public Definition
     MemberDef *reimplements() const;
     MemberList *reimplementedBy() const;
     
+    // in-body documentation
+    void setInbodyDocumentation(const char *docs,const char *file,int line);
+    int inbodyLine() const { return m_inbodyLine; }
+    QCString inbodyFile() const { return m_inbodyFile; }
+    const QCString &inbodyDocumentation() const { return m_inbodyDocs; }
+    
     // For function documentation that can also be found in a class's related func section.
     void setRelatedAlso(ClassDef *cd)     { m_relatedAlso=cd; }
     ClassDef *relatedAlso() const         { return m_relatedAlso; }
@@ -245,12 +252,13 @@ class MemberDef : public Definition
     void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
     void addListReference(Definition *d);
 
-    QCString getBodyAnchor() const 
-    { 
-      return bodyMemb ? bodyMemb->anchor() : anchor(); 
-    }
-    void setBodyMember(MemberDef *md) { bodyMemb = md; }
+    //QCString getBodyAnchor() const 
+    //{ 
+    //  return bodyMemb ? bodyMemb->anchor() : anchor(); 
+    //}
+    //void setBodyMember(MemberDef *md) { bodyMemb = md; }
     void setDocsForDefinition(bool b) { docsForDefinition = b; }
+    void setGroupAlias(MemberDef *md) { groupAlias = md; }
 
     // cached typedef functions
     bool isTypedefValCached() const { return m_isTypedefValCached; }
@@ -295,7 +303,7 @@ class MemberDef : public Definition
     QCString decl;            // member declaration in class
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
-    MemberDef *bodyMemb;      // Member containing the definition
+    MemberDef *groupAlias;    // Member containing the definition
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class
@@ -345,7 +353,11 @@ class MemberDef : public Definition
 
     bool m_isTypedefValCached;
     ClassDef *m_cachedTypedefValue;
-
+    
+    // inbody documentation
+    int m_inbodyLine;
+    QCString m_inbodyFile;
+    QCString m_inbodyDocs;
 };
 
 #endif

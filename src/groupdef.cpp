@@ -208,6 +208,7 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
           sameScope
          )
       {
+        md->setGroupAlias(srcMd); 
         return FALSE; // member already added
       }
     }
@@ -364,9 +365,10 @@ int GroupDef::countMembers() const
          exampleDict->count();
 }
 
-/*! Compute the HTML anchor names for all members in the class */ 
+/*! Compute the HTML anchor names for all members in the group */ 
 void GroupDef::computeAnchors()
 {
+  //printf("GroupDef::computeAnchors()\n");
   setAnchors(0,'a',allMemberList);
 }
 
@@ -416,7 +418,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION"));
     Doxygen::searchIndex->addWord(localName().lower());
   }
 

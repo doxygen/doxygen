@@ -74,6 +74,9 @@ Entry::Entry(const Entry &e)
   brief       = e.brief.copy();
   briefLine   = e.briefLine;
   briefFile   = e.briefFile.copy();
+  inbodyDocs  = e.inbodyDocs.copy();
+  inbodyLine  = e.inbodyLine;
+  inbodyFile  = e.inbodyFile.copy();
   inside      = e.inside.copy();
   fileName    = e.fileName.copy();
   startLine   = e.startLine;
@@ -233,6 +236,9 @@ void Entry::reset()
   brief.resize(0);
   briefFile.resize(0);
   briefLine=-1;
+  inbodyDocs.resize(0);
+  inbodyFile.resize(0);
+  inbodyLine=-1;
   inside.resize(0);
   fileName.resize(0);
   //scopeSpec.resize(0);
@@ -285,6 +291,8 @@ int Entry::getSize()
   size+=relates.length()+1;
   size+=brief.length()+1;
   size+=briefFile.length()+1;
+  size+=inbodyDocs.length()+1;
+  size+=inbodyFile.length()+1;
   size+=inside.length()+1;
   size+=fileName.length()+1;
   size+=initializer.length()+1;

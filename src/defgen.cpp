@@ -103,7 +103,7 @@ void generateDEFForMember(MemberDef *md,
 
   t << memPrefix << "kind = '" << memType << "';" << endl;
   t << memPrefix << "id   = '"
-    << def->getOutputFileBase() << "_1" << md->anchor()
+    << md->getOutputFileBase() << "_1" << md->anchor()
     << "';" << endl;
 
   t << memPrefix << "virt = ";

@@ -1886,25 +1886,10 @@ DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth)
 {
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
-  if (md->getGroupDef())
-  {
-    m_diskName = md->getGroupDef()->getOutputFileBase()+"_"+md->getBodyAnchor();
-  }
-  else
-  {
-    m_diskName = md->getOutputFileBase()+"_"+md->anchor();
-  }
+  m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   QCString uniqueId;
-  if (md->getGroupDef()) // member is in a group
-  {
-    uniqueId = md->getReference()+"$"+
-               md->getGroupDef()->getOutputFileBase()+"#"+md->getBodyAnchor();
-  }
-  else // ungrouped member
-  {
-    uniqueId = md->getReference()+"$"+
-               md->getOutputFileBase()+"#"+md->anchor();
-  }
+  uniqueId = md->getReference()+"$"+
+             md->getOutputFileBase()+"#"+md->anchor();
   m_startNode = new DotNode(m_curNodeNumber++,
                             md->qualifiedName(),
                             uniqueId.data(),
@@ -2049,16 +2034,8 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
       if (rmd->isFunction())
       {
         QCString uniqueId;
-        if (rmd->getGroupDef()) // member is in a group
-        {
-          uniqueId = rmd->getReference()+"$"+
-            rmd->getGroupDef()->getOutputFileBase()+"#"+rmd->getBodyAnchor();
-        }
-        else // ungrouped member
-        {
-          uniqueId=rmd->getReference()+"$"+
-            rmd->getOutputFileBase()+"#"+rmd->anchor();
-        }
+        uniqueId=rmd->getReference()+"$"+
+                 rmd->getOutputFileBase()+"#"+rmd->anchor();
         DotNode *bn  = m_usedNodes->find(uniqueId);
         if (bn) // file is already a node in the graph
         {

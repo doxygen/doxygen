@@ -84,6 +84,10 @@ class Definition
     virtual bool isLinkable() const = 0;
     virtual QCString getReference() const { return m_ref; }
 
+    // symbols
+    QCString symbolName() const { return m_symbolName; }
+    void setSymbolName(const QCString &name) { m_symbolName=name; }
+
     virtual bool isReference() const { return !m_ref.isEmpty(); }
     void setReference(const char *r) { m_ref=r; }
 
@@ -174,6 +178,7 @@ class Definition
     int m_briefLine;
     QCString m_briefFile;
     QList<ListItemInfo> *m_xrefListItems;
+    QCString m_symbolName;
 };
 
 class DefinitionList : public QList<Definition>

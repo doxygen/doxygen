@@ -1407,7 +1407,10 @@ void HtmlGenerator::writeSearchPage()
       }
       t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
         << versionString << " -->" << endl;
-      writeDefaultQuickLinks(t,TRUE,HLI_Search);
+      if (!Config_getBool("DISABLE_INDEX")) 
+      { 
+        writeDefaultQuickLinks(t,TRUE,HLI_Search);
+      }
 
       t << "<?php \n\n";
       t << "function search_results()\n";

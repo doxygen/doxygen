@@ -38,6 +38,7 @@
     </xsd:sequence>
     <xsd:attribute name="id" />
     <xsd:attribute name="kind" type="DoxCompoundKind" />
+    <xsd:attribute name="prot" type="DoxProtectionKind" />
   </xsd:complexType>
 
   <xsd:complexType name="listofallmembersType">
@@ -104,6 +105,7 @@
       <xsd:element name="exceptions" type="linkedTextType" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
+      <xsd:element name="inbodydescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="location" type="locationType" />
       <xsd:element name="references" type="referenceType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="referencedby" type="referenceType" minOccurs="0" maxOccurs="unbounded" />

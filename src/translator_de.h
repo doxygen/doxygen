@@ -79,7 +79,11 @@
 //
 //   2003/09/11 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - Updated for "new since 1.3.1" version
-//   
+//  
+//   2003/09/24 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated a few strings which changed in CVS revision 1.22
+//      ("compound" vs. "class")
+//    
 //   Todo:
 //    - see FIXME
 
@@ -213,7 +217,7 @@ class TranslatorGerman : public Translator
       }
       else
       {
-        return "Übersicht";
+        return "Auflistung der Klassen";
       }
     }
     
@@ -223,7 +227,7 @@ class TranslatorGerman : public Translator
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
-    { return "Auflistung der Header-Dateien"; }
+    { return "Header-Dateien"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
@@ -234,7 +238,7 @@ class TranslatorGerman : public Translator
       }
       else
       {
-        return "Datenstruktur-Elemente";
+        return "Klassen-Elemente";
       }
     }
 
@@ -392,9 +396,11 @@ class TranslatorGerman : public Translator
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
     {
-	    return "Datenstruktur-Verzeichnis";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+	return "Datenstruktur-Verzeichnis";
+      else
+        return "Klassen-Verzeichnis";
     }
 
     /*! This is used in LaTeX as the title of the chapter with the
@@ -541,7 +547,7 @@ class TranslatorGerman : public Translator
       }
       else
       {
-        return "Übersicht";
+        return "Klassen";
       }
     }
 

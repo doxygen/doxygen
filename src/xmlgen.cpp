@@ -736,6 +736,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   t << "        <detaileddescription>" << endl;
   writeXMLDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
   t << "        </detaileddescription>" << endl;
+  t << "        <inbodydescription>" << endl;
+  writeXMLDocBlock(t,md->docFile(),md->inbodyLine(),md->getOuterScope(),md,md->inbodyDocumentation());
+  t << "        </inbodydescription>" << endl;
   if (md->getDefLine()!=-1)
   {
     t << "        <location file=\"" 
@@ -803,12 +806,9 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
     for (mii.toFirst();(mi=mii.current());++mii)
     {
       MemberDef *md=mi->memberDef;
-      ClassDef  *cd=md->getClassDef();
-      Definition *d=md->getGroupDef();
-      if (d==0) d = cd;
       Protection prot = mi->prot;
       Specifier virt=md->virtualness();
-      t << "      <member refid=\"" << d->getOutputFileBase() << "_1" <<
+      t << "      <member refid=\"" << md->getOutputFileBase() << "_1" <<
         md->anchor() << "\" prot=\"";
       switch (prot)
       {
@@ -876,7 +876,15 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << cd->getOutputFileBase() << "\" kind=\"" 
-    << cd->compoundTypeString() << "\">" << endl;
+    << cd->compoundTypeString() << "\" prot=\"";
+  switch (cd->protection())
+  {
+    case Public:    t << "public";    break;
+    case Protected: t << "protected"; break;
+    case Private:   t << "private";   break;
+    case Package:   t << "package";   break;
+  }
+  t << "\">" << endl;
   t << "    <compoundname>"; 
   writeXMLString(t,cd->name()); 
   t << "</compoundname>" << endl;
