@@ -1,6 +1,6 @@
 
 #
-# 
+# $Id$
 #
 # Copyright (C) 1997-2001 by Dimitri van Heesch.
 # 
@@ -15,8 +15,8 @@
 # 
 
 all: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
-	$(MAKE) -f Makefile.libdoxygen $@
 	$(MAKE) -f Makefile.libdoxycfg $@
+	$(MAKE) -f Makefile.libdoxygen $@
 	$(MAKE) -f Makefile.doxygen    $@
 	$(MAKE) -f Makefile.doxytag    $@
 	$(MAKE) -f Makefile.doxysearch $@
