@@ -1,0 +1,30 @@
+PROJECT_NAME     = 
+OUTPUT_DIRECTORY = ..
+HTML_HEADER      =
+HTML_FOOTER      =
+QUIET            = NO
+WARNINGS         = YES
+DISABLE_INDEX    = YES
+EXTRACT_ALL      = NO
+EXTRACT_PRIVATE  = NO
+GENERATE_LATEX   = YES
+GENERATE_HTML    = YES
+ENABLE_PREPROCESSING = NO
+INPUT            = index.doc install.doc starting.doc trouble.doc \
+		   history.doc features.doc \
+		   doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
+                   installdox_usage.doc autolink.doc \
+		   config.doc commands.doc htmlcmds.doc 
+FILE_PATTERNS    = *.cpp *.h *.doc
+EXAMPLE_PATH     = ../examples
+RECURSIVE        = NO
+TAGFILES         =
+ALLEXTERNALS     = NO
+PERL_PATH        = /usr/local/bin/perl
+SEARCHENGINE     = NO
+CGI_NAME         = search.cgi
+CGI_URL          =
+DOC_URL          =
+DOC_ABSPATH      =
+BIN_ABSPATH      = /usr/local/bin/
+EXT_DOC_PATHS    =

@@ -1,0 +1,47 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * All output generated with Doxygen is not covered by this license.
+ *
+ */
+/*! \page doxygen_usage Doxygen usage
+
+Doxygen is a command line based utility.  Calling \c doxygen with the
+\c -h option at the command line will give you a brief description of the 
+usage of the program.
+
+All options consist of a leading character <tt>-</tt>, 
+followed by one character and optionally an argument.
+
+To generate a class browser you typically need to follow these steps:
+<ol>
+<li> You document your source code with 
+     special documentation blocks.
+<li> You generate a configuration file (see section \ref config) by 
+     calling doxygen with the \c -g option:
+\verbatim
+doxygen -g <config_file>
+\endverbatim
+<li> You edit the configuration file so it matches your project.
+     In the configuration file you can specify the input files and
+     a lot of optional information.
+<li> You let doxygen generate the documentation, based on the settings in the
+     configuration file:
+\verbatim
+doxygen <config_file>
+\endverbatim
+</ol>
+
+If you also want a search engine to be generated, you should look
+at section \ref doxysearch_usage. 
+
+*/

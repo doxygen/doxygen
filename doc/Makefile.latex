@@ -1,0 +1,14 @@
+all: doxygen_manual.ps
+
+doxygen_manual.ps: doxygen_manual.dvi
+	dvips -o doxygen_manual.ps doxygen_manual.dvi
+
+doxygen_manual.dvi: doxygen_manual.tex doxygen.sty
+	echo "Running latex..."
+	latex doxygen_manual.tex 
+	echo "Running makeindex..."
+	makeindex doxygen_manual.idx
+	echo "Rerunning latex...."
+	latex doxygen_manual.tex
+clean:
+	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log

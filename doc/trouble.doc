@@ -1,0 +1,67 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * All output generated with Doxygen is not covered by this license.
+ *
+ */
+/*! \page trouble Troubleshooting
+
+<h2>Known problems:</h2>
+<ul>
+<li>Doxygen is <em>not</em> a compiler, it is only a lexical scanner.
+    This means that it can and will not detect errors in your source code.
+<li>Since it impossible to test all possible code fragments, it is
+    very well possible, that some valid piece of C/C++ code is not handled
+    properly. If you find such a piece, please send it to me, so I can
+    improve doxygen's parsing capabilities. Try to make the piece of code 
+    you send as small as possible, to help me narrow down the search.
+<li>Using declarations and directives are not yet. They are 
+    simply ignored. 
+<li>Doxygen does not work properly if there are multiple classes, structs
+    or unions with the same name in your code. It should not crash however,
+    rather it should ignore all of the classes with the same name except one.
+<li>Some commands do not work inside the arguments of other commands.
+    Inside a HTML link (i.e \<a href="..."\>...\<a\>) for instance 
+    other commands (including other HTML commands) do not work!
+    The sectioning commands are an important exception. 
+<li>Redundant braces can confuse doxygen in some cases. 
+    For example:
+\verbatim
+  void f (int);
+\endverbatim
+    is properly parsed as a function declaration, but
+\verbatim
+  const int (a);
+\endverbatim
+  is also seen as a function declaration, because only the syntax is analysed,
+  not the semantics. If the redundant braces can be detected, as in
+\verbatim
+  int *(a[20]);
+\endverbatim
+  then doxygen will remove the braces and correctly parse the result.
+</ul>
+
+
+<h2>How to help</h2>
+The development of Doxygen highly depends on your input! 
+
+If you are trying Doxygen let me know what you think of it (do you
+miss certain features?). Even if you decide not to use it, please let me
+know why. 
+
+Furthermore, I would appreciate a mail if you have found
+a bug, or if you have ideas (or even better some code or a patch) 
+how to fix existing bugs and limitations. 
+
+My email address: <a href="mailto:dimitri@stack.nl">dimitri@stack.nl</a> 
+*/
+
