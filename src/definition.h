@@ -97,6 +97,7 @@ class Definition
     int getEndBodyLine() const           { return endBodyLine; }
     FileDef *getBodyDef()                { return bodyDef; }
     void writeSourceDef(OutputList &ol,const char *scopeName);
+    void writeInlineCode(OutputList &ol,const char *scopeName);
     void writeSourceRefs(OutputList &ol,const char *scopeName);
     void addSourceReference(MemberDef *d);
 

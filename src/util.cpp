@@ -1954,7 +1954,7 @@ bool generateLink(OutputList &ol,const char *clName,
     ol.endTextLink();
     return TRUE;
   }
-  else if ((fd=findFileDef(&inputNameDict,linkRef,ambig))
+  else if ((fd=findFileDef(inputNameDict,linkRef,ambig))
        && fd->isLinkable())
   {
         // link to documented input file
@@ -1973,7 +1973,7 @@ void generateFileRef(OutputList &ol,const char *name,const char *text)
   //FileInfo *fi;
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(&inputNameDict,name,ambig)) && 
+  if ((fd=findFileDef(inputNameDict,name,ambig)) && 
       fd->isLinkable()) 
     // link to documented input file
     ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);

@@ -213,7 +213,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     while (fd)
     {
       ol.startMemberItem(0);
-      ol.docify("file");
+      ol.docify("file ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
       ol.endMemberItem(FALSE);

@@ -84,10 +84,13 @@ You will need to install the windows/dos versions of following tools:
   You can download them at: http://sourceware.cygnus.com/cygwin/
   Make sure the BISONLIB environment variable points to the
   location where bison.simple and bison.hairy are located.
-- Qt-1.xx (Qt-2.xx should also work, but I didn't test it for Windows) 
-  (Hint: only the tools section is required, so you can use the free 
-   X-windows version (use Qt-1.44) as well!)
-  You can get it at http://www.troll.no
+- Qt-1.xx (Qt-2.xx does not work without adding some extra code) 
+  Only the tools section is required, so you can use the free 
+  X-windows version (use Qt-1.44) and build a library called qt.lib out of 
+  the sources in src/tools. The library should be put in the lib directory
+  of the Qt distribution. You can get Qt-1.44 at http://www.trolltech.com
+  Before continuing make sure the QTDIR environment variable points to the 
+  root of the Qt distribution.  
 - Microsoft Visual C++ (I only tested with version 5.0).
   Use the vcvars32.bat to set the environment variables 
   (if you did not select to do this automatically during installation).
@@ -146,7 +149,7 @@ QT RELATED PROBLEMS:
   - do "cd qt"
   - do "ln -s your-qt-include-dir-here include",
   - do "ln -s your-qt-lib-dir-here lib",
-  - do "export QTDIR=$PWD" (or "setenv QTDIR $PWD if you have a csh)
+  - do "export QTDIR=$PWD" (or "setenv QTDIR $PWD if you have a csh-like shell)
   
   Now install doxygen as described above.  
 
@@ -252,4 +255,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (11 June 2000)
+Dimitri van Heesch (18 June 2000)

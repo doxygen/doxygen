@@ -141,15 +141,27 @@ static bool readCodeFragment(const char *fileName,
     }
     if (!f.atEnd())
     {
-      // skip until the opening bracket is found
-      while (lineNr<=endLine && !f.atEnd() && c!='{')
+      // skip until the opening bracket or lonely : is found
+      bool found=FALSE;
+      char cn;
+      while (lineNr<=endLine && !f.atEnd() && !found)
       {
-        while ((c=f.getch())!='{' && c!=-1) if (c=='\n') lineNr++; 
+        while ((c=f.getch())!='{' && c!=':' && c!=-1) if (c=='\n') lineNr++; 
+        if (c==':')
+        {
+          cn=f.getch();
+          if (cn!=':') found=TRUE;
+        }
+        else if (c=='{')
+        {
+          found=TRUE;
+        }
       }
-      if (c=='{') 
+      if (found) 
       {
         // copy until end of line
         result+=c;
+        if (c==':') result+=cn;
         startLine=lineNr;
         const int maxLineLength=4096;
         char lineStr[maxLineLength];
@@ -179,7 +191,7 @@ static bool readCodeFragment(const char *fileName,
 }
 
 /*! Write a reference to the source code defining this definition */
-void Definition::writeSourceDef(OutputList &ol,const char *scopeName)
+void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
@@ -271,6 +283,13 @@ void Definition::writeSourceDef(OutputList &ol,const char *scopeName)
     ol.newParagraph();
     ol.enableAll();
   }
+  ol.popGeneratorState();
+}
+
+/*! Write code of this definition into the documentation */
+void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
+{
+  ol.pushGeneratorState();
   if (Config::inlineSourceFlag && startBodyLine!=-1 && 
       endBodyLine>=startBodyLine && bodyDef)
   {

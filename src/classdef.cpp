@@ -1025,7 +1025,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   while (file)
   {
     bool ambig;
-    FileDef *fd=findFileDef(&inputNameDict,file,ambig);
+    FileDef *fd=findFileDef(inputNameDict,file,ambig);
     if (fd)
     {
       if (first)

@@ -99,7 +99,7 @@ static void setFileName(const char *name)
 {
   bool ambig;
   g_yyFileName=name;
-  g_yyFileDef=findFileDef(&inputNameDict,g_yyFileName,ambig);
+  g_yyFileDef=findFileDef(inputNameDict,g_yyFileName,ambig);
 }
 
 static void incrLevel()
@@ -858,7 +858,7 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef) 
       {
 	bool ambig;
-	FileDef *fd = findFileDef(&inputNameDict,incFileName,ambig);
+	FileDef *fd = findFileDef(inputNameDict,incFileName,ambig);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
       }

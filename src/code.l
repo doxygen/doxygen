@@ -676,7 +676,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  //FileInfo *f;
 					  bool ambig;
                                           FileDef *fd;
-					  if ((fd=findFileDef(&inputNameDict,yytext,ambig)) &&
+					  if ((fd=findFileDef(inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {
 					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
