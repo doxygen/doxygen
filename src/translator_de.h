@@ -638,7 +638,7 @@ class TranslatorGerman : public Translator
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Include-Abh&auml;ngikeitsdiagramm f&uuml;r "+fName+":";
+      return (QCString)"Include-Abh&auml;ngigkeitsdiagramm f&uuml;r "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -834,7 +834,7 @@ class TranslatorGerman : public Translator
         "Die Rechtecke in obigem Graphen bedeuten:\n"
         "<ul>\n"
         "<li>Ein schwarz gef&uuml;lltes Rechteck stellt die Struktur oder "
-        "Klasse dar, f&uuml;die der Graph erzeug wurde.\n"
+        "Klasse dar, f&uuml;r die der Graph erzeug wurde.\n"
         "<li>Ein Rechteck mit schwarzem Rahmen kennzeichnet eine dokumentierte "
         " Struktur oder Klasse.\n"
         "<li>Ein Rechteck mit grauem Rahmen kennzeichnet eine undokumentierte "
@@ -850,10 +850,10 @@ class TranslatorGerman : public Translator
         "zwischen zwei Klassen dar.\n"
         "<li>Ein dunkelgr&uuml;ner Pfeil stellt gesch&uuml;tzte Vererbung dar.\n"
         "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.\n"
-        "<li>Ein gestrichelter violetter Pfeil beutet, dass eine Klasse in einer "
+        "<li>Ein gestrichelter violetter Pfeil bedeutet, dass eine Klasse in einer "
         "anderen enthalten ist oder von einer anderen benutzt wird. Am Pfeil "
         "stehen die Variable(n), mit deren Hilfe auf die Struktur oder Klasse "
-        "an der Pfeilspize zugegriffen werden kann. \n"
+        "an der Pfeilspitze zugegriffen werden kann. \n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */

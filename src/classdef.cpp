@@ -138,11 +138,11 @@ void ClassDef::insertBaseClass(ClassDef *cd,const char *n,Protection p,
   inherits->append(new BaseClassDef(cd,n,p,s,t));
 }
 
-// inserts a super class in the inherited list
-void ClassDef::insertSuperClass(ClassDef *cd,Protection p,
+// inserts a sub class in the inherited list
+void ClassDef::insertSubClass(ClassDef *cd,Protection p,
                                 Specifier s,const char *t)
 {
-  //printf("*** insert super class %s into %s\n",cd->name().data(),name().data());
+  //printf("*** insert sub class %s into %s\n",cd->name().data(),name().data());
   inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
 }
 
@@ -732,7 +732,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (Config::classDiagramFlag) ol.disableAllBut(OutputGenerator::Man);
 
   
-  // write superclasses
+  // write subclasses
   int count;
   if ((count=inherits->count())>0)
   {
@@ -856,7 +856,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
+        ol.startHtmlLink("graph_legend.html");
+        ol.docify(theTranslator->trLegend());
+        ol.endHtmlLink();
         ol.writeString("]</font></center>");
         ol.popGeneratorState();
       }
@@ -889,7 +891,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
+        ol.startHtmlLink("graph_legend.html");
+        ol.docify(theTranslator->trLegend());
+        ol.endHtmlLink();
         ol.writeString("]</font></center>");
         ol.popGeneratorState();
       }
@@ -1465,7 +1469,7 @@ bool ClassDef::isLinkableInProject()
 
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
-{ return // show all classes or a superclass is visible
+{ return // show all classes or a subclass is visible
   (Config::allExtFlag || hasNonReferenceSuperClass()) &&
     // and not an annonymous compound
     name().find('@')==-1 &&
@@ -1501,7 +1505,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
 /*! 
  * recusively merges the `all members' lists of a class base 
  * with that of this class. Must only be called for classes without
- * superclasses!
+ * subclasses!
  */
 
 void ClassDef::mergeMembers()
@@ -1527,7 +1531,7 @@ void ClassDef::mergeMembers()
       MemberNameInfo *dstMni;
       if ((dstMni=dstMnd->find(srcMni->memberName())))
         // a member with that name is already in the class.
-        // the member may hide or reimplement the one in the super class
+        // the member may hide or reimplement the one in the sub class
         // or there may be another path to the base class that is already 
         // visited via another branch in the class hierarchy.
       {
@@ -1643,13 +1647,13 @@ void ClassDef::mergeMembers()
           }
         }
       }
-      else // base class has a member that is not in the super class => copy
+      else // base class has a member that is not in the sub class => copy
       {
         // create a deep copy of the list (only the MemberInfo's will be 
         // copied, not the actual MemberDef's)
         MemberNameInfo *newMni = new MemberNameInfo(srcMni->memberName()); 
         
-        // copy the member(s) from the base to the super class
+        // copy the member(s) from the base to the sub class
         MemberNameInfoIterator mnii(*srcMni);
         MemberInfo *mi;
         for (;(mi=mnii.current());++mnii)

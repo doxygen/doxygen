@@ -329,10 +329,10 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
     }
     t << "      </basecompoundlist>" << endl;
   }
-  if (cd->superClasses()->count()>0)
+  if (cd->subClasses()->count()>0)
   {
     t << "      <derivedcompoundlist>" << endl;
-    BaseClassListIterator bcli(*cd->superClasses());
+    BaseClassListIterator bcli(*cd->subClasses());
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {

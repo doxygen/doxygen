@@ -88,6 +88,7 @@ static bool             inWarningBlock;
 static bool             inRemarkBlock;
 static bool             inAttentionBlock;
 static bool             inParBlock;
+static bool             insideHtmlLink;
 static QCString         sectionRef;
 static bool             insideVerbatim = FALSE;
 static bool             insidePre = FALSE;
@@ -134,6 +135,7 @@ static void initParser()
   inRemarkBlock = FALSE;
   inAttentionBlock = FALSE;
   inParBlock = FALSE;
+  insideHtmlLink = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -840,8 +842,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x      DocDontInclude
 %x      DocHtmlLink
 %x      DocHtmlAnchor
-%x      DocHtmlHref1
-%x      DocHtmlHref2
+%x      DocHtmlHref
 %x	DocSkiplineKey
 %x	DocSkipKey
 %x	DocLineKey
@@ -889,6 +890,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan,Text>"&"[AEIOUaeiou]"circ;"	{ outDoc->writeCirc(yytext[1]);   }
 <DocScan,Text>"&"[ANOano]"tilde;"	{ outDoc->writeTilde(yytext[1]);  }
 <DocScan,Text>"&szlig;"			{ outDoc->writeSharpS();          }
+<DocScan,Text>"&"[cC]"cedil;"		{ outDoc->writeCCedil(yytext[1]); }
 <DocScan,Text>"&[aA]ring;"		{ outDoc->writeRing(yytext[1]);   }
 <DocScan,DocHtmlScan,DocLatexScan>"$("[a-z_A-Z]+")"	{ 
   					  QCString envvar=&yytext[2];
@@ -1784,7 +1786,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					  BEGIN(DocScan);
 					}
-<DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
+<DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->startHtmlLink(yytext); 
+                                                          outDoc->docify(yytext); 
+							  outDoc->endHtmlLink(); 
+                                                        }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILESCHAR}*{FILEECHAR}+/".\\n" { // special exception that is otherwise matches by FILEMASK
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -2036,7 +2041,12 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"<"{BR}{ATTR}">"		{ outDoc->lineBreak(); }
 <DocScan>"<"{I}{ATTR}">"		{ outDoc->startEmphasis(); }
 <DocScan>"</"{I}{ATTR}">"		{ outDoc->endEmphasis(); }
-<DocScan>"</"{A}{ATTR}">"			
+<DocScan>"</"{A}{ATTR}">"		{ if (insideHtmlLink) 
+                                          {
+                                            outDoc->endHtmlLink(); 
+                                            insideHtmlLink=FALSE;
+                                          }
+                                        }
 <DocScan>"<"{A}				{ BEGIN(DocHtmlLink); }
 <DocScan>"<"{BOLD}{ATTR}">"		{ outDoc->startBold(); }
 <DocScan>"</"{BOLD}{ATTR}">"		{ outDoc->endBold(); }
@@ -2055,16 +2065,15 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocHtmlLink>{HREF}{BN}*"="{BN}*("\""?)	{ 
   					  htmlUrl.resize(0);
 					  htmlText.resize(0);
-  					  BEGIN(DocHtmlHref1); }
-<DocHtmlHref1>{URLMASK}			{ 
+  					  BEGIN(DocHtmlHref); 
+				        }
+<DocHtmlHref>{URLMASK}			{ 
   					  htmlUrl=yytext; 
 					}
-<DocHtmlHref1>">"			{ BEGIN(DocHtmlHref2); }
-<DocHtmlHref2>[^<]*			{ htmlText+=yytext; }
-<DocHtmlHref2>"<"			{ 
-  					  outDoc->writeHtmlLink(htmlUrl,htmlText);
-  					  unput(*yytext); 
-					  BEGIN(DocScan); 
+<DocHtmlHref>">"			{ 
+  					  outDoc->startHtmlLink(htmlUrl);
+                                          insideHtmlLink=TRUE;
+  					  BEGIN(DocScan); 
 					}
 <DocHtmlLink,DocHtmlAnchor>">"		{ BEGIN(DocScan); }
 <DocScan>{CMD}("\\"|"@"|"<"|">"|"&"|"$"|"#"|"%") {

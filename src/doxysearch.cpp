@@ -509,7 +509,7 @@ void generateResults(SearchResults *sr)
            "</center></td></tr>\n",page+1,numPages);
     printf("  <tr bgcolor=#ffffff>\n"
            "    <td colspan=2>\n"
-           "      <dl compact>\n");
+           "      <table border=\"0\" cellspacing=\"2\" cellpadding=\"2\">\n");
     int i;
     for (i=0 ; i < resultCount && pageEntries > 0; i++)
     {
@@ -526,8 +526,8 @@ void generateResults(SearchResults *sr)
         readString(f,htmlName,MAXSTRLEN);
         int rank=(int)(d->rank*100+0.5);
         if (rank==0) rank++;
-        printf("        <dt><b><font color=#%2x00%2x>%d</font></b>"
-               "<dd><a href=\"%s/%s\">%s</a>\n",
+        printf("        <tr><td align=\"right\"><b><font color=#%2x00%2x>%d</font></b>"
+               "</td><td><a href=\"%s/%s\">%s</a></td></tr>\n",
                rank*2+55, 255-rank*2, rank, 
                d->fileInfo->url, htmlName, linkName);
         pageEntries--;
@@ -537,7 +537,7 @@ void generateResults(SearchResults *sr)
         skipEntries--;
       }
     }
-    printf("      </dl>\n"
+    printf("      </table>\n"
            "    </td>\n"
            "  </tr>\n"
            "  <tr><td colspan=2 bgcolor=\"#4040c0\"><center>&nbsp;");

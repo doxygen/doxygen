@@ -287,7 +287,10 @@ QCString unhtmlify(const char *str)
 <SearchRefName>"\" doxytag=\""	   {
   				     BEGIN( ReadRefName ); 
   				   }
-<SearchRefName>"\"></a>"	   {
+<SearchRefName>"\"></a><a"	   { // HACK: avoid finding links in code fragments
+  				     BEGIN( Start );
+  				   }
+<SearchRefName>"\"></a>"	   { // HACK: deal with Qt code
   				     if (nameBug)
 				       BEGIN( Start );
 				     else

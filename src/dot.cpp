@@ -154,7 +154,7 @@ static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
  */
 static bool isLeaf(ClassDef *cd)
 {
-  BaseClassList *bcl = cd->superClasses();
+  BaseClassList *bcl = cd->subClasses();
   if (bcl->count()>0) // class has children, check their visibility
   {
     BaseClassListIterator bcli(*bcl);
@@ -613,7 +613,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
 {
   //printf("addHierarchy `%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
-  BaseClassListIterator bcli(*cd->superClasses());
+  BaseClassListIterator bcli(*cd->subClasses());
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
@@ -673,7 +673,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
         bn->addParent(n);
         m_usedNodes->insert(bClass->name(),bn); // add node to the used list
       }
-      if (!bClass->visited && !hideSuper && bClass->superClasses()->count()>0)
+      if (!bClass->visited && !hideSuper && bClass->subClasses()->count()>0)
       {
         bool wasVisited=bClass->visited;
         bClass->visited=TRUE;
@@ -698,7 +698,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   ClassDef *cd;
   for (cli.toLast();(cd=cli.current());--cli)
   {
-    //printf("Trying %s superClasses=%d\n",cd->name().data(),cd->superClasses()->count());
+    //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
     if (!hasVisibleRoot(cd->baseClasses()))
     {
       if (cd->isVisibleInHierarchy()) // root class in the graph
@@ -715,7 +715,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
         //m_usedNodes->clear();
         m_usedNodes->insert(cd->name(),n);
         m_rootNodes->insert(0,n);   
-        if (!cd->visited && cd->superClasses()->count()>0)
+        if (!cd->visited && cd->subClasses()->count()>0)
         {
           addHierarchy(n,cd,cd->visited);
           cd->visited=TRUE;
@@ -846,7 +846,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
 
 void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
 {
-  BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->superClasses());
+  BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {

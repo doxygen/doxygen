@@ -134,8 +134,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()
     { forall(&OutputGenerator::endTextLink); }
-    void writeHtmlLink(const char *url,const char *text)
-    { forall(&OutputGenerator::writeHtmlLink,url,text); }
+    void startHtmlLink(const char *url)
+    { forall(&OutputGenerator::startHtmlLink,url); }
+    void endHtmlLink()
+    { forall(&OutputGenerator::endHtmlLink); }
     void writeMailLink(const char *url)
     { forall(&OutputGenerator::writeMailLink,url); } 
     void writeStartAnnoItem(const char *type,const char *file, 
@@ -296,6 +298,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeRing,c); }
     void writeSharpS()
     { forall(&OutputGenerator::writeSharpS); }
+    void writeCCedil(char c)
+    { forall(&OutputGenerator::writeCCedil,c); }
     void startMemberDescription() 
     { forall(&OutputGenerator::startMemberDescription); }
     void endMemberDescription() 

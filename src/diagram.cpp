@@ -249,8 +249,8 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   if (parent) parent->addChild(di);
   di->move(count()*gridWidth,level*gridHeight);
   append(di);
-  BaseClassList *bcl=doBases ? cd->baseClasses() : cd->superClasses();
-  /* there are base/super classes */
+  BaseClassList *bcl=doBases ? cd->baseClasses() : cd->subClasses();
+  /* there are base/sub classes */
   int count=0;
   BaseClassDef *bcd=bcl->first();
   while (bcd)

@@ -48,92 +48,118 @@ struct IncludeInfo;
 
 /*! \brief This class contains all information about a compound.
  *
- *  A compound can be a class, struct, union, interface, or exception 
+ *  A compound can be a class, struct, union, interface, or exception.
+ *  \note This class should be renamed to CompoundDef
  */
 class ClassDef : public Definition
 {
   public:
+    /*! \name Public API
+     *  \{
+     */
+
+    /*! The various compound types */
     enum CompoundType { Class=Entry::CLASS_SEC, 
                         Struct=Entry::STRUCT_SEC, 
                         Union=Entry::UNION_SEC,
                         Interface=Entry::INTERFACE_SEC,
                         Exception=Entry::EXCEPTION_SEC
                       };
-    ClassDef(const char *fileName,int startLine,
-             const char *name,CompoundType ct,
-             const char *ref=0,const char *fName=0);
-   ~ClassDef();
     DefType definitionType() { return TypeClass; }
     QCString getOutputFileBase() const { return fileName; }
+
+    /*! Returns the name as it is appears in the documentation */
     QCString displayName() const;
+
+    /*! Returns the type of compound this is */
     CompoundType compoundType() const { return compType; } 
+
+    /*! Returns the type of compound as a string */
     QCString compoundTypeString() const;
-    void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
+
+    /*! Returns the list of base classes from which this class directly
+     *  inherits.
+     */
     BaseClassList *baseClasses() { return inherits; }
-    void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
-    BaseClassList *superClasses() { return inheritedBy; }
-    void setIncludeFile(FileDef *fd,const char *incName,bool local); 
+    
+    /*! Returns the list of sub classes that directly inherit from this class
+     */
+    BaseClassList *subClasses() { return inheritedBy; }
+
+    /*! Returns a list of all members. This includes any inherited members.
+     *  Members are sorted alphabetically.
+     */ 
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
+
+    /*! Returns a dictionary of all members. This includes any inherited 
+     *  members. Members are sorted alphabetically.
+     */ 
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
-    void insertMember(MemberDef *);
-    void insertUsedFile(const char *);
-    void computeAnchors();
-    void computeMemberGroups();
-    void setAnchor(MemberDef *);
-    void dumpMembers();
+
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
-    bool addExample(const char *anchor,const char *name, const char *file);
-    bool hasExamples();
-    void setProtection(Protection p) { prot=p; }
+
+    /*! Return the protection level (Public,Protected,Private) in which 
+     *  this compound was found.
+     */
     Protection protection() const { return prot; }
+
+    /*! returns TRUE iff a link is possible to an item within this project.
+     */
     bool isLinkableInProject();
-    /*! a link to this class is possible (either within this project,
-     *  or as a cross-reference to another project
+
+    /*! return TRUE iff a link to this class is possible (either within 
+     *  this project, or as a cross-reference to another project).
      */
     bool isLinkable()
     {
       return isLinkableInProject() || isReference();
     }
-    bool hasNonReferenceSuperClass();
+
     /*! the class is visible in a class diagram, or class hierarchy */
     bool isVisibleInHierarchy();
     
-    // template argument functions
+    /*! Returns the template arguments of this class 
+     *  Will return 0 if not applicable.
+     */
     ArgumentList *templateArguments() const { return tempArgs; }
+
+    /*! Returns the template arguments that this nested class "inherits" 
+     *  from its outer class (doxygen assumes there is only one!). 
+     *  Will return 0 if not applicable.
+     */
     ArgumentList *outerTemplateArguments() const;
-    void setTemplateArguments(ArgumentList *al);
-    //QCString getTemplateNameString();
     
+    /*! Returns the namespace this compound is in, or 0 if it has a global
+     *  scope.
+     */
     NamespaceDef *getNamespaceDef() { return nspace; }
-    FileDef *getFileDef() const { return fileDef; }
+
+    /*! Returns the file in which this compound's definition can be found.
+     *  Should not return 0 (but it might be a good idea to check anyway).
+     */
+    FileDef      *getFileDef() const { return fileDef; }
+
+    /*! Returns the Java package this class is in or 0 if not applicable. 
+     */ 
+    PackageDef   *packageDef() const;
     
-    void setNamespace(NamespaceDef *nd) { nspace = nd; }
-    void setFileDef(FileDef *fd) { fileDef=fd; }
-    void mergeMembers();
+    /*! Returns TRUE iff \a bcd is a direct or indirect base class of this
+     *  class. This function will recusively traverse all branches of the
+     *  inheritance tree.
+     */
     bool isBaseClass(ClassDef *bcd);
-    void determineImplUsageRelation();
-    void determineIntfUsageRelation();
+
     UsesClassDict *usedImplementationClasses() const 
     { 
       return usesImplClassDict; 
     }
+
     UsesClassDict *usedInterfaceClasses() const
     {
       return usesIntfClassDict;
     }
-    void setSubGrouping(bool enabled) { subGrouping = enabled; }
-    
-    bool visited;
-
-    void addMembersToMemberGroup();
-    void distributeMemberGroupDocumentation();
-
-    //void generateXML(QTextStream &t);
-    //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
-
-    PackageDef *packageDef() const;
    
     /* member lists by protection */
     MemberList pubMembers;
@@ -170,9 +196,60 @@ class ClassDef : public Definition
     MemberList variableMembers;
     MemberList propertyMembers;
 
+    /*! \} */
+
+    /*! \name Doxygen internal API
+     *  \{
+     */
+    void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
+    void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
+    void setIncludeFile(FileDef *fd,const char *incName,bool local); 
+    void insertMember(MemberDef *);
+    void insertUsedFile(const char *);
+    void computeAnchors();
+    void computeMemberGroups();
+    void setAnchor(MemberDef *);
+    void dumpMembers();
+    bool addExample(const char *anchor,const char *name, const char *file);
+    void addMembersToMemberGroup();
+    void distributeMemberGroupDocumentation();
+    void setNamespace(NamespaceDef *nd) { nspace = nd; }
+    void setTemplateArguments(ArgumentList *al);
+    void mergeMembers();
+    void setFileDef(FileDef *fd) { fileDef=fd; }
+    void determineImplUsageRelation();
+    void determineIntfUsageRelation();
+    void setSubGrouping(bool enabled) { subGrouping = enabled; }
+    void setProtection(Protection p) { prot=p; }
+
+    /*! Creates a new compound definition.
+     *  \param fileName  full path and file name in which this compound was
+     *                   found.
+     *  \param startLine line number where the definition of this compound
+     *                   starts.
+     *  \param name      the name of this compound (including scope)
+     *  \param ct        the kind of Compound
+     *  \param ref       the tag file from which this compound is extracted
+     *                   or 0 if the compound doesn't come from a tag file
+     *  \param fName     the file name as found in the tag file. 
+     *                   This overwrites the file that doxygen normally 
+     *                   generates based on the compound type & name.
+     */
+    ClassDef(const char *fileName,int startLine,
+             const char *name,CompoundType ct,
+             const char *ref=0,const char *fName=0);
+    /*! Destroys a compound definition. */
+   ~ClassDef();
+    
+    bool visited;
+
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
     void addMemberListToGroup(MemberList *);
+    bool hasExamples();
+    bool hasNonReferenceSuperClass();
+
+    /*! \} */
 
   private: 
     QCString fileName;                   // HTML containing the class docs
@@ -183,7 +260,6 @@ class ClassDef : public Definition
     BaseClassList *inherits;
     BaseClassList *inheritedBy;
     NamespaceDef  *nspace;              // the namespace this class is in
-
 
     /* user defined member groups */
     MemberGroupList    *memberGroupList;

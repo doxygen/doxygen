@@ -27,11 +27,12 @@
 #include "language.h"
 #include "doxygen.h"
 
-PackageDef::PackageDef(const char *df,int dl,const char *na) : 
+PackageDef::PackageDef(const char *df,int dl,const char *na,const char *ref) : 
    Definition(df,dl,na)
 {
   classList       = new ClassList;
   packageFileName = "package_"+convertFileName(na);
+  setReference(ref);
 }
 
 PackageDef::~PackageDef()
