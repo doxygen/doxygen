@@ -55,8 +55,8 @@ class MemberList : public QList<MemberDef>
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                const char *title,const char *subtitle,
                bool inGroup=FALSE,bool countSubGroups=TRUE);
-    void writeDocumentation(OutputList &ol,const char *scopeName
-               /*,MemberDef::MemberType m*/);
+    void writeDocumentation(OutputList &ol,const char *scopeName,
+               Definition *container);
     void addMemberGroup(MemberGroup *mg);
 
   private:

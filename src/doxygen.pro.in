@@ -16,7 +16,7 @@
 
 TEMPLATE     =	doxygen.t
 CONFIG       =	console qt warn_on $extraopts
-HEADERS      =	doxygen.h scanner.h classdef.h classlist.h memberdef.h \
+HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
                 membername.h index.h memberlist.h definition.h \
                 entry.h logos.h instdox.h message.h code.h \
                 filedef.h util.h cppvalue.h constexp.h \
@@ -27,8 +27,8 @@ HEADERS      =	doxygen.h scanner.h classdef.h classlist.h memberdef.h \
 		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
                 translator_ru.h translator_pl.h dot.h rtfgen.h xml.h xml_dtd.h \
                 reflist.h
-SOURCES      =	doxygen.cpp scanner.cpp classdef.cpp classlist.cpp memberdef.cpp \
-	        membername.cpp index.cpp memberlist.cpp \
+SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
+                memberdef.cpp membername.cpp index.cpp memberlist.cpp \
 		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
                 config.cpp filedef.cpp util.cpp groupdef.cpp \
                 outputgen.cpp outputlist.cpp htmlgen.cpp latexgen.cpp mangen.cpp \

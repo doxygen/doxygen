@@ -21,7 +21,7 @@
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
-#include "scanner.h"
+#include "doc.h"
 #include "doxygen.h"
 #include "membername.h"
 #include "message.h"
@@ -974,7 +974,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trMemberTypedefDocumentation());
     ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name());
+    typedefMembers.writeDocumentation(ol,name(),this);
   }
 
   enumMembers.countDocMembers();
@@ -984,7 +984,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trMemberEnumerationDocumentation());
     ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name());
+    enumMembers.writeDocumentation(ol,name(),this);
   }
   
   //enumValMembers.countDocMembers();
@@ -1004,7 +1004,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trConstructorDocumentation());
     ol.endGroupHeader();
-    constructors.writeDocumentation(ol,name());
+    constructors.writeDocumentation(ol,name(),this);
   }
 
   functionMembers.countDocMembers();
@@ -1014,7 +1014,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trMemberFunctionDocumentation());
     ol.endGroupHeader();
-    functionMembers.writeDocumentation(ol,name());
+    functionMembers.writeDocumentation(ol,name(),this);
   }
 
   relatedMembers.countDocMembers();
@@ -1024,7 +1024,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trRelatedFunctionDocumentation());
     ol.endGroupHeader();
-    relatedMembers.writeDocumentation(ol,name());
+    relatedMembers.writeDocumentation(ol,name(),this);
   }
 
   variableMembers.countDocMembers();
@@ -1034,7 +1034,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trMemberDataDocumentation());
     ol.endGroupHeader();
-    variableMembers.writeDocumentation(ol,name());
+    variableMembers.writeDocumentation(ol,name(),this);
   }
   
   ol.startTextBlock();
@@ -1601,7 +1601,7 @@ void ClassDef::determineImplUsageRelation()
       MemberDef *md=mi->memberDef;
       if (md->isVariable()) // for each member variable in this class
       {
-        QCString type=md->typeString();
+        QCString type=removeRedundantWhiteSpace(md->typeString());
         int typeLen=type.length();
         static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
         //printf("in class %s found var type=`%s' name=`%s'\n",

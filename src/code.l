@@ -410,7 +410,7 @@ static bool getLink(const char *className,
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  QCString m=memberName;
+  QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
   if (getDefs(c,m,"()",md,cd,fd,nd,gd) && md->isLinkable())
@@ -574,39 +574,6 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	    if (mcd && mcd->isLinkable())
 	    {
 	      if (generateClassMemberLink(ol,mcd,memName)) return;
-#if 0
-	      //printf("Found class `%s'\n",mcd->name().data());
-	      MemberName *mmn=memberNameDict[memName];
-	      if (mmn)
-	      {
-		MemberNameIterator mmni(*mmn);
-		MemberDef *mmd,*xmd=0;
-		ClassDef *xcd=0;
-		const int maxInheritanceDepth = 100000;
-		int mdist=maxInheritanceDepth;
-		for (;(mmd=mmni.current());++mmni)
-		{
-		  int m=minClassDistance(mcd,mmd->getClassDef());
-		  if (m<mdist && mmd->getClassDef()->isLinkable())
-		  {
-		    mdist=m;
-		    xcd=mmd->getClassDef();
-		    xmd=mmd;
-		  }
-		}
-		if (mdist!=maxInheritanceDepth)
-		{
-                  if (g_currentDefinition && g_currentMemberDef &&
-	              xmd!=g_currentMemberDef && g_insideBody)
-                  {
-                    xmd->addSourceReference(g_currentMemberDef);
-                  }
-		  writeMultiLineCodeLink(ol,xcd->getReference(),
-		     xcd->getOutputFileBase(),xmd->anchor(),memName);
-		  return;
-		}
-	      }
-#endif
 	    }
 	  }
 	}
@@ -617,27 +584,12 @@ static void generateMemberLink(OutputList &ol,const char *varName,
   return;
 }
 
-static QCString removeWhiteSpace(const char *s)
-{
-  QCString result;
-  if (s)
-  {
-    const char *p=s;
-    int c;
-    while ((c=*p++))
-    {
-      if (c!=' ' && c!='\n' && c!='\r' && c!='\t') result+=c;
-    }
-  }
-  return result;
-}
-
 static void generateFunctionLink(OutputList &ol,char *funcName)
 {
   OutputList result(&ol);
   CodeClassDef *ccd=0;
   QCString locScope=g_classScope.copy();
-  QCString locFunc=removeWhiteSpace(funcName);
+  QCString locFunc=removeRedundantWhiteSpace(funcName);
   int i=locFunc.findRev("::");
   if (i>0)
   {
@@ -970,7 +922,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
   					}
-<Body>{SCOPENAME}{B}*"<"[^\n\>]*">"/{B}* { // A<T> *pt;
+<Body>{SCOPENAME}{B}*"<"[^\n\"\>]*">"/{B}* { // A<T> *pt;
 					  generateClassLink(*g_code,yytext);
 					  addType();
   					  g_name+=yytext; 

@@ -40,6 +40,19 @@ Multiple lines can be concatenated by inserting a backslash (\\)
 as the last character of a line. Environment variables can be expanded 
 using the pattern \c $(ENV_VARIABLE_NAME).
 
+You can also include part of a configuration file from another configuration
+file using a <code>\@INCLUDE</code> tag as follows:
+\verbatim
+@INCLUDE = config_file_name
+\endverbatim 
+The include file is searched in the current working directory. You can 
+also specify a list of directories that should be searched before looking
+in the current working directory. Do this by putting a <code>\@INCLUDEPATH</code> tag 
+with these paths before the <code>\@INCLUDE</code> tag, e.g:
+\verbatim
+@INCLUDEPATH = my_config_dir
+\endverbatim
+
 The configuration options can be divided into several categories.
 Below is an alphabetical index of the tags that are recognized 
 followed by the descriptions of the tags grouped by category.

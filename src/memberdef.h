@@ -79,7 +79,7 @@ class MemberDef : public Definition
     const char *typeString() const        { return type; }
     const char *argsString() const        { return args; }
     const char *excpString() const        { return exception; }     
-    const char *anchor() const            { return anc; }
+    QCString anchor() const;
     const QCString &initializer() const   { return init; }
     int initializerLines() const          { return initLines; }
     int  getMemberSpecifiers() const      { return memSpec; }
@@ -90,6 +90,7 @@ class MemberDef : public Definition
     GroupDef *getGroupDef() const         { return group; }
     FileDef  *getFileDef() const          { return fileDef; }
     NamespaceDef* getNamespaceDef() const { return nspace; }
+    Definition *getCompoundDef() const;
 
     // direct kind info 
     Protection protection() const         { return prot; }
@@ -144,7 +145,7 @@ class MemberDef : public Definition
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                    bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
-                            const char *scopeName/*,MemberType m*/);
+                            const char *scopeName,Definition *container);
     void warnIfUndocumented();
     
     // relation to other members

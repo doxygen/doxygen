@@ -28,7 +28,6 @@
 #include "classlist.h"
 #include "membername.h"
 #include "filename.h"
-//#include "define.h"
 #include "namespacedef.h"
 #include "formula.h"
 #include "section.h"
@@ -37,7 +36,8 @@
 struct PageInfo
 {
   PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
-     defFileName(f), defLine(l), name(n), doc(d), title(t) {}
+     defFileName(f), defLine(l), name(n), doc(d), title(t), 
+     todoId(0), testId(0) {}
 
   // where the page definition was found
   QCString defFileName;
@@ -47,6 +47,10 @@ struct PageInfo
   QCString name;
   QCString doc;
   QCString title;
+
+  // ids
+  int todoId;
+  int testId;
 };
 
 class PageList : public QList<PageInfo> 
@@ -104,7 +108,6 @@ extern MemberNameDict functionNameDict;
 extern StringDict substituteDict;
 extern FileList fileList;
 extern FileDict fileDict;
-//extern DefineDict defineDict;
 extern ClassDef unrelatedClass; 
 extern QTextStream tagFile;
 extern SectionDict sectionDict;
@@ -113,7 +116,6 @@ extern FileNameDict *includeNameDict;
 extern FileNameDict *exampleNameDict;
 extern FileNameDict *inputNameDict;
 extern FileNameDict *imageNameDict;
-//extern FileList includeFiles; 
 extern StringDict typedefDict;
 extern GroupList groupList;
 extern GroupDict groupDict;

@@ -23,8 +23,6 @@
 #include <qtextstream.h>
 #include <ctype.h>
 
-#include "outputlist.h"
-#include "xml.h"
 
 class ClassDef;
 class FileDef;
@@ -41,6 +39,8 @@ class GroupDef;
 class NamespaceList;
 class OutputList;
 
+//--------------------------------------------------------------------
+
 class TextGeneratorIntf
 {
   public:
@@ -54,22 +54,12 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorOLImpl(OutputList &ol) : m_ol(ol) {}
-    void writeString(const char *s) const
-    { m_ol.docify(s); }
-    void writeBreak() const
-    { 
-      m_ol.pushGeneratorState();
-      m_ol.disableAllBut(OutputGenerator::Html);
-      m_ol.lineBreak();
-      m_ol.popGeneratorState();
-    }
+    TextGeneratorOLImpl(OutputList &ol);
+    void writeString(const char *s) const;
+    void writeBreak() const;
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
-                  ) const
-    {
-      m_ol.writeObjectLink(extRef,file,anchor,text);
-    }
+                  ) const;
   private:
     OutputList &m_ol;
 };
@@ -77,24 +67,17 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorXMLImpl(QTextStream &t) : m_t(t) {}
-    void writeString(const char *s) const
-    { 
-      writeXMLString(m_t,s); 
-    }
-    void writeBreak() const {}
+    TextGeneratorXMLImpl(QTextStream &t);
+    void writeString(const char *s) const;
+    void writeBreak() const;
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
-                  ) const
-    {
-      if (extRef==0) 
-      { writeXMLLink(m_t,file,anchor,text); } 
-      else // external references are not supported for XML
-      { writeXMLString(m_t,text); }
-    }
+                  ) const;
   private:
     QTextStream &m_t;
 };
+
+//--------------------------------------------------------------------
 
 extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
                         const char *text,bool autoBreak=FALSE,bool external=TRUE);
@@ -105,7 +88,8 @@ extern QCString dateToString(bool);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, 
                     ClassDef *&cd,FileDef *&fd, 
-                    NamespaceDef *&nd,GroupDef *&gd
+                    NamespaceDef *&nd,GroupDef *&gd,
+                    bool forceEmptyScope=FALSE
                    );
 extern bool generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);

@@ -20,7 +20,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "language.h"
-#include "scanner.h"
+#include "doc.h"
 
 ClassList::ClassList() : QList<ClassDef>()
 {

@@ -65,6 +65,9 @@ sub GenerateDep {
 #$ GenerateDep("defargs.cpp","defargs.l");
 	$(LEX) -PdefargsYY -t defargs.l >defargs.cpp
 
+#$ GenerateDep("doc.cpp","doc.l");
+	$(LEX) -PdocYY -t doc.l >doc.cpp
+
 #$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
 	$(LEX) -PcppExpYY -t constexp.l >ce_lex.cpp 
 
@@ -77,3 +80,4 @@ sub GenerateDep {
 
 xml_dtd.h: doxygen.dtd
 	cat doxygen.dtd | sed -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >xml_dtd.h 
+

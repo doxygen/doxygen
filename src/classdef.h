@@ -203,6 +203,7 @@ struct UsesClassDef
   UsesClassDef(ClassDef *cd) : classDef(cd) 
   { 
     accessors = new QDict<void>(17); 
+    containment = TRUE;
   }
  ~UsesClassDef()
   {
@@ -218,6 +219,7 @@ struct UsesClassDef
   ClassDef *classDef;
   QDict<void> *accessors;
   QCString templSpecifiers;
+  bool containment;
 };
 
 class UsesClassDict : public QDict<UsesClassDef>

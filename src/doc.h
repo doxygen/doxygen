@@ -15,14 +15,19 @@
  *
  */
 
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef DOC_H
+#define DOC_H
 
 #include "qtbc.h"
 
 class OutputList;
-class Entry;
 
-extern void parseMain(Entry *);
+extern void parseDoc(OutputList &ol,
+                     const char *fileName,int startLine,
+                     const char *clName, const char *memName,
+                     const QCString &docString);
+extern void parseExample(OutputList &ol,const QCString &docString, 
+                           const char *fileName);
+extern void parseText(OutputList &ol,const QCString &txtString);
 
 #endif

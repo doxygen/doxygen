@@ -21,7 +21,7 @@
 #include <qstrlist.h>
 #include <qfile.h>
 
-extern void parseConfig(const QCString &config);
+extern void parseConfig(const QCString &config,const char *fn);
 extern void writeTemplateConfig(QFile *f,bool shortList);
 extern void checkConfig();
 extern void configStrToVal();

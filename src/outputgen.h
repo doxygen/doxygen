@@ -122,9 +122,9 @@ class OutputGenerator
     virtual void startMemberDoc(const char *,const char *,
                                 const char *,const char *) = 0;
     virtual void endMemberDoc() = 0;
-    virtual void startDoxyAnchor(const char *fileName,const char *clName,
-                                 const char *anchor,const char *name) = 0;
-    virtual void endDoxyAnchor() = 0;
+    virtual void startDoxyAnchor(const char *fName,const char *anchor,
+                                 const char *name) = 0;
+    virtual void endDoxyAnchor(const char *fileName,const char *anchor) = 0;
     virtual void startCodeAnchor(const char *label) = 0;
     virtual void endCodeAnchor() = 0;
     virtual void writeLatexSpacing() = 0;
@@ -187,7 +187,8 @@ class OutputGenerator
     virtual void endQuickIndexItem() = 0;
     virtual void writeFormula(const char *,const char *) = 0;
     virtual void writeNonBreakableSpace() = 0;
-    virtual void writeImage(const char *,const char *,const char *) = 0;
+    virtual void startImage(const char *,const char *,bool) = 0;
+    virtual void endImage(bool) = 0;
     
     virtual void startDescTable() = 0;
     virtual void endDescTable() = 0;

@@ -45,6 +45,9 @@
 //  - Encoding conversion tables moved to the methods that use them.
 //  - Updates for "new since 1.1.5".
 //
+// 2000/08/02 (Petr Prikryl)
+//  - Updated for 1.2.0
+//
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
@@ -1128,6 +1131,23 @@ class TranslatorCzech : public Translator
     {
       return DECODE("vysvìtlivky");
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.0
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a test item */
+    virtual QCString trTest()
+    {
+      return "Test";
+    }
+   
+    /*! Used as the header of the test list */
+    virtual QCString trTestList()
+    {
+      return "Seznam testù";
+    }
+
 };
 
 #endif // TRANSLATOR_CZ_H

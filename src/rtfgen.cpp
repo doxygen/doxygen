@@ -1124,7 +1124,7 @@ void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
   if (!ref && fn)
   {
     t << "\\tab ";
-    WriteRTFReference(name);
+    WriteRTFReference(fn);
     t << endl;
   }
   else
@@ -1392,15 +1392,15 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
     // make an index entry
     addToIndex(name,0);
 
-    if (name)
-    {
-      writeAnchor(0,name);
-    }
-
-    if (Config::rtfHyperFlag && fileName)
-    {
+    //if (name)
+    //{
+    //  writeAnchor(0,name);
+    //}
+    //
+    //if (Config::rtfHyperFlag && fileName)
+    //{
       writeAnchor(fileName,0);
-    }
+    //}
   }
 }
 
@@ -1459,13 +1459,16 @@ void RTFGenerator::endMemberDoc()
   newParagraph();
 }
 
-void RTFGenerator::startDoxyAnchor(const char *fName,const char *clname,
-    const char *anchor,const char *)
+void RTFGenerator::startDoxyAnchor(const char *,const char *,const char *)
+{
+}
+
+void RTFGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
   QCString ref;
-  if (clname)
+  if (fName)
   {
-    ref+=clname;
+    ref+=fName;
   }
   if (anchor)
   {
@@ -1479,33 +1482,6 @@ void RTFGenerator::startDoxyAnchor(const char *fName,const char *clname,
   t << "{\\bkmkend ";
   t << formatBmkStr(ref);
   t << "}" << endl;
-
-  if (Config::rtfHyperFlag)
-  { // doxygen expects a bookmark based on fName for the hyper target so we make a second bookmark
-    ref="";
-
-    if (fName)
-    {
-      ref+=fName;
-    }
-    if (anchor)
-    {
-      ref+='_';
-      ref+=anchor;
-    }
-
-    t << "{\\bkmkstart ";
-    t << formatBmkStr(ref);
-    t << "}" << endl;
-    t << "{\\bkmkend ";
-    t << formatBmkStr(ref);
-    t << "}" << endl;
-  }
-}
-
-void RTFGenerator::endDoxyAnchor()
-{
-
 }
 
 
@@ -1760,12 +1736,9 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
     const char *fileName,const char *)
 {
   newParagraph();
-  DBG_RTF(t <<"{\\comment This would be an image map..." << endl)
 
   // create a gif file
-  d.writeImageMap(t,dir,fileName);
-
-  t << "}" << endl;
+  d.writeImageMap(t,dir,fileName,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -1855,16 +1828,14 @@ void RTFGenerator::endMemberList()
 #endif
 }
 
-void RTFGenerator::writeImage(const char *,const char *,const char *)
+void RTFGenerator::startImage(const char *,const char *,bool)
 {
-#ifdef DELETEDCODE
-  t << "\\mbox{\\epsfig{file=" << name;
-  if (w)
-    t << "," << w; 
-  else if (h)
-    t << "," << h;
-  t << "}}" << endl;
-#endif
+  // not yet implemented
+}
+
+void RTFGenerator::endImage(bool)
+{
+  // not yet implemented
 }
 
 void RTFGenerator::startDescTable()  

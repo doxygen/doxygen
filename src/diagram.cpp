@@ -475,7 +475,8 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
 void TreeDiagram::drawBoxes(QTextStream &t,Image *image, 
                             bool doBase,bool bitmap,
                             uint baseRows,uint superRows,
-                            uint cellWidth,uint cellHeight)
+                            uint cellWidth,uint cellHeight,
+                            bool generateMap)
 {
   DiagramRow *dr=first();
   if (!doBase) dr=next();
@@ -543,7 +544,8 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
           bool hasDocs=di->getClassDef()->isLinkable();
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,
               hasDocs,di->getChildren()->count()>0); 
-          if (!firstRow) writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
+          if (!firstRow && generateMap) 
+            writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
         }
         else
         {
@@ -575,7 +577,8 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
           }
           bool hasDocs=di->getClassDef()->isLinkable();
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,hasDocs); 
-          if (!firstRow) writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
+          if (!firstRow && generateMap) 
+            writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
         }
         else
         {
@@ -1244,7 +1247,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 
 
 void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
-                                 const char *fileName)
+                                 const char *fileName, bool generateMap)
 {
   uint baseRows=base->computeRows();
   uint superRows=super->computeRows();
@@ -1271,13 +1274,13 @@ void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
 
   Image image(imageWidth,imageHeight);
 
-  base->drawBoxes(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
-  super->drawBoxes(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
+  base->drawBoxes(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight,generateMap);
+  super->drawBoxes(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight,generateMap);
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
   image.save((QCString)path+"/"+fileName+".gif");
   
-  t << "</map>" << endl;
+  if (generateMap) t << "</map>" << endl;
 }
 

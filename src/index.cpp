@@ -24,7 +24,7 @@
 #include "message.h"
 #include "index.h"
 #include "doxygen.h"
-#include "scanner.h"
+#include "doc.h"
 #include "code.h"
 #include "config.h"
 #include "filedef.h"
@@ -634,7 +634,7 @@ void writeNamespaceIndex(OutputList &ol)
         ol.endEmphasis();
       }
       ol.docify(")");
-      ol.writeEndAnnoItem(nd->name());
+      ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
         htmlHelp->addContentsItem(nd->name(),nd->getOutputFileBase());
@@ -710,7 +710,7 @@ void writeAnnotatedClassList(OutputList &ol)
         ol.endEmphasis();
       }
       ol.docify(")");
-      ol.writeEndAnnoItem(cd->name());
+      ol.writeEndAnnoItem(cd->getOutputFileBase());
       if (Config::generateHtml && Config::htmlHelpFlag)
       {
         HtmlHelp::getInstance()->addContentsItem(
@@ -1521,7 +1521,11 @@ void writeGraphInfo(OutputList &ol)
   startTitle(ol,0);
   parseText(ol,theTranslator->trLegendTitle());
   endTitle(ol,0,0);
+  bool oldStripCommentsState = Config::stripCommentsFlag;
+  // temporarily disable the stripping of comments for our own code example!
+  Config::stripCommentsFlag = FALSE;
   parseDoc(ol,"graph_legend",1,0,0,theTranslator->trLegendDocs());
+  Config::stripCommentsFlag = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();
 }

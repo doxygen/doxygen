@@ -716,6 +716,244 @@ class TranslatorFrench : public Translator
     {
       return "Définition dans le fichier @0.";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991205
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDeprecated()
+    {
+      return "Obsolète";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.0.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! this text is put before a collaboration diagram */
+    virtual QCString trCollaborationDiagram(const char *clName)
+    {
+      return (QCString)"Diagramme de collaboration de "+clName+":";
+    }
+    /*! this text is put before an include dependency graph */
+    virtual QCString trInclDepGraph(const char *fName)
+    {
+      return (QCString)"Graphe des dépendances par inclusion pour "+fName+":";
+    }
+    /*! header that is put before the list of constructor/destructors. */
+    virtual QCString trConstructorDocumentation()
+    {
+      return "Documentation des contructeurs et destructeurs"; 
+    }
+    /*! Used in the file documentation to point to the corresponding sources. */
+    virtual QCString trGotoSourceCode()
+    {
+      return "Aller au code source de ce fichier.";
+    }
+    /*! Used in the file sources to point to the corresponding documentation. */
+    virtual QCString trGotoDocumentation()
+    {
+      return "Aller à la documentation de ce fichier.";
+    }
+    /*! Text for the \pre command */
+    virtual QCString trPrecondition()
+    {
+      return "Précondition";
+    }
+    /*! Text for the \post command */
+    virtual QCString trPostcondition()
+    {
+      return "Postcondition";
+    }
+    /*! Text for the \invariant command */
+    virtual QCString trInvariant()
+    {
+      return "Invariant";
+    }
+    /*! Text shown before a multi-line variable/enum initialization */
+    virtual QCString trInitialValue()
+    {
+      return "Initialisation:";
+    }
+    /*! Text used the source code in the file index */
+    virtual QCString trCode()
+    {
+      return "code";
+    }
+    virtual QCString trGraphicalHierarchy()
+    {
+      return "Diagramme hiérarchique des classes";
+    }
+    virtual QCString trGotoGraphicalHierarchy()
+    {
+      return "Aller au diagramme hiérarchique des classes";
+    }
+    virtual QCString trGotoTextualHierarchy()
+    {
+      return "Aller à la hiérarchie des classes en texte";
+    }
+    virtual QCString trPageIndex()
+    {
+      return "Index des pages";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+    
+    virtual QCString trNote()
+    {
+      return "Note";
+    }
+    virtual QCString trPublicTypes()
+    {
+      return "Types Publics";
+    }
+    virtual QCString trPublicAttribs()
+    {
+      return "Attributs Publics";
+    }
+    virtual QCString trStaticPublicAttribs()
+    {
+      return "Attributs Publics Statiques";
+    }
+    virtual QCString trProtectedTypes()
+    {
+      return "Types Protégés";
+    }
+    virtual QCString trProtectedAttribs()
+    {
+      return "Attributs Protégés";
+    }
+    virtual QCString trStaticProtectedAttribs()
+    {
+      return "Attributs Protégés Statiques";
+    }
+    virtual QCString trPrivateTypes()
+    {
+      return "Types Privés";
+    }
+    virtual QCString trPrivateAttribs()
+    {
+      return "Attributs Privés";
+    }
+    virtual QCString trStaticPrivateAttribs()
+    {
+      return "Attributs Privés Statiques";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a todo item */
+    virtual QCString trTodo()
+    {
+      return "A Faire";
+    }
+    /*! Used as the header of the todo list */
+    virtual QCString trTodoList()
+    {
+      return "Liste des choses à faire";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trReferencedBy()
+    {
+      return "Référencé par";
+    }
+    virtual QCString trRemarks()
+    {
+      return "Remarques";
+    }
+    virtual QCString trAttention()
+    {
+      return "Attention";
+    }
+    virtual QCString trInclByDepGraph()
+    {
+      return "Ce graphe montre quels fichiers incluent directement "
+             "ou indirectement ce fichier:";
+    }
+    virtual QCString trSince()
+    {
+      return "Depuis";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    virtual QCString trLegendTitle()
+    {
+      return "Légende du graphe";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    virtual QCString trLegendDocs()
+    {
+      return 
+		"Cette page explique comment interpréter les graphes générés "
+		"par doxygen.<p>\n"
+
+        "Considérez l'exemple suivant:\n"
+        "\\code\n"
+        "/*! Classe invisible à cause d'une troncature */\n"
+        "class Invisible { };\n\n"
+        "/*! Classe tronquée, la relation d'héritage est masquée */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/*! Classe non documentée avec des commentaires Doxygen */\n"
+        "class Undocumented { };\n\n"
+        "/*! Classe dérivée par héritage public */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Classe dérivée par héritage protégé */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Classe dérivée par héritage privé */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Classe utilisée par la classe dérivée */\n"
+        "class Used { };\n\n"
+        "/*! Super-classe qui hérite de plusieurs autres classes */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+		"Si la valeur 200 est attribuée au tag \\c MAX_DOT_GRAPH_HEIGHT "
+		"du fichier de configuration, cela génèrera le graphe suivant:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+		"Les rectangles du graphe ci-dessus ont la signification suivante:\n"
+        "<ul>\n"
+        "<li>Un rectangle plein noir représente la structure ou la classe pour laquelle "
+        "le graphe est généré.\n"
+        "<li>Un rectangle avec un bord noir indique une classe ou une structure documentée.\n"
+        "<li>Un rectangle avec un bord gris indique une classe ou une structure non documentée.\n"
+        "<li>Un rectangle avec un bord rouge indique une structure ou une classe documentée\n"
+		"pour laquelle des relations d'héritage ou de collaboration manquent. Un graphe est "
+		"tronqué s'il ne rentre pas dans les limites spécifiées."
+        "</ul>\n"
+        "Les flèches ont la signification suivante:\n"
+        "<ul>\n"
+        "<li>Une flèche bleu foncé est utilisée pour visuliser une relation d'héritage public "
+		"entre deux classes.\n"
+        "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégé.\n"
+        "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privé.\n"
+		"<li>Une fléche violette en pointillés est utilisée si une classe est contenue ou "
+		"utilisée par une autre classe. La flèche est étiquetée avec la ou les variable(s) "
+		"qui permettent d'acceder à la classe ou structure pointée. \n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    virtual QCString trLegend()
+    {
+      return "Légende";
+    }
 };
 
 #endif
