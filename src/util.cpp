@@ -452,6 +452,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   if (scopeIndex!=-1) // strip scope part for the name
   {
     resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
+    if (resName.isEmpty())
+    {
+      // qualifiedName was of form A:: !
+      return result;
+    }
   }
   MemberDef *md=0;
   while (mContext && md==0)
@@ -2602,7 +2607,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
 {
   QCString type = arg->type;
   QCString name = arg->name;
-  printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
+  //printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
   if ((type=="const" || type=="volatile") && !name.isEmpty()) 
   { // name is part of type => correct
     type+=" ";
@@ -2634,7 +2639,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     canType += type.mid(p,i-p);
     QCString word = type.mid(i,l);
     ClassDef *cd = getResolvedClass(d,fs,word);
-    printf("word %s => %s\n",word.data(),cd?cd->qualifiedName().data():"<none>");
+    //printf("word %s => %s\n",word.data(),cd?cd->qualifiedName().data():"<none>");
     if (cd)
     {
       canType+=cd->qualifiedName();
@@ -2654,7 +2659,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     p=i+l;
   }
   canType += type.right(type.length()-p);
-  printf("result = %s\n",canType.data());
+  //printf("result = %s\n",canType.data());
  
   return removeRedundantWhiteSpace(canType);
 }
@@ -2961,7 +2966,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   QCString mScope;
   if (memberName.left(9)!="operator " && // treat operator conversion methods
                                          // as a special case
-      (im=memberName.findRev("::"))!=-1
+      (im=memberName.findRev("::"))!=-1 && 
+      im<(int)memberName.length()-2 // not A::
      )
   {
     mScope=memberName.left(im); 
@@ -2973,6 +2979,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
+  if (mName.isEmpty()) printf("memberName=%s\n",memberName.data());
   MemberName *mn = Doxygen::memberNameSDict[mName];
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {

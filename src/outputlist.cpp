@@ -133,7 +133,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
                   Definition *ctx,MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
-                  bool singleLine,bool isParam)
+                  bool singleLine,bool linkFromIndex)
 {
   int count=0;
   if (docStr.isEmpty()) return;
@@ -151,13 +151,13 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   {
     root = validatingParseDoc(fileName,startLine,
                               ctx,md,docStr,indexWords,isExample,exampleName,
-                              singleLine,isParam);
+                              singleLine,linkFromIndex);
   }
   else
   {
     root = validatingParseDoc(fileName,startLine,
                               ctx,md,docStr+"\n",indexWords,isExample,exampleName,
-                              singleLine,isParam);
+                              singleLine,linkFromIndex);
   }
 
   og=outputs->first();

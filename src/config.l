@@ -2850,12 +2850,12 @@ static QCString configFileToString(const char *name)
         int fsize=f.size();
         QCString contents(fsize+2);
         f.readBlock(contents.data(),fsize);
+        f.close();
         if (fsize==0 || contents[fsize-1]=='\n') 
           contents[fsize]='\0';
         else
           contents[fsize]='\n'; // to help the scanner
         contents[fsize+1]='\0';
-        f.close();
         return contents;
       }
   }

@@ -423,6 +423,8 @@ MemberDef::MemberDef(const char *df,int dl,
   m_inbodyLine = -1;
   m_implOnly=FALSE;
   groupMember = 0;
+  m_hasDocumentedParams = FALSE;
+  m_hasDocumentedReturnType = FALSE;
 }
 
 /*! Destroys the member definition. */
@@ -1584,13 +1586,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.startDescTableData();
         ol.parseDoc(docFile(),docLine(),
                     getOuterScope()?getOuterScope():container,
-                    this,
+                    this,         // memberDef
                     a->docs+"\n", // docStr
                     TRUE,         // indexWords
-                    FALSE,        // isExample
-                    0,            // exampleName
-                    FALSE,        // singleLine
-                    TRUE          // isParam
+                    FALSE         // isExample
                    );
         ol.endDescTableData();
       }
@@ -1837,6 +1836,24 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   // enable LaTeX again
   //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
   ol.popGeneratorState();
+
+  if (!Config_getBool("EXTRACT_ALL") &&
+      Config_getBool("WARN_IF_UNDOCUMENTED") &&
+      Config_getBool("WARN_NO_PARAMDOC"))
+  {
+    if (!hasDocumentedParams())
+    {
+      warn_doc_error(docFile(),docLine(),
+          "Warning: parameters of member %s are not (all) documented",
+          qualifiedName().data());
+    }
+    if (!hasDocumentedReturnType())
+    {
+      warn_doc_error(docFile(),docLine(),
+          "Warning: return type of member %s is not documented",
+          qualifiedName().data());
+    }
+  }
 
 }
 

@@ -213,7 +213,7 @@ static void addRelatedPage(Entry *root)
   {
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
-  //printf("addRelatedPage() %s gd=%p\n",root->name.data(),gd);
+  //printf("---> addRelatedPage() %s gd=%p\n",root->name.data(),gd);
   PageDef *pd = addRelatedPage(root->name,root->args,root->doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
@@ -1724,7 +1724,7 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]\\*");
+  static const QRegExp re("([^)]*\\*");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 &&     // contains a (*
@@ -1905,7 +1905,7 @@ static void buildVarList(Entry *root)
         {
           root->type=root->type.left(root->type.length()-1);
           root->args.prepend(")");
-          printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
+          //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
       }
     }
@@ -6769,7 +6769,7 @@ static void generatePageDocs()
       
       SectionInfo *si=0;
       if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
-          (si=Doxygen::sectionDict.find(pd->name()))!=0)
+          (si=Doxygen::sectionDict.find(pageName))!=0)
       {
         outputList->startSection(si->label,si->title,si->type);
         outputList->docify(si->title);

@@ -71,11 +71,13 @@ class MemberDef : public Definition
               bool related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al);
    ~MemberDef(); 
-    DefType definitionType() { return TypeMember; }
+    DefType definitionType()              { return TypeMember; }
     
+    // link id
     QCString getOutputFileBase() const;
     QCString getReference() const;
     QCString anchor() const;
+
     const char *declaration() const       { return decl; }
     const char *definition() const        { return def; }
     const char *typeString() const        { return type; }
@@ -110,7 +112,7 @@ class MemberDef : public Definition
     Specifier virtualness() const;
     MemberType memberType() const         { return mtype; }
 
-    // convenience methods
+    // getter methods
     bool isSignal() const                 { return mtype==Signal;      }
     bool isSlot() const                   { return mtype==Slot;        }
     bool isVariable() const               { return mtype==Variable;    }
@@ -137,6 +139,8 @@ class MemberDef : public Definition
     bool isImplementation() const         { return m_implOnly; }
     bool isExternal() const               { return explExt; }
     bool isTemplateSpecialization() const { return tspec; }
+    bool hasDocumentedParams() const      { return m_hasDocumentedParams; }
+    bool hasDocumentedReturnType() const  { return m_hasDocumentedReturnType; }
     bool isObjCMethod() const;
     bool isConstructor() const;
     bool isDestructor() const;
@@ -154,27 +158,29 @@ class MemberDef : public Definition
     bool isDocumentedFriendClass() const;
 
     // set functions
-    void setMemberType(MemberType t)       { mtype=t; }
-    void setDefinition(const char *d)      { def=d; }
-    void setFileDef(FileDef *fd)           { fileDef=fd; }
+    void setMemberType(MemberType t)        { mtype=t; }
+    void setDefinition(const char *d)       { def=d; }
+    void setFileDef(FileDef *fd)            { fileDef=fd; }
     void setAnchor(const char *a);
-    void setProtection(Protection p)       { prot=p; }
-    void setMemberSpecifiers(int s)        { memSpec=s; }
-    void mergeMemberSpecifiers(int s)      { memSpec|=s; }
+    void setProtection(Protection p)        { prot=p; }
+    void setMemberSpecifiers(int s)         { memSpec=s; }
+    void mergeMemberSpecifiers(int s)       { memSpec|=s; }
     void setInitializer(const char *i);
-    void setBitfields(const char *s)       { bitfields = s; }
-    void setMaxInitLines(int lines)        { userInitLines=lines; }
+    void setBitfields(const char *s)        { bitfields = s; }
+    void setMaxInitLines(int lines)         { userInitLines=lines; }
     void setMemberClass(ClassDef *cd);
     void setSectionList(Definition *d,MemberList *sl);
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0);
-    void setExplicitExternal(bool b)       { explExt=b; }
-    void setReadAccessor(const char *r)    { read=r; }
-    void setWriteAccessor(const char *w)   { write=w; }
-    void setTemplateSpecialization(bool b) { tspec=b; }
+    void setExplicitExternal(bool b)        { explExt=b; }
+    void setReadAccessor(const char *r)     { read=r; }
+    void setWriteAccessor(const char *w)    { write=w; }
+    void setTemplateSpecialization(bool b)  { tspec=b; }
     
-    void makeRelated()                    { related=TRUE; } 
+    void makeRelated()                      { related=TRUE; } 
+    void setHasDocumentedParams(bool b)     { m_hasDocumentedParams = b; }
+    void setHasDocumentedReturnType(bool b) { m_hasDocumentedReturnType = b; }
 
     // output generatation
     void writeLink(OutputList &ol,
@@ -330,18 +336,17 @@ class MemberDef : public Definition
     MemberDef *groupAlias;    // Member containing the definition
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
-    bool    related;          // is this a member that is only related to a class
-    bool    stat;             // is it a static function?
-    int     memSpec;          // The specifiers present for this member
+    int  memSpec;             // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
+    bool related;             // is this a member that is only related to a class
+    bool stat;                // is it a static function?
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
     bool annScope;            // member is part of an annoymous scope
     bool annUsed;             
     bool annShown;           
     bool m_hasCallGraph;
-    //int  indDepth;            // indentation depth for this member if inside an annonymous scope
-    int  maxInitLines;        // when the initializer will be displayed 
+    int maxInitLines;         // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
@@ -389,6 +394,9 @@ class MemberDef : public Definition
     // objective-c
     bool m_implOnly; // function found in implementation but not 
                      // in the interface
+
+    bool m_hasDocumentedParams;
+    bool m_hasDocumentedReturnType;
 };
 
 #endif

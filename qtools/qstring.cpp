@@ -12212,6 +12212,14 @@ QString::QString( const QByteArray& ba )
     d = new QStringData(uc,l,l);
 }
 
+QString::QString( const QCString& ba )
+{
+    Q2HELPER(stat_construct_ba++)
+    uint l;
+    QChar *uc = internalAsciiToUnicode(ba,&l);
+    d = new QStringData(uc,l,l);
+}
+
 /*!
   Constructs a string that is a deep copy of the
   first \a length QChar in the array \a unicode.
