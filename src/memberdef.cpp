@@ -99,11 +99,24 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
   }
   //printf("~~~ %s cName=%s\n",md->name().data(),cName.data());
+
+  // You can set the next to TRUE to experiment with multiline parameter lists.
+  // I'll add this in some form in a future release.
+  bool multiLineArgs = FALSE; /* argList->count()>2; */
   while (a)
   {
     QRegExp re(")(");
     int vp;
-    if (!a->attrib.isEmpty())
+    if (multiLineArgs)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.lineBreak();
+      ol.writeNonBreakableSpace();
+      ol.writeNonBreakableSpace();
+      ol.popGeneratorState();
+    }
+    if (!a->attrib.isEmpty()) // argument has an IDL attribute
     {
       ol.docify(a->attrib+" ");
     }
@@ -148,6 +161,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
     a=argList->next();
     if (a) ol.docify(", "); // there are more arguments
+  }
+  if (multiLineArgs)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.lineBreak();
+    ol.popGeneratorState();
   }
   ol.docify(")"); // end argument list
   if (argList->constSpecifier)
@@ -746,7 +766,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       ol.startMemberDescription();
       parseDoc(ol,cname,name(),briefDescription());
-      if (!documentation().isEmpty()) 
+      if (/*!documentation().isEmpty()*/ detailsAreVisible()) 
       {
         ol.disableAllBut(OutputGenerator::Html);
         ol.endEmphasis();
@@ -1297,11 +1317,17 @@ bool MemberDef::detailsAreVisible() const
            (!Config::briefMemDescFlag || Config::alwaysDetailsFlag) && 
            Config::repeatBriefFlag // has brief description inside detailed area
          ) ||
-         (initLines>0 && initLines<maxInitLines)
+         (initLines>0 && initLines<maxInitLines) ||
+         (argList!=0 && argList->hasDocumentation())
          ;
 }
 
 void MemberDef::setEnumDecl(OutputList &ed) 
 { 
   enumDeclList=new OutputList(&ed); 
+}
+
+bool MemberDef::hasDocumentation()
+{ 
+  return Definition::hasDocumentation() || (argList!=0 && argList->hasDocumentation()); 
 }

@@ -107,7 +107,13 @@ class HtmlGenerator : public OutputGenerator
     void writeAnchor(const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
-    void endCodeFragment()   { t << "</div></pre>"; }
+    void endCodeFragment()   { t << "</div></pre>"; } // <- I know this is 
+                                                      //    ordered the wrong
+                                                      //    way, but it is
+                                                      //    the only way I know
+                                                      //    to prevent an extra
+                                                      //    blank line 
+                                                      //    (with netscape)
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }
     void writeBoldString(const char *text) 

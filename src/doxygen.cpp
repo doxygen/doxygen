@@ -84,7 +84,7 @@ StringDict     excludeNameDict(1009);   // sections
 FileNameDict   includeNameDict(1009);   // include names
 FileNameDict   exampleNameDict(1009);   // examples
 FileNameDict   imageNameDict(257);      // images
-DefineDict     defineDict(10007);       // all defines
+//DefineDict     defineDict(10007);       // all defines
 StringDict     typedefDict(1009);       // all typedefs
 GroupDict      groupDict(257);          // all groups
 FormulaDict    formulaDict(1009);       // all formulas
@@ -122,7 +122,7 @@ void clearAll()
   includeNameDict.clear();  
   exampleNameDict.clear();  
   imageNameDict.clear();     
-  defineDict.clear();      
+  //defineDict.clear();      
   typedefDict.clear();      
   groupDict.clear();         
   formulaDict.clear();      
@@ -474,7 +474,6 @@ static void addMemberToGroups(Entry *root,MemberDef *md)
     }
   }
 }
-
 
 //----------------------------------------------------------------------
 // build a list of all classes mentioned in the documentation
@@ -956,7 +955,11 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   NamespaceDef *nd = 0;
   if (!scope.isEmpty())
   {
-    nd = namespaceDict[scope];
+    QCString nscope=removeAnnonymousScopes(scope);
+    if (!nscope.isEmpty())
+    {
+      nd = namespaceDict[nscope];
+    }
   }
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
@@ -3516,7 +3519,7 @@ void generateFileDocs()
         {
           fd->writeDocumentation(*outputList);
         }
-        if (src && !fd->isReference()) // TODO: can this be TRUE for tag files?
+        if (src && !fd->isReference()) 
         {
           fd->writeSource(*outputList);
         }
@@ -3739,6 +3742,7 @@ void findDefineDocumentation(Entry *root)
             bool ambig;
             md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
+            addMemberToGroups(root,md);
           }
           md=mn->next();
         }
@@ -3769,6 +3773,7 @@ void findDefineDocumentation(Entry *root)
               bool ambig;
               md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
+              addMemberToGroups(root,md);
             }
           }
           md=mn->next();
@@ -3969,7 +3974,9 @@ void buildExampleList(Entry *root)
       else
       {
         PageInfo *pi=new PageInfo(root->name,root->doc,root->args);
-        setFileNameForSections(root->anchors,root->name);
+        setFileNameForSections(root->anchors,
+                               convertSlashes(pi->name,TRUE)+"-example"
+                              );
         exampleList.inSort(pi);
         exampleDict.insert(root->name,pi);
       }
@@ -4788,6 +4795,7 @@ int main(int argc,char **argv)
   }
 
   parseConfig(config); 
+  configStrToVal();
 
   if (updateConfig)
   {
@@ -4795,6 +4803,7 @@ int main(int argc,char **argv)
     exit(1);
   }
   
+  substituteEnvironmentVars();
   checkConfig();
 
   /**************************************************************************

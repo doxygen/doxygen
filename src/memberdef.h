@@ -109,9 +109,7 @@ class MemberDef : public Definition
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
     void makeRelated()                   { related=TRUE; } 
     void setGroupDef(GroupDef *gd)       { group=gd; }
-    bool hasDocumentation()  // overrides hasDocumentation in definition.h
-      { return Definition::hasDocumentation(); }
-
+    bool hasDocumentation();  // overrides hasDocumentation in definition.h
     bool isLinkableInProject();
     bool isLinkable();
     
@@ -242,6 +240,7 @@ class MemberDef : public Definition
     int grpId;                // group id
     QCString grpHeader;       // group header
     MemberGroup *memberGroup; // group's member definition
+
     GroupDef *group;          // group in which this member is in
 
     // disable copying of member defs

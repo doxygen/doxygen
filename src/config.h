@@ -26,6 +26,8 @@
 extern void parseConfig(const QCString &config);
 extern void writeTemplateConfig(QFile *f,bool shortList);
 extern void checkConfig();
+extern void configStrToVal();
+extern void substituteEnvironmentVars();
 
 struct Config
 {
@@ -68,6 +70,7 @@ struct Config
   static QStrList predefined;          // list of predefined macro names.
   static QStrList extraPackageList;    // list of extra LaTeX packages.
   static QStrList stripFromPath;       // list of candidates to strip from the file path
+  static QStrList sectionFilterList;   // list of section filters to are enabled
   static bool     quietFlag;           // generate progress messages flag      
   static bool     warningFlag;         // generate warnings flag               
   static bool     recursiveFlag;       // scan directories recursively         

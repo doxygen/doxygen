@@ -53,7 +53,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   srcDefDict = 0;
   srcAnchorDict = 0;
   usingList = 0;
-  isSource = Config::extractAllFlag;
+  isSource = FALSE; /*Config::extractAllFlag*/;
   docname = nm;
   if (Config::fullPathNameFlag)
   {

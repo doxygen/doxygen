@@ -845,6 +845,45 @@ static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s,int leve
   return s;
 }
 
+/*! if either t1 or t2 contains a namespace scope, then remove that
+ *  scope. If neither or both have a namespace scope, t1 and t2 remain
+ *  unchanged.
+ */
+static void trimNamespaceScope(QCString &t1,QCString &t2)
+{
+  int p1=t1.length();
+  int p2=t2.length();
+  for (;;)
+  {
+    int i1=t1.findRev("::",p1);
+    int i2=t2.findRev("::",p2);
+    if (i1==-1 && i2==-1)
+    {
+      return;
+    }
+    if (i1!=-1 && i2==-1) // only t1 has a scope
+    {
+      QCString scope=t1.left(i1);
+      if (!scope.isEmpty() && namespaceDict[scope]!=0) // scope is a namespace
+      {
+        t1 = t1.right(t1.length()-i1-2);
+        return;
+      }
+    }
+    else if (i1==-1 && i2!=-1) // only t2 has a scope
+    {
+      QCString scope=t2.left(i2);
+      if (!scope.isEmpty() && namespaceDict[scope]!=0) // scope is a namespace
+      {
+        t2 = t2.right(t2.length()-i2-2);
+        return;
+      }
+    }
+    p1 = QMAX(i1-2,0);
+    p2 = QMAX(i2-2,0);
+  }
+}
+
 //----------------------------------------------------------------------
 // Matches the arguments list srcAl with the argument list dstAl
 // Returns TRUE if the argument lists are equal. Two argument list are 
@@ -920,6 +959,10 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
       //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
+
+      // remove a namespace scope that is only in one type 
+      // (assuming a using statement was used)
+      trimNamespaceScope(srcAType,dstAType);
 
       QCString srcScope;
       QCString dstScope;

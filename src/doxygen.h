@@ -97,7 +97,7 @@ extern MemberNameDict functionNameDict;
 extern StringDict substituteDict;
 extern FileList fileList;
 extern FileDict fileDict;
-extern DefineDict defineDict;
+//extern DefineDict defineDict;
 extern ClassDef unrelatedClass; 
 extern QTextStream tagFile;
 extern SectionDict sectionDict;

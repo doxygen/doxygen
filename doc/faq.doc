@@ -127,6 +127,14 @@ doxygen generates. You can include this by putting
 \endverbatim
 In the HEAD section of the HTML page.
 
+<li><b>Why does doxygen use Qt?</b>
+
+The most important reason is too have a platform abstraction for most 
+Unices and Windows by means of the QFile, QFileInfo, QDir, QDate, 
+QTime and QIODevice classes. 
+Another reason is for the nice and bug free utility classes, like QList, 
+QDict, QString, QArray, QTextStream, QRegExp etc. 
+
 </ol>
 
 \htmlonly

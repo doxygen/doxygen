@@ -37,9 +37,9 @@ int MemberName::compareItems(GCI item1, GCI item2)
   FileDef  *f1=m1->getFileDef();
   FileDef  *f2=m2->getFileDef();
   if (c1 && c2)
-    return stricmp(c1->name(),c2->name());
+    return strcmp(c1->name(),c2->name());
   else if (f1 && f2)
-    return stricmp(f1->name(),f2->name());
+    return strcmp(f1->name(),f2->name());
   else 
     return 0;
 }
@@ -59,9 +59,9 @@ int MemberNameInfo::compareItems(GCI item1, GCI item2)
   FileDef  *f1=m1->memberDef->getFileDef();
   FileDef  *f2=m2->memberDef->getFileDef();
   if (c1 && c2)
-    return stricmp(c1->name(),c2->name());
+    return strcmp(c1->name(),c2->name());
   else if (f1 && f2)
-    return stricmp(f1->name(),f2->name());
+    return strcmp(f1->name(),f2->name());
   else 
     return 0;
 }

@@ -49,6 +49,7 @@ class OutputList
     
     void disableAllBut(OutputGenerator::OutputType o);
     void enableAll();
+    void disableAll();
     void disable(OutputGenerator::OutputType o);
     void enable(OutputGenerator::OutputType o);
     bool isEnabled(OutputGenerator::OutputType o);
