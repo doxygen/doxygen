@@ -1,0 +1,52 @@
+#
+# 
+#
+# Copyright (C) 1997-2000 by Dimitri van Heesch.
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+# 
+
+CFGGENBIN_DIR = ../configgen/bin
+CFGGENSRC_DIR = ../configgen
+
+all: $(CFGGENBIN_DIR)/configgen config.h config.l doxywizard.cpp doxywizard.h \
+     Makefile.doxywizard  
+	$(MAKE) -f Makefile.doxywizard $@
+
+Makefile.doxywizard: doxywizard.pro doxywizard.t
+	$(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
+
+config.l: $(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.l
+	$(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.l >config.l
+
+config.h: $(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.h
+	$(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.h >config.h
+
+doxywizard.cpp: $(CFGGENBIN_DIR)/configgen doxywizard_templ.cpp
+	$(CFGGENBIN_DIR)/configgen doxywizard_templ.cpp >doxywizard.cpp
+
+doxywizard.h: $(CFGGENBIN_DIR)/configgen doxywizard_templ.h
+	$(CFGGENBIN_DIR)/configgen doxywizard_templ.h >doxywizard.h
+
+$(CFGGENBIN_DIR)/configgen: $(CFGGENSRC_DIR)/configgen.cpp
+	$(MAKE) -C $(CFGGENSRC_DIR) 
+
+tmake: 
+	$(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
+
+clean: Makefile.doxywizard 
+	$(MAKE) -f Makefile.doxywizard clean 
+
+distclean: clean
+	$(RM) doxywizard.cpp doxywizard.h \
+              config.l config.h config.cpp Makefile.doxywizard
+
+install:
+	$(INSTTOOL) -d $(INSTALL)/bin	
+	$(INSTTOOL) -m 755 ../../bin/doxywizard $(INSTALL)/bin	
+
+FORCE:

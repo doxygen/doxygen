@@ -1,11 +1,13 @@
 
-all: src/version.cpp
+all: src/version.cpp configgen doxywizard
 	cd src ; $(MAKE)
 
 clean: FORCE
 	cd examples ; $(MAKE) clean
 	cd doc ; $(MAKE) clean
 	cd src ; $(MAKE) clean
+	cd addon/configgen ; $(MAKE) clean
+	cd addon/doxywizard ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
@@ -13,18 +15,25 @@ distclean: clean
 	cd examples ; $(MAKE) clean
 	cd doc ; $(MAKE) clean
 	cd src ; $(MAKE) distclean
+	cd addon/configgen ; $(MAKE) distclean
+	cd addon/doxywizard ; $(MAKE) distclean
 	-rm -f bin/doxy*
 	-rm -f html
 	-rm -f objects/*.o
-	-rm -f src/Makefile.doxygen \
-	       src/Makefile.doxytag \
-	       src/Makefile.doxysearch
+	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch
 	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
 	-rm -f src/version.cpp
+	-rm -r addon/configgen/Makefile addon/doxywizard/Makefile
+	-rm -f addon/configgen/Makefile.configgen 
+	-rm -f addon/doxywizard/Makefile.doxywizard
+	-rm -f addon/configgen/configgen.pro addon/doxywizard/doxywizard.pro
+	-rm -f addon/configgen/obj/*.o
+	-rm -f addon/doxywizard/obj/*.o
+	-rm -f addon/doxywizard/moc/moc_*
 
-install:
+install: doxywizard_install
 	$(INSTTOOL) -d $(INSTALL)/bin
 	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
 	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
@@ -52,7 +61,7 @@ pdf: docs
 	cd latex ; $(MAKE)
 
 archive: clean
-	tar zcvf dx`date +%y%m%d`.tgz tmake doc wintools examples bin objects \
+	tar zcvf dx`date +%y%m%d`.tgz addon tmake doc wintools examples bin objects \
 	       src configure configure.bin Makefile.in Makefile.win.in INSTALL \
 	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION packages
 
@@ -60,3 +69,4 @@ src/version.cpp: Makefile
 	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp
 
 FORCE:
+

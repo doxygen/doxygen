@@ -27,6 +27,7 @@
 class ClassDef;
 class OutputList;
 class ClassList;
+class ClassDict;
 class MemberDef;
 class NamespaceList;
 class MemberGroupDict;
@@ -77,6 +78,7 @@ class NamespaceDef : public Definition
     QCString fileName;
     QStrList files;
     ClassList *classList;
+    ClassDict *classDict;
     NamespaceList *usingList;
 
     MemberList allMemberList;

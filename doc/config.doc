@@ -68,6 +68,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
 <li> \refitem cfg_doc_url DOC_URL
 <li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
+<li> \refitem cfg_enabled_sections ENABLED_SECTIONS
 <li> \refitem cfg_example_path EXAMPLE_PATH
 <li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
 <li> \refitem cfg_exclude EXCLUDE
@@ -369,6 +370,13 @@ description.
   \addindex TAB_SIZE
   the \c TAB_SIZE tag can be used to set the number of spaces in a tab.
   Doxygen uses this value to replace tabs by spaces in code fragments.
+
+\anchor cfg_enabled_sections
+<dt>\c ENABLED_SECTIONS <dd>
+  \addindex ENABLED_SECTIONS
+  The \c ENABLE_SECTIONS tag can be used to enable conditional
+  documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
+  \ref cmdendif "\\endif" blocks.
 
 </dl>
 

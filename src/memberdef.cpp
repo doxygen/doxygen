@@ -634,12 +634,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       else
       {
         type = type.left(i) + " { ... } " + type.right(type.length()-i-l);
-        linkifyText(ol,cname,name(),type); 
+        linkifyText(ol,cname,name(),type,TRUE); 
       }
     }
     else
     {
-      linkifyText(ol,cname,name(),type); 
+      linkifyText(ol,cname,name(),type,TRUE); 
     }
     bool htmlOn = ol.isEnabled(OutputGenerator::Html);
     if (htmlOn && Config::htmlAlignMemberFlag && !type.isEmpty())
@@ -995,14 +995,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       parseText(ol,theTranslator->trInitialValue());
       ol.endBold();
       ol.startCodeFragment();
-      if (isDefine())
-      {
-        parseCode(ol,scopeName,init,FALSE,0);
-      }
-      else
-      {
-        parseCode(ol,scopeName,init.simplifyWhiteSpace(),FALSE,0);
-      }
+      parseCode(ol,scopeName,init,FALSE,0);
       ol.endCodeFragment();
     }
     

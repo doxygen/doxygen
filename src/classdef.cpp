@@ -1623,8 +1623,8 @@ void ClassDef::determineImplUsageRelation()
         bool found=FALSE;
         while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
         {
-          ClassDef *cd=getClass(name()+"::"+type.mid(i,l));
-          if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try inbetween scopes!
+          ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
+          if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
           if (cd /*&& cd->isLinkable()*/) // class exists and is linkable 
           {
             found=TRUE;

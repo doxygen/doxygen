@@ -31,6 +31,7 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
 {
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
+  classDict = new ClassDict(1009);
   //memList = new MemberList;
   usingList = 0;
   setReference(ref);
@@ -42,6 +43,7 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
 NamespaceDef::~NamespaceDef()
 {
   delete classList;
+  delete classDict;
   delete usingList;
   delete memberGroupList;
   delete memberGroupDict;
@@ -54,7 +56,11 @@ void NamespaceDef::insertUsedFile(const char *f)
 
 void NamespaceDef::insertClass(ClassDef *cd)
 {
-  classList->append(cd);
+  if (classDict->find(cd->name())==0)
+  {
+    classList->append(cd);
+    classDict->insert(cd->name(),cd);
+  }
 }
 
 void NamespaceDef::addMemberToGroup(MemberDef *md,int groupId)

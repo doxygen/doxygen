@@ -1,0 +1,42 @@
+#
+# 
+#
+# Copyright (C) 1997-2000 by Dimitri van Heesch.
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+# 
+
+CFGGEN_DIR = bin
+
+all: Makefile.configgen config.h config.l   
+	$(MAKE) -f Makefile.configgen $@
+
+Makefile.configgen: configgen.pro 
+	$(PERL) $(TMAKE) configgen.pro >Makefile.configgen
+
+config.h: $(CFGGEN_DIR)/configgen config_templ.h
+	$(CFGGEN_DIR)/configgen config_templ.h >config.h
+
+config.l: $(CFGGEN_DIR)/configgen config_templ.l
+	$(CFGGEN_DIR)/configgen config_templ.l >config.l
+
+$(CFGGEN_DIR)/configgen: Makefile.configgen configgen.cpp
+	$(MAKE) -f Makefile.configgen 
+
+tmake: 
+	$(PERL) $(TMAKE) configgen.pro >Makefile.configgen
+
+install:
+	$(CP) config.l config.h ../../src
+
+clean: Makefile.configgen 
+	$(MAKE) -f Makefile.configgen clean 
+
+distclean: clean
+	$(RM) config.cpp config.h config.l Makefile.configgen
+
+FORCE:

@@ -40,7 +40,7 @@ extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
 extern void linkifyText(OutputList &ol,const char *clName,const char *name,
-                        const char *text);
+                        const char *text,bool autoBreak=FALSE);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, 
                     ClassDef *&cd,FileDef *&fd, 
@@ -60,6 +60,7 @@ extern QCString convertSlashes(const QCString &s,bool dots=FALSE);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
+extern ClassDef *getResolvedClass(const char *key);
 extern FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
 extern void showFileDefMatches(const FileNameDict *fnDict,const char *n);

@@ -624,7 +624,7 @@ void HtmlGenerator::insertMemberAlign()
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    t << "&nbsp;</td><td valign=top>"; 
+    t << "&nbsp;</td><td valign=bottom>"; 
   }
 }
 
@@ -652,7 +652,7 @@ void HtmlGenerator::endMemberDescription()
   }
   else
   {
-    t << "</em></font></dl>";
+    t << "<br><br></em></font></dl>";
   }
 }
 
