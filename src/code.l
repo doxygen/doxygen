@@ -281,11 +281,22 @@ static void addVariable()
   }
   else 
   {
-    //printf("adding variable `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
+    int i;
     if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
     {
+      //printf("adding variable `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
       g_cvd.classScope=g_classScope;
       g_codeVarList.append(new CodeVarDef(g_cvd)); // add it to a list
+    }
+    else if ((i=g_cvd.type.find('<'))>0)
+    {
+      g_cvd.type = g_cvd.type.left(i);
+      if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
+      {
+        //printf("adding template type variable `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
+        g_cvd.classScope=g_classScope;
+        g_codeVarList.append(new CodeVarDef(g_cvd));
+      }
     }
   }
 }
@@ -300,11 +311,22 @@ static void addParameter()
   }
   else 
   {
-    //printf("adding parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
-    if ((getClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
+    int i;
+    if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
     {
+      //printf("adding parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
       g_cvd.classScope=g_classScope;
       g_codeParmList.append(new CodeVarDef(g_cvd)); // add it to a list
+    }
+    else if ((i=g_cvd.type.find('<'))>0)
+    {
+      g_cvd.type = g_cvd.type.left(i);
+      if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
+      {
+        //printf("adding template type parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
+        g_cvd.classScope=g_classScope;
+        g_codeParmList.append(new CodeVarDef(g_cvd));
+      }
     }
   }
 }
@@ -948,15 +970,11 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
   					}
-					/*
-<Body>{SCOPETNAME}/{B}*	{
-  					  int i;
-					  generateClassLink(*g_code,yytext,&i);
+<Body>{SCOPENAME}{B}*"<"[^\n\>]*">"/{B}* { // A<T> *pt;
+					  generateClassLink(*g_code,yytext);
 					  addType();
-					  QCString text=yytext;
-  					  g_name+=text.left(i); 
-  					}
-					*/
+  					  g_name+=yytext; 
+					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()
 					  generateClassLink(*g_code,yytext);
 					  addType();
@@ -1094,7 +1112,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]* {
+<MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\>]*">")? {
 					  addParmType();
 					  g_parmName=yytext; 
 					  generateClassLink(*g_code,yytext);

@@ -838,6 +838,23 @@ QCString fileToString(const char *name)
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
     fileOpened=f.open(IO_ReadOnly,stdin);
+    if (fileOpened)
+    {
+      const int bSize=4096;
+      QCString contents(bSize);
+      int totalSize=0;
+      int size;
+      while ((size=f.readBlock(contents.data()+totalSize,bSize))==bSize)
+      {
+        totalSize+=bSize;
+        contents.resize(totalSize+bSize); 
+      }
+      totalSize+=size+2;
+      contents.resize(totalSize);
+      contents.at(totalSize-2)='\n'; // to help the scanner
+      contents.at(totalSize-1)='\0';
+      return contents;
+    }
   }
   else // read from file
   {
@@ -849,22 +866,25 @@ QCString fileToString(const char *name)
     }
     f.setName(name);
     fileOpened=f.open(IO_ReadOnly);
+    if (fileOpened)
+    {
+      int fsize=f.size();
+      QCString contents(fsize+2);
+      f.readBlock(contents.data(),fsize);
+      if (fsize==0 || contents[fsize-1]=='\n') 
+        contents[fsize]='\0';
+      else
+        contents[fsize]='\n'; // to help the scanner
+      contents[fsize+1]='\0';
+      f.close();
+      return contents;
+    }
   }
   if (!fileOpened)  
   {
     err("Error: cannot open file `%s' for reading\n",name);
-    return "";
   }
-  int fsize=f.size();
-  QCString contents(fsize+2);
-  f.readBlock(contents.data(),fsize);
-  if (fsize==0 || contents[fsize-1]=='\n') 
-    contents[fsize]='\0';
-  else
-    contents[fsize]='\n';
-  contents[fsize+1]='\0';
-  f.close();
-  return contents;
+  return "";
 }
 
 QCString dateToString(bool includeTime)
