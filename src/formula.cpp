@@ -27,6 +27,7 @@
 #include "image.h"
 #include "util.h"
 #include "message.h"
+#include "config.h"
 
 Formula::Formula(const char *text)
 {
@@ -66,6 +67,12 @@ void FormulaList::generateBitmaps(const char *path)
     QTextStream t(&f);
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{epsf}" << endl; // for those who want to include images
+    const char *s=Config::extraPackageList.first();
+    while (s)
+    {
+      t << "\\usepackage{" << s << "}\n";
+      s=Config::extraPackageList.next();
+    }
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;
     int page=0;

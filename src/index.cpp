@@ -495,7 +495,7 @@ void writeFileIndex(OutputList &ol)
 }
 
 //----------------------------------------------------------------------------
-
+#if 0
 void writeSourceIndex(OutputList &ol)
 {
   ol.disableAllBut(OutputGenerator::Html);
@@ -561,6 +561,7 @@ void writeSourceIndex(OutputList &ol)
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
+#endif
 
 //----------------------------------------------------------------------------
 int countNamespaces()
@@ -723,13 +724,11 @@ void writeAlphabeticalClassList(OutputList &ol)
   ClassDef *cd;
   char startLetter=0;
   int headerItems=0;
-  int prefixLength = Config::ignorePrefix.length();
   for (;(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject())
     {
-      int index = cd->name().left(prefixLength)==Config::ignorePrefix ? 
-                  prefixLength : 0;
+      int index = getPrefixIndex(cd->name());
       if (cd->name().at(index)!=startLetter) // new begin letter => new header
       {
         startLetter=cd->name().at(index);
@@ -762,8 +761,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   {
     if (cd->isLinkableInProject())
     {
-      int index = cd->name().left(prefixLength)==Config::ignorePrefix ? 
-                  prefixLength : 0;
+      int index = getPrefixIndex(cd->name());
       if (cd->name().at(index)!=startLetter)
       {
         // insert a new header using a dummy class pointer.
@@ -811,8 +809,7 @@ void writeAlphabeticalClassList(OutputList &ol)
         if (cd)
         {
           //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
-          int index = cd->name().left(prefixLength)==Config::ignorePrefix ? 
-                      prefixLength : 0;
+          int index = getPrefixIndex(cd->name());
           startLetter=cd->name().at(index);
           char s[2]; s[0]=startLetter; s[1]=0;
           ol.writeIndexHeading(s);

@@ -102,9 +102,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   if (fileList->count()>0)
   {
-    ol.startMemberHeader();
+    ol.startGroupHeader();
     parseText(ol,theTranslator->trFiles());
-    ol.endMemberHeader();
+    ol.endGroupHeader();
     ol.startIndexList();
     FileDef *fd=fileList->first();
     while (fd)
@@ -123,9 +123,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
     {
       if (!found)
       {
-        ol.startMemberHeader();
+        ol.startGroupHeader();
         parseText(ol,theTranslator->trCompounds());
-        ol.endMemberHeader();
+        ol.endGroupHeader();
         ol.startIndexList();
         found=TRUE;
       }

@@ -19,6 +19,7 @@ bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 f_debug=NO
 f_shared=YES
 f_make=NO
+f_dot=NO
 f_perl=NO
 f_plf_auto=NO
 f_prefix=/usr
@@ -51,6 +52,9 @@ while test -n "$1";  do
     --make)
        shift; f_make=$1
        ;;
+    --dot)
+       shift; f_dot=$1
+       ;;
     --perl)
        shift; f_perl=$1
        ;;
@@ -72,10 +76,10 @@ done
 if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
-          [--perl name] [--make name] [--platform target] [--prefix dir]
-          [--install name] [--english-only]
+          [--perl name] [--make name] [--dot name] [--platform target] 
+          [--prefix dir] [--install name] [--english-only]
 
-Options:ll 
+Options: 
 
   --help                Print this help
 
@@ -90,6 +94,10 @@ Options:ll
 
   --make name           Use \`name' as the name of the GNU make tool
 		        [default: autodetect]
+
+  --dot name            Use \`name' as the name of the dot tool that
+                        is part of the Graphviz package.
+                        [default: autodetect]
 
   --platform target     Do not detect platform but use \`target' instead.
                         See PLATFORMS for a list of possibilities
@@ -241,6 +249,27 @@ if test "$f_make" = NO; then
 fi
 echo "using $f_make"
 
+# - check for dot ------------------------------------------------------------
+
+echo -n "  Checking for dot... "
+if test "$f_dot" = NO; then
+  dot_dirs="$bin_dirs"
+  dot_prog=NO
+  for j in $dot_dirs; do
+    if test -x "$j/dot"; then
+      dot_prog="$j/dot"
+      break 2
+    fi
+  done
+  f_dot="$dot_prog" 
+fi
+
+if test "$f_dot" = NO; then
+  echo "not found!";
+else
+  echo "using $f_dot"
+fi
+
 # - check for perl ------------------------------------------------------------
 
 echo -n "  Checking for perl... "
@@ -294,6 +323,12 @@ DOXYDOCS  = ..
 export TMAKEPATH
 EOF
 
+if test "$f_dot" != NO; then
+  cat >> .makeconfig <<EOF
+HAVE_DOT  = $f_dot
+EOF
+fi
+
 touch .tmakeconfig
 if test "$f_shared" = NO; then
   cat >> .tmakeconfig <<EOF
@@ -302,7 +337,7 @@ EOF
 fi
 
 if test "$f_english" = YES; then
-  cat >> .tmakeconfig << EOF
+  cat >> .tmakeconfig <<EOF
 TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi

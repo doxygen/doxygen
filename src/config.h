@@ -53,7 +53,7 @@ struct Config
   static QCString paperType;           // the page type to generate docs for
   static QCString manExtension;        // extension the man page files
   static QCString htmlStyleSheet;      // user defined cascading style sheet
-  static QCString ignorePrefix;        // prefix to ignore for the alphabetical index
+  static QStrList ignorePrefixList;    // list of prefixes to ignore for the alphabetical index
   static QStrList includePath;         // list of include paths                
   static QStrList examplePath;         // list of example paths                
   static QStrList imagePath;           // list of image paths                
@@ -112,6 +112,8 @@ struct Config
   static bool     generateRTF;         // generate RTF flag
   static bool     compactRTFFlag;      // generate more compact RTF
   static bool     rtfHyperFlag;        // generate hyper links in RTF
+  static bool     showIncFileFlag;     // show include file in file documentation?
+  static bool     stripCommentsFlag;   // strip special comments from code fragments?
 };
 
 #endif

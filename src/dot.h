@@ -67,8 +67,8 @@ class DotNode
     void colorConnectedNodes(int curColor);
     const DotNode   *findRoot() const; // only works for acyclic graphs!
     int              m_number;
-    QCString         m_label;     
-    QCString         m_url;       
+    QCString         m_label;     //!< label text
+    QCString         m_url;       //!< url of the node (format: remove$local)
     QList<DotNode>  *m_parents;   //!< list of parent nodes (incoming arrows)
     QList<DotNode>  *m_children;  //!< list of child nodes (outgoing arrows)
     QList<EdgeInfo> *m_edgeInfo;  //!< edge info for each child

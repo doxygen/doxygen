@@ -331,27 +331,39 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (incInfo)
   {
     QCString nm=incInfo->includeName.isEmpty() ? 
-                incInfo->fileDef->docName().data() : 
-                incInfo->includeName.data();
-    ol.startTypewriter();
-    ol.docify("#include ");
-    if (incInfo->local)
-      ol.docify("\"");
-    else
-      ol.docify("<");
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
-    ol.docify(nm);
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.enable(OutputGenerator::Html);
-    ol.writeObjectLink(0,incInfo->fileDef->includeName(),0,nm);
-    ol.popGeneratorState();
-    if (incInfo->local)
-      ol.docify("\"");
-    else
-      ol.docify(">");
-    ol.endTypewriter();
-    ol.newParagraph();
+      (incInfo->fileDef ?
+       incInfo->fileDef->docName().data() : "" 
+      ) :
+      incInfo->includeName.data();
+    if (!nm.isEmpty())
+    {
+      ol.startTypewriter();
+      ol.docify("#include ");
+      if (incInfo->local)
+        ol.docify("\"");
+      else
+        ol.docify("<");
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      ol.docify(nm);
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.enable(OutputGenerator::Html);
+      if (incInfo->fileDef)
+      {
+        ol.writeObjectLink(0,incInfo->fileDef->includeName(),0,nm);
+      }
+      else
+      {
+        ol.docify(nm);
+      }
+      ol.popGeneratorState();
+      if (incInfo->local)
+        ol.docify("\"");
+      else
+        ol.docify(">");
+      ol.endTypewriter();
+      ol.newParagraph();
+    }
   }
 
 
@@ -1340,12 +1352,14 @@ void ClassDef::determineImplUsageRelation()
         //printf("in class %s found var type=`%s' name=`%s'\n",
         //            name().data(),type.data(),md->name().data());
         int p=0,i,l;
-        while ((i=re.match(type,p,&l))!=-1) // for each class name in the type
+        bool found=FALSE;
+        while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
         {
           ClassDef *cd=getClass(name()+"::"+type.mid(i,l));
           if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try inbetween scopes!
           if (cd && cd->isLinkable()) // class exists and is linkable 
           {
+            found=TRUE;
             if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 
             UsesClassDef *ucd=usesImplClassDict->find(cd->name());
             if (ucd==0)

@@ -339,42 +339,29 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       fd=ifd;
     }
 
-    
     // if a file is found, we mark it as a source file.
     if (fd)
     {
-      //printf("Adding file %s used by %s\n",fd->name().data(),cd->name().data());
-      //printf("fd->name()=%s fd->absFilePath()=%s\n",fd->name().data(),
-      //                                              fd->absFilePath().data());
-      // set include file definition
-      //cd->setIncludeFile(fd);
-      // set include supplied name 
-      //cd->setIncludeName(root->includeName);
-      
       QCString iName = !root->includeName.isEmpty() ? 
                        root->includeName.data() : root->includeFile.data();
       bool local=FALSE;
-      if (!iName.isEmpty())
+      if (!iName.isEmpty()) // user specified include file
       {
-        local = iName.at(0)=='"';
+        local = iName.at(0)=='"'; // is it a local include file
         if (local || iName.at(0)=='<')
         {
-          iName=iName.mid(1,iName.length()-2);
+          iName=iName.mid(1,iName.length()-2); // strip quotes or brackets
         }
       }
-      fd->setGenerateSource(TRUE);
-      cd->setIncludeFile(fd,iName,local);
-      
-      //if (cd->name().find('@')==-1)
-      //{
-      //  fd->setIncludeName(cd->getOutputFileBase()+"-include");
-      //}
-      //if (!fd->absFilePath().isEmpty() && 
-      //    includeDict[fd->absFilePath()]==0) // include not inserted earlier
-      //{
-      //  includeFiles.inSort(fd);
-      //  includeDict.insert(fd->absFilePath(),fd);
-      //}
+      if (Config::verbatimHeaderFlag) // generate code for header
+      {
+        cd->setIncludeFile(fd,iName,local);
+        fd->setGenerateSource(TRUE);
+      }
+      else // put #include in the class documentation without link
+      {
+        cd->setIncludeFile(0,iName,local);
+      }
     }
   }
 }
@@ -1609,108 +1596,146 @@ void transferFunctionDocumentation()
 
 //----------------------------------------------------------------------
 
-bool findBaseClassRelation(Entry *root,ClassDef *cd,const char *scopePrefix,
-                           bool insertUndocumented)
+static bool findBaseClassRelation(Entry *root,ClassDef *cd,
+                           BaseInfo *bi,
+                           bool insertUndocumented
+                          )
 {
-  // The base class could ofcouse also be a non-nested class
-  QList<BaseInfo> *baseList=root->extends;
-  BaseInfo *bi=baseList->first();
-  bool foundAny=FALSE;
-  while (bi) // for each base class
+  Entry *parentNode=root->parent;
+  bool lastParent=FALSE;
+  do // for each parent scope, starting with the largest scope 
+     // (in case of nested classes)
   {
-    QCString baseClassName=removeRedundantWhiteSpace(scopePrefix+bi->name);
-    ClassDef *baseClass=getClass(baseClassName);
-    if (baseClassName!=root->name) // check for base class with the same name, 
-                                   // look in the outer scope for a match
+    QCString scopeName= parentNode ? parentNode->name.data() : "";
+    int scopeOffset=scopeName.length();
+    do // try all parent scope prefixes, starting with the largest scope
     {
-      //printf("baseClass %s of %s found (%s and %s)\n",
-      //    baseClassName.data(),
-      //    root->name.data(),
-      //    (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
-      //    (bi->virt==Normal)?"normal":"virtual"
-      //      );
-      int i;
-      QCString templSpec;
-      if (baseClass==0 && (i=baseClassName.find('<'))!=-1) 
-        // base class has template specifiers
-      {
-        // TODO: here we should try to find the correct template specialization
-        // but for now, we only look for the unspecializated base class.
-        templSpec=baseClassName.right(baseClassName.length()-i);
-        baseClassName=baseClassName.left(i);
-        baseClass=getClass(baseClassName);
-        //printf("baseClass=%p baseClass=%s templSpec=%s\n",
-        //        baseClass,baseClassName.data(),templSpec.data());
-      }
+      //printf("scopePrefix=`%s' bi->name=`%s'\n",
+      //    scopeName.left(scopeOffset).data(),bi->name.data());
 
-      bool found=baseClass!=0 && baseClass!=cd;
-      NamespaceDef *nd=cd->getNamespace();
-      if (!found)
+      QCString baseClassName=removeRedundantWhiteSpace(bi->name);
+      if (scopeOffset>0)
       {
-        FileDef *fd=cd->getFileDef();
-        if (fd)
+        baseClassName.prepend(scopeName.left(scopeOffset)+"::");
+      }
+      ClassDef *baseClass=getClass(baseClassName);
+      if (baseClassName!=root->name) // check for base class with the same name, 
+        // look in the outer scope for a match
+      {
+        //printf("baseClass %s of %s found (%s and %s)\n",
+        //    baseClassName.data(),
+        //    root->name.data(),
+        //    (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
+        //    (bi->virt==Normal)?"normal":"virtual"
+        //   );
+
+        int i;
+        QCString templSpec;
+        if (baseClass==0 && (i=baseClassName.find('<'))!=-1) 
+          // base class has template specifiers
         {
-          // look for the using statement in this file in which the
-          // class was found
-          NamespaceList *nl = fd->getUsedNamespaces();
-          if (nl) // try to prepend any of the using namespace scopes.
+          // TODO: here we should try to find the correct template specialization
+          // but for now, we only look for the unspecializated base class.
+          templSpec=baseClassName.right(baseClassName.length()-i);
+          baseClassName=baseClassName.left(i);
+          baseClass=getClass(baseClassName);
+          //printf("baseClass=%p baseClass=%s templSpec=%s\n",
+          //        baseClass,baseClassName.data(),templSpec.data());
+        }
+
+        bool found=baseClass!=0 && baseClass!=cd;
+        NamespaceDef *nd=cd->getNamespace();
+        if (!found)
+        {
+          FileDef *fd=cd->getFileDef();
+          if (fd)
           {
-            NamespaceListIterator nli(*nl);
-            NamespaceDef *nd;
-            for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
+            // look for the using statement in this file in which the
+            // class was found
+            NamespaceList *nl = fd->getUsedNamespaces();
+            if (nl) // try to prepend any of the using namespace scopes.
             {
-              QCString fName = nd->name()+"::"+baseClassName;
-              found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
-                      root->name!=fName;
+              NamespaceListIterator nli(*nl);
+              NamespaceDef *nd;
+              for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
+              {
+                QCString fName = nd->name()+"::"+baseClassName;
+                found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                  root->name!=fName;
+              }
+            }
+          }
+          if (!found && nd) // class is inside a namespace
+          {
+            NamespaceList *nl = nd->getUsedNamespaces();
+            QCString fName = nd->name()+"::"+baseClassName;
+            found = (baseClass=getClass(fName))!=0 && root->name!=fName;
+            if (nl) // try to prepend any of the using namespace scopes.
+            {
+              NamespaceListIterator nli(*nl);
+              NamespaceDef *nd;
+              for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
+              {
+                fName = nd->name()+"::"+baseClassName;
+                found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                  root->name!=fName;
+              }
             }
           }
         }
-        if (!found && nd) // class is inside a namespace
+        if (found)
         {
-          NamespaceList *nl = nd->getUsedNamespaces();
-          QCString fName = nd->name()+"::"+baseClassName;
-          found = (baseClass=getClass(fName))!=0 && root->name!=fName;
-          if (nl) // try to prepend any of the using namespace scopes.
-          {
-            NamespaceListIterator nli(*nl);
-            NamespaceDef *nd;
-            for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
-            {
-              fName = nd->name()+"::"+baseClassName;
-              found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
-                      root->name!=fName;
-            }
-          }
+          //printf(">>> Documented base class = %s\n",bi->name.data());
+          // add base class to this class
+          cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
+          // add this class as super class to the base class
+          baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
+          return TRUE;
+        }
+        else if (insertUndocumented)
+        {
+          //printf(">>> Undocumented base class = %s\n",bi->name.data());
+          baseClass=new ClassDef(baseClassName,ClassDef::Class);
+          // add base class to this class
+          cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
+          // add this class as super class to the base class
+          baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
+          // the undocumented base was found in this file
+          baseClass->insertUsedFile(root->fileName);
+          // add class to the list
+          classList.inSort(baseClass);
+          //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
+          //classDict.insert(resolveDefines(bi->name),baseClass);
+          classDict.insert(baseClassName,baseClass);
+          return TRUE;
+        }
+        else
+        {
+          //printf(">>> base class %s not found!\n",bi->name.data());
         }
       }
-      if (found)
+      if (scopeOffset==0)
       {
-        // add base class to this class
-        cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
-        // add this class as super class to the base class
-        baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
-        foundAny=TRUE;
+        scopeOffset=-1;
       }
-      else if (insertUndocumented)
+      else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
       {
-        //printf(">>> Undocumented base class = %s\n",bi->name.data());
-        baseClass=new ClassDef(baseClassName,ClassDef::Class);
-        // add base class to this class
-        cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
-        // add this class as super class to the base class
-        baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
-        // the undocumented base was found in this file
-        baseClass->insertUsedFile(root->fileName);
-        // add class to the list
-        classList.inSort(baseClass);
-        //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-        //classDict.insert(resolveDefines(bi->name),baseClass);
-        classDict.insert(baseClassName,baseClass);
+        scopeOffset=0;
       }
+      //printf("new scopeOffset=`%d'",scopeOffset);
+    } while (scopeOffset>=0);
+
+    if (parentNode==0)
+    {
+      lastParent=TRUE;
     }
-    bi=baseList->next();
-  }
-  return foundAny;
+    else
+    {
+      parentNode=parentNode->parent;
+    }
+  } while (lastParent);
+
+  return FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -1721,9 +1746,9 @@ void computeClassRelations(Entry *root)
   if (
       (
        (
-        root->section & Entry::COMPOUND_MASK
+        root->section & Entry::COMPOUND_MASK 
        ) 
-       ||
+       || 
        (
         (root->section & Entry::COMPOUNDDOC_MASK) && root->extends->count()>0 
        )
@@ -1743,20 +1768,19 @@ void computeClassRelations(Entry *root)
         cd->visited=TRUE; // mark class as used 
         if (root->extends->count()>0) // there are base classes
         {
-          Entry *p=root->parent;
-          bool found=FALSE;
-          // For nested classes (or classes inside namespaces) the base class 
-          // could also be nested (or inside a namespace)!
-          // To find the correct scope, we try to prepend the scope to the base
-          // name, starting with the largest, most inner scope.
-          while (p && p->section&Entry::SCOPE_MASK && 
-            !(found=findBaseClassRelation(root,cd,p->name+"::",FALSE))) 
-              p=p->parent;
-          // For classes with global scope the same search is preformed
-          if (!found)
+          // The base class could ofcouse also be a non-nested class
+          QList<BaseInfo> *baseList=root->extends;
+          BaseInfo *bi=baseList->first();
+          while (bi) // for each base class
           {
-            findBaseClassRelation(root,cd,0,TRUE);
-          } // class not nested
+            // find a documented base class in the correct scope
+            if (!findBaseClassRelation(root,cd,bi,FALSE))
+            {
+              // no documented base class -> try to find an undocumented one
+              findBaseClassRelation(root,cd,bi,TRUE);
+            }
+            bi=baseList->next();
+          }
         } // class has no base classes
       } // else class is already found
     }

@@ -16,20 +16,19 @@ all: class/html/index.html \
      jdstyle/html/index.html \
      structcmd/html/index.html \
      autolink/html/index.html \
-     tag/html/index.html \
      restypedef/html/index.html \
      afterdoc/html/index.html \
      template/html/index.html \
      tag/html/index.html \
      group/html/index.html \
-     diagram/html/index.html
+     diagrams/html/index.html
 
 clean:
 	deltree /y class define enum file 
 	deltree /y func page relates author
 	deltree /y par overload example include qtstyle 
-	deltree /y jdstyle structcmd autolink tag resdefine 
-	deltree /y restypedef
+	deltree /y jdstyle structcmd autolink resdefine 
+	deltree /y restypedef afterdoc template tag group diagrams
 
 class/html/index.html: class.h class.cfg
 	$(DOXYDIR)\doxygen class.cfg
@@ -98,5 +97,5 @@ template/html/index.html: templ.cpp templ.cfg
 group/html/index.html: group.cpp group.cfg
 	$(DOXYDIR)\doxygen group.cfg
 
-diagram/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
+diagrams/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
 	$(DOXYDIR)\doxygen diagrams.cfg

@@ -103,8 +103,6 @@ tools should be installed.
     the Graph visualization toolkit version 1.5</a><br>
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.<br>
-    <b>Note:</b> For windows you will have to set the <code>DOTFONTPATH</code> environment 
-    variable to include the current directory (e.g. <code>DOTFONTPATH=.</code>)
 <li><a href="http://msdn.microsoft.com/workshop/author/htmlhelp">
     the HTML help workshop</a> (for Windows only)<br>
     Needed for compiling compressed HTML output (a.k.a. the new Windows help format).
