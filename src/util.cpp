@@ -60,12 +60,13 @@ extern char **environ;
 
 //------------------------------------------------------------------------
 
-static QCache<int> g_accessibilityCache(10000,10000); 
+static QCache<ClassDef*> g_lookupCache(20000,20000); 
 
+// object that automatically initializes the cache at startup
 class CacheInitializer
 {
   public:
-    CacheInitializer() { g_accessibilityCache.setAutoDelete(TRUE); }
+    CacheInitializer() { g_lookupCache.setAutoDelete(TRUE); }
 } g_cacheInitializer;
 
 
@@ -578,7 +579,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
                               MemberDef **pTypeDef,
                               QCString *pTemplSpec
                              );
-int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
+int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
 
 /*! Returns the class representing the value of the typedef represented by \a md
@@ -673,7 +674,7 @@ QCString substTypedef(Definition *scope,FileDef *fileScope,const QCString &name)
       if (md->isTypedef()) // d is a typedef
       {
         // test accessibility of typedef within scope.
-        int distance = isAccessibleFrom(scope,fileScope,d,"");
+        int distance = isAccessibleFromWithExpScope(scope,fileScope,d,"");
         if (distance!=-1 && distance<minDistance) 
                    // definition is accessible and a better match
         {
@@ -711,7 +712,7 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
   return current; // path could be followed
 }
 
-bool accessibleViaUsingClass(const ClassSDict *cl,
+bool accessibleViaUsingClass(const SDict<Definition> *cl,
                              FileDef *fileScope,
                              Definition *item,
                              const QCString &explicitScopePart=""
@@ -719,26 +720,14 @@ bool accessibleViaUsingClass(const ClassSDict *cl,
 {
   if (cl) // see if the class was imported via a using statement 
   {
-    ClassSDict::Iterator cli(*cl);
-    ClassDef *ucd;
+    SDict<Definition>::Iterator cli(*cl);
+    Definition *ucd;
+    bool explicitScopePartEmpty = explicitScopePart.isEmpty();
     for (cli.toFirst();(ucd=cli.current());++cli)
     {
       //printf("Trying via used class %s\n",ucd->name().data());
-      Definition *sc = explicitScopePart.isEmpty() ? ucd : followPath(ucd,fileScope,explicitScopePart);
-      if (item->definitionType()==Definition::TypeMember)
-      {
-        MemberDef *md = (MemberDef *)item;
-        if (md->isTypedef()) // d is a typedef
-        {
-          QCString spec;
-          ClassDef *typedefClass = newResolveTypedef(fileScope,md,&spec);
-          if (sc && sc==typedefClass) return TRUE;
-        }
-      }
-      else // item is a class
-      {
-        if (sc && sc==item) return TRUE; 
-      }
+      Definition *sc = explicitScopePartEmpty ? ucd : followPath(ucd,fileScope,explicitScopePart);
+      if (sc && sc==item) return TRUE; 
       //printf("Try via used class done\n");
     }
   }
@@ -773,15 +762,10 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
 {
   //fprintf(stderr,"<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
-  QCString key=scope->name()+"+"+item->qualifiedName();
-  int *pval=g_accessibilityCache.find(key);
+
   int result=0; // assume we found it
   int i;
-  if (pval) // value was cached
-  {
-    //fprintf(stderr,"> found cached value=%d\n",*pval);
-    return *pval; 
-  }
+
   if (item->getOuterScope()==scope) 
   {
     //fprintf(stderr,"> found it\n");
@@ -790,7 +774,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   {
     if (fileScope)
     {
-      ClassSDict *cl = fileScope->getUsedClasses();
+      SDict<Definition> *cl = fileScope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item)) 
       {
         //fprintf(stderr,"> found via used class\n");
@@ -812,7 +796,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       NamespaceDef *nscope = (NamespaceDef*)scope;
-      ClassSDict *cl = nscope->getUsedClasses();
+      SDict<Definition> *cl = nscope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item)) 
       {
         //fprintf(stderr,"> found via used class\n");
@@ -831,7 +815,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     result= (i==-1) ? -1 : i+1;
   }
 done:
-  g_accessibilityCache.insert(key,new int(result));
+  //g_lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -840,7 +824,7 @@ done:
  * if item in not in this scope. The explicitScopePart limits the search
  * to scopes that match \a scope plus the explicit part.
  */
-int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
+int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart)
 {
   if (explicitScopePart.isEmpty())
@@ -848,17 +832,10 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
     // handle degenerate case where there is no explicit scope.
     return isAccessibleFrom(scope,fileScope,item);
   }
-  //printf("<isAccesibleFrom(%s,%s,%s)\n",scope?scope->name().data():"<global>",
+  //printf("<isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
   //                                      item?item->name().data():"<none>",
   //                                      explicitScopePart.data());
-  QCString key=scope->name()+"+"+item->qualifiedName()+"+"+explicitScopePart;
-  int *pval=g_accessibilityCache.find(key);
   int result=0; // assume we found it
-  if (pval) // value was cached
-  {
-    //printf("> found cached value=%d\n",*pval);
-    return *pval; 
-  }
   Definition *newScope = followPath(scope,fileScope,explicitScopePart);
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
@@ -878,14 +855,14 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
         // in A via a using directive.
         //printf("newScope is a namespace: %s!\n",newScope->name().data());
         NamespaceDef *nscope = (NamespaceDef*)newScope;
-        ClassSDict *cl = nscope->getUsedClasses();
+        SDict<Definition> *cl = nscope->getUsedClasses();
         if (cl)
         {
-          ClassSDict::Iterator cli(*cl);
-          ClassDef *cd;
+          SDict<Definition>::Iterator cli(*cl);
+          Definition *cd;
           for (cli.toFirst();(cd=cli.current());++cli)
           {
-            i = isAccessibleFrom(scope,fileScope,item,cd->name());
+            i = isAccessibleFromWithExpScope(scope,fileScope,item,cd->name());
             if (i!=-1)
             {
               //printf("> found via explicit scope of used class\n");
@@ -902,7 +879,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
           {
             if (g_visitedNamespaces.find(nd->name())==0)
             {
-              i = isAccessibleFrom(scope,fileScope,item,nd->name());
+              i = isAccessibleFromWithExpScope(scope,fileScope,item,nd->name());
               if (i!=-1)
               {
                 //printf("> found via explicit scope of used namespace\n");
@@ -915,7 +892,8 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
       // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {
-        i = isAccessibleFrom(scope->getOuterScope(),fileScope,item,explicitScopePart);
+        i = isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
+                                         item,explicitScopePart);
       }
       //printf("> result=%d\n",i);
       result = (i==-1) ? -1 : i+1;
@@ -927,7 +905,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       NamespaceDef *nscope = (NamespaceDef*)scope;
-      ClassSDict *cl = nscope->getUsedClasses();
+      SDict<Definition> *cl = nscope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item,explicitScopePart)) 
       {
         //printf("> found in used class\n");
@@ -944,7 +922,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
     {
       if (fileScope)
       {
-        ClassSDict *cl = fileScope->getUsedClasses();
+        SDict<Definition> *cl = fileScope->getUsedClasses();
         if (accessibleViaUsingClass(cl,fileScope,item,explicitScopePart)) 
         {
           //printf("> found in used class\n");
@@ -962,13 +940,14 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
     }
     else // continue by looking into the parent scope
     {
-      int i=isAccessibleFrom(scope->getOuterScope(),fileScope,item,explicitScopePart);
+      int i=isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
+                                         item,explicitScopePart);
       //printf("> result=%d\n",i);
       result= (i==-1) ? -1 : i+1;
     }
   }
 done:
-  g_accessibilityCache.insert(key,new int(result));
+  //g_lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1006,6 +985,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
     name=name.mid(qualifierIndex+2);
   }
+
   if (name.isEmpty()) 
   {
     //printf("] empty name\n");
@@ -1016,22 +996,43 @@ ClassDef *getResolvedClassRec(Definition *scope,
   //printf("Looking for symbol %s result=%p\n",name.data(),dl);
   if (dl==0) 
   {
-    //printf("] no such symbol\n");
-    return 0; // symbol not found
+    // name is not a known symbol
+    return 0;
   }
+
+  // Since it is often the case that the same name is searched in the same
+  // scope over an over again (especially for the linked source code generation)
+  // we use a cache to collect previous results. This is possible since the
+  // result of a lookup is deterministic. As the key we use the concatenated
+  // scope, the name to search for and the explicit scope prefix. The speedup
+  // achieved by this simple cache can be enormous.
+  QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
+  ClassDef **pval=g_lookupCache.find(key);
+  //printf("Searching for %s result=%p\n",key.data(),pval);
+  if (pval)
+  {
+    return *pval; 
+  }
+  else // not found yet; we already add a 0 to avoid the possibility of 
+       // endless recursion.
+  {
+    g_lookupCache.insert(key,new ClassDef*(0));
+  }
+
+  ClassDef *bestMatch=0;
 
   //printf(" found %d symbol with name %s\n",dl->count(),name.data());
   // now we look int the list of Definitions and determine which one is the "best"
   DefinitionListIterator dli(*dl);
   Definition *d;
-  ClassDef *bestMatch=0;
   MemberDef *bestTypedef=0;
   QCString bestTemplSpec;
   int minDistance=10000; // init at "infinite"
-  for (dli.toFirst();(d=dli.current());++dli) // foreach definition
+  int count=0;
+  for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
   {
-    //printf("  found type %x name=%s\n",
-    //       d->definitionType(),d->name().data());
+    //fprintf(stderr,"  found type %x name=%s (%d/%d)\n",
+    //       d->definitionType(),d->name().data(),count,dl->count());
 
     // only look at classes and members
     if (d->definitionType()==Definition::TypeClass ||
@@ -1039,7 +1040,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     {
       g_visitedNamespaces.clear();
       // test accessibility of definition within scope.
-      int distance = isAccessibleFrom(scope,fileScope,d,explicitScopePart);
+      int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
       if (distance!=-1) // definition is accessible
       {
         // see if we are dealing with a class or a typedef
@@ -1060,8 +1061,6 @@ ClassDef *getResolvedClassRec(Definition *scope,
           if (md->isTypedef()) // d is a typedef
           {
             //printf("    found typedef!\n");
-            QCString spec;
-            ClassDef *typedefClass = newResolveTypedef(fileScope,md,&spec);
 
             // we found a symbol at this distance, but if it didn't
             // resolve to a class, we still have to make sure that
@@ -1069,8 +1068,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
             // that symbol is hidden by this one.
             if (distance<minDistance)
             {
+              QCString spec;
               minDistance=distance;
-              bestMatch = typedefClass; 
+              bestMatch = newResolveTypedef(fileScope,md,&spec);
               //printf("      bestTypeDef=%p\n",md);
               bestTypedef = md;
               bestTemplSpec = spec;
@@ -1091,6 +1091,16 @@ ClassDef *getResolvedClassRec(Definition *scope,
   if (pTemplSpec)
   {
     *pTemplSpec = bestTemplSpec;
+  }
+
+  pval=g_lookupCache.find(key);
+  if (pval)
+  {
+    *pval=bestMatch;
+  }
+  else
+  {
+    g_lookupCache.insert(key,new ClassDef*(bestMatch));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -1119,7 +1129,6 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     scope=Doxygen::globalScope;
   }
-  //printf("-------- start\n");
   //printf("getResolvedClass(%s,%s)\n",scope?scope->name().data():"<global>",n);
   ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
@@ -1129,7 +1138,6 @@ ClassDef *getResolvedClass(Definition *scope,
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
   // 
-  //printf("-------- end\n");
   return result;
 }
 
@@ -1308,54 +1316,28 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileSco
       NamespaceDef *nd=0;
       GroupDef     *gd=0;
 
-      //QCString searchName=name;
-      //printf("word=`%s' scope=`%s'\n",
-      //        word.data(),scope ? scope->name().data() : "<none>"
-      //      );
-//      Definition *curScope = scope;
-      // check if `word' is a documented class name
-      //int scopeOffset=scopeName.length();
-//      do // for each scope (starting with full scope and going to empty scope)
-//      {
-        //printf("Searching %s in %s...\n",word.data(),curScope?curScope->name().data():"<global>");
-//        QCString fullName = word;
-//        QCString prefix;
-//        replaceNamespaceAliases(fullName,fullName.length());
-//        //if (scopeOffset>0)
-//        if (curScope && curScope!=Doxygen::globalScope)
-//        {
-//          prefix = curScope->name();
-//          replaceNamespaceAliases(prefix,prefix.length());
-//          fullName.prepend(prefix+"::");
-//        }
-
-        MemberDef *typeDef=0;
-        if ((cd=getResolvedClass(scope,fileScope,word,&typeDef))) 
+      MemberDef *typeDef=0;
+      if ((cd=getResolvedClass(scope,fileScope,word,&typeDef))) 
+      {
+        // add link to the result
+        if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          // add link to the result
-          if (external ? cd->isLinkable() : cd->isLinkableInProject())
-          {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
-            found=TRUE;
-          }
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          found=TRUE;
         }
-        else if (typeDef)
+      }
+      else if (typeDef)
+      {
+        if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
-          if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
-          {
-            out.writeLink(typeDef->getReference(),
-                          typeDef->getOutputFileBase(),
-                          typeDef->anchor(),
-                          word);
-            found=TRUE;
-          }
+          out.writeLink(typeDef->getReference(),
+              typeDef->getOutputFileBase(),
+              typeDef->anchor(),
+              word);
+          found=TRUE;
         }
+      }
 
-//        if (curScope) curScope = curScope->getOuterScope();
-//      } //while (!found && scopeOffset>=0);
-//      while (!found && curScope);
-
-//endloop:      
       if (scope && 
           (scope->definitionType()==Definition::TypeClass || 
            scope->definitionType()==Definition::TypeNamespace
@@ -2072,7 +2054,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
                    NamespaceSDict *usingNamespaces,
-                   ClassSDict *usingClasses)
+                   SDict<Definition> *usingClasses)
 {
   //printf("match argument start %s:%s <-> %s:%s using nsp=%p class=%p\n",
   //    srcA->type.data(),srcA->name.data(),
@@ -2186,8 +2168,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     }
     if (usingClasses && usingClasses->count()>0)
     {
-      ClassSDict::Iterator cli(*usingClasses);
-      ClassDef *cd;
+      SDict<Definition>::Iterator cli(*usingClasses);
+      Definition *cd;
       for (;(cd=cli.current());++cli)
       {
         srcAType=trimScope(cd->name(),srcAType);
@@ -2339,7 +2321,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
                     const char *cl,const char *ns,bool checkCV,
                     NamespaceSDict *usingNamespaces,
-                    ClassSDict *usingClasses)
+                    SDict<Definition> *usingClasses)
 {
   QCString className=cl;
   QCString namespaceName=ns;
@@ -3536,6 +3518,7 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 QCString escapeCharsInString(const char *name,bool allowDots)
 {
+  static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
   QCString result;
   char c;
   const char *p=name;
@@ -3557,7 +3540,7 @@ QCString escapeCharsInString(const char *name,bool allowDots)
       case ',': result+="_00"; break;
       case ' ': result+="_01"; break;
       default: 
-        if (Config_getBool("CASE_SENSE_NAMES") || !isupper(c))
+        if (caseSenseNames || !isupper(c))
         {
           result+=c;
         }
@@ -3578,8 +3561,10 @@ QCString escapeCharsInString(const char *name,bool allowDots)
  */
 QCString convertNameToFile(const char *name,bool allowDots)
 {
+  static bool shortNames = Config_getBool("SHORT_NAMES");
+  static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
   QCString result;
-  if (Config_getBool("SHORT_NAMES"))
+  if (shortNames)
   {
     static QDict<void> usedNames(10007);
     static int count=1;
@@ -3601,7 +3586,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
   {
     result=escapeCharsInString(name,allowDots);
   }
-  if (Config_getBool("CREATE_SUBDIRS"))
+  if (createSubdirs)
   {
     if (Doxygen::htmlDirMap==0) 
     {

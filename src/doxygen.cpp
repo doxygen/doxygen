@@ -1217,24 +1217,9 @@ static void findUsingDeclarations(Entry *root)
       // the possible scopes in which the using statement was found, starting
       // with the most inner scope and going to the most outer scope (i.e. 
       // file scope).
-//      int scopeOffset = scName.length();
-//      do
-//      {
-//        QCString scope=scopeOffset>0 ? 
-//                      scName.left(scopeOffset)+"::" : QCString();
-//        //printf("Trying with scope=`%s'\n",scope.data());
-//        usingCd = getClass(scope+root->name);
-//        if (scopeOffset==0)
-//        {
-//          scopeOffset=-1;
-//        }
-//        else if ((scopeOffset=scName.findRev("::",scopeOffset-1))==-1)
-//        {
-//          scopeOffset=0;
-//        }
-//      } while (scopeOffset>=0 && usingCd==0);
 
-      usingCd = getResolvedClass(nd,fd,root->name);
+      MemberDef *mtd=0;
+      usingCd = getResolvedClass(nd,fd,root->name,&mtd);
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
       if (usingCd==0) // definition not in the input => add an artificial class
@@ -1248,8 +1233,20 @@ static void findUsingDeclarations(Entry *root)
         usingCd->setClassIsArtificial();
       }
 
-      // add the namespace the correct scope
-      if (usingCd)
+      if (mtd) // add the typedef to the correct scope
+      {
+        if (nd)
+        {
+          //printf("Inside namespace %s\n",nd->name().data());
+          nd->addUsingDeclaration(mtd);
+        }
+        else if (fd)
+        {
+          //printf("Inside file %s\n",nd->name().data());
+          fd->addUsingDeclaration(mtd);
+        }
+      }
+      else if (usingCd) // add the class to the correct scope
       {
         if (nd)
         {
@@ -1623,20 +1620,23 @@ static MemberDef *addVariableToFile(
         return md;
       }
       
-      if (nd==0 && md->isExplicit()!=root->explicitExternal)
-      {
-        // merge ingroup specifiers
-        if (md->getGroupDef()==0 && root->groups->first())
-        {
-          //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-          //md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
-          addMemberToGroups(root,md);
-        }
-        else if (md->getGroupDef()!=0 && root->groups->count()==0)
-        {
-          root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
-        }
-      }
+      // TODO: rethink why we would need this!
+      //if (nd==0 && md->isExplicit()!=root->explicitExternal)
+      //{
+      //  // merge ingroup specifiers
+      //  if (md->getGroupDef()==0 && root->groups->first())
+      //  {
+      //    //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
+      //    //md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+      //    addMemberToGroups(root,md);
+      //  }
+      //  else if (md->getGroupDef()!=0 && root->groups->count()==0)
+      //  {
+      //    // enabling has the result that an ungrouped, undocumented external variable is put
+      //    // in a group if the definition is documented and grouped!
+      //    //root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
+      //  }
+      //}
     } 
   }
   // new global variable, enum value or typedef
@@ -1668,10 +1668,6 @@ static MemberDef *addVariableToFile(
   md->enableCallGraph(root->callGraph);
   md->setExplicitExternal(root->explicitExternal);
   addMemberToGroups(root,md);
-  //if (root->mGrpId!=-1) 
-  //{
-  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-  //}
 
   md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
@@ -2286,8 +2282,8 @@ static void buildFunctionList(Entry *root)
             QCString nsName,rnsName;
             if (nd)  nsName  = nd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
-            NamespaceSDict *unl = fd ? fd->getUsedNamespaces() : 0;
-            ClassSDict     *ucl = fd ? fd->getUsedClasses() : 0;
+            NamespaceSDict    *unl = fd ? fd->getUsedNamespaces() : 0;
+            SDict<Definition> *ucl = fd ? fd->getUsedClasses() : 0;
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             if ( 
@@ -2968,32 +2964,34 @@ static ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
         if (result && result!=cd) return result;
       }
     }
-    ClassSDict *cl = nd->getUsedClasses();
+    SDict<Definition> *cl = nd->getUsedClasses();
     if (cl)
     {
-      ClassSDict::Iterator cli(*cl);
-      ClassDef *ucd;
+      SDict<Definition>::Iterator cli(*cl);
+      Definition *ucd;
       for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
       {
-        if (rightScopeMatch(ucd->name(),name))
+        if (ucd->definitionType()==Definition::TypeClass && 
+            rightScopeMatch(ucd->name(),name))
         {
-          return ucd;
+          return (ClassDef *)ucd;
         }
       }
     }
     // TODO: check any inbetween namespaces as well!
     if (fd) // and in the global namespace
     {
-      ClassSDict *cl = fd->getUsedClasses();
+      SDict<Definition> *cl = fd->getUsedClasses();
       if (cl)
       {
-        ClassSDict::Iterator cli(*cl);
-        ClassDef *ucd;
+        SDict<Definition>::Iterator cli(*cl);
+        Definition *ucd;
         for (cli.toFirst(); (ucd=cli.current()); ++cli)
         {
-          if (rightScopeMatch(ucd->name(),name))
+          if (ucd->definitionType()==Definition::TypeClass && 
+              rightScopeMatch(ucd->name(),name))
           {
-            return ucd;
+            return (ClassDef *)ucd;
           }
         }
       }
@@ -3020,16 +3018,17 @@ static ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
         }
       }
     }
-    ClassSDict *cl = fd->getUsedClasses();
+    SDict<Definition> *cl = fd->getUsedClasses();
     if (cl)
     {
-      ClassSDict::Iterator cli(*cl);
-      ClassDef *ucd;
+      SDict<Definition>::Iterator cli(*cl);
+      Definition *ucd;
       for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
       {
-        if (rightScopeMatch(ucd->name(),name))
+        if (ucd->definitionType()==Definition::TypeClass && 
+           rightScopeMatch(ucd->name(),name))
         {
-          return ucd;
+          return (ClassDef *)ucd;
         }
       }
     }
@@ -4139,8 +4138,8 @@ static bool findGlobalMember(Entry *root,
       //    namespaceName.data(),nd ? nd->name().data() : "<none>");
       FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
-      NamespaceSDict *nl = fd ? fd->getUsedNamespaces() : 0;
-      ClassSDict *cl     = fd ? fd->getUsedClasses()    : 0;
+      NamespaceSDict *nl    = fd ? fd->getUsedNamespaces() : 0;
+      SDict<Definition> *cl = fd ? fd->getUsedClasses()    : 0;
       //printf("NamespaceList %p\n",nl);
 
       // search in the list of namespaces that are imported via a 
@@ -4676,14 +4675,14 @@ static void findMember(Entry *root,
               }
             }
 
-            ClassSDict *cl = new ClassSDict(17);
+            SDict<Definition> *cl = new SDict<Definition>(17);
             if (nd) 
             {
-              ClassSDict *ncl = nd->getUsedClasses();
+              SDict<Definition> *ncl = nd->getUsedClasses();
               if (ncl)
               {
-                ClassSDict::Iterator csdi(*ncl);
-                ClassDef *ncd;
+                SDict<Definition>::Iterator csdi(*ncl);
+                Definition *ncd;
                 for (csdi.toFirst();(ncd=csdi.current());++csdi)
                 {
                   cl->append(ncd->qualifiedName(),ncd);
@@ -4692,11 +4691,11 @@ static void findMember(Entry *root,
             }
             if (fd) 
             {
-              ClassSDict *fcl = fd->getUsedClasses();
+              SDict<Definition> *fcl = fd->getUsedClasses();
               if (fcl)
               {
-                ClassSDict::Iterator csdi(*fcl);
-                ClassDef *fcd;
+                SDict<Definition>::Iterator csdi(*fcl);
+                Definition *fcd;
                 for (csdi.toFirst();(fcd=csdi.current());++csdi)
                 {
                   cl->append(fcd->qualifiedName(),fcd);

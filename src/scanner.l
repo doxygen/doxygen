@@ -491,7 +491,7 @@ static void prependScope()
 /*! Returns TRUE iff the current entry could be a K&R style C function */
 static bool checkForKnRstyleC()
 {
-  if (((QCString)yyFileName).right(2)!=".c") return FALSE; // must be a C file
+  if (((QCString)yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
   if (!current->argList) return FALSE;
   ArgumentListIterator ali(*current->argList);
   Argument *a;
@@ -3575,12 +3575,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <ClassVar>"<"   	                { current->name += *yytext;
   					  sharpCount=1; 
+					  roundCount=0;
 					  lastSkipSharpContext = YY_START;
 					  specName = &current->name;
 					  BEGIN ( Specialization );
 					}
 <Bases>"<"   	       	                { 
   					  sharpCount=1; 
+					  roundCount=0;
 					  lastSkipSharpContext = YY_START;
 					  if (insideObjC) // start of protocol list
 					  {
@@ -3594,17 +3596,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					}
 <Specialization>"<"			{ *specName += *yytext;
-  					  sharpCount++;
+  					  if (roundCount==0) sharpCount++;
   					}
 <Specialization>">"			{
   					  *specName += *yytext;
-  					  if (--sharpCount<=0)
+  					  if (roundCount==0 && --sharpCount<=0)
 					    BEGIN(lastSkipSharpContext);
   					}
 <Specialization>{BN}+			{ lineCount(); *specName +=' '; }
 <Specialization>"<<"			{ *specName += yytext; }
 <Specialization>">>"			{ *specName += yytext; }
 <Specialization>"typename"{BN}+		{ lineCount(); }
+<Specialization>"("			{ *specName += *yytext; roundCount++; }
+<Specialization>")"			{ *specName += *yytext; roundCount--; }
 <Specialization>.			{
   					  *specName += *yytext;
   					}

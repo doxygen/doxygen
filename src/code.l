@@ -1466,6 +1466,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 %x      ObjCCall
 %x      ObjCMName
 %x      ObjCSkipStr
+%x      OldStyleArgs
 
 %%
 
@@ -1783,7 +1784,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
 					      ClassDef *ncd=new ClassDef("<code>",1,
-				 		  g_curClassName,ClassDef::Class,0,0,TRUE);
+				 		  g_curClassName,ClassDef::Class,0,0,FALSE);
 					      g_codeClassSDict.append(g_curClassName,ncd);
 					      // insert base classes.
 					      char *s=g_curClassBases.first();
@@ -2280,7 +2281,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<MemberCall2,FuncCall>{TYPEKW}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,OldStyleArgs>{TYPEKW}/([^a-z_A-Z0-9]) {
 					  addParmType();
 					  g_parmName=yytext; 
   					  startFontClass("keywordtype");
@@ -2352,7 +2353,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					    BEGIN( SkipInits );
 					  }
   					}
-<CallEnd>({BN}"const"|"volatile")*{BN}*"{" {
+<CallEnd,OldStyleArgs>({BN}"const"|"volatile")*{BN}*"{" {
                                           if (g_insideBody)
 					  {
 					    g_theVarContext.pushScope();
@@ -2400,6 +2401,28 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					  g_curlyCount++;
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
+  					}
+<CallEnd>{ID}				{
+  					  if (g_insideBody || !g_parmType.isEmpty()) 
+					  {
+					    REJECT;
+					  }
+					  // could be K&R style definition
+					  addParmType();
+					  g_parmName=yytext; 
+					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
+					  BEGIN(OldStyleArgs);
+  					}
+<OldStyleArgs>{ID}			{
+					  addParmType();
+					  g_parmName=yytext; 
+					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
+  					}
+<OldStyleArgs>[,;]			{
+  					  g_code->codify(yytext);
+					  g_theVarContext.addVariable(g_parmType,g_parmName);
+					  if (*yytext==';') g_parmType.resize(0);
+					  g_parmName.resize(0);
   					}
 <CallEnd>.				{
   					  unput(*yytext);

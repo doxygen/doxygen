@@ -149,7 +149,7 @@ class ClassDef : public Definition
      *  class. This function will recusively traverse all branches of the
      *  inheritance tree.
      */
-    bool isBaseClass(ClassDef *bcd,bool followInstances);
+    bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0);
 
     /*! Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.

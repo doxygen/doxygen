@@ -3154,13 +3154,13 @@ endparamlist:
 
 //--------------------------------------------------------------------------
 
-int DocParamSect::parse(const QString &cmdName)
+int DocParamSect::parse(const QString &cmdName,Direction d)
 {
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
   g_nodeStack.push(this);
 
-  DocParamList *pl = new DocParamList(this,m_type);
+  DocParamList *pl = new DocParamList(this,m_type,d);
   if (m_children.isEmpty())
   {
     pl->markFirst();
@@ -3204,7 +3204,9 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t)
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-int DocPara::handleParamSection(const QString &cmdName,DocParamSect::Type t)
+int DocPara::handleParamSection(const QString &cmdName,
+                                DocParamSect::Type t,
+                                int direction=DocParamSect::Unspecified)
 {
   DocParamSect *ps=0;
   if (!m_children.isEmpty() &&                        // previous element
@@ -3219,7 +3221,7 @@ int DocPara::handleParamSection(const QString &cmdName,DocParamSect::Type t)
     ps=new DocParamSect(this,t);
     m_children.append(ps);
   }
-  int rv=ps->parse(cmdName);
+  int rv=ps->parse(cmdName,(DocParamSect::Direction)direction);
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
@@ -3738,7 +3740,7 @@ int DocPara::handleCommand(const QString &cmdName)
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
       break; 
     case CMD_PARAM:
-      retval = handleParamSection(cmdName,DocParamSect::Param);
+      retval = handleParamSection(cmdName,DocParamSect::Param,g_token->paramDir);
       break;
     case CMD_RETVAL:
       retval = handleParamSection(cmdName,DocParamSect::RetVal);

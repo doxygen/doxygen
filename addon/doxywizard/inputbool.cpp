@@ -14,7 +14,11 @@
 
 #include "inputbool.h"
 #include "pagewidget.h"
+#if QT_VERSION >= 300
+#include <qstylefactory.h>
+#else
 #include <qwindowsstyle.h>
+#endif
 #include <qlayout.h>
 
 InputBool::InputBool( const QString & text, PageWidget * parent, bool &flag )
@@ -25,9 +29,13 @@ InputBool::InputBool( const QString & text, PageWidget * parent, bool &flag )
   layout->addWidget(cb);
   layout->addStretch(10);
 
+#if QT_VERSION >= 300
+  QStyle *winStyle = QStyleFactory::create("windows");
+#else
   QWindowsStyle *winStyle = new QWindowsStyle();
+#endif
   cb->setChecked( flag );
-  cb->setStyle( winStyle );
+  if (winStyle) cb->setStyle( winStyle );
   cb->setMinimumSize( sizeHint() );
 
   connect( cb, SIGNAL(toggled(bool)), SLOT(setState(bool)) );

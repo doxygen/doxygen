@@ -909,8 +909,13 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
     {  
        Unknown, Param, RetVal, Exception 
     };
-    DocParamSect(DocNode *parent,Type t) : m_parent(parent), m_type(t) {}
-    int parse(const QString &cmdName);
+    enum Direction
+    {
+       In=1, Out=2, InOut=3, Unspecified=0
+    };
+    DocParamSect(DocNode *parent,Type t) 
+      : m_parent(parent), m_type(t) {}
+    int parse(const QString &cmdName,Direction d);
     Kind kind() const          { return Kind_ParamSect; }
     Type type() const          { return m_type; }
     DocNode *parent() const    { return m_parent; }
@@ -919,6 +924,7 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
   private:
     DocNode *       m_parent;
     Type            m_type;
+    Direction       m_dir;
 };
 
 /*! Node representing a paragraph in the documentation tree */
@@ -943,7 +949,8 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     int handleHtmlEndTag(const QString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t);
     int handleXRefItem();
-    int handleParamSection(const QString &cmdName,DocParamSect::Type t);
+    int handleParamSection(const QString &cmdName,DocParamSect::Type t,
+                           int direction);
     void handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t);
     void handleImage(const QString &cmdName);
     void handleDotFile(const QString &cmdName);
@@ -965,14 +972,15 @@ class DocPara : public CompAccept<DocPara>, public DocNode
 class DocParamList : public DocNode
 {
   public:
-    DocParamList(DocNode *parent,DocParamSect::Type t) 
-      : m_parent(parent) , m_type(t), m_isFirst(TRUE), m_isLast(TRUE)
+    DocParamList(DocNode *parent,DocParamSect::Type t,DocParamSect::Direction d) 
+      : m_parent(parent) , m_type(t), m_dir(d), m_isFirst(TRUE), m_isLast(TRUE)
     { m_paragraph=new DocPara(this); }
     virtual ~DocParamList()         { delete m_paragraph; }
     Kind kind() const               { return Kind_ParamList; }
     DocNode *parent() const         { return m_parent; }
     const QStrList &parameters()    { return m_params; }
     DocParamSect::Type type() const { return m_type; }
+    DocParamSect::Direction direction() const { return m_dir; }
     void markFirst(bool b=TRUE)     { m_isFirst=b; }
     void markLast(bool b=TRUE)      { m_isLast=b; }
     bool isFirst() const            { return m_isFirst; }
@@ -986,12 +994,13 @@ class DocParamList : public DocNode
     int parse(const QString &cmdName);
 
   private:
-    DocNode *          m_parent;
-    DocPara *          m_paragraph;
-    QStrList           m_params;
-    DocParamSect::Type m_type;
-    bool               m_isFirst;
-    bool               m_isLast;
+    DocNode *               m_parent;
+    DocPara *               m_paragraph;
+    QStrList                m_params;
+    DocParamSect::Type      m_type;
+    DocParamSect::Direction m_dir;
+    bool                    m_isFirst;
+    bool                    m_isLast;
 };
 
 /*! @brief Node representing an item of a auto list */

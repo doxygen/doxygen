@@ -288,6 +288,8 @@ LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"))?
 SPCMD1    {CMD}[a-z_A-Z0-9]+ 
 SPCMD2    {CMD}[\\@<>&$#%~]
 SPCMD3    {CMD}form#[0-9]+
+INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
+PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
 SCOPESEP  "::"|"#"|"."
@@ -391,7 +393,34 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      { /* special command */
                          g_token->name = yytext+1;
+			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
+  		       }
+<St_Para>{PARAMIO}     { /* param [in,out] command */
+  			 g_token->name = "param";
+			 QString s(yytext);
+			 bool isIn  = s.find("in")!=-1;
+			 bool isOut = s.find("out")!=-1;
+			 if (isIn)
+			 {
+			   if (isOut)
+			   {
+			     g_token->paramDir=TokenInfo::InOut;
+			   }
+			   else
+			   {
+			     g_token->paramDir=TokenInfo::In;
+			   }
+			 }
+			 else if (isOut)
+			 {
+			   g_token->paramDir=TokenInfo::Out;
+			 }
+			 else
+			 {
+			   g_token->paramDir=TokenInfo::Unspecified;
+			 }
+			 return TK_COMMAND;
   		       }
 <St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} { // URL
                          g_token->name=yytext;
@@ -567,6 +596,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_TitleN>{SPCMD1}    |   
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
+			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
                        }
 <St_TitleN>{WORD1}     |
@@ -592,6 +622,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_TitleQ>{SPCMD1}    |   
 <St_TitleQ>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;
+			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
                        }
 <St_TitleQ>{WORD1NQ}   |
@@ -663,6 +694,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_Ref2>{SPCMD1}      |   
 <St_Ref2>{SPCMD2}      { /* special command */ 
                          g_token->name = yytext+1;
+			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
                        }
 <St_Ref2>{WORD1NQ}     |

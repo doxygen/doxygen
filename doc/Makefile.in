@@ -31,6 +31,6 @@ clean:
 language: language.doc 
 
 language.doc: $(wildcard ../src/translator*.h) maintainers.txt language.tpl translator.py
-	python translator.pl
+	python translator.py
 
 FORCE:

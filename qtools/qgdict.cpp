@@ -41,7 +41,6 @@
 #include "qdatastream.h"
 #include <ctype.h>
 
-
 // NOT REVISED
 /*!
   \class QGDict qgdict.h
@@ -87,8 +86,8 @@ public:
 int QGDict::hashKeyString( const QString &key )
 {
 #if defined(CHECK_NULL)
-    if ( key.isNull() )
-	qWarning( "QGDict::hashStringKey: Invalid null key" );
+    if ( key.isNull() ) 
+	qWarning( "QGDict::hashStringKey: Invalid null key" ); 
 #endif
     int i;
     register uint h=0;
