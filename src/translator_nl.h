@@ -151,7 +151,7 @@ class TranslatorDutch : public Translator
     QCString trModuleDocumentation()
     { return "Module Documentatie"; }
     QCString trClassDocumentation()
-    { return "Klasse Documentatie"; }
+    { return "Klassen Documentatie"; }
     QCString trFileDocumentation()
     { return "File Documentatie"; }
     QCString trExampleDocumentation()

@@ -124,6 +124,8 @@ class HtmlGenerator : public OutputGenerator
                                                       //    to prevent an extra
                                                       //    blank line 
                                                       //    (with netscape)
+    void startPreFragment() { t << "<pre>"; }
+    void endPreFragment()   { t << "</pre>"; }
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }
     void writeBoldString(const char *text) 

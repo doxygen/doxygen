@@ -105,6 +105,8 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
+    void startPreFragment() { startCodeFragment(); }
+    void endPreFragment() { endCodeFragment(); }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }
     void writeBoldString(const char *text) 

@@ -33,34 +33,6 @@
 #include "section.h"
 #include "membergroup.h"
 
-struct PageInfo
-{
-  PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
-     defFileName(f), defLine(l), name(n), doc(d), title(t), 
-     todoId(0), testId(0) {}
-
-  // where the page definition was found
-  QCString defFileName;
-  int defLine;
-
-  // contents of the page
-  QCString name;
-  QCString doc;
-  QCString title;
-
-  // ids
-  int todoId;
-  int testId;
-};
-
-class PageList : public QList<PageInfo> 
-{
-  int compareItems(GCI i1,GCI i2)
-  {
-    return stricmp(((PageInfo *)i1)->name,((PageInfo *)i2)->name);
-  }
-};
-
 class BufStr : public QCString
 {
   public:
@@ -87,35 +59,37 @@ class BufStr : public QCString
     const int spareRoom; // 10Kb extra room to avoid frequent resizing
 };
 
+class PageSList;
+class PageSDict;
+class PageInfo;
+
+extern PageSDict *exampleSDict;
+extern PageSDict *pageSDict;
+extern PageInfo *mainPage;
+extern FileNameDict *includeNameDict;
+extern FileNameDict *exampleNameDict;
+extern FileNameDict *inputNameDict;
+extern FileNameDict *imageNameDict;
+
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
 typedef QDict<QCString>    StringDict;
-typedef QDict<PageInfo>    PageDict;
 typedef QDict<GroupDef>    GroupDict;
 
-extern const char * getOverloadDocs();
 extern ClassList classList;
 extern ClassDict classDict;
 extern QStrList tagfileList;
-extern PageList exampleList;
-extern PageDict exampleDict;
-extern PageList pageList;
-extern PageDict pageDict;
 extern MemberNameList memberNameList;
 extern MemberNameList functionNameList;
 extern MemberNameDict memberNameDict;
 extern MemberNameDict functionNameDict;
-extern StringDict substituteDict;
+//extern StringDict substituteDict;
 extern FileList fileList;
 extern FileDict fileDict;
 extern ClassDef unrelatedClass; 
 extern QTextStream tagFile;
 extern SectionDict sectionDict;
 extern FileNameList inputNameList;
-extern FileNameDict *includeNameDict;
-extern FileNameDict *exampleNameDict;
-extern FileNameDict *inputNameDict;
-extern FileNameDict *imageNameDict;
 extern StringDict typedefDict;
 extern GroupList groupList;
 extern GroupDict groupDict;
@@ -124,7 +98,6 @@ extern NamespaceDict namespaceDict;
 extern FormulaList formulaList;
 extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
-extern PageInfo *mainPage;
 extern StringDict tagDestinationDict; 
 extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
 extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
@@ -142,5 +115,7 @@ extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
 extern QCString spaces;
+
+extern const char * getOverloadDocs();
 
 #endif

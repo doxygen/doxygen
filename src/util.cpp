@@ -37,6 +37,7 @@
 #include "version.h"
 #include "groupdef.h"
 #include "xml.h"
+#include "page.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -797,14 +798,14 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
-  if (pageList.count()>0)
+  if (pageSDict->count()>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,"pages.html");
     parseText(ol,theTranslator->trRelatedPages());
     ol.endQuickIndexItem();
   } 
-  if (exampleList.count()>0)
+  if (exampleSDict->count()>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,"examples.html");
@@ -2109,13 +2110,13 @@ bool generateLink(OutputList &ol,const char *clName,
     ol.docify(lt);
     return FALSE;
   }
-  else if ((pi=pageDict[linkRef])) // link to a page
+  else if ((pi=pageSDict->find(linkRef))) // link to a page
   {
     ol.writeObjectLink(0,pi->name,0,lt);  
     writePageRef(ol,pi->name,0);
     return TRUE;
   }
-  else if ((pi=exampleDict[linkRef])) // link to an example
+  else if ((pi=exampleSDict->find(linkRef))) // link to an example
   {
     ol.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
     writePageRef(ol,convertFileName(pi->name)+"-example",0);
@@ -2162,6 +2163,7 @@ void generateFileRef(OutputList &ol,const char *name,const char *text)
 
 //----------------------------------------------------------------------
 
+#if 0
 QCString substituteClassNames(const QCString &s)
 {
   int i=0,l,p;
@@ -2185,6 +2187,7 @@ QCString substituteClassNames(const QCString &s)
   result+=s.mid(i,s.length()-i);
   return result;
 }
+#endif
 
 //----------------------------------------------------------------------
 

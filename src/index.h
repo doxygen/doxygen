@@ -52,7 +52,7 @@ void writeSourceIndex(OutputList &ol);
 void writeAnnotatedIndex(OutputList &ol);
 void writeAnnotatedClassList(OutputList &ol);
 void writeMemberIndex(OutputList &ol);
-void writeMemberList(OutputList &ol);
+void writeMemberList(OutputList &ol,bool useSections);
 void writeHeaderIndex(OutputList &ol);
 void writeHeaderFileList(OutputList &ol);
 void writeExampleIndex(OutputList &ol);

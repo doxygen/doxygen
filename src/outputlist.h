@@ -186,6 +186,10 @@ class OutputList
     { forall(&OutputGenerator::startCodeFragment); }
     void endCodeFragment() 
     { forall(&OutputGenerator::endCodeFragment); }
+    void startPreFragment() 
+    { forall(&OutputGenerator::startPreFragment); }
+    void endPreFragment() 
+    { forall(&OutputGenerator::endPreFragment); }
     void startCodeLine() 
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 
@@ -395,7 +399,7 @@ class OutputList
     FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
-#if defined(HAS_BOOL_TYPE)
+#if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);

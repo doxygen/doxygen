@@ -113,6 +113,8 @@ class OutputGenerator
     virtual void writeAnchor(const char *fileName,const char *name) = 0;
     virtual void startCodeFragment() = 0;
     virtual void endCodeFragment() = 0;
+    virtual void startPreFragment() = 0;
+    virtual void endPreFragment() = 0;
     virtual void startCodeLine() = 0;
     virtual void endCodeLine() = 0;
     virtual void writeBoldString(const char *text) = 0;
