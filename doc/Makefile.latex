@@ -28,4 +28,4 @@ doxygen_manual.pdf: doxygen_manual.tex doxygen.sty
 	echo "Rerunning latex...."
 	pdflatex doxygen_manual.tex
 clean:
-	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.pdf
+	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log doxygen_manual.pdf

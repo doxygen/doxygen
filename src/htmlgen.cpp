@@ -1176,3 +1176,39 @@ void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
   }
   codify(" ");
 }
+
+void HtmlGenerator::startSimpleSect(SectionTypes,
+                                const char *file,const char *anchor,
+                                const char *title)
+{
+  t << "<dl compact><dt><b>";
+  if (file)
+  {
+    writeObjectLink(0,file,anchor,title);
+  }
+  else
+  {
+    docify(title);
+  }
+  t << "</b></dt>";
+}
+
+void HtmlGenerator::endSimpleSect()
+{
+  t << "</dl>"; 
+}
+
+void HtmlGenerator::startParamList(ParamListTypes,
+                                const char *title)
+{
+  t << "<dl compact><dt><b>";
+  docify(title);
+  t << "</b></dt>";
+}
+
+void HtmlGenerator::endParamList()
+{
+  t << "</dl>"; 
+}
+
+

@@ -1221,9 +1221,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (docArgList && docArgList->hasDocumentation())
     {
       //printf("***** argumentList is documented\n");
-      ol.startParamList(BaseOutputDocInterface::Param);
-      parseText(ol,theTranslator->trParameters()+": ");
-      ol.endDescTitle();
+      ol.startParamList(BaseOutputDocInterface::Param,theTranslator->trParameters()+": ");
       ol.writeDescItem();
       ol.startDescTable();
       ArgumentListIterator ali(*docArgList);
@@ -1241,7 +1239,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         }
       }
       ol.endDescTable();
-      ol.endDescList();
+      ol.endParamList();
     }
     
     if (isEnumerate())
@@ -1258,12 +1256,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             if (first)
             {
               //ol.newParagraph();
-              ol.startDescList(BaseOutputDocInterface::EnumValues);
-              parseText(ol,theTranslator->trEnumerationValues());
-              ol.docify(":");
-              ol.endDescTitle();
+              ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
               ol.writeDescItem();
-              //ol.startItemList();
               ol.startDescTable();
             }
 
@@ -1312,7 +1306,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       { 
         //ol.endItemList(); 
         ol.endDescTable();
-        ol.endDescList();
+        ol.endSimpleSect();
         ol.writeChar('\n'); 
       }
     }
@@ -1457,20 +1451,21 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // write the list of examples that use this member
     if (hasExamples())
     {
-      ol.startDescList(BaseOutputDocInterface::Examples);
-      parseText(ol,theTranslator->trExamples()+": ");
-      //ol.writeBoldString("Examples: ");
-      ol.endDescTitle();
+      ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
       ol.writeDescItem();
       writeExample(ol,getExamples());
       //ol.endDescItem();
-      ol.endDescList();
+      ol.endSimpleSect();
     }
     // write reference to the source
     writeSourceDef(ol,cname);
     writeSourceRefs(ol,cname);
     writeSourceReffedBy(ol,cname);
     writeInlineCode(ol,cname);
+
+    ol.disableAllBut(OutputGenerator::RTF);
+    ol.newParagraph();
+    ol.enableAll();
 
     ol.endIndent();
     // enable LaTeX again

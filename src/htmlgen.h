@@ -191,8 +191,10 @@ class HtmlGenerator : public OutputGenerator
     void writeCCedil(char c)  { t << "&" << c << "cedil;"; }
     void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
     void endDescList()        { t << "</dl>"; }
-    void startParamList(ParamListTypes) { t << "<dl compact><dt><b>" << endl; }    
-    void endParamList()       { t << "</dl>"; }
+    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
+    void endSimpleSect();
+    void startParamList(ParamListTypes,const char *);
+    void endParamList();
     void endDescTitle()       { t << "</b>"; }
     void writeDescItem()      { t << "<dd>" << endl; }
     void startSection(const char *,const char *,bool);

@@ -1485,6 +1485,15 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
+                    "MULTILINE_CPP_IS_BRIEF",
+                    "The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen \n"
+                    "treat a multi-line C++ special comment block (i.e. a block of //! or /// \n"
+		    "comments) as a brief description. This used to be the default behaviour. \n"
+		    "The new default is to treat a multi-line C++ comment block as a detailed \n"
+		    "description. Set this tag to YES if you prefer the old behaviour instead. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "DETAILS_AT_TOP",
                     "If the DETAILS_AT_TOP tag is set to YES then Doxygen \n"
                     "will output the detailed description near the top, like JavaDoc.\n"
@@ -2188,8 +2197,9 @@ void Config::create()
                     "SKIP_FUNCTION_MACROS",
                     "If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then \n"
 		    "doxygen's preprocessor will remove all function-like macros that are alone \n"
-		    "on a line and do not end with a semicolon. Such function macros are typically \n"
-		    "used for boiler-plate code, and will confuse the parser if not removed. \n",
+		    "on a line, have an all uppercase name, and do not end with a semicolon. Such \n"
+		    "function macros are typically used for boiler-plate code, and will confuse the \n"
+		    "parser if not removed. \n",
                     TRUE
                  );
   cb->addDependency("ENABLE_PREPROCESSING");

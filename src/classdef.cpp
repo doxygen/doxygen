@@ -728,14 +728,11 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
     // write examples
     if (exampleFlag)
     {
-      ol.startDescList(BaseOutputDocInterface::Examples);
-      parseText(ol,theTranslator->trExamples()+": ");
-      ol.endDescTitle();
+      ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
       ol.writeDescItem();
       ol.newParagraph();
       writeExample(ol,m_exampleSDict);
-      //ol.endDescItem();
-      ol.endDescList();
+      ol.endSimpleSect();
     }
     ol.newParagraph();
     writeSourceDef(ol,name());

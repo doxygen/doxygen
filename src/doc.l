@@ -551,7 +551,7 @@ static void endBlock()
   }
   else
   {
-    outDoc->endDescList();
+    outDoc->endSimpleSect();
   }
   currentListIndent.pop();
   inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
@@ -928,7 +928,7 @@ static void checkArgName(const QCString &name,bool isParam)
   if (!Config_getBool("WARN_IF_UNDOCUMENTED")) return;
 
   //printf("name=%s\n",name.data());
-  static QRegExp re("[a-zA-Z0-9_]+");
+  static QRegExp re("[a-zA-Z0-9_]+\\.*");
   int p=0,i=0,l;
   while ((i=re.match(name,p,&l))!=-1)
   {
@@ -1103,7 +1103,7 @@ ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
-URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))("("{URLCHAR}*")")?
+URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))([({]{URLCHAR}*[)}])?
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9\x80-\xff]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]*"\"")
 ATTR      ({B}+[^>\n]*)?
@@ -1456,9 +1456,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (b) endBlock();  
 					    inParBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Par);
-					    outDoc->docify(title);
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Par,0,0,title);
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1478,9 +1476,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inWarningBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Warning);
-					    scanString(theTranslator->trWarning()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Warning,0,0,theTranslator->trWarning()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1499,9 +1495,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inRemarkBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Remark);
-					    scanString(theTranslator->trRemarks()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Remark,0,0,theTranslator->trRemarks()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1520,9 +1514,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inAttentionBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Attention);
-					    scanString(theTranslator->trAttention()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Attention,0,0,theTranslator->trAttention()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1541,9 +1533,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inNoteBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Note);
-					    scanString(theTranslator->trNote()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Note,0,0,theTranslator->trNote()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1562,9 +1552,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inPreBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Pre);
-					    scanString(theTranslator->trPrecondition()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Pre,0,0,theTranslator->trPrecondition()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1583,9 +1571,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inPostBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Post);
-					    scanString(theTranslator->trPostcondition()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Post,0,0,theTranslator->trPostcondition()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1604,9 +1590,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inInvarBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Invar);
-					    scanString(theTranslator->trInvariant()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Invar,0,0,theTranslator->trInvariant()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1625,9 +1609,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inVersionBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Version);
-					    scanString(theTranslator->trVersion()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Version,0,0,theTranslator->trVersion()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1646,9 +1628,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inSinceBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Since);
-					    scanString(theTranslator->trSince()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Since,0,0,theTranslator->trSince()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1667,9 +1647,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inDateBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Date);
-					    scanString(theTranslator->trDate()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Date,0,0,theTranslator->trDate()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1692,12 +1670,10 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
-					    outDoc->startDescList(BaseOutputDocInterface::Todo);
-					    outDoc->writeObjectLink(0,"todo",item->listAnchor,theTranslator->trTodo()+": ");
-					    outDoc->endDescTitle();
+					    outDoc->startSimpleSect(BaseOutputDocInterface::Todo,"todo",item->listAnchor,theTranslator->trTodo()+": ");
 					    outDoc->writeDescItem();
 					    internalParseDocument(item->text);
-					    outDoc->endDescList();
+					    outDoc->endSimpleSect();
 					    currentListIndent.pop();
 					  }
   					}
@@ -1716,12 +1692,10 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Test);
-					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Test,"test",item->listAnchor,theTranslator->trTest()+": ");
 					    outDoc->writeDescItem();
 					    internalParseDocument(item->text);
-					    outDoc->endDescList();
+					    outDoc->endSimpleSect();
 					    currentListIndent.pop();
 					  }
   					}
@@ -1740,12 +1714,10 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Bug);
-					    outDoc->writeObjectLink(0,"bug",item->listAnchor,theTranslator->trBug()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Bug,"bug",item->listAnchor,theTranslator->trBug()+": ");
 					    outDoc->writeDescItem();
 					    internalParseDocument(item->text);
-					    outDoc->endDescList();
+					    outDoc->endSimpleSect();
 					    currentListIndent.pop();
 					  }
   					}
@@ -1760,9 +1732,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inDeprecatedBlock=TRUE;
 					    currentListIndent.push("P");
-					    outDoc->startDescList(BaseOutputDocInterface::Deprecated);
-					    scanString(theTranslator->trDeprecated()+": ");
-					    outDoc->endDescTitle();
+					    outDoc->startSimpleSect(BaseOutputDocInterface::Deprecated,0,0,theTranslator->trDeprecated()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1783,12 +1753,10 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   				          endArgumentList();
 					  if (inBlock()) endBlock();
 					  currentListIndent.push("P");
-  					  outDoc->startDescList(BaseOutputDocInterface::RCS);
-					  scanString(tagName+": ");
-					  outDoc->endDescTitle();
+  					  outDoc->startSimpleSect(BaseOutputDocInterface::RCS,0,0,tagName+": ");
 					  outDoc->writeDescItem();
 					  scanString(tagText);
-					  outDoc->endDescList();
+					  outDoc->endSimpleSect();
 					  currentListIndent.pop();
   					}
 <DocScan>{CMD}"author"[s]?{BSEP}	{
@@ -1802,10 +1770,9 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inAuthorBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Author);
 					    bool singular = ((QString)yytext).find('s')==-1;
-					    scanString(theTranslator->trAuthor(TRUE,singular)+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Author,
+						                    0,0,theTranslator->trAuthor(TRUE,singular)+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1824,9 +1791,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startDescList(BaseOutputDocInterface::Return);
-					    scanString(theTranslator->trReturns()+": ");
-					    outDoc->endDescTitle();
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Return,0,0,theTranslator->trReturns()+" :");
 					    outDoc->writeDescItem();
 					  }
   					}
@@ -1841,9 +1806,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
 					    currentListIndent.push("P");
-					    outDoc->startDescList(BaseOutputDocInterface::See);
-					    scanString(theTranslator->trSeeAlso()+": ");
-					    outDoc->endDescTitle();
+					    outDoc->startSimpleSect(BaseOutputDocInterface::See,0,0,theTranslator->trSeeAlso()+": ");
 					    outDoc->writeDescItem();
 					  }
 					  else
@@ -1863,9 +1826,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inParamBlock=TRUE;
 					    currentListIndent.push("P");
-					    outDoc->startParamList(BaseOutputDocInterface::Param);
-					    scanString(theTranslator->trParameters()+": ");
-  					    outDoc->endDescTitle();
+					    outDoc->startParamList(BaseOutputDocInterface::Param,theTranslator->trParameters()+": ");
   					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
 					  }
@@ -1887,9 +1848,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inRetValBlock=TRUE;
 					    currentListIndent.push("P");
-					    outDoc->startParamList(BaseOutputDocInterface::RetVal);
-					    scanString(theTranslator->trReturnValues()+": ");
-  					    outDoc->endDescTitle();
+					    outDoc->startParamList(BaseOutputDocInterface::RetVal,theTranslator->trReturnValues()+": ");
   					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
 					  }
@@ -1911,9 +1870,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inExceptionBlock=TRUE;
 					    currentListIndent.push("P");
-					    outDoc->startParamList(BaseOutputDocInterface::Exception);
-					    scanString(theTranslator->trExceptions()+": ");
-  					    outDoc->endDescTitle();
+					    outDoc->startParamList(BaseOutputDocInterface::Exception,theTranslator->trExceptions()+": ");
 					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
 					  }

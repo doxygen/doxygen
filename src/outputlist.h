@@ -331,8 +331,13 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDescList,t); }
     void endDescList() 
     { forall(&OutputGenerator::endDescList); }
-    void startParamList(ParamListTypes t) 
-    { forall(&OutputGenerator::startParamList,t); }
+    void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
+                         const char *title) 
+    { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }
+    void endSimpleSect() 
+    { forall(&OutputGenerator::endSimpleSect); }
+    void startParamList(ParamListTypes t,const char *title) 
+    { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 
     { forall(&OutputGenerator::endParamList); }
     void endDescTitle() 
@@ -489,7 +494,6 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
-    FORALLPROTO1(ParamListTypes);
     FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
@@ -498,12 +502,14 @@ class OutputList : public OutputDocInterface
     FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);
+    FORALLPROTO2(ParamListTypes,const char *);
     FORALLPROTO2(const char *,const char *);
     FORALLPROTO2(const char *,bool);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
+    FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);
   

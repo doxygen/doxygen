@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ICompound *comp;
   for (cli->toFirst();(comp=cli->current());cli->toNext())
   {
-    printf("Processing %s...\n",comp->name().data());
+    printf("Processing %s...\n",comp->name()->latin1());
     bool hasDocs = isDocumented(comp->briefDescription(),comp->detailedDescription());
     switch (comp->kind())
     {
@@ -108,7 +108,6 @@ int main(int argc,char **argv)
       case ICompound::File:       numFiles++;      break;
       case ICompound::Group:      numGroups++;     break;
       case ICompound::Page:       numPages++;      break;
-      case ICompound::Package:    numPackages++;   break;
       default: break;
     }
     
@@ -120,7 +119,7 @@ int main(int argc,char **argv)
       IMember *mem;
       for (mli->toFirst();(mem=mli->current());mli->toNext())
       {
-        IParamIterator *pli = mem->params();
+        IParamIterator *pli = mem->parameters();
         IParam *par;
         if (comp->kind()==ICompound::Class || 
             comp->kind()==ICompound::Struct ||
@@ -203,7 +202,7 @@ int main(int argc,char **argv)
         {
           numParams++;
         }
-        if (mem->typeString()!="void")
+        if (QString(mem->typeString()->latin1())!="void")
         {
           numParams++; // count non-void return types as well
         }

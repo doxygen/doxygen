@@ -6350,31 +6350,36 @@ static void readFiles(BufStr &output)
 
     int fileNameSize=fileName.length();
 
+    bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+
     BufStr tempBuf(10000);
+    BufStr *bufPtr = multiLineIsBrief ? &tempBuf : &output;
 
     // add begin filename marker
-    tempBuf.addChar(0x06);
+    bufPtr->addChar(0x06);
     // copy filename
-    tempBuf.addArray(fileName.data(),fileNameSize);
+    bufPtr->addArray(fileName.data(),fileNameSize);
     
     // add end filename marker
-    tempBuf.addChar(0x06);
-    tempBuf.addChar('\n');
+    bufPtr->addChar(0x06);
+    bufPtr->addChar('\n');
     if (Config_getBool("ENABLE_PREPROCESSING"))
     {
       msg("Preprocessing %s...\n",s->data());
-      preprocessFile(fileName,tempBuf);
+      preprocessFile(fileName,*bufPtr);
     }
     else
     {
       msg("Reading %s...\n",s->data());
-      copyAndFilterFile(fileName,tempBuf);
+      copyAndFilterFile(fileName,*bufPtr);
     }
 
-    tempBuf.addChar('\n'); /* to prevent problems under Windows ? */
+    bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
 
-    convertCppComments(&tempBuf,&output);
-    //output.addArray(tempBuf.data(),tempBuf.curPos());
+    if (multiLineIsBrief)
+    {
+      convertCppComments(&tempBuf,&output);
+    }
 
     s=inputFiles.next();
     //printf("-------> adding new line\n");

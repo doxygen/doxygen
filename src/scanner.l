@@ -445,7 +445,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -1043,7 +1043,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           lineCount();
   					  QCString scope=yytext;
 					  current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
-					  printf("import name = %s -> %s\n",yytext,current->name.data());
+					  //printf("import name = %s -> %s\n",yytext,current->name.data());
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
 					  current_root->addSubEntry(current);

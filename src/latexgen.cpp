@@ -196,7 +196,7 @@ void LatexGenerator::init()
 #if defined(_MSC_VER)
       // ps2pdf.bat does not work properly from a makefile using GNU make!
       << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-         "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl
+         "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl;
 #else
       << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl;
 #endif
@@ -1914,5 +1914,37 @@ void LatexGenerator::endDescItem()
   {
     lineBreak();
   }
+}
+
+void LatexGenerator::startSimpleSect(SectionTypes,const char *file,
+                                     const char *anchor,const char *title)
+{
+  t << "\\begin{Desc}\n\\item[";
+  if (file)
+  {
+    writeObjectLink(0,file,anchor,title);
+  }
+  else
+  {
+    docify(title);
+  }
+  t << "]";
+}
+
+void LatexGenerator::endSimpleSect()
+{
+  t << "\\end{Desc}" << endl;
+}
+
+void LatexGenerator::startParamList(ParamListTypes,const char *title)
+{
+  t << "\\begin{Desc}\n\\item[";
+  docify(title);
+  t << "]";
+}
+
+void LatexGenerator::endParamList()
+{
+  t << "\\end{Desc}" << endl;
 }
 

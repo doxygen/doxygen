@@ -226,7 +226,10 @@ class BaseOutputDocInterface
     virtual void writeCCedil(char) = 0;
     virtual void startDescList(SectionTypes t) = 0;
     virtual void endDescList() = 0;
-    virtual void startParamList(ParamListTypes t) = 0;
+    virtual void startSimpleSect(SectionTypes t,const char *file,
+                                 const char *anchor,const char *title) = 0;
+    virtual void endSimpleSect() = 0;
+    virtual void startParamList(ParamListTypes t,const char *title) = 0;
     virtual void endParamList() = 0;
     virtual void endDescTitle() = 0;
     virtual void writeDescItem() = 0;

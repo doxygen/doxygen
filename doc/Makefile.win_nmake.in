@@ -22,7 +22,7 @@ all: language FORCE
 	@copy Makefile.latex ..\latex\Makefile
 	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen_manual.tex >..\latex\doxygen_manual.tex
 	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen.sty >..\latex\doxygen.sty 
-	@copy doxygen_logo.eps ..\latex
+	@epstopdf doxygen_logo.eps -o=..\latex\doxygen_logo.pdf
 
 clean: 
 	del /s /q ..\html ..\latex
