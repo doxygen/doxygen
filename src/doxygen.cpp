@@ -3201,7 +3201,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           NamespaceDef *nd=0;
           if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
           tcd = findClassDefinition(fd,nd,scopeName,classTempList);
-          
+
           if (cd && tcd==cd) // member's classes match
           {
             Debug::print(Debug::FindMembers,0,
@@ -5737,7 +5737,29 @@ int main(int argc,char **argv)
       {
         QCString name=alias.left(i).stripWhiteSpace();
         QCString value=alias.right(alias.length()-i-1);
-        value=substitute(value,"\\n","\n");
+        QCString newValue;
+        int in,p=0;
+        // for each \n in the alias command value
+        while ((in=value.find("\\n",p))!=-1)
+        {
+          newValue+=value.mid(p,in-p);
+          // expand \n's except if \n is part of a built-in command.
+          if (value.mid(in,5)!="\\note" && 
+              value.mid(in,5)!="\\name" && 
+              value.mid(in,10)!="\\namespace" && 
+              value.mid(in,14)!="\\nosubgrouping"
+             ) 
+          {
+            newValue+="\n";
+          }
+          else 
+          {
+            newValue+="\\n";
+          }
+          p=in+2;
+        }
+        newValue+=value.mid(p,value.length()-p);
+        value=newValue;
         //printf("Alias: found name=`%s' value=`%s'\n",name.data(),value.data()); 
         if (!name.isEmpty())
         {

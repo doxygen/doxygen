@@ -139,6 +139,7 @@ static char             lastCopyArgChar;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
+static QCString         *pSkipDoc;
 
 static bool             insideFormula;
 
@@ -2837,30 +2838,58 @@ TITLE     [tT][iI][tT][lL][eE]
   					  sectionType=SectionInfo::Anchor;
 					  BEGIN(AnchorLabel);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
 					  current->doc+="\\\\verbatim";
 					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\verbatim";
   					  BEGIN(SkipVerbatim);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
+<Doc,PageDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
   					  current->doc+=yytext;
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
   					  current->doc+="\\\\code";
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"code"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>{CMD}"code"/[^a-z_A-Z0-9] {
   					  lastCodeState=YY_START;
 					  current->doc+="\\code";
+					  pSkipDoc=&current->doc;
 					  BEGIN(SkipCode);
 					}
-<Doc,PageDoc,JavaDoc,ClassDoc>"<"{PRE}{ATTR}">" {
+<Doc,PageDoc,ClassDoc>"<"{PRE}{ATTR}">" {
   					  lastCodeState=YY_START;
 					  current->doc+="<PRE>";
+					  pSkipDoc=&current->doc;
 					  BEGIN(SkipCode);
   					}
+<JavaDoc>"<"{PRE}{ATTR}">" 		{
+  					  lastCodeState=YY_START;
+					  current->brief+="<PRE>";
+					  pSkipDoc=&current->brief;
+					  BEGIN(SkipCode);
+  					}
+<JavaDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
+					  current->brief+="\\\\verbatim";
+					}
+<JavaDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] 	{
+					  lastVerbState=YY_START;
+					  current->brief+="\\verbatim";
+  					  BEGIN(SkipVerbatim);
+  					}
+<JavaDoc>{CMD}"addindex"{B}+[^\n]+ 	{
+  					  current->brief+=yytext;
+  					}
+<JavaDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
+  					  current->brief+="\\\\code";
+  					}
+<JavaDoc>{CMD}"code"/[^a-z_A-Z0-9] 	{
+  					  lastCodeState=YY_START;
+					  current->brief+="\\code";
+					  pSkipDoc=&current->brief;
+					  BEGIN(SkipCode);
+					}
 <SkipVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					  BEGIN(lastVerbState);
@@ -2890,30 +2919,30 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->doc+=*yytext;
   					}
 <SkipCode>{CMD}"endcode"		{
-  					  current->doc+="\\endcode";
+  					  *pSkipDoc+="\\endcode";
 					  BEGIN(lastCodeState);
   					}
 <SkipCode>"</"{PRE}{ATTR}">"		{
-  					  current->doc+="</PRE>";
+  					  *pSkipDoc+="</PRE>";
 					  BEGIN(lastCodeState);
   					}
 <SkipCode>^"//"({B}*"*"+)?		{
   					  if (!removeSlashes)
-					    current->doc+=yytext;
+					    *pSkipDoc+=yytext;
   					}
 <SkipCode>^{B}*"*"+		
 <SkipCode>"//"				{
-  					  current->doc+=yytext;
+  					  *pSkipDoc+=yytext;
   					}
 <SkipCode>[^ \<\*\t\/\\\n]+		{
-  					  current->doc+=yytext;
+  					  *pSkipDoc+=yytext;
   					}
 <SkipCode>\n				{
   					  yyLineNr++;
-					  current->doc+=*yytext;
+					  *pSkipDoc+=*yytext;
   					}
 <SkipCode>.				{
-  					  current->doc+=*yytext;
+  					  *pSkipDoc+=*yytext;
   					}
 <AnchorLabel>{ID}			{
   					  sectionLabel=yytext;
@@ -3004,7 +3033,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    err("Error: comment block ended inside \\code ... \\endcode block at line %d in %s!\n",
 						yyLineNr,yyFileName);
-					    current->doc += "\\endcode\n\n";
+					    *pSkipDoc += "\\endcode\n\n";
 					    BEGIN( lastDocContext );
 					  }
 					  else if (YY_START==ClassDocBrief &&
@@ -3340,6 +3369,43 @@ TITLE     [tT][iI][tT][lL][eE]
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
   					  current->doc+=' '; 
 					}
+
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
+  					  current->doc+=yytext;
+  					}
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+  					  QCString *pValue=aliasDict[yytext+1];
+					  if (pValue)
+					  {
+					    int i,l=pValue->length();
+					    for (i=l-1;i>=0;i--)
+					    {
+					      unput(pValue->at(i));
+					    }
+					  }
+					  else
+					  {
+  					    current->doc+=yytext;
+					  }
+  					}
+<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
+  					  current->brief+=yytext;
+  					}
+<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+  					  QCString *pValue=aliasDict[yytext+1];
+					  if (pValue)
+					  {
+					    int i,l=pValue->length();
+					    for (i=l-1;i>=0;i--)
+					    {
+					      unput(pValue->at(i));
+					    }
+					  }
+					  else
+					  {
+  					    current->brief+=yytext;
+					  }
+  					}
 <DefLineDoc,LineDoc,ClassDoc,Doc>"/*"   { current->doc += yytext; }
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;

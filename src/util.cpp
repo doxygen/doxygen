@@ -491,6 +491,10 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
         out.writeBreak();
         out.writeString(splitText.right(splitLength-i-1));
       } 
+      else
+      {
+        out.writeString(splitText); 
+      }
       floatingIndex=splitLength-i-1;
     }
     else

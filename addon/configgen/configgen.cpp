@@ -775,7 +775,8 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Korean, Hungarian, Spanish, Russian, Croatian, Polish, and Portuguese.\n"
+                    "Korean, Hungarian, Spanish, Romanian, Russian, Croatian, Polish, and \n"
+                    "Portuguese.\n"
                    );
   ConfigString::addFixedValue("outputLanguage","English");
   ConfigString::addFixedValue("outputLanguage","Dutch");
@@ -789,6 +790,7 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Japanese");
   ConfigString::addFixedValue("outputLanguage","Korean");
   ConfigString::addFixedValue("outputLanguage","Spanish");
+  ConfigString::addFixedValue("outputLanguage","Romanian");
   ConfigString::addFixedValue("outputLanguage","Russian");
   ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Polish");
@@ -1035,7 +1037,6 @@ void init()
                     "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
-                    "Predefined commands cannot be overwritten using aliases. \n" 
                  );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Messages","configuration options related to warning and progress messages");

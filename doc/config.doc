@@ -448,7 +448,6 @@ followed by the descriptions of the tags grouped by category.
  put the command \\sideeffect (or \@sideeffect) in the documentation, which 
  will result in a user defined paragraph with heading "Side Effects:".
  You can put \\n's in the value part of an alias to insert newlines.
- Predefined commands cannot be overwritten using aliases.
 
 </dl>
 
