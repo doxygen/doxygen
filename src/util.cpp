@@ -78,7 +78,7 @@ int iSystem(const char *command)
     }
   }
 #else
-  system(command);
+  return system(command);
 #endif
 }
 

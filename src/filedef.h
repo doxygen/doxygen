@@ -209,7 +209,7 @@ class FileList : public QList<FileDef>
     {
       FileDef *md1 = (FileDef *)item1;
       FileDef *md2 = (FileDef *)item2;
-      return strcasecmp(md1->name(),md2->name());
+      return stricmp(md1->name(),md2->name());
     }
   private:
     QCString m_pathName;
@@ -224,7 +224,7 @@ class OutputNameList : public QList<FileList>
     {
       FileList *fl1 = (FileList *)item1;
       FileList *fl2 = (FileList *)item2;
-      return strcasecmp(fl1->path(),fl2->path());
+      return stricmp(fl1->path(),fl2->path());
     }
 };
 
