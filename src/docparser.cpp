@@ -276,7 +276,7 @@ static void checkArgumentName(const QString &name,bool isParam)
   }
 }
 
-/*! Checks if the parameters that have been specified using @param are
+/*! Checks if the parameters that have been specified using \@param are
  *  indeed all paramters.
  *  Must be called after checkArgumentName() has been called for each
  *  argument.
@@ -2219,7 +2219,7 @@ int DocIndexEntry::parse()
         break;
     }
   }
-  if (tok!=TK_WHITESPACE) retval=tok;
+  if (tok!=0) retval=tok;
   doctokenizerYYsetStatePara();
 endindexentry:
   DBG(("DocIndexEntry::parse() end retval=%x\n",retval));
@@ -4561,10 +4561,17 @@ void DocRoot::parse()
   while (retval==RetVal_Section)
   {
     SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-    ASSERT(sec!=0);
-    DocSection *s=new DocSection(this,1,g_token->sectionId);
-    m_children.append(s);
-    retval = s->parse();
+    if (sec)
+    {
+      DocSection *s=new DocSection(this,1,g_token->sectionId);
+      m_children.append(s);
+      retval = s->parse();
+    }
+    else
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid anchor id `%s'",g_token->sectionId.data());
+      retval = 0;
+    }
   }
 
   if (retval==RetVal_Internal)

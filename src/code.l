@@ -593,7 +593,11 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	//printf("mn=%p md=%p md->getBodyDef()=%p g_sourceFileDef=%p\n",
 	//    mn,md,
 	//    md->getBodyDef(),g_sourceFileDef);
-        if (md->getBodyDef()==g_sourceFileDef)
+	
+	// in case there are multiple members we could link to, we 
+	// only link to members if defined in the same file or 
+	// defined as external.
+        if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
         {
           g_theCallContext.setClass(stripClassName(md->typeString()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());

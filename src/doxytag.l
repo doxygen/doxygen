@@ -20,7 +20,6 @@
  *	includes
  */
 #include <stdio.h>
-#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -165,7 +164,7 @@ static void addReference()
   //  docRefName.data(),(docBaseLink+"#"+docAnchor).data());
   if (genIndex && !docRefName.isEmpty() && !docBaseLink.isEmpty())
   {
-    if (!docAnchor.isEmpty())
+    if (docAnchor.isEmpty())
       searchIndex.addReference(docRefName,docBaseLink);
     else
       searchIndex.addReference(docRefName,docBaseLink+"#"+docAnchor);

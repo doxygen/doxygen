@@ -615,6 +615,7 @@ MemberDef *FileDef::getSourceMember(int lineNr)
   return result;
 }
 
+
 void FileDef::addUsingDirective(NamespaceDef *nd)
 {
   if (usingDirList==0)
@@ -647,6 +648,49 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
     includeDict->insert(iName,ii);
   }
 }
+
+void FileDef::addIncludedUsingDirectives()
+{
+  if (!visited)
+  {
+    visited=TRUE;
+    NamespaceList nl;
+    if (includeList) // file contains #includes
+    {
+      QListIterator<IncludeInfo> iii(*includeList);
+      IncludeInfo *ii;
+      for (;(ii=iii.current());++iii) // foreach #include...
+      {
+        if (ii->fileDef) // ...that is a known file
+        {
+          // recurse into this file
+          ii->fileDef->addIncludedUsingDirectives();
+        }
+      }
+      // iterate through list from last to first
+      for (iii.toLast();(ii=iii.current());--iii)
+      {
+        if (ii->fileDef)
+        {
+          NamespaceList *unl = ii->fileDef->usingDirList;
+          if (unl)
+          {
+            NamespaceListIterator nli(*unl);
+            NamespaceDef *nd;
+            for (nli.toLast();(nd=nli.current());--nli)
+            {
+              // append each using directive found in a #include file
+              if (usingDirList==0) usingDirList = new NamespaceList;
+              usingDirList->prepend(nd);
+            }
+          }
+        }
+      }
+    }
+    // add elements of nl to usingDirList
+  }
+}
+
 
 void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local)
 {

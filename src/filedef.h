@@ -146,6 +146,7 @@ class FileDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
+    void addIncludedUsingDirectives();
 
     void addListReferences();
 
@@ -175,6 +176,8 @@ class FileDef : public Definition
 
     NamespaceSDict *namespaceSDict;
     ClassSDict *classSDict;
+    
+    bool visited;
 
   private: 
     

@@ -1388,7 +1388,7 @@ void writeAlphabeticalClassList(OutputList &ol)
                            "<tr>"
                              "<td><div class=\"ah\">&nbsp;&nbsp;"); 
           ol.writeString(s);
-          ol.writeString(         "&nbsp;&nbsp;"
+          ol.writeString(         "&nbsp;&nbsp;</div>"
                              "</td>"
                            "</tr>"
                          "</table>\n");

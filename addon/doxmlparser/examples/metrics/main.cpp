@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -19,17 +19,19 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <doxmlintf.h>
 
 bool isDocumented(IDocRoot *brief,IDocRoot *detailed)
 {
-  bool found=FALSE;
+  bool found=false;
   if (brief)
   {
     IDocIterator *docIt = brief->contents();
     if (docIt->current()) // method has brief description
     {
-      found=TRUE;
+      found=true;
     }
     docIt->release();
   }
@@ -38,7 +40,7 @@ bool isDocumented(IDocRoot *brief,IDocRoot *detailed)
     IDocIterator *docIt = detailed->contents();
     if (docIt->current())
     {
-      found=TRUE;
+      found=true;
     }
     docIt->release();
   }
@@ -202,7 +204,7 @@ int main(int argc,char **argv)
         {
           numParams++;
         }
-        if (QString(mem->typeString()->latin1())!="void")
+        if (strcmp(mem->typeString()->latin1(),"void")!=0)
         {
           numParams++; // count non-void return types as well
         }
