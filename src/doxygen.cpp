@@ -5266,17 +5266,17 @@ int main(int argc,char **argv)
           err("Error: option -w is missing a configuration file name\n");
           exit(1);
         }
-        if (strcasecmp(formatName,"rtf")==0)
+        if (stricmp(formatName,"rtf")==0)
         {
           generateStyleSheetFile(OutputGenerator::RTF,argv[optind+1]);
           exit(1);
         }
-        else if (strcasecmp(formatName,"html")==0)
+        else if (stricmp(formatName,"html")==0)
         {
           generateStyleSheetFile(OutputGenerator::Html,argv[optind+1]);
           exit(1);
         }
-        else if (strcasecmp(formatName,"latex")==0)
+        else if (stricmp(formatName,"latex")==0)
         {
           if (optind+2<argc) // use config file to get settings
           {
