@@ -1175,38 +1175,38 @@ void Config::check()
 //    }
 //
 //  }
-  // check perl path
-  bool found=FALSE;
-  QCString &perlPath = Config_getString("PERL_PATH");
-  if (perlPath.isEmpty())
-  {
-    QFileInfo fi;
-    fi.setFile("/usr/bin/perl");
-    if (fi.exists()) 
-    {
-      perlPath="/usr/bin/perl";
-      found=TRUE;
-    }
-    else
-    {
-      fi.setFile("/usr/local/bin/perl");
-      if (fi.exists())
-      {
-	perlPath="/usr/local/bin/perl";
-	found=TRUE;
-      }
-    }
-  }
-  if (!found)
-  {
-    QFileInfo fi(perlPath);
-    if (!fi.exists())
-    {
-      config_warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
-	  "user specified (%s) location\n",
-	  perlPath.data());
-    }
-  }
+//  // check perl path
+//  bool found=FALSE;
+//  QCString &perlPath = Config_getString("PERL_PATH");
+//  if (perlPath.isEmpty())
+//  {
+//    QFileInfo fi;
+//    fi.setFile("/usr/bin/perl");
+//    if (fi.exists()) 
+//    {
+//      perlPath="/usr/bin/perl";
+//      found=TRUE;
+//    }
+//    else
+//    {
+//      fi.setFile("/usr/local/bin/perl");
+//      if (fi.exists())
+//      {
+//	perlPath="/usr/local/bin/perl";
+//	found=TRUE;
+//      }
+//    }
+//  }
+//  if (!found)
+//  {
+//    QFileInfo fi(perlPath);
+//    if (!fi.exists())
+//    {
+//      config_warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
+//	  "user specified (%s) location\n",
+//	  perlPath.data());
+//    }
+//  }
 
 #undef PUTENV
 #undef SEP

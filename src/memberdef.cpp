@@ -136,13 +136,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       //printf("a->type=`%s' a->name=`%s'\n",a->type.data(),a->name.data());
       QCString n=a->type.left(vp);
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->name(),n);
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
     }
     else // non-function pointer type
     {
       QCString n=a->type;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->name(),n);
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
     }
     if (!md->isDefine())
     {
@@ -167,7 +167,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (vp!=-1) // write the part of the argument type 
                 // that comes after the name
     {
-      linkifyText(TextGeneratorOLImpl(ol),cd,
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),
                   md->name(),a->type.right(a->type.length()-vp));
     }
     if (!a->defval.isEmpty()) // write the default value
@@ -175,7 +175,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       QCString n=a->defval;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       ol.docify(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->name(),n); 
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n); 
     }
     a=defArgList->next();
     if (a) 
@@ -806,21 +806,21 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       if (getAnonymousEnumType()) // type is an anonymous enum
       {
-        linkifyText(TextGeneratorOLImpl(ol),d,name(),ltype.left(i),TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype.left(i),TRUE); 
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
         //ol+=*getAnonymousEnumType()->enumDecl();
-        linkifyText(TextGeneratorOLImpl(ol),d,name(),ltype.right(ltype.length()-i-l),TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol),d,fileDef,name(),ltype.right(ltype.length()-i-l),TRUE); 
       }
       else
       {
         ltype = ltype.left(i) + " { ... } " + ltype.right(ltype.length()-i-l);
-        linkifyText(TextGeneratorOLImpl(ol),d,name(),ltype,TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
       }
     }
   }
   else
   {
-    linkifyText(TextGeneratorOLImpl(ol),d,name(),ltype,TRUE); 
+    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
   if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
@@ -891,7 +891,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   {
     if (!isDefine()) ol.writeString(" ");
     //ol.docify(argsString());
-    linkifyText(TextGeneratorOLImpl(ol),d,name(),argsString()); 
+    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),argsString()); 
   }
 
   if (excpString())
@@ -902,7 +902,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   if (!bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),d,name(),bitfields.simplifyWhiteSpace());
+    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),bitfields.simplifyWhiteSpace());
   }
   else if (hasOneLineInitializer()
       //!init.isEmpty() && initLines==0 && // one line initializer
@@ -912,12 +912,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!isDefine()) 
     {
       ol.writeString(" = "); 
-      linkifyText(TextGeneratorOLImpl(ol),d,name(),init.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),init.simplifyWhiteSpace());
     }
     else 
     {
       ol.writeNonBreakableSpace(3);
-      linkifyText(TextGeneratorOLImpl(ol),d,name(),init);
+      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),init);
     }
   }
 
@@ -1094,10 +1094,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             htmlHelp->addIndexItem(cname,name(),cfname,anchor());
           }
-          linkifyText(TextGeneratorOLImpl(ol),container,name(),ldef.left(i));
+          linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
           //ol+=*vmd->enumDecl();
           vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-          linkifyText(TextGeneratorOLImpl(ol),container,name(),ldef.right(ldef.length()-i-l));
+          linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-i-l));
 
           found=TRUE;
         }
@@ -1122,7 +1122,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         // last ei characters of ldef contain pointer/reference specifiers
         int ni=ldef.find("::",si);
         if (ni>=ei) ei=ni+2;
-        linkifyText(TextGeneratorOLImpl(ol),container,name(),ldef.right(ldef.length()-ei));
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-ei));
       }
     }
     else // not an enum value
@@ -1184,25 +1184,25 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         }
       }
       ol.startMemberDocName();
-      linkifyText(TextGeneratorOLImpl(ol),container,name(),ldef);
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
       if (hasOneLineInitializer()) // add initializer
       {
         if (!isDefine()) 
         {
           ol.docify(" = "); 
-          linkifyText(TextGeneratorOLImpl(ol),container,name(),init.simplifyWhiteSpace());
+          linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),init.simplifyWhiteSpace());
         }
         else 
         {
           ol.writeNonBreakableSpace(3);
-          linkifyText(TextGeneratorOLImpl(ol),container,name(),init);
+          linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),init);
         }
       }
       if (excpString()) // add exception list
       {
         ol.docify(" ");
-        linkifyText(TextGeneratorOLImpl(ol),container,name(),excpString());
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),excpString());
       }
     }
 

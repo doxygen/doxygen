@@ -2860,6 +2860,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
+<SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
+                                        }
 <SkipInits,SkipCurly,SkipCurlyCpp>.	{
   				          //addToBody(yytext);
   					}

@@ -5,6 +5,7 @@
 #define LANG_IT
 #define LANG_DE
 #define LANG_JP
+#define LANG_JE
 #define LANG_ES
 #define LANG_FI
 #define LANG_RU

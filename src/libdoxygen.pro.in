@@ -99,6 +99,7 @@ HEADERS      =	bufstr.h \
 		translator_hr.h \
 		translator_hu.h \
 		translator_it.h \
+		translator_je.h \
 		translator_jp.h \
 		translator_kr.h \
 		translator_nl.h \

@@ -25,6 +25,7 @@ distclean: clean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html
+	-rm -f latex
 	-rm -f objects/*.o
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.doxytag src/Makefile.libdoxycfg

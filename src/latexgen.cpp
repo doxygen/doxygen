@@ -1211,7 +1211,8 @@ void LatexGenerator::docify(const char *str)
 
 void LatexGenerator::codify(const char *str)
 {
-  static bool isJapanese      = theTranslator->idLanguage()=="japanese";
+  static bool isJapanese  = theTranslator->idLanguage()=="japanese" || 
+                            theTranslator->idLanguage()=="japanese-en";
 
   if (str)
   { 

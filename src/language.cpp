@@ -43,6 +43,9 @@
 #ifdef LANG_JP
 #include "translator_jp.h"
 #endif
+#ifdef LANG_JE
+#include "translator_je.h"
+#endif
 #ifdef LANG_ES
 #include "translator_es.h"
 #endif
@@ -297,11 +300,7 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorCatalan;
   }
 #endif
-//  else if (L_EQUAL("japanese-sjis"))
-//  {
-//    theTranslator=new TranslatorJapaneseSjis;
-//  }
-#endif
+#endif // ENGLISH_ONLY
   else // use the default language (i.e. english)
   {
     theTranslator=new TranslatorEnglish;

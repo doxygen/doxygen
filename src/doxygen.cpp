@@ -2257,6 +2257,11 @@ static void buildFunctionList(Entry *root)
                 matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,unl,ucl)
                )
             {
+              GroupDef *gd=0;
+              if (root->groups->first()!=0)
+              {
+                gd = Doxygen::groupSDict[root->groups->first()->groupname.data()];
+              }
               //printf("match!\n");
               // see if we need to create a new member
               found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
@@ -2265,6 +2270,11 @@ static void buildFunctionList(Entry *root)
                      ) 
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
+              if (!found && gd && gd==md->getGroupDef())
+              {
+                // member is already in the group, so we don't want to add it again.
+                found=TRUE;
+              }
               
               //printf("combining function with prototype found=%d in namespace %s\n",
               //    found,nsName.data());
@@ -2325,12 +2335,13 @@ static void buildFunctionList(Entry *root)
               md->enableCallGraph(md->hasCallGraph() || root->callGraph);
 
               // merge ingroup specifiers
-              if (md->getGroupDef()==0 && root->groups->first())
+              if (md->getGroupDef()==0 && root->groups->first()!=0)
               {
+                //printf("new member is grouped, existing member not\n");
                 // if we do addMemberToGroups here an undocumented declaration may prevent 
                 // the documented implementation below it from being added 
                 //addMemberToGroups(root,md);
-                GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
+                //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
                 if (gd)
                 {
                   bool success = gd->insertMember(md);
@@ -2342,7 +2353,12 @@ static void buildFunctionList(Entry *root)
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
               {
+                //printf("existing member is grouped, new member not\n");
                 root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
+              }
+              else if (md->getGroupDef()!=0 && root->groups->first()!=0)
+              {
+                //printf("both members are grouped\n");
               }
             }
           }
@@ -3338,12 +3354,12 @@ static bool findClassRelation(
       }
       baseClassName=stripTemplateSpecifiersFromScope
                           (removeRedundantWhiteSpace(baseClassName));
-      bool baseClassIsTypeDef;
+      MemberDef *baseClassTypeDef;
       QCString templSpec;
       ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,
                                            cd->getFileDef(), // todo: is this ok?
                                            baseClassName,
-                                           &baseClassIsTypeDef,
+                                           &baseClassTypeDef,
                                            &templSpec);
       //printf("baseClassName=%s baseClass=%p cd=%p\n",baseClassName.data(),baseClass,cd);
       //printf("    root->name=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
@@ -3444,7 +3460,7 @@ static bool findClassRelation(
           else if (mode==DocumentedOnly)
           {
             QCString usedName;
-            if (baseClassIsTypeDef) usedName=biName;
+            if (baseClassTypeDef) usedName=biName;
             cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
             // add this class as super class to the base class
             baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
