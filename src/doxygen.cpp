@@ -696,6 +696,8 @@ void buildNamespaceList(Entry *root)
   }
 }
 
+//----------------------------------------------------------------------
+
 void findUsingDirectives(Entry *root)
 {
   if (root->section==Entry::USINGDIR_SEC)
@@ -801,6 +803,83 @@ void findUsingDirectives(Entry *root)
     findUsingDirectives(e);
   }
 }
+
+//----------------------------------------------------------------------
+
+void findUsingDeclarations(Entry *root)
+{
+  if (root->section==Entry::USINGDECL_SEC)
+  {
+    //printf("Found using declaration %s at line %d of %s\n",
+    //    root->name.data(),root->startLine,root->fileName.data());
+    bool ambig;
+    if (!root->name.isEmpty())
+    {
+      ClassDef *usingCd = 0;
+      NamespaceDef *nd = 0;
+      FileDef      *fd = findFileDef(&inputNameDict,root->fileName,ambig);
+      QCString scName;
+
+      // see if the using statement was found inside a namespace or inside
+      // the global file scope.
+      if (root->parent->section == Entry::NAMESPACE_SEC)
+      {
+        scName=root->parent->name.copy();
+        if (!scName.isEmpty())
+        {
+          nd = namespaceDict[scName];
+        }
+      }
+
+      // Assume the using statement was used to import a class.
+      // Find the scope in which the `using' namespace is defined by prepending
+      // the possible scopes in which the using statement was found, starting
+      // with the most inner scope and going to the most outer scope (i.e. 
+      // file scope).
+      int scopeOffset = scName.length();
+      do
+      {
+        QCString scope=scopeOffset>0 ? 
+                      scName.left(scopeOffset)+"::" : QCString();
+        //printf("Trying with scope=`%s'\n",scope.data());
+        usingCd = getClass(scope+root->name);
+        if (scopeOffset==0)
+        {
+          scopeOffset=-1;
+        }
+        else if ((scopeOffset=scName.findRev("::",scopeOffset-1))==-1)
+        {
+          scopeOffset=0;
+        }
+      } while (scopeOffset>=0 && usingCd==0);
+
+      //printf("%s -> %p\n",root->name.data(),usingCd);
+
+      // add the namespace the correct scope
+      if (usingCd)
+      {
+        if (nd)
+        {
+          //printf("Inside namespace %s\n",nd->name().data());
+          nd->addUsingDeclaration(usingCd);
+        }
+        else if (fd)
+        {
+          //printf("Inside file %s\n",fd->name().data());
+          fd->addUsingDeclaration(usingCd);
+        }
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    findUsingDeclarations(e);
+  }
+}
+
+
 
 //----------------------------------------------------------------------
 
@@ -2131,7 +2210,7 @@ void addMemberDocs(Entry *root,
 // find a class definition given the scope name and (optionally) a 
 // template list specifier
 
-static ClassDef *findClassDefinition(const char *scopeName,const char *classTempList)
+static ClassDef *findSimpleClassDefinition(const char *scopeName,const char *classTempList)
 {
   ClassDef *tcd=0;
   if (classTempList) // try to find the correct specialization
@@ -2146,6 +2225,68 @@ static ClassDef *findClassDefinition(const char *scopeName,const char *classTemp
   if (tcd==0)
   {
     tcd=getClass(scopeName); // try general class
+  }
+  return tcd;
+}
+
+static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
+                         const char *scopeName,const char *classTempList)
+{
+  ClassDef *tcd = findSimpleClassDefinition(scopeName,classTempList);
+  if (tcd==0) // try using declaration
+  {
+    ClassList *cl = 0;
+    if (nd)
+    {
+      cl=nd->getUsedClasses();
+    }
+    else
+    {
+      cl=fd->getUsedClasses();
+    }
+    if (cl)
+    {
+      ClassListIterator cli(*cl);
+      ClassDef *cd;
+      for (;(cd=cli.current()) && tcd==0;++cli)
+      {
+        QCString scName = scopeName;
+        int scopeOffset = scName.length();
+        do
+        {
+          QCString scope=scName.left(scopeOffset);
+          //printf("`%s'<->`%s' `%s'\n",cd->name().data(),scope.data(),scopeName);
+          if (rightScopeMatch(cd->name(),scope))
+          {
+            //printf("Trying to find `%s'\n",(cd->name()+scName.right(scName.length()-scopeOffset)).data());
+            tcd = findSimpleClassDefinition(cd->name()+scName.right(scName.length()-scopeOffset),classTempList); 
+          }
+          scopeOffset=scName.findRev("::",scopeOffset-1);
+        } while (scopeOffset>=0 && tcd==0);
+      }
+    }
+  }
+  if (tcd==0) // try using directive
+  {
+    NamespaceList *nl = 0;
+    if (nd)
+    {
+      nl=nd->getUsedNamespaces();
+    }
+    else if (fd)
+    {
+      nl=fd->getUsedNamespaces();
+    }
+    if (nl)
+    {
+      NamespaceListIterator nli(*nl);
+      NamespaceDef *nd;
+      for (;(nd=nli.current()) && tcd==0;++nli)
+      {
+        //printf("Trying with scope=%s\n",nd->name().data());
+        tcd = findSimpleClassDefinition(nd->name()+"::"+scopeName,classTempList); 
+      }
+    }
   }
   return tcd;
 }
@@ -2659,33 +2800,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
           ClassDef *tcd=0;
           
-          tcd = findClassDefinition(scopeName,classTempList);
-
-          if (tcd==0)
-          {
-            bool ambig;
-            NamespaceDef *nd = 0;
-            FileDef *fd = 0;
-            NamespaceList *nl = 0;
-            if (!namespaceName.isEmpty() && (nd=namespaceDict[namespaceName]))
-            {
-              nl=nd->getUsedNamespaces();
-            }
-            else if ((fd=findFileDef(&inputNameDict,root->fileName,ambig)))
-            {
-              nl=fd->getUsedNamespaces();
-            }
-            if (nl)
-            {
-              NamespaceListIterator nli(*nl);
-              NamespaceDef *nd;
-              for (;(nd=nli.current()) && tcd==0;++nli)
-              {
-                //printf("Trying with scope=%s\n",nd->name().data());
-                tcd = findClassDefinition(nd->name()+"::"+scopeName,classTempList); 
-              }
-            }
-          }
+          bool ambig;
+          FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+          NamespaceDef *nd=0;
+          if (!namespaceName.isEmpty()) nd=namespaceDict[namespaceName];
+          tcd = findClassDefinition(fd,nd,scopeName,classTempList);
           
           if (cd && tcd==cd) // member's classes match
           {
@@ -4969,7 +5088,10 @@ int main(int argc,char **argv)
    *            Initialize some global constants
    **************************************************************************/
   
-  spaces.fill(' ',Config::tabSize);
+  spaces.resize(Config::tabSize+1);
+  int sp;for (sp=0;sp<Config::tabSize;sp++) spaces.at(sp)=' ';
+  spaces.at(Config::tabSize)='\0';
+
   compoundKeywordDict.insert("class",(void *)8);
   compoundKeywordDict.insert("struct",(void *)8);
   compoundKeywordDict.insert("union",(void *)8);
@@ -5134,6 +5256,7 @@ int main(int argc,char **argv)
   
   msg("Building class list...\n");
   buildClassList(root);
+  findUsingDeclarations(root);
   
   msg("Building example list...\n");
   buildExampleList(root);

@@ -105,7 +105,7 @@ class LatexGenerator : public OutputGenerator
     void insertMemberAlign() {}
 
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
-    void writeAnchor(const char *name) { t << "\\label{" << name << "}" << endl; }
+    void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
     void startCodeLine() { col=0; }
@@ -211,10 +211,10 @@ class LatexGenerator : public OutputGenerator
 
     //static void docifyStatic(QTextStream &t,const char *str);
 
-    void startDotGraph() {}
-    void endDotGraph(DotClassGraph &) {}
-    void startInclDepGraph() {}
-    void endInclDepGraph(DotInclDepGraph &) {}
+    void startDotGraph();
+    void endDotGraph(DotClassGraph &);
+    void startInclDepGraph();
+    void endInclDepGraph(DotInclDepGraph &);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}

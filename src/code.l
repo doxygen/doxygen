@@ -304,7 +304,7 @@ static void generateClassLink(OutputList &ol,char *clName,int *clNameLen=0)
 	//if (latexOn) ol.disable(OutputGenerator::Latex);
 	ol.disable(OutputGenerator::Latex);
 	ol.disable(OutputGenerator::RTF);
-	ol.writeAnchor(anchor);
+	ol.writeAnchor(0,anchor);
 	//if (latexOn) ol.enable(OutputGenerator::Latex);
 	ol.popGeneratorState();
 	g_anchorCount++;
@@ -347,7 +347,7 @@ static bool getLink(const char *className,
 	result.pushGeneratorState();
 	//if (latexEnabled) result.disable(OutputGenerator::Latex);
 	result.disable(OutputGenerator::Latex);
-	result.writeAnchor(anchor);
+	result.writeAnchor(0,anchor);
 	result.popGeneratorState();
 	//if (latexEnabled) result.enable(OutputGenerator::Latex);
 	g_anchorCount++;

@@ -111,7 +111,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDescription();
 
     void writeRuler()    { t << "<hr>"; }
-    void writeAnchor(const char *name) 
+    void writeAnchor(const char *,const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
     void endCodeFragment()   { t << "</div></pre>"; } // <- I know this is 
@@ -142,8 +142,8 @@ class HtmlGenerator : public OutputGenerator
     void startDoxyAnchor(const char *fName,const char *clName,
                          const char *anchor,const char *name);
     void endDoxyAnchor();
-    void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\">"; }
-    void endCodeAnchor() { t << "</a>"; }
+    void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\"></a>"; }
+    void endCodeAnchor() { }
     void writeLatexSpacing() {}
     //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,

@@ -35,7 +35,8 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   classList = new ClassList;
   classDict = new ClassDict(1009);
   //memList = new MemberList;
-  usingList = 0;
+  usingDirList = 0;
+  usingDeclList = 0;
   setReference(ref);
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
@@ -48,7 +49,8 @@ NamespaceDef::~NamespaceDef()
 {
   delete classList;
   delete classDict;
-  delete usingList;
+  delete usingDirList;
+  delete usingDeclList;
   delete memberGroupList;
   delete memberGroupDict;
 }
@@ -182,7 +184,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Html);
     //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
     //if (latexOn) ol.disable(OutputGenerator::Latex);
-    ol.writeAnchor("_details"); 
+    ol.writeAnchor(0,"_details"); 
     //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -293,9 +295,18 @@ int NamespaceDef::countMembers()
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)
 {
-  if (usingList==0)
+  if (usingDirList==0)
   {
-    usingList = new NamespaceList;
+    usingDirList = new NamespaceList;
   }
-  usingList->append(nd);
+  usingDirList->append(nd);
+}
+
+void NamespaceDef::addUsingDeclaration(ClassDef *cd)
+{
+  if (usingDeclList==0)
+  {
+    usingDeclList = new ClassList;
+  }
+  usingDeclList->append(cd);
 }

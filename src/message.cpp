@@ -18,7 +18,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "config.h"
-#include <qregexp.h>
+#include "util.h"
 
 static QCString outputFormat;
 static int warnFormatOrder; // 1 = $file,$line,$text
@@ -62,11 +62,22 @@ void initWarningFormat()
   {
     warnFormatOrder = 6;
   }
-  outputFormat = Config::warnFormat.
-      replace(QRegExp("\\$file"),"%s").
-      replace(QRegExp("\\$text"),"%s").
-      replace(QRegExp("\\$line"),"%d")+
-      '\n';
+  outputFormat = 
+      substitute(
+        substitute(
+          substitute( 
+            Config::warnFormat,
+           "$file","%s"
+          ),
+          "$text","%s"
+        ),
+        "$line","%d"
+      )+'\n';
+
+  //    replace(QRegExp("\\$file"),"%s").
+  //    replace(QRegExp("\\$text"),"%s").
+  //    replace(QRegExp("\\$line"),"%d")+
+  //    '\n';
 }
 
 

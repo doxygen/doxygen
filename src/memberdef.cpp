@@ -250,7 +250,7 @@ MemberDef::MemberDef(const char *df,int dl,
   membTAL=0;
   type=substituteClassNames(t);
   args=substituteClassNames(a);
-  if (type.isNull()) decl=name()+args; else decl=type+" "+name()+args;
+  if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
   declLine=0;
   memberGroup=0;
   virt=v;

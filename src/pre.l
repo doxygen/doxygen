@@ -35,6 +35,7 @@
 #include <qregexp.h>
 #include <qfileinfo.h>
   
+#include "pre.h"
 #include "constexp.h"
 #include "define.h"
 #include "doxygen.h"
@@ -1459,7 +1460,7 @@ BN	[ \t\r\n]
 					      if (!g_quoteArg) g_defText+=' ';
 					      g_defText+='@';
 					      QCString numStr;
-					      numStr.setNum(*n);
+					      numStr.sprintf("%d",*n);
 					      g_defText+=numStr;
 					      if (!g_quoteArg) g_defText+=' ';
 					    }

@@ -117,7 +117,9 @@ class FileDef : public Definition
     void computeAnchors();
 
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceList *getUsedNamespaces() const { return usingList; }
+    NamespaceList *getUsedNamespaces() const { return usingDirList; }
+    void addUsingDeclaration(ClassDef *cd);
+    ClassList *getUsedClasses() const { return usingDeclList; }
 
     void setGenerateSource(bool b) { isSource=b; }
     bool generateSource() const { return isSource; }
@@ -142,7 +144,8 @@ class FileDef : public Definition
     QList<IncludeInfo> *includeList;
     NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
-    NamespaceList *usingList;
+    NamespaceList *usingDirList;
+    ClassList *usingDeclList;
     //DefineList *defineList;
     QCString path;
     QCString filepath;

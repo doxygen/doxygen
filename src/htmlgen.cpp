@@ -173,7 +173,7 @@ void HtmlGenerator::endFile()
 
 void HtmlGenerator::startProjectNumber()
 {
-  t << "<h3 align=center>";
+  t << "<h3 align=\"center\">";
 }
 
 void HtmlGenerator::endProjectNumber()
@@ -230,12 +230,11 @@ void HtmlGenerator::writeStyleInfo(int part)
 void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *name)
 {
-  t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\">";
+  t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor()
 {
-  t << "</a>" << endl;
 }
 
 void HtmlGenerator::newParagraph()
@@ -752,10 +751,10 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "<p>" << endl;
-  t << "<table width=100% cellpadding=2 cellspacing=0 border=0>" << endl;
+  t << "<table width=\"100%\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">" << endl;
   t << "  <tr>" << endl;
   t << "    <td class=\"md\"><b>" << endl; 
-  t << "      <table cellspadding=0 cellspacing=0 border=0>" << endl;
+  t << "      <table cellspadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
@@ -837,7 +836,7 @@ void HtmlGenerator::startDotGraph()
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,Config::htmlOutputDir);
+  g.writeGraph(t,GIF,Config::htmlOutputDir);
 }
 
 void HtmlGenerator::startInclDepGraph()
@@ -846,7 +845,7 @@ void HtmlGenerator::startInclDepGraph()
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,Config::htmlOutputDir);
+  g.writeGraph(t,GIF,Config::htmlOutputDir);
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
@@ -865,7 +864,7 @@ void HtmlGenerator::startMemberGroupHeader()
   //t << "        <td class=\"groupLine\"><img src=\"null.gif\" width=1></td>" << endl;
   //t << "        <td><div class=\"groupHeader\">&nbsp;&nbsp;";
 
-  t << "<tr><td colspan=2><div class=\"groupHeader\">";
+  t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
@@ -885,7 +884,7 @@ void HtmlGenerator::endMemberGroupHeader()
 void HtmlGenerator::startMemberGroupDocs()
 {
   //t << "<tr><td colspan=2><img src=\"null.gif\" height=4></td></tr>" << endl;
-  t << "<tr><td colspan=2><div class=\"groupText\">";
+  t << "<tr><td colspan=\"2\"><div class=\"groupText\">";
 }
 
 void HtmlGenerator::endMemberGroupDocs()

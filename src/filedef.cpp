@@ -50,7 +50,8 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   namespaceDict = new NamespaceDict(7);
   srcDefDict = 0;
   srcAnchorDict = 0;
-  usingList = 0;
+  usingDirList = 0;
+  usingDeclList = 0;
   isSource = FALSE; 
   docname = nm;
   if (Config::fullPathNameFlag)
@@ -72,7 +73,8 @@ FileDef::~FileDef()
   delete namespaceDict;
   delete srcDefDict;
   delete srcAnchorDict;
-  delete usingList;
+  delete usingDirList;
+  delete usingDeclList;
   delete memberGroupList;
   delete memberGroupDict;
 }
@@ -189,7 +191,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     DotInclDepGraph incDepGraph(this);
     if (!incDepGraph.isTrivial())
     {
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
       parseText(ol,theTranslator->trInclDepGraph(name()));
@@ -287,7 +289,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     //if (latexOn) ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
-    ol.writeAnchor("_details"); 
+    ol.writeAnchor(0,"_details"); 
     //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -533,11 +535,20 @@ QCString FileDef::getSourceAnchor(int lineNr)
 
 void FileDef::addUsingDirective(NamespaceDef *nd)
 {
-  if (usingList==0)
+  if (usingDirList==0)
   {
-    usingList = new NamespaceList;
+    usingDirList = new NamespaceList;
   }
-  usingList->append(nd);
+  usingDirList->append(nd);
+}
+
+void FileDef::addUsingDeclaration(ClassDef *cd)
+{
+  if (usingDeclList==0)
+  {
+    usingDeclList = new ClassList;
+  }
+  usingDeclList->append(cd);
 }
 
 void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)

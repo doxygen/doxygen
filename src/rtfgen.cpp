@@ -358,7 +358,7 @@ void RTFGenerator::endProjectNumber()
 
 void RTFGenerator::startIndexSection(IndexSections is)
 {
-  QCString paperName;
+  //QCString paperName;
 
   m_listLevel = 0;
 
@@ -1148,14 +1148,16 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
     // make an index entry
     addToIndex(name,NULL);
 
-    // make a bookmark for referencing
-    writeAnchor(name);
 
     if (fileName)
     {
       // doxygen expects different anchors for pdf and if "FULL PATHS"
-      if (strcmp(name,fileName) != 0)
-        writeAnchor(fileName);
+      writeAnchor(fileName,0);
+    }
+    else
+    {
+      // make a bookmark for referencing
+      writeAnchor(0,name);
     }
   }
 }
@@ -1408,7 +1410,7 @@ void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
 
   newParagraph();
   // make bookmark
-  writeAnchor(lab);
+  writeAnchor(0,lab);
   t << "}";
 }
 
@@ -1547,9 +1549,13 @@ void RTFGenerator::endMemberItem(bool)
   newParagraph();
 }
 
-void RTFGenerator::writeAnchor(const char *name) 
+void RTFGenerator::writeAnchor(const char *fileName,const char *name) 
 { 
-  t << "{\\bkmkstart " << formatBmkStr(name) << "}" << endl;
+  t << "{\\bkmkstart ";
+  if (fileName) t << formatBmkStr(fileName);
+  if (fileName && name) t << "_";
+  if (name) t << formatBmkStr(name);
+  t << "}" << endl;
   t << "{\\bkmkend " << formatBmkStr(name) << "}" << endl;
 }
 
@@ -1936,7 +1942,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   newParagraph();
   t <<"{\\comment This would be an image map..." << endl;
 
-  g.writeGraph(t,Config::rtfOutputDir);
+  g.writeGraph(t,GIF,Config::rtfOutputDir);
 
   t << "}" << endl;
 
@@ -1958,11 +1964,11 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   newParagraph();
   t <<"{\\comment This would be an image map..." << endl;
 
-  g.writeGraph(t,Config::rtfOutputDir);
+  g.writeGraph(t,GIF,Config::rtfOutputDir);
 
   t << "}" << endl;
 
-  QCString diskName = g.diskName();
+  //QCString diskName = g.diskName();
 
   // display the file
   t << "{" << endl;

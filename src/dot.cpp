@@ -101,7 +101,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
   return TRUE;
 }
 
-static bool readBoundingBox(const char *fileName,int *width,int *height)
+static bool readBoundingBoxDot(const char *fileName,int *width,int *height)
 {
   QFile f(fileName);
   if (!f.open(IO_ReadOnly)) return FALSE;
@@ -113,13 +113,34 @@ static bool readBoundingBox(const char *fileName,int *width,int *height)
     buf[numBytes-1]='\0';
     if (strncmp(buf,"\tgraph [bb",10)==0)
     {
-      int x,y,w,h;
-      if (sscanf(buf,"\tgraph [bb= \"%d,%d,%d,%d\"];",&x,&y,&w,&h)!=4)
+      int x,y;
+      if (sscanf(buf,"\tgraph [bb= \"%d,%d,%d,%d\"];",&x,&y,width,height)!=4)
       {
         return FALSE;
       }
-      *width  = w*96/72; // 96 pixels/inch, 72 points/inch
-      *height = h*96/72; // 96 pixels/inch, 72 points/inch
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
+{
+  QFile f(fileName);
+  if (!f.open(IO_ReadOnly)) return FALSE;
+  const int maxLineLen=1024;
+  char buf[maxLineLen];
+  while (!f.atEnd())
+  {
+    int numBytes = f.readLine(buf,maxLineLen);
+    buf[numBytes-1]='\0';
+    if (strncmp(buf,"%%BoundingBox: ",15)==0)
+    {
+      int x,y;
+      if (sscanf(buf,"%%%%BoundingBox: %d %d %d %d",&x,&y,width,height)!=4)
+      {
+        return FALSE;
+      }
       return TRUE;
     }
   }
@@ -290,7 +311,9 @@ static QCString convertLabel(const QCString &l)
   return result;
 }
 
-void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
+void DotNode::writeBox(QTextStream &t,
+                       GraphOutputFormat format,
+                       bool hasNonReachableChildren)
 {
   const char *labCol = 
           m_url.isEmpty() ? "grey" :  // non link
@@ -299,7 +322,8 @@ void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
            );
   t << "  Node" << m_number << " [shape=\"box\",label=\""
     << convertLabel(m_label)    
-    << "\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\"";
+    << "\",fontsize=10,height=0.2,width=0.4";
+  if (format==GIF) t << ",fontname=\"doxfont\"";
   t << ",color=\"" << labCol << "\"";
   if (m_isRoot)
   {
@@ -312,8 +336,13 @@ void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
   t << "];" << endl; 
 }
 
-void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown,
-                         bool pointBack)
+void DotNode::writeArrow(QTextStream &t,
+                         GraphOutputFormat format,
+                         DotNode *cn,
+                         EdgeInfo *ei,
+                         bool topDown, 
+                         bool pointBack
+                        )
 {
   t << "  Node";
   if (topDown) t << cn->number(); else t << m_number;
@@ -327,11 +356,16 @@ void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown,
   {
     t << ",label=\"" << ei->m_label << "\"";
   }
-  t << ",fontname=\"doxfont\"";
+  if (format==GIF) t << ",fontname=\"doxfont\"";
   t << "];" << endl; 
 }
 
-void DotNode::write(QTextStream &t,bool topDown,bool toChildren,int distance)
+void DotNode::write(QTextStream &t,
+                    GraphOutputFormat format,
+                    bool topDown,
+                    bool toChildren,
+                    int distance
+                   )
 {
   //printf("DotNode::write(%d) name=%s\n",distance,m_label.data());
   if (m_written) return; // node already written to the output
@@ -347,7 +381,7 @@ void DotNode::write(QTextStream &t,bool topDown,bool toChildren,int distance)
       if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
     }
   }
-  writeBox(t,hasNonReachableChildren);
+  writeBox(t,format,hasNonReachableChildren);
   m_written=TRUE;
   if (nl)
   {
@@ -360,9 +394,9 @@ void DotNode::write(QTextStream &t,bool topDown,bool toChildren,int distance)
       {
         if (cn->m_distance<=distance) 
         {
-          writeArrow(t,cn,dnli2.current(),topDown);
+          writeArrow(t,format,cn,dnli2.current(),topDown);
         }
-        cn->write(t,topDown,toChildren,distance);
+        cn->write(t,format,topDown,toChildren,distance);
       }
     }
     else // render parents
@@ -374,12 +408,13 @@ void DotNode::write(QTextStream &t,bool topDown,bool toChildren,int distance)
         if (pn->m_distance<=distance) 
         {
           writeArrow(t,
+                     format,
                      pn,
                      pn->m_edgeInfo->at(pn->m_children->findRef(this)),
                      FALSE
                     );
         }
-        pn->write(t,TRUE,FALSE,distance);
+        pn->write(t,format,TRUE,FALSE,distance);
       }
     }
   }
@@ -535,13 +570,13 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
     for (;(node=dnli2.current());++dnli2)
     {
-      if (node->m_subgraphId==n->m_subgraphId) node->write(t,FALSE,TRUE);
+      if (node->m_subgraphId==n->m_subgraphId) node->write(t,GIF,FALSE,TRUE);
     }
     t << "}" << endl;
     f.close();
 
     QCString dotCmd;
-    dotCmd.sprintf("dot -Tgif %s -o %s",dotName.data(),gifName.data());
+    dotCmd.sprintf("dot -Tgif \"%s\" -o \"%s\"",dotName.data(),gifName.data());
     //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
     if (system(dotCmd)!=0)
     {
@@ -549,7 +584,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       out << "</table>" << endl;
       return;
     }
-    dotCmd.sprintf("dot -Timap %s -o %s",dotName.data(),mapName.data());
+    dotCmd.sprintf("dot -Timap \"%s\" -o \"%s\"",dotName.data(),mapName.data());
     //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
     if (system(dotCmd)!=0)
     {
@@ -871,8 +906,13 @@ DotClassGraph::~DotClassGraph()
   delete m_usedNodes;
 }
 
-void writeDotGraph(DotNode *root,const QCString &baseName,
-                          bool lrRank,bool renderParents,int distance)
+void writeDotGraph(DotNode *root,
+                   GraphOutputFormat format,
+                   const QCString &baseName,
+                   bool lrRank,
+                   bool renderParents,
+                   int distance
+                  )
 {
   // generate the graph description for dot
   //printf("writeDotGraph(%s,%d)\n",baseName.data(),renderParents);
@@ -888,7 +928,7 @@ void writeDotGraph(DotNode *root,const QCString &baseName,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,TRUE,TRUE,distance);
+    root->write(t,format,TRUE,TRUE,distance);
     if (renderParents && root->m_parents) 
     {
       //printf("rendering parents!\n");
@@ -899,12 +939,13 @@ void writeDotGraph(DotNode *root,const QCString &baseName,
         if (pn->m_distance<=distance) 
         {
           root->writeArrow(t,
+                           format,
                            pn,
                            pn->m_edgeInfo->at(pn->m_children->findRef(root)),
                            FALSE
                           );
         }
-        pn->write(t,TRUE,FALSE,distance);
+        pn->write(t,format,TRUE,FALSE,distance);
       }
     }
     t << "}" << endl;
@@ -912,9 +953,11 @@ void writeDotGraph(DotNode *root,const QCString &baseName,
   }
 }
 
-static void findMaximalDotGraph(DotNode *root,int maxDist,
+static void findMaximalDotGraph(DotNode *root,
+                                int maxDist,
                                 const QCString &baseName,
                                 QDir &thisDir,
+                                GraphOutputFormat format,
                                 bool lrRank=FALSE,
                                 bool renderParents=FALSE
                                )
@@ -930,11 +973,11 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
   // sized image (dimensions: maxImageWidth, maxImageHeight)
   do
   {
-    writeDotGraph(root,baseName,lrRank,renderParents,curDistance);
+    writeDotGraph(root,format,baseName,lrRank,renderParents,curDistance);
 
     QCString dotCmd;
     // create annotated dot file
-    dotCmd.sprintf("dot -Tdot %s.dot -o %s_tmp.dot",baseName.data(),baseName.data());
+    dotCmd.sprintf("dot -Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -942,7 +985,9 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
     }
 
     // extract bounding box from the result
-    readBoundingBox(baseName+"_tmp.dot",&width,&height);
+    readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
+    width  = width *96/72; // 96 pixels/inch, 72 points/inch
+    height = height*96/72; // 96 pixels/inch, 72 points/inch
     //printf("Found bounding box (%d,%d)\n",width,height);
     
     lastFit=(width<maxImageWidth && height<maxImageHeight);
@@ -968,6 +1013,7 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
   {
     //printf("Using last fit %d\n",minDistance);
     writeDotGraph(root,
+                  format,
                   baseName,
                   lrRank || (curDistance==1 && width>maxImageWidth),
                   renderParents,
@@ -982,8 +1028,9 @@ QCString DotClassGraph::diskName() const
 }
 
 void DotClassGraph::writeGraph(QTextStream &out,
-                                  const char *path,
-                                  bool isTBRank)
+                               GraphOutputFormat format,
+                               const char *path,
+                               bool isTBRank)
 {
   QDir d(path);
   // store the original directory
@@ -1014,38 +1061,58 @@ void DotClassGraph::writeGraph(QTextStream &out,
       break;
   }
 
-  // TODO: make sure curDistance>0
-  
   findMaximalDotGraph(m_startNode,m_maxDistance,baseName,
-                      thisDir,!isTBRank,m_graphType==Inheritance);
+                      thisDir,format,!isTBRank,m_graphType==Inheritance);
 
-  // run dot to create a .gif image
-  QCString dotCmd;
-  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
-  if (system(dotCmd)!=0)
+  if (format==GIF) // run dot to create a .gif image
   {
-     err("Problems running dot. Check your installation!\n");
-     return;
+    QCString dotCmd;
+    dotCmd.sprintf("dot -Tgif \"%s.dot\" -o \"%s.gif\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+       err("Error: Problems running dot. Check your installation!\n");
+       return;
+    }
+    // run dot again to create an image map
+    dotCmd.sprintf("dot -Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+       err("Error: Problems running dot. Check your installation!\n");
+       return;
+    }
+    out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
+        << m_startNode->m_label << "_" << mapName << "\"></center>" << endl;
+    out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
+    convertMapFile(out,baseName+".map");
+    out << "</map><p>" << endl;
+    thisDir.remove(baseName+".map");
   }
-  //printf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
-
-  // run dot again to create an image map
-  dotCmd.sprintf("dot -Timap %s.dot -o %s.map",baseName.data(),baseName.data());
-  if (system(dotCmd)!=0)
+  else if (format==EPS) // run dot to create a .eps image
   {
-     err("Problems running dot. Check your installation!\n");
-     return;
+    QCString dotCmd;
+    dotCmd.sprintf("dot -Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+       err("Error: Problems running dot. Check your installation!\n");
+       return;
+    }
+    int width,height;
+    if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
+    {
+      err("Error: Could not extract bounding box from .eps!\n");
+      return;
+    }
+    int maxWidth = 420; /* approx. page width in points */
+   
+    out << "\\begin{figure}[H]\n"
+           "\\begin{center}\n"
+           "\\leavevmode\n"
+           "\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
+           "\\epsfbox{" << baseName << ".eps}\n"
+           "\\end{center}\n"
+           "\\end{figure}\n";
   }
-  //printf("dot -Timap %s.dot -o %s.map\n",baseName.data(),baseName.data());
-
-  out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-      << m_startNode->m_label << "_" << mapName << "\"></center>" << endl;
-  out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
-  convertMapFile(out,baseName+".map");
-  out << "</map><p>" << endl;
-
-  //thisDir.remove(baseName+".dot");
-  thisDir.remove(baseName+".map");
+  thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1130,7 +1197,10 @@ QCString DotInclDepGraph::diskName() const
   return m_diskName + "_incldep"; 
 }
 
-void DotInclDepGraph::writeGraph(QTextStream &out,const char *path)
+void DotInclDepGraph::writeGraph(QTextStream &out,
+                                 GraphOutputFormat format,
+                                 const char *path
+                                )
 {
   QDir d(path);
   // store the original directory
@@ -1144,35 +1214,65 @@ void DotInclDepGraph::writeGraph(QTextStream &out,const char *path)
   QDir thisDir;
 
   QCString baseName=m_diskName+"_incldep";
-  
-  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir);
 
-  // run dot to create a .gif image
-  QCString dotCmd;
-  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
-  if (system(dotCmd)!=0)
+  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,format);
+
+  if (format==GIF)
   {
-     err("Problems running dot. Check your installation!\n");
-     return;
-  }
-  //printf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
+    // run dot to create a .gif image
+    QCString dotCmd;
+    dotCmd.sprintf("dot -Tgif \"%s.dot\" -o \"%s.gif\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      return;
+    }
+    //printf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
 
-  // run dot again to create an image map
-  dotCmd.sprintf("dot -Timap %s.dot -o %s.map",baseName.data(),baseName.data());
-  if (system(dotCmd)!=0)
-  {
-     err("Problems running dot. Check your installation!\n");
-     return;
-  }
+    // run dot again to create an image map
+    dotCmd.sprintf("dot -Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      return;
+    }
 
-  out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
+    out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
       << m_startNode->m_label << "_map\"></center>" << endl;
-  out << "<map name=\"" << m_startNode->m_label << "_map\">" << endl;
-  convertMapFile(out,baseName+".map");
-  out << "</map><p>" << endl;
+    out << "<map name=\"" << m_startNode->m_label << "_map\">" << endl;
+    convertMapFile(out,baseName+".map");
+    out << "</map><p>" << endl;
+    thisDir.remove(baseName+".map");
+  }
+  else if (format==EPS)
+  {
+    // run dot to create a .eps image
+    QCString dotCmd;
+
+    dotCmd.sprintf("dot -Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
+    if (system(dotCmd)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      return;
+    }
+    int width,height;
+    if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
+    {
+      err("Error: Could not extract bounding box from .eps!\n");
+      return;
+    }
+    int maxWidth = 420; /* approx. page width in points */
+   
+    out << "\\begin{figure}[H]\n"
+           "\\begin{center}\n"
+           "\\leavevmode\n"
+           "\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
+           "\\epsfbox{" << baseName << ".eps}\n"
+           "\\end{center}\n"
+           "\\end{figure}\n";
+  }
 
   thisDir.remove(baseName+".dot");
-  thisDir.remove(baseName+".map");
 
   QDir::setCurrent(oldDir);
 }
