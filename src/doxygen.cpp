@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
@@ -4100,11 +4100,14 @@ static void findMember(Entry *root,
         bool isDefine=FALSE;
         {
           MemberName *mn = Doxygen::functionNameSDict[funcName];
-          MemberDef *md = mn->first();
-          while (md && !isDefine)
+          if (mn)
           {
-            isDefine = isDefine || md->isDefine();
-            md = mn->next();
+            MemberDef *md = mn->first();
+            while (md && !isDefine)
+            {
+              isDefine = isDefine || md->isDefine();
+              md = mn->next();
+            }
           }
         }
         if ((mn=Doxygen::memberNameSDict[funcName])==0)
@@ -5837,7 +5840,6 @@ static void generateConfigFile(const char *configFile,bool shortList,
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    Config::instance()->init();
     Config::instance()->writeTemplate(&f,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -6563,6 +6565,8 @@ void readConfiguration(int argc, char **argv)
    *            Parse or generate the config file                           *
    **************************************************************************/
 
+  Config::instance()->init();
+
   if (genConfig)
   {
     generateConfigFile(configName,shortList);
@@ -6599,6 +6603,7 @@ void readConfiguration(int argc, char **argv)
       usage(argv[0]);
     }
   }
+
 
   if (!Config::instance()->parse(configName))
   {
