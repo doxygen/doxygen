@@ -1055,6 +1055,8 @@ static void readIncludeFile(const QCString &inc)
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
+    
+    // findFile will overwrite g_yyFileDef if found
     if ((f=findFile(incFileName,localInclude))) // see if the include file can be found
     {
       //printf("Found include file!\n");
@@ -1627,7 +1629,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Include>[^\">\n]+[\">]			{ 
 					  g_incName+=yytext;
 					  readIncludeFile(g_incName);
-					  
 					  BEGIN(Start);
   					}
 <DefName>{ID}/"("			{

@@ -127,6 +127,14 @@ void DirDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  {
+    Doxygen::tagFile << "  <compound kind=\"dir\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
+    Doxygen::tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  }
+  
 
   ol.startMemberSections();
   // write subdir list
@@ -144,6 +152,10 @@ void DirDef::writeDocumentation(OutputList &ol)
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
       ol.endMemberItem();
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      {
+        Doxygen::tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
+      }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
@@ -156,7 +168,6 @@ void DirDef::writeDocumentation(OutputList &ol)
 
     ol.endMemberList();
   }
-
   
   // write file list
   if (m_fileList->count()>0)
@@ -169,13 +180,22 @@ void DirDef::writeDocumentation(OutputList &ol)
     while (fd)
     {
       ol.startMemberItem(0);
-      ol.docify("file ");
+      ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
-      //if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-      //{
-      //  Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
-      //}
+      if (fd->isLinkable())
+      {
+        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+      }
+      else
+      {
+        ol.startBold();
+        ol.writeString(fd->name()); 
+        ol.endBold();
+      }
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      {
+        Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+      }
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
@@ -190,13 +210,17 @@ void DirDef::writeDocumentation(OutputList &ol)
   }
   ol.endMemberSections();
 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  {
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
+  }
+
+
   if (!Config_getBool("DETAILS_AT_TOP"))
   {
     writeDetailedDocumentation(ol);
   }
-
-
-  // write details (if !DETAILS_AT_TOP)
   
   endFile(ol); 
   ol.popGeneratorState();
@@ -293,7 +317,7 @@ void buildDirectories()
     for (;(fd=fni.current());++fni)
     {
       //printf("buildDirectories %s\n",fd->name().data());
-      if (fd->getReference().isEmpty())
+      if (fd->getReference().isEmpty() && !fd->isDocumentationFile())
       {
         DirDef *dir;
         if ((dir=Doxygen::directories.find(fd->getPath()))==0) // new directory

@@ -87,13 +87,22 @@
 //   2004/08/01 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - Updated for "new since 1.3.8" version
 //    
+//   2004/09/19 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.3.9" version
+//    
+//   2004/09/25 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - changed "Typendefinitionen" to "Typdefinitionen" in
+//      trFileMembersDescription() and trTypedefs()
+//    - added a dash after (file, ...) names and in front of description
+//    - changed "Eigenschaften" to "Propertys" (yeah, not ..."ies")
+//    
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_3_9
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -341,7 +350,7 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
       if (!extractAll) result+="dokumentierten ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="Funktionen, Variablen, Makros, Aufzählungen und Typendefinitionen";
+        result+="Funktionen, Variablen, Makros, Aufzählungen und Typdefinitionen";
       }
       else
       {
@@ -471,7 +480,7 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "Typendefinitionen"; }
+    { return "Typdefinitionen"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
@@ -685,7 +694,7 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" Dateireferenz";
+      result+="-Dateireferenz";
       return result;
     }
 
@@ -693,7 +702,7 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Namensbereichsreferenz";
+      result+="-Namensbereichsreferenz";
       return result;
     }
     
@@ -1214,13 +1223,13 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return "Eigenschaften";
+      return "Propertys";
     }
 
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Dokumentation der Eigenschaften";
+      return "Dokumentation der Propertys";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1617,6 +1626,52 @@ class TranslatorGerman : public TranslatorAdapter_1_3_9
     virtual QCString trSourceFile(QCString& filename)
     {
       return filename + " Quellcode";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Verzeichnishierarchie"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Verzeichnisdokumentation"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Verzeichnisse"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Diese Verzeichnishierarchie ist -mit Einschränkungen- "
+	     "alphabetisch sortiert:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=" Verzeichnisreferenz"; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool, bool singular)
+    { 
+      QCString result("Verzeichnis");
+      if (!singular) result+="se";
+      return result; 
     }
 
 };

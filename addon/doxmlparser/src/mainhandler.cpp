@@ -133,6 +133,7 @@ void MainHandler::endName()
   else
   {
     m_curCompound->name = m_curString;
+    m_compoundNameDict.insert(m_curString,m_curCompound);
   }
 }
 
@@ -230,16 +231,16 @@ ICompound *MainHandler::compoundById(const char *id) const
   // unchanged.
   MainHandler *that = (MainHandler *)this;
   ch->initialize(that);
-  printf("loading compound %s in memory\n",id);
+  //printf("loading compound %s in memory\n",id);
   that->m_compoundsLoaded.insert(id,ch);
   return ch->toICompound();
 }
 
 void MainHandler::unloadCompound(CompoundHandler *ch)
 {
-  printf("unloading compound %s from memory\n",ch->id()->latin1());
+  //printf("unloading compound %s from memory\n",ch->id()->latin1());
   bool result = m_compoundsLoaded.remove(ch->id()->latin1()); 
-  if (!result) printf("Failed to unload!\n");
+  if (!result) debug(1,"Failed to unload component!\n");
 }
 
 ICompound *MainHandler::compoundByName(const char *name) const
@@ -257,7 +258,7 @@ ICompound *MainHandler::memberById(const char *id) const
   if (ids.isEmpty()) return 0;
   MemberEntry *me = m_memberDict[id];
   if (me==0) return 0; // id not found
-  return compoundById(me->id);
+  return compoundById(me->compound->id);
 }
 
 ICompoundIterator *MainHandler::memberByName(const char *name) const

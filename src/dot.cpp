@@ -33,6 +33,10 @@
 #include <qtextstream.h>
 #include <md5.h>
 
+// Enable this for transparent images
+// It doesn't seems to work very well with edge labels so I disabled it.
+//#define DOT_TRANSPARENT 
+
 //--------------------------------------------------------------------
 
 static const int maxCmdLine = 40960;
@@ -68,6 +72,9 @@ static void writeGraphHeader(QTextStream &t)
 {
   t << "digraph G" << endl;
   t << "{" << endl;
+#if defined(DOT_TRANSPARENT)
+  t << "  bgcolor=\"transparent\"" << endl;
+#endif
   t << "  edge [fontname=\"Helvetica\",fontsize=10,"
        "labelfontname=\"Helvetica\",labelfontsize=10];\n";
   t << "  node [fontname=\"Helvetica\",fontsize=10,shape=record];\n";
@@ -586,7 +593,11 @@ void DotNode::writeBox(QTextStream &t,
   }
   else 
   {
+#if defined(DOT_TRANSPARENT)
+    t << ",color=\"" << labCol << "\", fillcolor=\"white\", style=\"filled\"";
+#else
     t << ",color=\"" << labCol << "\"";
+#endif
     if (!m_url.isEmpty())
     {
       int anchorPos = m_url.findRev('#');
@@ -2327,8 +2338,30 @@ bool DotCallGraph::isTrivial() const
 
 //-------------------------------------------------------------
 
-DotDirDeps::DotDirDeps(DirDef *)
+DotDirDeps::DotDirDeps(DirDef *dd)
 {
+  FileList *fl = dd->getFiles();
+  if (fl) 
+  {
+    QListIterator<FileDef> fli(*fl);
+    FileDef *fd;
+    for (fli.toFirst();(fd=fli.current());++fli) // foreach file in dir dd
+    {
+      QList<IncludeInfo> *ifl = fd->includeFileList();
+      if (ifl)
+      {
+        QListIterator<IncludeInfo> ifli(*ifl); 
+        IncludeInfo *ii;
+        for (ifli.toFirst();(ii=ifli.current());++ifli) // foreach include file
+        {
+          if (ii->fileDef)
+          {
+            // add dependency
+          } 
+        }
+      }
+    }
+  }
 }
 
 DotDirDeps::~DotDirDeps()

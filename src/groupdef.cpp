@@ -43,6 +43,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   namespaceList = new NamespaceList;
   pageDict = new PageSDict(257);
   exampleDict = new PageSDict(257);
+  dirList = new DirList;
   allMemberList = new MemberList;
   allMemberNameInfoSDict = new MemberNameInfoSDict(17);
   if (refFileName)
@@ -86,6 +87,7 @@ GroupDef::~GroupDef()
   delete allMemberList;
   delete allMemberNameInfoSDict;
   delete memberGroupSDict;
+  delete dirList;
 }
 
 void GroupDef::setGroupTitle( const char *t )
@@ -153,6 +155,14 @@ void GroupDef::addNamespace(const NamespaceDef *def)
     namespaceList->inSort(def);  
   else
     namespaceList->append(def);
+}
+
+void GroupDef::addDir(const DirDef *def)
+{
+  if (Config_getBool("SORT_BRIEF_DOCS"))
+    dirList->inSort(def);  
+  else
+    dirList->append(def);
 }
 
 void GroupDef::addPage(PageDef *def)
@@ -516,7 +526,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     while (fd)
     {
       ol.startMemberItem(0);
-      ol.docify("file ");
+      ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
       if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
@@ -599,6 +609,39 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.endMemberList();
   }
 
+  // write list of directories
+  if (dirList->count()>0)
+  {
+    ol.startMemberHeader();
+    ol.parseText(theTranslator->trDirectories());
+    ol.endMemberHeader();
+    ol.startMemberList();
+    DirDef *dd=dirList->first();
+    while (dd)
+    {
+      ol.startMemberItem(0);
+      ol.parseText(theTranslator->trDir(FALSE,TRUE));
+      ol.insertMemberAlign();
+      ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
+      ol.endMemberItem();
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      {
+        Doxygen::tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
+      }
+      if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+      {
+        ol.startMemberDescription();
+        ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE);
+        ol.endMemberDescription();
+        ol.newParagraph();
+      }
+      dd=dirList->next();
+    }
+
+    ol.endMemberList();
+  }
+
+  
   // write list of classes
   classSDict->writeDeclaration(ol);
 
@@ -715,6 +758,24 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
       gd->addNamespace(nd);
       nd->makePartOfGroup(gd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
+    }
+  }
+}
+
+void addDirToGroups(Entry *root,DirDef *dd)
+{
+  //printf("*** root->groups->count()=%d\n",root->groups->count());
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
+  {
+    GroupDef *gd=0;
+    //printf("group `%s'\n",g->groupname.data());
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+    {
+      gd->addDir(dd);
+      dd->makePartOfGroup(gd);
+      //printf("Dir %s: in group %s\n",dd->name().data(),g->groupname.data());
     }
   }
 }

@@ -4621,6 +4621,7 @@ static void findMember(Entry *root,
             if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
             ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
+            //printf("*** cd=%s tcd=%s fd=%s\n",cd->name().data(),tcd->name().data(),fd->name().data());
 
             if (cd && tcd==cd) // member's classes match
             {
@@ -4859,7 +4860,7 @@ static void findMember(Entry *root,
             }
           }
         }
-        else // member specialization
+        else if (cd) // member specialization
         {
           MemberDef::MemberType mtype=MemberDef::Function;
           ArgumentList *tArgList = new ArgumentList;
@@ -4893,6 +4894,11 @@ static void findMember(Entry *root,
           mn->append(md);
           cd->insertMember(md);
           md->setRefItems(root->sli);
+        }
+        else
+        {
+          //printf("Specialized member %s of unknown scope %s%s found!\n",
+          //        scopeName.data(),funcName.data(),funcArgs.data());
         }
       }
       else if (overloaded) // check if the function belongs to only one class 
@@ -6496,6 +6502,7 @@ static void findDirDocumentation(Entry *root)
       //printf("Match for with dir %s\n",matchingDir->name().data());
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
+      addDirToGroups(root,matchingDir);
     }
     else
     {
@@ -8284,14 +8291,14 @@ void parseInput()
   msg("Freeing input...\n");
   input.resize(0);
   
-  msg("Building directory list...\n");
-  buildDirectories();
-  findDirDocumentation(root);
-  
   msg("Building group list...\n");
   buildGroupList(root);
   organizeSubGroups(root);
 
+  msg("Building directory list...\n");
+  buildDirectories();
+  findDirDocumentation(root);
+  
   msg("Building namespace list...\n");
   buildNamespaceList(root);
   findUsingDirectives(root);

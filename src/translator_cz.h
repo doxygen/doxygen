@@ -130,6 +130,7 @@
 // 2004/02/26 - trLegendDocs() updated.
 // 2004/02/27 - Text inside the trCallGraph() corrected.
 // 2004/06/16 - The new method "since 1.3.8" implemented. 
+// 2004/09/14 - The new methods "since 1.3.9" implemented. 
 
 // Todo
 // ----
@@ -149,7 +150,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public TranslatorAdapter_1_3_9
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1673,6 +1674,59 @@ class TranslatorCzech : public TranslatorAdapter_1_3_9
       return decode("Zdrojový soubor ") + filename;
     }
     
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return decode("Hierarchie adresáøù"); }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return decode("Dokumentace k adresáøùm"); }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return decode("Adresáøe"); }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { 
+        return decode("Následující hierarchie adresáøù je zhruba, "
+                      "ale ne úplnì, øazena podle abecedy:"); 
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { 
+        QCString result = "Reference k adresáøi "; 
+        result += dirName; 
+        return decode(result); 
+    }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+        QCString result((first_capital ? "Adresáø" : "adresáø"));
+        if ( ! singular) 
+            result += "e";
+        return decode(result); 
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

@@ -36,6 +36,38 @@ class TemplateParamListHandler;
 class TitleHandler;
 class ListOfAllMembersHandler;
 
+class IncludeHandler : public IInclude, public BaseHandler<IncludeHandler>\
+{
+  public:
+    IncludeHandler(IBaseHandler *parent,const char *endtag);
+    virtual ~IncludeHandler();
+
+    void startInclude(const QXmlAttributes &attrib);
+    void endInclude();
+
+    // IInclude
+    virtual const IString * name() const 
+    { return &m_name; }
+    virtual const IString * refId() const
+    { return &m_refId; }
+    virtual bool isLocal() const
+    { return &m_isLocal; }
+
+  private:
+    IBaseHandler *m_parent;
+    StringImpl m_name;
+    StringImpl m_refId;
+    bool m_isLocal;
+};
+
+class IncludeIterator : public BaseIterator<IIncludeIterator,IInclude,IncludeHandler>
+{
+  public:
+    IncludeIterator(const QList<IncludeHandler> &list) : 
+      BaseIterator<IIncludeIterator,IInclude,IncludeHandler>(list) {}
+};
+
+
 class RelatedCompound : public IRelatedCompound
 {
   public:
@@ -94,10 +126,14 @@ class CompoundHandler : public IClass,
     virtual void startCollaborationGraph(const QXmlAttributes& attrib);
     virtual void startIncludeDependencyGraph(const QXmlAttributes& attrib);
     virtual void startIncludedByDependencyGraph(const QXmlAttributes& attrib);
+    virtual void startIncludes(const QXmlAttributes& attrib);
+    virtual void startIncludedBy(const QXmlAttributes& attrib);
+    virtual void startInnerDir(const QXmlAttributes& attrib);
     virtual void startInnerClass(const QXmlAttributes& attrib);
     virtual void startInnerNamespace(const QXmlAttributes& attrib);
     virtual void startInnerFile(const QXmlAttributes& attrib);
     virtual void startInnerGroup(const QXmlAttributes& attrib);
+    virtual void startInnerPage(const QXmlAttributes& attrib);
     virtual void startTitle(const QXmlAttributes& attrib);
     virtual void startTemplateParamList(const QXmlAttributes& attrib);
     virtual void startListOfAllMembers(const QXmlAttributes& attrib);
@@ -140,6 +176,8 @@ class CompoundHandler : public IClass,
     IGraph *includeDependencyGraph() const; 
     IGraph *includedByDependencyGraph() const;
     IDocProgramListing *source() const;
+    IIncludeIterator *includes() const;
+    IIncludeIterator *includedBy() const;
 
     // IPage implementation
     const IDocTitle *title() const;
@@ -149,6 +187,8 @@ class CompoundHandler : public IClass,
     QList<RelatedCompound>         m_subClasses;
     QList<SectionHandler>          m_sections;
     QList<ParamHandler>            m_params;
+    QList<IncludeHandler>          m_includes;
+    QList<IncludeHandler>          m_includedBy;
     DocHandler*                    m_brief;
     DocHandler*                    m_detailed;
     ProgramListingHandler*         m_programListing;

@@ -1,4 +1,3 @@
-"<?\n"
 "function readInt($file)\n"
 "{\n"
 "  $b1 = ord(fgetc($file)); $b2 = ord(fgetc($file));\n"

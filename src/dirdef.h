@@ -32,7 +32,7 @@ class OutputList;
 
 class DirDef;
 
-class DirDefList : public QList<DirDef>
+class DirList : public QList<DirDef>
 {
   public:
    int compareItems(GCI item1,GCI item2);
@@ -67,7 +67,7 @@ class DirDef : public Definition
     static DirDef *createNewDir(const char *path);
     static bool matchPath(const QCString &path,QStrList &l);
 
-    DirDefList m_subdirs;
+    DirList m_subdirs;
     QCString m_dispName;
     QCString m_shortName;
     FileList *m_fileList;                 // list of files in the group
@@ -75,7 +75,7 @@ class DirDef : public Definition
     int m_dirCount;
 };
 
-inline int DirDefList::compareItems(GCI item1,GCI item2)
+inline int DirList::compareItems(GCI item1,GCI item2)
 {
   return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
 }

@@ -37,6 +37,8 @@ class MemberGroupSDict;
 class MemberNameInfoSDict;
 class PageSDict;
 class PageDef;
+class DirDef;
+class DirList;
 
 class GroupDef : public Definition
 {
@@ -53,8 +55,9 @@ class GroupDef : public Definition
     void addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
     void addParentGroup(const GroupDef *def);
-    void addPage(PageDef *def);                // pages in this group
-    void addExample(const PageDef *def);       // examples in this group
+    void addPage(PageDef *def);
+    void addExample(const PageDef *def);
+    void addDir(const DirDef *dd);
     bool insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
@@ -108,6 +111,7 @@ class GroupDef : public Definition
     NamespaceList * getNamespaces() const   { return namespaceList; }
     GroupList *     getSubGroups() const    { return groupList; }
     PageSDict *     getPages() const        { return pageDict; }
+    DirList *       getDirs() const         { return dirList; }
     
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
@@ -122,6 +126,7 @@ class GroupDef : public Definition
     GroupList *groupList;               // list of sub groups.
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
+    DirList *dirList;                   // list of directories in the group
 
     MemberList *allMemberList;
     MemberNameInfoSDict *allMemberNameInfoSDict;
@@ -153,6 +158,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup);
 void addMemberToGroups(Entry *root,MemberDef *md);
 void addPageToGroups(Entry *root,PageDef *pd);
 void addExampleToGroups(Entry *root,PageDef *eg);
+void addDirToGroups(Entry *root,DirDef *dd);
 
 #endif
 

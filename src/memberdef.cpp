@@ -133,16 +133,26 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   while (a)
   {
     if (md->isDefine() || first) ol.startParameterType(first,md->isObjCMethod()?"dummy":0);
-    QRegExp re(")(");
-    int vp;
+    QRegExp re(")("),res("(.*\\*");
+    int vp=a->type.find(re);
+    int wp=a->type.find(res);
+
+    // use the following to put the function pointer type before the name
+    bool hasFuncPtrType=FALSE; 
+
+    // or use the following to put the function pointer as it appears in
+    // the prototype.
+    // bool hasFuncPtrType=vp!=-1 && wp!=-1 && wp<vp; 
+
     if (!a->attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
       ol.docify(a->attrib+" ");
     }
-    if ((vp=a->type.find(re))!=-1) // argument type is a function pointer
+    if (hasFuncPtrType) // argument type is a function pointer
     {
       //printf("a->type=`%s' a->name=`%s'\n",a->type.data(),a->name.data());
       QCString n=a->type.left(vp);
+      if (hasFuncPtrType) n=a->type.left(wp);
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
@@ -162,9 +172,16 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.endParameterType();
       ol.startParameterName(defArgList->count()<2);
     }
+    if (hasFuncPtrType)
+    {
+      ol.docify(a->type.mid(wp,vp-wp)); 
+    }
     if (!a->name.isEmpty() || (a->name.isEmpty() && a->type=="...")) // argument has a name
     { 
-      ol.docify(" ");
+      if (!hasFuncPtrType);
+      {
+        ol.docify(" ");
+      }
       ol.disable(OutputGenerator::Man);
       ol.startEmphasis();
       ol.enable(OutputGenerator::Man);
@@ -177,8 +194,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     {
       ol.docify(a->array);
     }
-    if (vp!=-1) // write the part of the argument type 
-                // that comes after the name
+    if (hasFuncPtrType) // write the part of the argument type 
+                        // that comes after the name
     {
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),
                   md->name(),a->type.right(a->type.length()-vp));
@@ -405,6 +422,7 @@ MemberDef::MemberDef(const char *df,int dl,
   m_cachedTypedefValue = 0;
   m_inbodyLine = -1;
   m_implOnly=FALSE;
+  groupMember = 0;
 }
 
 /*! Destroys the member definition. */
@@ -1783,6 +1801,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
 
+  ol.endIndent();
+
   if ((m_hasCallGraph || Config_getBool("CALL_GRAPH")) 
       && isFunction() && Config_getBool("HAVE_DOT")
      )
@@ -1800,7 +1820,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
   }
 
-  ol.endIndent();
   // enable LaTeX again
   //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
   ol.popGeneratorState();
@@ -1976,6 +1995,8 @@ bool MemberDef::hasOneLineInitializer() const
 
 bool MemberDef::hasMultiLineInitializer() const
 {
+  //printf("initLines=%d userInitLines=%d maxInitLines=%d\n",
+  //    initLines,userInitLines,maxInitLines);
   return initLines>0 && 
          ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
           || initLines<userInitLines // explicitly enabled
@@ -1984,6 +2005,7 @@ bool MemberDef::hasMultiLineInitializer() const
 
 void MemberDef::setInitializer(const char *initializer)    
 { 
+  //printf("setInitializer(%s)\n",initializer);
   init=initializer; 
   int p=init.length()-1;
   while (p>=0 && isspace((uchar)init.at(p))) p--;

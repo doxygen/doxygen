@@ -33,6 +33,7 @@ class ICompound;
 class ISection;
 class INode;
 class IDocInternal;
+class IDocRoot;
 
 /*! \brief Read only interface to a string. 
  */
@@ -51,6 +52,11 @@ class IString
     virtual int length() const = 0;
 };
 
+/*! \brief Base interface for hyperlinked text
+ *
+ *  Depending on the result of kind() the interface is extended by
+ *  ILT_Text or ILT_Ref.
+ */
 class ILinkedText
 {
   public:
@@ -58,12 +64,16 @@ class ILinkedText
     virtual Kind kind() const = 0;
 };
 
+/*! \brief Plain text fragment.
+ */
 class ILT_Text : public ILinkedText
 {
   public:
     virtual const IString *text() const = 0;
 };
 
+/*! \brief Reference to an object.
+ */
 class ILT_Ref : public ILinkedText
 {
   public:
@@ -74,6 +84,8 @@ class ILT_Ref : public ILinkedText
     virtual const IString *text() const = 0;
 };
 
+/*! \brief Iterates over a list of ILinkedText fragments.
+ */
 class ILinkedTextIterator 
 {
   public:
@@ -85,6 +97,7 @@ class ILinkedTextIterator
     virtual void release() = 0;
 };
 
+/*! \brief Representation of a parameter of a function. */
 class IParam 
 {
   public:
@@ -94,6 +107,7 @@ class IParam
     virtual const IString * attrib() const = 0;
     virtual const IString * arraySpecifier() const = 0;
     virtual ILinkedTextIterator *defaultValue() const = 0;
+    virtual IDocRoot *briefDescription() const = 0;
 };
 
 class IParamIterator
@@ -171,7 +185,8 @@ class IDoc
       Anchor,             // 34 -> IDocAnchor
       Symbol,             // 35 -> IDocSymbol
       Internal,           // 36 -> IDocInternal
-      Root                // 37 -> IDocRoot
+      Root,               // 37 -> IDocRoot
+      ParameterItem       // 38 -> IDocParameterItem
     };
     virtual Kind kind() const = 0;
 };
@@ -238,15 +253,21 @@ class IDocParameterList : public IDoc
 {
   public:
     enum Types { Param, RetVal, Exception };
-    virtual Types listType() const = 0;
+    virtual Types sectType() const = 0;
     virtual IDocIterator *params() const = 0;
+};
+
+class IDocParameterItem : public IDoc
+{
+  public:
+    virtual IDocIterator *paramNames() const = 0;
+    virtual IDocPara *description() const = 0;
 };
 
 class IDocParameter : public IDoc
 {
   public:
     virtual const IString * name() const = 0;
-    virtual IDocPara *description() const = 0;
 };
 
 class IDocTitle : public IDoc
@@ -562,8 +583,18 @@ class IMember
     virtual ILinkedTextIterator *type() const = 0;
     virtual const IString * typeString() const = 0;
     virtual const IString * name() const = 0;
+    virtual const IString * readAccessor() const = 0;
+    virtual const IString * writeAccessor() const = 0;
+    virtual const IString * definition() const = 0;
+    virtual const IString * argsstring() const = 0;
     virtual bool isConst() const = 0;
     virtual bool isVolatile() const = 0;
+    virtual bool isStatic() const = 0;
+    virtual bool isExplicit() const = 0;
+    virtual bool isInline() const = 0;
+    virtual bool isMutable() const = 0;
+    virtual bool isReadable() const = 0;
+    virtual bool isWritable() const = 0;
     virtual IParamIterator *parameters() const = 0;
     virtual IParamIterator *templateParameters() const = 0;
     virtual ILinkedTextIterator *initializer() const = 0;
@@ -578,6 +609,7 @@ class IMember
     virtual IMemberReferenceIterator *reimplementedBy() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
+    virtual IDocRoot *inbodyDescription() const = 0;
 };
 
 class IDefine : public IMember
@@ -636,19 +668,26 @@ class IEnumValue : public IMember
     virtual const IString * name() const = 0;
 };
 
-#if 0
-class IEnumValueIterator 
+/*! \brief Include relation
+ */
+class IInclude 
 {
   public:
-    virtual IEnumValue *toFirst() = 0;
-    virtual IEnumValue *toLast() = 0;
-    virtual IEnumValue *toNext() = 0;
-    virtual IEnumValue *toPrev() = 0;
-    virtual IEnumValue *current() const = 0;
+    virtual const IString * name() const = 0;
+    virtual const IString * refId() const = 0;
+    virtual bool isLocal() const = 0;
+};
+
+class IIncludeIterator
+{
+  public:
+    virtual IInclude *toFirst() = 0;
+    virtual IInclude *toLast() = 0;
+    virtual IInclude *toNext() = 0;
+    virtual IInclude *toPrev() = 0;
+    virtual IInclude *current() const = 0;
     virtual void release() = 0;
 };
-#endif
-
 
 class IMemberIterator 
 {
@@ -936,6 +975,7 @@ class IInterface : public ICompound
     virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
 };
 
+
 /*! \brief The interface to a Java/IDL exception in the object model. 
  */
 class IException : public ICompound
@@ -960,9 +1000,9 @@ class IFile : public ICompound
     virtual IDocProgramListing *source() const = 0;
     virtual ICompoundIterator *nestedCompounds() const = 0;
 
-    // file:
-    //  includes()
-    //  includedBy()
+    virtual IIncludeIterator *includes() const = 0;
+    virtual IIncludeIterator *includedBy() const = 0;
+
     //  ICompound *innerNamespaces()
     //  ICompoundIterator *innerClasses()
 };

@@ -1986,25 +1986,22 @@ class C {};
 \section cmdamp \&
 
   \addindex \\\&
-  This command writes the \& character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This character has to be escaped because 
-  it has a special meaning in HTML.
+  This command writes the \& character to output. 
+  This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
 \section cmddollar \$
 
   \addindex \\\$
-  This command writes the \$ character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This 
-  character has to be escaped in some cases, because it is used to expand 
+  This command writes the \$ character to the output. 
+  This character has to be escaped in some cases, because it is used to expand 
   environment variables.
 
 <hr>
 \section cmdhash \#
 
   \addindex \\\#
-  This command writes the \# character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This 
+  This command writes the \# character to the output. This 
   character has to be escaped in some cases, because it is used to refer
   to documented entities. 
 
@@ -2012,23 +2009,20 @@ class C {};
 \section cmdlt \<
 
   \addindex \\\<
-  This command writes the \< character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This 
-  character has to be escaped because it has a special meaning in HTML.
+  This command writes the \< character to the output. 
+  This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
 \section cmdgt \>
 
   \addindex \\\>
-  This command writes the \> character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This 
+  This command writes the \> character to the output. This 
   character has to be escaped because it has a special meaning in HTML.
 
 \section cmdperc \%
 
   \addindex \\\%
-  This command writes the \% character to the HTML and 
-  \f$\mbox{\LaTeX}\f$ output. This 
+  This command writes the \% character to the output. This 
   character has to be escaped in some cases, because it is used to 
   prevent auto-linking to word that is also a documented class or struct. 
 

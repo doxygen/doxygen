@@ -76,7 +76,8 @@ void MemberList::countDecMembers()
                                        m_funcCnt++,m_numDecMembers++; 
                                      break;
         case MemberDef::Enumeration: m_enumCnt++,m_numDecMembers++; break;
-        case MemberDef::EnumValue:   m_enumValCnt++,m_numDecMembers++; break;
+        case MemberDef::EnumValue:   //m_enumValCnt++,m_numDecMembers++; 
+                                     break;
         case MemberDef::Typedef:     m_typeCnt++,m_numDecMembers++; break;
         case MemberDef::Prototype:   m_protoCnt++,m_numDecMembers++; break;
         case MemberDef::Define:      if (Config_getBool("EXTRACT_ALL") || 
@@ -92,7 +93,7 @@ void MemberList::countDecMembers()
       }
     }
   }
-  if (memberGroupList /*&& countSubGroups*/)
+  if (memberGroupList)
   {
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
@@ -309,10 +310,10 @@ void MemberList::writeDeclarations(OutputList &ol,
              const char *title,const char *subtitle
              /*, bool inGroup,bool countSubGroups*/)
 {
-  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",title,subtitle);
   //printf("----- writeDeclaration() ----\n");
   countDecMembers(); // count member not in group
   if (numDecMembers()==0) return;
+  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",title,subtitle,numDecMembers());
   if (title) 
   {
     ol.startMemberHeader();

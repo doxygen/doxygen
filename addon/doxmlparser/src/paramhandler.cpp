@@ -17,6 +17,7 @@
 #include "memberhandler.h"
 #include "linkedtexthandler.h"
 #include "debug.h"
+#include "dochandler.h"
 
 TemplateParamListHandler::TemplateParamListHandler(IBaseHandler *parent) : m_parent(parent)
 {
@@ -49,7 +50,7 @@ void TemplateParamListHandler::endTemplateParamList()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
+ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent), m_brief(0)
 {
   addEndHandler("param",this,&ParamHandler::endParam);
 
@@ -67,6 +68,8 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
   addStartHandler("attribute");
   addEndHandler("attribute",this,&ParamHandler::endAttrib);
 
+  addStartHandler("briefdescription",this,&ParamHandler::startBriefDesc);
+  
   addStartHandler("defval",this,&ParamHandler::startDefVal);
 
   m_linkedTextHandler = 0;
@@ -74,6 +77,7 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
 
 ParamHandler::~ParamHandler()
 {
+  delete m_brief;
   delete m_linkedTextHandler;
 }
 
@@ -128,6 +132,13 @@ void ParamHandler::startDefVal(const QXmlAttributes& /*attrib*/)
   debug(2,"member defVal\n");
 }
 
+void ParamHandler::startBriefDesc(const QXmlAttributes& attrib)
+{
+  DocHandler *docHandler = new DocHandler(this);
+  docHandler->startDoc(attrib);
+  m_brief = docHandler;
+}
+
 ILinkedTextIterator *ParamHandler::type() const 
 { 
   return new LinkedTextIterator(m_type); 
@@ -137,5 +148,11 @@ ILinkedTextIterator *ParamHandler::defaultValue() const
 { 
   return new LinkedTextIterator(m_defVal); 
 }
+
+IDocRoot *ParamHandler::briefDescription() const
+{ 
+  return m_brief; 
+}
+    
 
 

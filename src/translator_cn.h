@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_3_9
+class TranslatorChinese : public Translator
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -1481,6 +1481,69 @@ class TranslatorChinese : public TranslatorAdapter_1_3_9
     {
       /* return filename + " Source File"; */
       return filename + CN_SPC"Ô´ÎÄ¼þ";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    /*     { return "Directory Hierarchy"; } */
+    {
+      return "$(BL\\Â¼½á$(DC((B";
+    }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    /*     { return "Directory Documentation"; } */
+    {
+      return "$(BL\\Â¼J8[c(B";
+    }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    /*     { return "Directories"; } */
+    {
+      return "$(BL\\Â¼(B";
+    }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+/*     { return "This directory hierarchy is sorted roughly, " */
+/*              "but not completely, alphabetically:"; */
+/*     } */
+    {
+      return "$(BL\\Â¼½á$(DC(½ö¾­¹ý$(BBgCWE*GSNs!$VuL$40A40D;zJlË³=x(B";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    /*     { QCString result=dirName; result+=" Directory Reference"; return result; } */
+    {
+      QCString result=dirName;
+      result+=CN_SPC"$(BL\\Â¼;29M(B"; 
+      return result;
+    }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool, bool)
+    { 
+      /*       QCString result((first_capital ? "Director" : "director")); */
+      /*       if (singular) result+="y"; else result+="ies"; */
+      /*       return result;  */
+      return "$(BL\\Â¼(B";
     }
     
 };

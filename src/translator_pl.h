@@ -13,14 +13,14 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Polish translation was updated to version 1.3.8 by
+ * Polish translation was updated to version 1.3.9 by
  * Piotr Kaminski (Piotr.Kaminski@ctm.gdynia.pl)
  */
 
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public TranslatorAdapter_1_3_9
+class TranslatorPolish : public Translator
 {
   private:
     /*! to avoid macro redefinition from translator_pl.h */
@@ -1511,7 +1511,51 @@ class TranslatorPolish : public TranslatorAdapter_1_3_9
       return "Plik ¼ród³owy " + filename;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
 
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Struktura katalogów"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Dokumentacja katalogów"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Katalogi"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Ta struktura katalogów jest posortowana jest z grubsza, "
+             "choæ nie ca³kowicie, alfabetycznie:";
+        }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result="Dokumentacja katalogu "; result+=dirName; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Katalog" : "katalog"));
+      if (! singular) result+="i";
+      return result; 
+    }
 };
 
 #endif

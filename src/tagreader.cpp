@@ -132,6 +132,7 @@ class TagGroupInfo
     QStringList namespaceList;
     QStringList fileList;
     QStringList pageList;
+    QStringList dirList;
 };
 
 /*! Container for page specific info that can be read from a tagfile */
@@ -144,6 +145,17 @@ class TagPageInfo
     QStrList docAnchors;
 };
 
+/*! Container for directory specific info that can be read from a tagfile */
+class TagDirInfo
+{
+  public:
+    QString name;
+    QString filename;
+    QString path;
+    QStringList subdirList;
+    QStringList fileList;
+    QStrList docAnchors;
+};
 
 /*! Tag file parser. 
  *  Reads an XML-structured tagfile and builds up the structure in
@@ -160,6 +172,7 @@ class TagFileParser : public QXmlDefaultHandler
                  InPage,
                  InMember,
                  InPackage,
+                 InDir,
                  InTempArgList
                };
     class StartElementHandler
@@ -264,6 +277,11 @@ class TagFileParser : public QXmlDefaultHandler
         m_curPackage = new TagPackageInfo;
         m_state = InPackage;
       }
+      else if (kind=="dir")
+      {
+        m_curDir = new TagDirInfo;
+        m_state = InDir;
+      }
       else
       {
         err("Error: Unknown compound attribute `%s' found!\n",kind.data());
@@ -287,6 +305,8 @@ class TagFileParser : public QXmlDefaultHandler
                           m_curGroup=0; break; 
         case InPage:      m_tagFilePages.append(m_curPage); 
                           m_curPage=0; break; 
+        case InDir:       m_tagFileDirs.append(m_curDir);
+                          m_curDir=0; break;
         case InPackage:   m_tagFilePackages.append(m_curPackage); 
                           m_curPackage=0; break; 
         default:
@@ -351,6 +371,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InPage:      m_curPage->docAnchors.append(m_curString); break;
         case InMember:    m_curMember->docAnchors.append(m_curString); break;
         case InPackage:   m_curPackage->docAnchors.append(m_curString); break;
+        case InDir:       m_curDir->docAnchors.append(m_curString); break;
         default:   err("Error: Unexpected tag `member' found\n"); break; 
       }
     }
@@ -379,6 +400,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InGroup:      m_curGroup->fileList.append(m_curString); break;
+        case InDir:        m_curDir->fileList.append(m_curString); break;
         default:   err("Error: Unexpected tag `file' found\n"); break; 
       }
     }
@@ -387,6 +409,14 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InGroup:      m_curGroup->fileList.append(m_curString); break;
+        default:   err("Error: Unexpected tag `page' found\n"); break; 
+      }
+    }
+    void endDir()
+    {
+      switch(m_state)
+      {
+        case InDir:      m_curDir->subdirList.append(m_curString); break;
         default:   err("Error: Unexpected tag `page' found\n"); break; 
       }
     }
@@ -414,6 +444,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InNamespace: m_curNamespace->name = m_curString; break;
         case InGroup:     m_curGroup->name     = m_curString; break;
         case InPage:      m_curPage->name      = m_curString; break;
+        case InDir:       m_curDir->name       = m_curString; break;
         case InMember:    m_curMember->name    = m_curString; break;
         case InPackage:   m_curPackage->name   = m_curString; break;
         default: err("Error: Unexpected tag `name' found\n"); break; 
@@ -510,6 +541,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InGroup:     m_curGroup->filename     = m_curString;    break;
         case InPage:      m_curPage->filename      = m_curString;    break;
         case InPackage:   m_curPackage->filename   = m_curString;    break;
+        case InDir:       m_curDir->filename       = m_curString;    break;
         default: err("Error: Unexpected tag `filename' found\n"); break; 
       }
     }
@@ -518,6 +550,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch (m_state)
       {
         case InFile:      m_curFile->path          = m_curString;    break;
+        case InDir:       m_curDir->path           = m_curString;    break;
         default: err("Error: Unexpected tag `path' found\n");     break; 
       }
     }
@@ -580,6 +613,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_curGroup=0;
       m_curPage=0;
       m_curPackage=0;
+      m_curDir=0;
 
       m_stateStack.setAutoDelete(TRUE);
       m_tagFileClasses.setAutoDelete(TRUE);
@@ -588,6 +622,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_tagFileGroups.setAutoDelete(TRUE);
       m_tagFilePages.setAutoDelete(TRUE);
       m_tagFilePackages.setAutoDelete(TRUE);
+      m_tagFileDirs.setAutoDelete(TRUE);
 
       m_startElementHandlers.insert("compound",    new StartElementHandler(this,&TagFileParser::startCompound));
       m_startElementHandlers.insert("member",      new StartElementHandler(this,&TagFileParser::startMember));
@@ -603,6 +638,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("class",       new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("namespace",   new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("file",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("dir",         new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("page",        new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("docanchor",   new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("tagfile",     new StartElementHandler(this,&TagFileParser::startIgnoreElement));
@@ -623,6 +659,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_endElementHandlers.insert("class"   ,    new EndElementHandler(this,&TagFileParser::endClass));
       m_endElementHandlers.insert("namespace",   new EndElementHandler(this,&TagFileParser::endNamespace));
       m_endElementHandlers.insert("file",        new EndElementHandler(this,&TagFileParser::endFile));
+      m_endElementHandlers.insert("dir",         new EndElementHandler(this,&TagFileParser::endDir));
       m_endElementHandlers.insert("page",        new EndElementHandler(this,&TagFileParser::endPage));
       m_endElementHandlers.insert("docanchor",   new EndElementHandler(this,&TagFileParser::endDocAnchor));
       m_endElementHandlers.insert("tagfile",     new EndElementHandler(this,&TagFileParser::endIgnoreElement));
@@ -678,6 +715,7 @@ class TagFileParser : public QXmlDefaultHandler
     QList<TagGroupInfo>        m_tagFileGroups;
     QList<TagPageInfo>         m_tagFilePages;
     QList<TagPackageInfo>      m_tagFilePackages;
+    QList<TagDirInfo>          m_tagFileDirs;
     QDict<StartElementHandler> m_startElementHandlers;
     QDict<EndElementHandler>   m_endElementHandlers;
     TagClassInfo              *m_curClass;
@@ -686,6 +724,7 @@ class TagFileParser : public QXmlDefaultHandler
     TagPackageInfo            *m_curPackage;
     TagGroupInfo              *m_curGroup;
     TagPageInfo               *m_curPage;
+    TagDirInfo                *m_curDir;
     TagMemberInfo             *m_curMember;
     TagIncludeInfo            *m_curIncludes;
     QCString                   m_curString;
@@ -871,6 +910,25 @@ void TagFileParser::dump()
     msg("page `%s'\n",pd->name.data());
     msg("  title `%s'\n",pd->title.data());
     msg("  filename `%s'\n",pd->filename.data());
+  }
+  //============== DIRS
+  QListIterator<TagDirInfo> ldi(m_tagFileDirs);
+  TagDirInfo *dd;
+  for (;(dd=ldi.current());++ldi)
+  {
+    msg("dir `%s'\n",dd->name.data());
+    msg("  path `%s'\n",dd->path.data());
+    QStringList::Iterator it;
+    for ( it = dd->fileList.begin(); 
+        it != dd->fileList.end(); ++it ) 
+    {
+      msg( "  file: %s \n", (*it).latin1() );
+    }
+    for ( it = dd->subdirList.begin(); 
+        it != dd->subdirList.end(); ++it ) 
+    {
+      msg( "  subdir: %s \n", (*it).latin1() );
+    }
   }
 }
 

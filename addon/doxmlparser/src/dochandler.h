@@ -45,6 +45,7 @@ DEFINE_CLS_IMPL(DocItemizedList);
 DEFINE_CLS_IMPL(DocOrderedList);
 DEFINE_CLS_IMPL(DocListItem);
 DEFINE_CLS_IMPL(DocParameterList);
+DEFINE_CLS_IMPL(DocParameterItem);
 DEFINE_CLS_IMPL(DocParameter);
 DEFINE_CLS_IMPL(DocTitle);
 DEFINE_CLS_IMPL(DocSimpleSect);
@@ -418,24 +419,54 @@ class ParameterHandler : public DocParameterImpl,
     virtual ~ParameterHandler();
     virtual void startParameterName(const QXmlAttributes& attrib);
     virtual void endParameterName();
-    virtual void startParameterDescription(const QXmlAttributes& attrib);
-    virtual void endParameterDescription();
-    virtual void startParagraph(const QXmlAttributes& attrib);
 
     // IDocParameter
     virtual Kind kind() const { return DocImpl::Parameter; }
     virtual const IString *name() const { return &m_name; }
-    virtual IDocPara *description() const { return m_description; }
 
   private:
     IBaseHandler     *m_parent;
     StringImpl        m_name;
-    ParagraphHandler *m_description;
 };
 
 //-----------------------------------------------------------------------------
 
-/* \brief Node representing a parameter list.
+/* \brief Node representing a list of param names with a single description.
+ *
+ */
+class ParameterItemHandler : public DocParameterItemImpl, 
+                             public BaseHandler<ParameterItemHandler>
+{
+    friend class ParameterItemIterator;
+  public:
+    ParameterItemHandler(IBaseHandler *parent);
+    virtual ~ParameterItemHandler();
+    virtual void startParameterItem(const QXmlAttributes& attrib);
+    virtual void endParameterItem();
+    virtual void startParameterName(const QXmlAttributes& attrib);
+    virtual void startParagraph(const QXmlAttributes& attrib);
+
+    // IDocParameterItem
+    virtual Kind kind() const { return DocImpl::ParameterItem; }
+    virtual IDocIterator *paramNames() const;
+    virtual IDocPara *description() const { return m_description; }
+
+  private:
+    IBaseHandler            *m_parent;
+    QList<ParameterHandler>  m_parameters;
+    ParagraphHandler *m_description;
+};
+
+class ParameterItemIterator : public BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>
+{
+  public:
+    ParameterItemIterator(const ParameterItemHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>(handler.m_parameters) {}
+};
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a parameter section.
  *
  */
 class ParameterListHandler : public DocParameterListImpl, 
@@ -447,26 +478,24 @@ class ParameterListHandler : public DocParameterListImpl,
     virtual ~ParameterListHandler();
     virtual void startParameterList(const QXmlAttributes& attrib);
     virtual void endParameterList();
-    virtual void startParameterName(const QXmlAttributes& attrib);
-    virtual void startParameterDescription(const QXmlAttributes& attrib);
+    virtual void startParameterItem(const QXmlAttributes& attrib);
 
     // IDocParameterList
     virtual Kind kind() const { return DocImpl::ParameterList; }
-    virtual Types listType() const { return m_type; }
+    virtual Types sectType() const { return m_type; }
     virtual IDocIterator *params() const;
 
   private:
     IBaseHandler            *m_parent;
-    QList<ParameterHandler>  m_parameters;
-    ParameterHandler        *m_curParam;
+    QList<ParameterItemHandler>  m_paramItems;
     Types                    m_type;
 };
 
-class ParameterListIterator : public BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>
+class ParameterListIterator : public BaseIteratorVia<IDocIterator,IDoc,ParameterItemHandler,DocImpl>
 {
   public:
     ParameterListIterator(const ParameterListHandler &handler) : 
-      BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>(handler.m_parameters) {}
+      BaseIteratorVia<IDocIterator,IDoc,ParameterItemHandler,DocImpl>(handler.m_paramItems) {}
 };
 
 //-----------------------------------------------------------------------------

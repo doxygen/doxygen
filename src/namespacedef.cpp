@@ -42,6 +42,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   setReference(lref);
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
+  visited=FALSE;
 }
 
 NamespaceDef::~NamespaceDef()

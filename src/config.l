@@ -1113,6 +1113,7 @@ void Config::check()
     filePatternList.append("*.inc");
     filePatternList.append("*.m");
     filePatternList.append("*.mm");
+    filePatternList.append("*.dox");
 #if !defined(_WIN32)
     // unix => case sensitive match => also include useful uppercase versions
     filePatternList.append("*.C");

@@ -283,7 +283,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 						if (fi>=0)
 						{
 						  a->type  = g_curArgTypeName.left(fi+1);
-						  a->name  = g_curArgTypeName.mid(fi+1,bi-fi-1);
+						  a->name  = g_curArgTypeName.mid(fi+1,bi-fi-1).stripWhiteSpace();
 						  a->array = g_curArgTypeName.right(l-bi);
 						}
 						else
@@ -294,7 +294,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					      else if (i>=0 && g_curArgTypeName.at(i)!=':')
 					      { // type contains a name
 						a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
-						a->name = g_curArgTypeName.right(l-i-1);
+						a->name = g_curArgTypeName.right(l-i-1).stripWhiteSpace();
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {

@@ -216,12 +216,12 @@
 
   <xsd:complexType name="linkType">
     <xsd:attribute name="refid" type="xsd:string" />
-    <xsd:attribute name="external" type="DoxBool" use="optional"/>
+    <xsd:attribute name="external" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="listingType">
     <xsd:sequence>
-      <xsd:element name="codeline" type="codelineType" maxOccurs="unbounded" />
+      <xsd:element name="codeline" type="codelineType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 
@@ -528,12 +528,25 @@
     <xsd:attribute name="langid" type="xsd:string" /> 
   </xsd:complexType>
 
-  <xsd:group name="docParamListGroup">
+  <xsd:complexType name="docParamListType">
     <xsd:sequence>
-      <xsd:element name="parametername" type="docParamName" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="parameteritem" type="docParamListItem" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="kind" type="DoxParamListKind" /> 
+  </xsd:complexType>
+
+  <xsd:complexType name="docParamListItem">
+    <xsd:sequence>
+      <xsd:element name="parameternamelist" type="docParamNameList" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="parameterdescription" type="descriptionType" />
     </xsd:sequence>
-  </xsd:group>
+  </xsd:complexType>
+
+  <xsd:complexType name="docParamNameList">
+    <xsd:sequence>
+      <xsd:element name="parametername" type="docParamName" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
 
   <xsd:complexType name="docParamName">
     <xsd:simpleContent>
@@ -541,13 +554,6 @@
         <xsd:attribute name="direction" type="DoxParamDir" use="optional" />
       </xsd:extension>
     </xsd:simpleContent>
-  </xsd:complexType>
-
-  <xsd:complexType name="docParamListType">
-    <xsd:sequence>
-      <xsd:group ref="docParamListGroup" maxOccurs="unbounded" />
-    </xsd:sequence>
-    <xsd:attribute name="kind" type="DoxParamListKind" /> 
   </xsd:complexType>
 
   <xsd:complexType name="docXRefSectType">
