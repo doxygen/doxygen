@@ -29,10 +29,7 @@
 #ifndef TRANSLATOR_HU_H
 #define TRANSLATOR_HU_H
 
-#include "translator.h"
-#include "../qtools/qdatetime.h"
-
-class TranslatorHungarian : public TranslatorAdapter_1_3_8
+class TranslatorHungarian : public TranslatorAdapter_1_3_9
 {
   private:
     const char * zed(char c)
@@ -1516,6 +1513,17 @@ class TranslatorHungarian : public TranslatorAdapter_1_3_8
     virtual QCString trSearchMatches()
     {
       return "Találatok:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return filename + " Forrásfájl";
     }
 
 };

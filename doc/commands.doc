@@ -56,6 +56,7 @@ documentation:
 \refitem cmddef \\def
 \refitem cmddefgroup \\defgroup
 \refitem cmddeprecated \\deprecated
+\refitem cmddir \\dir
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
@@ -272,6 +273,18 @@ doxygen. Unrecognized commands are treated as normal text.
   
   \sa page \ref grouping "Grouping", sections \ref cmdingroup "\\ingroup", \ref cmdaddtogroup "\\addtogroup",
   \ref cmdweakgroup "\\weakgroup".
+
+<hr>
+\section cmddir \dir [<path fragment>]
+  
+  \addindex \\dir
+  Indicates that a comment block contains documentation for a directory.
+  The "path fragment" argument should include the directory name and 
+  enough of the path to be unique w.r.t. the other directories in the project.
+  The \ref cfg_show_dirs "SHOW_DIRECTORIES" option determines whether 
+  or not the directory information is shown and the
+  \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is 
+  stripped from the full path before it appears in the output.
 
 <hr>
 

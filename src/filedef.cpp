@@ -84,6 +84,7 @@ FileDef::FileDef(const char *p,const char *nm,
   package = 0;
   isSource = FALSE; 
   docname = nm;
+  dir = 0;
   if (Config_getBool("FULL_PATH_NAMES"))
   {
     docname.prepend(stripFromPath(path.copy()));
@@ -213,11 +214,29 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   QCString pageTitle=theTranslator->trFileReference(docname);
   startFile(ol,getOutputFileBase(),name(),pageTitle);
-  startTitle(ol,getOutputFileBase());
-  ol.parseText(pageTitle);
-  addGroupListToTitle(ol,this);
-  endTitle(ol,getOutputFileBase(),docName());
-  //ol.newParagraph();
+
+  if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
+  {
+    getDirDef()->writeNavigationPath(ol);
+    QCString pageTitleShort=theTranslator->trFileReference(name());
+    startTitle(ol,getOutputFileBase());
+    ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.parseText(pageTitleShort); // Html only
+      ol.enableAll();
+      ol.disable(OutputGenerator::Html);
+      ol.parseText(pageTitle); // other output formats
+    ol.popGeneratorState();
+    addGroupListToTitle(ol,this);
+    endTitle(ol,getOutputFileBase(),docname);
+  }
+  else
+  {
+    startTitle(ol,getOutputFileBase());
+    ol.parseText(pageTitle);
+    addGroupListToTitle(ol,this);
+    endTitle(ol,getOutputFileBase(),docname);
+  }
   
   if (Config_getBool("SEARCHENGINE"))
   {
@@ -500,11 +519,23 @@ void FileDef::writeDocumentation(OutputList &ol)
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
+  QCString pageTitle = theTranslator->trSourceFile(docname);
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,getSourceFileBase(),0,theTranslator->trSourceFile(docname));
-  startTitle(ol,0);
-  ol.parseText(docname);
-  endTitle(ol,0,0);
+  startFile(ol,getSourceFileBase(),0,pageTitle);
+
+  if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
+  {
+    getDirDef()->writeNavigationPath(ol);
+    startTitle(ol,getOutputFileBase());
+    ol.parseText(name());
+    endTitle(ol,getOutputFileBase(),docname);
+  }
+  else
+  {
+    startTitle(ol,0);
+    ol.parseText(docname);
+    endTitle(ol,0,0);
+  }
 
   if (isLinkable())
   {

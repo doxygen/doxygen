@@ -1467,6 +1467,61 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   ti << "  </compound>" << endl;
 }
 
+static void generateXMLForDir(DirDef *dd,QTextStream &ti)
+{
+  if (dd->isReference()) return; // skip external references
+  ti << "  <compound refid=\"" << dd->getOutputFileBase() 
+     << "\" kind=\"dir\"><name>" << convertToXML(dd->displayName()) 
+     << "</name>" << endl;
+
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+
+  QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
+  writeXMLHeader(t);
+  t << "  <compounddef id=\"" 
+    << dd->getOutputFileBase() << "\" kind=\"dir\">" << endl;
+  t << "    <compoundname>" << convertToXML(dd->displayName()) << "</compoundname>" << endl;
+
+  QListIterator<DirDef> subdirs(dd->subDirs());
+  DirDef *subdir;
+  for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
+  {
+    t << "    <innerdir refid=\"" << subdir->getOutputFileBase() 
+      << "\">" << convertToXML(subdir->displayName()) << "</innerdir>" << endl;
+  }
+  
+  FileList *fl = dd->getFiles();
+  if (fl)
+  {
+    QListIterator<FileDef> fli(*fl);
+    FileDef *fd = fl->first();
+    for (fli.toFirst();(fd=fli.current());++fli)
+    {
+      t << "    <innerfile refid=\"" << fd->getOutputFileBase() 
+        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
+    }
+  }
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,dd->briefFile(),dd->briefLine(),dd,0,dd->briefDescription());
+  t << "    </briefdescription>" << endl;
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
+  t << "    </detaileddescription>" << endl;
+  t << "    <location file=\"" << dd->name() << "\"/>" << endl; 
+  t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
+}
+
 static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
 {
   // + name
@@ -1534,7 +1589,6 @@ void generateXML()
   // + classes
   // + namespaces
   // + files
-  // - packages
   // + groups
   // + related pages
   // - examples
@@ -1666,6 +1720,15 @@ void generateXML()
     {
       msg("Generating XML output for page %s\n",pd->name().data());
       generateXMLForPage(pd,t,FALSE);
+    }
+  }
+  {
+    DirDef *dir;
+    DirSDict::Iterator sdi(Doxygen::directories);
+    for (sdi.toFirst();(dir=sdi.current());++sdi)
+    {
+      msg("Generate XML output for dir %s\n",dir->name().data());
+      generateXMLForDir(dir,t);
     }
   }
   {

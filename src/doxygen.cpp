@@ -121,7 +121,7 @@ SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
-SDict<DirDef>  Doxygen::directories(17);
+DirSDict       Doxygen::directories(17);
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -6451,6 +6451,61 @@ static void findDefineDocumentation(Entry *root)
 }
 
 //----------------------------------------------------------------------------
+
+static void findDirDocumentation(Entry *root)
+{
+  if (root->section == Entry::DIRDOC_SEC)
+  {
+    QCString normalizedName = root->name;
+    normalizedName = substitute(normalizedName,"\\","/");
+    if (normalizedName.at(normalizedName.length()-1)!='/')
+    {
+      normalizedName+='/';
+    }
+    DirDef *dir,*matchingDir=0;
+    SDict<DirDef>::Iterator sdi(Doxygen::directories);
+    for (sdi.toFirst();(dir=sdi.current());++sdi)
+    {
+      printf("Dir: %s<->%s\n",dir->name().data(),normalizedName.data());
+      if (dir->name().right(normalizedName.length())==normalizedName)
+      {
+        if (matchingDir)
+        {
+           warn(root->fileName,root->startLine,
+             "Warning: \\dir command matches multiple directories.\n"
+             "  Applying the command for directory %s\n"
+             "  Ignoring the command for directory %s\n",
+             matchingDir->name().data(),dir->name().data()
+           );
+        }
+        else
+        {
+          matchingDir=dir;
+        }
+      }
+    }
+    if (matchingDir)
+    {
+      printf("Match for with dir %s\n",matchingDir->name().data());
+      matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
+    }
+    else
+    {
+      warn(root->fileName,root->startLine,"Warning: No matching "
+          "directory found for command \\dir %s\n",root->name.data());
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    findDirDocumentation(e);
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // create a (sorted) list of separate documentation pages
 
 static void buildPageList(Entry *root)
@@ -7329,41 +7384,6 @@ static int readDir(QFileInfo *fi,
   return totalSize;
 }
 
-//----------------------------------------------------------------------------
-// read the file with name `name' into a string.
-
-//static QCString readExampleFile(const char *name)
-//{
-//  QCString example;
-//  QFileInfo fi(name);
-//  if (fi.exists())
-//  {
-//    QFile f((const char *)fi.absFilePath());
-//    if (f.open(IO_ReadOnly))
-//    {
-//      example.resize(fi.size()+1);
-//      if ((int)fi.size()!=f.readBlock(example.data(),fi.size()))
-//      {
-//        err("Error while reading file %s\n",fi.absFilePath().data());
-//        //exit(1);
-//        return "";
-//      }
-//      example.at(fi.size())='\0';
-//    }
-//    else
-//    {
-//      err("Error opening file %s\n",fi.absFilePath().data());
-//      //exit(1);
-//      return "";
-//    }
-//  }
-//  else
-//  {
-//    err("Error: example file %s does not exist\n",name);
-//    exit(1);
-//  }
-//  return example;
-//}
 
 //----------------------------------------------------------------------------
 // read a file or all files in a directory and append their contents to the
@@ -8257,8 +8277,9 @@ void parseInput()
   msg("Freeing input...\n");
   input.resize(0);
   
-  //msg("Building directory list...\n");
-  //buildDirectories();
+  msg("Building directory list...\n");
+  buildDirectories();
+  findDirDocumentation(root);
   
   msg("Building group list...\n");
   buildGroupList(root);
@@ -8480,6 +8501,24 @@ void generateOutput()
   if (Config_getBool("GENERATE_LATEX")) writeDoxFont(Config_getString("LATEX_OUTPUT"));
   if (Config_getBool("GENERATE_RTF"))   writeDoxFont(Config_getString("RTF_OUTPUT"));
 
+  msg("Generating style sheet...\n");
+  //printf("writing style info\n");
+  outputList->writeStyleInfo(0); // write first part
+  outputList->disableAllBut(OutputGenerator::Latex);
+  outputList->parseText(
+            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
+          );
+  outputList->writeStyleInfo(1); // write second part
+  //parseText(*outputList,theTranslator->trWrittenBy());
+  outputList->writeStyleInfo(2); // write third part
+  outputList->parseText(
+            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
+          );
+  outputList->writeStyleInfo(3); // write fourth part
+  //parseText(*outputList,theTranslator->trWrittenBy());
+  outputList->writeStyleInfo(4); // write last part
+  outputList->enableAll();
+  
   //statistics();
   
   // count the number of documented elements in the lists we have built. 
@@ -8522,12 +8561,24 @@ void generateOutput()
   msg("Generating group documentation...\n");
   generateGroupDocs();
 
+  if (Config_getBool("SHOW_DIRECTORIES"))
+  {
+    msg("Generating directory documentation...\n");
+    generateDirDocs(*outputList);
+  }
+
   msg("Generating namespace index...\n");
   generateNamespaceDocs();
   
   msg("Generating group index...\n");
   writeGroupIndex(*outputList);
  
+  if (Config_getBool("SHOW_DIRECTORIES"))
+  {
+    msg("Generating directory index...\n");
+    writeDirIndex(*outputList);
+  }
+
   msg("Generating example index...\n");
   writeExampleIndex(*outputList);
   
@@ -8548,24 +8599,6 @@ void generateOutput()
 
   //msg("Generating search index...\n");
   //generateSearchIndex();
-  
-  msg("Generating style sheet...\n");
-  //printf("writing style info\n");
-  outputList->writeStyleInfo(0); // write first part
-  outputList->disableAllBut(OutputGenerator::Latex);
-  outputList->parseText(
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
-          );
-  outputList->writeStyleInfo(1); // write second part
-  //parseText(*outputList,theTranslator->trWrittenBy());
-  outputList->writeStyleInfo(2); // write third part
-  outputList->parseText(
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
-          );
-  outputList->writeStyleInfo(3); // write fourth part
-  //parseText(*outputList,theTranslator->trWrittenBy());
-  outputList->writeStyleInfo(4); // write last part
-  outputList->enableAll();
   
   if (Config_getBool("GENERATE_RTF"))
   {

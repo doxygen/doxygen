@@ -4225,6 +4225,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->startLine = yyLineNr;
 					  BEGIN( FileDocArg1 );
   					}
+<Doc,LineDoc,JavaDoc>{B}*{CMD}"dir"{B}*	{
+  					  current->section = Entry::DIRDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( FileDocArg1 );
+  					}
 <Doc,JavaDoc>{B}*{CMD}"example"{B}+ 	{
  					  current->section = Entry::EXAMPLE_SEC;
 					  current->fileName = yyFileName;
@@ -5029,7 +5035,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current_root->addSubEntry(current);
 					    current = new Entry ;
 					    initEntry();
-					    BEGIN( FindMembers );
+					    BEGIN( lastDocContext );
 					  }
 					}
 <PageDoc>"<"{TITLE}">"			{ 

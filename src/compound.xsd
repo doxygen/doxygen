@@ -21,6 +21,7 @@
       <xsd:element name="includedby" type="incType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="incdepgraph" type="graphType" minOccurs="0" />
       <xsd:element name="invincdepgraph" type="graphType" minOccurs="0" />
+      <xsd:element name="innerdir" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerfile" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerclass" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innernamespace" type="refType" minOccurs="0" maxOccurs="unbounded" />
@@ -647,6 +648,7 @@
       <xsd:enumeration value="group" />
       <xsd:enumeration value="page" />
       <xsd:enumeration value="example" />
+      <xsd:enumeration value="dir" />
     </xsd:restriction>
   </xsd:simpleType>
 

@@ -1814,6 +1814,13 @@ void Config::create()
                     "list will mention the files that were used to generate the documentation. \n",
                     TRUE
                 );
+  cb = addBool(
+                    "SHOW_DIRECTORIES",
+		    "If the sources in your project are distributed over multiple directories \n"
+		    "then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy \n"
+		    "in the documentation.\n",
+		    TRUE
+              );
   
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Messages","configuration options related to warning and progress messages");

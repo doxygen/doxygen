@@ -1,2 +1,8 @@
 Makefile
 doxywizard.pro
+Makefile.doxywizard
+config.cpp
+config.h
+config.l
+moc
+obj

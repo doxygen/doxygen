@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_ZA_H
 #define TRANSLATOR_ZA_H
 
-class TranslatorAfrikaans : public Translator
+class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
 {
   public:
 

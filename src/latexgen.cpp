@@ -31,6 +31,7 @@
 #include "pagedef.h"
 #include "docparser.h"
 #include "latexdocvisitor.h"
+#include "dirdef.h"
 
 //static QCString filterTitle(const char *s)
 //{
@@ -102,6 +103,7 @@ LatexGenerator::LatexGenerator() : OutputGenerator()
   insideTabbing=FALSE;
   firstDescItem=TRUE;
   insidePre=FALSE;
+  m_indent=0;
 }
 
 LatexGenerator::~LatexGenerator()
@@ -501,6 +503,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Module Index}\n"
       break;
+    case isDirIndex:
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Directory Index}\n"
+      break;
     case isNamespaceIndex:
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Namespace Index}\"
@@ -529,6 +535,22 @@ void LatexGenerator::startIndexSection(IndexSections is)
         for (gli.toFirst();(gd=gli.current()) && !found;++gli)
         {
           if (!gd->isReference())
+          {
+            if (compactLatex) t << "\\section"; else t << "\\chapter";
+            t << "{"; //Module Documentation}\n";
+            found=TRUE;
+          }
+        }
+      }
+      break;
+    case isDirDocumentation:
+      {
+        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        DirDef *dd;
+        bool found=FALSE;
+        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        {
+          if (dd->isLinkableInProject())
           {
             if (compactLatex) t << "\\section"; else t << "\\chapter";
             t << "{"; //Module Documentation}\n";
@@ -637,6 +659,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
       break;
+    case isDirIndex:
+      t << "}\n\\input{dirs}\n";
+      break;
     case isNamespaceIndex:
       t << "}\n\\input{namespaces}\n";
       break;
@@ -671,6 +696,29 @@ void LatexGenerator::endIndexSection(IndexSections is)
           {
             if (compactLatex) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
+          }
+        }
+      }
+      break;
+    case isDirDocumentation:
+      {
+        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        DirDef *dd;
+        bool found=FALSE;
+        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        {
+          if (dd->isLinkableInProject())
+          {
+            t << "}\n\\input{" << dd->getOutputFileBase() << "}\n";
+            found=TRUE;
+          }
+        }
+        for (;(dd=dli.current());++dli)
+        {
+          if (dd->isLinkableInProject())
+          {
+            if (compactLatex) t << "\\input"; else t << "\\include";
+            t << "{" << dd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -1321,10 +1369,39 @@ void LatexGenerator::endMemberItem()
   t << endl; 
 }
 
+void LatexGenerator::startMemberDescription() 
+{
+  if (!insideTabbing)
+  { 
+    t << "\\begin{CompactList}\\small\\item\\em "; 
+  }
+  else
+  {
+    for (int i=0;i<m_indent+1;i++) t << "\\>";
+    t << "{\\em ";
+  }
+}
+
+void LatexGenerator::endMemberDescription() 
+{ 
+  if (!insideTabbing)
+  {
+    t << "\\item\\end{CompactList}"; 
+  }
+  else
+  {
+    t << "}\\\\";
+  }
+}
+
+
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
   if (insideTabbing)
+  {
     t << "\\>";
+    m_indent++;
+  }
   else
     t << "\\ "; 
 }

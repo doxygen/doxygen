@@ -227,7 +227,7 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_kindString = attrib.value("kind");
-  printf("startMember kindString=`%s'\n",m_kindString.data());
+  //printf("startMember kindString=`%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_virtualness = attrib.value("virt");
@@ -242,7 +242,7 @@ void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_kindString = "enumvalue";
-  printf("startEnumValue kindString=`%s'\n",m_kindString.data());
+  //printf("startEnumValue kindString=`%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_virtualness = "non-virtual";

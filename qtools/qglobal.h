@@ -96,7 +96,7 @@
 #define _OS_ULTRIX_
 #elif defined(reliantunix)
 #define _OS_RELIANTUNIX_
-#elif defined(linux) || defined(__linux) || defined(__linux__)
+#elif defined(linux) || defined(__linux) || defined(__linux__) || defined(__GNU__) || defined(__GLIBC__)
 #define _OS_LINUX_
 #elif defined(__FreeBSD__)
 #define _OS_FREEBSD_
@@ -116,8 +116,6 @@
 #define _OS_LYNXOS_
 #elif defined(_UNIXWARE)
 #define _OS_UNIXWARE_
-#elif defined(__GNU__)
-#define _OS_GNU_
 #elif defined(DGUX)
 #define _OS_DGUX_
 #elif defined(__QNX__)

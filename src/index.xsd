@@ -40,6 +40,7 @@
       <xsd:enumeration value="group"/>
       <xsd:enumeration value="page"/>
       <xsd:enumeration value="example"/>
+      <xsd:enumeration value="dir"/>
     </xsd:restriction>
   </xsd:simpleType>
 

@@ -35,6 +35,7 @@
 #include "index.h"
 #include "pagedef.h"
 #include "debug.h"
+#include "dirdef.h"
 
 // #define GROUP_COLOR "#ff8080"
 
@@ -50,6 +51,15 @@ static const char *defaultStyleSheet =
 "}\n"
 "CAPTION { font-weight: bold }\n"
 "DIV.qindex {\n"
+"	width: 100%;\n"
+"	background-color: #eeeeff;\n"
+"	border: 1px solid #b0b0b0;\n"
+"	text-align: center;\n"
+"	margin: 2px;\n"
+"	padding: 2px;\n"
+"	line-height: 140%;\n"
+"}\n"
+"DIV.nav {\n"
 "	width: 100%;\n"
 "	background-color: #eeeeff;\n"
 "	border: 1px solid #b0b0b0;\n"
@@ -1363,6 +1373,13 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     startQuickIndexItem(t,"modules"+Doxygen::htmlFileExtension,
                         hli==HLI_Modules,compact,first,relPath);
     t << fixSpaces(theTranslator->trModules());
+    endQuickIndexItem(t);
+  } 
+  if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
+  {
+    startQuickIndexItem(t,"dirs"+Doxygen::htmlFileExtension,
+                        hli==HLI_Directories,compact,first,relPath);
+    t << fixSpaces(theTranslator->trDirectories());
     endQuickIndexItem(t);
   } 
   if (documentedNamespaces>0)

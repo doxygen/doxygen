@@ -18,27 +18,28 @@
 #ifndef TRANSLATOR_EN_H
 #define TRANSLATOR_EN_H
 
-// When defining a translator class for the new language, follow
-// the description in the documentation.  One of the steps says
-// that you should copy the translator_en.h (this) file to your
-// translator_xx.h new file.  Your new language should use the
-// Translator class as the base class.  This means that you need to
-// implement exactly the same (pure virtual) methods as the
-// TranslatorEnglish does.  Because of this, it is a good idea to
-// start with the copy of TranslatorEnglish and replace the strings
-// one by one.
-//
-// It is not necessary to include "translator.h" or
-// "translator_adapter.h" here.  The files are included in the
-// language.cpp correctly.  Not including any of the mentioned
-// files frees the maintainer from thinking about whether the
-// first, the second, or both files should be included or not, and
-// why.  This holds namely for localized translators because their
-// base class is changed occasionaly to adapter classes when the
-// Translator class changes the interface, or back to the
-// Translator class (by the local maintainer) when the localized
-// translator is made up-to-date again.
+/*! 
+ When defining a translator class for the new language, follow
+ the description in the documentation.  One of the steps says
+ that you should copy the translator_en.h (this) file to your
+ translator_xx.h new file.  Your new language should use the
+ Translator class as the base class.  This means that you need to
+ implement exactly the same (pure virtual) methods as the
+ TranslatorEnglish does.  Because of this, it is a good idea to
+ start with the copy of TranslatorEnglish and replace the strings
+ one by one.
 
+ It is not necessary to include "translator.h" or
+ "translator_adapter.h" here.  The files are included in the
+ language.cpp correctly.  Not including any of the mentioned
+ files frees the maintainer from thinking about whether the
+ first, the second, or both files should be included or not, and
+ why.  This holds namely for localized translators because their
+ base class is changed occasionaly to adapter classes when the
+ Translator class changes the interface, or back to the
+ Translator class (by the local maintainer) when the localized
+ translator is made up-to-date again.
+*/
 class TranslatorEnglish : public Translator
 {
   public:
@@ -1553,6 +1554,27 @@ class TranslatorEnglish : public Translator
     virtual QCString trSourceFile(QCString& filename)
     {
       return filename + " Source File";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDirIndex()
+    { return "Directories"; }
+    virtual QCString trDirDocumentation()
+    { return "Directory Documentation"; }
+    virtual QCString trDirectories()
+    { return "Directories"; }
+    virtual QCString trDirDescription()
+    { return "Here is a list of all directories:"; }
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=" Directory Reference"; return result; }
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Director" : "director"));
+      if (singular) result+="y"; else result+="ies";
+      return result; 
     }
 
 };

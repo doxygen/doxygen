@@ -149,9 +149,6 @@ if test -z "$f_platform"; then
     FreeBSD:*)
       f_platform=freebsd-g++
       ;;
-    GNU:*)
-      f_platform=gnu-g++
-      ;;
     HP-UX:*)
       f_platform=hpux-g++
       ;;
@@ -161,7 +158,7 @@ if test -z "$f_platform"; then
     IRIX:*)
       f_platform=irix-n32
       ;;
-    Linux:*)
+    Linux:*|GNU:*|GNU/*:*)
       f_platform=linux-g++
       ;;
     NetBSD:*)
@@ -239,27 +236,6 @@ if test "$f_wizard" = YES; then
         QTDIR=$d
       fi
     done
-#     if test -d "/usr/lib/qt3/lib"; then
-#       if test -d "/usr/lib/qt3/include"; then
-#         if test -x "/usr/lib/qt3/bin/moc"; then
-#           QTDIR="/usr/lib/qt3"
-#         fi
-#       fi
-#     fi
-#     if test -d "/usr/lib/qt2/lib"; then
-#       if test -d "/usr/lib/qt2/include"; then
-#         if test -x "/usr/lib/qt2/bin/moc"; then
-#           QTDIR="/usr/lib/qt2"
-#         fi
-#       fi
-#     fi
-#     if test -d "/usr/lib/qt/lib"; then
-#       if test -d "/usr/lib/qt/include"; then
-#         if test -x "/usr/lib/qt/bin/moc"; then
-#           QTDIR="/usr/lib/qt"
-#         fi
-#       fi
-#     fi
   else
     echo "  Detected Qt via the QTDIR environment variable..."
     echo -n "                    "

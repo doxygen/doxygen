@@ -422,6 +422,17 @@ class Translator
 
     virtual QCString trSourceFile(QCString& filename) = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDirIndex() = 0;
+    virtual QCString trDirDocumentation() = 0;
+    virtual QCString trDirectories() = 0;
+    virtual QCString trDirDescription() = 0;
+    virtual QCString trDirReference(const char *dirName) = 0;
+    virtual QCString trDir(bool first_capital, bool singular) = 0;
+
 };
 
 #endif

@@ -26,15 +26,15 @@ enum IndexSections
   isTitlePageStart,
   isTitlePageAuthor,
   isMainPage,
-//  isPackageIndex,
   isModuleIndex,
+  isDirIndex,
   isNamespaceIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
   isPageIndex,
-//  isPackageDocumentation,
   isModuleDocumentation,
+  isDirDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
   isFileDocumentation,
@@ -61,6 +61,7 @@ void writeExampleIndex(OutputList &ol);
 void writePageIndex(OutputList &ol);
 void writeFileMemberIndex(OutputList &ol);
 void writeGroupIndex(OutputList &ol);
+void writeDirIndex(OutputList &ol);
 void writeNamespaceIndex(OutputList &ol);
 void writeNamespaceMemberIndex(OutputList &ol);
 void writeGraphicalClassHierarchy(OutputList &ol);
@@ -74,6 +75,7 @@ enum HighlightedItem
   HLI_None=0,
   HLI_Main,
   HLI_Modules,
+  HLI_Directories,
   HLI_Namespaces,
   HLI_Hierarchy,
   HLI_Classes,
@@ -148,6 +150,7 @@ extern int documentedFileMembers[FMHL_Total];
 extern int documentedNamespaceMembers[NMHL_Total];
 extern int documentedHtmlFiles;
 extern int documentedPages;
+extern int documentedDirs;
 
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
