@@ -540,6 +540,7 @@ void HtmlGenerator::codify(const char *str)
                    break; 
         case '\n': t << '\n'; col=0; 
                    break;
+        case '\r': break;
         case '<':  t << "&lt;"; col++; 
                    break;
         case '>':  t << "&gt;"; col++; 

@@ -39,8 +39,8 @@
 #define QGLOBAL_H
 
 
-#define QT_VERSION	220
-#define QT_VERSION_STR	"2.2.0"
+#define QT_VERSION	222
+#define QT_VERSION_STR	"2.2.2"
 
 
 //
@@ -98,9 +98,6 @@
 #define _OS_RELIANTUNIX_
 #elif defined(linux) || defined(__linux) || defined(__linux__)
 #define _OS_LINUX_
-#if defined(__alpha__) || defined(__alpha)
-#define _OS_ALPHA_LINUX_
-#endif
 #elif defined(__FreeBSD__)
 #define _OS_FREEBSD_
 #elif defined(__NetBSD__)
@@ -153,18 +150,19 @@
 //
 //   SYM	- Symantec C++ for both PC and Macintosh
 //   MPW	- MPW C++
-//   MWERKS	- Metroworks CodeWarrior
+//   MWERKS	- Metrowerks CodeWarrior
 //   MSVC	- Microsoft Visual C/C++
 //   BOR	- Borland/Turbo C++
 //   WAT	- Watcom C++
 //   GNU	- GNU C++
 //   COMEAU	- Comeau C++
 //   EDG	- Edison Design Group C++
-//   OC		- CenterLine ObjectCenter C++
+//   OC		- CenterLine C++
 //   SUN	- Sun C++
 //   DEC	- DEC C++
 //   HP		- HPUX C++
-//   USLC	- SCO UnixWare C++
+//   USLC	- SCO UnixWare7 C++
+//   CDS	- Reliant C++
 //   KAI	- KAI C++
 //
 
@@ -175,6 +173,7 @@
 #define _CC_SYM_
 #elif defined( __KCC )
 #define _CC_KAI_
+#define _CC_EDG_
 #define Q_HAS_BOOL_TYPE
 #elif defined(applec)
 #define _CC_MPW_
@@ -196,6 +195,9 @@
 #define Q_TEMPLATE_NEEDS_EXPLICIT_CONVERSION
 #define Q_SPURIOUS_NON_VOID_WARNING
 #endif
+#if __GNUC__ == 2 && __GNUC_MINOR__ >= 95
+#define Q_DELETING_VOID_UNDEFINED
+#endif
 #if __GNUC__ == 2 && __GNUC_MINOR__ >= 96
 #define Q_DELETING_VOID_UNDEFINED
 #define Q_FP_CCAST_BROKEN
@@ -206,9 +208,17 @@
 #elif defined(__xlC__)
 #define _CC_XLC_
 #define Q_FULL_TEMPLATE_INSTANTIATION
+#if __xlC__ >= 0x400
+#define Q_HAS_BOOL_TYPE
+#endif
+#if __xlC__ <= 0x0306
+#define Q_TEMPLATE_NEEDS_EXPLICIT_CONVERSION
+#endif
 #elif defined(como40)
 #define _CC_EDG_
 #define _CC_COMEAU_
+#define Q_HAS_BOOL_TYPE
+#define Q_C_CALLBACKS
 #elif defined(__USLC__)
 #define _CC_USLC_
 #ifdef __EDG__ // UnixWare7
@@ -216,19 +226,24 @@
 #endif
 #elif defined(__EDG) || defined(__EDG__)
 // one observed on SGI DCC, the other documented
-#define Q_HAS_BOOL_TYPE
 #define _CC_EDG_
 #elif defined(OBJECTCENTER) || defined(CENTERLINE_CLPP)
 #define _CC_OC_
+#if defined(_BOOL)
+#define Q_HAS_BOOL_TYPE
+#endif
 #elif defined(__SUNPRO_CC)
 #define _CC_SUN_
 #if __SUNPRO_CC >= 0x500
 #define Q_HAS_BOOL_TYPE
-#define Q_SPARCWORKS_FUNCP_BUG
+#define Q_FP_CCAST_BROKEN
 #define Q_C_CALLBACKS
 #endif
 #elif defined(__DECCXX)
 #define _CC_DEC_
+#if __DECCXX_VER >= 60060005
+#define Q_HAS_BOOL_TYPE
+#endif
 #elif defined(__CDS__)
 #define _CC_CDS_
 #define Q_HAS_BOOL_TYPE
@@ -246,10 +261,6 @@
 #endif // __HP_aCC
 #else
 #error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
-#endif
-
-#if defined(_CC_COMEAU_)
-#define Q_C_CALLBACKS
 #endif
 
 #ifndef Q_PACKED
@@ -302,13 +313,7 @@
 #define Q_HAS_BOOL_TYPE
 #elif _MSC_VER >= 1100 || __BORLANDC__ >= 0x500
 #define Q_HAS_BOOL_TYPE
-#elif defined(_CC_COMEAU_)
-#define Q_HAS_BOOL_TYPE
-#elif defined(sgi) && ( (_COMPILER_VERSION >= 710) || defined(_BOOL) )
-#define Q_HAS_BOOL_TYPE
-#elif defined(__DECCXX) && (__DECCXX_VER >= 60060005)
-#define Q_HAS_BOOL_TYPE
-#elif defined(_AIX) && (__xlC__ >= 0x500)
+#elif defined(sgi) && defined(_BOOL)
 #define Q_HAS_BOOL_TYPE
 #endif
 
@@ -478,6 +483,8 @@ Q_EXPORT bool qSysInfo( int *wordSize, bool *bigEndian );
 #pragma warning(disable: 4275)
 #pragma warning(disable: 4514)
 #pragma warning(disable: 4800)
+#pragma warning(disable: 4097)
+#pragma warning(disable: 4706)
 #elif defined(_CC_BOR_)
 #pragma option -w-inl
 #pragma option -w-aus

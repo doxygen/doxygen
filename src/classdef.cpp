@@ -604,6 +604,7 @@ ArgumentList *ClassDef::outerTemplateArguments() const
   int ti;
   ClassDef *pcd=0;
   int pi=0;
+  if (tempArgs) return tempArgs;
   // find the outer most class scope
   while ((ti=name().find("::",pi))!=-1 && 
       (pcd=getClass(name().left(ti)))==0
@@ -612,10 +613,7 @@ ArgumentList *ClassDef::outerTemplateArguments() const
   {
     return pcd->templateArguments();
   }
-  else
-  {
-    return tempArgs;
-  }
+  return 0;
 }
 
 

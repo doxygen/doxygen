@@ -693,6 +693,11 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
+					  if (current->mtArgList) // transfer template arguments
+					  {
+					    current->tArgList = current->mtArgList;
+					    current->mtArgList = 0;
+					  }
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
@@ -749,9 +754,9 @@ TITLE     [tT][iI][tT][lL][eE]
   					  lineCount();
 					  // class template specifier already found => member template specifier
 					  // already inside class => member template specifier
-					  if (current->tArgList || (current_root->section&Entry::COMPOUND_MASK))
-					  {
-					    //printf("-------> member template\n");
+					  //if (current->tArgList /*|| (current_root->section&Entry::COMPOUND_MASK)*/)
+					  //{
+					  //  printf("-------> member template \n");
 					    if (current->mtArgList)
 					    {
 					      current->mtArgList->clear();
@@ -762,26 +767,25 @@ TITLE     [tT][iI][tT][lL][eE]
 					      current->mtArgList->setAutoDelete(TRUE);
 					    }
 					    currentArgumentList = current->mtArgList;
-					  }
-					  else // class template specifier
-					  {
-					    //printf("-------> class template\n");
-					    if (current->tArgList)
-					    {
-					      current->tArgList->clear();
-                                            }
-					    else
-					    {
-					      current->tArgList = new ArgumentList;
-					      current->tArgList->setAutoDelete(TRUE);
-					    }
-					    currentArgumentList = current->tArgList;
-					  }
+					  //}
+					  //else // class template specifier
+					  //{
+					  //  printf("-------> class template\n");
+					  //  if (current->tArgList)
+					  //  {
+					  //    current->tArgList->clear();
+                                          //  }
+					  //  else
+					  //  {
+					  //    current->tArgList = new ArgumentList;
+					  //    current->tArgList->setAutoDelete(TRUE);
+					  //  }
+					  //  currentArgumentList = current->tArgList;
+					  //}
 					  templateStr="<";
 					  fullArgString = templateStr.copy();
 					  copyArgString = &templateStr;
 					  currentArgumentContext = FindMembers;
-					  //printf("Start template list\n");
 					  BEGIN( ReadTempArgs );
   					}
 <FindMembers>"namespace"{BN}+/{ID}{BN}*"=" { // namespace alias
@@ -793,7 +797,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( NSAliasArg );
   					}
 <NSAliasArg>({ID}"::")*{ID}		{
-  					  printf("Inserting namespace alias %s::%s->%s\n",current_root->name.data(),aliasName.data(),yytext);
+  					  //printf("Inserting namespace alias %s::%s->%s\n",current_root->name.data(),aliasName.data(),yytext);
 					  if (current_root->name.isEmpty())
 					  {
 					    namespaceAliasDict.insert(aliasName,new QCString(yytext));
@@ -1616,6 +1620,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  lineCount();
   					  addType(current);
 					  funcPtrType=yytext;
+					  roundCount=0;
 					  //current->type += yytext;
 					  BEGIN( FuncPtr );
   					}
@@ -1638,12 +1643,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->type+=funcPtrType.data()+1;
   					  BEGIN(FindMembers);
   					}
-<EndFuncPtr>")"{BN}*/"("		{ // a variable function
+<EndFuncPtr>")"{BN}*/"("		{ // a function pointer
   					  lineCount();
 					  current->type+=funcPtrType+")";
 					  BEGIN(FindMembers);
   					}
-<EndFuncPtr>")"{BN}*/"["		{
+<EndFuncPtr>")"{BN}*/"["		{ // an array of variables
   					  lineCount();
 					  current->type+=funcPtrType.data();
 					  current->args += ")";
@@ -1653,6 +1658,9 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->args += *yytext ;
 					  roundCount=0;
 					  BEGIN( FuncFunc );
+  					}
+<EndFuncPtr>"["[^\n\]]*"]"		{
+  					  funcPtrType+=yytext;
   					}
 <EndFuncPtr>")"				{
   					  BEGIN(FindMembers);
@@ -1790,7 +1798,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <ReadTempArgs>"<"			{
 					  *copyArgString+=*yytext;
 					  fullArgString+=*yytext;
-					  argSharpCount=0;
+					  argSharpCount=1;
 					  BEGIN( CopyArgSharp );
 					}
 <ReadTempArgs>">"			{
@@ -1815,16 +1823,23 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <CopyArgSharp>"<"			{
   					  argSharpCount++;
+					  //printf("argSharpCount++=%d  copy\n",argSharpCount);
 					  *copyArgString+=*yytext;
 					  fullArgString+=*yytext;
   					}
 <CopyArgSharp>">"			{
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
-					  if (argRoundCount>0)
-					    argRoundCount--;
+					  argSharpCount--;
+					  if (argSharpCount>0)
+					  {
+					    //printf("argSharpCount--=%d copy\n",argSharpCount);
+					  }
 					  else
+					  {
 					    BEGIN( ReadTempArgs );
+					    //printf("end of argSharpCount\n");
+					  }
   					}
 <CopyArgString>\\.			{
   					  *copyArgString+=yytext;
@@ -2631,6 +2646,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN(ClassDocBrief);
   					}
 <TodoParam>\n                           |
+<TodoParam>"//"                         |
+<TodoParam>"/*"                         |
 <TodoParam>.				{
   					  if (current->todoId!=0)
 					  {
@@ -2659,6 +2676,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN(todoStartContext);
   					}
 <TestParam>\n                           |
+<TestParam>"//"                         |
+<TestParam>"/*"                         |
 <TestParam>.				{
   					  if (current->testId!=0)
 					  {
@@ -3008,7 +3027,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
 <Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
-<LineDoc,JavaDoc>"//"					{ current->brief += yytext; }
+<LineDoc,JavaDoc,ClassDocBrief>"//"			{ current->brief += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}

@@ -561,10 +561,14 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     }
     else // end sub item list
     {
-      pPrevInfo->endList();
-      listIndentStack.pop();
-      currentListIndent.pop();
-      delete pPrevInfo;
+      while (pPrevInfo && pPrevInfo->indent>indent)
+      {
+	pPrevInfo->endList();
+	listIndentStack.pop();
+	currentListIndent.pop();
+	delete pPrevInfo;
+	pPrevInfo = listIndentStack.top();
+      }
       // safe guard against wrong indenting
       if (listIndentStack.isEmpty()) 
       {
@@ -855,7 +859,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  int dashPos = text.findRev('-');
 					  //printf("dashPos=%d char='%c'\n",dashPos,text.at(dashPos+1));
 					  bool isEnumerated = text.at(dashPos+1)=='#';
-  					  addListItemMarker(yytext,dashPos,isEnumerated);
+  					  addListItemMarker(yytext,dashPos+1,isEnumerated);
   					}
 <DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"("#")?{B}+ { /* found list item marker */
   					  QCString text=yytext;

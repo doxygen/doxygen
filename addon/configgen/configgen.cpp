@@ -1313,6 +1313,16 @@ void init()
                     "or Internet explorer 4.0+). "
                  );
   addDependency("ftvHelpFlag","generateHtml");
+  ConfigInt::add(   "treeViewWidth",
+                    "TREEVIEW_WIDTH",
+                    "250",
+                    "What is the width of the treeview panel?",
+                    "If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be \n"
+                    "used to set the initial width (in pixels) of the frame in which the tree \n"
+                    "is shown. \n",
+                    0,1500
+                 );
+  addDependency("treeViewWidth","generateHtml");
 
 //  TODO: integrate this option
 //  ConfigBool::add(  "htmlHelpGroupsOnly",

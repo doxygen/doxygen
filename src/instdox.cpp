@@ -120,6 +120,7 @@ void writeInstallScript()
     t << "      $match = \".html\";\n";
     t << "      next if ( $file =~ /^\\.\\.?$/ );\n";
     t << "      ($file =~ /$match/) && (push @files, $file);\n";
+    t << "      ($file =~ \"tree.js\") && (push @files, $file);\n";
     t << "    }\n";
     t << "    closedir(D);\n";
     t << "  }\n";
@@ -145,9 +146,17 @@ void writeInstallScript()
     t << "      print STDERR \"Error: opening file $oldf for writing\\n\";\n";
     t << "      exit 1;\n";
     t << "    }\n";
-    t << "    while (<F>) {\n";
-    t << "      s/doxygen\\=\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\" (href|src)=\\\"\\2/doxygen\\=\\\"$1:$subst{$1}\\\" \\3=\\\"$subst{$1}/g;\n";
-    t << "      print G \"$_\";\n";
+    t << "    if ($oldf!=\"tree.js\") {\n";
+    t << "      while (<F>) {\n";
+    t << "        s/doxygen\\=\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\" (href|src)=\\\"\\2/doxygen\\=\\\"$1:$subst{$1}\\\" \\3=\\\"$subst{$1}/g;\n";
+    t << "        print G \"$_\";\n";
+    t << "      }\n";
+    t << "    }\n";
+    t << "    else {\n";
+    t << "      while (<F>) {\n";
+    t << "        s/\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\", \\\"\\2/\\\"$1:$subst{$1}\\\" ,\\\"$subst{$1}/g;\n";
+    t << "        print G \"$_\";\n";
+    t << "      }\n";
     t << "    }\n";
     t << "  } \n";
     t << "  else {\n";

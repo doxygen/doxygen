@@ -193,10 +193,14 @@ const int QTextStream::floatfield  = ( QTextStream::scientific |
 
 class QTextStreamPrivate {
 public:
-    QTextStreamPrivate(): decoder( 0 ), sourceType( NotSet ) {}
+#ifndef QT_NO_TEXTCODEC
+    QTextStreamPrivate() : decoder( 0 ), sourceType( NotSet ) {}
     ~QTextStreamPrivate() { delete decoder; }
-
     QTextDecoder *decoder;		//???
+#else
+    QTextStreamPrivate() : sourceType( NotSet ) {}
+    ~QTextStreamPrivate() { }
+#endif
     QString ungetcBuf;
 
     enum SourceType { NotSet, IODevice, String, ByteArray, File };
@@ -664,14 +668,41 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 	}
     }
 
+#ifndef QT_NO_TEXTCODEC
     if ( mapper ) {
+	bool shortRead = FALSE;
 	if ( !d->decoder )
 	    d->decoder = mapper->makeDecoder();
 	while( rnum < len ) {
 	    QString s;
-	    while ( s.isEmpty() ) {
-		// TODO: can this getch() call be optimized to read
-		// more than one character after another?  YES!
+	    bool readBlock = !( len == 1+rnum );
+	    while ( TRUE ) {
+		// for efficiency: normally read a whole block
+		if ( readBlock ) {
+		    // guess buffersize; this may be wrong (too small or too
+		    // big). But we can handle this (either iterate reading
+		    // or use ungetcBuf).
+		    // Note that this might cause problems for codecs where
+		    // one byte can result in >1 Unicode Characters if bytes
+		    // are written to the stream in the meantime (loss of
+		    // synchronicity).
+		    uint rlen = len - rnum;
+		    char *cbuf = new char[ rlen ];
+		    if ( ungetHack != EOF ) {
+			rlen = 1+dev->readBlock( cbuf+1, rlen-1 );
+			cbuf[0] = (char)ungetHack;
+			ungetHack = EOF;
+		    } else {
+			rlen = dev->readBlock( cbuf, rlen );
+		    }
+		    s  += d->decoder->toUnicode( cbuf, rlen );
+		    delete[] cbuf;
+		    // use buffered reading only for the first time, because we
+		    // have to get the stream synchronous again (this is easier
+		    // with single character reading)
+		    readBlock = FALSE;
+		}
+		// get stream (and codec) in sync
 		int c;
 		if ( ungetHack == EOF ) {
 		    c = dev->getch();
@@ -679,10 +710,15 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 		    c = ungetHack;
 		    ungetHack = EOF;
 		}
-		if ( c == EOF )
-		    return rnum;
+		if ( c == EOF ) {
+		    shortRead = TRUE;
+		    break;
+		}
 		char b = c;
-		s  = d->decoder->toUnicode( &b, 1 );
+		uint lengthBefore = s.length();
+		s  += d->decoder->toUnicode( &b, 1 );
+		if ( s.length() > lengthBefore )
+		    break; // it seems we are in sync now
 	    }
 	    uint i = 0;
 	    while( rnum < len && i < s.length() )
@@ -690,8 +726,12 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 	    if ( s.length() > i )
 		// could be = but append is clearer
 		d->ungetcBuf.append( s.mid( i ) );
+	    if ( shortRead )
+		return rnum;
 	}
-    } else if ( latin1 ) {
+    } else
+#endif
+    if ( latin1 ) {
 	if ( len == 1+rnum ) {
 	    // use this method for one character because it is more efficient
 	    // (arnt doubts whether it makes a difference, but lets it stand)
@@ -699,14 +739,18 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 	    if ( c != EOF )
 		buf[rnum++] = (char)c;
 	} else {
-	    if ( (QChar)ungetHack != QEOF )
+	    if ( ungetHack != EOF ) {
 		buf[rnum++] = (char)ungetHack;
-	    uint rlen = len - rnum;
-	    char *cbuf = new char[rlen];
-	    rlen = dev->readBlock( cbuf, rlen );
-	    uint i = 0;
-	    while( i < rlen )
-		buf[rnum++] = cbuf[i++];
+		ungetHack = EOF;
+	    }
+	    char *cbuf = new char[len - rnum];
+	    while ( !dev->atEnd() && rnum < len ) {
+		uint rlen = len - rnum;
+		rlen = dev->readBlock( cbuf, rlen );
+		uint i = 0;
+		while( i < rlen )
+		    buf[rnum++] = cbuf[i++];
+	    }
 	    delete[] cbuf;
 	}
     } else { // UCS-2 or UTF-16
@@ -722,29 +766,34 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 	    else
 		buf[rnum++] = QChar( c1, c2 );
 	} else {
-	    uint rlen = 2 * ( len-rnum );
-	    char *cbuf = new char[rlen]; // for paranoids: overflow possible
-	    if ( (QChar)ungetHack != QEOF ) {
-		rlen = 1+dev->readBlock( cbuf+1, rlen-1 );
-		cbuf[0] = (char)ungetHack;
-	    } else {
-		rlen = dev->readBlock( cbuf, rlen );
-	    }
-	    // is this right? we can't use an odd number of bytes, but
-	    // if there -is- an odd number, with this code we'll never
-	    // get to EOF.
-	    if ( (rlen & 1) == 1 )
-		dev->ungetch( cbuf[--rlen] );
-	    uint i = 0;
-	    if ( isNetworkOrder() ) {
-		while( i < rlen ) {
-		    buf[rnum++] = QChar( cbuf[i+1], cbuf[i] );
-		    i+=2;
+	    char *cbuf = new char[ 2*( len - rnum ) ]; // for paranoids: overflow possible
+	    while ( !dev->atEnd() && rnum < len ) {
+		uint rlen = 2 * ( len-rnum );
+		if ( ungetHack != EOF ) {
+		    rlen = 1+dev->readBlock( cbuf+1, rlen-1 );
+		    cbuf[0] = (char)ungetHack;
+		    ungetHack = EOF;
+		} else {
+		    rlen = dev->readBlock( cbuf, rlen );
 		}
-	    } else {
-		while( i < rlen ) {
-		    buf[rnum++] = QChar( cbuf[i], cbuf[i+1] );
-		    i+=2;
+		// We can't use an odd number of bytes, so put it back. But
+		// do it only if we are capable of reading more -- normally
+		// there should not be an odd number, but the file might be
+		// truncated or not in UTF-16...
+		if ( (rlen & 1) == 1 )
+		    if ( !dev->atEnd() )
+			dev->ungetch( cbuf[--rlen] );
+		uint i = 0;
+		if ( isNetworkOrder() ) {
+		    while( i < rlen ) {
+			buf[rnum++] = QChar( cbuf[i+1], cbuf[i] );
+			i+=2;
+		    }
+		} else {
+		    while( i < rlen ) {
+			buf[rnum++] = QChar( cbuf[i], cbuf[i+1] );
+			i+=2;
+		    }
 		}
 	    }
 	    delete[] cbuf;
@@ -759,12 +808,15 @@ uint QTextStream::ts_getbuf( QChar* buf, uint len )
 */
 void QTextStream::ts_putc( QChar c )
 {
+#ifndef QT_NO_TEXTCODEC
     if ( mapper ) {
 	int len = 1;
 	QString s = c;
 	QCString block = mapper->fromUnicode( s, len );
 	dev->writeBlock( block, len );
-    } else if ( latin1 ) {
+    } else
+#endif
+    if ( latin1 ) {
 	if( c.row() )
 	    dev->putch( '?' ); //######unknown character???
 	else
@@ -820,7 +872,7 @@ void QTextStream::ts_ungetc( QChar c )
 
   The buffer \e s must be preallocated.
 
-  \note No Encoding is done by this function.
+  Note that no encoding is done by this function.
 
   \warning The behaviour of this function is undefined unless the
   stream's encoding is set to Unicode or Latin1.
@@ -838,7 +890,7 @@ QTextStream &QTextStream::readRawBytes( char *s, uint len )
   Writes the \e len bytes from \e s to the stream and returns a reference to
   the stream.
 
-  \note No Encoding is done by this function.
+  Note that no encoding is done by this function.
 
   \sa QIODevice::writeBlock()
 */
@@ -1428,19 +1480,28 @@ QString QTextStream::readLine()
 	return QString::null;
     }
 #endif
-    QChar c = ts_getc();
-    if ( c == QEOF )
+    QString result( "" );
+    const int buf_size = 256;
+    QChar c[buf_size];
+    int pos = 0;
+
+    c[pos] = ts_getc();
+    if ( c[pos] == QEOF )
 	return QString::null;
 
-    QString result( "" );
-    while ( c != QEOF && c != '\n' ) {
-	result += c;
-	c = ts_getc();
+    while ( c[pos] != QEOF && c[pos] != '\n' ) {
+	pos++;
+	if ( pos >= buf_size ) {
+	    result += QString( c, pos );
+	    pos = 0;
+	}
+	c[pos] = ts_getc();
     }
+    result += QString( c, pos );
 
     int len = (int)result.length();
     if ( len && result[len-1] == '\r' )
-	result.truncate(len-1);		// (if there are two \r, let one stay)
+	result.truncate(len-1); // (if there are two \r, let one stay)
 
     return result;
 }
@@ -1456,7 +1517,7 @@ QString QTextStream::read()
 {
 #if defined(CHECK_STATE)
     if ( !dev ) {
-	qWarning( "QTextStream::readLine: No device" );
+	qWarning( "QTextStream::read: No device" );
 	return QString::null;
     }
 #endif
@@ -1507,8 +1568,20 @@ QString QTextStream::read()
 
 /*!
   Writes a \c char to the stream and returns a reference to the stream.
-*/
 
+  The character \a c is assumed to be Latin1 encoded independent of the Encoding set
+  for the QTextStream.
+*/
+QTextStream &QTextStream::operator<<( QChar c )
+{
+    CHECK_STREAM_PRECOND
+    ts_putc( c );
+    return *this;
+}
+
+/*!
+  Writes a \c char to the stream and returns a reference to the stream.
+*/
 QTextStream &QTextStream::operator<<( char c )
 {
     CHECK_STREAM_PRECOND
@@ -1737,6 +1810,9 @@ QTextStream &QTextStream::operator<<( double f )
 
 /*!
   Writes a string to the stream and returns a reference to the stream.
+
+  The string \a s is assumed to be Latin1 encoded independent of the Encoding set
+  for the QTextStream.
 */
 
 QTextStream &QTextStream::operator<<( const char* s )
@@ -1774,6 +1850,9 @@ QTextStream &QTextStream::operator<<( const char* s )
 
 /*!
   Writes \a s to the stream and returns a reference to the stream.
+
+  The string \a s is assumed to be Latin1 encoded independent of the Encoding set
+  for the QTextStream.
 */
 
 QTextStream &QTextStream::operator<<( const QCString & s )
@@ -2064,11 +2143,12 @@ QTextStream &reset( QTextStream &s )
   writing to non-persistent storage used by a single process.
   </ul>
 
-  \c Locale and all Unicode encodings, except \c RawUnicode, will look
-  at the first two bytes in a input stream to determine the byte
-  order. The initial byte order marker will be stripped off before data is read.
+  \c Locale and all Unicode encodings, except \c RawUnicode, will look at
+  the first two bytes in a input stream to determine the byte order. The
+  initial byte order marker will be stripped off before data is read.
 
-  \note This function should be called before any data is read to/written from the stream.
+  Note that this function should be called before any data is read
+  to/written from the stream.
   \sa setCodec()
 */
 
@@ -2084,10 +2164,16 @@ void QTextStream::setEncoding( Encoding e )
 	internalOrder = TRUE;
 	break;
     case UnicodeUTF8:
+#ifndef QT_NO_CODECS
 	mapper = QTextCodec::codecForMib( 106 );
 	latin1 = FALSE;
 	doUnicodeHeader = TRUE;
 	internalOrder = TRUE;
+#else
+	mapper = 0;
+	latin1 = TRUE;
+	doUnicodeHeader = TRUE;
+#endif
 	break;
     case UnicodeNetworkOrder:
 	mapper = 0;
@@ -2109,12 +2195,14 @@ void QTextStream::setEncoding( Encoding e )
 	break;
     case Locale:
 	latin1 = TRUE; 				// fallback to Latin 1
+#ifndef QT_NO_TEXTCODEC
 	mapper = QTextCodec::codecForLocale();
 #if defined(_OS_WIN32_)
 	if ( GetACP() == 1252 )
 	    mapper = 0;				// Optimized latin1 processing
 #endif
 	if ( mapper && mapper->mibEnum() == 4 )
+#endif
 	    mapper = 0;				// Optimized latin1 processing
 	doUnicodeHeader = TRUE; // If it reads as Unicode, accept it
 	break;
@@ -2127,11 +2215,14 @@ void QTextStream::setEncoding( Encoding e )
 }
 
 
-/*!
-  Sets the codec for this stream to \a codec. Will not try to autodetect Unicode.
+#ifndef QT_NO_TEXTCODEC
+/*!  Sets the codec for this stream to \a codec. Will not try to
+  autodetect Unicode.
 
-    \note This function should be called before any data is read to/written from the stream.
-    \sa setEncoding()
+  Note that this function should be called before any data is read
+  to/written from the stream.
+
+  \sa setEncoding()
 */
 
 void QTextStream::setCodec( QTextCodec *codec )
@@ -2141,5 +2232,6 @@ void QTextStream::setCodec( QTextCodec *codec )
     mapper = codec;
     doUnicodeHeader = FALSE;
 }
+#endif
 
 #endif // QT_NO_TEXTSTREAM

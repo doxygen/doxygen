@@ -16,6 +16,7 @@
 #include "ftvhelp.h"
 #include "config.h"
 #include "message.h"
+#include "doxygen.h"
 
 
 const char treeview_data[]=
@@ -272,7 +273,7 @@ static void generateFolderTreeViewData()
   {
     QTextStream t(&f);
     t << "<html><head><title>" << Config::projectName << "</title></head>" << endl;
-    t << "<frameset cols=\"250,*\">" << endl;
+    t << "<frameset cols=\"" << Config::treeViewWidth << ",*\">" << endl;
     t << "  <frame src=\"tree.html\" name=\"treefrm\">" << endl;
     t << "  <frame src=\"main.html\" name=\"basefrm\">" << endl;
     t << "</frameset>" << endl;
@@ -360,7 +361,7 @@ void FTVHelp::initialize()
   }
   /* Write the header of the contents file */
   m_cts.setDevice(m_cf);
-  m_cts << "foldersTree = gFld(\"<b>";
+  m_cts << "foldersTree = gFld(\"\", \"<b>";
   if (Config::projectName.isEmpty())
   {
     m_cts << "Root";
@@ -409,18 +410,35 @@ int FTVHelp::decContentsDepth()
  *  \param name the name of the item.
  *  \param ref  the URL of to the item.
  */
-void FTVHelp::addContentsItem(bool isDir,const char *name,const char *ref, 
-    const char *anchor)
+void FTVHelp::addContentsItem(bool isDir,
+                              const char *ref,
+                              const char *file,
+                              const char *anchor, 
+                              const char *name
+                             )
 {
   int i; for (i=0;i<m_dc;i++) m_cts << "  ";
   QCString parent;
+  QCString tagName = ref;
+  QCString tagDir;
+  if (ref)
+  {
+    tagName += ":";
+    QCString *s = tagDestinationDict[ref];
+    if (s)
+    {
+      tagDir = *s + "/";
+      tagName += tagDir;
+    }
+  }
   if (m_dc==0) parent="foldersTree"; else parent.sprintf("aux%d",m_dc); 
   if (isDir) // directory entry
   {
-    m_cts << "aux" << m_dc+1 << " = insFld(" << parent << ", gFld(\"" << name << "\", ";
-    if (ref)      // ref optional param
+    m_cts << "aux" << m_dc+1 << " = insFld(" << parent << ", gFld(\"" 
+          << name << "\", \"" << tagName << "\", ";
+    if (file)      // file optional param
     {
-      m_cts << "\"" << ref << ".html\"))";
+      m_cts << "\"" << tagDir << file << ".html\"))";
     }
     else
     {
@@ -429,10 +447,11 @@ void FTVHelp::addContentsItem(bool isDir,const char *name,const char *ref,
   }
   else // text entry
   {
-    m_cts << "     insDoc(" << parent << ", gLnk(0, \"" << name << "\", ";
-    if (ref)      // ref optional param
+    m_cts << "     insDoc(" << parent << ", gLnk(\"" 
+          << name << "\", \"" << tagName << "\", ";
+    if (file)      // ref optional param
     {
-      m_cts << "\"" << ref << ".html";
+      m_cts << "\"" << tagDir << file << ".html";
       if (anchor) m_cts << "#" << anchor;  
       m_cts << "\"))";
     }

@@ -93,6 +93,7 @@ static QCString           g_lastGuardName;
 static QCString           g_incName;
 static QCString           g_guardExpr;
 static int                g_curlyCount;
+static bool               g_nospaces; // add extra spaces during macro expansion
 
 static void setFileName(const char *name)
 {
@@ -494,6 +495,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	  if (key.length()>1 && (subst=argTable[key])) 
 	  {
 	    QCString substArg=*subst;
+	    //printf("substArg=`%s'\n",substArg.data());
 	    // only if no ## operator is before or after the argument
 	    // marker we do macro expansion.
 	    if (!hash) expandExpression(substArg,0,0);
@@ -507,7 +509,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	    }
 	    else
 	    {
-	      resExpr+=" "+substArg+" ";
+	      if (g_nospaces)
+	      {
+	        resExpr+=substArg;
+	      }
+	      else
+	      {
+	        resExpr+=" "+substArg+" ";
+	      }
 	    }
 	  }
 	}
@@ -597,7 +606,15 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	{
 	  // substitute the definition of the macro
 	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
-	  expMacro=" "+def->definition.stripWhiteSpace()+" ";
+	  if (g_nospaces)
+	  {
+	    expMacro=def->definition.stripWhiteSpace();
+	  }
+	  else
+	  {
+	    expMacro=" "+def->definition.stripWhiteSpace()+" ";
+	  }
+	  //expMacro=def->definition.stripWhiteSpace();
 	  replaced=TRUE;
 	  len=l;
 	  //printf("simple macro expansion=`%s'->`%s'\n",macroName.data(),expMacro.data());
@@ -1086,6 +1103,7 @@ BN	[ \t\r\n]
 					    else // g_findDefArgContext==IncludeID
 					    {
 					      readIncludeFile(result);
+					      g_nospaces=FALSE;
 					      BEGIN(Start);
 					    }
 					  }
@@ -1339,12 +1357,14 @@ BN	[ \t\r\n]
 					  BEGIN(SkipCPPBlock);
 					}
 <IncludeID>{ID}{B}*/"("			{
+  					  g_nospaces=TRUE;
 				          g_roundCount=0;
 					  g_defArgsStr=yytext;
 					  g_findDefArgContext = IncludeID;
 					  BEGIN(FindDefineArgs);
 					}
 <IncludeID>{ID}				{
+  					  g_nospaces=TRUE;
                                           readIncludeFile(expandMacro(yytext));
 					  BEGIN(Start);
   					}
@@ -1529,12 +1549,12 @@ BN	[ \t\r\n]
 					    int *n;
 					    if ((n=(*g_argDict)[yytext]))
 					    {
-					      if (!g_quoteArg) g_defText+=' ';
+					      //if (!g_quoteArg) g_defText+=' ';
 					      g_defText+='@';
 					      QCString numStr;
 					      numStr.sprintf("%d",*n);
 					      g_defText+=numStr;
-					      if (!g_quoteArg) g_defText+=' ';
+					      //if (!g_quoteArg) g_defText+=' ';
 					    }
 					    else
 					    {
@@ -1768,6 +1788,7 @@ void preprocessFile(const char *fileName,BufStr &output)
 //#endif
 
   g_curlyCount=0;
+  g_nospaces=FALSE;
   g_outputBuf=&output;
   g_includeStack.setAutoDelete(TRUE);
   g_includeStack.clear();

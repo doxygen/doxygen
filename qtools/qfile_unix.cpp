@@ -236,7 +236,7 @@ bool QFile::open( int m )
 	} else {
 	    length = (int)st.st_size;
 	    ioIndex  = (flags() & IO_Append) == 0 ? 0 : length;
-	    if ( (flags() & !IO_Truncate) && length == 0 && isReadable() ) {
+	    if ( !(flags()&IO_Truncate) && length == 0 && isReadable() ) {
 		// try if you can read from it (if you can, it's a sequential
 		// device; e.g. a file in the /proc filesystem)
 		int c = getch();
@@ -300,13 +300,13 @@ bool QFile::open( int m, FILE *f )
     STATBUF st;
     FSTAT( FILENO(fh), &st );
     ioIndex = (int)ftell( fh );
-    if ( (st.st_mode & STAT_MASK) != STAT_REG ) {
+    if ( (st.st_mode & STAT_MASK) != STAT_REG || f == stdin ) { //stdin is non seekable
 	// non-seekable
 	setType( IO_Sequential );
 	length = INT_MAX;
     } else {
 	length = (int)st.st_size;
-	if ( (flags() & !IO_Truncate) && length == 0 && isReadable() ) {
+	if ( !(flags()&IO_Truncate) && length == 0 && isReadable() ) {
 	    // try if you can read from it (if you can, it's a sequential
 	    // device; e.g. a file in the /proc filesystem)
 	    int c = getch();
@@ -350,7 +350,7 @@ bool QFile::open( int m, int f )
     STATBUF st;
     FSTAT( fd, &st );
     ioIndex  = (int)LSEEK(fd, 0, SEEK_CUR);
-    if ( (st.st_mode & STAT_MASK) != STAT_REG ) {
+    if ( (st.st_mode & STAT_MASK) != STAT_REG || f == 0 ) { // stdin is not seekable...
 	// non-seekable
 	setType( IO_Sequential );
 	length = INT_MAX;
@@ -365,6 +365,7 @@ bool QFile::open( int m, int f )
 		setType( IO_Sequential );
 		length = INT_MAX;
 	    }
+	    resetStatus();
 	}
     }
     return TRUE;
@@ -466,18 +467,31 @@ int QFile::readBlock( char *p, uint len )
 	return -1;
     }
 #endif
-    int nread;					// number of bytes read
-    if ( isRaw() ) {				// raw file
-	nread = READ( fd, p, len );
-	if ( len && nread <= 0 ) {
-	    nread = 0;
-	    setStatus(IO_ReadError);
+    int nread = 0;					// number of bytes read
+    if ( !ungetchBuffer.isEmpty() ) {
+	// need to add these to the returned string.
+	int l = ungetchBuffer.length();
+	while( nread < l ) {
+	    *p = ungetchBuffer[ l - nread - 1 ];
+	    p++;
+	    nread++;
 	}
-    } else {					// buffered file
-	nread = fread( p, 1, len, fh );
-	if ( (uint)nread != len ) {
-	    if ( ferror( fh ) || nread==0 )
+	ungetchBuffer.truncate( l - nread );
+    }
+    
+    if ( nread < (int)len ) {
+	if ( isRaw() ) {				// raw file
+	    nread += READ( fd, p, len-nread );
+	    if ( len && nread <= 0 ) {
+		nread = 0;
 		setStatus(IO_ReadError);
+	    }
+	} else {					// buffered file
+	    nread += fread( p, 1, len-nread, fh );
+	    if ( (uint)nread != len ) {
+		if ( ferror( fh ) || nread==0 )
+		    setStatus(IO_ReadError);
+	    }
 	}
     }
     ioIndex += nread;

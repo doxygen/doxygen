@@ -355,7 +355,7 @@ bool QDate::setYMD( int y, int m, int d )
     }
     jd = greg2jul( y, m, d );
 #if defined(DEBUG)
-    ASSERT( year() == y && month() == m && day() == d );
+    ASSERT( year() == (y > 99 ? y : 1900+y) && month() == m && day() == d );
 #endif
     return TRUE;
 }
