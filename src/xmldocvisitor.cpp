@@ -155,6 +155,8 @@ void XmlDocVisitor::visit(DocStyleChange *s)
         m_insidePre=FALSE;
       }
       break;
+    case DocStyleChange::Div:  /* HTML only */ break;
+    case DocStyleChange::Span: /* HTML only */ break;
   }
 }
 

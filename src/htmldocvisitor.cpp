@@ -169,6 +169,13 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
         m_insidePre=FALSE;
         m_t << "</pre>";
       }
+    case DocStyleChange::Div:
+      if (s->enable()) m_t << "<div" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</div>";
+      break;
+    case DocStyleChange::Span:
+      if (s->enable()) m_t << "<span" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</span>";
+      break;
+
   }
 }
 

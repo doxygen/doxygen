@@ -1389,8 +1389,8 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <Body>"("{B}*("*"{B}*)*{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func()
 					  g_code->codify(yytext);
-					  int s=0;while (!isId(yytext[s])) s++;
-                                          int e=yyleng-1;while (!isId(yytext[e])) e--;
+					  int s=0;while (s<yyleng && !isId(yytext[s])) s++;
+                                          int e=yyleng-1;while (e>=0 && !isId(yytext[e])) e--;
 					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
 					  addType();
   					  g_name=varname; 

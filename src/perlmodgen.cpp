@@ -574,7 +574,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
 void PerlModDocVisitor::visit(DocURL *u)
 {
   openItem("url");
-  m_output.addQuoted(u->url());
+  m_output.addFieldQuotedString("content", u->url());
   closeItem();
 }
 
@@ -594,6 +594,8 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Center:        style = "center"; break;
     case DocStyleChange::Small:         style = "small"; break;
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
+    case DocStyleChange::Div:           style = "div"; break;
+    case DocStyleChange::Span:          style = "span"; break;
                                         
   }
   openItem("style");

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -18,9 +18,7 @@
 #ifndef TRANSLATOR_KR_H
 #define TRANSLATOR_KR_H
 
-#include "translator_adapter.h"
-
-class TranslatorKorean : public TranslatorAdapter_1_2_13
+class TranslatorKorean : public Translator
 {
   public:
 
@@ -66,7 +64,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return "관련된 함수들"; }
+    { return "관련된 함수"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
@@ -74,7 +72,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "상세한 내용"; }
+    { return "세부 사항"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -82,7 +80,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "구성원(member) 열거 문서화"; }
+    { return "멤버 열거형 문서화"; }
     
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
@@ -94,33 +92,33 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
           // TODO: This need to be translated. -ryk11/22/01.
-          return "멤서 데이타 문서화"; 
+          return "멤버 변수 문서화"; 
       }
       else
       {
-          return "멤서 데이타 문서화"; 
+          return "멤버 변수 문서화"; 
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return "More..."; }
+    { return "세부 사항 보기"; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "모든 구성원들(members)의 명단"; }
+    { return "전체 멤버 목록 보기"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return "구성원(member) 명단"; }
+    { return "멤버(멤버함수, 멤버변수 등) 목록"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return "완전한 구성원들(members)의 명단 " ; }
+    { return "모든 멤버(멤버함수, 멤버변수 등) 목록 " ; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return ", 상속받은 모든 구성원(members)들도 포함"; }
+    { return ", 상속받은 모든 멤버도 포함"; }
     
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -128,21 +126,21 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="";
       if (s) result+=(QCString)s+"에 ";
-      result += "source 코드로 부터 Doxygen에 의해 자동적으로 생성";
+      result += "source 코드로 부터 Doxygen에 의해 자동으로 생성";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return "열거체 이름"; }
+    { return "열거형 이름"; }
     
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "열거체 값"; }
+    { return "열거형 값"; }
     
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return "에서 정의된"; }
+    { return "에서 정의"; }
 
     // quick reference sections
 
@@ -150,11 +148,11 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return "모듈들"; }
+    { return "모듈"; }
     
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return "클래스 계층(도)"; } // "클래스 조직" or "클래스 분류체계"
+    { return "클래스 계통도"; } // "클래스 조직" or "클래스 분류체계"
     
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
@@ -162,12 +160,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
             //Alternate text: "혼합 목록", "합성(집합) 명단(리스트)"
-            return "혼합 목록";
+            return "복합구조(클래스, 구조체, 공용체)";
         }
         else
         {
             //TODO: This needs to be translated. -ryk11/22/01.
-            return "혼합 목록";
+            return "복합구조(클래스, 구조체, 공용체)";
         }
     } 
     
@@ -177,7 +175,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
-    { return "헤더 파일들"; }
+    { return "헤더 파일"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
@@ -185,12 +183,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
             // TODO: This need to be translated. -ryk11/22/01.
-            return "혼합 멤버들";
+            return "복합구조(클래스, 구조체, 공용체) 멤버";
         }
         else
         {
             // Alternate text: "합성(집합) 명단(멤버들)"
-            return "혼합 멤버들";
+            return "복합구조(클래스, 구조체, 공용체) 멤버";
         }
     }
 
@@ -200,21 +198,21 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
             // TODO: This needs to be translated. -ryk11/22/01.
-            return "파일 멤버들";
+            return "파일 멤버";
         }
         else
         {
-            return "파일 멤버들";
+            return "파일 멤버";
         }
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return "관련된 페이지들"; }
+    { return "관련된 페이지"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return "예제들"; }
+    { return "예제"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
@@ -222,14 +220,14 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "이 상속 목록은 완전하지는 않지만 알파벳순으로 분류되었습니다.";}
+    { return "이 상속 목록은 알파벳 순으로 정렬되어있습니다. (완전하지는 않음)";}
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="이것은 간략한 설명을 가진 모든 ";
+      QCString result="다음은 간략한 설명을 가진 ";
       if (!extractAll) result+="문서화된 ";
-      result+="파일들에 대한 목록입니다.";
+      result+="모든 파일에 대한 목록입니다.";
       return result;
     }
 
@@ -239,20 +237,20 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
             // TODO: This needs to be translated. -ryk11/22/01.
-            return "이것은 간략한 설명을 가진 클래스들, "
-                "구조체들, 공용체들, 그리고 인터페이스들입니다.";
+            return "다음은 간략한 설명을 가진 클래스, "
+                "구조체, 공용체, 인터페이스의 목록입니다.";
         }
         else
         {
-            return "이것은 간략한 설명을 가진 클래스들, "
-                "구조체들, 공용체들, 그리고 인터페이스들입니다.";
+            return "다음은 간략한 설명을 가진 클래스, "
+                "구조체, 공용체, 인터페이스의 목록입니다.";
         }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="이곳에 모든 리스트가 있습니다";
+      QCString result="다음은 문서화된 모든 클래스, 구조체, 공용체 멤버에 대한 목록입니다. ";
       if (!extractAll)
       {
           result+="문서화된 ";
@@ -260,47 +258,47 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
           // TODO: This need to be translated. -ryk11/22/01.
-          result+="링크가 된 클래스 멤버들 ";
+          result+="링크 된 클래스 멤버는 ";
       }
       else
       {
-          result+="링크가 된 클래스 멤버들 ";
+          result+="링크 된 클래스 멤버는 ";
       }
       if (extractAll) 
-          result+="각각의 멤버를 위한 클래스 문서:";
+          result+="그 멤버에 대한 클래스 문서화로 갑니다.";
       else 
-          result+="이하로 속한 클래스들:";            
+          result+="이하로 속한 클래스:";            
       return result;
     }
 
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="이곳에 모든 리스트가 있습니다";
+      QCString result="다음은 문서화된 모든 파일에 대한 목록입니다. ";
       if (!extractAll) result+="문서화된 ";
-      result+="링크가 된 파일 멤버들 ";
+      result+="링크 된 파일 멤버는 ";
       if (extractAll) 
-        result+="각 멤버들에 대한 파일 문서화";
+        result+="그 멤버에 대한 파일 문서화로 갑니다.";
       else 
-        result+="그것들이 속해있는 파일들";
+        result+="그들이 속해있는 파일로 갑니다.";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
     virtual QCString trHeaderFilesDescription()
-    { return "이것은 API를 구성하는 헤더 파일들입니다."; }
+    { return "다음은 API를 구성하는 헤더 파일입니다."; }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return "이것은 모든 예제들의 목록입니다."; }
+    { return "다음은 모든 예제의 목록입니다."; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return "이것은 모든 관련된 문서화 페이지들의 목록입니다."; }
+    { return "다음은 모든 관련된 문서화 페이지의 목록입니다."; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "이것은 모든 모듈들의 목록입니다."; }
+    { return "다음은 모든 모듈의 목록입니다."; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given. 
@@ -331,7 +329,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { return "합성 인덱스"; }
+    { return "복합구조(클래스, 구조체, 공용체) 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
@@ -377,49 +375,49 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "정의들"; }
+    { return "매크로, #define"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return "함수 원형들"; }
+    { return "함수 원형"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "타입 정의들"; }
+    { return "타입 정의"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return "Enumerations"; }
+    { return "열거형"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return "함수들"; }
+    { return "함수"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return "변수들"; }
+    { return "변수"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return "열거체 값들"; }
+    { return "열거형 값"; }
     
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "정의 문서화"; }
+    { return "#define 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
@@ -437,13 +435,13 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "열거체 타입 문서화"; }
+    { return "열거형 타입 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "열거체 값 문서화"; }
+    { return "열거형 값 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
@@ -461,7 +459,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { return "혼합들"; }
+    { return "복합구조"; }
 
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
@@ -469,8 +467,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result="";
-      if (projName) result+=(QCString)projName+"에 대해 ";
-      result += (QCString)date+" 생성 by";
+      if (projName) result+=(QCString)projName+" 문서화. ";
+      result += "생성일시 : " +(QCString)date+" by";
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
@@ -492,7 +490,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
-    { return "내부적 이유를 위해 재구현된: API가 영향을 받지않았다."; }
+    { return "내부적 이유로 인해 재구현된: API가 영향을 받지않았다."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -500,7 +498,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
-    { return "버그들과 한계들"; }
+    { return "버그와 한계"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -512,19 +510,19 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return "반환"; }
+    { return "반환값"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "참조하시요"; }
+    { return "참조"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return "매개변수들"; }
+    { return "매개변수"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return "예외들"; }
+    { return "예외"; }
     
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
@@ -536,14 +534,14 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "이름공간 목록"; }
+    { return "namespace 목록"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="이것은 모든 간략한 설명을 가진 ";
+      QCString result="다음은 간략한 설명을 가진 ";
       if (!extractAll) result+="문서화된 ";
-      result+="이름공간의 목록입니다:";
+      result+="namespace의 목록입니다.";
       return result;
     }
 
@@ -551,7 +549,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "프렌드"; }
+    { return "friend"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -561,7 +559,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      * related classes 
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "프렌드, 그리고 관련된 함수 문서화"; }
+    { return "friend, 그리고 관련된 함수 문서화"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -598,30 +596,30 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" 이름 공간 참조";
+      result+=" namespace 참조";
       return result;
     }
     
     virtual QCString trPublicMembers()
-    { return "공용 메소드"; }
+    { return "public 메소드"; }
     virtual QCString trPublicSlots()
-    { return "공용 Slots"; }
+    { return "public slots"; }
     virtual QCString trSignals()
     { return "신호"; }
     virtual QCString trStaticPublicMembers()
-    { return "정적 공용 메소드"; }
+    { return "static public 메소드"; }
     virtual QCString trProtectedMembers()
-    { return "프로텍티드 메소드"; }
+    { return "protected 메소드"; }
     virtual QCString trProtectedSlots()
-    { return "Protected Slots"; }
+    { return "protected slots"; }
     virtual QCString trStaticProtectedMembers()
-    { return "정적 프로텍티드 메소드"; }
+    { return "static protected 메소드"; }
     virtual QCString trPrivateMembers()
-    { return "프라이베이트 메소드"; }
+    { return "private 메소드"; }
     virtual QCString trPrivateSlots()
-    { return "Private Slots"; }
+    { return "private slots"; }
     virtual QCString trStaticPrivateMembers()
-    { return "정적 프라이베이트 메소드"; }
+    { return "static private 메소드"; }
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -642,7 +640,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
           if (i<numEntries-2) // not the fore last entry 
             result+=", ";
           else                // the fore last entry
-            result+=", and ";
+            result+=", 과 ";
         }
       }
       return result; 
@@ -661,7 +659,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return trWriteList(numEntries)+"에 의해 상속된.";
+      return trWriteList(numEntries)+"에 의해 상속되었습니다.";
     }
 
     /*! used in member documentation blocks to produce a list of 
@@ -669,7 +667,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return trWriteList(numEntries)+"으로부터 재구현된.";
+      return trWriteList(numEntries)+"으로부터 재구현되었습니다.";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -677,37 +675,37 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return trWriteList(numEntries)+"에서 재구현된.";
+      return trWriteList(numEntries)+"에서 재구현되었습니다.";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "이름공간 멤버들"; }
+    { return "namespace 멤버"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
-      QCString result="이것은 모든 ";
+      QCString result="다음은 모든 ";
       if (!extractAll) result+="문서화된 ";
-      result+="이름공간 멤버들의 목록입니다.";
+      result+="namespace 멤버의 목록입니다. ";
       if (extractAll) 
-        result+="각 멤버들에 대한 문서화에 ";
+        result+="각 멤버에 대한 문서화의 ";
       else 
-        result+="속해있는 이름공간에 ";
-      result+="링크도있읍니다.";
+        result+="속해있는 namespace의 ";
+      result+="링크도 있습니다.";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the 
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "이름공간 색인"; }
+    { return "namespace 색인"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "이름공간 문서화"; }
+    { return "namespace 문서화"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -717,7 +715,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return "이름공간"; }
+    { return "namespace"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -741,7 +739,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
       }
       result+="을 위한 문서화는 다음의 파일";
       if (!single) result+="들";
-      result+="로부터 생성되었습니다:";
+      result+="로부터 생성되었습니다.";
       return result;
     }
 
@@ -749,7 +747,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return "알파벳순서의 목록"; }
+    { return "알파벳순 목록"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -762,7 +760,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "주요 페이지"; }
+    { return "메인 페이지"; }
 
     /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
@@ -780,11 +778,11 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "파일 @1. 의 @0 번째 라인에서 정의";
+      return "@1 파일의 @0 번째 라인에서 정의";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return "파일 @0. 에서 정의";
+      return "@0 파일에서 정의";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -803,7 +801,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)clName+"에 대한 원조 도표:";
+      return (QCString)clName+"에 대한 협력 도표:";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
@@ -818,12 +816,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "이 파일에 대한 소스 코드로 가시오";
+      return "이 파일에 대한 소스 코드 보기";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "이 파일의 문서화로 가시오";
+      return "이 파일의 문서화 보기";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
@@ -852,15 +850,15 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "도표의 클래스 분류체계"; // "도표의 클래스 조직"
+      return "도표로된 클래스 분류체계"; // "도표의 클래스 조직"
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "도표의 클래스 분류체계로 가시오"; // "도표의 클래스 조직으로 가시오"
+      return "도표로된 클래스 분류체계 보기"; // "도표의 클래스 조직으로 가시오"
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "문자의 클래스 분류체계로 가시오"; // "문자의 클래스 조직으로 가시오"
+      return "문자로된 클래스 분류체계 보기"; // "문자의 클래스 조직으로 가시오"
     }
     virtual QCString trPageIndex()
     {
@@ -873,50 +871,50 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     
     virtual QCString trNote()
     {
-        return "Note"; // TODO: Need to be translated. -ryk11/22/01.
+        return "노트"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trPublicTypes()
     {
-        return "Public Types"; // TODO: Need to be translated. -ryk11/22/01.
+        return "public 타입"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-          return "Data Fields"; // TODO: Need to be translated. -ryk11/22/01.
+          return "Data 필드"; // TODO: Need to be translated. -ryk11/22/01.
       }
       else
       {
-          return "Public Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+          return "public 속성"; // TODO: Need to be translated. -ryk11/22/01.
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-        return "Static Public Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+        return "static public 속성"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trProtectedTypes()
     {
-        return "Protected Types"; // TODO: Need to be translated. -ryk11/22/01.
+        return "protected 타입"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trProtectedAttribs()
     {
-        return "Protected Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+        return "protected 속성"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trStaticProtectedAttribs()
     {
-        return "Static Protected Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+        return "static protected 속성"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trPrivateTypes()
     {
-        return "Private Types"; // TODO: Need to be translated. -ryk11/22/01.
+        return "private 타입"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trPrivateAttribs()
     {
-        return "Private Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+        return "private 속성"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trStaticPrivateAttribs()
     {
-        return "Static Private Attributes"; // TODO: Need to be translated. -ryk11/22/01.
+        return "static private 속성"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -931,7 +929,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-        return "Todo List"; // TODO: Need to be translated. -ryk11/22/01.
+        return "Todo 목록"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -940,15 +938,15 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
 
     virtual QCString trReferencedBy()
     {
-        return "Referenced by"; // TODO: Need to be translated. -ryk11/22/01.
+        return "참조하는 곳"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trRemarks()
     {
-        return "Remarks"; // TODO: Need to be translated. -ryk11/22/01.
+        return "설명"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trAttention()
     {
-        return "Attention"; // TODO: Need to be translated. -ryk11/22/01.
+        return "주의"; // TODO: Need to be translated. -ryk11/22/01.
     }
     virtual QCString trInclByDepGraph()
     {
@@ -968,7 +966,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-        return "Graph Legend"; // TODO: Need to be translated. -ryk11/22/01.
+        return "그래프 설명"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! page explaining how the dot graph's should be interpreted 
      *  The %A in the text below are to prevent link to classes called "A".
@@ -977,9 +975,11 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     {
         // TODO: Need to be translated. -ryk11/22/01.
         return
-        "This page explains how to interpret the graphs that are generated "
-        "by doxygen.<p>\n"
-        "Consider the following example:\n"
+		"Doxygen에 의해 생성된 도표를 보기위한 설명입니다.<p>\n"
+        //"This page explains how to interpret the graphs that are generated "
+        //"by doxygen.<p>\n"
+		"다음의 예제를 참고하세요.\n"
+        //"Consider the following example:\n"
         "\\code\n"
         "/*! Invisible class because of truncation */\n"
         "class Invisible { };\n\n"
@@ -1008,38 +1008,53 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
-        "is set to 240 this will result in the following graph:"
+		"설정 파일의 MAX_DOT_GRAPH_HEIGHT 플래그가 240으로 설정되었다면 다음의 그래프가 나올 것이다."
+        //"If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+        //"is set to 240 this will result in the following graph:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "The boxes in the above graph have the following meaning:\n"
+		"박스에는 다음을 뜻한다.\n"
+        //"The boxes in the above graph have the following meaning:\n"
         "<ul>\n"
-        "<li>%A filled black box represents the struct or class for which the "
-        "graph is generated.\n"
-        "<li>%A box with a black border denotes a documented struct or class.\n"
-        "<li>%A box with a grey border denotes an undocumented struct or class.\n"
-        "<li>%A box with a red border denotes a documented struct or class for"
-        "which not all inheritance/containment relations are shown. %A graph is "
-        "truncated if it does not fit within the specified boundaries.\n"
+		"<li>%검은 상자는 그래프를 산출한 구조체나 클래스를 말한다.\n"
+        //"<li>%A filled black box represents the struct or class for which the "
+        //"graph is generated.\n"
+		"<li>%검은선으로된 상자는 문서화된 구조체나 클래스를 표시한다.\n"
+        //"<li>%A box with a black border denotes a documented struct or class.\n"
+		"<li>%회색선으로된 상자는 문서화되지 않은 구조체나 클래스를 표시한다.\n"
+        //"<li>%A box with a grey border denotes an undocumented struct or class.\n"
+		"<li>%빨간선으로된 상자는 모든 상속/containment 관계를 보이지 않은 문서화된 구조체나 클래스를 나타낸다. "
+		"지정된 경계안에 들어가지 않으면 그래프는 짤려진다.\n"
+        //"<li>%A box with a red border denotes a documented struct or class for"
+        //"which not all inheritance/containment relations are shown. %A graph is "
+        //"truncated if it does not fit within the specified boundaries.\n"
         "</ul>\n"
-        "The arrows have the following meaning:\n"
+		"화살표는 다음을 뜻한다.\n"
+        //"The arrows have the following meaning:\n"
         "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
-        "relation between two classes.\n"
-        "<li>%A dark green arrow is used for protected inheritance.\n"
-        "<li>%A dark red arrow is used for private inheritance.\n"
-        "<li>%A purple dashed arrow is used if a class is contained or used "
-        "by another class. The arrow is labeled with the variable(s) "
-        "through which the pointed class or struct is accessible.\n"
-        "<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        "the template class it was instantiated from. The arrow is labeled with "
-        "the template parameters of the instance.\n"
+		"<li>%어두운 파란 화살표는 두 클래스간의 public 상속관계를 나타낸다.\n"
+        //"<li>%A dark blue arrow is used to visualize a public inheritance "
+        //"relation between two classes.\n"
+		"<li>%어두운 녹색 화살표는 protected 상속관계를 나타낸다.\n"
+        //"<li>%A dark green arrow is used for protected inheritance.\n"
+		"<li>%어두운 빨강 화살표는 private 상속관계를 나타낸다.\n"
+        //"<li>%A dark red arrow is used for private inheritance.\n"
+		"<li>%밝은 자주색 화살표는 클래스에 의해 포함되더나 사용된 클래스를 나타낸다. "
+		"이 화살표의 라벨은 접근 가능한 변수명을 나타낸다.\n"
+        //"<li>%A purple dashed arrow is used if a class is contained or used "
+        //"by another class. The arrow is labeled with the variable(s) "
+        //"through which the pointed class or struct is accessible.\n"
+		"<li>%밝은 노랑색 화살표는 템플릿 인스턴스와 템플릿 클래스를 나타낸다. "
+		"이 화살표의 라벨은 그 인스턴스의 템플릿 매개변수를 나타낸다.\n" 
+        //"<li>%A yellow dashed arrow denotes a relation between a template instance and "
+        //"the template class it was instantiated from. The arrow is labeled with "
+        //"the template parameters of the instance.\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-        return "legend"; // TODO: Need to be translated. -ryk11/22/01.
+        return "설명"; // TODO: Need to be translated. -ryk11/22/01.
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1049,12 +1064,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-        return "Test"; // TODO: Need to be translated. -ryk11/22/01.
+        return "테스트"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-        return "Test List"; // TODO: Need to be translated. -ryk11/22/01.
+        return "테스트 목록"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1064,7 +1079,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-        return "DCOP Methods"; // TODO: Need to be translated. -ryk11/22/01.
+        return "DCOP 메소드"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1074,12 +1089,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-        return "Properties"; // TODO: Need to be translated. -ryk11/22/01.
+        return "properties"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-        return "Property Documentation"; // TODO: Need to be translated. -ryk11/22/01.
+        return "property 문서화"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1089,49 +1104,50 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used for Java interfaces in the summary section of Java packages */
     virtual QCString trInterfaces()
     {
-        return "Interfaces"; // TODO: Need to be translated. -ryk11/22/01.
+        return "인터페이스"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-          return "Data Structures"; // TODO: Need to be translated. -ryk11/22/01.
+          return "데이터 구조"; // TODO: Need to be translated. -ryk11/22/01.
       }
       else
       {
-          return "Classes"; // TODO: Need to be translated. -ryk11/22/01.
+          return "클래스"; // TODO: Need to be translated. -ryk11/22/01.
       }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-        return (QCString)"Package "+name; // TODO: Need to be translated. -ryk11/22/01.
+        return (QCString)"패키지 "+name; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-        return "Package List"; // TODO: Need to be translated. -ryk11/22/01.
+        return "패키지 목록"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-        return "Here are the packages with brief descriptions (if available):"; // TODO: Need to be translated. -ryk11/22/01.
+		//Here are the packages with brief descriptions (if available):"; // TODO: Need to be translated. -ryk11/22/01.
+        return "다음은 간략한 설명을 가진 패키지이다.";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-        return "Packages"; // TODO: Need to be translated. -ryk11/22/01.
+        return "패키지"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Used as a chapter title for Latex & RTF output */
     virtual QCString trPackageDocumentation()
     {
-        return "Package Documentation"; // TODO: Need to be translated. -ryk11/22/01.
+        return "패키지 문서화"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-        return "Value:"; // TODO: Need to be translated. -ryk11/22/01.
+        return "값:"; // TODO: Need to be translated. -ryk11/22/01.
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1141,12 +1157,12 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-        return "Bug"; // TODO: Need to be translated. -ryk11/22/01.
+        return "버그"; // TODO: Need to be translated. -ryk11/22/01.
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-        return "Bug List"; // TODO: Need to be translated. -ryk11/22/01.
+        return "버그 목록"; // TODO: Need to be translated. -ryk11/22/01.
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1195,7 +1211,7 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-        return "Index"; // TODO: Need to be translated. -ryk11/22/01.
+        return "인덱스"; // TODO: Need to be translated. -ryk11/22/01.
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1204,8 +1220,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trClass(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Class" : "class"));
-      if (!singular)  result+="es";
+      QCString result((first_capital ? "클래스" : "클래스"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1215,8 +1231,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trFile(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "File" : "file"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "파일" : "파일"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1237,8 +1253,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trGroup(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Group" : "group"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "그룹" : "그룹"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1248,8 +1264,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trPage(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Page" : "page"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "페이지" : "페이지"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1259,8 +1275,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trMember(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Member" : "member"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "멤버" : "멤버"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
    
@@ -1270,8 +1286,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trField(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Field" : "field"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "필드" : "필드"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1294,8 +1310,8 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
     {                                                                         
-      QCString result((first_capital ? "Author" : "author"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "작성자" : "작성자"));
+      if (!singular)  result+="들";
       return result;  // TODO: Need to be translated. -ryk11/22/01.
     }
 
@@ -1307,7 +1323,70 @@ class TranslatorKorean : public TranslatorAdapter_1_2_13
      */
     virtual QCString trReferences()
     {
-        return "References"; // TODO: Need to be translated. -ryk11/22/01.
+        return "참조"; // TODO: Need to be translated. -ryk11/22/01.
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      //return "Implements "+trWriteList(numEntries)+".";
+	  return trWriteList(numEntries)+" 구현.";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      //return "Implemented in "+trWriteList(numEntries)+".";
+	  return trWriteList(numEntries)+"에 구현되었다.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "목차";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Deprecated 목록";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "이벤트";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "이벤트 문서화";
     }
 
 };

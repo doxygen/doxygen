@@ -168,7 +168,9 @@ void ManDocVisitor::visit(DocStyleChange *s)
         m_t << ".PP" << endl;
         m_firstCol=TRUE;
       }
-    break;
+      break;
+    case DocStyleChange::Div:  /* HTML only */ break;
+    case DocStyleChange::Span: /* HTML only */ break;
   }
 }
 

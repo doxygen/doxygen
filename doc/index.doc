@@ -39,10 +39,10 @@ It can help you in three ways:
      The documentation is extracted directly from the sources, which
      makes it much easier to keep the documentation consistent with the
      source code.
-<li> Doxygen can be configured to extract the code structure 
-     from undocumented source files. This can be very useful to quickly 
+<li> You can configure doxygen to extract the code structure 
+     from undocumented source files. This is very useful to quickly 
      find your way in large source distributions. 
-     The relations between the various elements are be visualized
+     You can also visualize the relations between the various elements 
      by means of include dependency graphs, inheritance diagrams,
      and collaboration diagrams, which are all generated automatically.
 <li> You can even `abuse' doxygen for creating normal documentation (as I did
@@ -183,7 +183,7 @@ Thanks go to:
     Roddy, Paul Schwartz, Charles Duffy, Vadym Voznyuk, Philip Walton,
     Dwight Browne, Andreas Fredriksson, Karel Lindveld, Ivan Lee, Albert
     Vernon, Adam McKee, Vijapurapu Anatharac, Ben Hunsberger and 
-    Walter Wartenweiler for donating money.
+    Walter Wartenweiler, Jeff Garbers and David Harris for donating money.
 <li>The Comms group of <a href="http://www.symbian.com">Symbian</a> for donating
     an ultra cool <a href="http://www.psion.com/revoplus">Revo plus</a> 
     organizer!

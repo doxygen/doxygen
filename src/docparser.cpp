@@ -664,6 +664,8 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Subscript:    return "subscript"; 
     case DocStyleChange::Superscript:  return "superscript"; 
     case DocStyleChange::Preformatted: return "pre"; 
+    case DocStyleChange::Div:          return "div";
+    case DocStyleChange::Span:         return "span";
   }
   return "<invalid>";
 }
@@ -883,6 +885,12 @@ reparsetoken:
       {
         switch (HtmlTagMapper::map(tokenName))
         {
+          case HTML_DIV:
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found <div> tag in heading\n");
+            break;
+          case HTML_PRE:
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found <pre> tag in heading\n");
+            break;
           case HTML_BOLD:
             if (!g_token->endTag)
             {
@@ -891,20 +899,6 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Bold,tokenName);
-            }
-            break;
-          case HTML_PRE:
-            if (!g_token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Preformatted,&g_token->attribs);
-              parent->setInsidePreformatted(TRUE);
-              //doctokenizerYYsetInsidePre(TRUE);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Preformatted,tokenName);
-              parent->setInsidePreformatted(FALSE);
-              //doctokenizerYYsetInsidePre(FALSE);
             }
             break;
           case HTML_CODE:
