@@ -120,7 +120,6 @@ SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
-bool           Doxygen::lookupCacheEnabled=FALSE;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -6193,6 +6192,54 @@ static void findSectionsInDocumentation()
   if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
 }
 
+static void flushCachedTemplateRelations()
+{
+  // remove all references to template classes from the cache
+  // as there can be new template instances that should be linked
+  // to instead.
+  QCacheIterator<LookupInfo> ci(Doxygen::lookupCache);
+  LookupInfo *li=0;
+  for (ci.toFirst();(li=ci.current());++ci)
+  {
+    if (li->classDef && li->classDef->isTemplate())
+    {
+      Doxygen::lookupCache.remove(ci.currentKey());
+    }
+  }
+  // remove all cached typedef resolutions whose target is a
+  // template class as this may now be a template instance
+  MemberNameSDict::Iterator fnli(Doxygen::functionNameSDict);
+  MemberName *fn;
+  for (;(fn=fnli.current());++fnli) // for each global function name
+  {
+    MemberNameIterator fni(*fn);
+    MemberDef *fmd;
+    for (;(fmd=fni.current());++fni) // for each function with that name
+    {
+      if (fmd->isTypedefValCached())
+      {
+        ClassDef *cd = fmd->getCachedTypedefVal();
+        if (cd->isTemplate()) fmd->invalidateTypedefValCache();
+      }
+    }
+  }
+  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  for (;(fn=mnli.current());++mnli) // for each class method name
+  {
+    MemberNameIterator mni(*fn);
+    MemberDef *fmd;
+    for (;(fmd=mni.current());++mni) // for each function with that name
+    {
+      if (fmd->isTypedefValCached())
+      {
+        ClassDef *cd = fmd->getCachedTypedefVal();
+        if (cd->isTemplate()) fmd->invalidateTypedefValCache();
+      }
+    }
+  }
+}
+
+
 //----------------------------------------------------------------------------
 
 static void findDefineDocumentation(Entry *root)
@@ -7437,7 +7484,6 @@ void initDoxygen()
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::lookupCache.setAutoDelete(TRUE);
-  Doxygen::lookupCacheEnabled=FALSE;
 }
 
 void cleanUpDoxygen()
@@ -8227,6 +8273,9 @@ void parseInput()
   findInheritedTemplateInstances();       
   findUsedTemplateInstances();       
 
+  msg("Flushing cached template relations that have become invalid...\n");
+  flushCachedTemplateRelations();
+  
   msg("Creating members for template instances...\n");
   createTemplateInstanceMembers();
 
@@ -8235,10 +8284,6 @@ void parseInput()
   computeClassRelations();        
   classEntries.clear();          
 
-  // from now on the class relations are fixed and we can
-  // start to cache them to improve performance
-  Doxygen::lookupCacheEnabled=TRUE;
-  
   msg("Searching for enumerations...\n");
   findEnums(root);
   findEnumDocumentation(root);

@@ -273,6 +273,7 @@ class MemberDef : public Definition
     QCString getCachedTypedefTemplSpec() const { return m_cachedTypedefTemplSpec; }
     void cacheTypedefVal(ClassDef *val,const QCString &templSpec) 
     { m_isTypedefValCached=TRUE; m_cachedTypedefValue=val; m_cachedTypedefTemplSpec=templSpec; }
+    void invalidateTypedefValCache() { m_isTypedefValCached=FALSE; }
     
     // declaration <-> definition relation
     void setMemberDefinition(MemberDef *md) { memDef=md; }

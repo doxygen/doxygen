@@ -112,7 +112,6 @@ class Doxygen
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
-    static bool                      lookupCacheEnabled;    
 };
 
 void initDoxygen();

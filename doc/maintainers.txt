@@ -27,7 +27,7 @@ Daniel YC Lin: daniel@twpda.com
 Gary Lee: garylee@ecosine.com.tw
 
 TranslatorCroatian
-Boris Bralo: boris.bralo@zg.tel.hr
+Boris Bralo: boris.bralo@zg.htnet.hr
 
 TranslatorCzech 
 Petr P&rcaron;ikryl: prikrylp@skil.cz
@@ -64,6 +64,7 @@ Ahmed Aldo Faisal: aaf23@cam.ac.uk
 TranslatorJapanese 
 Ryunosuke Satoh: sun594@hotmail.com
 Kenji Nagamatsu: naga@joyful.club.ne.jp
+Iwasa Kazmi: iwasa@cosmo-system.jp
 
 TranslatorKorean
 Richard Kim: ryk@dspwiz.com
@@ -74,7 +75,7 @@ Mindaugas Radzius: mindaugasradzius@takas.lt
 Aidas Berukstis: aidasber@takas.lt
 
 TranslatorNorwegian
-Lars Erik Jordet: lej@circuitry.no
+Lars Erik Jordet: lejordet@gmail.com
 
 TranslatorPolish 
 Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl

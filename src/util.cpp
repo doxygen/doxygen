@@ -662,7 +662,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   }
 
   // remember computed value for next time
-  if (Doxygen::lookupCacheEnabled && result && result->getDefFileName()!="<code>") 
+  if (result && result->getDefFileName()!="<code>") 
     // this check is needed to prevent that temporary classes that are 
     // introduced while parsing code fragments are being cached here.
   {
@@ -1045,7 +1045,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
   LookupInfo *pval=Doxygen::lookupCache.find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
-  if (Doxygen::lookupCacheEnabled && pval)
+  if (pval)
   {
     if (pTemplSpec) *pTemplSpec=pval->templSpec;
     if (pTypeDef)   *pTypeDef=pval->typeDef;
@@ -1143,14 +1143,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   else
   {
-    if (Doxygen::lookupCacheEnabled)
-    {
-      Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
-    }
-    else // remove the 0 key from the cache
-    {
-      Doxygen::lookupCache.remove(key);
-    }
+    Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
