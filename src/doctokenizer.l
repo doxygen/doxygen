@@ -252,6 +252,18 @@ static void handleHtmlTag()
   g_token->endTag = startNamePos==2;
 }
 
+static QString stripEmptyLines(const char *s)
+{
+  int result=0,p=0;
+  for (;;)
+  {
+    int c;
+    while ((c=s[p]) && (c==' ' || c=='\t' || c=='\r')) p++;
+    if (s[p]=='\n') result=++p; else break;
+  }
+  return &s[result];
+}
+
 //--------------------------------------------------------------------------
 
 #undef  YY_INPUT
@@ -565,6 +577,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*{ID}{FUNCARG}?
   			 g_token->verb+=yytext;
   		       }
 <St_Verbatim>{CMD}"endverbatim" {
+  			 g_token->verb=stripEmptyLines(g_token->verb);
                          return RetVal_OK;
                        }
 <St_Verbatim>[^\\@\n]+     |

@@ -1430,8 +1430,7 @@ void memcpy(void *dest, const void *src, size_t n);
   tag of doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
-  by the 
-  \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part 
+  by the \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part 
   of the absolute path to disambiguate it.
 
   Using the \\include command is equivalent to inserting the file into 
@@ -1446,9 +1445,13 @@ void memcpy(void *dest, const void *src, size_t n);
   \ref cmddontinclude "\\dontinclude" command in combination with 
   the \ref cmdline "\\line", \ref cmdskip "\\skip", 
   \ref cmdskipline "\\skipline", 
-  and \\until commands. 
+  and \\until commands.  
 
-  \sa section \ref cmdexample "\\example" and \ref cmddontinclude "\\dontinclude".
+  \note Doxygen's special commands do not work inside blocks of code. 
+  It is allowed to nest C-style comments inside a code block though.
+
+  \sa section \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude", and
+      section \ref cmdverbatim "\\verbatim".
 
 <hr>
 \section cmdincludelineno \\includelineno <file-name>
@@ -1635,7 +1638,7 @@ void memcpy(void *dest, const void *src, size_t n);
   classes and members that are documented are automatically replaced by 
   links to the documentation. 
 
-  \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim"  
+  \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim".
 
 <hr>
 \section cmdcopydoc \\copydoc <link-object>
@@ -1805,7 +1808,7 @@ class C {};
   \addindex \\endverbatim
   Ends a block of text that was started with a \\verbatim command.
   
-  \sa section \ref cmdverbatim "\\verbatim".
+  \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim".
 
 <hr>
 \section cmdendxmlonly \\endxmlonly
@@ -2019,6 +2022,8 @@ class C {};
 
   \warning Make sure you include a \\endverbatim command for each 
   \\verbatim command or the parser will get confused!
+
+  \sa section \ref cmdcode "\\code", and section \ref cmdverbinclude "\\verbinclude".
 
 <hr>
 \section cmdxmlonly \\xmlonly

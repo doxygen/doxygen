@@ -412,6 +412,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
     docEntry->anchors->append(si);
+    outputXRef.resize(0);
   }
   //current->brief  = slString; // restore orginial brief desc.
 }
@@ -643,7 +644,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
    *   grouping commands (e.g. @{ and @})
    */
 
-<Comment>{CMD}{CMD}[a-z_A-Z]*{B}*	{ // escaped command
+<Comment>{CMD}{CMD}[a-z_A-Z]+{B}*	{ // escaped command
   					  addOutput(yytext);
   					}
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
@@ -1116,8 +1117,8 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
 <SectionLabel>{LABELID}			{ // first argyment
   					  sectionLabel=yytext;
+                                          addOutput(yytext);
 					  sectionTitle.resize(0);
-                                          current->doc+=yytext;
 					  BEGIN(SectionTitle);
   					}
 <SectionLabel>{DOCNL}			{ // missing argument
@@ -1151,15 +1152,19 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					}
 <SectionTitle>[^\n@\\]*			{ // any character without special meaning
   					  sectionTitle+=yytext;
-                                          current->doc+=yytext;
+					  addOutput(yytext);
   					}
-<SectionTitle>("\\\\"|"@@")		{ // unescape escaped command
-  					  sectionTitle+=*yytext;
-                                          current->doc+=*yytext;
+<SectionTitle>("\\\\"|"@@"){ID}		{ // unescape escaped command
+  					  sectionTitle+=&yytext[1];
+					  addOutput(yytext);
+  					}
+<SectionTitle>{CMD}[$@\\&~<>#%]		{ // unescape escaped character
+  					  sectionTitle+=yytext[1];
+  					  addOutput(yytext);
   					}
 <SectionTitle>.				{ // anything else
   					  sectionTitle+=yytext;
-                                          current->doc+=yytext;
+					  addOutput(*yytext);
   					}
 
   /* ----- handle arguments of the anchor command ------- */
@@ -1168,7 +1173,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
                                           SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
                                           Doxygen::sectionDict.insert(yytext,si);
   					  current->anchors->append(si);
-                                          addOutput(yytext);
+					  addOutput(yytext);
 					  BEGIN( Comment );
   					}
 <AnchorLabel>{DOCNL}			{ // missing argument
@@ -1646,8 +1651,9 @@ static void handleSection(const QCString &s)
   BEGIN(SectionLabel);
 }
 
-static void handleAnchor(const QCString &)
+static void handleAnchor(const QCString &s)
 {
+  addOutput("@"+s+" ");
   BEGIN(AnchorLabel);
 }
 
@@ -1825,8 +1831,8 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
 		       /* in,out */ Protection &prot
 		      )
 {
-  //fprintf(stderr,"isBrief=%d isJavaDocStyle=%d\n",
-  //    isBrief,isJavaDocStyle);
+  //fprintf(stderr,"parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
+  //    isBrief,isJavaDocStyle,lineNr);
   initParser();
   guards.setAutoDelete(TRUE);
   guards.clear();
@@ -1840,6 +1846,7 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
   //inBody         = foundInBody;
   protection     = prot;
   needNewEntry   = FALSE;
+  outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;
   commentScanYYrestart( commentScanYYin );

@@ -1332,7 +1332,7 @@ static void readTextFileByName(const QString &file,QString &text)
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
   {
-    text = fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"));
+    text = fileToString(fd->absFilePath(),FALSE);
   }
   else if (ambig)
   {
@@ -5126,6 +5126,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_paramsFound.clear();
   g_sectionDict = 0; //sections;
   
+  //printf("Starting comment block at %s:%d\n",g_fileName.data(),startLine);
   doctokenizerYYlineno=startLine;
   doctokenizerYYinit(input,g_fileName);
 
