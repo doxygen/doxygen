@@ -863,7 +863,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer.simplifyWhiteSpace());
+  md->setInitializer(root->initializer);
   //if (root->mGrpId!=-1) 
   //{
   //  printf("memberdef %s in memberGroup %d\n",name.data(),root->mGrpId);
@@ -922,7 +922,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer.simplifyWhiteSpace());
+  md->setInitializer(root->initializer);
   bool ambig;
   FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
@@ -2010,7 +2010,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
     
     if (md->initializer().isEmpty() && !root->initializer.isEmpty())
     {
-      md->setInitializer(root->initializer.simplifyWhiteSpace());
+      md->setInitializer(root->initializer);
     }
     
     //if (md->bodyCode().isEmpty() && !root->body.isEmpty()) /* no body yet */

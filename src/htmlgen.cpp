@@ -605,7 +605,7 @@ void HtmlGenerator::startParameter(bool first)
   if (first)
   {
     t << endl << "</b></td>" << endl;
-    t << "<td><b>" << endl;
+    t << "<td valign=bottom><b>" << endl;
   }
   else
   {
@@ -767,7 +767,7 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
   t << "    <td class=\"md\"><b>" << endl; 
   t << "      <table cellspadding=0 cellspacing=0 border=0>" << endl;
   t << "        <tr>" << endl;
-  t << "          <td><b>" << endl;
+  t << "          <td valign=top><b>" << endl;
 }
 
 void HtmlGenerator::endMemberDoc()     

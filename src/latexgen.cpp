@@ -1134,18 +1134,22 @@ void LatexGenerator::docify(const char *str)
 
 void LatexGenerator::codify(const char *str)
 {
-  static char spaces[]="        ";
   if (str)
   { 
     const char *p=str;
     char c;
+    int spacesToNextTabStop;
     while (*p)
     {
       c=*p++;
       switch(c)
       {
         case 0x0c: break; // remove ^L
-        case '\t': t << &spaces[col&7]; col+=8-(col&7); break; 
+        case '\t': spacesToNextTabStop =
+                         Config::tabSize - (col%Config::tabSize);
+                   t << spaces.left(spacesToNextTabStop); 
+                   col+=spacesToNextTabStop;
+                   break; 
         case '\n': t << '\n'; col=0;                    break;
         default:   t << c;    col++;                    break;
       }

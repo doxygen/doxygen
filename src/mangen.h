@@ -107,7 +107,7 @@ class ManGenerator : public OutputGenerator
     void startCodeFragment();
     void endCodeFragment();
     void startCodeLine() {}
-    void endCodeLine() { t << endl; }
+    void endCodeLine() { t << endl; col=0; }
     void writeBoldString(const char *text) 
                          { t << "\\fB"; docify(text); t << "\\fR"; firstCol=FALSE; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }

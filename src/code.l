@@ -887,7 +887,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <RemoveSpecialCComment>"//"|"/*"
 <RemoveSpecialCComment>\n  { g_yyLineNr++; }
 <RemoveSpecialCComment>.
-<*>\n({B}*"//"[!/][^\n]*\n)*		{ // remove special one-line comment
+<*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');

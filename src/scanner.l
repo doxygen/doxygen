@@ -49,8 +49,6 @@
   
 #define YY_NEVER_INTERACTIVE 1
   
-
-  
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -874,7 +872,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLMASK   [a-z_A-Z0-9\~\:\@\#\.\-\+\/]+
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
-WORD      ({NONTERM}+([^\n ]*{NONTERM}?))|("\""[^\n\"]"\"")
+WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BOLD	  [bB]
@@ -1651,8 +1649,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  }
 					  BEGIN(DocScan);
   					}
-<DocRefName>{SCOPENAME}/{B}+"\""	{
+<DocRefName>{SCOPENAME}{B}+/"\""	{
   					  sectionRef=yytext;
+					  sectionRef=sectionRef.stripWhiteSpace();
 					  BEGIN(DocRefArgStart);
   					}
 <DocRefArgStart>"\""			{
@@ -2011,22 +2010,16 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
   					}
-<DocBold>{WORD}				{ 
-  					  outDoc->startBold();
-  					  linkifyText(*outDoc,className,0,yytext);
-					  outDoc->endBold();
-					  BEGIN( DocScan );
-					}
 <DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
   					  outDoc->startBold();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  outDoc->endBold();
 					  BEGIN( DocScan );
   					}
-<DocCode>{WORD}				{ 
-  					  outDoc->startTypewriter();
+<DocBold>{WORD}				{ 
+  					  outDoc->startBold();
   					  linkifyText(*outDoc,className,0,yytext);
-					  outDoc->endTypewriter();
+					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
 <DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
@@ -2035,6 +2028,12 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
   					}
+<DocCode>{WORD}				{ 
+  					  outDoc->startTypewriter();
+  					  linkifyText(*outDoc,className,0,yytext);
+					  outDoc->endTypewriter();
+					  BEGIN( DocScan );
+					}
 <DocInclude>{FILE}			{
 					  includeFile(*outDoc,stripQuotes(yytext),FALSE); 
 					  BEGIN( DocScan );
@@ -2091,11 +2090,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>{BN}+/\n			{ 
   					  outDoc->writeChar(' '); 
 					}
-<DocScan>{B}+				{
+<DocScan>\n?{B}*			{
   					  outDoc->writeChar(' '); 
-  					}
-<DocScan>\n				{
-  					  outDoc->writeChar('\n'); 
   					}
 <DocCode,DocEmphasis,DocBold,DocScan,Text>[a-z_A-Z0-9]+ { 
 					  outDoc->docify(yytext);
@@ -3139,7 +3135,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					}
 <Curly>.				{ current->program += yytext ; }
 
-<FindMembers>"("({ID}{BN}*"::"{BN}*)*("*"{BN}*)+ {
+<FindMembers>"("({BN}*{ID}{BN}*"::"{BN}*)*("*"{BN}*)+ {
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -4261,6 +4257,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    memberGroupDocs+="\n\n";
 					  }
 					  memberGroupDocs+=current->doc;
+					  current->doc.resize(0);
+					  current->brief.resize(0);
 					  BEGIN(lastDocContext);
   					}
 <ExampleDoc,Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {

@@ -157,6 +157,10 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.endParameter(FALSE);
     }
   }
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.writeString("&nbsp;");
+  ol.popGeneratorState();
   ol.docify(")"); // end argument list
   if (argList->constSpecifier)
   {
@@ -728,8 +732,16 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
     if (!init.isEmpty() && initLines==0) // add initializer
     {
-      if (!isDefine()) ol.writeString(" = "); else ol.writeNonBreakableSpace();
-      linkifyText(ol,cname,name(),init);
+      if (!isDefine()) 
+      {
+        ol.writeString(" = "); 
+        linkifyText(ol,cname,name(),init.simplifyWhiteSpace());
+      }
+      else 
+      {
+        ol.writeNonBreakableSpace();
+        linkifyText(ol,cname,name(),init);
+      }
     }
 
     if (!detailsVisible && !Config::extractAllFlag && !annMemb)
@@ -905,8 +917,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       writeDefArgumentList(ol,cd,scopeName,this);
       if (!init.isEmpty() && initLines==0) // add initializer
       {
-        if (!isDefine()) ol.docify(" = "); else ol.writeNonBreakableSpace();
-        linkifyText(ol,scopeName,name(),init);
+        if (!isDefine()) 
+        {
+          ol.docify(" = "); 
+          linkifyText(ol,scopeName,name(),init.simplifyWhiteSpace());
+        }
+        else 
+        {
+          ol.writeNonBreakableSpace();
+          linkifyText(ol,scopeName,name(),init);
+        }
       }
       if (excpString()) // add exception list
       {
@@ -975,7 +995,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       parseText(ol,theTranslator->trInitialValue());
       ol.endBold();
       ol.startCodeFragment();
-      parseCode(ol,scopeName,init,FALSE,0);
+      if (isDefine())
+      {
+        parseCode(ol,scopeName,init,FALSE,0);
+      }
+      else
+      {
+        parseCode(ol,scopeName,init.simplifyWhiteSpace(),FALSE,0);
+      }
       ol.endCodeFragment();
     }
     
