@@ -738,7 +738,7 @@ static QDict<MemberDef> g_resolvedTypedefs;
 ClassDef *getResolvedClassRec(Definition *scope,
                               FileDef *fileScope,
                               const char *n,
-                              bool *pIsTypeDef,
+                              MemberDef **pTypeDef,
                               QCString *pTemplSpec
                              );
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
@@ -1029,7 +1029,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
 ClassDef *getResolvedClassRec(Definition *scope,
                               FileDef *fileScope,
                               const char *n,
-                              bool *pIsTypeDef,
+                              MemberDef **pTypeDef,
                               QCString *pTemplSpec
                              )
 {
@@ -1057,7 +1057,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   DefinitionListIterator dli(*dl);
   Definition *d;
   ClassDef *bestMatch=0;
-  bool bestIsTypedef=FALSE;
+  MemberDef *bestTypedef=0;
   QCString bestTemplSpec;
   int minDistance=10000; // init at "infinite"
   for (dli.toFirst();(d=dli.current());++dli) // foreach definition
@@ -1078,7 +1078,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
           {
             minDistance=distance;
             bestMatch = (ClassDef *)d; 
-            bestIsTypedef = FALSE;
+            bestTypedef = 0;
             bestTemplSpec.resize(0);
           }
         }
@@ -1087,6 +1087,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
           MemberDef *md = (MemberDef *)d;
           if (md->isTypedef()) // d is a typedef
           {
+            //printf("found typedef!\n");
             QCString spec;
             ClassDef *typedefClass = newResolveTypedef(fileScope,md,&spec);
 
@@ -1098,7 +1099,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
             {
               minDistance=distance;
               bestMatch = typedefClass; 
-              bestIsTypedef = TRUE;
+              //printf("bestTypeDef=%p\n",md);
+              bestTypedef = md;
               bestTemplSpec = spec;
             }
 
@@ -1107,9 +1109,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
       } // if definition accessible
     } // if definition is a class or member
   } // foreach definition
-  if (pIsTypeDef) 
+  if (pTypeDef) 
   {
-    *pIsTypeDef = bestIsTypedef;
+    *pTypeDef = bestTypedef;
   }
   if (pTemplSpec)
   {
@@ -1127,7 +1129,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
 ClassDef *getResolvedClass(Definition *scope,
                            FileDef *fileScope,
                            const char *n,
-                           bool *pIsTypeDef,
+                           MemberDef **pTypeDef,
                            QCString *pTemplSpec
                           )
 {
@@ -1140,7 +1142,7 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     scope=Doxygen::globalScope;
   }
-  ClassDef *result = getResolvedClassRec(scope,fileScope,n,pIsTypeDef,pTemplSpec);
+  ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
   if (result && !result->isLinkable()) result=0; // don't link to artifical classes
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
@@ -1258,14 +1260,17 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 }
 
 
-void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*name*/,const char *text,bool autoBreak,bool external)
+void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileScope,const char * /*name*/,const char *text,bool autoBreak,bool external)
 {
   //printf("`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
   QCString txtStr=text;
   QCString scopeName;
   int strLen = txtStr.length();
-  //printf("linkifyText scope=%s strtxt=%s strlen=%d\n",scope?scope->name().data():"<none>",txtStr.data(),strLen);
+  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
+  //    scope?scope->name().data():"<none>",
+  //    fileScope?fileScope->name().data():"<none>",
+  //    txtStr.data(),strLen);
   int matchLen;
   int index=0;
   int newIndex;
@@ -1340,9 +1345,8 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
 //          fullName.prepend(prefix+"::");
 //        }
 
-//        bool isTypeDef=FALSE;
-        if ((cd=getResolvedClass(scope,0,word/*fullName,&isTypeDef*/))) 
-                                       // todo: fill in fileScope
+        MemberDef *typeDef=0;
+        if ((cd=getResolvedClass(scope,fileScope,word,&typeDef))) 
         {
           // add link to the result
           if (external ? cd->isLinkable() : cd->isLinkableInProject())
@@ -1351,10 +1355,17 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
             found=TRUE;
           }
         }
-//        else if (isTypeDef)
-//        {
-//          goto endloop;
-//        }
+        else if (typeDef)
+        {
+          if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
+          {
+            out.writeLink(typeDef->getReference(),
+                          typeDef->getOutputFileBase(),
+                          typeDef->anchor(),
+                          word);
+            found=TRUE;
+          }
+        }
 
 //        if (curScope) curScope = curScope->getOuterScope();
 //      } //while (!found && scopeOffset>=0);
@@ -4499,7 +4510,8 @@ void filterLatexString(QTextStream &t,const char *str,
                        bool insideTabbing,bool insidePre,bool insideItem)
 {
   static bool isCzech         = theTranslator->idLanguage()=="czech";
-  static bool isJapanese      = theTranslator->idLanguage()=="japanese";
+  static bool isJapanese      = theTranslator->idLanguage()=="japanese" ||
+                                theTranslator->idLanguage()=="japanese-en";
   static bool isKorean        = theTranslator->idLanguage()=="korean";
   static bool isRussian       = theTranslator->idLanguage()=="russian";
   static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";

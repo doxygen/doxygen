@@ -1342,6 +1342,55 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_3
 //////////////////////////////////////////////////////////////////////////
 
 
+    /*! When the search engine is enabled this text is put in the index 
+     *  of each page before the search field. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Buscar";
+    }
+
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Resultados de la Búsqueda";
+    }
+
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Disculpe, no se encontraron documentos que coincidan con su búsqueda.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Se encontró <b>1</b> documento que coincide con su búsqueda.";
+      }
+      else 
+      {
+        return "Se encontraron <b>$num</b> documentos que coinciden con su búsqueda. "
+               "Se muestran los mejores resultados primero.";
+      }
+    }
+
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Coincidencias:";
+    }
+
 };
 
 

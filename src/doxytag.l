@@ -507,10 +507,9 @@ void usage(const char *name)
   fprintf(stderr,"Doxytag version %s\nCopyright Dimitri van Heesch 1997-2003\n\n",
       versionString);
   fprintf(stderr,"  Generates a tag file and/or a search index for a set of HTML files\n\n");
-  fprintf(stderr,"Usage: %s [-t tag_file] [-s index_file] [ html_file [html_file...] ]\n",name);
+  fprintf(stderr,"Usage: %s [-t tag_file] [ html_file [html_file...] ]\n",name);
   fprintf(stderr,"Options:\n");
   fprintf(stderr,"  -t <tag_file>   Generate tag file <tag_file>.\n");
-  fprintf(stderr,"  -s <index_file> Generate search index <index_file>.\n\n");
   fprintf(stderr,"If no HTML files are given all files in the current dir that\n"
                  "have a .html extension are parsed.\n\n");
   exit(1);

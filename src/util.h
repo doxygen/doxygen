@@ -77,8 +77,14 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 //--------------------------------------------------------------------
 
-void linkifyText(const TextGeneratorIntf &ol,Definition *scope,const char *name,
-                        const char *text,bool autoBreak=FALSE,bool external=TRUE);
+void linkifyText(const TextGeneratorIntf &ol,
+                 Definition *scope,
+                 FileDef *fileScope,
+                 const char *name,
+                 const char *text,
+                 bool autoBreak=FALSE,
+                 bool external=TRUE
+                );
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
 QCString fileToString(const char *name,bool filter=FALSE);
 QCString dateToString(bool);
@@ -131,7 +137,7 @@ ClassDef *getClass(const char *key);
 ClassDef *getResolvedClass(Definition *scope,
                            FileDef *fileScope,
                            const char *key,
-                           bool *pIsTypeDef=0,
+                           MemberDef **pTypeDef=0,
                            QCString *pTemplSpec=0);
 NamespaceDef *getResolvedNamespace(const char *key);
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,

@@ -120,7 +120,7 @@
     <xsd:attribute name="mutable" type="DoxBool" />
   </xsd:complexType>
 
-  <xsd:complexType name="descriptionType">
+  <xsd:complexType name="descriptionType" mixed="true">
     <xsd:sequence>
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="sect1" type="docSect1Type" minOccurs="0" maxOccurs="unbounded" />
@@ -244,7 +244,7 @@
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="sect3" type="docSect3Type" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="internal" type="docInternalS2Type" minOccurs="0" />
-    </xsd:sequencee
+    </xsd:sequence>
     <xsd:attribute name="id" />
   </xsd:complexType>
 

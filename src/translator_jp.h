@@ -29,42 +29,7 @@
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapaneseEn : public TranslatorEnglish
-{
-  public:
-    virtual QCString idLanguage()
-    { return "japanese"; }
-    virtual QCString latexLanguageSupportCommand()
-      {
-	return "";
-      }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString idLanguageCharset()
-    {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return "Shift_JIS";
-      }
-      else
-      {
-        return "euc-jp";
-      }
-    }
-    virtual QCString trRTFansicp()
-    {
-      return "932";
-    }
-
-    /*! Used as ansicpg for RTF fcharset
-     *  \see trRTFansicp() for a table of possible values.
-     */
-    virtual QCString trRTFCharSet()
-    {
-      return "128";
-    }
-};
-
-class TranslatorJapanese : public TranslatorEnglish
+class TranslatorJapanese : public TranslatorAdapter_1_3_3
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -109,30 +74,39 @@ class TranslatorJapanese : public TranslatorEnglish
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return decode("解説"); }
+    { return decode("説明"); }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return decode("Typedef の解説"); }
+    { return decode("型定義"); }
 
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return decode("Enum の解説"); }
+    { return decode("列挙型"); }
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return decode("メソッドの解説"); }
+    { 
+	  if( Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+	  {
+		return decode("メソッド");
+	  }
+	  else
+	  {
+		return decode("関数");
+	  }
+	}
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
       if( Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  return decode("構造体の解説");
+	  return decode("構造体");
 	}
       else
 	{
-	  return decode("変数の解説");
+	  return decode("変数");
 	}
     }
 
@@ -267,11 +241,11 @@ class TranslatorJapanese : public TranslatorEnglish
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  return decode("データ構造の解説です。");
+	  return decode("データ構造の説明です。");
 	}
       else
 	{
-	  return decode("クラス、構造体、共用体、インタフェースの解説です。");
+	  return decode("クラス、構造体、共用体、インタフェースの説明です。");
 	}
     }
 
@@ -289,7 +263,7 @@ class TranslatorJapanese : public TranslatorEnglish
 	  result+=decode("クラスメンバの一覧で、それぞれ");
 	  if (extractAll) result+=decode("が属しているクラス");
 	}
-      result+=decode("の解説へリンクしています。");
+      result+=decode("の説明へリンクしています。");
       return result;
     }
 
@@ -305,7 +279,7 @@ class TranslatorJapanese : public TranslatorEnglish
 	{
 	  result+=decode("ファイルメンバの");
 	}
-      result+=decode("一覧です。それぞれが属しているファイルの解説へリンクしています。");
+      result+=decode("一覧です。それぞれが属しているファイルの説明へリンクしています。");
       return result;
     }
 
@@ -375,7 +349,7 @@ class TranslatorJapanese : public TranslatorEnglish
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return decode("モジュールの解説"); }
+    { return decode("モジュール"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -384,11 +358,11 @@ class TranslatorJapanese : public TranslatorEnglish
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  return decode("データ構造の解説");
+	  return decode("データ構造");
 	}
       else
 	{
-	  return decode("クラスの解説");
+	  return decode("クラス");
 	}
     }
 
@@ -396,19 +370,19 @@ class TranslatorJapanese : public TranslatorEnglish
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return decode("ファイルの解説"); }
+    { return decode("ファイル"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return decode("例の解説"); }
+    { return decode("例"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return decode("ページの解説"); }
+    { return decode("ページ"); }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -430,13 +404,13 @@ class TranslatorJapanese : public TranslatorEnglish
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return decode("Typedef"); }
+    { return decode("型定義"); }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return decode("Enum"); }
+    { return decode("列挙型"); }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
@@ -454,48 +428,48 @@ class TranslatorJapanese : public TranslatorEnglish
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-      { return decode("Enum 値"); }
+      { return decode("列挙型の値"); }
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return decode("マクロ定義の解説"); }
+    { return decode("マクロ定義"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return decode("関数プロトタイプの解説"); }
+    { return decode("関数プロトタイプ"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return decode("Typedef の解説"); }
+    { return decode("型定義"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return decode("Enum の解説"); }
+    { return decode("列挙型"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return decode("Enum 値の解説"); }
+    { return decode("列挙型の値"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return decode("関数の解説"); }
+    { return decode("関数"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return decode("変数の解説"); }
+    { return decode("変数"); }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -585,13 +559,13 @@ class TranslatorJapanese : public TranslatorEnglish
 
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return decode("名前空間一覧"); }
+    { return decode("ネームスペース一覧"); }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool /*extractAll*/)
     {
       QCString result=decode("");
-      result+=decode("名前空間の一覧です。");
+      result+=decode("ネームスペースの一覧です。");
       return result;
     }
 
@@ -609,7 +583,7 @@ class TranslatorJapanese : public TranslatorEnglish
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return decode("フレンドと関連する関数の解説"); }
+    { return decode("フレンドと関連する関数"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -630,21 +604,21 @@ class TranslatorJapanese : public TranslatorEnglish
         case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
       if (isTemplate) result+=decode(" テンプレート");
-      result+=(QCString)clName+decode(" の解説");
+		result+=(QCString)clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result=decode("")+(QCString)fileName+decode(" の解説");
+      QCString result=decode("")+(QCString)fileName;
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result=decode("名前空間 ")+(QCString)namespaceName+decode(" の解説");
+      QCString result=decode("ネームスペース ")+(QCString)namespaceName;
       return result;
     }
 
@@ -729,17 +703,17 @@ class TranslatorJapanese : public TranslatorEnglish
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return decode("名前空間メンバ"); }
+    { return decode("ネームスペースメンバ"); }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
 	QCString result=decode("これは");
-      result+=decode("名前空間の一覧です。それぞれ");
+      result+=decode("ネームスペースの一覧です。それぞれ");
       if (extractAll)
-	  result+=decode("の名前空間の解説");
+	  result+=decode("のネームスペース");
       else
-	  result+=decode("が属している名前空間");
+	  result+=decode("が属しているネームスペース");
       result+=decode("へリンクしています。");
       return result;
     }
@@ -747,13 +721,13 @@ class TranslatorJapanese : public TranslatorEnglish
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return decode("名前空間索引"); }
+    { return decode("ネームスペース索引"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return decode("名前空間の解説"); }
+    { return decode("ネームスペース"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -763,7 +737,7 @@ class TranslatorJapanese : public TranslatorEnglish
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return decode("名前空間"); }
+    { return decode("ネームスペース"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -785,7 +759,7 @@ class TranslatorJapanese : public TranslatorEnglish
         case ClassDef::Interface:  result+=decode("インタフェース"); break;
         case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
-      result+=decode("の解説は次のファイルから生成されました:");
+      result+=decode("の説明は次のファイルから生成されました:");
       return result;
     }
 
@@ -857,7 +831,7 @@ class TranslatorJapanese : public TranslatorEnglish
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return decode("コンストラクタとデストラクタの解説");
+      return decode("コンストラクタとデストラクタ");
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -867,7 +841,7 @@ class TranslatorJapanese : public TranslatorEnglish
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return decode("解説を見る。");
+      return decode("説明を見る。");
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
@@ -984,7 +958,7 @@ class TranslatorJapanese : public TranslatorEnglish
 
     virtual QCString trReferencedBy()
     {
-      return decode("呼出");
+      return decode("参照元");
     }
     virtual QCString trRemarks()
     {
@@ -1112,7 +1086,7 @@ class TranslatorJapanese : public TranslatorEnglish
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return decode("プロパティの解説");
+      return decode("プロパティ");
     }
 
 
@@ -1160,7 +1134,7 @@ class TranslatorJapanese : public TranslatorEnglish
     /*! Used as a chapter title for Latex & RTF output */
     virtual QCString trPackageDocumentation()
     {
-      return decode("パッケージの解説");
+      return decode("パッケージ");
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1265,7 +1239,7 @@ class TranslatorJapanese : public TranslatorEnglish
     {
       first_capital = first_capital;
       singular = singular;
-      QCString result(decode("名前空間"));
+      QCString result(decode("ネームスペース"));
       return result;
     }
 
@@ -1351,7 +1325,7 @@ class TranslatorJapanese : public TranslatorEnglish
      */
     virtual QCString trReferences()
     {
-      return decode("参照");
+      return decode("参照先");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1411,7 +1385,7 @@ class TranslatorJapanese : public TranslatorEnglish
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return decode("イベントの解説");
+      return decode("イベント");
     }
 
 //////////////////////////////////////////////////////////////////////////

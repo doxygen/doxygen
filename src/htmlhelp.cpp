@@ -332,26 +332,27 @@ void HtmlHelp::initialize()
   */
   s_languageDict.setAutoDelete(TRUE);
   s_languageDict.clear();
-  s_languageDict.insert("czech",    new QCString("0x405 Czech"));
-  s_languageDict.insert("danish",   new QCString("0x406 Danish"));
-  s_languageDict.insert("dutch",    new QCString("0x413 Dutch"));
-  s_languageDict.insert("finnish",  new QCString("0x40B Finnish"));
-  s_languageDict.insert("french",   new QCString("0x40C French"));
-  s_languageDict.insert("german",   new QCString("0x407 German"));
-  s_languageDict.insert("greece",   new QCString("0x408 Greece"));
-  s_languageDict.insert("hungarian",new QCString("0x40E Hungarian"));
-  s_languageDict.insert("italian",  new QCString("0x410 Italian"));
-  s_languageDict.insert("norwegian",new QCString("0x814 Norwegian"));
-  s_languageDict.insert("polish",   new QCString("0x415 Polish"));
-  s_languageDict.insert("portugese",new QCString("0x816 Portuguese(Portugal)"));
-  s_languageDict.insert("brazil",   new QCString("0x416 Portuguese(Brazil)"));
-  s_languageDict.insert("russian",  new QCString("0x419 Russian"));
-  s_languageDict.insert("spanish",  new QCString("0x40A Spannish(Traditional Sort)"));
-  s_languageDict.insert("swedish",  new QCString("0x41D Swedish"));
-  s_languageDict.insert("turkey",   new QCString("0x41F Turkey"));
-  s_languageDict.insert("japanese", new QCString("0x411 Japanese"));
-  s_languageDict.insert("korean",   new QCString("0x412 Korean"));
-  s_languageDict.insert("chinese",  new QCString("0x804 Chinese (PRC)"));
+  s_languageDict.insert("czech",       new QCString("0x405 Czech"));
+  s_languageDict.insert("danish",      new QCString("0x406 Danish"));
+  s_languageDict.insert("dutch",       new QCString("0x413 Dutch"));
+  s_languageDict.insert("finnish",     new QCString("0x40B Finnish"));
+  s_languageDict.insert("french",      new QCString("0x40C French"));
+  s_languageDict.insert("german",      new QCString("0x407 German"));
+  s_languageDict.insert("greece",      new QCString("0x408 Greece"));
+  s_languageDict.insert("hungarian",   new QCString("0x40E Hungarian"));
+  s_languageDict.insert("italian",     new QCString("0x410 Italian"));
+  s_languageDict.insert("norwegian",   new QCString("0x814 Norwegian"));
+  s_languageDict.insert("polish",      new QCString("0x415 Polish"));
+  s_languageDict.insert("portugese",   new QCString("0x816 Portuguese(Portugal)"));
+  s_languageDict.insert("brazil",      new QCString("0x416 Portuguese(Brazil)"));
+  s_languageDict.insert("russian",     new QCString("0x419 Russian"));
+  s_languageDict.insert("spanish",     new QCString("0x40A Spannish(Traditional Sort)"));
+  s_languageDict.insert("swedish",     new QCString("0x41D Swedish"));
+  s_languageDict.insert("turkey",      new QCString("0x41F Turkey"));
+  s_languageDict.insert("japanese",    new QCString("0x411 Japanese"));
+  s_languageDict.insert("japanese-en", new QCString("0x411 Japanese"));
+  s_languageDict.insert("korean",      new QCString("0x412 Korean"));
+  s_languageDict.insert("chinese",     new QCString("0x804 Chinese (PRC)"));
 }
 
 

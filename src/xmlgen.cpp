@@ -340,7 +340,11 @@ class XMLCodeGenerator : public BaseCodeDocInterface
 };
 
 
-static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,Definition *scope,int indent)
+static void writeTemplateArgumentList(ArgumentList *al,
+                                      QTextStream &t,
+                                      Definition *scope,
+                                      FileDef *fileScope,
+                                      int indent)
 {
   QCString indentStr;
   indentStr.fill(' ',indent);
@@ -355,7 +359,7 @@ static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,Definition
       if (!a->type.isEmpty())
       {
         t << indentStr <<  "    <type>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,0,a->type);
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->type);
         t << "</type>" << endl;
       }
       if (!a->name.isEmpty())
@@ -366,7 +370,7 @@ static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,Definition
       if (!a->defval.isEmpty())
       {
         t << indentStr << "    <defval>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,0,a->defval);
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
         t << "</defval>" << endl;
       }
       t << indentStr << "  </param>" << endl;
@@ -379,13 +383,13 @@ static void writeMemberTemplateLists(MemberDef *md,QTextStream &t)
 {
   if (md->templateArguments()) // function template prefix
   {
-    writeTemplateArgumentList(md->templateArguments(),t,md->getClassDef(),8);
+    writeTemplateArgumentList(md->templateArguments(),t,md->getClassDef(),md->getFileDef(),8);
   }
 }
 
 static void writeTemplateList(ClassDef *cd,QTextStream &t)
 {
-  writeTemplateArgumentList(cd->templateArguments(),t,cd,4);
+  writeTemplateArgumentList(cd->templateArguments(),t,cd,0,4);
 }
 
 static void writeXMLDocBlock(QTextStream &t,
@@ -574,7 +578,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     }
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     t << "        <type>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),typeStr);
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),typeStr);
     t << "</type>" << endl;
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
@@ -622,7 +626,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         if (!a->type.isEmpty())
         {
           t << "          <type>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->name(),a->type);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),a->type);
           t << "</type>" << endl;
         }
         if (!a->name.isEmpty())
@@ -646,7 +650,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         if (!a->defval.isEmpty())
         {
           t << "          <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->name(),a->defval);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),a->defval);
           t << "</defval>" << endl;
         }
         if (defArg && defArg->hasDocumentation())
@@ -674,14 +678,14 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   if (!md->initializer().isEmpty())
   {
     t << "        <initializer>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),md->initializer());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),md->initializer());
     t << "</initializer>" << endl;
   }
 
   if (md->excpString())
   {
     t << "        <exceptions>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),md->excpString());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),md->excpString());
     t << "</exceptions>" << endl;
   }
   

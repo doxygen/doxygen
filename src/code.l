@@ -648,18 +648,16 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   QCString className=clName;
   if (className.isEmpty()) return;
   ClassDef *cd=0;
+  MemberDef *md=0;
 
   if (!g_theVarContext.findVariable(className)) // not a local variable
   {
     Definition *d = g_currentDefinition;
-    cd = getResolvedClass(d,g_sourceFileDef,className);
-    if (cd==0 && (i=className.find('<'))!=-1)
+    cd = getResolvedClass(d,g_sourceFileDef,className,&md);
+    if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
-      cd=getResolvedClass(d,g_sourceFileDef,className.left(i));
+      cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
     }
-  }
-  else
-  {
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
@@ -677,17 +675,33 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       }
     }
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
+    if (md)
+    {
+      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+                      md->getBodyDef() : md->getOuterScope();
+      if (md->getGroupDef()) d = md->getGroupDef();
+      if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+      {
+        addDocCrossReference(g_currentMemberDef,md);
+      }
+    }
   }
   else 
   {
-    //printf("class %s not linkable! cd=%p\n",clName,cd);
-    //printf("typeOnly=%d\n",typeOnly);
-    if (cd==0 && !typeOnly) // not a class, see if it is a global enum/variable/typedef.
+    //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
+    if (md!=0 || (cd==0 && !typeOnly)) // not a class, see if it is a global enum/variable/typedef.
     {
-      MemberDef *md = setCallContextForVar(clName);
-      //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
-      if (md && (g_currentDefinition==0 || isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)!=-1))
+      if (md==0) // not found as a typedef
       {
+	md = setCallContextForVar(clName);
+        if (md && g_currentDefinition!=0 && !isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
+	{
+	  md=0; // variable not accessible
+	}
+      }
+      if (md)
+      {
+        //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
         Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                md->getBodyDef() : md->getOuterScope();
 	//printf("definition %s\n",d?d->name().data():"<none>");
