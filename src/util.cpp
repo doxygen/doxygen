@@ -2166,8 +2166,15 @@ bool getScopeDefs(const char *docScope,const char *scope,
   //printf("getScopeDefs: docScope=`%s' scope=`%s'\n",docScope,scope);
   if (scopeName.isEmpty()) return FALSE;
 
+  bool explicitGlobalScope=FALSE;
+  if (scopeName.at(0)==':' && scopeName.at(1)==':')
+  {
+    scopeName=scopeName.right(scopeName.length()-2);  
+    explicitGlobalScope=TRUE;
+  }
+  
   QCString docScopeName=docScope;
-  int scopeOffset=docScopeName.length();
+  int scopeOffset=explicitGlobalScope ? 0 : docScopeName.length();
 
   do // for each possible docScope (from largest to and including empty)
   {
@@ -2193,6 +2200,14 @@ bool getScopeDefs(const char *docScope,const char *scope,
   } while (scopeOffset>=0);
   
   return FALSE;
+}
+
+static bool isLowerCase(QCString &s)
+{
+  char *p=s.data();
+  int c;
+  while ((c=*p++)) if (!islower(c)) return FALSE;
+  return TRUE; 
 }
 
 /*!
@@ -2229,7 +2244,26 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   {
     ClassDef *cd=0;
     NamespaceDef *nd=0;
-    if (linkText.isEmpty()) linkText=tmpName;
+
+    if (linkText.isEmpty())
+    {
+      linkText=tmpName;
+      // strip :: prefix if present
+      if (linkText.at(0)==':' && linkText.at(1)==':')
+      {
+        linkText=linkText.right(linkText.length()-2);
+      }
+    }
+
+    if (scopePos==-1 && isLowerCase(tsName))
+    { // link to lower case only name => do not try to autolink 
+      od.docify(linkText);
+      // text has been written, stop now.
+      return FALSE;
+    }
+
+    //printf("scName=%s tmpName=%s\n",scName,tmpName.data());
+    
     // check if this is a class or namespace reference
     if (scName!=tmpName && getScopeDefs(scName,name,cd,nd))
     {

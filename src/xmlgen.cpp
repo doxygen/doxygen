@@ -224,9 +224,12 @@ class XMLGenerator : public OutputDocInterface
 
     void docify(const char *s) 
     {
-      XML_DB(("(docify \"%s\")\n",s));
-      startParMode();
-      writeXMLString(m_t,s);
+      if (m_outputEnabled)
+      {
+        XML_DB(("(docify \"%s\")\n",s));
+        startParMode();
+        writeXMLString(m_t,s);
+      }
     }
     void writeChar(char c) 
     {
@@ -779,10 +782,12 @@ class XMLGenerator : public OutputDocInterface
     void startPageRef() 
     {
       XML_DB(("(startPageRef)\n"));
+      m_outputEnabled = FALSE;
     }
     void endPageRef(const char *,const char *) 
     {
       XML_DB(("(endPageRef)\n"));
+      m_outputEnabled = TRUE;
     }
     void writeLineNumber(const char *extRef,const char *compId,
                          const char *anchorId,int l)
@@ -886,6 +891,7 @@ class XMLGenerator : public OutputDocInterface
       m_t.setDevice(&m_b);
       m_t.setEncoding(QTextStream::Latin1);
       m_inParamList = FALSE;
+      m_outputEnabled = TRUE;
     }
     /*! copy constructor */
     XMLGenerator(const XMLGenerator *xg)
@@ -902,6 +908,7 @@ class XMLGenerator : public OutputDocInterface
       m_inParStack  = xg->m_inParStack;
       m_inListStack = xg->m_inListStack;
       m_inParamList = xg->m_inParamList;
+      m_outputEnabled = xg->m_outputEnabled;
     } 
     /*! destructor */
     virtual ~XMLGenerator()
@@ -935,6 +942,7 @@ class XMLGenerator : public OutputDocInterface
     ValStack<bool> m_inParStack;  
     ValStack<bool> m_inListStack;
     bool m_inParamList;
+    bool m_outputEnabled;
     
     friend void writeXMLCodeBlock(QTextStream &t,FileDef *fd);
 };

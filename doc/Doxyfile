@@ -51,3 +51,4 @@ DOC_ABSPATH       =
 BIN_ABSPATH       = /usr/local/bin/
 EXT_DOC_PATHS     =
 PDF_HYPERLINKS    = YES
+USE_PDFLATEX      = YES

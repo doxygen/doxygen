@@ -1757,7 +1757,10 @@ void LatexGenerator::startDotFile(const char *name,bool hasCaption)
     +baseName;
   writeDotGraphFromFile(name,outName,EPS);
   if (hasCaption)
+  {
     t << "\\begin{figure}[H]" << endl;
+    t << "\\begin{center}" << endl;
+  }
   else
     t << "\\mbox{";
   t << "\\includegraphics";
@@ -1781,6 +1784,7 @@ void LatexGenerator::endDotFile(bool hasCaption)
   if (hasCaption)
   {
     t << "}" << endl;
+    t << "\\end{center}" << endl;
     t << "\\end{figure}" << endl;
   }
 }

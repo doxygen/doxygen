@@ -2772,6 +2772,13 @@ static bool findClassRelation(
   //}
   //printf("\n");
 
+  QCString biName=bi->name;
+  bool explicitGlobalScope=FALSE;
+  if (biName.left(2)=="::") // explicit global scope
+  {
+     biName=biName.right(biName.length()-2);
+     explicitGlobalScope=TRUE;
+  }
 
   Entry *parentNode=root->parent;
   bool lastParent=FALSE;
@@ -2779,13 +2786,13 @@ static bool findClassRelation(
      // (in case of nested classes)
   {
     QCString scopeName= parentNode ? parentNode->name.data() : "";
-    int scopeOffset=scopeName.length();
+    int scopeOffset=explicitGlobalScope ? 0 : scopeName.length();
     do // try all parent scope prefixes, starting with the largest scope
     {
-      //printf("scopePrefix=`%s' bi->name=`%s'\n",
-      //    scopeName.left(scopeOffset).data(),bi->name.data());
+      //printf("scopePrefix=`%s' biName=`%s'\n",
+      //    scopeName.left(scopeOffset).data(),biName.data());
 
-      QCString baseClassName=bi->name;
+      QCString baseClassName=biName;
       if (scopeOffset>0)
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
@@ -2794,7 +2801,7 @@ static bool findClassRelation(
                           (removeRedundantWhiteSpace(baseClassName));
       bool baseClassIsTypeDef;
       QCString templSpec;
-      ClassDef *baseClass=getResolvedClass(cd,baseClassName,&baseClassIsTypeDef,&templSpec);
+      ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,baseClassName,&baseClassIsTypeDef,&templSpec);
       //printf("baseClassName=%s baseClass=%p cd=%p\n",baseClassName.data(),baseClass,cd);
       //printf("    root->name=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
       //                    root->name.data(),
@@ -2807,7 +2814,7 @@ static bool findClassRelation(
       //   ) // Check for base class with the same name.
       //     // If found then look in the outer scope for a match
       //     // and prevent recursion.
-      if (!isRecursiveBaseClass(root->name,baseClassName))
+      if (!isRecursiveBaseClass(root->name,baseClassName) || explicitGlobalScope)
       {
         Debug::print(
             Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",
@@ -2849,6 +2856,7 @@ static bool findClassRelation(
           }
         }
 
+        //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
         NamespaceDef *nd=cd->getNamespaceDef();
         if (!found && (i=baseClassName.findRev("::"))!=-1)
@@ -2887,7 +2895,7 @@ static bool findClassRelation(
                 ClassDef *ucd;
                 for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
                 {
-                  if (rightScopeMatch(ucd->name(),bi->name))
+                  if (rightScopeMatch(ucd->name(),biName))
                   {
                     baseClass = ucd;
                     found = TRUE;
@@ -2921,7 +2929,7 @@ static bool findClassRelation(
                 ClassDef *ucd;
                 for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
                 {
-                  if (rightScopeMatch(ucd->name(),bi->name))
+                  if (rightScopeMatch(ucd->name(),biName))
                   {
                     baseClass = ucd;
                     found = TRUE;
@@ -2939,7 +2947,7 @@ static bool findClassRelation(
                 ClassDef *ucd;
                 for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
                 {
-                  if (rightScopeMatch(ucd->name(),bi->name))
+                  if (rightScopeMatch(ucd->name(),biName))
                   {
                     baseClass = ucd;
                     found = TRUE;
@@ -2949,10 +2957,10 @@ static bool findClassRelation(
             }
           }
         }
-        bool isATemplateArgument = templateNames!=0 && templateNames->find(bi->name)!=0;
-        if (/*!isATemplateArgument &&*/ found)
+        bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
+        if (found)
         {
-          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",bi->name.data(),templSpec.data());
+          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",biName.data(),templSpec.data());
           // add base class to this class
 
           // if templSpec is not empty then we should "instantiate"
@@ -2971,7 +2979,7 @@ static bool findClassRelation(
           else if (mode==DocumentedOnly)
           {
             QCString usedName;
-            if (baseClassIsTypeDef) usedName=bi->name;
+            if (baseClassIsTypeDef) usedName=biName;
             cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
             // add this class as super class to the base class
             baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
@@ -2982,7 +2990,7 @@ static bool findClassRelation(
         {
           Debug::print(Debug::Classes,0,
                        "    New undocumented base class `%s' baseClassName=%s\n",
-                       bi->name.data(),baseClassName.data()
+                       biName.data(),baseClassName.data()
                       );
           baseClass=0;
           if (isATemplateArgument)
@@ -3004,7 +3012,7 @@ static bool findClassRelation(
             if (isArtificial) baseClass->setClassIsArtificial();
           }
           // add base class to this class
-          cd->insertBaseClass(baseClass,bi->name,bi->prot,bi->virt,templSpec);
+          cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
@@ -3014,8 +3022,22 @@ static bool findClassRelation(
         }
         else
         {
-          Debug::print(Debug::Classes,0,"    Base class `%s' not found\n",bi->name.data());
+          Debug::print(Debug::Classes,0,"    Base class `%s' not found\n",biName.data());
         }
+      }
+      else
+      {
+        if (mode!=TemplateInstances)
+        {
+          warn(root->fileName,root->startLine,
+              "Detected potential recursive class relation "
+              "between class %s and base class %s!\n",
+              root->name.data(),baseClassName.data()
+              );
+        }
+        // for mode==TemplateInstance this case is quite common and
+        // indicates a relation between a template class and a template 
+        // instance with the same name.
       }
       if (scopeOffset==0)
       {

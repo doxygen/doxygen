@@ -212,15 +212,14 @@ Now install doxygen as described above.
 
 <b>Bison problems</b>
 
-Versions 1.31 and 1.32 of bison contain a "bug" that results in a 
-compiler error like this:
+Versions 1.31 to 1.34 of bison contain a "bug" that results in a 
+compiler errors like this:
 
 ce_parse.cpp:348: member `class CPPValue yyalloc::yyvs' with 
 constructor not allowed in union
 
-There is no real solution to this problem, but it is discussed on the
-bison mailing list. I recomment to use version 1.29 until the problems 
-with bison are resolved.
+This problem has been solved in version 1.35 (versions before 1.31 
+will also work).
 
 <b>Latex problems</b>
 

@@ -2652,18 +2652,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
-  					  QCString bName = yytext;
-					  bName = bName.stripWhiteSpace();
-  					  bool globalScope = bName.at(0)==':' && baseName.isEmpty();
-  					  if (!globalScope)
-  					    baseName += bName;
-					  else
-					    baseName += (bName.data()+2);
+  					  //QCString bName = yytext;
+					  //bName = bName.stripWhiteSpace();
+  					  //bool globalScope = bName.at(0)==':' && baseName.isEmpty();
+  					  //if (!globalScope)
+  					  //  baseName += bName;
+					  //else
+					  //  baseName += (bName.data()+2);
+  					  baseName+=yytext;
 					  current->args += ' ';
-					  if (!globalScope)
-					    current->args += bName;
-					  else
-					    current->args += (bName.data()+2);
+					  //if (!globalScope)
+					  //  current->args += bName;
+					  //else
+					  //  current->args += (bName.data()+2);
+					  current->args += yytext;
 					}
 <Bases>{BN}*{ID}("."{ID})*		{ // Java style class
     					  QCString name = yytext;
@@ -4149,6 +4151,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->brief+=yytext;
   					}
+<LineDoc,AfterDocLine,CopyArgCommentLine>{CMD}("brief"|"short") {}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)

@@ -63,40 +63,32 @@ In both cases the intermediate *'s are optional, so
 is also valid.
 
 <li> A third alternative is to use a block of at least two C++ comment 
-lines, where the first starts with an additional slash or an 
+lines, where each line starts with an additional slash or an 
 exclamation mark. Here are examples of the two cases:
 
 \verbatim
 ///
-// ... text ...
-//
+/// ... text ...
+///
 \endverbatim
 
 or
 
 \verbatim
 //!
-// ... text ...
-//
+//!... text ...
+//!
 \endverbatim
 
 <li>
 
-One could also repeat the special markers for each line as shown in
-the following examples:
+Some people like to make their comment blocks more visible in the
+documentation. For this purpose you can use the following:
 
 \verbatim
-/// 
-/// ... text ....
-///
-\endverbatim
-
-or 
-
-\verbatim
-//!
-//! ... text ...
-//!
+/////////////////////////////////////////////////
+/// ... text ...
+/////////////////////////////////////////////////
 \endverbatim
 
 </ol>
@@ -117,7 +109,8 @@ Here is an example:
  */
 \endverbatim
 
-<li>If \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is set to YES in the configuration file, 
+<li>If \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is set to \c YES 
+    in the configuration file, 
     then using JavaDoc style comment
     blocks will automatically start a brief description which ends at the
     first dot followed by a space or new line. Here is an example:
@@ -126,6 +119,11 @@ Here is an example:
 /** Brief description which ends at this dot. Details follow
  *  here.
  */
+\endverbatim
+The option has the same effect for multi-line special C++ comments:
+\verbatim
+/// Brief description which ends at this dot. Details follow
+/// here.
 \endverbatim
 
 <li>A third option is to use a special C++ style comment which does not 
@@ -145,7 +143,9 @@ or
 \endverbatim
 
 Note the blank line in the last example, which is required to separate the 
-brief description from the block containing the detailed description.
+brief description from the block containing the detailed description. The
+\ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" should also be set to \c NO
+for this case.
 
 </ol>
 
@@ -215,7 +215,7 @@ implementer of the members more direct access to the documentation.
 As a compromise the brief description could be placed before the
 declaration and the detailed description before the member definition.
 
-\subsection memberdoc Documenting members afterwards
+\subsection memberdoc Putting documentation after members 
 
 If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,

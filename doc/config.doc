@@ -79,6 +79,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 <li> \refitem cfg_compact_latex COMPACT_LATEX 
 <li> \refitem cfg_compact_rtf COMPACT_RTF
+<li> \refitem cfg_details_at_top DETAILS_AT_TOP 
 <li> \refitem cfg_disable_index DISABLE_INDEX 
 <li> \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
@@ -399,6 +400,14 @@ followed by the descriptions of the tags grouped by category.
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO (the default), the 
   Javadoc-style will behave just like the Qt-style comments.
+
+\anchor cfg_details_at_top
+<dt>\c DETAILS_AT_TOP <dd>
+ \addindex DETAILS_AT_TOP
+  If the DETAILS_AT_TOP tag is set to YES then Doxygen
+  will output the detailed description near the top, like JavaDoc.
+  If set to NO, the detailed description appears after the member
+  documentation.
 
 \anchor cfg_inherit_docs
 <dt>\c INHERIT_DOCS <dd>

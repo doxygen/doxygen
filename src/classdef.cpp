@@ -2318,8 +2318,8 @@ void ClassDef::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
       //printf("%s->setMemberClass(%p)\n",imd->name().data(),this);
       imd->setMemberClass(this);
       imd->setTemplateMaster(md);
-      //imd->setDocumentation(md->documentation());
-      //imd->setBriefDescription(md->briefDescription());
+      imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+      imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
       insertMember(imd);
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",
