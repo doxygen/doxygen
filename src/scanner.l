@@ -473,9 +473,9 @@ static void setContext()
   QCString fileName = yyFileName;
   insideIDL  = fileName.right(4)==".idl" || fileName.right(5)==".pidl" || 
                fileName.right(4)==".odl";
-  insideJava = fileName.right(5)==".java";
+  insideJava = fileName.right(5)==".java" || fileName.right(3)==".as";
   insideCS   = fileName.right(3)==".cs"; // for normal keywords add colon
-  insideD    = fileName.right(3)==".d"; // for normal keywords add colon
+  insideD    = fileName.right(2)==".d"; // for normal keywords add colon
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
                fileName.right(4)==".inc" || fileName.right(6)==".phtml";
   insideObjC = fileName.right(2)==".m" || fileName.right(2)==".M" ||
@@ -1188,9 +1188,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  lineCount();
   					  current->argList->getLast()->name=QCString(yytext).stripWhiteSpace();
   					}
-<ObjCParams>"..."			{ // name of parameter
-  					  current->argList->getLast()->attrib="[,]";
-  					  current->argList->getLast()->type="...";
+<ObjCParams>","{BN}*"..."		{ // name of parameter
+  					  lineCount();
+					  // do we want the comma as part of the name?
+  					  //current->name += ",";
+  					  Argument *a = new Argument;
+  					  a->attrib="[,]";
+  					  a->type="...";
+					  current->argList->append(a);
   					}
    /*
 <ObjCParams>":"				{ 
@@ -1567,9 +1572,16 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                           lineCount();
   					  QCString scope=yytext;
 					  current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
-					  //printf("import name = %s -> %s\n",yytext,current->name.data());
-                                          current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDECL_SEC;
+					  current->fileName = yyFileName; 
+					  if (insideD) 
+					  {
+					    current->section=Entry::USINGDIR_SEC;
+					  }
+					  else
+					  {
+					    //printf("import name = %s -> %s\n",yytext,current->name.data());
+					    current->section=Entry::USINGDECL_SEC;
+					  }
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
 					  initEntry();
@@ -1709,6 +1721,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <FindMembers>"Q_PROPERTY"		{ // Qt property declaration
 					  current->protection = protection = Public ;
   					  current->mtype = mtype = Property;
+					  current->type.resize(0);
   					  BEGIN(QtPropType);
   					}
 <QtPropType>"("				{ // start of property arguments
@@ -1717,8 +1730,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
+<QtPropType>"const"|"volatile"		{
+  				          current->type+=yytext;
+  					}
+<QtPropType>{B}+			{
+  				          current->type+=yytext;
+  					}
 <QtPropType>{ID}			{
-  					  current->type=yytext;
+  					  current->type+=yytext;
                                           BEGIN(QtPropName);
   					}
 <QtPropName>{ID}			{
@@ -4384,11 +4403,11 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
  /* ---- Comments blocks ------ */
 
-<DocBlock>"*/"				{ // end of comment block
+<DocBlock>"*"*"*/"			{ // end of comment block
   				          handleCommentBlock(docBlock,FALSE);
 					  BEGIN(docBlockContext);
   					}
-<DocBlock>^{B}*"*"+/{BN}+		{ // start of a comment line
+<DocBlock>^{B}*"*"+/[^//]		{ // start of a comment line
   					}
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
@@ -4449,9 +4468,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
 
    /*************************************************************************/
-   /*** The next part is obsolete and will be removed */
-
-
+   /***           The next part is obsolete and will be removed           ***/
 
 
 <JavaDoc>{CMD}("brief"|"short"){B}+	{
@@ -6121,8 +6138,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 <DefLineDoc,LineDoc,ClassDoc,PageDoc,Doc>"/*"|"//"   { current->doc += yytext; }
 
-
-  /**** End of obsolete part                                             */
+  /***                  End of obsolete part                           ***/
   /***********************************************************************/
 
 

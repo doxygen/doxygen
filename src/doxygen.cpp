@@ -221,9 +221,9 @@ static void addRelatedPage(Entry *root)
      );
   if (pd)
   {
-    // see if the function is inside a namespace
     Definition *ctx = 0;
 
+    // find the page's context
     if (root->parent->section & Entry::COMPOUND_MASK ) // inside class
     {
        QCString fullName=removeRedundantWhiteSpace(root->parent->name);
@@ -648,7 +648,7 @@ static void addClassToContext(Entry *root)
 
   bool ambig;
 
-  NamespaceDef *nd = 0;
+  //NamespaceDef *nd = 0;
   FileDef      *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
   // see if the using statement was found inside a namespace or inside
@@ -657,18 +657,16 @@ static void addClassToContext(Entry *root)
   if (root->parent->section == Entry::NAMESPACE_SEC)
   {
      scName=root->parent->name;
-     if (!scName.isEmpty())
-     {
-        nd = getResolvedNamespace(scName);
-     }
+ //    if (!scName.isEmpty())
+ //    {
+ //       nd = getResolvedNamespace(scName);
+ //    }
   }
   QCString fullName = root->name;
 
-  ClassDef *cd = getResolvedClass( nd,fd,
-            // normally we could use root->name to find the class, but since we did not yet resolve
-            // the class/namespace nesting relations we have to use the fully qualified name here.
-            scName.isEmpty() ? root->name : scName+"::"+root->name,
-            0,0,TRUE);
+  QCString qualifiedName = scName.isEmpty() ? root->name : scName+"::"+root->name;
+  
+  ClassDef *cd = getClass(qualifiedName);
 
   Debug::print(Debug::Classes,0, "  Found class with name %s (cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), cd);
@@ -1975,7 +1973,6 @@ static void buildVarList(Entry *root)
     QCString classScope=stripAnonymousNamespaceScope(scope);
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
-    scope=classScope;
 
     bool isRelated=FALSE;
     if (!root->relates.isEmpty()) // related variable
@@ -1991,6 +1988,7 @@ static void buildVarList(Entry *root)
     {
       // TODO: clean up this mess!
       MemberDef *md=0;
+#if 0
       // if cd is an annonymous scope we insert the member 
       // into a non-annonymous scope as well.
       //int indentDepth=0;
@@ -2028,6 +2026,7 @@ static void buildVarList(Entry *root)
           }
         }
       }
+#endif
       //printf("name=`%s' scope=%s scope.right=%s indentDepth=%d anonyScopes=%d\n",
       //                   name.data(),scope.data(),
       //                   scope.right(scope.length()-si).data(),
@@ -6654,6 +6653,62 @@ static void findMainPage(Entry *root)
   }
 }
 
+static void computePageRelations(Entry *root)
+{
+  if ((root->section==Entry::PAGEDOC_SEC || 
+       root->section==Entry::MAINPAGEDOC_SEC
+      )
+      && !root->name.isEmpty()
+     )
+  {
+    PageDef *pd = root->section==Entry::PAGEDOC_SEC ?
+                    Doxygen::pageSDict->find(root->name) : 
+                    Doxygen::mainPage; 
+    if (pd)
+    {
+      QListIterator<BaseInfo> bii(*root->extends);
+      BaseInfo *bi;
+      for (bii.toFirst();(bi=bii.current());++bii)
+      {
+        PageDef *subPd = Doxygen::pageSDict->find(bi->name);
+        if (subPd)
+        {
+          pd->addInnerCompound(subPd);
+          //printf("*** Added subpage relation: %s->%s\n",
+          //    pd->name().data(),subPd->name().data());
+        }
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    computePageRelations(e);
+  }
+}
+
+static void checkPageRelations()
+{
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    Definition *ppd = pd->getOuterScope();
+    while (ppd)
+    {
+      if (ppd==pd)
+      {
+        err("Warning: page defined at line %d of file %s with label %s is a subpage "
+            "of itself! Please remove this cyclic dependency.\n",
+            pd->docLine(),pd->docFile().data(),pd->name().data());
+        exit(1);
+      }
+      ppd=ppd->getOuterScope();
+    }
+  }
+}
+
 //----------------------------------------------------------------------------
 
 static void resolveUserReferences()
@@ -6738,66 +6793,7 @@ static void generatePageDocs()
     if (!pd->getGroupDef() && !pd->isReference())
     {
       msg("Generating docs for page %s...\n",pd->name().data());
-      //outputList->disable(OutputGenerator::Man);
-      QCString pageName;
-      if (Config_getBool("CASE_SENSE_NAMES"))
-        pageName=pd->name();
-      else
-        pageName=pd->name().lower();
-
-      startFile(*outputList,pageName,pageName,pd->title());
- 
-      // save old generator state and write title only to Man generator
-      outputList->pushGeneratorState();
-      outputList->disableAllBut(OutputGenerator::Man);
-      outputList->startTitleHead(pageName);
-      outputList->endTitleHead(pageName, pageName);
-      outputList->popGeneratorState();
-      
-      SectionInfo *si=0;
-      if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
-          (si=Doxygen::sectionDict.find(pageName))!=0)
-      {
-        outputList->startSection(si->label,si->title,si->type);
-        outputList->docify(si->title);
-        outputList->endSection(si->label,si->type);
-      }
-      outputList->startTextBlock();
-      outputList->parseDoc(pd->docFile(),       // fileName
-                           pd->docLine(),       // startLine
-                           pd,                  // context
-                           0,                   // memberdef
-                           pd->documentation(), // docStr
-                           TRUE,                // index words
-                           FALSE                // not an example
-                          );
-      outputList->endTextBlock();
-      endFile(*outputList);
-      //outputList->enable(OutputGenerator::Man);
-
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-      {
-        bool found=FALSE;
-        QDictIterator<RefList> rli(*Doxygen::xrefLists);
-        RefList *rl;
-        for (rli.toFirst();(rl=rli.current());++rli)
-        {
-          if (rl->listName()==pd->name())
-          {
-            found=TRUE;
-            break;
-          }
-        }
-        if (!found) // not one of the generated related pages
-        {
-          Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
-          Doxygen::tagFile << "    <name>" << pd->name() << "</name>" << endl;
-          Doxygen::tagFile << "    <title>" << convertToXML(pd->title()) << "</title>" << endl;
-          Doxygen::tagFile << "    <filename>" << pd->getOutputFileBase() << "</filename>" << endl;
-          pd->writeDocAnchorsToTagFile();
-          Doxygen::tagFile << "  </compound>" << endl;
-        }
-      }
+      pd->writeDocumentation(*outputList);
     }
   }
 }
@@ -7282,8 +7278,8 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {
-    dest.resize(oldPos+newSize); // resize the array
-    //printf(".......resizing from %d to %d\n",oldPos+size,oldPos+newSize);
+    dest.shrink(oldPos+newSize); // resize the array
+    //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,dest.data());
   }
 }
 
@@ -8529,7 +8525,11 @@ void parseInput()
 
   msg("Building class list...\n");
   buildClassList(root);
+
+  msg("Associating documentation with classes...\n");
   buildClassDocList(root);
+
+  msg("Computing nesting relations for classes...\n");
   resolveClassNestingRelations();
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelation(), that's why
@@ -8586,6 +8586,10 @@ void parseInput()
 
   msg("Search for main page...\n");
   findMainPage(root);
+
+  msg("Computing page relations...\n");
+  computePageRelations(root);
+  checkPageRelations();
 
   msg("Sorting lists...\n");
   Doxygen::memberNameSDict.sort();

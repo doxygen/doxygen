@@ -60,7 +60,7 @@
 //
  
 
-class TranslatorKorean : public TranslatorAdapter_1_3_9
+class TranslatorKorean : public TranslatorAdapter_1_4_1
 {
  private:
   /*! The decode() can change euc into sjis */

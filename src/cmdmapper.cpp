@@ -73,6 +73,7 @@ CommandMap cmdMap[] =
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
+  { "subpage",       CMD_SUBPAGE },
   { "subsection",    CMD_SUBSECTION },
   { "subsubsection", CMD_SUBSUBSECTION },
   { "paragraph",     CMD_PARAGRAPH },

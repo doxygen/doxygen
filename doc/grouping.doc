@@ -16,11 +16,13 @@
  */
 /*! \page grouping Grouping
 
-Doxygen has two mechanisms to group things together. 
+Doxygen has three mechanisms to group things together. 
 One mechanism works at a global level, creating a new page
-for each group. These groups are called "modules" in the documentation.
-The other mechanism works within a member list of some compound entity,
-and is refered to as a "member group".
+for each group. These groups are called \ref modules "'modules'" in the documentation.
+The second mechanism works within a member list of some compound entity,
+and is refered to as a \ref memgroup "'member groups'". 
+For \ref cmdpage "pages" there is a third grouping mechanism referred to 
+a \ref subpaging "subpaging".
 
 \section modules Modules
 
@@ -31,46 +33,53 @@ variables, enums, typedefs, and defines, but also other groups.
 
 To define a group, you should put the \ref cmddefgroup "\\defgroup"
 command in a special comment block. The first argument of the command 
-is a label that should uniquely identify the group.  You can make an 
-entity a member of a specific group by putting 
+is a label that should uniquely identify the group.  
+The second argument is the name or title of the group as it should appear 
+in the documentation.
+
+You can make an entity a member of a specific group by putting 
 a \ref cmdingroup "\\ingroup" command inside its documentation block.
-The second argument is the title of the group.
 
 To avoid putting \ref cmdingroup "\\ingroup" commands in the documentation
-of each member you can also group members together by the 
+for each member you can also group members together by the 
 open marker <code>\@{</code> before the group and the 
 closing marker <code>\@}</code> after the group. The markers can 
 be put in the documentation of the group definition or in a separate 
 documentation block. 
 
-Groups can also be nested using these grouping markers.
+Groups themselves can also be nested using these grouping markers.
 
 You will get an error message when you use the same group label more than once.
-If you don't want doxygen to enforce
-unique labels, then you can use \ref cmdaddtogroup "\\addtogroup" instead of
-\ref cmddefgroup "\\defgroup". It can be used exactly like \ref cmddefgroup "\\defgroup",
-but when the group has been defined already, then it silently merges the existing documentation
-with the new one.
+If you don't want doxygen to enforce unique labels, then you can 
+use \ref cmdaddtogroup "\\addtogroup" instead of
+\ref cmddefgroup "\\defgroup". 
+It can be used exactly like \ref cmddefgroup "\\defgroup",
+but when the group has been defined already, then it silently merges the 
+existing documentation with the new one.
 The title of the group is optional for this command, so you can use
 \verbatim
 /** \addtogroup <label> */
 /*\@{*/
 /*\@}*/
 \endverbatim
-to add members to a group that is defined in more detail elsewhere.
+to add additional members to a group that is defined in more detail elsewhere.
 
 Note that compound entities (like classes, files and namespaces) can
 be put into multiple groups, but members (like variable, functions, typedefs
 and enums) can only be a member of one group 
-(this restriction is to avoid ambiguous linking targets).
+(this restriction is in place to avoid ambiguous linking targets in case 
+a member is not documented in the context of its class, namespace
+or file, but only visible as part of a group).
 
-Doxygen will put members into that group where the grouping definition had
-the highest priority: f.i. \ref cmdingroup "\\ingroup" overrides any automatic
-grouping definition via <code>\@{</code> <code>\@}</code>. Conflicting grouping
-definitions with the same priority trigger a warning, unless one definition
-was for a member without any explicit documentation. The following example
-puts VarInA into group A and silently resolves the conflict for IntegerVariable by
-putting it into group IntVariables, because the second instance of IntegerVariable
+Doxygen will put members into the group whose definition has
+the highest "priority": e.g. An explicit \ref cmdingroup "\\ingroup" overrides 
+an implicit grouping definition via <code>\@{</code> <code>\@}</code>. 
+Conflicting grouping definitions with the same priority trigger a warning, 
+unless one definition was for a member without any explicit documentation. 
+
+The following example puts VarInA into group A and silently resolves 
+the conflict for IntegerVariable by putting it into group IntVariables, 
+because the second instance of IntegerVariable
 is undocumented:
 
 \verbatim
@@ -191,5 +200,21 @@ different protection levels (i.e. public and protected).
 Go to the <a href="formulas.html">next</a> section or return to the
  <a href="index.html">index</a>.
 \endhtmlonly
+
+\section subpaging Subpaging
+
+Information can be grouped into pages using the \ref cmdpage "\\page" and
+\ref cmdsubpage "\\mainpage" commands. Normally, this results in a
+flat list of pages, where the "main" page is the first in the list. 
+
+Instead of adding structure using the approach decribed in section
+\ref modules "modules" it is often more natural and convienent to add 
+additional structure to the pages using the \ref cmdsubpage "\\subpage" 
+command. 
+
+For a page A the \\subpage command adds a link to another page B and at 
+the same time makes page B a subpage of A. This has the effect of making
+two groups GA and GB, where GB is part of GA, page A is put in group GA, 
+and page B is put in group GB.
 
 */

@@ -641,6 +641,21 @@ void XmlDocVisitor::visitPre(DocImage *img)
     m_t << "\"";
   }
   m_t << ">";
+
+  // copy the image to the output dir
+  QFile inImage(img->name());
+  QFile outImage(Config_getString("XML_OUTPUT")+"/"+baseName.ascii());
+  if (inImage.open(IO_ReadOnly))
+  {
+    if (outImage.open(IO_WriteOnly))
+    {
+      char *buffer = new char[inImage.size()];
+      inImage.readBlock(buffer,inImage.size());
+      outImage.writeBlock(buffer,inImage.size());
+      outImage.flush();
+      delete buffer;
+    }
+  }
 }
 
 void XmlDocVisitor::visitPost(DocImage *) 

@@ -74,7 +74,7 @@ Here is an example that speaks for itself:
 
 If you like you can also use HTML commands inside the documentation
 blocks. Using these commands has the advantage that it is more natural
-for list items that consists of multiple paragraphs. 
+for list items that consist of multiple paragraphs. 
 
 Here is the above example with HTML commands:
 \verbatim

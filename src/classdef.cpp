@@ -1571,7 +1571,7 @@ void ClassDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
           ol.writeString("href=\"");
           ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
           ol.writeString("\">");
-          ol.writeString(md->localName());
+          ol.writeString(md->name());
           ol.writeString("</a>");
         }
         ol.writeString("</td></tr>\n");
@@ -2076,12 +2076,9 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
 
 static bool isStandardFunc(MemberDef *md)
 {
-  ClassDef *cd=md->getClassDef();
-  if (cd->templateMaster()) cd=cd->templateMaster();
   return md->name()=="operator=" || // assignment operator
-         md->name()==cd->localName() || // constructor
-         (md->name().find('~')!=-1 && 
-          md->name().find("operator")==-1); // destructor
+         md->isConstructor() ||     // constructor
+         md->isDestructor();        // destructor
 }
 
 /*! 

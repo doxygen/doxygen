@@ -69,7 +69,7 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_4_1
+class TranslatorSwedish : public Translator
 {
   public:
 
@@ -186,9 +186,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
 
     virtual QCString trFileList()
     { return "Fillista"; }
-
-    virtual QCString trHeaderFiles()
-    { return "Headerfiler"; }
 
     virtual QCString trCompoundMembers()
     {
@@ -314,9 +311,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
       return result;
     }
 
-    virtual QCString trHeaderFilesDescription()
-    { return "Här följer headerfilerna som API:n består av:"; }
-
     virtual QCString trExamplesDescription()
     { return "Här följer en lista med alla exempel:"; }
 
@@ -325,9 +319,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
 
     virtual QCString trModulesDescription()
     { return "Här följer en lista över alla moduler:"; }
-
-    virtual QCString trNoDescriptionAvailable()
-    { return "Beskrivning saknas"; }
 
     virtual QCString trDocumentation()
     { return "Dokumentation"; }
@@ -411,9 +402,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
     virtual QCString trEnumerationTypeDocumentation()
     { return "Dokumentation över egenuppräknande typer"; }
 
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Dokumentation över egenuppräknande typers värden"; }
-
     virtual QCString trFunctionDocumentation()
     { return "Dokumentation över funktioner"; }
 
@@ -456,14 +444,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
     virtual QCString trForInternalUseOnly()
     { return "Endast för internt bruk."; }
 
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Omskriven av intern anledning; API:n påverkas inte.";}
-
     virtual QCString trWarning()
     { return "Varning"; }
-
-    virtual QCString trBugsAndLimitations()
-    { return "Fel och begränsningar"; }
 
     virtual QCString trVersion()
     { return "Version"; }
@@ -704,10 +686,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Källor";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definition på rad @0 i filen @1.";
@@ -1027,11 +1005,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Gränssnitt";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1064,11 +1037,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
     virtual QCString trPackages()
     {
       return "Paket";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Paketdokumentation";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1186,16 +1154,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
     { 
       QCString result((first_capital ? "Medlem" : "medlem"));
       if (!singular)  result+="mar";
-      return result; 
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "Fält" : "fält"));
       return result; 
     }
 
@@ -1458,6 +1416,20 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_1
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+      return "Det här är en överlagrad medlemsfunktion "
+             "tillhandahållen för bekvämlighet. Den enda som "
+             "skiljer sig från ovanstående funktion är vilka "
+             "argument den tar emot.";
+    }
 
 	
 };

@@ -49,10 +49,10 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_4_1
+class TranslatorRussian : public Translator
 {
   private:
-    /*! The Decode() inline assumes the source written in the 
+    /*! The decode() inline assumes the source written in the 
         Koi8-R encoding (maintainer dependent). 
      */
     inline QCString decode(const QCString & sInput)
@@ -216,10 +216,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
     virtual QCString trFileList()
     { return decode("Файлы"); }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return decode("Заголовочные файлы"); }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
@@ -330,10 +326,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
       return decode( result );
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return decode("Полный список заголовочных файлов."); }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return decode("Полный список примеров."); }
@@ -345,12 +337,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return decode("Полный список групп."); }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return decode("Описание отсутсвует"); }
 
     // index titles (the project name is prepended for these) 
 
@@ -502,12 +488,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
     { return decode("Перечисления"); }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return decode("Элементы перечислений"); }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -566,19 +546,9 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
     virtual QCString trForInternalUseOnly()
     { return decode("Только для внутреннего использования"); }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    /*??*/
-    { return decode("Изменено по внутренним причинам"); 
-    }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return decode("Предупреждения"); }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return decode("Ошибки и ограничения"); }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -881,10 +851,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return decode("Исходные тексты.");
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return decode("См. определение в файле @1 строка @0");
@@ -1192,11 +1158,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return decode("Интерфейсы");
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1226,11 +1187,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
-    {
-      return decode("Пакеты");
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
     {
       return decode("Пакеты");
     }
@@ -1348,17 +1304,6 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
       return decode(result); 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Пол" : "пол"));
-      result+=(singular ? "е" : "я");
-      return decode(result); 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1615,6 +1560,20 @@ class TranslatorRussian : public TranslatorAdapter_1_4_1
       QCString result((first_capital ? "Директори" : "директори"));
       if (singular) result+="я"; else result+="и";
       return decode( result ); 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return decode( "Эта функция перегружена и предоставляется исключительно "
+              "для удобства использования. Она отличается от вышеупомянутой "
+              "только фактическими аргументами." );
     }
 };
 

@@ -1094,6 +1094,7 @@ void Config::check()
     filePatternList.append("*.cxx");
     filePatternList.append("*.cpp");
     filePatternList.append("*.c++");
+    filePatternList.append("*.d");
     filePatternList.append("*.java");
     filePatternList.append("*.ii");
     filePatternList.append("*.ixx");

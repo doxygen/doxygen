@@ -1,4 +1,4 @@
-(1.4.1-20050227)
+(1.4.1-20050314)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
 Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
 Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 2 translators are up-to-date, 28 translators are based on
+Of them, 5 translators are up-to-date, 25 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,8 +17,11 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 192 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorCzech
   TranslatorDutch -- Remove the obsolete methods (never used).
   TranslatorEnglish -- Remove the obsolete methods (never used).
+  TranslatorRussian
+  TranslatorSwedish
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -27,9 +30,7 @@ version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
   TranslatorUkrainian             1.4.1 	 1 method to implement
-  TranslatorSwedish               1.4.1 	 1 method to implement
   TranslatorSerbian               1.4.1 	 1 method to implement
-  TranslatorRussian               1.4.1 	 1 method to implement
   TranslatorRomanian              1.4.1 	 1 method to implement
   TranslatorPolish                1.4.1 	 1 method to implement
   TranslatorKorean                1.4.01	 1 method to implement
@@ -39,7 +40,6 @@ must be implemented to become up-to-date:
   TranslatorHungarian             1.4.1 	 1 method to implement
   TranslatorGerman                1.4.1 	 1 method to implement
   TranslatorFrench                1.4.1 	 1 method to implement
-  TranslatorCzech                 1.4.1 	 1 method to implement
   TranslatorCroatian              1.4.1 	 1 method to implement
   TranslatorChinese               1.4.1 	 1 method to implement
   TranslatorBrazilian             1.4.1 	 1 method to implement
@@ -209,16 +209,6 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_3_8)  8 methods to implement
 
 TranslatorCroatian   (TranslatorAdapter_1_4_1)  1 method to implement
 ------------------
-
-  Implements 191 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-
-
-TranslatorCzech   (TranslatorAdapter_1_4_1)  1 method to implement
----------------
 
   Implements 191 of the required methods.
 
@@ -769,29 +759,6 @@ TranslatorRomanian   (TranslatorAdapter_1_4_1)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorRussian   (TranslatorAdapter_1_4_1)  1 method to implement
------------------
-
-  Implements 191 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trNoDescriptionAvailable()
-
-
 TranslatorSerbian   (TranslatorAdapter_1_4_1)  1 method to implement
 -----------------
 
@@ -923,29 +890,6 @@ TranslatorSpanish   (TranslatorAdapter_1_3_8)  8 methods to implement
 
     virtual QCString trHeaderFilesDescription()
     virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorSwedish   (TranslatorAdapter_1_4_1)  1 method to implement
------------------
-
-  Implements 191 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool/*singular*/)
     virtual QCString trPackageDocumentation()
     virtual QCString trSources()
     virtual QCString trReimplementedForInternalReasons()
