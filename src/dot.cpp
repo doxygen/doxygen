@@ -2433,9 +2433,11 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  dotfiles to generate image maps.
  *  \param inFile just the basename part of the filename
  *  \param outDir output directory
+ *  \param relPath relative path the to root of the output dir
  *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
-QString getDotImageMapFromFile(const QString& inFile, const QString& outDir)
+QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
+    const QCString &relPath)
 {
   QString outFile = inFile + ".map";
 
@@ -2458,7 +2460,7 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir)
   }
   QString result;
   QTextOStream tmpout(&result);
-  convertMapFile(tmpout, outFile, "",TRUE);
+  convertMapFile(tmpout, outFile, relPath ,TRUE);
   QDir().remove(outFile);
 // printf("result=%s\n",result.data());
 

@@ -357,9 +357,7 @@ class DocVerbatim : public DocNode
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, XmlOnly, Verbatim, Dot };
     DocVerbatim(DocNode *parent,const QString &context,
                 const QString &text, Type t,bool isExample,
-                const QString &exampleFile) : 
-      m_parent(parent), m_context(context), m_text(text), m_type(t),
-      m_isExample(isExample), m_exampleFile(exampleFile) {}
+                const QString &exampleFile);
     Kind kind() const           { return Kind_Verbatim; }
     Type type() const           { return m_type; }
     QString text() const        { return m_text; }
@@ -368,6 +366,7 @@ class DocVerbatim : public DocNode
     void accept(DocVisitor *v)  { v->visit(this); }
     bool isExample() const      { return m_isExample; }
     QString exampleFile() const { return m_exampleFile; }
+    QString relPath() const    { return m_relPath; }
 
   private:
     DocNode *m_parent;
@@ -376,6 +375,7 @@ class DocVerbatim : public DocNode
     Type     m_type;
     bool     m_isExample;
     QString  m_exampleFile;
+    QString  m_relPath;
 };
 
 
@@ -455,6 +455,7 @@ class DocFormula : public DocNode
     Kind kind() const          { return Kind_Formula; }
     QString name() const       { return m_name; }
     QString text() const       { return m_text; }
+    QString relPath() const    { return m_relPath; }
     int id() const             { return m_id; }
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
@@ -463,6 +464,7 @@ class DocFormula : public DocNode
     DocNode *m_parent;
     QString  m_name;
     QString  m_text;
+    QString  m_relPath;
     int      m_id;
 };
 

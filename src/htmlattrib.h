@@ -35,6 +35,18 @@ class HtmlAttribList : public QList<HtmlAttrib>
     { operator=(l); }
     HtmlAttribList &operator=(const HtmlAttribList &l)
     { clear(); QList<HtmlAttrib>::operator=(l); return *this; }
+    QString toString() const
+    {
+      HtmlAttribList *that = (HtmlAttribList *)this;
+      QString result;
+      HtmlAttrib *attr=that->first();
+      while (attr)
+      {
+        result+=" "+attr->name+"=\""+attr->value+"\"";
+        attr=that->next();
+      }
+      return result;
+    }
   private:
     QCollection::Item newItem( QCollection::Item d ) 
     { return (QCollection::Item)new HtmlAttrib(*(HtmlAttrib *)d); }

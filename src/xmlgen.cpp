@@ -955,8 +955,19 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Virtual: t << "virtual";      break;
         case Pure:    t <<"pure-virtual"; break;
       }
-      t << "\">" << convertToXML(bcd->classDef->displayName()) 
-        << "</basecompoundref>" << endl;
+      t << "\">";
+      if (!bcd->templSpecifiers.isEmpty())
+      {
+        convertToXML(
+            insertTemplateSpecifierInScope(
+              bcd->classDef->displayName(),bcd->templSpecifiers)
+           );
+      }
+      else
+      {
+        convertToXML(bcd->classDef->displayName());
+      }
+      t  << "</basecompoundref>" << endl;
     }
   }
   if (cd->subClasses()->count()>0)

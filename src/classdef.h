@@ -75,6 +75,7 @@ class ClassDef : public Definition
     QCString getReference() const;
     bool isReference() const;
     bool isLocal() const { return m_isLocal; }
+    bool isArtificial() const { return m_artificial; }
 
     bool hasDocumentation() const;
 

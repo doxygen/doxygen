@@ -578,10 +578,10 @@ bool MemberDef::isLinkableInProject() const
     //printf("in a namespace but namespace not linkable!\n");
     return FALSE; // in namespace but namespace not linkable
   }
-  if (!group && fileDef && !fileDef->isLinkableInProject()) 
+  if (!group && !nspace && fileDef && !fileDef->isLinkableInProject()) 
   {
     //printf("in a file but file not linkable!\n");
-    return FALSE; // in file but file not linkable
+    return FALSE; // in file (and not in namespace) but file not linkable
   }
   if (prot==Private && !Config_getBool("EXTRACT_PRIVATE") && mtype!=Friend) 
   {

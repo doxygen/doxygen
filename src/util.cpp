@@ -72,27 +72,6 @@ extern char **environ;
 //#define MAP_ALGO ALGO_COUNT
 //#define MAP_ALGO ALGO_CRC16
 #define MAP_ALGO ALGO_MD5
-    
-//------------------------------------------------------------------------
-
-struct LookupInfo
-{
-  LookupInfo(ClassDef *cd=0,MemberDef *td=0,QCString ts="") 
-    : classDef(cd), typeDef(td), templSpec(ts) {}
-  ClassDef  *classDef;
-  MemberDef *typeDef;
-  QCString   templSpec;
-};
-
-static QCache<LookupInfo> g_lookupCache(20000,20000); 
-
-// object that automatically initializes the cache at startup
-class CacheInitializer
-{
-  public:
-    CacheInitializer() { g_lookupCache.setAutoDelete(TRUE); }
-} g_cacheInitializer;
-
 
 //------------------------------------------------------------------------
 // TextGeneratorOLImpl implementation
@@ -618,6 +597,10 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
   {
+    //printf("Already cached %s->%s\n",
+    //    md->name().data(),
+    //    md->getCachedTypedefVal()?md->getCachedTypedefVal()->name().data():"<none>");
+    if (pTemplSpec) *pTemplSpec = md->getCachedTypedefTemplSpec();
     return md->getCachedTypedefVal();
   }
   QCString qname = md->qualifiedName();
@@ -638,32 +621,61 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   }
   if (type.left(7)=="struct ") // strip leading "struct"
   {
+    type=type.mid(7);
   }
   else if (type.left(6)=="union ") // or strip leading "union"
   {
+    type=type.mid(6);
   }
   type=type.stripWhiteSpace(); // strip leading and trailing whitespace
-  ClassDef *result = getResolvedClassRec(md->getOuterScope(),fileScope,type,0,0);
+  MemberDef *memTypeDef = 0;
+  ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
+                                  fileScope,type,&memTypeDef,0);
+  // if type is a typedef than return what it resolves to.
+  if (memTypeDef) return newResolveTypedef(fileScope,memTypeDef,pTemplSpec);
+  
   //printf("type=%s result=%p\n",type.data(),result);
   if (result==0)
   {
     // try unspecialized version if type is template
+    int si=type.findRev("::");
     int i=type.find('<');
-    if (i!=-1) // typedef of a template => try the unspecialized version
+    if (si==-1 && i!=-1) // typedef of a template => try the unspecialized version
     {
       *pTemplSpec = type.mid(i);
       result = getResolvedClassRec(md->getOuterScope(),fileScope,type.left(i),0,0);
     }
+    else if (si!=-1) // A::B
+    {
+      i=type.find('<',si);
+      if (i==-1) // Something like A<T>::B => lookup A::B
+      {
+        i=type.length();
+      }
+      else // Something like A<T>::B<S> => lookup A::B, spec=<S>
+      {
+        *pTemplSpec = type.mid(i);
+      }
+      result = getResolvedClassRec(md->getOuterScope(),fileScope,
+           stripTemplateSpecifiersFromScope(type.left(i),FALSE),0,0);
+    }
   }
 
   // remember computed value for next time
-  if (result && result->getDefFileName()!="<code>") 
+  if (Doxygen::lookupCacheEnabled && result && result->getDefFileName()!="<code>") 
     // this check is needed to prevent that temporary classes that are 
     // introduced while parsing code fragments are being cached here.
   {
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
-    md->cacheTypedefVal(result);
+    if (pTemplSpec)
+    {
+      md->cacheTypedefVal(result,*pTemplSpec);
+    }
+    else
+    {
+      md->cacheTypedefVal(result,"");
+    }
   }
   
   g_resolvedTypedefs.remove(qname); // remove from the trace list
@@ -839,7 +851,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     result= (i==-1) ? -1 : i+1;
   }
 done:
-  //g_lookupCache.insert(key,new int(result));
+  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -971,7 +983,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
     }
   }
 done:
-  //g_lookupCache.insert(key,new int(result));
+  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1031,9 +1043,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
   QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
-  LookupInfo *pval=g_lookupCache.find(key);
+  LookupInfo *pval=Doxygen::lookupCache.find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
-  if (pval)
+  if (Doxygen::lookupCacheEnabled && pval)
   {
     if (pTemplSpec) *pTemplSpec=pval->templSpec;
     if (pTypeDef)   *pTypeDef=pval->typeDef;
@@ -1045,7 +1057,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   else // not found yet; we already add a 0 to avoid the possibility of 
        // endless recursion.
   {
-    g_lookupCache.insert(key,new LookupInfo);
+    Doxygen::lookupCache.insert(key,new LookupInfo);
   }
 
   ClassDef *bestMatch=0;
@@ -1100,7 +1112,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
               QCString spec;
               minDistance=distance;
               bestMatch = newResolveTypedef(fileScope,md,&spec);
-              //printf("      bestTypeDef=%p\n",md);
+              //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
               bestTypedef = md;
               bestTemplSpec = spec;
             }
@@ -1122,7 +1134,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     *pTemplSpec = bestTemplSpec;
   }
 
-  pval=g_lookupCache.find(key);
+  pval=Doxygen::lookupCache.find(key);
   if (pval)
   {
     pval->classDef  = bestMatch;
@@ -1131,7 +1143,14 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   else
   {
-    g_lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
+    if (Doxygen::lookupCacheEnabled)
+    {
+      Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
+    }
+    else // remove the 0 key from the cache
+    {
+      Doxygen::lookupCache.remove(key);
+    }
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -1602,6 +1621,55 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
+
+/*! looks for a filter for the file \a name.  Returns the name of the filter
+ *  if there is a match for the file name, otherwise an empty string.
+ */
+QCString getFileFilter(const char* name)
+{
+  // sanity check
+  if (name==0) return "";
+
+  // first look for filter pattern list
+  QStrList& filterList = Config_getList("FILTER_PATTERNS");
+
+  if (filterList.isEmpty()) 
+  {
+    // use INPUT_FILTER instead (For all files)
+    return Config_getString("INPUT_FILTER");
+  }
+
+  // compare the file name to the filter pattern list
+  QStrListIterator sli(filterList);
+  char* filterStr;
+  for(sli.toFirst(); (filterStr = sli.current()); ++sli)
+  {
+    QCString fs = filterStr;
+    int i_equals=fs.find('=');
+
+    if (i_equals!=-1)
+    {
+      QCString filterPattern = fs.left(i_equals);
+
+#if defined(_WIN32) || defined(_OS_MAC_) // windows or mac
+      QRegExp fpat(filterPattern,FALSE,TRUE); // case insensitive match
+#else // unix
+      QRegExp fpat(filterPattern,TRUE,TRUE); // case sensitive match
+#endif
+
+      if (fpat.match(name)!=-1) 
+      {
+        // found a match!
+        QCString filterName = fs.mid(i_equals+1);
+        return filterName;
+      }
+    }
+  }
+
+  // no match
+  return "";
+}
+
 /*! reads a file with name \a name and returns it as a string. If \a filter
  *  is TRUE the file will be filtered by any user specified input filter.
  *  If \a name is "-" the string will be read from standard input. 
@@ -1641,7 +1709,8 @@ QCString fileToString(const char *name,bool filter)
       err("Error: file `%s' not found\n",name);
       return "";
     }
-    if (Config_getString("INPUT_FILTER").isEmpty() || !filter)
+    QCString filterName = getFileFilter(name);
+    if (filterName.isEmpty() || !filter)
     {
       f.setName(name);
       fileOpened=f.open(IO_ReadOnly);
@@ -1666,11 +1735,11 @@ QCString fileToString(const char *name,bool filter)
     }
     else // filter the input
     {
-      QCString cmd=Config_getString("INPUT_FILTER")+" \""+name+"\"";
+      QCString cmd=filterName+" \""+name+"\"";
       FILE *f=popen(cmd,"r");
       if (!f)
       {
-        err("Error: could not execute filter %s\n",Config_getString("INPUT_FILTER").data());
+        err("Error: could not execute filter %s\n",filterName.data());
         return "";
       }
       const int bSize=4096;

@@ -28,7 +28,7 @@
 #include "config.h"
 
 #define PREFRAG_START "<div class=\"fragment\"><pre>"
-#define PREFRAG_END   "</pre></div"
+#define PREFRAG_END   "</pre></div>"
 
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
@@ -228,7 +228,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         file.close();
 
         m_t << "<div align=\"center\">" << endl;
-        writeDotFile(fileName);
+        writeDotFile(fileName,s->relPath());
         m_t << "</div>" << endl;
 
         file.remove();
@@ -308,13 +308,14 @@ void HtmlDocVisitor::visit(DocFormula *f)
   if (m_hide) return;
   bool bDisplay = f->text().at(0)=='\\';
   if (bDisplay) m_t << "<p class=\"formulaDsp\">" << endl;
-  m_t << "<img class=\"formula" << (bDisplay ? "Dsp" : "Inl");
+  m_t << "<img class=\"formula" 
+      << (bDisplay ? "Dsp" : "Inl");
   m_t << "\" alt=\"";
   filterQuotedCdataAttr(f->text());
   m_t << "\"";
   /// @todo cache image dimensions on formula generation and give height/width
   /// for faster preloading and better rendering of the page
-  m_t << " src=\"" << f->name() << ".png\">";
+  m_t << " src=\"" << f->relPath() << f->name() << ".png\">";
   if (bDisplay)
     m_t << endl << "<p>" << endl;
 }
@@ -742,7 +743,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  writeDotFile(df->file());
+  writeDotFile(df->file(),"");
   m_t << "<div align=\"center\">" << endl;
   if (df->hasCaption())
   { 
@@ -1053,7 +1054,7 @@ void HtmlDocVisitor::popEnabled()
   delete v;
 }
 
-void HtmlDocVisitor::writeDotFile(const QString &fileName)
+void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath)
 {
   QString baseName=fileName;
   int i;
@@ -1065,10 +1066,10 @@ void HtmlDocVisitor::writeDotFile(const QString &fileName)
   writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
   QString mapName = baseName+".map";
   QString mapFile = fileName+".map";
-  m_t << "<img src=\"" << baseName << "." 
+  m_t << "<img src=\"" << relPath << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getDotImageMapFromFile(fileName,outDir);
+  QString imap = getDotImageMapFromFile(fileName,outDir,relPath.data());
   m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 

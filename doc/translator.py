@@ -42,6 +42,7 @@
   2004/04/16 - Added new tokens to the tokenizer (to remove some warnings).
   2004/05/25 - Added from __future__ import generators not to force Python 2.3.
   2004/06/03 - Removed dependency on textwrap module.
+  2004/07/07 - Fixed the bug in the fill() function.
   """                               
 
 from __future__ import generators
@@ -70,7 +71,7 @@ def fill(s):
             else:
                 lines.append(line)  # another full line formed
                 line = word         # next line started
-        
+        lines.append(line)          # the last line
     return '\n'.join(lines)
 
     
@@ -1390,7 +1391,7 @@ class TrManager:
                 alphabetically). This means that they derive from the
                 Translator class and they implement all %d of the required
                 methods. Anyway, there still may be some details listed even 
-                for them. Please, see the details for them:'''
+                for them:'''
             s = s % len(self.requiredMethodsDic)    
             f.write('-' * 70 + '\n')
             f.write(fill(s) + '\n\n')

@@ -1251,6 +1251,17 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
 
 //---------------------------------------------------------------------------
 
+DocVerbatim::DocVerbatim(DocNode *parent,const QString &context,
+    const QString &text, Type t,bool isExample,
+    const QString &exampleFile) 
+  : m_parent(parent), m_context(context), m_text(text), m_type(t),
+    m_isExample(isExample), m_exampleFile(exampleFile), m_relPath(g_relPath) 
+{
+}
+
+
+//---------------------------------------------------------------------------
+
 void DocInclude::parse()
 {
   DBG(("DocInclude::parse(file=%s,text=%s)\n",m_file.data(),m_text.data()));
@@ -1480,7 +1491,7 @@ bool DocXRefItem::parse()
 //---------------------------------------------------------------------------
 
 DocFormula::DocFormula(DocNode *parent,int id) :
-      m_parent(parent) 
+      m_parent(parent), m_relPath(g_relPath)
 {
   QString formCmd;
   formCmd.sprintf("\\form#%d",id);
@@ -4117,7 +4128,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag <%s> found", tagName.data());
-      m_children.append(new DocWord(this, "<"+tagName+">"));
+      m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
       break;
       break;
     default:
@@ -4257,8 +4268,8 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       // ignore </a> tag (can be part of <a name=...></a>
       break;
     case HTML_UNKNOWN:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag </%s> found",
-          tagName.data());
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag </%s> found", tagName.data());
+      m_children.append(new DocWord(this,"</"+tagName+">"));
       break;
     default:
       // we should not get here!

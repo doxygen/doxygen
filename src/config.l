@@ -1943,7 +1943,17 @@ void Config::create()
                     "by executing (via popen()) the command <filter> <input-file>, where <filter> \n"
                     "is the value of the INPUT_FILTER tag, and <input-file> is the name of an \n"
                     "input file. Doxygen will then use the output that the filter program writes \n"
-                    "to standard output. \n"
+                    "to standard output.  If FILTER_PATTERNS is specified, this tag will be \n"
+                    "ignored. \n"
+                   );
+  cl = addList(
+                    "FILTER_PATTERNS",
+                    "The FILTER_PATTERNS tag can be used to specify filters on a per file pattern \n"
+                    "basis.  Doxygen will compare the file name with each pattern and apply the \n"
+                    "filter if there is a match.  The filters are a list of the form: \n"
+                    "pattern=filter (like *.cpp=my_cpp_filter). See INPUT_FILTER for further \n"
+                    "info on how filters are used. If FILTER_PATTERNS is empty, INPUT_FILTER \n"
+                    "is applied to all files. \n"
                    );
   cl->setWidgetType(ConfigList::File);
   cb = addBool(

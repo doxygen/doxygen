@@ -270,7 +270,9 @@ class MemberDef : public Definition
     // cached typedef functions
     bool isTypedefValCached() const { return m_isTypedefValCached; }
     ClassDef *getCachedTypedefVal() const { return m_cachedTypedefValue; }
-    void cacheTypedefVal(ClassDef *val) { m_isTypedefValCached=TRUE; m_cachedTypedefValue=val; }
+    QCString getCachedTypedefTemplSpec() const { return m_cachedTypedefTemplSpec; }
+    void cacheTypedefVal(ClassDef *val,const QCString &templSpec) 
+    { m_isTypedefValCached=TRUE; m_cachedTypedefValue=val; m_cachedTypedefTemplSpec=templSpec; }
     
     // declaration <-> definition relation
     void setMemberDefinition(MemberDef *md) { memDef=md; }
@@ -360,6 +362,7 @@ class MemberDef : public Definition
 
     bool m_isTypedefValCached;
     ClassDef *m_cachedTypedefValue;
+    QCString m_cachedTypedefTemplSpec;
     
     // inbody documentation
     int m_inbodyLine;
