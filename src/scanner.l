@@ -264,6 +264,7 @@ static void addSection()
   if (Doxygen::sectionDict.find(sectionLabel)==0)
   {
     SectionInfo *si=new SectionInfo(sectionLabel,sectionTitle,sectionType);
+    si->fileName = current->name;
     //printf("Adding section addr=%p label=`%s' sectionTitle=`%s' fileName=%s\n",si,sectionLabel.data(),sectionTitle.data(),si->fileName.data());
     Doxygen::sectionDict.insert(sectionLabel,si);
     current->anchors->append(new QCString(sectionLabel));

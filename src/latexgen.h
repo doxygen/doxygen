@@ -177,9 +177,11 @@ class LatexGenerator : public OutputGenerator
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList()     { t << "\\begin{Desc}\n\\item["; }
+    void endDescList()       { t << "\\end{Desc}" << endl; }
+    void startParamList()    { startDescList(); }
+    void endParamList()      { endDescList(); }
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
-    void endDescList()       { t << "\\end{Desc}" << endl; }
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
     void writeSectionRef(const char *,const char *,const char *,const char *);

@@ -28,6 +28,9 @@
 // - Removed unneeeded decode() calls
 // - Changed some CS terminology
 // 
+// 2001/01/22
+// - Added strings from 1.2.4
+//
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
@@ -748,6 +751,65 @@ class TranslatorCroatian : public Translator
     virtual QCString trDCOPMethods()
     {
       return "DCOP metode";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return "Svojstva (property)";
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return "Dokumentacija svojstava";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return decode("Suèelja (interfaces)");
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      return "Klase";
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return decode((QCString)"Paket "+name);
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return "Lista paketa";
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return "Paketi s kratkim opisom (ukoliko postoji):";
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return "Paketi";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return "Dokumentacija paketa";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "Vrijednost:";
     }
 };
 

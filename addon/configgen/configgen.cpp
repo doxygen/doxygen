@@ -1306,6 +1306,15 @@ void init()
                     "of the generated HTML documentation. \n"
                  );
   addDependency("htmlHelpFlag","generateHtml");
+  ConfigBool::add(  "htmlHelpChiFlag",
+                    "GENERATE_CHI",
+                    "FALSE",
+                    "should chi file be generated?",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the GENERATE_CHI flag \n"
+                    "controls if a separate .chi index file is generated (YES) or that \n"
+                    "it should be included in the master .chm file (NO).\n"
+                 );
+  addDependency("htmlHelpChiFlag","generateHtml");
   ConfigBool::add(  "noIndexFlag",
                     "DISABLE_INDEX",
                     "FALSE",
@@ -1755,6 +1764,15 @@ void init()
                     "arrows in the dot generated graphs. \n"
                  );
   addDependency("generateLegend","haveDotFlag");
+  ConfigBool::add(  "dotCleanUp",
+                    "DOT_CLEANUP",
+                    "TRUE",
+                    "remove intermedia dot files?",
+                    "If the DOT_CLEANUP tag is set to YES (the default) Doxygen will \n"
+                    "remove the intermedate dot files that are used to generate \n"
+                    "the various graphs. \n"
+                 );
+  addDependency("dotCleanUp","haveDotFlag");
 
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Search","Configuration::addtions related to the search engine   ");

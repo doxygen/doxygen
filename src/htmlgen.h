@@ -179,9 +179,11 @@ class HtmlGenerator : public OutputGenerator
     void writeRing(char c)    { t << "&" << c << "ring;"; }
     void writeSharpS()        { t << "&szlig;"; }
     void startDescList()      { t << "<dl compact><dt>" << endl; }
+    void endDescList()        { t << "</dl>"; }
+    void startParamList()     { startDescList(); }
+    void endParamList()       { endDescList(); }
     void endDescTitle()       {}
     void writeDescItem()      { t << "<dd>" << endl; }
-    void endDescList()        { t << "</dl>"; }
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
     void writeSectionRef(const char *,const char *,const char *,const char *);

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <qlist.h>
 #include <qdict.h>
+#include <qfileinfo.h>
 
 #include "ftvhelp.h"
 #include "config.h"
@@ -302,7 +303,21 @@ static void generateFolderTreeViewData()
   {
     QTextStream t(&f);
     t << "<html><head>" << endl;
-    t << "<link rel=\"stylesheet\" href=\"doxygen.css\">" << endl;
+    t << "<link rel=\"stylesheet\" href=\"";
+    if (Config::htmlStyleSheet.isEmpty())
+    {
+      t << "doxygen.css";
+    }
+    else
+    {
+      QFileInfo cssfi(Config::htmlStyleSheet);
+      if (!cssfi.exists())
+      {
+        err("Error: user specified HTML style sheet file does not exist!\n");
+      }
+      t << cssfi.fileName();
+    }
+    t << "\">" << endl;
     t << "<script src=\"treeview.js\"></script>" << endl;
     t << "<script src=\"tree.js\"></script>" << endl;
     t << "<script>" << endl;
