@@ -58,12 +58,16 @@ class RTFGenerator : public OutputGenerator
     void startTitleHead(const char *);
     void startTitle();
     void endTitleHead(const char *,const char *name);
-    void endTitle() {};  //{ t << "}"; }
+    void endTitle() {} 
 
     void newParagraph();
     void writeString(const char *text);
     void startIndexList();
     void endIndexList();
+    void startIndexKey();
+    void endIndexKey();
+    void startIndexValue();
+    void endIndexValue(const char *);
     void startItemList();
     void endItemList();
     void startEnumList();

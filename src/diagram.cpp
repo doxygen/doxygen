@@ -126,7 +126,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
 {
   int colFill = hasDocs ? (firstRow ? 0 : 2) : 7;
   int colBorder = (firstRow || !hasDocs) ? 1 : 3;
-  int l = stringLength(di->label());
+  int l = Image::stringLength(di->label());
   uint mask=virtToMask(di->virtualness());
   image->fillRect(x+1,y+1,w-2,h-2,colFill,mask);
   image->drawRect(x,y,w,h,colBorder,mask);
@@ -463,7 +463,7 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
     {
       if (di->isInList()) done=TRUE;
       if (maxXPos) mx=QMAX(mx,(uint)di->xPos());
-      if (maxLabelLen) ml=QMAX(ml,stringLength(di->label()));
+      if (maxLabelLen) ml=QMAX(ml,Image::stringLength(di->label()));
       di=dr->next();
     }
     dr=next();

@@ -53,7 +53,13 @@ class DocNode
       ListItem,
       ParameterList,
       Parameter,
-      SimpleSect
+      SimpleSect,
+      Title,
+      Ref,
+      VariableList,
+      VariableListEntry,
+      HRuler,
+      LineBreak
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -223,6 +229,85 @@ class ParameterListHandler : public DocNode,
 
 //-----------------------------------------------------------------------------
 
+/* \brief Node representing a horizontal ruler
+ *
+ */
+class LineBreakHandler : public DocNode, public BaseHandler<LineBreakHandler>
+{
+  public:
+    LineBreakHandler(IBaseHandler *parent);
+    virtual ~LineBreakHandler();
+
+    void startLineBreak(const QXmlAttributes& attrib);
+    void endLineBreak();
+
+  private:
+    IBaseHandler   *m_parent;
+};
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a horizontal ruler
+ *
+ */
+class HRulerHandler : public DocNode, public BaseHandler<HRulerHandler>
+{
+  public:
+    HRulerHandler(IBaseHandler *parent);
+    virtual ~HRulerHandler();
+
+    void startHRuler(const QXmlAttributes& attrib);
+    void endHRuler();
+
+  private:
+    IBaseHandler   *m_parent;
+};
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a reference to another item
+ *
+ */
+class RefHandler : public DocNode, public BaseHandler<RefHandler>
+{
+  public:
+    RefHandler(IBaseHandler *parent);
+    virtual ~RefHandler();
+    void startRef(const QXmlAttributes& attrib);
+    void endRef();
+  private:
+    IBaseHandler   *m_parent;
+    QCString        m_refId;
+    QCString        m_anchor;
+    QCString        m_linkText;
+};
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing the title of a section
+ *
+ */
+// children: text, ref
+// children handled by MarkupHandler: 
+//           bold, computeroutput, emphasis, center,
+//           small, subscript, superscript. 
+class TitleHandler : public DocNode, public BaseHandler<TitleHandler>
+{
+  public:
+    TitleHandler(IBaseHandler *parent);
+    virtual ~TitleHandler();
+    virtual void startTitle(const QXmlAttributes& attrib);
+    virtual void endTitle();
+    virtual void startRef(const QXmlAttributes& attrib);
+    void addTextNode();
+  private:
+    IBaseHandler   *m_parent;
+    QList<DocNode>  m_children;
+    MarkupHandler  *m_markupHandler;
+};
+
+//-----------------------------------------------------------------------------
+
 /* \brief Node representing a simple section with an unnumbered header.
  *
  */
@@ -244,15 +329,58 @@ class SimpleSectHandler : public DocNode,
     virtual void startSimpleSect(const QXmlAttributes& attrib);
     virtual void endSimpleSect();
     virtual void startTitle(const QXmlAttributes& attrib);
-    virtual void endTitle();
     virtual void startParagraph(const QXmlAttributes& attrib);
 
   private:
     IBaseHandler            *m_parent;
     ParagraphHandler        *m_paragraph;
     Types                    m_type;
-    // TODO: a title can also contain links (for todo sections for instance!)
-    QString                  m_title;
+    TitleHandler            *m_title;
+};
+
+//-----------------------------------------------------------------------------
+
+class VariableListEntryHandler : public DocNode, public BaseHandler<VariableListEntryHandler>
+{
+  public:
+    virtual void startVarListEntry(const QXmlAttributes& attrib);
+    virtual void endVarListEntry();
+    virtual void startListItem(const QXmlAttributes& attrib);
+    virtual void endListItem();
+    virtual void startTerm(const QXmlAttributes& attrib);
+    virtual void endTerm();
+    virtual void startParagraph(const QXmlAttributes& attrib);
+
+    VariableListEntryHandler(IBaseHandler *parent);
+    virtual ~VariableListEntryHandler();
+
+  private:
+    IBaseHandler     *m_parent;
+    QString           m_term;
+    ParagraphHandler *m_description;
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a list of named items.
+ *
+ */
+// children: varlistentry, listitem
+class VariableListHandler : public DocNode, public BaseHandler<VariableListHandler>
+{
+  public:
+    virtual void startVariableList(const QXmlAttributes& attrib);
+    virtual void endVariableList();
+    virtual void startVarListEntry(const QXmlAttributes& attrib);
+    virtual void startListItem(const QXmlAttributes& attrib);
+    
+    VariableListHandler(IBaseHandler *parent);
+    virtual ~VariableListHandler();
+
+  private:
+    IBaseHandler   *m_parent;
+    QList<VariableListEntryHandler> m_entries;
+    VariableListEntryHandler *m_curEntry;
 };
 
 //-----------------------------------------------------------------------------
@@ -260,10 +388,13 @@ class SimpleSectHandler : public DocNode,
 /*! \brief Node representing a paragraph of text and commands.
  *
  */
-// children: itemizedlist, orderedlist, parameterlist, simplesect,
-//           programlisting, hruler, variablelist, 
-//           linebreak, nonbreakablespace, ref, ulink, email,
-//           table, link, indexentry, formula, image, dotfile, ref
+// children: itemizedlist, orderedlist, parameterlist, simplesect, ref,
+//           variablelist, hruler, linebreak,
+// TODO:
+//           ulink, email, link
+//           table,
+//           programlisting, 
+//           indexentry, formula, image, dotfile
 // children handled by MarkupHandler: 
 //           bold, computeroutput, emphasis, center,
 //           small, subscript, superscript. 
@@ -276,6 +407,10 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     virtual void startOrderedList(const QXmlAttributes& attrib);
     virtual void startParameterList(const QXmlAttributes& attrib);
     virtual void startSimpleSect(const QXmlAttributes& attrib);
+    virtual void startRef(const QXmlAttributes& attrib);
+    virtual void startVariableList(const QXmlAttributes& attrib);
+    virtual void startHRuler(const QXmlAttributes& attrib);
+    virtual void startLineBreak(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();

@@ -1653,6 +1653,8 @@ MemberDef *MemberDef::createTemplateInstanceMember(
 
 bool MemberDef::hasOneLineInitializer() const
 {
+  //printf("%s: init=%s, initLines=%d maxInitLines=%d userInitLines=%d\n",
+  //    name().data(),init.data(),initLines,maxInitLines,userInitLines);
   return !init.isEmpty() && initLines==0 && // one line initializer
          ((maxInitLines>0 && userInitLines==-1) || userInitLines>0); // enabled by default or explicitly
 }
@@ -1663,4 +1665,13 @@ bool MemberDef::hasMultiLineInitializer() const
          ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
           || initLines<userInitLines // explicitly enabled
          );
+}
+
+void MemberDef::setInitializer(const char *initializer)    
+{ 
+  init=initializer; 
+  int p=init.length()-1;
+  while (p>=0 && isspace(init.at(p))) p--;
+  init=init.left(p+1);
+  initLines=init.contains('\n');
 }

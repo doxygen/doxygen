@@ -139,10 +139,7 @@ class MemberDef : public Definition
     void setProtection(Protection p)      { prot=p; }
     void setMemberSpecifiers(int s)       { memSpec=s; }
     void mergeMemberSpecifiers(int s)     { memSpec|=s; }
-    void setInitializer(const char *i)    { init=i; 
-                                            //init=init.stripWhiteSpace();
-                                            initLines=init.contains('\n');
-                                          }
+    void setInitializer(const char *i);
     void setBitfields(const char *s)      { bitfields = s; }
     void setMaxInitLines(int lines)       { userInitLines=lines; }
     void setMemberClass(ClassDef *cd);

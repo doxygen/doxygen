@@ -347,7 +347,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
     {
       if (!started)
       {
-        ol.startIndexList();
+        ol.startItemList();
         if (hasHtmlHelp) htmlHelp->incContentsDepth();
         if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
@@ -396,7 +396,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
   }
   if (started) 
   {
-    ol.endIndexList(); 
+    ol.endItemList(); 
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -550,7 +550,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
       {
         if (!started)
         {
-          ol.startIndexList();
+          ol.startItemList();
           if (hasHtmlHelp) htmlHelp->incContentsDepth();
           if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
@@ -621,7 +621,7 @@ void writeClassHierarchy(OutputList &ol)
   writeClassTreeForList(ol,&Doxygen::hiddenClasses,started);
   if (started) 
   {
-    ol.endIndexList();
+    ol.endItemList();
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -875,6 +875,7 @@ void writeFileIndex(OutputList &ol)
         if (!path.isEmpty()) fullName.prepend(path+"/");
 
         // --------------- LaTeX/RTF only -------------------------
+#if 0
         if (doc)
         {
           ol.pushGeneratorState();
@@ -887,22 +888,22 @@ void writeFileIndex(OutputList &ol)
           if (!fd->briefDescription().isEmpty())
           {
             ol.docify(" (");
-            OutputList briefOutput(&ol);
-            parseDoc(briefOutput,fd->absFilePath(),1,
+            parseDoc(ol,fd->absFilePath(),1,
                 0,0,
                 abbreviate(fd->briefDescription(),fd->name()));
-            ol+=briefOutput;
             ol.docify(")");
           }
           ol.writeEndAnnoItem(fd->getOutputFileBase());
           ol.popGeneratorState();
         }
+#endif
         // --------------------------------------------------------
 
         // ----------------- HTML only ----------------------------
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.writeListItem();
+        //ol.pushGeneratorState();
+        //ol.disableAllBut(OutputGenerator::Html);
+        //ol.writeListItem();
+        ol.startIndexKey();
         ol.docify(path);
         if (doc)
         {
@@ -932,25 +933,29 @@ void writeFileIndex(OutputList &ol)
         }
         if (src)
         {
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputGenerator::Html);
           ol.docify(" ");
           ol.startTextLink(fd->includeName(),0);
           ol.docify("[");
           parseText(ol,theTranslator->trCode());
           ol.docify("]");
           ol.endTextLink();
+          ol.popGeneratorState();
         }
+        ol.endIndexKey();
+        ol.startIndexValue();
         if (!fd->briefDescription().isEmpty())
         {
-          ol.docify(" (");
-          OutputList briefOutput(&ol);
-          parseDoc(briefOutput,
+          //ol.docify(" (");
+          parseDoc(ol,
               fd->absFilePath(),1,
               0,0,
               abbreviate(fd->briefDescription(),fd->name()));
-          ol+=briefOutput;
-          ol.docify(")");
+          //ol.docify(")");
         }
-        ol.popGeneratorState();
+        ol.endIndexValue(fd->getOutputFileBase());
+        //ol.popGeneratorState();
         // --------------------------------------------------------
       }
       fd=fl->next();
@@ -1039,19 +1044,22 @@ void writeNamespaceIndex(OutputList &ol)
         ol.startIndexList();
         first=FALSE;
       }
-      ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
+      //ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
+      ol.startIndexKey();
+      ol.writeObjectLink(0,nd->getOutputFileBase(),0,nd->name());
+      ol.endIndexKey();
+      ol.startIndexValue();
       if (!nd->briefDescription().isEmpty())
       {
-        ol.docify(" (");
-        OutputList briefOutput(&ol);
-        parseDoc(briefOutput,
+        //ol.docify(" (");
+        parseDoc(ol,
                  nd->getDefFileName(),nd->getDefLine(),
                  nd->name(),0,
                  abbreviate(nd->briefDescription(),nd->name()));
-        ol+=briefOutput;
-        ol.docify(")");
+        //ol.docify(")");
       }
-      ol.writeEndAnnoItem(nd->getOutputFileBase());
+      ol.endIndexValue(nd->getOutputFileBase());
+      //ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
         htmlHelp->addContentsItem(FALSE,nd->name(),nd->getOutputFileBase());
@@ -1112,19 +1120,22 @@ void writeAnnotatedClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       QCString type=cd->compoundTypeString();
-      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
+      //ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
+      ol.startIndexKey();
+      ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
+      ol.endIndexKey();
+      ol.startIndexValue();
       if (!cd->briefDescription().isEmpty())
       {
-        ol.docify(" (");
-        OutputList briefOutput(&ol);
-        parseDoc(briefOutput,
+        //ol.docify(" (");
+        parseDoc(ol,
                  cd->getDefFileName(),cd->getDefLine(),
                  cd->name(),0,
                  abbreviate(cd->briefDescription(),cd->name()));
-        ol+=briefOutput;
-        ol.docify(")");
+        //ol.docify(")");
       }
-      ol.writeEndAnnoItem(cd->getOutputFileBase());
+      ol.endIndexValue(cd->getOutputFileBase());
+      //ol.writeEndAnnoItem(cd->getOutputFileBase());
       if (hasHtmlHelp)
       {
         HtmlHelp::getInstance()->addContentsItem(FALSE,cd->name(),cd->getOutputFileBase());
@@ -1152,19 +1163,23 @@ void writePackageList(OutputList &ol)
   {
     if (!pd->isReference())
     {
-      ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
+      //ol.writeStartAnnoItem("package",pd->getOutputFileBase(),0,pd->name());
+      ol.startIndexKey();
+      ol.writeObjectLink(0,pd->getOutputFileBase(),0,pd->name());
+      ol.endIndexKey();
+      ol.startIndexValue();
       if (!pd->briefDescription().isEmpty())
       {
-        ol.docify(" (");
-        OutputList briefOutput(&ol);
-        parseDoc(briefOutput,
+        //ol.docify(" (");
+        parseDoc(ol,
             pd->getDefFileName(),pd->getDefLine(),
             pd->name(),0,
             abbreviate(pd->briefDescription(),pd->name()));
-        ol+=briefOutput;
-        ol.docify(")");
+        //ol.docify(")");
       }
-      ol.writeEndAnnoItem(pd->getOutputFileBase());
+      ol.endIndexValue(pd->getOutputFileBase());
+      
+      //ol.writeEndAnnoItem(pd->getOutputFileBase());
       if (hasHtmlHelp)
       {
         HtmlHelp::getInstance()->addContentsItem(FALSE,pd->name(),pd->getOutputFileBase());
@@ -1967,7 +1982,7 @@ void writeExampleIndex(OutputList &ol)
   parseText(ol,theTranslator->trExamplesDescription());
   //ol.newParagraph();
   ol.endTextBlock();
-  ol.startIndexList();
+  ol.startItemList();
   PageSDictIterator pdi(*Doxygen::exampleSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
@@ -1988,7 +2003,7 @@ void writeExampleIndex(OutputList &ol)
     }
     ol.writeString("\n");
   }
-  ol.endIndexList();
+  ol.endItemList();
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
@@ -2071,7 +2086,7 @@ void writePageIndex(OutputList &ol)
   parseText(ol,theTranslator->trRelatedPagesDescription());
   //ol.newParagraph();
   ol.endTextBlock();
-  ol.startIndexList();
+  ol.startItemList();
   PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
@@ -2105,7 +2120,7 @@ void writePageIndex(OutputList &ol)
       if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
     }
   }
-  ol.endIndexList();
+  ol.endItemList();
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
@@ -2258,12 +2273,12 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     // write subgroups
     if (hasSubGroups)
     {
-      ol.startIndexList();
+      ol.startItemList();
       for (gli.toLast();(subgd=gli.current());--gli)
       {
         writeGroupTreeNode(ol,subgd,TRUE);
       }
-      ol.endIndexList(); 
+      ol.endItemList(); 
     }
 
 
@@ -2463,14 +2478,14 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 
 void writeGroupHierarchy(OutputList &ol)
 {
-  ol.startIndexList();
+  ol.startItemList();
   GroupListIterator gli(Doxygen::groupList);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
     writeGroupTreeNode(ol,gd,FALSE);
   }
-  ol.endIndexList(); 
+  ol.endItemList(); 
 }
 
 //----------------------------------------------------------------------------

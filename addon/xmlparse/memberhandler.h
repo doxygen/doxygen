@@ -22,10 +22,11 @@
 
 #include "basehandler.h"
 #include "paramhandler.h"
+#include "doxmlintf.h"
 
 class DocHandler;
 
-class MemberHandler : public BaseHandler<MemberHandler>
+class MemberHandler : public IMember, public BaseHandler<MemberHandler>
 {
   public:
     virtual void startMember(const QXmlAttributes& attrib);
@@ -38,6 +39,16 @@ class MemberHandler : public BaseHandler<MemberHandler>
 
     MemberHandler(IBaseHandler *parent);
     virtual ~MemberHandler();
+
+    // IMember
+    virtual QString kind() const { return m_kind; }
+    virtual QString id() const { return m_id; }
+    virtual QString protection() const { return m_protection; }
+    virtual QString virtualness() const { return m_virtualness; }
+    virtual QString type() const { return m_type; }
+    virtual QString name() const { return m_name; }
+    virtual QListIterator<IParam> getParamIterator() const { return m_params; }
+
   private:
     IBaseHandler *m_parent;
     QString m_kind;
@@ -48,7 +59,7 @@ class MemberHandler : public BaseHandler<MemberHandler>
     QString m_name;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
-    QList<ParamHandler> m_params;
+    QList<IParam> m_params;
 };
 
 #endif

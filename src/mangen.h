@@ -61,6 +61,10 @@ class ManGenerator : public OutputGenerator
     void writeString(const char *text);
     void startIndexList() {}
     void endIndexList()   { newParagraph(); } 
+    void startIndexKey() {}
+    void endIndexKey()   {} 
+    void startIndexValue() {}
+    void endIndexValue(const char *)   {} 
     void startItemList()  {}
     void endItemList()    { newParagraph(); }
     void startEnumList()  {}

@@ -13,95 +13,53 @@
  *
  */
 
-#include "mainhandler.h"
-
-#include <qstring.h>
-#include <qxml.h>
-#include <qfile.h>
-#include <qdict.h>
-#include <qlist.h>
-
-//#define USE_DOM
-#define USE_SAX
-
-#ifdef USE_DOM
-#include <qdom.h>
-#endif
-
-class ErrorHandler : public QXmlErrorHandler
-{
-    public:
-      virtual ~ErrorHandler() {}
-      bool warning( const QXmlParseException & )
-      {
-        return FALSE;
-      }
-      bool error( const QXmlParseException & )
-      {
-        return FALSE;
-      }
-      bool fatalError( const QXmlParseException &exception )
-      {
-        fprintf(stderr,"Fatal error at line %d column %d: %s\n",
-            exception.lineNumber(),exception.columnNumber(),
-            exception.message().data());
-        return FALSE;
-      }
-      QString errorString() { return ""; }
-
-    private:
-      QString errorMsg;
-};
+#include <stdio.h>
+#include "doxmlintf.h"
 
 
 int main(int argc,char **argv)
 {
-  if (argc==1)
+  if (argc!=2)
   {
     printf("Usage: %s file.xml\n",argv[0]);
     exit(1);
   }
 
-  QFile xmlFile(argv[1]);
+  IDoxygen *dox = createObjectModelFromXML(argv[1]);
 
-#ifdef USE_SAX
-  MainHandler handler;
-  ErrorHandler errorHandler;
-  QXmlInputSource source( xmlFile );
-  QXmlSimpleReader reader;
-  reader.setContentHandler( &handler );
-  reader.setErrorHandler( &errorHandler );
-  reader.parse( source );
-#endif
-
-#ifdef USE_DOM
-  if (!xmlFile.open( IO_ReadOnly ))
   {
-    qFatal("Could not read %s",argv[1] );
-  }
-  QDomDocument doc;
-  doc.setContent( &xmlFile );
-
-  QDomElement de = doc.documentElement();
-
-  printf("docElem=%s\n",de.tagName().data());
-
-  QDomNode n = de.firstChild();
-  while( !n.isNull() ) 
-  {
-    QDomElement e = n.toElement(); // try to convert the node to an element.
-    if( !e.isNull() ) 
-    { // the node was really an element.
-      printf("direct child %s id=%s kind=%s\n",
-          e.tagName().data(),
-          e.attribute("id").data(),
-          e.attribute("kind").data()
-          );
+    QListIterator<ICompound> cli(dox->getCompoundIterator());
+    ICompound *comp;
+    printf("--- compound list ---------\n");
+    for (cli.toFirst();(comp=cli.current());++cli)
+    {
+      printf("Compound name=%s id=%s kind=%s\n",
+          comp->name().data(),comp->id().data(),comp->kind().data());
+      QListIterator<ISection> sli(comp->getSectionIterator());
+      ISection *sec;
+      for (sli.toFirst();(sec=sli.current());++sli)
+      {
+        printf("  Section kind=%s\n",sec->kind().data());
+        QListIterator<IMember> mli(sec->getMemberIterator());
+        IMember *mem;
+        for (mli.toFirst();(mem=mli.current());++mli)
+        {
+          printf("    Member type=%s name=%s\n",mem->type().data(),mem->name().data());
+          QListIterator<IParam> pli(mem->getParamIterator());
+          IParam *par;
+          for (pli.toFirst();(par=pli.current());++pli)
+          {
+            printf("      Param type=%s name=%s defvalue=%s\n",
+                par->type().data(),par->definitionName().data(),par->defaultValue().data());
+          }
+        }
+      }
     }
-    n = n.nextSibling();
+    printf("---------------------------\n");
+
   }
 
-#endif
+  delete dox;
 
   return 0;
 }

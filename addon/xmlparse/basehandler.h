@@ -190,6 +190,17 @@ template<class T> class BaseHandler : public IBaseHandler,
       m_curString="";
       return TRUE;
     }
+    
+    bool skippedEntity ( const QString &s )
+    {
+      if (m_delegateHandler)
+      {
+        return m_delegateHandler->skippedEntity(s);
+      }
+      
+      printf("Skipped unhandled entity %s\n",s.data());
+      return TRUE;
+    }
 
     virtual bool characters ( const QString & ch ) 
     {
@@ -198,6 +209,7 @@ template<class T> class BaseHandler : public IBaseHandler,
         return m_delegateHandler->characters(ch);
       }
 
+      //printf("Found characters \"%s\"\n",ch.data());
       m_curString+=ch;
       return TRUE;
     }

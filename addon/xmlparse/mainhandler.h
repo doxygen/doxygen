@@ -19,15 +19,28 @@
 #include <qlist.h>
 #include "basehandler.h"
 #include "compoundhandler.h"
+#include "doxmlintf.h"
 
-class MainHandler : public BaseHandler<MainHandler>
+class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
 {
   public:
     virtual void startCompound(const QXmlAttributes& attrib);
     MainHandler();
     virtual ~MainHandler();
+
+    // IDoxygen
+    QListIterator<ICompound> getCompoundIterator() const
+    {
+      return m_compounds;
+    }
+    ICompound *getCompoundById(const QString &id) const
+    {
+      return m_compoundDict[id];
+    }
+
   private:
-    QList<CompoundHandler> m_compounds;
+    QList<ICompound> m_compounds;
+    QDict<ICompound> m_compoundDict;
 };
 
 #endif

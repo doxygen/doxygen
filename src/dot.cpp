@@ -431,7 +431,7 @@ void DotNode::write(QTextStream &t,
 void DotNode::writeXML(QTextStream &t)
 {
   t << "      <node id=\"" << m_number << "\">" << endl;
-  t << "        <label>" << m_label << "</label>" << endl;
+  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
@@ -475,12 +475,12 @@ void DotNode::writeXML(QTextStream &t)
         while ((ni=edgeInfo->m_label.find("\\n",p))!=-1)
         {
           t << "          <edgelabel>" 
-            << edgeInfo->m_label.mid(p,ni-p)
+            << convertToXML(edgeInfo->m_label.mid(p,ni-p))
             << "</edgelabel>" << endl;
           p=ni+2;
         }
         t << "          <edgelabel>" 
-          << edgeInfo->m_label.right(edgeInfo->m_label.length()-p) 
+          << convertToXML(edgeInfo->m_label.right(edgeInfo->m_label.length()-p))
           << "</edgelabel>" << endl;
       }
       t << "        </childnode>" << endl;

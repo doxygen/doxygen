@@ -71,7 +71,7 @@ IGNORE_PREFIX          =
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------
-GENERATE_HTML          = YES
+GENERATE_HTML          = NO
 HTML_OUTPUT            = 
 HTML_HEADER            = 
 HTML_FOOTER            = 

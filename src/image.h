@@ -41,6 +41,7 @@ class Image
     uint getWidth() const { return width; }
     uint getHeight() const { return height; }
     uchar *getData() const { return data; }
+    static uint stringLength(const char *s);
  
   private:
     int width;
