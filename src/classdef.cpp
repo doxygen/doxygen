@@ -114,6 +114,18 @@ ClassDef::~ClassDef()
   delete memberGroupDict;
 }
 
+QCString ClassDef::displayName() const
+{
+  if (Config::hideScopeNames)
+  {
+    return stripScope(name());
+  }
+  else
+  {
+    return name();
+  }
+}
+
 // inserts a base class in the inheritance list
 void ClassDef::insertBaseClass(ClassDef *cd,Protection p,
                                Specifier s,const char *t)
@@ -926,7 +938,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.endDescList();
     }
     ol.newParagraph();
-    writeSourceRef(ol,name());
+    writeSourceDef(ol,name());
     ol.endTextBlock();
   }
   
@@ -1029,7 +1041,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.docify(stripFromPath(path));
       }
 
-      if (fd->isLinkable())
+      if (fd->generateSource() || (!fd->isReference() && Config::sourceBrowseFlag))
+      {
+        ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+      }
+      else if (fd->isLinkable())
       {
         ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
             fd->name());

@@ -49,7 +49,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   namespaceList = new NamespaceList;
   namespaceDict = new NamespaceDict(7);
   srcDefDict = 0;
-  srcAnchorDict = 0;
+  srcMemberDict = 0;
   usingDirList = 0;
   usingDeclList = 0;
   isSource = FALSE; 
@@ -72,7 +72,7 @@ FileDef::~FileDef()
   delete namespaceList;
   delete namespaceDict;
   delete srcDefDict;
-  delete srcAnchorDict;
+  delete srcMemberDict;
   delete usingDirList;
   delete usingDeclList;
   delete memberGroupList;
@@ -529,18 +529,14 @@ void FileDef::insertNamespace(NamespaceDef *nd)
   }
 }
 
-void FileDef::addSourceRef(int line,Definition *d,const char *anchor)
+void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)
 {
   if (d)
   {
-    if (srcDefDict==0) srcDefDict = new QIntDict<Definition>(257);
-    if (srcAnchorDict==0) 
-    {
-      srcAnchorDict = new QIntDict<QCString>(257);
-      srcAnchorDict->setAutoDelete(TRUE);
-    }
+    if (srcDefDict==0)    srcDefDict    = new QIntDict<Definition>(257);
+    if (srcMemberDict==0) srcMemberDict = new QIntDict<MemberDef>(257);
     srcDefDict->insert(line,d);
-    srcAnchorDict->insert(line,new QCString(anchor));
+    if (md) srcMemberDict->insert(line,md);
     //printf("Adding member %s with anchor %s at line %d to file %s\n",
     //    d->name().data(),anchor,line,name().data());
   }
@@ -556,13 +552,12 @@ Definition *FileDef::getSourceDefinition(int lineNr)
   return result;
 }
 
-QCString FileDef::getSourceAnchor(int lineNr)
+MemberDef *FileDef::getSourceMember(int lineNr)
 {
-  QCString result;
-  if (srcAnchorDict)
+  MemberDef *result=0;
+  if (srcMemberDict)
   {
-    QCString *pstr = srcAnchorDict->find(lineNr);
-    if (pstr) result=*pstr;
+    result = srcMemberDict->find(lineNr);
   }
   return result;
 }

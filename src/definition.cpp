@@ -24,6 +24,7 @@
 #include "message.h"
 #include "outputlist.h"
 #include "scanner.h"
+#include <qregexp.h>
 
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
@@ -36,11 +37,15 @@ Definition::Definition(const char *df,int dl,
   sectionList=0, 
   startBodyLine=endBodyLine=-1, 
   bodyDef=0;
+  sourceRefList=0;
+  sourceRefDict=0;
 }
 
 Definition::~Definition()
 {
   delete sectionList;
+  delete sourceRefList;
+  delete sourceRefDict;
 }
 
 QCString Definition::nameToFile(const char *name)
@@ -174,7 +179,7 @@ static bool readCodeFragment(const char *fileName,
 }
 
 /*! Write a reference to the source code defining this definition */
-void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
+void Definition::writeSourceDef(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
@@ -288,11 +293,89 @@ void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
   ol.popGeneratorState();
 }
 
+/*! Write a reference to the source code fragments in which this 
+ *  definition is used.
+ */
+void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
+{
+  ol.pushGeneratorState();
+  if (Config::sourceBrowseFlag && sourceRefList)
+  {
+    ol.newParagraph();
+    parseText(ol,theTranslator->trReferencedBy());
+    ol.docify(" ");
+
+    QCString defLine=theTranslator->trWriteList(sourceRefList->count());
+
+    QRegExp marker("@[0-9]+");
+    int index=0,newIndex,matchLen;
+    // now replace all markers in inheritLine with links to the classes
+    while ((newIndex=marker.match(defLine,index,&matchLen))!=-1)
+    {
+      bool ok;
+      parseText(ol,defLine.mid(index,newIndex-index));
+      uint entryIndex = defLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      MemberDef *md=sourceRefList->at(entryIndex);
+      if (ok && md)
+      {
+        QCString scope=md->getScopeString();
+        QCString name=md->name();
+        if (!scope.isEmpty() && scope!=scopeName)
+        {
+          name.prepend(scope+"::");
+        }
+        if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
+        {
+          QCString lineStr,anchorStr;
+          anchorStr.sprintf("l%05d",md->getStartBodyLine());
+          ol.writeObjectLink(0,md->getBodyDef()->sourceName(),
+            anchorStr,name);
+        }
+        else
+        {
+          ol.docify(name);
+        }
+        ol.docify("()");
+      }
+      index=newIndex+matchLen;
+    } 
+    parseText(ol,defLine.right(defLine.length()-index));
+    ol.writeString(".");
+  }
+  ol.popGeneratorState();
+}
+
+
+
 bool Definition::hasDocumentation() 
 { 
-  return !doc.isEmpty() ||              // has detailed docs
-         !brief.isEmpty() ||            // has brief description
-         /*(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) || // has a source reference */
+  return !doc.isEmpty() ||             // has detailed docs
+         !brief.isEmpty() ||           // has brief description
          Config::extractAllFlag;       // extract everything
+}
+
+void Definition::addSourceReference(MemberDef *md)
+{
+  if (md)
+  {
+    QCString name=md->name();
+    QCString scope=md->getScopeString();
+
+    if (!scope.isEmpty())
+    {
+      name.prepend(scope+"::");
+    }
+
+    if (sourceRefList==0)
+    {
+      sourceRefDict = new MemberDict(53);
+      sourceRefList = new MemberList;
+    }
+    if (sourceRefDict->find(name)==0)
+    {
+      sourceRefDict->insert(name,md);
+      sourceRefList->inSort(md);
+    }
+  }
 }
 

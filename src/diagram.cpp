@@ -196,14 +196,17 @@ DiagramItem::~DiagramItem()
 
 QCString DiagramItem::label() const
 {
+  QCString result;
   if (!templSpec.isEmpty())
   {
-    return insertTemplateSpecifierInScope(classDef->name(),templSpec);
+    result=insertTemplateSpecifierInScope(classDef->name(),templSpec);
   }
   else
   {
-    return classDef->name();
+    result=classDef->name();
   }
+  if (Config::hideScopeNames) result=stripScope(result);
+  return result;
 }
 
 QCString DiagramItem::fileName() const

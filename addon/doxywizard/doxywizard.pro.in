@@ -49,4 +49,4 @@ OBJECTS_DIR =   obj
 MOC_DIR     =   moc
 
 # extra C++ compiler options
-TMAKE_CXXFLAGS = -DDOXYWIZARD
+TMAKE_CXXFLAGS += -DDOXYWIZARD

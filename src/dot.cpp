@@ -654,7 +654,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
       else 
       {
         bn = new DotNode(m_curNodeNumber++,
-             bClass->name(),
+             bClass->displayName(),
              bClass->isLinkable() ? 
               (bClass->getReference()+"$"+bClass->getOutputFileBase()).data() : 
               0
@@ -701,7 +701,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
       {
         //printf("Inserting root class %s\n",cd->name().data());
         DotNode *n = new DotNode(m_curNodeNumber++,
-                cd->name(),
+                cd->displayName(),
                 cd->isLinkable() ?
                   (cd->getReference()+"$"+cd->getOutputFileBase()).data() :
                   0
@@ -805,8 +805,10 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   }
   else // new class
   {
+    QCString displayName=className.copy();
+    if (Config::hideScopeNames) displayName=stripScope(displayName);
     bn = new DotNode(m_curNodeNumber++,
-        className,
+        displayName,
         cd->isLinkable() ? 
           (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
         distance
@@ -877,7 +879,7 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
   m_startNode = new DotNode(m_curNodeNumber++,
-                            cd->name(),
+                            cd->displayName(),
                             cd->isLinkable() ? 
                               (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
                             0,                         // distance

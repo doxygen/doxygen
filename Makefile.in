@@ -49,6 +49,10 @@ install: doxywizard_install
 	cd $(INSTALL)/doc/doxygen/examples ; $(MAKE)
 	cd $(INSTALL)/doc/doxygen/doc ; $(MAKE)
 	rm -rf $(INSTALL)/doc/doxygen/doc
+	cd $(INSTALL)/doc/doxygen/latex ; $(MAKE)
+	cp $(INSTALL)/doc/doxygen/latex/doxygen_manual.pdf $(INSTALL)/doc/doxygen
+	cp $(INSTALL)/doc/doxygen/latex/doxygen_manual.ps $(INSTALL)/doc/doxygen
+	rm -rf $(INSTALL)/doc/doxygen/latex
 
 docs: FORCE
 	cd examples ; $(MAKE)

@@ -285,7 +285,7 @@ static void buildFileList(Entry *root)
       const char *fn = root->fileName.data();
       QCString text;
       text.sprintf("Warning: the name `%s' supplied as "
-                   "the second argument in the \\file statement.",
+                   "the second argument in the \\file statement ",
                     root->name.data()
                   );
       if (ambig) // name is ambigious
@@ -331,7 +331,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     { // explicit request
       QCString text;
       text.sprintf("Warning: the name `%s' supplied as "
-                  "the second argument in the \\class statement.",
+                  "the second argument in the \\class statement ",
                   root->includeFile.data()
                  );
       if (ambig) // name is ambigious
@@ -911,7 +911,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if (mtype==MemberDef::Friend)
+    if (mtype==MemberDef::Friend || Config::hideScopeNames)
     {
       def=root->type+" "+name+root->args;
     }
@@ -922,7 +922,14 @@ static MemberDef *addVariableToClass(
   }
   else
   {
-    def=scope+"::"+name+root->args;
+    if (Config::hideScopeNames)
+    {
+      def=name+root->args;
+    }
+    else
+    {
+      def=scope+"::"+name+root->args;
+    }
   }
   if (def.left(7)=="static ") def=def.right(def.length()-7);
 
@@ -1067,7 +1074,9 @@ static MemberDef *addVariableToFile(
 
   QCString def;
   // determine the definition of the global variable
-  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' && 
+      !Config::hideScopeNames
+     )
     // variable is inside a namespace, so put the scope before the name
   {
     if (!root->type.isEmpty())
@@ -1386,7 +1395,7 @@ static void buildMemberList(Entry *root)
         //md->setScopeTemplateArguments(root->tArgList);
         md->addSectionsToDefinition(root->anchors);
         QCString def;
-        if (!root->relates.isEmpty() || isFriend)
+        if (!root->relates.isEmpty() || isFriend || Config::hideScopeNames)
         {
           if (!root->type.isEmpty())
           {
@@ -2478,17 +2487,16 @@ static void substituteTemplateArgNames(ArgumentList *src,
 
 }
 
-//----------------------------------------------------------------------
-// This function tries to find a member (in a documented class/file/namespace) 
-// that corresponds to the function declaration given in `funcDecl'.
-//
-// The related field may be used to specify a related class name.
-// It is only used if the class name cannot be extracted from the function
-// declaration.
-//
-// The boolean overloaded is used to specify whether or not a standard
-// overload documentation line should be generated.
-
+/*! This function tries to find a member (in a documented class/file/namespace) 
+ * that corresponds to the function declaration given in \a funcDecl.
+ *
+ * The \a related field may be used to specify a related class name.
+ * It is only used if the class name cannot be extracted from the function
+ * declaration.
+ *
+ * The boolean \a overloaded is used to specify whether or not a standard
+ * overload documentation line should be generated.
+ */
 static void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
                 bool isFunc)
 {
@@ -2733,7 +2741,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
   
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
   // rebuild the function declaration (needed to get the scope right).
-  if (!scopeName.isEmpty() && !isRelated && !isFriend)
+  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config::hideScopeNames)
   {
     if (!funcType.isEmpty())
     {
@@ -3408,6 +3416,7 @@ static void findEnums(Entry *root)
         //printf("add %s to new memberName. Now %d members\n",
         //       name.data(),mn->count());
       }
+      addMemberToGroups(root,md);
 
       EntryListIterator eli(*root->sublist);
       Entry *e;
@@ -3732,6 +3741,35 @@ static void buildCompleteMemberLists()
 
 //----------------------------------------------------------------------------
 
+static void generateFileSources()
+{
+  if (documentedHtmlFiles==0) return;
+  writeFileIndex(*outputList);
+  
+  if (inputNameList.count()>0)
+  {
+    FileName *fn=inputNameList.first();
+    while (fn)
+    {
+      FileDef *fd=fn->first();
+      while (fd)
+      {
+        bool src = !fd->isReference() &&
+                   (fd->generateSource() || Config::sourceBrowseFlag);
+        if (src)
+        {
+          msg("Generating code for file %s...\n",fd->name().data());
+          fd->writeSource(*outputList);
+        }
+        fd=fn->next();
+      }
+      fn=inputNameList.next();
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
 static void generateFileDocs()
 {
   if (documentedHtmlFiles==0) return;
@@ -3746,19 +3784,10 @@ static void generateFileDocs()
       while (fd)
       {
         bool doc = fd->isLinkableInProject();
-        bool src = fd->generateSource() || 
-                   (!fd->isReference() && Config::sourceBrowseFlag);
-        if (doc || src)
-        {
-          msg("Generating docs for file %s...\n",fd->name().data());
-        }
         if (doc)
         {
+          msg("Generating docs for file %s...\n",fd->name().data());
           fd->writeDocumentation(*outputList);
-        }
-        if (src && !fd->isReference()) 
-        {
-          fd->writeSource(*outputList);
         }
 
         fd=fn->next();
@@ -3769,30 +3798,6 @@ static void generateFileDocs()
 }
 
 //----------------------------------------------------------------------------
-
-//void generateSources()
-//{
-//  if (Config::sourceBrowseFlag)
-//  {
-//    writeSourceIndex(*outputList);
-//  
-//    if (inputNameList.count()>0)
-//    {
-//      FileName *fn=inputNameList.first();
-//      while (fn)
-//      {
-//        FileDef *fd=fn->first();
-//        while (fd && !fd->isReference())
-//        {
-//          msg("Generating source listing for file %s...\n",fd->name().data());
-//          fd->writeSource(*outputList);
-//          fd=fn->next();
-//        }
-//        fn=inputNameList.next();
-//      }
-//    }
-//  }
-//}
 
 static void addSourceReferences()
 {
@@ -3822,7 +3827,7 @@ static void addSourceReferences()
         Definition *d=cd;
         if (d==0) d=md->getNamespace();
         if (d==0) d=md->getFileDef();
-        fd->addSourceRef(md->getStartBodyLine(),d,md->anchor());
+        fd->addSourceRef(md->getStartBodyLine(),d,md);
       }
     }
   }
@@ -3835,16 +3840,18 @@ static void addSourceReferences()
     {
       NamespaceDef *nd=md->getNamespace();
       FileDef *fd=md->getBodyDef();
+      GroupDef *gd=md->groupDef();
       if (md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
-          (nd && nd->isLinkableInProject()) ||
-          (fd && fd->isLinkableInProject()) 
+          ((nd && nd->isLinkableInProject()) ||
+           (fd && fd->isLinkableInProject()) ||
+           (gd && gd->isLinkableInProject())
+          )
          )
       {
         //printf("Found member `%s' in file `%s' at line `%d'\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine()); 
-        Definition *d=md->getFileDef();
-        if (d==0) d=md->getNamespace();
-        fd->addSourceRef(md->getStartBodyLine(),d,md->anchor());
+        Definition *d=gd ? gd : (nd ? nd : fd);
+        fd->addSourceRef(md->getStartBodyLine(),d,md);
       }  
     }
   }
@@ -4725,9 +4732,10 @@ static void copyStyleSheet()
   if (!Config::htmlStyleSheet.isEmpty())
   {
     QFile cssf(Config::htmlStyleSheet);
+    QFileInfo cssfi(Config::htmlStyleSheet);
     if (cssf.open(IO_ReadOnly))
     {
-      QCString destFileName = Config::htmlOutputDir+"/"+Config::htmlStyleSheet;
+      QCString destFileName = Config::htmlOutputDir+"/"+cssfi.fileName();
       QFile df(destFileName);
       if (df.open(IO_WriteOnly))
       {
@@ -5445,6 +5453,9 @@ int main(int argc,char **argv)
 
   msg("Generating example documentation...\n");
   generateExampleDocs();
+
+  msg("Generating file sources...\n");
+  generateFileSources();
 
   msg("Generating file documentation...\n");
   generateFileDocs();

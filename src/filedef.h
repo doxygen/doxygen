@@ -87,9 +87,9 @@ class FileDef : public Definition
     /*! Returns the name as it is used in the documentation */
     QCString docName() const { return docname; }
     
-    void addSourceRef(int line,Definition *d,const char *anchor);
+    void addSourceRef(int line,Definition *d,MemberDef *md);
     Definition *getSourceDefinition(int lineNr);
-    QCString getSourceAnchor(int lineNr);
+    MemberDef *getSourceMember(int lineNr);
 
     /* Sets the name of the include file to \a n. */
     //void setIncludeName(const char *n_) { incName=n_; }
@@ -157,7 +157,7 @@ class FileDef : public Definition
     QCString docname;
     //QCString incName;
     QIntDict<Definition> *srcDefDict;
-    QIntDict<QCString> *srcAnchorDict;
+    QIntDict<MemberDef> *srcMemberDict;
     bool isSource;
 
     /* user defined member groups */

@@ -89,7 +89,8 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
     }
     else
     {
-      t << Config::htmlStyleSheet;
+      QFileInfo cssfi(Config::htmlStyleSheet);
+      t << cssfi.fileName();
     }
     t << "\" rel=\"stylesheet\" type=\"text/css\">\n"
          "</head><body bgcolor=\"#ffffff\">\n";
@@ -220,7 +221,8 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      startPlainFile(Config::htmlStyleSheet);
+      QFileInfo cssfi(Config::htmlStyleSheet);
+      startPlainFile(cssfi.fileName());
       t << fileToString(Config::htmlStyleSheet);
       endPlainFile();
     }

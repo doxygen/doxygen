@@ -115,7 +115,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
       //printf("Passed...\n");
       if (cd->isLinkable())
       {
-        ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
+        ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
         if (cd->isReference()) 
         { 
           ol.startTypewriter(); 
@@ -125,13 +125,16 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         if (hasHtmlHelp)
         {
           htmlHelp->addContentsItem(cd->name(),cd->getOutputFileBase());
-          //cd->writeMembersToContents();
         }
       }
       else
       {
         ol.writeIndexItem(0,0,cd->name());
         //if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
+        if (hasHtmlHelp)
+        {
+          htmlHelp->addContentsItem(cd->name(),0);
+        }
       }
       if (!cd->visited && !hideSuper && cd->superClasses()->count()>0)
       {
@@ -184,7 +187,7 @@ void writeClassHierarchy(OutputList &ol)
         }
         if (cd->isLinkable())
         {
-          ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
+          ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
           if (cd->isReference()) 
           {
             ol.startTypewriter(); 
@@ -199,8 +202,12 @@ void writeClassHierarchy(OutputList &ol)
         }
         else
         {
-          ol.writeIndexItem(0,0,cd->name());
+          ol.writeIndexItem(0,0,cd->displayName());
           //if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
+          if (hasHtmlHelp)
+          {
+            htmlHelp->addContentsItem(cd->name(),0);
+          }
         }
         if (!cd->visited && cd->superClasses()->count()>0) 
         {
@@ -654,7 +661,7 @@ void writeAnnotatedClassList(OutputList &ol)
         case ClassDef::Union:      type="union";     break;
         default:                   type="interface"; break;
       }
-      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
+      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
       ol.docify(" (");
       if (!cd->briefDescription().isEmpty())
       {
@@ -792,7 +799,14 @@ void writeAlphabeticalClassList(OutputList &ol)
       {
         QCString cname;
         QCString namesp;
-        extractNamespaceName(cd->name(),cname,namesp);
+        if (Config::hideScopeNames)
+        {
+          cname=cd->displayName();
+        }
+        else
+        {
+          extractNamespaceName(cd->name(),cname,namesp);
+        }
 
         ol.writeObjectLink(cd->getReference(),
                            cd->getOutputFileBase(),0,cname);
@@ -927,7 +941,7 @@ void writeMemberList(OutputList &ol)
         if (//cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
             //!md->isReference() && md->hasDocumentation() && 
             md->isLinkableInProject() &&
-            prevName!=cd->name() && 
+            prevName!=cd->displayName() && 
             cd->isLinkableInProject()
            )
         {
@@ -936,9 +950,9 @@ void writeMemberList(OutputList &ol)
           else 
             ol.docify(", ");
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),md->anchor(),
-                            cd->name());
+                            cd->displayName());
           count++;
-          prevName=cd->name();
+          prevName=cd->displayName();
         }
         md=mn->prev();
       }
@@ -1384,7 +1398,7 @@ void writePageIndex(OutputList &ol)
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
-  ol.docify(title);
+  parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
@@ -1568,7 +1582,7 @@ void writeIndex(OutputList &ol)
     parseDoc(ol,defFileName,defLine,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
-  if (Config::noIndexFlag) writeQuickLinks(ol,FALSE);
+  if (Config::noIndexFlag && mainPage==0) writeQuickLinks(ol,FALSE);
 
   if (mainPage)
   {

@@ -27,7 +27,7 @@
 #include "memberlist.h"
 #include "definition.h"
 
-typedef QDict<MemberDef> MemberDict;
+class MemberDict;
 class ClassList;
 class OutputList;
 class FileDef;
@@ -58,6 +58,7 @@ class ClassDef : public Definition
              const char *ref=0,const char *fName=0);
    ~ClassDef();
     QCString getOutputFileBase() const { return fileName; }
+    QCString displayName() const;
     CompoundType compoundType() const { return compType; } 
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
