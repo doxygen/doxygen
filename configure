@@ -343,7 +343,8 @@ TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi
 
-for i in Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in ; do
+for i in Makefile.in src/Makefile.in examples/Makefile.in \
+         doc/Makefile.in ; do
      SRC=$i
      DST=`echo $i|sed 's%\(.*\).in$%\1%'`
      TIME=`date`
@@ -357,7 +358,8 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-for i in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in ; do
+for i in src/doxygen.pro.in src/doxytag.pro.in \
+         src/doxysearch.pro.in ; do
      SRC=$i
      DST=`echo $i|sed 's%\(.*\).in$%\1%'`
      TIME=`date`

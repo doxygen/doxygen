@@ -206,6 +206,8 @@ class ManGenerator : public OutputGenerator
     void startTextBlock(bool) {}
     void endTextBlock() {}
     void lastIndexPage() {}
+    void startParameter(bool) {}
+    void endParameter(bool) {}
 
   private:
     bool firstCol;

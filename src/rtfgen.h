@@ -208,6 +208,9 @@ class RTFGenerator : public OutputGenerator
     void endTextBlock();
     void lastIndexPage();
 
+    void startParameter(bool) {}
+    void endParameter(bool) {}
+
     static bool preProcessFileInplace(const char *path,const char *name);
     
   private:
