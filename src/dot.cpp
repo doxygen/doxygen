@@ -11,7 +11,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -204,7 +205,7 @@ void DotNode::addChild(DotNode *n,
     m_edgeInfo = new QList<EdgeInfo>;
     m_edgeInfo->setAutoDelete(TRUE);
   }
-  m_children->insert(0,n);
+  m_children->append(n);
   EdgeInfo *ei = new EdgeInfo;
   ei->m_color = edgeColor;
   ei->m_style = edgeStyle; 
@@ -214,7 +215,7 @@ void DotNode::addChild(DotNode *n,
     ei->m_labColor=edgeColor;
   else
     ei->m_labColor=edgeLabCol;
-  m_edgeInfo->insert(0,ei);
+  m_edgeInfo->append(ei);
 }
 
 void DotNode::addParent(DotNode *n)
@@ -610,7 +611,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   initClassHierarchy(&classList);
   ClassListIterator cli(classList);
   ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (cli.toLast();(cd=cli.current());--cli)
   {
     //printf("Trying %s superClasses=%d\n",cd->name().data(),cd->superClasses()->count());
     if (!hasVisibleRoot(cd->baseClasses()))

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -146,23 +147,15 @@ class RTFGenerator : public OutputGenerator
     void endTableRow()      { }//t << "\\\\\\hline\n";
     void nextTableColumn()  { }//t << "&";
     void endTableColumn()   { }
-    void writeCopyright()    { t << "\\copyright"; }
+    void writeCopyright()    { t << "\251"; }
     void writeQuote()        { t << "\""; }
-    void writeUmlaut(char c) { if (c=='i') t << "\\\"{\\i}"; else 
-                                           t << "\\\"{" << c << "}"; 
-                             }
-    void writeAcute(char c)  { if (c=='i') t << "\\'{\\i}"; else
-                                           t << "\\'{"  << c << "}"; 
-                             }
-    void writeGrave(char c)  { if (c=='i') t << "\\`{\\i}"; else
-                                           t << "\\`{"  << c << "}"; 
-                             }
-    void writeCirc(char c)   { if (c=='i') t << "\\^{\\i}"; else
-                                           t << "\\^{"  << c << "}"; 
-                             }
-    void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
-    void writeRing(char c)   { t << "\\" << c << c; }
-    void writeSharpS()       { t << "\"s"; }
+    void writeUmlaut(char c);
+    void writeAcute(char c);
+    void writeGrave(char c);
+    void writeCirc(char c);
+    void writeTilde(char c);
+    void writeRing(char c);
+    void writeSharpS()       { t << "\337"; }
 
     void startMemberDescription();
     void endMemberDescription();
@@ -204,6 +197,13 @@ class RTFGenerator : public OutputGenerator
     void endInclDepGraph(DotInclDepGraph &);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
+    void startMemberGroupHeader();
+    void endMemberGroupHeader();
+    void startMemberGroupDocs();
+    void endMemberGroupDocs();
+    void startMemberGroup();
+    void endMemberGroup(bool);
+    
     void startTextBlock(bool dense);
     void endTextBlock();
     void lastIndexPage();
@@ -231,10 +231,10 @@ class RTFGenerator : public OutputGenerator
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
-    void RtfwriteRuler_doubleline() {t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_emboss() {t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_thick() {t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_thin() {t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_doubleline() { t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_emboss() { t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_thick() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_thin() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
     void WriteRTFReference(const char *label);
 };
 

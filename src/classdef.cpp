@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -105,7 +106,8 @@ void ClassDef::insertBaseClass(ClassDef *cd,Protection p,
                                Specifier s,const char *t)
 {
   //printf("*** insert base class %s into %s\n",cd->name().data(),name().data());
-  inherits->inSort(new BaseClassDef(cd,p,s,t));
+  //inherits->inSort(new BaseClassDef(cd,p,s,t));
+  inherits->append(new BaseClassDef(cd,p,s,t));
 }
 
 // inserts a super class in the inherited list
@@ -143,21 +145,18 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
   //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
   {
-    /*************************************************/
-    /* insert member in the appropriate member group */
-    /*************************************************/
-    addMemberToGroup(md,groupId);
-    
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
     if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
     {
       related.append(md);
+      md->setSectionList(&related);
     }
     else if (md->isFriend())
     {
       friends.append(md);
+      md->setSectionList(&friends);
     }
     else
     {
@@ -165,18 +164,22 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
       {
         case MemberDef::Signal:
           signals.append(md);
+          md->setSectionList(&signals);
           break;
         case MemberDef::Slot:
           switch (md->protection())
           {
             case Protected: 
               proSlots.append(md); 
+              md->setSectionList(&proSlots);
               break;
             case Public:    
               pubSlots.append(md); 
+              md->setSectionList(&pubSlots);
               break;
             case Private:   
               priSlots.append(md);
+              md->setSectionList(&priSlots);
               break;
           }
           break;
@@ -189,12 +192,15 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
               {
                 case Protected: 
                   proStaticAttribs.append(md); 
+                  md->setSectionList(&proStaticAttribs);
                   break;
                 case Public:    
                   pubStaticAttribs.append(md); 
+                  md->setSectionList(&pubStaticAttribs);
                   break;
                 case Private:   
                   priStaticAttribs.append(md); 
+                  md->setSectionList(&priStaticAttribs);
                   break;
               }
             }
@@ -204,12 +210,15 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
               {
                 case Protected: 
                   proStaticMembers.append(md); 
+                  md->setSectionList(&proStaticMembers);
                   break;
                 case Public:    
                   pubStaticMembers.append(md); 
+                  md->setSectionList(&pubStaticMembers);
                   break;
                 case Private:   
                   priStaticMembers.append(md); 
+                  md->setSectionList(&priStaticMembers);
                   break;
               }
             }
@@ -220,27 +229,54 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
             {
               switch (md->protection())
               {
-                case Protected: proAttribs.append(md); break;
-                case Public:    pubAttribs.append(md); break;
-                case Private:   priAttribs.append(md); break;
+                case Protected: 
+                  proAttribs.append(md); 
+                  md->setSectionList(&proAttribs);
+                  break;
+                case Public:    
+                  pubAttribs.append(md); 
+                  md->setSectionList(&pubAttribs);
+                  break;
+                case Private:   
+                  priAttribs.append(md); 
+                  md->setSectionList(&priAttribs);
+                  break;
               }
             }
             else if (md->isTypedef() || md->isEnumerate())
             {
               switch (md->protection())
               {
-                case Protected: proTypes.append(md); break;
-                case Public:    pubTypes.append(md); break;
-                case Private:   priTypes.append(md); break;
+                case Protected: 
+                  proTypes.append(md); 
+                  md->setSectionList(&proTypes); 
+                  break;
+                case Public:    
+                  pubTypes.append(md); 
+                  md->setSectionList(&pubTypes); 
+                  break;
+                case Private:   
+                  priTypes.append(md); 
+                  md->setSectionList(&priTypes); 
+                  break;
               }
             }
             else // member function
             {
               switch (md->protection())
               {
-                case Protected: proMembers.append(md); break;
-                case Public:    pubMembers.append(md); break;
-                case Private:   priMembers.append(md); break;
+                case Protected: 
+                  proMembers.append(md); 
+                  md->setSectionList(&proMembers); 
+                  break;
+                case Public:    
+                  pubMembers.append(md); 
+                  md->setSectionList(&pubMembers); 
+                  break;
+                case Private:   
+                  priMembers.append(md); 
+                  md->setSectionList(&priMembers); 
+                  break;
               }
             }
           }
@@ -345,6 +381,14 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
           break; 
       }
     }
+
+    /*************************************************/
+    /* insert member in the appropriate member group */
+    /*************************************************/
+    // Note: this must be done AFTER inserting the member in the 
+    // regular groups
+    addMemberToGroup(md,groupId);
+    
   }
 
   MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
@@ -408,12 +452,6 @@ void ClassDef::computeAnchors()
   setAnchors('s',&pubTypes);
   setAnchors('t',&proTypes);
   setAnchors('u',&priTypes);
-  //MemberGroupListIterator mgli(*memberGroupList);
-  //MemberGroup *mg;
-  //for (;(mg=mgli.current());++mgli)
-  //{
-  //  mg->setAnchors();
-  //}
 }
 
 // add a file name to the used files set
@@ -687,7 +725,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    mg->writeDeclarations(ol,this,0,0,0);
+    if (!mg->allMembersInSameSection()) // group is in its own section
+    {
+      mg->writeDeclarations(ol,this,0,0,0);
+    }
+    else // add this group to the corresponding member section
+    {
+      mg->addToDeclarationSection();
+    }
   }
 
   // non static public members

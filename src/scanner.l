@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
   
@@ -862,7 +863,8 @@ SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLMASK   [a-z_A-Z0-9\~\:\@\#\.\-\+\/]+
-WORD      ([a-z_A-Z0-9]+([^\n ]*[a-z_A_Z0-9])?)|("\""[^\n\"]"\"")
+NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
+WORD      ({NONTERM}+([^\n ]*{NONTERM}?))|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BOLD	  [bB]
@@ -1149,7 +1151,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocHtmlScan,DocLatexScan>"//"|"/*"|"*/"	{
   					  outDoc->writeString(yytext);
   					}
-<DocHtmlScan,DocLatexScan>.		{
+<DocHtmlScan,DocLatexScan>.|\n		{
   					  char c[2];
 					  c[0]=*yytext;c[1]='\0';
   					  outDoc->writeString(c);
@@ -1201,7 +1203,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <DocScan>{CMD}"link"/{BN}	        { BEGIN( DocLink ); }
 <DocSkipWord>[a-z_A-Z0-9.:()]+		{ BEGIN( DocScan ); }
-<DocLink>[a-z_A-Z0-9:#.~/()\-\+]+       { 
+<DocLink>[a-z_A-Z0-9:#.,~&*/<>()\-\+]+  {  // TODO: support operators as well!
   					  linkRef  = stripKnownExtensions(yytext);
 					  linkText = "";
   					  BEGIN( DocLinkText ); 
@@ -3923,10 +3925,12 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    BEGIN( tmpDocType );
 					  }
  					} 
+  /*
 <JavaDoc>"@"				{
   					  unput(*yytext);
 					  BEGIN(ClassDoc);
   					}
+  */
 <JavaDoc>^{B}*"*"+/[^/]			{
   					  //printf("---> removing %s\n",yytext);
   					}
@@ -4439,7 +4443,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <PageDocTitle>\n			{ yyLineNr++; current->args+=" "; }
 <PageDocTitle>[^\n\<]			{ current->args+=yytext; }
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
-<ClassDoc,Doc,JavaDoc>{CMD}"ingroup"{B}+   { 
+<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
   					  BEGIN( GroupName ); 
@@ -4591,6 +4595,14 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
                                           if (afterDocTerminator!=0)
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
+  					}
+<AfterDocLine>\n{B}*("//!<"|"///<") 	{ 
+  					  yyLineNr++;
+  					  BEGIN(AfterDocLine);
+  					}
+<AfterDocLine>\n{B}*("/*!<"|"/**<") 	{ 
+  					  yyLineNr++;
+  					  BEGIN(AfterDoc);
   					}
 <AfterDocLine>.				{ current->brief+=yytext; }
 <AfterDocBrief>"/*"|"//"		{ current->brief+=yytext; }

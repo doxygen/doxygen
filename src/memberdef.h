@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -92,6 +93,7 @@ class MemberDef : public Definition
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
     bool isInline() const                { return inLine; }
+    MemberList *getSectionList() const   { return section; }
     void setMemberType(MemberType t)     { mtype=t; }
     void setDefinition(const char *d)    { def=d; }
     void setDefFile(const char *f)       { defFile=f; }
@@ -106,6 +108,7 @@ class MemberDef : public Definition
                                            initLines=init.contains('\n');
                                          }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
+    void setSectionList(MemberList *sl)  { section=sl; }
     void makeRelated()                   { related=TRUE; } 
     void setGroupDef(GroupDef *gd)       { group=gd; }
     bool hasDocumentation();  // overrides hasDocumentation in definition.h
@@ -229,7 +232,8 @@ class MemberDef : public Definition
     bool annUsed;
     bool annShown;
     int  indDepth;
-    MemberDef *annMemb;
+    MemberList *section;      // declation list containing this member 
+    MemberDef  *annMemb;
     ArgumentList *argList;    // argument list of this member
     ArgumentList *tArgList;   // template argument list of function template
     ArgumentList *scopeTAL;   // template argument list of class template

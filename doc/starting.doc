@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 /*! \page starting Getting started
@@ -556,7 +557,7 @@ Go to the <a href="diagrams.html">next</a> section or return to the
        edge of the arrow is labled with the variable(s) responsible for the
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
-       of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, \c T<B>* ). 
+       of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, <code>T\<B\>*</code> ). 
   </ul>
 
 The reason why classes or structs are sometimes hidden is too prevent images

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -199,14 +200,14 @@ void HtmlGenerator::writeStyleInfo(int part)
       t << "A.elRef { font-weight: bold }" << endl;
       t << "A.code { text-decoration: none; font-weight: normal; color: #4444ee }" << endl;
       t << "A.codeRef { font-weight: normal; color: #4444ee }" << endl;
-      t << "A.gl:link { color: #ffffff }" << endl;
-      t << "A.gl:visited { color: #ffffff }" << endl;
-      t << "A.gl { text-decoration: none; font-weight: bold; background-color: " << GROUP_COLOR << " }" << endl;
       t << "DL.el { margin-left: -1cm }" << endl;
       t << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl;
       t << "DIV.in { margin-left: 16 }" << endl;
       t << "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }" << endl;
       t << "TD.md { background-color: #f2f2ff }" << endl;
+      t << "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }" << endl;
+      t << "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }" << endl;
+      //t << "TD.groupLine { background-color: #3080ff }" << endl;
       t << endl;
       endPlainFile();
     }
@@ -791,3 +792,51 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
   g.writeGraph(t,Config::htmlOutputDir);
 }
+
+void HtmlGenerator::startMemberGroupHeader()
+{
+  //t << "<tr><td colspan=2><img src=\"null.gif\" height=8></td></tr>" << endl;
+  //t << "<tr><td colspan=2>" << endl;
+  //t << "  <div class=\"in\">" << endl;
+  //t << "    <table border=0 cellspacing=0 cellpadding=0>" << endl;
+  //t << "      <tr><td colspan=3 class=\"groupLine\"><img src=\"null.gif\" height=1></td></tr>" << endl;
+  //t << "      <tr>" << endl;
+  //t << "        <td class=\"groupLine\"><img src=\"null.gif\" width=1></td>" << endl;
+  //t << "        <td><div class=\"groupHeader\">&nbsp;&nbsp;";
+
+  t << "<tr><td colspan=2><div class=\"groupHeader\">";
+}
+
+void HtmlGenerator::endMemberGroupHeader()
+{
+  //t << "&nbsp;&nbsp;</div></td>" << endl;
+  //t << "        <td class=\"groupLine\"><img src=\"null.gif\" width=1></td>" << endl;
+  //t << "      </tr>" << endl;
+  //t << "      <tr><td colspan=3 class=\"groupLine\"><img src=\"null.gif\" height=1></td></tr>" << endl;
+  //t << "    </table>" << endl;
+  //t << "  </div>" << endl;
+  //t << "</tr>" << endl;
+  //t << "<tr><td colspan=2><img src=\"null.gif\" height=4></td></tr>" << endl;
+
+  t << "</div></td></tr>" << endl;
+}
+
+void HtmlGenerator::startMemberGroupDocs()
+{
+  //t << "<tr><td colspan=2><img src=\"null.gif\" height=4></td></tr>" << endl;
+  t << "<tr><td colspan=2><div class=\"groupText\">";
+}
+
+void HtmlGenerator::endMemberGroupDocs()
+{
+  t << "<br><br></div></td></tr>" << endl;
+}
+
+void HtmlGenerator::startMemberGroup()
+{
+}
+
+void HtmlGenerator::endMemberGroup(bool)
+{
+}
+

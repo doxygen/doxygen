@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -34,11 +35,14 @@
 
 MemberGroup::MemberGroup(int id,const char *hdr,const char *d) /* : Definition(idToName(id)) */
 {
-  memberList = new MemberList;
-  grpId      = id;
-  grpHeader  = hdr;
-  doc        = d;
-  scope      = 0;
+  memberList     = new MemberList;
+  grpId          = id;
+  grpHeader      = hdr;
+  doc            = d;
+  scope          = 0;
+  inSameSection  = TRUE;
+  inDeclSection  = 0;
+  numDeclMembers = -1;
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -50,6 +54,15 @@ MemberGroup::~MemberGroup()
 void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember(%s)\n",md->name().data());
+  if (inSameSection && memberList->count()>0 && 
+      memberList->first()->getSectionList()!=md->getSectionList())
+  {
+    inSameSection=FALSE;
+  }
+  else if (inDeclSection==0)
+  {
+    inDeclSection = md->getSectionList();
+  }
   memberList->append(md);
 }
 
@@ -66,9 +79,30 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               bool inGroup)
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,TRUE);
+  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inGroup);
 }
 
+/*! Add this group as a subsection of the declaration section, instead
+ *  of rendering it in its own section
+ */
+void MemberGroup::addToDeclarationSection()
+{
+  if (inDeclSection)
+  {
+    inDeclSection->addMemberGroup(this);
+  }
+}
+
+int MemberGroup::countDecMembers()
+{
+  if (numDeclMembers==-1) /* number of member not cached */
+  {
+    memberList->countDecMembers(TRUE);
+    numDeclMembers = memberList->totalCount();
+  }
+  return numDeclMembers;
+}

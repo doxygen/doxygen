@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -268,6 +269,7 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   annUsed=FALSE;
   annShown=FALSE;
   indDepth=0;
+  section=0;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
   if (tal)
@@ -591,7 +593,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         htmlHelp->addIndexItem(cname,name(),cfname,anchor());
       }
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
       ol.docify("\n");
+      ol.popGeneratorState();
     }
 
     //printf("member name=%s indDepth=%d\n",name().data(),indDepth);

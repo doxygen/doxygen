@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -102,8 +103,12 @@ class OutputGenerator
     virtual void endMemberList()    = 0;
     virtual void startMemberItem(int) = 0;
     virtual void endMemberItem(bool) = 0;
-    //virtual void memberGroupSpacing(bool) = 0;
-    //virtual void memberGroupSeparator() = 0;
+    virtual void startMemberGroupHeader() = 0;
+    virtual void endMemberGroupHeader() = 0;
+    virtual void startMemberGroupDocs() = 0;
+    virtual void endMemberGroupDocs() = 0;
+    virtual void startMemberGroup() = 0;
+    virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign() = 0;
 
     virtual void writeRuler() = 0;
