@@ -79,6 +79,7 @@ static int              lastSkipHtmlCommentContext;
 static int              lastIfContext;
 static int              lastInternalDocContext;
 static int              lastPreLineCtrlContext;
+static int              lastSkipVerbStringContext;;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -143,6 +144,7 @@ static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
 static QCString         *pSkipDoc;
+static QCString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
 static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
 
@@ -719,6 +721,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	DefinePHP
 %x	DefinePHPEnd
 %x	OldStyleArgs
+%x	SkipVerbString
 
 %%
 
@@ -1769,6 +1772,31 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->initializer+=*yytext;
 					  yyLineNr++;
   					}
+<ReadInitializer>"@\""			{ 
+  					  current->initializer+=yytext;
+                                          if (!insideCS) REJECT;
+					  // C# verbatim string
+					  lastSkipVerbStringContext=YY_START;
+					  pSkipVerbString=&current->initializer;
+					  BEGIN(SkipVerbString);
+					}
+<SkipVerbString>[^\n"]+			{
+					  *pSkipVerbString+=yytext;
+					}
+<SkipVerbString>"\"\""			{ // quote escape
+					  *pSkipVerbString+=yytext;
+					}
+<SkipVerbString>"\""			{
+					  *pSkipVerbString+=*yytext;
+					  BEGIN(lastSkipVerbStringContext);
+					}
+<SkipVerbString>\n			{
+					  *pSkipVerbString+=*yytext;
+					  yyLineNr++;
+  					}
+<SkipVerbString>.			{
+					  *pSkipVerbString+=*yytext;
+  					}
 <ReadInitializer>.			{ 
   					  current->initializer+=*yytext; 
 					}
@@ -1991,13 +2019,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody,ReadNSBody>[^\r\n\#{}"'/]*	{ current->program += yytext ; }
+<ReadBody,ReadNSBody>[^\r\n\#{}"@'/]*	{ current->program += yytext ; }
 <ReadBody,ReadNSBody>"//".*		{ current->program += yytext ; }
 <ReadBody,ReadNSBody>"#".*		{ if (! insidePHP)
 					    REJECT;
 					  current->program += yytext ;
 					}
-<ReadBody,ReadNSBody>\"				{ current->program += yytext ; 
+<ReadBody,ReadNSBody>@\"		{ current->program += yytext ; 
+                                          pSkipVerbString = &current->program;
+                                          lastSkipVerbStringContext=YY_START;
+                                          BEGIN( SkipVerbString );
+					}
+<ReadBody,ReadNSBody>\"			{ current->program += yytext ; 
                                           pCopyQuotedString = &current->program;
                                           lastStringContext=YY_START;
                                           BEGIN( CopyString );
@@ -2011,8 +2044,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody,ReadNSBody>{CHARLIT}                     { current->program += yytext; }
-<ReadBody,ReadNSBody>"{"				{ current->program += yytext ;
+<ReadBody,ReadNSBody>{CHARLIT}          { current->program += yytext; }
+<ReadBody,ReadNSBody>"{"                { current->program += yytext ;
 					  ++curlyCount ;
 					}
 <ReadBody,ReadNSBody>"}"		{ //err("ReadBody count=%d\n",curlyCount);
@@ -2992,7 +3025,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++;
   				          //addToBody(yytext);
   					}
-<SkipCurly,SkipCurlyCpp>[^\n"'\\/{}]+	{
+<SkipCurly,SkipCurlyCpp>[^\n"'@\\/{}]+	{
   				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 
@@ -3032,6 +3065,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
+  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>@\"   {
+  				          if (! insideCS) REJECT;
+					  // C# verbatim string
+					  lastSkipVerbStringContext=YY_START;
+					  pSkipVerbString=&current->initializer;
+					  BEGIN(SkipVerbString);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
                                         }
@@ -3657,7 +3697,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->name = "mainpage";
 					  BEGIN( PageDocArg2 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"file"{B}*	{
+<Doc,LineDoc,JavaDoc>{B}*{CMD}"file"{B}*	{
   					  current->section = Entry::FILEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;

@@ -565,6 +565,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
  */
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpec)
 {
+  //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
   {
@@ -606,7 +607,14 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   }
 
   // remember computed value for next time
-  md->cacheTypedefVal(result);
+  if (result && result->getDefFileName()!="<code>") 
+    // this check is needed to prevent that temporary classes that are 
+    // introduced while parsing code fragments are being cached here.
+  {
+    //printf("setting cached typedef %p in result %p\n",md,result);
+    //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
+    md->cacheTypedefVal(result);
+  }
   
   g_resolvedTypedefs.remove(qname); // remove from the trace list
   
@@ -3542,10 +3550,10 @@ QCString stripScope(const char *name)
 }
 
 /*! Convert nibble (range 0..15) to hex char */
-static char nibbleToHex(int n)
-{
-  return (n < 10) ? ('0'+n) : ('a'+n-10);
-}
+//static char nibbleToHex(int n)
+//{
+//  return (n < 10) ? ('0'+n) : ('a'+n-10);
+//}
 
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
@@ -3564,16 +3572,17 @@ QCString convertToXML(const char *s)
       case '\'': result+="&apos;"; break; 
       case '"':  result+="&quot;"; break;
       default:   
-        if (c<0) 
-        {
-          result+=(QCString)"&#x" + 
-                  nibbleToHex((((uchar)c)>>4)&0xf)+
-                  nibbleToHex(c&0xf)+";";
-        }
-        else 
-        {
+        //if (c<0) 
+        //{       <- this doesn't work for languages that use
+        //           characters with codes beyond 255
+        //  result+=(QCString)"&#x" + 
+        //          nibbleToHex((((uchar)c)>>4)&0xf)+
+        //          nibbleToHex(c&0xf)+";";
+        //}
+        //else 
+        //{
           result+=c;        
-        }
+        //}
         break;
     }
   }

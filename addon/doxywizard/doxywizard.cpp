@@ -320,7 +320,7 @@ void Wizard::about()
   text.sprintf( "<qt><center>A tool to create and edit configuration files "
                 "that can be read by doxygen version %s.</center><p>"
                 "<center>Written by Dimitri van Heesch</center><p>"
-                "<center>(c) 2000-2002</center></qt>",versionString
+                "<center>(c) 2000-2003</center></qt>",versionString
               );
   QMessageBox::about(this, "DoxyWizard",text);
 }
