@@ -897,33 +897,40 @@ void Config::check()
   // expand the relative stripFromPath values
   QStrList &stripFromPath = Config_getList("STRIP_FROM_PATH");
   char *sfp = stripFromPath.first();
-  while (sfp)
+  if (sfp==0) // by default use the current path
   {
-    register char *p = sfp;
-    if (p)
+    stripFromPath.append(QDir::currentDirPath()+"/");
+  }
+  else
+  {
+    while (sfp)
     {
-      char c;
-      while ((c=*p))
+      register char *p = sfp;
+      if (p)
       {
-	if (c=='\\') *p='/';
-	p++;
+	char c;
+	while ((c=*p))
+	{
+	  if (c=='\\') *p='/';
+	  p++;
+	}
       }
-    }
-    QCString path = sfp;
-    if (path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':'))
-    {
-      QFileInfo fi(path);
-      if (fi.exists() && fi.isDir())
+      QCString path = sfp;
+      if (path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':'))
       {
-	int i = stripFromPath.at();
-	stripFromPath.remove();
-	if (stripFromPath.at()==i) // did not remove last item
-	  stripFromPath.insert(i,fi.absFilePath()+"/");
-	else
-	  stripFromPath.append(fi.absFilePath()+"/");
+	QFileInfo fi(path);
+	if (fi.exists() && fi.isDir())
+	{
+	  int i = stripFromPath.at();
+	  stripFromPath.remove();
+	  if (stripFromPath.at()==i) // did not remove last item
+	    stripFromPath.insert(i,fi.absFilePath()+"/");
+	  else
+	    stripFromPath.append(fi.absFilePath()+"/");
+	}
       }
+      sfp = stripFromPath.next();
     }
-    sfp = stripFromPath.next();
   }
   
   
@@ -1475,7 +1482,9 @@ void Config::create()
                     "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
                     "can be used to strip a user-defined part of the path. Stripping is \n"
                     "only done if one of the specified strings matches the left-hand part of \n"
-                    "the path. It is allowed to use relative paths in the argument list.\n"
+                    "the path. It is allowed to use relative paths in the argument list. \n"
+		    "If left blank the directory from which doxygen is run is used as the \n"
+		    "path to strip. \n"
                  );
   cl->addDependency("FULL_PATH_NAMES");
   cb = addBool(
@@ -1682,6 +1691,18 @@ void Config::create()
                     "declaration order. \n",
                     FALSE
                  );
+  cb = addBool(
+                    "SORT_BY_SCOPE_NAME",
+                    "If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be \n"
+                    "sorted by fully-qualified names, including namespaces. If set to \n"
+		    "NO (the default), the class list will be sorted only by class name, \n"
+		    "not including the namespace part. \n"
+                    "Note: This option is not very useful if HIDE_SCOPE_NAMES is set to YES.\n"
+                    "Note: This option applies only to the class list, not to the \n"
+                    "alphabetical list.\n",
+                    FALSE
+                 );
+
   cb = addBool(
                     "GENERATE_TODOLIST",
                     "The GENERATE_TODOLIST tag can be used to enable (YES) or \n"

@@ -30,26 +30,29 @@ ClassList::~ClassList()
 {
 }
 
-int ClassList::compareItems(GCI item1, GCI item2)
+static int compItems(void *item1,void *item2)
 {
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
-  //return stricmp(c1->localName().data()+getPrefixIndex(c1->localName()),
-  //               c2->localName().data()+getPrefixIndex(c2->localName())
-  //              );
-  return stricmp(c1->className().data()+getPrefixIndex(c1->className()),
-                 c2->className().data()+getPrefixIndex(c2->className()));
+  int p1=0,p2=0;
+  static bool b = Config_getBool("SORT_BY_SCOPE_NAME");
+  if (!b) 
+  { 
+    p1=getPrefixIndex(c1->className()); 
+    p2=getPrefixIndex(c2->className()); 
+  }
+  return stricmp(c1->className().data()+p1,
+                 c2->className().data()+p2);
+}
+
+int ClassList::compareItems(GCI item1, GCI item2)
+{
+  return compItems(item1,item2);
 }
 
 int ClassSDict::compareItems(GCI item1, GCI item2)
 {
-  ClassDef *c1=(ClassDef *)item1;
-  ClassDef *c2=(ClassDef *)item2;
-  //return stricmp(c1->localName().data()+getPrefixIndex(c1->localName()),
-  //               c2->localName().data()+getPrefixIndex(c2->localName())
-  //              );
-  return stricmp(c1->className().data()+getPrefixIndex(c1->className()),
-                 c2->className().data()+getPrefixIndex(c2->className()));
+  return compItems(item1,item2);
 }
 
 ClassListIterator::ClassListIterator(const ClassList &cllist) :

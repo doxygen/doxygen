@@ -660,7 +660,8 @@ void HtmlDocVisitor::visitPost(DocInternal *)
 void HtmlDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
-  m_t << "<a href=\"" << href->url() << "\">";
+  m_t << "<a href=\"" << href->url()  << "\""
+      << htmlAttribsToString(href->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHRef *) 

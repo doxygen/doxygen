@@ -52,6 +52,9 @@
            class \c A has a member variable \c m_a of type class \c B, then
            \c A has an arrow to \c B with \c m_a as label).
       </ul>
+  <li>if \ref cfg_call_graph "CALL_GRAPH" is set to YES, a 
+      graphical call graph is drawn for each function showing the 
+      functions that the function directly or indirectly calls.
   </ul>
 
   The elements in the class diagrams in HTML and RTF 

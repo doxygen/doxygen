@@ -38,8 +38,9 @@ class DevNullCodeDocInterface : public BaseCodeDocInterface
 {
   public:
     virtual void codify(const char *) {}
-    virtual void writeCodeLink(const char *,const char *,
-                               const char *,const char *) {}
+    virtual void writeCodeLink(const char *ref,const char *file,
+                               const char *anchor,const char *name) 
+    { ref=ref; file=file; anchor=anchor; name=name; }
     virtual void writeLineNumber(const char *,const char *,
                                  const char *,int) {}
     virtual void startCodeLine() {}

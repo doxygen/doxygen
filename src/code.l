@@ -1074,7 +1074,7 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 BN      [ \t\n\r]
-ID	[a-z_A-Z][a-z_A-Z0-9]*
+ID	"$"?[a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
@@ -1543,7 +1543,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					  endFontClass();
   					}
-<Body>"this->"				{ g_code->codify(yytext); }
+<Body>"$"?"this->"			{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
   					  g_code->codify(yytext);
 					  g_memCallContext = YY_START;

@@ -294,7 +294,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
 void LatexDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "\\label{" << anc->anchor() << "}" << endl;
+  m_t << "\\label{" << anc->file() << "_" << anc->anchor() << "}" << endl;
   if (!anc->file().isEmpty() && Config_getBool("PDF_HYPERLINKS")) 
   {
     m_t << "\\hypertarget{" << anc->file() << "_" << anc->anchor() 
@@ -526,7 +526,7 @@ void LatexDocVisitor::visitPre(DocSection *s)
   }
   m_t << "\\" << getSectionName(s->level()) << "{";
   filter(s->title());
-  m_t << "}\\label{" << s->anchor() << "}" << endl;
+  m_t << "}\\label{" << s->file() << "_" << s->anchor() << "}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocSection *) 
@@ -810,7 +810,7 @@ void LatexDocVisitor::visitPre(DocSecRefItem *)
 void LatexDocVisitor::visitPost(DocSecRefItem *ref) 
 {
   if (m_hide) return;
-  m_t << "}{\\ref{" << ref->anchor() << "}}{}" << endl;
+  m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocSecRefList *)
@@ -976,7 +976,8 @@ void LatexDocVisitor::endLink(const QString &ref,const QString &file,const QStri
   m_t << "}";
   if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "{\\rm ("; filter(theTranslator->trPageAbbreviation());
+    m_t << "{\\rm ("; 
+    filter(theTranslator->trPageAbbreviation());
     m_t << "\\,\\pageref{" << file;
     if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "})}";

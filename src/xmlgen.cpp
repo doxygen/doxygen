@@ -1467,8 +1467,16 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
   }
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
-      pd->documentation()+"\n\\include "+pd->name());
+  if (isExample)
+  {
+    writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
+        pd->documentation()+"\n\\include "+pd->name());
+  }
+  else
+  {
+    writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
+        pd->documentation());
+  }
   t << "    </detaileddescription>" << endl;
 
   t << "  </compounddef>" << endl;

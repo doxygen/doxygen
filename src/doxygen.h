@@ -100,6 +100,7 @@ class Doxygen
     static QTime                     runningTime;
     static SearchIndex              *searchIndex;
     static SDict<DefinitionList>    *symbolMap;
+    static bool                      outputToWizard;
 };
 
 void initDoxygen();

@@ -500,12 +500,85 @@ static bool checkForKnRstyleC()
   return TRUE;
 }
 
+static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
+{
+  int si = current->args.length();
+  if (oldStyleArgType.isEmpty()) // new argument
+  {
+    static QRegExp re("([^)]*)");
+    int bi1 = current->args.findRev(re);
+    int bi2 = bi1!=-1 ? current->args.findRev(re,bi1-1) : -1; 
+    char c;
+    if (bi1!=-1 && bi2!=-1) // found something like "int (*func)(int arg)"
+    {
+      int s=bi2+1;
+      oldStyleArgType = current->args.left(s);
+      int i=s;
+      while (i<si && ((c=current->args.at(i))=='*' || isspace(c))) i++;
+      oldStyleArgType += current->args.mid(s,i-s);
+      s=i;
+      while (i<si && isId(current->args.at(i))) i++;
+      oldStyleArgName = current->args.mid(s,i-s);
+      oldStyleArgType+=current->args.mid(i);
+    }
+    else if (bi1!=-1) // redundant braces like in "int (*var)"
+    {
+      int s=bi1;
+      oldStyleArgType = current->args.left(s);
+      s++;
+      int i=s+1;
+      while (i<si && ((c=current->args.at(i))=='*' || isspace(c))) i++;
+      oldStyleArgType += current->args.mid(s,i-s);
+      s=i;
+      while (i<si && isId(current->args.at(i))) i++;
+      oldStyleArgName = current->args.mid(s,i-s);
+    }
+    else // normal "int *var"
+    {
+      int l=si,i=l-1,j;
+      char c;
+      // look for start of name in "type *name"
+      while (i>=0 && isId(current->args.at(i))) i--;
+      j=i+1;
+      // look for start of *'s
+      while (i>=0 && ((c=current->args.at(i))=='*' || isspace(c))) i--;
+      i++;
+      if (i!=l)
+      {
+	oldStyleArgType=current->args.left(i);
+	oldStyleArgPtr=current->args.mid(i,j-i);
+	oldStyleArgName=current->args.mid(j).stripWhiteSpace();
+      }
+      else
+      {
+	oldStyleArgName=current->args.copy().stripWhiteSpace();
+      }
+    }
+  }
+  else // continuation like *arg2 in "int *args,*arg2"
+  {
+    int l=si,j=0;
+    char c;
+    while (j<l && ((c=current->args.at(j))=='*' || isspace(c))) j++;
+    if (j>0)
+    {
+      oldStyleArgPtr=current->args.left(j);
+      oldStyleArgName=current->args.mid(j).stripWhiteSpace();
+    }
+    else
+    {
+      oldStyleArgName=current->args.copy().stripWhiteSpace();
+    }
+  }
+  //fprintf(stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data());
+}
+
 /*! Update the argument \a name with additional \a type info. For K&R style
  *  function the type is found \e after the argument list, so this routine
  *  in needed to fix up.
  */
-void addKnRArgInfo(const QCString &type,const QCString &name,
-                   const QCString &brief,const QCString &docs)
+static void addKnRArgInfo(const QCString &type,const QCString &name,
+                          const QCString &brief,const QCString &docs)
 {
   if (current->argList==0) return;
   ArgumentListIterator ali(*current->argList);
@@ -564,7 +637,7 @@ BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+"\"")
-ID        [a-z_A-Z][a-z_A-Z0-9]*
+ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
@@ -2850,7 +2923,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FuncQual>{ID}				{ // typically a K&R style C function
 					  if (checkForKnRstyleC())
 					  {
-					    fprintf(stderr,"===> got a K&R style function\n");
+					    //fprintf(stderr,"===> got a K&R style function\n");
                                             current->args = yytext; 
 					    oldStyleArgType.resize(0);
 					    BEGIN(OldStyleArgs);
@@ -2863,41 +2936,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <OldStyleArgs>[,;]			{
   					  QCString oldStyleArgPtr;
   					  QCString oldStyleArgName;
-  					  if (oldStyleArgType.isEmpty())
-					  {
-					    int l=current->args.length(),i=l-1,j;
-					    char c;
-					    while (i>=0 && isId(current->args.at(i))) i--;
-					    j=i+1;
-					    while (i>=0 && ((c=current->args.at(i))=='*' || isspace(c))) i--;
-					    i++;
-					    if (i!=l)
-					    {
-					      oldStyleArgType=current->args.left(i);
-					      oldStyleArgPtr=current->args.mid(i,j-i);
-					      oldStyleArgName=current->args.mid(j).stripWhiteSpace();
-					    }
-					    else
-					    {
-					      oldStyleArgName=current->args.copy().stripWhiteSpace();
-					    }
-					  }
-					  else
-					  {
-					    int l=current->args.length(),j=0;
-					    char c;
-					    while (j<l && ((c=current->args.at(j))=='*' || isspace(c))) j++;
-					    if (j>0)
-					    {
-					      oldStyleArgPtr=current->args.left(j);
-					      oldStyleArgName=current->args.mid(j).stripWhiteSpace();
-					    }
-					    else
-					    {
-					      oldStyleArgName=current->args.copy().stripWhiteSpace();
-					    }
-					  }
-					  fprintf(stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data());
+					  splitKnRArg(oldStyleArgPtr,oldStyleArgName);
 					  QCString doc,brief;
 					  if (current->doc!=docBackup)
 					  {
@@ -2909,7 +2948,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                             brief=current->brief.copy();
 					    current->brief=briefBackup;
 					  }
-					  addKnRArgInfo(oldStyleArgType+oldStyleArgPtr,oldStyleArgName,brief,doc);
+					  addKnRArgInfo(oldStyleArgType+oldStyleArgPtr,
+					                oldStyleArgName,brief,doc);
 					  current->args.resize(0);
 					  if (*yytext==';') oldStyleArgType.resize(0);
   					}
@@ -4404,7 +4444,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipVerbatim><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s!",g_skipBlockName.data(),g_skipBlockName.data()
+                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s tag!",g_skipBlockName.data(),g_skipBlockName.data()
                                               );
 					  yyterminate();
   					}
@@ -4452,7 +4492,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipCode><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-                                               "Warning: reached end of file while inside a %s block; check for missing end tag!",
+                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s tag!",
+					       g_skipBlockName.data(),
 					       g_skipBlockName.data()
                                               );
 					  yyterminate();

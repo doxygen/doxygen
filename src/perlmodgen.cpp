@@ -1921,7 +1921,7 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
     GroupDef *sgd;
     for (gli.toFirst();(sgd=gli.current());++gli)
       m_output.openHash()
-	.addFieldQuotedString("title", gd->groupTitle())
+	.addFieldQuotedString("title", sgd->groupTitle())
 	.closeHash();
     m_output.closeList();
   }

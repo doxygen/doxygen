@@ -691,16 +691,18 @@ class DocLanguage : public CompAccept<DocLanguage>, public DocNode
 class DocHRef : public CompAccept<DocHRef>, public DocNode
 {
   public:
-    DocHRef(DocNode *parent,const QString &url) : 
-      m_parent(parent), m_url(url) {}
+    DocHRef(DocNode *parent,const HtmlAttribList &attribs,const QString &url) : 
+      m_parent(parent), m_attribs(attribs), m_url(url) {}
     int parse();
     QString url() const        { return m_url; }
     Kind kind() const          { return Kind_HRef; }
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocHRef>::accept(this,v); }
+    const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
     DocNode * m_parent;
+    HtmlAttribList m_attribs;
     QString   m_url;
 };
 
