@@ -1927,11 +1927,11 @@ static bool PreProcessFile(QDir &d,QCString &infName, QTextStream &t, bool bIncl
   return TRUE;
 }
 
-void RTFGenerator::startCollaborationDiagram() 
+void RTFGenerator::startDotGraph() 
 {
 }
 
-void RTFGenerator::endCollaborationDiagram(DotGfxUsageGraph &g) 
+void RTFGenerator::endDotGraph(DotClassGraph &g) 
 {
   newParagraph();
   t <<"{\\comment This would be an image map..." << endl;

@@ -60,6 +60,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_cgi_name CGI_NAME 
 <li> \refitem cfg_cgi_url CGI_URL 
 <li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
+<li> \refitem cfg_class_graph CLASS_GRAPH
 <li> \refitem cfg_collaboration_graph COLLABORATION_GRAPH
 <li> \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 <li> \refitem cfg_compact_latex COMPACT_LATEX 
@@ -115,6 +116,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_output_directory OUTPUT_DIRECTORY
 <li> \refitem cfg_output_language OUTPUT_LANGUAGE
 <li> \refitem cfg_paper_type PAPER_TYPE
+<li> \refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
 <li> \refitem cfg_perl_path PERL_PATH
 <li> \refitem cfg_predefined PREDEFINED
 <li> \refitem cfg_project_name PROJECT_NAME
@@ -704,6 +706,15 @@ EXTRA_PACKAGES = times
  the version number of doxygen, the project name (see PROJECT_NAME), or the
  project number (see PROJECT_NUMBER).
    
+\anchor cfg_pdf_hyperlinks
+<dt>\c PDF_HYPERLINKS <dd>
+ \addindex PDF_HYPERLINKS
+
+If the \c PDF_HYPERLINKS tag is set to \c YES, the LaTeX that is generated
+is prepared for conversion to pdf (using ps2pdf). The pdf file will
+contain links (just like the HTML output) instead of page references
+This makes the output suitable for online browsing using a pdf viewer.
+
 \anchor cfg_latex_batchmode
 <dt>\c LATEX_BATCHMODE <dd>
  \addindex LATEX_BATCHMODE
@@ -890,6 +901,14 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  visualization toolkit from AT&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
  
+\anchor cfg_class_graph
+<dt>\c CLASS_GRAPH <dd>
+ \addindex CLASS_GRAPH
+If the \c CLASS_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen
+will generate a graph for each documented class showing the direct and
+indirect inheritance relations. Setting this tag to \c YES will force the
+the \c CLASS_DIAGRAMS tag to NO.
+
 \anchor cfg_collaboration_graph
 <dt>\c COLLABORATION_GRAPH <dd>
  \addindex COLLABORATION_GRAPH

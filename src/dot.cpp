@@ -312,14 +312,15 @@ void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
   t << "];" << endl; 
 }
 
-void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown)
+void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown,
+                         bool pointBack)
 {
   t << "  Node";
   if (topDown) t << cn->number(); else t << m_number;
   t << " -> Node";
   if (topDown) t << m_number; else t << cn->number();
   t << " [";
-  t << "dir=back,";
+  if (pointBack) t << "dir=back,";
   t << "color=\"" << edgeColorMap[ei->m_color] 
     << "\",fontsize=10,style=\"" << edgeStyleMap[ei->m_style] << "\"";
   if (!ei->m_label.isEmpty())
@@ -330,15 +331,16 @@ void DotNode::writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown)
   t << "];" << endl; 
 }
 
-void DotNode::write(QTextStream &t,bool topDown,int distance)
+void DotNode::write(QTextStream &t,bool topDown,bool toChildren,int distance)
 {
   //printf("DotNode::write(%d) name=%s\n",distance,m_label.data());
   if (m_written) return; // node already written to the output
   if (m_distance>distance) return;
+  QList<DotNode> *nl = toChildren ? m_children : m_parents; 
   bool hasNonReachableChildren=FALSE;
-  if (m_distance==distance && m_children)
+  if (m_distance==distance && nl)
   {
-    QListIterator<DotNode> dnli(*m_children);
+    QListIterator<DotNode> dnli(*nl);
     DotNode *cn;
     for (dnli.toFirst();(cn=dnli.current());++dnli)
     {
@@ -347,15 +349,38 @@ void DotNode::write(QTextStream &t,bool topDown,int distance)
   }
   writeBox(t,hasNonReachableChildren);
   m_written=TRUE;
-  if (m_children)
+  if (nl)
   {
-    QListIterator<DotNode>  dnli1(*m_children);
-    QListIterator<EdgeInfo> dnli2(*m_edgeInfo);
-    DotNode *cn;
-    for (dnli1.toFirst();(cn=dnli1.current());++dnli1,++dnli2)
+    if (toChildren)
     {
-      if (cn->m_distance<=distance) writeArrow(t,cn,dnli2.current(),topDown);
-      cn->write(t,topDown,distance);
+      QListIterator<DotNode>  dnli1(*nl);
+      QListIterator<EdgeInfo> dnli2(*m_edgeInfo);
+      DotNode *cn;
+      for (dnli1.toFirst();(cn=dnli1.current());++dnli1,++dnli2)
+      {
+        if (cn->m_distance<=distance) 
+        {
+          writeArrow(t,cn,dnli2.current(),topDown);
+        }
+        cn->write(t,topDown,toChildren,distance);
+      }
+    }
+    else // render parents
+    {
+      QListIterator<DotNode> dnli(*nl);
+      DotNode *pn;
+      for (dnli.toFirst();(pn=dnli.current());++dnli)
+      {
+        if (pn->m_distance<=distance) 
+        {
+          writeArrow(t,
+                     pn,
+                     pn->m_edgeInfo->at(pn->m_children->findRef(this)),
+                     FALSE
+                    );
+        }
+        pn->write(t,TRUE,FALSE,distance);
+      }
     }
   }
 }
@@ -510,7 +535,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
     for (;(node=dnli2.current());++dnli2)
     {
-      if (node->m_subgraphId==n->m_subgraphId) node->write(t,FALSE);
+      if (node->m_subgraphId==n->m_subgraphId) node->write(t,FALSE,TRUE);
     }
     t << "}" << endl;
     f.close();
@@ -712,82 +737,106 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 
 //--------------------------------------------------------------------
 
-int DotGfxUsageGraph::m_curNodeNumber;
+int DotClassGraph::m_curNodeNumber;
 
-void DotGfxUsageGraph::addClass(ClassDef *cd,DotNode *n,int prot,
-    const char *label,int distance)
+void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
+    const char *label,int distance,const char *templSpec,bool base)
 {
   //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
   //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
   int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
-  DotNode *bn = m_usedNodes->find(cd->name());
+  QCString className;
+  if (templSpec)
+    className=insertTemplateSpecifierInScope(cd->name(),templSpec);
+  else
+    className=cd->name().copy();
+  DotNode *bn = m_usedNodes->find(className);
   if (bn) // class already inserted
   {
-    n->addChild(bn,prot,edgeStyle,label);
-    bn->addParent(n);
+    if (base)
+    {
+      n->addChild(bn,prot,edgeStyle,label);
+      bn->addParent(n);
+    }
+    else
+    {
+      bn->addChild(n,prot,edgeStyle,label);
+      n->addParent(bn);
+    }
     bn->setDistance(distance);
     //printf(" add exiting node %s of %s\n",bn->m_label.data(),n->m_label.data());
   }
   else // new class
   {
     bn = new DotNode(m_curNodeNumber++,
-        cd->name(),
+        className,
         cd->isLinkable() ? 
           (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
         distance
        );
     if (distance>m_maxDistance) m_maxDistance=distance;
-    n->addChild(bn,prot,edgeStyle,label);
-    bn->addParent(n);
-    m_usedNodes->insert(cd->name(),bn);
+    if (base)
+    {
+      n->addChild(bn,prot,edgeStyle,label);
+      bn->addParent(n);
+    }
+    else
+    {
+      bn->addChild(n,prot,edgeStyle,label);
+      n->addParent(bn);
+    }
+    m_usedNodes->insert(className,bn);
     //printf(" add used node %s of %s\n",cd->name().data(),n->m_label.data());
-    if (distance<m_recDepth) buildGraph(cd,bn,distance+1);
+    if (distance<m_recDepth) buildGraph(cd,bn,distance+1,base);
   }
 }
 
-void DotGfxUsageGraph::buildGraph(ClassDef *cd,DotNode *n,int distance)
+void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
 {
-  // add base classes
-  BaseClassListIterator bcli(*cd->baseClasses());
+  BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->superClasses());
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
-    addClass(bcd->classDef,n,bcd->prot,0,distance); 
+    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->templSpecifiers,base); 
   }
-  UsesClassDict *dict = m_impl ? cd->usedImplementationClasses() :
-                                 cd->usedInterfaceClasses();
-  if (dict)
+  if (m_graphType != Inheritance)
   {
-    UsesClassDictIterator ucdi(*dict);
-    UsesClassDef *ucd;
-    for (;(ucd=ucdi.current());++ucdi)
+    UsesClassDict *dict = 
+      m_graphType==Implementation ? cd->usedImplementationClasses() :
+                                    cd->usedInterfaceClasses();
+    if (dict)
     {
-      QCString label;
-      QDictIterator<void> dvi(*ucd->accessors);
-      const char *s;
-      bool first=TRUE;
-      for (;(s=dvi.currentKey());++dvi)
+      UsesClassDictIterator ucdi(*dict);
+      UsesClassDef *ucd;
+      for (;(ucd=ucdi.current());++ucdi)
       {
-        if (first) 
+        QCString label;
+        QDictIterator<void> dvi(*ucd->accessors);
+        const char *s;
+        bool first=TRUE;
+        for (;(s=dvi.currentKey());++dvi)
         {
-          label=s;
-          first=FALSE;
+          if (first) 
+          {
+            label=s;
+            first=FALSE;
+          }
+          else
+          {
+            label+=QCString("\\n")+s;
+          }
         }
-        else
-        {
-          label+=QCString("\\n")+s;
-        }
+        //printf("Found label=`%s'\n",label.data());
+        addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,ucd->templSpecifiers,base);
       }
-      //printf("Found label=`%s'\n",label.data());
-      addClass(ucd->classDef,n,EdgeInfo::Black,label,distance);
     }
   }
 }
 
-DotGfxUsageGraph::DotGfxUsageGraph(ClassDef *cd,bool impl,int maxRecursionDepth)
+DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
 {
   //printf("DotGfxUsage::DotGfxUsage %s\n",cd->name().data());
-  m_impl = impl;
+  m_graphType = t;
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
   m_startNode = new DotNode(m_curNodeNumber++,
@@ -800,25 +849,33 @@ DotGfxUsageGraph::DotGfxUsageGraph(ClassDef *cd,bool impl,int maxRecursionDepth)
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(cd->name(),m_startNode);
   //printf("Root node %s\n",cd->name().data());
-  if (m_recDepth>0) buildGraph(cd,m_startNode,1);
+  if (m_recDepth>0) 
+  {
+    buildGraph(cd,m_startNode,1,TRUE);
+    if (t==Inheritance) buildGraph(cd,m_startNode,1,FALSE);
+  }
   m_diskName = cd->getOutputFileBase().copy();
 }
 
-bool DotGfxUsageGraph::isTrivial() const
+bool DotClassGraph::isTrivial() const
 {
-  return m_startNode->m_children==0;
+  if (m_graphType==Inheritance)
+    return m_startNode->m_children==0 && m_startNode->m_parents==0;
+  else
+    return m_startNode->m_children==0;
 }
 
-DotGfxUsageGraph::~DotGfxUsageGraph()
+DotClassGraph::~DotClassGraph()
 {
   deleteNodes(m_startNode);
   delete m_usedNodes;
 }
 
-static void writeDotGraph(DotNode *root,const QCString &baseName,
-                          bool lrRank,int distance)
+void writeDotGraph(DotNode *root,const QCString &baseName,
+                          bool lrRank,bool renderParents,int distance)
 {
   // generate the graph description for dot
+  //printf("writeDotGraph(%s,%d)\n",baseName.data(),renderParents);
   QFile f;
   f.setName(baseName+".dot");
   if (f.open(IO_WriteOnly))
@@ -831,7 +888,25 @@ static void writeDotGraph(DotNode *root,const QCString &baseName,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,TRUE,distance);
+    root->write(t,TRUE,TRUE,distance);
+    if (renderParents && root->m_parents) 
+    {
+      //printf("rendering parents!\n");
+      QListIterator<DotNode>  dnli(*root->m_parents);
+      DotNode *pn;
+      for (dnli.toFirst();(pn=dnli.current());++dnli)
+      {
+        if (pn->m_distance<=distance) 
+        {
+          root->writeArrow(t,
+                           pn,
+                           pn->m_edgeInfo->at(pn->m_children->findRef(root)),
+                           FALSE
+                          );
+        }
+        pn->write(t,TRUE,FALSE,distance);
+      }
+    }
     t << "}" << endl;
     f.close();
   }
@@ -840,7 +915,8 @@ static void writeDotGraph(DotNode *root,const QCString &baseName,
 static void findMaximalDotGraph(DotNode *root,int maxDist,
                                 const QCString &baseName,
                                 QDir &thisDir,
-                                bool lrRank=FALSE
+                                bool lrRank=FALSE,
+                                bool renderParents=FALSE
                                )
 {
   bool lastFit;
@@ -854,7 +930,7 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
   // sized image (dimensions: maxImageWidth, maxImageHeight)
   do
   {
-    writeDotGraph(root,baseName,lrRank,curDistance);
+    writeDotGraph(root,baseName,lrRank,renderParents,curDistance);
 
     QCString dotCmd;
     // create annotated dot file
@@ -891,19 +967,21 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
   if (!lastFit)
   {
     //printf("Using last fit %d\n",minDistance);
-    writeDotGraph(root,baseName,
+    writeDotGraph(root,
+                  baseName,
                   lrRank || (curDistance==1 && width>maxImageWidth),
+                  renderParents,
                   minDistance
                  );
   }
 }
 
-QCString DotGfxUsageGraph::diskName() const
+QCString DotClassGraph::diskName() const
 {
   return m_diskName + "_coll_graph"; 
 }
 
-void DotGfxUsageGraph::writeGraph(QTextStream &out,
+void DotClassGraph::writeGraph(QTextStream &out,
                                   const char *path,
                                   bool isTBRank)
 {
@@ -919,14 +997,27 @@ void DotGfxUsageGraph::writeGraph(QTextStream &out,
   QDir thisDir;
 
   QCString baseName;
-  if (m_impl)
-    baseName.sprintf("%s_coll_graph",m_diskName.data());
-  else
-    baseName.sprintf("%s_intf_graph",m_diskName.data());
+  QCString mapName;
+  switch (m_graphType)
+  {
+    case Implementation:
+      baseName.sprintf("%s_coll_graph",m_diskName.data());
+      mapName="coll_map";
+      break;
+    case Interface:
+      baseName.sprintf("%s_intf_graph",m_diskName.data());
+      mapName="intf_map";
+      break;
+    case Inheritance:
+      baseName.sprintf("%s_inherit_graph",m_diskName.data());
+      mapName="inherit_map";
+      break;
+  }
 
   // TODO: make sure curDistance>0
   
-  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,!isTBRank);
+  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,
+                      thisDir,!isTBRank,m_graphType==Inheritance);
 
   // run dot to create a .gif image
   QCString dotCmd;
@@ -948,12 +1039,12 @@ void DotGfxUsageGraph::writeGraph(QTextStream &out,
   //printf("dot -Timap %s.dot -o %s.map\n",baseName.data(),baseName.data());
 
   out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-      << m_startNode->m_label << "_impl_map\"></center>" << endl;
-  out << "<map name=\"" << m_startNode->m_label << "_impl_map\">" << endl;
+      << m_startNode->m_label << "_" << mapName << "\"></center>" << endl;
+  out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
   convertMapFile(out,baseName+".map");
   out << "</map><p>" << endl;
 
-  thisDir.remove(baseName+".dot");
+  //thisDir.remove(baseName+".dot");
   thisDir.remove(baseName+".map");
 
   QDir::setCurrent(oldDir);

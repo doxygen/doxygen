@@ -104,7 +104,8 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   bool first=TRUE;
   while (a)
   {
-    ol.startParameter(first); first=FALSE;
+    if (!md->isDefine()) ol.startParameter(first); else ol.docify(" ");
+    first=FALSE;
     QRegExp re(")(");
     int vp;
     if (!a->attrib.isEmpty()) // argument has an IDL attribute
@@ -154,7 +155,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (a) 
     {
       ol.docify(", "); // there are more arguments
-      ol.endParameter(FALSE);
+      if (!md->isDefine()) ol.endParameter(FALSE);
     }
   }
   ol.pushGeneratorState();
@@ -1004,7 +1005,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.docify("]");
       ol.endTypewriter();
     }
-    ol.endParameter(TRUE);
+    if (!isDefine()) ol.endParameter(TRUE);
     ol.endMemberDoc();
     ol.endDoxyAnchor();
     ol.startIndent();
@@ -1300,11 +1301,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
 void MemberDef::warnIfUndocumented()
 {
-  //if (memberGroup) return;
+  if (memberGroup) return;
   ClassDef     *cd = memberClass();
   NamespaceDef *nd = getNamespace();
   FileDef      *fd = getFileDef();
-  GroupDef      *gd = groupDef();
+  GroupDef     *gd = groupDef();
   Definition *d=0;
   const char *t=0;
   if (cd) 

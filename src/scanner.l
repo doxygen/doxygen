@@ -830,7 +830,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
     if (result.left(5)!="http:")
     {
       warn("Warning: image file %s is not found in IMAGE_PATH: "  
-	   "assuming external image. ",fileName);
+	   "assuming external image.\n",fileName);
     }
   }
   return result;
@@ -877,7 +877,7 @@ ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLMASK   [a-z_A-Z0-9\~\:\@\#\.\-\+\/]+
+URLMASK   [a-z_A-Z0-9\~\:\?\@\#\.\-\+\/]+
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
@@ -1124,6 +1124,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   */
 <DocScan>^{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+ { /* found list item marker */
   					  addListItemMarker(yytext);
+  					}
+<DocScan>\n{B}*"-"			{
+  					  addListItemMarker(yytext+1);
   					}
 <DocScan>"<!--"				{ BEGIN(DocSkipHtmlComment); }
 <DocSkipHtmlComment>"--"[!]?">"		{ BEGIN(DocScan); }
@@ -3970,6 +3973,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  current->brief+=' ';
 					  lineCount();
   					}
+<JavaDoc>".\\"/[ \t\r\n]		{
+					  current->brief+=".";
+					}
 <JavaDoc>"."[ \t\r\n]			{
   					  lineCount();
 					  current->brief+=".";

@@ -106,6 +106,7 @@ struct Config
   static bool     allExtFlag; // include all external classes flag
   static QCString perlPath; // the absolute path to perl
   static bool     haveDotFlag; // indicates wether or not dot is present
+  static bool     classGraphFlag; // class graph
   static bool     collGraphFlag; // collaboration graph
   static bool     includeGraphFlag; // include graph
   static bool     gfxHierarchyFlag; // flag to enable graphical hierarchy

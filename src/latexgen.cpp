@@ -47,22 +47,21 @@ static QCString filterTitle(const char *s)
   return result;  
 }
 
-//static QCString escapeLabelName(const QCString &s)
-//{
-//  QCString result;
-//  uint i;
-//  for (i=0;i<s.length();i++)
-//  {
-//    char c=s.at(i);
-//    switch (c)
-//    {
-//      case '~': result+=".1"; break;
-//      case '%': result+=".2"; break;
-//      default: result+=c;
-//    }
-//  }
-//  return result;
-//}
+static QCString escapeLabelName(const QCString &s)
+{
+  QCString result;
+  uint i;
+  for (i=0;i<s.length();i++)
+  {
+    char c=s.at(i);
+    switch (c)
+    {
+      case '%': result+="\\%"; break;
+      default: result+=c;
+    }
+  }
+  return result;
+}
 
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
@@ -861,11 +860,11 @@ void LatexGenerator::startMemberDoc(const char *clname,
     docify(clname);
     t << "}!";
   }
-  t << memname << "@{";
+  t << escapeLabelName(memname) << "@{";
   docify(memname);
   t << "}}" << endl;
   
-  t << "\\index{" << memname << "@{";
+  t << "\\index{" << escapeLabelName(memname) << "@{";
   docify(memname);
   t << "}";
   if (clname)
@@ -921,7 +920,7 @@ void LatexGenerator::addToIndex(const char *s1,const char *s2)
 {
   if (s1)
   {
-    t << "\\index{" << s1 << "@{";
+    t << "\\index{" << escapeLabelName(s1) << "@{";
     docify(s1);
     t << "}";
     if (s2)

@@ -965,7 +965,15 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
                                           {
                                             startCodeLine(*g_code);
                                           }
-  					  BEGIN(g_lastSpecialCContext);
+					  if (g_lastSpecialCContext==SkipCxxComment)
+					  { // force end of C++ comment here
+					    endFontClass();
+					    BEGIN( g_lastCContext ) ;
+					  }
+					  else
+					  {
+  					    BEGIN(g_lastSpecialCContext);
+					  }
   					}
 <RemoveSpecialCComment>"*/"		{
   					  BEGIN(g_lastSpecialCContext);

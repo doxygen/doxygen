@@ -198,6 +198,7 @@ struct UsesClassDef
   }
   ClassDef *classDef;
   QDict<void> *accessors;
+  QCString templSpecifiers;
 };
 
 class UsesClassDict : public QDict<UsesClassDef>

@@ -1427,6 +1427,16 @@ void init()
                     "toolkit from AT&T and Lucent Bell Labs. The other options in this section \n"
                     "have no effect if this option is set to NO (the default) \n"
                  );
+  ConfigBool::add(  "classGraphFlag",
+                    "CLASS_GRAPH",
+                    "TRUE",
+                    "class graph",
+                    "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
+                    "will generate a graph for each documented class showing the direct and \n"
+                    "indirect inheritance relations. Setting this tag to YES will force the \n"
+                    "the CLASS_DIAGRAMS tag to NO.\n"
+                 );
+  addDependency("classGraphFlag","haveDotFlag");
   ConfigBool::add(  "collGraphFlag",
                     "COLLABORATION_GRAPH",
                     "TRUE",

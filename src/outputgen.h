@@ -26,7 +26,7 @@
 #include "index.h"
 
 class ClassDiagram;
-class DotGfxUsageGraph;
+class DotClassGraph;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 
@@ -200,8 +200,8 @@ class OutputGenerator
     virtual void startDescTableData() = 0;
     virtual void endDescTableData() = 0;
 
-    virtual void startCollaborationDiagram() = 0;
-    virtual void endCollaborationDiagram(DotGfxUsageGraph &g) = 0;
+    virtual void startDotGraph() = 0;
+    virtual void endDotGraph(DotClassGraph &g) = 0;
     virtual void startInclDepGraph() = 0;
     virtual void endInclDepGraph(DotInclDepGraph &g) = 0;
     virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;

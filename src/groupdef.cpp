@@ -36,7 +36,8 @@ GroupDef::GroupDef(const char *na,const char *t) :
 {
   fileList = new FileList;
   classList = new ClassList;
-//  groupList = new GroupList;
+  groupList = new GroupList;
+  namespaceList = new NamespaceList;
 
   allMemberList = new MemberList;
   allMemberDict = new QDict<MemberDef>;
@@ -57,6 +58,10 @@ GroupDef::~GroupDef()
 {
   delete fileList;
   delete classList;
+  delete groupList;
+  delete namespaceList;
+  delete allMemberList;
+  delete allMemberDict;
   delete memberGroupList;
   delete memberGroupDict;
 }
@@ -120,14 +125,18 @@ void GroupDef::insertMember(MemberDef *md,int groupId)
   }
 }
 
-//void GroupDef::addGroup(const GroupDef *def)
-//{
-//  groupList->append(def);
-//}
+void GroupDef::addGroup(const GroupDef *def)
+{
+  groupList->append(def);
+}
 
 int GroupDef::countMembers() const
 {
-  return fileList->count()+classList->count()+allMemberList->count();
+  return fileList->count()+
+         classList->count()+
+         namespaceList->count()+
+         groupList->count()+
+         allMemberList->count();
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -185,6 +194,55 @@ void GroupDef::writeDocumentation(OutputList &ol)
         ol.newParagraph();
       }
       fd=fileList->next();
+    }
+    ol.endMemberList();
+  }
+  if (namespaceList->count()>0)
+  {
+    ol.startMemberHeader();
+    parseText(ol,theTranslator->trNamespaces());
+    ol.endMemberHeader();
+    ol.startMemberList();
+    NamespaceDef *nd=namespaceList->first();
+    while (nd)
+    {
+      ol.startMemberItem(0);
+      ol.docify("namespace");
+      ol.insertMemberAlign();
+      ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
+      ol.endMemberItem(FALSE);
+      if (!nd->briefDescription().isEmpty() && Config::briefMemDescFlag)
+      {
+        ol.startMemberDescription();
+        parseDoc(ol,0,0,nd->briefDescription());
+        ol.endMemberDescription();
+        ol.newParagraph();
+      }
+      nd=namespaceList->next();
+    }
+    ol.endMemberList();
+  }
+  if (groupList->count()>0)
+  {
+    ol.startMemberHeader();
+    parseText(ol,theTranslator->trModules());
+    ol.endMemberHeader();
+    ol.startMemberList();
+    GroupDef *gd=groupList->first();
+    while (gd)
+    {
+      ol.startMemberItem(0);
+      //ol.insertMemberAlign();
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
+      ol.endMemberItem(FALSE);
+      if (!gd->briefDescription().isEmpty() && Config::briefMemDescFlag)
+      {
+        ol.startMemberDescription();
+        parseDoc(ol,0,0,gd->briefDescription());
+        ol.endMemberDescription();
+        ol.newParagraph();
+      }
+      gd=groupList->next();
     }
     ol.endMemberList();
   }
@@ -303,3 +361,79 @@ void GroupDef::writeDocumentation(OutputList &ol)
   endFile(ol); 
   ol.popGeneratorState();
 }
+
+//---- helper functions ------------------------------------------------------
+
+void addClassToGroups(Entry *root,ClassDef *cd)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      gd->addClass(cd);
+      //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
+    }
+  }
+}
+
+void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
+{
+  //printf("root->groups->count()=%d\n",root->groups->count());
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    //printf("group `%s'\n",s->data());
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      gd->addNamespace(nd);
+      //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
+    }
+  }
+}
+
+void addGroupToGroups(Entry *root,GroupDef *subGroup)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      gd->addGroup(subGroup);
+    }
+  }
+}
+
+void addMemberToGroups(Entry *root,MemberDef *md)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      GroupDef *mgd = md->groupDef();
+      if (mgd==0)
+      {
+        gd->insertMember(md,root->mGrpId);
+        md->setGroupDef(gd);
+      }
+      else if (mgd!=gd)
+      {
+        warn("Warning: Member %s found in multiple groups.!\n"
+             "The member will be put in group %s, and not in group %s",
+              md->name().data(),mgd->name().data(),gd->name().data()
+            );
+      }
+      //printf("Member %s: in group %s\n",md->name().data(),s->data());
+    }
+  }
+}
+

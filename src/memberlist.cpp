@@ -119,67 +119,7 @@ void MemberList::countDocMembers()
         (Config::extractAllFlag || md->detailsAreVisible()) 
        )
     {
-      static QRegExp r("@[0-9]+");
-      int dummy;
-      switch(md->memberType())
-      {
-        case MemberDef::Enumeration:
-          if (r.match(md->name(),0,&dummy)==-1)
-          {
-            m_count++;
-          }
-          break;
-        case MemberDef::EnumValue:   
-          {
-            MemberDef *scope;
-            scope=md->getEnumScope();
-            if (scope && r.match(scope->name(),0,&dummy)!=-1) 
-              m_count++;
-          }
-          break;
-        default:
-          m_count++;
-          break;
-      }
-
-//      QRegExp r("@[0-9]+");
-//      int dummy;
-//      switch(md->memberType())
-//      {
-//        case MemberDef::Variable:    
-//          varCnt++;     
-//          break;
-//        case MemberDef::Function:    
-//        case MemberDef::Signal:
-//        case MemberDef::Slot:
-//          funcCnt++;    
-//          break;
-//        case MemberDef::Enumeration:
-//          if (r.match(md->name(),0,&dummy)==-1)
-//          {
-//            enumCnt++;
-//          }
-//          break;
-//        case MemberDef::EnumValue:   
-//          {
-//            MemberDef *scope;
-//            scope=md->getEnumScope();
-//            if (scope && r.match(scope->name(),0,&dummy)!=-1) 
-//              enumValCnt++;
-//          }
-//          break;
-//        case MemberDef::Typedef:     
-//          typeCnt++;    
-//          break;
-//        case MemberDef::Prototype:   
-//          protoCnt++;   
-//          break;
-//        case MemberDef::Define:      
-//          defCnt++;
-//          break;
-//        case MemberDef::Friend:
-//          friendCnt++;
-//      }
+      if (md->memberType()!=MemberDef::EnumValue) m_count++;
     }
     md=next();
   }

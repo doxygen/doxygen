@@ -214,8 +214,8 @@ class HtmlGenerator : public OutputGenerator
     { t << "</td></tr>" << endl; }
     //static void docifyStatic(QTextStream &t,const char *str);
     
-    void startCollaborationDiagram();
-    void endCollaborationDiagram(DotGfxUsageGraph &g);
+    void startDotGraph();
+    void endDotGraph(DotClassGraph &g);
     void startInclDepGraph();
     void endInclDepGraph(DotInclDepGraph &g);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g);

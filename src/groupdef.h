@@ -41,12 +41,12 @@ class GroupDef : public Definition
   public:
     GroupDef(const char *name,const char *title);
    ~GroupDef();
-    //const char *groupFile() const { return fileName; }
     QCString getOutputFileBase() const { return fileName; }
     const char *groupTitle() const { return title; }
     void addFile(const FileDef *def); 
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
+    void addGroup(const GroupDef *def);
     void insertMember(MemberDef *def,int groupId);
     void addMemberToGroup(MemberDef *def,int groupId);
     void writeDocumentation(OutputList &ol);
@@ -64,13 +64,15 @@ class GroupDef : public Definition
   private: 
     QCString title;                     // title of the group
     QCString fileName;                  // base name of the generated file
-    FileList *fileList;                 // list of all files in the group
-    ClassList *classList;               // list of all classes in the group
-    NamespaceList *namespaceList;       // list of all namespace in the group
+    FileList *fileList;                 // list of files in the group
+    ClassList *classList;               // list of classes in the group
+    NamespaceList *namespaceList;       // list of namespaces in the group
+    GroupList *groupList;               // list of sub groups.
 
     MemberList *allMemberList;          // list of all members in the group
     QDict<MemberDef> *allMemberDict;
-    // members sorted to type
+    
+    // members sorted by type
     MemberList defineMembers;
     MemberList protoMembers;
     MemberList typedefMembers;
@@ -80,7 +82,7 @@ class GroupDef : public Definition
     MemberList varMembers;
 
     /* user defined member groups */
-    MemberGroupList *memberGroupList;
+    MemberGroupList *memberGroupList;   // list of member groups in this group
     MemberGroupDict *memberGroupDict;
 
 };
@@ -94,5 +96,10 @@ class GroupListIterator : public QListIterator<GroupDef>
   public:
     GroupListIterator(const GroupList &l) : QListIterator<GroupDef>(l) {}
 };
+
+void addClassToGroups(Entry *root,ClassDef *cd);
+void addNamespaceToGroups(Entry *root,NamespaceDef *nd);
+void addGroupToGroups(Entry *root,GroupDef *subGroup);
+void addMemberToGroups(Entry *root,MemberDef *md);
 
 #endif

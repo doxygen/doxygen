@@ -35,7 +35,7 @@ You should use the \\mainpage command inside a comment block like this:
  */
 \endverbatim
 
-<li><b>When I set EXTRACT_ALL to NO non of my function are shown in the documentation.</b></li>
+<li><b>When I set EXTRACT_ALL to NO non of my functions are shown in the documentation.</b></li>
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -146,6 +146,11 @@ Unices and Windows by means of the QFile, QFileInfo, QDir, QDate,
 QTime and QIODevice classes. 
 Another reason is for the nice and bug free utility classes, like QList, 
 QDict, QString, QArray, QTextStream, QRegExp etc. 
+
+<li><b>Can use doxygen on my Java code?</b>
+
+No, at the moment there is no support for Java. I suggest to
+use Sun's JavaDoc instead.
 
 </ol>
 

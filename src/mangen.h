@@ -197,8 +197,8 @@ class ManGenerator : public OutputGenerator
     void startDescTableData() { }
     void endDescTableData() {}
 
-    void startCollaborationDiagram() {}
-    void endCollaborationDiagram(DotGfxUsageGraph &) {}
+    void startDotGraph() {}
+    void endDotGraph(DotClassGraph &) {}
     void startInclDepGraph() {}
     void endInclDepGraph(DotInclDepGraph &) {}
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}

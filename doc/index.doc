@@ -47,23 +47,33 @@ Documents produced by Doxygen are derivative works derived from the
 input used in their production; they are not affected by this license.
 
 <h2>Introduction</h2>
-Doxygen is a documentation system for C, C++ and IDL. It can generate an 
-on-line class browser (in HTML) and/or an off-line reference manual 
-(in \f$\mbox{\LaTeX}\f$) from a set 
-of documented source files. There is also support for generating 
-man pages and for converting the generated output into 
-Postscript, hyperlinked PDF or compressed HTML.
-The documentation is extracted directly from the 
-sources. Doxygen is developed on <a href="http://www.linux.org">Linux</a>, 
-but it runs on most other UNIX flavors as well. 
-An executable for Windows 9x/NT is also available.
+Doxygen is a documentation system for C++, IDL (Corba and Microsoft flavors) 
+and C. 
 
-Doxygen can also be configured to extract the code-structure from undocumented
-source files. This can be very useful to quickly find your way in large
-source distributions.
+It can help you in three ways:
+<ol>
+<li> It can generate an on-line documentation browser (in HTML) and/or an 
+     off-line reference manual (in \f$\mbox{\LaTeX}\f$) from a set 
+     of documented source files. 
+     There is also support for generating output in RTF (MS-Word), 
+     Postscript, hyperlinked PDF, compressed HTML, and Unix man pages.
+     The documentation is extracted directly from the sources, which
+     makes it much easier to keep the documentation consistent with the
+     source code.
+<li> Doxygen can be configured to extract the code structure 
+     from undocumented source files. This can be very useful to quickly 
+     find your way in large source distributions. 
+     The relations between the various elements are be visualized
+     by means of include dependency graphs, inheritance diagrams,
+     and collaboration diagrams, which are all generated automatically.
+<li> You can even `abuse' doxygen for creating normal documentation (as I did
+     for this manual).
+</ol>
 
-You can even `abuse' doxygen for creating normal documentation (as I did
-for this manual).
+Doxygen is developed on <a href="http://www.linux.org">Linux</a>, 
+but is set-up to be highly portable. As a result, it runs on most 
+other UNIX flavors as well. Furthermore, an executable for 
+Windows 9x/NT is also available.
 
 This manual is divided into two parts, each of which is divided into several 
 sections.
@@ -77,6 +87,7 @@ The first part forms a user manual:
                      documentation quickly. 
 <li>Section \ref docblocks demonstrates the various ways that code can
                  be documented.
+<li>Section \ref grouping shows how to group things together. 
 <li>Section \ref formulas shows how to insert formulas in the documentation.
 <li>Section \ref diagrams describes the diagrams and graphs that doxygen can generate.
 <li>Section \ref preprocessing explains how doxygen deals with macro definitions.
@@ -112,13 +123,13 @@ The second part forms a reference manual:
 
 <h2>Projects using doxygen</h2>
 
-I have compiled a small 
+I have compiled a 
 \htmlonly
 <a href="http://www.stack.nl/~dimitri/doxygen/projects.html">list of projects</a> 
-that use doxygen
+that use doxygen.
 \endhtmlonly
 \latexonly
-list of projects that use doxygen (see {\tt http://www.stack.nl/$\sim$dimitri/doxygen/projects.html})
+list of projects that use doxygen (see {\tt http://www.stack.nl/$\sim$dimitri/doxygen/projects.html}).
 \endlatexonly
 If you know other projects, let me know and I'll add them. 
 
@@ -143,13 +154,13 @@ Thanks go to:
     Although I have rewritten practically all code since then, DOC++ has still 
     given me a good start in writing Doxygen.
 <li>All people at Troll Tech, for creating a beautiful GUI Toolkit
-    (which is even useful for GUI-less applications like doxygen :-)
+    (which is very useful as a Windows/Unix platform abstraction layer :-)
 <li>My brother <a href="http://www.stack.nl/~fidget/index.html">Frank</a>
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
 <li>Parker Waerchter for adding the RTF output generator.
-<li>Joerg Baumann, for adding conditional documentation blocks, and
-    PDF links.
+<li>Joerg Baumann, for adding conditional documentation blocks, 
+    PDF links, and the configuration generator.
 <li>Matthias Andree for providing a .spec script for building rpms from the
     sources.
 <li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 

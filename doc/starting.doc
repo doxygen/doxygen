@@ -60,33 +60,38 @@ Makefile. It contains of a number of assignments (tags) of the form:
 You can probably leave the values of most tags in a generated template 
 configuration file to their default value. 
 
-The \c INPUT tag is the only tag for which you are required to provide
-a value. See section \ref config for more details about the configuration file.
-For a small project consisting of a few C and/or C++ source and header files, 
-you can add the names of the files after the \c INPUT tag. 
-If you have a larger project consisting of a source directory or tree
-this may become tiresome. In this case you should put the root directory or 
-directories after the \c INPUT tag, and add one or more file 
-patterns to the \c FILE_PATTERN tag (for instance <code>*.cpp *.h</code>). 
-Only files that match one of the 
+The \ref cfg_input "INPUT" tag is the only tag for which you are required to 
+provide a value. See section \ref config for more details about the 
+configuration file. For a small project consisting of a few C and/or C++ source 
+and header files, you can add the names of the files after the 
+\ref cfg_input "INPUT" tag. 
+
+If you have a larger project consisting of a source directory or tree this may 
+become tiresome. In this case you should put the root directory or 
+directories after the \ref cfg_input "INPUT" tag, and add one or more file 
+patterns to the \ref cfg_file_patterns "FILE_PATTERNS" tag 
+(for instance <code>*.cpp *.h</code>). Only files that match one of the 
 patterns will be parsed (if the patterns are omitted all files will be parsed).
 For recursive parsing of a source tree you must set 
-the \c RECURSIVE tag to \c YES. To further fine-tune the list of files
-that is parsed the \c EXCLUDE and \c EXCLUDE_PATTERNS tags can be used.
+the \ref cfg_recursive "RECURSIVE" tag to \c YES. To further fine-tune the 
+list of files that is parsed the \ref cfg_exclude "EXCLUDE" and 
+\ref cfg_exclude_patterns "EXCLUDE_PATTERNS" tags can be used.
 
 If you start using doxygen for an existing project (thus without any 
 documentation that doxygen is aware of), you can still get an idea of
-what the documented result would be. To do so, you must set the \c EXTRACT_ALL 
-tag in the configuration file to \c YES. Then, doxygen will pretend 
-everything in your sources is documented. Please note that warnings of
-undocumented members will not be generated as long as \c EXTRACT_ALL is set
-to \c YES.
+what the documented result would be. To do so, you must set 
+the \ref cfg_extract_all "EXTRACT_ALL" tag in the configuration file 
+to \c YES. Then, doxygen will pretend everything in your sources is documented. 
+Please note that warnings of undocumented members will not be generated as 
+long as \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
 
 To analyse an existing piece of software it is useful to cross-reference 
 a (documented) entity with its definition in the source files. Doxygen will
-generate such cross-references if you set the \c SOURCE_BROWSER tag to \c YES.  
+generate such cross-references if you set 
+the \ref cfg_source_browser "SOURCE_BROWSER" tag to \c YES.  
 It can also include the sources directly into the documentation by setting
-\c INLINE_SOURCES to \c YES (this can be handly for code reviews for instance).
+\ref cfg_inline_sources "INLINE_SOURCES" to \c YES (this can be handly for 
+code reviews for instance).
 
 \subsection step2 Step 2: Running doxygen
 
@@ -95,18 +100,19 @@ To generate the documentation you can now enter:
 doxygen <config-file>
 \endverbatim
 
-Doxygen will create a \c html, \c latex and/or \c man directory inside 
+Doxygen will create a \c html, \c rtf, \c latex and/or \c man directory inside 
 the output directory. 
-As the names suggest the \c html directory contains the
-generated documentation in HTML format and the \c latex directory contains the
-generated documentation in \f$\mbox{\LaTeX}\f$ format. Man pages are put
-in a \c man3 directory inside the \c man directory.
+As the names suggest the \c html directory contain the
+generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$ and Unix-Man page
+format.
 
 The default output directory is the directory in which \c doxygen
 is started. The directory to which the output is written can be changed 
-using the \c OUTPUT_DIRECTORY , \c HTML_OUTPUT, \c LATEX_OUTPUT, and
-\c MAN_OUTPUT tags of the configuration file. If the output directory does not 
-exist, \c doxygen will try to create it for you.
+using the \ref cfg_output_directory "OUTPUT_DIRECTORY" , 
+\ref cfg_html_output "HTML_OUTPUT", \ref cfg_latex_output "LATEX_OUTPUT", 
+and \ref cfg_man_output "MAN_OUTPUT" tags of the configuration file. 
+If the output directory does not exist, \c doxygen will try to create it 
+for you.
 
 \addindex browser
 The generated HTML documentation can be viewed by pointing a HTML browser
@@ -127,10 +133,10 @@ converted into a postscript file \c refman.ps by typing <code>make ps</code>
 (this requires <code>dvips</code>).  The Postscript file can be send to a postscript
 printer. If you do not have a postscript printer, you can try to use 
 ghostscript to convert postscript into something your printer understands.
-Conversion to PDF is also possible; just type
-<code>make pdf</code> (this required <code>ps2pdf</code>). 
-To get the best results for PDF output you should set the 
-\c PDF_HYPERLINKS tag to \c YES.
+Conversion to PDF is also possible if you have installed the ghostscript
+interpreter; just type <code>make pdf</code>. To get the best results for 
+PDF output you should set the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" 
+tag to \c YES.
 
 The generated man pages can be viewed using the \c man program. You do need
 to make sure the man directory is in the man path (see the \c MANPATH
@@ -145,10 +151,11 @@ this should ofcourse be step 1. Here I assume
 you already have some code and you want doxygen to generate a nice document 
 describing the API and maybe the internals as well.
 
-If the \c EXTRACT_ALL option is set to \c NO in the configuration file 
-(the default), then doxygen will only generate documentation for 
-\e documented members, files, classes and namespaces. So how do you document 
-these? For members, classes and namespaces there are basicly two options:
+If the \ref cfg_extract_all "EXTRACT_ALL" option is set to \c NO in the 
+configuration file (the default), then doxygen will only generate 
+documentation for \e documented members, files, classes and namespaces. So 
+how do you document these? For members, classes and namespaces there are 
+basically two options:
 <ol>
 <li>Place a \e special documentation block in front of the declaration or
     definition of the member, class or namespace. For file, class and namespace
@@ -174,7 +181,7 @@ During parsing the following steps take place:
 <li> If a line starts with some whitespace followed by one or more asterixes 
      (<tt>*</tt>) then the whitespace and asterixes are removed.
 <li> All resulting blank lines are treated as a paragraph separators.
-     This saves you from placing new-paragraph commands yourself, 
+     This saves you from placing new-paragraph commands yourself 
      in order to make the generated documentation readable.
 <li> Links are created for words corresponding to documented classes. 
 <li> Links to members are created when certain patterns are found in the
@@ -218,7 +225,7 @@ Using a number of column aligned minus signs at the start of a
      
      More text here.
 
-If you use tabs within lists, please make sure that \c TAB_SIZE in the 
+If you use tabs within lists, please make sure that \ref cfg_tab_size "TAB_SIZE" in the 
 configuration file is set to the correct tab size.
 
 \htmlonly
@@ -272,11 +279,12 @@ The one-line comments should contain a brief description,
 whereas the multi-line comment blocks contain a more detailed description.
 The brief descriptions are included in the member overview of a class, 
 namespace or file and are printed using a small italic font 
-(this description can be omitted by setting \c BRIEF_MEMBER_DESC to \c NO in 
+(this description can be hidden by 
+ setting \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" to \c NO in 
 the config file). By default the brief descriptions are also the first 
 sentence of the detailed description 
-(this can be changed by setting the \c REPEAT_BRIEF tag to \c NO). 
-Both the brief and the detailed descriptions are optional 
+(this can be changed by setting the \ref cfg_repeat_brief "REPEAT_BRIEF" tag 
+to \c NO). Both the brief and the detailed descriptions are optional 
 for the Qt style. 
 
 Here is the same piece of code, this time documented using the JavaDoc 
@@ -287,10 +295,17 @@ style:
  for the corresponding HTML documentation that is generated by doxygen.
  \endhtmlonly
 
-Note that the first sentence of the documentation (until the <tt>.</tt>) 
+Note that by default the first sentence of the documentation (until the <tt>.</tt>) 
 is treated as a brief description, whereas the documentation block as a whole 
-forms the detailed description. The brief description is required for the 
-JavaDoc style.
+forms the detailed description. If you want to put a dot in the middle of a
+sentence you should put a backslash and space behind it. Example:
+\verbatim
+  /** Brief description (e.g.\ using only a few words). Details follow. */
+\endverbatim
+The brief description is required for the JavaDoc style, unless you set
+\ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" to NO. If you do this,
+doxygen treats JavaDoc comments just like Qt comments (i.e. You have
+to insert an explicit \ref cmdbrief "\\brief" command to add a brief description).
 
 Unlike most other documentation systems, doxygen also allows you to put
 the documentation of members (including global functions) in front of 
@@ -300,6 +315,11 @@ implementer of the members more direct access to the documentation.
 As a compromise the brief description could be placed before the
 declaration and the detailed description before the member definition
 (assuming you use the Qt style comments).
+
+\par Note:
+Each entity can only have \e one brief and \e one detailed description. If you
+specify more than one comment block of the same type, only one will be used,
+and all others are ignored!
 
 \subsection structuralcommands Structural commands
 
@@ -399,9 +419,99 @@ Here is an example of a the use of these comment blocks:
  \endhtmlonly
 
 \warning These blocks can only be used to document \e members.
-         They cannot be used to document file classes, unions, structs and 
-         enums. Furthermore, the structural commands mentioned in the 
-         previous section are ignored inside these comment blocks.
+         They cannot be used to document files, classes, unions, structs,
+         groups, namespaces and enums. Furthermore, the structural commands 
+         mentioned in the previous section (like <code>\\class</code>) are ignored 
+         inside these comment blocks.
+
+\htmlonly
+Go to the <a href="grouping.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+/*! \page grouping Grouping
+
+Doxygen has two mechanisms to group things together. 
+One mechanism works at a global level, creating a new page
+for each group. These groups are called "modules" in the documentation.
+The other mechanism works within a member list of some compound entity,
+and is refered to as a "member group".
+
+\subsection modules Modules
+
+Modules are a way to group things together on a separate page. You
+can document a group as a whole, as well as all individual members.
+Members of a group can be files, namespaces, classes, functions,
+variables, enums, typedefs, and defines, but also other groups.
+
+To define a group, you should put the \ref cmddefgroup "\\defgroup"
+command in a special comment block. The first argument of the command 
+is a label that should uniquely identify the group.  You can make an 
+entity a member of a specific group by putting 
+a \ref cmdingroup "\\ingroup" command inside its documentation.
+
+\par Example:
+\verbinclude group.cpp
+
+\htmlonly
+Click <a href="$(DOXYGEN_DOCDIR)/examples/group/html/modules.html">here</a> 
+for the corresponding HTML documentation that is generated by Doxygen.
+\endhtmlonly
+
+\subsection memgroup Member Groups
+
+If a compound (e.g. a class or file) has many members, it is often 
+desired to group them together. Doxygen already automatically groups 
+things together on type and protection level, but maybe you feel that 
+this is not enough or that that default grouping is wrong. 
+For instance, because you feel that members of different (syntactic) 
+types belong to the same (semantic) group.
+
+A member group is defined by 
+a 
+\verbatim
+//@{ 
+  ...
+//@}
+\endverbatim 
+block or a 
+\verbatim
+/*@{*/ 
+  ... 
+/*@}*/ 
+\endverbatim 
+block if you prefer C style 
+comments. Note that the members of the group should be 
+physcially inside the member group's body.
+
+Before the opening marker of a block a separate comment block should be 
+placed. This block should contain the \ref cmdname "@name" 
+(or \ref cmdname "\name") command and is used to specify the header 
+of the group. Optionally, the comment block may contain more
+detailed information about the group.
+
+Nesting of member groups is not allowed. 
+
+If all members of a member group have the same type and protection level
+(for instance all are static public members), then the whole member 
+group is displayed as a subgroup of the type/protection level group 
+(the group is displayed as a subsection of the "Static Public Members" 
+section for instance). If two or more members have different types, 
+then the group is put at the same level as the automatically 
+generated groups. 
+
+\par Example:
+\verbinclude memgrp.cpp
+
+\htmlonly
+Click <a href="$(DOXYGEN_DOCDIR)/examples/memgrp/html/class_test.html">here</a> 
+for the corresponding HTML documentation that is generated by Doxygen.
+\endhtmlonly
+
+Here Group1 is displayed as a subsection of the "Public Members". And
+Group2 is a separate section because it contains members with
+different protection levels (i.e. public and protected).
 
 \htmlonly
 Go to the <a href="formulas.html">next</a> section or return to the
@@ -501,6 +611,10 @@ Go to the <a href="diagrams.html">next</a> section or return to the
       <b>Warning:</b> When you have a very large class hierarchy where many 
       classes derive from a common base class, the resulting image may become 
       too big to handle for some browsers.
+  <li>if \ref cfg_class_graph "CLASS_GRAPH" is set to \c YES,
+      a graph will be generated for each documented class showing the 
+      direct and indirect inheritance relations. This disables the
+      generation of the build-in class inheritance diagrams.
   <li>if \ref cfg_include_graph "INCLUDE_GRAPH" is set to \c YES, an include 
       dependency graph is generated for each documented file that includes at 
       least one other file. This feature is currently supported for HTML and RTF 
@@ -518,52 +632,56 @@ Go to the <a href="diagrams.html">next</a> section or return to the
   The elements in the class diagrams in HTML and RTF 
   have the following meaning:
   <ul>
-  <li> A yellow box indicates a class. A box can have a 
+  <li> A \b yellow box indicates a class. A box can have a 
        little marker in the lower right corner to indicate that the class 
-       contains base classes that are hidden. If the box is filled with a 
+       contains base classes that are hidden. 
+       For the class diagrams the maximum tree width is currently 8 elements. 
+       If a tree wider some nodes will be hidden.
+       If the box is filled with a 
        dashed pattern the inheritance relation is virtual.
-  <li> A white box indicates that the documentation of the class
+  <li> A \b white box indicates that the documentation of the class
        is currently shown.
-  <li> A grey box indicates an undocumented class.
-  <li> A solid dark blue arrows indicates public inheritance.
-  <li> A dashed dark green arrows indicates protected inheritance.
-  <li> A dotted dark green arrows indicates private inheritance.
+  <li> A \b grey box indicates an undocumented class.
+  <li> A <b>solid dark blue</b> arrow indicates public inheritance.
+  <li> A <b>dashed dark green</b> arrow indicates protected inheritance.
+  <li> A <b>dotted dark green</b> arrow indicates private inheritance.
   </ul>
 
   The elements in the class diagram in \f$\mbox{\LaTeX}\f$ have the 
   following meaning:
   <ul>
-  <li> A white box indicates a class.
-       A marker in the lower right corner of the box indicates that the 
+  <li> A \b white box indicates a class.
+       A \b marker in the lower right corner of the box indicates that the 
        class has base classes that are hidden. 
-       If the box has a dashed border this indicates virtual inheritance.
-  <li> A solid arrow indicates public inheritance.
-  <li> A dashed arrow indicates protected inheritance.
-  <li> A dotted arrow indicated private inheritance.
+       If the box has a \b dashed border this indicates virtual inheritance.
+  <li> A \b solid arrow indicates public inheritance.
+  <li> A \b dashed arrow indicates protected inheritance.
+  <li> A \b dotted arrow indicated private inheritance.
   </ul>
 
   The elements in the graphs generated by the dot tool have the following
   meaning:
   <ul>
-  <li> A white box indicates a class or struct. If the box has a 
-       red border this indicates that the class contains related classes
-       that are hidden.
-  <li> A black box indicates that the class' documentation is currently shown.
-  <li> A dark blue arrow indicates an include relation (for the 
+  <li> A \b white box indicates a class or struct or file. 
+  <li> A box with a \b red border indicates a node that has
+       \e more arrows than are shown! 
+       In order words: the graph is \e truncated with respect to this node.
+       The reason a graph is sometimes truncated is too prevent images
+       from becoming too large. 
+       For the graphs generated with dot doxygen tries
+       to limit the width of the resulting image to 1024 pixels.  
+  <li> A \b black box indicates that the class' documentation is currently shown.
+  <li> A <b>dark blue</b> arrow indicates an include relation (for the 
        include dependency graph) or public inheritance (for the other graphs).
-  <li> A dark green arrow indicates protected inheritance.
-  <li> A dark red arrow indicates private inheritance.
-  <li> A purple dashed arrow indicated a "usage" relation, the 
+  <li> A <b>dark green</b> arrow indicates protected inheritance.
+  <li> A <b>dark red</b> arrow indicates private inheritance.
+  <li> A <b>purple dashed</b> arrow indicated a "usage" relation, the 
        edge of the arrow is labled with the variable(s) responsible for the
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
        of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, <code>T\<B\>*</code> ). 
   </ul>
 
-The reason why classes or structs are sometimes hidden is too prevent images
-to become too large. For the class diagrams the maximum tree width
-is currently 8 elements. For the graphs generated with dot doxygen tries
-to limit the width of the resulting image to 1024 pixels.  
 
 Here are a couple of header files that together show the various diagrams
 that doxygen can generate: 
@@ -622,13 +740,14 @@ Then by default doxygen will feed the following to its parser:
   static CONST_STRING version = "2.xx";
 \endverbatim
 
-You can disable all preprocessing by setting \c ENABLE_PREPROCESSING to \c 
+You can disable all preprocessing by setting 
+\ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
 NO in the configuation file. In the case above doxygen will then read
 both statements!
 
 In case you want to expand the \c CONST_STRING macro, you should set the
-\c MACRO_EXPANSION tag in the config file to \c YES. Then the result 
-after preprocessing becomes:
+\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the config file 
+to \c YES. Then the result after preprocessing becomes:
 
 \verbatim
 #define VERSION
@@ -640,8 +759,10 @@ after preprocessing becomes:
 Note that doxygen will now expand \e all macro definitions 
 (recursively if needed). This is often too much. Therefore, doxygen also 
 allows you to expand only those defines that you explicitly 
-specify. For this you have to set the \c EXPAND_ONLY_PREDEF tag to \c YES
-and specify the macro definitions after the \c PREDEFINED tag.  
+specify. For this you have to set the 
+\ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" tag to \c YES
+and specify the macro definitions after 
+the \ref cfg_predefined "PREDEFINED" tag.  
 
 As an example, suppose you have the following obfusciated code fragment
 of an abstract base class called \c IUnknown:
@@ -696,9 +817,11 @@ class  IUnknown
 };
 \endverbatim
 
-Note that the \c PREDEFINED tag accepts function like macro definitions
-(like \c DECLARE_INTERFACE), normal macro substitutions (like \c PURE
-and \c THIS) and plain defines (like \c __cplusplus).
+Note that the \ref cfg_predefined "PREDEFINED" tag accepts function 
+like macro definitions
+(like \c DECLARE_INTERFACE ), normal macro 
+substitutions (like \c PURE and \c THIS) and plain 
+defines (like \c __cplusplus).
 
 Note also that preprocessor definitions that are normally defined 
 automatically by the preprocessor (like \c __cplusplus), have to be defined 
@@ -726,7 +849,7 @@ PREDEFINED = QListT:=QList
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
 even more flexibility you can always write an input filter and specify it 
-after the \c INPUT_FILTER tag.
+after the \ref cfg_input_filter "INPUT_FILTER" tag.
 
 If you are unsure what the effect of doxygen's preprocessing will be
 you can run doxygen as follows:

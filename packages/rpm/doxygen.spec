@@ -1,5 +1,5 @@
 Name: doxygen
-Version: 1.1.2-20000430
+Version: 1.1.3
 Summary: documentation system for C, C++ and IDL
 Release: 1
 Source0: doxygen-%{version}.src.tar.gz
@@ -24,7 +24,7 @@ BuildPrereq: perl tetex
 
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix %{prefix}
+CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix %{prefix} --with-doxywizard
 make
 
 %install
@@ -36,6 +36,9 @@ make INSTALL=$RPM_BUILD_ROOT%{prefix} install
 ( cd $RPM_BUILD_ROOT
   mkdir -p ./usr/doc/packages
   mv .%{prefix}/doc/doxygen ./usr/doc/packages/doxygen
+  mv .%{prefix}/doc/doxysearch ./usr/doc/packages/doxysearch
+  mv .%{prefix}/doc/doxytag ./usr/doc/packages/doxytag
+  mv .%{prefix}/doc/doxywizard ./usr/doc/packages/doxywizard
 )
 
 %files
