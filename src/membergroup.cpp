@@ -115,6 +115,12 @@ void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
   memberList->writeDocumentation(ol,scopeName,container,0);
 }
 
+void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
+               Definition *container)
+{
+  memberList->writeDocumentationPage(ol,scopeName,container);
+}
+
 /*! Add this group as a subsection of the declaration section, instead
  *  of rendering it in its own section
  */

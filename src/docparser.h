@@ -557,6 +557,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
     QString title() const      { return m_title; }
     DocNode *parent() const    { return m_parent; }
     QString relPath() const    { return m_relPath; }
+    QString key() const        { return m_key; }
     void accept(DocVisitor *v) { CompAccept<DocXRefItem>::accept(this,v); }
     bool parse();
 

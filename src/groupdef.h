@@ -45,7 +45,7 @@ class GroupDef : public Definition
   public:
     GroupDef(const char *fileName,int line,const char *name,const char *title,const char *refFileName=0);
    ~GroupDef();
-    DefType definitionType() { return TypeGroup; }
+    DefType definitionType() const { return TypeGroup; }
     QCString getOutputFileBase() const;
     const char *groupTitle() const { return title; }
     void setGroupTitle( const char *newtitle );
@@ -63,6 +63,9 @@ class GroupDef : public Definition
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
+    void writeMemberDocumentation(OutputList &ol);
+    void writeMemberPages(OutputList &ol);
+    void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
     int countMembers() const;
     bool isLinkableInProject() const
     {

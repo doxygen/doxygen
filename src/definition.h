@@ -51,7 +51,7 @@ class Definition
       TypeNamespace, TypePackage, TypePage, TypeDir
     };
     /*! Use this for dynamic inspection of the type of the derived class */
-    virtual DefType definitionType() = 0;
+    virtual DefType definitionType() const = 0;
     
     /*! Create a new definition */
     Definition(
@@ -195,6 +195,7 @@ class Definition
 
     void writePathFragment(OutputList &ol) const;
     void writeNavigationPath(OutputList &ol) const;
+    virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
 
   protected:
     void setLocalName(const QCString name) { m_localName=name; }

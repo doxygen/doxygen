@@ -67,7 +67,7 @@ class ClassDef : public Definition
                         Category=Entry::CATEGORY_SEC,
                         Exception=Entry::EXCEPTION_SEC
                       };
-    DefType definitionType() { return TypeClass; }
+    DefType definitionType() const { return TypeClass; }
     QCString getOutputFileBase() const; 
     QCString getInstanceOutputFileBase() const; 
     QCString getFileBase() const;
@@ -104,9 +104,12 @@ class ClassDef : public Definition
 
     void writeDocumentation(OutputList &ol);
     void writeDocumentationForInnerClasses(OutputList &ol);
+    void writeMemberDocumentation(OutputList &ol);
+    void writeMemberPages(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
+    void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
 
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.

@@ -369,6 +369,7 @@ static void buildFileList(Entry *root)
   {
     bool ambig;
     FileDef *fd=findFileDef(Doxygen::inputNameDict,root->name,ambig);
+    //printf("**************** root->name=%s fd=%p\n",root->name.data(),fd);
     if (fd && !ambig)
     {
       if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
@@ -383,6 +384,7 @@ static void buildFileList(Entry *root)
       }
       else
       {
+        //printf("Adding documentation!\n");
         // using FALSE in setDocumentation is small hack to make sure a file 
         // is documented even if a \file command is used without further 
         // documentation
@@ -627,30 +629,47 @@ ArgumentList *getTemplateArgumentsFromName(
 
 static void addClassToContext(Entry *root)
 {
-  QCString fullName=removeRedundantWhiteSpace(root->name);
-  if (fullName.isEmpty())
-  {
-    // this should not be called
-    warn(root->fileName,root->startLine,
-        "Warning: invalid class name found!"
-        );
-    return;
-  }
-  Debug::print(Debug::Classes,0,"  Found class with raw name %s\n",fullName.data());
-
-  fullName=stripAnonymousNamespaceScope(fullName);
-  fullName=stripTemplateSpecifiersFromScope(fullName);
-
-  Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
+//  QCString fullName=removeRedundantWhiteSpace(root->name);
+//
+//  if (fullName.isEmpty())
+//  {
+//    // this should not be called
+//    warn(root->fileName,root->startLine,
+//        "Warning: invalid class name found!"
+//        );
+//    return;
+//  }
+//  Debug::print(Debug::Classes,0,"  Found class with raw name %s\n",fullName.data());
+//
+//  fullName=stripAnonymousNamespaceScope(fullName);
+//  fullName=stripTemplateSpecifiersFromScope(fullName);
+//
+//  Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
 
   bool ambig;
-  ClassDef *cd;
-  //printf("findFileDef(%s)\n",root->fileName.data());
-  FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
-  if ((cd=getClass(fullName))) 
+  NamespaceDef *nd = 0;
+  FileDef      *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+
+  // see if the using statement was found inside a namespace or inside
+  // the global file scope.
+  if (root->parent->section == Entry::NAMESPACE_SEC)
   {
-    Debug::print(Debug::Classes,0,"  Existing class!\n",fullName.data());
+     QCString scName=root->parent->name;
+     if (!scName.isEmpty())
+     {
+        nd = getResolvedNamespace(scName);
+     }
+  }
+  QCString fullName = root->name;
+  ClassDef *cd = getResolvedClass(nd,fd,root->name,0,0,TRUE);
+  Debug::print(Debug::Classes,0, "  Found class with name %s (cd=%p)\n",
+      cd ? cd->name().data() : root->name.data(), cd);
+  
+  if (cd) 
+  {
+    fullName=cd->name();
+    Debug::print(Debug::Classes,0,"  Existing class %s!\n",cd->name().data());
     //if (cd->templateArguments()==0)
     //{
     //  //printf("existing ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
@@ -693,7 +712,7 @@ static void addClassToContext(Entry *root)
         cd->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
       }
       cd->addSectionsToDefinition(root->anchors);
-      cd->setName(fullName); // change name to match docs
+      //cd->setName(fullName); // change name to match docs
     }
     cd->setFileDef(fd);
     if (cd->hasDocumentation())
@@ -719,7 +738,7 @@ static void addClassToContext(Entry *root)
       // this happens if a template class declared with @class is found
       // before the actual definition.
       ArgumentList *tArgList = 
-        getTemplateArgumentsFromName(fullName,root->tArgLists);
+        getTemplateArgumentsFromName(cd->name(),root->tArgLists);
       cd->setTemplateArguments(tArgList);
     }
   }
@@ -1703,7 +1722,7 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]*\\*");
+  static const QRegExp re("([^)]*)");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 &&     // contains a (*
@@ -2424,27 +2443,52 @@ static void buildFunctionList(Entry *root)
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->memSpec);
           md->setMemberGroupId(root->mGrpId);
+
+          // see if the function is inside a namespace
+          NamespaceDef *nd = 0;
+          QCString scope;
+          if (root->parent->section == Entry::NAMESPACE_SEC )
+          {
+            QCString nscope=removeAnonymousScopes(root->parent->name);
+            if (!nscope.isEmpty())
+            {
+              nd = getResolvedNamespace(nscope);
+              if (nd) 
+              {
+                scope+=nd->name();
+                if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+                {
+                  scope+=".";
+                }
+                else
+                {
+                  scope+="::";
+                }
+              }
+            }
+          }
+
           QCString def;
           if (!root->type.isEmpty())
           {
             if (root->argList)
             {
-              def=root->type+" "+name;
+              def=root->type+" "+scope+name;
             }
             else
             {
-              def=root->type+" "+name+root->args;
+              def=root->type+" "+scope+name+root->args;
             }
           }
           else
           {
             if (root->argList)
             {
-              def=name.copy();
+              def=scope+name.copy();
             }
             else
             {
-              def=name+root->args;
+              def=scope+name+root->args;
             }
           }
           Debug::print(Debug::Functions,0,
@@ -2464,17 +2508,6 @@ static void buildFunctionList(Entry *root)
           //{
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
           //}
-
-          // see if the function is inside a namespace
-          NamespaceDef *nd = 0;
-          if (root->parent->section == Entry::NAMESPACE_SEC )
-          {
-            QCString nscope=removeAnonymousScopes(root->parent->name);
-            if (!nscope.isEmpty())
-            {
-              nd = getResolvedNamespace(nscope);
-            }
-          }
 
           md->setRefItems(root->sli);
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')

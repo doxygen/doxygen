@@ -877,6 +877,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	SectionLabel
 %x	SectionTitle
 %x      CopyArgString
+%x      CopyArgPHPString
 %x	CopyArgRound
 %x	CopyArgSharp
 %x	CopyArgComment
@@ -2563,8 +2564,9 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   */
 <ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/]*	{ current->program += yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"//".*		{ current->program += yytext ; }
-<ReadBody,ReadNSBody,ReadBodyIntf>"#".*		{ if (! insidePHP)
+<ReadBody,ReadNSBody,ReadBodyIntf>"#".*	{ if (!insidePHP) 
 					    REJECT;
+					  // append PHP comment.
 					  current->program += yytext ;
 					}
 <ReadBody,ReadNSBody,ReadBodyIntf>@\"	{ current->program += yytext ; 
@@ -3005,7 +3007,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <ReadFuncArgType>[^ \/\r\t\n\)\(\"\'#]+ { *copyArgString+=yytext; 
   					  fullArgString+=yytext;
   					}
-<CopyArgString>[^\n\\\"\']+		{ *copyArgString+=yytext; 
+<CopyArgString,CopyArgPHPString>[^\n\\\"\']+		{ *copyArgString+=yytext; 
 					  fullArgString+=yytext;
 					}
 <CopyArgRound>[^\/\n\)\(\"\']+		{ 
@@ -3080,17 +3082,19 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  lastCContext = YY_START;
 					  BEGIN( SkipCxxComment );
   					}
-<ReadFuncArgType,ReadTempArgs>"'#"	{ if (! insidePHP)
+  /*
+<ReadFuncArgType,ReadTempArgs>"'#"	{ if (insidePHP)
                                             REJECT;
   					  *copyArgString+=yytext; 
   					  fullArgString+=yytext; 
 					}
 <ReadFuncArgType,ReadTempArgs>"#"	{
-  					  if (! insidePHP)
+  					  if (!insidePHP)
   					    REJECT;
   					  lastCContext = YY_START;
 					  BEGIN( SkipCxxComment );
   					}
+  */
 	/* `)' followed by a special comment */
 <ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<"	{
   					  lineCount();
@@ -3191,11 +3195,16 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    //printf("end of argSharpCount\n");
 					  }
   					}
-<CopyArgString>\\.			{
+<CopyArgString,CopyArgPHPString>\\.	{
   					  *copyArgString+=yytext;
   					  fullArgString+=yytext;
   					}
 <CopyArgString>\"			{
+  					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
+					  BEGIN( lastCopyArgStringContext );
+  					}
+<CopyArgPHPString>\'			{
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
 					  BEGIN( lastCopyArgStringContext );
@@ -3211,12 +3220,24 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					    fullArgString+=yytext; 
 					  }
 					}
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>\n  { 
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>\'     { 
+					  if (insidePHP)
+					  {
+					    lastCopyArgStringContext=YY_START;
+					    BEGIN(CopyArgPHPString);
+					  }
+					  else
+					  {
+  					    *copyArgString+=yytext; 
+  					    fullArgString+=yytext; 
+					  }
+  					}
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>\n  { 
   					  yyLineNr++; 
 					  *copyArgString+=*yytext; 
 					  fullArgString+=*yytext; 
 					}
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>.	  { 
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>.	  { 
   					  *copyArgString+=*yytext; 
   					  fullArgString+=*yytext; 
 					}
@@ -3665,19 +3686,22 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  BEGIN( FindMembers );
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>"#"   {
-  				          if (! insidePHP)
+  				          if (!insidePHP)
   				            REJECT;
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>@\"   {
-  				          if (! insideCS) REJECT;
+  				          if (!insideCS) REJECT;
 					  // C# verbatim string
 					  lastSkipVerbStringContext=YY_START;
 					  pSkipVerbString=&current->initializer;
 					  BEGIN(SkipVerbString);
   					}
+<SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
+                                          if (insidePHP) REJECT;
+                                        }
 <SkipInits,SkipCurly,SkipCurlyCpp>\'	{
   					  if (insidePHP)
 					  {
@@ -3685,9 +3709,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    BEGIN(SkipPHPString);
 					  }
 					}
-<SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
-                                          if (insidePHP) REJECT;
-                                        }
 <SkipInits,SkipCurly,SkipCurlyCpp>.	{ }
 <SkipString,SkipPHPString>\\.		{ }
 <SkipString>\"				{ 
@@ -3757,6 +3778,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					}
 <CompoundName>{SCOPENAME}{BN}*";"	{ // forward declaration
     					  unput(';');
+					  current->reset();
 					  if (isTypedef) // typedef of a class, put typedef keyword back
 					  {
 					    current->type.prepend("typedef");
@@ -6113,7 +6135,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					}
 <*>"#"				        {	
-  					  if (! insidePHP)
+  					  if (!insidePHP)
   					    REJECT;
   					  lastCContext = YY_START ;
 					  BEGIN( SkipCxxComment ) ;

@@ -232,11 +232,13 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     first=FALSE;
   }
   ol.pushGeneratorState();
+  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
   ol.disable(OutputGenerator::Html);
   //if (!first) ol.writeString("&nbsp;");
   if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
   ol.disableAllBut(OutputGenerator::Html);
+  if (!htmlOn) ol.disable(OutputGenerator::Html);
   if (!md->isDefine()) 
   {
     if (first) ol.startParameterName(defArgList->count()<2);
@@ -506,31 +508,48 @@ bool MemberDef::hasExamples()
 
 QCString MemberDef::getOutputFileBase() const
 {
+  QCString baseName;
   if (m_templateMaster)
   {
     return m_templateMaster->getOutputFileBase();
   }
   else if (group)
   {
-    return group->getOutputFileBase();
+    baseName=group->getOutputFileBase();
   }
   else if (classDef)
   {
-    return classDef->getOutputFileBase();
+    baseName=classDef->getOutputFileBase();
   }
   else if (nspace)
   {
-    return nspace->getOutputFileBase();
+    baseName=nspace->getOutputFileBase();
   }
   else if (fileDef)
   {
-    return fileDef->getOutputFileBase();
+    baseName=fileDef->getOutputFileBase();
   }
-  warn(m_defFileName,m_defLine,
+  
+  if (baseName.isEmpty())
+  {
+    warn(m_defFileName,m_defLine,
        "Warning: Internal inconsistency: member %s does not belong to any"
        " container!",name().data()
       );
-  return "dummy";
+    return "dummy";
+  }
+  else if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    if (getEnumScope()) // enum value, which is part of enum's documentation
+    {
+      baseName+="_"+getEnumScope()->anchor();
+    }
+    else
+    {
+      baseName+="_"+anchor();
+    }
+  }
+  return baseName;
 }
 
 QCString MemberDef::getReference() const
@@ -879,7 +898,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // in case of class members that are put in a group the name of the outerscope
   // differs from the cname.
   if (getOuterScope()) osname=getOuterScope()->name();
-
 
   HtmlHelp *htmlHelp=0;
   bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
@@ -1234,7 +1252,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   QCString cname  = container->name();
   QCString cfname = getOutputFileBase();  
-
 
   if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
   {
@@ -1598,6 +1615,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.endParamList();
   }
 
+  // For enum, we also write the documented enum values
   if (isEnumerate())
   {
     bool first=TRUE;
@@ -1749,7 +1767,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       // write the list of classes that overwrite this member
       ol.disable(OutputGenerator::RTF);
       ol.newParagraph();
-      ol.enableAll();
+      ol.enable(OutputGenerator::RTF);
 
       QCString reimplInLine;
       if (virt==Pure || (classDef && classDef->compoundType()==ClassDef::Interface))
@@ -1799,6 +1817,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.parseText(reimplInLine.right(reimplInLine.length()-index));
     }
   }
+
   // write the list of examples that use this member
   if (hasExamples())
   {
@@ -1808,14 +1827,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     //ol.endDescItem();
     ol.endSimpleSect();
   }
+
   // write reference to the source
   writeSourceDef(ol,cname);
   writeSourceRefs(ol,cname);
   writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
 
-  ol.endIndent();
-
+  // write call graph
   if ((m_hasCallGraph || Config_getBool("CALL_GRAPH")) 
       && isFunction() && Config_getBool("HAVE_DOT")
      )
@@ -1832,6 +1851,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.enableAll();
     }
   }
+
+  ol.endIndent();
 
   // enable LaTeX again
   //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
@@ -2058,19 +2079,21 @@ void MemberDef::addListReference(Definition *)
     memLabel=theTranslator->trMember(TRUE,TRUE);
   }
   QCString memName = name();
-  if (!Config_getBool("HIDE_SCOPE_NAMES"))
+  Definition *pd=getOuterScope();
+  if ((!Config_getBool("HIDE_SCOPE_NAMES") && // there is a scope
+        pd && pd!=Doxygen::globalScope)       // and we can show it
+        ||
+        ((pd=getClassDef()) && !isRelated())  // it's a class so we
+                                              // show the scope anyway
+     )
   {
-    Definition *pd=getOuterScope();
-    if (pd && pd!=Doxygen::globalScope)
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-      {
-        memName.prepend(pd->name()+".");
-      }
-      else
-      {
-        memName.prepend(pd->name()+"::");
-      }
+      memName.prepend(pd->name()+".");
+    }
+    else
+    {
+      memName.prepend(pd->name()+"::");
     }
   }
   if (xrefListItems())

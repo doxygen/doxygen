@@ -131,6 +131,7 @@
 // 2004/02/27 - Text inside the trCallGraph() corrected.
 // 2004/06/16 - The new method "since 1.3.8" implemented. 
 // 2004/09/14 - The new methods "since 1.3.9" implemented. 
+// 2005/02/11 - The "never used" methods removed.
 
 // Todo
 // ----
@@ -301,10 +302,6 @@ class TranslatorCzech : public Translator
     virtual QCString trFileList()
     { return decode("Seznam souborù"); }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return decode("Seznam hlavièkových souborù"); }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -447,11 +444,6 @@ class TranslatorCzech : public Translator
       return decode(result);
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return decode("Zde naleznete hlavièkové soubory, které tvoøí "
-             "aplikaèní programátorské rozhraní (API):"); }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return decode("Zde naleznete seznam všech pøíkladù:"); }
@@ -464,12 +456,6 @@ class TranslatorCzech : public Translator
     virtual QCString trModulesDescription()
     { return decode("Zde naleznete seznam všech modulù:"); }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return decode("Popis není k dispozici"); }
-    
     // index titles (the project name is prepended for these) 
 
 
@@ -620,12 +606,6 @@ class TranslatorCzech : public Translator
     { return decode("Dokumentace výètových typù"); }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return decode("Dokumentace výètových hodnot"); }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -679,18 +659,9 @@ class TranslatorCzech : public Translator
     virtual QCString trForInternalUseOnly()
     { return decode("Pouze pro vnitøní použití."); }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return decode("Reimplementováno z interních dùvodù; "
-                    "aplikaèní rozhraní zachováno."); }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return decode("Pozor"); }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return decode("Chyby a omezení"); }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -979,10 +950,6 @@ class TranslatorCzech : public Translator
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return decode("Zdroje");
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return decode("Definice je uvedena na øádku @0 v souboru @1.");
@@ -1304,11 +1271,6 @@ class TranslatorCzech : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return decode("Rozhraní");
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1334,11 +1296,6 @@ class TranslatorCzech : public Translator
     virtual QCString trPackages()
     {
       return decode("Balíky");
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return decode("Dokumentace balíku");
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1450,17 +1407,6 @@ class TranslatorCzech : public Translator
       return decode(result); 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Položk" : "položk"));
-      result+=(singular ? "a" : "y");
-      return decode(result); 
-    }
-
     /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo,
      * kdo to pouziva.
      */

@@ -1479,12 +1479,19 @@ void Config::create()
                     "all members of a group must be documented explicitly.\n",
                     FALSE
                  );
+  cb = addBool(    
+                    "SEPARATE_MEMBER_PAGES",
+		    "If the SEPARATE_MEMBER_PAGES tag is set to YES, then doxygen will produce \n"
+		    "a new page for each member. If set to NO, the documentation of a member will \n"
+		    "be part of the file/class/namespace that contains it.\n",
+		    FALSE
+		 );
   ci = addInt(
                     "TAB_SIZE",
                     "The TAB_SIZE tag can be used to set the number of spaces in a tab. \n"
                     "Doxygen uses this value to replace tabs by spaces in code fragments. \n",
                     1,16,8
-                );
+                 );
   cl = addList(
                     "ALIASES",
                     "This tag can be used to specify a number of aliases that acts \n"

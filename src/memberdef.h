@@ -71,7 +71,7 @@ class MemberDef : public Definition
               bool related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al);
    ~MemberDef(); 
-    DefType definitionType()              { return TypeMember; }
+    DefType definitionType() const        { return TypeMember; }
     
     // link id
     QCString getOutputFileBase() const;

@@ -36,7 +36,8 @@ class HtmlGenerator : public OutputGenerator
     static void writeHeaderFile(QFile &f);
     static void writeFooterFile(QFile &f);
    
-    void enable() { active=TRUE; }
+    void enable() 
+    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==Html) active=TRUE;  }
     void disableIf(OutputType o) { if (o==Html) active=FALSE; }

@@ -31,7 +31,8 @@ class ManGenerator : public OutputGenerator
     //OutputGenerator *copy()  { return new ManGenerator; } 
     //OutputGenerator *clone() { return new ManGenerator(*this); }
     //void append(const OutputGenerator *o);
-    void enable() { active=TRUE; }
+    void enable() 
+    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==Man) active=TRUE;  }
     void disableIf(OutputType o) { if (o==Man) active=FALSE; }

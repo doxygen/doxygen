@@ -34,7 +34,8 @@ class RTFGenerator : public OutputGenerator
     //OutputGenerator *copy();
     //OutputGenerator *clone() { return new RTFGenerator(*this); }
     //void append(const OutputGenerator *o);
-    void enable() { active=TRUE; }
+    void enable() 
+    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==RTF) active=TRUE;  }
     void disableIf(OutputType o) { if (o==RTF) active=FALSE; }

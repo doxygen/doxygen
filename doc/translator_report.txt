@@ -1,4 +1,4 @@
-(1.4.1-20050129)
+(1.4.1-20050227)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 
@@ -20,7 +20,7 @@ still may be some details listed even for them:
   TranslatorBrazilian -- Remove the obsolete methods (never used).
   TranslatorChinese -- Remove the obsolete methods (never used).
   TranslatorCroatian -- Remove the obsolete methods (never used).
-  TranslatorCzech -- Remove the obsolete methods (never used).
+  TranslatorCzech
   TranslatorDutch -- Remove the obsolete methods (never used).
   TranslatorEnglish -- Remove the obsolete methods (never used).
   TranslatorFrench -- Remove the obsolete methods (never used).
@@ -224,25 +224,6 @@ TranslatorCroatian   (Translator)
     QCString trBugsAndLimitations()
     QCString trEnumerationValueDocumentation()
     QCString trNoDescriptionAvailable()
-
-
-TranslatorCzech   (Translator)
----------------
-
-  Implements 191 of the required methods.
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trNoDescriptionAvailable()
 
 
 TranslatorDanish   (TranslatorAdapter_1_3_9)  6 methods to implement

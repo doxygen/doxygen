@@ -78,6 +78,17 @@ static const char *defaultStyleSheet =
 "	padding: 2px;\n"
 "	line-height: 140%;\n"
 "}\n"
+"DIV.navtab {\n"
+"       background-color: #eeeeff;\n"
+"       border: 1px solid #b0b0b0;\n"
+"       text-align: center;\n"
+"       margin: 2px;\n"
+"       margin-right: 15px;\n"
+"       padding: 2px;\n"
+"}\n"
+"TD.navtab {\n"
+"       font-size: 70%;\n"
+"}\n"
 "A.qindex {\n"
 "       text-decoration: none;\n"
 "       font-weight: bold;\n"
@@ -495,34 +506,6 @@ void HtmlGenerator::startFile(const char *name,const char *,
     << versionString << " -->" << endl;
 }
 
-//void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
-//{
-//  QCString *dest;
-//  if (s) 
-//  {
-//    t << "<a class=\"qindexRef\" ";
-//    t << "doxygen=\"" << s << ":";
-//    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
-//    if (strcmp(s,"_cgi")!=0) t << "/"; // small hack to get the cgi binary link right
-//    t << "\" ";
-//  }
-//  else
-//  {
-//    t << "<a class=\"qindex\" ";
-//  }
-//  t << "href=\""; 
-//  if (s)
-//  {
-//    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
-//    if (strcmp(s,"_cgi")!=0) t << "/";
-//  }
-//  t << l << "\">";
-//}
-//
-//void HtmlGenerator::endQuickIndexItem()
-//{
-//  t << "</a> &nbsp; ";
-//}
 
 static void writePageFooter(QTextStream &t,const QCString &lastTitle,
                             const QCString relPath)
