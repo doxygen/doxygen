@@ -280,8 +280,12 @@ Doxygen. Unrecognized commands are treated as normal text.
   \addindex \fn
   Indicates that a comment block contains documentation for a function
   (either global or as a member of a class). This command is needed if a 
-  comment block is \e not located before the function declaration 
-  or definition. A full function declaration should be specified after the
+  comment block is \e not placed in front of the function declaration 
+  or definition. If your comment block \e is in front of the function 
+  declaration or definition this command can (and to avoid redundancy
+  should) be ommitted. 
+
+  A full function declaration should be specified after the
   \\fn command. The argument ends at the end of the line.
 
   \par Example:

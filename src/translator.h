@@ -1227,6 +1227,22 @@ class Translator
     {
       return "Value:";
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \bug item */
+    virtual QCString trBug()
+    {
+      return "Bug";
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return "Bug List";
+    }
+
 };
 
 #endif

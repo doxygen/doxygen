@@ -275,9 +275,16 @@ void HtmlGenerator::writeStyleInfo(int part)
     else // write user defined style sheet
     {
       QFileInfo cssfi(Config::htmlStyleSheet);
-      startPlainFile(cssfi.fileName());
-      t << fileToString(Config::htmlStyleSheet);
-      endPlainFile();
+      if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
+      {
+        err("Error: style sheet %s does not exist or is not readable!", Config::htmlStyleSheet.data());
+      }
+      else
+      {
+        startPlainFile(cssfi.fileName());
+        t << fileToString(Config::htmlStyleSheet);
+        endPlainFile();
+      }
     }
   }
 }

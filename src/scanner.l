@@ -87,9 +87,11 @@ static int		squareCount  = 0 ;
 static int              ifCount      = 0 ;
 static int              padCount     = 0 ;
 static int              todoStartContext = 0;
-static QCString         todoString = 0;
+static QCString         todoString;
 static int              testStartContext = 0;
-static QCString         testString = 0;
+static QCString         testString;
+static int              bugStartContext = 0;
+static QCString         bugString;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -474,6 +476,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	SkipVerbatim
 %x      TodoParam
 %x      TestParam
+%x      BugParam
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1202,7 +1205,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<FindMembers,FindFields>"//"([!*]?){B}*"@{"|"/*"([!*]?){B}*"@{"	{
+<FindMembers,FindFields>"//"([!*]?){B}*{CMD}"{"|"/*"([!*]?){B}*{CMD}"{"	{
   					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -1221,7 +1224,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN( Doc );
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//"([!*]?){B}*"@}"|"/*"([!*]?){B}*"@}"{B}*"*/"	{
+<FindMembers,FindFields,ReadInitializer>"//"([!*]?){B}*{CMD}"}"|"/*"([!*]?){B}*{CMD}"}"{B}*"*/"	{
   					  endGroup();
   					}
 <FindMembers>"="			{
@@ -1401,7 +1404,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 
 <FindMembers>"["			{ 
-					  if (current->name.isEmpty()) // IDL function property
+					  if (current->name.isEmpty() || current->name=="typedef") // IDL function property
 					  {
 					    squareCount=1;
 					    lastSquareContext = YY_START;
@@ -2258,11 +2261,20 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( ClassVar );
 					}
 <ClassVar>{SCOPENAME}{BN}*/"("		{
-  					  addType(current);
-					  current->name = yytext;
-					  current->name = current->name.stripWhiteSpace();
-					  lineCount();
-  					  BEGIN( FindMembers );
+  					  if (insideIDL && strncmp(yytext,"switch",6)==0)
+					  {
+					    // Corba IDL style union
+					    roundCount=0;
+					    BEGIN(SkipUnionSwitch);
+					  }
+					  else
+					  {
+  					    addType(current);
+					    current->name = yytext;
+					    current->name = current->name.stripWhiteSpace();
+					    lineCount();
+  					    BEGIN( FindMembers );
+					  }
   					}
 <ClassVar>{ID}				{
   					  if (insideIDL && strcmp(yytext,"switch")==0)
@@ -2417,7 +2429,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  curlyCount=0;
 					  BEGIN( ReadBody ) ;
 					}
-<SkipUnionSwitch>"("			{
+<SkipUnionSwitch>{B}*"("		{
   					  roundCount++;
   					}
 <SkipUnionSwitch>")"			{
@@ -2564,7 +2576,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  }
 					  BEGIN( tmpDocType );
   					}
-<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"){B}*	{
+<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"){B}+	{
 					  current->section = Entry::MEMBERDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -2601,55 +2613,55 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocFunc ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"enum"{B}*	{
+<Doc,JavaDoc>{B}*{CMD}"enum"{B}+	{
   					  current->section = Entry::ENUMDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( EnumDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"defgroup"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"defgroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"namespace"{B}*	{
+<Doc,JavaDoc>{B}*{CMD}"namespace"{B}+	{
   					  current->section = Entry::NAMESPACEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
   					  BEGIN( NameSpaceDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"class"{B}*  	{
+<Doc,JavaDoc>{B}*{CMD}"class"{B}+  	{
   					  current->section = Entry::CLASSDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"union"{B}*  	{
+<Doc,JavaDoc>{B}*{CMD}"union"{B}+  	{
   					  current->section = Entry::UNIONDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"struct"{B}* 	{
+<Doc,JavaDoc>{B}*{CMD}"struct"{B}+ 	{
   					  current->section = Entry::STRUCTDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"interface"{B}* 	{
+<Doc,JavaDoc>{B}*{CMD}"interface"{B}+ 	{
   					  current->section = Entry::INTERFACEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"idlexcept"{B}* 	{
+<Doc,JavaDoc>{B}*{CMD}"idlexcept"{B}+ 	{
   					  current->section = Entry::EXCEPTIONDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*{CMD}"page"{B}*   	{
+<Doc,JavaDoc>{B}*{CMD}"page"{B}+   	{
   					  current->section = Entry::PAGEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -2667,7 +2679,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr;
 					  BEGIN( FileDocArg1 );
   					}
-<Doc,JavaDoc>{B}*{CMD}"example"{B}* 	{
+<Doc,JavaDoc>{B}*{CMD}"example"{B}+ 	{
  					  current->section = Entry::EXAMPLE_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -2698,10 +2710,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
 <SkipHtmlComment>.
-<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test")/[^a-z_A-Z0-9] {
+<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					}
-<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test")/[^a-z_A-Z0-9]	{
+<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug")/[^a-z_A-Z0-9]	{
   					  current->brief+=yytext;
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
@@ -2715,6 +2727,13 @@ TITLE     [tT][iI][tT][lL][eE]
   					  testStartContext = YY_START;
 					  lastBriefContext = TestParam; // this is where we will continue at the end of the argument
 					  testString = current->brief.copy(); // these will be swapped later on.
+					  current->brief.resize(0);
+					  BEGIN(ClassDocBrief);
+  					}
+<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"bug"/[^a-z_A-Z0-9]	{
+  					  bugStartContext = YY_START;
+					  lastBriefContext = BugParam; // this is where we will continue at the end of the argument
+					  bugString = current->brief.copy(); // these will be swapped later on.
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
   					}
@@ -2777,6 +2796,36 @@ TITLE     [tT][iI][tT][lL][eE]
   					  unput(*yytext);
 					  current->brief  = testString.copy(); // restore orginial brief desc.
 					  BEGIN(testStartContext);
+  					}
+<BugParam>\n                            |
+<BugParam>"//"                          |
+<BugParam>"/*"                          |
+<BugParam>.				{
+  					  if (current->bugId!=0)
+					  {
+					    RefItem *item = bugList.getRefItem(current->bugId);
+					    item->text += " <p>";
+					    item->text += current->brief;
+					  }
+					  else
+					  {
+  					    int bugItemId  = bugList.addRefItem();
+					    char anchorLabel[12];
+					    sprintf(anchorLabel,"_bug%06d",bugItemId);
+					    RefItem *item = bugList.getRefItem(bugItemId);
+					    item->text = current->brief.copy();
+					    item->listAnchor = anchorLabel;
+					    current->bugId = bugItemId;
+					    QCString bugCmdString;
+					    bugCmdString.sprintf("\\bug %d\n",bugItemId);
+					    current->doc += bugCmdString;
+					    sectionType=SectionInfo::Anchor;
+					    sectionLabel=anchorLabel;
+					    addSection();
+					  }
+  					  unput(*yytext);
+					  current->brief  = bugString.copy(); // restore orginial brief desc.
+					  BEGIN(bugStartContext);
   					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
@@ -3057,7 +3106,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  if (!removeSlashes)
 					    *pSkipDoc+=yytext;
   					}
-<SkipCode>^{B}*"*"+/{B}+		
+<SkipCode>^{B}*"*"+/{BN}+		
 <SkipCode>"//"				{
   					  *pSkipDoc+=yytext;
   					}
@@ -3102,7 +3151,7 @@ TITLE     [tT][iI][tT][lL][eE]
 							  lineCount();
 							  BEGIN( GroupName );
   							}
-<ClassDoc,Doc,JavaDoc>"@{"				{
+<ClassDoc,Doc,JavaDoc>{CMD}"{"				{
   							  if (current->section == Entry::GROUPDOC_SEC)
 							  {
 							    autoGroupNameStack.push(new QCString(current->name));
@@ -3118,7 +3167,7 @@ TITLE     [tT][iI][tT][lL][eE]
 							    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
 							  }
   							}
-<ClassDoc,Doc,JavaDoc>"@}"				{
+<ClassDoc,Doc,JavaDoc>{CMD}"}"				{
   							  endGroup();
   							}
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
@@ -3203,6 +3252,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN( TestParam );
 					  }
 					  else if (YY_START==ClassDocBrief &&
+					      lastBriefContext==BugParam)
+					  {
+					    unput('/');unput('*'); // make sure we have something to read
+					    BEGIN( BugParam );
+					  }
+					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
   					    current->doc += "\n\n";
@@ -3269,7 +3324,10 @@ TITLE     [tT][iI][tT][lL][eE]
 <ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
 					  if (!current->doc.isEmpty()) current->doc+=" <p>";
-					  if (lastBriefContext==TodoParam || lastBriefContext==TestParam)
+					  if (lastBriefContext==TodoParam || 
+					      lastBriefContext==TestParam || 
+					      lastBriefContext==BugParam
+					     )
 					  {
 					    unput('\n');
 					  }
@@ -3299,6 +3357,16 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    unput('\n'); // make sure we have something to read
 					    BEGIN( TestParam );
+					  }
+					  else if
+					     (lastBriefContext==BugParam &&
+					      (bugStartContext==LineDoc ||
+					       bugStartContext==AfterDocLine
+					      )
+					     )
+					  {
+					    unput('\n'); // make sure we have something to read
+					    BEGIN( BugParam );
 					  }
 					  else
 					  {

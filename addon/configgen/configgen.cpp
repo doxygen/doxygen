@@ -93,7 +93,7 @@ class ConfigOption
     virtual void printHeader(QTextStream &t)
     {
       t << "  static " << type << " " << varName 
-        << "; // " << shortDesc << endl;
+        << "; /*!< " << shortDesc << " */" << endl;
     }
     virtual void printStatic(QTextStream &) {}
     virtual void printConfig(QTextStream &t)
@@ -1035,6 +1035,14 @@ void init()
                     "disable (NO) the test list. This list is created by putting \\test \n"
                     "commands in the documentation.\n"
                  );
+  ConfigBool::add(  "generateBugList",
+                    "GENERATE_BUGLIST",
+                    "TRUE",
+                    "do we want a bug list?",
+                    "The GENERATE_BUGLIST tag can be used to enable (YES) or \n"
+                    "disable (NO) the bug list. This list is created by putting \\bug \n"
+                    "commands in the documentation.\n"
+                 );
   ConfigList::add(  "aliasList",
                     "ALIASES",
                     "",
@@ -1068,6 +1076,14 @@ void init()
                     "For instance some of the names that are used will be different. The list \n"
                     "of all members will be omitted, etc. \n"
                  );
+  ConfigBool::add(  "showUsedFilesFlag",
+                    "SHOW_USED_FILES",
+                    "TRUE",
+                    "do we show the list of used files for classes and structs?",
+                    "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
+                    "at the bottom of the documentation of classes and structs. If set to YES the \n"
+                    "list will mention the files that were used to generate the documentation. \n"
+                );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------
@@ -1315,6 +1331,23 @@ void init()
                     "it should be included in the master .chm file (NO).\n"
                  );
   addDependency("htmlHelpChiFlag","generateHtml");
+  ConfigBool::add(  "htmlHelpTocFlag",
+                    "BINARY_TOC",
+                    "FALSE",
+                    "should a binary table of contents be generated?",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the BINARY_TOC flag \n"
+                    "controls whether a binary table of contents is generated (YES) or a \n"
+                    "normal table of contents (NO) in the .chm file.\n"
+                 );
+  addDependency("htmlHelpTocFlag","generateHtml");
+  ConfigBool::add(  "htmlHelpTocExpandFlag",
+                    "TOC_EXPAND",
+                    "FALSE",
+                    "should module elements be displayed in the table of contents?",
+                    "The TOC_EXPAND flag can be set YES to add extra items for group members \n"
+                    "to the contents of the Html help documentation and to the tree view. \n"
+                 );
+  addDependency("htmlHelpTocExpandFlag","generateHtml");
   ConfigBool::add(  "noIndexFlag",
                     "DISABLE_INDEX",
                     "FALSE",

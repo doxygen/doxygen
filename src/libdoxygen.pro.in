@@ -15,7 +15,7 @@
 # TMake project file for doxygen
 
 TEMPLATE     =	libdoxygen.t
-CONFIG       =	console warn_on staticlib
+CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
                 membername.h index.h memberlist.h definition.h \
                 entry.h logos.h instdox.h message.h code.h \

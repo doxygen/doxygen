@@ -32,7 +32,7 @@ class TranslatorDutch : public Translator
     QCString trRelatedSubscript()
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
-    { return "Gedetaileerde Beschrijving"; }
+    { return "Gedetailleerde Beschrijving"; }
     QCString trMemberTypedefDocumentation()
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()
@@ -516,15 +516,15 @@ class TranslatorDutch : public Translator
     }
     QCString trGraphicalHierarchy()
     {
-      return "Grafische Klasse Hierarchie";
+      return "Grafische Klasse Hi&euml;rarchie";
     }
     QCString trGotoGraphicalHierarchy()
     {
-      return "Ga naar de grafische klasse hierarchie";
+      return "Ga naar de grafische klasse hi&euml;rarchie";
     }
     QCString trGotoTextualHierarchy()
     {
-      return "Ga naar de tekstu&euml;le klasse hierarchie";
+      return "Ga naar de tekstuele klasse hi&euml;rarchie";
     }
     QCString trPageIndex()
     {
@@ -695,12 +695,12 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
     
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    QCString trTest()
     {
       return "Test";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    QCString trTestList()
     {
       return "Test Lijst";
     }
@@ -710,7 +710,7 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
+    QCString trDCOPMethods()
     {
       return "DCOP Methoden";
     }
@@ -720,15 +720,76 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    virtual QCString trProperties()
+    QCString trProperties()
     {
       return "Properties";
     }
     /*! Used as a section header for IDL property documentation */
-    virtual QCString trPropertyDocumentation()
+    QCString trPropertyDocumentation()
     {
       return "Property Documentatie";
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    QCString trInterfaces()
+    {
+      return "Interfaces";
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    QCString trClasses()
+    {
+      return "Klassen";
+    }
+    /*! Used as the title of a Java package */
+    QCString trPackage(const char *name)
+    {
+      return (QCString)"Package "+name;
+    }
+    /*! Title of the package index page */
+    QCString trPackageList()
+    {
+      return "Package Lijst";
+    }
+    /*! The description of the package index page */
+    QCString trPackageListDescription()
+    {
+      return "Hier volgen de packages, elk met een korte beschrijving (indien aanwezig):";
+    }
+    /*! The link name in the Quick links header for each page */
+    QCString trPackages()
+    {
+      return "Packages";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    QCString trPackageDocumentation()
+    {
+      return "Package Documentatie";
+    }
+    /*! Text shown before a multi-line define */
+    QCString trDefineValue()
+    {
+      return "Waarde:";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \bug item */
+    QCString trBug()
+    {
+      return "Bug";
+    }
+    /*! Used as the header of the bug list */
+    QCString trBugList()
+    {
+      return "Bug Lijst";
+    }
+
 };
 
 #endif

@@ -199,7 +199,7 @@ class ManGenerator : public OutputGenerator
     void endDescTable() {}
     void startDescTableTitle() { writeListItem(); startBold(); }
     void endDescTableTitle() { endBold(); }
-    void startDescTableData() { }
+    void startDescTableData() { t << endl; firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}

@@ -90,6 +90,7 @@ class PageInfo
     // ids
     int todoId;
     int testId;
+    int bugId;
 
     // is this page part of a group
     GroupDef *inGroup;

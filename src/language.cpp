@@ -126,6 +126,10 @@ bool setTranslator(const char *langName)
   {
     theTranslator=new TranslatorChinese;
   }
+  else if (L_EQUAL("norwegian"))
+  {
+    theTranslator=new TranslatorNorwegian;
+  }
 #endif
   else // use the default language (i.e. english)
   {

@@ -175,12 +175,12 @@ void GroupDef::insertMember(MemberDef *md)
         return; // member already added
       }
     }
-    mni->append(new MemberInfo(md,Public,Normal));
+    mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
   }
   else
   {
     mni = new MemberNameInfo(md->name());
-    mni->append(new MemberInfo(md,Public,Normal));
+    mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
     allMemberNameInfoDict->insert(mni->memberName(),mni);
   }
   allMemberList->append(md); 
@@ -262,7 +262,7 @@ void GroupDef::computeAnchors()
 void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+  //ol.disable(OutputGenerator::Man);
   startFile(ol,fileName,title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);

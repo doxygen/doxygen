@@ -76,6 +76,7 @@ Entry::Entry(const Entry &e)
   initLines   = e.initLines;
   todoId      = e.todoId;
   testId      = e.testId;
+  bugId       = e.bugId;
   tagInfo     = e.tagInfo;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
@@ -223,6 +224,7 @@ void Entry::reset()
   mGrpId = -1;
   todoId = 0;
   testId = 0;
+  bugId = 0;
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;

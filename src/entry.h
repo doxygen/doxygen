@@ -25,14 +25,21 @@ enum Protection { Public, Protected, Private } ;
 enum Specifier { Normal, Virtual, Pure } ;
 enum MethodTypes { Method, Signal, Slot, DCOP, Property };
 
+/*! \brief This class stores information about an inheritance relation
+ */ 
 struct BaseInfo 
 {
+  /*! Creates an object representing an inheritance relation */
   BaseInfo(const char *n,Protection p,Specifier v) : name(n),prot(p),virt(v) {}
-  QCString   name; // the name of the base class
-  Protection prot; // inheritance type
-  Specifier  virt; // virtualness
+  QCString   name; //!< the name of the base class
+  Protection prot; //!< inheritance type
+  Specifier  virt; //!< virtualness
 };
 
+/*! \brief This class contains the information about the argument of a
+ *         function or template
+ *
+ */
 struct Argument
 {
   /*! Construct a new argument. */
@@ -77,22 +84,36 @@ struct Argument
   QCString docs;     /*!< Argument's documentation (may be empty) */
 };
 
+/*! \brief This class represents an function or template argument list. 
+ *
+ *  This class also stores some information about member that is typically
+ *  put after the argument list, such as wether the member is const, 
+ *  volatile or pure virtual.
+ */
 class ArgumentList : public QList<Argument> 
 {
   public:
-   ~ArgumentList() {}
+    /*! Creates an empty argument list */
     ArgumentList() : QList<Argument>(), 
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
                      pureSpecifier(FALSE) {}
+    /*! Destroys the argument list */
+   ~ArgumentList() {}
     bool hasDocumentation() const;
+    /*! Does the member modify the state of the class? default: FALSE. */
     bool constSpecifier;
+    /*! Is the member volatile? default: FALSE. */
     bool volatileSpecifier;
+    /*! Is this a pure virtual member? default: FALSE */
     bool pureSpecifier;
 };
 
 typedef QListIterator<Argument> ArgumentListIterator;
 
+/*! \brief This struct is used to capture the tag file information 
+ *         for an Entry. 
+ */
 struct TagInfo 
 {
   QCString tagName;
@@ -100,7 +121,10 @@ struct TagInfo
   QCString anchor;
 };
 
-/*! Raw entry. parseMain() in scanner.l will generate a tree of these
+/*! \brief Represents an unstructured piece of information, about an
+ *         entity found in the sources. 
+ *
+ *  parseMain() in scanner.l will generate a tree of these
  *  entries.
  */
 class Entry
@@ -166,7 +190,11 @@ class Entry
     ~Entry();
     int getSize();
 
+    /*! Adds entry \e as a child to this entry */
     void	addSubEntry (Entry* e) ;
+    /*! Restore the state of this Entry to the default value it has
+     *  at construction time. 
+     */
     void        reset();
 
     int        section;       //!< entry type (see Sections);
@@ -207,8 +235,9 @@ class Entry
     QList<QCString> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
-    int         todoId;       //!< id of the todo item of this entry
-    int         testId;       //!< id of the test item of this entry
+    int         todoId;       //!< id of the todo list item of this entry
+    int         testId;       //!< id of the test list item of this entry
+    int         bugId;        //!< id of the bug list item of this entry
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
   private:

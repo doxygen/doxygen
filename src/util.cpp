@@ -324,15 +324,17 @@ QCString stripFromPath(const QCString &path)
 int guessSection(const char *name)
 {
   QCString n=((QCString)name).lower();
-  if (n.right(2)==".c"   || // source
-      n.right(3)==".cc"  ||
-      n.right(4)==".cxx" ||
-      n.right(4)==".cpp" ||
-      n.right(4)==".c++" ||
-      n.right(3)==".ii"  || // inline
-      n.right(4)==".ixx" ||
-      n.right(4)==".ipp" ||
-      n.right(4)==".i++"
+  if (n.right(2)==".c"    || // source
+      n.right(3)==".cc"   ||
+      n.right(4)==".cxx"  ||
+      n.right(4)==".cpp"  ||
+      n.right(4)==".c++"  ||
+      n.right(5)==".java" ||
+      n.right(3)==".ii"   || // inline
+      n.right(4)==".ixx"  ||
+      n.right(4)==".ipp"  ||
+      n.right(4)==".i++"  ||
+      n.right(4)==".inl"
      ) return Entry::SOURCE_SEC;
   if (n.right(2)==".h"   || // header
       n.right(3)==".hh"  ||

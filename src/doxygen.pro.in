@@ -15,7 +15,7 @@
 # TMake project file for doxygen
 
 TEMPLATE     =	app.t
-CONFIG       =	console warn_on $extraopt
+CONFIG       =	console warn_on $extraopts
 HEADERS      =	doxygen.h 
 SOURCES      =	main.cpp 
 unix:LIBS                  += -L../lib -ldoxygen -lqtools 

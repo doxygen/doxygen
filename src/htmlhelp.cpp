@@ -305,8 +305,8 @@ void HtmlHelp::createProjectFile()
          "Contents file=index.hhc\n"
          "Default Window=main\n"
          "Default topic=" << indexName << "\n"
-         "Index file=index.hhk\n"
-         "Binary TOC=YES\n";
+         "Index file=index.hhk\n";
+    if (Config::htmlHelpTocFlag) t << "Binary TOC=YES\n";
     if (Config::htmlHelpChiFlag) t << "Create CHI file=YES\n";
     t << "Title=" << Config::projectName << endl << endl;
     
@@ -388,6 +388,13 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const char *name,const char *ref, 
                                const char *anchor)
 {
+  // If we're using a binary toc then folders cannot have links. 
+  if(Config::htmlHelpTocFlag && isDir) 
+  {
+    ref = 0;
+    anchor = 0;
+  }
+  
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
   cts << "<param name=\"Name\" value=\"" << name << "\">";

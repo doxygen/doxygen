@@ -18,6 +18,7 @@
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include "language.h"
 
 
 const char treeview_data[]=
@@ -273,7 +274,10 @@ static void generateFolderTreeViewData()
   else
   {
     QTextStream t(&f);
-    t << "<html><head><title>"; 
+    t << "<html><head>";
+    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
+      << theTranslator->idLanguageCharset() << "\">\n";
+    t << "<title>"; 
     if (Config::projectName.isEmpty())
     {
       t << "Doxygen Documentation";
