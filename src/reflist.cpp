@@ -32,10 +32,8 @@ RefList::RefList(const char *listName,
   m_dictIterator = 0;
   m_id = 0;
   m_listName = listName;
-  //m_optionName = optionName;
   m_pageTitle = pageTitle;
   m_secTitle = secTitle;
-  /*m_type = type;*/
 }
 
 /*! Destroy the todo list. Currently not called! */
@@ -95,11 +93,6 @@ QCString RefList::listName() const
   return m_listName;
 }
 
-//QCString RefList::optionName() const
-//{
-//  return m_optionName;
-//}
-
 QCString RefList::pageTitle() const
 {
   return m_pageTitle;
@@ -109,11 +102,4 @@ QCString RefList::sectionTitle() const
 {
   return m_secTitle;
 }
-
-
-//BaseOutputDocInterface::SectionTypes RefList::sectionType() const
-//{
-//  return m_type;
-//}
-
 

@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2003/04: translated new items used since version 1.3
  *  2002/11: translated new items used since version 1.2.18
  *  2002/08: translated new items used since version 1.2.17
  *  2002/07: translated new items used since version 1.2.16
@@ -67,7 +68,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_3
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1387,6 +1388,46 @@ class TranslatorItalian : public TranslatorAdapter_1_3
     virtual QCString trEventDocumentation()
     {
       return "Documentazione degli eventi";
+    }
+
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    {
+      return "Tipi con visibilità di package";
+    }
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
+     */
+    virtual QCString trPackageMembers()
+    {
+      return "Funczioni con visibilità di package";
+    }
+    /*! Used as a heading for a list of static Java class functions with
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    {
+      return "Funzioni statiche con visibilità di package";
+    }
+    /*! Used as a heading for a list of Java class variables with package
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    {
+      return "Attributi con visibilità di package";
+    }
+    /*! Used as a heading for a list of static Java class variables with
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    {
+      return "Attributi statici con visibilità di package";
     }
 
 };

@@ -29,9 +29,6 @@
 #include "util.h"
 #include "message.h"
   
-  
-#define YY_NO_UNPUT
-  
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -97,6 +94,7 @@ static int yyread(char *buf,int max_size)
 B       [ \t]
 ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 
+%option nounput
 %option noyywrap
 
 %x      Start

@@ -38,7 +38,6 @@ unsigned char ftv2blank_png[] = {
   0x32, 0xcb, 0x72, 0x8f, 0x7c, 0x12, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
   0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2blank_png_len = 174;
 
 unsigned char ftv2doc_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -64,7 +63,6 @@ unsigned char ftv2doc_png[] = {
   0x83, 0x47, 0xbd, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
   0x42, 0x60, 0x82
 };
-unsigned int ftv2doc_png_len = 255;
 
 unsigned char ftv2folderclosed_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -90,7 +88,6 @@ unsigned char ftv2folderclosed_png[] = {
   0x13, 0x15, 0x98, 0x60, 0xbd, 0x81, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x49,
   0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2folderclosed_png_len = 259;
 
 unsigned char ftv2folderopen_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -116,7 +113,6 @@ unsigned char ftv2folderopen_png[] = {
   0x0d, 0xa4, 0x29, 0x14, 0xcb, 0xda, 0x47, 0xac, 0x44, 0x00, 0x00, 0x00,
   0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2folderopen_png_len = 261;
 
 unsigned char ftv2lastnode_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -140,7 +136,6 @@ unsigned char ftv2lastnode_png[] = {
   0x88, 0x10, 0xca, 0x33, 0x3d, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
   0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2lastnode_png_len = 233;
 
 unsigned char ftv2link_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -174,7 +169,6 @@ unsigned char ftv2link_png[] = {
   0xcf, 0x07, 0x71, 0x95, 0x2b, 0xa1, 0x10, 0x78, 0xd0, 0xff, 0x00, 0x00,
   0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2link_png_len = 358;
 
 unsigned char ftv2mlastnode_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -192,7 +186,6 @@ unsigned char ftv2mlastnode_png[] = {
   0xc0, 0xdc, 0x69, 0xc8, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44,
   0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2mlastnode_png_len = 160;
 
 unsigned char ftv2mnode_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -213,7 +206,6 @@ unsigned char ftv2mnode_png[] = {
   0x96, 0x03, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42,
   0x60, 0x82
 };
-unsigned int ftv2mnode_png_len = 194;
 
 unsigned char ftv2node_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -237,7 +229,6 @@ unsigned char ftv2node_png[] = {
   0x52, 0x00, 0xe2, 0xfa, 0x45, 0x3a, 0xe1, 0x00, 0x00, 0x00, 0x00, 0x49,
   0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2node_png_len = 235;
 
 unsigned char ftv2plastnode_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -255,7 +246,6 @@ unsigned char ftv2plastnode_png[] = {
   0x00, 0x6e, 0xc1, 0x02, 0xc2, 0xe5, 0xed, 0x75, 0xa7, 0x00, 0x00, 0x00,
   0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2plastnode_png_len = 165;
 
 unsigned char ftv2pnode_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -276,7 +266,6 @@ unsigned char ftv2pnode_png[] = {
   0xba, 0x6b, 0x07, 0x2f, 0xaa, 0xcb, 0x1f, 0x6f, 0x00, 0x00, 0x00, 0x00,
   0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int ftv2pnode_png_len = 200;
 
 unsigned char ftv2vertline_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -300,30 +289,66 @@ unsigned char ftv2vertline_png[] = {
   0x3a, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60,
   0x82
 };
-unsigned int ftv2vertline_png_len = 229;
 
 
 struct ImageInfo
 {
+  const char *alt;
   const char *name;
-  unsigned char *data;
+  const unsigned char *data;
   unsigned int len;
+  unsigned short width, height;
 } image_info[] =
 {
-  { "ftv2blank.png",ftv2blank_png,ftv2blank_png_len },
-  { "ftv2doc.png",ftv2doc_png,ftv2doc_png_len },
-  { "ftv2folderclosed.png",ftv2folderclosed_png,ftv2folderclosed_png_len },
-  { "ftv2folderopen.png",ftv2folderopen_png,ftv2folderopen_png_len },
-  { "ftv2lastnode.png",ftv2lastnode_png,ftv2lastnode_png_len },
-  { "ftv2link.png",ftv2link_png,ftv2link_png_len },
-  { "ftv2mlastnode.png",ftv2mlastnode_png,ftv2mlastnode_png_len },
-  { "ftv2mnode.png",ftv2mnode_png,ftv2mnode_png_len },
-  { "ftv2node.png",ftv2node_png,ftv2node_png_len },
-  { "ftv2plastnode.png",ftv2plastnode_png,ftv2plastnode_png_len },
-  { "ftv2pnode.png",ftv2pnode_png,ftv2pnode_png_len },
-  { "ftv2vertline.png",ftv2vertline_png,ftv2vertline_png_len },
-  { 0,0,0 }
+  { "&nbsp;", "ftv2blank.png",ftv2blank_png,174,16,22 },
+#define FTVIMG_blank 0
+
+  { "*", "ftv2doc.png",ftv2doc_png,255,24,22 },
+#define FTVIMG_doc 1
+
+  { "+", "ftv2folderclosed.png",ftv2folderclosed_png,259,24,22 },
+#define FTVIMG_folderclosed 2
+
+  { "-", "ftv2folderopen.png",ftv2folderopen_png,261,24,22 },
+#define FTVIMG_folderopen 3
+
+  { "\\", "ftv2lastnode.png",ftv2lastnode_png,233,16,22 },
+#define FTVIMG_lastnode 4
+
+  { "-", "ftv2link.png",ftv2link_png,358,24,22 },
+#define FTVIMG_link 5
+
+  { "\\", "ftv2mlastnode.png",ftv2mlastnode_png,160,16,22 },
+#define FTVIMG_mlastnode 6
+
+  { "o", "ftv2mnode.png",ftv2mnode_png,194,16,22 },
+#define FTVIMG_mnode 7
+
+  { "o", "ftv2node.png",ftv2node_png,235,16,22 },
+#define FTVIMG_node 8
+
+  { "\\", "ftv2plastnode.png",ftv2plastnode_png,165,16,22 },
+#define FTVIMG_plastnode 9
+
+  { "o", "ftv2pnode.png",ftv2pnode_png,200,16,22 },
+#define FTVIMG_pnode 10
+
+  { "|", "ftv2vertline.png",ftv2vertline_png,229,16,22 },
+#define FTVIMG_vertline 11
+
+  { 0,0,0,0,0,0 }
+#define FTVIMG_UNUSED 12
 };
+
+#define _S(nym) #nym
+#define FTV_ICON_FILE(nym) "ftv2" _S(nym) ".png"
+#define FTVIMG_INDEX(nym) FTVIMG_ ## nym
+#define _INFO(nym) ( image_info[FTVIMG_INDEX(nym)] )
+#define IMG_PREAMBLE(nym) \
+  "<img src=\"" FTV_ICON_FILE(nym) "\" " \
+    "alt=\"" << _INFO(nym).alt << "\" " \
+    "width=" << _INFO(nym).width << " " \
+    "height=" << _INFO(nym).height << " "
 
 struct FTVNode
 {
@@ -467,22 +492,22 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
     {
       if (n->isDir)
       {
-        t << "<img src=\"ftv2plastnode.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << IMG_PREAMBLE(plastnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       }
       else
       {
-        t << "<img src=\"ftv2lastnode.png\"/>";
+        t << IMG_PREAMBLE(lastnode) << "/>";
       }
     }
     else
     {
       if (n->isDir)
       {
-        t << "<img src=\"ftv2pnode.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << IMG_PREAMBLE(pnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       }
       else
       {
-        t << "<img src=\"ftv2node.png\"/>";
+        t << IMG_PREAMBLE(node) << "/>";
       }
     }
   }
@@ -490,11 +515,11 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
   {
     if (n->isLast)
     {
-      t << "<img src=\"ftv2blank.png\"/>";
+      t << IMG_PREAMBLE(blank) << "/>";
     }
     else
     {
-      t << "<img src=\"ftv2vertline.png\"/>";
+      t << IMG_PREAMBLE(vertline) << "/>";
     }
   }
 }
@@ -550,7 +575,7 @@ void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
     generateIndent(t,n,0);
     if (n->isDir)
     {
-      t << "<img src=\"ftv2folderclosed.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      t << IMG_PREAMBLE(folderclosed) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       generateLink(t,n);
       t << "</p>\n";
       t << spaces << "<div id=\"folder" << folderId << "\">\n";
@@ -560,7 +585,7 @@ void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
     }
     else
     {
-      t << "<img src=\"ftv2doc.png\"/>";
+      t << IMG_PREAMBLE(doc) << "/>";
       generateLink(t,n);
       t << "</p>\n";
     }
@@ -680,7 +705,7 @@ void FTVHelp::generateTreeView()
     t << "    {\n";
     t << "      var folder = document.getElementById(id);\n";
     t << "      var l = 0;\n";
-    t << "      var vl = \"ftv2vertline.png\";\n";
+    t << "      var vl = \"" FTV_ICON_FILE(vertline) "\";\n";
     t << "      if (imageNode != null && imageNode.nodeName != \"IMG\") \n";
     t << "      {\n";
     t << "        imageNode = findChildNode(imageNode, \"IMG\");\n";
@@ -700,14 +725,14 @@ void FTVHelp::generateTreeView()
     t << "        if (imageNode != null) \n";
     t << "        {\n";
     t << "          l = imageNode.src.length;\n";
-    t << "          imageNode.nextSibling.src = \"ftv2folderclosed.png\";\n";
-    t << "          if (imageNode.src.substring(l-13,l) == \"ftv2mnode.png\")\n";
+    t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
+    t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
     t << "          {\n";
-    t << "            imageNode.src = \"ftv2pnode.png\";\n";
+    t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
     t << "          }\n";
-    t << "          else if (imageNode.src.substring(l-17,l) == \"ftv2mlastnode.png\")\n";
+    t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
     t << "          {\n";
-    t << "            imageNode.src = \"ftv2plastnode.png\";\n";
+    t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
     t << "          }\n";
     t << "        }\n";
     t << "        folder.style.display = \"none\";\n";
@@ -723,14 +748,14 @@ void FTVHelp::generateTreeView()
     t << "        if (imageNode != null) \n";
     t << "        {\n";
     t << "          l = imageNode.src.length;\n";
-    t << "          imageNode.nextSibling.src = \"ftv2folderopen.png\";\n";
-    t << "          if (imageNode.src.substring(l-13,l) == \"ftv2pnode.png\")\n";
+    t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderopen) "\";\n";
+    t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(pnode) "\")\n";
     t << "          {\n";
-    t << "            imageNode.src = \"ftv2mnode.png\";\n";
+    t << "            imageNode.src = \"" FTV_ICON_FILE(mnode) "\";\n";
     t << "          }\n";
-    t << "          else if (imageNode.src.substring(l-17,l) == \"ftv2plastnode.png\")\n";
+    t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(plastnode) "\")\n";
     t << "          {\n";
-    t << "            imageNode.src = \"ftv2mlastnode.png\";\n";
+    t << "            imageNode.src = \"" FTV_ICON_FILE(mlastnode) "\";\n";
     t << "          }\n";
     t << "        }\n";
     t << "        folder.style.display = \"block\";\n";

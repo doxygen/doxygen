@@ -823,11 +823,12 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
       do // for each scope (starting with full scope and going to empty scope)
       {
         QCString fullName = word;
+        QCString prefix;
         replaceNamespaceAliases(fullName,fullName.length());
         if (scopeOffset>0)
         {
 
-          QCString prefix = scopeName.left(scopeOffset);
+          prefix = scopeName.left(scopeOffset);
           replaceNamespaceAliases(prefix,scopeOffset);
           fullName.prepend(prefix+"::");
         }
@@ -2518,7 +2519,7 @@ bool resolveRef(/* in */  const char *scName,
   GroupDef     *gd = 0;
 
   // check if nameStr is a member or global.
-  //printf("getDefs(scope=%s,name=%s,args=%s\n",scopeStr.data(),nameStr.data(),argsStr.data());
+  //printf("getDefs(scope=%s,name=%s,args=%s)\n",scopeStr.data(),nameStr.data(),argsStr.data());
   if (getDefs(scopeStr,nameStr,argsStr,
               md,cd,fd,nd,gd,
               scopePos==0 && !memberScopeFirst,
@@ -3192,6 +3193,12 @@ QCString stripScope(const char *name)
   
 }
 
+/*! Convert nibble (range 0..15) to hex char */
+static char nibbleToHex(int n)
+{
+  return (n < 10) ? ('0'+n) : ('a'+n-10);
+}
+
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
 {
@@ -3208,7 +3215,18 @@ QCString convertToXML(const char *s)
       case '&':  result+="&amp;";  break;
       case '\'': result+="&apos;"; break; 
       case '"':  result+="&quot;"; break;
-      default:   result+=c;        break;         
+      default:   
+        if (c<0) 
+        {
+          result+=(QCString)"&#x" + 
+                  nibbleToHex((((uchar)c)>>4)&0xf)+
+                  nibbleToHex(c&0xf)+";";
+        }
+        else 
+        {
+          result+=c;        
+        }
+        break;
     }
   }
   return result;

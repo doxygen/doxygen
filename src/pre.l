@@ -354,6 +354,12 @@ static void processConcatOperators(QCString &expr)
   //printf("processConcatOperators: out=`%s'\n",expr.data());
 }
 
+static void yyunput (int c,char *buf_ptr  );
+static void returnCharToStream(char c)
+{
+  unput(c);
+}
+
 /*! replaces the function macro \a def whose argument list starts at
  * \a pos in expression \a expr. 
  * Notice that this routine may scan beyond the \a expr string if needed.
@@ -1900,7 +1906,9 @@ static int getCurrentChar(const QCString &expr,QCString *rest,uint pos)
   }
   else
   {
-    int cc=yyinput();unput(cc);
+    int cc=yyinput();
+    returnCharToStream(cc);
+    //unput((char)cc);
     //printf("%c=yyinput()\n",cc);
     return cc;
   }
@@ -1921,7 +1929,8 @@ static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c)
   }
   else
   {
-    unput(c);
+    //unput(c);
+    returnCharToStream(c);
   }
   //printf("result: unputChar(%s,%s,%d,%c)\n",expr.data(),rest ? rest->data() : 0,pos,c);
 }
@@ -2114,7 +2123,10 @@ void preprocessFile(const char *fileName,BufStr &output)
   }
 }
 
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
 //  int  preYYwrap() { return 1 ; }
   void preYYdummy() { yy_flex_realloc(0,0); } 
 }
+#endif
+

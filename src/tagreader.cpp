@@ -895,6 +895,10 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     me->virt       = tmi->virt;
     me->stat       = tmi->isStatic;
     me->fileName   = ce->fileName;
+    if (ce->section == Entry::GROUPDOC_SEC)
+    {
+      me->groups->append(new Grouping(ce->name,Grouping::GROUPING_INGROUP));
+    }
     addDocAnchors(me,tmi->docAnchors);
     TagInfo *ti    = new TagInfo;
     ti->tagName    = m_tagName;
@@ -1113,8 +1117,8 @@ void TagFileParser::buildLists(Entry *root)
   }
 
   // build group list, but only if config file says to include it
-  if (Config_getBool("EXTERNAL_GROUPS")) 
-  {
+  //if (Config_getBool("EXTERNAL_GROUPS")) 
+  //{
     TagGroupInfo *tgi = m_tagFileGroups.first();
     while (tgi)
     {
@@ -1132,7 +1136,7 @@ void TagFileParser::buildLists(Entry *root)
       root->addSubEntry(ge);
       tgi = m_tagFileGroups.next();
     }
-  }
+  //}
 
   // build page list
   TagPageInfo *tpi = m_tagFilePages.first();

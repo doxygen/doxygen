@@ -25,10 +25,13 @@
 #include "bufstr.h"
 #include "debug.h"
 #include "message.h"
+#include "config.h"
 
 static BufStr *g_inBuf;
 static BufStr *g_outBuf;
 static int     g_inBufPos;
+static int     g_col;
+static int     g_blockHeadCol;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -59,9 +62,35 @@ static void replaceCommentMarker(const char *s,int len)
   g_outBuf->addArray(p,len-(p-s));
 }
 
+static inline int computeIndent(const char *s)
+{
+  int col=0;
+  static int tabSize=Config_getInt("TAB_SIZE");
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    if (c==' ') col++;
+    else if (c=='\t') col+=tabSize-(col%tabSize); 
+    else break;
+  }
+  return col;
+}
+
 static inline void copyToOutput(const char *s,int len)
 {
   g_outBuf->addArray(s,len);
+  int i;
+  static int tabSize=Config_getInt("TAB_SIZE");
+  for (i=0;i<len;i++) 
+  {
+    switch (s[i])
+    {
+      case '\n': g_col=0; break;
+      case '\t': g_col+=tabSize-(g_col%tabSize); break;
+      default:   g_col++; break;
+    }
+  }
 }
 
 #undef  YY_INPUT
@@ -76,10 +105,22 @@ static int yyread(char *buf,int max_size)
   return bytesToCopy;
 }
 
+#define replaceComment(offset)                                \
+  int i=computeIndent(&yytext[offset]);                       \
+  if (i==g_blockHeadCol)                                      \
+  {                                                           \
+    replaceCommentMarker(yytext,yyleng);                      \
+  }                                                           \
+  else                                                        \
+  {                                                           \
+    copyToOutput(" */",3);                                    \
+    int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);         \
+    BEGIN(Scan);                                              \
+  }                                                           \
+
 %}
 
 %option noyywrap
-%option nounput
 
 %x Scan
 %x SkipString
@@ -99,18 +140,20 @@ static int yyread(char *buf,int max_size)
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Scan>("//!"|"///").*\n/[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+<Scan>("//!"|"///").*/\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
   				     int i=3;
 				     if (yytext[2]=='/')
 				     {
 				       while (i<yyleng && yytext[i]=='/') i++;
 				     }
+				     g_blockHeadCol=g_col;
                                      copyToOutput("/**",3); 
 				     copyToOutput(yytext+i,yyleng-i); 
 				     BEGIN(SComment); 
                                    }
-<Scan>"//##Documentation".*\n	   { /* Start of Rational Rose ANSI C++ comment block */
+<Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
                                      int i=17; //=strlen("//##Documentation");
+				     g_blockHeadCol=g_col;
 				     copyToOutput("/**",3);
 				     copyToOutput(yytext+i,yyleng-i);
 				     BEGIN(SComment);
@@ -169,28 +212,28 @@ static int yyread(char *buf,int max_size)
 				     BEGIN(Scan); 
                                    }
 <SComment>^[ \t]*"///"[\/]*/\n     {
-                                     replaceCommentMarker(yytext,yyleng); 
+  				     replaceComment(0);
   				   }
 <SComment>\n[ \t]*"///"[\/]*/\n    {
-                                     replaceCommentMarker(yytext,yyleng); 
+                                     replaceComment(1); 
                                    }
 <SComment>^[ \t]*"///"[^\/\n].*/\n { 
-                                     replaceCommentMarker(yytext,yyleng); 
+  				     replaceComment(0);
   				   }
 <SComment>\n[ \t]*"///"[^\/\n].*/\n  { 
-                                     replaceCommentMarker(yytext,yyleng); 
+                                     replaceComment(1); 
   				   }
 <SComment>^[ \t]*"//!".*/\n        { 
-                                     replaceCommentMarker(yytext,yyleng); 
+  				     replaceComment(0);
                                    }
 <SComment>\n[ \t]*"//!".*/\n       { 
-                                     replaceCommentMarker(yytext,yyleng); 
+                                     replaceComment(1); 
                                    }
 <SComment>^[ \t]*"//##".*/\n       {
-                                     replaceCommentMarker(yytext,yyleng);
+  				     replaceComment(0);
                                    }
 <SComment>\n[ \t]*"//##".*/\n      {
-                                     replaceCommentMarker(yytext,yyleng);
+                                     replaceComment(1); 
                                    }
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 
@@ -205,6 +248,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf)
   g_inBuf    = inBuf;
   g_outBuf   = outBuf;
   g_inBufPos = 0;
+  g_col      = 0;
   BEGIN(Scan);
   yylex();
   if (Debug::isFlagSet(Debug::CommentCnv))
@@ -214,7 +258,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf)
 }
 
 //----------------------------------------------------------------------------
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
     void commentcnvYYdummy() { yy_flex_realloc(0,0); } 
 }
+#endif
 

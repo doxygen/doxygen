@@ -73,13 +73,17 @@
 //    - changed "Datenelemente" to "Methoden" in
 //      tr{,Static}{Public,Protected,Private}Members
 //
+//   2003/04/28 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.3" version
+//    - translated Java package to Paket
+//
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_3
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -1225,31 +1229,31 @@ class TranslatorGerman : public TranslatorAdapter_1_3
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return (QCString)"Package "+name;
+      return (QCString)"Paket "+name;
     }
 
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return "Package Liste";
+      return "Paketliste";
     }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "Hier folgen die packages mit einer Kurzbeschreibung (wenn verfügbar):";
+      return "Hier folgen die Pakete mit einer Kurzbeschreibung (wenn verfügbar):";
     }
 
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return "Packages";
+      return "Pakete";
     }
 
     /*! Used as a chapter title for Latex & RTF output */
     virtual QCString trPackageDocumentation()
     {
-      return "Package Dokumentation";
+      return "Paketdokumentation";
     }
 
     /*! Text shown before a multi-line define */
@@ -1475,6 +1479,49 @@ class TranslatorGerman : public TranslatorAdapter_1_3
     virtual QCString trEventDocumentation()
     {
       return "Ereignisdokumentation";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Pakettypen";
+    }
+
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Paketfunktionen";
+    }
+
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Statische Paketfunktionen";
+    }
+    
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    {
+      return "Paketattribute";
+    }
+    
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    {
+      return "Statische Paketattribute";
     }
 
 };

@@ -65,7 +65,6 @@ void config_warn(const char *fmt, ...)
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
-#define YY_NO_UNPUT
 
 /* -----------------------------------------------------------------
  */
@@ -410,6 +409,7 @@ static void readIncludeFile(const char *incName)
 
 %}
 
+%option nounput
 %option noyywrap
 
 %x      Start
@@ -2713,6 +2713,6 @@ bool Config::parse(const char *fn)
   return TRUE;
 }
 
-//extern "C" { // some bogus code to keep the compiler happy
-//  int  configYYwrap() { return 1 ; }
-//}
+extern "C" { // some bogus code to keep the compiler happy
+  //int  configYYwrap() { return 1 ; }
+}

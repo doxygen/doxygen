@@ -1388,7 +1388,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
 					}
-<Body>"("{B}*("*"{B}*)*{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func()
+<Body>"("{B}*("*"{B}*)+{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
 					  g_code->codify(yytext);
 					  int s=0;while (s<yyleng && !isId(yytext[s])) s++;
                                           int e=yyleng-1;while (e>=0 && !isId(yytext[e])) e--;
@@ -2085,7 +2085,11 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   return;
 }
 
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
-//  int  codeYYwrap() { return 1 ; }
   void codeYYdummy() { yy_flex_realloc(0,0); } 
 }
+#else
+#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
+#endif
+

@@ -2285,7 +2285,9 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
   /* Some groups should appear twice under different parent-groups.
    * That is why we should not check if it was visited 
    */
-  if (/*!gd->visited &&*/ (!gd->isASubGroup() || level>0))
+  if (/*!gd->visited &&*/ (!gd->isASubGroup() || level>0) &&
+      (!gd->isReference() || Config_getBool("EXTERNAL_GROUPS")) // hide external groups by default
+     )
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
