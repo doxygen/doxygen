@@ -104,9 +104,9 @@ Compilation is now done by performing the following steps:
     See the <code>PLATFORMS</code> file for a list of possible platform
     options.
 
-    If you have Qt-2.1.x installed and want to build the GUI front-end, you
-    should run the configure script with the <code>--with-doxywizard</code> 
-    option:
+    If you have Qt-3.2.x or higher installed and want to build the GUI 
+    front-end, you should run the configure script with 
+    the <code>--with-doxywizard</code> option:
 
 \verbatim
     configure --with-doxywizard
@@ -297,32 +297,10 @@ ce_parse.cpp:
 
 <b>Sun compiler problems</b>
 
-I tried compiling doxygen only with Sun's C++ WorkShop Compiler
-version 5.0 (I used <code>./configure --platform solaris-cc</code>)
-
-Qt-2.x.y is required for this compiler (Qt-1.44 has problems with the bool
-type).
-
-Compiling the \c doxygen binary went ok, but while linking <code>doxytag</code> I got a 
-lot of link errors, like these:
-
-\verbatim
-QList<PageInfo>::__vtbl   /home/dimitri/doxygen/
-objects/SunWS_cache/CC_obj_6/6c3eO4IogMT2vrlGCQUQ.o
-[Hint: try checking whether the first non-inlined, non-pure 
-virtual function of class QList<PageInfo> is defined]
-\endverbatim
-
-These are generated because the compiler is confused about the object sharing
-between \c doxygen and \c doxytag. To compile \c doxytag 
-anyway do:
-
-\verbatim
-rm -rf objects
-mkdir objects
-cd src
-gmake -f Makefile.doxytag
-\endverbatim
+It appears that doxygen doesn't work properly if it is compiled 
+with Sun's C++ WorkShop Compiler. I cannot verify this myself as I do 
+not have access to a Solaris machine with this compiler. With GNU compiler
+it does work.
 
 when configuring with <code>--static</code> I got:
 
@@ -467,7 +445,7 @@ Here is what is required:
     still a requirement however. A commercial license to build
     doxywizard with the latest Qt library was kindly donated to me
     by the nice people at <a href="http://www.trolltech.com">TrollTech</a>. 
-    See doxygen download page for a link.
+    See doxygen download page for a link. 
    
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders

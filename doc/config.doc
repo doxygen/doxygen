@@ -19,7 +19,7 @@
 \section config_format Format
 
 A configuration file is a free-form ASCII text file with a structure
-that is similar to that of a Makefile, default name \c Doxyfile. It is
+that is similar to that of a Makefile, with the default name \c Doxyfile. It is
 parsed by \c doxygen.  The file may contain tabs and newlines for
 formatting purposes.  The statements in the file are case-sensitive.
 Comments may be placed anywhere within the file (except within quotes).
@@ -35,7 +35,7 @@ new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (&quot;...&quot;).
 Multiple lines can be concatenated by inserting a backslash (\\)
 as the last character of a line. Environment variables can be expanded 
-using the pattern \c \$(ENV_VARIABLE_NAME).
+using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
@@ -77,7 +77,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
+\refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
 \refitem cfg_dot_path DOT_PATH
+\refitem cfg_dot_transparent DOT_TRANSPARENT
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
 \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
@@ -98,6 +100,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_extract_private EXTRACT_PRIVATE
 \refitem cfg_extract_static EXTRACT_STATIC
 \refitem cfg_file_patterns FILE_PATTERNS
+\refitem cfg_file_version_filter FILE_VERSION_FILTER
 \refitem cfg_filter_patterns FILTER_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
 \refitem cfg_full_path_names FULL_PATH_NAMES
@@ -725,6 +728,39 @@ documentation.
  *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
  *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm
  </code>
+
+\anchor cfg_file_version_filter
+<dt>\c FILE_VERSION_FILTER <dd>
+ \addindex FILE_VERSION_FILTER
+ The \c FILE_VERSION_FILTER tag can be used to specify a program or script that
+ doxygen should invoke to get the current version for each file (typically from the
+ version control system). Doxygen will invoke the program by executing (via
+ popen()) the command <code>command input-file</code>, where \c command is 
+ the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name 
+ of an input file provided by doxygen. 
+ Whatever the progam writes to standard output is used as the file version. 
+
+Example of using a shell script as a filter for Unix:
+\verbatim
+ FILE_VERSION_FILTER = "/bin/sh versionfilter.sh"
+\endverbatim
+
+Example shell script for CVS:
+\verbatim
+#!/bin/sh
+cvs status $1 | sed -n 's/^[ \]*Working revision:[ \t]*\([0-9][0-9\.]*\).*/\1/p'
+\endverbatim 
+ 
+Example shell script for Subversion:
+\verbatim
+#!/bin/sh
+svn stat -v $1 | sed -n 's/^[ A-Z?\*|!]\{1,15\}/r/;s/ \{1,15\}/\/r/;s/ .*//p'
+\endverbatim
+
+Example filter for ClearCase:
+\verbatim
+FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
+\endverbatim
 
 \anchor cfg_recursive
 <dt>\c RECURSIVE <dd>
@@ -1654,6 +1690,22 @@ not depth-constraint.
  this value, doxygen will try to truncate the graph, so that it fits within
  the specified constraint. Beware that most browsers cannot cope with very
  large images.
+
+\anchor cfg_dot_transparent
+<dt>\c DOT_TRANSPARENT <dd>
+ \addindex DOT_TRANSPARENT
+ Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent 
+ background. This is disabled by default, which results in a white background. 
+ Warning: Depending on the platform used, enabling this option may lead to badly
+ anti-aliased labels on the edges of a graph (i.e. they become hard to read).
+ 
+\anchor cfg_dot_multi_targets
+<dt>\c DOT_MULTI_TARGETS <dd>
+ \addindex DOT_MULTI_TARGET
+ Set the \c DOT_MULTI_TARGETS tag to \c YES allow dot to generate multiple output
+ files in one run (i.e. multiple -o and -T options on the command line). This
+ makes dot run faster, but since only newer versions of dot (>1.8.10)
+ support this, this feature is disabled by default.
 
 \anchor cfg_generate_legend 
 <dt>\c GENERATE_LEGEND <dd>

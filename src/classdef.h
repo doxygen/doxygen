@@ -333,6 +333,7 @@ class ClassDef : public Definition
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
     bool hasExamples();
     bool hasNonReferenceSuperClass();
+    void showUsedFiles(OutputList &ol);
 
     /*! \} Interal API */
 

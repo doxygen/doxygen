@@ -111,8 +111,8 @@ class RTFDocVisitor : public DocVisitor
     void visitPost(DocSecRefItem *);
     void visitPre(DocSecRefList *);
     void visitPost(DocSecRefList *);
-    void visitPre(DocLanguage *);
-    void visitPost(DocLanguage *);
+    //void visitPre(DocLanguage *);
+    //void visitPost(DocLanguage *);
     void visitPre(DocParamSect *);
     void visitPost(DocParamSect *);
     void visitPre(DocParamList *);

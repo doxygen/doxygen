@@ -286,6 +286,28 @@ class DotGroupCollaboration
     QList<Edge>     m_edges;
 };
 
+/** @brief Helper class to run dot from doxygen.
+ */
+class DotRunner
+{
+  public:
+    /** Creates a runner for a dot \a file. */
+    DotRunner(const char *file);
+
+    /** Adds an additional job to the run.
+     *  Performing multiple jobs one file can be faster.
+     */
+    void addJob(const char *format,const char *output);
+
+    /** Runs dot for all jobs added. */
+    bool run();
+  private:
+    QList<QCString> m_jobs;
+    QCString m_file;
+};
+
+
+
 void generateGraphLegend(const char *path);
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);

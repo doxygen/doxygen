@@ -66,7 +66,7 @@ enum CommandType
   CMD_INTERNAL     = 32,         
   CMD_INTERNALREF  = 33,
   CMD_INVARIANT    = 34 | SIMPLESECT_BIT ,
-  CMD_LANGSWITCH   = 35,
+  //CMD_LANGSWITCH   = 35,
   CMD_LATEXONLY    = 36,
   CMD_LESS         = 37,
   CMD_LI           = 38,

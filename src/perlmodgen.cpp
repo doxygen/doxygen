@@ -367,8 +367,8 @@ public:
   void visitPost(DocSecRefItem *);
   void visitPre(DocSecRefList *);
   void visitPost(DocSecRefList *);
-  void visitPre(DocLanguage *);
-  void visitPost(DocLanguage *);
+  //void visitPre(DocLanguage *);
+  //void visitPost(DocLanguage *);
   void visitPre(DocParamSect *);
   void visitPost(DocParamSect *);
   void visitPre(DocParamList *);
@@ -1126,16 +1126,16 @@ void PerlModDocVisitor::visitPost(DocSecRefList *)
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocLanguage *l)
-{
-  openItem("language");
-  m_output.addFieldQuotedString("id", l->id());
-}
-
-void PerlModDocVisitor::visitPost(DocLanguage *)
-{
-  closeItem();
-}
+//void PerlModDocVisitor::visitPre(DocLanguage *l)
+//{
+//  openItem("language");
+//  m_output.addFieldQuotedString("id", l->id());
+//}
+//
+//void PerlModDocVisitor::visitPost(DocLanguage *)
+//{
+//  closeItem();
+//}
 
 void PerlModDocVisitor::visitPre(DocParamSect *s)
 {

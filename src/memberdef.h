@@ -213,11 +213,8 @@ class MemberDef : public Definition
     // enumeration specific members
     void insertEnumField(MemberDef *md);
     void setEnumScope(MemberDef *md);
+    void setEnumClassScope(ClassDef *cd)     { classDef = cd; }
     MemberDef *getEnumScope() const          { return enumScope; }
-    //void setEnumUsed()                       { eUsed=TRUE; }
-    //bool enumUsed() const                    { return eUsed; }
-    //void setEnumDecl(OutputList &ed);
-    //OutputList *enumDecl() const             { return enumDeclList; }
     MemberList *enumFieldList() const        { return enumFields; }
     void setDocumentedEnumValues(bool value) { docEnumValues=value; }
     bool hasDocumentedEnumValues() const     { return docEnumValues; }

@@ -498,6 +498,10 @@ DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
 void DirDef::writeDepGraph(QTextStream &t)
 {
     t << "digraph G {\n";
+    if (Config_getBool("DOT_TRANSPARENT"))
+    {
+      t << "  bgcolor=transparent;\n";
+    }
     t << "  compound=true\n";
     t << "  node [ fontsize=10, fontname=\"Helvetica\"];\n";
     t << "  edge [ labelfontsize=9, labelfontname=\"Helvetica\"];\n";
@@ -583,7 +587,11 @@ void DirDef::writeDepGraph(QTextStream &t)
             << usedDir->shortName() << "\"";
           if (usedDir->isCluster())
           {
-            t << " color=\"red\" fillcolor=\"white\" style=\"filled\"";
+            if (!Config_getBool("DOT_TRANSPARENT"))
+            {
+              t << " fillcolor=\"white\" style=\"filled\"";
+            }
+            t << " color=\"red\"";
           }
           t << " URL=\"" << usedDir->getOutputFileBase() 
             << Doxygen::htmlFileExtension << "\"];\n";
@@ -831,13 +839,20 @@ void writeDirDependencyGraph(const char *dirName)
         dir->writeDepGraph(t);
       }
       f.close();
-      QCString dotArgs(4096);
-      QCString outFile = QCString(dirName)+"/"+dir->getOutputFileBase()+"_dep.gif";
-      dotArgs.sprintf("%s -Tgif -o %s",path.data(),outFile.data());
-      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      {
-        err("Problems running dot. Check your installation!\n");
-      }
+
+      QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+      QCString outFile = QCString(dirName)+"/"+
+                         dir->getOutputFileBase()+"_dep."+imgExt; 
+      DotRunner dotRun(path);
+      dotRun.addJob(imgExt,outFile);
+      dotRun.run();
+      
+      //QCString dotArgs(4096);
+      //dotArgs.sprintf("%s -Tgif -o %s",path.data(),outFile.data());
+      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      //{
+      //  err("Problems running dot. Check your installation!\n");
+      //}
     }
     out << "</body></html>";
   }
