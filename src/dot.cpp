@@ -1610,6 +1610,7 @@ QCString DotClassGraph::diskName() const
 QCString DotClassGraph::writeGraph(QTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
+                               const char *relPath,
                                bool isTBRank,
                                bool generateImageMap)
 {
@@ -1642,7 +1643,6 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
       break;
   }
   baseName = convertNameToFile(diskName());
-
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString md5 = computeMd5Signature(m_startNode,        // root
@@ -1722,7 +1722,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   if (format==BITMAP && generateImageMap) // run dot to create a image map
   {
     QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
-    out << "<p><center><img src=\"" << baseName << "." 
+    out << "<p><center><img src=\"" << relPath << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
       << mapLabel << "\" alt=\"";
     switch (m_graphType)
@@ -1816,7 +1816,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
       doc = bfd->isLinkable();
       src = bfd->generateSourceFile();
     }
-    if (doc || src)
+    if (doc || src || !Config_getBool("HIDE_UNDOC_RELATIONS"))
     {
       QCString url="";
       if (bfd) url=bfd->getOutputFileBase().copy();
@@ -1833,8 +1833,8 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
       }
       else
       {
-        QCString tmp_url="";
-        if (bfd) tmp_url=bfd->getReference()+"$"+url;
+        QCString tmp_url;
+        if (bfd) tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
         bn = new DotNode(
                           m_curNodeNumber++,
                           ii->includeName,
@@ -1890,6 +1890,7 @@ QCString DotInclDepGraph::diskName() const
 QCString DotInclDepGraph::writeGraph(QTextStream &out,
                                  GraphOutputFormat format,
                                  const char *path,
+                                 const char *relPath,
                                  bool generateImageMap
                                 )
 {
@@ -1900,7 +1901,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // go to the html output directory (i.e. path)
+  // go to the output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
@@ -1995,7 +1996,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<p><center><img src=\"" << baseName << "." 
+    out << "<p><center><img src=\"" << relPath << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
       << mapName << "_map\" alt=\"";
     if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
@@ -2081,7 +2082,7 @@ DotCallGraph::~DotCallGraph()
 }
 
 QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
-                        const char *path,bool generateImageMap)
+                        const char *path,const char *relPath,bool generateImageMap)
 {
   QDir d(path);
   // store the original directory
@@ -2177,7 +2178,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<p><center><img src=\"" << baseName << "." 
+    out << "<p><center><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
     out << "\">";

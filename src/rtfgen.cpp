@@ -190,6 +190,8 @@ void RTFGenerator::init()
   {
     loadExtensions(rtfExtensionsFile);
   }
+
+  createSubDirs(d);
 }
 
 static QCString makeIndexName(const char *s,int i)
@@ -322,6 +324,7 @@ void RTFGenerator::beginRTFSection()
 void RTFGenerator::startFile(const char *name,const char *,const char *)
 {
   QCString fileName=name;
+  relPath = relativePathToRoot(fileName);
 
   if (fileName.right(4)!=".rtf" ) fileName+=".rtf";
   startPlainFile(fileName);
@@ -1357,7 +1360,7 @@ void RTFGenerator::startMemberDoc(const char *clname,
   t << endl;
 }
 
-void RTFGenerator::endMemberDoc()
+void RTFGenerator::endMemberDoc(bool)
 {
   DBG_RTF(t << "{\\comment endMemberDoc}" << endl)
   t << "}" << endl;
@@ -2188,7 +2191,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   newParagraph();
 
   QCString fileName =
-    g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
+    g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),relPath,TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2210,7 +2213,8 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),FALSE);
+  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
+                         relPath,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2231,7 +2235,8 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),FALSE);
+  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
+                        relPath,FALSE);
 
   // display the file
   t << "{" << endl;

@@ -128,7 +128,7 @@ class HtmlGenerator : public OutputGenerator
     void lineBreak() { t << "<br>" << endl; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
-    void endMemberDoc(); 
+    void endMemberDoc(bool); 
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor,const char *name);
     void endDoxyAnchor(const char *fName,const char *anchor);
@@ -214,6 +214,7 @@ class HtmlGenerator : public OutputGenerator
   private:
     QCString lastTitle;
     QCString lastFile;
+    QCString relPath;
 
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);

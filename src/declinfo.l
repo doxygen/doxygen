@@ -65,7 +65,11 @@ static void addTypeName()
 {
   //printf("addTypeName() type=`%s' scope=`%s' name=`%s'\n",
   //       type.data(),scope.data(),name.data());
-  if (name.isEmpty()) return;
+  if (name.isEmpty() || 
+      name.at(name.length()-1)==':')  // end of Objective-C keyword => append to name not type
+  {
+    return;
+  }
   if (!type.isEmpty()) type+=' ';
   type+=name;
   name.resize(0);

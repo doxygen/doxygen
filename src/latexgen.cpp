@@ -51,6 +51,7 @@
 //  return result;  
 //}
 
+
 static QCString escapeLabelName(const char *s)
 {
   QCString result;
@@ -222,6 +223,8 @@ void LatexGenerator::init()
   t << endl
     << "clean:" << endl
     << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
+
+  createSubDirs(d);
 }
 
 static void writeDefaultHeaderPart1(QTextStream &t)
@@ -441,6 +444,7 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
 void LatexGenerator::startFile(const char *name,const char *,const char *)
 {
   QCString fileName=name;
+  relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
 }
@@ -926,7 +930,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
   if (Config_getBool("PDF_HYPERLINKS"))
   {
     t << "\\hyperlink{";
-    if (f) t << f;
+    if (f) t << stripPath(f);
     if (anchor) t << "_" << anchor; 
     t << "}{";
   }
@@ -947,7 +951,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   if (!ref && Config_getBool("PDF_HYPERLINKS"))
   {
     t << "\\hyperlink{";
-    if (f) t << f;
+    if (f) t << stripPath(f);
     if (f && anchor) t << "_"; 
     if (anchor) t << anchor; 
     t << "}{";
@@ -986,7 +990,7 @@ void LatexGenerator::startTitleHead(const char *fileName)
 {
   if (Config_getBool("PDF_HYPERLINKS") && fileName)
   {
-    t << "\\hypertarget{" << fileName << "}{" << endl;
+    t << "\\hypertarget{" << stripPath(fileName) << "}{" << endl;
   }
   if (Config_getBool("COMPACT_LATEX")) 
   {
@@ -1100,7 +1104,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
 }
 
-void LatexGenerator::endMemberDoc() 
+void LatexGenerator::endMemberDoc(bool) 
 { 
   t << "}";
   if (Config_getBool("COMPACT_LATEX")) t << "\\hfill";
@@ -1112,7 +1116,7 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
   if (Config_getBool("PDF_HYPERLINKS"))
   {
     t << "\\hypertarget{";
-    if (fName) t << fName;
+    if (fName) t << stripPath(fName);
     if (anchor) t << "_" << anchor;
     t << "}{" << endl;
   }
@@ -1136,7 +1140,7 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
   t << "\\label{" << name << "}" << endl; 
   if (fName && Config_getBool("PDF_HYPERLINKS"))
   {
-    t << "\\hypertarget{" << fName << "_" << name << "}{}" << endl;
+    t << "\\hypertarget{" << stripPath(fName) << "_" << name << "}{}" << endl;
   }
 }
 
@@ -1168,7 +1172,7 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::Sect
 {
   if (Config_getBool("PDF_HYPERLINKS"))
   {
-    t << "\\hypertarget{" << lab << "}{}";
+    t << "\\hypertarget{" << stripPath(lab) << "}{}";
   }
   t << "\\";
   if (Config_getBool("COMPACT_LATEX"))
@@ -1380,7 +1384,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(DotClassGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"));
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
 
 void LatexGenerator::startInclDepGraph() 
@@ -1389,7 +1393,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(DotInclDepGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"));
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
 
 void LatexGenerator::startCallGraph() 
@@ -1398,7 +1402,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(DotCallGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"));
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
 
 void LatexGenerator::startDescription() 

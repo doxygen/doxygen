@@ -101,6 +101,7 @@ class Doxygen
     static SearchIndex              *searchIndex;
     static SDict<DefinitionList>    *symbolMap;
     static bool                      outputToWizard;
+    static QDict<int>               *htmlDirMap;
 };
 
 void initDoxygen();

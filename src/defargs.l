@@ -266,7 +266,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    if (l>0)
 					    {
 					      int i=l-1;
-					      while (i>=0 && (isspace(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && (isspace((uchar)g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
 					      //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
 					      Argument *a = new Argument; 

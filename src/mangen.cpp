@@ -35,10 +35,9 @@ static QCString getExtension()
 {
   QCString ext = Config_getString("MAN_EXTENSION");
   if( ext.length() >= 2 &&
-      ext.data()[0] == '.' &&
-      isdigit( ext.data()[1] ) )
+      ext.data()[0] == '.')
   {
-    ext = ext.mid(1, 1);
+    ext = ext.mid(1, ext.length()-1);
   }
   else
   {
@@ -95,6 +94,7 @@ void ManGenerator::init()
     err("Could not create output directory %s/man%s\n",manOutput.data(),ext.data());
     exit(1);
   }
+  createSubDirs(d);
 }
 
 static QCString buildFileName(const char *name)
@@ -405,7 +405,7 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
     linkfile.close();
 }
 
-void ManGenerator::endMemberDoc()
+void ManGenerator::endMemberDoc(bool)
 {
     t << "\"";
 }

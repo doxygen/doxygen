@@ -904,7 +904,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   m_t << "\\item[";
   if (Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "\\hyperlink{" << x->file() << "_" << x->anchor() << "}{";
+    m_t << "\\hyperlink{" << stripPath(x->file()) << "_" << x->anchor() << "}{";
   }
   else
   {
@@ -960,7 +960,7 @@ void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QSt
   if (ref.isEmpty() && Config_getBool("PDF_HYPERLINKS"))
   {
     m_t << "\\hyperlink{";
-    if (!file.isEmpty()) m_t << file;
+    if (!file.isEmpty()) m_t << stripPath(file);
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";

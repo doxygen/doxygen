@@ -316,7 +316,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void insertMemberAlign() = 0;
     virtual void startMemberDoc(const char *,const char *,
                                 const char *,const char *) = 0;
-    virtual void endMemberDoc() = 0;
+    virtual void endMemberDoc(bool) = 0;
     virtual void startDoxyAnchor(const char *fName,const char *manName,
                                  const char *anchor,const char *name) = 0;
     virtual void endDoxyAnchor(const char *fileName,const char *anchor) = 0;

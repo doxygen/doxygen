@@ -142,7 +142,7 @@ class LatexGenerator : public OutputGenerator
     void endDescItem();
     void lineBreak() { t << "\\par\n"; }
     void startMemberDoc(const char *,const char *,const char *,const char *);
-    void endMemberDoc();
+    void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
     void startCodeAnchor(const char *) {}
@@ -299,6 +299,7 @@ class LatexGenerator : public OutputGenerator
     bool insideTabbing;
     bool firstDescItem;
     bool insidePre;
+    QCString relPath;
 };
 
 #endif
