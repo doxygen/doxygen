@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+** $Id$
 **
 ** Definition of base class for all collection classes
 **

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -18,11 +18,13 @@
 #include <qwidget.h>
 #include <qstring.h>
 
+#include "input.h"
+
 class QLabel;
 class QSpinBox;
 class PageWidget;
 
-class InputInt : public QWidget
+class InputInt : public QWidget, public IInput
 {
   Q_OBJECT
 
@@ -32,6 +34,7 @@ class InputInt : public QWidget
     ~InputInt(){};
     void setEnabled(bool);
     void init();
+    QObject *qobject() { return this; }
 
   private:
     QLabel *lab;

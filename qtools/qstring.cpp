@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+** $Id$
 **
 ** Implementation of the QString class and related Unicode functions
 **

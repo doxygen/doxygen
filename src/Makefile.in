@@ -14,14 +14,18 @@
 # input used in their production; they are not affected by this license.
 # 
 
-all: Makefile.libdoxygen Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
+all: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
 	$(MAKE) -f Makefile.libdoxygen $@
+	$(MAKE) -f Makefile.libdoxycfg $@
 	$(MAKE) -f Makefile.doxygen    $@
 	$(MAKE) -f Makefile.doxytag    $@
 	$(MAKE) -f Makefile.doxysearch $@
 
 Makefile.libdoxygen: libdoxygen.pro libdoxygen.t 
 	$(ENV) $(PERL) $(TMAKE) libdoxygen.pro >Makefile.libdoxygen
+
+Makefile.libdoxycfg: libdoxycfg.pro libdoxycfg.t 
+	$(ENV) $(PERL) $(TMAKE) libdoxycfg.pro >Makefile.libdoxycfg
 
 Makefile.doxygen: doxygen.pro 
 	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
@@ -34,12 +38,14 @@ Makefile.doxysearch: doxysearch.pro
 
 tmake: 
 	$(ENV) $(PERL) $(TMAKE) libdoxygen.pro >Makefile.libdoxygen
+	$(ENV) $(PERL) $(TMAKE) libdoxycfg.pro >Makefile.libdoxycfg
 	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
 	$(ENV) $(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
 	$(ENV) $(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
 
 clean: Makefile.libdoxygen Makefile.doxygen Makefile.doxytag Makefile.doxysearch
 	$(MAKE) -f Makefile.libdoxygen clean 
+	$(MAKE) -f Makefile.libdoxycfg clean 
 	$(MAKE) -f Makefile.doxygen    clean 
 	$(MAKE) -f Makefile.doxytag    clean
 	$(MAKE) -f Makefile.doxysearch clean

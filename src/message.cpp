@@ -32,9 +32,9 @@ static FILE *warnFile = stderr;
 
 void initWarningFormat()
 {
-  int filePos = Config::warnFormat.find("$file");
-  int linePos = Config::warnFormat.find("$line");
-  int textPos = Config::warnFormat.find("$text");
+  int filePos = Config::instance()->getString("WARN_FORMAT").find("$file");
+  int linePos = Config::instance()->getString("WARN_FORMAT").find("$line");
+  int textPos = Config::instance()->getString("WARN_FORMAT").find("$text");
 
   // sort items on position (there are 6 cases)
   warnFormatOrder = 1;
@@ -68,7 +68,7 @@ void initWarningFormat()
       substitute(
         substitute(
           substitute( 
-            Config::warnFormat,
+            Config::instance()->getString("WARN_FORMAT"),
            "$file","%s"
           ),
           "$text","%s"
@@ -81,16 +81,16 @@ void initWarningFormat()
   //    replace(QRegExp("\\$line"),"%d")+
   //    '\n';
 
-  if (!Config::warnLogFile.isEmpty())
+  if (!Config::instance()->getString("WARN_LOGFILE").isEmpty())
   {
-    warnFile = fopen(Config::warnLogFile,"w");
+    warnFile = fopen(Config::instance()->getString("WARN_LOGFILE"),"w");
   }
 }
 
 
 void msg(const char *fmt, ...)
 {
-  if (!Config::quietFlag)
+  if (!Config::instance()->getBool("QUIET"))
   {
     va_list args;
     va_start(args, fmt);
@@ -101,9 +101,9 @@ void msg(const char *fmt, ...)
 
 void warn(const char *file,int line,const char *fmt, ...)
 {
-  if (Config::warningFlag)
+  if (Config::instance()->getBool("WARNINGS"))
   {
-    if (file==0) file="<unknwon>";
+    if (file==0) file="<unknown>";
     char text[4096];
     va_list args;
     va_start(args, fmt);
@@ -125,7 +125,7 @@ void warn(const char *file,int line,const char *fmt, ...)
 
 void warn_cont(const char *fmt, ...)
 {
-  if (Config::warningFlag)
+  if (Config::instance()->getBool("WARNINGS"))
   {
     va_list args;
     va_start(args, fmt);
@@ -136,7 +136,7 @@ void warn_cont(const char *fmt, ...)
   
 void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
-  if (Config::warningUndocFlag)
+  if (Config::instance()->getBool("WARN_IF_UNDOCUMENTED"))
   {
     if (file==0) file="<unknwon>";
     char text[4096];

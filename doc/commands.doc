@@ -77,6 +77,7 @@ documentation:
 <li> \refitem cmdfile \file
 <li> \refitem cmdfn \fn
 <li> \refitem cmdhideinitializer \hideinitializer
+<li> \refitem cmdhtmlinclude \htmlinclude
 <li> \refitem cmdhtmlonly \htmlonly
 <li> \refitem cmdif \if
 <li> \refitem cmdimage \image
@@ -899,7 +900,7 @@ Public/Protected/Private/... section.
 \subsection cmdanchor \anchor <word>
 
   \addindex \anchor
-  This command places an invisble, named anchor into to documentation
+  This command places an invisible, named anchor into to documentation
   to which you can refer with the \\ref command.
 
   \sa section \ref cmdref "\\ref".
@@ -1117,6 +1118,20 @@ Public/Protected/Private/... section.
   This command includes the file \<file-name\> verbatim in the documentation.
   The command is equivalent to pasting the file in the documentation and
   placing \\verbatim and \\endverbatim commands around it. 
+
+  Files or directories that doxygen should look for can be specified using the 
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
+
+<hr>
+\subsection cmdhtmlinclude \htmlinclude <file-name>
+
+  \addindex \htmlinclude
+  This command includes the file \<file-name\> as is in the HTML documentation.
+  The command is equivalent to pasting the file in the documentation and
+  placing \\htmlonly and \\endhtmlonly commands around it.
+
+  Files or directories that doxygen should look for can be specified using the 
+  \ref cfg_example_path "EXAMPLE_PATH" tag of Doxygen's configuration file.
 
 <hr>
 <h2>\htmlonly <center> --- \endhtmlonly 

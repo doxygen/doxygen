@@ -126,7 +126,7 @@ int FileNameList::compareItems(GCI item1, GCI item2)
   FileName *f2=(FileName *)item2;
   //printf("FileNameList::compareItems `%s'<->`%s'\n",
   //    f1->fileName(),f2->fileName());
-  return Config::fullPathNameFlag ?
+  return Config::instance()->getBool("FULL_PATH_NAMES") ?
          stricmp(f1->fullName(),f2->fullName()) :
          stricmp(f1->fileName(),f2->fileName());
 }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -26,11 +26,13 @@
 
 #if QT_VERSION >= 200
 
+#include <locale.h>
+
 #define GCI QCollection::Item
 
 #include <qcstring.h>
 #include <qstring.h>
-inline QCString convertToQCString(const QString &s) { return s.local8Bit(); }
+inline QCString convertToQCString(const QString &s) { return s.latin1(); }
 
 #else /* QT_VERSION < 200 */
 

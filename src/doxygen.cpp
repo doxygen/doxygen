@@ -231,7 +231,7 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
     }
 
     QCString pageName;
-    if (Config::caseSensitiveNames)
+    if (Config::instance()->getBool("CASE_SENSE_NAMES"))
       pageName=pi->name.copy();
     else
       pageName=pi->name.lower();
@@ -286,13 +286,13 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
                         const char *name,const char *title,const char *args=0)
 {
 
-  //printf("addRefItem(%s) todoId=%d testId\n",name,todoId,testId);
+  //printf("addRefItem(%s) todoId=%d testId=%d bugId=%d\n",name,todoId,testId,bugId);
 
   ////////////////////////////////////////////////////////////
   // add item to the todo list
   ////////////////////////////////////////////////////////////
 
-  if (todoId>0 && Config::generateTodoList)
+  if (todoId>0 && Config::instance()->getBool("GENERATE_TODOLIST"))
   {
     RefItem *item = todoList.getRefItem(todoId);
     ASSERT(item!=0);
@@ -322,7 +322,7 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
   // add item to the test list
   ////////////////////////////////////////////////////////////
 
-  if (testId>0 && Config::generateTestList)
+  if (testId>0 && Config::instance()->getBool("GENERATE_TESTLIST"))
   {
     RefItem *item = testList.getRefItem(testId);
     ASSERT(item!=0);
@@ -351,7 +351,7 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
   // add item to the bug list
   ////////////////////////////////////////////////////////////
 
-  if (bugId>0 && Config::generateBugList)
+  if (bugId>0 && Config::instance()->getBool("GENERATE_BUGLIST"))
   {
     RefItem *item = bugList.getRefItem(bugId);
     ASSERT(item!=0);
@@ -371,6 +371,7 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
     doc += "</dt>\n<dd>";
     doc += item->text;
     doc += "</dd></dl>\n";
+    //printf("Bug page: %s\n",doc.data());
     addRelatedPage("bug",theTranslator->trBugList(),doc,0,"generated",1,0,0,0);
 
     item->written=TRUE;
@@ -442,7 +443,7 @@ static void organizeSubGroups(Entry *root)
 static void buildFileList(Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
-        ((root->section & Entry::FILE_MASK) && Config::extractAllFlag)) &&
+        ((root->section & Entry::FILE_MASK) && Config::instance()->getBool("EXTRACT_ALL"))) &&
       !root->name.isEmpty() && !root->tagInfo // skip any file coming from tag files
      )
   {
@@ -517,7 +518,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
   if ( 
       (!root->doc.stripWhiteSpace().isEmpty() || 
        !root->brief.stripWhiteSpace().isEmpty() || 
-       Config::extractAllFlag
+       Config::instance()->getBool("EXTRACT_ALL")
       ) && root->protection!=Private
      )
   { 
@@ -653,7 +654,7 @@ static void buildClassList(Entry *root)
           cd->setTemplateArguments(root->tArgList);
         }
         if (!root->doc.isEmpty() || !root->brief.isEmpty() || 
-            (root->bodyLine!=-1 && Config::sourceBrowseFlag)
+            (root->bodyLine!=-1 && Config::instance()->getBool("SOURCE_BROWSER"))
            ) 
           // block contains something that ends up in the docs
         { 
@@ -1139,7 +1140,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if (mtype==MemberDef::Friend || Config::hideScopeNames)
+    if (mtype==MemberDef::Friend || Config::instance()->getBool("HIDE_SCOPE_NAMES"))
     {
       def=root->type+" "+name+root->args;
     }
@@ -1150,7 +1151,7 @@ static MemberDef *addVariableToClass(
   }
   else
   {
-    if (Config::hideScopeNames)
+    if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
     {
       def=name+root->args;
     }
@@ -1272,7 +1273,7 @@ static MemberDef *addVariableToFile(
   QCString def;
   // determine the definition of the global variable
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' && 
-      !Config::hideScopeNames
+      !Config::instance()->getBool("HIDE_SCOPE_NAMES")
      )
     // variable is inside a namespace, so put the scope before the name
   {
@@ -1690,7 +1691,7 @@ static void buildMemberList(Entry *root)
           name=name.left(i); 
         }
              
-        //if (Config::includeSourceFlag && !root->body.isEmpty())
+        //if (Config::instance()->get("") && !root->body.isEmpty())
         //{
         //  printf("Function: %s\n-----------------\n%s\n------------------\n",
         //         rname.data(),root->body.data());
@@ -1721,7 +1722,7 @@ static void buildMemberList(Entry *root)
         //md->setScopeTemplateArguments(root->tArgList);
         md->addSectionsToDefinition(root->anchors);
         QCString def;
-        if (!root->relates.isEmpty() || isFriend || Config::hideScopeNames)
+        if (!root->relates.isEmpty() || isFriend || Config::instance()->getBool("HIDE_SCOPE_NAMES"))
         {
           if (!root->type.isEmpty())
           {
@@ -1970,19 +1971,18 @@ static void buildMemberList(Entry *root)
             }
           }
 
+          md->setRefItems(root->todoId,root->testId,root->bugId);
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
           {
             // add member to namespace
             nd->insertMember(md); 
             md->setNamespace(nd);
-            md->setRefItems(root->todoId,root->testId,root->bugId);
           }
           else if (fd)
           {
             // add member to the file
             fd->insertMember(md);
             md->setFileDef(fd); 
-            md->setRefItems(root->todoId,root->testId,root->bugId);
           }
 
           // add member to the list of file members
@@ -2122,7 +2122,7 @@ static void transferFunctionDocumentation()
       FileDef *fdec = mdec->getFileDef();
 
       // check if not in different but documented files
-      if (Config::extractAllFlag || 
+      if (Config::instance()->getBool("EXTRACT_ALL") || 
           fdef==fdec || 
           (fdef!=0 && (!fdef->hasDocumentation() || !mdec->hasDocumentation()))
          )
@@ -2609,7 +2609,7 @@ static void addTodoTestBugReferences()
       if (d==0) d=md->getFileDef();
       // TODO: i18n this
       QCString memLabel="member";
-      if (Config::optimizeForCFlag) memLabel="field";
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C")) memLabel="field";
       if (d)
       {
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
@@ -2630,7 +2630,7 @@ static void addTodoTestBugReferences()
       if (d==0) d=md->getFileDef();
       // TODO: i18n this
       QCString memLabel="member";
-      if (Config::optimizeForCFlag) memLabel="global";
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C")) memLabel="global";
       if (d)
       {
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),md->name(),md->argsString());
@@ -2707,9 +2707,12 @@ static void addMemberDocs(Entry *root,
         ) && !root->doc.isEmpty() 
        )
     {
+      //printf("overwrite!\n");
       md->setDocumentation(root->doc);
     }
 
+    //printf("Adding brief md->brief=`%s' root->brief=`%s'!\n",
+    //     md->briefDescription().data(),root->brief.data());
     // brief descriptions inside a compound override the documentation 
     // outside it
     if ( /* !md->isStatic() && !root->stat &&  do not replace doc of static */
@@ -2719,6 +2722,7 @@ static void addMemberDocs(Entry *root,
         ) && !root->brief.isEmpty()
        )
     {
+      //printf("overwrite!\n");
       md->setBriefDescription(root->brief);
     }
     
@@ -2868,7 +2872,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
 // with name `name' and argument list `args' (for overloading) and
 // function declaration `decl' to the corresponding member definition.
 
-static bool findUnrelatedFunction(Entry *root, 
+static bool findGlobalMember(Entry *root, 
                            const QCString &namespaceName,
                            const char *name, 
                            const char *tempArg,
@@ -2879,7 +2883,7 @@ static bool findUnrelatedFunction(Entry *root,
   if (n.isEmpty()) return FALSE;
   if (n.find("::")!=-1) return FALSE; // skip undefined class members
   Debug::print(Debug::FindMembers,0,
-       "2. findUnrelatedFunction(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
+       "2. findGlobalMember(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
           namespaceName.data(),name,tempArg,decl);
   MemberName *mn=Doxygen::functionNameDict[n+tempArg]; // look in function dictionary
   if (mn==0)
@@ -2920,6 +2924,16 @@ static bool findUnrelatedFunction(Entry *root,
           (md->argumentList()==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
           matchArguments(md->argumentList(),root->argList,0,nsName);
+
+        // for static members we also check if the comment block was found in 
+        // the same file. This is needed because static members with the same
+        // name can be in different files. Thus it would be wrong to just
+        // put the comment block at the first syntactically matching member.
+        if (matching && md->isStatic() && md->getDefFileName()!=root->fileName)
+        {
+          matching = FALSE;
+        }
+
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
@@ -3040,7 +3054,7 @@ static void substituteTemplateArgNames(ArgumentList *src,
 }
 
 /*! This function tries to find a member (in a documented class/file/namespace) 
- * that corresponds to the function declaration given in \a funcDecl.
+ * that corresponds to the function/variable declaration given in \a funcDecl.
  *
  * The \a related field may be used to specify a related class name.
  * It is only used if the class name cannot be extracted from the function
@@ -3048,9 +3062,16 @@ static void substituteTemplateArgNames(ArgumentList *src,
  *
  * The boolean \a overloaded is used to specify whether or not a standard
  * overload documentation line should be generated.
+ *
+ * The boolean \a isFunc is a hint that indicates that this is a function
+ * instead of a variable or typedef.
  */
-static void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
-                bool isFunc)
+static void findMember(Entry *root,
+                       QCString funcDecl,
+                       QCString related,
+                       bool overloaded,
+                       bool isFunc
+                      )
 {
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
@@ -3061,7 +3082,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
                root->mtArgList,tempArgListToString(root->mtArgList).data(),
                root->scopeSpec.data(),root->memberSpec.data(),root->memSpec
               );
-  //if (Config::includeSourceFlag && !root->body.isEmpty())
+  //if (Config::instance()->get("") && !root->body.isEmpty())
   //{
   //  //printf("Function: %s\n-----------------\n%s\n------------------\n",
   //  //root->name.data(),root->body.data());
@@ -3297,7 +3318,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
   
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
   // rebuild the function declaration (needed to get the scope right).
-  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config::hideScopeNames)
+  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config::instance()->getBool("HIDE_SCOPE_NAMES"))
   {
     if (!funcType.isEmpty())
     {
@@ -3499,6 +3520,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
               (md->argumentList()==0 && root->argList->count()==0) || 
               matchArguments(argList, root->argList,className,namespaceName,TRUE,nl);
 
+
             Debug::print(Debug::FindMembers,0,
                          "6. match results = %d\n",matching);
             
@@ -3619,7 +3641,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
       }
       else // unrelated function with the same name as a member
       {
-        if (!findUnrelatedFunction(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+        if (!findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
         {
           warn(root->fileName,root->startLine,
                "Warning: Cannot determine class for function\n%s",
@@ -3759,7 +3781,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
     else // unrelated not overloaded member found
     {
       if (className.isEmpty() && 
-          !findUnrelatedFunction(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+          !findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
       {
         warn(root->fileName,root->startLine,
              "Warning: class for member %s cannot "
@@ -3831,8 +3853,9 @@ static void findMemberDocumentation(Entry *root)
       compoundKeywordDict.find(root->type)==0 // that is not a keyword 
                                               // (to skip forward declaration of class etc.)
       )
-     ) && !root->stat                // not static
-     /* && (
+     ) /*
+        && (!root->stat && !root->parent)  // not static & global: TODO: fix this hack!
+        && (
        !root->doc.isEmpty() ||          // has detailed docs
         !root->brief.isEmpty() ||        // has brief docs
         (root->memSpec&Entry::Inline) || // is inline
@@ -3972,7 +3995,7 @@ static void findEnums(Entry *root)
       md->setRefItems(root->todoId,root->testId,root->bugId);
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
-        if (Config::hideScopeNames)
+        if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
         {
           md->setDefinition(name);  
         }
@@ -4000,7 +4023,7 @@ static void findEnums(Entry *root)
       }
       else if (cd)
       {
-        if (Config::hideScopeNames)
+        if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
         {
           md->setDefinition(name);  
         }
@@ -4465,14 +4488,19 @@ static void addSourceReferences()
 static void generateClassDocs()
 {
   // write the installdox script if necessary
-  if (Config::generateHtml && 
-      (Config::tagFileList.count()>0 || Config::searchEngineFlag)) 
+  if (Config::instance()->getBool("GENERATE_HTML") && 
+      (Config::instance()->getList("TAGFILES").count()>0 || 
+       Config::instance()->getBool("SEARCHENGINE")
+      )
+     ) 
+  {
     writeInstallScript();
+  }
   
   msg("Generating annotated compound index...\n");
   writeAnnotatedIndex(*outputList);
 
-  if (Config::alphaIndexFlag)
+  if (Config::instance()->getBool("ALPHABETICAL_INDEX"))
   {
     msg("Generating alphabetical compound index...\n");
     writeAlphabeticalIndex(*outputList);
@@ -4897,7 +4925,7 @@ static void generatePageDocs()
       msg("Generating docs for page %s...\n",pi->name.data());
       outputList->disable(OutputGenerator::Man);
       QCString pageName;
-      if (Config::caseSensitiveNames)
+      if (Config::instance()->getBool("CASE_SENSE_NAMES"))
         pageName=pi->name.copy();
       else
         pageName=pi->name.lower();
@@ -4917,7 +4945,7 @@ static void generatePageDocs()
       endFile(*outputList);
       outputList->enable(OutputGenerator::Man);
 
-      if (!Config::genTagFile.isEmpty() && pi->name!="todo" && pi->name!="test")
+      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty() && pi->name!="todo" && pi->name!="test")
       {
         Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
         Doxygen::tagFile << "    <name>" << pi->name << "</name>" << endl;
@@ -5079,28 +5107,29 @@ static QCString fixSlashes(QCString &s)
 
 static void generateSearchIndex()
 {
-  if (Config::searchEngineFlag && Config::generateHtml)
+  if (Config::instance()->getBool("SEARCHENGINE") && Config::instance()->getBool("GENERATE_HTML"))
   {
     // create search index
     QCString fileName;
-    writeSearchButton(Config::htmlOutputDir);
+    writeSearchButton(Config::instance()->getString("HTML_OUTPUT"));
 
 #if !defined(_WIN32)
     // create cgi script
-    fileName = Config::htmlOutputDir+"/"+Config::cgiName;
+    fileName = Config::instance()->getString("HTML_OUTPUT")+"/"+Config::instance()->getString("CGI_NAME");
     QFile f(fileName);
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
       t << "#!/bin/sh"   << endl
-        << "DOXYSEARCH=" << Config::binAbsPath << "/doxysearch" << endl
-        << "DOXYPATH="   << Config::docAbsPath << " ";
+        << "DOXYSEARCH=" << Config::instance()->getString("BIN_ABSPATH") << "/doxysearch" << endl
+        << "DOXYPATH="   << Config::instance()->getString("DOC_ABSPATH") << " ";
 
-      char *s=Config::extDocPathList.first();
+      QStrList &extDocPaths=Config::instance()->getList("EXT_DOC_PATHS");
+      char *s= extDocPaths.first();
       while (s)
       {
         t << s << " ";
-        s=Config::extDocPathList.next();
+        s=extDocPaths.next();
       }
 
       t << endl 
@@ -5124,11 +5153,11 @@ static void generateSearchIndex()
     }
 #else /* Windows platform */
     // create cgi program
-    fileName = Config::cgiName.copy();
+    fileName = Config::instance()->getString("CGI_NAME").copy();
     if (fileName.right(4)==".cgi") 
       fileName=fileName.left(fileName.length()-4);
     fileName+=".c";
-    fileName.prepend(Config::htmlOutputDir+"/");
+    fileName.prepend(Config::instance()->getString("HTML_OUTPUT")+"/");
     QFile f(fileName);
     if (f.open(IO_WriteOnly))
     {
@@ -5138,9 +5167,9 @@ static void generateSearchIndex()
       t << "#include <process.h>" << endl;
       t << endl;
       t << "const char *DOXYSEARCH = \"" << 
-           fixSlashes(Config::binAbsPath) << "\\\\doxysearch.exe\";" << endl;
+           fixSlashes(Config::instance()->getString("BIN_ABSPATH")) << "\\\\doxysearch.exe\";" << endl;
       t << "const char *DOXYPATH = \"" << 
-           fixSlashes(Config::docAbsPath) << "\";" << endl;
+           fixSlashes(Config::instance()->getString("DOC_ABSPATH")) << "\";" << endl;
       t << endl;
       t << "int main(void)" << endl;
       t << "{" << endl;
@@ -5163,13 +5192,13 @@ static void generateSearchIndex()
 #endif /* !defined(_WIN32) */
     
     // create config file
-    fileName = Config::htmlOutputDir+"/search.cfg";
+    fileName = Config::instance()->getString("HTML_OUTPUT")+"/search.cfg";
     f.setName(fileName);
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
-      t << Config::docURL << "/" << endl 
-        << Config::cgiURL << "/" << Config::cgiName << endl;
+      t << Config::instance()->getString("DOC_URL") << "/" << endl 
+        << Config::instance()->getString("CGI_URL") << "/" << Config::instance()->getString("CGI_NAME") << endl;
       f.close();
     }
     else
@@ -5225,7 +5254,7 @@ static void generateConfigFile(const char *configFile,bool shortList)
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    writeTemplateConfig(&f,shortList);
+    Config::instance()->writeTemplate(&f,shortList);
     if (!writeToStdout)
     {
       msg("\n\nConfiguration file `%s' created.\n\n",configFile);
@@ -5331,7 +5360,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
 
   QFileInfo fi(fileName);
   if (!fi.exists()) return;
-  if (Config::inputFilter.isEmpty())
+  if (Config::instance()->getString("INPUT_FILTER").isEmpty())
   {
     QFile f(fileName);
     if (!f.open(IO_ReadOnly))
@@ -5350,11 +5379,11 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    QCString cmd=Config::inputFilter+" "+fileName;
+    QCString cmd=Config::instance()->getString("INPUT_FILTER")+" "+fileName;
     FILE *f=popen(cmd,"r");
     if (!f)
     {
-      err("Error: could not execute filter %s\n",Config::inputFilter.data());
+      err("Error: could not execute filter %s\n",Config::instance()->getString("INPUT_FILTER").data());
       return;
     }
     const int bufSize=1024;
@@ -5382,13 +5411,14 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
 //----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
-  if (!Config::htmlStyleSheet.isEmpty())
+  QCString &htmlStyleSheet = Config::instance()->getString("HTML_STYLESHEET");
+  if (!htmlStyleSheet.isEmpty())
   {
-    QFile cssf(Config::htmlStyleSheet);
-    QFileInfo cssfi(Config::htmlStyleSheet);
+    QFile cssf(htmlStyleSheet);
+    QFileInfo cssfi(htmlStyleSheet);
     if (cssf.open(IO_ReadOnly))
     {
-      QCString destFileName = Config::htmlOutputDir+"/"+cssfi.fileName().data();
+      QCString destFileName = Config::instance()->getString("HTML_OUTPUT")+"/"+cssfi.fileName().data();
       QFile df(destFileName);
       if (df.open(IO_WriteOnly))
       {
@@ -5405,8 +5435,8 @@ static void copyStyleSheet()
     }
     else
     {
-      err("Error: could not open user specified style sheet %s\n",Config::htmlStyleSheet.data());
-      Config::htmlStyleSheet.resize(0); // revert to the default
+      err("Error: could not open user specified style sheet %s\n",Config::instance()->getString("HTML_STYLESHEET").data());
+      htmlStyleSheet.resize(0); // revert to the default
     }
   }
 }
@@ -5433,7 +5463,7 @@ static void readFiles(BufStr &output)
     // add end filename marker
     output.addChar(0x06);
     output.addChar('\n');
-    if (Config::preprocessingFlag)
+    if (Config::instance()->getBool("ENABLE_PREPROCESSING"))
     {
       msg("Preprocessing %s...\n",s->data());
       preprocessFile(fileName,output);
@@ -5517,7 +5547,8 @@ static int readDir(QFileInfo *fi,
         if (resultList) resultList->append(rs);
         if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
       }
-      else if (Config::recursiveFlag && cfi->isDir() && cfi->fileName()!="." && 
+      else if (Config::instance()->getBool("RECURSIVE") && 
+          cfi->isDir() && cfi->fileName()!="." && 
           cfi->fileName()!="..")
       {
         cfi->setFile(cfi->absFilePath());
@@ -5633,9 +5664,10 @@ static int readFileOrDirectory(const char *s,
 
 static void readFormulaRepository()
 {
-  QFile f(Config::htmlOutputDir+"/formula.repository");
+  QFile f(Config::instance()->getString("HTML_OUTPUT")+"/formula.repository");
   if (f.open(IO_ReadOnly)) // open repository
   {
+    msg("Reading formula repository...\n");
     QTextStream t(&f);
     QCString line;
     while (!t.eof())
@@ -5707,6 +5739,7 @@ void initDoxygen()
 {
 #if QT_VERSION >= 200
   setlocale(LC_ALL,"");
+  setlocale(LC_NUMERIC,"C");
 #endif
   
   initPreprocessor();
@@ -5798,14 +5831,14 @@ void readConfiguration(int argc, char **argv)
           {
             QCString configFile=fileToString(argv[optind+4]);
             if (configFile.isEmpty()) exit(1);
-            parseConfig(fileToString(argv[optind+4]),argv[optind+4]); 
-            configStrToVal();
-            substituteEnvironmentVars();
-            checkConfig();
+            Config::instance()->parse(fileToString(argv[optind+4]),argv[optind+4]); 
+            Config::instance()->convertStrToVal();
+            Config::instance()->substituteEnvironmentVars();
+            Config::instance()->check();
           }
           else
           {
-            Config::init();
+            Config::instance()->init();
             setTranslator("English");
           }
           if (optind+3>=argc)
@@ -5836,14 +5869,14 @@ void readConfiguration(int argc, char **argv)
           {
             QCString configFile=fileToString(argv[optind+3]);
             if (configFile.isEmpty()) exit(1);
-            parseConfig(fileToString(argv[optind+3]),argv[optind+3]); 
-            configStrToVal();
-            substituteEnvironmentVars();
-            checkConfig();
+            Config::instance()->parse(fileToString(argv[optind+3]),argv[optind+3]); 
+            Config::instance()->convertStrToVal();
+            Config::instance()->substituteEnvironmentVars();
+            Config::instance()->check();
           }
           else // use default config
           {
-            Config::init();
+            Config::instance()->init();
             setTranslator("English");
           }
           if (optind+2>=argc)
@@ -5936,8 +5969,8 @@ void readConfiguration(int argc, char **argv)
     }
   }
 
-  parseConfig(config,configName); 
-  configStrToVal();
+  Config::instance()->parse(config,configName); 
+  Config::instance()->convertStrToVal();
 
   if (updateConfig)
   {
@@ -5945,33 +5978,34 @@ void readConfiguration(int argc, char **argv)
     exit(1);
   }
   
-  substituteEnvironmentVars();
-  checkConfig();
+  Config::instance()->substituteEnvironmentVars();
+  Config::instance()->check();
 }
 
 void parseInput()
 {
-  Doxygen::inputNameDict = new FileNameDict(1009);
+  Doxygen::inputNameDict   = new FileNameDict(1009);
   Doxygen::includeNameDict = new FileNameDict(1009);
   Doxygen::exampleNameDict = new FileNameDict(1009);
-  Doxygen::imageNameDict = new FileNameDict(257);
+  Doxygen::imageNameDict   = new FileNameDict(257);
 
-  if (!Config::docURL.isEmpty())
+  if (!Config::instance()->getString("DOC_URL").isEmpty())
   {
-    Doxygen::tagDestinationDict.insert("_doc",new QCString(Config::docURL));
+    Doxygen::tagDestinationDict.insert("_doc",new QCString(Config::instance()->getString("DOC_URL")));
   }
-  if (!Config::cgiURL.isEmpty())
+  if (!Config::instance()->getString("CGI_URL").isEmpty())
   {
-    Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config::cgiURL+"/"+Config::cgiName));
+    Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config::instance()->getString("CGI_URL")+"/"+Config::instance()->getString("CGI_NAME")));
   }
 
   /**************************************************************************
    *            Initialize some global constants
    **************************************************************************/
   
-  spaces.resize(Config::tabSize+1);
-  int sp;for (sp=0;sp<Config::tabSize;sp++) spaces.at(sp)=' ';
-  spaces.at(Config::tabSize)='\0';
+  int &tabSize = Config::instance()->getInt("TAB_SIZE");
+  spaces.resize(tabSize+1);
+  int sp;for (sp=0;sp<tabSize;sp++) spaces.at(sp)=' ';
+  spaces.at(tabSize)='\0';
 
   compoundKeywordDict.insert("class",(void *)8);
   compoundKeywordDict.insert("struct",(void *)8);
@@ -5985,46 +6019,55 @@ void parseInput()
 
   // gather names of all files in the include path
   msg("Searching for include files...\n");
-  char *s=Config::includePath.first();
+  QStrList &includePathList = Config::instance()->getList("INCLUDE_PATH");
+  char *s=includePathList.first();
   while (s)
   {
-    QStrList *pl = &Config::includeFilePatternList;
-    if (pl->count()==0) pl = &Config::filePatternList;
-    readFileOrDirectory(s,0,Doxygen::includeNameDict,0,pl,
-                        &Config::excludePatternList,0,0);
-    s=Config::includePath.next(); 
+    QStrList &pl = Config::instance()->getList("INCLUDE_FILE_PATTERNS");
+    if (pl.count()==0) 
+    {
+      pl = Config::instance()->getList("FILE_PATTERNS");
+    }
+    readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
+                        &Config::instance()->getList("EXCLUDE_PATTERNS"),0,0);
+    s=includePathList.next(); 
   }
   
   msg("Searching for example files...\n");
-  s=Config::examplePath.first();
+  QStrList &examplePathList = Config::instance()->getList("EXAMPLE_PATH");
+  s=examplePathList.first();
   while (s)
   {
-    readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,&Config::examplePatternList,
+    readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
+                        &Config::instance()->getList("EXAMPLE_PATTERNS"),
                         0,0,0);
-    s=Config::examplePath.next(); 
+    s=examplePathList.next(); 
   }
 
   msg("Searching for images...\n");
-  s=Config::imagePath.first();
+  QStrList &imagePathList=Config::instance()->getList("IMAGE_PATH");
+  s=imagePathList.first();
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
                         0,0,0);
-    s=Config::imagePath.next(); 
+    s=imagePathList.next(); 
   }
 
   msg("Searching for files to exclude\n");
-  s=Config::excludeSources.first();
+  QStrList &excludeList = Config::instance()->getList("EXCLUDE");
+  s=excludeList.first();
   while (s)
   {
-    readFileOrDirectory(s,0,0,0,&Config::filePatternList,
+    readFileOrDirectory(s,0,0,0,&Config::instance()->getList("FILE_PATTERNS"),
                         0,0,&excludeNameDict,FALSE);
-    s=Config::excludeSources.next();
+    s=excludeList.next();
   }
 
   msg("Reading input files...\n");
   int inputSize=0;
-  s=Config::inputSources.first();
+  QStrList &inputList=Config::instance()->getList("INPUT");
+  s=inputList.first();
   while (s)
   {
     QCString path=s;
@@ -6034,26 +6077,28 @@ void parseInput()
 
     inputSize+=readFileOrDirectory(path,&Doxygen::inputNameList,
         Doxygen::inputNameDict,&excludeNameDict,
-                                   &Config::filePatternList,
-                                   &Config::excludePatternList,
+                                   &Config::instance()->getList("FILE_PATTERNS"),
+                                   &Config::instance()->getList("EXCLUDE_PATTERNS"),
                                    &inputFiles,0);
-    s=Config::inputSources.next();
+    s=inputList.next();
   }
   
   // add predefined macro name to a dictionary
-  s=Config::expandAsDefinedList.first();
+  QStrList &expandAsDefinedList =Config::instance()->getList("EXPAND_AS_DEFINED");
+  s=expandAsDefinedList.first();
   while (s)
   {
     if (Doxygen::expandAsDefinedDict[s]==0)
     {
       Doxygen::expandAsDefinedDict.insert(s,(void *)666);
     }
-    s=Config::expandAsDefinedList.next();
+    s=expandAsDefinedList.next();
   }
 
   // add aliases to a dictionary
   Doxygen::aliasDict.setAutoDelete(TRUE);
-  s=Config::aliasList.first();
+  QStrList &aliasList = Config::instance()->getList("ALIASES");
+  s=aliasList.first();
   while (s)
   {
     if (Doxygen::aliasDict[s]==0)
@@ -6102,7 +6147,7 @@ void parseInput()
         }
       }
     }
-    s=Config::aliasList.next();
+    s=aliasList.next();
   }
   
   BufStr input(inputSize+1); // Add one byte extra for \0 termination
@@ -6120,11 +6165,109 @@ void parseInput()
     msg("Read %d bytes\n",input.curPos());
   }
 
+  /**************************************************************************
+   *            Check/create output directorties                            *
+   **************************************************************************/
+
+  QCString &outputDirectory = Config::instance()->getString("OUTPUT_DIRECTORY");
+  if (outputDirectory.isEmpty()) 
+  {
+    outputDirectory=QDir::currentDirPath();
+  }
+  else
+  {
+    QDir dir(outputDirectory);
+    if (!dir.exists())
+    {
+      dir.setPath(QDir::currentDirPath());
+      if (!dir.mkdir(outputDirectory))
+      {
+        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+	    "exist and cannot be created\n",outputDirectory.data());
+        exit(1);
+      }
+      else if (!Config::instance()->getBool("QUIET"))
+      {
+	err("Notice: Output directory `%s' does not exist. "
+	    "I have created it for you.\n", outputDirectory.data());
+      }
+      dir.cd(outputDirectory);
+    }
+    outputDirectory=dir.absPath();
+  }
+
+  QCString &htmlOutput = Config::instance()->getString("HTML_OUTPUT");
+  bool &generateHtml = Config::instance()->getBool("GENERATE_HTML");
+  if (htmlOutput.isEmpty() && generateHtml)
+  {
+    htmlOutput=outputDirectory+"/html";
+  }
+  else if (htmlOutput && htmlOutput[0]!='/' && htmlOutput[1]!=':')
+  {
+    htmlOutput.prepend(outputDirectory+'/');
+  }
+  QDir htmlDir(htmlOutput);
+  if (generateHtml && !htmlDir.exists() && !htmlDir.mkdir(htmlOutput))
+  {
+    err("Could not create output directory %s\n",htmlOutput.data());
+    exit(1);
+  }
+  
+  QCString &latexOutput = Config::instance()->getString("LATEX_OUTPUT");
+  bool &generateLatex = Config::instance()->getBool("GENERATE_LATEX");
+  if (latexOutput.isEmpty() && generateLatex)
+  {
+    latexOutput=outputDirectory+"/latex";
+  }
+  else if (latexOutput && latexOutput[0]!='/' && latexOutput[1]!=':')
+  {
+    latexOutput.prepend(outputDirectory+'/');
+  }
+  QDir latexDir(latexOutput);
+  if (generateLatex && !latexDir.exists() && !latexDir.mkdir(latexOutput))
+  {
+    err("Could not create output directory %s\n",latexOutput.data());
+    exit(1);
+  }
+  
+  QCString &rtfOutput = Config::instance()->getString("RTF_OUTPUT");
+  bool &generateRtf = Config::instance()->getBool("GENERATE_RTF");
+  if (rtfOutput.isEmpty() && generateRtf)
+  {
+    rtfOutput=outputDirectory+"/rtf";
+  }
+  else if (rtfOutput && rtfOutput[0]!='/' && rtfOutput[1]!=':')
+  {
+    rtfOutput.prepend(outputDirectory+'/');
+  }
+  QDir rtfDir(rtfOutput);
+  if (generateRtf && !rtfDir.exists() && !rtfDir.mkdir(rtfOutput))
+  {
+    err("Could not create output directory %s\n",rtfOutput.data());
+    exit(1);
+  }
+
+  QCString &manOutput = Config::instance()->getString("MAN_OUTPUT");
+  bool &generateMan = Config::instance()->getBool("GENERATE_MAN");
+  if (manOutput.isEmpty() && generateMan)
+  {
+    manOutput=outputDirectory+"/man";
+  }
+  else if (manOutput && manOutput[0]!='/' && manOutput[1]!=':')
+  {
+    manOutput.prepend(outputDirectory+'/');
+  }
+  QDir manDir(manOutput);
+  if (generateMan && !manDir.exists() && !manDir.mkdir(manOutput))
+  {
+    err("Could not create output directory %s\n",manOutput.data());
+    exit(1);
+  }
+
   // Notice: the order of the function calls below is very important!
   
-  if (Config::generateHtml)
+  if (Config::instance()->getBool("GENERATE_HTML"))
   {
-    msg("Reading formula repository...\n");
     readFormulaRepository();
   }
   
@@ -6138,11 +6281,12 @@ void parseInput()
 
   msg("Reading tag files\n");
   
-  s=Config::tagFileList.first();
+  QStrList &tagFileList = Config::instance()->getList("TAGFILES");
+  s=tagFileList.first();
   while (s)
   {
     readTagFile(root,s);
-    s=Config::tagFileList.next();
+    s=tagFileList.next();
   }
   
   
@@ -6226,7 +6370,7 @@ void parseInput()
   msg("Adding classes to their packages...\n");
   addClassesToPackages();
 
-  if (Config::haveDotFlag && Config::collGraphFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("COLLABORATION_GRAPH"))
   {
     msg("Computing class implementation usage relations...\n");
     computeClassImplUsageRelations();
@@ -6235,7 +6379,7 @@ void parseInput()
   msg("Adding members to member groups.\n");
   addMembersToMemberGroup();
 
-  if (Config::distributeDocFlag)
+  if (Config::instance()->getBool("DISTRIBUTE_GROUP_DOC"))
   {
     msg("Distributing member group documentation.\n");
     distributeMemberGroupDocumentation();
@@ -6244,7 +6388,7 @@ void parseInput()
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
   
-  if (Config::inheritDocsFlag)
+  if (Config::instance()->getBool("INHERIT_DOCS"))
   {
     msg("Inheriting documentation...\n");
     inheritDocumentation();
@@ -6261,122 +6405,29 @@ void parseInput()
 void generateOutput()
 {
   /**************************************************************************
-   *            Check/create output directorties                            *
-   **************************************************************************/
-  if (Config::outputDir.isEmpty()) 
-  {
-    Config::outputDir=QDir::currentDirPath();
-  }
-  else
-  {
-    QDir dir(Config::outputDir);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(Config::outputDir))
-      {
-        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
-	    "exist and cannot be created\n",Config::outputDir.data());
-        exit(1);
-      }
-      else if (!Config::quietFlag)
-      {
-	err("Notice: Output directory `%s' does not exist. "
-	    "I have created it for you.\n", Config::outputDir.data());
-      }
-      dir.cd(Config::outputDir);
-    }
-    Config::outputDir=dir.absPath();
-  }
-
-  if (Config::htmlOutputDir.isEmpty() && Config::generateHtml)
-  {
-    Config::htmlOutputDir=Config::outputDir+"/html";
-  }
-  else if (Config::htmlOutputDir && Config::htmlOutputDir[0]!='/')
-  {
-    Config::htmlOutputDir.prepend(Config::outputDir+'/');
-  }
-  QDir htmlDir(Config::htmlOutputDir);
-  if (Config::generateHtml && !htmlDir.exists() && 
-      !htmlDir.mkdir(Config::htmlOutputDir))
-  {
-    err("Could not create output directory %s\n",Config::htmlOutputDir.data());
-    exit(1);
-  }
-  
-  if (Config::latexOutputDir.isEmpty() && Config::generateLatex)
-  {
-    Config::latexOutputDir=Config::outputDir+"/latex";
-  }
-  else if (Config::latexOutputDir && Config::latexOutputDir[0]!='/')
-  {
-    Config::latexOutputDir.prepend(Config::outputDir+'/');
-  }
-  QDir latexDir(Config::latexOutputDir);
-  if (Config::generateLatex && !latexDir.exists() && 
-      !latexDir.mkdir(Config::latexOutputDir))
-  {
-    err("Could not create output directory %s\n",Config::latexOutputDir.data());
-    exit(1);
-  }
-  
-  if (Config::rtfOutputDir.isEmpty() && Config::generateRTF)
-  {
-    Config::rtfOutputDir=Config::outputDir+"/rtf";
-  }
-  else if (Config::rtfOutputDir && Config::rtfOutputDir[0]!='/')
-  {
-    Config::rtfOutputDir.prepend(Config::outputDir+'/');
-  }
-  QDir rtfDir(Config::rtfOutputDir);
-  if (Config::generateRTF && !rtfDir.exists() && 
-      !rtfDir.mkdir(Config::rtfOutputDir))
-  {
-    err("Could not create output directory %s\n",Config::rtfOutputDir.data());
-    exit(1);
-  }
-
-  if (Config::manOutputDir.isEmpty() && Config::generateMan)
-  {
-    Config::manOutputDir=Config::outputDir+"/man";
-  }
-  else if (Config::manOutputDir && Config::manOutputDir[0]!='/')
-  {
-    Config::manOutputDir.prepend(Config::outputDir+'/');
-  }
-  QDir manDir(Config::manOutputDir);
-  if (Config::generateMan && !manDir.exists() && 
-      !manDir.mkdir(Config::manOutputDir))
-  {
-    err("Could not create output directory %s\n",Config::manOutputDir.data());
-    exit(1);
-  }
-
-  /**************************************************************************
    *            Initialize output generators                                *
    **************************************************************************/
 
   outputList = new OutputList(TRUE);
-  if (Config::generateHtml)  
+  if (Config::instance()->getBool("GENERATE_HTML"))  
   {
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
-    if (Config::htmlHelpFlag) HtmlHelp::getInstance()->initialize();
-    if (Config::ftvHelpFlag) FTVHelp::getInstance()->initialize();
+    if (Config::instance()->getBool("GENERATE_HTMLHELP")) HtmlHelp::getInstance()->initialize();
+    if (Config::instance()->getBool("GENERATE_TREEVIEW")) FTVHelp::getInstance()->initialize();
     copyStyleSheet();
   }
-  if (Config::generateLatex) 
+  if (Config::instance()->getBool("GENERATE_LATEX")) 
   {
     outputList->add(new LatexGenerator);
     LatexGenerator::init();
   }
-  if (Config::generateMan)
+  if (Config::instance()->getBool("GENERATE_MAN"))
   {
     outputList->add(new ManGenerator);
     ManGenerator::init();
   }
-  if (Config::generateRTF)
+  if (Config::instance()->getBool("GENERATE_RTF"))
   {
     outputList->add(new RTFGenerator);
     RTFGenerator::init();
@@ -6387,13 +6438,14 @@ void generateOutput()
    **************************************************************************/
 
   QFile *tag=0;
-  if (!Config::genTagFile.isEmpty())
+  QCString &generateTagFile = Config::instance()->getString("GENERATE_TAGFILE");
+  if (!generateTagFile.isEmpty())
   {
-    tag=new QFile(Config::genTagFile);
+    tag=new QFile(generateTagFile);
     if (!tag->open(IO_WriteOnly))
     {
       err("Error: cannot open tag file %s for writing\n",
-          Config::genTagFile.data()
+          generateTagFile.data()
          );
       exit(1);
     }
@@ -6401,8 +6453,8 @@ void generateOutput()
     Doxygen::tagFile << "<tagfile>" << endl;
   }
 
-  if (Config::generateHtml) writeDoxFont(Config::htmlOutputDir);
-  if (Config::generateRTF)  writeDoxFont(Config::rtfOutputDir);
+  if (Config::instance()->getBool("GENERATE_HTML")) writeDoxFont(Config::instance()->getString("HTML_OUTPUT"));
+  if (Config::instance()->getBool("GENERATE_RTF"))  writeDoxFont(Config::instance()->getString("RTF_OUTPUT"));
 
   //statistics();
   
@@ -6465,7 +6517,7 @@ void generateOutput()
   msg("Generating page index...\n");
   writePageIndex(*outputList);
   
-  if (Config::generateLegend)
+  if (Config::instance()->getBool("GENERATE_LEGEND"))
   {
     msg("Generating graph info page...\n");
     writeGraphInfo(*outputList);
@@ -6478,63 +6530,63 @@ void generateOutput()
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
   parseText(*outputList,
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config::projectName)
+            theTranslator->trGeneratedAt(dateToString(TRUE),Config::instance()->getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(1); // write second part
   parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(2); // write third part
   parseText(*outputList,
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config::projectName)
+            theTranslator->trGeneratedAt(dateToString(TRUE),Config::instance()->getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(3); // write fourth part
   parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(4); // write last part
   outputList->enableAll();
   
-  if (Config::generateRTF)
+  if (Config::instance()->getBool("GENERATE_RTF"))
   {
     msg("Combining RTF output...\n");
-    if (!RTFGenerator::preProcessFileInplace(Config::rtfOutputDir,"refman.rtf"))
+    if (!RTFGenerator::preProcessFileInplace(Config::instance()->getString("RTF_OUTPUT"),"refman.rtf"))
     {
       err("An error occurred during post-processing the RTF files!\n");
     }
   }
   
-  if (Config::haveDotFlag && Config::gfxHierarchyFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("GRAPHICAL_HIERARCHY"))
   {
     msg("Generating graphical class hierarchy...\n");
     writeGraphicalClassHierarchy(*outputList);
   }
 
-  if (Doxygen::formulaList.count()>0 && Config::generateHtml)
+  if (Doxygen::formulaList.count()>0 && Config::instance()->getBool("GENERATE_HTML"))
   {
     msg("Generating bitmaps for formulas in HTML...\n");
-    Doxygen::formulaList.generateBitmaps(Config::htmlOutputDir);
+    Doxygen::formulaList.generateBitmaps(Config::instance()->getString("HTML_OUTPUT"));
   }
   
-  if (Config::searchEngineFlag || Config::tagFileList.count()>0)
+  if (Config::instance()->getBool("SEARCHENGINE") || Config::instance()->getList("TAGFILES").count()>0)
   {
     msg("\nNow copy the file\n\n     %s\n\nto the directory where the CGI binaries are "
-        "located and don't forget to run\n\n",(Config::htmlOutputDir+"/"+Config::cgiName).data());
+        "located and don't forget to run\n\n",(Config::instance()->getString("HTML_OUTPUT")+"/"+Config::instance()->getString("CGI_NAME")).data());
     msg("     %s/installdox\n\nto replace any dummy links.\n\n",
-        Config::htmlOutputDir.data());
+        Config::instance()->getString("HTML_OUTPUT").data());
   }
   
-  if (Config::generateHtml && Config::htmlHelpFlag)  
+  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP"))  
   {
     HtmlHelp::getInstance()->finalize();
   }
-  if (Config::generateHtml && Config::ftvHelpFlag)  
+  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW"))  
   {
     FTVHelp::getInstance()->finalize();
   }
-  if (!Config::genTagFile.isEmpty())
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "</tagfile>" << endl;
     delete tag;
   }
 
-  if (Config::generateHtml && Config::dotCleanUp) removeDoxFont(Config::htmlOutputDir);
-  if (Config::generateRTF && Config::dotCleanUp)  removeDoxFont(Config::rtfOutputDir);
+  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("DOT_CLEANUP")) removeDoxFont(Config::instance()->getString("HTML_OUTPUT"));
+  if (Config::instance()->getBool("GENERATE_RTF") && Config::instance()->getBool("DOT_CLEANUP"))  removeDoxFont(Config::instance()->getString("RTF_OUTPUT"));
 }
 

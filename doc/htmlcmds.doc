@@ -91,7 +91,7 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </VAR>  Ends a \c </VAR> section.
 </ul>
 
-The special HTML characters entities that are recognized by Doxygen:
+The special HTML character entities that are recognized by Doxygen:
 
 <ul>
 <li>\c &copy; the copyright symbol
@@ -107,6 +107,11 @@ The special HTML characters entities that are recognized by Doxygen:
 <li>\c &?tilde; where ? is one of {A,N,O,a,n,o},
        writes a character with a tilde accent (like &atilde;).
 <li>\c &szlig; write a sharp s (i.e. &szlig;) to the output.
+<li>\c &?cedil; where ? is one of {c,C},
+       writes a c-cedille (like &ccedil;).
+<li>\c &?ring; where ? is one of {a,A},
+       writes an \c a with a ring (like &aring;).
+<li>\c &nbsp; a non breakable space.
 </ul>
 
 */

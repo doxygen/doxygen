@@ -223,7 +223,7 @@ class BaseOutputDocInterface
     virtual void lineBreak() = 0;
     virtual void addIndexItem(const char *s1,const char *s2) = 0;
     virtual void writeFormula(const char *,const char *) = 0;
-    virtual void writeNonBreakableSpace() = 0;
+    virtual void writeNonBreakableSpace(int) = 0;
     virtual void startImage(const char *,const char *,bool) = 0;
     virtual void endImage(bool) = 0;
     virtual void startDescTable() = 0;

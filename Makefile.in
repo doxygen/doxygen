@@ -1,6 +1,6 @@
 DOCDIR = $(INSTALL)/share/doc/packages/doxygen
 
-#all: src/version.cpp configgen doxywizard 
+#all: src/version.cpp doxywizard 
 #	cd qtools ; $(MAKE)
 #	cd src ; $(MAKE)
 
@@ -9,7 +9,6 @@ clean: FORCE
 	cd doc ; $(MAKE) clean
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
-	cd addon/configgen ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
 	cd addon/xmlread ; $(MAKE) clean
 	cd addon/xmlgen ; $(MAKE) clean
@@ -18,7 +17,6 @@ clean: FORCE
 
 distclean: clean
 	cd src ; $(MAKE) distclean
-	cd addon/configgen ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
 	cd addon/xmlread ; $(MAKE) distclean
 	cd addon/xmlgen ; $(MAKE) distclean
@@ -26,19 +24,19 @@ distclean: clean
 	-rm -f bin/doxy*
 	-rm -f html
 	-rm -f objects/*.o
-	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen src/Makefile.doxytag 
+	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
+	-rm -f src/Makefile.doxytag src/Makefile.libdoxycfg
 	-rm -f src/Makefile.doxysearch qtools/Makefile.qtools
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro
+	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro src/libdoxycfg.pro
 	-rm -f src/version.cpp
-	-rm -r addon/configgen/Makefile addon/doxywizard/Makefile
-	-rm -f addon/configgen/Makefile.configgen 
+	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/Makefile.doxywizard
-	-rm -f addon/configgen/configgen.pro addon/doxywizard/doxywizard.pro
-	-rm -f addon/configgen/obj/*.o
+	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f addon/doxywizard/obj/*.o
 	-rm -f addon/doxywizard/moc/moc_*
+	-rm -f addon/doxywizard/config.cpp
 	-rm -f addon/xmlread/xmlread.pro 
 	-rm -f addon/xmlread/Makefile addon/xmlread/Makefile.xmlread
 	-rm -f addon/xmlread/*.o

@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+** $Id$
 **
 ** Implementation of extended char array operations, and QByteArray and
 ** QCString classes

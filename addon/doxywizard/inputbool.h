@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -17,9 +17,11 @@
 
 #include <qcheckbox.h>
 
+#include "input.h"
+
 class PageWidget;
 
-class InputBool : public QCheckBox
+class InputBool : public QCheckBox, public IInput
 {
   Q_OBJECT
 
@@ -27,9 +29,13 @@ class InputBool : public QCheckBox
     InputBool( const QString &text, PageWidget *parent, bool &flag );
     ~InputBool(){};
     void init();
+    void setEnabled(bool b) { QCheckBox::setEnabled(b); }
+    QObject *qobject() { return this; }
+    bool getState() const { return state; }
 
   signals:
     void changed();
+    void toggle(const char *,bool);
 
   private slots:
     void setState(bool);

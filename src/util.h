@@ -101,7 +101,9 @@ extern QCString convertFileName(const QCString &s);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
-extern ClassDef *getResolvedClass(const char *key,bool *pIsTypeDef=0);
+extern ClassDef *getResolvedClass(const char *key,
+                                  bool *pIsTypeDef=0,
+                                  QCString *pTemplSpec=0);
 extern NamespaceDef *getResolvedNamespace(const char *key);
 extern FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);

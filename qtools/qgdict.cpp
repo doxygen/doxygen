@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+** $Id$
 **
 ** Implementation of QGDict and QGDictIterator classes
 **

@@ -350,6 +350,31 @@ static void verbIncludeFile(OutputDocInterface &od,const char *name)
   }
 }
 
+static void rawIncludeFile(OutputDocInterface &od,const char *name)
+{
+  bool ambig;
+  FileDef *fd;
+  if ((fd=findFileDef(Doxygen::exampleNameDict,name,ambig)))
+  {
+    od.writeString(fileToString(fd->absFilePath()));
+  }
+  else if (ambig)
+  {
+    QCString text;
+    text.sprintf("Include file name %s is ambigious.\n",name);
+    text+=("Possible candidates:\n");
+    text+=showFileDefMatches(Doxygen::exampleNameDict,name);
+    warn(yyFileName,yyLineNr,text);
+  }
+  else
+  {
+    warn(yyFileName,yyLineNr,
+	"Warning: include file %s is not found. "
+	"Check your EXAMPLE_PATH",name);
+  }
+}
+
+
 
 static QCString stripQuotes(const char *s)
 {
@@ -522,7 +547,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     //printf("Parsed[%d]=%d\n",i,marker[i]);
     if (marker[i]=='\t')
     {
-      indent+=Config::tabSize - (indent%Config::tabSize);
+      indent+=Config::instance()->getInt("TAB_SIZE") - (indent%Config::instance()->getInt("TAB_SIZE"));
     }
     else if (marker[i]=='\n')
     {
@@ -653,13 +678,13 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
       switch(type)
       {
 	case IT_Html: 
-	  outputDir = Config::htmlOutputDir;
+	  outputDir = Config::instance()->getString("HTML_OUTPUT");
 	  break;
 	case IT_Latex: 
-	  outputDir = Config::latexOutputDir;
+	  outputDir = Config::instance()->getString("LATEX_OUTPUT");
 	  break;
 	case IT_RTF:
-	  outputDir = Config::rtfOutputDir;
+	  outputDir = Config::instance()->getString("RTF_OUTPUT");
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
@@ -866,6 +891,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocRefName
 %x	DocVerbatim
 %x	DocVerbInc
+%x	DocHtmlInc
 %x	DocIndexWord
 %x	DocRefArg
 %x	DocRefArgStart
@@ -907,7 +933,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan,Text>"&"[ANOano]"tilde;"	{ outDoc->writeTilde(yytext[1]);  }
 <DocScan,Text>"&szlig;"			{ outDoc->writeSharpS();          }
 <DocScan,Text>"&"[cC]"cedil;"		{ outDoc->writeCCedil(yytext[1]); }
-<DocScan,Text>"&[aA]ring;"		{ outDoc->writeRing(yytext[1]);   }
+<DocScan,Text>"&"[aA]"ring;"		{ outDoc->writeRing(yytext[1]);   }
+<DocScan,Text>"&nbsp;"			{ outDoc->writeNonBreakableSpace(1); }
 <DocScan,DocHtmlScan,DocLatexScan>"$("[a-z_A-Z]+")"	{ 
   					  QCString envvar=&yytext[2];
   					  envvar=envvar.left(envvar.length()-1);
@@ -951,6 +978,14 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  verbIncludeFile(*outDoc,stripQuotes(yytext));
 					  BEGIN( DocScan ); 
 					}
+<DocScan>{CMD}"htmlinclude"/{BN}	{ BEGIN( DocHtmlInc ); }
+<DocHtmlInc>{FILE}			{
+    					  outDoc->pushGeneratorState();
+    					  outDoc->disableAllBut(OutputGenerator::Html);
+  					  rawIncludeFile(*outDoc,stripQuotes(yytext));
+    					  outDoc->popGeneratorState();
+					  BEGIN( DocScan );
+  					}
 <DocScan>{CMD}"verbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->startCodeFragment();
 					  insideVerbatim=TRUE;
@@ -974,7 +1009,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->codify(c);
   					}
 <DocScan>{CMD}"internal"/{BN}	        { 
-					  if (!Config::internalDocsFlag)
+					  if (!Config::instance()->getBool("INTERNAL_DOCS"))
 					  {
 					    outDoc->newParagraph();
 					    scanString(theTranslator->trForInternalUseOnly()+"\n");
@@ -1293,7 +1328,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\todo "[0-9]+		{ // this tag is generated in an earlier pass
-  					  if (Config::generateTodoList)
+  					  if (Config::instance()->getBool("GENERATE_TODOLIST"))
 					  {
 					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-6);
@@ -1315,7 +1350,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\test "[0-9]+		{ // this tag is generated in an earlier pass
-  				          if (Config::generateTestList)
+  				          if (Config::instance()->getBool("GENERATE_TESTLIST"))
 					  {
   					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-6);
@@ -1337,7 +1372,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\bug "[0-9]+			{ // this tag is generated in an earlier pass
-  				          if (Config::generateBugList)
+  				          if (Config::instance()->getBool("GENERATE_BUGLIST"))
 					  {
   					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-5);
@@ -1621,7 +1656,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocIf>[^\n\t ]+			{
-  					  if (Config::sectionFilterList.find(yytext)==-1)
+  					  if (Config::instance()->getList("ENABLED_SECTIONS").find(yytext)==-1)
 					  {
 					    outDoc->disableAll();
 					  }

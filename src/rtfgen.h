@@ -190,7 +190,7 @@ class RTFGenerator : public OutputGenerator
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *);
-    void writeNonBreakableSpace();
+    void writeNonBreakableSpace(int);
     void startImage(const char *,const char *,bool);
     void endImage(bool);
 	

@@ -44,34 +44,6 @@ sub GenerateDep {
 
 ####################
 
-#$ GenerateDep("scanner.cpp","scanner.l");
-	$(LEX) -PscanYY -t scanner.l >scanner.cpp
-
-#$ GenerateDep("code.cpp","code.l");
-	$(LEX) -PcodeYY -t code.l >code.cpp
-
-#$ GenerateDep("pre.cpp","pre.l");
-	$(LEX) -PpreYY -t pre.l >pre.cpp 
-
-#$ GenerateDep("declinfo.cpp","declinfo.l");
-	$(LEX) -PdeclinfoYY -t declinfo.l >declinfo.cpp
-
-#$ GenerateDep("defargs.cpp","defargs.l");
-	$(LEX) -PdefargsYY -t defargs.l >defargs.cpp
-
-#$ GenerateDep("doc.cpp","doc.l");
-	$(LEX) -PdocYY -t doc.l >doc.cpp
-
-#$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
-	$(LEX) -PcppExpYY -t constexp.l >ce_lex.cpp 
-
-#$ GenerateDep("ce_parse.cpp","constexp.y");
-	$(YACC) -l -p cppExpYY constexp.y -o ce_parse.cpp 
-
-#$ GenerateDep("ce_parse.h","constexp.y");
-	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
-	-rm ce_parse.c	
-
-treeview.h: treeview.js
-	cat treeview.js | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >treeview.h 
+#$ GenerateDep("config.cpp","config.l");
+	$(LEX) -PconfigYY -t config.l >config.cpp 
 

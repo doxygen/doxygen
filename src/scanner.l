@@ -170,6 +170,7 @@ static void initParser()
   isTypedef = FALSE;
   autoGroupNameStack.clear();
   insideTryBlock = FALSE;
+  insideIDL = FALSE;
 }
 
 static void initEntry()
@@ -333,15 +334,35 @@ static void checkDocs()
 
 static QCString extractName(const QCString &s)
 {
-  static const QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
-  int i,p=0,l;
-  while ((i=id.match(s,p,&l))!=-1)
-  {
-    QCString idstr=s.mid(i,l);
-    if (idstr!="struct" && idstr!="class" && idstr!="union") return idstr;
-    p=i+l;
-  }
-  return "";
+  //static const QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
+  //int i,p=0,l;
+  //while ((i=id.match(s,p,&l))!=-1)
+  //{
+  //  QCString idstr=s.mid(i,l);
+  //  if (idstr!="struct" && idstr!="class" && idstr!="union") 
+  //  {
+  //    
+  //    return idstr;
+  //  }
+  //  p=i+l;
+  //}
+  //return "";
+  QCString result=s;
+  if (result.left(7)=="struct ") result=result.right(result.length()-7);
+  if (result.left(6)=="class " ) result=result.right(result.length()-6);
+  if (result.left(6)=="union " ) result=result.right(result.length()-6);
+  int l=result.length()-1;
+  while (l>=0 && 
+         (result.at(l)=='*' || result.at(l)==' ' || isspace(result.at(l)))
+        ) l--;
+  return removeRedundantWhiteSpace(result.left(l+1));
+}
+
+static void setContext()
+{
+  QCString fileName = yyFileName;
+  insideIDL  = fileName.right(4)==".idl";
+  insideJava = fileName.right(5)==".java";
 }
 
 /* ----------------------------------------------------------------- */
@@ -430,6 +451,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	SkipSquare
 %x	TypedefName
 %x	TryFunctionBlock
+%x	TryFunctionBlockEnd
 %x	Comment
 %x      Doc
 %x	JavaDoc
@@ -520,8 +542,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
 					    yyFileName[i] = yytext[i+1] ;
 					  yyFileName[i] = 0 ;
-					  insideIDL  = i>4 && strcmp(&yyFileName[i-4],".idl")==0;
-					  insideJava = i>5 && strcmp(&yyFileName[i-5],".java")==0;
+					  setContext();
 					  msg("Parsing file %s...\n",yyFileName);
 					  current_root  = global_root ;
 					  initParser();
@@ -567,7 +588,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <NextSemi>"'"\\[0-7]{1,3}"'"            
 <NextSemi>"'"\\."'"                     
-<NextSemi>"'"."'"                       
+<NextSemi>"'".{1,4}"'"                       
 <NextSemi>\"				{
   					  lastStringContext=NextSemi;
 					  BEGIN(SkipString);
@@ -1080,13 +1101,17 @@ TITLE     [tT][iI][tT][lL][eE]
 <IDLUnionCase>":"			{ BEGIN(FindMembers); }
 <IDLUnionCase>\n			{ yyLineNr++; }
 <IDLUnionCase>.
-<TryFunctionBlock>\n
+<TryFunctionBlock>\n			{ yyLineNr++; }
 <TryFunctionBlock>"{"			{ 
 					  curlyCount=0;
-					  lastCurlyContext = FindMembers ;
+					  lastCurlyContext = TryFunctionBlockEnd ;
   					  BEGIN( SkipCurly );
 					}
 <TryFunctionBlock>.
+<TryFunctionBlockEnd>"catch"		{ BEGIN(TryFunctionBlock); }
+<TryFunctionBlockEnd>.			{ unput(*yytext); 
+  					  BEGIN( FindMembers );
+					}
 <EndCppQuote>")"			{
   					  insideCppQuote=FALSE;
 					  BEGIN(FindMembers);
@@ -1166,7 +1191,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -1186,7 +1211,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -1212,7 +1237,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -1285,7 +1310,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <ReadInitializer>"'"\\[0-7]{1,3}"'"            
 <ReadInitializer>"'"\\."'"                     
-<ReadInitializer>"'"."'"                       
+<ReadInitializer>"'".{1,4}"'"                       
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
 					  yyLineNr++;
@@ -1335,7 +1360,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <CopyRound>"'"\\[0-7]{1,3}"'"           { *pCopyRoundString+=yytext; }
 <CopyRound>"'"\\."'"                    { *pCopyRoundString+=yytext; }
-<CopyRound>"'"."'"                      { *pCopyRoundString+=yytext; }
+<CopyRound>"'".{1,4}"'"                 { *pCopyRoundString+=yytext; }
 <CopyRound>[^"'()\n]+			{
   					  *pCopyRoundString+=yytext;
   					}
@@ -1358,7 +1383,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <CopyCurly>"'"\\[0-7]{1,3}"'"           { *pCopyCurlyString+=yytext; }
 <CopyCurly>"'"\\."'"                    { *pCopyCurlyString+=yytext; }
-<CopyCurly>"'"."'"                      { *pCopyCurlyString+=yytext; }
+<CopyCurly>"'".{1,4}"'"                 { *pCopyCurlyString+=yytext; }
 <CopyCurly>[^"'{}\/\n]+			{
   					  *pCopyCurlyString+=yytext;
   					}
@@ -1515,9 +1540,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody>"'"\\[0-7]{1,3}"'"               { current->program += yytext; }
-<ReadBody>"'"\\."'"                        { current->program += yytext; }
-<ReadBody>"'"."'"                          { current->program += yytext; }
+<ReadBody>"'"\\[0-7]{1,3}"'"            { current->program += yytext; }
+<ReadBody>"'"\\."'"                     { current->program += yytext; }
+<ReadBody>"'".{1,4}"'"                  { current->program += yytext; }
 <ReadBody>"{"				{ current->program += yytext ;
 					  ++curlyCount ;
 					}
@@ -1944,7 +1969,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  *copyArgString+=yytext; 
   					  fullArgString+=yytext; 
 					}
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"."'"     { 
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'".{1,4}"'"     { 
   					  *copyArgString+=yytext; 
   					  fullArgString+=yytext; 
 					}
@@ -2175,7 +2200,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    afterDocTerminator = '}';
 					    if (yytext[yyleng-3]=='/')
 					      BEGIN(AfterDocLine);
-					    else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					    else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
 					      BEGIN(AfterDocBrief);
 					    else
 					      BEGIN(AfterDoc);
@@ -2192,7 +2217,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <SkipCurly>"'"\\."'"                    {
   				          //addToBody(yytext);
   					}
-<SkipCurly>"'"."'"                      {
+<SkipCurly>"'".{1,4}"'"                      {
   				          //addToBody(yytext);
   					}
 <SkipCurly>\"			        { 
@@ -2288,7 +2313,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( ClassVar );
 					}
 <ClassVar>{SCOPENAME}{BN}*/"("		{
-  					  if (insideIDL && strncmp(yytext,"switch",6)==0)
+                                          err("Inside IDL = %d\n",insideIDL);
+  					  if (insideIDL && strncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
 					  {
 					    // Corba IDL style union
 					    roundCount=0;
@@ -2496,7 +2522,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
 					    current->inside = current_root->name+"::";
-					  if (!Config::autoBriefFlag) // use the Qt style
+					  if (!Config::instance()->getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
 					    tmpDocType=-1;
 					    if (YY_START==ReadBody)
@@ -3496,7 +3522,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  newDocState();
   					}
 <Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
-<Doc,AfterDoc,LineDoc,ClassDoc>("\\\\"|"@@")	{ current->doc += yytext; }
+<Doc,PageDoc,AfterDoc,LineDoc,ClassDoc>("\\\\"|"@@")	{ current->doc += yytext; }
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }
@@ -3767,6 +3793,7 @@ static void parseCompounds(Entry *rt)
 	BEGIN( FindMembers ) ;
       current_root = ce ;
       strcpy( yyFileName, ce->fileName ) ;
+      setContext();
       yyLineNr = ce->startLine ;
       //printf("---> Inner block starts at line %d\n",yyLineNr);
       //current->reset();

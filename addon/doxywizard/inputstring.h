@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -19,13 +19,16 @@
 #include <qstring.h>
 #include <qdict.h>
 
+#include "qtbc.h"
+#include "input.h"
+
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QComboBox;
 class PageWidget;
 
-class InputString : public QWidget
+class InputString : public QWidget, public IInput
 {
   Q_OBJECT
 
@@ -42,6 +45,7 @@ class InputString : public QWidget
     void setEnabled(bool);
     void addValue(const char *s);
     void init();
+    QObject *qobject() { return this; }
 
   private:
     QLabel *lab;

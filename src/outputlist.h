@@ -353,8 +353,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endQuickIndexItem); }
     void writeFormula(const char *n,const char *t)
     { forall(&OutputGenerator::writeFormula,n,t); }
-    void writeNonBreakableSpace()
-    { forall(&OutputGenerator::writeNonBreakableSpace); }
+    void writeNonBreakableSpace(int num)
+    { forall(&OutputGenerator::writeNonBreakableSpace,num); }
     void startImage(const char *n,const char *s,bool c)
     { forall(&OutputGenerator::startImage,n,s,c); }
     void endImage(bool c)
