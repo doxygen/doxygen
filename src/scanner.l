@@ -183,6 +183,7 @@ static QCString         docBlock;
 static QCString         docBlockName;
 static bool             docBlockInBody;
 static bool             docBlockJavaStyle;
+static char             docBlockTerm;
 
 
 //-----------------------------------------------------------------------------
@@ -336,51 +337,8 @@ static void addMemberGroupDocs()
 
 //-----------------------------------------------------------------
 
-static void handleCommentBlock(const QCString &doc,bool brief)
-{
-  if (brief)
-  {
-    current->briefFile = yyFileName;
-    current->briefLine = yyLineNr;
-  }
-  else
-  {
-    current->docFile = yyFileName;
-    current->docLine = yyLineNr;
-  }
-  if (docBlockInBody)
-  {
-    if (previous==0) 
-    {
-      ASSERT(previous!=0); // shouldn't happen
-      return;
-    }
-    if (!previous->doc.isEmpty()) 
-    { // start a new paragraph for the next piece of text found in the body
-      previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
-    }
-  }
-  if (parseCommentBlock(
-	docBlockInBody ? previous : current,
-	doc,     // text
-	yyFileName, // file
-	yyLineNr,   // line
-	docBlockInBody ? FALSE : brief, 
-	docBlockInBody ? FALSE : docBlockJavaStyle,
-	protection)
-     ) // need to start a new entry
-  {
-    if (current->section==Entry::MEMBERGRP_SEC)
-    {
-      addMemberGroupDocs();
-    }
-    current_root->addSubEntry(current);
-    previous = current;
-    current = new Entry ;
-    initEntry();
-  }
-}
-
+static void startCommentBlock(bool);
+static void handleCommentBlock(const QCString &doc,bool brief);
 //-----------------------------------------------------------------
 
 static void addXRefItem(bool inBody,const char *listName,const char *itemTitle,const char *listTitle)
@@ -2034,7 +1992,26 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
+					  {
 					    current->bodyLine=yyLineNr;
+					  }
+#ifdef COMMENTSCAN
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = FALSE;
+					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlock.resize(0);
+					  docBlockTerm = ';';
+					  if (yytext[yyleng-3]=='/')
+					  {
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
+					  }
+					  else
+					  {
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
+					  }
+#else
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ';';
 					  if (yytext[yyleng-3]=='/')
@@ -2060,9 +2037,27 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    current->docFile = yyFileName;
 					    BEGIN(AfterDoc);
 					  }
+#endif
   					}
 <MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
+#ifdef COMMENTSCAN
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = FALSE;
+					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlock.resize(0);
+					  docBlockTerm = ',';
+					  if (yytext[yyleng-3]=='/')
+					  {
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
+					  }
+					  else
+					  {
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
+					  }
+#else
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ',';
 					  if (yytext[yyleng-3]=='/')
@@ -2088,6 +2083,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    current->docFile = yyFileName;
 					    BEGIN(AfterDoc);
 					  }
+#endif
   					}
 <DefineEnd,FindFields,FindFieldArg,ReadInitializer,OldStyleArgs>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
@@ -4142,6 +4138,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
+					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 #else
 					  BEGIN( Doc );
@@ -4179,6 +4176,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					      current->brief.resize(0);
 					    }
 					  }
+					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 #else
 					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
@@ -4243,6 +4241,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
+					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
 #else
 					  BEGIN( LineDoc );
@@ -4270,6 +4269,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
+					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
 #else
 					  BEGIN( LineDoc );
@@ -4296,8 +4296,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  else
 					  {
 					    if ((insideJava || insideCS || insideD) &&
-						current->name.isEmpty() && 
-						current->type.isEmpty()
+						current->name.isEmpty()
 					       )
 					    {
 					      // static Java initializer
@@ -4305,6 +4304,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					      if (current->stat)
 					      {
 						current->name="[static initializer]";
+						current->type.resize(0);
 					      }
 					      else
 					      {
@@ -4365,7 +4365,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 <DocBlock>^{B}*"*"+/{BN}+		{ // start of a comment line
   					}
-<DocBlock>("@@"|"\\\\"){ID}		{ // escaped command
+<DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
   					}
 <DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
@@ -4399,9 +4399,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    REJECT;
 					  }
   					}
-<DocCopyBlock>[^@\*\\\n]+		{ // any character that is not special
+<DocCopyBlock>[^@/*\\\n]+		{ // any character that is not special
   					  docBlock+=yytext;
   					}
+<DocCopyBlock>"/*"|"*/"|"//"		{
+  					  docBlock+=yytext;
+					}
 <DocCopyBlock>\n			{ // newline
   					  docBlock+=*yytext;
 					  yyLineNr++;
@@ -5259,6 +5262,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 <AnchorLabel>{LABELID}			{
                                           SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
+					  printf("New anchor file=%s label=%s\n",yyFileName,yytext);
                                           Doxygen::sectionDict.insert(yytext,si);
   					  current->anchors->append(si);
                                           current->doc+=yytext;
@@ -6141,6 +6145,62 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %%
 
 //----------------------------------------------------------------------------
+
+static void startCommentBlock(bool brief)
+{
+  if (brief)
+  {
+    current->briefFile = yyFileName;
+    current->briefLine = yyLineNr;
+  }
+  else
+  {
+    current->docFile = yyFileName;
+    current->docLine = yyLineNr;
+  }
+}
+  
+static void handleCommentBlock(const QCString &doc,bool brief)
+{
+  if (docBlockInBody)
+  {
+    if (previous==0) 
+    {
+      ASSERT(previous!=0); // shouldn't happen
+      goto exit;
+    }
+    if (!previous->doc.isEmpty()) 
+    { // start a new paragraph for the next piece of text found in the body
+      previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
+    }
+  }
+  if (parseCommentBlock(
+	docBlockInBody ? previous : current,
+	doc,     // text
+	yyFileName, // file
+	brief ? current->briefLine : current->docLine,   // line of block start
+	docBlockInBody ? FALSE : brief, 
+	docBlockInBody ? FALSE : docBlockJavaStyle,
+	protection)
+     ) // need to start a new entry
+  {
+    if (current->section==Entry::MEMBERGRP_SEC)
+    {
+      addMemberGroupDocs();
+    }
+    current_root->addSubEntry(current);
+    previous = current;
+    current = new Entry ;
+    initEntry();
+  }
+
+exit:
+  if (docBlockTerm)
+  {
+    unput(docBlockTerm);
+    docBlockTerm=0;
+  }
+}
 
 #ifndef COMMENTSCAN
 static void startGroup()

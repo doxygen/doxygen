@@ -493,6 +493,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // - body code 
   // + template arguments 
   //     (templateArguments(), definitionTemplateParameterLists())
+  // - call graph
   
   // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
@@ -896,7 +897,7 @@ static void writeInnerClasses(const ClassSDict *cl,QTextStream &t)
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      if (cd->name().find('@')!=-1) // skip anonymous scopes
+      if (cd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "    <innerclass refid=\"" << cd->getOutputFileBase()
           << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
@@ -913,7 +914,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,QTextStream &t)
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (nd->name().find('@')!=-1) // skip anonymouse scopes
+      if (nd->name().find('@')==-1) // skip anonymouse scopes
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;

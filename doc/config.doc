@@ -121,6 +121,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_treeview GENERATE_TREEVIEW
 \refitem cfg_generate_xml GENERATE_XML
 \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
+\refitem cfg_group_graphs GROUP_GRAPHS
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
 \refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
@@ -202,6 +203,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_template_relations TEMPLATE_RELATIONS
 \refitem cfg_toc_expand TOC_EXPAND
 \refitem cfg_treeview_width TREEVIEW_WIDTH
+\refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_windows_encoding USE_WINDOWS_ENCODING
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
@@ -1585,6 +1587,19 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  will generate a graph for each documented class showing the direct and
  indirect implementation dependencies (inheritance, containment, and
  class references variables) of the class with other documented classes.
+
+\anchor cfg_group_graphs
+<dt>\c GROUP_GRAPHS <dd>
+ \addindex GROUP_GRAPHS
+ If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen
+ will generate a graph for groups, showing the direct groups dependencies.
+
+\anchor cfg_uml_look
+<dt>\c UML_LOOK <dd>
+ \addindex UML_LOOK
+ If the UML_LOOK tag is set to YES doxygen will generate inheritance and
+ collaboration diagrams in a style similar to the OMG's Unified Modeling
+ Language.
 
 \anchor cfg_template_relations
 <dt>\c TEMPLATE_RELATIONS <dd>

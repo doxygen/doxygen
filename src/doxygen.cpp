@@ -8775,7 +8775,7 @@ void generateOutput()
     }
     Doxygen::tagFile.setDevice(tag);
     Doxygen::tagFile.setEncoding(QTextStream::Latin1);
-    Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+    Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>" << endl;
     Doxygen::tagFile << "<tagfile>" << endl;
   }
 

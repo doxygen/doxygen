@@ -20,7 +20,7 @@
 #ifndef TRANSLATOR_UA_H
 #define TRANSLATOR_UA_H
 
-class TranslatorUkrainian : public TranslatorAdapter_1_2_11
+class TranslatorUkrainian  : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -302,11 +302,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode("Полный список додаткових опис╕в."); }
+    { return decode("Повний список додаткових опис╕в."); }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return decode("Полный список модул╕в."); }
+    { return decode("Повний список модул╕в."); }
 
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given. 
@@ -622,8 +622,8 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
           case ClassDef::Struct: result+="структури"; break;
           case ClassDef::Union:  result+="об'╓днання"; break;
           case ClassDef::Interface:  result+="╕нтерфейсу"; break;
-          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-          case ClassDef::Category:   result+="category"; break; // translate me!
+          case ClassDef::Protocol:   result+="протоколу"; break;
+          case ClassDef::Category:   result+="категор╕╖"; break;
           case ClassDef::Exception:  result+="Виняток"; break;
         }
       }
@@ -635,8 +635,8 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
           case ClassDef::Struct: result+="Структура"; break;
           case ClassDef::Union:  result+="Об'╓днання"; break;
           case ClassDef::Interface:  result+="╤нтерфейс"; break;
-          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-          case ClassDef::Category:   result+="category"; break; // translate me!
+          case ClassDef::Protocol:   result+="Протокол"; break;
+          case ClassDef::Category:   result+="Категор╕я"; break;
           case ClassDef::Exception:  result+="Виняток"; break;
         }
       }
@@ -800,10 +800,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
           if (single) result+="цього ╕нтерфейсу"; else result+="цих ╕нтерфейс╕в";
           break;
         case ClassDef::Protocol:  
-          if (single) result+="protocol"; else result+="protocols"; // translate me!
+          if (single) result+="цього протоколу"; else result+="цих протокол╕в";
           break; 
         case ClassDef::Category:
-          if (single) result+="category"; else result+="categories"; // translate me!
+          if (single) result+="ц╕╓╖ категор╕╖"; else result+="цих категор╕й";
           break; 
         case ClassDef::Exception:
           if (single) result+="цього винятку"; else result+="цих винятк╕в";
@@ -826,7 +826,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return decode("Значения, що повертаються"); }
+    { return decode("Значення, що повертаються"); }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
@@ -1024,7 +1024,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
     }
     virtual QCString trInclByDepGraph()
     {
-      return decode("Граф файлов, як╕ включають цей файл:");
+      return decode("Граф файл╕в, як╕ включають цей файл:");
     }
     virtual QCString trSince()
     /*??*/
@@ -1048,11 +1048,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
         "Позначення, що використовуються у графах.<p>\n"
         "Розглянемо наступний приклад:\n"
         "\\code\n"
-        "/*! Невидимый класс из-за усечения */\n"
+        "/*! Невидимий клас через зр╕зання */\n"
         "class Invisible { };\n\n"
         "/*! Обмежений клас, в╕дношення успадкування приховане */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Недокументований класс */\n"
+        "/* Недокументований клас */\n"
         "class Undocumented { };\n\n"
         "/*! Загальнодоступне успадкування */\n"
         "class PublicBase : public Truncated { };\n\n"
@@ -1089,7 +1089,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
         "Стр╕лки мають наступний зм╕ст:\n"
         "<ul>\n"
         "<li>Темносиня стр╕лка в╕добража╓ в╕дношення загальнодоступного успадкування "
-        "м╕ь двома класами.\n"
+        "м╕ж двома класами.\n"
         "<li>Темнозелена стр╕лка використову╓ться при захищеному успадкуванн╕.\n"
         "<li>Темночервона стр╕лка використову╓ться при приватному успадкуванн╕.\n"
         "<li>Пурпурна стр╕лка використову╓ться, якщо клас м╕ститься в"
@@ -1338,6 +1338,249 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
       if (!singular) result+="и";
       return decode(result); 
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Використову╓";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Реал╕зу╓ " + trWriteList(numEntries) + ".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Реал╕зу╓ в " + trWriteList(numEntries) + ".";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Зм╕ст";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Застар╕л╕ елементи";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Под╕╖";
+    }
+
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Документац╕я под╕й";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Типи пакет╕в";
+    }
+
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Функц╕╖ пакет╕в";
+    }
+
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Статичн╕ функц╕ю пакет╕в";
+    }
+    
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    {
+      return "Атрибути пакет╕в";
+    }
+    
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    {
+      return "Статичн╕ атрибути пакет╕в";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Вс╕";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Граф вс╕х виклик╕в ц╕╓╖ функц╕╖:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Шукати";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Результати пошуку";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Не знайдено документ╕в в╕дпов╕дно до вашого запиту.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Було знайдено <b>1</b> документ в╕дпов╕дно до вашого запиту.";
+      }
+      else 
+      {
+        return "Було знайдено <b>$num</b> документ╕в в╕дпов╕дно до вашого запиту. "
+	       "Найкращ╕ в╕дпов╕дност╕ показано спочатку.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "В╕дпов╕дн╕сть:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Текст програми "+filename;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Дерево каталог╕в"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Документац╕я каталог╕в"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Каталоги"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Дерево каталог╕в впорядковано наближено "
+	     "до алфав╕ту:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result="Дов╕дник каталогу "; result+=dirName; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool, bool singular)
+    { 
+      QCString result("Каталог");
+      if (!singular) result+="и";
+      return result; 
+    }
+
 };
 
 #endif
+

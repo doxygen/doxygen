@@ -290,23 +290,32 @@ static VariableContext g_theVarContext;
 class CallContext
 {
   public:
+    struct Ctx
+    {
+      Ctx() : name(g_name), type(g_type), cd(0) {}
+      QCString name;
+      QCString type;
+      ClassDef *cd;
+    };
+
     CallContext() 
     {
-      m_classList.append(0);
+      m_classList.append(new Ctx);
+      m_classList.setAutoDelete(TRUE);
     }
     virtual ~CallContext() {}
     void setClass(ClassDef *cd)
     {
-      if (cd)
+      Ctx *ctx = m_classList.getLast();
+      if (ctx)
       {
 	DBG_CTX((stderr,"** Set call context %s (%p)\n",cd==0 ? "<null>" : cd->name().data(),cd));
-	m_classList.removeLast();
-	m_classList.append(cd);
+        ctx->cd=cd;
       }
     }
     void pushScope()
     {
-      m_classList.append(0);
+      m_classList.append(new Ctx);
       DBG_CTX((stderr,"** Push call context %d\n",m_classList.count()));
     }
     void popScope()
@@ -314,6 +323,12 @@ class CallContext
       if (m_classList.count()>1)
       {
         DBG_CTX((stderr,"** Pop call context %d\n",m_classList.count()));
+	Ctx *ctx = m_classList.getLast();
+	if (ctx)
+	{
+	  g_name = ctx->name;
+	  g_type = ctx->type;
+	}
 	m_classList.removeLast();
       }
       else
@@ -324,16 +339,20 @@ class CallContext
     void clear()
     {
       DBG_CTX((stderr,"** Clear call context\n"));
-      m_classList.clear();
-      m_classList.append(0);
+      Ctx *ctx = m_classList.getLast();
+      if (ctx)
+      {
+	ctx->cd=0;
+      }
     }
     ClassDef *getClass() const
     {
-      return m_classList.getLast();
+      Ctx *ctx = m_classList.getLast();
+      if (ctx) return ctx->cd; else return 0;
     }
 
   private:
-    QList<ClassDef> m_classList;    
+    QList<Ctx> m_classList;    
 };
 
 static CallContext g_theCallContext;
@@ -761,7 +780,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
     {
       cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
     }
-    //printf("is found as a type %s\n",cd?cd->name().data():"<null>");
+    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
   }
   else
   {
@@ -928,7 +947,7 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
   if (mcd)
   {
     MemberDef *xmd = mcd->getMemberByName(memName);
-    //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
+    //fprintf(stderr,"generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
     if (xmd)
     {
       // extract class definition of the return type in order to resolve
@@ -967,7 +986,7 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
 
 	// add usage reference
 	if (g_currentDefinition && g_currentMemberDef &&
-	    xmd!=g_currentMemberDef && g_insideBody)
+	    /*xmd!=g_currentMemberDef &&*/ g_insideBody)
 	{
 	  addDocCrossReference(g_currentMemberDef,xmd);
 	}
@@ -2415,6 +2434,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (*yytext==';') g_searchingForBody=FALSE; 
 					  if (!g_inClass && !g_type.isEmpty())
 					  {
+					    //fprintf(stderr,"add variable g_type=%s g_name=%s)\n",g_type.data(),g_name.data());
 					    g_theVarContext.addVariable(g_type,g_name);
 					  }
 					  g_parmType.resize(0);g_parmName.resize(0);
