@@ -3826,7 +3826,7 @@ void filterLatexString(QTextStream &t,const char *str,
           case '[':  if (Config_getBool("PDF_HYPERLINKS")) 
                        t << "\\mbox{[}"; 
                      else if (insideItem)
-                       t << "\[";
+                       t << "\\[";
                      else
                        t << "[";
                      break;
@@ -3834,7 +3834,7 @@ void filterLatexString(QTextStream &t,const char *str,
                      if (Config_getBool("PDF_HYPERLINKS"))
                        t << "\\mbox{]}";
                      else if (insideItem)
-                       t << "\[";
+                       t << "\\[";
                      else
                        t << "]";             
                      break;
