@@ -119,6 +119,8 @@ class MemberDef : public Definition
     bool isExplicit() const               { return (memSpec&Entry::Explicit)!=0; }
     bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
     bool isExternal() const               { return explExt; }
+    bool hasOneLineInitializer() const;
+    bool hasMultiLineInitializer() const;
 
     // output info
     bool isLinkableInProject() const;

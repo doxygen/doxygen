@@ -98,7 +98,7 @@ StringDict     Doxygen::aliasDict(257);          // aliases
 FileNameDict   *Doxygen::includeNameDict;        // include names
 FileNameDict   *Doxygen::exampleNameDict;        // examples
 FileNameDict   *Doxygen::imageNameDict;          // images
-//TypedefDict    Doxygen::typedefDict(1009);       // all typedefs
+FileNameDict   *Doxygen::dotFileNameDict;        // dot files
 StringDict     Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict     Doxygen::tagDestinationDict(257); // all tag locations
                                         // a member group
@@ -140,7 +140,7 @@ void clearAll()
   Doxygen::includeNameDict->clear();  
   Doxygen::exampleNameDict->clear();  
   Doxygen::imageNameDict->clear();     
-  //Doxygen::typedefDict.clear();      
+  Doxygen::dotFileNameDict->clear();     
   Doxygen::groupDict.clear();         
   Doxygen::formulaDict.clear();      
   Doxygen::formulaNameDict.clear();  
@@ -159,8 +159,8 @@ void statistics()
   Doxygen::exampleNameDict->statistics();
   fprintf(stderr,"--- imageNameDict stats ----\n");
   Doxygen::imageNameDict->statistics();
-  //fprintf(stderr,"--- classDict stats ----\n");
-  //Doxygen::classSDict.statistics();
+  fprintf(stderr,"--- dotFileNameDict stats ----\n");
+  Doxygen::dotFileNameDict->statistics();
   fprintf(stderr,"--- namespaceDict stats ----\n");
   Doxygen::namespaceDict.statistics();
   fprintf(stderr,"--- memberNameDict stats ----\n");
@@ -6698,10 +6698,11 @@ void readConfiguration(int argc, char **argv)
 
 void parseInput()
 {
-  Doxygen::inputNameDict   = new FileNameDict(1009);
-  Doxygen::includeNameDict = new FileNameDict(1009);
-  Doxygen::exampleNameDict = new FileNameDict(1009);
-  Doxygen::imageNameDict   = new FileNameDict(257);
+  Doxygen::inputNameDict     = new FileNameDict(1009);
+  Doxygen::includeNameDict   = new FileNameDict(1009);
+  Doxygen::exampleNameDict   = new FileNameDict(1009);
+  Doxygen::imageNameDict     = new FileNameDict(257);
+  Doxygen::dotFileNameDict   = new FileNameDict(257);
 
   if (!Config_getString("DOC_URL").isEmpty())
   {
@@ -6766,6 +6767,16 @@ void parseInput()
     readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
                         0,0,0);
     s=imagePathList.next(); 
+  }
+
+  msg("Searching for dot files...\n");
+  QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
+  s=dotFileList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::dotFileNameDict,0,0,
+                        0,0,0);
+    s=dotFileList.next(); 
   }
 
   msg("Searching for files to exclude\n");

@@ -223,8 +223,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{fancyhdr}\n"
     "\\usepackage{graphicx}\n"
     "\\usepackage{float}\n"
-    "\\usepackage{alltt}\n"
-    "\\usepackage{doxygen}\n";
+    "\\usepackage{alltt}\n";
   if (Config_getBool("PDF_HYPERLINKS")) 
   {
     t << "\\usepackage{times}" << endl;
@@ -254,6 +253,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     t << sLanguageSupportCommand;
   }
 
+  t << "\\usepackage{doxygen}\n";
   QStrList &extraPackages = Config_getList("EXTRA_PACKAGES");
   const char *s=extraPackages.first();
   while (s)
@@ -1545,6 +1545,43 @@ void LatexGenerator::startImage(const char *name,const char *size,bool hasCaptio
 }
 
 void LatexGenerator::endImage(bool hasCaption)
+{
+  if (hasCaption)
+  {
+    t << "}" << endl;
+    t << "\\end{figure}" << endl;
+  }
+}
+
+void LatexGenerator::startDotFile(const char *name,bool hasCaption)
+{
+  QCString baseName=name;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1); 
+  }
+  QCString outName = Config_getString("LATEX_OUTPUT")+
+#ifdef _WIN32
+    "\\"
+#else
+    "/"
+#endif
+    +baseName;
+  writeDotGraphFromFile(name,outName,EPS);
+  if (hasCaption)
+    t << "\\begin{figure}[H]" << endl;
+  else
+    t << "\\mbox{";
+  t << "\\includegraphics";
+  t << "{" << baseName << ".eps}";
+  if (hasCaption) 
+    t << "\\caption{";
+  else
+    t << "}" << endl;
+}
+
+void LatexGenerator::endDotFile(bool hasCaption)
 {
   if (hasCaption)
   {

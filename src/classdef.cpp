@@ -1072,7 +1072,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     // write examples
     if (exampleFlag)
     {
-      ol.startDescList();
+      ol.startDescList(BaseOutputDocInterface::Examples);
       ol.startBold();
       parseText(ol,theTranslator->trExamples()+": ");
       ol.endBold();
@@ -1199,6 +1199,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       {
         msg("Generating docs for nested compound %s...\n",innerCd->name().data());
         innerCd->writeDocumentation(ol);
+        innerCd->writeMemberList(ol);
       }
     }
   }
@@ -1541,6 +1542,7 @@ bool ClassDef::isLinkableInProject() const
   {
     return !name().isEmpty() &&    /* no name */
       //m_isTemplBaseClass==-1 &&  /* template base class */
+      !m_artificial &&
       name().find('@')==-1 && /* anonymous compound */
       (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
       hasDocumentation() &&   /* documented */ 

@@ -306,8 +306,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDescription); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
-    void startDescList() 
-    { forall(&OutputGenerator::startDescList); }
+    void startDescList(SectionTypes t) 
+    { forall(&OutputGenerator::startDescList,t); }
     void endDescList() 
     { forall(&OutputGenerator::endDescList); }
     void startParamList(ParamListTypes t) 
@@ -361,6 +361,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startImage,n,s,c); }
     void endImage(bool c)
     { forall(&OutputGenerator::endImage,c); }
+    void startDotFile(const char *n,bool c)
+    { forall(&OutputGenerator::startDotFile,n,c); }
+    void endDotFile(bool c)
+    { forall(&OutputGenerator::endDotFile,c); }
 
     void startDescTable()
     { forall(&OutputGenerator::startDescTable); }
@@ -456,6 +460,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
     FORALLPROTO1(ParamListTypes);
+    FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);

@@ -1413,11 +1413,6 @@ void Config::create()
                     "Doxygen uses this value to replace tabs by spaces in code fragments. \n",
                     1,16,8
                 );
-  cl = addList(
-                    "ENABLED_SECTIONS",
-                    "The ENABLED_SECTIONS tag can be used to enable conditional \n"
-                    "documentation sections, marked by \\if sectionname ... \\endif. \n"
-                 );
   cb = addBool(
                     "GENERATE_TODOLIST",
                     "The GENERATE_TODOLIST tag can be used to enable (YES) or \n"
@@ -1447,6 +1442,11 @@ void Config::create()
                     "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
+                 );
+  cl = addList(
+                    "ENABLED_SECTIONS",
+                    "The ENABLED_SECTIONS tag can be used to enable conditional \n"
+                    "documentation sections, marked by \\if sectionname ... \\endif. \n"
                  );
   ci = addInt(
                     "MAX_INITIALIZER_LINES",
@@ -2076,6 +2076,14 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("HAVE_DOT");
+  cl = addList(
+                    "DOTFILE_DIRS",
+                    "The DOTFILE_DIRS tag can be used to specify one or more directories that \n"
+		    "contain dot files that are included in the documentation (see the \n"
+                    "\\dotfile command). \n"
+                 );
+  cl->setWidgetType(ConfigList::Dir);
+  cl->addDependency("HAVE_DOT");
   ci = addInt(
                     "MAX_DOT_GRAPH_WIDTH",
                     "The MAX_DOT_GRAPH_WIDTH tag can be used to set the maximum allowed width \n"

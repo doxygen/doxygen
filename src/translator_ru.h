@@ -43,6 +43,8 @@
  * Compounds переведено как классы, см Строустрап.
  *
  * Определения помеченные ?? являются спорными.
+ *
+ * Благодарности: Vitaly A. Repin <vitaly@radio.hop.stu.neva.ru>
  */
 
 #ifndef TRANSLATOR_RU_H
@@ -678,13 +680,13 @@ class TranslatorRussian : public Translator
     }
     
     virtual QCString trPublicMembers()
-    { return decode("Публичные члены"); }
+    { return decode("Открытые члены"); }
     virtual QCString trPublicSlots()
-    { return decode("Публичные слоты"); }
+    { return decode("Открытые слоты"); }
     virtual QCString trSignals()
     { return decode("Сигналы"); }
     virtual QCString trStaticPublicMembers()
-    { return decode("Публичные статические члены"); }
+    { return decode("Открытые статические члены"); }
     virtual QCString trProtectedMembers()
     { return decode("Защищенные члены"); }
     virtual QCString trProtectedSlots()
@@ -692,11 +694,11 @@ class TranslatorRussian : public Translator
     virtual QCString trStaticProtectedMembers()
     { return decode("Защищенные статические члены"); }
     virtual QCString trPrivateMembers()
-    { return decode("Приватные члены"); }
+    { return decode("Закрытые члены"); }
     virtual QCString trPrivateSlots()
-    { return decode("Приватные слоты"); }
+    { return decode("Закрытые слоты"); }
     virtual QCString trStaticPrivateMembers()
-    { return decode("Приватные статические члены"); }
+    { return decode("Закрытые статические члены"); }
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -957,7 +959,7 @@ class TranslatorRussian : public Translator
     }
     virtual QCString trPublicTypes()
     {
-      return decode("Публичные типы");
+      return decode("Открытые типы");
     }
     virtual QCString trPublicAttribs()
     {
@@ -972,7 +974,7 @@ class TranslatorRussian : public Translator
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return decode("Статические публичные данные");
+      return decode("Статические открытые данные");
     }
     virtual QCString trProtectedTypes()
     {
@@ -988,15 +990,15 @@ class TranslatorRussian : public Translator
     }
     virtual QCString trPrivateTypes()
     {
-      return decode("Приватные типы");
+      return decode("Закрытые типы");
     }
     virtual QCString trPrivateAttribs()
     {
-      return decode("Приватные данные");
+      return decode("Закрытые данные");
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return decode("Приватные статические данные");
+      return decode("Закрытые статические данные");
     }
 
 
@@ -1065,11 +1067,11 @@ class TranslatorRussian : public Translator
         "class Truncated : public Invisible { };\n\n"
         "/* Недокументированный класс */\n"
         "class Undocumented { };\n\n"
-        "/*! Публичное наследование */\n"
+        "/*! Открытое наследование */\n"
         "class PublicBase : public Truncated { };\n\n"
         "/*! Защищенное наследование */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Приватное наследование */\n"
+        "/*! Закрытое наследование */\n"
         "class PrivateBase { };\n\n"
         "/*! Класс, используемый классом Inherited */\n"
         "class Used { };\n\n"
@@ -1099,10 +1101,10 @@ class TranslatorRussian : public Translator
         "</ul>\n"
         "Стрелки имеют следующее значение:\n"
         "<ul>\n"
-        "<li>Темносиняя стрелка используется для изображения отношения публичного наследования "
+        "<li>Темносиняя стрелка используется для изображения отношения открытого наследования "
         "между двумя классами.\n"
         "<li>Темнозеленая стрелка используется при защищенном наследовании.\n"
-        "<li>Темнокрасная стрелка используется при приватном наследовании.\n"
+        "<li>Темнокрасная стрелка используется при закрытом наследовании.\n"
         "<li>Фиолетовая стрелка используется, если класс содержится в"
         "другом класе или используется другим классом."
         "Со стрелкой указывается переменная, "

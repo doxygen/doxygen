@@ -149,6 +149,7 @@ static bool             insideFormula;
 static bool  	        insideTryBlock=FALSE;
 
 static int              depthIf;
+static int  	        initializerSharpCount;
 
 //-----------------------------------------------------------------------------
 
@@ -1320,6 +1321,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
 					  lastInitializerContext = YY_START;
+					  initializerSharpCount=0;
 					  BEGIN(ReadInitializer);
   					}
   /* Read initializer rules */
@@ -1339,8 +1341,15 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <ReadInitializer>[;,]			{
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
-  					  unput(*yytext);
-  					  BEGIN(lastInitializerContext);
+  					  if (initializerSharpCount==0)
+					  {
+  					    unput(*yytext);
+  					    BEGIN(lastInitializerContext);
+					  }
+					  else
+					  {
+  					    current->initializer+=*yytext; 
+					  }
   					}
 <ReadInitializer>\"			{
 					  if (insideIDL && insideCppQuote)
@@ -1355,9 +1364,23 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(CopyString);
 					  }
 					}
-<ReadInitializer>"'"\\[0-7]{1,3}"'"            
-<ReadInitializer>"'"\\."'"                     
-<ReadInitializer>"'".{1,4}"'"                       
+<ReadInitializer>"<<"			{
+  					  current->initializer+=yytext; 
+					}
+<ReadInitializer>">>"			{
+  					  current->initializer+=yytext; 
+  					}
+<ReadInitializer>\<			{
+  					  initializerSharpCount++;
+  					  current->initializer+=*yytext; 
+  					}
+<ReadInitializer>\>			{
+  					  initializerSharpCount--;
+  					  current->initializer+=*yytext; 
+  					}
+<ReadInitializer>"'"\\[0-7]{1,3}"'"     |
+<ReadInitializer>"'"\\."'"              |
+<ReadInitializer>"'".{1,4}"'"           { current->initializer+=yytext; } 
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
 					  yyLineNr++;
@@ -1547,6 +1570,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <FindFields>"="				{
   					  lastInitializerContext = YY_START;
+					  initializerSharpCount=0;
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>","				{
@@ -1760,6 +1784,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					}					
 <MemberSpec>"="				{ 
   					  lastInitializerContext=YY_START;
+					  initializerSharpCount=0;
   					  BEGIN(ReadInitializer);
   					  /* BEGIN(MemberSpecSkip); */
 					}
@@ -3834,7 +3859,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {

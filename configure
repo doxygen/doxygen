@@ -27,6 +27,7 @@ f_prefix=/usr
 f_insttool=NO
 f_english=NO
 f_wizard=NO
+f_langs=nl,se,cz,fr,it,de,jp,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua
 
 while test -n "$1";  do
   case $1 in
@@ -50,6 +51,9 @@ while test -n "$1";  do
        ;;
     --english-only | -english-only)
        f_english=YES
+       ;;
+    --enable-langs | -enable-langs)
+       shift; f_langs=$1
        ;;
     --platform | -platform)
        shift; f_platform=$1
@@ -86,7 +90,7 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--make name] [--dot name] [--platform target] 
           [--prefix dir] [--docdir dir] [--install name] [--english-only] 
-          [--with-doxywizard] 
+          [----enable-langs list] [--with-doxywizard] 
 
 Options: 
 
@@ -112,6 +116,8 @@ Options:
   --install name        Use \`name' as the name of the GNU install tool
                         [default: autodetect]
   --english-only        Include support for English only.
+  --enable-langs list 	Include support for output languages listed in list.
+  			[default: $f_langs]
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt 2.x.x
 
@@ -344,6 +350,7 @@ if test "$f_perl" = NO; then
 fi
 echo "using $f_perl";
 
+
 # -----------------------------------------------------------------------------
 
 test -f .makeconfig && rm .makeconfig
@@ -450,3 +457,20 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
+# - generating src/lang_cfg.h 
+
+echo -n "  Generating src/lang_cfg.h..."
+echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
+        chomp @l; 
+	@allowed=(NL,SE,CZ,FR,IT,DE,JP,ES,FI,RU,HR,PL,PT,HU,KR,RO,SI,CN,NO,BR,
+		  DK,SK,UA);
+	foreach my $elem (@l){ 
+	     $elem =~ tr/a-z/A-Z/;
+	     $r=0;
+	     foreach my $tst (@allowed){
+		if ($tst eq $elem) { $r=1; last; } 		
+	     }	    
+	     if ($r!=1) { die "ERROR: Invalid language $elem was selected!\n"; } 
+	     print "#define LANG_$elem\n";
+        };' > ./src/lang_cfg.h   
+echo

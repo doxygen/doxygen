@@ -170,10 +170,10 @@ class ManGenerator : public OutputGenerator
                                 firstCol=FALSE; }
     void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
-    void startDescList();
+    void startDescList(SectionTypes);
     void endDescList()        {}
-    void startParamList(ParamListTypes)     { startDescList(); }
-    void endParamList()       { endDescList(); }
+    void startParamList(ParamListTypes);
+    void endParamList()       {}
     void endDescTitle();
     void writeDescItem();
     void startSection(const char *,const char *,bool);
@@ -198,6 +198,8 @@ class ManGenerator : public OutputGenerator
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
     void startImage(const char *,const char *,bool) {}
     void endImage(bool) {}
+    void startDotFile(const char *,bool) {}
+    void endDotFile(bool) {}
     
     void startDescTable() {}
     void endDescTable() {}

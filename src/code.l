@@ -36,8 +36,8 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
-#define SCOPEBLOCK (void *)1
-#define INNERBLOCK (void *)2
+#define SCOPEBLOCK (int *)4
+#define INNERBLOCK (int *)8
 
 /*! local class definition, used for classes that are defined
  *  inside code fragments.
@@ -109,7 +109,7 @@ static QCString      g_parmName;
 static bool          g_inClass;
 static QCString      g_classScope;
 static QCString      g_realScope;
-static QStack<void>  g_scopeStack;      // 1 if bracket starts a scope, 2 for internal blocks 
+static QStack<int>   g_scopeStack;      // 1 if bracket starts a scope, 2 for internal blocks 
 static CodeClassDef  g_ccd;
 static CodeVarDef    g_cvd;
 static bool          g_exampleBlock;
@@ -939,7 +939,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
 					  else
 					  {
-  					    g_scopeStack.push((void *)2);
+  					    g_scopeStack.push(INNERBLOCK);
 					  }
 					  BEGIN( Body );
  					}

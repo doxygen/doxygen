@@ -21,6 +21,13 @@
 #include <qdict.h>
 #include <qlist.h>
 
+//#define USE_DOM
+#define USE_SAX
+
+#ifdef USE_DOM
+#include <qdom.h>
+#endif
+
 class ErrorHandler : public QXmlErrorHandler
 {
     public:
@@ -55,18 +62,47 @@ int main(int argc,char **argv)
     exit(1);
   }
 
-  //for (;;)
-  //{
-    QFile xmlFile(argv[1]);
-    MainHandler handler;
-    ErrorHandler errorHandler;
-    QXmlInputSource source( xmlFile );
-    QXmlSimpleReader reader;
-    reader.setContentHandler( &handler );
-    reader.setErrorHandler( &errorHandler );
-    reader.parse( source );
-  //}
-  
+  QFile xmlFile(argv[1]);
+  if (!xmlFile.open( IO_ReadOnly ))
+  {
+    qFatal("Could not read %s",argv[1] );
+  }
+
+#ifdef USE_SAX
+  MainHandler handler;
+  ErrorHandler errorHandler;
+  QXmlInputSource source( xmlFile );
+  QXmlSimpleReader reader;
+  reader.setContentHandler( &handler );
+  reader.setErrorHandler( &errorHandler );
+  reader.parse( source );
+#endif
+
+#ifdef USE_DOM
+  QDomDocument doc;
+  doc.setContent( &xmlFile );
+
+  QDomElement de = doc.documentElement();
+
+  printf("docElem=%s\n",de.tagName().data());
+
+  QDomNode n = de.firstChild();
+  while( !n.isNull() ) 
+  {
+    QDomElement e = n.toElement(); // try to convert the node to an element.
+    if( !e.isNull() ) 
+    { // the node was really an element.
+      printf("direct child %s id=%s kind=%s\n",
+          e.tagName().data(),
+          e.attribute("id").data(),
+          e.attribute("kind").data()
+          );
+    }
+    n = n.nextSibling();
+  }
+
+#endif
+
   return 0;
 }
 

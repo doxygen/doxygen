@@ -84,6 +84,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
 <li> \refitem cfg_doc_url DOC_URL
 <li> \refitem cfg_dot_path DOT_PATH
+<li> \refitem cfg_dotfile_dirs DOTFILE_DIRS
 <li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 <li> \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 <li> \refitem cfg_enabled_sections ENABLED_SECTIONS
@@ -1183,6 +1184,13 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex DOT_PATH
  This tag can be used to specify the path where the dot tool can be found. 
  If left blank, it is assumed the dot tool can be found on the path. 
+
+\anchor cfg_dotfile_dirs
+<dt>\c DOTFILE_DIRS <dd>
+ \addindex DOTFILE_DIRS
+ This tag can be used to specify one or more directories that 
+ contain dot files that are included in the documentation (see the
+ \\dotfile command).
 
 \anchor cfg_max_dot_graph_height 
 <dt>\c MAX_DOT_GRAPH_HEIGHT <dd>

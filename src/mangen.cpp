@@ -308,7 +308,17 @@ void ManGenerator::writeChar(char c)
   paragraph=FALSE;
 }
 
-void ManGenerator::startDescList()      
+void ManGenerator::startDescList(SectionTypes)      
+{
+  if (!firstCol) 
+  { t << endl << ".PP" << endl; 
+    firstCol=TRUE; paragraph=TRUE; 
+    col=0;
+  }
+  paragraph=FALSE;
+}
+
+void ManGenerator::startParamList(ParamListTypes)      
 {
   if (!firstCol) 
   { t << endl << ".PP" << endl; 
