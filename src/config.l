@@ -138,6 +138,7 @@ QCString Config::genTagFile;
 bool     Config::allExtFlag = FALSE;
 QCString Config::perlPath = "/usr/bin/perl";
 bool     Config::haveDotFlag = FALSE;
+bool     Config::classGraphFlag = TRUE;
 bool     Config::collGraphFlag = TRUE;
 bool     Config::includeGraphFlag = TRUE;
 bool     Config::gfxHierarchyFlag = TRUE;
@@ -275,6 +276,7 @@ static int yyread(char *buf,int max_size)
 <Start>"ALLEXTERNALS"[ \t]*"="          { BEGIN(GetBool); b=&Config::allExtFlag; }
 <Start>"PERL_PATH"[ \t]*"="             { BEGIN(GetString); s=&Config::perlPath; s->resize(0); }
 <Start>"HAVE_DOT"[ \t]*"="              { BEGIN(GetBool); b=&Config::haveDotFlag; }
+<Start>"CLASS_GRAPH"[ \t]*"="           { BEGIN(GetBool); b=&Config::classGraphFlag; }
 <Start>"COLLABORATION_GRAPH"[ \t]*"="   { BEGIN(GetBool); b=&Config::collGraphFlag; }
 <Start>"INCLUDE_GRAPH"[ \t]*"="         { BEGIN(GetBool); b=&Config::includeGraphFlag; }
 <Start>"GRAPHICAL_HIERARCHY"[ \t]*"="   { BEGIN(GetBool); b=&Config::gfxHierarchyFlag; }
@@ -557,6 +559,7 @@ void dumpConfig()
   printf("perlPath=`%s'\n",Config::perlPath.data());
   printf("# Configuration options related to the dot tool   \n");
   printf("haveDotFlag=`%d'\n",Config::haveDotFlag);
+  printf("classGraphFlag=`%d'\n",Config::classGraphFlag);
   printf("collGraphFlag=`%d'\n",Config::collGraphFlag);
   printf("includeGraphFlag=`%d'\n",Config::includeGraphFlag);
   printf("gfxHierarchyFlag=`%d'\n",Config::gfxHierarchyFlag);
@@ -654,6 +657,7 @@ void Config::init()
   Config::allExtFlag = FALSE;
   Config::perlPath = "/usr/bin/perl";
   Config::haveDotFlag = FALSE;
+  Config::classGraphFlag = TRUE;
   Config::collGraphFlag = TRUE;
   Config::includeGraphFlag = TRUE;
   Config::gfxHierarchyFlag = TRUE;
@@ -1630,6 +1634,18 @@ void writeTemplateConfig(QFile *f,bool sl)
   }
   t << "HAVE_DOT              = ";
   writeBoolValue(t,Config::haveDotFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n";
+    t << "# will generate a graph for each documented class showing the direct and \n";
+    t << "# indirect inheritance relations. Setting this tag to YES will force the \n";
+    t << "# the CLASS_DIAGRAMS tag to NO.\n";
+    t << "\n";
+  }
+  t << "CLASS_GRAPH           = ";
+  writeBoolValue(t,Config::classGraphFlag);
   t << "\n";
   if (!sl)
   {

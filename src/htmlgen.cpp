@@ -784,11 +784,11 @@ void HtmlGenerator::endMemberDoc()
   t << "</table>" << endl; 
 }
 
-void HtmlGenerator::startCollaborationDiagram()
+void HtmlGenerator::startDotGraph()
 {
 }
 
-void HtmlGenerator::endCollaborationDiagram(DotGfxUsageGraph &g)
+void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
   g.writeGraph(t,Config::htmlOutputDir);
 }

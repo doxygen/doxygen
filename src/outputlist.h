@@ -33,7 +33,7 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
   
 class ClassDiagram;
-class DotGfxUsageGraph;
+class DotClassGraph;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 
@@ -347,10 +347,10 @@ class OutputList
     { forall(&OutputGenerator::startDescTableData); }
     void endDescTableData()
     { forall(&OutputGenerator::endDescTableData); }
-    void startCollaborationDiagram()
-    { forall(&OutputGenerator::startCollaborationDiagram); }
-    void endCollaborationDiagram(DotGfxUsageGraph &g)
-    { forall(&OutputGenerator::endCollaborationDiagram,g); }
+    void startDotGraph()
+    { forall(&OutputGenerator::startDotGraph); }
+    void endDotGraph(DotClassGraph &g)
+    { forall(&OutputGenerator::endDotGraph,g); }
     void startInclDepGraph()
     { forall(&OutputGenerator::startInclDepGraph); }
     void endInclDepGraph(DotInclDepGraph &g)
@@ -383,7 +383,7 @@ class OutputList
     FORALLPROTO1(char);
     FORALLPROTO1(IndexSections);
     FORALLPROTO1(int);
-    FORALLPROTO1(DotGfxUsageGraph &);
+    FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
 #if defined(HAS_BOOL_TYPE)

@@ -10,6 +10,11 @@
  *  This is the third group
  */
 
+/*! \defgroup group4 The Fourth Group
+ *  \ingroup group3
+ *  Group 4 is a subgroup of group 3
+ */
+
 /*! \ingroup group1 
  *  \brief class C1 in group 1
  */
@@ -35,11 +40,11 @@ class C4 {};
  */
 class C5 {};
 
-/*! \ingroup group1 group2 group3
- *  \brief class C6 in all groups
- *  \sa \link group1 The first group\endlink, group2, group3
+/*! \ingroup group1 group2 group3 group4
+ *  namespace N1 is in all groups
+ *  \sa \link group1 The first group\endlink, group2, group3, group4
  */
-class C6 {};
+namespace N1 {};
 
 /*! \file
  *  \ingroup group3

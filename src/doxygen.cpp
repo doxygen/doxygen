@@ -154,7 +154,7 @@ int documentedIncludeFiles;
 QTextStream tagFile;
 
 void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
-                        bool over_load);
+                        bool over_load,NamespaceList *nl=0);
 
 const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
@@ -195,6 +195,7 @@ void buildGroupList(Entry *root)
       gd->addSectionsToDefinition(root->anchors);
       groupList.append(gd);
       groupDict.insert(root->name,gd);
+      addGroupToGroups(root,gd);
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -405,48 +406,6 @@ static bool addNamespace(Entry *root,ClassDef *cd)
     } 
   }
   return FALSE;
-}
-
-static void addClassToGroups(Entry *root,ClassDef *cd)
-{
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
-  {
-    GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
-    {
-      gd->addClass(cd);
-      //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
-    }
-  }
-}
-
-static void addMemberToGroups(Entry *root,MemberDef *md)
-{
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
-  {
-    GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=groupDict[*s]))
-    {
-      GroupDef *mgd = md->groupDef();
-      if (mgd==0)
-      {
-        gd->insertMember(md,root->mGrpId);
-        md->setGroupDef(gd);
-      }
-      else if (mgd!=gd)
-      {
-        warn("Warning: Member %s found in multiple groups.!\n"
-             "The member will be put in group %s, and not in group %s",
-              md->name().data(),mgd->name().data(),gd->name().data()
-            );
-      }
-      //printf("Member %s: in group %s\n",md->name().data(),s->data());
-    }
-  }
 }
 
 //----------------------------------------------------------------------
@@ -689,14 +648,8 @@ void buildNamespaceList(Entry *root)
         nd->setBriefDescription(root->brief);
         nd->addSectionsToDefinition(root->anchors);
 
-        QListIterator<QCString> sli(*root->groups);
-        QCString *s;
-        for (;(s=sli.current());++sli)
-        {
-          GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=groupDict[*s]))
-            gd->addNamespace(nd);
-        }
+        //printf("Adding namespace to group\n");
+        addNamespaceToGroups(root,nd);
 
         bool ambig;
         // file definition containing the namespace nd
@@ -710,6 +663,7 @@ void buildNamespaceList(Entry *root)
         // add class to the list
         namespaceList.inSort(nd);
         namespaceDict.insert(fullName,nd);
+
       }
     }
   }
@@ -782,6 +736,39 @@ void findUsingDirectives(Entry *root)
           //printf("Inside file %s\n",fd->name().data());
           fd->addUsingDirective(usingNd);
         }
+      }
+      else // unknown namespace, but add it anyway.
+      {
+        NamespaceDef *nd=new NamespaceDef(root->name);
+        nd->setDocumentation(root->doc); // copy docs to definition
+        nd->setBriefDescription(root->brief);
+        nd->addSectionsToDefinition(root->anchors);
+
+        QListIterator<QCString> sli(*root->groups);
+        QCString *s;
+        for (;(s=sli.current());++sli)
+        {
+          GroupDef *gd=0;
+          if (!s->isEmpty() && (gd=groupDict[*s]))
+            gd->addNamespace(nd);
+        }
+
+        bool ambig;
+        // file definition containing the namespace nd
+        FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+        // insert the namespace in the file definition
+        if (fd) 
+        {
+          fd->insertNamespace(nd);
+          fd->addUsingDirective(nd);
+        }
+
+        // the empty string test is needed for extract all case
+        nd->setBriefDescription(root->brief);
+        nd->insertUsedFile(root->fileName);
+        // add class to the list
+        namespaceList.inSort(nd);
+        namespaceDict.insert(root->name,nd);
       }
     }
   }
@@ -1961,7 +1948,7 @@ void computeMemberReferences()
 // over_load is set the standard overload text is added. 
 
 void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
-                        bool over_load)
+                        bool over_load,NamespaceList *nl)
 {
   //printf("addMemberDocs: `%s'::`%s' `%s' funcDecl=`%s'\n",
   //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl);
@@ -1973,7 +1960,9 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
   NamespaceDef *nd=md->getNamespace();
   if (matchArguments(md->argumentList(),root->argList,
         cd ? cd->name().data() : 0,
-        nd ? nd->name().data() : 0
+        nd ? nd->name().data() : 0,
+        TRUE,
+        nl
         )
      ) 
   {
@@ -2715,10 +2704,16 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
                 );
             
             // TODO: match loop for all possible scopes
+
+            bool ambig;
+            FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+            // list of namespaces using in the file that this member definition is part of
+            NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
+            
             bool matching=
               md->isVariable() || md->isTypedef() || // needed for function pointers
               (md->argumentList()==0 && root->argList->count()==0) || 
-              matchArguments(argList, root->argList,className,namespaceName);
+              matchArguments(argList, root->argList,className,namespaceName,TRUE,nl);
 
             Debug::print(Debug::FindMembers,0,
                          "6. match results = %d\n",matching);
@@ -2742,7 +2737,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
             {
               //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
               //         root->inLine,md->isInline());
-              addMemberDocs(root,md,funcDecl,overloaded);
+              addMemberDocs(root,md,funcDecl,overloaded,nl);
               count++;
             }
           } 
@@ -4533,7 +4528,8 @@ int readDir(QFileInfo *fi,
          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
       }
       else if (cfi->isFile() && 
-          patternMatch(cfi,patList) && !patternMatch(cfi,exclPatList))
+          (patList==0 || patternMatch(cfi,patList)) && 
+          !patternMatch(cfi,exclPatList))
       {
         totalSize+=cfi->size()+cfi->absFilePath().length()+4;
         QCString name=convertToQCString(cfi->fileName());
@@ -4991,13 +4987,13 @@ int main(int argc,char **argv)
   msg("Freeing input...\n");
   input.resize(0);
   
+  msg("Building group list...\n");
+  buildGroupList(root);
+
   msg("Building namespace list...\n");
   buildNamespaceList(root);
   findUsingDirectives(root);
   
-  msg("Building group list...\n");
-  buildGroupList(root);
-
   //msg("Computing group relations...\n");
   //computeGroupRelations(root); 
   

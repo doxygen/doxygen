@@ -1449,6 +1449,7 @@ void writeGroupList(OutputList &ol)
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
+    //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     if (gd->countMembers()>0)
     {
       ol.startDescItem();

@@ -41,9 +41,11 @@ struct EdgeInfo
 class DotNode
 {
   friend class DotGfxHierarchyTable;
-  friend class DotGfxUsageGraph;
+  friend class DotClassGraph;
   friend class DotInclDepGraph;
   friend class DotNodeList;
+  friend void writeDotGraph(DotNode *root,const QCString &baseName,
+                   bool lrRank,bool renderParents,int distance);
   public:
     DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE);
    ~DotNode();
@@ -60,14 +62,15 @@ class DotNode
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int  number() const { return m_number; }
-    void write(QTextStream &t,bool topDown,int maxDistance=1000);
+    void write(QTextStream &t,bool topDown,bool toChildren,int maxDistance=1000);
     int  m_subgraphId;
     void clearWriteFlag();
 
   private:
     void colorConnectedNodes(int curColor);
     void writeBox(QTextStream &t,bool hasNonReachableChildren);
-    void writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown);
+    void writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown,
+                    bool pointBack=TRUE);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
     QCString         m_label;     //!< label text
@@ -98,22 +101,24 @@ class DotGfxHierarchyTable
     DotNodeList    *m_rootSubgraphs;
 };
 
-class DotGfxUsageGraph
+class DotClassGraph
 {
   public:
-    DotGfxUsageGraph(ClassDef *cd,bool impl,int maxRecusionDepth=1000);
-   ~DotGfxUsageGraph();
+    enum GraphType { Interface, Implementation, Inheritance };
+    DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth=1000);
+   ~DotClassGraph();
     bool isTrivial() const;
     void writeGraph(QTextStream &t,const char *path,bool TBRank=TRUE);
     QCString diskName() const;
 
   private:
-    void buildGraph(ClassDef *cd,DotNode *n,int level);
-    void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,int level);
+    void buildGraph(ClassDef *cd,DotNode *n,int level,bool base);
+    void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
+                  int level,const char *templSpec,bool base);
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
     static int      m_curNodeNumber;
-    bool            m_impl;
+    GraphType       m_graphType;
     int             m_recDepth;
     QCString        m_diskName;
     int             m_maxDistance;

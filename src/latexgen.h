@@ -211,8 +211,8 @@ class LatexGenerator : public OutputGenerator
 
     //static void docifyStatic(QTextStream &t,const char *str);
 
-    void startCollaborationDiagram() {}
-    void endCollaborationDiagram(DotGfxUsageGraph &) {}
+    void startDotGraph() {}
+    void endDotGraph(DotClassGraph &) {}
     void startInclDepGraph() {}
     void endInclDepGraph(DotInclDepGraph &) {}
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}

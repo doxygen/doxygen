@@ -946,7 +946,8 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
 // stored in the list should be equal.
 
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
-                    const char *cl,const char *ns,bool checkCV)
+                    const char *cl,const char *ns,bool checkCV,
+                    NamespaceList *usingList)
 {
   QCString className=cl;
   QCString namespaceName=ns;
@@ -1048,9 +1049,18 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
         srcAType=trimScope(namespaceName,srcAType);
         dstAType=trimScope(namespaceName,dstAType);
       }
+      if (usingList && usingList->count()>0)
+      {
+        NamespaceListIterator nli(*usingList);
+        NamespaceDef *nd;
+        for (;(nd=nli.current());++nli)
+        {
+          srcAType=trimScope(nd->name(),srcAType);
+          dstAType=trimScope(nd->name(),dstAType);
+        }
+      }
       //printf("srcAType=%s dstAType=%s\n",srcAType.data(),dstAType.data());
       
-      //printf("`%s' <=> `%s'\n",srcAType.data(),dstAType.data());
       uint srcPos=0,dstPos=0; 
       bool equal=TRUE;
       while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
@@ -1201,6 +1211,7 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
   //printArgList(srcAl);printf(" <=> ");
   //printArgList(dstAl);printf("\n");
+
   if (srcAl==0 || dstAl==0 || srcAl->count()!=dstAl->count())
   {
     return; // invalid argument lists -> do not merge

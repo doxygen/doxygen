@@ -243,7 +243,7 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
                   break;
               }
             }
-            else if (md->isTypedef() || md->isEnumerate())
+            else if (md->isTypedef() || md->isEnumerate() || md->isEnumValue())
             {
               switch (md->protection())
               {
@@ -675,8 +675,25 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if ( icd->isVisibleInHierarchy()) count++;
     ibcd=inherits->next();
   }
-  if (Config::classDiagramFlag && count>0) 
-    // write class diagram
+
+  
+  if (Config::haveDotFlag && Config::classGraphFlag)
+    // write class diagram using dot
+  {
+    DotClassGraph inheritanceGraph(this,DotClassGraph::Inheritance);
+    if (!inheritanceGraph.isTrivial())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Man);
+      ol.startDotGraph();
+      parseText(ol,theTranslator->trClassDiagram(name()));
+      ol.endDotGraph(inheritanceGraph);
+      ol.popGeneratorState();
+    }
+  }
+  else if (Config::classDiagramFlag && count>0) 
+    // write class diagram using build-in generator
   {
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
@@ -688,20 +705,16 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (Config::haveDotFlag && Config::collGraphFlag)
   {
-    DotGfxUsageGraph usageImplGraph(this,TRUE);
+    DotClassGraph usageImplGraph(this,DotClassGraph::Implementation);
     if (!usageImplGraph.isTrivial())
     {
+      ol.pushGeneratorState();
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Man);
-      ol.startCollaborationDiagram();
+      ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
-      //usageImplGraph.writeGraph(Config::htmlOutputDir);
-      //ol.writeString((QCString)"<p>Interface collaboration diagram for "
-      //               "<a href=\"usage_intf_graph_"+name()+".html\">here</a>");
-      //ol.writeString((QCString)"<p>Implementation collaboration diagram for "
-      //                         "<a href=\"usage_impl_graph_"+name()+".html\">here</a>");
-      ol.endCollaborationDiagram(usageImplGraph);
-      ol.enableAll();
+      ol.endDotGraph(usageImplGraph);
+      ol.popGeneratorState();
     }
   }
 
@@ -1616,6 +1629,7 @@ void ClassDef::determineImplUsageRelation()
       if (md->isVariable()) // for each member variable in this class
       {
         QCString type=md->typeString();
+        int typeLen=type.length();
         static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
         //printf("in class %s found var type=`%s' name=`%s'\n",
         //            name().data(),type.data(),md->name().data());
@@ -1623,17 +1637,35 @@ void ClassDef::determineImplUsageRelation()
         bool found=FALSE;
         while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
         {
+          int ts=p+l;
+          int te=ts;
+          while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
+          if (type.at(ts)=='<') // assume template instance
+          {
+            // locate end of template
+            te=ts+1;
+            int brCount=1;
+            while (te<typeLen && brCount!=0)
+            {
+              if (type.at(te)=='<') brCount++;
+              if (type.at(te)=='>') brCount--;
+              te++;
+            }
+          }
+          QCString templSpec;
+          if (te>ts) templSpec = type.mid(ts,te-ts);
           ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
           if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
-          if (cd /*&& cd->isLinkable()*/) // class exists and is linkable 
+          if (cd) // class exists 
           {
             found=TRUE;
             if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 
             UsesClassDef *ucd=usesImplClassDict->find(cd->name());
-            if (ucd==0)
+            if (ucd==0 || ucd->templSpecifiers!=templSpec)
             {
               ucd = new UsesClassDef(cd);
               usesImplClassDict->insert(cd->name(),ucd);
+              ucd->templSpecifiers = templSpec;
               //printf("Adding used class %s to class %s\n",
               //    cd->name().data(),name().data());
             }

@@ -35,6 +35,7 @@ class ExampleList;
 class ClassList;
 class BaseClassList;
 class GroupDef;
+class NamespaceList;
 
 extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
@@ -53,7 +54,8 @@ extern bool generateLink(OutputList &ol,const char *,
 extern void generateFileRef(OutputList &ol,const char *,
                              const char *linkTxt=0);
 extern bool matchArguments(ArgumentList *,ArgumentList *,
-                           const char *cl=0,const char *ns=0,bool checkCV=TRUE);
+                           const char *cl=0,const char *ns=0,bool checkCV=TRUE,
+                           NamespaceList *usingList=0);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
 extern QCString substituteClassNames(const QCString &s);
 extern QCString convertSlashes(const QCString &s,bool dots=FALSE);
