@@ -247,7 +247,7 @@ class ClassDef : public Definition
      */
     void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
     void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
-    void setIncludeFile(FileDef *fd,const char *incName,bool local); 
+    void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
     void insertMember(MemberDef *);
     void insertUsedFile(const char *);
     void computeAnchors();

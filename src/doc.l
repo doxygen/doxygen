@@ -2254,17 +2254,21 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 <DocScan>{CMD}"skipline"{BN}+		{ BEGIN( DocSkiplineKey ); firstLine=TRUE; }
 <DocScan>{CMD}"line"{BN}+		{ BEGIN( DocLineKey ); firstLine=TRUE; }
 <DocScan>{CMD}"until"{BN}+		{ BEGIN( DocUntilKey ); firstLine=TRUE; }
-<DocSkipKey>[^ \t\r\n]+			{ 
+<DocSkipKey>[^\r\n]+			{ 
   					  if (includeFileLength>0) 
-					    skipUntil(yytext); 
+					  {
+					    QCString pattern=yytext;
+					    skipUntil(pattern.stripWhiteSpace()); 
+					  }
   					  BEGIN( DocScan );
 					}
-<DocLineKey>[^ \t\r\n]+			{ 
+<DocLineKey>[^\r\n]+			{ 
   					  if (includeFileLength>0) 
 					  {
+					    QCString pattern=yytext;
 					    if (firstLine) outDoc->startCodeFragment();
 					    firstLine=FALSE;
-					    showLine(*outDoc,yytext); 
+					    showLine(*outDoc,pattern.stripWhiteSpace()); 
 					    BEGIN( DocKeyEnd );
 					  }
 					  else
@@ -2272,12 +2276,13 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					    BEGIN( DocScan );
 					  }
 					}
-<DocSkiplineKey>[^ \t\r\n]+		{ 
+<DocSkiplineKey>[^\r\n]+		{ 
   					  if (includeFileLength>0) 
 					  {
+					    QCString pattern=yytext;
 					    if (firstLine) outDoc->startCodeFragment();
 					    firstLine=FALSE;
-					    skipLine(*outDoc,yytext); 
+					    skipLine(*outDoc,pattern.stripWhiteSpace()); 
 					    BEGIN( DocKeyEnd );
 					  }
 					  else
@@ -2285,12 +2290,13 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					    BEGIN( DocScan );
 					  }
 					}
-<DocUntilKey>[^ \t\r\n]+		{ 
+<DocUntilKey>[^\r\n]+			{ 
   					  if (includeFileLength>0) 
 					  {
+					    QCString pattern=yytext;
 					    if (firstLine) outDoc->startCodeFragment();
 					    firstLine=FALSE;
-					    showUntil(*outDoc,yytext); 
+					    showUntil(*outDoc,pattern.stripWhiteSpace()); 
 					    BEGIN( DocKeyEnd );
 					  }
 					  else

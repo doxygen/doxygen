@@ -35,11 +35,13 @@
  * -------------+------------------------------------------------------------
  *  2002-01-23  | Update for new since 1.2.13
  * -------------+------------------------------------------------------------
+ *  2002-07-11  | Update for new since 1.2.16
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public TranslatorAdapter_1_2_16
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
@@ -1253,6 +1255,20 @@ class TranslatorFrench : public TranslatorAdapter_1_2_16
     {
       return "Implémenté dans "+trWriteList(numEntries)+".";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Table des matières";
+    }
+
+
 
 };
 #endif

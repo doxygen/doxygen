@@ -19,7 +19,8 @@
  *
  * Revision history
  *
- *  2002/07: modified trRelatedPagesDescription() method
+ *  2002/07: translated new items used since version 1.2.16
+ *  2002/06: modified trRelatedPagesDescription() method
  *           correct typo in trInclByDepGraph() method
  *  2002/01: translated new items used since version 1.2.13
  *           updated e-mail address
@@ -64,7 +65,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_16
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1344,6 +1345,19 @@ class TranslatorItalian : public TranslatorAdapter_1_2_16
     {
       return "Implementato in "+trWriteList(numEntries)+".";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Sommario";
+    }
+
 };
 
 #endif

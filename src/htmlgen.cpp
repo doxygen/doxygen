@@ -919,14 +919,8 @@ void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
   {
     baseName=baseName.right(baseName.length()-i-1); 
   }
-  QCString outName = Config_getString("HTML_OUTPUT")+
-#ifdef _WIN32
-    "\\"
-#else
-    "/"
-#endif
-    +baseName;
-  writeDotGraphFromFile(name,outName,BITMAP);
+  QCString outDir = Config_getString("HTML_OUTPUT");
+  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
   t << "<div align=\"center\">" << endl;
   t << "<img src=\"" << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\"" 

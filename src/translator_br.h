@@ -13,9 +13,11 @@
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@icmc.sc.usp.br>
  *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.2.13.2 (2002/05/10)
+ *   Version: 1.2.17 (2002/07/10)
  *
  * History:
+ *   1.2.17 (2002/07/10):
+ *      - Updated to Doxygen 1.2.17.
  *   1.2.13.2 (2002/05/10):
  *      - Latex Babel package language name fixed.
  *      - "Estrura" bug identified and fixed (Thanks to Jorge Ramos).
@@ -23,7 +25,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_2_16
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1332,6 +1334,18 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_16
     virtual QCString trImplementedInList(int numEntries)
     {
       return "Implementado em "+trWriteList(numEntries)+".";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Conteúdo";
     }
 
 };

@@ -1106,10 +1106,6 @@ ALIASES  = "english=\if english" \
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks!
 
-  \sa 
-    Section \ref cmdpage "\\page" for an example of the 
-            \ref cmdsection "\\section" command.
-
 <hr>
 \subsection cmdsubsection \subsection <subsection-name> (subsection title)
 

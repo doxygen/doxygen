@@ -424,11 +424,11 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       }
       if (fd->generateSourceFile()) // generate code for header
       {
-        cd->setIncludeFile(fd,iName,local);
+        cd->setIncludeFile(fd,iName,local,!root->includeName.isEmpty());
       }
       else // put #include in the class documentation without link
       {
-        cd->setIncludeFile(0,iName,local);
+        cd->setIncludeFile(0,iName,local,FALSE);
       }
     }
   }
@@ -6408,7 +6408,7 @@ static void readFiles(BufStr &output)
     bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
 
     BufStr tempBuf(10000);
-    BufStr *bufPtr = multiLineIsBrief ? &tempBuf : &output;
+    BufStr *bufPtr = multiLineIsBrief ? &output : &tempBuf;
 
     // add begin filename marker
     bufPtr->addChar(0x06);
@@ -6431,7 +6431,7 @@ static void readFiles(BufStr &output)
 
     bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
 
-    if (multiLineIsBrief)
+    if (!multiLineIsBrief)
     {
       convertCppComments(&tempBuf,&output);
     }

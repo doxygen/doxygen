@@ -168,6 +168,6 @@ class DotInclDepGraph
 };
 
 void generateGraphLegend(const char *path);
-void writeDotGraphFromFile(const char *inFile,const char *outFile,
-                      GraphOutputFormat format);
+void writeDotGraphFromFile(const char *inFile,const char *outDir,
+                           const char *outFile,GraphOutputFormat format);
 

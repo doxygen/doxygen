@@ -58,9 +58,12 @@
 //    - trCompoundReference(), trLegendDocs() updated
 //    - Removed some TODO's
 //
-//  2002/02/13 Oliver Brandt (o.brandt@tu-bs.de)
+//  2001/02/13 Oliver Brandt (o.brandt@tu-bs.de)
 //    - Updated for "new since 1.2.13" version
 //    - Removed some TODO's
+//
+//  2002-07-08 Oliver Brandt (o.brandt@tu-bs.de)
+//    - Updated for "new since 1.2.16" version
 //
 // Todo:
 //   - see FIXME
@@ -1392,6 +1395,17 @@ class TranslatorGerman : public TranslatorAdapter_1_2_16
       return "Implementiert in " + trWriteList(numEntries) + ".";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /* used in RTF documentation as a heading for the Table
+     * of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Inhaltsverzeichnis";
+    }
 };
 
 #endif
