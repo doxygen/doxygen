@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
 */
-// translation by Boris Bralo <boris.bralo@zg.tel.hr>
+// translation by Boris Bralo <boris.bralo@zg.htnet.hr>
 // Updates:
 // --------
 // 2000/08/20 
@@ -52,11 +52,14 @@
 //
 // 2003/04/29
 // - Added strings for 1.3.0
+//
+// 2004/06/21
+// - Added strings for 1.3.8
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_3_8
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1211,6 +1214,17 @@ class TranslatorCroatian : public TranslatorAdapter_1_3_8
 	{
 		return decode("Pronaðeno:");
 	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Izvorni kod datoteke " + filename;
+    }
 
 };
 

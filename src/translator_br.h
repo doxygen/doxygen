@@ -11,11 +11,12 @@
  * input used in their production; they are not affected by this license.
  *
  * Brazilian Portuguese version by
- *   Fabio "FJTC" Jun Takada Chino <chino@icmc.usp.br>
- *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.3 (2003/05/01)
+ *   Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
+ *   Version: 1.3.8 (2004/06/30)
  *
  * History:
+ * 	 1.3.8
+ *		- Updated to Doxygen 1.3.8
  *   1.3.3:
  *      - Updated to Doxygen 1.3.3
  *   1.3.2:
@@ -31,7 +32,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_3_8
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1535,5 +1536,17 @@ class TranslatorBrazilian: public TranslatorAdapter_1_3_8
     {
       return "Resultados:";
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return  "Código-Fonte de " + filename;
+    }
+    
 };
 #endif
