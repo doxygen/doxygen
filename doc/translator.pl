@@ -82,6 +82,11 @@
 #    method identifier and the opening parenthesis to match better
 #    the method prototype with the one in the translator.h.
 #
+# 2001/11/06
+#  - TranslatorAdapterCVS is not used any more.  There is nothing
+#    like "almost up-to-date" any more.  The script was simplified
+#    to reflect the changes.  
+#
 ################################################################
 
 use 5.005;
@@ -516,11 +521,7 @@ xxxTABLE_FOOTxxx
         my $status = shift @list;
         
         my $i = $status =~ s{^Translator$}{up-to-date};
-        
-        if ($i == 0) { 
-            $i = $status =~ s{^TranslatorAdapterCVS}{almost up-to-date};
-        }
-        
+
         if ($i == 0) { 
             $i = $status =~ s{^TranslatorAdapter_(\d)_(\d)_(\d)}
                              {$1.$2.$3}x;
@@ -972,19 +973,15 @@ print STDERR "\n\n";
 
     # If there are up-to-date translators, list them.  #{{{
     #
-    my @list = sort grep { $cb{$_} =~ m/^Translator(AdapterCVS)?$/ } keys %cb;
+    my @list = sort grep { $cb{$_} =~ m/^Translator$/ } keys %cb;    
     
     if (@list) {
         print FOUT "\n" .'-' x 70 . "\n";
         print FOUT "The following translator classes are up-to-date " 
                  . "(sorted alphabetically).\n"
                  . "This means that they derive from the Translator class.  "
-                 . "If the translator\n"
-                 . "derives from TranslatorAdapterCVS, it is considered "
-                 . "to be almost up-to-date.\n"
-                 . "In other words, it is newer than the last official "
-                 . "release.  Anyway, there\n"
-                 . "still may be some details listed even for "
+                 . "Anyway, there still\n"
+                 . "may be some details listed even for "
                  . "the up-to-date translators.\n"
                  . "Please, check the text below if the translator "
                  . "is marked so.\n\n";
@@ -994,10 +991,6 @@ print STDERR "\n\n";
             # Print the class name.
             #
             print FOUT "  $_";
-            
-            # For almost up-to-date translators, show also the base class.
-            #
-            if ($cb{$_} ne 'Translator') { print FOUT "\t($cb{$_})"; }
             
             # If some details were listed for the translator class,
             # add a notice.
@@ -1030,7 +1023,7 @@ print STDERR "\n\n";
     #
     @list = sort 
             grep { $cb{$_} !~ m/^Translator$/ } 
-            grep { $cb{$_} !~ m/^TranslatorAdapter/ } 
+            grep { $cb{$_} !~ m/^TranslatorAdapter_/ } 
             keys %cb;
 
     if (@list) {
