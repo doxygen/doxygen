@@ -27,6 +27,7 @@
 #include "config.h"
 #include "util.h"
 #include "doxygen.h"
+#include <string.h>
 
 static QCString getExtension()
 {
@@ -94,10 +95,11 @@ void ManGenerator::init()
   }
 }
 
-void ManGenerator::startFile(const char *name,const char *,bool)
+static QCString buildFileName(const char *name)
 {
   QCString fileName=name;
 
+#if 0
   // TODO: do something sensible here.
   if (fileName.left(6)=="class_")
   {
@@ -129,11 +131,20 @@ void ManGenerator::startFile(const char *name,const char *,bool)
   {
     fileName=fileName.left(i); 
   }
+#endif
+
   if (convertToQCString(fileName.right(2))!=Config_getString("MAN_EXTENSION")) 
   {
     fileName+=Config_getString("MAN_EXTENSION");
   }
-  startPlainFile(fileName);
+
+  return fileName;
+}
+
+void ManGenerator::startFile(const char *,const char *manName,
+                             const char *,bool)
+{
+  startPlainFile( buildFileName( manName ) );
   firstCol=TRUE;
 }
 
@@ -359,6 +370,46 @@ void ManGenerator::startMemberDoc(const char *,const char *,const char *,const c
   t << ".SS \""; 
   firstCol=FALSE;
   paragraph=FALSE;
+}
+
+void ManGenerator::startDoxyAnchor(const char *fname,const char *,
+                                   const char *name)
+{
+    const char *basename;
+
+    // something to be done?
+    if( !Config_getBool("MAN_LINKS") ) 
+    {
+	return; // no
+    }
+
+    // truncate after an (optional) ::
+    basename = strrchr( name, ':' );
+    if ( !basename ) 
+    {
+	basename = name;
+    } 
+    else 
+    {
+	basename++;
+    }
+
+    // only create file when it doesn't exist
+    QCString fileName=dir+"/"+buildFileName( basename );
+    QFile linkfile( fileName );
+    if ( !linkfile.open( IO_ReadOnly ) ) 
+    {
+	if ( linkfile.open( IO_WriteOnly ) ) 
+        {
+	      QTextStream linkstream;
+	      linkstream.setDevice(&linkfile);
+#if QT_VERSION >= 200
+	      linkstream.setEncoding(QTextStream::Latin1);
+#endif
+	      linkstream << ".so man" << getExtension() << "/" << buildFileName( fname ) << endl;
+	}
+    }
+    linkfile.close();
 }
 
 void ManGenerator::endMemberDoc()

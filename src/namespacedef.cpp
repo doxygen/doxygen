@@ -210,7 +210,7 @@ void NamespaceDef::computeAnchors()
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   QCString pageTitle=name()+" Namespace Reference";
-  startFile(ol,getOutputFileBase(),pageTitle);
+  startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);
   parseText(ol,theTranslator->trNamespaceReference(name()));
@@ -320,7 +320,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
 

@@ -300,9 +300,10 @@ void endTitle(OutputList &ol,const char *fileName,const char *name)
   ol.endTitleHead(fileName,name);
 }
 
-void startFile(OutputList &ol,const char *name,const char *title,bool external)
+void startFile(OutputList &ol,const char *name,const char *manName,
+               const char *title,bool external)
 {
-  ol.startFile(name,title,external);
+  ol.startFile(name,manName,title,external);
   if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,external);
 }
 
@@ -634,7 +635,7 @@ void writeHierarchicalIndex(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"hierarchy","Hierarchical Index");
+  startFile(ol,"hierarchy",0,"Hierarchical Index");
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
@@ -684,7 +685,7 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 {
   if (hierarchyClasses==0) return;
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"inherits","Graphical Class Hierarchy");
+  startFile(ol,"inherits",0,"Graphical Class Hierarchy");
   startTitle(ol,0);
   QCString title = theTranslator->trGraphicalHierarchy();
   QCString htmlHelpTitle = title;
@@ -763,7 +764,7 @@ void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"files","File Index");
+  startFile(ol,"files",0,"File Index");
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
   QCString htmlHelpTitle = title;
@@ -982,7 +983,7 @@ void writeNamespaceIndex(OutputList &ol)
   if (documentedNamespaces==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"namespaces","Namespace Index");
+  startFile(ol,"namespaces",0,"Namespace Index");
   startTitle(ol,0);
   QCString title = theTranslator->trNamespaceList();
   QCString htmlHelpTitle = title;
@@ -1324,7 +1325,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"classes.html","Alphabetical index");
+  startFile(ol,"classes.html",0,"Alphabetical index");
   startTitle(ol,0);
   parseText(ol,Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
@@ -1345,7 +1346,7 @@ void writeAnnotatedIndex(OutputList &ol)
   
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"annotated","Annotated Index");
+  startFile(ol,"annotated",0,"Annotated Index");
   startTitle(ol,0);
   QCString title = theTranslator->trCompoundList();
   QCString htmlHelpTitle = title;
@@ -1396,7 +1397,7 @@ void writePackageIndex(OutputList &ol)
   
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"packages","Package Index");
+  startFile(ol,"packages",0,"Package Index");
   startTitle(ol,0);
   QCString title = theTranslator->trPackageList();
   QCString htmlHelpTitle = title;
@@ -1588,7 +1589,7 @@ void writeMemberIndex(OutputList &ol)
   if (documentedMembers==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"functions","Compound Member Index");
+  startFile(ol,"functions",0,"Compound Member Index");
   QCString title = theTranslator->trCompoundMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
@@ -1845,7 +1846,7 @@ void writeFileMemberIndex(OutputList &ol)
   if (documentedFunctions==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"globals","File Member Index");
+  startFile(ol,"globals",0,"File Member Index");
   QCString title = theTranslator->trFileMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
@@ -1884,7 +1885,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
   if (documentedNamespaceMembers==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"namespacemembers","Namespace Member Index");
+  startFile(ol,"namespacemembers",0,"Namespace Member Index");
   QCString title = theTranslator->trNamespaceMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
@@ -1923,7 +1924,7 @@ void writeExampleIndex(OutputList &ol)
   if (Doxygen::exampleSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"examples","Example Index");
+  startFile(ol,"examples",0,"Example Index");
   startTitle(ol,0);
   QCString title = theTranslator->trExamples();
   QCString htmlHelpTitle = title;
@@ -2028,7 +2029,7 @@ void writePageIndex(OutputList &ol)
   if (indexedPages==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"pages","Page Index");
+  startFile(ol,"pages",0,"Page Index");
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
   QCString htmlHelpTitle = title;
@@ -2132,7 +2133,7 @@ void writeGraphInfo(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   generateGraphLegend(Config_getString("HTML_OUTPUT"));
-  startFile(ol,"graph_legend","Graph Legend");
+  startFile(ol,"graph_legend",0,"Graph Legend");
   startTitle(ol,0);
   parseText(ol,theTranslator->trLegendTitle());
   endTitle(ol,0,0);
@@ -2523,7 +2524,7 @@ void writeGroupIndex(OutputList &ol)
   if (documentedGroups==0) return; 
   ol.pushGeneratorState(); 
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"modules","Module Index");
+  startFile(ol,"modules",0,"Module Index");
   startTitle(ol,0);
   QCString title = theTranslator->trModules();
   QCString htmlHelpTitle = title;
@@ -2607,7 +2608,7 @@ void writeIndex(OutputList &ol)
 
   QCString indexName="index";
   if (Config_getBool("GENERATE_TREEVIEW")) indexName="main";
-  ol.startFile(indexName,title,FALSE);
+  ol.startFile(indexName,0,title,FALSE);
   
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -2655,7 +2656,7 @@ void writeIndex(OutputList &ol)
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::RTF);
 
-  ol.startFile("refman",0,FALSE);
+  ol.startFile("refman",0,0,FALSE);
   ol.startIndexSection(isTitlePageStart);
   if (!Config_getString("LATEX_HEADER").isEmpty()) 
   {
@@ -2780,7 +2781,7 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.disable(OutputGenerator::Man);
-    startFile(ol,Doxygen::mainPage->name,Doxygen::mainPage->title);
+    startFile(ol,Doxygen::mainPage->name,0,Doxygen::mainPage->title);
     //SectionInfo *si=0;
     //if (!Doxygen::mainPage->title.isEmpty() && !Doxygen::mainPage->name.isEmpty() &&
     //    (si=Doxygen::sectionDict[Doxygen::mainPage->name])!=0)

@@ -45,7 +45,8 @@ class HtmlGenerator : public OutputGenerator
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
     
     //void generateExternalIndex();
-    void startFile(const char *name,const char *title,bool external);
+    void startFile(const char *name,const char *manName,
+                   const char *title,bool external);
     void writeFooter(int,bool);
     void endFile();
     void clearBuffer();

@@ -460,7 +460,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=' ';
       result+=s.at(i);
     }
-    else if (c!=' ' ||
+    else if (!isspace(c) ||
 	      ( i!=0 && i!=l-1 && 
                 (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
                 isId(s.at(i+1))

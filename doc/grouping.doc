@@ -34,6 +34,7 @@ command in a special comment block. The first argument of the command
 is a label that should uniquely identify the group.  You can make an 
 entity a member of a specific group by putting 
 a \ref cmdingroup "\\ingroup" command inside its documentation block.
+The second argument is the title of the group.
 
 To avoid putting \ref cmdingroup "\\ingroup" commands in the documentation
 of each member you can also group members together by the 
@@ -44,10 +45,74 @@ documentation block.
 
 Groups can also be nested using these grouping markers.
 
+You will get an error message when you use the same group label more than once.
+If you don't want doxygen to enforce
+unique labels, then you can use \ref cmdaddtogroup "\\addtogroup" instead of
+\ref cmddefgroup "\\defgroup". It can be used exactly like \ref cmddefgroup "\\defgroup",
+but when the group has been defined already, then it silently merges the existing documentation
+with the new one.
+The title of the group is optional for this command, so you can use
+\verbatim
+/** \addtogroup <label> */
+/*\@{*/
+/*\@}*/
+\endverbatim
+to add members to a group that is defined in more detail elsewhere.
+
 Note that compound entities (like classes, files and namespaces) can
 be put into multiple groups, but members (like variable, functions, typedefs
 and enums) can only be a member of one group 
 (this restriction is to avoid ambiguous linking targets).
+
+Doxygen will put members into that group where the grouping definition had
+the highest priority: f.i. \ref cmdingroup "\\ingroup" overrides any automatic
+grouping definition via <code>\@{</code> <code>\@}</code>. Conflicting grouping
+definitions with the same priority trigger a warning, unless one definition
+was for a member without any explicit documentation. The following example
+puts VarInA into group A and silently resolves the conflict for IntegerVariable by
+putting it into group IntVariables, because the second instance of IntegerVariable
+is undocumented:
+
+\verbatim
+
+/**
+ * \ingroup A
+ */
+extern int VarInA;
+
+/**
+ * \defgroup IntVariables Global integer variables
+ */
+/*@{*/
+
+/** an integer variable */
+extern int IntegerVariable;
+
+/*@}*/
+
+....
+
+/**
+ * \defgroup Variables Global variables
+ */
+/*@{*/
+
+/** a variable in group A */
+int VarInA;
+
+int IntegerVariable;
+
+/*@}*/
+\endverbatim
+
+The priorities of grouping definitions are (from highest to lowest):
+\ref cmdingroup "\\ingroup", \ref cmddefgroup "\\defgroup",
+\ref cmdaddtogroup "\\addtogroup", \ref cmdweakgroup "\\weakgroup".
+The last command is exactly like \ref cmdaddtogroup "\\addtogroup"
+with a lower priority. It was added to allow "lazy" grouping
+definitions: you can use commands with a higher priority in your .h
+files to define the hierarchy and \ref cmdweakgroup "\\weakgroup"
+in .c files without having to duplicate the hierarchy exactly.
 
 \par Example:
 \verbinclude group.cpp

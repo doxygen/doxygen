@@ -408,7 +408,7 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   writeDefaultStyleSheetPart3(t);
 }
 
-void LatexGenerator::startFile(const char *name,const char *,bool)
+void LatexGenerator::startFile(const char *name,const char *,const char *,bool)
 {
   QCString fileName=name;
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";

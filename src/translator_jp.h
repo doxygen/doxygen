@@ -520,9 +520,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_5
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
+    /* these are for the member sections of a class, struct or union */
     QCString trPublicMembers()
     { return "公開メンバ"; }
     QCString trPublicSlots()
@@ -543,7 +541,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_5
     { return "非公開スロット"; }
     QCString trStaticPrivateMembers()
     { return "静的非公開メンバ"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -745,17 +742,17 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_5
     {
       return "このファイルの解説を見る。";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "事前条件";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "事後条件";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invariant";

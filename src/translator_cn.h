@@ -504,17 +504,17 @@ class TranslatorChinese : public TranslatorAdapter_1_2_1
     {
       return "浏览该文件的文档。";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "前置条件";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "后置条件";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "不变性";

@@ -528,17 +528,17 @@ class TranslatorSlovene : public TranslatorAdapter_1_1_5
     {
       return "dokumenacija tekoèe datoteke.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Predpogoji (preconditions)";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Naknadni pogoji (posconditions)";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invarianta";

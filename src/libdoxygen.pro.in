@@ -142,9 +142,10 @@ SOURCES      =	ce_lex.cpp \
 		util.cpp \
 		version.cpp
 
-win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+win32:TMAKE_CXXFLAGS       += -DQT_NODLL -Zm200
 INCLUDEPATH                += ../qtools
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen
 OBJECTS_DIR                =  ../objects
+

@@ -626,7 +626,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pageType+=cType;
   pageTitle+=pageType+" Reference";
   if (outerTempArgList) pageTitle.prepend(" Template");
-  startFile(ol,getOutputFileBase(),pageTitle);
+  startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trCompoundReference(name(),m_compType,outerTempArgList!=0));
   endTitle(ol,getOutputFileBase(),name());
@@ -1096,7 +1096,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Man);
   ol.writeString("\n");
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
   ol.popGeneratorState();
@@ -1121,7 +1121,8 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  startFile(ol,m_memListFileName,theTranslator->trMemberList());
+  startFile(ol,m_memListFileName,m_memListFileName,
+            theTranslator->trMemberList());
   startTitle(ol,0);
   parseText(ol,name()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
@@ -1891,7 +1892,7 @@ QCString ClassDef::getSourceFileBase() const
   return convertNameToFile(m_fileName+"-source"); 
 }
 
-void ClassDef::setGroupDefForAllMembers(GroupDef *gd)
+void ClassDef::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs)
 {
   gd->addClass(this);
   //printf("ClassDef::setGroupDefForAllMembers(%s)\n",gd->name().data());
@@ -1904,10 +1905,10 @@ void ClassDef::setGroupDefForAllMembers(GroupDef *gd)
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       MemberDef *md=mi->memberDef;
-      md->setGroupDef(gd);
+      md->setGroupDef(gd,pri,fileName,startLine,hasDocs);
       gd->insertMember(md,TRUE);
       ClassDef *innerClass = md->getClassDefOfAnonymousType();
-      if (innerClass) innerClass->setGroupDefForAllMembers(gd);
+      if (innerClass) innerClass->setGroupDefForAllMembers(gd,pri,fileName,startLine,hasDocs);
     }
   }
 }

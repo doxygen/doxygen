@@ -571,17 +571,17 @@ class TranslatorNorwegian : public TranslatorAdapter_1_2_2
     {
       return "Gå til dokumentasjonen for denne filen.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return "Før-kondisjon";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return "Etter-kondisjon";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return "Invariant";

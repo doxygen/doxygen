@@ -48,6 +48,8 @@ class GroupDef : public Definition
     DefType definitionType() { return TypeGroup; }
     QCString getOutputFileBase() const;
     const char *groupTitle() const { return title; }
+    void setGroupTitle( const char *newtitle );
+    bool hasGroupTitle( ) { return titleSet; }
     void addFile(const FileDef *def); 
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
@@ -56,6 +58,8 @@ class GroupDef : public Definition
     void addPage(PageInfo *def);                // pages in this group
     void addExample(const PageInfo *def);       // examples in this group
     void insertMember(MemberDef *def,bool docOnly=FALSE);
+    void removeMember(MemberDef *md);
+    bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject()
@@ -82,6 +86,7 @@ class GroupDef : public Definition
 
   private: 
     QCString title;                     // title of the group
+    bool titleSet;                      // true if title is not the same as the name
     QCString fileName;                  // base name of the generated file
     FileList *fileList;                 // list of files in the group
     ClassSDict *classSDict;             // list of classes in the group
@@ -115,7 +120,6 @@ class GroupDef : public Definition
     /* user defined member groups */
     MemberGroupList *memberGroupList;   // list of member groups in this group
     MemberGroupDict *memberGroupDict;
-
 };
 
 class GroupList : public QList<GroupDef>

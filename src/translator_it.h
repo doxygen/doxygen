@@ -57,9 +57,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-#include "translator.h"
-
-class TranslatorItalian : public Translator
+class TranslatorItalian : public TranslatorAdapterCVS
 {
   public:
 
@@ -676,9 +674,7 @@ class TranslatorItalian : public Translator
       return result;
     }
 
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union
-     */
+    /* these are for the member sections of a class, struct or union */
     QCString trPublicMembers()
     { return "Membri pubblici"; }
     QCString trPublicSlots()
@@ -699,7 +695,6 @@ class TranslatorItalian : public Translator
     { return "Slot privati"; }
     QCString trStaticPrivateMembers()
     { return "Membri privati statici"; }
-    /*! \endmgroup */
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -903,17 +898,17 @@ class TranslatorItalian : public Translator
     {
       return "Vai alla documentazione di questo file.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Precondizione";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Postcondizione";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invariante";

@@ -530,9 +530,7 @@ class TranslatorKorean : public TranslatorAdapter_1_1_0
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
+    /* these are for the member sections of a class, struct or union */
     QCString trPublicMembers()
     { return "공용 메소드"; }
     QCString trPublicSlots()
@@ -553,7 +551,6 @@ class TranslatorKorean : public TranslatorAdapter_1_1_0
     { return "Private Slots"; }
     QCString trStaticPrivateMembers()
     { return "정적 프라이베이트 메소드"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -757,17 +754,17 @@ class TranslatorKorean : public TranslatorAdapter_1_1_0
     {
       return "이 파일의 문서화로 가시오";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "전제 조건";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "후미 조건"; // "후치조건"
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "변하지 않는";

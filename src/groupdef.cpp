@@ -44,14 +44,8 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   exampleDict = new PageSDict(257);
   allMemberList = new MemberList;
   allMemberNameInfoDict = new MemberNameInfoDict(1009);
-  if (t) 
-    title = t;
-  else
-  {
-    title = na;
-    title.at(0)=toupper(title.at(0));
-  }
   fileName = (QCString)"group_"+na;
+  setGroupTitle( t );
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
@@ -89,6 +83,22 @@ GroupDef::~GroupDef()
   delete memberGroupList;
   delete memberGroupDict;
 }
+
+void GroupDef::setGroupTitle( const char *t )
+{
+  if ( t && strlen(t) )
+  {
+    title = t;
+    titleSet = TRUE;
+  }
+  else
+  {
+    title = name();
+    title.at(0)=toupper(title.at(0));
+    titleSet = FALSE;
+  }
+}
+
 
 void GroupDef::distributeMemberGroupDocumentation()
 {
@@ -158,7 +168,7 @@ void GroupDef::addMembersToMemberGroup()
 
 void GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
-  //printf("GroupDef::insertMember(%s)\n",md->name().data());
+  // fprintf(stderr, "GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoDict)[md->name()]))
   { // member with this name already found
@@ -237,6 +247,70 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
   //addMemberToGroup(md,groupId);
 }
 
+void GroupDef::removeMember(MemberDef *md)
+{
+  // fprintf(stderr, "GroupDef(%s)::removeMember( %s )\n", title.data(), md->name().data());
+  MemberNameInfo *mni = allMemberNameInfoDict->find(md->name());
+  if (mni)
+  {
+    MemberNameInfoIterator mnii(*mni);
+    while( mnii.current() )
+    {
+      if( mnii.current()->memberDef == md )
+      {
+	mni->remove(mnii.current());
+        break;
+      }
+      ++mnii;
+    }
+    if( mni->isEmpty() )
+    {
+      allMemberNameInfoDict->remove(md->name());
+      delete mni;
+    }
+
+    allMemberList->remove(md); 
+    switch(md->memberType())
+    {
+      case MemberDef::Variable:
+	decVarMembers.remove(md);
+        docVarMembers.remove(md);
+        break;
+      case MemberDef::Function: 
+        decFuncMembers.remove(md);
+        docFuncMembers.remove(md);
+        break;
+      case MemberDef::Typedef:      
+        decTypedefMembers.remove(md);
+        docTypedefMembers.remove(md);
+        break;
+      case MemberDef::Enumeration:  
+        decEnumMembers.remove(md);
+        docEnumMembers.remove(md);
+        break;
+      case MemberDef::EnumValue:    
+	decEnumValMembers.remove(md);
+	docEnumValMembers.remove(md);
+        break;
+      case MemberDef::Prototype:    
+        decProtoMembers.remove(md);
+        docProtoMembers.remove(md);
+        break;
+      case MemberDef::Define:       
+        decDefineMembers.remove(md);
+        docDefineMembers.remove(md);
+        break;
+      default:
+        err("GroupDef::removeMember(): unexpected member remove in file!\n");
+    }
+  }
+}
+
+bool GroupDef::containsGroup(const GroupDef *def)
+{
+    return groupList->find(def) >= 0;
+}
+
 void GroupDef::addGroup(const GroupDef *def)
 {
   if (Config_getBool("SORT_MEMBER_DOCS"))
@@ -280,7 +354,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
   //ol.disable(OutputGenerator::Man);
-  startFile(ol,getOutputFileBase(),title);
+  startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);
   endTitle(ol,getOutputFileBase(),title);
@@ -510,12 +584,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
 void addClassToGroups(Entry *root,ClassDef *cd)
 {
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
     {
       gd->addClass(cd);
       //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
@@ -526,13 +600,13 @@ void addClassToGroups(Entry *root,ClassDef *cd)
 void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
 {
   //printf("root->groups->count()=%d\n",root->groups->count());
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
     //printf("group `%s'\n",s->data());
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
     {
       gd->addNamespace(nd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
@@ -542,12 +616,13 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
 
 void addGroupToGroups(Entry *root,GroupDef *subGroup)
 {
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]) &&
+	!gd->containsGroup(subGroup) )
     {
       gd->addGroup(subGroup);
       subGroup->addParentGroup(gd);
@@ -555,34 +630,87 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   }
 }
 
-/*! Add a member to all groups it is contained in */
+/*! Add a member to the group with the highest priority */
 void addMemberToGroups(Entry *root,MemberDef *md)
 {
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  //printf("  Root 0x%p = %s, md 0x%p %s\n", root, root->name.data(), md, md->name().data() );
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+
+  // Search entry's group list for group with highest pri.
+  Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
+  GroupDef *fgd=0;
+  for (;(g=gli.current());++gli)
   {
-    //printf("addMemberToGroups(group=%s,member=%s)\n",s->data(),md->name().data());
-    GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+    GroupDef *gd;
+    if (!g->groupname.isEmpty() &&
+        (gd=Doxygen::groupDict[g->groupname]) &&
+	g->pri >= pri)
     {
-      GroupDef *mgd = md->getGroupDef();
-      if (mgd==0)
-      {
-        gd->insertMember(md);
-        md->setGroupDef(gd);
-        ClassDef *cd = md->getClassDefOfAnonymousType();
-        if (cd) cd->setGroupDefForAllMembers(gd);
+      if( fgd && g->pri == pri ) {
+         warn(root->fileName.data(), root->startLine,
+           "Warning: Member %s found in multiple %s groups! "
+           "The member will be put in group %s, and not in group %s",
+	   md->name().data(), Grouping::getGroupPriName( pri ),
+	   gd->name().data(), fgd->name().data()
+          );
       }
-      else if (mgd!=gd)
+
+      fgd = gd;
+      pri = g->pri;
+    }
+  }
+
+  // put member into group defined by this entry?
+  if( fgd )
+  {
+    GroupDef *mgd = md->getGroupDef();
+    bool insertit = FALSE;
+    if (mgd==0)
+      insertit = TRUE;
+    else if (mgd!=fgd)
+    {
+      bool moveit = FALSE;
+
+      // move member from one group to another if 
+      // - the new one has a higher priority
+      // - the new entry has the same priority, but with docs where the old one had no docs
+      if( md->getGroupPri() < pri )
+	  moveit = TRUE;
+      else
       {
-        warn(mgd->getDefFileName(),mgd->getDefLine(),
-             "Warning: Member %s found in multiple groups.!\n"
-             "The member will be put in group %s, and not in group %s",
-              md->name().data(),mgd->name().data(),gd->name().data()
-            );
+	  if( md->getGroupPri() == pri )
+	  {
+
+	      if( root->doc.length() != 0 && !md->getGroupHasDocs() )
+		  moveit = TRUE;
+	      else if( root->doc.length() != 0 && md->getGroupHasDocs() )
+	      {
+		  warn(md->getGroupFileName(),md->getGroupStartLine(),
+		       "Warning: Member documentation for %s found several times in %s groups!\n"
+		       "%s:%d: The member will remain in group %s, and won't be put into group %s",
+		       md->name().data(), Grouping::getGroupPriName( pri ),
+		       root->fileName.data(), root->startLine,
+		       mgd->name().data(),
+		       fgd->name().data()
+		       );
+	      }
+	  }
       }
-      //printf("Member %s: in group %s\n",md->name().data(),s->data());
+
+      if( moveit )
+      {
+        mgd->removeMember(md);
+        insertit = TRUE;
+      }
+    }
+
+    if( insertit )
+    {
+      fgd->insertMember(md);
+      md->setGroupDef(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+      ClassDef *cd = md->getClassDefOfAnonymousType();
+      if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
     }
   }
 }
@@ -590,12 +718,12 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 
 void addExampleToGroups(Entry *root,PageInfo *eg)
 {
-  QListIterator<QCString> sli(*root->groups);
-  QCString *s;
-  for (;(s=sli.current());++sli)
+  QListIterator<Grouping> gli(*root->groups);
+  Grouping *g;
+  for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
     {
       gd->addExample(eg);
       //printf("Example %s: in group %s\n",eg->name().data(),s->data());

@@ -48,9 +48,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-#include "translator.h"
-
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapterCVS
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -921,17 +919,17 @@ class TranslatorRussian : public Translator
     {
       return decode("См. документацию.");
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return decode("Предусловие");
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return decode("Постусловие");
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return decode("Инвариант");

@@ -857,7 +857,8 @@ void RTFGenerator::beginRTFSection()
   t << Rtf_Style["Heading2"]->reference << "\n";
 }
 
-void RTFGenerator::startFile(const char *name,const char *, bool )
+void RTFGenerator::startFile(const char *name,const char *,
+                             const char *, bool )
 {
   QCString fileName=name;
 

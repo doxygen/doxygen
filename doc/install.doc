@@ -421,6 +421,10 @@ Here is what is required:
     to produce PDF output instead of DVI, or the PDF can be produced
     from PostScript using the utility <code>ps2pdf</code>.
 
+    If you want to use MikTeX then you need to download the
+    fancyhdr package separately. You can find it at:
+    ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/
+
 <li>If you want to generate compressed HTML help 
     (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
     config file, then you need the Microsoft HTML help workshop. 

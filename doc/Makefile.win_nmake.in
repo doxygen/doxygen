@@ -26,5 +26,11 @@ all: FORCE
 
 clean: 
 	del /s /q ..\html ..\latex
+	del translator_report.txt *.bak
+
+language: language.doc language.tpl translator.pl
+
+language.doc: language.tpl FORCE
+	$(PERL) translator.pl
 
 FORCE:

@@ -289,7 +289,8 @@ class OutputGenerator : public BaseOutputDocInterface
     ///////////////////////////////////////////////////////////////
     // structural output interface
     ///////////////////////////////////////////////////////////////
-    virtual void startFile(const char *name,const char *title,bool ext) = 0;
+    virtual void startFile(const char *name,const char *manName,
+                           const char *title,bool ext) = 0;
     virtual void writeFooter(int,bool) = 0;
     virtual void endFile() = 0;
     virtual void startIndexSection(IndexSections) = 0;

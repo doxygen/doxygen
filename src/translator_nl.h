@@ -501,17 +501,17 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     {
       return "Ga naar de documentatie van deze file.";
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     QCString trPrecondition()
     {
       return "Preconditie";
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     QCString trPostcondition()
     {
       return "Postconditie";
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     QCString trInvariant()
     {
       return "Invariant";

@@ -84,10 +84,16 @@ class MemberDef : public Definition
 
     // scope query members
     ClassDef *getClassDef() const         { return classDef; }
-    GroupDef *getGroupDef() const         { return group; }
     FileDef  *getFileDef() const          { return fileDef; }
     NamespaceDef* getNamespaceDef() const { return nspace; }
     //Definition *getCompoundDef() const;
+
+    // querying the grouping definition
+    GroupDef *getGroupDef() const            { return group; }
+    Grouping::GroupPri_t getGroupPri() const { return grouppri; }
+    const char *getGroupFileName() const     { return groupFileName; }
+    int getGroupStartLine() const            { return groupStartLine; }
+    bool getGroupHasDocs() const             { return groupHasDocs; }
 
     // direct kind info 
     Protection protection() const         { return prot; }
@@ -137,7 +143,7 @@ class MemberDef : public Definition
     void setMaxInitLines(int lines)       { userInitLines=lines; }
     void setMemberClass(ClassDef *cd)     { classDef=cd; }
     void setSectionList(MemberList *sl)   { section=sl; }
-    void setGroupDef(GroupDef *gd);
+    void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void setExplicitExternal(bool b)      { explExt=b; }
     
     void makeRelated()                    { related=TRUE; } 
@@ -274,6 +280,11 @@ class MemberDef : public Definition
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and 
                                    // cached here. 
+    Grouping::GroupPri_t grouppri; // priority of this definition
+    QCString groupFileName;   // file where this grouping was defined
+    int groupStartLine;       // line  "      "      "     "     "
+    bool groupHasDocs;        // true if the entry that caused the grouping was documented
+
 
 
     // disable copying of member defs

@@ -431,9 +431,6 @@ class Translator
      */
     virtual QCString trEnumerationValues() = 0;
     
-    /*! This is used in man pages as the author section. */
-    virtual QCString trAuthor() = 0;
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -503,9 +500,6 @@ class Translator
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate() = 0;
-
-    /*! this text is generated when the \\author command is used. */
-    virtual QCString trAuthors() = 0;
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns() = 0;
@@ -688,13 +682,13 @@ class Translator
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation() = 0;
 
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition() = 0;
 
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition() = 0;
 
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant() = 0;
 
     /*! Text shown before a multi-line variable/enum initialization */
@@ -846,6 +840,17 @@ class Translator
     virtual QCString trMember(bool first_capital, bool singular) = 0;
     virtual QCString trField(bool first_capital, bool singular) = 0;
     virtual QCString trGlobal(bool first_capital, bool singular) = 0;
+
+    
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.2.7
+    //////////////////////////////////////////////////////////////////////////
+        
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. 
+     */
+    virtual QCString trAuthor(bool first_capital, bool singular) = 0;
+
 };
 
 #endif

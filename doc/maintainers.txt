@@ -15,7 +15,7 @@ Petr P&rcaron;ikryl: prikrylp@skil.cz
 Vlastimil Havran: havran@fel.cvut.cz
 
 Danish
-Erik Søe Sørensen: erik@mail.nu
+Erik S&oslash;e S&oslash;rensen: erik@mail.nu
 
 Dutch 
 Dimitri van Heesch: dimitri@stack.nl

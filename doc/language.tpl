@@ -1,6 +1,6 @@
 /******************************************************************************
- * <notice>This is the template for generating language.doc.  Edit this file,
- * not the language.doc.</notice>
+ * <notice>This is the template for generating language.doc.  
+ * Edit manually this file, not the language.doc!</notice>
  * 
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
@@ -23,7 +23,8 @@ Doxygen has support for multiple languages. This means
 that the text fragments that doxygen generates can changed into languages 
 other than English (the default) at configuration time.
 <p>
-Currently, $numlang languages are supported (sorted alphabetically): 
+Currently (version $version), $numlang languages 
+are supported (sorted alphabetically): 
 $languages.
 
 The table of information related to the supported languages follows.
@@ -33,7 +34,6 @@ when the translator was updated.
 <p>
 
 $information_table
-Have a look at <code>doxygen/doc/translator.txt</code> for more details.
 <p>
 
 Most people on the list have indicated that they were also busy

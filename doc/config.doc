@@ -142,6 +142,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_latex_output LATEX_OUTPUT
 <li> \refitem cfg_macro_expansion MACRO_EXPANSION
 <li> \refitem cfg_man_extension MAN_EXTENSION
+<li> \refitem cfg_man_links MAN_LINKS
 <li> \refitem cfg_man_output MAN_OUTPUT
 <li> \refitem cfg_max_dot_graph_height MAX_DOT_GRAPH_HEIGHT
 <li> \refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
@@ -997,6 +998,16 @@ EXTRA_PACKAGES = times
  \addindex MAX_EXTENSION
  The \c MAN_EXTENSION tag determines the extension that is added to
  the generated man pages (default is the subroutine's section .3)
+
+\anchor cfg_man_links
+<dt>\c MAN_LINKS <dd> 
+ \addindex MAN_LINKS
+ If the \c MAN_LINKS tag is set to \c YES and Doxygen generates man output, 
+ then it will generate one additional man file for each entity documented in 
+ the real man page(s). These additional files only source the real man page, 
+ but without them the man command would be unable to find the correct page. 
+ The default is \c NO.
+
 </dl>
 
 \subsection config_prepro Preprocessor related options
@@ -1138,22 +1149,22 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_include_graph
 <dt>\c INCLUDE_GRAPH <dd>
  \addindex INCLUDE_GRAPH 
- If the \c ENABLE_PREPROCESSING, \c INCLUDE_GRAPH, and \c HAVE_DOT tags are 
- set to \c YES then doxygen will generate a graph for each documented file 
+ If the \c ENABLE_PREPROCESSING, \c SEARCH_INCLUDES, \c INCLUDE_GRAPH, and \c HAVE_DOT
+ tags are set to \c YES then doxygen will generate a graph for each documented file
  showing the direct and indirect include dependencies of the file with other
  documented files.
 
 \anchor cfg_included_by_graph
 <dt>\c INCLUDED_BY_GRAPH <dd>
  \addindex INCLUDED_BY_GRAPH 
- If the \c ENABLE_PREPROCESSING, \c INCLUDED_BY_GRAPH, and \c HAVE_DOT tags are 
- set to \c YES then doxygen will generate a graph for each documented header
- file showing the documented files that directly or indirectly include this
- file.
+ If the \c ENABLE_PREPROCESSING, \c SEARCH_INCLUDES, \c INCLUDED_BY_GRAPH, and
+ \c HAVE_DOT tags are set to \c YES then doxygen will generate a graph for each
+ documented header file showing the documented files that directly or indirectly
+ include this file.
 
 \anchor cfg_graphical_hierarchy
 <dt>\c GRAPHICAL_HIERARCHY <dd>
- \addindex GRAPHICAL_HIERATCHY
+ \addindex GRAPHICAL_HIERARCHY
  If the \c GRAPHICAL_HIERARCHY and \c HAVE_DOT tags are set to \c YES then 
  doxygen will graphical hierarchy of all classes instead of a textual one.
 

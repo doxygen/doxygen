@@ -40,7 +40,8 @@ class ManGenerator : public OutputGenerator
     OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
 
     static void init();
-    void startFile(const char *name,const char *title,bool external);
+    void startFile(const char *name,const char *manName,
+                   const char *title,bool external);
     void writeFooter(int,bool) {}
     void endFile();
     void clearBuffer();
@@ -125,7 +126,7 @@ class ManGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc();
-    void startDoxyAnchor(const char *,const char *,const char *) {}
+    void startDoxyAnchor(const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *) {}
     void startCodeAnchor(const char *) {}
     void endCodeAnchor() {}

@@ -127,6 +127,7 @@ documentation:
 <li> \refitem cmdverbinclude \verbinclude
 <li> \refitem cmdversion \version
 <li> \refitem cmdwarning \warning
+<li> \refitem cmdweakgroup \weakgroup
 <li> \refitem cmddollar \$
 <li> \refitem cmdat \@
 <li> \refitem cmdbackslash \\
@@ -150,10 +151,14 @@ Doxygen. Unrecognized commands are treated as normal text.
     Structural indicators
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\subsection cmdaddtogroup \addtogroup <name> 
+\subsection cmdaddtogroup \addtogroup <name> [(title)]
   \addindex \addtogroup
-  Add extra documentation to a group \<name\> that was previously defined 
-  using \\defgroup. This command can also be used to add a number of 
+  Defines a group just like \ref cmddefgroup "\\defgroup", but in contrast to
+  that command using the same \<name\> more than once will not result in a warning,
+  but rather one group with a merged documentation and the first title found in
+  any of the commands.
+
+  The title is optional, so this command can also be used to add a number of 
   entities to an existing group using \@{ and \@} like this:
 
 \verbatim
@@ -177,7 +182,8 @@ Doxygen. Unrecognized commands are treated as normal text.
   /*! @} */
 \endverbatim
 
-  See also \ref cmddefgroup "\\defgroup" and \ref cmdingroup "\\ingroup". 
+  \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup" and
+  \ref cmdweakgroup "\\weakgroup".
 
 \subsection cmdclass \class <name> [<header-file>] [<header-name>]
 
@@ -225,9 +231,10 @@ Doxygen. Unrecognized commands are treated as normal text.
   categories. You can also use groups as members of other groups,
   thus building a hierarchy of groups.
 
-  The \<name\> argument should an single word identifier.
+  The \<name\> argument should be a single word identifier.
   
-  \sa section \ref cmdingroup "\\ingroup"
+  \sa page \ref grouping "Grouping", sections \ref cmdingroup "\\ingroup", \ref cmdaddtogroup "\\addtogroup",
+  \ref cmdweakgroup "\\weakgroup".
 
 <hr>
 
@@ -348,7 +355,8 @@ Doxygen. Unrecognized commands are treated as normal text.
   class, file or namespace, then it will be added to the group or
   groups identified by \<groupname\>.
 
-  \sa section \ref cmddefgroup "\\defgroup".
+  \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup",
+  \ref cmdaddtogroup "\\addtogroup" and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
 \subsection cmdinterface \interface 
@@ -554,6 +562,15 @@ Public/Protected/Private/... section.
   This command is equivalent to \\typedef and \\fn.
 
   \sa section \ref cmdfn "\\fn" and \ref cmdtypedef "\\typedef".
+
+<hr>
+\subsection cmdweakgroup \weakgroup <name> [(title)]
+  \addindex \addtogroup
+  Can be used exactly like \ref cmdaddtogroup "\\addtogroup", but has
+  a lower priority when it comes to resolving conflicting grouping
+  definitions.
+
+  \sa page \ref grouping "Grouping" and \ref cmdaddtogroup "\\addtogroup".
 
 <hr>
 

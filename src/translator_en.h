@@ -18,7 +18,26 @@
 #ifndef TRANSLATOR_EN_H
 #define TRANSLATOR_EN_H
 
-#include "translator.h"
+// When defining a translator class for the new language, follow
+// the description in the documentation.  One of the steps says
+// that you should copy the translator_en.h (this) file to your
+// translator_xx.h new file.  Your new language should use the
+// Translator class as the base class.  This means that you need to
+// implement exactly the same (pure virtual) methods as the
+// TranslatorEnglish does.  Because of this, it is a good idea to
+// start with the copy of TranslatorEnglish and replace the strings
+// one by one.
+//
+// It is not necessary to include "translator.h" or
+// "translator_adapter.h" here.  The files are included in the
+// language.cpp correctly.  Not including any of the mentioned
+// files frees the maintainer from thinking about whether the
+// first, the second, or both files should be included or not, and
+// why.  This holds namely for localized translators because their
+// base class is changed occasionaly to adapter classes when the
+// Translator class changes the interface, or back to the
+// Translator class (by the local maintainer) when the localized
+// translator is made up-to-date again.
 
 class TranslatorEnglish : public Translator
 {
@@ -35,8 +54,19 @@ class TranslatorEnglish : public Translator
     virtual QCString idLanguage()
     { return "english"; }
     
-    /*! Used to get the LaTeX command(s) for the language support. This method
-     *  was designed for languages which do wish to use a babel package.
+    /*! Used to get the LaTeX command(s) for the language support. 
+     *  This method should return string with commands that switch
+     *  LaTeX to the desired language.  For example 
+     *  <pre>"\\usepackage[german]{babel}\n"
+     *  </pre>
+     *  or
+     *  <pre>"\\usepackage{polski}\n"
+     *  "\\usepackage[latin2]{inputenc}\n"
+     *  "\\usepackage[T1]{fontenc}\n"
+     *  </pre>
+     * 
+     * The English LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
      */
     virtual QCString latexLanguageSupportCommand()
     {
@@ -434,9 +464,6 @@ class TranslatorEnglish : public Translator
     { return "Enumeration values"; }
     
     /*! This is used in man pages as the author section. */
-    virtual QCString trAuthor()
-    { return "Author"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -542,9 +569,6 @@ class TranslatorEnglish : public Translator
     { return "Date"; }
 
     /*! this text is generated when the \\author command is used. */
-    virtual QCString trAuthors()
-    { return "Author(s)"; }
-
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
     { return "Returns"; }
@@ -1179,6 +1203,7 @@ class TranslatorEnglish : public Translator
     /*! Used as ansicpg for RTF file 
      * 
      * The following table shows the correlation of Charset name, Charset Value and 
+     * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
@@ -1197,6 +1222,7 @@ class TranslatorEnglish : public Translator
      * HANGEUL_CHARSET         129 (x81)             949
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
      * 
      */
     virtual QCString trRTFansicp()
@@ -1204,6 +1230,7 @@ class TranslatorEnglish : public Translator
       return "1252";
     }
     
+
     /*! Used as ansicpg for RTF fcharset 
      *  \see trRTFansicp() for a table of possible values.
      */
@@ -1225,7 +1252,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trClass(bool first_capital, bool singular)
     { 
       QCString result((first_capital ? "Class" : "class"));
-      if (first_capital) toupper(result.at(0));
       if (!singular)  result+="es";
       return result; 
     }
@@ -1306,7 +1332,20 @@ class TranslatorEnglish : public Translator
       if (!singular)  result+="s";
       return result; 
     }
-   
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Author" : "author"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
 };
 
 #endif
