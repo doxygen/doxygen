@@ -94,7 +94,7 @@ void dochandler_exit()
 // MarkupHandler
 //----------------------------------------------------------------------
 
-MarkupHandler::MarkupHandler(QList<IDoc> &children,QString &curString)
+MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
   : m_children(children), m_curString(curString), m_curMarkup(IDocMarkup::Normal)
 {
   addStartHandler("bold",this,&MarkupHandler::startBold);
@@ -700,8 +700,9 @@ SimpleSectHandler::~SimpleSectHandler()
 
 void SimpleSectHandler::startSimpleSect(const QXmlAttributes& attrib)
 {
-  m_type = s_typeMapper->stringToType(attrib.value("kind"));
-  debug(2,"start simple section %s\n",attrib.value("kind").data());
+  m_typeString = attrib.value("kind");
+  m_type = s_typeMapper->stringToType(m_typeString);
+  debug(2,"start simple section %s\n",m_typeString.data());
   m_parent->setDelegate(this);
 }
 
@@ -846,7 +847,7 @@ HighlightHandler::HighlightHandler(IBaseHandler *parent)
   m_children.setAutoDelete(TRUE);
   addEndHandler("highlight",this,&HighlightHandler::endHighlight);
   addStartHandler("ref",this,&HighlightHandler::startRef);
-  m_hl = Invalid;
+  m_hl = IDocHighlight::Invalid;
 }
 
 HighlightHandler::~HighlightHandler()

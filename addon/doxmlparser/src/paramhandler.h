@@ -25,13 +25,6 @@
 #include "baseiterator.h"
 #include "linkedtexthandler.h"
 
-class ParamIterator : public BaseIterator<IParamIterator,IParam,IParam>
-{
-  public:
-    ParamIterator(const QList<IParam> &list) : 
-      BaseIterator<IParamIterator,IParam,IParam>(list) {}
-};
-
 class ParamHandler : public IParam, public BaseHandler<ParamHandler>
 {
   public:
@@ -59,13 +52,21 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
 
   private:
     IBaseHandler *m_parent;
-    QList<ILinkedText> m_type;
+    QList<LinkedTextImpl> m_type;
     QString m_declName;
     QString m_defName;
     QString m_attrib;
     QString m_array;
-    QList<ILinkedText> m_defVal;
+    QList<LinkedTextImpl> m_defVal;
     LinkedTextHandler *m_linkedTextHandler;
 };
+
+class ParamIterator : public BaseIterator<IParamIterator,IParam,ParamHandler>
+{
+  public:
+    ParamIterator(const QList<ParamHandler> &list) : 
+      BaseIterator<IParamIterator,IParam,ParamHandler>(list) {}
+};
+
 
 #endif

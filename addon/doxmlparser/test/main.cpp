@@ -140,6 +140,10 @@ void DumpDoc(IDoc *doc)
       {
         IDocSimpleSect *ss = dynamic_cast<IDocSimpleSect*>(doc);
         ASSERT(ss!=0);
+        printf("     --- simplesect type=%s --- \n",ss->typeString().data());
+        DumpDoc(ss->title());
+        DumpDoc(ss->description());
+        printf("     --- end simplesect --- \n");
       }
       break;
     case IDoc::Title:
@@ -158,8 +162,12 @@ void DumpDoc(IDoc *doc)
       break;
     case IDoc::Ref:
       {
-        IDocRef *ref = dynamic_cast<IDocRef*>(ref);
+        IDocRef *ref = dynamic_cast<IDocRef*>(doc);
         ASSERT(ref!=0);
+        printf(" ref=%p\n",ref);
+        printf("     --- ref id=%s text=%s --- \n",
+            ref->refId().data(),ref->text().data());
+        printf("     --- end ref --- \n");
       }
       break;
     case IDoc::VariableList:
@@ -312,6 +320,43 @@ void DumpDoc(IDoc *doc)
   }
 }
 
+void DumpGraph(IGraph *graph)
+{
+  if (graph==0) { printf(" --- no graph ---\n"); return; }
+  printf(" --- graph ----\n");
+  INodeIterator *ni = graph->nodes();
+  INode *node;
+  for (ni->toFirst();(node=ni->current());ni->toNext())
+  {
+    printf("   --- node id=%s label=%s linkId=%s\n",
+           node->id().data(),
+           node->label().data(),
+           node->linkId().data()
+          );
+    IChildNodeIterator *cni = node->children();
+    IChildNode *cn;
+    for (cni->toFirst();(cn=cni->current());cni->toNext())
+    {
+      printf("    + child id=%s label=%s relation=%s\n",
+          cn->node()->id().data(),
+          cn->node()->label().data(),
+          cn->relationString().data()
+      );
+      IEdgeLabelIterator *eli = cn->edgeLabels();
+      IEdgeLabel *el;
+      for (eli->toFirst();(el=eli->current());eli->toNext())
+      {
+        printf("      edgeLabel=%s\n",el->label().data());
+      }
+      eli->release();
+    }
+    cni->release();
+  }
+  ni->release();
+  printf(" --- end graph ----\n");
+
+}
+
 int main(int argc,char **argv)
 {
   if (argc!=2)
@@ -321,6 +366,8 @@ int main(int argc,char **argv)
   }
 
   IDoxygen *dox = createObjectModel();
+
+  dox->setDebugLevel(0);
 
   if (!dox->readXMLDir(argv[1]))
   {
@@ -422,6 +469,41 @@ int main(int argc,char **argv)
       printf("===== detailed description ==== \n");
       DumpDoc(doc);
     }
+
+    if (comp->kind()==ICompound::Class)
+    {
+      IClass *cls = dynamic_cast<IClass*>(comp);
+      ASSERT(cls!=0);
+
+      printf("==== inheritance graph ==== \n");
+      DumpGraph(cls->inheritanceGraph());
+
+      printf("==== collabration graph ==== \n");
+      DumpGraph(cls->collaborationGraph());
+
+      printf("==== base classes ==== \n");
+      IRelatedCompoundIterator *bcli = cls->baseClasses();
+      IRelatedCompound *bClass;
+      for (bcli->toFirst();(bClass=bcli->current());bcli->toNext())
+      {
+        ICompound *bc = bClass->compound();
+        printf("    + class %s\n",bc->name().data());
+        bc->release();
+      }
+      bcli->release();
+
+      printf("==== derived classes ==== \n");
+      IRelatedCompoundIterator *dcli = cls->derivedClasses();
+      IRelatedCompound *dClass;
+      for (dcli->toFirst();(dClass=dcli->current());dcli->toNext())
+      {
+        ICompound *dc = dClass->compound();
+        printf("    + class %s\n",dc->name().data());
+        dc->release();
+      }
+      dcli->release();
+    }
+    
     comp->release();
   }
   cli->release();

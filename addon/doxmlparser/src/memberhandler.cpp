@@ -360,7 +360,7 @@ void MemberHandler::setCompoundHandler(CompoundHandler *c)
 ICompound *MemberHandler::compound() const
 {
   m_compound->addref();
-  return m_compound;
+  return m_compound->toICompound();
 }
 
 void MemberHandler::setSectionHandler(SectionHandler *c)

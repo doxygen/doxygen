@@ -19,29 +19,36 @@
 #include "basehandler.h"
 
 class LT_Ref;
-
-class LinkedTextIterator : public BaseIterator<ILinkedTextIterator,ILinkedText,ILinkedText>
+class LinkedTextImpl : public ILinkedText
 {
   public:
-    LinkedTextIterator(const QList<ILinkedText> &list) : 
-      BaseIterator<ILinkedTextIterator,ILinkedText,ILinkedText>(list) {}
+    virtual ~LinkedTextImpl() {}
 };
 
 class LinkedTextHandler : public BaseHandler<LinkedTextHandler>
 {
   public:
-    LinkedTextHandler(IBaseHandler *parent,QList<ILinkedText> &children);
+    LinkedTextHandler(IBaseHandler *parent,QList<LinkedTextImpl> &children);
     virtual ~LinkedTextHandler();
     virtual void start(const char *endTag);
     virtual void end();
     virtual void startRef(const QXmlAttributes& attrib);
     virtual void endRef();
-    static QString toString(const QList<ILinkedText> &list);
+    static QString toString(const QList<LinkedTextImpl> &list);
+
+    // ILinkedText
 
   private:
     IBaseHandler *m_parent;
-    QList<ILinkedText> &m_children;
+    QList<LinkedTextImpl> &m_children;
     LT_Ref *m_ref;
+};
+
+class LinkedTextIterator : public BaseIterator<ILinkedTextIterator,ILinkedText,LinkedTextImpl>
+{
+  public:
+    LinkedTextIterator(const QList<LinkedTextImpl> &list) : 
+      BaseIterator<ILinkedTextIterator,ILinkedText,LinkedTextImpl>(list) {}
 };
 
 #endif

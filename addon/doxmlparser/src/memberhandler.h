@@ -175,13 +175,13 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     QString m_id;
     QString m_protection;
     QString m_virtualness;
-    QList<ILinkedText> m_type;
-    QList<ILinkedText> m_initializer;
-    QList<ILinkedText> m_exception;
+    QList<LinkedTextImpl> m_type;
+    QList<LinkedTextImpl> m_initializer;
+    QList<LinkedTextImpl> m_exception;
     QString m_name;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
-    QList<IParam> m_params;
+    QList<ParamHandler> m_params;
     QList<MemberReference> m_references;
     QList<MemberReference> m_referencedBy;
     MemberReference *m_reimplements;

@@ -34,6 +34,7 @@ class GraphHandler : public IGraph, public BaseHandler<GraphHandler>
     void startGraph(const QXmlAttributes &attrib);
     void endGraph();
     void startNode(const QXmlAttributes &attrib);
+    NodeHandler *getNodeById(const QString &id) const;
 
     // IGraph
     virtual INodeIterator *nodes() const;
@@ -41,6 +42,7 @@ class GraphHandler : public IGraph, public BaseHandler<GraphHandler>
   private:
     IBaseHandler *m_parent;
     QList<NodeHandler> m_nodes;
+    QDict<NodeHandler> *m_nodeDict;
 };
 
 //----------------------------------------------------------------------
@@ -49,7 +51,7 @@ class NodeHandler : public INode, public BaseHandler<NodeHandler>
 {
     friend class ChildNodeIterator;
   public:
-    NodeHandler(IBaseHandler *parent);
+    NodeHandler(GraphHandler *gh);
     virtual ~NodeHandler();
 
     void startNode(const QXmlAttributes &attrib);
@@ -72,6 +74,7 @@ class NodeHandler : public INode, public BaseHandler<NodeHandler>
     QString m_label;
     QString m_link;
     QList<ChildNodeHandler> m_children;
+    GraphHandler *m_graph;
 };
 
 class NodeIterator : public BaseIterator<INodeIterator,INode,NodeHandler>
@@ -87,7 +90,7 @@ class ChildNodeHandler : public IChildNode, public BaseHandler<ChildNodeHandler>
 {
     friend class EdgeLabelIterator;
   public:
-    ChildNodeHandler(IBaseHandler *parent);
+    ChildNodeHandler(IBaseHandler *parent,GraphHandler *gh);
     virtual ~ChildNodeHandler();
 
     void startChildNode(const QXmlAttributes &attrib);
@@ -95,17 +98,18 @@ class ChildNodeHandler : public IChildNode, public BaseHandler<ChildNodeHandler>
     void startEdgeLabel(const QXmlAttributes &attrib);
 
     // IChildNode
-    virtual QString id() const { return m_id; }
+    virtual INode *node() const;
     virtual NodeRelation relation() const { return m_relation; }
     virtual QString relationString() const { return m_relationString; }
     virtual IEdgeLabelIterator *edgeLabels() const;
 
   private:
-    IBaseHandler *m_parent;
-    QString       m_id;
-    NodeRelation  m_relation;
-    QString       m_relationString;
+    IBaseHandler           *m_parent;
+    QString                 m_id;
+    NodeRelation            m_relation;
+    QString                 m_relationString;
     QList<EdgeLabelHandler> m_edgeLabels;
+    GraphHandler           *m_graph;
 };
 
 class ChildNodeIterator : public BaseIterator<IChildNodeIterator,IChildNode,ChildNodeHandler>

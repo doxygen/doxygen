@@ -75,8 +75,8 @@ template<class T> class ElementMapper
         Handler m_handler;
     };
 
-    typedef StartElementHandler<T> StartElementHandlerT;
-    typedef EndElementHandler<T>   EndElementHandlerT;
+    typedef StartElementHandler StartElementHandlerT;
+    typedef EndElementHandler   EndElementHandlerT;
   
   public:
     ElementMapper() : m_startHandlers(67), m_endHandlers(67)

@@ -3077,7 +3077,8 @@ static void computeClassRelations()
     {
       findBaseClassesForClass(root,cd,cd,DocumentedOnly,FALSE);
     }
-    if ((cd==0 || !cd->hasDocumentation()) && bName.right(2)!="::")
+    if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && 
+        bName.right(2)!="::")
     {
       if (!root->name.isEmpty() && root->name[0]!='@')
         warn_undoc(

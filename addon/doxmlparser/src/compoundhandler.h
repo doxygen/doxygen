@@ -28,9 +28,52 @@ class DocHandler;
 class ProgramListingHandler;
 class GraphHandler;
 class MemberHandler;
+class CompoundHandler;
+class SectionHandler;
 
-class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
+
+class RelatedCompound : public IRelatedCompound
 {
+  public:
+    RelatedCompound(CompoundHandler *parent,
+                    const QString &id,
+                    Protection prot,
+                    Kind kind
+                   ) :
+      m_parent(parent), m_id(id), m_protection(prot), m_kind(kind) {}
+    virtual ~RelatedCompound() {}
+
+    virtual ICompound *compound() const;
+    virtual Protection protection() const { return m_protection; }
+    virtual Kind kind() const { return m_kind; }
+    
+  private:  
+    CompoundHandler *m_parent;
+    QString m_id;
+    Protection m_protection;  
+    Kind m_kind;
+};
+
+class RelatedCompoundIterator : public BaseIterator<IRelatedCompoundIterator,IRelatedCompound,RelatedCompound>
+{
+  public:
+    RelatedCompoundIterator(const QList<RelatedCompound> &list) : 
+      BaseIterator<IRelatedCompoundIterator,IRelatedCompound,RelatedCompound>(list) {}
+};
+
+
+class CompoundHandler : public IClass,
+                        public IStruct,
+                        public IUnion,
+                        public IException,
+                        public IInterface,
+                        public INamespace,
+                        public IFile,
+                        public IGroup,
+                        public IPage,
+                        public BaseHandler<CompoundHandler>
+{
+    friend class RelatedCompound;
   public:
     virtual void startSection(const QXmlAttributes& attrib);
     virtual void startCompound(const QXmlAttributes& attrib);
@@ -44,6 +87,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     virtual void startProgramListing(const QXmlAttributes& attrib);
     virtual void startInheritanceGraph(const QXmlAttributes& attrib);
     virtual void startCollaborationGraph(const QXmlAttributes& attrib);
+    virtual void startInnerClass(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
@@ -51,6 +95,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     bool parseXML(const QString &compId);
     void initialize(MainHandler *mh);
     void insertMember(MemberHandler *mh);
+    ICompound *toICompound() const;
 
     // ICompound implementation
     QString name() const { return m_name; }
@@ -60,25 +105,21 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     ISectionIterator *sections() const;
     IDocRoot *briefDescription() const;
     IDocRoot *detailedDescription() const;
-    IGraph *inheritanceGraph() const;
-    IGraph *collaborationGraph() const;
     IMember *memberById(const QString &id) const;
     IMemberIterator *memberByName(const QString &name) const;
     void release();
 
+    // IClass implementation
+    IGraph *inheritanceGraph() const;
+    IGraph *collaborationGraph() const;
+    IRelatedCompoundIterator *baseClasses() const;
+    IRelatedCompoundIterator *derivedClasses() const;
+    ICompoundIterator *nestedClasses() const;
+    
   private:
-    struct RelatedClass
-    {
-      RelatedClass(const QString &id,const QString &prot,const QString &virt) :
-        m_id(id),m_protection(prot),m_virtualness(virt) {}
-
-      QString m_id;
-      QString m_protection;
-      QString m_virtualness;
-    };
-    QList<RelatedClass>     m_superClasses;
-    QList<RelatedClass>     m_subClasses;
-    QList<ISection>         m_sections;
+    QList<RelatedCompound> m_superClasses;
+    QList<RelatedCompound> m_subClasses;
+    QList<SectionHandler>  m_sections;
     DocHandler             *m_brief;
     DocHandler             *m_detailed;
     ProgramListingHandler  *m_programListing;
@@ -95,6 +136,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     MainHandler            *m_mainHandler;
     GraphHandler           *m_inheritanceGraph;
     GraphHandler           *m_collaborationGraph;
+    QList<QString>          m_innerClasses;
 
 };
 

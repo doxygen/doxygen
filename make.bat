@@ -30,6 +30,8 @@ type makeconfig                   > doc\Makefile
 type doc\Makefile.win_%MAKE%.in   >>doc\Makefile
 type makeconfig                   > addon\doxywizard\Makefile
 type addon\doxywizard\Makefile.win_%MAKE%.in >>addon\doxywizard\Makefile
+type makeconfig                        > addon\doxmlparser\src\Makefile
+type addon\doxmlparser\src\Makefile.in >>addon\doxmlparser\src\Makefile
 
 REM build in release or debug mode 
 REM sed is used to replace $extraopts by either debug or release while copying
