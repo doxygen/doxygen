@@ -119,6 +119,8 @@ SearchIndex *  Doxygen::searchIndex=0;
 SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
+QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
+bool           Doxygen::lookupCacheEnabled=FALSE;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -149,7 +151,6 @@ void clearAll()
   Doxygen::formulaNameDict.clear();  
   Doxygen::tagDestinationDict.clear();
   delete Doxygen::mainPage; Doxygen::mainPage=0;
-
 }
 
 void statistics()
@@ -3387,7 +3388,7 @@ static bool findClassRelation(
       }
       baseClassName=stripTemplateSpecifiersFromScope
                           (removeRedundantWhiteSpace(baseClassName));
-      MemberDef *baseClassTypeDef;
+      MemberDef *baseClassTypeDef=0;
       QCString templSpec;
       ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,
                                            cd->getFileDef(), // todo: is this ok?
@@ -3417,7 +3418,9 @@ static bool findClassRelation(
            );
 
         int i;
-        if (baseClass==0 && (i=baseClassName.find('<'))!=-1) 
+        int si=baseClassName.findRev("::");
+        if (si==-1) si=0;
+        if (baseClass==0 && (i=baseClassName.find('<',si))!=-1) 
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
@@ -3450,10 +3453,10 @@ static bool findClassRelation(
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
-        if (!found && (i=baseClassName.findRev("::"))!=-1)
+        if (!found && si!=-1)
         {
           // replace any namespace aliases
-          replaceNamespaceAliases(baseClassName,i);
+          replaceNamespaceAliases(baseClassName,si);
           baseClass=getResolvedClass(cd,cd->getFileDef(),baseClassName);
           found=baseClass!=0 && baseClass!=cd;
         }
@@ -3493,7 +3496,11 @@ static bool findClassRelation(
           else if (mode==DocumentedOnly)
           {
             QCString usedName;
-            if (baseClassTypeDef) usedName=biName;
+            if (baseClassTypeDef) 
+            {
+              usedName=biName;
+              //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
+            }
             cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
             // add this class as super class to the base class
             baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
@@ -6975,7 +6982,8 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
 
   QFileInfo fi(fileName);
   if (!fi.exists()) return;
-  if (Config_getString("INPUT_FILTER").isEmpty())
+  QCString filterName = getFileFilter(fileName);
+  if (filterName.isEmpty())
   {
     QFile f(fileName);
     if (!f.open(IO_ReadOnly))
@@ -6994,11 +7002,11 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    QCString cmd=Config_getString("INPUT_FILTER")+" "+fileName;
+    QCString cmd=filterName+" "+fileName;
     FILE *f=popen(cmd,"r");
     if (!f)
     {
-      err("Error: could not execute filter %s\n",Config_getString("INPUT_FILTER").data());
+      err("Error: could not execute filter %s\n",filterName.data());
       return;
     }
     const int bufSize=1024;
@@ -7428,6 +7436,8 @@ void initDoxygen()
   excludeNameDict.setAutoDelete(TRUE);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
+  Doxygen::lookupCache.setAutoDelete(TRUE);
+  Doxygen::lookupCacheEnabled=FALSE;
 }
 
 void cleanUpDoxygen()
@@ -8225,6 +8235,10 @@ void parseInput()
   computeClassRelations();        
   classEntries.clear();          
 
+  // from now on the class relations are fixed and we can
+  // start to cache them to improve performance
+  Doxygen::lookupCacheEnabled=TRUE;
+  
   msg("Searching for enumerations...\n");
   findEnums(root);
   findEnumDocumentation(root);

@@ -190,9 +190,10 @@ static FILE *checkAndOpenFile(const QCString &absName)
     if (alreadyIncluded) return 0; 
 
     
-    if (!Config_getString("INPUT_FILTER").isEmpty())
+    QCString filterName = getFileFilter(absName);
+    if (!filterName.isEmpty())
     {
-      QCString cmd = Config_getString("INPUT_FILTER")+" "+absName;
+      QCString cmd = filterName+" "+absName;
       f=popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
@@ -1480,7 +1481,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Command>.
 <UndefName>{ID}				{
   					  Define *def;
-  					  if ((def=isDefined(yytext)) && !def->isPredefined)
+  					  if ((def=isDefined(yytext)) 
+					      /*&& !def->isPredefined*/
+					     )
 					  {
 					    //printf("undefining %s\n",yytext);
 					    def->undef=TRUE;
@@ -1955,7 +1958,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    FileState *fs=g_includeStack.pop();
 					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
-					    if (Config_getString("INPUT_FILTER").isEmpty())
+					    if (getFileFilter(fs->fileName.data()).isEmpty())
 					      fclose(fs->filePtr);
 					    else
 					      pclose(fs->filePtr);
@@ -2203,7 +2206,7 @@ void preprocessFile(const char *fileName,BufStr &output)
     
   }
  
-  QCString &inputFilter = Config_getString("INPUT_FILTER");
+  QCString inputFilter = getFileFilter(fileName);
   if (inputFilter.isEmpty())
   {
     preYYin = fopen(fileName,"r");

@@ -115,6 +115,9 @@
 #ifdef LANG_LT
 #include "translator_lt.h"
 #endif
+#ifdef LANG_ZA
+#include "translator_za.h"
+#endif
 #endif
 
 #define L_EQUAL(a) !stricmp(langName,a)

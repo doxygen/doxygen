@@ -2017,7 +2017,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<FuncCall,Body,MemberCall,MemberCall2>\"	{
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;

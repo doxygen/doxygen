@@ -246,7 +246,7 @@ static bool readCodeFragment(const char *fileName,
 {
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
-  QCString cmd=Config_getString("INPUT_FILTER")+" \""+fileName+"\"";
+  QCString cmd=getFileFilter(fileName)+" \""+fileName+"\"";
   FILE *f = Config_getBool("FILTER_SOURCE_FILES") ? popen(cmd,"r") : fopen(fileName,"r");
   bool found=FALSE;
   if (f)

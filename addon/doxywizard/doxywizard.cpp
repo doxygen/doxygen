@@ -308,24 +308,6 @@ Step3::Step3(QWidget *parent) : QWidget(parent,"Step3")
   bg->setButton(0);
   layout->addWidget(bg);
 
-  //w = new QWidget( this );
-  //bl = new QHBoxLayout(w);
-  //bl->addWidget(new QLabel("Select the output language:",w));
-  //m_outputLang = new QComboBox(w);
-  //m_outputLang->setMinimumSize(m_outputLang->sizeHint());
-  //bl->setSpacing(10);
-  //bl->addWidget(m_outputLang);
-  //bl->addStretch(1);
-  //m_outputLang->insertItem("English");
-  //m_outputLang->insertItem("Dutch");
-  //m_outputLang->insertItem("German");
-  //m_outputLang->insertItem("Spanish");
-  //m_outputLang->insertItem("French");
-  //m_outputLang->insertItem("Chinese");
-  //m_outputLang->insertItem("Japanese");
-  //m_outputLang->insertItem("Korean");
-  //layout->addWidget(w);
-
   layout->addStretch(1);
 
   connect(m_latexEnabled,SIGNAL(stateChanged(int)),
@@ -558,9 +540,9 @@ void Step4::setDiagramMode(DiagramMode mode)
 {
   switch(mode)
   {
-    case DM_None:    m_diagramMode->setButton(0); break;
-    case DM_Builtin: m_diagramMode->setButton(1); break;
-    case DM_Dot:     m_diagramMode->setButton(2); break;
+    case DM_None:    m_diagramMode->setButton(0); diagramModeChanged(0); break;
+    case DM_Builtin: m_diagramMode->setButton(1); diagramModeChanged(1); break;
+    case DM_Dot:     m_diagramMode->setButton(2); diagramModeChanged(2); break;
   }
 }
 
@@ -654,6 +636,12 @@ MainWidget::MainWidget(QWidget *parent)
   // initialize config settings
   Config::instance()->init();
   Config::instance()->check();
+#if defined(Q_OS_MACX)
+  // we bundle dot with doxywizard on the Mac so we can safely enable
+  // it here
+  Config_getString("DOT_PATH")=getResourcePath();
+  Config_getBool("HAVE_DOT")=TRUE;
+#endif
   
   QWidget *w = new QWidget(this);
   setCentralWidget(w);
@@ -1130,7 +1118,10 @@ void MainWidget::launchExpert()
   expert.init();
   expert.exec();
 #if defined(Q_OS_MACX)
+  // we bundle dot with doxywizard on the Mac so we can safely enable
+  // it here
   Config_getString("DOT_PATH")=getResourcePath();
+  Config_getBool("HAVE_DOT")=TRUE;
 #endif
   setConfigSaved(FALSE);
 }
@@ -1183,6 +1174,13 @@ void MainWidget::resetConfig()
   {
     // initialize config settings
     Config::instance()->init();
+#if defined(Q_OS_MACX)
+    // we bundle dot with doxywizard on the Mac so we can safely enable
+    // it here
+    Config_getString("DOT_PATH")=getResourcePath();
+    Config_getBool("HAVE_DOT")=TRUE;
+#endif
+
     m_configFileName = "";
     setConfigSaved(FALSE);
     statusBar()->message("Configuration settings reset to their defaults",messageTimeout);

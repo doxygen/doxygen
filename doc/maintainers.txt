@@ -9,6 +9,9 @@
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
 
+TranslatorAfrikaans
+Johan Prinsloo: johan@zippysnoek.com
+
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: chino@icmc.sc.usp.br
 
@@ -16,8 +19,8 @@ TranslatorCatalan
 Albert Mora: amora@iua.upf.es
 
 TranslatorChinese
+Li Daobing: lidaobing@gmail.com
 Wei Liu: liuwei@asiainfo.com
-Wang Weihan: wangweihan@capinfo.com.cn
 
 TranslatorChinesetraditional
 Daniel YC Lin: daniel@twpda.com

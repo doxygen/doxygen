@@ -22,6 +22,7 @@
 #include "qtbc.h"
 #include <qtextstream.h>
 #include <qdatetime.h>
+#include <qcache.h>
 #include "groupdef.h"
 #include "filedef.h"
 #include "classdef.h"
@@ -49,6 +50,15 @@ class StringDict : public QDict<QCString>
   public: 
     StringDict(uint size=17) : QDict<QCString>(size) {}
     virtual ~StringDict() {}
+};
+
+struct LookupInfo
+{
+  LookupInfo(ClassDef *cd=0,MemberDef *td=0,QCString ts="") 
+    : classDef(cd), typeDef(td), templSpec(ts) {}
+  ClassDef  *classDef;
+  MemberDef *typeDef;
+  QCString   templSpec;
 };
 
 
@@ -101,6 +111,8 @@ class Doxygen
     static SDict<DefinitionList>    *symbolMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
+    static QCache<LookupInfo>        lookupCache;
+    static bool                      lookupCacheEnabled;    
 };
 
 void initDoxygen();

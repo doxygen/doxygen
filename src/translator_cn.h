@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_2_13
+class TranslatorChinese : public TranslatorAdapter_1_3_3
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -36,24 +36,24 @@ class TranslatorChinese : public TranslatorAdapter_1_2_13
     virtual QCString idLanguage()
     { return "chinese"; }
 
-		/*! Used to get the LaTeX command(s) for the language support. 
-		 * This method should return string with commands that switch
-		 * LaTeX to the desired language.  For example 
-		 * <pre>"\\usepackage[german]{babel}\n"
-		 * </pre>
-		 * or
-		 * <pre>"\\usepackage{polski}\n"
-		 * "\\usepackage[latin2]{inputenc}\n"
-		 * "\\usepackage[T1]{fontenc}\n"
-		 * </pre>
-		 * 
-		 * The English LaTeX does not use such commands.  Because of this
-		 * the empty string is returned in this implementation.
-		 */
-		virtual QCString latexLanguageSupportCommand()
-		{
+    /*! Used to get the LaTeX command(s) for the language support. 
+     * This method should return string with commands that switch
+     * LaTeX to the desired language.  For example 
+     * <pre>"\\usepackage[german]{babel}\n"
+     * </pre>
+     * or
+     * <pre>"\\usepackage{polski}\n"
+     * "\\usepackage[latin2]{inputenc}\n"
+     * "\\usepackage[T1]{fontenc}\n"
+     * </pre>
+     * 
+     * The English LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
+     */
+    virtual QCString latexLanguageSupportCommand()
+    {
       return "";
-		}
+    }
 
 
 		/*! return the language charset. This will be used for the HTML output */
@@ -495,8 +495,8 @@ class TranslatorChinese : public TranslatorAdapter_1_2_13
         case ClassDef::Struct: result+="结构"; break;
         case ClassDef::Union:  result+="联合"; break;
         case ClassDef::Interface:  result+="接口"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="协议"; break; // translate me!
+        case ClassDef::Category:   result+="分类"; break; // translate me!
         case ClassDef::Exception:  result+="异常"; break;
       }
       result+="参考";
@@ -661,8 +661,8 @@ class TranslatorChinese : public TranslatorAdapter_1_2_13
         case ClassDef::Struct:     result+="结构"; break;
         case ClassDef::Union:      result+="联合"; break;
         case ClassDef::Interface:  result+="接口"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="协议"; break; // translate me!
+        case ClassDef::Category:   result+="分类"; break; // translate me!
         case ClassDef::Exception:  result+="异常"; break;
       }
       result+="的文档由以下文件生成：";
@@ -1281,6 +1281,194 @@ class TranslatorChinese : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "参考";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      /* return "Implements "+trWriteList(numEntries)+"."; */
+      return "实现了"CN_SPC+trWriteList(numEntries)+"。";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      /* return "Implemented in "+trWriteList(numEntries)+"."; */
+      return "在"CN_SPC+trWriteList(numEntries)+CN_SPC"内被实现。";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      /* return "Table of Contents"; */
+      return "目录";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+/*    return "Deprecated List";  */
+      return "过时列表";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      /*      return "Events"; */
+      return "事件";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      /* return "Event Documentation"; */
+      return "事件文档";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      /* return "Package Types"; */
+      return "模块类型";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      /* return "Package Functions"; */
+      return "模块函数";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      /* return "Static Package Functions"; */
+      return "静态模块函数";
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      /* return "Package Attributes"; */
+      return "模块属性";
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      /* return "Static Package Attributes"; */
+      return "静态模块属性";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      /* return "All"; */
+      return "全部";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      /* return "Here is the call graph for this function:"; */
+      return "函数调用图:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      /* return "Search for"; */
+      return "搜索";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      /* return "Search Results"; */
+      return "搜索结果";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        /* return "Sorry, no documents matching your query."; */
+        return "对不起，找不到与你的查询相符的文档。";
+      }
+      else if (numDocuments==1)
+      {
+        /* return "Found <b>1</b> document matching your query."; */
+        return "找到<b>1</b>篇与你的查询相符的文档。";
+      }
+      else 
+      {
+        /* return "Found <b>$num</b> documents matching your query. "
+               "Showing best matches first."; */
+        return "找到<b>$num</b>篇与你的查询相符的文档。"
+               "先显示最吻合的文档。";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Matches:";
+      return "符合的结果:";
     }
 };
 

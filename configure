@@ -28,7 +28,7 @@ f_insttool=NO
 f_english=NO
 f_wizard=NO
 f_thread=NO
-f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt
+f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za
 
 while test -n "$1";  do
   case $1 in
@@ -111,7 +111,7 @@ Options:
                         See PLATFORMS for a list of possibilities
   --prefix dir          Installation prefix directory (doxygen will be
                         put in PREFIX/bin/doxygen)
-                        [default: /usr]
+                        [default: $f_prefix]
   --docdir dir          Documentation is installed in DOCDIR/doxygen/
                         [default: PREFIX/share/doc/packages]
   --install name        Use \`name' as the name of the GNU install tool
@@ -527,7 +527,7 @@ echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
 	@allowed=(NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,
-		  DK,SK,UA,GR,TW,SR,CA,LT);
+		  DK,SK,UA,GR,TW,SR,CA,LT,ZA);
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

@@ -104,6 +104,7 @@ bool getDefs(const QCString &scopeName,
                     bool checkCV=FALSE
                    );
 
+QCString getFileFilter(const char* name);
 
 bool resolveRef(/* in */  const char *scName,
                 /* in */  const char *name,

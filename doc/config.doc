@@ -97,6 +97,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_extract_private EXTRACT_PRIVATE
 \refitem cfg_extract_static EXTRACT_STATIC
 \refitem cfg_file_patterns FILE_PATTERNS
+\refitem cfg_filter_patterns FILTER_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
 \refitem cfg_full_path_names FULL_PATH_NAMES
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
@@ -776,6 +777,16 @@ function's detailed documentation block.
  is the value of the \c INPUT_FILTER tag, and \<input-file\> is the name of an
  input file. Doxygen will then use the output that the filter program writes
  to standard output.
+
+\anchor cfg_filter_patterns
+<dt>\c FILTER_PATTERNS <dd>
+ \addindex FILTER_PATTERNS
+ The \c FILTER_PATTERNS tag can be used to specify filters on a per file pattern
+ basis.  Doxygen will compare the file name with each pattern and apply the
+ filter if there is a match.  The filters are a list of the form:
+ pattern=filter (like <code>*.cpp=my_cpp_filter</code>). See \c INPUT_FILTER for further
+ info on how filters are used. If \c FILTER_PATTERNS is empty, \c INPUT_FILTER
+ is applied to all files. 
 
 \anchor cfg_filter_source_files
 <dt>\c FILTER_SOURCE_FILES <dd>

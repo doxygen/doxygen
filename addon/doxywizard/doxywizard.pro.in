@@ -53,7 +53,7 @@ win32:INCLUDEPATH       += .
 macosx-c++:LIBS+=-framework CoreFoundation -framework ApplicationServices
 
 # extra link options
-win32:TMAKE_LFLAGS = /NODEFAULTLIB:msvcrt.lib
+win32:TMAKE_LFLAGS = /NODEFAULTLIB:msvcrt.lib doxywizard.res
 win32:TMAKE_LIBS = $(QTDIR)\lib\qtmain.lib $(QTDIR)\lib\qt-mt332.lib user32.lib gdi32.lib comdlg32.lib imm32.lib ole32.lib uuid.lib wsock32.lib 
 win32:TMAKE_LIBS_QT = 
 

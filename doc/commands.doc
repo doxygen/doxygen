@@ -108,11 +108,18 @@ documentation:
 \refitem cmdpackage \\package
 \refitem cmdpage \\page
 \refitem cmdpar \\par
+\refitem cmdparagraph \\paragraph
 \refitem cmdparam \\param
 \refitem cmdpost \\post
 \refitem cmdpre \\pre
+\refitem cmd_php_only \\private (PHP only)
+\refitem cmd_php_only \\privatesection (PHP only)
 \refitem cmdproperty \\property
+\refitem cmd_php_only \\protected (PHP only)
+\refitem cmd_php_only \\protectedsection (PHP only)
 \refitem cmdprotocol \\protocol
+\refitem cmd_php_only \\public (PHP only)
+\refitem cmd_php_only \\publicsection (PHP only)
 \refitem cmdref \\ref
 \refitem cmdrelates \\relates
 \refitem cmdrelatesalso \\relatesalso
@@ -2010,10 +2017,21 @@ class C {};
   prevent auto-linking to word that is also a documented class or struct. 
 
 <hr>
-<hr>
+\section cmd_php_only PHP only commands
+For PHP files there are a number of additional commands, that can be
+used inside classes to make members public, private, or protected even
+though the language itself doesn't support this notion.
+
+To mark a single item use one of \\private, \\protected, \\public.
+For starting a section with a certain protection level use one of:
+\\privatesection, \\protectedsection, \\publicsection.
+The latter commands are similar to 
+"private:", "protected:", and "public:" in C++.
+
 <h2>\htmlonly <center> --- \endhtmlonly 
     Commands included for Qt compatibility
     \htmlonly --- </center>\endhtmlonly</h2>
+<hr>
 
 The following commands are supported to remain compatible to the Qt class
 browser generator. Do \e not use these commands in your own documentation.
@@ -2028,16 +2046,7 @@ browser generator. Do \e not use these commands in your own documentation.
 <li>\\l
 <li>\\postheader
 </ul>
-
-For PHP files there are a number of additional commands, that can be
-used inside classes to make members public, private, or protected even
-though the language itself doesn't support this notion.
-
-To mark a single item use one of \\private, \\protected, \\public.
-For starting a section with a certain protection level use one of:
-\\privatesection, \\protectedsection, \\publicsection.
-The latter commands are similar to 
-"private:", "protected:", and "public:" in C++.
+<hr>
 
 */
 
