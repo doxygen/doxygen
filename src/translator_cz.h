@@ -296,6 +296,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Struct:     result+=" struktury"; break;
         case ClassDef::Union:      result+=" unie"; break;
         case ClassDef::Interface:  result+=" rozhrani"; break;
+        case ClassDef::Exception:  result+=" exception"; break;
       }
       return result;
     }
@@ -454,6 +455,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Struct:     result+="tuto strukturu"; break;
         case ClassDef::Union:      result+="tuto unii"; break;
         case ClassDef::Interface:  result+="toto rozhrani"; break;
+        case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" byla vygenerovana z nasledujiciho souboru";
       if (single) result+=":"; else result+="s:";

@@ -1252,6 +1252,6 @@ void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
 
   image.save((QCString)path+"/"+fileName+".gif");
   
-  t << "</map></p>" << endl;
+  t << "</map>" << endl;
 }
 

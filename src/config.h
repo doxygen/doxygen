@@ -114,6 +114,7 @@ struct Config
   static bool     rtfHyperFlag;        // generate hyper links in RTF
   static bool     showIncFileFlag;     // show include file in file documentation?
   static bool     stripCommentsFlag;   // strip special comments from code fragments?
+  static bool     sortMembersFlag;     // sort members alphabetically?
 };
 
 #endif

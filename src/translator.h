@@ -527,6 +527,7 @@ class Translator
         case ClassDef::Struct:     result+=" Struct"; break;
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Exception:  result+=" Exception"; break;
       }
       result+=" Reference";
       return result;
@@ -686,6 +687,7 @@ class Translator
         case ClassDef::Struct:     result+="struct"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
+        case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";

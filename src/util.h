@@ -79,5 +79,6 @@ bool leftScopeMatch(const QCString &scope, const QCString &name);
 void writePageRef(OutputList &ol,const char *cn,const char *mn);
 QCString substituteKeywords(const QCString &s,const char *title);
 int getPrefixIndex(const QCString &name);
+QCString removeAnnonymousScopes(const QCString &s);
 
 #endif

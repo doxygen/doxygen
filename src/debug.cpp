@@ -45,6 +45,8 @@ static int labelToEnumValue(const char *l)
     return Debug::Variables;
   else if (label=="Preprocessor")
     return Debug::Preprocessor;
+  else if (label=="Classes")
+    return Debug::Classes;
   else
     return 0;
 }

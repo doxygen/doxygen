@@ -47,7 +47,8 @@ class ClassDef : public Definition
     enum CompoundType { Class=Entry::CLASS_SEC, 
                         Struct=Entry::STRUCT_SEC, 
                         Union=Entry::UNION_SEC,
-                        Interface=Entry::INTERFACE_SEC
+                        Interface=Entry::INTERFACE_SEC,
+                        Exception=Entry::EXCEPTION_SEC
                       };
     ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
    ~ClassDef();

@@ -473,6 +473,7 @@ class TranslatorFinnish : public Translator
         case ClassDef::Struct: result+=" Struct"; break; // "Struct"
         case ClassDef::Union:  result+=" Union"; break; // "Union"
         case ClassDef::Interface: result+=" Interface"; break; // "Interface"
+        case ClassDef::Exception: result+=" Exception"; break; // "Interface"
       }
       result+=" Referenssi"; // " Reference"
       return result;

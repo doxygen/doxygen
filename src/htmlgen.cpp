@@ -184,7 +184,12 @@ void HtmlGenerator::writeStyleInfo(int part)
     if (Config::htmlStyleSheet.isEmpty()) // write default style sheet
     {
       startPlainFile("doxygen.css"); 
-      t << "H1 { text-align: center }" << endl;
+      
+      // alternative, cooler looking titles
+      //t << "H1 { text-align: center; border-width: thin none thin none;" << endl;
+      //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }" << endl;
+
+      t << "H1 { text-align: center; }" << endl;
       t << "A.qindex {}" << endl;
       t << "A.qindexRef {}" << endl;
       t << "A.el { text-decoration: none; font-weight: bold }" << endl;

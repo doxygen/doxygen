@@ -59,6 +59,29 @@ bool isId(char c)
 //  return result;
 //}
 
+// remove all annoymous scopes from string s
+QCString removeAnnonymousScopes(const QCString &s)
+{
+  QCString result;
+  int i,ni,l=s.length();
+  int p=0;
+  while ((i=s.find('@',p))!=-1)
+  {
+    if (i>p+2) result+=s.mid(p,i-p-2);
+    if ((ni=s.find("::",i+1))!=-1)
+    {
+      p=ni+2;
+    }
+    else
+    {
+      p=l;
+    }
+  }
+  if (p!=l) result+=s.mid(p,l-p);
+  //printf("removeAnnonymousScopes(`%s')=`%s'\n",s.data(),result.data());
+  return result;
+}
+
 // strip annonymous left hand side part of the scope
 QCString stripAnnonymousNamespaceScope(const QCString &s)
 {
@@ -85,7 +108,7 @@ void writePageRef(OutputList &ol,const char *cn,const char *mn)
 
   ol.pushGeneratorState();
   
-  ol.enableAll();
+  //ol.enableAll();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Man);
   if (Config::pdfHyperFlag) ol.disable(OutputGenerator::Latex);

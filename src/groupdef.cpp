@@ -136,6 +136,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
         case ClassDef::Struct:     type="struct"; break;
         case ClassDef::Union:      type="union";  break;
         case ClassDef::Interface:  type="interface";  break;
+        case ClassDef::Exception:  type="exception";  break;
       }
       ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
       ol.writeEndAnnoItem(cd->name());

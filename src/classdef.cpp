@@ -121,12 +121,18 @@ void ClassDef::insertMember(const MemberDef *md)
     if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
     {
       related.append(md);
-      relatedMembers.inSort(md);
+      if (Config::sortMembersFlag)
+        relatedMembers.inSort(md);
+      else
+        relatedMembers.append(md);
     }
     else if (md->isFriend())
     {
       friends.append(md);
-      relatedMembers.inSort(md);
+      if (Config::sortMembersFlag)
+        relatedMembers.inSort(md);
+      else
+        relatedMembers.append(md);
     }
     else
     {
@@ -134,22 +140,34 @@ void ClassDef::insertMember(const MemberDef *md)
       {
         case MemberDef::Signal:
           signals.append(md);
-          functionMembers.inSort(md);
+          if (Config::sortMembersFlag)
+            functionMembers.inSort(md);
+          else
+            functionMembers.append(md);
           break;
         case MemberDef::Slot:
           switch (md->protection())
           {
             case Protected: 
               proSlots.append(md); 
-              functionMembers.inSort(md); 
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
               break;
             case Public:    
               pubSlots.append(md); 
-              functionMembers.inSort(md); 
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
               break;
             case Private:   
               priSlots.append(md);
-              functionMembers.inSort(md); 
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
               break;
           }
           break;
@@ -183,22 +201,43 @@ void ClassDef::insertMember(const MemberDef *md)
             switch (md->memberType())
             {
               case MemberDef::Typedef:
-                typedefMembers.inSort(md);
+                if (Config::sortMembersFlag)
+                  typedefMembers.inSort(md);
+                else
+                  typedefMembers.append(md);
                 break;
               case MemberDef::Enumeration:
-                enumMembers.inSort(md);
+                if (Config::sortMembersFlag)
+                  enumMembers.inSort(md);
+                else
+                  enumMembers.append(md);
                 break;
               case MemberDef::EnumValue:
-                enumValMembers.inSort(md);
+                if (Config::sortMembersFlag)
+                  enumValMembers.inSort(md);
+                else
+                  enumValMembers.append(md);
                 break;
               case MemberDef::Function:
-                if (md->name()==name() || md->name().find('~')!=-1)
+                if (md->name()==name() ||         // constructor
+                    (md->name().find('~')!=-1 &&  // hack to detect destructor
+                     md->name().find("operator")==-1
+                    )
+                   )
                   constructors.append(md);
                 else
-                  functionMembers.inSort(md);
+                {
+                  if (Config::sortMembersFlag)
+                    functionMembers.inSort(md);
+                  else
+                    functionMembers.append(md);
+                }
                 break;
               case MemberDef::Variable:
-                variableMembers.inSort(md);
+                if (Config::sortMembersFlag)
+                  variableMembers.inSort(md);
+                else
+                  variableMembers.append(md);
                 break;
               default:
                 printf("Unexpected member type %d found!\n",md->memberType());

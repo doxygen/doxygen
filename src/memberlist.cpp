@@ -63,7 +63,9 @@ void MemberList::countDecMembers()
         case MemberDef::Variable:    varCnt++,m_count++;  break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
-        case MemberDef::Slot:        funcCnt++,m_count++; break;
+        case MemberDef::Slot:        if (!md->isRelated() || md->memberClass())
+                                       funcCnt++,m_count++; 
+                                     break;
         case MemberDef::Enumeration: enumCnt++,m_count++; break;
         case MemberDef::EnumValue:   enumValCnt++,m_count++; break;
         case MemberDef::Typedef:     typeCnt++,m_count++; break;
@@ -409,8 +411,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if ( md->isFunction() || md->isSignal() || 
-           md->isSlot()) 
+      if (
+          ( md->isFunction() || md->isSignal() || md->isSlot()) &&
+          ( !md->isRelated() || md->memberClass() )
+         ) 
       {
         md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
@@ -424,7 +428,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if ( md->isFriend()) 
+      if (md->isFriend()) 
       {
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
