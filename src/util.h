@@ -133,6 +133,10 @@ bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceSDict *usingNamespaces=0,
                            SDict<Definition> *usingClasses=0);
+bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *srcAl,
+                     Definition *dstScope,FileDef *dstFileScope,ArgumentList *dstAl,
+                     bool checkCV
+                    );
 void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE);
 QCString substituteClassNames(const QCString &s);
 QCString substitute(const char *s,const char *src,const char *dst);

@@ -1378,7 +1378,7 @@ void LatexGenerator::writeNonBreakableSpace(int)
     m_indent++;
   }
   else
-    t << "\\ "; 
+    t << "~"; 
 }
 
 void LatexGenerator::startMemberList()  

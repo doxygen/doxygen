@@ -38,11 +38,11 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : Definition(df,dl,na)
 {
   fileList = new FileList;
-  classSDict = new ClassSDict(257);
+  classSDict = new ClassSDict(17);
   groupList = new GroupList;
-  namespaceList = new NamespaceList;
-  pageDict = new PageSDict(257);
-  exampleDict = new PageSDict(257);
+  namespaceSDict = new NamespaceSDict(17);
+  pageDict = new PageSDict(17);
+  exampleDict = new PageSDict(17);
   dirList = new DirList;
   allMemberList = new MemberList;
   allMemberNameInfoSDict = new MemberNameInfoSDict(17);
@@ -81,7 +81,7 @@ GroupDef::~GroupDef()
   delete fileList;
   delete classSDict;
   delete groupList;
-  delete namespaceList;
+  delete namespaceSDict;
   delete pageDict;
   delete exampleDict;
   delete allMemberList;
@@ -152,9 +152,9 @@ void GroupDef::addClass(const ClassDef *cd)
 void GroupDef::addNamespace(const NamespaceDef *def)
 {
   if (Config_getBool("SORT_BRIEF_DOCS"))
-    namespaceList->inSort(def);  
+    namespaceSDict->inSort(def->name(),def);  
   else
-    namespaceList->append(def);
+    namespaceSDict->append(def->name(),def);
 }
 
 void GroupDef::addDir(const DirDef *def)
@@ -414,7 +414,7 @@ int GroupDef::countMembers() const
 {
   return fileList->count()+
          classSDict->count()+
-         namespaceList->count()+
+         namespaceSDict->count()+
          groupList->count()+
          allMemberList->count()+
          pageDict->count()+
@@ -547,35 +547,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
 
   // write list of namespaces
-  if (namespaceList->count()>0)
-  {
-    ol.startMemberHeader();
-    ol.parseText(theTranslator->trNamespaces());
-    ol.endMemberHeader();
-    ol.startMemberList();
-    NamespaceDef *nd=namespaceList->first();
-    while (nd)
-    {
-      ol.startMemberItem(0);
-      ol.docify("namespace ");
-      ol.insertMemberAlign();
-      ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-      {
-        Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
-      }
-      ol.endMemberItem();
-      if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
-      {
-        ol.startMemberDescription();
-        ol.parseDoc(briefFile(),briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE);
-        ol.endMemberDescription();
-        ol.newParagraph();
-      }
-      nd=namespaceList->next();
-    }
-    ol.endMemberList();
-  }
+  namespaceSDict->writeDeclaration(ol);
 
   // write list of groups
   if (groupList->count()>0)
@@ -640,7 +612,6 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
     ol.endMemberList();
   }
-
   
   // write list of classes
   classSDict->writeDeclaration(ol);

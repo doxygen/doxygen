@@ -193,6 +193,9 @@ class Definition
     GroupList *partOfGroups() const { return m_partOfGroups; }
     QCString convertNameToFile(const char *name,bool allowDots=FALSE) const;
 
+    void writePathFragment(OutputList &ol) const;
+    void writeNavigationPath(OutputList &ol) const;
+
   protected:
     int      m_startBodyLine;   // line number of the start of the definition
     int      m_endBodyLine;     // line number of the end of the definition

@@ -163,6 +163,7 @@ class NamespaceSDict : public SDict<NamespaceDef>
                     ((NamespaceDef *)item2)->name()
                    );
     }
+    void writeDeclaration(OutputList &ol,bool localName=FALSE);
 };
 
 

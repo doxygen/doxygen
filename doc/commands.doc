@@ -131,6 +131,7 @@ documentation:
 \refitem cmdretval \\retval
 \refitem cmdsa \\sa
 \refitem cmdsection \\section
+\refitem cmdsee \\see
 \refitem cmdshowinitializer \\showinitializer
 \refitem cmdsince \\since
 \refitem cmdskip \\skip
@@ -1149,6 +1150,12 @@ void memcpy(void *dest, const void *src, size_t n);
 
   \sa section \ref autolink "autolink" for information on how to create links 
       to objects.
+
+<hr>
+\section cmdsee \see { references }
+
+  \addindex \\see
+  Equivalent to \ref cmdsa "\\sa". Introduced for compatibility with Javadoc.
 
 <hr>
 \section cmdsince \since { text }

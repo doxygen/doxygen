@@ -947,6 +947,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
               m_tempArgs != 0);
   
   startFile(ol,getOutputFileBase(),name(),pageTitle);  
+  if (getOuterScope()!=Doxygen::globalScope)
+  {
+    writeNavigationPath(ol);
+  }
   startTitle(ol,getOutputFileBase());
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
@@ -1343,6 +1347,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
                   theTranslator->trRelatedFunctions(),
                   theTranslator->trRelatedSubscript()
                  ); 
+
+  // nested classes
+  m_innerClasses->writeDeclaration(ol,0,0,TRUE);
+  
   ol.endMemberSections();
     
   // write detailed description

@@ -60,7 +60,8 @@ ClassListIterator::ClassListIterator(const ClassList &cllist) :
 {
 }
 
-void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header)
+void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
+                                  const char *header,bool localNames)
 {
   if (count()>0)
   {
@@ -102,15 +103,15 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           }
           ol.startMemberItem(FALSE);
           QCString tmp = cd->compoundTypeString();
-          QCString cname = cd->displayName();
-          //if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-          //{
-          //  cname = substitute(cd->className(),"::",".");
-          //}
-          //else
-          //{
-          //  cname = cd->className();
-          //}
+          QCString cname;
+          if (localNames)
+          {
+            cname = cd->localName();
+          }
+          else
+          {
+            cname = cd->displayName();
+          }
           ol.writeString(tmp);
           ol.writeString(" ");
           ol.insertMemberAlign();

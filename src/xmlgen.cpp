@@ -1402,10 +1402,10 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
         << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
     }
   }
-  NamespaceList *nl = gd->getNamespaces();
+  NamespaceSDict *nl = gd->getNamespaces();
   if (nl)
   {
-    NamespaceListIterator nli(*nl);
+    NamespaceSDict::Iterator nli(*nl);
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {

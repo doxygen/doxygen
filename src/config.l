@@ -1856,6 +1856,14 @@ void Config::create()
 		    "don't exist or using markup commands wrongly. \n",
                     TRUE
                  );
+  cb = addBool(     "WARN_NO_PARAMDOC",
+                    "This WARN_NO_PARAMDOC option can be abled to get warnings for \n"
+		    "functions that are documented, but have no documentation for their parameters \n"
+		    "or return value. If set to NO (the default) doxygen will only warn about \n"
+		    "wrong or incomplete parameter documentation, but not about the absence of \n"
+		    "documentation.\n",
+                    FALSE
+                 );
   cs = addString(
                     "WARN_FORMAT",
                     "The WARN_FORMAT tag determines the format of the warning messages that \n"

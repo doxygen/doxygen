@@ -753,3 +753,42 @@ QCString Definition::convertNameToFile(const char *name,bool allowDots) const
   }
 }
 
+void Definition::writePathFragment(OutputList &ol) const
+{
+  if (m_outerScope && m_outerScope!=Doxygen::globalScope)
+  {
+    m_outerScope->writePathFragment(ol);
+    ol.writeString("&nbsp;");
+    if (m_outerScope->definitionType()==Definition::TypeClass ||
+        m_outerScope->definitionType()==Definition::TypeNamespace)
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+      {
+        ol.writeString(".");
+      }
+      else
+      {
+        ol.writeString("::");
+      }
+    }
+    else
+    {
+      ol.writeString("/");
+    }
+    ol.writeString("&nbsp;");
+  }
+  ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_localName);
+}
+
+void Definition::writeNavigationPath(OutputList &ol) const
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+
+  ol.writeString("<div class=\"nav\">\n");
+  writePathFragment(ol);
+  ol.writeString("</div>\n");
+
+  ol.popGeneratorState();
+}
+

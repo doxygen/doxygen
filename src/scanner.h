@@ -24,5 +24,6 @@ class OutputList;
 class Entry;
 
 extern void parseMain(Entry *);
+extern void parseMain(Entry *,const char *fileName);
 
 #endif

@@ -1900,11 +1900,11 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
     m_output.closeList();
   }
 
-  NamespaceList *nl = gd->getNamespaces();
+  NamespaceSDict *nl = gd->getNamespaces();
   if (nl)
   {
     m_output.openList("namespaces");
-    NamespaceListIterator nli(*nl);
+    NamespaceSDict::Iterator nli(*nl);
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
       m_output.openHash()

@@ -511,6 +511,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
   }
 }
 
+#if 0
 static bool addNamespace(Entry *root,ClassDef *cd)
 {
   // see if this class is defined inside a namespace
@@ -539,6 +540,7 @@ static bool addNamespace(Entry *root,ClassDef *cd)
   }
   return FALSE;
 }
+#endif
 
 static Definition *findScope(Entry *root,int level=0)
 {
@@ -698,7 +700,7 @@ static void addClassToContext(Entry *root)
     {
       addIncludeFile(cd,fd,root);
     }
-    addNamespace(root,cd);
+    //addNamespace(root,cd);
     if (fd && (root->section & Entry::COMPOUND_MASK)) 
     {
       //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
@@ -793,7 +795,7 @@ static void addClassToContext(Entry *root)
     cd->setRefItems(root->sli);
 
     // see if the class is found inside a namespace 
-    bool found=addNamespace(root,cd);
+    //bool found=addNamespace(root,cd);
 
     cd->setFileDef(fd);
     if (cd->hasDocumentation())
@@ -801,6 +803,7 @@ static void addClassToContext(Entry *root)
       addIncludeFile(cd,fd,root);
     }
 
+#if 0
     // namespace is part of the class name
     if (!found && !namespaceName.isEmpty())
     {
@@ -824,6 +827,7 @@ static void addClassToContext(Entry *root)
       //   );
       fd->insertClass(cd);
     }
+#endif
 
     // the empty string test is needed for extract all case
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -1720,7 +1724,7 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]*");
+  static const QRegExp re("([^)]\\*");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 &&     // contains a (*
@@ -1901,6 +1905,7 @@ static void buildVarList(Entry *root)
         {
           root->type=root->type.left(root->type.length()-1);
           root->args.prepend(")");
+          printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
       }
     }
@@ -4722,10 +4727,43 @@ static void findMember(Entry *root,
                   className.data(),namespaceName.data()
                   );
 
-              // TODO: match loop for all possible scopes
+//#define NEWMATCH
+#ifdef NEWMATCH
+              
+              bool matching=
+                md->isVariable() || md->isTypedef() || // needed for function pointers
+                (md->argumentList()==0 && root->argList->count()==0) || 
+                matchArguments2(
+                    md->getClassDef(),md->getFileDef(),argList, 
+                    cd,fd,root->argList,
+                    TRUE);
 
-              bool ambig;
-              FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+              Debug::print(Debug::FindMembers,0,
+                  "6. match results of matchArguments2 = %d\n",matching);
+
+              if (substDone) // found a new argument list
+              {
+                if (matching) // replace member's argument list
+                {
+                  md->setDefinitionTemplateParameterLists(root->tArgLists);
+                  md->setArgumentList(argList);
+                }
+                else // no match -> delete argument list
+                {
+                  delete argList;
+                }
+              }
+              if (matching) 
+              {
+                //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
+                //         root->inLine,md->isInline());
+                addMemberDocs(root,md,funcDecl,0,overloaded,0/* TODO */);
+                count++;
+                memFound=TRUE;
+              }
+#else // old matching routine
+
+              // TODO: match loop for all possible scopes
 
               // list of namespaces using in the file/namespace that this 
               // member definition is part of
@@ -4829,6 +4867,7 @@ static void findMember(Entry *root,
               }
               delete cl;
               delete nl;
+#endif
             } 
           } 
           if (count==0 && root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
@@ -7294,6 +7333,55 @@ static void copyStyleSheet()
   }
 }
 
+#ifdef USE_TMP_FILE
+
+static void readFiles(const QCString &tmpFile)
+{
+  QFile outFile(tmpFile);
+  if (outFile.open(IO_WriteOnly))
+  {
+    QTextStream out(&outFile);
+    QCString *s=inputFiles.first();
+    while (s)
+    {
+      QCString fileName=*s;
+
+      //bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+
+      out << (char)6;
+      out << fileName;
+      out << (char)6;
+      out << '\n';
+      QFileInfo fi(fileName);
+      BufStr preBuf(fi.size()+4096);
+      BufStr *bufPtr = &preBuf;
+
+      if (Config_getBool("ENABLE_PREPROCESSING"))
+      {
+        msg("Preprocessing %s...\n",s->data());
+        preprocessFile(fileName,*bufPtr);
+      }
+      else
+      {
+        msg("Reading %s...\n",s->data());
+        copyAndFilterFile(fileName,*bufPtr);
+      }
+
+      bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
+
+      BufStr convBuf(bufPtr->curPos()+1024);
+
+      convertCppComments(&preBuf,&convBuf,fileName);
+
+      out.writeRawBytes(convBuf.data(),convBuf.curPos());
+      
+      s=inputFiles.next();
+      //printf("-------> adding new line\n");
+    }
+  }
+}
+
+#else
 //----------------------------------------------------------------------------
 // Reads a file to a string.
 // The name of the file is written in front of the file's contents and
@@ -7342,6 +7430,7 @@ static void readFiles(BufStr &output)
   }
   output.addChar(0);
 }
+#endif
 
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in `patList' in the 
@@ -8231,27 +8320,6 @@ void parseInput()
   }
   
   /**************************************************************************
-   *             Read Input Files                                           *
-   **************************************************************************/
-  
-  BufStr input(inputSize+1); // Add one byte extra for \0 termination
-
-  // read and preprocess all input files
-  readFiles(input);
-
-  if (input.isEmpty())
-  {
-    err("No input read, no output generated!\n");
-    delete root;
-    cleanUpDoxygen();
-    exit(1);
-  }
-  else
-  {
-    msg("Read %d bytes\n",input.curPos());
-  }
-
-  /**************************************************************************
    *            Check/create output directorties                            *
    **************************************************************************/
 
@@ -8386,17 +8454,69 @@ void parseInput()
     readFormulaRepository();
   }
   
-  root->program=input;
-
   /**************************************************************************
-   *             Gather information                                         * 
+   *             Read Input Files                                           *
    **************************************************************************/
   
+#ifdef USE_TMP_FILE
+
+  QCString tmpName = Config_getString("OUTPUT_DIRECTORY")+
+                     "/doxygen_scratchfile.tmp";
+
+  // read and preprocess all input files
+  readFiles(tmpName);
+
+  QFileInfo fi(tmpName);
+  if (fi.size()==0)
+  {
+    err("No input read, no output generated!\n");
+    delete root;
+    cleanUpDoxygen();
+    exit(1);
+  }
+  else
+  {
+    msg("Read %d bytes\n",fi.size());
+  }
+  
+  msg("Parsing input...\n");
+  parseMain(root,tmpName);            // build a tree of entries
+
+  // remove temp file
+  QDir().remove(tmpName);
+
+#else // use memory to store intermediate results
+
+  BufStr input(inputSize+1); // Add one byte extra for \0 termination
+
+  // read and preprocess all input files
+  readFiles(input);
+
+  if (input.isEmpty())
+  {
+    err("No input read, no output generated!\n");
+    delete root;
+    cleanUpDoxygen();
+    exit(1);
+  }
+  else
+  {
+    msg("Read %d bytes\n",input.curPos());
+  }
+
+  root->program=input;
+
   msg("Parsing input...\n");
   parseMain(root);            // build a tree of entries
 
   msg("Freeing input...\n");
   input.resize(0);
+
+#endif
+  
+  /**************************************************************************
+   *             Gather information                                         * 
+   **************************************************************************/
   
   msg("Building group list...\n");
   buildGroupList(root);

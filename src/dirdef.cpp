@@ -41,6 +41,16 @@ DirDef::~DirDef()
 {
 }
 
+bool DirDef::isLinkableInProject() const 
+{ 
+  return !isReference() && Config_getBool("SHOW_DIRECTORIES"); 
+}
+
+bool DirDef::isLinkable() const 
+{ 
+  return isReference() || isLinkableInProject(); 
+}
+
 void DirDef::addSubDir(DirDef *subdir)
 {
   m_subdirs.inSort(subdir);
@@ -213,6 +223,18 @@ void DirDef::writeDocumentation(OutputList &ol)
         ol.writeString(fd->name()); 
         ol.endBold();
       }
+      if (fd->generateSourceFile())
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.docify(" ");
+        ol.startTextLink(fd->includeName(),0);
+        ol.docify("[");
+        ol.parseText(theTranslator->trCode());
+        ol.docify("]");
+        ol.endTextLink();
+        ol.popGeneratorState();
+      }
       if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
         Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
@@ -247,6 +269,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
 }
 
+#if 0
 void DirDef::writePathFragment(OutputList &ol) const
 {
   if (m_parent)
@@ -268,6 +291,7 @@ void DirDef::writeNavigationPath(OutputList &ol)
 
   ol.popGeneratorState();
 }
+#endif
 
 void DirDef::setLevel()
 {
@@ -406,6 +430,7 @@ UsedDir::UsedDir(DirDef *dir,bool inherited) :
 UsedDir::~UsedDir()
 {
 }
+
 
 void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
 {

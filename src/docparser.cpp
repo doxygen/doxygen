@@ -62,6 +62,7 @@ static const char *sectionLevelToName[] =
 
 // global variables during a call to validatingParseDoc
 static bool         g_hasParamCommand;
+static bool         g_hasReturnCommand;
 static MemberDef *  g_memberDef;
 static QDict<void>  g_paramsFound;
 static bool         g_isExample;
@@ -317,11 +318,9 @@ static void checkUndocumentedParams()
       }
       if (found)
       {
-        QString scope=g_memberDef->getScopeString();
-        if (!scope.isEmpty()) scope+="::"; else scope="";
-        QString errMsg=(QString)
+        QString errMsg=
             "Warning: The following parameters of "+
-            scope + QString(g_memberDef->name()) + 
+            QString(g_memberDef->qualifiedName()) + 
             QString(argListToString(al)) +
             " are not documented:\n";
         for (ali.toFirst();(a=ali.current());++ali)
@@ -337,6 +336,69 @@ static void checkUndocumentedParams()
     }
   }
 }
+
+/*! Check if a member has documentation for its parameter and or return
+ *  type, if applicable.
+ */
+static void checkNoDocumentedParams()
+{
+  if (g_memberDef && Config_getBool("WARN_NO_PARAMDOC"))
+  {
+    ArgumentList *al= g_memberDef->argumentList();
+    ArgumentList *declAl = g_memberDef->declArgumentList();
+    QString returnType = g_memberDef->typeString();
+    if (!g_hasParamCommand && // no @param command
+        al &&                 // but the member has a parameter list
+        al->count()>0         // with at least one parameter (that is not void)
+       )
+    {
+      ArgumentListIterator ali(*al);
+      Argument *a;
+      bool allDoc=TRUE;
+      for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
+      {
+        allDoc = !a->docs.isEmpty();
+        printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
+      }
+      if (!allDoc) 
+      {
+        if (declAl) // try declaration arguments as well
+        {
+          allDoc=TRUE;
+          ArgumentListIterator ali(*declAl);
+          Argument *a;
+          for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
+          {
+            allDoc = !a->docs.isEmpty();
+            printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
+          }
+        }
+        if (!allDoc)
+        {
+          QString errMsg = 
+            "Warning: the parameters of member "+
+            QString(g_memberDef->qualifiedName())+
+            QString(argListToString(al))+
+            " are not documented.";
+          warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+        }
+      }
+    }
+    if (!g_hasReturnCommand &&   // no @return or @retval commands
+        !returnType.isEmpty() && // non empty
+        returnType!="void"       // end non void return type
+       )
+    {
+      QString errMsg = 
+        "Warning: the return type or values of member "+
+        QString(g_memberDef->qualifiedName())+
+        QString(argListToString(al))+
+        " are not documented.";
+      warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+    }
+  }
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -3227,7 +3289,7 @@ int DocParamList::parse(const QString &cmdName)
     }
     else if (m_type==DocParamSect::RetVal)
     {
-      //g_hasParamCommand=TRUE;
+      g_hasReturnCommand=TRUE;
       checkArgumentName(g_token->name,FALSE);
     }
     m_params.append(g_token->name);
@@ -3696,6 +3758,7 @@ int DocPara::handleCommand(const QString &cmdName)
       break;
     case CMD_RETURN:
       retval = handleSimpleSection(DocSimpleSect::Return);
+      g_hasReturnCommand=TRUE;
       break;
     case CMD_AUTHOR:
       retval = handleSimpleSection(DocSimpleSect::Author);
@@ -4890,7 +4953,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample, const char *exampleName,
-                            bool singleLine)
+                            bool singleLine,bool isParam)
 {
   
   //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
@@ -5003,6 +5066,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_isExample = isExample;
   g_exampleName = exampleName;
   g_hasParamCommand = FALSE;
+  g_hasReturnCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_sectionDict = 0; //sections;
@@ -5022,7 +5086,11 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     delete v;
   }
 
-  checkUndocumentedParams();
+  if (!isParam)
+  {
+    checkUndocumentedParams();
+    checkNoDocumentedParams();
+  }
 
   delete g_token;
 
@@ -5055,6 +5123,7 @@ DocNode *validatingParseText(const char *input)
   g_isExample = FALSE;
   g_exampleName = "";
   g_hasParamCommand = FALSE;
+  g_hasReturnCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_searchUrl="";

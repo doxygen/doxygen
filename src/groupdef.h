@@ -32,7 +32,7 @@ class ClassDef;
 class NamespaceDef;
 class GroupList;
 class OutputList;
-class NamespaceList;
+class NamespaceSDict;
 class MemberGroupSDict;
 class MemberNameInfoSDict;
 class PageSDict;
@@ -108,7 +108,7 @@ class GroupDef : public Definition
 
     FileList *      getFiles() const        { return fileList; }
     ClassSDict *    getClasses() const      { return classSDict; }
-    NamespaceList * getNamespaces() const   { return namespaceList; }
+    NamespaceSDict * getNamespaces() const   { return namespaceSDict; }
     GroupList *     getSubGroups() const    { return groupList; }
     PageSDict *     getPages() const        { return pageDict; }
     DirList *       getDirs() const         { return dirList; }
@@ -117,16 +117,16 @@ class GroupDef : public Definition
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private: 
-    QCString title;                     // title of the group
-    bool titleSet;                      // true if title is not the same as the name
-    QCString fileName;                  // base name of the generated file
-    FileList *fileList;                 // list of files in the group
-    ClassSDict *classSDict;             // list of classes in the group
-    NamespaceList *namespaceList;       // list of namespaces in the group
-    GroupList *groupList;               // list of sub groups.
-    PageSDict *pageDict;                // list of pages in the group
-    PageSDict *exampleDict;             // list of examples in the group
-    DirList *dirList;                   // list of directories in the group
+    QCString title;                      // title of the group
+    bool titleSet;                       // true if title is not the same as the name
+    QCString fileName;                   // base name of the generated file
+    FileList *fileList;                  // list of files in the group
+    ClassSDict *classSDict;              // list of classes in the group
+    NamespaceSDict *namespaceSDict;      // list of namespaces in the group
+    GroupList *groupList;                // list of sub groups.
+    PageSDict *pageDict;                 // list of pages in the group
+    PageSDict *exampleDict;              // list of examples in the group
+    DirList *dirList;                    // list of directories in the group
 
     MemberList *allMemberList;
     MemberNameInfoSDict *allMemberNameInfoSDict;

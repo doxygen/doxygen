@@ -205,6 +205,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_warn_if_doc_error WARN_IF_DOC_ERROR
 \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
 \refitem cfg_warn_logfile WARN_LOGFILE
+\refitem cfg_warn_no_paramdoc WARN_NO_PARAMDOC
 \refitem cfg_warnings WARNINGS
 \refitem cfg_xml_dtd XML_DTD
 \refitem cfg_xml_output XML_OUTPUT
@@ -672,6 +673,14 @@ function's detailed documentation block.
  potential errors in the documentation, such as not documenting some
  parameters in a documented function, or documenting parameters that
  don't exist or using markup commands wrongly. 
+
+\anchor cfg_warn_no_paramdoc
+<dt>\c WARN_NO_PARAMDOC
+This \c WARN_NO_PARAMDOC option can be abled to get warnings for 
+functions that are documented, but have no documentation for their parameters
+or return value. If set to \c NO (the default) doxygen will only warn about
+wrong or incomplete parameter documentation, but not about the absence of
+documentation.
 
 \anchor cfg_warn_format
 <dt>\c WARN_FORMAT <dd>
