@@ -518,6 +518,7 @@ static bool defaultHandleToken(DocNode *parent,int tok,
 static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                                const QString &cmdName)
 {
+  DBG(("handleStyleArgument(%s)\n",cmdName.data()));
   QString tokenName = g_token->name;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -527,7 +528,10 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
     return tok;
   }
   while ((tok=doctokenizerYYlex()) && 
-         tok!=TK_WHITESPACE && tok!=TK_NEWPARA && tok!=TK_LISTITEM && tok!=TK_ENDLIST
+         tok!=TK_WHITESPACE && 
+         tok!=TK_NEWPARA &&
+         tok!=TK_LISTITEM && 
+         tok!=TK_ENDLIST
         )
   {
     if (!defaultHandleToken(parent,tok,children))
@@ -547,9 +551,12 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
 	       tokToString(tok));
           break;
       }
+      break;
     }
   }
-  return tok==TK_NEWPARA ? TK_NEWPARA : RetVal_OK;
+  DBG(("handleStyleArgument(%s) end tok=%x\n",cmdName.data(),tok));
+  return (tok==TK_NEWPARA || tok==TK_LISTITEM || tok==TK_ENDLIST
+         ) ? tok : RetVal_OK; 
 }
 
 static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
@@ -699,45 +706,45 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
         case CMD_EMPHASIS:
           {
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
-            int retval=handleStyleArgument(parent,children,tokenName);
+            tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
             children.append(new DocWhiteSpace(parent," "));
-            if (retval==TK_NEWPARA) goto handlepara;
+            if (tok==TK_NEWPARA) goto handlepara;
           }
           break;
         case CMD_BOLD:
           {
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
-            int retval=handleStyleArgument(parent,children,tokenName);
+            tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
             children.append(new DocWhiteSpace(parent," "));
-            if (retval==TK_NEWPARA) goto handlepara;
+            if (tok==TK_NEWPARA) goto handlepara;
           }
           break;
         case CMD_CODE:
           {
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,TRUE));
-            int retval=handleStyleArgument(parent,children,tokenName);
+            tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
             children.append(new DocWhiteSpace(parent," "));
-            if (retval==TK_NEWPARA) goto handlepara;
+            if (tok==TK_NEWPARA) goto handlepara;
           }
           break;
         case CMD_HTMLONLY:
           {
             doctokenizerYYsetStateHtmlOnly();
-            int retval = doctokenizerYYlex();
+            tok = doctokenizerYYlex();
             children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_fileName));
-            if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: htmlonly section ended without end marker");
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: htmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
           break;
         case CMD_LATEXONLY:
           {
             doctokenizerYYsetStateLatexOnly();
-            int retval = doctokenizerYYlex();
+            tok = doctokenizerYYlex();
             children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_fileName));
-            if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: latexonly section ended without end marker",doctokenizerYYlineno);
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: latexonly section ended without end marker",doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
           }
           break;
@@ -749,7 +756,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           break;
         case CMD_ANCHOR:
           {
-            int tok=doctokenizerYYlex();
+            tok=doctokenizerYYlex();
             if (tok!=TK_WHITESPACE)
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
@@ -775,7 +782,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           break;
         case CMD_INTERNALREF:
           {
-            int tok=doctokenizerYYlex();
+            tok=doctokenizerYYlex();
             if (tok!=TK_WHITESPACE)
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
@@ -1004,6 +1011,8 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
                                     const QString &doc)
 {
   int retval = RetVal_OK;
+
+  if (doc.isEmpty()) return retval;
 
   doctokenizerYYinit(doc,g_fileName);
 
@@ -2531,32 +2540,6 @@ enddesclist:
 
 //---------------------------------------------------------------------------
 
-#if 0
-int DocHtmlPre::parse()
-{
-  int rv;
-  g_nodeStack.push(this);
-
-  bool isFirst=FALSE;
-  DocPara *par=0;
-  do
-  {
-    par = new DocPara(this);
-    if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
-    rv=par->parse();
-  }
-  while (rv==TK_NEWPARA);
-  if (par) par->markLast();
-
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
-  return rv==RetVal_EndPre ? RetVal_OK : rv;
-}
-#endif
-
-//---------------------------------------------------------------------------
-
 int DocHtmlListItem::parse()
 {
   DBG(("DocHtmlListItem::parse() start\n"));
@@ -2822,7 +2805,7 @@ int DocSimpleSect::parseRcs()
   internalValidatingParseDoc(this,m_children,g_token->text);
   docParserPopContext();
 
-  DBG(("DocSimpleSect::parseRcs() end retval=%d\n",retval));
+  DBG(("DocSimpleSect::parseRcs()\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return RetVal_OK; 
@@ -3246,6 +3229,7 @@ void DocPara::handleSection(const QString &cmdName)
 
 int DocPara::handleCommand(const QString &cmdName)
 {
+  DBG(("handleCommand(%s)\n",cmdName.data()));
   int retval = RetVal_OK;
   switch (CmdMapper::map(cmdName))
   {
@@ -3579,6 +3563,7 @@ int DocPara::handleCommand(const QString &cmdName)
          retval==RetVal_Section || retval==RetVal_EndList || 
          retval==RetVal_Internal || retval==RetVal_SwitchLang
         );
+  DBG(("handleCommand(%s) end retval=%x\n",cmdName.data(),retval));
   return retval;
 }
 
@@ -4103,6 +4088,7 @@ reparsetoken:
 	  
 	  // handle the command
 	  retval=handleCommand(g_token->name.copy());
+          DBG(("handleCommand returns %x\n",retval));
 
 	  // check the return value
 	  if (retval==RetVal_SimpleSec)
@@ -4120,6 +4106,11 @@ reparsetoken:
 	    // the command ended normally, keep scanner for new tokens.
 	    retval = 0;
 	  }
+          else if (retval==TK_LISTITEM || retval==TK_ENDLIST)
+          {
+            tok = retval;
+            goto reparsetoken;
+          }
 	  else // end of file, end of paragraph, start or end of section 
 	       // or some auto list marker
 	  {

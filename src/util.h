@@ -171,7 +171,7 @@ QCString convertToXML(const char *s);
 const char * getOverloadDocs();
 void addMembersToMemberGroup(MemberList *ml,
                              MemberGroupSDict *memberGroupSDict,
-                             Definition *context=0);
+                             Definition *context);
 bool extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec);
 QCString substituteTemplateArgumentsInString(

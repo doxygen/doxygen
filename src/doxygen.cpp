@@ -1064,9 +1064,9 @@ static void findUsingDeclarations(Entry *root)
       !(root->parent->section&Entry::COMPOUND_MASK) // not a class/struct member
      )
   {
-    printf("Found using declaration %s at line %d of %s inside section %x\n",
-        root->name.data(),root->startLine,root->fileName.data(),
-        root->parent->section);
+    //printf("Found using declaration %s at line %d of %s inside section %x\n",
+    //    root->name.data(),root->startLine,root->fileName.data(),
+    //    root->parent->section);
     bool ambig;
     if (!root->name.isEmpty())
     {

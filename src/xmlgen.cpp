@@ -53,6 +53,16 @@ inline void writeXMLString(QTextStream &t,const char *s)
   t << convertToXML(s);
 }
 
+inline void writeXMLCodeString(QTextStream &t,const char *s)
+{
+  char c;
+  while ((c=*s++))
+  {
+    if (c==' ') t << "<sp/>"; else t << c;
+  } 
+}
+
+
 static void writeXMLHeader(QTextStream &t)
 {
   QCString dtdName = Config_getString("XML_DTD");
@@ -178,7 +188,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
         m_t << "<highlight class=\"normal\">";
         m_normalHLNeedStartTag=FALSE;
       }
-      writeXMLString(m_t,text);
+      writeXMLCodeString(m_t,text);
     }
     void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *text) 

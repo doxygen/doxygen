@@ -52,24 +52,26 @@ To take full advantage of doxygen's features the following additional
 tools should be installed.
 
 <ul>
-<li>Troll Tech's GUI toolkit version 2.x.y
+<li>Troll Tech's GUI toolkit 
     <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
-    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
+    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
     \addindex Qt
-    This is needed to build the GUI front-end. 
+    version 2 or higher.
+    This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
-    <a href="http://www.tug.org/">teTeX 1.0</a>
-    \latexonly \\par (see {\tt http://www.tug.org/})\endlatexonly.
+    <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
+    \latexonly \\par (see {\tt http://www.tug.org/interest.html\#free})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.research.att.com/sw/tools/graphviz/">
-    the Graph visualization toolkit version 1.5</a>
+    the Graph visualization toolkit version 1.5 or higher</a>
     \latexonly \\par (see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
     freetype support (which requires the freetype library and header files), 
-    otherwise dot will produce a warning that it cannot find doxfont!
-<li>The ghostscript interpreter.
+    otherwise the graphs will not render proper text labels.
+<li>The ghostscript interpreter. To be found at 
+    <a href="http://www.ghostscript.com/">www.ghostscript.com</a>.
 </ul>
 
 Compilation is now done by performing the following steps:

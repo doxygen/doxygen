@@ -765,6 +765,7 @@ class HighlightHandler : public DocHighlightImpl, public BaseHandler<HighlightHa
     void startHighlight(const QXmlAttributes& attrib);
     void endHighlight();
     virtual void startRef(const QXmlAttributes&);
+    virtual void startSpace(const QXmlAttributes&);
 
     // IDocHighlight
     virtual Kind kind() const { return DocImpl::Highlight; }

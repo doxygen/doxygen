@@ -25,9 +25,6 @@
     properly. If you find such a piece, please send it to me, so I can
     improve doxygen's parsing capabilities. Try to make the piece of code 
     you send as small as possible, to help me narrow down the search.
-<li>Using declarations for member are not yet supported. 
-    They are simply ignored. Using declarations for class and using 
-    directives are supported however. 
 <li>Doxygen does not work properly if there are multiple classes, structs
     or unions with the same name in your code. It should not crash however,
     rather it should ignore all of the classes with the same name except one.
@@ -78,37 +75,47 @@ If you are trying Doxygen let me know what you think of it (do you
 miss certain features?). Even if you decide not to use it, please let me
 know why. 
 
+\anchor bug_reports
 <h2>How to report a bug</h2>
 
-I would appreciate an e-mail if you have found
-a bug, or if you have ideas (or even better some code or a patch) 
-how to fix existing bugs and limitations. For patches please use
-"diff -u" or include the files you modified. If you send more than
-one file please tar or zip everything, so I only have to save and download
-one file.
+If you find a bug please send an e-mail to: dimitri@stack.nl.
+If you are unsure whether or not something is a bug, please ask help
+on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> 
+first (subscription is required).
 
-Always try to include the following information in your bug report: 
-- The version of doxygen you are using (for instance 1.2.4).
+If you send only a (vague) description of a bug, you are usually not very 
+helpful and it will cost me much more time to figure out what you mean. 
+In the worst-case your bug report may even be completely ignored by me, so
+always try to include the following information in your bug report: 
+- The version of doxygen you are using (for instance 1.2.4, use 
+  <code>doxygen --version</code> if you are not sure).
 - The name and version number of your operating system (for instance 
   SuSE Linux 6.4)
 - It is usually a good idea to send along the configuation file as well, 
   but please use doxygen with the <code>-s</code> flag while generating it
-  to keep it small. 
-- The easiest way for me to solve bugs is if you can send me a small example
-  demonstrating the problem you have. Please make sure the example is valid
+  to keep it small (use <code>doxygen -s -u [configName]</code> to strip
+  the comments from an existing config file). 
+- The easiest (and often the only) way for me to fix bugs is if you can 
+  send me a small example demonstrating the problem you have, so I can
+  reproduce it on my machine. Please make sure the example is valid
   source code (could potentially compile) and that the problem is really 
   captured by the example (I often get examples that do not trigger the 
-  actual bug!).
+  actual bug!). If you intend to send more than one file please zip or tar
+  the files together into a single attachment for easier processing.
 
-If you send only a (vague) description of a bug, you are usually not very 
-helpful and it will cost me much more time to figure out what you mean. 
-In the worst-case your bug report may even be completely ignored by me! 
+If you have ideas (or even better some code or a patch) 
+how to fix existing bugs and limitations please discuss them on 
+the <a href="http://sourceforge.net/mail/?group_id=5971">developers mailing list</a>. 
+Patches can also send directly to dimitri@stack.nl.
 
-My e-mail address: dimitri@stack.nl 
+For patches please use
+"diff -uN" or include the files you modified. If you send more than
+one file please tar or zip everything, so I only have to save and download
+one file.
 
-Note that you can also post bug report to the developers mailing list
-or use the bug tracker at sourceforge (though I do not really like the
-latter because of its web interface).
+Note that you can also post bug reports via the bug tracker at 
+sourceforge, but I do not really like this because of its web 
+interface, which I find rather clumpsy to use.
 
 */
 
