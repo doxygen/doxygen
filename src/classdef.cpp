@@ -45,7 +45,7 @@ static QCString stripExtension(const char *fName)
 ClassDef::ClassDef(
     const char *defFileName,int defLine,
     const char *nm,CompoundType ct,
-    const char *ref,const char *fName) 
+    const char *lref,const char *fName) 
  : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm)) 
 {
   //name=n;
@@ -53,9 +53,9 @@ ClassDef::ClassDef(
     fileName=stripExtension(fName);
   else
     fileName="class_"+nameToFile(nm);
-  if (ref) 
+  if (lref) 
   {
-    //url=(QCString)"doxygen=\""+ref+":\" href=\""+fileName;
+    //url=(QCString)"doxygen=\""+lref+":\" href=\""+fileName;
     exampleList = 0;
     exampleDict = 0;
   }
@@ -74,7 +74,7 @@ ClassDef::ClassDef(
   allMemberNameInfoList->setAutoDelete(TRUE);
   allMemberNameInfoDict = new MemberNameInfoDict(1009);
   visited=FALSE;
-  setReference(ref);
+  setReference(lref);
   compType=ct;
   incInfo=0;
   tempArgs=0;
@@ -551,17 +551,17 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
   }
 }
 
-void ClassDef::setIncludeFile(FileDef *fd,const char *incName,bool local)
+void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
 {
-  //printf("ClassDef::setInclude(%p,%s,%d)\n",fd,incName,local);
+  //printf("ClassDef::setInclude(%p,%s,%d)\n",fd,includeName,local);
   if (!incInfo) incInfo=new IncludeInfo;
-  if ((incName && incInfo->includeName.isEmpty()) ||
+  if ((includeName && incInfo->includeName.isEmpty()) ||
       (fd!=0 && incInfo->fileDef==0)
      )
   {
     //printf("Setting file info\n");
     incInfo->fileDef     = fd;
-    incInfo->includeName = incName;
+    incInfo->includeName = includeName;
     incInfo->local       = local;
   }
 }
@@ -776,6 +776,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trClassDiagram(name()));
       ol.endDotGraph(inheritanceGraph);
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.writeString("<font size=2><center>[");
+        ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
+        ol.writeString("]</center></font>");
+        ol.popGeneratorState();
+      }
       ol.popGeneratorState();
     }
   }
@@ -800,6 +808,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
       ol.endDotGraph(usageImplGraph);
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.writeString("<font size=2><center>[");
+        ol.writeHtmlLink("graph_legend.html",theTranslator->trLegend());
+        ol.writeString("]</center></font>");
+        ol.popGeneratorState();
+      }
       ol.popGeneratorState();
     }
   }

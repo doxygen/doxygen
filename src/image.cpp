@@ -310,11 +310,11 @@ void Image::drawRect(int x,int y,int w,int h,uchar colIndex,uint mask)
   drawVertLine(x+w-1,y,y+h-1,colIndex,mask);
 }
 
-void Image::fillRect(int x,int y,int width,int height,uchar colIndex,uint mask)
+void Image::fillRect(int x,int y,int lwidth,int lheight,uchar colIndex,uint mask)
 {
   int xp,yp,xi,yi;
-  for (yp=y,yi=0;yp<y+height;yp++,yi++)
-    for (xp=x,xi=0;xp<x+width;xp++,xi++)
+  for (yp=y,yi=0;yp<y+lheight;yp++,yi++)
+    for (xp=x,xi=0;xp<x+lwidth;xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f))) 
         setPixel(xp,yp,colIndex);
 }

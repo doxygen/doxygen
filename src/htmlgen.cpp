@@ -111,7 +111,8 @@ void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
   {
     t << "<a class=\"qindexRef\" ";
     t << "doxygen=\"" << s << ":";
-    if ((dest=tagDestinationDict[s])) t << *dest << "/";
+    if ((dest=tagDestinationDict[s])) t << *dest;
+    if (strcmp(s,"_cgi")!=0) t << "/"; // small hack to get the cgi binary link right
     t << "\" ";
   }
   else
@@ -121,7 +122,8 @@ void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
   t << "href=\""; 
   if (s)
   {
-    if ((dest=tagDestinationDict[s])) t << *dest << "/";
+    if ((dest=tagDestinationDict[s])) t << *dest;
+    if (strcmp(s,"_cgi")!=0) t << "/";
   }
   t << l << "\">";
 }

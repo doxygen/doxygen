@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 ############################################################################
-# $Id$
+# 
 #
 # Creates a Makefile from a template and a project file.
 #

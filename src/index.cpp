@@ -1491,6 +1491,23 @@ void writeGroupList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+void writeGraphInfo(OutputList &ol)
+{
+  if (!Config::haveDotFlag) return;
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  generateGraphLegend(Config::htmlOutputDir);
+  startFile(ol,"graph_legend","Graph Legend");
+  startTitle(ol,0);
+  parseText(ol,theTranslator->trLegendTitle());
+  endTitle(ol,0,0);
+  parseDoc(ol,"graph_legend",1,0,0,theTranslator->trLegendDocs());
+  endFile(ol);
+  ol.popGeneratorState();
+}
+
+//----------------------------------------------------------------------------
+
 void writeGroupIndex(OutputList &ol)
 {
   if (documentedGroups==0) return; 
@@ -1521,6 +1538,8 @@ void writeGroupIndex(OutputList &ol)
   endFile(ol);
   ol.popGeneratorState();
 }
+
+//----------------------------------------------------------------------------
 
 void writeIndex(OutputList &ol)
 {

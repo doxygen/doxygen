@@ -182,6 +182,20 @@ Here is a list of the languages and their current maintainers:
 
   <TR BGCOLOR="#ffffff">
       <TD>
+        Polish
+      </TD>  
+      <TD>
+        Grzegorz Kowal
+      </TD>
+      <TD>
+        <a href="mailto:g_kowal@NOSPAM.poczta.onet.pl">
+                        g_kowal@NOSPAM.poczta.onet.pl</a>
+      </TD>
+  </TR>
+
+
+  <TR BGCOLOR="#ffffff">
+      <TD>
         Dutch
       </TD>  
       <TD>
@@ -226,6 +240,8 @@ Here is a list of the languages and their current maintainers:
   Russian & Nickolay Semyonov & {\tt snob@int.spb.ru} \\
   \hline
   Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} \\
+  \hline
+  Polish & Grzegorz Kowal & {\tt g\_kowal@poczta.onet.pl} \\
   \hline
   Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} \\
   \hline

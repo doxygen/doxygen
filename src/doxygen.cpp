@@ -656,6 +656,7 @@ static void buildNamespaceList(Entry *root)
         FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
+        addNamespaceToGroups(root,nd);
       }
       else /* if (!root->doc.isEmpty() || 
                   !root->brief.isEmpty() || 
@@ -1493,7 +1494,10 @@ static void buildMemberList(Entry *root)
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
-               root->name.find("::")==-1 &&
+               root->name.find("::")==-1 && // TODO: remove this check
+                                            // it breaks cases like 
+                                            // func<A::B>(), but it is needed
+                                            // for detect that A::func() is a member 
                root->relates.isEmpty() &&
                root->type.left(7)!="extern " &&
                root->type.left(8)!="typedef " 
@@ -2678,7 +2682,9 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
   }
 
   namespaceName=removeAnnonymousScopes(namespaceName);
+  //printf("namespaceName=`%s' className=`%s'\n",namespaceName.data(),className.data());
   // merge class and namespace scopes again
+  scopeName.resize(0);
   if (!namespaceName.isEmpty())
   {
     if (className.isEmpty())
@@ -3292,14 +3298,14 @@ static void findMemberDocumentation(Entry *root)
 
     if (!root->type.isEmpty())
     {
-        findMember(root,
-            root->type+" "+
-            root->inside+
-            root->name+
-            root->args+
-            root->exception,
-            root->relates,
-            FALSE,isFunc);
+      findMember(root,
+          root->type+" "+
+          root->inside+
+          root->name+
+          root->args+
+          root->exception,
+          root->relates,
+          FALSE,isFunc);
     }
     else
     {
@@ -4576,8 +4582,8 @@ static void generateSearchIndex()
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
-      t << Config::docURL << endl << Config::cgiURL 
-        << "/" << Config::cgiName << endl;
+      t << Config::docURL << "/" << endl 
+        << Config::cgiURL << "/" << Config::cgiName << endl;
       f.close();
     }
     else
@@ -5112,7 +5118,7 @@ int main(int argc,char **argv)
 #endif
   
   initPreprocessor();
-  
+
   /**************************************************************************
    *             Handle arguments                                           *
    **************************************************************************/
@@ -5217,6 +5223,15 @@ int main(int argc,char **argv)
   includeNameDict = new FileNameDict(1009);
   exampleNameDict = new FileNameDict(1009);
   imageNameDict = new FileNameDict(257);
+
+  if (!Config::docURL.isEmpty())
+  {
+    tagDestinationDict.insert("_doc",new QCString(Config::docURL));
+  }
+  if (!Config::cgiURL.isEmpty())
+  {
+    tagDestinationDict.insert("_cgi",new QCString(Config::cgiURL+"/"+Config::cgiName));
+  }
 
   /**************************************************************************
    *            Initialize some global constants
@@ -5555,6 +5570,9 @@ int main(int argc,char **argv)
   msg("Generating page index...\n");
   writePageIndex(*outputList);
   
+  msg("Generating graph info page...\n");
+  writeGraphInfo(*outputList);
+
   msg("Generating search index...\n");
   generateSearchIndex();
   

@@ -559,35 +559,35 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
   //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
   ol.disableAllBut(OutputGenerator::Html);
-  QCString extLink,absPath;
-  if (ext) { extLink="_doc"; absPath=Config::docURL+"/"; }
+  QCString extLink;
+  if (ext) { extLink="_doc"; }
   //if (manEnabled) ol.disable(OutputGenerator::Man);
   //if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
 
   if (!compact) ol.writeListItem();
-  ol.startQuickIndexItem(extLink,absPath+"index.html");
+  ol.startQuickIndexItem(extLink,"index.html");
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
 
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"modules.html");
+    ol.startQuickIndexItem(extLink,"modules.html");
     parseText(ol,theTranslator->trModules());
     ol.endQuickIndexItem();
   } 
   if (documentedNamespaces>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"namespaces.html");
+    ol.startQuickIndexItem(extLink,"namespaces.html");
     parseText(ol,theTranslator->trNamespaceList());
     ol.endQuickIndexItem();
   }
   if (hierarchyClasses>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"hierarchy.html");
+    ol.startQuickIndexItem(extLink,"hierarchy.html");
     parseText(ol,theTranslator->trClassHierarchy());
     ol.endQuickIndexItem();
   } 
@@ -596,75 +596,75 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     if (Config::alphaIndexFlag)
     {
       if (!compact) ol.writeListItem();
-      ol.startQuickIndexItem(extLink,absPath+"classes.html");
+      ol.startQuickIndexItem(extLink,"classes.html");
       parseText(ol,theTranslator->trAlphabeticalList());
       ol.endQuickIndexItem();
     }
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"annotated.html");
+    ol.startQuickIndexItem(extLink,"annotated.html");
     parseText(ol,theTranslator->trCompoundList());
     ol.endQuickIndexItem();
   } 
   if (documentedHtmlFiles>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"files.html");
+    ol.startQuickIndexItem(extLink,"files.html");
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
   //if (documentedIncludeFiles>0 && Config::verbatimHeaderFlag)
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,absPath+"headers.html");
+  //  ol.startQuickIndexItem(extLink,"headers.html");
   //  parseText(ol,theTranslator->trHeaderFiles());
   //  ol.endQuickIndexItem();
   //}
   //if (Config::sourceBrowseFlag) 
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,absPath+"sources.html");
+  //  ol.startQuickIndexItem(extLink,"sources.html");
   //  parseText(ol,theTranslator->trSources());
   //  ol.endQuickIndexItem();
   //}
   if (documentedNamespaceMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"namespacemembers.html");
+    ol.startQuickIndexItem(extLink,"namespacemembers.html");
     parseText(ol,theTranslator->trNamespaceMembers());
     ol.endQuickIndexItem();
   }
   if (documentedMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"functions.html");
+    ol.startQuickIndexItem(extLink,"functions.html");
     parseText(ol,theTranslator->trCompoundMembers());
     ol.endQuickIndexItem();
   } 
   if (documentedFunctions>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"globals.html");
+    ol.startQuickIndexItem(extLink,"globals.html");
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
   if (pageList.count()>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"pages.html");
+    ol.startQuickIndexItem(extLink,"pages.html");
     parseText(ol,theTranslator->trRelatedPages());
     ol.endQuickIndexItem();
   } 
   if (exampleList.count()>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"examples.html");
+    ol.startQuickIndexItem(extLink,"examples.html");
     parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
   if (Config::searchEngineFlag)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem("_cgi",Config::cgiURL+"/"+Config::cgiName);
+    ol.startQuickIndexItem("_cgi","");
     parseText(ol,theTranslator->trSearch());
     ol.endQuickIndexItem();
   } 

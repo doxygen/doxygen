@@ -583,10 +583,47 @@ class TranslatorCroatian : public Translator
     {
       return "Static private atributi";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a todo item */
+    virtual QCString trTodo()
+    {
+      return "Za uraditi";
+    }
+    /*! Used as the header of the todo list */
+    virtual QCString trTodoList()
+    {
+      return "Ostalo za uraditi";
+    }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.1.1
+// new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trReferencedBy()
+    {
+      return "Referencirano od";
+    }
+    virtual QCString trRemarks()
+    {
+      return "Napomene";
+    }
+    virtual QCString trAttention()
+    {
+      return "Pa¾nja";
+    }
+    virtual QCString trInclByDepGraph()
+    {
+      return "Ovaj graf pokazuje koje datoteke izravno "
+             "ili neizravno ukljuèuju ovu datoteku:";
+    }
+    virtual QCString trSince()
+    {
+      return "Od";
+    }
+
 
 };
 

@@ -25,6 +25,7 @@ GENERATE_MAN      = NO
 GENERATE_LATEX    = YES
 GENERATE_HTML     = YES
 GENERATE_HTMLHELP = YES
+GENERATE_RTF      = NO
 ENABLE_PREPROCESSING = NO
 INPUT             = index.doc install.doc starting.doc faq.doc trouble.doc \
 		   history.doc features.doc \

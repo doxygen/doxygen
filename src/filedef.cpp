@@ -34,14 +34,14 @@
     \a the file name, and \a ref is an HTML anchor name if the
     file was read from a tag file or 0 otherwise
 */
-FileDef::FileDef(const char *p,const char *nm,const char *ref)
+FileDef::FileDef(const char *p,const char *nm,const char *lref)
    : Definition((QCString)p+nm,1,nm)
 {
   path=p;
   filepath=path+nm;
   filename=nameToFile(nm);
   diskname=filename.copy();
-  setReference(ref);
+  setReference(lref);
   classList     = new ClassList;
   includeList   = new QList<IncludeInfo>;
   includeList->setAutoDelete(TRUE);

@@ -899,6 +899,78 @@ class Translator
     {
       return "Since";
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    virtual QCString trLegendTitle()
+    {
+      return "Graph Legend";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    virtual QCString trLegendDocs()
+    {
+      return 
+        "This page explains how to interpret the graphs that are generated "
+        "by doxygen.<p>\n"
+        "Consider the following example:\n"
+        "\\code\n"
+        "/*! Invisible class because of truncation */\n"
+        "class Invisible { };\n\n"
+        "/*! Truncated class, inheritance relation is hidden */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* Class not documented with doxygen comments */\n"
+        "class Undocumented { };\n\n"
+        "/*! Class that is inherited using public inheritance */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Class that is inherited using protected inheritance */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Class that is inherited using private inheritance */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Class that is used by the Inherited class */\n"
+        "class Used { };\n\n"
+        "/*! Super class that inherits a number of other classes */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+        "is set to 200 this will result in the following graph:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "The boxes in the above graph have the following meaning:\n"
+        "<ul>\n"
+        "<li>A filled black box represents the struct or class for which the "
+        "graph is generated.\n"
+        "<li>A box with a black border denotes a documented struct or class.\n"
+        "<li>A box with a grey border denotes an undocumented struct or class.\n"
+        "<li>A box with a red border denotes a documented struct or class for\n"
+        "which not all inheritance/containment relations are shown. A graph is "
+        "truncated if it does not fit within the specified boundaries."
+        "</ul>\n"
+        "The arrows have the following meaning:\n"
+        "<ul>\n"
+        "<li>A dark blue arrow is used to visualize a public inheritance "
+        "relation between two classes.\n"
+        "<li>A dark green arrow is used for protected inheritance.\n"
+        "<li>A dark red arrow is used for private inheritance.\n"
+        "<li>A purple dashed arrow is used if a class is contained or used "
+        "by another class. The arrow is labeled with the variable(s) "
+        "through which the pointed class or struct is accessible. \n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    virtual QCString trLegend()
+    {
+      return "legend";
+    }
 };
 
 #endif

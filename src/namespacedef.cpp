@@ -28,7 +28,7 @@
 #include "message.h"
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
-                           const char *name,const char *ref) : 
+                           const char *name,const char *lref) : 
    Definition(df,dl,name)
 {
   fileName="namespace_"+nameToFile(name);
@@ -37,7 +37,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   //memList = new MemberList;
   usingDirList = 0;
   usingDeclList = 0;
-  setReference(ref);
+  setReference(lref);
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
