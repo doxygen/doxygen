@@ -213,7 +213,7 @@ local int huft_build(uIntf *b, uInt n, uInt s, const uIntf *d, const uIntf *e, i
 
         /* compute minimum size table less than or equal to l bits */
         z = g - w;
-        z = z > (uInt)l ? l : z;        /* table size upper limit */
+        z = z > (uInt)l ? (uInt)l : z;        /* table size upper limit */
         if ((f = 1 << (j = k - w)) > a + 1)     /* try a k-w bit table */
         {                       /* too few codes for k-w bit table */
           f -= a + 1;           /* deduct codes from patterns left */
@@ -445,6 +445,8 @@ int inflate_trees_fixed(uIntf *bl, uIntf *bd, inflate_huft **tl, inflate_huft **
     ZFREE(z, c);
     fixed_built = 1;
   }
+#else
+  z=z; // DvH: added to avoid compiler warning
 #endif
   *bl = fixed_bl;
   *bd = fixed_bd;

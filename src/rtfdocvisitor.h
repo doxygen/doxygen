@@ -132,7 +132,7 @@ class RTFDocVisitor : public DocVisitor
     // helper functions 
     //--------------------------------------
     
-    void filter(const char *str);
+    void filter(const char *str,bool verbatim=FALSE);
     void startLink(const QString &ref,const QString &file,
                    const QString &anchor);
     void endLink(const QString &ref);

@@ -36,6 +36,7 @@ class ClassDiagram;
 class DotClassGraph;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
+class SectionDict;
 
 class OutputList : public OutputDocInterface
 {
@@ -61,7 +62,7 @@ class OutputList : public OutputDocInterface
 
     void parseDoc(const char *fileName,int startLine,
                   const char *clName,MemberDef *md,const QCString &docStr,
-                  bool isExample);
+                  bool isExample,SectionDict *sections=0);
     void parseText(const QCString &textStr);
     
 

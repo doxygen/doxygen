@@ -823,7 +823,7 @@ void RTFGenerator::lastIndexPage()
   t <<"\\sect \\sbkpage \\pgndec \\pgnrestart\n";
   t <<"\\sect \\sectd \\sbknone\n";
 
-  // set footer
+  // set new footer with arabic numbers
   t <<"{\\footer "<< rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
   //t << rtf_Style["Heading1"]->reference << "\n";
 
@@ -1970,7 +1970,7 @@ void RTFGenerator::endTextBlock()
   newParagraph();
   DBG_RTF(t << "{\\comment endTextBlock}" << endl)
   t << "}" << endl;
-  m_omitParagraph = TRUE;
+  //m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::newParagraph()

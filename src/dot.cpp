@@ -775,7 +775,8 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
     for (;(node=dnli2.current());++dnli2)
     {
-      if (node->m_subgraphId==n->m_subgraphId) node->write(t,BITMAP,FALSE,TRUE);
+      if (node->m_subgraphId==n->m_subgraphId) 
+        node->write(t,BITMAP,FALSE,TRUE,1000,TRUE);
     }
     t << "}" << endl;
     f.close();
@@ -1062,7 +1063,10 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     }
     m_usedNodes->insert(className,bn);
     //printf(" add new child node `%s' to %s\n",className.data(),n->m_label.data());
-    if (distance<m_recDepth) buildGraph(cd,bn,distance+1,base);
+    
+    // we use <=, i.s.o < to cause one more level than intended which is used to 
+    // detect truncated nodes
+    if (distance<=m_recDepth) buildGraph(cd,bn,distance+1,base);
   }
 }
 
@@ -1374,7 +1378,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   }
   baseName = convertNameToFile(diskName());
 
-  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,
+  findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),baseName,
                       thisDir,format,!isTBRank,m_graphType==Inheritance);
 
   if (format==BITMAP) // run dot to create a bitmap image
@@ -1548,15 +1552,19 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
         n->addChild(bn,0,0,0);
         bn->addParent(n);
         m_usedNodes->insert(in,bn);
-        if (bfd) buildGraph(bn,bfd,distance+1);
+
+        // we use <=, i.s.o < to cause one more level than intended which is used to 
+        // detect truncated nodes
+        if (bfd && distance<=m_recDepth) buildGraph(bn,bfd,distance+1);
       }
     }
   }
 }
 
-DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
+DotInclDepGraph::DotInclDepGraph(FileDef *fd,int maxRecursionDepth,bool inverse)
 {
   m_maxDistance = 0;
+  m_recDepth = maxRecursionDepth;
   m_inverse = inverse;
   ASSERT(fd!=0);
   m_diskName  = fd->getFileBase().copy();
@@ -1610,7 +1618,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   QCString mapName=m_startNode->m_label.copy();
   if (m_inverse) mapName+="dep";
 
-  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,format,
+  findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),baseName,thisDir,format,
                       FALSE,FALSE,!m_inverse);
 
   if (format==BITMAP)

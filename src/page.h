@@ -27,8 +27,14 @@ class PageInfo
   public:
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
-      doc(d), title(t), context(0), sectionDict(0),specialListItems(0),m_inGroup(0)
-       {}
+      doc(d), title(t), context(0),specialListItems(0),m_inGroup(0)
+    {
+      sectionDict = new SectionDict(17);
+    }
+    ~PageInfo()
+    {
+      delete sectionDict;
+    }
 
     // where the page definition was found
     QCString defFileName;
@@ -51,33 +57,33 @@ class PageInfo
     bool isReference() const { return !reference.isEmpty(); }
     QCString getReference() const { return reference; }
     
-    void addSections(QList<QCString> *anchorList)
-    {
-      if (anchorList)
-      {
-        QCString *s=anchorList->first();
-        while (s)
-        {
-          SectionInfo *si=0;
-          if (!s->isEmpty() && (si=Doxygen::sectionDict[*s]))
-          {
-            //printf("Add section `%s' to definition `%s'\n",
-            //    si->label.data(),n.data());
-            if (sectionDict==0) 
-            {
-              sectionDict = new SectionDict(17);
-            }
-            if (sectionDict->find(*s)==0)
-            {
-              sectionDict->insert(*s,si);
-            }
-            si->pageRef = this;
-            si->fileName = fileName;
-          }
-          s=anchorList->next();
-        }
-      }
-    }
+    //void addSections(QList<QCString> *anchorList)
+    //{
+    //  if (anchorList)
+    //  {
+    //    QCString *s=anchorList->first();
+    //    while (s)
+    //    {
+    //      SectionInfo *si=0;
+    //      if (!s->isEmpty() && (si=Doxygen::sectionDict[*s]))
+    //      {
+    //        //printf("Add section `%s' to definition `%s'\n",
+    //        //    si->label.data(),n.data());
+    //        if (sectionDict==0) 
+    //        {
+    //          sectionDict = new SectionDict(17);
+    //        }
+    //        if (sectionDict->find(*s)==0)
+    //        {
+    //          sectionDict->insert(*s,si);
+    //        }
+    //        si->pageRef = this;
+    //        si->fileName = fileName;
+    //      }
+    //      s=anchorList->next();
+    //    }
+    //  }
+    //}
     void findSectionsInDocumentation()
     {
       docFindSections(doc,this,0,0,defFileName);

@@ -1032,7 +1032,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_GRAPH"))
     // write class diagram using dot
   {
-    DotClassGraph inheritanceGraph(this,DotClassGraph::Inheritance);
+    DotClassGraph inheritanceGraph(this,DotClassGraph::Inheritance,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
     if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
@@ -1067,7 +1067,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
   {
-    DotClassGraph usageImplGraph(this,DotClassGraph::Implementation);
+    DotClassGraph usageImplGraph(this,DotClassGraph::Implementation,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();

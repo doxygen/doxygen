@@ -2763,7 +2763,8 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     Doxygen::insideMainPage=TRUE;
-    ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->doc,FALSE);
+    ol.parseDoc(defFileName,defLine,0,0,
+                Doxygen::mainPage->doc,FALSE,Doxygen::mainPage->sectionDict);
 
     if (!Config_getString("GENERATE_TAGFILE").isEmpty())
     {
@@ -2936,7 +2937,8 @@ void writeIndex(OutputList &ol)
     //  ol.endSection(si->label,FALSE);
     //}
     ol.startTextBlock();
-    ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->doc,FALSE);
+    ol.parseDoc(defFileName,defLine,0,0,
+                Doxygen::mainPage->doc,FALSE,Doxygen::mainPage->sectionDict);
     ol.endTextBlock();
     endFile(ol);
     ol.enable(OutputGenerator::Man);

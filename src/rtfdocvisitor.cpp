@@ -292,15 +292,15 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
-      m_t << "\\par" << endl; 
+      //m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
     case DocVerbatim::Verbatim: 
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      filter(s->text());
-      m_t << "\\par" << endl; 
+      filter(s->text(),TRUE);
+      //m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
     case DocVerbatim::HtmlOnly: 
@@ -572,14 +572,17 @@ void RTFDocVisitor::visitPost(DocSimpleListItem *)
 void RTFDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
-  m_t << "{" // start section
+  m_t << "\\par" << endl << 
+         "{{" // start section
       << rtf_Style_Reset;
   QString heading;
-  int level = QMIN(s->level()+2,4);
+  int level = QMIN(s->level()+1,4);
   heading.sprintf("Heading%d",level);
   // set style
-  m_t << rtf_Style[heading]->reference;
+  m_t << rtf_Style[heading]->reference << endl;
   // make table of contents entry
+  filter(s->title());
+  m_t << endl << "\\par" << "}" << endl;
   m_t << "{\\tc\\tcl" << level << " \\v ";
   filter(s->title());
   m_t << "}" << endl;
@@ -588,8 +591,7 @@ void RTFDocVisitor::visitPre(DocSection *s)
 void RTFDocVisitor::visitPost(DocSection *) 
 {
   if (m_hide) return;
-  m_t << "\\par" << endl;
-  m_t << "}"; // end section
+  m_t << "}" << endl; // end section
 }
 
 void RTFDocVisitor::visitPre(DocHtmlList *l)
@@ -686,15 +688,15 @@ void RTFDocVisitor::visitPre(DocHtmlTable *)
   m_t << "\\par" << endl;
 }
 
-void RTFDocVisitor::visitPost(DocHtmlTable *t) 
+void RTFDocVisitor::visitPost(DocHtmlTable *) 
 {
   if (m_hide) return;
-  if (!t->hasCaption())
-  {
-    m_t << endl; 
-    m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
-    m_t << "{\\row }" << endl;
-  }
+  //if (!t->hasCaption())
+  //{
+  //  m_t << endl; 
+  //  m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
+  //  m_t << "{\\row }" << endl;
+  //}
   m_t << "\\pard" << endl;
 }
 
@@ -724,7 +726,7 @@ void RTFDocVisitor::visitPre(DocHtmlRow *r)
            "\\clbrdrb\\brdrs\\brdrw10 "
            "\\clbrdrr \\brdrs\\brdrw10 "
            "\\cltxlrtb "
-           "\\cellx" << (i*columnWidth) << endl;
+           "\\cellx" << ((i+1)*columnWidth) << endl;
   }
   m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
 }
@@ -1091,7 +1093,7 @@ static char* getMultiByte(int c)
     return s;
 }
 
-void RTFDocVisitor::filter(const char *str)
+void RTFDocVisitor::filter(const char *str,bool verbatim)
 { 
   if (str)
   {
@@ -1121,6 +1123,15 @@ void RTFDocVisitor::filter(const char *str)
         case '{':  m_t << "\\{";            break;
         case '}':  m_t << "\\}";            break;
         case '\\': m_t << "\\\\";           break;
+        case '\n': if (verbatim)
+                   {
+                     m_t << "\\par" << endl; 
+                   }
+                   else
+                   {
+                     m_t << '\n';
+                   }
+                   break;
         default:   m_t << (char)c;
       }
       pc = c;
