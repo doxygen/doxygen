@@ -100,8 +100,7 @@ static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
 static char		yyFileName[4096] ;
 static int              lastMemberGroupLine;
-static bool    		sig;
-static bool    		slot;
+static MethodTypes 	mtype;
 static bool    		gstat;
 static bool             removeSlashes;
 static Specifier 	virt;
@@ -119,6 +118,7 @@ static SectionInfo::SectionType
                         sectionType;
 static QCString         funcPtrType;
 static QCString         templateStr;
+static QCString         aliasName;
 static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
@@ -157,8 +157,7 @@ static void initParser()
   curlyCount = 0;
   ifCount = 0;
   memberGroupId = NOGROUP;
-  sig = FALSE;
-  slot = FALSE;
+  mtype = Method;
   gstat = FALSE;
   virt = Normal;
   baseVirt = Normal;
@@ -442,6 +441,8 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	CopyRound
 %x	CopyCurly
 %x	IDLUnionCase
+%x	NSAliasName
+%x	NSAliasArg
 
 %%
 
@@ -512,8 +513,16 @@ TITLE     [tT][iI][tT][lL][eE]
   					  unput(*yytext);
   					  BEGIN( FindMembers ) ; 
 					}
-<FindMembers>{B}*"signals"{BN}*":"{BN}* { current->sig = sig = TRUE;
-					  current->slot = slot = FALSE;
+<FindMembers>{B}*"k_dcop"{BN}*":"{BN}*  { current->mtype = mtype = DCOP;
+					  current->protection = protection = Public ;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+					}
+
+<FindMembers>{B}*"signals"{BN}*":"{BN}* { current->mtype = mtype = Signal;
 					  current->protection = protection = Public ;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
@@ -524,8 +533,7 @@ TITLE     [tT][iI][tT][lL][eE]
 
 <FindMembers>{B}*"public"{BN}*"slots"{BN}*":"{BN}* {
 					  current->protection = protection = Public ;
-					  current->slot = slot = TRUE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -535,8 +543,7 @@ TITLE     [tT][iI][tT][lL][eE]
 
 <FindMembers>{B}*"protected"{BN}*"slots"{BN}*":"{BN}* {
 					  current->protection = protection = Protected ;
-					  current->slot = slot = TRUE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -546,8 +553,7 @@ TITLE     [tT][iI][tT][lL][eE]
 
 <FindMembers>{B}*"private"{BN}*"slots"{BN}*":"{BN}* {
 					  current->protection = protection = Private ;
-					  current->slot = slot = TRUE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -558,8 +564,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <FindMembers>{B}*"methods"{B}":"	{ /* M$-IDL only: ignored */ }
 <FindMembers>{B}*"public"{BN}*":"{BN}*	{ 
 					  current->protection = protection = Public ;
-					  current->slot = slot = FALSE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Method;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -568,8 +573,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <FindMembers>{B}*"protected"{BN}*":"{BN}* { 
   					  current->protection = protection = Protected ;
-					  current->slot = slot = FALSE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Method;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -578,8 +582,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <FindMembers>{B}*"private"{BN}*":"{BN}*	{ 
   					  current->protection = protection = Private ;
-					  current->slot = slot = FALSE;
-					  current->sig = sig = FALSE;
+					  current->mtype = mtype = Method;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
 					  current->args.resize(0);
@@ -766,6 +769,20 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //printf("Start template list\n");
 					  BEGIN( ReadTempArgs );
   					}
+<FindMembers>"namespace"{BN}+/{ID}{BN}*"=" { // namespace alias
+                                          lineCount(); 
+  					  BEGIN( NSAliasName );
+					}
+<NSAliasName>{ID}			{
+  					  aliasName = yytext;
+					  BEGIN( NSAliasArg );
+  					}
+<NSAliasArg>({ID}"::")*{ID}		{
+  					  namespaceAliasDict.insert(aliasName,new QCString(yytext));
+  					}
+<NSAliasArg>";"				{
+  					  BEGIN( FindMembers );
+  					}
 <FindMembers>"using"{BN}+		{ 
 					  current->startLine=yyLineNr; 
                                           lineCount(); 
@@ -780,10 +797,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  current->protection = protection ;
-				          current->sig        = sig;
+				          current->mtype      = mtype;
 					  current->virt       = virt;
 					  current->stat       = gstat;
-					  current->slot       = slot;
 					  current->mGrpId     = memberGroupId;
 					  BEGIN(Using);
   					}
@@ -794,10 +810,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  current->protection = protection ;
-				          current->sig        = sig;
+				          current->mtype      = mtype;
 					  current->virt       = virt;
 					  current->stat       = gstat;
-					  current->slot       = slot;
 					  current->mGrpId     = memberGroupId;
 					  BEGIN(Using);
   					}
@@ -958,10 +973,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  current->protection = protection ;
-				          current->sig        = sig;
+				          current->mtype      = mtype;
 					  current->virt       = virt;
 					  current->stat       = gstat;
-					  current->slot       = slot;
 					  current->mGrpId     = memberGroupId;
 					  BEGIN(FindMembers);
   					}
@@ -1258,8 +1272,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    // variable found 
 					    current->section = Entry::EMPTY_SEC ;
 					    current->protection = protection;
-					    current->slot = slot = FALSE;
-					    current->sig = sig = FALSE;
+				            current->mtype = Method;
 					    current->virt = Normal; 
 					    current->stat = gstat;
 					    current->mGrpId = memberGroupId;
@@ -1355,10 +1368,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current_root->parent->addSubEntry(current);
 					    current             = new Entry ;
 					    current->protection = protection ;
-				            current->sig        = sig;
+                                            current->mtype      = mtype;
 					    current->virt       = virt;
 					    current->stat       = gstat;
-					    current->slot       = slot;
 					    current->mGrpId     = memberGroupId;
 					  }
 					  else // probably a redundant , 
@@ -1429,10 +1441,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					      { // namespaces and interfaces ends with a closing bracket without semicolon
 						current->reset();
 						current->protection = protection ;
-						current->sig = sig;
+                                                current->mtype = mtype;
 						current->virt = virt;
 						current->stat = gstat;
-						current->slot = slot;
 						current->mGrpId = memberGroupId;
 						BEGIN( FindMembers ) ;
 					      }
@@ -1457,10 +1468,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry( current ) ;
 					  current = new Entry;
 					  current->protection = protection ;
-					  current->sig = sig;
+                                          current->mtype = mtype;
 					  current->virt = virt;
 					  current->stat = gstat;
-					  current->slot = slot;
 					  current->mGrpId = memberGroupId;
   					  BEGIN(MemberSpecSkip); 
   					}
@@ -1509,10 +1519,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
   					    Entry *varEntry=new Entry;
 					    varEntry->protection = current->protection ;
-					    varEntry->sig = current->sig;
+                                            varEntry->mtype = current->mtype;
 					    varEntry->virt = current->virt;
 					    varEntry->stat = current->stat;
-					    varEntry->slot = current->slot;
 					    varEntry->section = Entry::VARIABLE_SEC;
 					    varEntry->name = msName.stripWhiteSpace();
 					    varEntry->type = current->type.simplifyWhiteSpace()+" ";
@@ -1548,10 +1557,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					    isTypedef=FALSE;
 					    current->reset();
 					    current->protection = protection ;
-					    current->sig = sig;
+					    current->mtype = mtype;
 					    current->virt = virt;
 					    current->stat = gstat;
-					    current->slot = slot;
 					    current->mGrpId = memberGroupId;
 					    BEGIN( FindMembers );
 					  }
@@ -1962,10 +1970,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
 					  current->protection = protection;
-				          current->sig = sig;
+					  current->mtype = mtype;
 					  current->virt = virt;
 					  current->stat = gstat;
-					  current->slot = slot;
 					  current->mGrpId = memberGroupId;
 					  lastCurlyContext = FindMembers;
 					  if( *yytext == '{' )
@@ -2564,6 +2571,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
 <SkipHtmlComment>.
+<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test")/[^a-z_A-Z0-9] {
+  					  current->doc+=yytext;
+  					}
+<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test")/[^a-z_A-Z0-9]	{
+  					  current->brief+=yytext;
+  					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
   					  todoStartContext = YY_START;
 					  lastBriefContext = TodoParam; // this is where we will continue at the end of the argument
@@ -3019,10 +3032,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current_root->addSubEntry(current);
 					    current = new Entry ;
 					    current->protection = protection ;
-				            current->sig = sig;
+					    current->mtype = mtype;
 					    current->virt = virt;
 					    current->stat = gstat;
-					    current->slot = slot;
 					    current->mGrpId = memberGroupId;
 					    BEGIN( FindMembers );
 					  }
@@ -3300,10 +3312,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
 					  current->protection = protection ;
-				          current->sig = sig;
+					  current->mtype = mtype;
 					  current->virt = virt;
 					  current->stat = gstat;
-					  current->slot = slot;
 					  current->mGrpId = memberGroupId;
 					  BEGIN( FindMembers );
   					}
@@ -3399,8 +3410,7 @@ static void parseCompounds(Entry *rt)
 	current->protection = protection = ce->protection;
       else // named struct, union, or interface
 	current->protection = protection = Public ;
-      sig = FALSE;
-      slot = FALSE;
+      mtype = Method;
       gstat = FALSE;
       virt = Normal;
       current->mGrpId = memberGroupId = ce->mGrpId;
@@ -3419,8 +3429,7 @@ void parseMain(Entry *rt)
   initParser();
   anonCount     = 0;
   protection    = Public;
-  sig           = FALSE;
-  slot          = FALSE;
+  mtype         = Method;
   gstat         = FALSE;
   virt          = Normal;
   current_root  = rt;

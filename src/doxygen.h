@@ -91,6 +91,7 @@ extern QTextStream tagFile;
 extern SectionDict sectionDict;
 extern FileNameList inputNameList;
 extern StringDict typedefDict;
+extern StringDict namespaceAliasDict;
 extern GroupList groupList;
 extern GroupDict groupDict;
 extern NamespaceList namespaceList;

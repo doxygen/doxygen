@@ -326,19 +326,19 @@ static const struct
   { "ListEnum4",
     "\\s94\\fi-360\\li1800\\widctlpar\\fs20\\cgrid "
   },
-  { "ListEnum4",
+  { "ListEnum5",
     "\\s95\\fi-360\\li2160\\widctlpar\\fs20\\cgrid "
   },
-  { "ListEnum5",
+  { "ListEnum6",
     "\\s96\\fi-360\\li2520\\widctlpar\\fs20\\cgrid "
   },
-  { "ListEnum6",
+  { "ListEnum7",
     "\\s97\\fi-360\\li2880\\widctlpar\\fs20\\cgrid "
   },
-  { "ListEnum7",
+  { "ListEnum8",
     "\\s98\\fi-360\\li3240\\widctlpar\\fs20\\cgrid "
   },
-  { "ListEnum8",
+  { "ListEnum9",
     "\\s99\\fi-360\\li3600\\widctlpar\\fs20\\cgrid "
   },
   { 0,

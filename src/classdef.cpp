@@ -178,6 +178,7 @@ void ClassDef::addMembersToMemberGroup()
   addMemberListToGroup(&pubAttribs);
   addMemberListToGroup(&pubSlots);
   addMemberListToGroup(&signals);
+  addMemberListToGroup(&dcopMethods);
   addMemberListToGroup(&pubStaticMembers);
   addMemberListToGroup(&pubStaticAttribs);
   addMemberListToGroup(&proTypes);
@@ -219,11 +220,15 @@ void ClassDef::insertMember(MemberDef *md)
     {
       switch (md->memberType())
       {
-        case MemberDef::Signal:
+        case MemberDef::Signal: // Qt specific
           signals.append(md);
           md->setSectionList(&signals);
           break;
-        case MemberDef::Slot:
+        case MemberDef::DCOP:   // KDE2 specific
+          dcopMethods.append(md);
+          md->setSectionList(&dcopMethods);
+          break;
+        case MemberDef::Slot:   // Qt specific
           switch (md->protection())
           {
             case Protected: 
@@ -358,7 +363,8 @@ void ClassDef::insertMember(MemberDef *md)
     {
       switch (md->memberType())
       {
-        case MemberDef::Signal:
+        case MemberDef::Signal: // fall through
+        case MemberDef::DCOP:
           if (Config::sortMembersFlag)
             functionMembers.inSort(md);
           else
@@ -511,6 +517,7 @@ void ClassDef::computeAnchors()
   setAnchors('s',&pubTypes);
   setAnchors('t',&proTypes);
   setAnchors('u',&priTypes);
+  setAnchors('v',&dcopMethods);
 }
 
 void ClassDef::distributeMemberGroupDocumentation()
@@ -857,6 +864,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pubAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
   pubSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
   signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
+  dcopMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
+
   // static public members
   pubStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
   pubStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicAttribs(),0); 
@@ -1066,7 +1075,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.docify(stripFromPath(path));
       }
 
-      if (fd->generateSource() || (!fd->isReference() && Config::sourceBrowseFlag))
+      if (fd->generateSourceFile())
       {
         ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
       }
@@ -1340,6 +1349,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     pubAttribs.writePlainDeclarations(ol,this,0,0,0); 
     pubSlots.writePlainDeclarations(ol,this,0,0,0); 
     signals.writePlainDeclarations(ol,this,0,0,0); 
+    dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
     pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
     pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
     proTypes.writePlainDeclarations(ol,this,0,0,0); 
@@ -1856,7 +1866,8 @@ void ClassDef::generateXML(QTextStream &t)
   }
   int numMembers = 
     pubTypes.count()+pubMembers.count()+pubAttribs.count()+
-    pubSlots.count()+signals.count()+pubStaticMembers.count()+
+    pubSlots.count()+signals.count()+dcopMethods.count()+
+    pubStaticMembers.count()+
     pubStaticAttribs.count()+proTypes.count()+proMembers.count()+
     proAttribs.count()+proSlots.count()+proStaticMembers.count()+
     proStaticAttribs.count()+priTypes.count()+priMembers.count()+
@@ -1870,6 +1881,7 @@ void ClassDef::generateXML(QTextStream &t)
     generateXMLSection(t,&pubAttribs,"public-attrib");
     generateXMLSection(t,&pubSlots,"public-slot");
     generateXMLSection(t,&signals,"signal");
+    generateXMLSection(t,&dcopMethods,"dcop-func");
     generateXMLSection(t,&pubStaticMembers,"public-static-func");
     generateXMLSection(t,&pubStaticAttribs,"public-static-attrib");
     generateXMLSection(t,&proTypes,"protected-type");

@@ -164,9 +164,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.docify(ii->includeName);
       ol.enableAll();
       ol.disableAllBut(OutputGenerator::Html);
-      if (fd && fd->isLinkable() && 
-          (fd->generateSource() || Config::sourceBrowseFlag)
-         )
+      if (fd && fd->isLinkable() && fd->generateSourceFile())
       {
         ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
       }
@@ -222,7 +220,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
   }
 
-  if (generateSource() || (!isReference() && Config::sourceBrowseFlag))
+  if (generateSourceFile())
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.newParagraph();

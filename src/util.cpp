@@ -314,6 +314,31 @@ ClassDef *getClass(const char *name)
   return classDict[name];
 }
 
+NamespaceDef *getResolvedNamespace(const char *name)
+{
+  if (name==0 || name[0]=='\0') return 0;
+  QCString *subst = namespaceAliasDict[name];
+  if (subst)
+  {
+    int count=0; // recursion detection guard
+    QCString *newSubst;
+    while ((newSubst=namespaceAliasDict[*subst]) && count<10)
+    {
+      subst=newSubst;
+      count++;
+    }
+    if (count==10)
+    {
+      warn_cont("Warning: possible recursive namespace alias detected for %s!\n",name);
+    }
+    return namespaceDict[subst->data()];
+  }
+  else
+  {
+    return namespaceDict[name];
+  }
+}
+
 ClassDef *getResolvedClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
@@ -2434,9 +2459,10 @@ void extractNamespaceName(const QCString &scopeName,
 {
   QCString clName=scopeName.copy();
   //QCString nsName;
-  if (!clName.isEmpty() && namespaceDict[clName] && getClass(clName)==0)
+  NamespaceDef *nd;
+  if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
-    namespaceName=clName.copy();
+    namespaceName=nd->name().copy();
     className.resize(0);
     //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
     //     className.data(),namespaceName.data());
@@ -2446,9 +2472,9 @@ void extractNamespaceName(const QCString &scopeName,
   while (p>=0 && (i=clName.findRev("::",p))!=-1) 
     // see if the first part is a namespace (and not a class)
   {
-    if (i>0 && namespaceDict[clName.left(i)] && getClass(clName.left(i))==0)
+    if (i>0 && (nd=getResolvedNamespace(clName.left(i))) && getClass(clName.left(i))==0)
     {
-      namespaceName=clName.left(i);
+      namespaceName=nd->name().copy();
       className=clName.right(clName.length()-i-2);
       //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
       //   className.data(),namespaceName.data());

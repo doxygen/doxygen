@@ -333,7 +333,7 @@ void countFiles(int &htmlFiles,int &files)
     for (;(fd=fni.current());++fni)
     {
       bool doc = fd->isLinkableInProject();
-      bool src = fd->generateSource() || Config::sourceBrowseFlag;
+      bool src = fd->generateSourceFile();
       if (doc || src)
       {
         htmlFiles++;
@@ -415,7 +415,7 @@ void writeFileIndex(OutputList &ol)
     {
       //printf("Found filedef %s\n",fd->name().data());
       bool doc = fd->isLinkableInProject();
-      bool src = fd->generateSource() || Config::sourceBrowseFlag;
+      bool src = fd->generateSourceFile();
       if ((doc || src) && !fd->isReference())
       {
         QCString path;
@@ -849,7 +849,7 @@ void writeAlphabeticalClassList(OutputList &ol)
         if (!namesp.isEmpty())
         {
           ol.docify(" (");
-          NamespaceDef *nd = namespaceDict[namesp];
+          NamespaceDef *nd = getResolvedNamespace(namesp);
           if (nd && nd->isLinkable())
           {
             ol.writeObjectLink(nd->getReference(),

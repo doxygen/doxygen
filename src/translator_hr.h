@@ -31,96 +31,27 @@
 class TranslatorCroatian : public Translator
 {
   private:
-	/*! to avoid macro redefinition from translator_cz.h */
-	/*  Speed loss is actualy less than in Czech version due to
-		fewer QCString copying. 
-	 */
-	inline QCString& decode(const QCString& sInput)
-	{ 
+        /*! to avoid macro redefinition from translator_cz.h */
+        /*  Speed loss is actualy less than in Czech version due to
+                fewer QCString copying. 
+         */
+        inline QCString decode(const QCString& sInput)
+        { 
 #ifdef _WIN32
-		return ISOToWin(sInput);
+                return ISO88592ToWin1250(sInput);
 #else
-		return const_cast<QCString&>(sInput);
+                return sInput;
 #endif
-	}
-    /*! returns the string converted from windows-1250 to iso-8859-2 */
-    QCString WinToISO(const QCString& sInput)
-    {
-      // The conversion table for characters >127
-      // 
-      static const char WinToISOTab[] = {
-        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
-        '\x88', '\x89', '\xA9', '\x8B', '\xA6', '\xAB', '\xAE', '\xAC',
-        '\x90', '\x91', '\x92', '\x93', '\x94', '\x2E', '\x96', '\x97',
-        '\x98', '\x99', '\xB9', '\x9B', '\xB6', '\xBB', '\xBE', '\xBC',
-        '\xA0', '\x20', '\x20', '\xA3', '\xA4', '\xA1', '\xA6', '\xA7',
-        '\x22', '\xA9', '\xAA', '\x3C', '\xAC', '\x2D', '\xAE', '\xAF',
-        '\x2E', '\x2B', '\x20', '\xB3', '\x27', '\x75', '\xB6', '\xB7',
-        '\x20', '\xB1', '\xBA', '\x3E', '\xA5', '\x22', '\xB5', '\xBF',
-        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
-        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
-        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
-        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
-        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
-        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
-        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\x2D',
-        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
-        '\0'
-      };
-      
-      QCString result;
-      int len = sInput.length();
-
-      for (int i = 0; i < len; ++i)
-      {
-        unsigned int c = sInput[i];  
-        result += (c > 127) ? WinToISOTab[c & 0x7F] : c;
-      }
-      return result;
-    }
-    
-    /*! returns the string converted from iso-8859-2 to windows-1250 */
-    QCString ISOToWin(const QCString& sInput)
-    {
-      // The conversion table for characters >127
-      // 
-      static const char ISOToWinTab[] = {
-        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
-        '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F',
-        '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97',
-        '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F',
-        '\xA0', '\xA5', '\xA2', '\xA3', '\xA4', '\xBC', '\x8C', '\xA7',
-        '\xA8', '\x8A', '\xAA', '\x8D', '\x8F', '\xAD', '\x8E', '\xAF',
-        '\xB0', '\xB9', '\xB2', '\xB3', '\xB4', '\xBE', '\x9C', '\xB7',
-        '\xB8', '\x9A', '\xBA', '\x9D', '\x9F', '\xBD', '\x9E', '\xBF',
-        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
-        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
-        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
-        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
-        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
-        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
-        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7',
-        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
-        '\0'
-      };
-      QCString result;
-      int len = sInput.length();
-
-      for (int i = 0; i < len; ++i)
-      {
-        unsigned int c = sInput[i];  
-        result += (c > 127) ? ISOToWinTab[c & 0x7F] : c;
-      }
-      return result;
-    }
+        }
+  
   public:
     QCString idLanguage()
     { return "croatian"; }
     QCString idLanguageCharset()
 #ifdef _WIN32
-	{ return "windows-1250"; }
+        { return "windows-1250"; }
 #else
-	{ return "iso-8859-2"; }
+        { return "iso-8859-2"; }
 #endif
     QCString latexBabelPackage()
     { return "croatian"; }
@@ -137,7 +68,7 @@ class TranslatorCroatian : public Translator
     QCString trEnumerationValueDocumentation()
     { return decode("Dokumentacija enum vrijednosti"); }
     QCString trMemberFunctionDocumentation()
-	{ return decode("Dokumentacija funkcija"); }
+        { return decode("Dokumentacija funkcija"); }
     QCString trMemberDataDocumentation()
     { return decode("Documentacija varijabli"); }
     QCString trGeneratedFrom(const char *s,bool single)
@@ -145,9 +76,9 @@ class TranslatorCroatian : public Translator
       QCString result= decode("Dokumentacija za ")+s+
                        decode("je generirana iz ");
       if (single)
-		  result+= decode("datoteke :");
-	  else
-		  result+= decode("slijedeæih datoteka:");
+                  result+= decode("datoteke :");
+          else
+                  result+= decode("slijedeæih datoteka:");
       return result;
     }
     QCString trMore()
@@ -196,7 +127,7 @@ class TranslatorCroatian : public Translator
     { return decode("Tra¾i"); }
     QCString trClassHierarchyDescription()
     { return decode("Stablo naslijeðivanja je poslo¾eno "
-					"pribli¾no po abecedi:");
+                                        "pribli¾no po abecedi:");
     }
     QCString trFileListDescription(bool extractAll)
     {
@@ -207,7 +138,7 @@ class TranslatorCroatian : public Translator
     }
     QCString trCompoundListDescription()
     { return decode("Popis svih klasa, unija i struktura "
-					"s kratkim opisom :"); 
+                                        "s kratkim opisom :"); 
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
@@ -311,8 +242,8 @@ class TranslatorCroatian : public Translator
     QCString trForInternalUseOnly()
     { return decode("Iskljuèivo za internu uporabu."); }
     QCString trReimplementedForInternalReasons()
-	{ return decode("Reimplementirano zbog internih razloga; "
-					"Nema utjecaja na API."); 
+        { return decode("Reimplementirano zbog internih razloga; "
+                                        "Nema utjecaja na API."); 
     }
     QCString trWarning()
     { return decode("Upozorenje"); }
@@ -376,7 +307,7 @@ class TranslatorCroatian : public Translator
         case ClassDef::Interface:  result+=decode(" suèelja (interface) "); break;
         case ClassDef::Exception:  result+=decode(" iznimke (exception) "); break;
       }
-	  result += (QCString)clName;
+          result += (QCString)clName;
       
       return result;
     }
@@ -384,14 +315,14 @@ class TranslatorCroatian : public Translator
       // used as the title of the HTML page of a file
     {
       QCString result=decode("Opis datoteke "); 
-	  result+=fileName;
-	  return result;
+          result+=fileName;
+          return result;
     }
     QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
       QCString result =decode("Opis namespace-a ");
-	  result+=namespaceName;
+          result+=namespaceName;
       
       return result;
     }
@@ -712,12 +643,12 @@ class TranslatorCroatian : public Translator
     }
     virtual QCString trAttention()
     {
-    	return decode("Pa¾nja");
+        return decode("Pa¾nja");
     }
     virtual QCString trInclByDepGraph()
     {
       return decode("Ovaj graf pokazuje koje datoteke izravno "
-		            "ili neizravno ukljuèuju ovu datoteku:");
+                            "ili neizravno ukljuèuju ovu datoteku:");
     }
     virtual QCString trSince()
     {

@@ -1414,6 +1414,7 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
     case Signal:      // fall through
     case Prototype:   // fall through
     case Friend:      // fall through
+    case DCOP:        // fall through
     case Slot:        t << "functiondef"; xmlType=function_t; break;
   }
   t << " id=\"";
@@ -1562,6 +1563,7 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
     case Signal:      // fall through
     case Prototype:   // fall through
     case Friend:      // fall through
+    case DCOP:        // fall through
     case Slot:        t << "functiondef"; break;
   }
   t << ">" << endl;
