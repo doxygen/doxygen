@@ -221,7 +221,7 @@ void LatexGenerator::init()
 
   t << endl
     << "clean:" << endl
-    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out" << endl;
+    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.pdf" << endl;
 }
 
 static void writeDefaultHeaderPart1(QTextStream &t)
@@ -435,7 +435,7 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   writeDefaultStyleSheetPart3(t);
 }
 
-void LatexGenerator::startFile(const char *name,const char *,const char *,bool)
+void LatexGenerator::startFile(const char *name,const char *,const char *)
 {
   QCString fileName=name;
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";

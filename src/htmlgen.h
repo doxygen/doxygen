@@ -43,9 +43,8 @@ class HtmlGenerator : public OutputGenerator
 
     void printDoc(DocNode *);
 
-    void startFile(const char *name,const char *manName,
-                   const char *title,bool external);
-    void writeFooter(int,bool);
+    void startFile(const char *name,const char *manName,const char *title);
+    void writeFooter();
     void endFile();
     void clearBuffer();
 
@@ -164,8 +163,9 @@ class HtmlGenerator : public OutputGenerator
     void endClassDiagram(ClassDiagram &,const char *,const char *);
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
-    void startQuickIndexItem(const char *,const char *);
-    void endQuickIndexItem();
+    //void startQuickIndexItem(const char *,const char *);
+    //void endQuickIndexItem();
+    void writeQuickLinks(bool compact,HighlightedItem hli);
     void writeNonBreakableSpace(int);
     
     void startDescTable()
@@ -209,6 +209,7 @@ class HtmlGenerator : public OutputGenerator
 
     void writeCodeAnchor(const char *anchor) 
     { t << "<a name=\"" << anchor << "\"></a>"; }
+    static void writeSearchPage();
 
   private:
     QCString lastTitle;

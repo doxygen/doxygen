@@ -137,8 +137,7 @@ static QCString buildFileName(const char *name)
   return fileName;
 }
 
-void ManGenerator::startFile(const char *,const char *manName,
-                             const char *,bool)
+void ManGenerator::startFile(const char *,const char *manName,const char *)
 {
   startPlainFile( buildFileName( manName ) );
   firstCol=TRUE;

@@ -136,7 +136,7 @@ Unfortunately this only works if both compressed HTML files are in the same
 directory.
 
 As a result you must rename the generated \c index.chm files for all projects
-into something unique and put all \c .chm files in one directory.
+into something unique and put all <code>.chm</code> files in one directory.
 
 Suppose you have a project \e a referring to a project \e b using tag file
 \c b.tag, then you could rename the \c index.chm for project \e a into

@@ -36,24 +36,28 @@ class SectionDict;
 
 //---------------------------------------------------------------------------
 
+/*! Initialize the documentation parser */
+void initDocParser();
+
 /*! Main entry point for the documentation parser.
  *  @param fileName  File in which the documentation block is found (or the
  *                   name of the example file in case isExample is TRUE).
  *  @param startLine Line at which the documentation block is found.
- *  @param context   Class or namespace in which of the item to which this
- *                   block belongs.
+ *  @param context   Class or namespace to which this block belongs.
  *  @param md        Member definition to which the documentation belongs.
  *                   Can be 0.
  *  @param input     String representation of the documentation block.
+ *  @param indexWords Indicates whether or not words should be put in the 
+ *                   search index.
  *  @param isExample TRUE if the documentation belongs to an example.
  *  @param exampleName Base name of the example file (0 if isExample is FALSE).
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
-                            const char *context, MemberDef *md,
-                            const char *input,bool isExample,
-                            const char *exampleName=0);
+                            Definition *context, MemberDef *md,
+                            const char *input,bool indexWords,
+                            bool isExample,const char *exampleName=0);
 
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.
@@ -176,8 +180,7 @@ template<class T> class CompAccept
 class DocWord : public DocNode
 {
   public:
-    DocWord(DocNode *parent,const QString &word) : 
-      m_parent(parent), m_word(word) {}
+    DocWord(DocNode *parent,const QString &word);
     QString word() const { return m_word; }
     Kind kind() const { return Kind_Word; }
     DocNode *parent() const { return m_parent; }
@@ -195,9 +198,7 @@ class DocLinkedWord : public DocNode
   public:
     DocLinkedWord(DocNode *parent,const QString &word,
                   const QString &ref,const QString &file,
-                  const QString &anchor) : 
-      m_parent(parent), m_word(word), m_ref(ref), 
-      m_file(file), m_anchor(anchor) {}
+                  const QString &anchor);
     QString word() const       { return m_word; }
     Kind kind() const          { return Kind_Word; }
     DocNode *parent() const    { return m_parent; }
@@ -312,7 +313,7 @@ class DocSymbol : public DocNode
   public:
     enum SymType { Unknown=0, BSlash,At,Less,Greater,Amp,Dollar,Hash,Percent, 
                    Copy, Tm, Reg, Apos, Quot, Uml, Acute, Grave, Circ, Tilde, Szlig,
-                   Cedil, Ring, Nbsp
+                   Cedil, Ring, Nbsp, Slash
                  };
     DocSymbol(DocNode *parent,SymType s,char letter='\0') : 
       m_parent(parent), m_symbol(s), m_letter(letter) {}
@@ -923,6 +924,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void markLast(bool v=TRUE)  { m_isLast=v; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
+    const QList<DocNode> &children() const { return m_children; }
 
     int handleCommand(const QString &cmdName);
     int handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs);

@@ -1,6 +1,6 @@
 Summary: A documentation system for C/C++.
 Name: doxygen
-Version: 1.3.3
+Version: 1.3.3_20030808
 Release: 1
 Epoch: 1
 Source0: ftp://ftp.stack.nl/pub/users/dimitri/%{name}-%{version}.src.tar.gz
@@ -56,7 +56,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %doc LANGUAGE.HOWTO README examples html
 %{_bindir}/doxygen
-%{_bindir}/doxysearch
 %{_bindir}/doxytag
 
 %files doxywizard

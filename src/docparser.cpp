@@ -38,6 +38,8 @@
 #include "printdocvisitor.h"
 #include "message.h"
 #include "section.h"
+#include "searchindex.h"
+#include "language.h"
 
 #define DBG(x) do {} while(0)
 //#define DBG(x) printf x
@@ -65,6 +67,8 @@ static QDict<void>  g_paramsFound;
 static bool         g_isExample;
 static QCString     g_exampleName;
 static SectionDict *g_sectionDict;
+
+static QCString     g_searchUrl;
 
 // include file state
 static QString g_includeFileText;
@@ -691,7 +695,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
   Definition *compound=0;
   MemberDef  *member=0;
-  QString name = linkToText(g_token->name);
+  QString name = linkToText(g_token->name,TRUE);
   if (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
     if (member) // member link
@@ -1088,6 +1092,11 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
     *letter=symName.at(1);
     return DocSymbol::Ring;
   }
+  else if (l==8 && symName.right(6)=="slash;")
+  {
+    *letter=symName.at(1);
+    return DocSymbol::Slash;
+  }
   return DocSymbol::Unknown;
 }
 
@@ -1103,7 +1112,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
   doctokenizerYYinit(doc,g_fileName);
 
   // first parse any number of paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *lastPar=0;
   do
   {
@@ -1146,6 +1155,33 @@ static void readTextFileByName(const QString &file,QString &text)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included file %s is not found. "
            "Check your EXAMPLE_PATH",file.data());
+  }
+}
+
+//---------------------------------------------------------------------------
+
+DocWord::DocWord(DocNode *parent,const QString &word) : 
+      m_parent(parent), m_word(word) 
+{
+  //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
+  if (!g_searchUrl.isEmpty())
+  {
+    Doxygen::searchIndex->addWord(word.lower());
+  }
+}
+
+//---------------------------------------------------------------------------
+
+DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
+                  const QString &ref,const QString &file,
+                  const QString &anchor) : 
+      m_parent(parent), m_word(word), m_ref(ref), 
+      m_file(file), m_anchor(anchor) 
+{
+  //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
+  if (!g_searchUrl.isEmpty())
+  {
+    Doxygen::searchIndex->addWord(word.lower());
   }
 }
 
@@ -1636,7 +1672,6 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
    m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
 {
   Definition  *compound = 0;
-  //PageInfo    *pageInfo = 0;
   QCString     anchor;
   ASSERT(!target.isEmpty());
   SectionInfo *sec = Doxygen::sectionDict[target];
@@ -1653,14 +1688,11 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   }
   else if (resolveLink(g_context,target,TRUE,&compound,/*&pageInfo,*/anchor))
   {
-    m_text = linkToText(target);
+    bool isFile = compound ? 
+                 (compound->definitionType()==Definition::TypeFile ? TRUE : FALSE) : 
+                 FALSE;
+    m_text = linkToText(target,isFile);
     m_anchor = anchor;
-    //if (pageInfo) // ref to page 
-    //{
-    //  m_file   = pageInfo->getOutputFileBase();
-    //  m_ref    = pageInfo->getReference();
-    //}
-    //else 
     if (compound) // ref to compound
     {
       if (anchor.isEmpty() &&                                  /* compound link */
@@ -1681,6 +1713,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   }
   else // oops, bogus target
   {
+    m_text = linkToText(target,FALSE);
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unable to resolve reference to `%s' for \\ref command",
            target.data()); 
   }
@@ -2150,7 +2183,7 @@ int DocInternal::parse(int level)
   DBG(("DocInternal::parse() start\n"));
 
   // first parse any number of paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *lastPar=0;
   do
   {
@@ -2347,7 +2380,7 @@ int DocHtmlCell::parse()
   DBG(("DocHtmlCell::parse() start\n"));
 
   // parse one or more paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *par=0;
   do
   {
@@ -2680,7 +2713,7 @@ int DocHtmlDescData::parse()
   g_nodeStack.push(this);
   DBG(("DocHtmlDescData::parse() start\n"));
 
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *par=0;
   do
   {
@@ -2778,7 +2811,7 @@ int DocHtmlListItem::parse()
   g_nodeStack.push(this);
 
   // parse one or more paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *par=0;
   do
   {
@@ -4444,7 +4477,7 @@ int DocSection::parse()
   }
 
   // first parse any number of paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *lastPar=0;
   do
   {
@@ -4634,7 +4667,7 @@ void DocRoot::parse()
   int retval=0;
 
   // first parse any number of paragraphs
-  bool isFirst=FALSE;
+  bool isFirst=TRUE;
   DocPara *lastPar=0;
   do
   {
@@ -4703,16 +4736,103 @@ void DocRoot::parse()
 //--------------------------------------------------------------------------
 
 DocNode *validatingParseDoc(const char *fileName,int startLine,
-                            const char *context,MemberDef *md,
-                            const char *input,bool isExample,
-                            const char *exampleName)
+                            Definition *ctx,MemberDef *md,
+                            const char *input,bool indexWords,
+                            bool isExample, const char *exampleName)
 {
   
+  //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
+  //                                     md?md->name().data():"<none>");
   //printf("========== validating %s at line %d\n",fileName,startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   g_token = new TokenInfo;
 
-  g_context = context;
+  if (ctx &&
+      (ctx->definitionType()==Definition::TypeClass || 
+       ctx->definitionType()==Definition::TypeNamespace
+      )
+     ) 
+  {
+    g_context = ctx->name();
+  }
+  else
+  {
+    g_context = "";
+  }
+
+  if (indexWords && md && Config_getBool("SEARCHENGINE"))
+  {
+    g_searchUrl=md->getOutputFileBase()+
+      Config_getString("HTML_FILE_EXTENSION")+"#"+md->anchor();
+    Doxygen::searchIndex->setCurrentDoc(
+        theTranslator->trMember(TRUE,TRUE)+" "+md->qualifiedName(),
+        g_searchUrl);
+  }
+  else if (indexWords && ctx && Config_getBool("SEARCHENGINE"))
+  {
+    g_searchUrl=ctx->getOutputFileBase()+
+      Config_getString("HTML_FILE_EXTENSION");
+    QCString name = ctx->qualifiedName();
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      name = substitute(name,"::",".");
+    }
+    switch (ctx->definitionType())
+    {
+      case Definition::TypePage:
+        {
+          PageDef *pd = (PageDef *)ctx;
+          if (!pd->title().isEmpty())
+          {
+            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
+          }
+          else
+          {
+            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->name();
+          }
+        }
+        break;
+      case Definition::TypeClass:
+        {
+          ClassDef *cd = (ClassDef *)ctx;
+          name.prepend(cd->compoundTypeString()+" ");
+        }
+        break;
+      case Definition::TypeNamespace:
+        {
+          if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+          {
+            name = theTranslator->trPackage(name);
+          }
+          else
+          {
+            name.prepend(theTranslator->trNamespace(TRUE,TRUE)+" ");
+          }
+        }
+        break;
+      case Definition::TypeGroup:
+        {
+          GroupDef *gd = (GroupDef *)ctx;
+          if (gd->groupTitle())
+          {
+            name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
+          }
+          else
+          {
+            name.prepend(theTranslator->trGroup(TRUE,TRUE)+" ");
+          }
+        }
+        break;
+      default:
+        break;
+    }
+    Doxygen::searchIndex->setCurrentDoc(name,g_searchUrl);
+  }
+  else
+  {
+    g_searchUrl="";
+  }
+
   g_fileName = fileName;
   g_memberDef = md;
   g_nodeStack.clear();
@@ -4779,6 +4899,7 @@ DocNode *validatingParseText(const char *input)
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
+  g_searchUrl="";
 
   doctokenizerYYlineno=1;
   doctokenizerYYinit(input,g_fileName);
@@ -4808,3 +4929,14 @@ void docFindSections(const char *input,
   doctokenizerYYFindSections(input,d,mg,fileName);
 }
 
+void initDocParser()
+{
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex = new SearchIndex;
+  }
+  else
+  {
+    Doxygen::searchIndex = 0;
+  }
+}

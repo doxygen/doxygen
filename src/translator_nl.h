@@ -88,13 +88,13 @@ class TranslatorDutch : public Translator
     QCString trClassHierarchy()
     { return "Klasse Hi&euml;rarchie"; }
     QCString trCompoundList()
-    { return "Compound Lijst"; }
+    { return "Klasse Lijst"; }
     QCString trFileList()
     { return "File Lijst"; }
     QCString trHeaderFiles()
     { return "Header Lijst"; }
     QCString trCompoundMembers()
-    { return "Compound Members"; }
+    { return "Klasse Members"; }
     QCString trFileMembers()
     { return "File members"; }
     QCString trRelatedPages()
@@ -154,7 +154,7 @@ class TranslatorDutch : public Translator
     QCString trHierarchicalIndex()
     { return "Hi&euml;rarchische Index"; }
     QCString trCompoundIndex()
-    { return "Compound Index"; }
+    { return "Klasse Index"; }
     QCString trFileIndex() 
     { return "File Index"; }
     QCString trModuleDocumentation()
@@ -199,7 +199,7 @@ class TranslatorDutch : public Translator
     QCString trVariableDocumentation()
     { return "Documentatie van variabelen"; }
     QCString trCompounds()
-    { return "Compounds"; }
+    { return "Klassen"; }
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result=(QCString)"Gegenereerd op "+date;
@@ -1085,6 +1085,57 @@ class TranslatorDutch : public Translator
     {
       return "Hier is de call graaf voor deze functie:";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the index 
+     *  of each page before the search field. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Zoek naar";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Zoek Resultaten";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Helaas, er zijn geen documenten gevonden die aan de zoekopdracht voldoen.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Er is <b>1</b> document gevonden dat aan de zoekopdracht voldoet.";
+      }
+      else 
+      {
+        return "Er zijn <b>$num</b> documenten gevonden die aan de zoekopdracht voldoen. "
+               "De beste resultaten worden eerst getoond.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Gevonden:";
+    }
+
     
 };
 

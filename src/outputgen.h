@@ -275,8 +275,8 @@ class OutputGenerator : public BaseOutputDocInterface
     // structural output interface
     ///////////////////////////////////////////////////////////////
     virtual void startFile(const char *name,const char *manName,
-                           const char *title,bool ext) = 0;
-    virtual void writeFooter(int,bool) = 0;
+                           const char *title) = 0;
+    virtual void writeFooter() = 0;
     virtual void endFile() = 0;
     virtual void startIndexSection(IndexSections) = 0;
     virtual void endIndexSection(IndexSections) = 0;
@@ -338,8 +338,9 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startCallGraph() = 0;
     virtual void endCallGraph(DotCallGraph &g) = 0;
     virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
-    virtual void startQuickIndexItem(const char *s,const char *l) = 0;
-    virtual void endQuickIndexItem() = 0;
+    //virtual void startQuickIndexItem(const char *s,const char *l) = 0;
+    //virtual void endQuickIndexItem() = 0;
+    virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
     virtual void startTextBlock(bool) = 0;
     virtual void endTextBlock() = 0;
     virtual void lastIndexPage() = 0;

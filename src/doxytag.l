@@ -32,8 +32,8 @@
 #include <qdir.h>
   
 #include "version.h"
-#include "suffixtree.h"
-#include "searchindex.h"
+//#include "suffixtree.h"
+//#include "searchindex.h"
 #include "logos.h"
 
 static QCString convertToXML(const char *s)
@@ -95,7 +95,7 @@ static QCString  docBaseLink;
 static QCString  docAnchor;
 static QCString  docRefName;
 static bool      nameBug;
-static SearchIndex searchIndex;
+//static SearchIndex searchIndex;
 
 #define YY_NEVER_INTERACTIVE 1
 
@@ -162,14 +162,14 @@ static void addReference()
 {
   //printf("addReference() key: %s ref:%s\n",
   //  docRefName.data(),(docBaseLink+"#"+docAnchor).data());
-  if (genIndex && !docRefName.isEmpty() && !docBaseLink.isEmpty())
-  {
-    if (docAnchor.isEmpty())
-      searchIndex.addReference(docRefName,docBaseLink);
-    else
-      searchIndex.addReference(docRefName,docBaseLink+"#"+docAnchor);
-    searchIndex.addWord(docRefName,docRefName,TRUE);
-  }
+  //if (genIndex && !docRefName.isEmpty() && !docBaseLink.isEmpty())
+  //{
+  //  if (docAnchor.isEmpty())
+  //    searchIndex.addReference(docRefName,docBaseLink);
+  //  else
+  //    searchIndex.addReference(docRefName,docBaseLink+"#"+docAnchor);
+  //  searchIndex.addWord(docRefName,docRefName,TRUE);
+  //}
 }
 
 QCString unhtmlify(const char *str)
@@ -247,10 +247,10 @@ QCString unhtmlify(const char *str)
   				     //printf("tag: %s#%s ref: %s word: `%s'\n",
 				     // docBaseLink.data(),docAnchor.data(),
 				     // docRefName.data(),yytext);
-  				     if (genIndex && !docRefName.isEmpty() && yyleng>2)
-				       searchIndex.addWord(docRefName,
-					                   yytext,FALSE
-							  );
+  				     //if (genIndex && !docRefName.isEmpty() && yyleng>2)
+				     //  searchIndex.addWord(docRefName,
+				     //	                   yytext,FALSE
+				     //			  );
   				   }
 <SkipPreformated>"</pre>"	   {
   				     BEGIN( Start );
@@ -458,8 +458,8 @@ void parseFile(QFileInfo &fi)
     QCString input(fi.size()+1);
     docBaseLink=fi.fileName();
     docRefName=fi.fileName().copy();
-    searchIndex.addReference(docRefName,docBaseLink);
-    searchIndex.addWord(docRefName,docRefName,TRUE);
+    //searchIndex.addReference(docRefName,docBaseLink);
+    //searchIndex.addWord(docRefName,docRefName,TRUE);
     f.readBlock(input.data(),fi.size());
     input.at(fi.size())='\0';
     parse(input);
@@ -584,46 +584,48 @@ int main(int argc,char **argv)
   }
   if (genIndex)
   {
-    //printf("Writing search index\n");
-    if (!searchIndex.saveIndex(indexName))
-    {
-      fprintf(stderr,"Error: Could not write search index\n");
-    }
-    QFileInfo fi(indexName);
-    if (fi.exists())
-    {
-      QCString dir=convertToQCString(fi.dir().absPath());
-      fi.setFile(dir+"/search.png");
-      if (!fi.exists()) writeSearchButton(dir);
-      fi.setFile(dir+"/doxygen.png");
-      if (!fi.exists()) writeLogo(dir);
-      fi.setFile(dir+"/search.cgi");
-      if (!fi.exists())
-      {
-        QFile f;
-	f.setName(dir+"/search.cgi");
-	if (f.open(IO_WriteOnly))
-	{
-	  QTextStream t(&f);
-	  t << "#!/bin/sh" << endl 
-	    << "DOXYSEARCH=" << endl 
-	    << "DOXYPATH=" << endl
-	    << "if [ -f $DOXYSEARCH ]" << endl
-	    << "then" << endl
-	    << "  $DOXYSEARCH $DOXYPATH" << endl 
-	    << "else" << endl
-	    << "  echo \"Content-Type: text/html\"" << endl
-	    << "  echo \"\"" << endl
-	    << "  echo \"<H1>Error: $DOXYSEARCH not found. Check cgi script!\"" << endl
-	    << "fi" << endl;
-          f.close();
-	}	  
-	else
-	{
-	  fprintf(stderr,"Error: could not open file %s for writing\n",(dir+"/search.cgi").data());
-	}
-      }
-    }
+    fprintf(stderr,"Error: doxytag cannot be used to generate a search index anymore.\n"
+	           "This functionality has been integrated into doxygen.\n");
+//    printf("Writing search index\n");
+//    if (!searchIndex.saveIndex(indexName))
+//    {
+//      fprintf(stderr,"Error: Could not write search index\n");
+//    }
+//    QFileInfo fi(indexName);
+//    if (fi.exists())
+//    {
+//      QCString dir=convertToQCString(fi.dir().absPath());
+//      fi.setFile(dir+"/search.png");
+//      if (!fi.exists()) writeSearchButton(dir);
+//      fi.setFile(dir+"/doxygen.png");
+//      if (!fi.exists()) writeLogo(dir);
+//      fi.setFile(dir+"/search.cgi");
+//      if (!fi.exists())
+//      {
+//        QFile f;
+//	f.setName(dir+"/search.cgi");
+//	if (f.open(IO_WriteOnly))
+//	{
+//	  QTextStream t(&f);
+//	  t << "#!/bin/sh" << endl 
+//	    << "DOXYSEARCH=" << endl 
+//	    << "DOXYPATH=" << endl
+//	    << "if [ -f $DOXYSEARCH ]" << endl
+//	    << "then" << endl
+//	    << "  $DOXYSEARCH $DOXYPATH" << endl 
+//	    << "else" << endl
+//	    << "  echo \"Content-Type: text/html\"" << endl
+//	    << "  echo \"\"" << endl
+//	    << "  echo \"<H1>Error: $DOXYSEARCH not found. Check cgi script!\"" << endl
+//	    << "fi" << endl;
+//          f.close();
+//	}	  
+//	else
+//	{
+//	  fprintf(stderr,"Error: could not open file %s for writing\n",(dir+"/search.cgi").data());
+//	}
+//      }
+//    }
   }
   if (genTag)
   {

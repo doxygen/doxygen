@@ -44,9 +44,8 @@ class RTFGenerator : public OutputGenerator
 
     void printDoc(DocNode *);
 
-    void startFile(const char *name,const char *manName,
-                   const char *title, bool external);
-    void writeFooter(int,bool) {}
+    void startFile(const char *name,const char *manName,const char *title);
+    void writeFooter() {}
     void endFile();
     void clearBuffer();
     
@@ -203,8 +202,9 @@ class RTFGenerator : public OutputGenerator
     //void endColorFont()   {}
     void startPageRef();
     void endPageRef(const char *,const char *);
-    void startQuickIndexItem(const char *,const char *) {}
-    void endQuickIndexItem() {}
+    //void startQuickIndexItem(const char *,const char *) {}
+    //void endQuickIndexItem() {}
+    void writeQuickLinks(bool,HighlightedItem) {}
     //void writeFormula(const char *,const char *);
     void writeNonBreakableSpace(int);
     //void startImage(const char *,const char *,bool);

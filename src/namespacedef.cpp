@@ -221,7 +221,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
+      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -236,7 +236,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
+      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
       ol.newParagraph();
     }
     ol.endTextBlock();
@@ -276,7 +276,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
   else if (!briefDescription().isEmpty()) 
   {
-    ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
+    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);

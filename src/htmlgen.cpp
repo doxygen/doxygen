@@ -32,6 +32,8 @@
 #include "htmlhelp.h"
 #include "docparser.h"
 #include "htmldocvisitor.h"
+#include "index.h"
+#include "pagedef.h"
 
 // #define GROUP_COLOR "#ff8080"
 
@@ -53,20 +55,15 @@ static const char *defaultStyleSheet =
 "             text-align: center;\n"
 "             margin-bottom: 2px\n" 
 "}\n"
-"A.qindex { text-decoration: none; font-weight: bold; }\n"
+"A.qindex { text-decoration: none; font-weight: bold; color: #0000ee }\n"
+"A.qindex:visited { text-decoration: none; font-weight: bold; color: #0000ee }\n"
 "A.qindex:hover { text-decoration: none; background-color: #ddddff }\n"
 "A.qindexHL { text-decoration: none; font-weight: bold;\n"
 "             background-color: #6666cc;\n"
 "             color: #ffffff\n"
 "           }\n"
-"A.qindexHL:hover { text-decoration: none; background-color: #6666cc }\n"
-"A.qindexRef { text-decoration: none; font-weight: bold; }\n"
-"A.qindexRef:hover { text-decoration: none; background-color: #ddddff }\n"
-"A.qindexRefHL { text-decoration: none; font-weight: bold;\n"
-"             background-color: #6666cc;\n"
-"             color: #ffffff\n"
-"           }\n"
-"A.qindexRefHL:hover { text-decoration: none; background-color: #6666cc }\n"
+"A.qindexHL:hover { text-decoration: none; background-color: #6666cc; color: #ffffff }\n"
+"A.qindexHL:visited { text-decoration: none; background-color: #6666cc; color: #ffffff }\n"
 "A.el { text-decoration: none; font-weight: bold }\n"
 "A.elRef { font-weight: bold }\n"
 "A.code { text-decoration: none; font-weight: normal; color: #4444ee }\n"
@@ -198,10 +195,28 @@ static const char *defaultStyleSheet =
 "	background-color: #FAFAFA;\n"
 "	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "	font-size: 13px;\n"
+"}\n"
+".search     { color: #0000ee;\n"
+"              font-weight: bold;\n"
+"}\n"
+"FORM.search {\n"
+"              margin-bottom: 0px;\n"
+"              margin-top: 0px;\n"
+"}\n"
+"INPUT.search { font-size: 75%;\n"
+"               color: #000080;\n"
+"               font-weight: normal;\n"
+"               background-color: #eeeeff;\n"
+"}\n"
+"TD.tiny      { font-size: 75%;\n"
 "}\n";
 
 static QCString g_header;
 static QCString g_footer;
+
+const char search_script[]=
+#include "search_php.h"
+;
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
@@ -234,22 +249,17 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   t << defaultStyleSheet;
 }
 
-static void writeDefaultHeaderFile(QTextStream &t, const char *title,
-                                   bool external)
+static void writeDefaultHeaderFile(QTextStream &t, const char *title)
 {
-  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
-    "<html><head>" /*"<meta name=\"robots\" content=\"noindex\">\n"*/
+  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+    "<html><head>" 
     "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
          << theTranslator->idLanguageCharset() << "\">\n"
     "<title>"; 
   t << convertToHtml(title);
   t << "</title>\n";
   t << "<link ";
-  if (external) 
-    t << "doxygen=\"_doc:" << Config_getString("DOC_URL") 
-      << "\" href=\"" << Config_getString("DOC_URL") << "/";
-  else
-    t << "href=\"";
+  t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
   {
     t << "doxygen.css";
@@ -275,7 +285,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 #if QT_VERSION >= 200
   t.setEncoding(QTextStream::Latin1);
 #endif
-  writeDefaultHeaderFile(t,"$title",FALSE);
+  writeDefaultHeaderFile(t,"$title");
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
@@ -294,7 +304,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
 
 
 void HtmlGenerator::startFile(const char *name,const char *,
-                              const char *title,bool external)
+                              const char *title)
 {
   //printf("HtmlGenerator::startFile(%s)\n",name);
   QCString fileName=name;
@@ -319,7 +329,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   lastFile = fileName;
   if (g_header.isEmpty()) 
   {
-    writeDefaultHeaderFile(t,dispTitle,external);
+    writeDefaultHeaderFile(t,dispTitle);
   }
   else
   {
@@ -329,73 +339,59 @@ void HtmlGenerator::startFile(const char *name,const char *,
     << versionString << " -->" << endl;
 }
 
-void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
+//void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
+//{
+//  QCString *dest;
+//  if (s) 
+//  {
+//    t << "<a class=\"qindexRef\" ";
+//    t << "doxygen=\"" << s << ":";
+//    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
+//    if (strcmp(s,"_cgi")!=0) t << "/"; // small hack to get the cgi binary link right
+//    t << "\" ";
+//  }
+//  else
+//  {
+//    t << "<a class=\"qindex\" ";
+//  }
+//  t << "href=\""; 
+//  if (s)
+//  {
+//    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
+//    if (strcmp(s,"_cgi")!=0) t << "/";
+//  }
+//  t << l << "\">";
+//}
+//
+//void HtmlGenerator::endQuickIndexItem()
+//{
+//  t << "</a> &nbsp; ";
+//}
+
+static void writePageFooter(QTextStream &t,const QCString lastTitle)
 {
-  QCString *dest;
-  if (s) 
+  if (g_footer.isEmpty())
   {
-    t << "<a class=\"qindexRef\" ";
-    t << "doxygen=\"" << s << ":";
-    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
-    if (strcmp(s,"_cgi")!=0) t << "/"; // small hack to get the cgi binary link right
-    t << "\" ";
+    t << "<hr size=\"1\"><address style=\"align: right;\"><small>";
+    t << theTranslator->trGeneratedAt(
+        dateToString(TRUE),
+        Config_getString("PROJECT_NAME")
+        );
+    t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
+    t << endl << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
+      << "align=\"middle\" border=0 > " << endl << 
+      "</a>" << versionString <<" ";
+    t << "</small></address>\n</body>\n</html>\n";
   }
   else
   {
-    t << "<a class=\"qindex\" ";
+    t << substituteKeywords(g_footer,convertToHtml(lastTitle));
   }
-  t << "href=\""; 
-  if (s)
-  {
-    if ((dest=Doxygen::tagDestinationDict[s])) t << *dest;
-    if (strcmp(s,"_cgi")!=0) t << "/";
-  }
-  t << l << "\">";
 }
 
-void HtmlGenerator::endQuickIndexItem()
+void HtmlGenerator::writeFooter()
 {
-  t << "</a> &nbsp; ";
-}
-
-void HtmlGenerator::writeFooter(int part,bool external)
-{
-  switch (part)
-  {
-    case 0:
-      if (g_footer.isEmpty())
-        t << "<hr size=\"1\"><address style=\"align: right;\"><small>";
-      else
-        t << substituteKeywords(g_footer,convertToHtml(lastTitle));
-      break;
-    case 1:
-      if (g_footer.isEmpty())
-      {
-        t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
-        t << endl << "<img ";
-        if (external)
-        {
-          t << "doxygen=\"_doc:" << Config_getString("DOC_URL") 
-            << "\" src=\"" << Config_getString("DOC_URL") << "/";
-        }
-        else
-        {
-          t << "src=\"";
-        }
-        t << "doxygen.png\" alt=\"doxygen\" " 
-          << "align=\"middle\" border=0 > " << endl << 
-             "</a>" << versionString <<" ";
-      }
-      break;
-    default:
-      if (g_footer.isEmpty())
-      {
-        //t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;1997-2003";
-        t << "</small></address>\n</body>\n</html>\n";
-      }
-      break;
-      
-  }
+  writePageFooter(t,lastTitle);
 }
 
 void HtmlGenerator::endFile()
@@ -454,7 +450,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *name)
 {
-  t << "<a name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
+  t << "<a class=\"anchor\" name=\"" << anchor << "\" doxytag=\"" << name << "\" ></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)
@@ -633,12 +629,12 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::Secti
     case SectionInfo::Paragraph:     t << "<h5>"; break;
     default: ASSERT(0); break;
   }
-  t << "<a name=\"" << lab << "\">";
+  t << "<a class=\"anchor\" name=\"" << lab << "\">";
 }
 
 void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
 {
-  t << "</a>" << endl;
+  t << "</a>";
   switch(type)
   {
     case SectionInfo::Page:          t << "</h1>"; break;
@@ -1210,5 +1206,241 @@ void HtmlGenerator::printDoc(DocNode *n)
   HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this);
   n->accept(visitor);
   delete visitor; 
+}
+
+static void startQuickIndexItem(QTextStream &t,const char *l,
+                                bool hl,bool compact,bool &first)
+{
+  if (!first && compact) t << " | ";
+  first=FALSE;
+  if (!compact) t << "<li>";
+  if (hl && compact)
+  {
+    t << "<a class=\"qindexHL\" ";
+  }
+  else
+  {
+    t << "<a class=\"qindex\" ";
+  }
+  t << "href=\"" << l << "\">";
+}
+
+static void endQuickIndexItem(QTextStream &t)
+{
+  t << "</a>";
+}
+
+static QCString fixSpaces(const QCString &s)
+{
+  return substitute(s," ","&nbsp;");
+}
+
+static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem hli)
+{
+  bool first=TRUE;
+  if (compact) 
+  {
+    t << "<div class=\"qindex\">"; 
+  }
+  else 
+  {
+    t << "<ul>";
+  }
+
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    t << "  <form class=\"search\" action=\"search.php\" method=\"get\">\n";
+  }
+
+  if (Config_getBool("GENERATE_TREEVIEW"))
+  {
+    startQuickIndexItem(t,"main"+Doxygen::htmlFileExtension,
+                        hli==HLI_Main,compact,first);
+  }
+  else
+  {
+    startQuickIndexItem(t,"index"+Doxygen::htmlFileExtension,
+                        hli==HLI_Main,compact,first);
+  }
+  t << fixSpaces(theTranslator->trMainPage());
+  endQuickIndexItem(t);
+
+  if (documentedGroups>0)
+  {
+    startQuickIndexItem(t,"modules"+Doxygen::htmlFileExtension,
+                        hli==HLI_Modules,compact,first);
+    t << fixSpaces(theTranslator->trModules());
+    endQuickIndexItem(t);
+  } 
+  if (documentedNamespaces>0)
+  {
+    startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
+                        hli==HLI_Namespaces,compact,first);
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      t << fixSpaces(theTranslator->trPackages());
+    }
+    else
+    {
+      t << theTranslator->trNamespaceList();
+    }
+    endQuickIndexItem(t);
+  }
+  if (hierarchyClasses>0)
+  {
+    startQuickIndexItem(t,"hierarchy"+Doxygen::htmlFileExtension,
+                           hli==HLI_Hierarchy,compact,first);
+    t << fixSpaces(theTranslator->trClassHierarchy());
+    endQuickIndexItem(t);
+  } 
+  if (annotatedClasses>0)
+  {
+    if (Config_getBool("ALPHABETICAL_INDEX"))
+    {
+      startQuickIndexItem(t,"classes"+Doxygen::htmlFileExtension,
+                          hli==HLI_Classes,compact,first);
+      t << fixSpaces(theTranslator->trAlphabeticalList());
+      endQuickIndexItem(t);
+    }
+    startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
+                        hli==HLI_Annotated,compact,first);
+    t << fixSpaces(theTranslator->trCompoundList());
+    endQuickIndexItem(t);
+  } 
+  if (documentedHtmlFiles>0)
+  {
+    startQuickIndexItem(t,"files"+Doxygen::htmlFileExtension,
+                        hli==HLI_Files,compact,first);
+    t << fixSpaces(theTranslator->trFileList());
+    endQuickIndexItem(t);
+  } 
+  if (documentedNamespaceMembers[NMHL_All]>0)
+  {
+    startQuickIndexItem(t,"namespacemembers"+Doxygen::htmlFileExtension,
+                        hli==HLI_NamespaceMembers,compact,first);
+    t << fixSpaces(theTranslator->trNamespaceMembers());
+    endQuickIndexItem(t);
+  }
+  if (documentedClassMembers[CMHL_All]>0)
+  {
+    startQuickIndexItem(t,"functions"+Doxygen::htmlFileExtension,
+                        hli==HLI_Functions,compact,first);
+    t << fixSpaces(theTranslator->trCompoundMembers());
+    endQuickIndexItem(t);
+  } 
+  if (documentedFileMembers[FMHL_All]>0)
+  {
+    startQuickIndexItem(t,"globals"+Doxygen::htmlFileExtension,
+                        hli==HLI_Globals,compact,first);
+    t << fixSpaces(theTranslator->trFileMembers());
+    endQuickIndexItem(t);
+  } 
+  if (indexedPages>0)
+  {
+    startQuickIndexItem(t,"pages"+Doxygen::htmlFileExtension,
+                        hli==HLI_Pages,compact,first);
+    t << fixSpaces(theTranslator->trRelatedPages());
+    endQuickIndexItem(t);
+  } 
+  if (Doxygen::exampleSDict->count()>0)
+  {
+    startQuickIndexItem(t,"examples"+Doxygen::htmlFileExtension,
+                        hli==HLI_Examples,compact,first);
+    t << fixSpaces(theTranslator->trExamples());
+    endQuickIndexItem(t);
+  } 
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    if (compact)
+    {
+      t << "  | ";
+    }
+    else
+    {
+      t << "<li>";
+    }
+    t << "<span class=\"search";
+    if (hli==HLI_Search) t << "HL";
+    QCString searchFor = fixSpaces(theTranslator->trSearchForIndex());
+    if (searchFor.at(0)=='S') searchFor="<u>S</u>"+searchFor.mid(1);
+    t << "\">" << searchFor << "&nbsp;";
+    if (hli!=HLI_Search)
+    {
+      t << "<input class=\"search\" type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/>"
+           "</span></form>";
+    }
+  } 
+  if (hli!=HLI_Search)
+  {
+    if (compact) 
+    {
+      t << "</div>\n";
+    }
+    else 
+    {
+      t << "</ul>\n";
+    }
+  }
+}
+
+void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
+{
+  writeDefaultQuickLinks(t,compact,hli);
+}
+
+void HtmlGenerator::writeSearchPage()
+{
+  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTML"))
+  {
+    QCString fileName = Config_getString("HTML_OUTPUT")+"/search.php";
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly))
+    {
+      QTextStream t(&f);
+      if (g_header.isEmpty()) 
+      {
+        writeDefaultHeaderFile(t,"Search");
+      }
+      else
+      {
+        t << substituteKeywords(g_header,"Search");
+      }
+      t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
+        << versionString << " -->" << endl;
+      writeDefaultQuickLinks(t,TRUE,HLI_Search);
+
+      t << "<?php \n\n";
+      t << "function search_results()\n";
+      t << "{\n";
+      t << "  return \"" << theTranslator->trSearchResultsTitle() << "\";\n";
+      t << "}\n";
+      t << "\n";
+      t << "function matches_text($num)\n";
+      t << "{\n";
+      t << "  if ($num==0)\n";
+      t << "  {\n";
+      t << "    return \"" << theTranslator->trSearchResults(0) << "\";\n";
+      t << "  }\n";
+      t << "  else if ($num==1)\n";
+      t << "  {\n";
+      t << "    return \"" << theTranslator->trSearchResults(1) << "\";\n";
+      t << "  }\n";
+      t << "  else // $num>1\n";
+      t << "  {\n";
+      t << "    return \"" << theTranslator->trSearchResults(2) << "\";\n";
+      t << "  }\n";
+      t << "}\n";
+      t << "\n";
+      t << "function report_matches()\n";
+      t << "{\n";
+      t << " return \"" << theTranslator->trSearchMatches() << " \";\n";
+      t << "}\n";
+      t << "\n";
+      t << search_script;
+      t << "\n";
+      t << "?>\n";
+      writePageFooter(t,"Search");
+    }
+  }
 }
 

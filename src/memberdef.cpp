@@ -336,6 +336,7 @@ MemberDef::MemberDef(const char *df,int dl,
   {
     tArgList=0;
   }
+  //printf("new member al=%p\n",al);
   // copy function definition arguments (if any)
   if (al)
   {
@@ -933,7 +934,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       !annMemb)
   {
     ol.startMemberDescription();
-    ol.parseDoc(briefFile(),briefLine(),osname,this,briefDescription(),FALSE);
+    ol.parseDoc(briefFile(),briefLine(),getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -1291,14 +1292,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) 
        )  
     { 
-      ol.parseDoc(briefFile(),briefLine(),scopeName,this,brief,FALSE);
+      ol.parseDoc(briefFile(),briefLine(),getOuterScope()?getOuterScope():container,this,brief,FALSE,FALSE);
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!detailed.isEmpty())
     { 
-      ol.parseDoc(docFile(),docLine(),scopeName,this,detailed+"\n",FALSE);
+      ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1333,7 +1334,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.docify(a->name);
           ol.endDescTableTitle();
           ol.startDescTableData();
-          ol.parseDoc(docFile(),docLine(),scopeName,this,a->docs+"\n",FALSE);
+          ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,a->docs+"\n",TRUE,FALSE);
           ol.endDescTableData();
         }
       }
@@ -1368,12 +1369,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
               HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());
             }
             //ol.writeListItem();
-            ol.startDescTableTitle();
+            ol.startDescTableTitle(); // this enables emphasis!
             ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
             first=FALSE;
-            ol.startEmphasis();
+            //ol.startEmphasis();
             ol.docify(fmd->name());
-            ol.endEmphasis();
+            //ol.endEmphasis();
             ol.disableAllBut(OutputGenerator::Man);
             ol.writeString(" ");
             ol.enableAll();
@@ -1384,7 +1385,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              ol.parseDoc(fmd->briefFile(),fmd->briefLine(),scopeName,fmd,fmd->briefDescription(),FALSE);
+              ol.parseDoc(fmd->briefFile(),fmd->briefLine(),getOuterScope()?getOuterScope():container,fmd,fmd->briefDescription(),TRUE,FALSE);
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1394,7 +1395,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              ol.parseDoc(fmd->docFile(),fmd->docLine(),scopeName,fmd,fmd->documentation()+"\n",FALSE);
+              ol.parseDoc(fmd->docFile(),fmd->docLine(),getOuterScope()?getOuterScope():container,fmd,fmd->documentation()+"\n",TRUE,FALSE);
             }
             ol.endDescTableData();
           }
@@ -1814,6 +1815,7 @@ void MemberDef::setInitializer(const char *initializer)
 void MemberDef::addListReference(Definition *d)
 {
   visited=TRUE;
+  if (!isLinkableInProject()) return;
   QCString memLabel;
   if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
   {

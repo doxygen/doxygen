@@ -291,64 +291,22 @@ unsigned char ftv2vertline_png[] = {
 };
 
 
-struct ImageInfo
-{
-  const char *alt;
-  const char *name;
-  const unsigned char *data;
-  unsigned int len;
-  unsigned short width, height;
-} image_info[] =
+FTVImageInfo image_info[] =
 {
   { "&nbsp;", "ftv2blank.png",ftv2blank_png,174,16,22 },
-#define FTVIMG_blank 0
-
-  { "*", "ftv2doc.png",ftv2doc_png,255,24,22 },
-#define FTVIMG_doc 1
-
-  { "+", "ftv2folderclosed.png",ftv2folderclosed_png,259,24,22 },
-#define FTVIMG_folderclosed 2
-
-  { "-", "ftv2folderopen.png",ftv2folderopen_png,261,24,22 },
-#define FTVIMG_folderopen 3
-
+  { "*",  "ftv2doc.png",ftv2doc_png,255,24,22 },
+  { "+",  "ftv2folderclosed.png",ftv2folderclosed_png,259,24,22 },
+  { "-",  "ftv2folderopen.png",ftv2folderopen_png,261,24,22 },
   { "\\", "ftv2lastnode.png",ftv2lastnode_png,233,16,22 },
-#define FTVIMG_lastnode 4
-
-  { "-", "ftv2link.png",ftv2link_png,358,24,22 },
-#define FTVIMG_link 5
-
+  { "-",  "ftv2link.png",ftv2link_png,358,24,22 },
   { "\\", "ftv2mlastnode.png",ftv2mlastnode_png,160,16,22 },
-#define FTVIMG_mlastnode 6
-
-  { "o", "ftv2mnode.png",ftv2mnode_png,194,16,22 },
-#define FTVIMG_mnode 7
-
-  { "o", "ftv2node.png",ftv2node_png,235,16,22 },
-#define FTVIMG_node 8
-
+  { "o",  "ftv2mnode.png",ftv2mnode_png,194,16,22 },
+  { "o",  "ftv2node.png",ftv2node_png,235,16,22 },
   { "\\", "ftv2plastnode.png",ftv2plastnode_png,165,16,22 },
-#define FTVIMG_plastnode 9
-
-  { "o", "ftv2pnode.png",ftv2pnode_png,200,16,22 },
-#define FTVIMG_pnode 10
-
-  { "|", "ftv2vertline.png",ftv2vertline_png,229,16,22 },
-#define FTVIMG_vertline 11
-
+  { "o",  "ftv2pnode.png",ftv2pnode_png,200,16,22 },
+  { "|",  "ftv2vertline.png",ftv2vertline_png,229,16,22 },
   { 0,0,0,0,0,0 }
-#define FTVIMG_UNUSED 12
 };
-
-#define _S(nym) #nym
-#define FTV_ICON_FILE(nym) "ftv2" _S(nym) ".png"
-#define FTVIMG_INDEX(nym) FTVIMG_ ## nym
-#define _INFO(nym) ( image_info[FTVIMG_INDEX(nym)] )
-#define IMG_PREAMBLE(nym) \
-  "<img src=\"" FTV_ICON_FILE(nym) "\" " \
-    "alt=\"" << _INFO(nym).alt << "\" " \
-    "width=" << _INFO(nym).width << " " \
-    "height=" << _INFO(nym).height << " "
 
 struct FTVNode
 {
@@ -410,11 +368,7 @@ void FTVHelp::initialize()
  */
 void FTVHelp::finalize()
 {
-  //m_cts.unsetDevice();
-  //m_cf->close();
-  //delete m_cf;
   generateTreeView();
-  //generateFolderTreeViewData();
 }
 
 /*! Increase the level of the contents hierarchy. 
@@ -496,22 +450,22 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
     {
       if (n->isDir)
       {
-        t << IMG_PREAMBLE(plastnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << "<img " << FTV_IMGATTRIBS(plastnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       }
       else
       {
-        t << IMG_PREAMBLE(lastnode) << "/>";
+        t << "<img " << FTV_IMGATTRIBS(lastnode) << "/>";
       }
     }
     else
     {
       if (n->isDir)
       {
-        t << IMG_PREAMBLE(pnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << "<img " << FTV_IMGATTRIBS(pnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       }
       else
       {
-        t << IMG_PREAMBLE(node) << "/>";
+        t << "<img " << FTV_IMGATTRIBS(node) << "/>";
       }
     }
   }
@@ -519,11 +473,11 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
   {
     if (n->isLast)
     {
-      t << IMG_PREAMBLE(blank) << "/>";
+      t << "<img " << FTV_IMGATTRIBS(blank) << "/>";
     }
     else
     {
-      t << IMG_PREAMBLE(vertline) << "/>";
+      t << "<img " << FTV_IMGATTRIBS(vertline) << "/>";
     }
   }
 }
@@ -579,7 +533,7 @@ void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
     generateIndent(t,n,0);
     if (n->isDir)
     {
-      t << IMG_PREAMBLE(folderclosed) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      t << "<img " << FTV_IMGATTRIBS(folderclosed) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
       generateLink(t,n);
       t << "</p>\n";
       t << spaces << "<div id=\"folder" << folderId << "\">\n";
@@ -589,12 +543,37 @@ void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
     }
     else
     {
-      t << IMG_PREAMBLE(doc) << "/>";
+      t << "<img " << FTV_IMGATTRIBS(doc) << "/>";
       generateLink(t,n);
       t << "</p>\n";
     }
   }
 }
+
+void FTVHelp::generateTreeViewImages()
+{
+  static bool done=FALSE;
+  if (done) return;
+  done=TRUE;
+
+  // Generate tree view images
+  FTVImageInfo *p = image_info;
+  while (p->name)
+  {
+    QCString fileName=Config_getString("HTML_OUTPUT")+"/"+p->name;
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly)) 
+    {
+      f.writeBlock((char *)p->data,p->len);
+    }
+    else
+    {
+      fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    }
+    f.close();
+    p++;
+  }
+} 
 
 void FTVHelp::generateTreeView()
 {
@@ -792,21 +771,7 @@ void FTVHelp::generateTreeView()
     t << "  </body>\n";
     t << "</html>\n";
   }
+  generateTreeViewImages();
 
-  // Generate tree view images
-  ImageInfo *p = image_info;
-  while (p->name)
-  {
-    QCString fileName=Config_getString("HTML_OUTPUT")+"/"+p->name;
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly)) 
-      f.writeBlock((char *)p->data,p->len);
-    else
-    {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
-    }
-    f.close();
-    p++;
-  }
 }
 

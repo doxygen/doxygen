@@ -89,6 +89,7 @@ void ManDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Acute:   m_t << s->letter() << "\\*(`"; break;
     case DocSymbol::Grave:   m_t << s->letter() << "\\*:"; break;
     case DocSymbol::Circ:    m_t << s->letter() << "\\*^"; break;
+    case DocSymbol::Slash:   m_t << s->letter(); break; /* todo: implement this */
     case DocSymbol::Tilde:   m_t << s->letter() << "\\*~"; break;
     case DocSymbol::Szlig:   m_t << "s\\*:"; break;
     case DocSymbol::Cedil:   m_t << s->letter() << "\\*,"; break;

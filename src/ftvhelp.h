@@ -18,10 +18,41 @@
 class QFile;
 struct FTVNode;
 
-/*! A class that generated the FTV Help specific file.
- *  This file is used in conjunction with additional FTV web browser code
- *  that can be obtained from:
- *  http://www.geocities.com/Paris/LeftBank/2178/ftexample.html
+struct FTVImageInfo
+{
+  const char *alt;
+  const char *name;
+  const unsigned char *data;
+  unsigned int len;
+  unsigned short width, height;
+};
+
+extern FTVImageInfo image_info[];
+
+#define FTVIMG_blank        0
+#define FTVIMG_doc          1
+#define FTVIMG_folderclosed 2
+#define FTVIMG_folderopen   3
+#define FTVIMG_lastnode     4
+#define FTVIMG_link         5
+#define FTVIMG_mlastnode    6
+#define FTVIMG_mnode        7
+#define FTVIMG_node         8
+#define FTVIMG_plastnode    9
+#define FTVIMG_pnode       10
+#define FTVIMG_vertline    11
+
+#define FTV_S(name) #name
+#define FTV_ICON_FILE(name) "ftv2" FTV_S(name) ".png"
+#define FTVIMG_INDEX(name) FTVIMG_ ## name
+#define FTV_INFO(name) ( image_info[FTVIMG_INDEX(name)] )
+#define FTV_IMGATTRIBS(name) \
+    "src=\"" FTV_ICON_FILE(name) "\" " \
+    "alt=\"" << FTV_INFO(name).alt << "\" " \
+    "width=" << FTV_INFO(name).width << " " \
+    "height=" << FTV_INFO(name).height << " "
+
+/*! A class that generates a dynamic tree view side panel.
  */
 class FTVHelp 
 {
@@ -38,6 +69,7 @@ class FTVHelp
                          const char *file,
                          const char *anchor, 
                          const char *name);
+    static void generateTreeViewImages();
 
   private:
     void generateTreeView();
@@ -53,6 +85,7 @@ class FTVHelp
     QList<FTVNode> *m_indentNodes;
     int m_indent;
 };
+
 
 #endif /* FTVHELP_H */
 

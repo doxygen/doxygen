@@ -20,7 +20,7 @@
 
 // translation by Dejan D. M. Milosavljevic <dmilos@email.com>;<dmilosx@ptt.yu>  
 
-class TranslatorSerbian : public Translator
+class TranslatorSerbian : public TranslatorAdapter_1_3_3
 {                                
 private:
    QCString decode(const QCString& sInput)

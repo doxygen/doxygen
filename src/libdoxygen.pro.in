@@ -79,9 +79,9 @@ HEADERS      =	bufstr.h \
 		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
+		search_php.h \
 		section.h \
 		sortdict.h \
-		suffixtree.h \
 		tagreader.h \
 		translator.h \
 		translator_adapter.h \
@@ -173,7 +173,6 @@ SOURCES      =	ce_lex.cpp \
 		rtfstyle.cpp \
 		scanner.cpp \
 		searchindex.cpp \
-		suffixtree.cpp \
 		tagreader.cpp \
 		translator.cpp \
 		util.cpp \

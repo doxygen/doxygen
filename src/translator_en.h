@@ -181,7 +181,7 @@ class TranslatorEnglish : public Translator
       }
       else
       {
-        return "Compound List"; 
+        return "Class List"; 
       }
     }
     
@@ -202,7 +202,7 @@ class TranslatorEnglish : public Translator
       }
       else
       {
-        return "Compound Members"; 
+        return "Class Members"; 
       }
     }
 
@@ -377,7 +377,7 @@ class TranslatorEnglish : public Translator
       }
       else
       {
-        return "Compound Index"; 
+        return "Class Index"; 
       }
     }
 
@@ -525,7 +525,7 @@ class TranslatorEnglish : public Translator
       }
       else
       {
-        return "Compounds"; 
+        return "Classes"; 
       }
     }
 
@@ -1489,6 +1489,55 @@ class TranslatorEnglish : public Translator
       return "Here is the call graph for this function:";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the index 
+     *  of each page before the search field. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Search for";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Search Results";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Sorry, no documents matching your query.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Found <b>1</b> document matching your query.";
+      }
+      else 
+      {
+        return "Found <b>$num</b> documents matching your query. "
+               "Showing best matches first.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Matches:";
+    }
 
 };
 

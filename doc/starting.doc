@@ -29,7 +29,7 @@ information.
 The executable \c doxysearch is only needed if you want to use the search 
 engine. See section \ref doxysearch_usage for more detailed usage information.
 
-Optionally, the executable \c doxywizard is a GUI front-end for editing 
+Optionally, the executable \c doxywizard is a graphical front-end for editing 
 the configuration files that are used by doxygen.
 
 The following figure shows the relation between the tools and the flow

@@ -323,6 +323,7 @@
       <xsd:element name="acute" type="docCharType" />
       <xsd:element name="grave" type="docCharType" />
       <xsd:element name="circ" type="docCharType" />
+      <xsd:element name="slash" type="docCharType" />
       <xsd:element name="tilde" type="docCharType" />
       <xsd:element name="cedil" type="docCharType" />
       <xsd:element name="ring" type="docCharType" />

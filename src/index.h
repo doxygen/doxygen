@@ -69,22 +69,6 @@ void writePackageIndex(OutputList &ol);
 
 void countDataStructures();
 
-#if 0
-extern int annotatedClasses;
-extern int hierarchyClasses;
-extern int documentedFunctions;
-extern int documentedMembers;
-extern int documentedDefines;
-extern int documentedFiles;
-extern int documentedGroups;
-extern int documentedNamespaces;
-extern int documentedNamespaceMembers;
-extern int documentedIncludeFiles;
-extern int indexedPages;
-#endif
-extern int documentedHtmlFiles;
-extern int documentedPages;
-
 enum HighlightedItem
 {
   HLI_None=0,
@@ -103,10 +87,59 @@ enum HighlightedItem
   HLI_Search
 };
 
+enum ClassMemberHighlight
+{
+  CMHL_All = 0,
+  CMHL_Functions,
+  CMHL_Variables,
+  CMHL_Typedefs,
+  CMHL_Enums,
+  CMHL_EnumValues,
+  CMHL_Related,
+  CMHL_Properties,
+  CMHL_Events,
+  CMHL_Total = CMHL_Events+1
+};
+
+enum FileMemberHighlight
+{
+  FMHL_All = 0,
+  FMHL_Functions,
+  FMHL_Variables,
+  FMHL_Typedefs,
+  FMHL_Enums,
+  FMHL_EnumValues,
+  FMHL_Defines,
+  FMHL_Total = FMHL_Defines+1
+};
+
+enum NamespaceMemberHighlight
+{
+  NMHL_All = 0,
+  NMHL_Functions,
+  NMHL_Variables,
+  NMHL_Typedefs,
+  NMHL_Enums,
+  NMHL_EnumValues,
+  NMHL_Total = FMHL_EnumValues+1
+};
+
+extern int annotatedClasses;
+extern int hierarchyClasses;
+extern int documentedFiles;
+extern int documentedGroups;
+extern int documentedNamespaces;
+extern int indexedPages;
+extern int documentedClassMembers[CMHL_Total];
+extern int documentedFileMembers[FMHL_Total];
+extern int documentedNamespaceMembers[NMHL_Total];
+extern int documentedHtmlFiles;
+extern int documentedPages;
+
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,bool external=FALSE,HighlightedItem hli=HLI_None);
+               const char *title,HighlightedItem hli=HLI_None);
 void endFile(OutputList &ol,bool external=FALSE);
 
 #endif
