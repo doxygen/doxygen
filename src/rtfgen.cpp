@@ -1700,7 +1700,7 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
   newParagraph();
 
   // create a png file
-  d.writeImage(t,dir,fileName,FALSE);
+  d.writeImage(t,dir,relPath,fileName,FALSE);
 
   // display the file
   t << "{" << endl;

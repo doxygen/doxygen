@@ -1871,6 +1871,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (!comment.isEmpty())
 					  {
 					    outputArray(comment,comment.length());
+					    g_defLitText=g_defLitText.left(g_defLitText.length()-comment.length()-1);
 					  }
   					  outputChar('\n');
   					  Define *def=0;

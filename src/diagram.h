@@ -105,6 +105,7 @@ class TreeDiagram : public QList<DiagramRow>
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellHeight,
+                   QCString relPath="",
                    bool generateMap=TRUE);
     void drawConnectors(QTextStream &t,Image *image,
                    bool doBase,bool bitmap,
@@ -123,7 +124,7 @@ class ClassDiagram
    ~ClassDiagram();
     void writeFigure(QTextStream &t,const char *path,
                      const char *file);
-    void writeImage(QTextStream &t,const char *path,
+    void writeImage(QTextStream &t,const char *path,const char *relPath,
                      const char *file,bool generateMap=TRUE);
   private:
     TreeDiagram *base;

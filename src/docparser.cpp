@@ -239,7 +239,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
 /*! Collects the parameters found with \@param or \@retval commands
  *  in a global list g_paramsFound. If \a isParam is set to TRUE
  *  and the parameter is not an actual parameter of the current
- *  member g_memberDef, than a warning is raised (unless warnings
+ *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
 static void checkArgumentName(const QString &name,bool isParam)
@@ -340,7 +340,7 @@ static void checkUndocumentedParams()
 
 //---------------------------------------------------------------------------
 
-/*! Strips know html and tex extensions from \a text. */
+/*! Strips known html and tex extensions from \a text. */
 static QString stripKnownExtensions(const char *text)
 {
   QString result=text;
@@ -1429,16 +1429,14 @@ void DocCopy::parse()
 
 //---------------------------------------------------------------------------
 
-void DocXRefItem::parse()
+DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) : 
+   m_parent(parent), m_id(id), m_key(key), m_relPath(g_relPath)
+{
+}
+
+bool DocXRefItem::parse()
 {
   QString listName;
-  //switch(m_type)
-  //{
-  //  case Bug:        listName="bug"; break; 
-  //  case Test:       listName="test"; break; 
-  //  case Todo:       listName="todo"; break; 
-  //  case Deprecated: listName="deprecated"; break; 
-  //}
   RefList *refList = Doxygen::xrefLists->find(m_key); 
   if (refList && 
       (
@@ -1465,7 +1463,9 @@ void DocXRefItem::parse()
         docParserPopContext();
       }
     }
+    return TRUE;
   }
+  return FALSE;
 }
 
 //---------------------------------------------------------------------------
@@ -1699,6 +1699,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict[target];
+  //printf("DocRef::DocRef(target=%s) sec=%p\n",target.data(),sec);
   if (sec) // ref to section or anchor
   {
     m_text         = sec->title;
@@ -1709,6 +1710,8 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
     if (sec->type!=SectionInfo::Page) m_anchor = sec->label;
     m_refToAnchor  = sec->type==SectionInfo::Anchor;
     m_refToSection = sec->type!=SectionInfo::Anchor;
+    //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d\n",
+    //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor);
   }
   else if (resolveLink(g_context,target,TRUE,&compound,/*&pageInfo,*/anchor))
   {
@@ -3234,8 +3237,14 @@ int DocPara::handleXRefItem()
   if (retval==RetVal_OK)
   {
     DocXRefItem *ref = new DocXRefItem(this,g_token->id,g_token->name);
-    m_children.append(ref);
-    ref->parse();
+    if (ref->parse())
+    {
+      m_children.append(ref);
+    }
+    else
+    {
+      delete ref;
+    }
   }
   doctokenizerYYsetStatePara();
   return retval;
@@ -3329,13 +3338,13 @@ void DocPara::handleImage(const QString &cmdName)
   } 
   doctokenizerYYsetStateFile();
   tok=doctokenizerYYlex();
+  doctokenizerYYsetStatePara();
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
         tokToString(tok),cmdName.data());
     return;
   }
-  doctokenizerYYsetStatePara();
   HtmlAttribList attrList;
   DocImage *img = new DocImage(this,attrList,findAndCopyImage(g_token->name,t),t);
   m_children.append(img);
@@ -3353,13 +3362,13 @@ void DocPara::handleDotFile(const QString &cmdName)
   }
   doctokenizerYYsetStateFile();
   tok=doctokenizerYYlex();
+  doctokenizerYYsetStatePara();
   if (tok!=TK_WORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
         tokToString(tok),cmdName.data());
     return;
   }
-  doctokenizerYYsetStatePara();
   QString name = g_token->name;
   DocDotFile *df = new DocDotFile(this,name);
   m_children.append(df);
@@ -4825,6 +4834,10 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_context = ctx->name();
   }
+  else if (ctx && ctx->definitionType()==Definition::TypePage)
+  {
+    g_context = ctx->getOuterScope()->name();
+  }
   else
   {
     g_context = "";
@@ -4904,6 +4917,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   g_fileName = fileName;
   g_relPath = ctx ? relativePathToRoot(ctx->getOutputFileBase()) : QString("");
+  //printf("ctx->name=%s relPath=%s\n",ctx->name().data(),g_relPath.data());
   g_memberDef = md;
   g_nodeStack.clear();
   g_styleStack.clear();

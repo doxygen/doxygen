@@ -48,6 +48,7 @@ documentation:
 \refitem cmdbug \\bug
 \refitem cmdc \\c
 \refitem cmdcallgraph \\callgraph
+\refitem cmdcategory \\category
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcopydoc \\copydoc
@@ -111,6 +112,7 @@ documentation:
 \refitem cmdpost \\post
 \refitem cmdpre \\pre
 \refitem cmdproperty \\property
+\refitem cmdprotocol \\protocol
 \refitem cmdref \\ref
 \refitem cmdrelates \\relates
 \refitem cmdrelatesalso \\relatesalso
@@ -202,6 +204,16 @@ doxygen. Unrecognized commands are treated as normal text.
   generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
   \note The completeness (and correctness) of the call graph depends on the 
   doxygen code parser which is not perfect.
+
+<hr>
+\section cmdcategory \category <name> [<header-file>] [<header-name>]
+
+  \addindex \\category
+  For Objective-C only: Indicates that a comment block contains documentation 
+  for a class category with name \<name\>. The arguments are 
+  equal to the \\class command.
+
+  \sa section \ref cmdclass "\\class".
 
 \section cmdclass \class <name> [<header-file>] [<header-name>]
 
@@ -385,7 +397,7 @@ doxygen. Unrecognized commands are treated as normal text.
   \ref cmdaddtogroup "\\addtogroup" and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
-\section cmdinterface \interface 
+\section cmdinterface \interface <name> [<header-file>] [<header-name>]
 
   \addindex \\interface
   Indicates that a comment block contains documentation for an
@@ -551,6 +563,16 @@ See section \ref memgroup for an example.
   This command is equivalent to \\var and \\fn.
 
   \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
+
+<hr>
+\section cmdprotocol \protocol <name> [<header-file>] [<header-name>]
+
+  \addindex \\protocol
+  Indicates that a comment block contains documentation for a
+  protocol in Objective-C with name \<name\>. The arguments are equal 
+  to the \\class command.
+
+  \sa section \ref cmdclass "\\class".
 
 <hr>
 \section cmdrelates \relates <name>

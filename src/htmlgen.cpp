@@ -813,11 +813,11 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
   t << "\n<p><center><img src=\""
-    << fileName << ".png\" usemap=\"#" << name << "_map\""
+    << relPath << fileName << ".png\" usemap=\"#" << name << "_map\""
     << " border=\"0\" alt=\"\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
 
-  d.writeImage(t,dir,fileName);
+  d.writeImage(t,dir,relPath,fileName);
 }
 
 

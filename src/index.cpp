@@ -116,6 +116,7 @@ static void endIndexHierarchy(OutputList &ol,int level)
 static bool g_memberIndexLetterUsed[CMHL_Total][256];
 static bool g_fileIndexLetterUsed[FMHL_Total][256];
 static bool g_namespaceIndexLetterUsed[NMHL_Total][256];
+static bool g_classIndexLetterUsed[CHL_Total][256];
 
 const int maxItemsBeforeQuickIndex = 30;
 
@@ -886,9 +887,7 @@ void writeFileIndex(OutputList &ol)
     ftvHelp->addContentsItem(TRUE,0,"files",0,ftvHelpTitle); 
     ftvHelp->incContentsDepth();
   }
-  //ol.newParagraph();
   ol.parseText(theTranslator->trFileListDescription(Config_getBool("EXTRACT_ALL")));
-  //ol.newParagraph();
   ol.endTextBlock();
 
   OutputNameDict outputNameDict(1009);
@@ -1196,16 +1195,58 @@ void writeAnnotatedClassList(OutputList &ol)
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
   bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ol.startIndexList(); 
-  //ClassDef *cd=Doxygen::classList.first();
-  //while (cd)
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
-  for (;(cd=cli.current());++cli)
+  
+  // clear index
+  for (int y=0;y<CHL_Total;y++)
+  {
+    for (int x=0;x<256;x++)
+    {
+      g_classIndexLetterUsed[y][x]=FALSE;
+    }
+  }
+  
+  // see which elements are in use
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    {
+      int c = cd->displayName().at(0);
+      g_classIndexLetterUsed[CHL_All][c]=TRUE;
+      switch(cd->compoundType())
+      {
+        case ClassDef::Class:
+          g_classIndexLetterUsed[CHL_Classes][c]=TRUE;
+          break;
+        case ClassDef::Struct:
+          g_classIndexLetterUsed[CHL_Structs][c]=TRUE;
+          break;
+        case ClassDef::Union:
+          g_classIndexLetterUsed[CHL_Unions][c]=TRUE;
+          break;
+        case ClassDef::Interface:
+          g_classIndexLetterUsed[CHL_Interfaces][c]=TRUE;
+          break;
+        case ClassDef::Protocol:
+          g_classIndexLetterUsed[CHL_Protocols][c]=TRUE;
+          break;
+        case ClassDef::Category:
+          g_classIndexLetterUsed[CHL_Categories][c]=TRUE;
+          break;
+        case ClassDef::Exception:
+          g_classIndexLetterUsed[CHL_Exceptions][c]=TRUE;
+          break;
+
+      }
+    }
+  }
+  
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       QCString type=cd->compoundTypeString();
-      //ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
       ol.startIndexKey();
       ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
       ol.endIndexKey();
@@ -1216,7 +1257,7 @@ void writeAnnotatedClassList(OutputList &ol)
         ol.parseDoc(
                  cd->briefFile(),cd->briefLine(),
                  cd,0,
-                 abbreviate(cd->briefDescription(),cd->name()),
+                 abbreviate(cd->briefDescription(),cd->displayName()),
                  FALSE,  // indexWords
                  FALSE   // isExample
                 );
@@ -1709,7 +1750,7 @@ int countClassMembers(int filter)
           (cd=md->getClassDef()) && 
           cd->isLinkableInProject() &&
           ( filter==CMHL_All        && !(md->isFriend() && isFriendToHide) ||
-           (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
+           (filter==CMHL_Functions  && (md->isFunction()  || md->isSlot() || md->isSignal()))  ||
            (filter==CMHL_Variables  && md->isVariable())  ||
            (filter==CMHL_Typedefs   && md->isTypedef())   ||
            (filter==CMHL_Enums      && md->isEnumerate()) ||
@@ -1769,10 +1810,6 @@ static void writeMemberIndexFiltered(OutputList &ol,
   QCString title = theTranslator->trCompoundMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  //if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
-  //startTitle(ol,0);
-  //ol.parseText(title);
-  //endTitle(ol,0,0);
   
   ol.writeString("<div class=\"qindex\">"); 
 

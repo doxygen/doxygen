@@ -6497,13 +6497,14 @@ static void generatePageDocs()
         outputList->endSection(si->label,si->type);
       }
       outputList->startTextBlock();
-      outputList->parseDoc(pd->docFile(),
-                           pd->docLine(),
-                           pd->getOuterScope(),0,
-                           pd->documentation(),
-                           TRUE,    // index words
-                           FALSE    // not an example
-                           /*,pd->sectionDict*/);
+      outputList->parseDoc(pd->docFile(),       // fileName
+                           pd->docLine(),       // startLine
+                           pd,                  // context
+                           0,                   // memberdef
+                           pd->documentation(), // docStr
+                           TRUE,                // index words
+                           FALSE                // not an example
+                          );
       outputList->endTextBlock();
       endFile(*outputList);
       //outputList->enable(OutputGenerator::Man);
@@ -6591,7 +6592,7 @@ static void generateExampleDocs()
     endTitle(*outputList,n,0);
     outputList->parseDoc(pd->docFile(),                            // file
                          pd->docLine(),                            // startLine
-                         pd->getOuterScope(),                      // context
+                         pd,                                       // context
                          0,                                        // memberDef
                          pd->documentation()+"\n\\include "+pd->name(),          // docs
                          TRUE,                                     // index words

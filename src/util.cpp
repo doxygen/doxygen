@@ -2616,7 +2616,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   fd=0, md=0, cd=0, nd=0, gd=0;
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
-  QCString scopeName=scName.copy();
+  QCString scopeName=scName;
   //printf("Search for name=%s args=%s in scope=%s\n",
   //          memberName.data(),args,scopeName.data());
   
@@ -2707,7 +2707,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           delete argList; argList=0;
         }
-        if (mdist==maxInheritanceDepth && args && strcmp(args,"()")!=0)
+        if (mdist==maxInheritanceDepth && args && strcmp(args,"()")==0)
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
@@ -3023,8 +3023,9 @@ bool resolveRef(/* in */  const char *scName,
   QCString fullName = substitute(tsName,"#","::");
   fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
   
-  int scopePos=fullName.findRev("::");
   int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
+  int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
+  int scopePos=fullName.findRev("::",endNamePos);
 
   // default result values
   *resContext=0;
@@ -3063,21 +3064,14 @@ bool resolveRef(/* in */  const char *scName,
     // continue search...
   }
   
-  // extract scope
-  QCString scopeStr=scName;
-
   //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
 
   // extract userscope+name
-  int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
   QCString nameStr=fullName.left(endNamePos);
 
   // extract arguments
   QCString argsStr;
   if (bracePos!=-1) argsStr=fullName.right(fullName.length()-bracePos);
-  
-  //printf("scope=`%s' name=`%s' arg=`%s'\n",
-  //       scopeStr.data(),nameStr.data(),argsStr.data());
   
   // strip template specifier
   // TODO: match against the correct partial template instantiation 
@@ -3087,6 +3081,8 @@ bool resolveRef(/* in */  const char *scName,
     int endTemplPos=nameStr.findRev('>');
     nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
   }
+
+  QCString scopeStr=scName;
 
   MemberDef    *md = 0;
   ClassDef     *cd = 0;

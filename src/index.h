@@ -124,6 +124,19 @@ enum NamespaceMemberHighlight
   NMHL_Total = FMHL_EnumValues+1
 };
 
+enum ClassHighlight
+{
+  CHL_All = 0,
+  CHL_Classes,
+  CHL_Structs,
+  CHL_Unions,
+  CHL_Interfaces,
+  CHL_Protocols,
+  CHL_Categories,
+  CHL_Exceptions,
+  CHL_Total = CHL_Exceptions+1
+};
+
 extern int annotatedClasses;
 extern int hierarchyClasses;
 extern int documentedFiles;

@@ -711,7 +711,6 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
                                       bool typeOnly=FALSE)
 {
   int i=0;
-  //fprintf(stderr,"generateClassOrGlobalLink(clName=%s)\n",clName);
   if (*clName=='~') // correct for matching negated values i.s.o. destructors.
   {
     g_code->codify("~");
@@ -726,14 +725,21 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   ClassDef *cd=0;
   MemberDef *md=0;
 
+  //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
   if (!g_theVarContext.findVariable(className)) // not a local variable
   {
     Definition *d = g_currentDefinition;
+    //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
     cd = getResolvedClass(d,g_sourceFileDef,className,&md);
     if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
       cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
     }
+    //printf("is not found as a variable %s\n",cd?cd->name().data():"<null>");
+  }
+  else
+  {
+    //printf("is a local variable!\n");
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
@@ -1212,7 +1218,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  }
 	  else
 	  {
-	    printf("Invalid name: id=%d\n",refId);
+	    //printf("Invalid name: id=%d\n",refId);
 	  }
 	}
 	else if (nc=='o') // reference to potential object name
@@ -1321,7 +1327,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  }
 	  else
 	  {
-	    printf("Invalid object: id=%d\n",refId);
+	    //printf("Invalid object: id=%d\n",refId);
 	  }
 	}
 	else if (nc=='c') // reference to nested call
@@ -1364,7 +1370,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  }
 	  else
 	  {
-	    printf("Invalid context: id=%d\n",refId);
+	    //printf("Invalid context: id=%d\n",refId);
 	  }
 	}
 	else // illegal marker
@@ -1981,7 +1987,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <Body>{SCOPETNAME}/{B}*"("		{ // a() or c::a() or t<A,B>::a()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
-					  g_theVarContext.addVariable(g_type,yytext);
+					  //g_theVarContext.addVariable(g_type,yytext);
   					  g_bracketCount=0;
 					  g_args.resize(0);
   					  g_name+=yytext; 

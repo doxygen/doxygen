@@ -154,6 +154,7 @@ static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
 
 static bool             insideFormula;
 static bool  	        insideTryBlock=FALSE;
+static bool             insideCode;
 static bool             needsSemi;
 
 static int              depthIf;
@@ -292,6 +293,28 @@ static QCString stripQuotes(const char *s)
   }
   return name;
 }
+
+//static QCString stripCComments(const QCString &s)
+//{
+//  int p=0,i;
+//  QCString result;
+//  while ((i=s.find("/*",p))!=-1)
+//  {
+//    result+=s.mid(p,i-p);
+//    int ei = s.find("*/",i+1);
+//    if (ei!=-1)
+//    {
+//      p=ei+2;
+//    }
+//    else
+//    {
+//      return result;
+//    }
+//  }
+//  result+=s.right(s.length()-p);
+//  printf("stripCComments: input=%s output=%s\n",s.data(),result.data());
+//  return result;
+//}
 
 static void newDocState();
 
@@ -695,6 +718,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	SkipCurlyCpp
 %x	SkipCurlyEndDoc
 %x      SkipString
+%x      SkipPHPString
 %x	SkipInits
 %x	SkipCPP
 %x	SkipCPPBlock
@@ -720,6 +744,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      LineDoc
 %x      DefLineDoc
 %x      ClassDocArg1
+%x      CategoryDocArg1
 %x      ClassDocArg2
 %x      ClassDocArg3
 %x      ClassDocFunc
@@ -790,6 +815,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	AnchorLabel
 %x	ReadInitializer
 %x	CopyString
+%x	CopyPHPString
 %x	CopyRound
 %x	CopyCurly
 %x	IDLUnionCase
@@ -883,7 +909,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN( FindMembers );
 					  }
 					}
-<NextSemi>{CHARLIT}			
+<NextSemi>{CHARLIT}			{ if (insidePHP) REJECT; }
 <NextSemi>\"				{
   					  lastStringContext=NextSemi;
 					  BEGIN(SkipString);
@@ -899,6 +925,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembersPHP>"<?"("php"?)            { // PHP code start
                                            BEGIN( FindMembers );
 					}
+<FindMembersPHP>[^\n<]+                 { // Non-PHP code text, ignore
+  					}
+<FindMembersPHP>\n                      { // Non-PHP code text, ignore
+  					  yyLineNr++;
+  					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
 <FindMembers>"?>"                       { // PHP code end
@@ -2028,7 +2059,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->initializer+=*yytext; 
   					}
   */
-<ReadInitializer>{CHARLIT}              { current->initializer+=yytext; } 
+<ReadInitializer>{CHARLIT}              { 
+                                          if (insidePHP) 
+					  {
+					    REJECT;
+					  }
+					  else
+					  {  
+					    current->initializer+=yytext; 
+					  }
+                                        } 
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
 					  yyLineNr++;
@@ -2063,21 +2103,25 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 
   /* generic quoted string copy rules */
-<CopyString>\\.				{
+<CopyString,CopyPHPString>\\.		{
   					  *pCopyQuotedString+=yytext;
   					}
 <CopyString>\"				{ 
   					  *pCopyQuotedString+=*yytext;
   					  BEGIN( lastStringContext ); 
 					}
-<CopyString>"/*"|"*/"|"//"		{
+<CopyPHPString>\'			{ 
+  					  *pCopyQuotedString+=*yytext;
+  					  BEGIN( lastStringContext ); 
+					}
+<CopyString,CopyPHPString>"/*"|"*/"|"//" {
   					  *pCopyQuotedString+=yytext;
   					}
-<CopyString>\n				{
+<CopyString,CopyPHPString>\n		{
   					  *pCopyQuotedString+=*yytext;
   					  yyLineNr++;
   					}
-<CopyString>.				{
+<CopyString,CopyPHPString>.		{
   					  *pCopyQuotedString+=*yytext;
   					}
 
@@ -2101,9 +2145,21 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++;
   					  *pCopyRoundString+=*yytext;
   					}
-<CopyRound>{CHARLIT}		        { *pCopyRoundString+=yytext; }
+<CopyRound>{CHARLIT}		        { 
+                                          if (insidePHP)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+                                            *pCopyRoundString+=yytext; 
+					  }
+                                        }
 <CopyRound>[^"'()\n]+			{
   					  *pCopyRoundString+=yytext;
+  					}
+<CopyRound>.				{
+  					  *pCopyRoundString+=*yytext;
   					}
 
   /* generic curly bracket list copy rules */
@@ -2122,13 +2178,24 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (--curlyCount<0)
 					    BEGIN(lastCurlyContext); 
   					}
-<CopyCurly>{CHARLIT}                    { *pCopyCurlyString+=yytext; }
+<CopyCurly>{CHARLIT}                    { if (insidePHP) 
+                                          { 
+					    REJECT; 
+					  } 
+					  else 
+					  {
+					    *pCopyCurlyString+=yytext; 
+					  }
+                                        }
 <CopyCurly>[^"'{}\/\n]+			{
   					  *pCopyCurlyString+=yytext;
   					}
 <CopyCurly>"/"				{ *pCopyCurlyString+=yytext; }
 <CopyCurly>\n				{
   					  yyLineNr++;
+					  *pCopyCurlyString+=*yytext;
+  					}
+<CopyCurly>.				{
 					  *pCopyCurlyString+=*yytext;
   					}
 <FindMembers>":"			{
@@ -2306,8 +2373,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lastContext = YY_START ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody,ReadNSBody,ReadBodyIntf>{CHARLIT}          { current->program += yytext; }
-<ReadBody,ReadNSBody,ReadBodyIntf>"{"                { current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{CHARLIT} { 
+                                              if (insidePHP) 
+					      {
+						REJECT; // for PHP code single quotes 
+					                // are used for strings of arbitrary length
+					      }
+					      else
+					      {
+                                                current->program += yytext; 
+					      }
+                                            }
+<ReadBody,ReadNSBody,ReadBodyIntf>"{"       { current->program += yytext ;
 					  ++curlyCount ;
 					}
 <ReadBody,ReadNSBody>"}"		{ //err("ReadBody count=%d\n",curlyCount);
@@ -2543,6 +2620,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  initEntry();
 					  insideObjC=FALSE;
 					  BEGIN( FindMembers ); 
+  					}
+<ReadBody,ReadNSBody,ReadBodyIntf>"'"	{
+  					  if (!insidePHP)
+					  {
+					    current->program += yytext;
+					  }
+					  else
+					  { // begin of single quoted string
+					    current->program += yytext;
+                                            pCopyQuotedString = &current->program;
+                                            lastStringContext=YY_START;
+					    BEGIN(CopyPHPString);
+					  }
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"'#"	{ current->program += yytext ; }
@@ -2881,8 +2971,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  BEGIN( lastCopyArgStringContext );
   					}
 <ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>{CHARLIT}     { 
-  					  *copyArgString+=yytext; 
-  					  fullArgString+=yytext; 
+                                          if (insidePHP)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+  					    *copyArgString+=yytext; 
+  					    fullArgString+=yytext; 
+					  }
 					}
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>\n  { 
   					  yyLineNr++; 
@@ -2973,7 +3070,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  BEGIN(CopyString);
 					}
 <FuncPtrInit>{CHARLIT}			{
-                                          current->args += yytext; 
+                                          if (insidePHP)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+                                            current->args += yytext; 
+					  }
   					}
 <FuncPtrInit>{ID}			{
                                           current->args += yytext; 
@@ -3258,6 +3362,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipCurly>{CHARLIT}                    {
   				          //addToBody(yytext);
+                                          if (insidePHP) REJECT;
   					}
 <SkipCurly>\"			        { 
   				          //addToBody(yytext);
@@ -3323,27 +3428,21 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  BEGIN(SkipVerbString);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
+                                          if (insidePHP) REJECT;
                                         }
-<SkipInits,SkipCurly,SkipCurlyCpp>.	{
-  				          //addToBody(yytext);
-  					}
-<SkipString>\\.				{
-  				          //addToBodyCond(yytext);
-  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>.	{ }
+<SkipString,SkipPHPString>\\.		{ }
 <SkipString>\"				{ 
-  				          //addToBodyCond(yytext);
   					  BEGIN( lastStringContext ); 
 					}
-<SkipString>"/*"|"*/"|"//"		{
-  				          //addToBodyCond(yytext);
-  					}
-<SkipString>\n				{
+<SkipPHPString>\'			{ 
+  					  BEGIN( lastStringContext ); 
+					}
+<SkipString,SkipPHPString>"/*"|"*/"|"//" { }
+<SkipString,SkipPHPString>\n		{
   					  yyLineNr++;
-  				          //addToBodyCond(yytext);
   					}
-<SkipString>.				{
-  				          //addToBodyCond(yytext);
-  					}
+<SkipString,SkipPHPString>.		{ }
 <Bases,CompoundName>";"			{ 
 					  current->section = Entry::EMPTY_SEC ;
 					  current->type.resize(0) ;
@@ -3526,8 +3625,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->name.sprintf("@%d",anonCount++);
 					  }
 					  curlyCount=0;
-					  if (current->section==Entry::PROTOCOL_SEC ||
-					      current->section==Entry::OBJCIMPL_SEC)
+					  if (/*current->section==Entry::PROTOCOL_SEC ||
+					      current->section==Entry::OBJCIMPL_SEC*/
+					      insideObjC
+					     )
 					  { // ObjC body that ends with @end
 					    BEGIN( ReadBodyIntf );
 					  }
@@ -3697,9 +3798,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <Comment>"/*"				{ current->program += yytext ; } 
 <Comment>"//"				{ current->program += yytext ; }
-<Comment>[^\n\/\*]+			{ current->program += yytext ; }
+<Comment>{CMD}("code"|"verbatim")	{
+                                          insideCode=TRUE;
+  					  current->program += yytext ;
+  					}
+<Comment>{CMD}("endcode"|"endverbatim")	{
+                                          insideCode=FALSE;
+  					  current->program += yytext ;
+  					}
+<Comment>[^ \.\n\/\*]+			{ current->program += yytext ; }
 <Comment>"*/"				{ current->program += yytext ;
-					  BEGIN( lastContext ) ;
+					  if (!insideCode) BEGIN( lastContext ) ;
 					}
 <Comment>.				{ current->program += *yytext ; }
 
@@ -4014,6 +4123,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
+<Doc,JavaDoc>{B}*{CMD}"protocol"{B}+  	{ // ObjC protocol
+  					  current->section = Entry::PROTOCOLDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( ClassDocArg1 ); 
+					}
+<Doc,JavaDoc>{B}*{CMD}"category"{B}+  	{ // ObjC category
+  					  current->section = Entry::CATEGORYDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( CategoryDocArg1 ); 
+					}
 <Doc,JavaDoc>{B}*{CMD}"union"{B}+  	{
   					  current->section = Entry::UNIONDOC_SEC;
 					  current->fileName = yyFileName;
@@ -4260,6 +4381,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                               );
   					  yyLineNr++;
   					}
+<CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+					  current->name = yytext;
+					  prependScope();
+					  BEGIN( ClassDocArg2 );
+   					}
 <ClassDocArg1>{SCOPENAME}/"<"		{
 					  current->name = yytext;
 					  // prepend outer scope name 
@@ -4269,17 +4395,29 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ClassDocArg1>{SCOPENAME}		{
 					  current->name = yytext;
+					  if (current->section==Entry::PROTOCOLDOC_SEC)
+					  {
+					    current->name+="-p";
+					  }
 					  // prepend outer scope name 
 					  prependScope();
 					  BEGIN( ClassDocArg2 );
 					}
-<ClassDocArg1>"\\"{B}*"\n"		{ 
+<ClassDocArg1,CategoryDocArg1>"\\"{B}*"\n"		{ 
                                           yyLineNr++; 
                                         }
 <ClassDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
 					       "\\class."
+                                              );
+  					  yyLineNr++;
+					  
+  					}
+<CategoryDocArg1>"\n"			{
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\category."
                                               );
   					  yyLineNr++;
 					  
@@ -4668,6 +4806,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <SectionTitle>[^\n*]*/"\n"		{
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
+					  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 
   					  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
   					  current->anchors->append(si);
                                           Doxygen::sectionDict.insert(yytext,si);
@@ -5299,7 +5438,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
   					}
-<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs>"*/" {
+<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,CategoryDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs>"*/" {
                                           // defer "*/" to a later time
   					  unput('/');
   					  unput('*');
@@ -5482,6 +5621,20 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCContext = YY_START ;
 					  BEGIN( SkipCxxComment ) ;
 					}
+<*>\'					{
+  					  if (insidePHP)
+					  {
+  					    lastStringContext=YY_START;
+					    BEGIN(SkipPHPString);
+					  }
+  					}
+<*>\"					{
+  					  if (insidePHP)
+					  {
+  					    lastStringContext=YY_START;
+					    BEGIN(SkipString);
+					  }
+  					}
 <*>.
 <SkipComment>"//"|"/*"
 <*>"/*"					{ lastCContext = YY_START ;

@@ -167,6 +167,7 @@ void ManDocVisitor::visit(DocStyleChange *s)
       {
         m_insidePre=FALSE;
         if (!m_firstCol) m_t << endl;
+        m_t << ".fi" << endl;
         m_t << ".PP" << endl;
         m_firstCol=TRUE;
       }
@@ -187,6 +188,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".nf" << endl;
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
@@ -196,6 +198,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".nf" << endl;
       m_t << s->text();
       if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
@@ -230,6 +233,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
          if (!m_firstCol) m_t << endl;
+         m_t << ".fi" << endl;
          m_t << ".PP" << endl;
          m_firstCol=TRUE;
       }
@@ -240,6 +244,7 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".nf" << endl;
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
@@ -253,6 +258,7 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".nf" << endl;
       m_t << inc->text();
       if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
@@ -287,6 +293,7 @@ void ManDocVisitor::visit(DocIncOperator *op)
     if (!m_hide)
     {
       if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
     }
@@ -548,6 +555,7 @@ void ManDocVisitor::visitPost(DocHtmlListItem *)
 //{
 //  m_insidePre=FALSE;
 //  if (!m_firstCol) m_t << endl;
+//  m_t << ".fi" << endl;
 //  m_t << ".PP" << endl;
 //  m_firstCol=TRUE;
 //}

@@ -632,5 +632,6 @@ void ManGenerator::printDoc(DocNode *n)
   n->accept(visitor);
   delete visitor; 
   firstCol=FALSE;
+  paragraph = FALSE;
 }
 
