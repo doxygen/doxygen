@@ -81,18 +81,23 @@ class HtmlGenerator : public OutputGenerator
     void endGroupHeader();
     void writeListItem() { t << "<li>"; }
 
-    void startMemberHeader() { startGroupHeader(); }
-    void endMemberHeader() { endGroupHeader(); }
-    void startMemberList()  { t << "<ul>"  << endl; }
-    void endMemberList()    { t << "</ul>" << endl; }
-    void startMemberItem() { t << "<li>"; }
-    void endMemberItem() { t << endl; }
+    void startMemberSections();
+    void endMemberSections();
+    void startMemberHeader();
+    void endMemberHeader();
+    void startMemberList();
+    void endMemberList();
+    void startMemberItem();
+    void insertMemberAlign();
+    void endMemberItem();
+    void startMemberDescription();
+    void endMemberDescription();
 
     void writeRuler()    { t << "<hr>"; }
     void writeAnchor(const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
-    void endCodeFragment()   { t << "</div></pre>"; }
+    void endCodeFragment()   { t << "</pre></div>"; }
     void writeBoldString(const char *text) 
                          { t << "<b>"; docify(text); t << "</b>"; }
     void startEmphasis() { t << "<em>";  }
@@ -111,6 +116,7 @@ class HtmlGenerator : public OutputGenerator
     void writeDoxyAnchor(const char *clName,const char *anchor,
                          const char *name);
     void writeLatexSpacing() {}
+    void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; }
@@ -139,8 +145,6 @@ class HtmlGenerator : public OutputGenerator
     void writeGrave(char c)   { t << "&" << c << "grave;"; }
     void writeCirc(char c)    { t << "&" << c << "circ;"; }
     void writeTilde(char c)   { t << "&" << c << "tilde;"; } 
-    void startMemberDescription() { t << "<dl class=\"el\"><dd><font size=-1><em>"; }
-    void endMemberDescription()   { t << "</em></font></dl>"; }
     void startDescList()      { t << "<dl compact><dt>" << endl; }
     void endDescTitle()       {}
     void writeDescItem()      { t << "<dd>" << endl; }
@@ -148,6 +152,7 @@ class HtmlGenerator : public OutputGenerator
     void writeSection(const char *,const char *,bool);
     void writeSectionRef(const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
+    void writeSectionRefAnchor(const char *,const char *,const char *);
     void addToIndex(const char *,const char *) {}
     void startIndent()        { t << "<div class=\"in\">" << endl; }
     void endIndent()          { t << "</div>" << endl; }
@@ -166,6 +171,7 @@ class HtmlGenerator : public OutputGenerator
   private:
     QString header;
     QString footer;
+    QString lastTitle;
 
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);

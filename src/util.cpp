@@ -37,6 +37,12 @@ bool isId(char c)
   return c=='_' || isalnum(c);
 }
 
+QString generateMarker(int id)
+{
+  QString result;
+  result.sprintf("@%d\n",id);
+  return result;
+}
 
 // try to determine if this files is a source or a header file by looking
 // at the extension (5 variations are allowed in both upper and lower case)
@@ -197,6 +203,7 @@ static void linkifyText(OutputList &ol,const char *clName,const char *name,const
     ClassDef *cd=0;
     FileDef *fd=0;
     MemberDef *md=0;
+    NamespaceDef *nd=0;
 
     // check if `word' is a documented class name
     if (word.length()>0 && word!=name && word!=clName)
@@ -206,24 +213,29 @@ static void linkifyText(OutputList &ol,const char *clName,const char *name,const
         // add link to the result
         if (cd->isVisible())
         {
-          result.writeObjectLink(cd->getReference(),cd->classFile(),0,word);
+          result.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
         }
         else
         {
           result.docify(word);
         }
       }
-      else if (getDefs(word,clName,0,md,cd,fd) && md->hasDocumentation())
+      else if (getDefs(word,clName,0,md,cd,fd,nd) && md->hasDocumentation())
       {
         if (cd && cd->isVisible() && !md->isFunction()) // word is a member of cd
         {
           result.writeObjectLink(cd->getReference(),
-                  cd->classFile(),md->anchor(),word);
+                  cd->getOutputFileBase(),md->anchor(),word);
+        }
+        else if (nd && nd->hasDocumentation())
+        {
+          result.writeObjectLink(nd->getReference(),
+                  nd->getOutputFileBase(),md->anchor(),word);
         }
         else if (fd && fd->hasDocumentation()) // word is a global in file fd
         {
           result.writeObjectLink(fd->getReference(),
-                  fd->diskName(),md->anchor(),word);
+                  fd->getOutputFileBase(),md->anchor(),word);
         }
         else // add word to the result
         {
@@ -313,6 +325,28 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   }
 }
 
+void writeExample(OutputList &ol,ExampleList *el)
+{
+  QString exampleLine=theTranslator->trWriteList(el->count());
+ 
+  QRegExp marker("@[0-9]+");
+  int index=0,newIndex,matchLen;
+  // now replace all markers in inheritLine with links to the classes
+  while ((newIndex=marker.match(exampleLine,index,&matchLen))!=-1)
+  {
+    bool ok;
+    parseText(ol,exampleLine.mid(index,newIndex-index));
+    uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+    Example *e=el->at(entryIndex);
+    if (ok && e) ol.writeObjectLink(0,e->file,e->anchor,e->name);
+    index=newIndex+matchLen;
+  } 
+  parseText(ol,exampleLine.right(exampleLine.length()-index));
+  ol.writeString(".");
+}
+
+
+
 QString argListToString(ArgumentList *al)
 {
   QString result;
@@ -335,11 +369,14 @@ static void writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
                       FileDef *fd,MemberDef *md,const char *name)
 {
   if (nd)
-    ol.writeObjectLink(0 /*TODO: references */,nd->namespaceFile(),md->anchor(),name);
+    ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+                       md->anchor(),name);
   else if (fd) 
-    ol.writeObjectLink(fd->getReference(),fd->diskName(),md->anchor(),name);
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
+                       md->anchor(),name);
   else    
-    ol.writeObjectLink(cd->getReference(),cd->classFile(),md->anchor(),name);
+    ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+                       md->anchor(),name);
 }
 
 static void warnForUndocumentedMember(MemberDef *md)
@@ -388,77 +425,84 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"modules.html");
-    parseDoc(ol,0,0,theTranslator->trModules());
+    parseText(ol,theTranslator->trModules());
     ol.endQuickIndexItem();
   } 
   if (documentedNamespaces>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"namespaces.html");
-    parseDoc(ol,0,0,theTranslator->trNamespaces());
+    parseText(ol,theTranslator->trNamespaceList());
     ol.endQuickIndexItem();
   }
   if (hierarchyClasses>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"hierarchy.html");
-    parseDoc(ol,0,0,theTranslator->trClassHierarchy());
+    parseText(ol,theTranslator->trClassHierarchy());
     ol.endQuickIndexItem();
   } 
   if (annotatedClasses>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"annotated.html");
-    parseDoc(ol,0,0,theTranslator->trCompoundList());
+    parseText(ol,theTranslator->trCompoundList());
     ol.endQuickIndexItem();
   } 
   if (documentedFiles>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"files.html");
-    parseDoc(ol,0,0,theTranslator->trFileList());
+    parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
   if (includeFiles.count()>0 && verbatimHeaderFlag)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"headers.html");
-    parseDoc(ol,0,0,theTranslator->trHeaderFiles());
+    parseText(ol,theTranslator->trHeaderFiles());
     ol.endQuickIndexItem();
   } 
+  if (documentedNamespaceMembers>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,absPath+"namespacemembers.html");
+    parseText(ol,theTranslator->trNamespaceMembers());
+    ol.endQuickIndexItem();
+  }
   if (documentedMembers>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"functions.html");
-    parseDoc(ol,0,0,theTranslator->trCompoundMembers());
+    parseText(ol,theTranslator->trCompoundMembers());
     ol.endQuickIndexItem();
   } 
   if (documentedFunctions>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"globals.html");
-    parseDoc(ol,0,0,theTranslator->trFileMembers());
+    parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
   if (pageList.count()>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"pages.html");
-    parseDoc(ol,0,0,theTranslator->trRelatedPages());
+    parseText(ol,theTranslator->trRelatedPages());
     ol.endQuickIndexItem();
   } 
   if (exampleList.count()>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"examples.html");
-    parseDoc(ol,0,0,theTranslator->trExamples());
+    parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
   if (searchEngineFlag)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem("_cgi:","");
-    parseDoc(ol,0,0,theTranslator->trSearch());
+    parseText(ol,theTranslator->trSearch());
     ol.endQuickIndexItem();
   } 
   if (compact) 
@@ -489,7 +533,7 @@ void endFile(OutputList &ol,bool external)
   ol.writeFooter(0,external); // write the footer
   if (footerFile.length()==0)
   {
-    parseDoc(ol,0,0,theTranslator->trGeneratedAt(
+    parseText(ol,theTranslator->trGeneratedAt(
               dateToString(TRUE),
               projectName
              ));
@@ -497,7 +541,7 @@ void endFile(OutputList &ol,bool external)
   ol.writeFooter(1,external); // write the link to the picture
   if (footerFile.length()==0)
   {
-    parseDoc(ol,0,0,theTranslator->trWrittenBy());
+    parseText(ol,theTranslator->trWrittenBy());
   }
   ol.writeFooter(2,external); // end the footer
   if (latexEnabled) ol.enable(OutputGenerator::Latex);
@@ -516,7 +560,7 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
        md->documentation().isEmpty() && 
        !briefMemDescFlag && 
        !repeatBriefFlag
-      )
+      ) 
      ) return;
   QString type=md->typeString();
   QRegExp r("@[0-9]+");
@@ -539,14 +583,24 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
     else if (fd) cname=fd->name();
 
     // If there is no detailed description we need to write the anchor here.
-    if (!md->detailsAreVisible() && !extractAllFlag)
+    bool detailsVisible = md->detailsAreVisible();
+    if (!detailsVisible && !extractAllFlag)
     {
-      ol.writeDoxyAnchor(cname,md->anchor(),md->name());
+      QString doxyName=md->name().copy();
+      if (!cname.isEmpty()) doxyName.prepend(cname+"::");
+      ol.writeDoxyAnchor(cname,md->anchor(),doxyName);
       ol.addToIndex(md->name(),cname);
       ol.addToIndex(cname,md->name());
       ol.docify("\n");
     }
-    
+    else if (!detailsVisible) // when extractAll it true we have to write
+                              // a index reference and label in LaTeX because
+                              // detailed section not shown in LaTeX
+    {
+      ol.addToIndex(md->name(),cname);
+      ol.addToIndex(cname,md->name());
+      ol.writeLatexLabel(cname,md->anchor());
+    }
     ol.startMemberItem();
 
     // write type
@@ -564,6 +618,8 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
     QString name=md->name().copy();
     if (type.length()>0) ol.writeString(" ");
 
+    ol.insertMemberAlign();
+    
     // write name
     if ( extractAllFlag ||
          (md->briefDescription().isEmpty() || !briefMemDescFlag) && 
@@ -610,7 +666,7 @@ static void writeMemberDef(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
         ol.docify(" ");
         ol.startTextLink(0,md->anchor());
         //ol.writeObjectLink(0,0,md->anchor()," More...");
-        parseDoc(ol,0,0,theTranslator->trMore());
+        parseText(ol,theTranslator->trMore());
         ol.endTextLink();
         ol.startEmphasis();
         ol.enableAll();
@@ -634,11 +690,13 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
   if (title) 
   {
     ol.startMemberHeader();
-    parseDoc(ol,0,0,title);
+    parseText(ol,title);
     ol.endMemberHeader();
   }
-  if (subtitle) ol.writeString(subtitle);
-  
+  if (subtitle) 
+  {
+    parseText(ol,subtitle);
+  }
 
   if (!fd && !nd) ol.startMemberList();
   MemberDef *md;
@@ -646,7 +704,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
   if (fd && ml->defineCount()>0)
   {
     ol.startMemberHeader();
-    parseDoc(ol,0,0,theTranslator->trDefines());
+    parseText(ol,theTranslator->trDefines());
     ol.endMemberHeader();
     ol.startMemberList();
     MemberListIterator mli(*ml);
@@ -663,7 +721,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
   if ((fd || nd) && ml->protoCount()>0)
   {
     ol.startMemberHeader();
-    parseDoc(ol,0,0,theTranslator->trFuncProtos());
+    parseText(ol,theTranslator->trFuncProtos());
     ol.startMemberList();
     MemberListIterator mli(*ml);
     for ( ; (md=mli.current()); ++mli )
@@ -678,7 +736,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     if (fd || nd) 
     {
       ol.startMemberHeader();
-      parseDoc(ol,0,0,theTranslator->trTypedefs());
+      parseText(ol,theTranslator->trTypedefs());
       ol.endMemberHeader();
       //ol.writeMemberHeader("Typedefs");
       ol.startMemberList();
@@ -697,36 +755,21 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     if (fd || nd) 
     {
       ol.startMemberHeader();
-      parseDoc(ol,0,0,theTranslator->trEnumerations());
+      parseText(ol,theTranslator->trEnumerations());
       ol.endMemberHeader();
       ol.startMemberList();
     }
     MemberListIterator mli(*ml);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      bool hasDocs=md->hasDocumentation();
+      /*bool hasDocs=md->hasDocumentation();*/
       QString type=md->typeString();
       type=type.stripWhiteSpace();
-      if (md->isEnumerate() && (hasDocs || !hideMemberFlag)) 
+      if (md->isEnumerate() /*&& (hasDocs || !hideMemberFlag)*/) 
       {
-        // see if there are any documented enum values
-        // we need this info to decide if we need to generate a link.
-        QList<MemberDef> *fmdl=md->enumFieldList();
-        int documentedEnumValues=0;
-        if (fmdl)
-        {
-          MemberDef *fmd=fmdl->first();
-          while (fmd)
-          {
-            if (fmd->hasDocumentation()) documentedEnumValues++;
-            fmd=fmdl->next();
-          }
-        }
-        if (documentedEnumValues>0) md->setDocumentedEnumValues(TRUE);
-
         if (!hideMemberFlag ||                // do not hide undocumented members or
             !md->documentation().isEmpty() || // member has detailed descr. or
-            documentedEnumValues>0 ||         // member has documented enum vales.
+            md->hasDocumentedEnumValues() ||  // member has documented enum vales.
             briefMemDescFlag ||               // brief descr. is shown or
             repeatBriefFlag                   // brief descr. is repeated.
            )
@@ -739,7 +782,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           {
             if (extractAllFlag ||
                 (md->briefDescription().isEmpty() || !briefMemDescFlag) &&
-                (!md->documentation().isEmpty() || documentedEnumValues>0 ||
+                (!md->documentation().isEmpty() || md->hasDocumentedEnumValues() ||
                  (!md->briefDescription().isEmpty() && 
                   !briefMemDescFlag &&
                   repeatBriefFlag
@@ -760,6 +803,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           }
 
           typeDecl.docify("{ ");
+          QList<MemberDef> *fmdl=md->enumFieldList();
           if (fmdl)
           {
             MemberDef *fmd=fmdl->first();
@@ -798,6 +842,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           {
             ol.startMemberItem();
             ol.writeString("enum ");
+            ol.insertMemberAlign();
             ol+=typeDecl;
             ol.endMemberItem();
             //QString brief=md->briefDescription();
@@ -807,14 +852,14 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
               ol.startMemberDescription();
               parseDoc(ol,cd?cd->name().data():0,
                   md->name().data(),md->briefDescription());
-              if (!md->documentation().isEmpty() || documentedEnumValues>0)
+              if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
               {
                 ol.disableAllBut(OutputGenerator::Html);
                 ol.endEmphasis();
                 ol.docify(" ");
                 ol.startTextLink(0,md->anchor());
                 //ol.writeObjectLink(0,0,md->anchor()," More...");
-                parseDoc(ol,0,0,theTranslator->trMore());
+                parseText(ol,theTranslator->trMore());
                 ol.endTextLink();
                 ol.startEmphasis();
                 ol.enableAll();
@@ -838,7 +883,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     if (fd || nd) 
     {
       ol.startMemberHeader();
-      parseDoc(ol,0,0,theTranslator->trFunctions());
+      parseText(ol,theTranslator->trFunctions());
       ol.endMemberHeader();
       ol.startMemberList();
     }
@@ -873,6 +918,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           {
             ol.startMemberItem();
             ol.docify("class ");
+            ol.insertMemberAlign();
             ol.writeObjectLink(0,0,md->anchor(),md->name());
             ol.endMemberItem();
           }
@@ -880,13 +926,15 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
           {
             ol.startMemberItem();
             ol.docify("class ");
-            ol.writeObjectLink(cd->getReference(),cd->classFile(),0,cd->name());
+            ol.insertMemberAlign();
+            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
             ol.endMemberItem();
           }
           else if (!hideMemberFlag) // no documentation
           {
             ol.startMemberItem();
             ol.docify("class ");
+            ol.insertMemberAlign();
             ol.writeBoldString(md->name());
             ol.endMemberItem();
           }
@@ -901,7 +949,7 @@ void writeMemberDecs(OutputList &ol,ClassDef *cd,NamespaceDef *nd, FileDef *fd,
     if (fd || nd) 
     {
       ol.startMemberHeader();
-      parseDoc(ol,0,0,theTranslator->trVariables());
+      parseText(ol,theTranslator->trVariables());
       ol.endMemberHeader();
       ol.startMemberList();
     }
@@ -1109,11 +1157,11 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
               {
                 ol.newParagraph();
                 ol.startBold();
-                parseDoc(ol,0,0,theTranslator->trEnumerationValues());
+                parseText(ol,theTranslator->trEnumerationValues());
                 //ol.writeBoldString("Enumeration values:");
                 ol.docify(":");
                 ol.endBold();
-                ol.startMemberList();
+                ol.startItemList();
               }
               ol.writeDoxyAnchor(cname,fmd->anchor(),fmd->name());
               ol.addToIndex(fmd->name(),cname);
@@ -1141,7 +1189,7 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
             fmd=fmdl->next();
           }
         }
-        if (!first) { ol.endMemberList(); ol.writeChar('\n'); }
+        if (!first) { ol.endItemList(); ol.writeChar('\n'); }
       }
       
       MemberDef *bmd=md->reimplements();
@@ -1159,33 +1207,49 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
         // write class that contains a member that is reimplemented by this one
         ClassDef *bcd = bmd->memberClass();
         ol.newParagraph();
-        parseDoc(ol,0,0,theTranslator->trReimplementedFrom());
-        //ol.writeString("Reimplemented from ");
-        ol.docify(" ");
-        if (bmd->hasDocumentation())
+        //parseText(ol,theTranslator->trReimplementedFrom());
+        //ol.docify(" ");
+        
+        QString reimplFromLine = theTranslator->trReimplementedFromList(1);
+        int markerPos = reimplFromLine.find("@0");
+        if (markerPos!=-1) // should always pass this.
         {
-          ol.writeObjectLink(bcd->getReference(),bcd->classFile(),
-              bmd->anchor(),bcd->name());
-          if (
-              !bcd->isReference() &&
-              //(bcd->hasDocumentation() || !hideClassFlag) &&
-              //(bcd->protection()!=Private || extractPrivateFlag)
-              bcd->isVisible() 
-              /*&& bmd->detailsAreVisible()*/
-             ) ol.writePageRef(bcd->name(),bmd->anchor());
+          parseText(ol,reimplFromLine.left(markerPos)); //text left from marker
+          if (bmd->hasDocumentation() && 
+              (bmd->protection()!=Private || extractPrivateFlag)
+             ) // replace marker with link
+          {
+            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+                bmd->anchor(),bcd->name());
+            if (
+                !bcd->isReference() &&
+                //(bcd->hasDocumentation() || !hideClassFlag) &&
+                //(bcd->protection()!=Private || extractPrivateFlag)
+                bcd->isVisible() 
+                /*&& bmd->detailsAreVisible()*/
+               ) ol.writePageRef(bcd->name(),bmd->anchor());
+          }
+          else
+          {
+            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+                0,bcd->name());
+            if (
+                !bcd->isReference() &&
+                //(bcd->hasDocumentation() || !hideClassFlag) &&
+                //(bcd->protection()!=Private || extractPrivateFlag)
+                bcd->isVisible()
+               ) ol.writePageRef(bcd->name(),0);
+          }
+          parseText(ol,reimplFromLine.right(
+                 reimplFromLine.length()-markerPos-2)); // text right from marker
+       
         }
         else
         {
-          ol.writeObjectLink(bcd->getReference(),bcd->classFile(),
-              0,bcd->name());
-          if (
-              !bcd->isReference() &&
-              //(bcd->hasDocumentation() || !hideClassFlag) &&
-              //(bcd->protection()!=Private || extractPrivateFlag)
-              bcd->isVisible()
-             ) ol.writePageRef(bcd->name(),0);
+          err("Error: translation error: no marker in trReimplementsFromList()\n");
         }
-        ol.writeString(".");
+        
+        //ol.writeString(".");
       }
       MemberList *bml=md->reimplementedBy();
       int count;
@@ -1193,16 +1257,53 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
       {
         // write the list of classes that overwrite this member
         ol.newParagraph();
-        parseDoc(ol,0,0,theTranslator->trReimplementedIn());
+        //parseText(ol,theTranslator->trReimplementedIn());
         //ol.writeString("Reimplemented in ");
-        ol.docify(" ");
+        //ol.docify(" ");
+        
+        QString reimplInLine = 
+          theTranslator->trReimplementedInList(bml->count());
+        QRegExp marker("@[0-9]+");
+        int index=0,newIndex,matchLen;
+        // now replace all markers in reimplInLine with links to the classes
+        while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
+        {
+          parseText(ol,reimplInLine.mid(index,newIndex-index));
+          bool ok;
+          uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+          bmd=bml->at(entryIndex);
+          if (ok && bmd) // write link for marker
+          {
+            ClassDef *bcd = bmd->memberClass();
+            if (bmd->hasDocumentation() &&
+                (bmd->protection()!=Private || extractPrivateFlag)
+               )
+            {
+              ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+                  bmd->anchor(),bcd->name());
+              if (!bcd->isReference() && bcd->isVisible()) 
+                ol.writePageRef(bcd->name(),bmd->anchor());
+            }
+            else
+            {
+              ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+                  0,bcd->name());
+              if (!bcd->isReference() && bcd->isVisible()) 
+                ol.writePageRef(bcd->name(),0);
+            }
+          }
+          index=newIndex+matchLen;
+        } 
+        parseText(ol,reimplInLine.right(reimplInLine.length()-index));
+
+#if 0
         bmd=bml->first();
         while (bmd)
         {
           ClassDef *bcd = bmd->memberClass();
           if (bmd->hasDocumentation())
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->classFile(),
+            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                           bmd->anchor(),bcd->name());
           if (
               !bcd->isReference() &&
@@ -1214,7 +1315,7 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
           }
           else
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->classFile(),
+            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 0,bcd->name());
             if (
                 !bcd->isReference() &&
@@ -1228,24 +1329,25 @@ void writeMemberDocs(OutputList &ol,MemberList *ml,const char *scopeName,
           {
             if (bml->at()==count-1) 
               //ol.writeString(" and "); 
-              parseDoc(ol,0,0," "+theTranslator->trAnd()+" ");
+              parseText(ol," "+theTranslator->trAnd()+" ");
             else 
               ol.writeString(", ");
           }
         }
         ol.writeString(".");
+#endif
       }
       // write the list of examples that use this member
       if (md->hasExamples())
       {
         ol.startDescList();
         ol.startBold();
-        parseDoc(ol,0,0,theTranslator->trExamples()+": ");
+        parseText(ol,theTranslator->trExamples()+": ");
         //ol.writeBoldString("Examples: ");
         ol.endBold();
         ol.endDescTitle();
         ol.writeDescItem();
-        md->writeExample(ol);
+        writeExample(ol,md->getExampleList());
         //ol.endDescItem();
         ol.endDescList();
       }
@@ -1388,8 +1490,7 @@ static QString trimTemplateSpecifiers(const QString &className,const QString &s)
 // removes the (one and only) occurrence of name:: from s.
 static QString trimScope(const QString &name,const QString &s)
 {
-  int spos;
-  spos=s.find(name+"::");
+  int spos=s.find(name+"::");
   if (spos!=-1)
   {
     return s.left(spos)+s.right(s.length()-spos-name.length()-2);
@@ -1486,8 +1587,12 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
       {
         srcAType=trimScope(className,srcAType);
         dstAType=trimScope(className,dstAType);
-        ClassDef *cd=getClass(className);
-        if (cd->baseClasses()->count()>0)
+        ClassDef *cd;
+        if (!namespaceName.isEmpty())
+          cd=getClass(namespaceName+"::"+className);
+        else
+          cd=getClass(className);
+        if (cd && cd->baseClasses()->count()>0)
         {
           srcAType=trimBaseClassScope(cd->baseClasses(),srcAType); 
           dstAType=trimBaseClassScope(cd->baseClasses(),dstAType); 
@@ -1703,17 +1808,19 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
 // returns TRUE if the class and member both could be found
 
 bool getDefs(const QString &memberName,const QString &className, 
-             const char *args,MemberDef *&md, ClassDef *&cd, FileDef *&fd)
+             const char *args,
+             MemberDef *&md, ClassDef *&cd, FileDef *&fd,NamespaceDef *&nd)
 {
   //printf("Search for %s::%s %s\n",className.data(),memberName.data(),args);
-  fd=0; md=0; cd=0;
+  fd=0, md=0, cd=0, nd=0;
   if (memberName.length()==0) return FALSE;
   MemberName *mn;
   if ((mn=memberNameDict[memberName]) && className.length()>0)
   {
     //printf("  >member name found\n");
     ClassDef *fcd=0;
-    if ((fcd=getClass(className)))
+    //printf("className=%s\n",className.data());
+    if ((fcd=getClass(className)) && fcd->hasDocumentation())
     {
       //printf("  >member class found\n");
       MemberDef *mmd=mn->first();
@@ -1744,7 +1851,6 @@ bool getDefs(const QString &memberName,const QString &className,
               mdist=m;
               cd=mcd;
               md=mmd;
-              fd=0;
             }
           }
           if (argList)
@@ -1778,7 +1884,6 @@ bool getDefs(const QString &memberName,const QString &className,
               mdist=m;
               cd=mcd;
               md=mmd;
-              fd=0;
             }
           }
           mmd=mn->next();
@@ -1788,11 +1893,28 @@ bool getDefs(const QString &memberName,const QString &className,
       return mdist<maxInheritanceDepth;
     } 
   }
-  else // maybe an unrelated member ?
+  else // maybe an namespace or file member ?
   {
     MemberName *mn;
-    if ((mn=functionNameDict[memberName])) 
+    if ((mn=functionNameDict[memberName])) // name is known
     {
+      NamespaceDef *fnd=0;
+      if (className.length()>0 && (fnd=namespaceDict[className]) &&
+          fnd->hasDocumentation())
+      { // inside a namespace
+        MemberDef *mmd=mn->first();
+        while (mmd)
+        {
+          if (mmd->getNamespace()==fnd && mmd->hasDocumentation())
+          { // namespace is found
+            nd=fnd;
+            md=mmd;
+            return TRUE;
+          }
+          mmd=mn->next();
+        }
+      }
+      // maybe a file member (e.g. global function or variable)
       md=mn->first();
       while (md)
       {
@@ -1801,7 +1923,6 @@ bool getDefs(const QString &memberName,const QString &className,
           fd=md->getFileDef();
           if (fd && fd->hasDocumentation())
           {
-            cd=0;
             return TRUE;
           }
         }
@@ -1828,11 +1949,17 @@ void generateClassRef(OutputList &ol,const char *clName,const char *linkTxt)
     ol.docify(linkText);
     return;
   }
-  ClassDef *cd;
+  ClassDef *cd=0;
+  NamespaceDef *nd=0;
   if ((cd=getClass(className)) && cd->isVisible())
   {
-    ol.writeObjectLink(cd->getReference(),cd->classFile(),0,linkText);
+    ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,linkText);
     if (!cd->isReference()) ol.writePageRef(cd->name(),0);
+  }
+  else if ((nd=namespaceDict[className]) && nd->hasDocumentation())
+  {
+    ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,linkText);
+    ol.writePageRef(nd->name(),0);
   }
   else
     ol.docify(linkText);
@@ -1887,8 +2014,11 @@ void generateRef(OutputList &ol,const char *clName,
   }
   
   // extract scope
-  QString scopeStr;
-  if (scopePos>0) scopeStr=tmpName.left(scopePos); else scopeStr=clName;
+  QString scopeContext=clName;
+  QString scopeUser;
+  if (scopePos>0) scopeUser=tmpName.left(scopePos); 
+  
+  //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
 
   // extract name
   int startNamePos=scopePos!=-1 ? scopePos+2 : 0;
@@ -1898,96 +2028,115 @@ void generateRef(OutputList &ol,const char *clName,
   // extract arguments
   QString argsStr;
   if (bracePos!=-1) argsStr=tmpName.right(tmpName.length()-bracePos);
- 
-  bool explicitLink=TRUE;
+  
   // create a default link text if none was explicitly given
+  bool explicitLink=TRUE;
   if (linkText.isNull())
   {
-    if (!scopeStr.isNull() && scopePos>0) linkText=scopeStr+"::";
+    if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
     linkText+=nameStr;
     explicitLink=FALSE;
   } 
-  
   //printf("scope=`%s' name=`%s' arg=`%s' linkText=`%s'\n",
   //       scopeStr.data(),nameStr.data(),argsStr.data(),linkText.data());
 
   //Define *d=0;
-  MemberDef *md;
-  ClassDef *cd;
-  FileDef *fd;
-  // check if nameStr is a member or global.
-  if (getDefs(nameStr,scopeStr,argsStr,md,cd,fd))
+  MemberDef *md    = 0;
+  ClassDef *cd     = 0;
+  FileDef *fd      = 0;
+  NamespaceDef *nd = 0;
+  int scopeOffset=scopeContext.length();
+  do
   {
-    QString anchor = md->hasDocumentation() ? md->anchor() : 0;
-    QString cName,aName;
-    if (cd) // nameStr is a member of cd
+    QString totalScope=scopeUser.copy();
+    if (scopeOffset>0) 
     {
-      //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
-      //      cd->classFile(),anchor.data(),resultName.stripWhiteSpace().data());
-      ol.writeObjectLink(cd->getReference(),
-                        cd->classFile(),anchor,
-                        linkText.stripWhiteSpace());
-      cName=cd->name();
-      aName=md->anchor();
+      if (!totalScope.isEmpty()) totalScope.prepend("::");
+      totalScope.prepend(scopeContext.left(scopeOffset));
     }
-    else if (fd) // nameStr is a global in file fd
+    //printf("Try with totalScope=`%s'\n",totalScope.data());
+    // check if nameStr is a member or global.
+    if (getDefs(nameStr,totalScope,argsStr,md,cd,fd,nd))
     {
-      //printf("addFileLink(%s,%s,%s)\n",fd->diskName(),anchor.data(),
-      //        resultName.stripWhiteSpace().data());
-      ol.writeObjectLink(fd->getReference(),fd->diskName(),
-                         anchor, linkText.stripWhiteSpace());
-      cName=fd->name();
-      aName=md->anchor();
+      QString anchor = md->hasDocumentation() ? md->anchor() : 0;
+      QString cName,aName;
+      if (cd) // nameStr is a member of cd
+      {
+        //printf("addObjectLink(%s,%s,%s,%s)\n",cd->getReference(),
+        //      cd->getOutputFileBase(),anchor.data(),resultName.stripWhiteSpace().data());
+        ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+                           anchor,linkText.stripWhiteSpace());
+        cName=cd->name();
+        aName=md->anchor();
+      }
+      else if (nd) // nameStr is a member of nd
+      {
+        ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+                           anchor,linkText.stripWhiteSpace());
+        cName=nd->name();
+        aName=md->anchor();
+      }
+      else if (fd) // nameStr is a global in file fd
+      {
+        //printf("addFileLink(%s,%s,%s)\n",fd->getOutputFileBase(),anchor.data(),
+        //        resultName.stripWhiteSpace().data());
+        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
+                           anchor,linkText.stripWhiteSpace());
+        cName=fd->name();
+        aName=md->anchor();
+      }
+      else // should not be reached
+      {
+        //printf("add no link fd=cd=0\n");
+        ol.docify(linkText);
+      }
+
+      // for functions we add the arguments if explicitly specified or else "()"
+      if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot())) 
+      {
+        if (argsStr.isNull())
+          ol.writeString("()");
+        else
+          ol.docify(argsStr);
+      }
+
+      // generate the page reference (for LaTeX)
+      if (cName.length()>0 || aName.length()>0)
+      {
+        if (
+             (cd && !cd->isReference() && cd->isVisible()) || 
+             (fd && !fd->isReference()) ||
+             (nd /* TODO: && !nd->isReference() */)
+           ) 
+        {
+          ol.writePageRef(cName,aName);
+        }
+      }
+      return;
     }
-    else // should not be reached
-    {
-      //printf("add no link fd=cd=0\n");
-      ol.docify(linkText);
-    }
-    
-    // for functions we add the arguments if explicitly specified or else "()"
-    if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot())) 
-    {
-      if (argsStr.isNull())
-        ol.writeString("()");
-      else
-        ol.docify(argsStr);
-    }
-    
-    // generate the page reference (for LaTeX)
-    if (cName.length()>0 || aName.length()>0)
-    {
-      if (/*md->detailsAreVisible() &&*/
-          (
-           (cd && !cd->isReference() &&
-          // (cd->hasDocumentation() || !hideClassFlag) &&
-          // (cd->protection()!=Private || extractPrivateFlag)
-            cd->isVisible()
-           ) || 
-           (fd && !fd->isReference())
-          )
-         ) ol.writePageRef(cName,aName);
-    }
-  }
-//  else if (!nameStr.isNull() && (d=defineDict[nameStr]))
-//     // check if nameStr is perhaps a define
-//  {
-//    if (d->hasDocumentation() && d->fileDef)
-//    {
-//      ol.writeObjectLink(0,d->fileDef->diskName(),d->anchor,
-//                         linkText.stripWhiteSpace());
-//      if (!explicitLink) ol.docify(argsStr);
-//    }
-//  }
-  else // nameStr is a false alarm or a typo.
+    //  else if (!nameStr.isNull() && (d=defineDict[nameStr]))
+    //     // check if nameStr is perhaps a define
+    //  {
+    //    if (d->hasDocumentation() && d->fileDef)
+    //    {
+    //      ol.writeObjectLink(0,d->fileDef->getOutputFileBase(),d->anchor,
+    //                         linkText.stripWhiteSpace());
+    //      if (!explicitLink) ol.docify(argsStr);
+    //    }
+    //  }
+    if (scopeOffset==0)
+      scopeOffset=-1;
+    else if ((scopeOffset=scopeContext.findRev("::",scopeOffset-1))==-1)
+      scopeOffset=0;
+  } while (scopeOffset>=0);
+  
+  // nothing found
+  if (rt) 
+    ol.docify(rt); 
+  else 
   {
-    if (rt) 
-      ol.docify(rt); 
-    else 
-    {
-      ol.docify(linkText);
-      if (!argsStr.isNull()) ol.docify(argsStr);
-    }
+    ol.docify(linkText);
+    if (!argsStr.isNull()) ol.docify(argsStr);
   }
   return;
 }
@@ -2016,7 +2165,7 @@ void generateLink(OutputList &ol,const char *clName,
   else if ((fd=findFileDef(&inputNameDict,linkRef,ambig))
        && fd->hasDocumentation())
         // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->diskName(),0,lt);
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
   else // probably a class or member reference
     generateRef(ol,clName,lr,inSeeBlock,lt);
 }
@@ -2030,7 +2179,7 @@ void generateFileRef(OutputList &ol,const char *name,const char *text)
   if ((fd=findFileDef(&inputNameDict,name,ambig)) && 
       fd->hasDocumentation()) 
     // link to documented input file
-    ol.writeObjectLink(fd->getReference(),fd->diskName(),0,linkText);
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,linkText);
   else
     ol.docify(linkText); 
 }
@@ -2169,6 +2318,20 @@ void showFileDefMatches(const FileNameDict *fnDict,const char *n)
       }
       fd=fn->next();
     }
+  }
+}
+
+//----------------------------------------------------------------------
+
+void setFileNameForSections(QList<QString> *anchorList,const char *fileName)
+{
+  if (!anchorList) return;
+  QString *s=anchorList->first();
+  while (s)
+  {
+    SectionInfo *si;
+    if (!s->isEmpty() && (si=sectionDict[*s])) si->fileName=fileName;
+    s=anchorList->next();
   }
 }
 

@@ -20,6 +20,7 @@
 #include "membername.h"
 #include "doxygen.h"
 #include "util.h"
+#include "message.h"
 
 /*! Creates a new member definition.
  *  Members can be function/variables/enums/etc. inside a class or inside a 
@@ -159,7 +160,7 @@ bool MemberDef::hasExamples()
     return exampleList->count()>0;
 }
 
-
+#if 0
 void MemberDef::writeExample(OutputList &ol)
 {
   Example *e=exampleList->first();
@@ -177,4 +178,27 @@ void MemberDef::writeExample(OutputList &ol)
   }
   ol.writeString(".");
 }
+#endif
 
+QString MemberDef::getOutputFileBase() const
+{
+  if (classDef)
+  {
+    return classDef->getOutputFileBase();
+  }
+  else if (fileDef)
+  {
+    return fileDef->getOutputFileBase();
+  }
+  else if (fileDec)
+  {
+    return fileDec->getOutputFileBase();
+  }
+  else if (nspace)
+  {
+    return nspace->getOutputFileBase();
+  }
+  warn("Warning: Internal inconsistency: member %s does not belong to any\n"
+       " container!\n",name().data());
+  return "dummy";
+}

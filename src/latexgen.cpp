@@ -172,6 +172,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Module Index}\n"
       break;
+    case isNamespaceIndex:
+      if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Namespace Index}\"
+      break;
     case isClassHierarchyIndex:
       if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Hierarchical Index}\n"
@@ -200,17 +204,28 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
+    case isNamespaceDocumentation:
+      {
+        NamespaceDef *nd=namespaceList.first();
+        bool found=FALSE;
+        while (nd && !found)
+        {
+          if (nd->hasDocumentation())
+          {
+            if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
+            t << "{"; // Namespace Documentation}\n":
+            found=TRUE;
+          }
+          nd=namespaceList.next();
+        } 
+      }
+      break;
     case isClassDocumentation:
       {
         ClassDef *cd=classList.first();
         bool found=FALSE;
         while (cd && !found)
         {
-          //if (cd->classFile()[0]!='@' && !cd->getReference() &&
-          //    (cd->hasDocumentation() || !hideClassFlag) &&
-          //    (cd->protection()!=Private || extractPrivateFlag)
-          //   ) 
-          
           if (!cd->isReference() && cd->isVisible())
           {
             if (compactLatexFlag) t << "\\section"; else t << "\\chapter";
@@ -282,6 +297,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
       break;
+    case isNamespaceIndex:
+      t << "}\n\\input{namespaces}\n";
+      break;
     case isClassHierarchyIndex:
       t << "}\n\\input{hierarchy}\n";
       break;
@@ -299,7 +317,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (gd->hasDocumentation() || gd->countMembers()>0)
           {
-            t << "}\n\\input{" << gd->groupFile() << "}\n";
+            t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
           gd=groupList.next();
@@ -309,9 +327,33 @@ void LatexGenerator::endIndexSection(IndexSections is)
           if (gd->hasDocumentation() || gd->countMembers()>0)
           {
             if (compactLatexFlag) t << "\\input"; else t << "\\include";
-            t << "{" << gd->groupFile() << "}\n";
+            t << "{" << gd->getOutputFileBase() << "}\n";
           }
           gd=groupList.next();
+        }
+      }
+      break;
+    case isNamespaceDocumentation:
+      {
+        NamespaceDef *nd=namespaceList.first();
+        bool found=FALSE;
+        while (nd && !found)
+        {
+          if (nd->hasDocumentation() || nd->countMembers()>0)
+          {
+            t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
+            found=TRUE;
+          }
+          nd=namespaceList.next();
+        }
+        while (nd)
+        {
+          if (nd->hasDocumentation() || nd->countMembers()>0)
+          {
+            if (compactLatexFlag) t << "\\input"; else t << "\\include";
+            t << "{" << nd->getOutputFileBase() << "}\n";
+          }
+          nd=namespaceList.next();
         }
       }
       break;
@@ -327,7 +369,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
           //   ) 
           if (!cd->isReference() && cd->isVisible())
           {
-            t << "}\n\\input{" << cd->classFile() << "}\n";
+            t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
           cd=classList.next();
@@ -341,7 +383,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
           if (!cd->isReference() && cd->isVisible())
           {
             if (compactLatexFlag) t << "\\input"; else t << "\\include";
-            t << "{" << cd->classFile() << "}\n";
+            t << "{" << cd->getOutputFileBase() << "}\n";
           } 
           cd=classList.next();
         }
@@ -360,13 +402,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                t << "}\n\\input{" << fd->diskName() << "}\n";
+                t << "}\n\\input{" << fd->getOutputFileBase() << "}\n";
                 isFirst=FALSE;
               }
               else
               {
                 if (compactLatexFlag) t << "\\input" ; else t << "\\include";
-                t << "{" << fd->diskName() << "}\n";
+                t << "{" << fd->getOutputFileBase() << "}\n";
               }
             }
             fd=fn->next();
@@ -670,6 +712,11 @@ void LatexGenerator::writeDoxyAnchor(const char *clname,const char *anchor,const
   t << "}" << endl;
 }
 
+void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
+{
+  writeDoxyAnchor(clName,anchor,0);
+}
+
 void LatexGenerator::addToIndex(const char *s1,const char *s2)
 {
   if (s1)
@@ -707,6 +754,15 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
   t << "\\contentsline{section}{";
   docify(title);
   t << "}{\\ref{" << lab << "}}" << endl;
+}
+
+void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
+                                     const char *title)
+{
+  startBold();
+  docify(title);
+  endBold();
+  t << " (p. \\pageref{" << lab << "})" << endl;
 }
 
 //void LatexGenerator::docify(const char *str)

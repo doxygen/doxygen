@@ -1160,11 +1160,11 @@ BN	[ \t\r\n]
 <SkipCommand>.
 <SkipLine>[^/\n]+			
 <SkipLine>.
-<SkipLine>"//"				{
+<SkipLine,SkipCommand,SkipCPPBlock>"//"	{
   					  lastCPPContext=YY_START;
   					  BEGIN(RemoveCPPComment);
 					}
-<SkipLine>"/*"				{
+<SkipLine,SkipCommand,SkipCPPBlock>"/*"	{
 					  lastCContext=YY_START;
   					  BEGIN(RemoveCComment);
   					}

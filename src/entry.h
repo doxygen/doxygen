@@ -140,6 +140,7 @@ class Entry
     QList<Entry>    *sublist; // entries that are children of this one
     QList<BaseInfo> *extends; // list of base classes
     QList<QString>  *groups;  // list of groups this entry belongs to
+    QList<QString>  *anchors; // list of anchors defined in this entry
     QString	fileName;     // file this entry was extracted from
     int		startLine;    // start line of entry in the source
     int         num;

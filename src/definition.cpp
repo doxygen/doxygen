@@ -16,6 +16,17 @@
 
 #include <ctype.h>
 #include "definition.h"
+#include "doxygen.h"
+
+Definition::Definition(const char *name,const char *b,const char *d)
+{
+  n=name; brief=b; doc=d; sectionList=0;
+}
+
+Definition::~Definition()
+{
+  delete sectionList;
+}
 
 QString Definition::nameToFile(const char *name)
 {
@@ -41,4 +52,23 @@ QString Definition::nameToFile(const char *name)
     }
   }
   return result;
+}
+
+void Definition::addSectionsToDefinition(QList<QString> *anchorList)
+{
+  if (!anchorList) return;
+  QString *s=anchorList->first();
+  while (s)
+  {
+    SectionInfo *si=0;
+    if (!s->isEmpty() && (si=sectionDict[*s]))
+    {
+      //printf("Add section `%s' to definition `%s'\n",
+      //    si->label.data(),n.data());
+      if (sectionList==0) sectionList = new SectionList;
+      sectionList->append(si);
+      si->definition = this;
+    }
+    s=anchorList->next();
+  }
 }

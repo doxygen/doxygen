@@ -51,77 +51,10 @@ void HtmlGenerator::init()
   writeLogo(htmlOutputDir);
 }
 
-//void HtmlGenerator::generateExternalIndex()
-//{
-//  //printf("Generating external index...\n");
-//  QFile f;
-//  f.setName(htmlOutputDir+"/header.html");
-//  if (f.open(IO_WriteOnly))
-//  {
-//    QTextStream tt(&f);
-//    if (header.length()==0) 
-//    {
-//      tt << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
-//        "<html><head><meta name=\"robots\" content=\"noindex\">\n"
-//        "<title>Doxysearch</title>\n"
-//        "</head><body bgcolor=\"#ffffff\">\n";
-//    }
-//    else
-//    {
-//      tt << header;
-//    }
-//    if (!noIndexFlag)
-//    {
-//      tt << "<center>";
-//      if (documentedGroups>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/modules.html\">Modules</a> &nbsp; ";
-//      if (hierarchyClasses>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/hierarchy.html\">Class hierarchy</a> &nbsp; ";
-//      if (annotatedClasses>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/annotated.html\">Compound list</a> &nbsp; "; 
-//      if (documentedFiles>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/files.html\">File list</a> &nbsp; ";
-//      if (includeFiles.count()>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/headers.html\">Header files</a> &nbsp; "; 
-//      if (documentedMembers>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/functions.html\">Compound Members</a> &nbsp; "; 
-//      if (documentedFunctions>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/globals.html\">File Members</a> &nbsp; ";
-//      if (pageList.count()>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/pages.html\">Related Pages</a> &nbsp; ";
-//      if (exampleList.count()>0)
-//        tt << "<a doxygen=\"_doc:\" href=\"/examples.html\">Examples</a> &nbsp; ";
-//      if (searchEngineFlag)
-//        tt << "<a doxygen=\"_cgi:\" href=\"\">Search</a>";
-//      tt << endl << "</center><hr>" << endl;
-//    }
-//  }
-//  f.close();
-//  
-//  f.setName(htmlOutputDir+"/footer.html");
-//  if (f.open(IO_WriteOnly))
-//  {
-//    QTextStream tt(&f);
-//    if (footer.length()==0)
-//    {
-//      tt << "<hr><address><small>Generated at " << dateToString(TRUE);
-//      if (projectName.length()>0) tt << " for " << projectName; 
-//      tt << " by <a href=\"http://www.stack.nl/~dimitri/doxygen/index.html\">"
-//        "doxygen</a>&nbsp; written by <a href="
-//        "\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>, &copy; "
-//        "1997-1999</small></address>\n</body>\n</html>\n";
-//    }
-//    else
-//    {
-//      tt << footer;
-//    }
-//  }
-//  f.close();
-//}
-
 void HtmlGenerator::startFile(const char *name,const char *title,bool external)
 {
   QString fileName=name;
+  lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
   if (header.length()==0) 
@@ -139,34 +72,14 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   }
   else
   {
-    t << header;
+    t << substitute(
+           substitute(  
+             substitute(header,"$title",lastTitle),
+             "$datetime",dateToString(TRUE)
+           ),
+           "$date",dateToString(FALSE)
+         );
   }
-  
-//  if (!noIndexFlag)
-//  {
-//    t << "<center>";
-//    if (documentedGroups>0)
-//      t << "<a href=\"modules.html\">Modules</a> &nbsp; ";
-//    if (hierarchyClasses>0)
-//      t << "<a href=\"hierarchy.html\">Class hierarchy</a> &nbsp; ";
-//    if (annotatedClasses>0)
-//      t << "<a href=\"annotated.html\">Compound list</a> &nbsp; "; 
-//    if (documentedFiles>0)
-//      t << "<a href=\"files.html\">File list</a> &nbsp; ";
-//    if (includeFiles.count()>0)
-//      t << "<a href=\"headers.html\">Header files</a> &nbsp; "; 
-//    if (documentedMembers>0)
-//      t << "<a href=\"functions.html\">Compound Members</a> &nbsp; "; 
-//    if (documentedFunctions>0)
-//      t << "<a href=\"globals.html\">File Members</a> &nbsp; ";
-//    if (pageList.count()>0)
-//      t << "<a href=\"pages.html\">Related Pages</a> &nbsp; ";
-//    if (exampleList.count()>0)
-//      t << "<a href=\"examples.html\">Examples</a> &nbsp; ";
-//    if (searchEngineFlag)
-//      t << "<a doxygen=\"_cgi:\" href=\"\">Search</a>";
-//    t << endl << "</center><hr>" << endl;
-//  }
 }
 
 void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
@@ -189,7 +102,13 @@ void HtmlGenerator::writeFooter(int part,bool external)
       if (footer.length()==0)
         t << "<hr><address><small>";
       else
-        t << footer;
+        t << substitute(
+               substitute(  
+                 substitute(footer,"$title",lastTitle),
+                 "$datetime",dateToString(TRUE)
+               ),
+               "$date",dateToString(FALSE)
+             );
       break;
     case 1:
       if (footer.length()==0)
@@ -219,24 +138,6 @@ void HtmlGenerator::writeFooter(int part,bool external)
 
 void HtmlGenerator::endFile()
 {
-//  if (footer.length()==0)
-//  {
-//    t << "<hr><address><small>Generated at " << dateToString(TRUE);
-//    if (projectName.length()>0) 
-//    {
-//      t << " for ";
-//      docify(projectName); 
-//    }
-//    t << " by <a href=\"http://www.stack.nl/~dimitri/doxygen/index.html\">"
-//      "<img src=\"doxygen.gif\" alt=\"doxygen\" align=center border=0 "
-//      "width=118 height=53></a>&nbsp; written by <a href="
-//      "\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>, &copy; "
-//      "1997-1999</small></address>\n</body>\n</html>\n";
-//  }
-//  else
-//  {
-//    t << footer;
-//  }
   endPlainFile();
 }
 
@@ -249,45 +150,6 @@ void HtmlGenerator::endProjectNumber()
 {
   t << "</h3>";
 }
-
-//void HtmlGenerator::writeIndex()
-//{
-//  startFile("index.html","Main Index");
-//  t << "<h1 align=center>"; 
-//  docify(projectName);
-//  t << " Documentation</h1>"
-//    << "<p>" << endl << "<p>" << endl;
-//  if (!projectNumber.isEmpty())
-//  {
-//    t << "<h3 align=center>";
-//    docify(projectNumber);
-//    t << "</h3>\n<p>\n<p>\n";
-//  }
-//  if (noIndexFlag)
-//  {
-//    t << "<ul>" << endl;
-//    if (hierarchyClasses>0)
-//      t << "<li><a href=\"hierarchy.html\">Class hierarchy</a>" << endl;
-//    if (annotatedClasses>0)
-//      t << "<li><a href=\"annotated.html\">Compound list</a>" << endl; 
-//    if (documentedFiles>0)
-//      t << "<li><a href=\"files.html\">File list</a>" << endl;
-//    if (includeFiles.count()>0)
-//      t << "<li><a href=\"headers.html\">Header files</a>" << endl; 
-//    if (documentedMembers>0)
-//      t << "<li><a href=\"functions.html\">Compound Members</a>" << endl; 
-//    if (documentedFunctions>0)
-//      t << "<li><a href=\"globals.html\">File Members</a>" << endl;
-//    if (pageList.count()>0)
-//      t << "<li><a href=\"pageList.html\">Related Pages</a>" << endl;
-//    if (exampleList.count()>0)
-//      t << "<li><a href=\"examples.html\">Examples</a>" << endl;
-//    if (searchEngineFlag)
-//      t << "<li><a doxygen=\"_cgi:\" href=\"\">Search</a>" << endl;
-//    t << "</ul>" << endl;
-//  }
-//  endFile();
-//}
 
 void HtmlGenerator::writeStyleInfo(int part)
 {
@@ -414,9 +276,9 @@ void HtmlGenerator::writeSectionRef(const char *name,const char *lab,
 {
   QString refName=name;
   if (refName.right(5)!=".html") refName+=".html";
-  t << "&quot;<a href=\"" << refName << "#" << lab << "\">";
+  t << "<a href=\"" << refName << "#" << lab << "\">";
   docify(title);
-  t << "</a>&quot;";
+  t << "</a>";
 }
 
 void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
@@ -429,12 +291,12 @@ void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
   t << "</a>";
 }
 
-//void HtmlGenerator::docify(const char *str)
-//{
-//  docifyStatic(t,str);
-//}
+void HtmlGenerator::writeSectionRefAnchor(const char *name,const char *lab,
+                                          const char *title)
+{
+  writeSectionRef(name,lab,title);
+}
 
-//void HtmlGenerator::docifyStatic(QTextStream &t,const char *str)
 void HtmlGenerator::docify(const char *str)
 {
   if (str)
@@ -510,3 +372,121 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
   t << "<img align=\"top\" src=\"" << n << "\">" << endl;
   if (text && text[0]=='\\') t << "</center></p>" << endl;
 }
+
+void HtmlGenerator::startMemberList()  
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    //t << endl << "<p><table border=0 cellspacing=2 cellpadding=0>" << endl; 
+  }
+  else
+  {
+    t << "<ul>" << endl; 
+  }
+}
+
+void HtmlGenerator::endMemberList()    
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    //t << "</table>" << endl; 
+  }
+  else
+  {
+    t << "</ul>" << endl; 
+  }
+}
+
+void HtmlGenerator::startMemberItem() 
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    t << "<tr><td align=right valign=top>"; 
+  }
+  else
+  {
+    t << "<li>"; 
+  }
+}
+
+void HtmlGenerator::insertMemberAlign() 
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    t << "</td><td valign=top>"; 
+  }
+}
+
+void HtmlGenerator::endMemberItem() 
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    t << "</td></tr>"; 
+  }
+  t << endl; 
+}
+
+void HtmlGenerator::startMemberDescription() 
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    t << "<tr><td></td><td><font size=-1><em>"; 
+  }
+  else
+  {
+    t << "<dl class=\"el\"><dd><font size=-1><em>";
+  }
+}
+
+void HtmlGenerator::endMemberDescription()   
+{ 
+  if (htmlAlignMemberFlag)
+  {
+    t << "</em></font><br><br></td></tr>" << endl; 
+  }
+  else
+  {
+    t << "</em></font></dl>";
+  }
+}
+
+void HtmlGenerator::startMemberSections()
+{
+  if (htmlAlignMemberFlag)
+  {
+    t << "<table border=0 cellpadding=0 cellspacing=1>" << endl;
+  }
+}
+
+void HtmlGenerator::endMemberSections()
+{
+  if (htmlAlignMemberFlag)
+  {
+    t << "</table>" << endl;
+  }
+}
+
+void HtmlGenerator::startMemberHeader()
+{
+  if (htmlAlignMemberFlag)
+  {
+    t << "<tr><td colspan=2><br><h2>";
+  }
+  else
+  {
+    startGroupHeader();
+  }
+}
+
+void HtmlGenerator::endMemberHeader()
+{
+  if (htmlAlignMemberFlag)
+  {
+    t << "</h2></td></tr>" << endl;
+  }
+  else
+  {
+    endGroupHeader();
+  }
+}
+

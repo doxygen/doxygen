@@ -37,7 +37,7 @@ static QString stripExtension(const char *fName)
 }
 
 // constructs a new class definition
-ClassDef::ClassDef(const char *nm,int ct,const char *ref,const char *fName) 
+ClassDef::ClassDef(const char *nm,CompoundType ct,const char *ref,const char *fName) 
  : Definition(removeRedundantWhiteSpace(nm)) 
 {
   //name=n;
@@ -155,7 +155,7 @@ void ClassDef::insertMember(const MemberDef *md)
   if (md->isFriend() || md->protection()!=Private || extractPrivateFlag)
   {
     MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
-    MemberNameInfo *mni;
+    MemberNameInfo *mni=0;
     if ((mni=(*allMemberNameInfoDict)[md->name()]))
     {
       mni->append(mi);
@@ -232,8 +232,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pageTitle+=pageType+" Reference";
   startFile(ol,fileName,pageTitle);
   startTitle(ol);
-  ol.docify(name()+" "+pageType.right(pageType.length()-1)+" ");
-  parseDoc(ol,0,0,theTranslator->trReference());
+  //ol.docify(name()+" "+pageType.right(pageType.length()-1)+" ");
+  //parseText(ol,theTranslator->trReference());
+  parseText(ol,theTranslator->trCompoundReference(name(),compType));
   endTitle(ol,name());
 
   // write brief description
@@ -244,8 +245,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(0,"details");
-    parseDoc(ol,0,0,theTranslator->trMore());
+    ol.startTextLink(0,"_details");
+    parseText(ol,theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
   }
@@ -286,7 +287,41 @@ void ClassDef::writeDocumentation(OutputList &ol)
   int count;
   if ((count=inherits->count())>0)
   {
-    parseDoc(ol,0,0,theTranslator->trInherits()+" ");
+    //parseText(ol,theTranslator->trInherits()+" ");
+
+    QString inheritLine = theTranslator->trInheritsList(inherits->count());
+    QRegExp marker("@[0-9]+");
+    int index=0,newIndex,matchLen;
+    // now replace all markers in inheritLine with links to the classes
+    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    {
+      parseText(ol,inheritLine.mid(index,newIndex-index));
+      bool ok;
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      BaseClassDef *bcd=inherits->at(entryIndex);
+      if (ok && bcd)
+      {
+        ClassDef *cd=bcd->classDef;
+        if (cd->hasDocumentation() || cd->isReference())
+        {
+          if (genTagFile.length()>0) tagFile << cd->getOutputFileBase() << "?";
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
+        }
+        else
+        {
+          ol.docify(cd->name());
+        }
+      }
+      else
+      {
+        err("Error: invalid marker %d in inherits list!\n",entryIndex);
+      }
+      index=newIndex+matchLen;
+    } 
+    parseText(ol,inheritLine.right(inheritLine.length()-index));
+    ol.newParagraph();
+    
+#if 0
     BaseClassDef *bcd=inherits->first();
     while (bcd)
     {
@@ -305,13 +340,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
       if (bcd)
       {
         if (inherits->at()==count-1) 
-          parseDoc(ol,0,0," "+theTranslator->trAnd()+" "); 
+          parseText(ol," "+theTranslator->trAnd()+" "); 
         else 
           ol.writeString(", ");
       }
     }
     ol.writeString(".");
-    ol.newParagraph();
+#endif
   }
 
   if (genTagFile.length()>0) tagFile << " \"" << fileName << ".html\"\n";
@@ -319,7 +354,36 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write subclasses
   if ((count=inheritedBy->count())>0)
   {
-    parseDoc(ol,0,0,theTranslator->trInheritedBy()+" ");
+    QString inheritLine = theTranslator->trInheritedByList(inheritedBy->count());
+    QRegExp marker("@[0-9]+");
+    int index=0,newIndex,matchLen;
+    // now replace all markers in inheritLine with links to the classes
+    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    {
+      parseText(ol,inheritLine.mid(index,newIndex-index));
+      bool ok;
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      BaseClassDef *bcd=inheritedBy->at(entryIndex);
+      if (ok && bcd)
+      {
+        ClassDef *cd=bcd->classDef;
+        if (cd->hasDocumentation() || cd->isReference())
+        {
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+        }
+        else
+        {
+          ol.docify(cd->name());
+        }
+        writeInheritanceSpecifier(ol,bcd);
+      }
+      index=newIndex+matchLen;
+    } 
+    parseText(ol,inheritLine.right(inheritLine.length()-index));
+    ol.newParagraph();
+        
+#if 0
+    parseText(ol,theTranslator->trInheritedBy()+" ");
     BaseClassDef *bcd=inheritedBy->first();
     while (bcd)
     {
@@ -337,13 +401,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
       if (bcd) 
       {
         if (inheritedBy->at()==count-1) 
-          parseDoc(ol,0,0," "+theTranslator->trAnd()+" "); 
+          parseText(ol," "+theTranslator->trAnd()+" "); 
         else 
           ol.writeString(", ");
       }
     }
     ol.writeString(".");
     ol.newParagraph();
+#endif
   }
 
   if (classDiagramFlag) ol.enableAll();
@@ -376,7 +441,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
     ol.disable(OutputGenerator::Man);
-    parseDoc(ol,name(),0,theTranslator->trClassDiagram(name()));
+    parseText(ol,theTranslator->trClassDiagram(name()));
     ol.enable(OutputGenerator::Man);
     ol.endClassDiagram(diagram,fileName,name());
   } 
@@ -386,40 +451,45 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(memListFileName,0);
-    parseDoc(ol,0,0,theTranslator->trListOfAllMembers());
+    parseText(ol,theTranslator->trListOfAllMembers());
     ol.endTextLink();
     ol.enableAll();
   }
   
   // write member groups
-  writeMemberDecs(ol,this,0,0,"Public Members",0,&pubMembers); 
-  writeMemberDecs(ol,this,0,0,"Public Slots",0,&pubSlots); 
-  writeMemberDecs(ol,this,0,0,"Signals",0,&signals); 
-  writeMemberDecs(ol,this,0,0,"Static Public Members",0,&pubStaticMembers); 
-  writeMemberDecs(ol,this,0,0,"Protected Members",0,&proMembers); 
-  writeMemberDecs(ol,this,0,0,"Protected Slots",0,&proSlots); 
-  writeMemberDecs(ol,this,0,0,"Static Protected Members",0,&proStaticMembers); 
+  ol.startMemberSections();
+  writeMemberDecs(ol,this,0,0,theTranslator->trPublicMembers(),0,&pubMembers); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trPublicSlots(),0,&pubSlots); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trSignals(),0,&signals); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trStaticPublicMembers(),0,&pubStaticMembers); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trProtectedMembers(),0,&proMembers); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trProtectedSlots(),0,&proSlots); 
+  writeMemberDecs(ol,this,0,0,theTranslator->trStaticProtectedMembers(),0,&proStaticMembers); 
   if (extractPrivateFlag)
   {
-    writeMemberDecs(ol,this,0,0,"Private Members",0,&priMembers); 
-    writeMemberDecs(ol,this,0,0,"Private Slots",0,&priSlots); 
-    writeMemberDecs(ol,this,0,0,"Static Private Members",0,&priStaticMembers); 
+    writeMemberDecs(ol,this,0,0,theTranslator->trPrivateMembers(),0,&priMembers); 
+    writeMemberDecs(ol,this,0,0,theTranslator->trPrivateSlots(),0,&priSlots); 
+    writeMemberDecs(ol,this,0,0,theTranslator->trStaticPrivateMembers(),0,&priStaticMembers); 
   }
-  writeMemberDecs(ol,this,0,0,"Friends",0,&friends);
+  writeMemberDecs(ol,this,0,0,theTranslator->trFriends(),0,&friends);
   writeMemberDecs(ol,this,0,0,
                   theTranslator->trRelatedFunctions(),
                   theTranslator->trRelatedSubscript(),
                   &related
                  ); 
+  ol.endMemberSections();
     
   // write detailed description
   bool exampleFlag=hasExamples();
   if (!briefDescription().isEmpty() || !documentation().isEmpty() || exampleFlag)
   {
     ol.writeRuler();
-    ol.writeAnchor("details");
+    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.writeAnchor("_details");
+    if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trDetailedDescription());
+    parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     if (tempArgs) // class is a template
     {
@@ -460,11 +530,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     {
       ol.startDescList();
       ol.startBold();
-      parseDoc(ol,0,0,theTranslator->trExamples()+": ");
+      parseText(ol,theTranslator->trExamples()+": ");
       ol.endBold();
       ol.endDescTitle();
       ol.writeDescItem();
-      writeExample(ol);
+      writeExample(ol,exampleList);
       //ol.endDescItem();
       ol.endDescList();
     }
@@ -489,7 +559,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trMemberTypedefDocumentation());
+    parseText(ol,theTranslator->trMemberTypedefDocumentation());
     ol.endGroupHeader();
 
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Typedef);
@@ -507,7 +577,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trMemberEnumerationDocumentation());
+    parseText(ol,theTranslator->trMemberEnumerationDocumentation());
     ol.endGroupHeader();
 
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Enumeration);
@@ -525,7 +595,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trEnumerationValueDocumentation());
+    parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
   
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::EnumValue);
@@ -548,7 +618,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trMemberFunctionDocumentation());
+    parseText(ol,theTranslator->trMemberFunctionDocumentation());
     ol.endGroupHeader();
     
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Function);
@@ -570,7 +640,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trRelatedFunctionDocumentation());
+    parseText(ol,theTranslator->trRelatedFunctionDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,&friends,name(),MemberDef::Friend); 
     writeMemberDocs(ol,&related,name(),MemberDef::Function); 
@@ -586,7 +656,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trMemberDataDocumentation());
+    parseText(ol,theTranslator->trMemberDataDocumentation());
     ol.endGroupHeader();
 
     writeMemberDocs(ol,&pubMembers,name(),MemberDef::Variable);
@@ -603,41 +673,57 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write the list of used files (Html and LaTeX only)
   ol.disable(OutputGenerator::Man);
   ol.writeRuler();
-  parseDoc(ol,0,0,
-      theTranslator->trGeneratedFrom(pageType.lower(),
+  parseText(ol,theTranslator->trGeneratedFrom(pageType.lower(),
       files.count()==1));
-  ol.startItemList();
-
+  
+  bool first=TRUE;
   const char *file = files.first();
   while (file)
   {
-    QFileInfo fi(file);
-    ol.writeListItem();
-    FileDef *fd;
     bool ambig;
-    if ((fd=findFileDef(&inputNameDict,fi.absFilePath(),ambig))
-        && fd->hasDocumentation())
+    FileDef *fd=findFileDef(&inputNameDict,file,ambig);
+    if (fd)
     {
-      ol.writeObjectLink(fd->getReference(),fd->diskName(),0,
-                         fi.fileName());
-    }
-    else
-    {
-      ol.docify(fi.fileName());
+      if (first)
+      {
+        first=FALSE;   
+        ol.startItemList();
+      }
+
+      ol.writeListItem();
+      QString path=fd->getPath().copy();
+      if (fullPathNameFlag)
+      {
+        // strip part of the path
+        if (path.left(stripFromPath.length())==stripFromPath)
+        {
+          path=path.right(path.length()-stripFromPath.length());
+        }
+        ol.docify(path);
+      }
+
+      if (fd->hasDocumentation())
+      {
+        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+            fd->name());
+      }
+      else
+      {
+        ol.docify(fd->name());
+      }
     }
     file=files.next();
   }
+  if (!first) ol.endItemList();
 
-  ol.endItemList();
-  ol.enable(OutputGenerator::Man);
-  
   // write Author section (Man only)
+  ol.enable(OutputGenerator::Man);
   ol.disableAllBut(OutputGenerator::Man);
   ol.writeString("\n");
   ol.startGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
   ol.enableAll();
  
   endFile(ol);
@@ -651,13 +737,11 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,memListFileName,theTranslator->trMemberList());
   startTitle(ol);
-  parseDoc(ol,name(),0,name()+" "+theTranslator->trMemberList());
+  parseText(ol,name()+" "+theTranslator->trMemberList());
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trThisIsTheListOfAllMembers());
-  ol.writeString(" ");
+  parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
   ol.writeObjectLink(reference,fileName,0,name());
-  ol.writeString(", ");
-  parseDoc(ol,0,0,theTranslator->trIncludingInheritedMembers());
+  parseText(ol,theTranslator->trIncludingInheritedMembers());
   
   ol.startItemList();
   
@@ -702,14 +786,14 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           QString name=mi->ambiguityResolutionScope+md->name();
           ol.writeListItem();
-          ol.writeObjectLink(cd->getReference(),cd->classFile(),
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
               md->anchor(),name);
           if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
-            parseDoc(ol,0,0," "+theTranslator->trEnumName());
+            parseText(ol," "+theTranslator->trEnumName());
           else if (md->isEnumValue())
-            parseDoc(ol,0,0," "+theTranslator->trEnumValue());
+            parseText(ol," "+theTranslator->trEnumValue());
           else if (md->isTypedef())
             ol.docify(" typedef");
           else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
@@ -725,16 +809,16 @@ void ClassDef::writeMemberList(OutputList &ol)
           if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
-            parseDoc(ol,0,0," "+theTranslator->trEnumName());
+            parseText(ol," "+theTranslator->trEnumName());
           else if (md->isEnumValue())
-            parseDoc(ol,0,0," "+theTranslator->trEnumValue());
+            parseText(ol," "+theTranslator->trEnumValue());
           else if (md->isTypedef())
             ol.docify(" typedef");
           ol.writeString(" (");
-          parseDoc(ol,0,0,theTranslator->trDefinedIn()+" ");
+          parseText(ol,theTranslator->trDefinedIn()+" ");
           if (cd->isVisible())
           {
-            ol.writeObjectLink(cd->getReference(),cd->classFile(),0,cd->name());
+            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
           }
           else
           {
@@ -792,9 +876,9 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   startTitle(ol);
   QString n=incName.copy();
   if (incName.isNull()) n=incFile->name();
-  parseDoc(ol,0,0,n);
+  parseText(ol,n);
   endTitle(ol,0);
-  parseDoc(ol,0,0,theTranslator->trVerbatimText(incFile->name()));
+  parseText(ol,theTranslator->trVerbatimText(incFile->name()));
   ol.writeRuler();
   ol.startCodeFragment();
   parseCode(ol,n,fileToString(incFile->absFilePath()),FALSE,0);
@@ -829,9 +913,31 @@ bool ClassDef::hasExamples()
     return exampleList->count()>0;
 }
 
+#if 0
 // write the list of all examples that are use this class.
 void ClassDef::writeExample(OutputList &ol)
 {
+  QString exampleLine=theTranslator->trWriteList(exampleList->count());
+ 
+  QRegExp marker("@[0-9]+");
+  int index=0,newIndex,matchLen;
+  // now replace all markers in inheritLine with links to the classes
+  while ((newIndex=marker.match(exampleLine,index,&matchLen))!=-1)
+  {
+    bool ok;
+    parseText(ol,exampleLine.mid(index,newIndex-index));
+    uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+    Example *e=exampleList->at(entryIndex);
+    if (ok && e)
+    {
+      ol.writeObjectLink(0,e->file,e->anchor,e->name);
+    }
+    index=newIndex+matchLen;
+  } 
+  parseText(ol,exampleLine.right(exampleLine.length()-index));
+  ol.writeString(".");
+  
+#if 0
   Example *e=exampleList->first();
   while (e)
   {
@@ -840,13 +946,15 @@ void ClassDef::writeExample(OutputList &ol)
     if (e)
     {
       if (exampleList->at()==(int)exampleList->count()-1)
-        parseDoc(ol,0,0," "+theTranslator->trAnd()+" ");
+        parseText(ol," "+theTranslator->trAnd()+" ");
       else
         ol.writeString(", ");
     }
   }
   ol.writeString(".");
+#endif
 }
+#endif
 
 void ClassDef::setTemplateArguments(ArgumentList *al)
 {

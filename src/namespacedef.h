@@ -31,16 +31,20 @@ class MemberDef;
 class NamespaceDef : public Definition
 {
   public:
-    NamespaceDef(const char *name);
+    NamespaceDef(const char *name,const char *ref=0);
    ~NamespaceDef();
-    QString namespaceFile() const { return fileName; }
+    //QString namespaceFile() const { return fileName; }
+    QString getOutputFileBase() const { return fileName; }
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);
     void insertClass(ClassDef *cd);
     void insertMember(MemberDef *md);
     void computeAnchors();
+    int countMembers();
+    const char *getReference() { return reference; }
     
   private:
+    QString reference;
     QString fileName;
     QStrList files;
     ClassList *classList;

@@ -76,6 +76,7 @@ static int              lastCodeState;
 static int              lastAfterDocContext;
 static int              lastGroupContext;
 static int              lastFormulaContext;
+static int              lastAnchorContext;
 static int              nextDefContext;
 static Protection	protection;
 static Protection	baseProt;
@@ -120,7 +121,8 @@ static char             afterDocTerminator;
 static int              tmpDocType;
 static QString          sectionLabel;
 static QString		sectionTitle;
-static bool             isSubsection;
+static SectionInfo::SectionType      
+                        sectionType;
 static QString          funcPtrType;
 static QString          templateStr;
 static QString          baseName;
@@ -184,7 +186,6 @@ static void initParser()
   inParBlock = FALSE;
   firstSeeArg = FALSE;
   javaDocSee = FALSE;
-  isSubsection = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -532,11 +533,18 @@ static void addSection()
 {
   //printf("New section pageName=%s label=%s title=%s\n",
   //    current->name.data(),sectionLabel.data(),sectionTitle.data());
-  SectionInfo *si=new SectionInfo(current->name,
-                   sectionLabel,sectionTitle,isSubsection);
-  sectionDict.insert(sectionLabel,si);
+  if (sectionLabel.isEmpty()) return;
+  if (sectionDict[sectionLabel]==0)
+  {
+    SectionInfo *si=new SectionInfo(sectionLabel,sectionTitle,sectionType);
+    sectionDict.insert(sectionLabel,si);
+    current->anchors->append(new QString(sectionLabel));
+  }
+  else
+  {
+    warn("Warning: Duplicate label %s found!\n",sectionLabel.data());
+  }
 }
-
 
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
@@ -710,6 +718,7 @@ VAR	  [vV][aA][rR]
 %x      MemberSpec
 %x      MemberSpecSkip
 %x	SkipVerbatim
+%x	Text
 %x      DocScan
 %x	DocParam
 %x	DocException
@@ -742,6 +751,8 @@ VAR	  [vV][aA][rR]
 %x	DocVerbInc
 %x	DocIndexWord
 %x	DocRef
+%x	DocRefArg
+%x	DocRefArgStart
 %x      DocRefItem
 %x      DocRefItemName
 %x	SectionLabel
@@ -756,6 +767,7 @@ VAR	  [vV][aA][rR]
 %x      DocSkipHtmlComment
 %x      ReadFormulaShort
 %x	ReadFormulaLong
+%x	AnchorLabel
 
 %%
 
@@ -798,13 +810,13 @@ VAR	  [vV][aA][rR]
 <DocScan>"<!--"				{ BEGIN(DocSkipHtmlComment); }
 <DocSkipHtmlComment>"--"[!]?">"		{ BEGIN(DocScan); }
 <DocSkipHtmlComment>.
-<DocScan>"&copy;"			{ outDoc->writeCopyright(); }
-<DocScan>"&quot;"			{ outDoc->writeQuote(); }
-<DocScan>"&"[AEIOUYaeiouy]"uml;"	{ outDoc->writeUmlaut(yytext[1]); }
-<DocScan>"&"[AEIOUYaeiouy]"acute;"	{ outDoc->writeAcute(yytext[1]);  }
-<DocScan>"&"[AEIOUaeiou]"grave;"	{ outDoc->writeGrave(yytext[1]);  }
-<DocScan>"&"[AEIOUaeiou]"circ;"		{ outDoc->writeCirc(yytext[1]);   }
-<DocScan>"&"[ANOano]"tilde;"		{ outDoc->writeTilde(yytext[1]);  }
+<DocScan,Text>"&copy;"			{ outDoc->writeCopyright(); }
+<DocScan,Text>"&quot;"			{ outDoc->writeQuote(); }
+<DocScan,Text>"&"[AEIOUYaeiouy]"uml;"	{ outDoc->writeUmlaut(yytext[1]); }
+<DocScan,Text>"&"[AEIOUYaeiouy]"acute;"	{ outDoc->writeAcute(yytext[1]);  }
+<DocScan,Text>"&"[AEIOUaeiou]"grave;"	{ outDoc->writeGrave(yytext[1]);  }
+<DocScan,Text>"&"[AEIOUaeiou]"circ;"	{ outDoc->writeCirc(yytext[1]);   }
+<DocScan,Text>"&"[ANOano]"tilde;"	{ outDoc->writeTilde(yytext[1]);  }
 <DocScan,DocHtmlScan,DocLatexScan>"$("[a-z_A-Z]+")"	{ 
   					  QString envvar=&yytext[2];
   					  envvar=envvar.left(envvar.length()-1);
@@ -914,7 +926,7 @@ VAR	  [vV][aA][rR]
 					    outDoc->writeFormula(formName,formula->getFormulaText());
 					  }
   					}
-<DocIndexWord>[^\n\t ]+			{
+<DocIndexWord>[^\n]+			{
   					  //printf("Adding %s to index\n",yytext);
 					  outDoc->addToIndex(yytext,0);
   					  BEGIN(DocScan);
@@ -1124,7 +1136,7 @@ VAR	  [vV][aA][rR]
 					  outDoc->docify(" - ");
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"section "{ID}"\n"	{
+<DocScan>"\\section "{ID}"\n"		{
   					  QString secName=&yytext[9];               // skip "\section "
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
@@ -1132,7 +1144,17 @@ VAR	  [vV][aA][rR]
 					  if ((sec=sectionDict[secName]))
 					  {
 					    //printf("Title %s\n",sec->title.data());
-					    outDoc->writeSection(sec->label,sec->title,sec->isSubsection);
+					    outDoc->writeSection(sec->label,sec->title,
+						                 sec->type==SectionInfo::Subsection);
+					  }
+  					}
+<DocScan>"\\anchor "{ID}"\n"		{
+  					  QString secName=&yytext[8];
+					  secName=secName.left(secName.length()-1);
+					  SectionInfo *sec;
+					  if ((sec=sectionDict[secName]))
+					  {
+					    outDoc->writeAnchor(sec->label);
 					  }
   					}
 <DocScan>"\\ref"			{
@@ -1146,11 +1168,52 @@ VAR	  [vV][aA][rR]
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[ref]))
 					  {
-					    outDoc->writeSectionRef(sec->pageName,sec->label,sec->title);
+					    QString text;
+					    if (sec->title.isEmpty()) 
+					      text=sec->label;
+					    else
+					      text=sec->title;
+					    if (sec->type==SectionInfo::Anchor)
+					    {
+					      outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					    }
+					    else
+					    {
+					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
+					    }
 					  }
 					  else
 					  {
 					    warn("Warning: reference to unknown section %s!\n",yytext);
+					    outDoc->writeBoldString("unknown reference!");
+					  }
+					  BEGIN(DocScan);
+  					}
+<DocRefName>{ID}/{B}+"\""		{
+  					  sectionRef=yytext;
+					  BEGIN(DocRefArgStart);
+  					}
+<DocRefArgStart>"\""			{
+  					  BEGIN(DocRefArg);
+  					}
+<DocRefArg>[^\"\n]+[\n\"]		{
+  					  yytext[yyleng-1]='\0';
+					  QString text=substitute(yytext,"\\\\","\\");
+					  SectionInfo *sec;
+					  if ((sec=sectionDict[sectionRef]))
+					  {
+					    if (sec->type==SectionInfo::Anchor)
+					    {
+					      outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					    }
+					    else
+					    {
+					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
+					    }
+					  }
+					  else
+					  {
+					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
 					    outDoc->writeBoldString("unknown reference!");
 					  }
 					  BEGIN(DocScan);
@@ -1163,7 +1226,7 @@ VAR	  [vV][aA][rR]
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[sectionRef]))
 					  {
-					    outDoc->writeSectionRefItem(sec->pageName,sec->label,yytext);
+					    outDoc->writeSectionRefItem(sec->fileName,sec->label,yytext);
 					  }
 					  else
 					  {
@@ -1271,6 +1334,10 @@ VAR	  [vV][aA][rR]
 <DocKeyEnd>("\\"|"@")"until"{BN}+		{ BEGIN(DocUntilKey); }
 <DocKeyEnd>("\\"|"@")"skipline"{BN}+		{ BEGIN(DocSkiplineKey); }
 <DocKeyEnd>\n
+<DocKeyEnd><<EOF>>			{
+  					  if (!firstLine) outDoc->endCodeFragment();
+					  yyterminate();
+  					}
 <DocKeyEnd>.				{
   					  unput(*yytext);
   					  if (!firstLine) outDoc->endCodeFragment();
@@ -1462,7 +1529,7 @@ VAR	  [vV][aA][rR]
 <DocScan>{BN}+				{ 
   					  outDoc->writeChar(' '); 
 					}
-<DocCode,DocEmphasis,DocBold,DocScan>.  { 
+<DocCode,DocEmphasis,DocBold,DocScan,Text>.  { 
 					  outDoc->writeChar(*yytext);
 					}
 <NextSemi>"{"				{ BEGIN(SkipBlock); }
@@ -1472,6 +1539,9 @@ VAR	  [vV][aA][rR]
 					  else
 					    BEGIN( NextSemi ) ;
 					}
+<NextSemi>"'"\\[0-7]{1,3}"'"            
+<NextSemi>"'"\\."'"                     
+<NextSemi>"'"."'"                       
 <NextSemi>\"				{
   					  lastStringContext=NextSemi;
 					  BEGIN(SkipString);
@@ -1556,6 +1626,9 @@ VAR	  [vV][aA][rR]
   /*
 <FindMembers>"inline"     		
   */
+<FindMembers>{BN}+			{
+  					  lineCount();
+  					}
 <FindMembers>{B}*"static"{BN}+     	{ //current->type += " static ";
   					  current->stat = TRUE;
 					  lineCount();
@@ -2081,8 +2154,8 @@ VAR	  [vV][aA][rR]
   					}
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
-<Curly>\n				{ current->program += yytext ;
-					  yyLineNr++ ;
+<Curly>{BN}+				{ current->program += yytext ;
+					  lineCount() ;
 					}
 <Curly>.				{ current->program += yytext ; }
 
@@ -2404,7 +2477,9 @@ VAR	  [vV][aA][rR]
 					    //BEGIN( FindMembers ) ;
 					    BEGIN( lastCurlyContext ) ;
 					}
-<SkipCurly>\'.\'
+<SkipCurly>"'"\\[0-7]{1,3}"'"            
+<SkipCurly>"'"\\."'"                     
+<SkipCurly>"'"."'"                       
 <SkipCurly>\"			        { 
   					  lastStringContext=SkipCurly;
   				          BEGIN( SkipString ); 
@@ -2538,15 +2613,16 @@ VAR	  [vV][aA][rR]
 					    );
 					  BEGIN( Curly ) ;
 					}
-<Comment>\n				{ current->program += yytext ;
-					  yyLineNr++ ;
+<Comment>{BN}+				{ current->program += yytext ;
+					  lineCount() ;
 					}
 <Comment>"/*"				{ current->program += yytext ; } 
 <Comment>"//"				{ current->program += yytext ; }
-<Comment>.				{ current->program += *yytext ; }
+<Comment>[^\n\*]+			{ current->program += yytext ; }
 <Comment>.*"*/"				{ current->program += yytext ;
 					  BEGIN( Curly ) ;
 					}
+<Comment>.				{ current->program += *yytext ; }
 
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator>("//"{B}*)?"/*!" { 
 					  removeSlashes=(yytext[1]=='/');
@@ -2596,7 +2672,7 @@ VAR	  [vV][aA][rR]
 					    current->inside = current_root->name+"::";
 					  BEGIN( LineDoc );
 					}
-<FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}+("{")?
+<FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}*("{")?
 <FindMembers>"{"			{
   					  current->type.resize(0);
   					  current->name.resize(0);
@@ -2846,12 +2922,17 @@ VAR	  [vV][aA][rR]
   					  current->doc+=yytext;
   					}
 <PageDoc>("\\"|"@")"section"{B}+	{
-  					  isSubsection=FALSE;
+  					  sectionType=SectionInfo::Section;
   					  BEGIN(SectionLabel);
   					}
 <PageDoc>("\\"|"@")"subsection"{B}+	{
-  					  isSubsection=TRUE;
+  					  sectionType=SectionInfo::Subsection;
   					  BEGIN(SectionLabel);
+  					}
+<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")anchor{B}+ {
+  					  lastAnchorContext = YY_START;
+  					  sectionType=SectionInfo::Anchor;
+					  BEGIN(AnchorLabel);
   					}
 <Doc,PageDoc,JavaDoc,ClassDoc>"\\\\verbatim"/[^a-z_A-Z0-9] {
 					  current->doc+="\\\\verbatim";
@@ -2860,6 +2941,9 @@ VAR	  [vV][aA][rR]
 					  lastVerbState=YY_START;
 					  current->doc+="\\verbatim";
   					  BEGIN(SkipVerbatim);
+  					}
+<Doc,PageDoc,JavaDoc,ClassDoc>"\\addindex"{B}+[^\n]+ {
+  					  current->doc+=yytext;
   					}
 <Doc,PageDoc,JavaDoc,ClassDoc>"\\\\code"/[^a-z_A-Z0-9] {
   					  current->doc+="\\\\code";
@@ -2928,7 +3012,13 @@ VAR	  [vV][aA][rR]
 <SkipCode>.				{
   					  current->doc+=*yytext;
   					}
-<SectionLabel>[a-z_A-Z0-9]+		{
+<AnchorLabel>{ID}			{
+  					  sectionLabel=yytext;
+					  addSection();
+					  current->doc += "\\anchor "+sectionLabel+"\n";
+					  BEGIN(lastAnchorContext);
+  					}
+<SectionLabel>{ID}			{
   					  sectionLabel=yytext;
 					  sectionTitle.resize(0);
 					  BEGIN(SectionTitle);
@@ -3220,15 +3310,18 @@ void scanString(const char *s)
 {
   const char *oldInputString = inputString;
   int oldInputPosition = inputPosition;
+  int oldRule = YY_START;
   YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));  
   inputString  = s;
   inputPosition = 0;
+  BEGIN( Text );
   scanYYlex();
   yy_delete_buffer(YY_CURRENT_BUFFER);
   yy_switch_to_buffer(oldBuffer);
   inputString = oldInputString;
   inputPosition = oldInputPosition;
+  BEGIN( oldRule );
 }
 
 //----------------------------------------------------------------------------
@@ -3308,6 +3401,7 @@ void parseMain(Entry *rt)
   global_root   = rt;
   current       = new Entry;
   inputString   = rt->program;
+  //printf("parseDoc=`%s'\n",inputString);
   inputPosition = 0;
   ifCount=0;
   scanYYrestart( scanYYin );
@@ -3363,6 +3457,21 @@ void parseDoc(OutputList &ol,const char *clName,
     refName=className;
   }
   parseDocument(ol,docString);
+}
+
+//----------------------------------------------------------------------------
+
+void parseText(OutputList &ol,const QString &txtString)
+{
+  inputString = txtString;
+  outDoc = new OutputList(&ol);
+  inputPosition = 0;
+  scanYYrestart( scanYYin ); 
+  BEGIN( Text );
+  scanYYlex();
+  ol+=*outDoc;
+  delete outDoc;
+  return;
 }
 
 //----------------------------------------------------------------------------

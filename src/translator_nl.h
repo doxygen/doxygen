@@ -24,12 +24,6 @@ class TranslatorDutch : public Translator
   public:
     QString latexBabelPackage()
     { return "dutch"; }
-    QString trInherits()
-    { return "Erft over van"; }
-    QString trAnd()
-    { return "en"; }
-    QString trInheritedBy()
-    { return "Wordt overge&euml;rfd door"; }
     QString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QString trRelatedSubscript()
@@ -55,8 +49,6 @@ class TranslatorDutch : public Translator
     }
     QString trMore()
     { return "Meer..."; }
-    QString trReference()
-    { return "Referentie"; }
     QString trListOfAllMembers()
     { return "Lijst van alle members."; }
     QString trMemberList()
@@ -64,7 +56,7 @@ class TranslatorDutch : public Translator
     QString trThisIsTheListOfAllMembers()
     { return "Dit is de complete lijst van alle members voor"; }
     QString trIncludingInheritedMembers()
-    { return "inclusief alle overge&euml;rfde members."; }
+    { return ", inclusief alle overge&euml;rfde members."; }
     QString trGeneratedAutomatically(const char *s)
     { QString result="Automatisch gegenereerd door Doxygen"; 
       if (s) result+=(QString)" voor "+s;
@@ -77,8 +69,6 @@ class TranslatorDutch : public Translator
     { return "enum waarde"; }
     QString trDefinedIn()
     { return "gedefinieerd in"; }
-    QString trIncludeFile()
-    { return "Include File"; }
     QString trVerbatimText(const char *f)
     { return (QString)"Dit is de letterlijke tekst van de include file "+f+"."; }
     QString trModules()
@@ -182,10 +172,6 @@ class TranslatorDutch : public Translator
     { return "Variabelen"; }
     QString trEnumerationValues()
     { return "Enumeratie waarden"; }
-    QString trReimplementedFrom()
-    { return "Nieuwe implementatie van"; }
-    QString trReimplementedIn()
-    { return "Opnieuw ge&iuml;mplementeerd in"; }
     QString trAuthor()
     { return "auteur"; }
     QString trDefineDocumentation()
@@ -246,10 +232,10 @@ class TranslatorDutch : public Translator
     QString trGeneratedBy()
     { return "Gegenereerd door"; }
     
-    // new since 0.49-990307 
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990307 
+//////////////////////////////////////////////////////////////////////////
     
-    QString trNamespaces()
-    { return "Namespaces"; }
     QString trNamespaceList()
     { return "Namespace Lijst"; }
     QString trNamespaceListDescription(bool extractAll)
@@ -261,6 +247,142 @@ class TranslatorDutch : public Translator
     }
     QString trFriends()
     { return "Friends"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990405
+//////////////////////////////////////////////////////////////////////////
+    
+    QString trRelatedFunctionDocumentation()
+    { return "Documentatie van friends en gerelateerde functies"; }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990425
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QString trCompoundReference(const char *clName,
+                                    ClassDef::CompoundType compType)
+      // used as the title of the HTML page of a class/struct/union
+    {
+      QString result=(QString)clName+" ";
+      switch(compType)
+      {
+        case ClassDef::Class:  result+=" Class"; break;
+        case ClassDef::Struct: result+=" Struct"; break;
+        case ClassDef::Union:  result+=" Union"; break;
+      }
+      result+=" Referentie";
+      return result;
+    }
+    virtual QString trFileReference(const char *fileName)
+      // used as the title of the HTML page of a file
+    {
+      QString result=fileName;
+      result+=" File Referentie"; 
+      return result;
+    }
+    virtual QString trNamespaceReference(const char *namespaceName)
+      // used as the title of the HTML page of a namespace
+    {
+      QString result=namespaceName;
+      result+=" Namespace Referentie";
+      return result;
+    }
+    
+    // these are for the member sections of a class, struct or union 
+    virtual QString trPublicMembers()
+    { return "Public Members"; }
+    virtual QString trPublicSlots()
+    { return "Public Slots"; }
+    virtual QString trSignals()
+    { return "Signals"; }
+    virtual QString trStaticPublicMembers()
+    { return "Static Public Members"; }
+    virtual QString trProtectedMembers()
+    { return "Protected Members"; }
+    virtual QString trProtectedSlots()
+    { return "Protected Slots"; }
+    virtual QString trStaticProtectedMembers()
+    { return "Static Protected Members"; }
+    virtual QString trPrivateMembers()
+    { return "Private Members"; }
+    virtual QString trPrivateSlots()
+    { return "Private Slots"; }
+    virtual QString trStaticPrivateMembers()
+    { return "Static Private Members"; }
+    // end of member sections 
+    
+    virtual QString trWriteList(int numEntries)
+    {
+      // this function is used to produce a comma-separated list of items.
+      // use generateMarker(i) to indicate where item i should be put.
+      QString result;
+      int i;
+      // the inherits list contain `numEntries' classes
+      for (i=0;i<numEntries;i++) 
+      {
+        // use generateMarker to generate placeholders for the class links!
+        result+=generateMarker(i); // generate marker for entry i in the list 
+                                   // (order is left to right)
+        
+        if (i!=numEntries-1)  // not the last entry, so we need a separator
+        {
+          if (i<numEntries-2) // not the fore last entry 
+            result+=", ";
+          else                // the fore last entry
+            result+=" en ";
+        }
+      }
+      return result; 
+    }
+    
+    virtual QString trInheritsList(int numEntries)
+      // used in class documentation to produce a list of base classes,
+      // if class diagrams are disabled.
+    {
+      return "Erft over van "+trWriteList(numEntries)+".";
+    }
+    virtual QString trInheritedByList(int numEntries)
+      // used in class documentation to produce a list of super classes,
+      // if class diagrams are disabled.
+    {
+      return "Wordt overge&euml;rfd door "+trWriteList(numEntries)+".";
+    }
+    virtual QString trReimplementedFromList(int numEntries)
+      // used in member documentation blocks to produce a list of 
+      // members that are hidden by this one.
+    {
+      return "Nieuwe implementatie van "+trWriteList(numEntries)+".";
+    }
+    virtual QString trReimplementedInList(int numEntries)
+    {
+      // used in member documentation blocks to produce a list of
+      // all member that overwrite the implementation of this member.
+      return "Opnieuw ge&iuml;mplementeerd in "+trWriteList(numEntries)+".";
+    }
+
+    virtual QString trNamespaceMembers()
+      // This is put above each page as a link to all members of namespaces.
+    { return "Namespace Members"; }
+    virtual QString trNamespaceMemberDescription(bool extractAll)
+      // This is an introduction to the page with all namespace members
+    { 
+      QString result="Hier is een lijst van alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+      result+="namespace members met links naar ";
+      if (extractAll) 
+        result+="de namespace documentatie voor iedere member:";
+      else 
+        result+="de namespaces waartoe ze behoren:";
+      return result;
+    }
+    virtual QString trNamespaceIndex()
+      // This is used in LaTeX as the title of the chapter with the 
+      // index of all namespaces.
+    { return "Namespace Index"; }
+    virtual QString trNamespaceDocumentation()
+      // This is used in LaTeX as the title of the chapter containing
+      // the documentation of all namespaces.
+    { return "Namespace Documentatie"; }
 };
 
 #endif

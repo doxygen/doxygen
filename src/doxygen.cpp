@@ -60,6 +60,7 @@ PageList       exampleList;        // list of all example files
 PageList       pageList;           // list of all related documentation pages
 MemberNameList memberNameList;     // list of class member + related functions
 MemberNameList functionNameList;   // list of all unrelated functions
+//MemberNameList namespaceNameList;  // list of namespace members;
 FileNameList   inputNameList;      // list of all input files
 StringList     inputFiles;         
 FileList       includeFiles;
@@ -71,8 +72,9 @@ PageDict       pageDict(1009);          // dictionary of all doc pages
 PageDict       exampleDict(1009);       // dictionary of all examples
 ClassDict      classDict(1009);         // dictionary of all documented classes
 NamespaceDict  namespaceDict(257);      // dictionary of all documented namespaces
-MemberNameDict memberNameDict(10007);   // dictionary of all member names
+MemberNameDict memberNameDict(10007);   // dictionary of all class member names
 MemberNameDict functionNameDict(10007); // dictionary of all functions
+//MemberNameDict namespaceNameDict(10007);// dictionaty of all namespace member names
 StringDict     substituteDict(1009);    // dictionary of class name substitutes
 SectionDict    sectionDict(257);        // dictionary of all page sections
 FileNameDict   inputNameDict(1009);     // dictionary of sections
@@ -100,6 +102,7 @@ int documentedMembers;
 int documentedFiles;
 int documentedGroups;
 int documentedNamespaces;
+int documentedNamespaceMembers;
 
 QTextStream tagFile;
 
@@ -140,6 +143,7 @@ void buildGroupList(Entry *root)
       gd = new GroupDef(root->name,root->type);
       gd->setBriefDescription(root->brief);
       gd->setDocumentation(root->doc);
+      gd->addSectionsToDefinition(root->anchors);
       groupList.inSort(gd);
       groupDict.insert(root->name,gd);
     }
@@ -207,6 +211,7 @@ void buildFileList(Entry *root)
       {
         fd->setDocumentation(root->doc);
         fd->setBriefDescription(root->brief); 
+        fd->addSectionsToDefinition(root->anchors);
         QListIterator<QString> sli(*root->groups);
         QString *s;
         for (;(s=sli.current());++sli)
@@ -290,7 +295,7 @@ void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     cd->setIncludeFile(fd);
     // set include supplied name 
     cd->setIncludeName(root->includeName);
-    fd->setIncludeName((QString)cd->classFile()+"-include");
+    fd->setIncludeName(cd->getOutputFileBase()+"-include");
     if (includeDict[fd->absFilePath()]==0) // include not inserted earlier
     {
       includeFiles.inSort(fd);
@@ -409,6 +414,7 @@ void buildClassList(Entry *root)
           {
             cd->setDocumentation(root->doc);
             cd->setBriefDescription(root->brief);
+            cd->addSectionsToDefinition(root->anchors);
             cd->setName(fullName); // change name to match docs
           }
         }
@@ -429,7 +435,7 @@ void buildClassList(Entry *root)
               ) 
            // new class
       {
-        int sec=ClassDef::Class; 
+        ClassDef::CompoundType sec=ClassDef::Class; 
         switch(root->section)
         {
           case Entry::UNION_SEC: 
@@ -445,6 +451,7 @@ void buildClassList(Entry *root)
         //printf("new ClassDef tempArgList=%p\n",root->tArgList);
         cd->setTemplateArguments(root->tArgList);
         cd->setProtection(root->protection);
+        cd->addSectionsToDefinition(root->anchors);
 
         QListIterator<QString> sli(*root->groups);
         QString *s;
@@ -519,6 +526,7 @@ void buildNamespaceList(Entry *root)
           {
             nd->setDocumentation(root->doc);
             nd->setName(fullName); // change name to match docs
+            nd->addSectionsToDefinition(root->anchors);
           }
           else if (!nd->documentation().isEmpty() && root->doc.length()>0)
           {
@@ -539,14 +547,16 @@ void buildNamespaceList(Entry *root)
           }
         }
       }
-      else if (root->doc.length()>0 || 
+      else /* if (root->doc.length()>0 || 
                root->brief.length()>0 || 
                extractAllFlag
-              ) 
+              )
+           */ 
       {
         NamespaceDef *nd=new NamespaceDef(fullName);
         nd->setDocumentation(root->doc); // copy docs to definition
         nd->setBriefDescription(root->brief);
+        nd->addSectionsToDefinition(root->anchors);
 
         QListIterator<QString> sli(*root->groups);
         QString *s;
@@ -639,12 +649,14 @@ void buildVarList(Entry *root)
     bool stat=root->stat;
     ClassDef *cd=0;
     Entry *p = root->parent;
-    while ((p->section & Entry::COMPOUND_MASK))
+    while ((p->section & Entry::COMPOUND_MASK) || 
+            p->section==Entry::NAMESPACE_SEC)
     {
       if (p->name.length()>0 && p->name[0]!='@')
       {
         if (!scope.isEmpty()) scope.prepend("::"); 
         scope.prepend(p->name);
+        break;
       }
       p=p->parent;
     }
@@ -652,6 +664,7 @@ void buildVarList(Entry *root)
     //printf("scope=%s\n",scope.data()); 
     
     int ni;
+#if 0
     if ((ni=root->name.findRev("::"))!=-1)
     {
       if (scope.length()>0) scope+="::";
@@ -659,8 +672,18 @@ void buildVarList(Entry *root)
       name=root->name.right(root->name.length()-ni-2);
       stat=TRUE;
     }
+#endif
+
+    if ((ni=root->name.findRev("::"))!=-1) goto nextMember;
+               /* skip this member, because it is a 
+                * static variable definition (always?), which will be
+                * found in a class scope as well, but then we know the
+                * correct protection level, so only then it will be
+                * inserted in the correct list!
+                */
 
     MemberDef::MemberType mtype;
+//    NamespaceDef *nd = 0;
     QString type=root->type.stripWhiteSpace();
     if (type=="@") 
       mtype=MemberDef::EnumValue;
@@ -715,11 +738,28 @@ void buildVarList(Entry *root)
       if (mn)
       {
         MemberDef *md=mn->first();
-        while (md)
+        while (md && !found)
         {
           if (md->memberClass()==cd) // member already in the scope
           {
             addMemberDocs(root,md,def,FALSE);
+            
+#if 0
+            // always trust the most protected scope, so adjust if needed
+            // This is needed to properly place static private variables,
+            // which are defined in a `public' scope.
+            printf("Checking protection level\n");
+            if (root->protection==Private || md->protection()!=Private)
+            {
+              printf("Set to private\n");
+              md->setProtection(Private);
+            }
+            else if (root->protection==Protected && md->protection()==Public)
+            {
+              printf("Set to protected\n");
+              md->setProtection(Protected);
+            }
+#endif
             found=TRUE; 
           }
           md=mn->next();
@@ -737,6 +777,7 @@ void buildVarList(Entry *root)
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
         md->setDefinition(def);
+        md->addSectionsToDefinition(root->anchors);
 
         // add the member to the global list
         if (mn)
@@ -761,6 +802,56 @@ void buildVarList(Entry *root)
         cd->insertUsedFile(root->fileName);
       }
     }
+#if 0
+    else if (scope.length()>0 && name.length()>0 && (nd=namespaceDict[scope]))
+    {
+      Debug::print(Debug::Variables,0,
+                   "  namespace variable:\n"
+                   "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d\n",
+                   root->type.data(),
+                   scope.data(), 
+                   name.data(),
+                   root->args.data(),
+                   root->protection
+                  );
+      // new global variable, enum value or typedef
+      MemberDef *md=new MemberDef(root->type,name,root->args,0,
+                           Public, Normal,root->stat,FALSE,
+                           mtype,0,0);
+      md->setDefFile(root->fileName);
+      md->setDefLine(root->startLine);
+      md->setDocumentation(root->doc);
+      md->setBriefDescription(root->brief);
+      md->addSectionsToDefinition(root->anchors);
+      QString def;
+      nd->insertMember(md); 
+      md->setNamespace(nd);
+      if (root->type.length()>0)
+      {
+        def=root->type+" "+nd->name()+"::"+name+root->args;
+      }
+      else
+      {
+        def=nd->name()+"::"+name+root->args;
+      }
+      if (def.left(7)=="static ") def=def.right(def.length()-7);
+      md->setDefinition(def);
+
+      MemberName *mn;
+      // add member definition to the list of globals 
+      if ((mn=namespaceNameDict[name]))
+      {
+        mn->inSort(md);
+      }
+      else
+      {
+        mn = new MemberName(name);
+        mn->inSort(md);
+        namespaceNameDict.insert(name,mn);
+        namespaceNameList.inSort(mn);
+      }
+    }
+#endif
     else if (name.length()>0) // global variable
     {
       Debug::print(Debug::Variables,0,
@@ -781,6 +872,7 @@ void buildVarList(Entry *root)
       md->setDefLine(root->startLine);
       md->setDocumentation(root->doc);
       md->setBriefDescription(root->brief);
+      md->addSectionsToDefinition(root->anchors);
       QString def;
 
       // see if the function is inside a namespace
@@ -850,6 +942,7 @@ void buildVarList(Entry *root)
       }
     }
   }
+nextMember:
   EntryListIterator eli(*root->sublist);
   Entry *e;
   for (;(e=eli.current());++eli)
@@ -925,6 +1018,7 @@ void buildMemberList(Entry *root)
         md->setDefLine(root->startLine);
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
+        md->addSectionsToDefinition(root->anchors);
         QString def;
         if (root->relates.length()>0 || isFriend)
         {
@@ -1048,6 +1142,7 @@ void buildMemberList(Entry *root)
               {
                 md->setBriefDescription(root->brief);
               }
+              md->addSectionsToDefinition(root->anchors);
             }
             md=mn->next();
           }
@@ -1067,6 +1162,7 @@ void buildMemberList(Entry *root)
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
           md->setPrototype(root->proto);
+          md->addSectionsToDefinition(root->anchors);
           QString def;
           if (root->type.length()>0)
           {
@@ -1357,8 +1453,9 @@ void computeClassRelations(Entry *root)
             }
             else // base class not documented
             {
-              //printf("Found undocumented base class %s\n",bi->name.data());
               NamespaceDef *nd=cd->getNamespace();
+              //printf("Found undocumented base class `%s' namespace scope=`%s'\n",
+              //    bi->name.data(),nd ? nd->name().data() : "<none>");
               if (nd && (baseClass=getClass(nd->name()+"::"+baseClassName))) 
                 // class is defined inside namespace
               {
@@ -1369,7 +1466,7 @@ void computeClassRelations(Entry *root)
               }
               else // undocumented base class
               {
-                baseClass=new ClassDef(bi->name,Entry::CLASS_SEC);
+                baseClass=new ClassDef(bi->name,ClassDef::Class);
                 // add base class to this class
                 cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
                 // add this class as super class to the base class
@@ -1523,6 +1620,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
   }
   md->setDefFile(root->fileName);
   md->setDefLine(root->startLine);
+  md->addSectionsToDefinition(root->anchors);
   if (cd) cd->insertUsedFile(root->fileName);
 }
 
@@ -1676,21 +1774,23 @@ void findMember(Entry *root,QString funcDecl,QString related,bool overloaded,
     else 
       scopeName=related.copy();
   }
-  else if (scopeName.isEmpty() && related.isEmpty() && root->parent && 
+  else if (/*scopeName.isEmpty() &&*/ related.isEmpty() && root->parent && 
            !root->parent->name.isNull())
   {
     Entry *p=root->parent;
     while (p) // get full scope as class name
     {
+      //printf("++++++ scope=`%s'\n",p->name.data());
       if (((p->section & Entry::COMPOUND_MASK) || 
            p->section == Entry::NAMESPACE_SEC
           ) && !p->name.isEmpty() && p->name[0]!='@'
          )
       {
+        if (scopeName.left(p->name.length())==p->name) 
+          break; // scope already present, so stop now
+        // prepend name to scope
         if (!scopeName.isEmpty()) scopeName.prepend("::");
         scopeName.prepend(p->name);
-        break; // stop here because the class name already contains
-               // the whole scope!
       }
       p=p->parent;
     } 
@@ -1906,6 +2006,7 @@ void findMember(Entry *root,QString funcDecl,QString related,bool overloaded,
           md->setDefFile(root->fileName);
           md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
+          md->addSectionsToDefinition(root->anchors);
           mn->inSort(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
@@ -1970,6 +2071,7 @@ void findMember(Entry *root,QString funcDecl,QString related,bool overloaded,
           md->setDefFile(root->fileName);
           md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
+          md->addSectionsToDefinition(root->anchors);
           mn->inSort(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
@@ -2014,7 +2116,7 @@ void findMember(Entry *root,QString funcDecl,QString related,bool overloaded,
 void findMemberDocumentation(Entry *root)
 {
   int i,l;
-  QRegExp re("([a-zA-Z0-9: ]*[ *]+[ ]*");
+  QRegExp re("([a-zA-Z0-9: ]*\\*+[ \\*]*");
   Debug::print(Debug::FindMembers,0,
          "root->type=`%s' root->name=`%s' root->args=`%s'\n",
           root->type.data(),root->name.data(),root->args.data()
@@ -2026,7 +2128,7 @@ void findMemberDocumentation(Entry *root)
     root->type=root->type.left(i+l);
     isFunc=FALSE;
   }
-  else if (root->name.find(re)!=-1 && root->name.find("operator")!=-1) 
+  else if (root->name.find(re)!=-1 && root->name.find("operator")==-1) 
     // func ptr entered with \fn, \var or \typedef
   {
     isFunc=FALSE;
@@ -2151,6 +2253,7 @@ void findEnums(Entry *root)
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       md->setDefFile(root->fileName);
       md->setDefLine(root->startLine);
+      md->addSectionsToDefinition(root->anchors);
       if (nd)
       {
         md->setDefinition(nd->name()+"::"+name);  
@@ -2301,6 +2404,7 @@ void findEnumDocumentation(Entry *root)
               {
                 md->setBriefDescription(root->brief);
               }
+              md->addSectionsToDefinition(root->anchors);
               found=TRUE;
             }
             md=mn->next();
@@ -2319,6 +2423,7 @@ void findEnumDocumentation(Entry *root)
         {
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
+          md->addSectionsToDefinition(root->anchors);
           found=TRUE;
         }
       } 
@@ -2336,6 +2441,49 @@ void findEnumDocumentation(Entry *root)
   {
     findEnumDocumentation(e);
   }
+}
+
+// seach for each enum (member or function) in mnl if it has documented 
+// enum values.
+static void findDEV(const MemberNameList &mnl)
+{
+  MemberName *mn;
+  MemberNameListIterator mnli(mnl);
+  // for each member name
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    // for each member definition
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      if (md->isEnumerate()) // member is an enum
+      {
+        QList<MemberDef> *fmdl = md->enumFieldList();
+        int documentedEnumValues=0;
+        if (fmdl) // enum has values
+        {
+          MemberDef *fmd=fmdl->first();
+          // for each enum value
+          while (fmd)
+          {
+            if (fmd->hasDocumentation()) documentedEnumValues++;
+            fmd=fmdl->next();
+          }
+        }
+        // at least one enum value is documented
+        if (documentedEnumValues>0) md->setDocumentedEnumValues(TRUE);
+      }
+    }
+  }
+}
+
+// seach for each enum (member or function) if it has documented enum 
+// values.
+void findDocumentedEnumValues()
+{
+  findDEV(memberNameList);
+  findDEV(functionNameList); 
 }
 
 //----------------------------------------------------------------------
@@ -2695,6 +2843,7 @@ void findDefineDocumentation(Entry *root)
               md->setDocumentation(root->doc);
             if (md->briefDescription().isEmpty())
               md->setBriefDescription(root->brief);
+            md->addSectionsToDefinition(root->anchors);
           }
           md=mn->next();
         }
@@ -2715,6 +2864,7 @@ void findDefineDocumentation(Entry *root)
                 md->setDocumentation(root->doc);
               if (md->briefDescription().isEmpty())
                 md->setBriefDescription(root->brief);
+              md->addSectionsToDefinition(root->anchors);
             }
           }
           md=mn->next();
@@ -2769,6 +2919,7 @@ void buildPageList(Entry *root)
           baseName=baseName.left(baseName.length()-5);
         pi=new PageInfo(baseName, root->doc,
                         root->args.stripWhiteSpace());
+        setFileNameForSections(root->anchors,root->name);
         pageList.append(pi);
         pageDict.insert(baseName,pi);
         if (pi->title.length()>0)
@@ -2779,8 +2930,11 @@ void buildPageList(Entry *root)
           else
             pageName=pi->name.lower();
           //outputList->writeTitle(pi->name,pi->title);
-          SectionInfo *si=new SectionInfo(pageName+".html",
-              pi->name,pi->title,FALSE);
+          
+          // a page name is a label as well!
+          SectionInfo *si=new SectionInfo(
+              pi->name,pi->title,SectionInfo::Section);
+          si->fileName=pageName+".html";
           //printf("Adding section info %s\n",pi->name.data());
           sectionDict.insert(pi->name,si);
         }
@@ -2796,6 +2950,26 @@ void buildPageList(Entry *root)
 }
 
 //----------------------------------------------------------------------------
+
+void resolveUserReferences()
+{
+  QDictIterator<SectionInfo> sdi(sectionDict);
+  SectionInfo *si;
+  for (;(si=sdi.current());++sdi)
+  {
+    if (si->definition)
+    {
+      //printf("si=`%s' def=`%s' file=`%s'\n",
+      //         si->label.data(),
+      //         si->definition->name().data(),
+      //         si->definition->getOutputFileBase().data());
+      si->fileName=si->definition->getOutputFileBase().copy();
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // generate all separate documentation pages
 
 void generatePageDocs()
@@ -2803,14 +2977,7 @@ void generatePageDocs()
   PageInfo *pi=pageList.first();
   while (pi)
   {
-    if (!pi->title.isEmpty())
-    {
-      msg("Generating docs for page %s...\n",pi->title.data());
-    }
-    else
-    {
-      msg("Generating docs for page %s...\n",pi->name.data());
-    }
+    msg("Generating docs for page %s...\n",pi->name.data());
     outputList->disable(OutputGenerator::Man);
     QString pageName;
     if (caseSensitiveNames)
@@ -2850,6 +3017,7 @@ void buildExampleList(Entry *root)
       else
       {
         PageInfo *pi=new PageInfo(root->name,root->doc,root->args);
+        setFileNameForSections(root->anchors,root->name);
         exampleList.inSort(pi);
         exampleDict.insert(root->name,pi);
       }
@@ -3166,6 +3334,7 @@ void readFiles(BufStr &output)
     s=inputFiles.next();
   }
 //  *p++='\0';
+  output.addChar('\n'); /* to prevent problems under Windows ? */
   output.addChar(0);
   //printf("Output after preprocessing:\n---------\n%s\n----------\n",output.data());
   //printf("Final length = %d\n",p-output.data());
@@ -3206,7 +3375,7 @@ int readDir(QFileInfo *fi,
       else if (cfi->isFile() && 
           patternMatch(cfi,patList) && !patternMatch(cfi,exclPatList))
       {
-        totalSize+=cfi->size()+cfi->absFilePath().length()+3;
+        totalSize+=cfi->size()+cfi->absFilePath().length()+4;
         QString name=cfi->fileName();
         if (fnDict)
         {
@@ -3306,7 +3475,7 @@ int readFileOrDirectory(const char *s,
       }
       else if (fi.isFile()) 
       {
-        totalSize+=fi.size()+fi.absFilePath().length()+3; //readFile(&fi,fiList,input); 
+        totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
         //fiList->inSort(new FileInfo(fi));
         QString name=fi.fileName();
         if (fnDict)
@@ -3646,16 +3815,19 @@ int main(int argc,char **argv)
   msg("Searching for enumerations...\n");
   findEnums(root);
   findEnumDocumentation(root);
-
 //  msg("Searching for function prototypes...\n");
 //  findPrototypes(root); // may introduce new members !
   
   msg("Searching for member function documentation...\n");
   findMemberDocumentation(root); // may introduce new members !
   
+
   msg("Freeing entry tree\n");
   delete root;
   
+  msg("Determining which enums are documented\n");
+  findDocumentedEnumValues();
+
   msg("Computing member references...\n");
   computeMemberReferences(); 
 
@@ -3678,18 +3850,22 @@ int main(int argc,char **argv)
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.
   msg("Counting data structures...\n");
-  annotatedClasses     = countAnnotatedClasses();
-  hierarchyClasses     = countClassHierarchy();
-  documentedMembers    = countMemberList();
-  documentedFunctions  = countFunctionList();
-  documentedFiles      = countFileList();
-  documentedGroups     = countGroupList();
-  documentedNamespaces = countNamespaceList();
+  annotatedClasses           = countAnnotatedClasses();
+  hierarchyClasses           = countClassHierarchy();
+  documentedMembers          = countClassMembers();
+  documentedFunctions        = countFileMembers();
+  documentedFiles            = countFiles();
+  documentedGroups           = countGroups();
+  documentedNamespaces       = countNamespaces();
+  documentedNamespaceMembers = countNamespaceMembers();
  
   // compute the shortest possible names of all files
   // without loosing the uniqueness of the file names.
   msg("Generating disk names...\n");
   inputNameList.generateDiskNames();
+  
+  msg("Resolving user defined references...\n");
+  resolveUserReferences();
 
   msg("Generating example documentation...\n");
   generateExampleDocs();
@@ -3715,9 +3891,12 @@ int main(int argc,char **argv)
   msg("Generating example index...\n");
   writeExampleIndex(*outputList);
   
-  msg("Generating function index...\n");
-  writeFunctionIndex(*outputList);
+  msg("Generating file member index...\n");
+  writeFileMemberIndex(*outputList);
   
+  msg("Generating namespace member index...\n");
+  writeNamespaceMemberIndex(*outputList);
+
 //  msg("Generating define index...\n");
 //  writeDefineIndex(*outputList);
   
@@ -3730,17 +3909,17 @@ int main(int argc,char **argv)
   msg("Generating style sheet...\n");
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
-  parseDoc(*outputList,0,0,
+  parseText(*outputList,
             theTranslator->trGeneratedAt(dateToString(TRUE),projectName)
           );
   outputList->writeStyleInfo(1); // write second part
-  parseDoc(*outputList,0,0, theTranslator->trWrittenBy());
+  parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(2); // write third part
-  parseDoc(*outputList,0,0,
+  parseText(*outputList,
             theTranslator->trGeneratedAt(dateToString(TRUE),projectName)
           );
   outputList->writeStyleInfo(3); // write fourth part
-  parseDoc(*outputList,0,0, theTranslator->trWrittenBy());
+  parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(4); // write last part
   outputList->enableAll();
   

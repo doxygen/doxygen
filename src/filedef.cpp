@@ -69,7 +69,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   QString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
   startTitle(ol);
-  ol.docify(pageTitle);
+  parseText(ol,theTranslator->trFileReference(name()));
   endTitle(ol,name());
   //ol.newParagraph();
   
@@ -86,8 +86,8 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(0,"details");
-    parseDoc(ol,0,0,theTranslator->trMore());
+    ol.startTextLink(0,"_details");
+    parseText(ol,theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
   }
@@ -96,6 +96,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   ol.enable(OutputGenerator::Man);
   ol.writeSynopsis();
  
+  ol.startMemberSections();
   if (classList->count()>0)
   {
     ClassDef *cd=classList->first();
@@ -111,7 +112,7 @@ void FileDef::writeDocumentation(OutputList &ol)
         if (!found)
         {
           ol.startMemberHeader();
-          parseDoc(ol,0,0,theTranslator->trCompounds());
+          parseText(ol,theTranslator->trCompounds());
           ol.endMemberHeader();
           ol.startMemberList();
           found=TRUE;
@@ -124,10 +125,11 @@ void FileDef::writeDocumentation(OutputList &ol)
           case ClassDef::Union:  ol.writeString("union");  break;
         }
         ol.writeString(" ");
+        ol.insertMemberAlign();
         if (cd->hasDocumentation()) 
         {
           ol.writeObjectLink(cd->getReference(),
-                            cd->classFile(),
+                            cd->getOutputFileBase(),
                             0,
                             cd->name()
                            );
@@ -146,6 +148,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   
   writeMemberDecs(ol,0,0,this,0,0,memList);
+  ol.endMemberSections();
 
   //doc=doc.stripWhiteSpace();
   //int bl=brief.length();
@@ -153,9 +156,12 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
-    ol.writeAnchor("details"); 
+    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.writeAnchor("_details"); 
+    if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trDetailedDescription());
+    parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     if (!briefDescription().isEmpty())
     {
@@ -177,7 +183,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trDefineDocumentation());
+    parseText(ol,theTranslator->trDefineDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Define);
   }
@@ -186,7 +192,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trFunctionPrototypeDocumentation());
+    parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Prototype);
   }
@@ -195,7 +201,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trTypedefDocumentation());
+    parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Typedef);
   }
@@ -204,7 +210,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trEnumerationTypeDocumentation());
+    parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Enumeration);
   }
@@ -213,7 +219,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trEnumerationValueDocumentation());
+    parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::EnumValue);
   }
@@ -222,7 +228,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trFunctionDocumentation());
+    parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Function);
   }
@@ -231,7 +237,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trVariableDocumentation());
+    parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Variable);
   }
@@ -239,9 +245,9 @@ void FileDef::writeDocumentation(OutputList &ol)
   // write Author section (Man only)
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
   ol.enableAll();
   endFile(ol);
 }

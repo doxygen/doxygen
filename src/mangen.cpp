@@ -78,7 +78,7 @@ void ManGenerator::startFile(const char *name,const char *,bool)
   {
     fileName=fileName.left(i); 
   }
-  if (fileName.right(2)!=".3") fileName+=".3";
+  if (fileName.right(2)!=manExtension) fileName+=manExtension;
   startPlainFile(fileName);
   firstCol=TRUE;
 }

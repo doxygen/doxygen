@@ -22,12 +22,14 @@
 #include "classdef.h"
 #include "classlist.h"
 #include "memberlist.h"
+#include "doxygen.h"
 
-NamespaceDef::NamespaceDef(const char *name) : Definition(name)
+NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
 {
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
   memList = new MemberList;
+  reference=ref;
 }
 
 NamespaceDef::~NamespaceDef()
@@ -61,18 +63,21 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   QString pageTitle=name()+" Namespace Reference";
   startFile(ol,fileName,pageTitle);
   startTitle(ol);
-  ol.docify(pageTitle);
+  //ol.docify(pageTitle);
+  parseText(ol,theTranslator->trNamespaceReference(name()));
   endTitle(ol,name());
+  
+  if (genTagFile.length()>0) tagFile << "%" << name() << ":\n";
   
   OutputList briefOutput(&ol); 
   if (briefDescription()) 
   {
-    parseDoc(briefOutput,0,0,briefDescription());
+    parseDoc(briefOutput,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(0,"details");
-    parseDoc(ol,0,0,theTranslator->trMore());
+    ol.startTextLink(0,"_details");
+    parseText(ol,theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
   }
@@ -81,6 +86,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.enable(OutputGenerator::Man);
   ol.writeSynopsis();
   
+  ol.startMemberSections();
   if (classList->count()>0)
   {
     ClassDef *cd=classList->first();
@@ -92,7 +98,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
         if (!found)
         {
           ol.startMemberHeader();
-          parseDoc(ol,0,0,theTranslator->trCompounds());
+          parseText(ol,theTranslator->trCompounds());
           ol.endMemberHeader();
           ol.startMemberList();
           found=TRUE;
@@ -111,13 +117,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           case ClassDef::Union:  ol.writeString("union");  break;
         }
         ol.writeString(" ");
+        ol.insertMemberAlign();
         if (cd->hasDocumentation()) 
         {
           ol.writeObjectLink(cd->getReference(),
-                            cd->classFile(),
-                            0,
-                            clName
-                           );
+                             cd->getOutputFileBase(),
+                             0,
+                             clName
+                            );
         }
         else
         {
@@ -133,13 +140,17 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
   
   writeMemberDecs(ol,0,this,0,0,0,memList);
+  ol.endMemberSections();
   
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
-    ol.writeAnchor("details"); 
+    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.writeAnchor("_details"); 
+    if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trDetailedDescription());
+    parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     if (!briefDescription().isEmpty())
     {
@@ -148,7 +159,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,0,0,documentation()+"\n");
+      parseDoc(ol,name(),0,documentation()+"\n");
       ol.newParagraph();
     }
   }
@@ -159,7 +170,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trFunctionPrototypeDocumentation());
+    parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Prototype);
   }
@@ -168,7 +179,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trTypedefDocumentation());
+    parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Typedef);
   }
@@ -177,7 +188,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trEnumerationTypeDocumentation());
+    parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Enumeration);
   }
@@ -186,7 +197,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trEnumerationValueDocumentation());
+    parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::EnumValue);
   }
@@ -195,7 +206,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trFunctionDocumentation());
+    parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Function);
   }
@@ -204,7 +215,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseDoc(ol,0,0,theTranslator->trVariableDocumentation());
+    parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
     writeMemberDocs(ol,memList,name(),MemberDef::Variable);
   }
@@ -212,9 +223,15 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   // write Author section (Man only)
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trAuthor());
+  parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseDoc(ol,0,0,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
   ol.enableAll();
   endFile(ol);
+}
+
+int NamespaceDef::countMembers()
+{
+  memList->countDocMembers();
+  return memList->totalCount()+classList->count();
 }
