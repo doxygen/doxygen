@@ -278,10 +278,6 @@ SOURCE=..\src\outputlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\packagedef.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\pagedef.cpp
 # End Source File
 # Begin Source File
@@ -547,10 +543,6 @@ SOURCE=..\src\outputgen.h
 # Begin Source File
 
 SOURCE=..\src\outputlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\packagedef.h
 # End Source File
 # Begin Source File
 

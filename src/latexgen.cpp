@@ -221,7 +221,7 @@ void LatexGenerator::init()
 
   t << endl
     << "clean:" << endl
-    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.pdf" << endl;
+    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
 }
 
 static void writeDefaultHeaderPart1(QTextStream &t)
@@ -1235,7 +1235,7 @@ void LatexGenerator::codify(const char *str)
           MultiByte = FALSE;
           continue;
         }
-        if ( (uchar)c>=0x80 || (uchar)c<=0xff) // char in range [0x80..0xff]
+        if ((uchar)c>=0x80) // char in range [0x80..0xff]
         {
           t << (char)c;
           MultiByte = TRUE;

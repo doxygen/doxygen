@@ -188,14 +188,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<div class=\"fragment\"><pre>"; 
+      m_t << "<pre class=\"fragment\"><div>"; 
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
-      m_t << "</pre></div>"; 
+      m_t << "</div></pre>"; 
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "<div class=\"fragment\"><pre>";
+      m_t << "<pre class=\"fragment\"><div>";
       filter(s->text());
-      m_t << "</pre></div>"; 
+      m_t << "</div></pre>"; 
       break;
     case DocVerbatim::HtmlOnly: 
       m_t << s->text(); 

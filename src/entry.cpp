@@ -87,6 +87,7 @@ Entry::Entry(const Entry &e)
   initializer = e.initializer;
   initLines   = e.initLines;
   callGraph   = e.callGraph;
+  objc        = e.objc;
   //todoId      = e.todoId;
   //testId      = e.testId;
   //bugId       = e.bugId;
@@ -260,6 +261,7 @@ void Entry::reset()
   proto   = FALSE;
   explicitExternal = FALSE;
   memSpec  = 0;
+  objc = FALSE;
   subGrouping = TRUE;
   protection = Public;
   groupDocType = GROUPDOC_NORMAL;

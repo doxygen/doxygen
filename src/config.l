@@ -1316,7 +1316,7 @@ void Config::create()
                     "The default language is English, other supported languages are: \n"
 		    "Brazilian, Catalan, Chinese, Chinese-Traditional, Croatian, Czech, Danish, Dutch, \n"
 		    "Finnish, French, German, Greek, Hungarian, Italian, Japanese, Japanese-en \n"
-		    "(Japanese with English messages), Korean, Norwegian, Polish, Portuguese, \n"
+		    "(Japanese with English messages), Korean, Korean-en, Norwegian, Polish, Portuguese, \n"
 		    "Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.\n",
 		    "English"
                    );
@@ -1369,6 +1369,7 @@ void Config::create()
 #endif
 #ifdef LANG_KR
   ce->addValue("Korean");
+  ce->addValue("Korean-en");
 #endif
 #ifdef LANG_NO
   ce->addValue("Norwegian");
@@ -2441,7 +2442,7 @@ void Config::create()
                  );
   cb->addDependency("ENABLE_PREPROCESSING");
   //-----------------------------------------------------------------------------------------------
-  addInfo(  "External","Configuration::addtions related to external references   ");
+  addInfo(  "External","Configuration::additions related to external references   ");
   //-----------------------------------------------------------------------------------------------
   cl = addList(
                     "TAGFILES",
@@ -2660,7 +2661,7 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
 
   //-----------------------------------------------------------------------------------------------
-  addInfo(  "Search","Configuration::addtions related to the search engine   ");
+  addInfo(  "Search","Configuration::additions related to the search engine   ");
   //-----------------------------------------------------------------------------------------------
   cb = addBool(
                     "SEARCHENGINE",

@@ -2,6 +2,8 @@ TEMPLATE	= lib
 CONFIG		= warn_on staticlib $extraopts
 HEADERS		= qarray.h \
 		  qbuffer.h \
+                  qcache.h \
+                  qgcache.h \
 		  qcollection.h \
 		  qconfig.h \
 		  qcstring.h \
@@ -50,6 +52,7 @@ SOURCES		= qbuffer.cpp \
 		  qfile.cpp \
 		  qfileinfo.cpp \
 		  qgarray.cpp \
+		  qgcache.cpp \
 		  qgdict.cpp \
 		  qglist.cpp \
 		  qglobal.cpp \
