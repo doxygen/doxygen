@@ -117,6 +117,7 @@ double         Doxygen::sysElapsedTime = 0.0;
 QTime          Doxygen::runningTime;
 SearchIndex *  Doxygen::searchIndex=0;
 SDict<DefinitionList> *Doxygen::symbolMap;
+bool           Doxygen::outputToWizard=FALSE;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -7039,9 +7040,12 @@ static int readDir(QFileInfo *fi,
     if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
     { // file should not be excluded
       //printf("killDict->find(%s)\n",cfi->absFilePath().data());
-      if ((!cfi->exists() || !cfi->isReadable()) && errorIfNotExist)
+      if (!cfi->exists() || !cfi->isReadable())
       {
-         err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+        if (errorIfNotExist)
+        {
+          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+        }
       }
       else if (cfi->isFile() && 
           (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
@@ -7159,9 +7163,12 @@ static int readFileOrDirectory(const char *s,
   {
     if (exclDict==0 || exclDict->find(fi.absFilePath())==0)
     {
-      if ((!fi.exists() || !fi.isReadable()) && errorIfNotExist)
+      if (!fi.exists() || !fi.isReadable())
       {
-        err("Error: source %s is not a readable file or directory... skipping.\n",s);
+        if (errorIfNotExist)
+        {
+          err("Error: source %s is not a readable file or directory... skipping.\n",s);
+        }
       }
       else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
       {
@@ -7542,6 +7549,7 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'b':
         setvbuf(stdout,NULL,_IONBF,0);
+        Doxygen::outputToWizard=TRUE;
         break;
       case 'h':
       case '?':

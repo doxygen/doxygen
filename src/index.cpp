@@ -3018,6 +3018,16 @@ void writeGroupIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+static bool mainPageHasTitle()
+{
+  if (Doxygen::mainPage==0) return FALSE;
+  if (Doxygen::mainPage->title().isEmpty()) return FALSE;
+  if (Doxygen::mainPage->title().lower()=="notitle") return FALSE;
+  return TRUE;
+}
+
+//----------------------------------------------------------------------------
+
 void writeIndex(OutputList &ol)
 {
   // save old generator state
@@ -3040,11 +3050,11 @@ void writeIndex(OutputList &ol)
     Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : 1;
 
   QCString title;
-  if (!Doxygen::mainPage || Doxygen::mainPage->title().isEmpty())
+  if (!mainPageHasTitle())
   {
     title = theTranslator->trMainPage();
   }
-  else if (Doxygen::mainPage)
+  else 
   {
     title = substitute(Doxygen::mainPage->title(),"%","");
   }
@@ -3149,7 +3159,7 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(isMainPage);
-    if (!Doxygen::mainPage->title().isEmpty())
+    if (mainPageHasTitle())
     {
       ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,Doxygen::mainPage->title(),FALSE,FALSE);
     }

@@ -302,6 +302,8 @@ class ClassDef : public Definition
      *  \param fName     the file name as found in the tag file. 
      *                   This overwrites the file that doxygen normally 
      *                   generates based on the compound type & name.
+     *  \param isSymbol  If TRUE this class name is added as a publicly 
+     *                   visible (and referencable) symbol.
      */
     ClassDef(const char *fileName,int startLine,
              const char *name,CompoundType ct,

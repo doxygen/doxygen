@@ -36,63 +36,16 @@ OutputList::OutputList(bool)
   outputs->setAutoDelete(TRUE);
 }
 
-//OutputList::OutputList(const OutputList *olist)
-//{
-//  //printf("OutputList::OutputList() deep copy\n");
-//  outputs = new QList<OutputGenerator>;
-//  outputs->setAutoDelete(TRUE);
-//
-//  QList<OutputGenerator> *ol=olist->outputs;
-//  OutputGenerator *og=ol->first();
-//  while (og)
-//  {
-//    OutputGenerator *ogc=og->copy();
-//    outputs->append(ogc); 
-//    if (og->isEnabled()) ogc->enable(); else ogc->disable();  
-//    og=ol->next();
-//  }
-//  //printf("OutputList::OutputList dst=%d res=%d\n",ol->count(),outputs->count());
-//}
-
 OutputList::~OutputList()
 {
   //printf("OutputList::~OutputList()\n");
   delete outputs;
 }
 
-//OutputList &OutputList::operator=(const OutputList &olist)
-//{
-//  if (this!=&olist)
-//  {
-//    QList<OutputGenerator> *ol=olist.outputs;
-//    OutputGenerator *ogsrc=ol->first();
-//    OutputGenerator *ogdst=outputs->first();
-//    //printf("OutputList::operator= src=%d dst=%d\n",outputs->count(),ol->count());
-//    while (ogdst)
-//    {
-//      ogdst=ogsrc->copy();
-//      ogsrc=ol->next();
-//      ogdst=outputs->next();
-//    }
-//  }
-//  return *this;
-//}
-
 void OutputList::add(const OutputGenerator *og)
 {
   if (og) outputs->append(og);
 }
-
-//HtmlGenerator *OutputList::getHtmlGenerator()
-//{
-//  OutputGenerator *og=outputs->first();
-//  while (og)
-//  {
-//    if (og->get(OutputGenerator::Html)) return (HtmlGenerator *)og;
-//    og=outputs->next();
-//  }
-//  return 0; // should not happen!
-//}
 
 void OutputList::disableAllBut(OutputGenerator::OutputType o)
 {
@@ -155,21 +108,6 @@ bool OutputList::isEnabled(OutputGenerator::OutputType o)
   }
   return result;
 }
-
-//OutputList &OutputList::operator+=(const OutputList &outputList)
-//{
-//  OutputList *ol=(OutputList *)&outputList;
-//  OutputGenerator *ogsrc=ol->outputs->first();
-//  OutputGenerator *ogdst=outputs->first();
-//  //printf("OutputList::operator+= src=%d dst=%d\n",outputs->count(),ol->outputs->count());
-//  while (ogdst && ogsrc)
-//  {
-//    ogdst->append(ogsrc);
-//    ogsrc=ol->outputs->next();
-//    ogdst=outputs->next();
-//  }
-//  return *this;
-//}
 
 void OutputList::pushGeneratorState()
 {

@@ -847,15 +847,53 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
   Definition *newScope = followPath(scope,fileScope,explicitScopePart);
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
-    //printf("scope traversal successful!\n");
+    //printf("scope traversal successful %s<->%s!\n",item->getOuterScope()->name().data(),newScope->name().data());
     if (item->getOuterScope()==newScope) 
     {
       //printf("> found it\n");
     }
     else 
     {
-      // repeat for the parent scope
       int i=-1;
+      if (newScope->definitionType()==Definition::TypeNamespace)
+      {
+        // this part deals with the case where item is a class
+        // A::B::C but is explicit referenced as A::C, where B is imported
+        // in A via a using directive.
+        //printf("newScope is a namespace: %s!\n",newScope->name().data());
+        NamespaceDef *nscope = (NamespaceDef*)newScope;
+        ClassSDict *cl = nscope->getUsedClasses();
+        if (cl)
+        {
+          ClassSDict::Iterator cli(*cl);
+          ClassDef *cd;
+          for (cli.toFirst();(cd=cli.current());++cli)
+          {
+            i = isAccessibleFrom(scope,fileScope,item,cd->name());
+            if (i!=-1)
+            {
+              //printf("> found via explicit scope of used class\n");
+              goto done;
+            }
+          }
+        }
+        NamespaceSDict *nl = nscope->getUsedNamespaces();
+        if (nl)
+        {
+          NamespaceSDict::Iterator nli(*nl);
+          NamespaceDef *nd;
+          for (nli.toFirst();(nd=nli.current());++nli)
+          {
+            i = isAccessibleFrom(scope,fileScope,item,nd->name());
+            if (i!=-1)
+            {
+              //printf("> found via explicit scope of used namespace\n");
+              goto done;
+            }
+          }
+        }
+      }
+      // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {
         i = isAccessibleFrom(scope->getOuterScope(),fileScope,item,explicitScopePart);
@@ -1381,17 +1419,24 @@ QCString argListToString(ArgumentList *al)
   result+="(";
   while (a)
   {
+    QCString type1 = a->type, type2;
+    int i=type1.find(")("); // hack to deal with function pointers
+    if (i!=-1)
+    {
+      type2=type1.mid(i);
+      type1=type1.left(i);
+    }
     if (!a->attrib.isEmpty())
     {
       result+=a->attrib+" ";
     }
     if (!a->name.isEmpty() || !a->array.isEmpty())
     {
-      result+= a->type+" "+a->name+a->array;
+      result+= type1+" "+a->name+type2+a->array;
     }
     else
     {
-      result+= a->type;
+      result+= type1+type2;
     }
     if (!a->defval.isEmpty())
     {

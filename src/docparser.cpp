@@ -699,7 +699,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   Definition *compound=0;
   MemberDef  *member=0;
   QString name = linkToText(g_token->name,TRUE);
-  if (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
+  if (!g_insideHtmlLink && 
+      resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
     //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member->isLinkable());
     if (member) // member link
@@ -3998,7 +3999,11 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
           }
           else if (opt->name=="href") // <a href=url>..</a> tag
           {
-            DocHRef *href = new DocHRef(this,opt->value);
+            // copy attributes
+            HtmlAttribList attrList = tagHtmlAttribs;
+            // and remove the href attribute
+            attrList.remove(opt);
+            DocHRef *href = new DocHRef(this,attrList,opt->value);
             m_children.append(href);
             g_insideHtmlLink=TRUE;
             retval = href->parse();
