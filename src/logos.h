@@ -18,6 +18,7 @@
 #define LOGOS_H
 
 extern void writeLogo(const char *dir);
+extern void writeNullImage(const char *dir);
 extern void writeSearchButton(const char *dir);
 
 #endif

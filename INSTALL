@@ -1,38 +1,34 @@
-DOXYGEN Version 0.49-990728
+DOXYGEN Version 0.49-990829
+
+CONTENTS
+--------
+  - Installation instructions for UNIX
+  - Installation instructions for Windows
+  - Known configuration problems:
+      * HTML related problems
+      * LaTeX related problems
+      * HP-UX / Digital UNIX problems
 
 INSTALLATION INSTRUCTIONS FOR UNIX:
 -----------------------------------
 
 1.  Unpack the archive, unless you already have:
    
-    gunzip doxygen-0.49-990728.src.tar.gz    # uncompress the archive
-    tar xf doxygen-0.49-990728.src.tar       # unpack it
+    gunzip doxygen-0.49-990829.src.tar.gz    # uncompress the archive
+    tar xf doxygen-0.49-990829.src.tar       # unpack it
 
-2.  Make sure Qt is installed properly (check the environment variable $QTDIR)
-
-    Note: on some systems (like FreeBSD) it is possible that qt is not
-    installed in one single directory. In this case I suggest to create a 
-    local qt directory to which the QTDIR variable should point. Then
-    create two links in that directory like this:
-      ln -s <location_of_the_qt_includes> include
-      ln -s <location_of_the_qt_libs> lib
-
-3.  Look at the first two entries of Makefile.config and modify them if needed.
-    Note: Doxygen requires GNU make to build. On some systems this is 
-    known as gmake. If you have such a system, you must edit Makefile.config
-    and replace make by gmake in rest of this document.
-
-4.  Compile the program.
-
-    Type:
-      
-      make
-
-    You'll see a list of all supported platforms/compiler combinations.
-    
-    To build for the Linux platform with g++ as the compiler for example, type:
+2.  Run the configure script:
  
-      make linux-g++
+    sh ./configure
+
+    The script tries to determine the platform you use, the location
+    of the Qt library, the make tool and the perl interpreter.
+    It will report what it finds. Use configure --help 
+    to see how to override or change the default settings.
+
+3.  Compile the program by running make:
+
+    make
 
     The program should compile without problems and three binaries (doxygen,
     doxytag, and doxysearch) should be available in the bin directory of the 
@@ -40,16 +36,12 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 
 5.  Generate the user manual.
     
-    type:
-   
-      make docs
+    make docs
 
     to let doxygen generate the HTML and LaTeX documentation.
     (you will need the stream editor `sed' for this)
 
-    type:
-   
-      make ps
+    make ps
 
     to generate a postscript version of the manual. 
     (you will need latex and dvips for this)
@@ -65,27 +57,40 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 INSTALLATION INSTRUCTIONS FOR WINDOWS:
 --------------------------------------
 
-Currently, only Microsoft Visual C++ version 5.0 is supported. For other
-platforms you may need to edit the Makefiles a bit. Let me know what you
-had to change if you got Doxygen working with another windows compiler. 
+Currently, only Microsoft Visual C++ (version 5.0) is supported. 
+(For other platforms you may need to edit the perl script in wintools/make.pl
+a bit). Let me know what you had to change if you got Doxygen working with 
+another windows compiler. 
 
 You will need to install the windows/dos versions of following tools:
 - Perl 5.0+
-- flex (you can use the DJGPP version)
-- bison (you can use the DJGPP version, but you need to copy 
-         lib\bison.sim to c:\djgpp\lib\bison.simple and
-         lib\bison.hai to c:\djgpp\lib\bison.hairy.
-         The paths seem to be hardcoded in the executable)
-- Qt (Hint: only the tools section is required, so you can use the free 
-      X-windows version as well!)
-- Microsoft Visual C++ version 5.0, use the vcvars32.bat to set the environment
-  variables.
+  You can download it at: http://www.ActiveState.com/pw32/
+- the GNU tools flex, bison and sed.
+  To get these working on Windows you can install the cygwin tools.
+  You can download them at: http://sourceware.cygnus.com/cygwin/
+  Make sure the BISONLIB environment variable points to the
+  location where bison.simple and bison.hairy are located.
+- Qt-1.xx (Qt-2.xx should also work, but I didn't test it for Windows) 
+  (Hint: only the tools section is required, so you can use the free 
+   X-windows version as well!)
+- Microsoft Visual C++ (I only tested with version 5.0).
+  Use the vcvars32.bat to set the environment variables 
+  (if not selected to do this automatically during installation).
+- To generate LaTeX documentation or formulas in HTML you need the tools: 
+  latex, dvips and gswin32 
+  To get these working under Windows install the fpTeX distribution
+  You can download it at: 
+     ftp://ctan.tug.org/tex-archive/systems/win32/web2c/fptex-0.3/
+- If you want to generate compressed HTML help (see GENERATE_HTMLHELP in the 
+  config file), then you need the Microsoft HTML help workshop. 
+  You can download it at: http://msdn.microsoft.com/workshop/author/htmlhelp
 - If you used WinZip to extract the tar archive it will (apparently) not 
   create empty folders, so you have to add the folders
   `objects' and `bin' manually in the root of the distribution before 
   compiling.
 
-Make sure all tools are accessible from the command-line.
+Make sure all tools are accessible from the command-line (add them to the
+PATH environment if needed).
 
 Open a dos box, goto the doxygen root dir and type:
 
@@ -96,10 +101,25 @@ This should build the executables doxygen.exe, doxytag.exe, and doxysearch.exe
 
 To build the examples type:
 
-nmake -f Makefile.windows examples
+nmake examples
+
+To generate the HTML documentation type:
+
+nmake docs
+
+The generated docs are located in the html directory.
+To generate the postscript manual type:
+
+nmake ps
+
+The manual should now be here latex/doxygen_manual.ps
 
 -----------------------------------------------------------------------------
 KNOWN CONFIGURATION PROBLEMS
+
+QT RELATED PROBLEMS:
+- Qt-2.01 contains a bug that 
+
 
 HTML RELATED PROBLEMS:
 - the indent continuously increases.
@@ -107,12 +127,11 @@ HTML RELATED PROBLEMS:
   It is not present in many later and earlier versions I tested.
 
 LATEX RELATED PROBLEMS:
-
 - the LaTeX translation of HTML tables doesn't seem to work for all 
   compilers. It is known to work for teTeX (versions 0.4 and 0.9)
 - the file a4wide.sty is not available for all distributions. If
   your distribution does not have it please select another paper type
-  in the config file (see PAPER_TYPE)
+  in the config file (see the PAPER_TYPE tag in the config file)
 - the file fancyheader.sty is known as fancyhdr.sty on some systems.
   Please change that in src/latexgen.cpp
 
@@ -154,4 +173,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (30 July 1999)
+Dimitri van Heesch (29 August 1999)

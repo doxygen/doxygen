@@ -63,6 +63,9 @@ class ManGenerator : public OutputGenerator
     void endItemList()    {}
     void startEnumList()  {}
     void endEnumList()    {}
+    void startAlfabeticalIndexList() {}
+    void endAlfabeticalIndexList() {} 
+    void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -85,13 +88,12 @@ class ManGenerator : public OutputGenerator
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     void writeListItem();
-    void startMemberList() { t << "\n.in +1c"; firstCol=FALSE; }
-    void endMemberList() { t << "\n.in -1c"; firstCol=FALSE; }
-    void startMemberItem() { if (firstCol) t << ".in +1c";
-                             t << "\n.ti -1c\n.RI \""; 
-                             firstCol=FALSE;
-                           }
-    void endMemberItem() { t << "\"\n.br"; }
+    void startMemberList();
+    void endMemberList();
+    void startMemberItem(bool,int);
+    void endMemberItem(bool,const char *,const char *,bool);
+    void memberGroupSpacing(bool) {}
+    void memberGroupSeparator() {}
     void writeRuler()    {}
     void writeAnchor(const char *) {}
     void startCodeFragment();
@@ -164,12 +166,14 @@ class ManGenerator : public OutputGenerator
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *) {}
+    void writeNonBreakableSpace() { t << "  "; }
     
   private:
     bool firstCol;
     bool paragraph;
     int col;
     bool upperCase;
+    bool insideTabbing;
 
     ManGenerator(const ManGenerator &g);
     ManGenerator &operator=(const ManGenerator &g);

@@ -108,7 +108,6 @@
 	Project('TMAKE_LIBS *= $$RES_FILE');
     }
     StdInit();
-    $project{"DESTDIR"} = FixPath($project{"DESTDIR"});
     if ( Project("VERSION") ) {
 	$project{"VER_MAJ"} = $project{"VERSION"};
 	$project{"VER_MAJ"} =~ s/\.\d+$//;
@@ -127,7 +126,7 @@
 
 CC	=	#$ Expand("TMAKE_CC");
 CFLAGS	=	#$ Expand("TMAKE_CFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
-INCPATH	=	#$ ExpandGlue("INCPATH",'-I"','" -I"','"');
+INCPATH	=	#$ ExpandPath("INCPATH",'-I',' -I','');
 #$ !Project("TMAKE_APP_OR_DLL") && DisableOutput();
 LINK	=	#$ Expand("TMAKE_LINK");
 LFLAGS	=	#$ Expand("TMAKE_LFLAGS");

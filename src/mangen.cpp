@@ -31,6 +31,7 @@ ManGenerator::ManGenerator() : OutputGenerator()
   paragraph=FALSE;
   col=0;
   upperCase=FALSE;
+  insideTabbing=FALSE;
 }
 
 ManGenerator::~ManGenerator()
@@ -342,3 +343,38 @@ void ManGenerator::endDescItem()
   t << "\" 1c" << endl;
   firstCol=TRUE;
 }
+
+void ManGenerator::startMemberItem(bool,int annType) 
+{ 
+  if (firstCol && !insideTabbing) t << ".in +1c\n";
+  t << "\n.ti -1c\n.RI \""; 
+  firstCol=FALSE;
+  if (annType!=0) insideTabbing=TRUE;
+}
+
+void ManGenerator::endMemberItem(bool,const char *,const char *,bool endItem) 
+{ 
+  if (endItem)
+  {
+    insideTabbing=FALSE;
+    t << "\"\n.br\n.RI \"";
+  }
+  t << "\"\n.br"; 
+}
+
+void ManGenerator::startMemberList() 
+{ 
+  if (!insideTabbing)
+  {
+    t << "\n.in +1c"; firstCol=FALSE; 
+  }
+}
+
+void ManGenerator::endMemberList() 
+{ 
+  if (!insideTabbing)
+  {
+    t << "\n.in -1c"; firstCol=FALSE; 
+  }
+}
+

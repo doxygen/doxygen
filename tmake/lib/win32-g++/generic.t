@@ -3,9 +3,11 @@
 #!
 #${
     if ( Config("qt") ) {
-	if ( $ENV{"QT_DLL"} && !$ENV{"QT_NODLL"} ) {
+	if ( !(Project("DEFINES") =~ /QT_NODLL/) &&
+	     ((Project("DEFINES") =~ /QT_(?:MAKE)?DLL/) ||
+	      ($ENV{"QT_DLL"} && !$ENV{"QT_NODLL"})) ) {
 	    Project('TMAKE_QT_DLL = 1');
-	    if ( Project("TARGET") eq "qt" ) {
+	    if ( (Project("TARGET") eq "qt") && Project("TMAKE_LIB_FLAG") ) {
 		Project('CONFIG += dll');
 	    }
 	}
@@ -18,38 +20,49 @@
     }
     if ( Config("warn_off") ) {
 	Project('TMAKE_CFLAGS += $$TMAKE_CFLAGS_WARN_OFF');
+	Project('TMAKE_CXXFLAGS += $$TMAKE_CXXFLAGS_WARN_OFF');
     } elsif ( Config("warn_on") ) {
 	Project('TMAKE_CFLAGS += $$TMAKE_CFLAGS_WARN_ON');
+	Project('TMAKE_CXXFLAGS += $$TMAKE_CXXFLAGS_WARN_ON');
     }
     if ( Config("debug") ) {
 	Project('TMAKE_CFLAGS += $$TMAKE_CFLAGS_DEBUG');
+	Project('TMAKE_CXXFLAGS += $$TMAKE_CXXFLAGS_DEBUG');
 	Project('TMAKE_LFLAGS += $$TMAKE_LFLAGS_DEBUG');
     } elsif ( Config("release") ) {
 	Project('TMAKE_CFLAGS += $$TMAKE_CFLAGS_RELEASE');
+	Project('TMAKE_CXXFLAGS += $$TMAKE_CXXFLAGS_RELEASE');
 	Project('TMAKE_LFLAGS += $$TMAKE_LFLAGS_RELEASE');
     }
     if ( Config("qt") || Config("opengl") ) {
 	Project('CONFIG += windows' );
     }
     if ( Config("qt") ) {
-	$moc_aware = 1;
-	AddIncludePath(Project('TMAKE_INCDIR_QT'));
+	Project('CONFIG *= moc');
+	AddIncludePath(Project("TMAKE_INCDIR_QT"));
+	if ( Config("release") ) {
+	    Project('DEFINES += NO_DEBUG');
+	}
 	if ( Config("opengl") ) {
 	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_OPENGL');
 	}
-	if ( Project("TARGET") eq "qt" ) {
-	    if ( Project("TMAKE_QT_DLL") && !(Project("DEFINES") =~ /QT_NODLL/) ) {
+	if ( (Project("TARGET") eq "qt") && Project("TMAKE_LIB_FLAG") ) {
+	    if ( Project("TMAKE_QT_DLL") ) {
+		Project('DEFINES -= QT_DLL');
 		Project('DEFINES *= QT_MAKEDLL');
+		Project('TMAKE_LFLAGS += $$TMAKE_LFLAGS_QT_DLL');
 	    }
 	} else {
-	    if ( Project("TMAKE_QT_DLL") && !(Project("DEFINES") =~ /QT_NODLL/) ) {
+	    if ( Project("TMAKE_QT_DLL") ) {
 		Project('DEFINES *= QT_DLL');
 	    }
 	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT');
-	    if ( (Project("DEFINES") =~ /QT_DLL/) ) {
+	    if ( Project("TMAKE_QT_DLL") ) {
 		my $qtver =FindHighestLibVersion($ENV{"QTDIR"} . "/lib", "qt");
 		Project("TMAKE_LIBS /= s/qt.lib/qt${qtver}.lib/");
-		Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_DLL');
+		if ( !Config("dll") ) {
+		    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_DLL');
+		}
 	    }
 	}
     }
@@ -69,10 +82,10 @@
     } else {
 	Project('TMAKE_LFLAGS_CONSOLE_ANY = $$TMAKE_LFLAGS_CONSOLE');
 	Project('TMAKE_LFLAGS_WINDOWS_ANY = $$TMAKE_LFLAGS_WINDOWS');
-	if ( Project('TMAKE_APP_FLAG') ) {
+	if ( Project("TMAKE_APP_FLAG") ) {
 	    $project{"TARGET_EXT"} = ".exe";
 	} else {
-	    $project{"TARGET_EXT"} = ".a";
+	    $project{"TARGET_EXT"} = ".lib";
 	}
     }
     if ( Config("windows") ) {
@@ -87,10 +100,28 @@
 	Project('TMAKE_LFLAGS *= $$TMAKE_LFLAGS_CONSOLE_ANY');
 	Project('TMAKE_LIBS   *= $$TMAKE_LIBS_CONSOLE');
     }
+    if ( Config("moc") ) {
+	$moc_aware = 1;
+    }
     Project('TMAKE_LIBS += $$LIBS');
     Project('TMAKE_FILETAGS = HEADERS SOURCES DEF_FILE RC_FILE TARGET TMAKE_LIBS DESTDIR DLLDESTDIR $$FILETAGS');
-    foreach ( split(/\s/,Project('TMAKE_FILETAGS')) ) {
+    foreach ( split(/\s/,Project("TMAKE_FILETAGS")) ) {
 	$project{$_} =~ s-[/\\]+-/-g;
+    }
+    if ( Project("DEF_FILE") ) {
+	Project('TMAKE_LFLAGS *= $$DEF_FILE');
+    }
+    if ( Project("RC_FILE") ) {
+	if ( Project("RES_FILE") ) {
+	    tmake_error("Both .rc and .res file specified.\n" .
+			"Please specify one of them, not both.");
+	}
+	$project{"RES_FILE"} = $project{"RC_FILE"};
+	$project{"RES_FILE"} =~ s/\.rc$/.res/i;
+	Project('TARGETDEPS += $$RES_FILE');
+    }
+    if ( Project("RES_FILE") ) {
+	Project('TMAKE_LIBS *= $$RES_FILE');
     }
     $obj_ext  = "o";
     $dir_sep  = "/";
@@ -102,23 +133,7 @@
 	$project{"TMAKE_LIBS"} =~ s/\$\(QTDIR\)/$qtdir/;
 	$project{"TMAKE_LIBS"} =~ s/\\/\//g;
     }
-    if ( Project('DEF_FILE') ) {
-	Project('TMAKE_LFLAGS *= $$DEF_FILE');
-    }
-    if ( Project('RC_FILE') ) {
-	if ( Project('RES_FILE') ) {
-	    tmake_error("Both .rc and .res file specified.\n" .
-			"Please specify one of them, not both.");
-	}
-	$project{"RES_FILE"} = $project{"RC_FILE"};
-	$project{"RES_FILE"} =~ s/\.rc$/.res/i;
-	Project('TARGETDEPS += $$RES_FILE');
-    }
-    if ( Project('RES_FILE') ) {
-	Project('TMAKE_LFLAGS *= $$RES_FILE');
-    }
     StdInit();
-    $project{"DESTDIR"} = FixPath($project{"DESTDIR"});
     if ( Project("VERSION") ) {
 	$project{"VER_MAJ"} = $project{"VERSION"};
 	$project{"VER_MAJ"} =~ s/\.\d+$//;
@@ -143,8 +158,10 @@
 ####### Compiler, tools and options
 
 CC	=	#$ Expand("TMAKE_CC");
+CXX	=	#$ Expand("TMAKE_CXX");
 CFLAGS	=	#$ Expand("TMAKE_CFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
-INCPATH	=	#$ ExpandGlue("INCPATH","-I"," -I","");
+CXXFLAGS=	#$ Expand("TMAKE_CXXFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
+INCPATH	=	#$ ExpandPath("INCPATH",'-I',' -I','');
 #$ !Project("TMAKE_APP_OR_DLL") && DisableOutput();
 LINK	=	#$ Expand("TMAKE_LINK");
 LFLAGS	=	#$ Expand("TMAKE_LFLAGS");
@@ -173,16 +190,16 @@ TARGET	=	#$ ExpandGlue("TARGET",$project{"DESTDIR"},"",$project{"TARGET_EXT"});
 .SUFFIXES: .cpp .cxx .cc .c
 
 .cpp.o:
-	#$ Expand("TMAKE_COMPILE_IMP");
+	#$ Expand("TMAKE_RUN_CXX_IMP");
 
 .cxx.o:
-	#$ Expand("TMAKE_COMPILE_IMP");
+	#$ Expand("TMAKE_RUN_CXX_IMP");
 
 .cc.o:
-	#$ Expand("TMAKE_COMPILE_IMP");
+	#$ Expand("TMAKE_RUN_CXX_IMP");
 
 .c.o:
-	#$ Expand("TMAKE_COMPILE_IMP");
+	#$ Expand("TMAKE_RUN_CC_IMP");
 
 ####### Build rules
 

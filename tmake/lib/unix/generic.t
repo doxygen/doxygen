@@ -34,8 +34,11 @@
 	Project('CONFIG *= x11inc');
     }
     if ( Config("qt") ) {
-	$moc_aware = 1;
+	Project('CONFIG *= moc');
 	AddIncludePath(Project("TMAKE_INCDIR_QT"));
+	if ( Config("release") ) {
+	    Project('DEFINES += NO_DEBUG');
+	}
 	if ( Config("opengl") ) {
 	    Project("TMAKE_LIBDIR_QT") &&
 		Project('TMAKE_LIBS *= -L$$TMAKE_LIBDIR_QT');
@@ -61,6 +64,9 @@
 	    Project('TMAKE_LIBS *= -L$$TMAKE_LIBDIR_X11');
 	Project('TMAKE_LIBS *= $$TMAKE_LIBS_X11');
     }
+    if ( Config("moc") ) {
+	$moc_aware = 1;
+    }
     Project('TMAKE_LIBS += $$LIBS');
     if ( !Project("TMAKE_RUN_CC") ) {
 	Project('TMAKE_RUN_CC = $(CC) -c $(CFLAGS) $(INCPATH) -o $obj $src');
@@ -76,7 +82,6 @@
     }
     Project('TMAKE_FILETAGS = HEADERS SOURCES TARGET DESTDIR $$FILETAGS');
     StdInit();
-    $project{"DESTDIR"} = FixPath($project{"DESTDIR"});
     $project{"VERSION"} || ($project{"VERSION"} = "1.0");
     $project{"VER_MAJ"} = $project{"VERSION"};
     $project{"VER_MAJ"} =~ s/\.\d+$//;
@@ -86,6 +91,8 @@
     if ( Project("TMAKE_APP_FLAG") ) {
 	if ( Config("dll") ) {
 	    Project('TARGET = $$TARGET.so');
+	    Project("TMAKE_LFLAGS_SHAPP") ||
+		($project{"TMAKE_LFLAGS_SHAPP"} = $project{"TMAKE_LFLAGS_SHLIB"});
 	    Project("TMAKE_LFLAGS_SONAME") &&
 		($project{"TMAKE_LFLAGS_SONAME"} .= $project{"TARGET"});
 	}
@@ -127,7 +134,11 @@
     if ( Config("dll") ) {
 	Project('TMAKE_CFLAGS *= $$TMAKE_CFLAGS_SHLIB' );
 	Project('TMAKE_CXXFLAGS *= $$TMAKE_CXXFLAGS_SHLIB' );
-	Project('TMAKE_LFLAGS *= $$TMAKE_LFLAGS_SHLIB $$TMAKE_LFLAGS_SONAME');
+	if ( Project("TMAKE_APP_FLAG") ) {
+	    Project('TMAKE_LFLAGS *= $$TMAKE_LFLAGS_SHAPP');
+	} else {
+	    Project('TMAKE_LFLAGS *= $$TMAKE_LFLAGS_SHLIB $$TMAKE_LFLAGS_SONAME');
+	}
     }
 #$}
 #!
@@ -143,7 +154,7 @@ CC	=	#$ Expand("TMAKE_CC");
 CXX	=	#$ Expand("TMAKE_CXX");
 CFLAGS	=	#$ Expand("TMAKE_CFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
 CXXFLAGS=	#$ Expand("TMAKE_CXXFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
-INCPATH	=	#$ ExpandGlue("INCPATH","-I"," -I","");
+INCPATH	=	#$ ExpandPath("INCPATH","-I"," -I","");
 #$ Config("staticlib") && DisableOutput();
 LINK	=	#$ Expand("TMAKE_LINK");
 LFLAGS	=	#$ Expand("TMAKE_LFLAGS");

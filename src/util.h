@@ -34,17 +34,17 @@ class FileNameDict;
 class ArgumentList;
 class OutputList;
 
-extern void writeMemberDecs(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
-                 FileDef *fd, const char *title, const char *subtitle,
-                 MemberList *ml);
-extern void writeMemberDocs(OutputList &ol,
-                 MemberList *ml,const char *scopeName,MemberDef::MemberType m);
+//extern void writeMemberDecs(OutputList &ol, ClassDef *cd, NamespaceDef *nd,
+//                 FileDef *fd, const char *title, const char *subtitle,
+//                 MemberList *ml);
+//extern void writeMemberDocs(OutputList &ol,
+//                 MemberList *ml,const char *scopeName,MemberDef::MemberType m);
 extern void setAnchors(char id,MemberList *ml);
 //extern int  countMemberDocs(MemberList *ml,MemberDef::MemberType m);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
-//extern OutputList linkifyText(const char *clName,const char *name,
-//                        const char *text);
+extern void linkifyText(OutputList &ol,const char *clName,const char *name,
+                        const char *text);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd,
                     NamespaceDef *&nd);
@@ -79,9 +79,18 @@ void startFile(OutputList &ol,const char *name,
 void endFile(OutputList &ol,bool external=FALSE);
 void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
 QCString argListToString(ArgumentList *al);
+QCString tempArgListToString(ArgumentList *al);
 QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleList *el);
 void setFileNameForSections(QList<QCString> *anchorList,const char *fileName);
 QCString stripAnnonymousScope(const QCString &s);
+
+
+//void writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
+//                      FileDef *fd,MemberDef *md,const char *name);
+//void warnForUndocumentedMember(MemberDef *md);
+QCString stripFromPath(const QCString &path);
+bool rightScopeMatch(const QCString &scope, const QCString &name);
+bool leftScopeMatch(const QCString &scope, const QCString &name);
 
 #endif

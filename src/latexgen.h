@@ -63,6 +63,9 @@ class LatexGenerator : public OutputGenerator
     void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
     void startEnumList()  { t << "\\begin{enumerate}"      << endl; }
     void endEnumList()    { t << "\\end{enumerate}"        << endl; }
+    void startAlfabeticalIndexList() {}
+    void endAlfabeticalIndexList() {} 
+    void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -85,10 +88,12 @@ class LatexGenerator : public OutputGenerator
     void endMemberHeader() { endGroupHeader(); }
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
-    void startMemberList()  { t << "\\begin{CompactItemize}" << endl; }
-    void endMemberList()    { t << "\\end{CompactItemize}"   << endl; }
-    void startMemberItem() { t << "\\item " << endl; }
-    void endMemberItem() { t << endl; }
+    void startMemberList();
+    void endMemberList();
+    void startMemberItem(bool,int);
+    void endMemberItem(bool,const char *,const char *,bool);
+    void memberGroupSpacing(bool) {}
+    void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
     void writeRuler() { t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}"; }
@@ -173,6 +178,7 @@ class LatexGenerator : public OutputGenerator
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *);
+    void writeNonBreakableSpace();
     
     //static void docifyStatic(QTextStream &t,const char *str);
     
@@ -180,6 +186,7 @@ class LatexGenerator : public OutputGenerator
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
     int col;
+    bool insideTabbing;
 };
 
 #endif

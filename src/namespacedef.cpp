@@ -30,7 +30,7 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
   memList = new MemberList;
-  reference=ref;
+  setReference(ref);
 }
 
 NamespaceDef::~NamespaceDef()
@@ -94,7 +94,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     bool found=FALSE;
     while (cd)
     {
-      if (cd->isVisibleExt())
+      if (cd->isLinkable())
       {
         if (!found)
         {
@@ -110,12 +110,13 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           clName = clName.right(clName.length()-name().length()-2);
         }
         
-        ol.startMemberItem();
+        ol.startMemberItem(FALSE,0);
         switch (cd->compoundType())
         {
-          case ClassDef::Class:  ol.writeString("class");  break;
-          case ClassDef::Struct: ol.writeString("struct"); break;
-          case ClassDef::Union:  ol.writeString("union");  break;
+          case ClassDef::Class:      ol.writeString("class");      break;
+          case ClassDef::Struct:     ol.writeString("struct");     break;
+          case ClassDef::Union:      ol.writeString("union");      break;
+          case ClassDef::Interface:  ol.writeString("interface");  break;
         }
         ol.writeString(" ");
         ol.insertMemberAlign();
@@ -133,14 +134,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           ol.docify(clName);
           ol.endBold();
         }
-        ol.endMemberItem();
+        ol.endMemberItem(FALSE,0,0,FALSE);
       }
       cd=classList->next();
     }
     if (found) ol.endMemberList();
   }
   
-  writeMemberDecs(ol,0,this,0,0,0,memList);
+  memList->writeDeclarations(ol,0,this,0,0,0);
   ol.endMemberSections();
   
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
@@ -173,7 +174,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::Prototype);
+    memList->writeDocumentation(ol,name(),MemberDef::Prototype);
   }
 
   if ( memList->typedefCount()>0 )
@@ -182,7 +183,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::Typedef);
+    memList->writeDocumentation(ol,name(),MemberDef::Typedef);
   }
 
   if ( memList->enumCount()>0 )
@@ -191,7 +192,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::Enumeration);
+    memList->writeDocumentation(ol,name(),MemberDef::Enumeration);
   }
 
   if ( memList->enumValueCount()>0 )
@@ -200,16 +201,19 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::EnumValue);
+    memList->writeDocumentation(ol,name(),MemberDef::EnumValue);
   }
 
-  if ( memList->funcCount()>0 )
+  int cnt;
+  if ( (cnt=memList->funcCount()>0) )
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trFunctionDocumentation());
+    QCString cntString;
+    //cntString.sprintf(" (%d)",cnt);
+    parseText(ol,theTranslator->trFunctionDocumentation()+cntString);
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::Function);
+    memList->writeDocumentation(ol,name(),MemberDef::Function);
   }
 
   if ( memList->varCount()>0 )
@@ -218,7 +222,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,memList,name(),MemberDef::Variable);
+    memList->writeDocumentation(ol,name(),MemberDef::Variable);
   }
 
   // write Author section (Man only)

@@ -1,14 +1,10 @@
-include ../Makefile.config
-
-DOXYDIR=../bin
-DOXYGEN_DOCDIR=..
 
 all: FORCE
-	DOXYGEN_DOCDIR=$(DOXYGEN_DOCDIR); \
+	DOXYGEN_DOCDIR=$(DOXYGEN); \
 	export DOXYGEN_DOCDIR; \
         VERSION=$(VERSION) ; \
 	export VERSION; \
-	$(DOXYDIR)/doxygen
+	$(DOXYGEN)/bin/doxygen
 	@rm -f ../latex/refman.tex
 	@cp doxygen_logo*.gif ../html
 	@cp Makefile.latex ../latex/Makefile

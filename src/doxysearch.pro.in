@@ -12,7 +12,7 @@
 # All output generated with Doxygen is not covered by this license.
 
 TEMPLATE     =  app.t
-CONFIG       =	console warn_on release
+CONFIG       =	console warn_on $extraopts
 SOURCES      =	doxysearch.cpp
 TARGET       =	../bin/doxysearch
 OBJECTS_DIR  =  ../objects

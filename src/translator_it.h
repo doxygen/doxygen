@@ -299,6 +299,7 @@ class TranslatorItalian : public Translator
         case ClassDef::Class:  result+=" classe"; break;
         case ClassDef::Struct: result+=" struct"; break;
         case ClassDef::Union:  result+=" union"; break;
+        case ClassDef::Interface:  result+=" interface"; break;
       }
       result+=" "+(QCString)clName;
       return result;

@@ -50,10 +50,6 @@ MemberNameInfo::MemberNameInfo(const char *n) : QList<MemberInfo>()
   setAutoDelete(TRUE);
 }
 
-MemberNameInfo::~MemberNameInfo()
-{
-}
-
 int MemberNameInfo::compareItems(GCI item1, GCI item2)
 {
   MemberInfo *m1=(MemberInfo *)item1;

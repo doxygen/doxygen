@@ -48,6 +48,13 @@
   int *(a[20]);
 \endverbatim
   then doxygen will remove the braces and correctly parse the result.
+<li>Not all names in code fragments that are include in the documentation
+    are replaced by links (for instance when using SOURCE_BROWSER = YES). 
+    For a part this is because the code parser isn't smart enough at the
+    moment. I'll try to improve this in the future. But even with these
+    improvements not everthing can be properly linked to the corresponding
+    documentation, because of possible ambiguities or lack of
+    information about the context in which the code fragment is found.  
 </ul>
 
 
@@ -67,6 +74,6 @@ demonstrating the problem you have (make sure the example compiles!). It is
 usually a good idea to send along the configuation file as well, but please 
 use doxygen with the <code>-s</code> flag while generating it. 
 
-My email address: <a href="mailto:dimitri@stack.nl">dimitri@stack.nl</a> 
+My e-mail address: <a href="mailto:dimitri@stack.nl">dimitri@stack.nl</a> 
 */
 

@@ -21,6 +21,8 @@ Define::Define()
 { 
   undef=FALSE; 
   fileDef=0; 
+  isPredefined=FALSE;
+  nonRecursive=FALSE;
 }
 
 Define::Define(const Define &d)

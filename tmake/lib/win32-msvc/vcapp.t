@@ -2,6 +2,16 @@
 #! This TMAKE template - Microsoft Visual C++ 5.0 applications
 #!
 #${
+    if ( Config("qt") ) {
+	if ( !(Project("DEFINES") =~ /QT_NODLL/) &&
+	     ((Project("DEFINES") =~ /QT_(?:MAKE)?DLL/) ||
+	      ($ENV{"QT_DLL"} && !$ENV{"QT_NODLL"})) ) {
+	    Project('TMAKE_QT_DLL = 1');
+	    if ( (Project("TARGET") eq "qt") && Project("TMAKE_LIB_FLAG") ) {
+		Project('CONFIG += dll');
+	    }
+	}
+    }
     if ( Config("qt") || Config("opengl") ) {
 	Project('CONFIG += windows');
     }
@@ -11,25 +21,22 @@
 	if ( Config("opengl") ) {
 	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_OPENGL');
 	}
+	if ( Project("TMAKE_QT_DLL") ) {
+	    Project('DEFINES *= QT_DLL');
+	}
 	Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT');
+	if ( Project("TMAKE_QT_DLL") ) {
+	    my $qtver =FindHighestLibVersion($ENV{"QTDIR"} . "/lib", "qt");
+	    Project("TMAKE_LIBS /= s/qt.lib/qt${qtver}.lib/");
+	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_DLL');
+	}
     }
     if ( Config("opengl") ) {
 	Project('TMAKE_LIBS *= $$TMAKE_LIBS_OPENGL');
     }
     Project('TMAKE_LIBS += $$LIBS');
 
-    if ( Config("windows") ) {
-	$project{"VC_PROJ_TYPE"} = 'Win32 (x86) Application';
-	$project{"VC_PROJ_CODE"} = '0x0101';
-	$vc_base_libs = 'kernel32.lib user32.lib gdi32.lib winspool.lib ' .
-			'comdlg32.lib advapi32.lib shell32.lib ole32.lib ' .
-			'oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ';
-	$vc_libs = $vc_base_libs . 'wsock32.lib ';
-	$vc_link_release = '/nologo /subsystem:windows /machine:I386';
-	$vc_link_debug   = '/nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept';
-	$vc_cpp_def_release = '/D "NDEBUG" /D "WIN32" /D "_WINDOWS" ';
-	$vc_cpp_def_debug   = '/D "_DEBUG" /D "WIN32" /D "_WINDOWS" ';
-    } else {
+    if ( Config("console") ) {
 	$project{"VC_PROJ_TYPE"} = 'Win32 (x86) Console Application';
 	$project{"VC_PROJ_CODE"} = '0x0103';
 	$vc_base_libs = 'kernel32.lib user32.lib gdi32.lib winspool.lib ' .
@@ -40,6 +47,17 @@
 	$vc_link_debug   = '/nologo /subsystem:console /debug /machine:I386 /pdbtype:sept';
 	$vc_cpp_def_release = '/D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" ';
 	$vc_cpp_def_debug   = '/D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" ';
+    } else {
+	$project{"VC_PROJ_TYPE"} = 'Win32 (x86) Application';
+	$project{"VC_PROJ_CODE"} = '0x0101';
+	$vc_base_libs = 'kernel32.lib user32.lib gdi32.lib winspool.lib ' .
+			'comdlg32.lib advapi32.lib shell32.lib ole32.lib ' .
+			'oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ';
+	$vc_libs = $vc_base_libs . 'wsock32.lib ';
+	$vc_link_release = '/nologo /subsystem:windows /machine:I386';
+	$vc_link_debug   = '/nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept';
+	$vc_cpp_def_release = '/D "NDEBUG" /D "WIN32" /D "_WINDOWS" ';
+	$vc_cpp_def_debug   = '/D "_DEBUG" /D "WIN32" /D "_WINDOWS" ';
     }
     $project{"VC_BASE_LINK_RELEASE"} = $vc_base_libs . $vc_link_release;
     $project{"VC_BASE_LINK_DEBUG"}   = $vc_base_libs . $vc_link_debug;
@@ -52,7 +70,7 @@
     $vc_cpp_opt_common  = '/YX /FD /c';
     $project{"VC_BASE_CPP_RELEASE"} = $vc_cpp_opt_release . $vc_cpp_def_release . $vc_cpp_opt_common;
     $project{"VC_BASE_CPP_DEBUG"}   = $vc_cpp_opt_debug   . $vc_cpp_def_debug   . $vc_cpp_opt_common;
-    ExpandGlue("INCPATH",'/I "','" /I "','"');
+    ExpandPath("INCPATH",'/I ',' /I ','');
     if ( $text ne "" ) { $vc_inc = $text . " ";  $text = ""; } else { $vc_inc = ""; }
     ExpandGlue("DEFINES",'/D "','" /D "','"');
     if ( $text ne "" ) { $vc_def = $text . " ";  $text = ""; } else { $vc_def = ""; }

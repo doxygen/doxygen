@@ -67,6 +67,9 @@ class OutputGenerator
     virtual void endEnumList()    = 0;
     virtual void startBold()      = 0;
     virtual void endBold()        = 0;
+    virtual void startAlfabeticalIndexList() = 0;
+    virtual void endAlfabeticalIndexList() = 0;
+    virtual void writeIndexHeading(const char *s) = 0;
     virtual void writeIndexItem(const char *ref,const char *file,
                                 const char *text) = 0;
     virtual void docify(const char *s) = 0;
@@ -92,8 +95,10 @@ class OutputGenerator
     virtual void endMemberSubtitle() = 0;
     virtual void startMemberList()  = 0;
     virtual void endMemberList()    = 0;
-    virtual void startMemberItem() = 0;
-    virtual void endMemberItem() = 0;
+    virtual void startMemberItem(bool,int) = 0;
+    virtual void endMemberItem(bool,const char *,const char *,bool) = 0;
+    virtual void memberGroupSpacing(bool) = 0;
+    virtual void memberGroupSeparator() = 0;
     virtual void insertMemberAlign() = 0;
 
     virtual void writeRuler() = 0;
@@ -165,6 +170,7 @@ class OutputGenerator
     virtual void startQuickIndexItem(const char *s,const char *l) = 0;
     virtual void endQuickIndexItem() = 0;
     virtual void writeFormula(const char *,const char *) = 0;
+    virtual void writeNonBreakableSpace() = 0;
     
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }

@@ -101,7 +101,7 @@ static void addNamespace(const char *name)
 
 static void addMember(const char *name,const char *anchor,const char *args)
 {
-  //printf("adding member %s\n",name);
+  //printf("adding member `%s' `%s'\n",name,anchor);
   if (cd || fd)
   {
     MemberNameDict *mnd=0;
@@ -112,7 +112,8 @@ static void addMember(const char *name,const char *anchor,const char *args)
     md=new MemberDef(0,name,args,0,Public,Normal,FALSE,FALSE,
                        MemberDef::Function,0,argList); 
     delete argList;
-    md->setReference(anchor);
+    md->setAnchor(anchor);
+    md->setReference(tagName);
     if (cd) // member of a class
     {
       md->setMemberClass(cd);
@@ -157,7 +158,7 @@ static void addMember(const char *name,const char *anchor,const char *args)
 
 %}
 
-ID [a-z_A-Z][a-z_A-Z0-9]*
+ID [a-z_A-Z0-9]+
 FILE [a-z_A-Z0-9\.\-\+\:\\\/]+
 SCOPE ({ID}"::")*{ID}
 

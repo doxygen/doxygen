@@ -28,6 +28,7 @@
 #include "util.h"
 #include "diagram.h"
 #include "language.h"
+#include "htmlhelp.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -66,7 +67,7 @@ ClassDef::ClassDef(const char *nm,CompoundType ct,const char *ref,const char *fN
   allMemberNameInfoList->setAutoDelete(TRUE);
   allMemberNameInfoDict = new MemberNameInfoDict(1009);
   visited=FALSE;
-  reference=ref;
+  setReference(ref);
   compType=ct;
   incFile=0;
   tempArgs=0;
@@ -103,7 +104,7 @@ void ClassDef::insertSuperClass(ClassDef *cd,Protection p,
 void ClassDef::insertMember(const MemberDef *md)
 {
   //printf("adding %s::%s\n",name(),md->name());
-  if (!reference)
+  if (!isReference())
   {
     if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
     {
@@ -224,10 +225,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
   QCString pageType;
   switch(compType)
   {
-    case Class:  pageType=" Class";  break;
-    case Struct: pageType=" Struct"; break;
-    case Union:  pageType=" Union";  break;
-    default:     pageType+=compType; break; // an error
+    case Class:  pageType=" Class";     break;
+    case Struct: pageType=" Struct";    break;
+    case Union:  pageType=" Union";     break;
+    default:     pageType=" Interface"; break;
   } 
   pageTitle+=pageType+" Reference";
   startFile(ol,fileName,pageTitle);
@@ -302,7 +303,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       if (ok && bcd)
       {
         ClassDef *cd=bcd->classDef;
-        if (cd->hasDocumentation() || cd->isReference())
+        if (cd->isLinkable())
         {
           if (Config::genTagFile.length()>0) tagFile << cd->getOutputFileBase() << "?";
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
@@ -340,7 +341,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       if (ok && bcd)
       {
         ClassDef *cd=bcd->classDef;
-        if (cd->hasDocumentation() || cd->isReference())
+        if (cd->isLinkable())
         {
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
         }
@@ -364,14 +365,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
-    if ( icd->isVisibleExt()) count++;
+    if ( icd->isVisibleInHierarchy()) count++;
     ibcd=inheritedBy->next();
   }
   ibcd=inherits->first();
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
-    if ( icd->isVisibleExt()) count++;
+    if ( icd->isVisibleInHierarchy()) count++;
     ibcd=inherits->next();
   }
   if (Config::classDiagramFlag && count>0) 
@@ -386,7 +387,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   } 
 
   // write link to list of all members (HTML only)
-  if (allMemberNameInfoList->count()>0 && compType==Class)
+  if (allMemberNameInfoList->count()>0 /*&& compType==Class*/)
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(memListFileName,0);
@@ -397,24 +398,23 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   // write member groups
   ol.startMemberSections();
-  writeMemberDecs(ol,this,0,0,theTranslator->trPublicMembers(),0,&pubMembers); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trPublicSlots(),0,&pubSlots); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trSignals(),0,&signals); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trStaticPublicMembers(),0,&pubStaticMembers); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trProtectedMembers(),0,&proMembers); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trProtectedSlots(),0,&proSlots); 
-  writeMemberDecs(ol,this,0,0,theTranslator->trStaticProtectedMembers(),0,&proStaticMembers); 
+  pubMembers.writeDeclarations(ol,this,0,0,theTranslator->trPublicMembers(),0); 
+  pubSlots.writeDeclarations(ol,this,0,0,theTranslator->trPublicSlots(),0); 
+  signals.writeDeclarations(ol,this,0,0,theTranslator->trSignals(),0); 
+  pubStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticPublicMembers(),0); 
+  proMembers.writeDeclarations(ol,this,0,0,theTranslator->trProtectedMembers(),0); 
+  proSlots.writeDeclarations(ol,this,0,0,theTranslator->trProtectedSlots(),0); 
+  proStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticProtectedMembers(),0); 
   if (Config::extractPrivateFlag)
   {
-    writeMemberDecs(ol,this,0,0,theTranslator->trPrivateMembers(),0,&priMembers); 
-    writeMemberDecs(ol,this,0,0,theTranslator->trPrivateSlots(),0,&priSlots); 
-    writeMemberDecs(ol,this,0,0,theTranslator->trStaticPrivateMembers(),0,&priStaticMembers); 
+    priMembers.writeDeclarations(ol,this,0,0,theTranslator->trPrivateMembers(),0); 
+    priSlots.writeDeclarations(ol,this,0,0,theTranslator->trPrivateSlots(),0); 
+    priStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticPrivateMembers(),0); 
   }
-  writeMemberDecs(ol,this,0,0,theTranslator->trFriends(),0,&friends);
-  writeMemberDecs(ol,this,0,0,
+  friends.writeDeclarations(ol,this,0,0,theTranslator->trFriends(),0);
+  related.writeDeclarations(ol,this,0,0,
                   theTranslator->trRelatedFunctions(),
-                  theTranslator->trRelatedSubscript(),
-                  &related
+                  theTranslator->trRelatedSubscript()
                  ); 
   ol.endMemberSections();
     
@@ -519,11 +519,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trMemberTypedefDocumentation());
     ol.endGroupHeader();
 
-    writeMemberDocs(ol,&pubMembers,name(),MemberDef::Typedef);
-    writeMemberDocs(ol,&proMembers,name(),MemberDef::Typedef); 
+    pubMembers.writeDocumentation(ol,name(),MemberDef::Typedef);
+    proMembers.writeDocumentation(ol,name(),MemberDef::Typedef); 
     if (Config::extractPrivateFlag)
     {
-      writeMemberDocs(ol,&priMembers,name(),MemberDef::Typedef); 
+      priMembers.writeDocumentation(ol,name(),MemberDef::Typedef); 
     }
   }
 
@@ -537,11 +537,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trMemberEnumerationDocumentation());
     ol.endGroupHeader();
 
-    writeMemberDocs(ol,&pubMembers,name(),MemberDef::Enumeration);
-    writeMemberDocs(ol,&proMembers,name(),MemberDef::Enumeration); 
+    pubMembers.writeDocumentation(ol,name(),MemberDef::Enumeration);
+    proMembers.writeDocumentation(ol,name(),MemberDef::Enumeration); 
     if (Config::extractPrivateFlag)
     {
-      writeMemberDocs(ol,&priMembers,name(),MemberDef::Enumeration); 
+      priMembers.writeDocumentation(ol,name(),MemberDef::Enumeration); 
     }
   }
  
@@ -555,41 +555,48 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
   
-    writeMemberDocs(ol,&pubMembers,name(),MemberDef::EnumValue);
-    writeMemberDocs(ol,&proMembers,name(),MemberDef::EnumValue); 
+    pubMembers.writeDocumentation(ol,name(),MemberDef::EnumValue);
+    proMembers.writeDocumentation(ol,name(),MemberDef::EnumValue); 
     if (Config::extractPrivateFlag)
     {
-      writeMemberDocs(ol,&priMembers,name(),MemberDef::EnumValue); 
+      priMembers.writeDocumentation(ol,name(),MemberDef::EnumValue); 
     }
   }
 
-  if ( pubMembers.funcCount() + pubSlots.funcCount() + 
+  int func_count=0;
+  if ( 
+      (
+       func_count =
+       pubMembers.funcCount() + pubSlots.funcCount() + 
        pubStaticMembers.funcCount() +
        proMembers.funcCount() + proSlots.funcCount() +
        proStaticMembers.funcCount() +
        (Config::extractPrivateFlag ?
           priMembers.funcCount() + priSlots.funcCount() +
           priStaticMembers.funcCount() : 0
-       ) 
+       )
+      )
      )
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trMemberFunctionDocumentation());
+    QCString countStr;
+    //countStr.sprintf(" (%d)",func_count);
+    parseText(ol,theTranslator->trMemberFunctionDocumentation()+countStr);
     ol.endGroupHeader();
     
-    writeMemberDocs(ol,&pubMembers,name(),MemberDef::Function);
-    writeMemberDocs(ol,&pubSlots,name(),MemberDef::Slot); 
-    writeMemberDocs(ol,&signals,name(),MemberDef::Signal); 
-    writeMemberDocs(ol,&pubStaticMembers,name(),MemberDef::Function); 
-    writeMemberDocs(ol,&proMembers,name(),MemberDef::Function); 
-    writeMemberDocs(ol,&proSlots,name(),MemberDef::Slot); 
-    writeMemberDocs(ol,&proStaticMembers,name(),MemberDef::Function); 
+    pubMembers.writeDocumentation(ol,name(),MemberDef::Function);
+    pubSlots.writeDocumentation(ol,name(),MemberDef::Slot); 
+    signals.writeDocumentation(ol,name(),MemberDef::Signal); 
+    pubStaticMembers.writeDocumentation(ol,name(),MemberDef::Function); 
+    proMembers.writeDocumentation(ol,name(),MemberDef::Function); 
+    proSlots.writeDocumentation(ol,name(),MemberDef::Slot); 
+    proStaticMembers.writeDocumentation(ol,name(),MemberDef::Function); 
     if (Config::extractPrivateFlag)
     {
-      writeMemberDocs(ol,&priMembers,name(),MemberDef::Function); 
-      writeMemberDocs(ol,&priSlots,name(),MemberDef::Slot); 
-      writeMemberDocs(ol,&priStaticMembers,name(),MemberDef::Function); 
+      priMembers.writeDocumentation(ol,name(),MemberDef::Function); 
+      priSlots.writeDocumentation(ol,name(),MemberDef::Slot); 
+      priStaticMembers.writeDocumentation(ol,name(),MemberDef::Function); 
     }
   }
   
@@ -599,8 +606,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trRelatedFunctionDocumentation());
     ol.endGroupHeader();
-    writeMemberDocs(ol,&friends,name(),MemberDef::Friend); 
-    writeMemberDocs(ol,&related,name(),MemberDef::Function); 
+    friends.writeDocumentation(ol,name(),MemberDef::Friend); 
+    related.writeDocumentation(ol,name(),MemberDef::Function); 
   }
   
   
@@ -616,22 +623,21 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trMemberDataDocumentation());
     ol.endGroupHeader();
 
-    writeMemberDocs(ol,&pubMembers,name(),MemberDef::Variable);
-    writeMemberDocs(ol,&pubStaticMembers,name(),MemberDef::Variable); 
-    writeMemberDocs(ol,&proMembers,name(),MemberDef::Variable); 
-    writeMemberDocs(ol,&proStaticMembers,name(),MemberDef::Variable); 
+    pubMembers.writeDocumentation(ol,name(),MemberDef::Variable);
+    pubStaticMembers.writeDocumentation(ol,name(),MemberDef::Variable); 
+    proMembers.writeDocumentation(ol,name(),MemberDef::Variable); 
+    proStaticMembers.writeDocumentation(ol,name(),MemberDef::Variable); 
     if (Config::extractPrivateFlag)
     {
-      writeMemberDocs(ol,&priMembers,name(),MemberDef::Variable); 
-      writeMemberDocs(ol,&priStaticMembers,name(),MemberDef::Variable); 
+      priMembers.writeDocumentation(ol,name(),MemberDef::Variable); 
+      priStaticMembers.writeDocumentation(ol,name(),MemberDef::Variable); 
     }
   }
   
   // write the list of used files (Html and LaTeX only)
   ol.disable(OutputGenerator::Man);
   ol.writeRuler();
-  parseText(ol,theTranslator->trGeneratedFrom(pageType.lower(),
-      files.count()==1));
+  parseText(ol,theTranslator->trGeneratedFromFiles(compType,files.count()==1));
   
   bool first=TRUE;
   const char *file = files.first();
@@ -651,15 +657,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
       QCString path=fd->getPath().copy();
       if (Config::fullPathNameFlag)
       {
-        // strip part of the path
-        if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
-        {
-          path=path.right(path.length()-Config::stripFromPath.length());
-        }
-        ol.docify(path);
+        ol.docify(stripFromPath(path));
       }
 
-      if (fd->hasDocumentation())
+      if (fd->isLinkable())
       {
         ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
             fd->name());
@@ -697,7 +698,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   parseText(ol,name()+" "+theTranslator->trMemberList());
   endTitle(ol,0);
   parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
-  ol.writeObjectLink(reference,fileName,0,name());
+  ol.writeObjectLink(getReference(),fileName,0,name());
   parseText(ol,theTranslator->trIncludingInheritedMembers());
   
   ol.startItemList();
@@ -738,7 +739,7 @@ void ClassDef::writeMemberList(OutputList &ol)
          )
       {
         bool memberWritten=FALSE;
-        if (cd->isVisible() && (md->hasDocumentation() || md->isReference())) 
+        if (cd->isLinkable() && md->isLinkable()) 
           // create a link to the documentation
         {
           QCString name=mi->ambiguityResolutionScope+md->name();
@@ -773,7 +774,7 @@ void ClassDef::writeMemberList(OutputList &ol)
             ol.docify(" typedef");
           ol.writeString(" (");
           parseText(ol,theTranslator->trDefinedIn()+" ");
-          if (cd->isVisible())
+          if (cd->isLinkable())
           {
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
           }
@@ -927,33 +928,33 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
   }
 }
 
-QCString ClassDef::getTemplateNameString()
-{
-  QCString result;
-  if (!tempArgs || tempArgs->count()==0) return result;
-  result="<";
-  Argument *a=tempArgs->first();
-  while (a)
-  {
-    if (a->name.length()>0) // add template argument name
-    {
-      result+=a->name;
-    }
-    else // extract name from type
-    {
-      int i=a->type.length()-1;
-      while (i>=0 && isId(a->type.at(i))) i--;
-      if (i>0)
-      {
-        result+=a->type.right(a->type.length()-i-1);
-      }
-    }
-    a=tempArgs->next();
-    if (a) result+=", ";
-  }
-  result+=">";
-  return result;
-}
+//QCString ClassDef::getTemplateNameString()
+//{
+//  QCString result;
+//  if (!tempArgs || tempArgs->count()==0) return result;
+//  result="<";
+//  Argument *a=tempArgs->first();
+//  while (a)
+//  {
+//    if (a->name.length()>0) // add template argument name
+//    {
+//      result+=a->name;
+//    }
+//    else // extract name from type
+//    {
+//      int i=a->type.length()-1;
+//      while (i>=0 && isId(a->type.at(i))) i--;
+//      if (i>0)
+//      {
+//        result+=a->type.right(a->type.length()-i-1);
+//      }
+//    }
+//    a=tempArgs->next();
+//    if (a) result+=", ";
+//  }
+//  result+=">";
+//  return result;
+//}
 
 bool ClassDef::hasNonReferenceSuperClass()
 {
@@ -962,4 +963,60 @@ bool ClassDef::hasNonReferenceSuperClass()
   for ( ; bcli.current() && !found ; ++bcli )
     found=found || bcli.current()->classDef->hasNonReferenceSuperClass();
   return found;
+}
+
+//void ClassDef::writeMembersToContents()
+//{
+//  HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+//
+//  htmlHelp->incContentsDepth();
+//  
+//  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+//  MemberNameInfo *mni;
+//  for (;(mni=mnili.current());++mnili)
+//  {
+//    MemberNameInfoIterator mnii(*mni);
+//    MemberInfo *mi;
+//    for (mnii.toLast();(mi=mnii.current());--mnii)
+//    {
+//      MemberDef *md=mi->memberDef;
+//      ClassDef  *cd=md->memberClass();
+//      if (md->isLinkable() && cd==this) // member is not inherited
+//      {
+//        htmlHelp->addContentsItem(md->name()+md->argsString(),
+//                                  cd->getOutputFileBase(),
+//                                  md->anchor());
+//      }
+//    }
+//  }
+//  htmlHelp->decContentsDepth();
+//}
+
+void ClassDef::writeDeclaration(OutputList &ol)
+{
+  //ol.insertMemberAlign();
+  switch(compType)
+  {
+    case Class:  ol.docify("class {");  break;
+    case Struct: ol.docify("struct {"); break;
+    default:     ol.docify("union {");  break; 
+  } 
+  ol.endMemberItem(FALSE,0,0,FALSE); // TODO: pass correct group parameters
+
+  // insert members of this class
+  pubMembers.writePlainDeclarations(ol,this,0,0); 
+  pubSlots.writePlainDeclarations(ol,this,0,0); 
+  signals.writePlainDeclarations(ol,this,0,0); 
+  pubStaticMembers.writePlainDeclarations(ol,this,0,0); 
+  proMembers.writePlainDeclarations(ol,this,0,0); 
+  proSlots.writePlainDeclarations(ol,this,0,0); 
+  proStaticMembers.writePlainDeclarations(ol,this,0,0); 
+  if (Config::extractPrivateFlag)
+  {
+    priMembers.writePlainDeclarations(ol,this,0,0); 
+    priSlots.writePlainDeclarations(ol,this,0,0); 
+    priStaticMembers.writePlainDeclarations(ol,this,0,0); 
+  }
+  friends.writePlainDeclarations(ol,this,0,0);
+  related.writePlainDeclarations(ol,this,0,0); 
 }

@@ -150,11 +150,19 @@ void FormulaList::generateBitmaps(const char *path)
       // Then we run ghostscript to convert the postscript to a pixmap
       // The pixmap is a truecolor image, where only black and white are
       // used.  
+#ifdef _WIN32
+      sprintf(gsCmd,"gswin32 -q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
+                    "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
+                    gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
+                    formBase.data(),formBase.data()
+             );
+#else
       sprintf(gsCmd,"gs -q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                     "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
+#endif
       //printf("Running ghostscript...\n");
       system(gsCmd);
       f.setName(formBase+".pnm");

@@ -29,51 +29,89 @@
 #
 ############################################################################
 
+$TMAKE_VERSION = "1.3";
+
 if ($] < 5.0) {
     &tmake_error("This program requires perl version 5 or newer");
 }
 
-$cpp_ext       = "cpp";
-$obj_ext       = "o";
-$moc_aware     = 0;
-$moc_pre       = "moc_";
-$moc_ext       = "moc";
-$moc_cmd       = '$(MOC)';
-$linebreak     = "\\";
-$dir_sep       = "/";
-$is_unix       = 1;
-$really_unix   = &check_unix();
-$guess_os      = 1;
-$depend_path   = "";
-$nodepend      = 0;
-$output_count  = 0;
+$cpp_ext	= "cpp";
+$moc_aware	= 0;
+$moc_pre	= "moc_";
+$moc_ext	= "moc";
+$moc_cmd	= '$(MOC)';
+$linebreak	= "\\";
+$really_unix	= &check_unix();
+$is_unix	= $really_unix;
+$dir_sep	= $is_unix ? "/" : "\\";
+$obj_ext	= $is_unix ? "o" : "obj";
+$depend_path	= "";
+$nodepend	= 0;
+$output_count	= 0;
+$notrim_whitespace = 0;
+$read_tmakeconf	= 0;
+		
+$template_name	= "";
+$project_name	= "";
+$outfile	= "";
+%project	= ();
+$eval_quit	= 0;
 
-$template_name = "";
-$project_name  = "";
-$outfile       = "";
-@project_extra = ();
-@project_files = ();
-@eval_expr     = ();
-$eval_done     = 0;
+$project{"TMAKEPATH"} = $ENV{"TMAKEPATH"} . ";" . $ENV{"HOME"} . "/.tmake/";
 
 while ( @ARGV ) {				# parse command line args
     $_ = shift @ARGV;
     if ( s/^-// ) {
 	if ( /^e(.*)/ ) {
-	    push( @eval_expr, ($1 eq "") ? shift @ARGV : $1);
+	    if ( ! $read_tmakeconf ) {
+		$read_tmakeconf = 1;
+		&ScanProject( &find_template("tmake.conf") );
+	    }
+	    $text = "";
+	    eval(  ($1 eq "") ? shift @ARGV : $1 );
+	    die $@ if $@;
+	    print $text . "\n" if ($text ne "");
+	    $eval_quit = 1;
 	} elsif ( /^t(.*)/ ) {
 	    $template_name = ($1 eq "") ? shift @ARGV : $1;
 	} elsif ( /^o(.*)/ ) {
 	    $outfile = ($1 eq "") ? shift @ARGV : $1;
 	    ($outfile eq "-") && ($outfile = "");
+	    if ( $outfile ne "" ) {
+		open(STDOUT,">" . fix_path($outfile)) ||
+		  &tmake_error("Can't create \"$outfile\"");
+	    }
 	} elsif ( /^p(.*)/ ) {
-	    push( @project_files, ($1 eq "") ? shift @ARGV : $1);
+	    #
+	    # The -p option is obsolete and will be removed in the next	    
+	    # tmake release.
+	    #
+	    &tmake_warning( "-p option obsolete, instead use \"tmake file1.pro file2.pro ...\"");
+	    my($pf) = ($1 eq "") ? shift @ARGV : $1;
+	    if ( ! $read_tmakeconf ) {
+		$read_tmakeconf = 1;
+		&ScanProject( &find_template("tmake.conf") );
+	    }
+	    if ( ! ($pf =~ /\.pro$/i) && -f fix_path($pf . ".pro") ) {
+		$pf .= ".pro";
+	    }	
+	    if ( $project_name eq "" ) {
+		$project_name = $pf;
+		$project{"PROJECT"} = $project_name;
+		$project{"PROJECT"} =~ s/\.pro$//i;
+		$project{"TARGET"} = $project{"PROJECT"};
+	    }
+	    if ( !&ScanProject($pf) ) {
+		&tmake_error("Can't open project file \"$pf\"");
+	    }
 	} elsif ( /^unix$/ ) {
-	    $guess_os = 0;
 	    $is_unix = 1;
+	    $dir_sep = "/";
+	    $obj_ext = "o";
 	} elsif ( /^win32$/ ) {
-	    $guess_os = 0;
 	    $is_unix = 0;
+	    $dir_sep = "\\";
+	    $obj_ext = "obj";
 	} elsif ( /^nodepend$/ ) {
 	    $nodepend = 1;			# don't generate dependencies
 	} elsif ( /^v$/ ) {
@@ -81,66 +119,46 @@ while ( @ARGV ) {				# parse command line args
 	} else {
 	    &tmake_usage();
 	}
-    } elsif ( /^\s*(?:[\w\-]+:)?\w+\s*[\+\-\*\/]?=/ ) { # project override
-	push( @project_extra, $_ );
+    } elsif ( /^\s*((?:[^:\s]*?:)?)(\w+)\s*(\+=|\*=|\-=|\/=|=)/ ) {
+	if ( ! $read_tmakeconf && ! (/^\s*TMAKEPATH/) ) {
+	    $read_tmakeconf = 1;
+	    &ScanProject( &find_template("tmake.conf") );
+	}
+	Project( $_ );				# manual project setting
     } else {
-	$project_name &&
-	    &tmake_error("You can only specify one project file");
-	$project_name = $_;
+	my($pf) = $_;
+	if ( ! $read_tmakeconf ) {
+	    $read_tmakeconf = 1;
+	    &ScanProject( &find_template("tmake.conf") );
+	}
+	if ( ! ($pf =~ /\.pro$/i) && -f fix_path($pf . ".pro") ) {
+	    $pf .= ".pro";
+	}	
+	if ( $project_name eq "" ) {
+	    $project_name = $pf;
+	    $project{"PROJECT"} = $project_name;
+	    $project{"PROJECT"} =~ s/\.pro$//i;
+	    $project{"TARGET"} = $project{"PROJECT"};
+	}
+	if ( !&ScanProject($pf) ) {
+	    &tmake_error("Can't open project file \"$pf\"");
+	}
     }
 }
 
-($project_name ne "") || &tmake_usage();
+&tmake_verb("Version $TMAKE_VERSION (runtime environment: " .
+	    ($really_unix ? "Unix" : "Win32") . ")\n" );
 
-if ( $guess_os && ! check_unix() ) {		# probably non-Unix,
-    $is_unix = 0;
-    &tmake_verb("Win32 detected");
+if ( $eval_quit ) {
+    &tmake_verb("Done!");
+    exit 0;
 }
-if ( ! $is_unix ) {
-    $obj_ext = "obj";
-    $dir_sep = "\\";
-}
-$outfile eq "" || open(STDOUT,">" . fix_path($outfile)) ||
-    &tmake_error("Can't create \"$outfile\"");
-
-%project = ();
-&ScanProject( &find_template("tmake.conf") );
-&tmake_verb("Reading the project file $project_name");
-if ( ! ($project_name =~ /\.pro$/i) && -f fix_path($project_name . ".pro") ) {
-    $project_name .= ".pro";
-}
-$project{"PROJECT"} = $project_name;
-$project{"PROJECT"} =~ s/\.pro$//i;
-$project{"TARGET"} = $project{"PROJECT"};
-
-unshift(@project_files,$project_name);
-foreach ( @project_files ) {
-    if ( ! ($_ =~ /\.pro$/i) && -f fix_path($_ . ".pro") ) {
-	$_ .= ".pro";
-    }
-    if ( !&ScanProject($_) ) {
-	&tmake_error("Can't open project file \"$_\"");
-    }
-}
-&Project( @project_extra );
+($project_name eq "") && &tmake_usage();
 
 if ( $template_name eq "" ) {
     $template_name = $project{"TEMPLATE"} ?
 	    $project{"TEMPLATE"} : "default.t";
 }
-
-foreach ( @eval_expr ) {
-    $text = "";
-    eval( $_ );
-    die $@ if $@;
-    print $text . "\n" if ($text ne "");
-    $eval_done = 1;
-}
-if ( $eval_done ) {
-    &tmake_verb("Done!");
-    exit 0;
-}
-
 $template_name = &find_template($template_name);
 &IncludeTemplate($template_name);
 &tmake_verb("Done!");
@@ -159,12 +177,11 @@ exit 0;						# finished!
 #
 
 sub tmake_usage {
-    print STDERR "Usage:\n    tmake [options] project-file\n";
+    print STDERR "Usage:\n    tmake [options] project-files\n";
     print STDERR "Options:\n";
     print STDERR "    -e expr    Evaluate expression, ignore template file\n";
     print STDERR "    -nodepend  Don't generate dependency information\n";
     print STDERR "    -o file    Write output to file\n";
-    print STDERR "    -p project Load additional project file\n";
     print STDERR "    -t file    Specify a template file\n";
     print STDERR "    -unix      Create output for Unix (auto detects)\n";
     print STDERR "    -v         Verbose/debug mode\n";
@@ -183,6 +200,18 @@ sub tmake_error {
     my($msg) = @_;
     print STDERR "tmake error: " . $msg . "\n";
     exit 1;
+}
+
+
+#
+# tmake_warning(msg)
+#
+# Prints the warning message
+#
+
+sub tmake_warning {
+    my($msg) = @_;
+    print STDERR "tmake warning: " . $msg . "\n";
 }
 
 
@@ -207,9 +236,13 @@ sub tmake_verb {
 sub check_unix {
     my($r);
     $r = 0;
-    if ( -f "/bin/uname" || -f "/usr/bin/uname" ) {
+    if ( -f "/bin/uname" ) {
 	$r = 1;
 	(-f "\\bin\\uname") && ($r = 0);
+    }
+    if ( -f "/usr/bin/uname" ) {
+	$r = 1;
+	(-f "\\usr\\bin\\uname") && ($r = 0);
     }
     return $r;
 }
@@ -232,8 +265,9 @@ sub find_template {
     } else {
 	$tb = $template_base . ";";
     }
-    $d = ";" . $tb . $ENV{"TMAKEPATH"} . ";" . $ENV{"HOME"} . "/.tmake/";
-    @dirs = &split_path( $d );
+    $d = $tb . $project{"TMAKEPATH"};
+    @dirs = ("");
+    push @dirs, &split_path( $d );
     $filename .= ".t" unless ($filename =~ /\.\w+$/);
     for $d ( @dirs ) {
 	$p = $d . $filename;
@@ -267,9 +301,15 @@ sub StdInit {
     $stdinit_done = 1;
     if ( defined($project{"OBJECTS_DIR"}) ) {
 	$project{"OBJECTS_DIR"} = FixPath($project{"OBJECTS_DIR"});
+	&mkdirp($project{"OBJECTS_DIR"},0777);
     }
     if ( defined($project{"MOC_DIR"}) ) {
 	$project{"MOC_DIR"} = FixPath($project{"MOC_DIR"});
+	&mkdirp($project{"MOC_DIR"},0777);
+    }
+    if ( defined($project{"DESTDIR"}) ) {
+	$project{"DESTDIR"} = FixPath($project{"DESTDIR"});
+	&mkdirp($project{"DESTDIR"},0777);
     }
     $project{"OBJECTS"} = &Objects($project{"SOURCES"});
     if ( $moc_aware ) {
@@ -347,18 +387,16 @@ sub Now {
 
 
 #
-# expand_project_val(tag)
+# expand_project_var(var)
 #
 # Internal function for Project().
 # Expands a project value string.
 #
 
-sub expand_project_val {
+sub expand_project_var {
     my($v) = @_;
     my($c);
     return "" if !defined($v);
-    $v =~ s/^\s+//;				# trim white space
-    $v =~ s/\s+$//;
     $c = 0;
     while ( $c < 100 ) {			# expand $$
 	if ( $v =~ s/(\$\$\w+)/\035/ ) {
@@ -415,27 +453,33 @@ sub expand_project_val {
 
 sub Project {
     my @settings = @_;
-    my($r,$if_tag,$t,$s,$v,$p,$c);
+    my($r,$if_var,$t,$s,$v,$p,$c);
     $r = "";
     foreach ( @settings ) {
 	$v = $_;
-	if ( $v =~ s/^\s*((?:[^:]*?:)?)(\w+)\s*(\+=|\*=|\-=|\/=|=)\s*// ) {
-	    $if_tag = $1;
-	    if ( $if_tag ne "" ) {		
-		chop $if_tag;
-		if ( $if_tag eq "unix" ) {
+	if ( $v =~ s/^\s*((?:[^:\s]*?:)?)(\w+)\s*(\+=|\*=|\-=|\/=|=)// ) {
+	    $if_var = $1;
+	    if ( $if_var ne "" ) {		
+		chop $if_var;
+		if ( $if_var eq "unix" ) {
 		    return "" if !$is_unix;
-		} elsif ( $if_tag eq "win32" ) {
+		} elsif ( $if_var eq "win32" ) {
 		    return "" if $is_unix;
-		} elsif ( ($if_tag ne $tmake_platform) && !Config($if_tag) ) {
+		} elsif ( ($if_var ne $tmake_platform) && !Config($if_var) ) {
 		    return "";
 		}
 	    }
 	    $t = $2;
 	    $s = $3;
-	    $v = expand_project_val($v);
+	    if ( ! $notrim_whitespace ) {	
+		$v =~ s/^\s+//;			# trim white space
+		$v =~ s/\s+$//;
+	    }
+	    $v = expand_project_var($v);
 	    $p = $project{$t};
-	    if ( $s eq "=" ) {			# set variable
+	    if ( $s ne "=" && $v eq "" ) {
+		# nothing to append, subtract or sed
+	    } elsif ( $s eq "=" ) {		# set variable
 		$p = $v;
 	    } elsif ( $s eq "+=" ) {		# append
 		if ( $p eq "" ) {
@@ -457,9 +501,9 @@ sub Project {
 		$cmd = '$p =~ ' . $v;
 		eval $cmd;
 	    }
-	    $project{$t} = expand_project_val($p);
+	    $project{$t} = expand_project_var($p);
 	} else {
-	    $p = expand_project_val($project{$v});
+	    $p = expand_project_var($project{$v});
 	}
 	if ( $p ne "" ) {
 	    $r = ($r eq "") ? $p : ($r . " " . $p);
@@ -480,7 +524,7 @@ sub Project {
 
 sub Substitute {
     my($subst) = @_;
-    $text = expand_project_val($subst);
+    $text = expand_project_var($subst);
     return $text;
 }
 
@@ -494,28 +538,50 @@ sub Substitute {
 
 sub ScanProject {
     my($file) = @_;
-    my($tag,$var,@v,$more,$line);
+    my($var,$val,@v,$more,$line,$endmark);
 
-    $tag = "";
+    $var = "";
     $line = 0;
     open(TMP,fix_path($file)) || return 0;
 
+    &tmake_verb("Reading the project file $file");
     while ( <TMP> ) {
 	$line++;
 	s/\#.*//;				# strip comment
 	s/^\s+//;				# strip white space
 	s/\s+$//;
-	if ( /^\s*((?:(?:[^:]*?:)?)\w+\s*(\+|\-|\*|\/)?=)/ ) {
-	    $tag = $1;				# tag also contains the ".="
+	if ( /^\s*((?:(?:[^:\s]*?:)?)\w+\s*(\+|\-|\*|\/)?=)/ ) {
+	    $var = $1;				# var also contains the ".="
 	    s/^.*?=\s*//;
+	    if ( /^\<\<(.*)$/ ) {
+		$endmark = $1;		
+		$val = "";
+		while ( <TMP> ) {
+		    $line++;
+		    if ( /^\Q$endmark\E$/ ) {
+			$endmark = "";
+			last;
+		    }
+		    $val .= $_;
+		}
+		if ( $endmark ne "" ) {
+		    tmake_error("$file:$line: End marker $endmark not found");
+		}
+		chop $val if ( $val ne "" );
+		$notrim_whitespace++;
+		Project( $var . $val );
+		$notrim_whitespace--;
+		$var = "";
+		$_ = "";
+	    }
 	}
-	if ( $tag ne "" ) {
+	if ( $var ne "" ) {
 	    $more = ( $_ =~ s/\s*\\\s*$// );	# more if \ at end of line
 	    push( @v, split( /\s+/, $_ ) );
 	    if ( ! $more ) {
-		$var = join(" ",@v);
-		Project( $tag . $var );
-		$tag = "";
+		$val = join(" ",@v);
+		Project( $var . $val );
+		$var = "";
 		@v = ();
 	    }
 	} elsif ( $_ ne "" ) {
@@ -523,6 +589,7 @@ sub ScanProject {
 	}
     }
     close(TMP);
+    &tmake_verb("Done reading the project file $file");
     return 1;
 }
 
@@ -601,15 +668,15 @@ sub IncludeTemplate {
 
 
 #
-# Expand(tag) - appends to $text
+# Expand(var) - appends to $text
 #
 # Expands a list of $project{} variables with a space character between them.
 #
 
 sub Expand {
-    my @tags = @_;
+    my @vars = @_;
     my($t);
-    $t = Project(@tags);
+    $t = Project(@vars);
     if ( $text eq "" ) {
 	$text = $t;
     } elsif ( $t ne "" ) {
@@ -620,13 +687,13 @@ sub Expand {
 
 
 #
-# ExpandGlue(tag,prepend,glue,append) - appends to $text
+# ExpandGlue(var,prepend,glue,append) - appends to $text
 #
-# Expands a $project{} tag, splits on whitespace
+# Expands a $project{} variable, splits on whitespace
 # and joins with $glue. $prepend is put at the start
 # of the string and $append is put at the end of the
 # string. The resulting string becomes "" if the project
-# tag is empty or not defined.
+# var is empty or not defined.
 #
 # Example:
 #
@@ -640,9 +707,9 @@ sub Expand {
 #
 
 sub ExpandGlue {
-    my($tag,$prepend,$glue,$append) = @_;
+    my($var,$prepend,$glue,$append) = @_;
     my($t,$v);
-    $v = Project($tag);
+    $v = Project($var);
     if ( $v eq "" ) {
 	$t = "";
     } else {
@@ -658,14 +725,67 @@ sub ExpandGlue {
 
 
 #
-# ExpandList(tag) - sets $text.
+# ExpandList(var) - sets $text.
 #
 # Suitable for expanding HEADERS = ... etc. in a Makefile
 #
 
 sub ExpandList {
-    my($tag) = @_;
-    return ExpandGlue($tag,""," ${linebreak}\n\t\t","");
+    my($var) = @_;
+    return ExpandGlue($var,""," ${linebreak}\n\t\t","");
+}
+
+
+#
+# ExpandPath(var,prepend,glue,append) - appends to $text
+#
+# Expands a $project{} variable, splits on either ';' or
+# whitespace and joins with $glue. $prepend is put at the
+# start of the string and $append is put at the end of the
+# string. The resulting string becomes "" if the project
+# variable is empty or not defined.
+#
+# If the variable contains at least one semicolon or tmake
+# is running on Windows, the resulting items are put in
+# double-quotes.
+#
+# Example:
+#
+#   The project file defines:
+#	INCLUDEPATH = "C:\qt\include;c:\program files\msdev\include
+#
+#   ExpandGlue("INCLUDEPATH","-I","-I","")
+#
+#   The result:
+#	$text = -I"c:\qt\include" -I"c:\program files\msdev\include"
+#
+
+sub ExpandPath {
+    my($var,$prepend,$glue,$append) = @_;
+    my($t,$v);
+    my($s);
+    $v = Project($var);
+    if ( $v eq "" ) {
+	$t = "";
+    } else {
+	if ( $v =~ /;/ || !$is_unix ) {
+	    $prepend .= '"';
+	    $glue = '"' . $glue . '"';
+	    $append = '"' . $append;
+	}
+
+	if ( $v =~ /;/ ) {    
+	    $t = $prepend . join($glue,split(/;+/,$v)) . $append;
+	} else {
+	    $t = $prepend . join($glue,split(/\s+/,$v)) . $append;
+	}
+    }
+    if ( $text eq "" ) {
+	$text = $t;
+    } elsif ( $t ne "" ) {
+	$text .= " " . $t;
+    }
+    return $text;
 }
 
 
@@ -859,11 +979,18 @@ sub AddIncludePath {
 	return;
     }
     $project{"INCLUDEPATH"} = "" if !defined($project{"INCLUDEPATH"});
+    if ( !defined($project{"INCPATH_SEP"}) ) {
+	if ( $project{"INCLUDEPATH"} =~ /;/ ) {
+	    $project{"INCPATH_SEP"} = ";";
+	} else {
+	    $project{"INCPATH_SEP"} = " ";
+	}
+    }
     $p = $project{"INCLUDEPATH"};
     $p = ($p && $path) ? ($p . ";" . $path) : ($p . $path);
     $project{"INCLUDEPATH"} = $p;
-    $p = join(" ",&split_path($p));
-    $p =~ s=[\\/](\s|$)= =g;
+    $p = join($project{"INCPATH_SEP"},&split_path($p));
+    $p =~ s=[\\/]($project{"INCPATH_SEP"}|$)=$project{"INCPATH_SEP"}=g;
     $project{"INCPATH"} = $p;
 }
 
@@ -887,7 +1014,7 @@ sub FindHighestLibVersion {
     $highest = "";
     @files = find_files($dir,"${name}.*\.lib");
     for $f ( @files ) {
-	if ( $f =~ /(\d+)\.lib/ ) {
+	if ( $f =~ /(\d+)\.lib/i ) {
 	    $v = $1;
 	    if ( $highest eq "" || $v > $highest ) {
 		$highest = $v;
@@ -971,7 +1098,7 @@ sub make_depend {
     @cur_dep_path = @dep_path;
     if ( $file =~ /(.*[\/\\])/ ) {
 	$dep_curdir = $1;
-	splice( @cur_dep_path, 0, 0, $dep_curdir );
+	push @cur_dep_path, $dep_curdir;
     } else {
 	$dep_curdir = "";
     }
@@ -1032,7 +1159,7 @@ sub canonical_dep {
 sub scan_dep {
     my($file) = @_;
     my($dir,$path,$found,@allincs,@includes,%incs);
-    $path = ($file eq $dep_file) ? $file : $dep_curdir . $file;
+    $path = $file;
     @includes = ();
     return @includes if $file =~ /\.$moc_ext$/; # avoid .moc files
     if ( ! (-f fix_path($path)) ) {
@@ -1072,13 +1199,24 @@ sub scan_dep {
 
 sub split_path {
     my($p) = @_;
-    return ""  if !defined($p);
+    my($s,@d);
+    @d = ();
+    return @d if !defined($p) || $p eq "";
     $p =~ s=:=;=g if $is_unix;
     $p =~ s=[/\\]+=/=g;
-    $p =~ s=([^/:]);=$1/;=g;
-    $p =~ s=([^:;/])$=$1/=;
-    $p =~ s=/=$dir_sep=g unless $is_unix;
-    return split(/;/,$p);
+    if ( !($p =~ /;/) ) {
+	$p =~ s/\s+/;/g;
+    }
+    $p =~ s/\s*;\s*/;/g;
+    while( $p =~ /(?:(?:[^\"\;][^\;]*;*)|(?:\"[^\"]*\";*))/g ) {
+	$s = $&;
+	$s =~ s=\"==g;
+	$s =~ s=[\s\;]+$==g;
+	$s =~ s=([^/:])$=$1/=g;
+	$s =~ s=/=$dir_sep=g unless $is_unix;
+	push @d, $s;
+    }
+    return @d;
 }
 
 
@@ -1096,4 +1234,29 @@ sub fix_path {
 	$p =~ s-/-\\-g;
     }
     return $p;
+}
+
+
+#
+# mkdirp(filename,mode) - Internal for StdInit()
+#
+# Creates the directory specified by $filename, with permissions
+# specified by mode (as modified by umask). Recursively calls
+# mkdir, similar to 'mkdir -p'.
+#
+
+sub mkdirp {
+    my($filename,$mode) = @_;
+    if ( $filename =~ /\$\(\w+\)/ ) {  # ignore "$(something)"
+	return 0;
+    }
+    $filename =~ s-[\\:/]+-/-g;
+    if ( -d $filename ) {
+	return 1;
+    }
+    $filename =~ m-^((.*)/)?(.*)-;
+    if ( defined($2) && ! mkdirp($2,$mode) ) {
+	return 0;
+    }
+    return mkdir($filename,$mode);
 }

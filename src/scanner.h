@@ -20,11 +20,15 @@
 #include "qtbc.h"
 #include <stdio.h>
 #include <qlist.h>
+#include <qintdict.h>
 
 #include "entry.h"
 #include "code.h"
+#include "membergroup.h"
 
 class OutputList;
+typedef QIntDict<MemberGroup> MemberGroupDict;
+typedef QIntDictIterator<MemberGroup> MemberGroupDictIterator;
 
 extern void parseMain(Entry *);
 extern void parseDoc(OutputList &ol,const char *clName, const char *memName,
@@ -32,4 +36,7 @@ extern void parseDoc(OutputList &ol,const char *clName, const char *memName,
 extern void parseExample(OutputList &ol,const QCString &docString, 
                            const char *fileName);
 extern void parseText(OutputList &ol,const QCString &txtString);
+
+extern MemberGroupDict memberGroupDict;
+
 #endif

@@ -45,6 +45,7 @@ static QCString         *copyArgValue;
 static QCString         curArgTypeName;
 static QCString         curArgDefValue;
 static QCString		curArgName;
+static QCString		curArgAttrib;
 static int              argRoundCount;
 static int              argSharpCount;
 static int              argCurlyCount;
@@ -94,6 +95,12 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <ReadFuncArgType>{B}*			{
   					  curArgTypeName+=" ";
   					}
+<ReadFuncArgType>"["[^\]]*"]"		{ 
+					  if (curArgTypeName.stripWhiteSpace().isEmpty())
+					    curArgAttrib=yytext; 
+					  else
+					    curArgTypeName+=yytext;
+					}
 <ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"\\."'"		{ curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ curArgDefValue+=yytext; }
@@ -216,6 +223,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 						   )
 						  ) i--;
 					    Argument *a = new Argument; 
+					    a->attrib = curArgAttrib.copy();
 					    if (i>=0 && curArgTypeName.at(i)!=':')
 					    { // type contains a name
 					      a->type = curArgTypeName.left(i+1).stripWhiteSpace();
@@ -229,6 +237,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    //printf("----> Adding argument `%s' `%s' `%s'\n",a->type.data(),a->name.data(),a->defval.data());
 					    argList->append(a);
 					  }
+					  curArgAttrib.resize(0);
 					  curArgTypeName.resize(0);
   					  curArgDefValue.resize(0);
 					  if (*yytext==')')

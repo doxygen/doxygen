@@ -46,7 +46,8 @@ class ClassDef : public Definition
     
     enum CompoundType { Class=Entry::CLASS_SEC, 
                         Struct=Entry::STRUCT_SEC, 
-                        Union=Entry::UNION_SEC 
+                        Union=Entry::UNION_SEC,
+                        Interface=Entry::INTERFACE_SEC
                       };
     
     ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
@@ -54,7 +55,7 @@ class ClassDef : public Definition
     //QCString classFile() const { return fileName; }
     QCString getOutputFileBase() const { return fileName; }
     CompoundType compoundType() const { return compType; } 
-    const char *memberListFileName() const { return memListFileName; }
+    //const char *memberListFileName() const { return memListFileName; }
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
@@ -64,8 +65,8 @@ class ClassDef : public Definition
     void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
-    bool isReference() { return !reference.isNull(); }
-    const char *getReference() const { return reference; }
+    //bool isReference() { return !reference.isNull(); }
+    //const char *getReference() const { return reference; }
     void insertMember(const MemberDef *);
     void insertUsedFile(const char *);
     void computeAnchors();
@@ -74,29 +75,45 @@ class ClassDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeIncludeFile(OutputList &ol);
+    //void writeMembersToContents();
+    void writeDeclaration(OutputList &ol);
     bool addExample(const char *anchor,const char *name, const char *file);
     bool hasExamples();
     //void writeExample(OutputList &ol);
     void setProtection(Protection p) { prot=p; }
     Protection protection() const { return prot; }
-    bool isVisible() 
-      { return !name().isEmpty() && name().at(0)!='@' &&
-               (prot!=Private || Config::extractPrivateFlag) &&
-               hasDocumentation();
-      }
+    /*! a link to this class is possible within this project */
+    bool isLinkableInProject() 
+    { int i = name().findRev("::");
+      if (i==-1) i=0; else i+=2;
+      return !name().isEmpty() && name().at(i)!='@' && 
+             (prot!=Private || Config::extractPrivateFlag) &&
+             hasDocumentation() && !isReference();
+    }
+    /*! a link to this class is possible (either within this project,
+     *  or as a cross-reference to another project
+     */
+    bool isLinkable()
+    {
+      return isLinkableInProject() || isReference();
+    }
     bool hasNonReferenceSuperClass();
-    bool isVisibleExt() 
-      { return (Config::allExtFlag || hasNonReferenceSuperClass()) &&
-               !name().isEmpty() && name().at(0)!='@' &&
-               (prot!=Private || Config::extractPrivateFlag) &&
-               (hasDocumentation() || !Config::hideClassFlag || 
-               !reference.isNull());
-      }
+    /*! the class is visible in a class diagram, or class hierarchy */
+    bool isVisibleInHierarchy() 
+    { return // show all classes or a superclass is visible
+             (Config::allExtFlag || hasNonReferenceSuperClass()) &&
+             // and not an annonymous compound
+             name().find('@')==-1 &&
+             // and not privately inherited
+             (prot!=Private || Config::extractPrivateFlag) &&
+             // documented or show anyway or documentation is external 
+             (hasDocumentation() || !Config::hideClassFlag || isReference());
+    }
     
     // template argument functions
     ArgumentList *templateArguments() const { return tempArgs; }
     void setTemplateArguments(ArgumentList *al);
-    QCString getTemplateNameString();
+    //QCString getTemplateNameString();
     void setNamespace(NamespaceDef *nd) { nspace = nd; }
     NamespaceDef *getNamespace() { return nspace; }
     
@@ -129,7 +146,7 @@ class ClassDef : public Definition
     MemberNameInfoDict *allMemberNameInfoDict;
     ArgumentList     *tempArgs;
     QStrList          files;
-    QCString           reference;
+    //QCString           reference;
     ExampleList      *exampleList;
     ExampleDict      *exampleDict;
     CompoundType      compType;

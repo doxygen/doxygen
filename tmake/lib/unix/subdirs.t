@@ -25,7 +25,9 @@ all: $(SUBDIRS)
 $(SUBDIRS): FORCE
 	cd $@; $(MAKE)
 
-tmake:
+#$ TmakeSelf();
+
+tmake_all:
 #${
 	$text = "\t" . 'for i in $(SUBDIRS); do ( cd $$i ; $(TMAKE) $$i.pro -o $(MAKEFILE); grep "TEMPLATE.*subdirs" $$i.pro 2>/dev/null >/dev/null && $(MAKE) -f $(MAKEFILE) tmake ) ; done';
 #$}

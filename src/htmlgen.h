@@ -21,6 +21,7 @@
 #include "outputgen.h"
 
 class QFile;
+class HtmlHelp;
 
 class HtmlGenerator : public OutputGenerator
 {
@@ -40,6 +41,7 @@ class HtmlGenerator : public OutputGenerator
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
     
     static void init();
+    
     //void generateExternalIndex();
     void startFile(const char *name,const char *title,bool external);
     void writeFooter(int,bool);
@@ -59,12 +61,15 @@ class HtmlGenerator : public OutputGenerator
     
     void newParagraph();
     void writeString(const char *text);
-    void startIndexList() { t << "<ul>"  << endl; }
-    void endIndexList()   { t << "</ul>" << endl; } 
+    void startIndexList();
+    void endIndexList();
     void startItemList()  { t << "<ul>"  << endl; }
     void endItemList()    { t << "</ul>" << endl; }
     void startEnumList()  { t << "<ol>"  << endl; }
     void endEnumList()    { t << "</ol>" << endl; }
+    void startAlfabeticalIndexList();
+    void endAlfabeticalIndexList();
+    void writeIndexHeading(const char *s);
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -90,9 +95,11 @@ class HtmlGenerator : public OutputGenerator
     void endMemberSubtitle();
     void startMemberList();
     void endMemberList();
-    void startMemberItem();
+    void startMemberItem(bool,int);
+    void memberGroupSpacing(bool inGroup);
+    void memberGroupSeparator();
     void insertMemberAlign();
-    void endMemberItem();
+    void endMemberItem(bool,const char *,const char *,bool);
     void startMemberDescription();
     void endMemberDescription();
 
@@ -115,7 +122,7 @@ class HtmlGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *) 
                             { t << endl << "<h3>"; }
-    void endMemberDoc()               { t << "</h3>" << endl; }
+    void endMemberDoc()     { t << "</h3>" << endl; }
     void writeDoxyAnchor(const char *clName,const char *anchor,
                          const char *name);
     void writeLatexSpacing() {}
@@ -168,6 +175,7 @@ class HtmlGenerator : public OutputGenerator
     void startQuickIndexItem(const char *,const char *);
     void endQuickIndexItem();
     void writeFormula(const char *,const char *);
+    void writeNonBreakableSpace() { t << "&nbsp;&nbsp;&nbsp;"; }
     
     //static void docifyStatic(QTextStream &t,const char *str);
     
@@ -175,9 +183,12 @@ class HtmlGenerator : public OutputGenerator
     QCString header;
     QCString footer;
     QCString lastTitle;
+    QCString lastFile;
 
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);
+
+    static HtmlHelp *htmlHelp;
 };
 
 #endif

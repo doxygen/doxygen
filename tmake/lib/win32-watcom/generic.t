@@ -109,7 +109,6 @@
     }
     $linebreak = '&';
     StdInit();
-    $project{"DESTDIR"} = FixPath($project{"DESTDIR"});
     if ( Project("VERSION") ) {
 	$project{"VER_MAJ"} = $project{"VERSION"};
 	$project{"VER_MAJ"} =~ s/\.\d+$//;
@@ -131,7 +130,7 @@ QTDIR	=	#$ $text = $ENV{"QTDIR"};
 #$ Config("qt") || EnableOutput();
 CC	=	#$ Expand("TMAKE_CC");
 CFLAGS	=	#$ Expand("TMAKE_CFLAGS"); ExpandGlue("DEFINES","-d="," -d=","");
-INCPATH	=	#$ ExpandGlue("INCPATH","-i="," -i=","");
+INCPATH	=	#$ ExpandPath("INCPATH",'-i=',' -i=','');
 #$ !Project("TMAKE_APP_OR_DLL") && DisableOutput();
 LINK	=	#$ Expand("TMAKE_LINK");
 LFLAGS	=	#$ Expand("TMAKE_LFLAGS");

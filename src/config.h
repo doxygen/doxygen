@@ -49,7 +49,6 @@ struct Config
   static QCString genTagFile;         // the tag file to generate
   static QCString inputFilter;        // a filter command that is applied to input files
   static QCString paperType;          // the page type to generate docs for
-  static QCString stripFromPath;      // the string to strip from the file path
   static QCString manExtension;       // extension the man page files
   static QStrList includePath;        // list of include paths                
   static QStrList examplePath;        // list of example paths                
@@ -61,6 +60,7 @@ struct Config
   static QStrList extDocPathList;     // list of external doc. directories.   
   static QStrList predefined;         // list of predefined macro names.
   static QStrList extraPackageList;   // list of extra LaTeX packages.
+  static QStrList stripFromPath;      // list of candidates to strip from the file path
   static bool     quietFlag;          // generate progress messages flag      
   static bool     warningFlag;        // generate warnings flag               
   static bool     recursiveFlag;      // scan directories recursively         
@@ -89,6 +89,8 @@ struct Config
   static bool     htmlAlignMemberFlag; // align members in HTML using tables.
   static bool     includeSourceFlag;  // include source code in documentation.  
   static bool     autoBriefFlag;      // javadoc comments behaves as Qt comments.
+  static bool     htmlHelpFlag;       // should html help files be generated?
+  static bool     alphaIndexFlag;     // should an alphabetical index be generated?
 };
 
 #endif

@@ -43,6 +43,7 @@ class OutputList;
 
 void writeIndex(OutputList &ol);
 void writeHierarchicalIndex(OutputList &ol);
+void writeAlphabeticalIndex(OutputList &ol);
 void writeClassHierarchy(OutputList &ol);
 void writeFileIndex(OutputList &ol);
 void writeAnnotatedIndex(OutputList &ol);
@@ -66,5 +67,6 @@ int countGroups();
 int countNamespaces();
 int countAnnotatedClasses();
 int countNamespaceMembers();
+int countIncludeFiles();
 
 #endif

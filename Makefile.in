@@ -1,0 +1,34 @@
+all: src/version.cpp
+	cd src ; $(MAKE)
+
+clean: FORCE
+	cd examples ; $(MAKE) clean
+	cd doc ; $(MAKE) clean
+	cd src ; $(MAKE) clean
+	-rm -f bin/doxy*
+	-rm -f objects/*.o
+
+distclean: clean
+	-rm -f src/Makefile.doxygen \
+	       src/Makefile.doxytag \
+	       src/Makefile.doxysearch
+	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile
+	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
+	-rm -f src/version.cpp
+
+docs: FORCE
+	cd examples ; $(MAKE)
+	cd doc ; $(MAKE)
+
+ps: docs
+	cd latex ; $(MAKE)
+
+archive: distclean
+	tar zcvf dx`date +%y%m%d`.tgz tmake doc wintools examples bin objects \
+	       src configure Makefile.in Makefile.win.in INSTALL make.bat \
+	       LANGUAGE.HOWTO LICENSE PLATFORMS VERSION
+
+src/version.cpp: Makefile
+	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp
+
+FORCE:

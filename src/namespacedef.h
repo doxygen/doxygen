@@ -41,20 +41,32 @@ class NamespaceDef : public Definition
     void insertMember(MemberDef *md);
     void computeAnchors();
     int countMembers();
-    const char *getReference() { return reference; }
-    bool isVisible() 
+    //const char *getReference() { return reference; }
+    //bool isVisible() 
+    //{
+    //  return !getReference() && hasDocumentation() &&
+    //         !name().isEmpty() && name().at(0)!='@';
+    //}
+    //bool isVisibleExt()
+    //{
+    //  return (getReference() || hasDocumentation()) &&
+    //         !name().isEmpty() && name().at(0)!='@';
+    //}
+
+    bool isLinkableInProject()
     {
-      return !getReference() && hasDocumentation() &&
-             !name().isEmpty() && name().at(0)!='@';
+      int i = name().findRev("::");
+      if (i==-1) i=0; else i+=2;
+      return !name().isEmpty() && name().at(i)!='@' &&
+              hasDocumentation() && !isReference();
     }
-    bool isVisibleExt()
+    bool isLinkable()
     {
-      return (getReference() || hasDocumentation()) &&
-             !name().isEmpty() && name().at(0)!='@';
+      return isLinkableInProject() || isReference();
     }
     
   private:
-    QCString reference;
+    //QCString reference;
     QCString fileName;
     QStrList files;
     ClassList *classList;
@@ -79,6 +91,10 @@ class NamespaceListIterator : public QListIterator<NamespaceDef>
       QListIterator<NamespaceDef>(l) {}
 };
 
-typedef QDict<NamespaceDef> NamespaceDict;
+class NamespaceDict : public QDict<NamespaceDef>
+{
+  public:
+    NamespaceDict(int size) : QDict<NamespaceDef>(size) {}
+};
 
 #endif

@@ -1,3 +1,4 @@
+
 #
 # $Id$
 #
@@ -11,8 +12,6 @@
 # 
 # All output generated with Doxygen is not covered by this license.
 # 
-
-include ../Makefile.config
 
 all: Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
 	$(MAKE) -f Makefile.doxygen    $@
@@ -37,7 +36,7 @@ clean:
 	$(MAKE) -f Makefile.doxygen    clean 
 	$(MAKE) -f Makefile.doxytag    clean
 	$(MAKE) -f Makefile.doxysearch clean
-	-rm -f scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
+	-$(RM) scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp \
 	       declinfo.cpp defargs.cpp
 

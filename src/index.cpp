@@ -30,6 +30,7 @@
 #include "util.h"
 #include "groupdef.h"
 #include "language.h"
+#include "htmlhelp.h"
 
 //----------------------------------------------------------------------------
 
@@ -122,7 +123,7 @@ bool hasVisibleRoot(BaseClassList *bcl)
   for ( ; bcli.current(); ++bcli)
   {
     ClassDef *cd=bcli.current()->classDef;
-    if (cd->isVisibleExt()) return TRUE;
+    if (cd->isVisibleInHierarchy()) return TRUE;
     hasVisibleRoot(cd->baseClasses());
   }
   return FALSE;
@@ -132,20 +133,27 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 {
+  HtmlHelp *htmlHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
   BaseClassListIterator bcli(*bcl);
   bool started=FALSE;
   for ( ; bcli.current() ; ++bcli)
   {
     ClassDef *cd=bcli.current()->classDef;
-    if (cd->isVisibleExt() && hasVisibleRoot(cd->baseClasses()))
+    if (cd->isVisibleInHierarchy() && hasVisibleRoot(cd->baseClasses()))
     {
       if (!started)
       {
         ol.startIndexList();
+        if (hasHtmlHelp) htmlHelp->incContentsDepth();
         started=TRUE;
       }
       //printf("Passed...\n");
-      if (cd->hasDocumentation() || cd->isReference())
+      if (cd->isLinkable())
       {
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
         if (cd->isReference()) 
@@ -154,10 +162,19 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
           ol.docify(" [external]");
           ol.endTypewriter();
         }
+        if (hasHtmlHelp)
+        {
+          htmlHelp->addContentsItem(cd->name(),cd->getOutputFileBase());
+          //cd->writeMembersToContents();
+        }
       }
       else
       {
         ol.writeIndexItem(0,0,cd->name());
+        if (hasHtmlHelp)
+        {
+          htmlHelp->addContentsItem(cd->name(),"nodoc");
+        }
       }
       if (!cd->visited && !hideSuper && cd->superClasses()->count()>0)
       {
@@ -166,7 +183,11 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
       }
     }
   }
-  if (started) ol.endIndexList(); 
+  if (started) 
+  {
+    ol.endIndexList(); 
+    if (hasHtmlHelp) htmlHelp->decContentsDepth();
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -175,6 +196,13 @@ void writeClassHierarchy(OutputList &ol)
 {
   initClassHierarchy(&classList);
 
+  HtmlHelp *htmlHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+
   bool started=FALSE;
   ClassListIterator cli(classList);
   for (;cli.current(); ++cli)
@@ -182,14 +210,15 @@ void writeClassHierarchy(OutputList &ol)
     ClassDef *cd=cli.current();
     if (!hasVisibleRoot(cd->baseClasses()))
     {
-      if (cd->isVisibleExt())
+      if (cd->isVisibleInHierarchy()) // WAS: isVisible()!
       {
         if (!started)
         {
           ol.startIndexList();
+          if (hasHtmlHelp) htmlHelp->incContentsDepth();
           started=TRUE;
         }
-        if (cd->hasDocumentation() || cd->isReference())
+        if (cd->isLinkable())
         {
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->name());
           if (cd->isReference()) 
@@ -198,10 +227,16 @@ void writeClassHierarchy(OutputList &ol)
             ol.docify(" [external]");
             ol.endTypewriter();
           }
+          if (hasHtmlHelp)
+          {
+            htmlHelp->addContentsItem(cd->name(),cd->getOutputFileBase());
+            //cd->writeMembersToContents();
+          }
         }
         else
         {
           ol.writeIndexItem(0,0,cd->name());
+          if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
         }
       }
       if (!cd->visited && cd->superClasses()->count()>0) 
@@ -211,11 +246,16 @@ void writeClassHierarchy(OutputList &ol)
       }
     }
   }
-  if (started) ol.endIndexList();
+  if (started) 
+  {
+    ol.endIndexList();
+    if (hasHtmlHelp) htmlHelp->decContentsDepth();
+  }
 }
 
 //----------------------------------------------------------------------------
 
+// TODO: let this function return the real number of items in the hierarchy.
 int countClassHierarchy()
 {
   initClassHierarchy(&classList);
@@ -236,8 +276,15 @@ void writeHierarchicalIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"hierarchy","Hierarchical Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trClassHierarchy());
+  QCString title = Config::projectName+" "+theTranslator->trClassHierarchy();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"hierarchy"); 
+  }
   parseText(ol,theTranslator->trClassHierarchyDescription());
   ol.newParagraph();
   writeClassHierarchy(ol);
@@ -258,7 +305,7 @@ int countFiles()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      if (fd->hasDocumentation()) count++;
+      if (fd->isLinkable()) count++;
     }
   }
   return count;
@@ -272,8 +319,17 @@ void writeFileIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"files","File Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trFileList());
+  QCString title = Config::projectName+" "+theTranslator->trFileList();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"files"); 
+    htmlHelp->incContentsDepth();
+  }
   ol.newParagraph();
   parseText(ol,theTranslator->trFileListDescription(Config::extractAllFlag));
   ol.newParagraph();
@@ -285,17 +341,14 @@ void writeFileIndex(OutputList &ol)
     FileDef *fd=fn->first();
     while (fd)
     {
-      if (fd->hasDocumentation() && !fd->isReference())
+      if (fd->isLinkableInProject())
       {
         //ol.writeIndexItem(fd->getReference(),fd->diskName(),
         //    fd->name());
         QCString path;
         if (Config::fullPathNameFlag) 
         {
-          path=fd->getPath().copy();
-          // strip part of the path
-          if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
-            path=path.right(path.length()-Config::stripFromPath.length());
+          path=stripFromPath(fd->getPath().copy());
         }
 
         ol.writeStartAnnoItem("file",
@@ -319,12 +372,20 @@ void writeFileIndex(OutputList &ol)
         }
         ol.docify(")");
         ol.writeEndAnnoItem(fd->name());
+        if (hasHtmlHelp)
+        {
+          htmlHelp->addContentsItem(fd->name(),fd->getOutputFileBase());
+        }
       }
       fd=fn->next();
     }
     fn=inputNameList.next();
   }
   ol.endIndexList();
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
@@ -337,7 +398,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isVisible()) count++;
+    if (nd->isLinkableInProject()) count++;
   }
   return count;
 }
@@ -350,8 +411,17 @@ void writeNamespaceIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"namespaces","Namespace Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trNamespaceList());
+  QCString title = Config::projectName+" "+theTranslator->trNamespaceList();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"namespaces"); 
+    htmlHelp->incContentsDepth();
+  }
   ol.newParagraph();
   parseText(ol,theTranslator->trNamespaceListDescription(Config::extractAllFlag));
   ol.newParagraph();
@@ -360,7 +430,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->isVisible())
+    if (nd->isLinkableInProject())
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
@@ -379,10 +449,18 @@ void writeNamespaceIndex(OutputList &ol)
       }
       ol.docify(")");
       ol.writeEndAnnoItem(nd->name());
+      if (hasHtmlHelp)
+      {
+        htmlHelp->addContentsItem(nd->name(),nd->getOutputFileBase());
+      }
     }
     nd=namespaceList.next();
   }
   ol.endIndexList();
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
@@ -397,7 +475,7 @@ int countAnnotatedClasses()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (!cd->isReference() && cd->isVisible()) 
+    if (cd->isLinkableInProject()) 
     { 
       //printf("Annotated class %s\n",cd->name().data()); 
       count++; 
@@ -417,20 +495,15 @@ void writeAnnotatedClassList(OutputList &ol)
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (!cd->isReference() && 
-        //!cd->name().isEmpty() && cd->name()[0]!='@' && 
-        //(cd->protection()!=Private || Config::extractPrivateFlag) &&
-        //(cd->hasDocumentation() || !hideClassFlag)
-        cd->isVisible()
-       )
+    if (cd->isLinkableInProject())
     {
       QCString type;
       switch (cd->compoundType())
       {
-        case ClassDef::Class:  type="class";   break;
-        case ClassDef::Struct: type="struct";  break;
-        case ClassDef::Union:  type="union";   break;
-        default:               type="unknown"; break; // an error
+        case ClassDef::Class:      type="class";     break;
+        case ClassDef::Struct:     type="struct";    break;
+        case ClassDef::Union:      type="union";     break;
+        default:                   type="interface"; break;
       }
       ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
       ol.docify(" (");
@@ -449,10 +522,60 @@ void writeAnnotatedClassList(OutputList &ol)
       }
       ol.docify(")");
       ol.writeEndAnnoItem(cd->name());
+      if (Config::generateHtml && Config::htmlHelpFlag)
+      {
+        HtmlHelp::getInstance()->addContentsItem(
+            cd->name(),cd->getOutputFileBase());
+        //cd->writeMembersToContents();
+      }
     }
     cd=classList.next(); 
   }
   ol.endIndexList();
+}
+
+//----------------------------------------------------------------------------
+
+void writeAlfabeticalClassList(OutputList &ol)
+{
+  ol.startAlfabeticalIndexList(); 
+  //ClassDef *cd=classList.first();
+  //while (cd)
+  ClassListIterator cli(classList);
+  ClassDef *cd;
+  char startLetter=0;
+  for (;(cd=cli.current());++cli)
+  {
+    if (cd->isLinkableInProject())
+    {
+      if (cd->name().at(0)!=startLetter)
+      {
+        startLetter=cd->name().at(0);
+        char s[2]; s[0]=startLetter; s[1]=0;
+        ol.writeIndexHeading(s);
+      }
+      ol.writeObjectLink(cd->getReference(),
+                         cd->getOutputFileBase(),0,cd->name());
+      ol.lineBreak();
+    }
+    cd=classList.next(); 
+  }
+  ol.endAlfabeticalIndexList();
+}
+
+//----------------------------------------------------------------------------
+
+void writeAlphabeticalIndex(OutputList &ol)
+{
+  ol.disableAllBut(OutputGenerator::Html);
+  if (annotatedClasses==0) return;
+  startFile(ol,"classes.html","Alfabetical index");
+  startTitle(ol);
+  parseText(ol,Config::projectName+" "+theTranslator->trCompoundIndex());
+  endTitle(ol,0);
+  writeAlfabeticalClassList(ol);
+  endFile(ol);
+  ol.enableAll();
 }
 
 //----------------------------------------------------------------------------
@@ -465,10 +588,23 @@ void writeAnnotatedIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"annotated","Annotated Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trCompoundList());
+  QCString title = Config::projectName+" "+theTranslator->trCompoundList();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"annotated"); 
+    htmlHelp->incContentsDepth();
+  }
   parseText(ol,theTranslator->trCompoundListDescription());
   writeAnnotatedClassList(ol);
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp->decContentsDepth();
+  }
+  
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
@@ -487,10 +623,12 @@ void writeMemberList(OutputList &ol)
     while (md && !found)
     {
       ClassDef *cd;
-      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-          !md->isReference() && md->hasDocumentation() &&
-           md->name()[0]!='@' && (cd=md->memberClass()) &&
-           cd->isVisible()
+      if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
+          //!md->isReference() && md->hasDocumentation() &&
+          // md->name()[0]!='@' && 
+           md->isLinkableInProject() &&
+           (cd=md->memberClass()) &&
+           cd->isLinkableInProject()
          ) 
       { 
         found=TRUE; 
@@ -511,10 +649,11 @@ void writeMemberList(OutputList &ol)
       while (md)
       {
         ClassDef *cd=md->memberClass();
-        if (cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-            !md->isReference() && md->hasDocumentation() && 
+        if (//cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
+            //!md->isReference() && md->hasDocumentation() && 
+            md->isLinkableInProject() &&
             prevName!=cd->name() && 
-            cd->isVisible()
+            cd->isLinkableInProject()
            )
         {
           if (count==0) 
@@ -548,16 +687,32 @@ int countClassMembers()
     ClassDef *cd;
     while (md && !found)
     {
-      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-          !md->isReference() && !md->isRelated() && md->hasDocumentation() &&
-          md->name()[0]!='@' && (cd=md->memberClass()) && cd->isVisible()) 
-        otherMd=md;
-      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-          !md->isReference() && md->isRelated() && md->hasDocumentation() &&
-          md->name()[0]!='@' && (cd=md->memberClass()) && cd->isVisible())
-        found=TRUE;
-      else
-        md=mn->next();
+      if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
+          //!md->isReference() && !md->isRelated() && md->hasDocumentation() &&
+          //md->name()[0]!='@' && (cd=md->memberClass()) && cd->isLinkable()) 
+          md->isLinkableInProject() && 
+          !md->isRelated() &&
+          (cd=md->memberClass()) && 
+          cd->isLinkableInProject()
+         )
+      {
+        if (!md->isRelated())
+          otherMd=md;
+        if (md->isRelated())
+          found=TRUE;
+      }
+         
+      //  otherMd=md;
+      //if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
+      //    //!md->isReference() && md->isRelated() && md->hasDocumentation() &&
+      //    //md->name()[0]!='@' && (cd=md->memberClass()) && cd->isLinkable()
+      //    md->isLinkableInProject() &&
+      //    md->isRelated() &&
+      //    (cd=md->memberClass()) &&
+      //    cd->isLinkableInProject()
+      //   )
+      //  found=TRUE;
+      md=mn->next();
     }
     if (found || otherMd) count++;
     mn=memberNameList.next();
@@ -597,13 +752,15 @@ void writeFileMemberList(OutputList &ol)
     {
       FileDef *fd=md->getFileDef() ? md->getFileDef() : md->getFileDec();
       bool hasDocs = 
-         (md->getFileDef() && md->getFileDef()->hasDocumentation()) ||
-         (md->getFileDec() && md->getFileDec()->hasDocumentation());
+         (md->getFileDef() && md->getFileDef()->isLinkableInProject()) ||
+         (md->getFileDec() && md->getFileDec()->isLinkableInProject());
       
       if (fd && hasDocs && 
-          !md->isReference() && 
-          md->hasDocumentation() && 
-          md->name()[0]!='@') found=TRUE;
+          md->isLinkableInProject()
+          //!md->isReference() && 
+          //md->hasDocumentation() && 
+          //md->name()[0]!='@'
+         ) found=TRUE;
       else
         md=mn->next();
     }
@@ -621,12 +778,13 @@ void writeFileMemberList(OutputList &ol)
       {
         FileDef *fd=md->getFileDef() ? md->getFileDef() : md->getFileDec();
         bool hasDocs = 
-         (md->getFileDef() && md->getFileDef()->hasDocumentation()) ||
-         (md->getFileDec() && md->getFileDec()->hasDocumentation());
+         (md->getFileDef() && md->getFileDef()->isLinkableInProject()) ||
+         (md->getFileDec() && md->getFileDec()->isLinkableInProject());
         if (fd && hasDocs && 
-            !md->isReference() && 
-            md->hasDocumentation() && 
-            md->name()[0]!='@' && 
+            md->isLinkableInProject() &&
+            //!md->isReference() && 
+            //md->hasDocumentation() && 
+            //md->name()[0]!='@' && 
             prevName!=fd->name())
         {
           if (count==0) 
@@ -663,9 +821,8 @@ void writeNamespaceMemberList(OutputList &ol)
     while (md && !found)
     {
       NamespaceDef *nd=md->getNamespace();
-      if (nd && nd->isVisible() &&
-          !md->isReference() && md->hasDocumentation() && 
-          !md->name().isEmpty() && md->name().at(0)!='@') found=TRUE;
+      if (nd && nd->isLinkableInProject() && md->isLinkableInProject()) 
+        found=TRUE;
       else
         md=mn->next();
     }
@@ -682,9 +839,7 @@ void writeNamespaceMemberList(OutputList &ol)
       while (md)
       {
         NamespaceDef *nd=md->getNamespace();
-        if (nd && nd->isVisible() &&
-            !md->isReference() && md->hasDocumentation() && 
-            !md->name().isEmpty() && md->name().at(0)!='@' &&
+        if (nd && nd->isLinkableInProject() && md->isLinkableInProject() &&
             prevName!=nd->name()
            )
         {
@@ -718,10 +873,7 @@ int countNamespaceMembers()
     while (md && !found)
     {
       NamespaceDef *nd=md->getNamespace();
-      if (nd && nd->isVisible() &&
-          !md->isReference() && md->hasDocumentation() && 
-          !md->name().isEmpty() && md->name().at(0)!='@'
-         )
+      if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
         found=TRUE;
       else
         md=mn->next();
@@ -745,11 +897,10 @@ int countFileMembers()
     bool found=FALSE;
     while (md && !found)
     {
-      if (!md->isReference() && md->hasDocumentation() && 
-          !md->name().isEmpty() && md->name()[0]!='@' && 
-          (((fd=md->getFileDef()) && fd->hasDocumentation())
+      if (md->isLinkableInProject() &&
+          (((fd=md->getFileDef()) && fd->isLinkableInProject())
             || 
-           ((fd=md->getFileDec()) && fd->hasDocumentation())
+           ((fd=md->getFileDec()) && fd->isLinkableInProject())
           )
          ) 
         found=TRUE;
@@ -800,45 +951,79 @@ void writeNamespaceMemberIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+int countIncludeFiles()
+{
+  int count=0;
+  FileDef *fd=includeFiles.first();
+  while (fd)
+  {
+    if (fd->isLinkableInProject())
+    {
+      count++;
+    }
+    fd=includeFiles.next();
+  }  
+  return count;
+}
+
 void writeHeaderFileList(OutputList &ol)
 {
-  if (includeFiles.count()>0)
+  bool started=FALSE;
+  FileDef *fd=includeFiles.first();
+  while (fd)
   {
-    ol.startItemList();
-    FileDef *fd=includeFiles.first();
-    while (fd)
+    if (fd->isLinkableInProject())
     {
+      if (!started)
+      {
+        started=TRUE;
+        ol.startItemList();
+      }
       ol.writeListItem();
       QCString path;
       if (Config::fullPathNameFlag) 
       {
-        path=fd->getPath().copy();
-        // strip part of the path
-        if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
-          path=path.right(path.length()-Config::stripFromPath.length());
+        path=stripFromPath(fd->getPath().copy());
       }
       if (!path.isEmpty()) ol.docify(path);
       ol.writeObjectLink(0,fd->includeName(),0,fd->name());
       ol.writeString("\n");
-      fd=includeFiles.next();
-    }  
-    ol.endItemList();
-  }
+      if (Config::generateHtml && Config::htmlHelpFlag)
+      {
+        HtmlHelp::getInstance()->addContentsItem(
+            fd->name(),fd->includeName());
+      }
+    }
+    fd=includeFiles.next();
+  }  
+  if (started) ol.endItemList();
 }
 
 //----------------------------------------------------------------------------
 
 void writeHeaderIndex(OutputList &ol)
 {
-  if (includeFiles.count()==0) return;
+  if (documentedIncludeFiles==0) return;
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"headers","Header File Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trHeaderFiles());
+  QCString title = Config::projectName+" "+theTranslator->trHeaderFiles();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"headers"); 
+    htmlHelp->incContentsDepth();
+  }
   parseText(ol,theTranslator->trHeaderFilesDescription());
   writeHeaderFileList(ol);
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::Man);
@@ -852,8 +1037,17 @@ void writeExampleIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trExamples());
+  QCString title = Config::projectName+" "+theTranslator->trExamples();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"examples"); 
+    htmlHelp->incContentsDepth();
+  }
   parseText(ol,theTranslator->trExamplesDescription());
   ol.startIndexList();
   PageInfo *pi=exampleList.first();
@@ -864,15 +1058,21 @@ void writeExampleIndex(OutputList &ol)
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
+      if (hasHtmlHelp) htmlHelp->addContentsItem(pi->title,n);
     }
     else
     {
       ol.writeObjectLink(0,n,0,pi->name);
+      if (hasHtmlHelp) htmlHelp->addContentsItem(pi->name,n);
     }
     ol.writeString("\n");
     pi=exampleList.next();
   }
   ol.endIndexList();
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
@@ -885,8 +1085,17 @@ void writePageIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
   startTitle(ol);
-  ol.docify(Config::projectName+" "+theTranslator->trRelatedPages());
+  QCString title = Config::projectName+" "+theTranslator->trRelatedPages();
+  ol.docify(title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"pages"); 
+    htmlHelp->incContentsDepth();
+  }
   parseText(ol,theTranslator->trRelatedPagesDescription());
   ol.startIndexList();
   PageInfo *pi=pageList.first();
@@ -907,9 +1116,14 @@ void writePageIndex(OutputList &ol)
     ol.writeListItem();
     ol.writeObjectLink(0,pageName,0,pageTitle);
     ol.writeString("\n");
+    if (hasHtmlHelp) htmlHelp->addContentsItem(pageTitle,pageName);
     pi=pageList.next();
   }
   ol.endIndexList();
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }
@@ -960,10 +1174,23 @@ void writeGroupIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"modules","Module Index");
   startTitle(ol);
-  parseText(ol,Config::projectName+" "+theTranslator->trModules());
+  QCString title = Config::projectName+" "+theTranslator->trModules();
+  parseText(ol,title);
   endTitle(ol,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"modules"); 
+    htmlHelp->incContentsDepth();
+  }
   parseText(ol,theTranslator->trModulesDescription());
   writeGroupList(ol);
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
   endFile(ol);
   ol.enable(OutputGenerator::Man);
 }

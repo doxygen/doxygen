@@ -46,6 +46,9 @@
   
 #define YY_NEVER_INTERACTIVE 1
   
+
+MemberGroupDict memberGroupDict(1009); // dictionary of the member groups heading
+  
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -75,6 +78,7 @@ static int              lastCurlyContext;
 static int              lastCodeState;
 static int              lastAfterDocContext;
 static int              lastGroupContext;
+static int              lastMemberGroupContext;
 static int              lastFormulaContext;
 static int              lastAnchorContext;
 static int              nextDefContext;
@@ -93,6 +97,7 @@ static Entry*		tempEntry    = 0 ;
 static int		yyLineNr     = 0 ;
 static int              anonCount    = 0 ;        
 static char		yyFileName[2048] ;
+static int              lastMemberGroupLine;
 static bool    		sig;
 static bool    		slot;
 static bool    		gstat;
@@ -104,6 +109,7 @@ static QCString         exampleName;
 static QCString         htmlUrl,htmlText;
 static QCString         currentIncludeFile;
 static QCString         msType,msName,msArgs;
+static int              memberGroupId = -1;
 static int              includeFileOffset = 0;
 static int              includeFileLength = 0;
 static bool             firstLine;
@@ -141,7 +147,8 @@ static int              lastCopyArgStringContext;
 static int              lastCopyArgContext;
 static QCString         *copyArgString;
 
-
+static ArgumentList     *currentArgumentList;
+static QCString         *currentTemplateSpec;
 
 //-----------------------------------------------------------------------------
 
@@ -168,6 +175,7 @@ static void initParser()
   sharpCount = 0;
   roundCount = 0;
   ifCount = 0;
+  memberGroupId = -1;
   sig = FALSE;
   slot = FALSE;
   gstat = FALSE;
@@ -513,7 +521,14 @@ static void showUntil(OutputList &ol,const char *key)
   }
 }
 
+static int newMemberGroupId()
+{
+  static int curGroupId=0;
+  return curGroupId++;
+}
+
 static void newDocState();
+
 
 //-----------------------------------------------------------------
 
@@ -576,6 +591,20 @@ static bool nameIsOperator(QCString &name)
 {
   return name.right(8)=="operator" &&
          (name.length()==8 || !isId(name.at(name.length()-9)));
+}
+
+static void checkDocs()
+{
+  if ((current->brief.length()>2 && 
+       current->brief.at(0)=='<' && current->brief.at(1)==' ') ||
+      (current->doc.length()>2 && 
+       current->doc.at(0)=='<' && current->doc.at(1)==' ')
+     )
+  {
+    warn("Warning: Found lonely '<' symbol at the start of the documentation "
+	 "at line %d of %s\n",yyLineNr,yyFileName);
+	 
+  }
 }
 
 /* ----------------------------------------------------------------- */
@@ -715,6 +744,7 @@ VAR	  [vV][aA][rR]
 %x	GroupDocArg1
 %x	GroupDocArg2
 %x	GroupName
+%x	GroupHeader
 %x	AfterDoc
 %x	AfterDocBrief
 %x	AfterDocLine
@@ -775,6 +805,7 @@ VAR	  [vV][aA][rR]
 %x      DocRefItemName
 %x	SectionLabel
 %x	SectionTitle
+%x	SkipTemplate
 %x	EndTemplate
 %x      CopyArgString
 %x	CopyArgRound
@@ -790,6 +821,11 @@ VAR	  [vV][aA][rR]
 %%
 
 <*>\x06[^\x06]*\x06			{ // new file
+  					  if (memberGroupId!=-1)
+					  {
+					    warn("Warning: Missing \\endmgroup in file %s\n",yyFileName);
+					    memberGroupId=-1;
+					  }
   					  yyLineNr= 1 ; 
 					  int i; 
 					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
@@ -1263,7 +1299,7 @@ VAR	  [vV][aA][rR]
   					  warn("Warning: \\endcode without <PRE> or \\code "
     					       "in the documentation of %s\n",refName.data()); 
 					}
-<DocScan>{SCOPEMASK}"("[a-z_A-Z,\<\> \t\*\&]+")"	{
+<DocScan>{SCOPEMASK}"("[a-z_A-Z,:\<\> \t\*\&]+")"	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
   					}
 <DocScan>{SCOPEMASK}(("()")?)          	{ 
@@ -1690,9 +1726,28 @@ VAR	  [vV][aA][rR]
 					  lineCount();
   					  BEGIN( ClassName ); 
 					}
+<FindMembers>{B}*"module"{BN}+		{ 
+  					  isTypedef=FALSE;
+					  current->section = Entry::NAMESPACE_SEC;
+					  current->type = "module" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  lineCount();
+  					  BEGIN( ClassName ); 
+					}
+<FindMembers>{B}*"interface"{BN}+ 	{
+  					  isTypedef=FALSE;
+					  current->section = Entry::INTERFACE_SEC;
+					  addType( current ) ;
+					  current->type += " interface" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  lineCount();
+					  BEGIN( ClassName );
+  					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
-  					  current->section = Entry::CLASS_SEC ;
+  					  current->section = Entry::CLASS_SEC;
 					  addType( current ) ;
 					  current->type += " class" ;
 					  current->fileName  = yyFileName;
@@ -1747,16 +1802,35 @@ VAR	  [vV][aA][rR]
 					}
 <FindMembers>"template"({BN}*)"<"/[>]?	{ 
   					  lineCount();
-					  if (current->tArgList)
+					  // class template specifier already found => member template specifier
+					  // already inside class => member template specifier
+					  if (current->tArgList || (current_root->section&Entry::COMPOUND_MASK))
 					  {
-					    //printf("scanner.l current->tArgList->clear() %p\n",current->tArgList);
-					    current->tArgList->clear();
+					    //printf("-------> member template\n");
+					    if (current->mtArgList)
+					    {
+					      current->mtArgList->clear();
+                                            }
+					    else
+					    {
+					      current->mtArgList = new ArgumentList;
+					      current->mtArgList->setAutoDelete(TRUE);
+					    }
+					    currentArgumentList = current->mtArgList;
 					  }
-					  else
+					  else // class template specifier
 					  {
-					    current->tArgList = new ArgumentList;
-					    current->tArgList->setAutoDelete(TRUE);
-					    //printf("scanner.l new tArgList %p\n",current->tArgList);
+					    //printf("-------> class template\n");
+					    if (current->tArgList)
+					    {
+					      current->tArgList->clear();
+                                            }
+					    else
+					    {
+					      current->tArgList = new ArgumentList;
+					      current->tArgList->setAutoDelete(TRUE);
+					    }
+					    currentArgumentList = current->tArgList;
 					  }
 					  templateStr="<";
 					  copyArgString=&templateStr;
@@ -1764,28 +1838,7 @@ VAR	  [vV][aA][rR]
 					  //printf("Start template list\n");
 					  BEGIN( ReadTempArgs );
   					}
-  /*
-<FindMembers>({ID}{BN}*"::")*{BN}*"operator"{BN}*[<=]+ {
-					  lineCount();
-					  addType( current );
-					  current->name = yytext;
-					}
-<FindMembers>"operator"{BN}*"/"[=]?/[^/ *] {  space added!
-					  lineCount();
-					  addType( current );
-					  current->name = yytext;
-					}
-<FindMembers>"operator"{BN}*"({B}*)"{BN}* /"(" {  space added!  
-					  lineCount();
-					  addType( current );
-					  current->name = yytext;
-					}
-<FindMembers>"operator"{BN}*[^(/]+	{ 
-  					  lineCount();
-  				          addType( current ) ;
-					  current->name  = yytext ;
-					}
-  */
+  /* for now the using statement is completely ignored */
 <FindMembers>"using"{BN}+		{ lineCount(); BEGIN(Using); }
 <Using>";"				{ BEGIN(FindMembers); }
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
@@ -1799,20 +1852,45 @@ VAR	  [vV][aA][rR]
 					  addType( current );
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
+					  current->scopeSpec.resize(0);
+					  currentTemplateSpec = &current->scopeSpec;
 					  if (nameIsOperator(current->name))
 					    BEGIN( Operator );
 					  else
 					    BEGIN( EndTemplate );
 					}
+<FindMemberName>{SCOPENAME}{BN}*/"<"	{
+  					  sharpCount=0;
+					  lineCount();
+  					  current->name+=((QCString)yytext).stripWhiteSpace();
+					  current->memberSpec.resize(0);
+					  currentTemplateSpec = &current->memberSpec;
+					  if (nameIsOperator(current->name))
+					    BEGIN( Operator );
+					  else
+					    BEGIN( EndTemplate );
+  					}
+  /*
+<SkipTemplate>"<"			{
+					  sharpCount++; 
+  					}
+<SkipTemplate>">"			{
+  					  if (--sharpCount<=0)
+					  {
+					    BEGIN(FindMembers);
+					  }
+  					}
+<SkipTemplate>.
+  */
+
 <EndTemplate>"<"			{ 
-  					  current->name+='<'; 
+  					  current->name+='<';
+  					  *currentTemplateSpec+='<'; 
 					  sharpCount++; 
 					}
-  /*
-<EndTemplate>">"({BN}*"::"{SCOPENAME})?	{
-  */
 <EndTemplate>">"			{
-					  current->name+=*yytext;
+  					  current->name+='>';
+					  *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {  
 					    //printf("Found %s\n",current->name.data());
@@ -1821,7 +1899,8 @@ VAR	  [vV][aA][rR]
 					}
 <EndTemplate>">"{BN}*"("		{ 
   					  lineCount();
-					  current->name+='>';
+  					  current->name+='>';
+					  *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {
 					    current->args = "(";
@@ -1834,12 +1913,16 @@ VAR	  [vV][aA][rR]
 <EndTemplate>">"{BN}*/"::"		{
   					  lineCount();
   					  current->name+='>';
+  					  *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {
 					    BEGIN(FindMemberName);
 					  }
   					}
-<EndTemplate>.				{ current->name+=*yytext; }
+<EndTemplate>.				{ 
+  					  current->name+=*yytext;
+  					  *currentTemplateSpec+=*yytext; 
+					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
 					  lineCount();
 					  if (YY_START==FindMembers)
@@ -1857,10 +1940,10 @@ VAR	  [vV][aA][rR]
 					  else
 					    BEGIN(FindMembers);
 					}
-<FindMembers>^{B}*"#"			{ lastCPPContext = YY_START; 
+<FindMembers>{B}*"#"			{ lastCPPContext = YY_START; 
 					  BEGIN( SkipCPP ) ; 
 					}
-<FindMembers>^{B}*"#define"		{
+<FindMembers>{B}*"#"{B}*"define"	{
   					  BEGIN( Define );
   					}
 <SkipCPP>.
@@ -1908,45 +1991,66 @@ VAR	  [vV][aA][rR]
 <FindMembers>[*&]+			{ current->name += yytext ; }
 <FindMembers,MemberSpec,Function,NextSemi>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
-					  current->doc.resize(0);
-					  current->brief.resize(0);
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ';';
 					  if (yytext[yyleng-3]=='/')
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
+					  }
 					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
+					  }
 					  else
+					  {
+					    current->doc.resize(0);
 					    BEGIN(AfterDoc);
+					  }
   					}
 <MemberSpec,FindFields,FindMembers,NextSemi>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
-					  current->doc.resize(0);
-					  current->brief.resize(0);
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ',';
 					  if (yytext[yyleng-3]=='/')
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
+					  }
 					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
+					  }
 					  else
+					  {
+					    current->doc.resize(0);
 					    BEGIN(AfterDoc);
+					  }
   					}
 <DefineEnd,FindFields,FindFieldArg>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
-					  current->doc.resize(0);
-					  current->brief.resize(0);
 					  lastAfterDocContext = YY_START;
 					  if (YY_START==DefineEnd)
 					    afterDocTerminator = '\n';
 					  else
 					    afterDocTerminator = 0;
 					  if (yytext[yyleng-3]=='/')
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
+					  }
 					  else if (yytext[yyleng-2]=='*' && Config::autoBriefFlag)
+					  {
+					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
+					  }
 					  else
+					  {
+					    current->doc.resize(0);
 					    BEGIN(AfterDoc);
+					  }
   					}
 <FindMembers>"="			{
   					  BEGIN(NextSemi);
@@ -2326,7 +2430,7 @@ VAR	  [vV][aA][rR]
 <ReadTempArgs>">"			{
 					  *copyArgString+=*yytext;
 					  //printf("end template list %s\n",copyArgString->data());
-					  stringToArgumentList(*copyArgString,current->tArgList);
+					  stringToArgumentList(*copyArgString,currentArgumentList);
 					  BEGIN( currentArgumentContext );
 					}
 <CopyArgRound>"("			{
@@ -2496,6 +2600,9 @@ VAR	  [vV][aA][rR]
 					      current->proto = TRUE;
 					    }
 					  }
+					  //printf("Adding entry `%s' groupId=%d groupHeader=`%s'\n",
+					  //    current->name.data(),current->mGrpId,current->mGrpId!=-1 ? 
+					  //        memberGroupDict[current->mGrpId]->header().data() : "");
 					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
@@ -2504,6 +2611,7 @@ VAR	  [vV][aA][rR]
 					  current->virt = virt;
 					  current->stat = gstat;
 					  current->slot = slot;
+					  current->mGrpId = memberGroupId;
 					  lastCurlyContext = FindMembers;
 					  if( *yytext == '{' )
 					  {
@@ -2658,14 +2766,17 @@ VAR	  [vV][aA][rR]
 					  current->name = yytext ;
 					  //BEGIN( FindMembers );
   					}
-<ClassVar>"("				{
-					  roundCount=1;
-					  lastSkipRoundContext=YY_START;
-					  BEGIN(SkipRound);
+<ClassVar>[(\[]				{
+                                          // probably a function anyway
+                                          unput('(');
+					  BEGIN( FindMembers );
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
-                                          baseProt=Private;
+					  if (current->section == Entry::INTERFACE_SEC)
+					    baseProt=Public;
+					  else  
+					    baseProt=Private;
                                           baseVirt=Normal;
 					  baseName.resize(0);
 					  BEGIN( Bases ) ;
@@ -2676,6 +2787,7 @@ VAR	  [vV][aA][rR]
     					}
 <ClassName,ClassVar>{B}*"{"{B}*		{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
+					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.length()==0 && !isTypedef) // anonymous compound
 					    current->name.sprintf("@%d",anonCount++);
 					  BEGIN( Curly ) ;
@@ -2725,6 +2837,7 @@ VAR	  [vV][aA][rR]
 					    BEGIN ( lastSkipRoundContext );
 					}
 <Bases>","				{ current->args += ',' ; 
+					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (baseName.length()>0)
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
@@ -2735,6 +2848,7 @@ VAR	  [vV][aA][rR]
 					}
 <Bases>{B}*"{"{B}*			{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
+					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (baseName.length()>0)
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
@@ -2935,6 +3049,12 @@ VAR	  [vV][aA][rR]
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
+<Doc,JavaDoc>{B}*("\\"|"@")"interface"{B}* {
+  					  current->section = Entry::INTERFACEDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( ClassDocArg1 ); 
+					}
 <Doc,JavaDoc>{B}*("\\"|"@")"page"{B}*   {
   					  current->section = Entry::PAGEDOC_SEC;
 					  current->fileName = yyFileName;
@@ -3076,6 +3196,35 @@ VAR	  [vV][aA][rR]
   					  sectionType=SectionInfo::Subsection;
   					  BEGIN(SectionLabel);
   					}
+<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")mgroup{B}+ {
+  					  //printf("--> mgroup found!\n");
+  					  lastMemberGroupContext = YY_START;
+					  if (memberGroupId!=-1)
+					  {
+  					    warn("Warning: ignoring nested mgroup command "
+					         "at line %d of %s. Previous command was found at line %d\n",
+						 yyLineNr,yyFileName,lastMemberGroupLine);
+					  }
+					  else
+					  {
+					    memberGroupId   = newMemberGroupId();
+					    current->mGrpId = memberGroupId;
+					    lastMemberGroupLine = yyLineNr;
+					  }
+					  BEGIN(GroupHeader);
+  					}
+<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")endmgroup/[^a-z_A-Z0-9] {
+  					  //printf("--> endmgroup found!\n");
+  					  memberGroupId = -1;
+					  current->mGrpId = -1;
+  					}
+<GroupHeader>[^\n]*/"\n"		{
+					  QCString header = ((QCString)yytext).stripWhiteSpace();
+  					  memberGroupDict.insert(memberGroupId,
+					                         new MemberGroup(memberGroupId,header)
+								);
+  					  BEGIN(lastMemberGroupContext);
+  					}
 <Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")anchor{B}+ {
   					  lastAnchorContext = YY_START;
   					  sectionType=SectionInfo::Anchor;
@@ -3216,6 +3365,7 @@ VAR	  [vV][aA][rR]
   							}
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
 <ExampleDoc,PageDoc,ClassDocBrief,ClassDoc>"*/"    	{
+  					  checkDocs();
   					  if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
@@ -3432,6 +3582,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( lastDocContext );
 					}
 <Doc>"*/"				{ 
+  				          checkDocs();
   					  current->doc += "\n\n";
   					  BEGIN( lastDocContext ); 
 					}
@@ -3540,7 +3691,7 @@ void parseCompounds(Entry *rt)
 	current->protection = protection = ce->protection;
       else if (ce->name.length()>0 && ce->name.at(0)=='@') // anonymous union
 	current->protection = protection = ce->protection;
-      else // named struct or union
+      else // named struct, union, or interface
 	current->protection = protection = Public ;
       sig = FALSE;
       slot = FALSE;
@@ -3637,6 +3788,11 @@ void parseText(OutputList &ol,const QCString &txtString)
   scanYYrestart( scanYYin ); 
   BEGIN( Text );
   scanYYlex();
+  if (memberGroupId!=-1)
+  {
+    warn("Warning: Missing \\endmgroup in file %s\n",yyFileName);
+    memberGroupId=-1;
+  }
   ol+=*outDoc;
   delete outDoc;
   return;
@@ -3655,3 +3811,6 @@ void parseExample(OutputList &ol,const QCString &docString,
 }
 
 //----------------------------------------------------------------------------
+extern "C" { // some bogus code to keep the compiler happy
+  void scannerYYdummy() { yy_flex_realloc(0,0); } 
+}

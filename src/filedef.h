@@ -31,6 +31,7 @@ class OutputList;
 class DefineList;
 class NamespaceDef;
 class NamespaceList;
+class NamespaceDict;
 
 /*! \class FileDef filedef.h
     \brief A File definition.
@@ -95,14 +96,25 @@ class FileDef : public Definition
     
     /*! Returns true iff this file was externally defined 
         (i.e. read from a tag file) */ 
-    bool isReference() { return !reference.isNull(); }
+    //bool isReference() { return !reference.isNull(); }
     
     /*! Returns the reference name of the external file, if any or 0
         if the file is not defined. */ 
-    const char *getReference() { return reference; }
+    //const char *getReference() { return reference; }
     
     //void setFileType(FileType ft) { ftype = ft; }
     //FileType fileType() const { return ftype; } 
+    
+    bool isLinkableInProject()
+    {
+      return hasDocumentation() && !isReference();
+    }
+
+    bool isLinkable()
+    {
+      return isLinkableInProject() || isReference();
+    }
+
     
     void writeDocumentation(OutputList &ol);
     friend void generatedFileNames();
@@ -115,12 +127,13 @@ class FileDef : public Definition
     MemberList *memList;
     ClassList  *classList;
     FileList   *includeList;
+    NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
     DefineList *defineList;
     //QCString n;
     //QCString doc;
     //QCString brief;
-    QCString reference;
+    //QCString reference;
     QCString path;
     QCString filepath;
     QCString diskname;

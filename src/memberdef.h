@@ -26,11 +26,12 @@
 #include "config.h"
 #include "outputlist.h"
 #include "definition.h"
-#include "config.h"
+#include "scanner.h"
 
 class FileDef;
 class MemberList;
 class NamespaceDef;
+
 
 class MemberDef : public Definition
 {
@@ -55,14 +56,22 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     
+    void writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
+                   FileDef *fd,MemberGroup *mg);
+    void writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+               int prevGroupId,bool inGroup); 
+    void writeDocumentation(MemberList *ml,OutputList &ol,
+                            const char *scopeName,MemberType m);
+    void warnIfUndocumented();
+    
     QCString getOutputFileBase() const;
     const char *declaration() const      { return decl; }
     const char *definition() const       { return def; }
     const char *typeString() const       { return type; }
     const char *argsString() const       { return args; }
     const char *excpString() const       { return exception; }     
-    const char *anchor() const           { return ref; }
-    QCString bodyCode() const             { return body; }
+    const char *anchor() const           { return anc; }
+    QCString bodyCode() const            { return body; }
     ClassDef *memberClass()              { return classDef; }
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
@@ -73,7 +82,7 @@ class MemberDef : public Definition
     void setDefLine(int l)               { defLine=l; }
     void setFileDef(FileDef *fd)         { fileDef=fd; }
     void setFileDec(FileDef *fd)         { fileDec=fd; }
-    void setAnchor(const char *a)        { ref=a; }
+    void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
     void setBody(const QCString &b)       { body=b; }
     FileDef *getFileDef()                { return fileDef; }
@@ -82,12 +91,11 @@ class MemberDef : public Definition
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
     bool hasDocumentation()  // overrides hasDocumentation in definition.h
-      { return !documentation().isNull() || 
-               !briefDescription().isNull() || 
-               !body.isEmpty() || 
-               Config::extractAllFlag; 
-      }
+      { return Definition::hasDocumentation() || !body.isEmpty(); }
 
+    bool isLinkableInProject();
+    bool isLinkable();
+    
     bool detailsAreVisible() const          
       { return !documentation().isEmpty() || !body.isEmpty() ||
                (mtype==Enumeration && docEnumValues) || 
@@ -142,9 +150,9 @@ class MemberDef : public Definition
     bool isPrototype() const { return proto; }
     
     // tag file related members
-    void setReference(const char *r) { external=r; } 
-    bool isReference() { return !external.isNull(); }
-    
+    //void setReference(const char *r) { external=r; } 
+    //bool isReference() { return !external.isNull(); }
+
     // argument related members
     ArgumentList *argumentList() const { return argList; }
     void setArgumentList(ArgumentList *al) 
@@ -152,13 +160,28 @@ class MemberDef : public Definition
       argList = al;
     }
     ArgumentList *templateArguments() const { return tArgList; }
-    void setScopeTemplateArguments(ArgumentList *t);
-    ArgumentList *scopeTemplateArguments() const { return scopeTAL; }
-    QCString getScopeTemplateNameString();
+    void setScopeDefTemplateArguments(ArgumentList *t);
+    ArgumentList *scopeDefTemplateArguments() const { return scopeTAL; }
+    void setMemberDefTemplateArguments(ArgumentList *t);
+    ArgumentList *memberDefTemplateArguments() const { return membTAL; }
+    //QCString getScopeTemplateNameString();
     
     // namespace related members
     NamespaceDef *getNamespace() { return nspace; }
     void setNamespace(NamespaceDef *nd) { nspace=nd; }
+
+    // grouping related members
+    void setGroupId(int groupId);
+    int groupId() const          { return grpId; }
+    QCString groupHeader() const { return grpHeader; }
+    MemberGroup *getMemberGroup() const { return memberGroup; }
+    
+    void setFromAnnonymousScope(bool b) { annScope=b; }    
+    void setFromAnnonymousMember(MemberDef *m) { annMemb=m; }    
+    bool fromAnnonymousScope() { return annScope; }
+    bool annonymousDeclShown() { return annUsed; }
+    void setIndentDepth( int i) { indDepth=i; }
+    int  indentDepth() { return indDepth; }
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -174,34 +197,40 @@ class MemberDef : public Definition
     MemberList *enumFields;   // enumeration fields
     OutputList *enumDeclList; // stored piece of documentation for enumeration.
     NamespaceDef *nspace;     // the namespace this member is in.
-    QCString type;             // return type
-    QCString args;             // function arguments/variable array specifiers
-    QCString exception;        // exceptions that can be thrown
-    QCString body;             // function body code
-    QCString decl;             // member declaration in class
-    QCString declFile;         // file where the declaration was found
+    QCString type;            // return type
+    QCString args;            // function arguments/variable array specifiers
+    QCString exception;       // exceptions that can be thrown
+    QCString body;            // function body code
+    QCString decl;            // member declaration in class
+    QCString declFile;        // file where the declaration was found
     int     declLine;         // line where the declaration was found
-    QCString def;              // member definition in code (fully qualified name)
-    QCString defFile;          // file where the definition was found
+    QCString def;             // member definition in code (fully qualified name)
+    QCString defFile;         // file where the definition was found
     int     defLine;          // line where the definition was found
-    QCString ref;              // HTML anchor name
+    QCString anc;             // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class
-    QCString external;         // anchor of a member if extracted from a tag file
     bool    stat;             // is it a static function?
     MemberType mtype;         // returns the kind of member
     bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
+    bool annScope;
+    bool annUsed;
+    int  indDepth;
+    MemberDef *annMemb;
     ArgumentList *argList;    // argument list of this member
     ArgumentList *tArgList;   // template argument list of function template
     ArgumentList *scopeTAL;   // template argument list of class template
+    ArgumentList *membTAL;    // template argument list of class template
+    int grpId;                // group id
+    QCString grpHeader;       // group header
+    MemberGroup *memberGroup; // group's member definition
 
     // disable copying of member defs
     MemberDef(const MemberDef &);
     MemberDef &operator=(const MemberDef &);
 };
-
 
 #endif
