@@ -25,6 +25,7 @@
 #include "filedef.h"
 #include "language.h"
 #include "scanner.h"
+#include "groupdef.h"
 
 //static QCString idToName(int id)
 //{
@@ -58,8 +59,9 @@ void MemberGroup::insertMember(MemberDef *md)
   //       memberList->first() ? memberList->first()->getSectionList() : 0,
   //       memberList->count(),
   //       md->getSectionList());
+  MemberDef *firstMd = memberList->first();
   if (inSameSection && memberList->count()>0 && 
-      memberList->first()->getSectionList()!=md->getSectionList())
+      firstMd->getSectionList()!=md->getSectionList())
   {
     inSameSection=FALSE;
   }
@@ -68,6 +70,14 @@ void MemberGroup::insertMember(MemberDef *md)
     inDeclSection = md->getSectionList();
   }
   memberList->append(md);
+
+  // copy the group of the first member in the memberGroup
+  GroupDef *gd;
+  if (firstMd && (gd=firstMd->getGroupDef()))
+  {
+    md->setGroupDef(gd);
+    gd->insertMember(md);
+  }
 }
 
 

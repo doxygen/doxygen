@@ -973,9 +973,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
     
     // repeat brief description
-    if (!briefDescription().isEmpty())
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
     {
       ol+=briefOutput;
+    }
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag &&
+        !documentation().isEmpty())
+    {
       ol.newParagraph();
     }
     // write documentation

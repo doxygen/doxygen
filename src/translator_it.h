@@ -5,13 +5,15 @@
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (June 1999)
  * Updates:
- *		2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
- *		2000/03: translated new items used since version 1.0 and 1.1.0
- *		1999/19: entirely rewritten the translation to correct small variations due
- *				 to feature additions and to conform to the layout of the latest
- *				 commented translator.h for the english language
- *		1999/09: corrected some small typos in the "new since 0.49-990425" section
- *				 added the "new since 0.49-990728" section
+ *        2000/11: modified slightly the translation in trLegendDocs() function,
+ *                 translated new items used since version 1.2.1 and 1.2.2
+ *        2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
+ *        2000/03: translated new items used since version 1.0 and 1.1.0
+ *        1999/19: entirely rewritten the translation to correct small variations due
+ *                 to feature additions and to conform to the layout of the latest
+ *                 commented translator.h for the english language
+ *        1999/09: corrected some small typos in the "new since 0.49-990425" section
+ *                 added the "new since 0.49-990728" section
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -91,7 +93,7 @@ class TranslatorItalian : public Translator
      */
     QCString trGeneratedAutomatically(const char *s)
     {
-	  QCString result="Generato automaticamente da Doxygen";
+      QCString result="Generato automaticamente da Doxygen";
       if (s) result+=(QCString)" per "+s;
       result+=" a partire dal codice sorgente.";
       return result;
@@ -162,8 +164,8 @@ class TranslatorItalian : public Translator
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription()
     {
-		return "Questa lista di ereditarietà è ordinata "
-		"approssimativamente, ma non completamente, in ordine alfabetico:";
+        return "Questa lista di ereditarietà è ordinata "
+        "approssimativamente, ma non completamente, in ordine alfabetico:";
     }
 
     /*! This is an introduction to the list with all files. */
@@ -171,7 +173,7 @@ class TranslatorItalian : public Translator
     {
       QCString result="Questa è una lista ";
       if (!extractAll) result+="dei files documentati ";
-	  else result+="di tutti i files ";
+      else result+="di tutti i files ";
       result+="con una loro breve descrizione:";
       return result;
     }
@@ -186,7 +188,7 @@ class TranslatorItalian : public Translator
     {
       QCString result="Questa è una lista ";
       if (!extractAll) result+="dei membri documentati, ";
-	  else result+="di tutti i membri ";
+      else result+="di tutti i membri ";
       result+="con collegamenti ";
       if (extractAll) result+="alla documentazione della classe di ciascun membro:";
       else result+="alla documentazione delle classi a cui appartengono:";
@@ -198,7 +200,7 @@ class TranslatorItalian : public Translator
     {
       QCString result="Questa è una lista ";
       if (!extractAll) result+="dei membri dei files documentati, ";
-	  else result+="di tutti i membri dei files ";
+      else result+="di tutti i membri dei files ";
       result+="con collegamenti ";
       if (extractAll) result+="alla documentazione del file di ciascun membro:";
       else result+="alla documentazione dei files a cui appartengono:";
@@ -476,7 +478,7 @@ class TranslatorItalian : public Translator
     {
       QCString result="Questa è la lista ";
       if (!extractAll) result+="dei namespaces documentati, ";
-	  else result+="di tutti i namespaces ";
+      else result+="di tutti i namespaces ";
       result+="con una loro breve descrizione:";
       return result;
     }
@@ -627,7 +629,7 @@ class TranslatorItalian : public Translator
     {
       QCString result="Questa è la lista ";
       if (!extractAll) result+="dei membri dei namespaces documentati, ";
- 	  else result+="di tutti i membri dei namespaces ";
+       else result+="di tutti i membri dei namespaces ";
       result+="con collegamenti ";
       if (extractAll)
         result+="alla documentazione del namespace per ciascun membro:";
@@ -679,7 +681,7 @@ class TranslatorItalian : public Translator
       }
       result+=" è stata generata a partire ";
       if (single) result+="dal seguente file:";
-	  else result+="dai seguenti files:";
+      else result+="dai seguenti files:";
       return result;
     }
 
@@ -906,21 +908,21 @@ class TranslatorItalian : public Translator
         "Questa pagina spiega come interpretare i grafi generati da doxygen.<p>\n"
         "Considerate l'esempio seguente:\n"
         "\\code\n"
-        "/*! Invisible class because of truncation */\n"
+        "/*! Classe invisibile per troncamento */\n"
         "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
+        "/*! Classe troncata, la relazione di ereditarietà e nascosta */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
+        "/* Classe non documentata con i commenti speciali di doxygen*/\n"
         "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
+        "/*! Classe che utilizza una ereditarietà pubblica */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
+        "/*! Classe che utilizza una ereditarietà protetta*/\n"
         "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
+        "/*! Classe che utilizza una ereditarietà  privata*/\n"
         "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
+        "/*! Classe utilizzata dalla classe Inherited */\n"
         "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
+        "/*! Classe che eredita da varie classi*/\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -970,6 +972,32 @@ class TranslatorItalian : public Translator
     {
       return "Lista dei test";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "Metodi DCOP";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return "Proprietà";
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return "Documentazione delle Proprietà";
+    }
+
 };
 
 #endif

@@ -36,6 +36,9 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
+#define SCOPEBLOCK (void *)1
+#define INNERBLOCK (void *)2
+
 /*! local class definition, used for classes that are defined
  *  inside code fragments.
  */
@@ -104,6 +107,8 @@ static QCString      g_parmType;
 static QCString      g_parmName;
 static bool          g_inClass;
 static QCString      g_classScope;
+static QCString      g_realScope;
+static QStack<void>  g_scopeStack;      // 1 if bracket starts a scope, 2 for internal blocks 
 static OutputList *  g_code;
 static CodeClassDef  g_ccd;
 static CodeVarDef    g_cvd;
@@ -122,6 +127,60 @@ static int           g_bodyCurlyCount;
 static ClassDef *    g_classVar;
 static QCString      g_saveName;
 static QCString      g_saveType;
+
+/*! add class/namespace name s to the scope */
+static void pushScope(const char *s)
+{
+  if (g_classScope.isEmpty())
+  {
+    g_classScope = s;
+  }
+  else
+  {
+    g_classScope += "::";
+    g_classScope += s;
+  }
+  //printf("pushScope() result: `%s'\n",g_classScope.data());
+}
+
+/*! remove the top class/namespace name from the scope */
+static void popScope()
+{
+  if (!g_classScope.isEmpty())
+  {
+    int i=g_classScope.findRev("::");
+    if (i==-1) // last name, strip all
+    {
+      g_classScope.resize(0);
+    } 
+    else // strip name
+    {
+      g_classScope = g_classScope.left(i);
+    }
+  }
+  else
+  {
+    //err("Error: Too many end of scopes found!\n");
+  }
+  //printf("popScope() result: `%s'\n",g_classScope.data());
+}
+
+static void setClassScope(const QCString &name)
+{
+  //printf("setClassScope(%s)\n",name.data());
+  QCString n=name;
+  n=n.simplifyWhiteSpace();
+  int ts=n.find('<'); // start of template
+  int te=n.findRev('>'); // end of template
+  //printf("ts=%d te=%d\n",ts,te);
+  if (ts!=-1 && te!=-1 && te>ts)
+  {
+    // remove template from scope
+    n=n.left(ts)+n.right(n.length()-te-1);
+  }
+  g_classScope = n;
+  //printf("--->New class scope `%s'\n",g_classScope.data());
+}
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef
  * is TRUE. If a definition starts at the current line, then the line
@@ -144,6 +203,8 @@ static void startCodeLine()
       QCString anchor;
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
+      g_realScope = d->name().copy();
+      //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       if (g_currentMemberDef) anchor=g_currentMemberDef->anchor();
       g_code->startCodeAnchor(lineAnchor);
@@ -254,27 +315,6 @@ static void addParmType()
   if (!g_parmType.isEmpty()) g_parmType += ' ' ;
   g_parmType += g_parmName ;
   g_parmName.resize(0) ;
-}
-
-static void setClassScope(const QCString &name)
-{
-  //printf("setClassScope(%s)\n",name.data());
-  QCString n=name;
-  n=n.simplifyWhiteSpace();
-  int ts=n.find('<'); // start of template
-  int te=n.findRev('>'); // end of template
-  //printf("ts=%d te=%d\n",ts,te);
-  if (ts!=-1 && te!=-1 && te>ts)
-  {
-    // remove template from scope
-    n=n.left(ts)+n.right(n.length()-te-1);
-  }
-  int index;
-  if ((index=n.findRev("::"))!=-1)
-    g_classScope=n.left(index);
-  else
-    g_classScope.resize(0);
-  //printf("--->New class scope `%s'\n",g_classScope.data());
 }
 
 static void addVariable()
@@ -698,6 +738,9 @@ static void startFontClass(const char *s)
   g_currentFontClass=s;
 }
 
+
+
+
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
@@ -753,7 +796,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_code->codify(yytext);
   					  BEGIN( ReadInclude ); 
 					}
-<Body>("class"|"struct"|"union")[ \t\n]+ { 
+<Body>("class"|"struct"|"union"|"namespace")[ \t\n]+ { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -801,6 +844,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					}
 <Body>"{"				{ 
+  					  g_scopeStack.push(INNERBLOCK);
   					  if (g_searchingForBody)
 					  {
 					    g_searchingForBody=FALSE;
@@ -813,11 +857,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_name.resize(0);
 					}
 <Body>"}"				{ 
+  					  if (g_scopeStack.pop()==SCOPEBLOCK) popScope();
   					  g_code->codify(yytext);
   					  g_inClass=FALSE; 
 					  if (--g_curlyCount<=0) 
 					  {
-					    g_classScope.resize(0);
+					    //g_classScope.resize(0);
 					    g_codeParmList.clear();
 					  }
 					  if (--g_bodyCurlyCount<=0)
@@ -855,11 +900,17 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  if (g_insideBody) g_bodyCurlyCount++;
 					  if (!g_ccd.name.isEmpty())
 					  {
-					    g_classScope=g_ccd.name.copy();
+  					    g_scopeStack.push(SCOPEBLOCK);
+					    pushScope(g_ccd.name);
+					    //g_classScope=g_ccd.name.copy();
 					    CodeClassDef *cd=new CodeClassDef(g_ccd);
 					    g_codeClassList.append(cd);
 					    g_codeClassDict.insert(cd->name,cd);
 					    //printf("g_codeClassList.count()=%d\n",g_codeClassList.count());
+					  }
+					  else
+					  {
+  					    g_scopeStack.push((void *)2);
 					  }
 					  BEGIN( Body );
  					}
@@ -951,13 +1002,6 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
   				          g_name.resize(0);g_type.resize(0);
   					}
-  /*
-<Body>([a-z_A-Z~][a-z_A-Z0-9]*)/([ \t]*)	{ 
-					  generateClassLink(*g_code,yytext);
-					  addType();
-  					  name+=yytext; 
-					}
-  */
 <Body>{TYPEKW}/{B}* {
   					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
@@ -1159,7 +1203,15 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>")"({BN}"const"|"volatile")*{BN}*"{" 	{
 					  addParameter();
 					  g_parmType.resize(0);g_parmName.resize(0);
-					  if (g_name.find("::")!=-1) setClassScope(g_name);
+					  if (g_name.find("::")!=-1) 
+					  {
+  					    g_scopeStack.push(SCOPEBLOCK);
+					    setClassScope(g_realScope);
+					  }
+					  else
+					  {
+  					    g_scopeStack.push(INNERBLOCK);
+					  }
 					  g_code->codify(")");
 					  startFontClass("keyword");
 					  yytext[yyleng-1]='\0';
@@ -1190,7 +1242,15 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_insideBody=TRUE;
 					  }
 					  if (g_insideBody) g_bodyCurlyCount++;
-					  if (g_name.find("::")!=-1) setClassScope(g_name);
+					  if (g_name.find("::")!=-1) 
+					  {
+  					    g_scopeStack.push(SCOPEBLOCK);
+					    setClassScope(g_realScope);
+					  }
+					  else
+					  {
+  					    g_scopeStack.push(INNERBLOCK);
+					  }
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body ); 
 					}
@@ -1520,6 +1580,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   g_sharpCount    = 0;
   g_insideTemplate = FALSE;
   g_classVar      = 0;
+  g_scopeStack.clear();
   g_classScope    = className;
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;

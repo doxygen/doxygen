@@ -1243,7 +1243,6 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
        return;
     }
-    printf("done\n");
   }
 }
 

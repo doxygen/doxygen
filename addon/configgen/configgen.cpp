@@ -713,6 +713,11 @@ int main(int argc,char * argv[])
   while (!ctfile.atEnd()) 
   {
     ctfile.readLine(buf,maxLineLen-1);
+    if (buf[l-2]--'\r') // remove the \r for the folks using Windows
+    {
+      buf[l-2]='\n';
+      buf[l-1]='\r';
+    }
     if      (QCString("#CONFIG Config\n"  )==buf) FORALL(printConfig(t))
     else if (QCString("#CONFIG Static\n"  )==buf) FORALL(printStatic(t))
     else if (QCString("#CONFIG Rules\n"   )==buf) FORALL(printRules(t))
