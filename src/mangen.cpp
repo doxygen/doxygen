@@ -150,6 +150,11 @@ void ManGenerator::writeHtmlLink(const char *,const char *text)
   docify(text);
 }
 
+void ManGenerator::writeMailLink(const char *url)
+{
+  docify(url);
+}
+
 void ManGenerator::startGroupHeader()
 {
   if (!firstCol) t << endl;

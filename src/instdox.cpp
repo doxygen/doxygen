@@ -50,7 +50,8 @@ void writeInstallScript()
       {
         fileName = tagLine;
       }
-      t << "\"" << fileName << "\", \"\"";
+      QFileInfo fi(fileName);
+      t << "\"" << fi.fileName() << "\", \"\"";
       s=Config::tagFileList.next();
       if (s) t << ", ";
     }

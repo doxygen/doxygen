@@ -303,7 +303,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
  \addindex JAVADOC_AUTOBRIEF
-  If the \c JAVADOC_NO_AUTOBRIEF is set to \c YES (the default) then Doxygen
+  If the \c JAVADOC_AUTOBRIEF is set to \c YES (the default) then Doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO, the Javadoc-style will
   behave just like the Qt-style comments.
@@ -444,10 +444,12 @@ followed by the descriptions of the tags grouped by category.
 
  The following commands have a special meaning inside the header:
  <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
- <code>\$doxygenversion</code>. 
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, only the current date,
- or the version number of doxygen.
+ the version number of doxygen, the project name (see PROJECT_NAME), or the
+ project number (see PROJECT_NUMBER).
    
 \anchor cfg_html_footer
 <dt>\c HTML_FOOTER <dd>
@@ -461,10 +463,15 @@ followed by the descriptions of the tags grouped by category.
 \endverbatim
  If the tag is left blank doxygen will generate a standard footer.
 
- The following commands have a special meaning inside the footer:
- <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>. 
+ The following commands have a special meaning inside the header:
+ <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
- the title of the page, the current date and time, or only the current date. 
+ the title of the page, the current date and time, only the current date,
+ the version number of doxygen, the project name (see PROJECT_NAME), or the
+ project number (see PROJECT_NUMBER).
+   
 
 \anchor cfg_html_stylesheet
 <dt>\c HTML_STYLESHEET <dd>
@@ -477,14 +484,19 @@ followed by the descriptions of the tags grouped by category.
 
 \verbatim
 H1 { text-align: center }
+A.qindex {}
+A.qindexRef {}
 A.el { text-decoration: none; font-weight: bold }
+A.elRef { font-weight: bold }
+A.code { text-decoration: none; font-weight: normal; color: #4444ee }
+A.codeRef { font-weight: normal; color: #4444ee }
+A.gl:link { color: #ffffff }
+A.gl:visited { color: #ffffff }
+A.gl { text-decoration: none; font-weight: bold; background-color: #ff8080 }
 DL.el { margin-left: -1cm }
 DIV.fragment { width: 100%; border: none; background-color: #eeeeee }
 DIV.in { margin-left: 16 }
 DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }
-A.gl:link { color: #ffffff }
-A.gl:visited { color: #ffffff }
-A.gl { text-decoration: none; font-weight: bold; background-color: #ff8080 }
 TD.md { background-color: #f2f2ff }
 \endverbatim
 
@@ -622,6 +634,15 @@ EXTRA_PACKAGES = times
  \par Note: 
    Only use a user defined header if you know what you are doing!
 
+ The following commands have a special meaning inside the header:
+ <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$projectnumber</code>. 
+ Doxygen will replace them by respectively 
+ the title of the page, the current date and time, only the current date,
+ the version number of doxygen, the project name (see PROJECT_NAME), or the
+ project number (see PROJECT_NUMBER).
+   
 </dl>
 
 \subsection man_output Man page related options
@@ -842,7 +863,7 @@ DOC_ABSPATH      = /home/dimitri/.html/qdbttabular
 BIN_ABSPATH      = /home/dimitri/bin
 \endverbatim
 
-To regenerate the Qt documentation from the sources, you could use the
+To regenerate the Qt-1.44 documentation from the sources, you could use the
 following config file:
 \verbatim
 PROJECT_NAME         = Qt

@@ -217,7 +217,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
         else
         {
-          t << fileToString(Config::latexHeaderFile);
+          QCString header = fileToString(Config::latexHeaderFile);
+          t << substituteKeywords(header,0);
         }
       }
       break;
@@ -657,13 +658,22 @@ void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
 
 void LatexGenerator::writeHtmlLink(const char *url,const char *text)
 {
+  t << "{\\tt ";
   docify(text);
+  t << "}";
   if (url)
   {
   //  t << " {\\tt (";
   //  docify(url);
   //  t << ")}";
   }
+}
+
+void LatexGenerator::writeMailLink(const char *url)
+{
+  t << "{\\tt "; 
+  docify(url);
+  t << "}";
 }
 
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,

@@ -450,6 +450,15 @@ class TranslatorDutch : public Translator
     {
       return "De definitie bevindt zich in de file @0.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.0.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDeprecated()
+    {
+      return "Verouderd";
+    }
 };
 
 #endif

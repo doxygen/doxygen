@@ -99,7 +99,7 @@ the output directory.
 As the names suggest the \c html directory contains the
 generated documentation in HTML format and the \c latex directory contains the
 generated documentation in \f$\mbox{\LaTeX}\f$ format. Man pages are put
-in a man3 directory inside the \c man directory.
+in a \c man3 directory inside the \c man directory.
 
 The default output directory is the directory in which \c doxygen
 is started. The directory to which the output is written can be changed 
@@ -123,11 +123,11 @@ By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
 <code>make</code> ofcourse). This file can then be viewed using \c xdvi or 
 converted into a postscript file \c refman.ps by typing <code>make ps</code> 
-(this requires \c dvips ).  The Postscript file can be send to a postscript
+(this requires <code>dvips</code>).  The Postscript file can be send to a postscript
 printer. If you do not have a postscript printer, you can try to use 
 ghostscript to convert postscript into something your printer understands.
 Conversion to PDF is also possible; just type
-<code>make pdf</code>. 
+<code>make pdf</code> (this required <code>ps2pdf</code>). 
 To get the best results for PDF output you should set the 
 \c PDF_HYPERLINKS tag to \c YES.
 
@@ -207,6 +207,13 @@ The following types of special documentation blocks are supported by doxygen:
 /// ... one line of text ...
 \endverbatim
 </ul>
+
+Doxygen only allows one brief and one detailed description. If there is
+one brief description before a declaration and one before a
+definition, only the one before the \e declaration will be used. If
+the same situation occurs for a detail description,
+the one before the \e definition is preferred and the one before the
+declaration will be ignored.
 
 Here is an example of a documented piece of C++ code using the Qt style:
 \verbinclude qtstyle.cpp
@@ -551,9 +558,9 @@ after the \c INPUT_FILTER tag.
 \subsection moreinfo More information
 
 \addindex QdbtTabular
-For a more elaborate example see <a href="http://www.stack.nl/~dimitri/qdbttabular/html/index.html">
+For a more elaborate example see <a href="http://www.stack.nl/~dimitri/qdbttabular/doc/html/index.html">
 the documentation of QdbtTabular</a> \latexonly 
-({\tt http://www.stack.nl/$\sim$dimitri/qdbttabular/html})\endlatexonly.
+({\tt http://www.stack.nl/$\sim$dimitri/qdbttabular/doc/html})\endlatexonly.
 \htmlonly
 I hope that was clear. If not, please let me know, so I can improve this document. If you have problems 
 take a look at the <a href="faq.html">faq</a> and the <a href="trouble.html">troubleshooting</a> sections. 

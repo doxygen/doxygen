@@ -43,6 +43,7 @@ class IndexFieldList : public QList<IndexField>
     {
       return stricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
     }
+   ~IndexFieldList() {}
 };
 
 class IndexFieldListIterator : public QListIterator<IndexField>
@@ -56,6 +57,7 @@ class IndexFieldDict : public QDict<IndexField>
 {
   public:
     IndexFieldDict(int size) : QDict<IndexField>(size) {}
+   ~IndexFieldDict() {}
 };
 
 /*! A helper class for HtmlHelp that manages a two level index in 

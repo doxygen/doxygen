@@ -16,18 +16,21 @@
 
 /*! \page history Doxygen History
 
-<h3>Features scheduled for version 1.0</h3>
+<h3>Version 1.0.0</h3>
+
+<h4>New features:</h4>
 <ul>
- <li>Include LaTeX style formulas in LaTeX and HTML output (in HTML as a gif). 
- <li>Multi-lingual support: currently supported languages are: English,
-     Dutch, French, German, Italian, Swedish, Czech, Japanese.
- <li>Generation of class diagrams (clickable image maps in HTML, eps images 
-     in postscript). 
- <li>Output generator for the man page format. 
- <li>Proper support for template classes, members, functions and specializations. 
- <li>Proper support for namespaces. 
- <li>Reintroduction of the multi-column class list (and file list) to quickly 
-     select a class or file 
+<li>Support for templates and namespaces.
+<li>Internationalization support. Currently supported languages are:
+    English, Czech, German, Spanish, Finnish, French, Italian, Japanse,
+    Dutch, and Swedish. 
+<li>Automatic generation of inheritance diagrams for sub & super classes.
+<li>Support for man page, compressed HTML help, and hyperlinked PDF output.
+<li>Cross-referencing documentation with source code and source inlining.
+<li>LaTeX formulas can be included in the documentation.
+<li>Support for parsing Corba & Microsoft IDL.
+<li>Images can be included in the documentation.
+<li>Improved parsing & preprocessing.
 </ul>
 
 <h3>Version 0.4</h3>

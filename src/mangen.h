@@ -76,6 +76,7 @@ class ManGenerator : public OutputGenerator
     void startTextLink(const char *,const char *) {}
     void endTextLink() {}
     void writeHtmlLink(const char *url,const char *text);
+    void writeMailLink(const char *url);
     void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
     void endTypewriter()   { t << "\\fR"; firstCol=FALSE; }
     void startGroupHeader();

@@ -121,6 +121,7 @@ static bool             inExceptionBlock;
 static bool             inSeeBlock;
 static bool             inReturnBlock;
 static bool             inAuthorBlock;
+static bool             inDeprecatedBlock;
 static bool             inVersionBlock;
 static bool             inDateBlock;
 static bool             inBugBlock;
@@ -146,6 +147,7 @@ static int              argSharpCount;
 static int              currentArgumentContext;
 static int              lastCopyArgStringContext;
 static int              lastCopyArgContext;
+static int              currentListIndentLevel;
 static QCString         *copyArgString;
 
 static ArgumentList     *currentArgumentList;
@@ -193,6 +195,7 @@ static void initParser()
   inSeeBlock = FALSE;
   inReturnBlock = FALSE;
   inAuthorBlock = FALSE;
+  inDeprecatedBlock = FALSE;
   inVersionBlock = FALSE;
   inDateBlock = FALSE;
   inBugBlock = FALSE;
@@ -538,7 +541,7 @@ static bool inBlock()
 {
   return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
          inVersionBlock || inDateBlock || inWarningBlock || inBugBlock ||
-	 inParBlock || inExceptionBlock;
+	 inParBlock || inExceptionBlock || inDeprecatedBlock;
 }
 
 static void endBlock()
@@ -551,7 +554,7 @@ static void endBlock()
     outDoc->endDescList();
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
     inVersionBlock=inDateBlock=inBugBlock=inWarningBlock=
-    inParBlock=inExceptionBlock=FALSE;
+    inParBlock=inExceptionBlock=inDeprecatedBlock=FALSE;
 }
 
 static void addSection()
@@ -738,6 +741,7 @@ static int yyread(char *buf,int max_size)
 //ATTR      ((({BN}+[^\>]+)/">")?)
 %}
 
+CMD	  ("\\"|"@")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -799,6 +803,7 @@ VAR	  [vV][aA][rR]
 %x	Include
 %x	ClassName
 %x	ClassVar
+%x	ClassTemplSpec
 %x	Bases
 %x	BasesProt
 %x	NextSemi
@@ -992,15 +997,15 @@ VAR	  [vV][aA][rR]
   					  envvar=envvar.left(envvar.length()-1);
 					  outDoc->docify(getenv(envvar));
 					}
-<DocScan>("\\"|"@")"htmlonly"/[^a-z_A-Z0-9]	{
+<DocScan>{CMD}"htmlonly"/[^a-z_A-Z0-9]	{
   					  outDoc->disableAllBut(OutputGenerator::Html); 
 					  BEGIN(DocHtmlScan);
   					}
-<DocHtmlScan>("\\"|"@")"endhtmlonly"/[^a-z_A-Z0-9] {
+<DocHtmlScan>{CMD}"endhtmlonly"/[^a-z_A-Z0-9] {
   					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"latexonly"/[^a-z_A-Z0-9]	{
+<DocScan>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
   					  outDoc->disableAllBut(OutputGenerator::Latex);
 					  BEGIN(DocLatexScan);
   					}
@@ -1012,7 +1017,7 @@ VAR	  [vV][aA][rR]
 					  c[0]=*yytext;c[1]='\0';
   					  outDoc->writeString(c);
   					}
-<DocLatexScan>("\\"|"@")"endlatexonly"/[^a-z_A-Z0-9] {
+<DocLatexScan>{CMD}"endlatexonly"/[^a-z_A-Z0-9] {
   					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
@@ -1023,16 +1028,16 @@ VAR	  [vV][aA][rR]
 <DocScan>"\\headerfilelist"/{BN}	{ /*TODO: fix this writeHeaderFileList(*outDoc); */ }
 <DocScan>"\\header"/{BN}                { BEGIN( DocSkipWord ); }
 <DocScan>"\\define"/{BN}	        { BEGIN( DocSkipWord ); }
-<DocScan>("\\"|"@")"verbinclude"/{BN}	{ BEGIN( DocVerbInc ); }
+<DocScan>{CMD}"verbinclude"/{BN}	{ BEGIN( DocVerbInc ); }
 <DocVerbInc>{FILE}			{
   					  verbIncludeFile(*outDoc,stripQuotes(yytext));
 					  BEGIN( DocScan ); 
   					}
-<DocScan>("\\"|"@")"verbatim"/[^a-z_A-Z0-9]	{
+<DocScan>{CMD}"verbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->startCodeFragment();
 					  BEGIN(DocVerbatim);
   					}
-<DocVerbatim>("\\"|"@")"endverbatim"/[^a-z_A-Z0-9]	{
+<DocVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->endCodeFragment();
   					  BEGIN(DocScan);
   					}
@@ -1048,7 +1053,7 @@ VAR	  [vV][aA][rR]
 					  char c[2];c[0]=*yytext;c[1]='\0';
   					  outDoc->codify(c);
   					}
-<DocScan>("\\"|"@")"internal"/{BN}      { 
+<DocScan>{CMD}"internal"/{BN}      { 
 					  if (!Config::internalDocsFlag)
 					  {
 					    outDoc->newParagraph();
@@ -1061,7 +1066,7 @@ VAR	  [vV][aA][rR]
   					  outDoc->newParagraph();
 					  scanString(theTranslator->trReimplementedForInternalReasons()+"\n");
   					}
-<DocScan>("\\"|"@")"link"/{BN}	        { BEGIN( DocLink ); }
+<DocScan>{CMD}"link"/{BN}	        { BEGIN( DocLink ); }
 <DocSkipWord>[a-z_A-Z0-9.:()]+		{ BEGIN( DocScan ); }
 <DocLink>[a-z_A-Z0-9:#.~/()\-\+]+       { 
   					  linkRef  = stripKnownExtensions(yytext);
@@ -1070,7 +1075,7 @@ VAR	  [vV][aA][rR]
 					}
 <DocLinkText>.				{ linkText += *yytext; }
 <DocLinkText>"\n"			{ linkText += " "; }
-<DocLink,DocLinkText>("\\"|"@")"endlink" { // <- needed for things like \endlink. 
+<DocLink,DocLinkText>{CMD}"endlink" { // <- needed for things like \endlink. 
   					  //printf("GenerateLink className=`%s' linkRef=`%s' linkText=`%s'\n",
 					  //        className.data(),linkRef.data(),linkText.data());
 					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText);
@@ -1085,10 +1090,10 @@ VAR	  [vV][aA][rR]
 					  BEGIN( DocScan );
   					}
   */
-<DocScan>("\\"|"@")"endlink"/[^a-z_A-Z0-9]      { warn("Warning: \\endlink without \\link "
+<DocScan>{CMD}"endlink"/[^a-z_A-Z0-9]      { warn("Warning: \\endlink without \\link "
     					         "in documentation of %s\n", refName.data()); 
 					}
-<DocScan>("\\"|"@")"addindex"/{BN}		{
+<DocScan>{CMD}"addindex"/{BN}		{
   					  BEGIN(DocIndexWord);
   					}
 <DocScan>"\\form#"[0-9]+		{
@@ -1105,7 +1110,7 @@ VAR	  [vV][aA][rR]
 					  outDoc->addToIndex(yytext,0);
   					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"arg"{BN}+	        { 
+<DocScan>{CMD}"arg"{BN}+	        { 
   					  if (insideArgumentList)
 					  {
 					    outDoc->writeListItem();
@@ -1117,7 +1122,7 @@ VAR	  [vV][aA][rR]
 					    insideArgumentList=TRUE;
 					  }
 					}
-<DocScan>("\\"|"@")"par"{B}+			{
+<DocScan>{CMD}"par"{B}+			{
   					  BEGIN(DocPar);
   					}
 <DocPar>[^\n]*{BN}+			{
@@ -1132,7 +1137,7 @@ VAR	  [vV][aA][rR]
 					  outDoc->writeDescItem();
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"warning"{BN}+	{ 
+<DocScan>{CMD}"warning"{BN}+	{ 
   				          endArgumentList();
   					  if (!inWarningBlock)
 					  {
@@ -1151,7 +1156,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
 				        }
-<DocScan>("\\"|"@")"bug"[s]?{BN}+		{
+<DocScan>{CMD}"bug"[s]?{BN}+		{
   				          endArgumentList();
   					  if (!inBugBlock)
 					  {
@@ -1169,7 +1174,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>("\\"|"@")"version"{BN}+	{
+<DocScan>{CMD}"version"{BN}+		{
   				          endArgumentList();
   					  if (!inVersionBlock)
 					  {
@@ -1188,7 +1193,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>("\\"|"@")"date"{BN}+		{
+<DocScan>{CMD}"date"{BN}+		{
   				          endArgumentList();
   					  if (!inDateBlock)
 					  {
@@ -1207,7 +1212,25 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>("\\"|"@")"author"{BN}+	{
+<DocScan>{CMD}"deprecated"{BN}+		{
+  					  endArgumentList();
+					  if (!inDeprecatedBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inDeprecatedBlock=TRUE;
+					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trDeprecated()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+					    outDoc->writeDescItem();
+					  }
+  					}
+<DocScan>{CMD}"author"{BN}+		{
   				          endArgumentList();
   					  if (!inAuthorBlock)
 					  {
@@ -1226,7 +1249,7 @@ VAR	  [vV][aA][rR]
 					    outDoc->docify(", ");
 					  }
   					}
-<DocScan>("\\"|"@")("return"([s])?|"result"){BN}+	{
+<DocScan>{CMD}("return"([s])?|"result"){BN}+	{
   				          endArgumentList();
   					  if (!inReturnBlock)
 					  {
@@ -1241,7 +1264,7 @@ VAR	  [vV][aA][rR]
 					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>("\\sa"|"@see"){BN}+           { 
+<DocScan>{CMD}("sa"|"see"){BN}+       { 
   				          endArgumentList();
   					  if (!inSeeBlock)
 					  {
@@ -1261,7 +1284,7 @@ VAR	  [vV][aA][rR]
 					    outDoc->docify(", ");
 					  }
 					}
-<DocScan>("\\"|"@")"param"{BN}+		{
+<DocScan>{CMD}"param"{BN}+		{
   				          endArgumentList();
   					  if (!inParamBlock)
 					  {
@@ -1281,7 +1304,7 @@ VAR	  [vV][aA][rR]
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>("\\"|"@")"retval"{BN}+	{
+<DocScan>{CMD}"retval"{BN}+		{
   				          endArgumentList();
   					  if (!inRetValBlock)
 					  {
@@ -1301,7 +1324,7 @@ VAR	  [vV][aA][rR]
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>("\\"|"@")("exception"|"throw")s?{BN}+	{
+<DocScan>{CMD}("exception"|"throw")s?{BN}+	{
   					  endArgumentList();
 					  if (!inExceptionBlock)
 					  {
@@ -1340,7 +1363,7 @@ VAR	  [vV][aA][rR]
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
-<DocScan>"\\section "{ID}"\n"		{
+<DocScan>{CMD}"section "{ID}"\n"		{
   					  QCString secName=&yytext[9];               // skip "\section "
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
@@ -1352,7 +1375,7 @@ VAR	  [vV][aA][rR]
 						                 sec->type==SectionInfo::Subsection);
 					  }
   					}
-<DocScan>"\\anchor "{ID}"\n"		{
+<DocScan>{CMD}"anchor "{ID}"\n"		{
   					  QCString secName=&yytext[8];
 					  secName=secName.left(secName.length()-1);
 					  SectionInfo *sec;
@@ -1361,10 +1384,10 @@ VAR	  [vV][aA][rR]
 					    outDoc->writeAnchor(sec->label);
 					  }
   					}
-<DocScan>("\\"|"@")"ref"		{
+<DocScan>{CMD}"ref"		{
   					  BEGIN(DocRefName);
   					}
-<DocScan>"\\refitem"			{
+<DocScan>{CMD}"refitem"			{
   					  BEGIN(DocRefItem);
   					}
 <DocRefName>{SCOPENAME}			{
@@ -1429,9 +1452,10 @@ VAR	  [vV][aA][rR]
   					}
 <DocRefItemName>.*/"\n"			{
 					  SectionInfo *sec;
+					  QCString text=yytext;
 					  if ((sec=sectionDict[sectionRef]))
 					  {
-					    outDoc->writeSectionRefItem(sec->fileName,sec->label,yytext);
+					    outDoc->writeSectionRefItem(sec->fileName,sec->label,text.stripWhiteSpace());
 					  }
 					  else
 					  {
@@ -1440,7 +1464,7 @@ VAR	  [vV][aA][rR]
 					  }
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"image"{B}+		{
+<DocScan>{CMD}"image"{B}+		{
   					  BEGIN(DocImage); 
   					}
 <DocImage>[hH][tT][mM][lL]		{
@@ -1496,12 +1520,12 @@ VAR	  [vV][aA][rR]
 					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"code"({BN}*"\n"|{B}*) { 
+<DocScan>{CMD}"code"({BN}*"\n"|{B}*) 	{ 
 					  outDoc->startCodeFragment();
   					  codeBlock.resize(0);
 					  BEGIN( DocCodeBlock ); 
 					}
-<DocScan>("\\"|"@")"endcode"/[^a-z_A-Z0-9] 	{ 
+<DocScan>{CMD}"endcode"/[^a-z_A-Z0-9] 	{ 
   					  warn("Warning: \\endcode without <PRE> or \\code "
     					       "in the documentation of %s\n",refName.data()); 
 					}
@@ -1521,10 +1545,12 @@ VAR	  [vV][aA][rR]
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
+<DocScan>("http:"|"ftp:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
+<DocScan>[a-zA-Z\.]+"@"[a-zA-Z\.]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILEMASK}			{
 					  generateFileRef(*outDoc,yytext);
 					}
-<DocCodeBlock>{BN}*("\\"|"@")"endcode"/[^a-z_A-Z0-9]  { // needed to match things like \endcode. (note the dot)
+<DocCodeBlock>{BN}*{CMD}"endcode"/[^a-z_A-Z0-9]  { // needed to match things like \endcode. (note the dot)
 				          parseCode(*outDoc,className,codeBlock,exampleDoc,exampleName);
 					  //printf("Code block\n-------------\n%s\n--------------\n",codeBlock.data());
 					  outDoc->endCodeFragment();
@@ -1536,17 +1562,17 @@ VAR	  [vV][aA][rR]
 					  outDoc->endCodeFragment();
 					  BEGIN( DocScan ); 
 					}
-<DocScan>("\\"|"@")"e"{BN}+	                { BEGIN( DocEmphasis ); }
-<DocScan>("\\"|"@")"a"{BN}+                     { BEGIN( DocEmphasis ); }
-<DocScan>("\\"|"@")"b"{BN}+			{ BEGIN( DocBold ); }
-<DocScan>("\\"|"@")"c"{BN}+                     { BEGIN( DocCode ); }
-<DocScan>("\\"|"@")"l"{BN}+		
-<DocScan>("\\"|"@")"include"{BN}+		{ BEGIN( DocInclude ); }
-<DocScan>("\\"|"@")"dontinclude"{BN}+		{ BEGIN( DocDontInclude ); }
-<DocScan>("\\"|"@")"skip"{BN}+		 	{ BEGIN( DocSkipKey ); }	
-<DocScan>("\\"|"@")"skipline"{BN}+		{ BEGIN( DocSkiplineKey ); firstLine=TRUE; }
-<DocScan>("\\"|"@")"line"{BN}+			{ BEGIN( DocLineKey ); firstLine=TRUE; }
-<DocScan>("\\"|"@")"until"{BN}+			{ BEGIN( DocUntilKey ); firstLine=TRUE; }
+<DocScan>{CMD}"e"{BN}+	                { BEGIN( DocEmphasis ); }
+<DocScan>{CMD}"a"{BN}+                     { BEGIN( DocEmphasis ); }
+<DocScan>{CMD}"b"{BN}+			{ BEGIN( DocBold ); }
+<DocScan>{CMD}"c"{BN}+                     { BEGIN( DocCode ); }
+<DocScan>{CMD}"l"{BN}+		
+<DocScan>{CMD}"include"{BN}+		{ BEGIN( DocInclude ); }
+<DocScan>{CMD}"dontinclude"{BN}+		{ BEGIN( DocDontInclude ); }
+<DocScan>{CMD}"skip"{BN}+		 	{ BEGIN( DocSkipKey ); }	
+<DocScan>{CMD}"skipline"{BN}+		{ BEGIN( DocSkiplineKey ); firstLine=TRUE; }
+<DocScan>{CMD}"line"{BN}+			{ BEGIN( DocLineKey ); firstLine=TRUE; }
+<DocScan>{CMD}"until"{BN}+			{ BEGIN( DocUntilKey ); firstLine=TRUE; }
 <DocSkipKey>[^ \t\r\n]+			{ 
   					  if (includeFileLength>0) 
 					    skipUntil(yytext); 
@@ -1591,9 +1617,9 @@ VAR	  [vV][aA][rR]
   					    BEGIN( DocScan );
 					  }
 					}
-<DocKeyEnd>("\\"|"@")"line"{BN}+		{ BEGIN(DocLineKey); }
-<DocKeyEnd>("\\"|"@")"until"{BN}+		{ BEGIN(DocUntilKey); }
-<DocKeyEnd>("\\"|"@")"skipline"{BN}+		{ BEGIN(DocSkiplineKey); }
+<DocKeyEnd>{CMD}"line"{BN}+		{ BEGIN(DocLineKey); }
+<DocKeyEnd>{CMD}"until"{BN}+		{ BEGIN(DocUntilKey); }
+<DocKeyEnd>{CMD}"skipline"{BN}+		{ BEGIN(DocSkiplineKey); }
 <DocKeyEnd>\n
 <DocKeyEnd><<EOF>>			{
   					  if (!firstLine) outDoc->endCodeFragment();
@@ -1656,10 +1682,18 @@ VAR	  [vV][aA][rR]
 <DocScan>"</"{TR}{ATTR}">"			
 <DocScan>"<"{TD}{ATTR}">"		{ if (curTable) curTable->newElem(); }
 <DocScan>"</"{TD}{ATTR}">"
-<DocScan>"<"{OL}{ATTR}">"		{ outDoc->startEnumList(); }
-<DocScan>"</"{OL}{ATTR}">"		{ outDoc->endEnumList(); }
-<DocScan>"<"{UL}{ATTR}">"		{ outDoc->startItemList(); }
-<DocScan>"</"{UL}{ATTR}">"		{ outDoc->endItemList(); }
+<DocScan>"<"{OL}{ATTR}">"		{ outDoc->startEnumList(); 
+  					  currentListIndentLevel++;
+					}
+<DocScan>"</"{OL}{ATTR}">"		{ outDoc->endEnumList(); 
+  					  currentListIndentLevel--;
+					}
+<DocScan>"<"{UL}{ATTR}">"		{ outDoc->startItemList(); 
+					  currentListIndentLevel++;
+					}
+<DocScan>"</"{UL}{ATTR}">"		{ outDoc->endItemList(); 
+  					  currentListIndentLevel--;
+					}
 <DocScan>"<"{LI}{ATTR}">"		{ outDoc->writeListItem(); }
 <DocScan>"</"{LI}{ATTR}">"		
 <DocScan>"<"{TT}{ATTR}">"		{ outDoc->startTypewriter(); }
@@ -1667,8 +1701,12 @@ VAR	  [vV][aA][rR]
 <DocScan>"<"{EM}{ATTR}">"		{ outDoc->startEmphasis(); }
 <DocScan>"</"{EM}{ATTR}">"		{ outDoc->endEmphasis(); }
 <DocScan>"<"{HR}{ATTR}">"		{ outDoc->writeRuler(); }
-<DocScan>"<"{DL}{ATTR}">"		{ outDoc->startDescription(); }
-<DocScan>"</"{DL}{ATTR}">"		{ outDoc->endDescription(); }
+<DocScan>"<"{DL}{ATTR}">"		{ outDoc->startDescription(); 
+					  currentListIndentLevel++;
+					}
+<DocScan>"</"{DL}{ATTR}">"		{ outDoc->endDescription(); 
+  					  currentListIndentLevel--;
+					}
 <DocScan>"<"{DT}{ATTR}">"		{ outDoc->startDescItem(); }
 <DocScan>"</"{DT}{ATTR}">"	
 <DocScan>"<"{DD}{ATTR}">"		{ outDoc->endDescItem(); }
@@ -1696,7 +1734,7 @@ VAR	  [vV][aA][rR]
   					  htmlUrl.resize(0);
 					  htmlText.resize(0);
   					  BEGIN(DocHtmlHref1); }
-<DocHtmlHref1>{URLMASK}+		{ 
+<DocHtmlHref1>{URLMASK}			{ 
   					  htmlUrl=yytext; 
 					}
 <DocHtmlHref1>">"			{ BEGIN(DocHtmlHref2); }
@@ -1710,30 +1748,8 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocScan); 
 					}
 <DocHtmlLink,DocHtmlAnchor>">"		{ BEGIN(DocScan); }
-
-<DocScan>"\\\\"				{
-  					  outDoc->docify("\\");
-  					}
-<DocScan>"\\@"				{
-  					  outDoc->docify("@");
-  					}
-<DocScan>"\\<"			        { 
-					  outDoc->docify("<");
-					}
-<DocScan>"\\>"				{ 
-  					  outDoc->docify(">");
-					}
-<DocScan>"\\&"				{ 
-  					  outDoc->docify("&");
-					}
-<DocScan>"\\$"				{
-  					  outDoc->docify("$");
-  					}
-<DocScan>"\\#"				{
-  					  outDoc->docify("#");
-  					}
-<DocScan>"\\%"				{
-  					  outDoc->docify("%");
+<DocScan>{CMD}("\\"|"@"|"<"|">"|"&"|"$"|"#"|"%") {
+  					  outDoc->docify(&yytext[1]);
   					}
 <DocScan>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
@@ -2610,6 +2626,12 @@ VAR	  [vV][aA][rR]
 					  current->type+=funcPtrType+")";
 					  BEGIN(FindMembers);
   					}
+<EndFuncPtr>")"{BN}*/"["		{
+  					  lineCount();
+					  current->type+=funcPtrType.data();
+					  current->args += ")";
+					  BEGIN(FindMembers);
+  					}
 <EndFuncPtr>"("				{ // a function returning a function
   					  current->args += *yytext ;
 					  bracketCount=0;
@@ -3036,6 +3058,26 @@ VAR	  [vV][aA][rR]
 					  current->argList->clear();
 					  BEGIN( FindMembers ) ;
 					}
+<ClassName>{SCOPENAME}{BN}*/"<"		{
+  					  sharpCount = 0;
+  					  current->name = yytext ;
+					  lineCount();
+					  BEGIN( ClassTemplSpec );
+					}
+<ClassTemplSpec>">"({BN}*{SCOPENAME})?	{
+					  current->name += yytext;
+  					  if (--sharpCount<=0)
+					  {
+					    BEGIN( ClassVar );
+					  }
+					}
+<ClassTemplSpec>"<"			{
+  					  current->name += yytext;
+  					  sharpCount++;
+  					}
+<ClassTemplSpec>.			{
+  					  current->name += yytext;
+					}
 <ClassName>{SCOPENAME}			{ 
 					  current->name = yytext ;
 					  lineCount();
@@ -3240,11 +3282,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( SkipCurlyBlock );
 					  	
   					}
-<JavaDoc>"@short"{B}+			{
-  					  lastBriefContext=Doc;
-  					  BEGIN( ClassDocBrief ); 
-					}
-<JavaDoc>"\\brief"{B}+			{
+<JavaDoc>{CMD}("brief"|"short"){B}+	{
   					  lastBriefContext=tmpDocType;
   					  BEGIN( ClassDocBrief ); 
 					}
@@ -3280,24 +3318,24 @@ VAR	  [vV][aA][rR]
 					  current->brief+=".";
 					  BEGIN( tmpDocType );
 					}
-<JavaDoc>("\\"|"@")("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
+<JavaDoc>{CMD}("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")("fn"|"var"|"typedef"){B}*	{
+<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"){B}*	{
 					  current->section = Entry::MEMBERDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
   					  BEGIN( ClassDocFunc ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"def"{B}+	{
+<Doc,JavaDoc>{B}*{CMD}"def"{B}+	{
   					  nextDefContext = YY_START==LineDoc ? DefLineDoc : ClassDoc;
   					  current->section = Entry::DEFINEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
   					  BEGIN( ClassDocDefine );
   					}
-<LineDoc,Doc,JavaDoc>{B}*("\\"|"@")"overload"{B}* { 
+<LineDoc,Doc,JavaDoc>{B}*{CMD}"overload"{B}* { 
   					  overloadContext = YY_START;
   					  BEGIN( ClassDocOverload ); 
 					}
@@ -3321,67 +3359,67 @@ VAR	  [vV][aA][rR]
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocFunc ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"enum"{B}*	{
+<Doc,JavaDoc>{B}*{CMD}"enum"{B}*	{
   					  current->section = Entry::ENUMDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( EnumDocArg1 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"defgroup"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"defgroup"{B}* {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"namespace"{B}*	{
+<Doc,JavaDoc>{B}*{CMD}"namespace"{B}*	{
   					  current->section = Entry::NAMESPACEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
   					  BEGIN( NameSpaceDocArg1 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"class"{B}*  {
+<Doc,JavaDoc>{B}*{CMD}"class"{B}*  	{
   					  current->section = Entry::CLASSDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"union"{B}*  {
+<Doc,JavaDoc>{B}*{CMD}"union"{B}*  	{
   					  current->section = Entry::UNIONDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"struct"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"struct"{B}* 	{
   					  current->section = Entry::STRUCTDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"interface"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"interface"{B}* 	{
   					  current->section = Entry::INTERFACEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 
 					}
-<Doc,JavaDoc>{B}*("\\"|"@")"page"{B}*   {
+<Doc,JavaDoc>{B}*{CMD}"page"{B}*   	{
   					  current->section = Entry::PAGEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( PageDocArg1 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"mainpage"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"mainpage"{B}* 	{
   					  current->section = Entry::MAINPAGEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( PageDocArg2 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"file"{B}*	{
+<Doc,JavaDoc>{B}*{CMD}"file"{B}*	{
   					  current->section = Entry::FILEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( FileDocArg1 );
   					}
-<Doc,JavaDoc>{B}*("\\"|"@")"example"{B}* {
+<Doc,JavaDoc>{B}*{CMD}"example"{B}* 	{
  					  current->section = Entry::EXAMPLE_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -3391,7 +3429,7 @@ VAR	  [vV][aA][rR]
 				          current->name = stripQuotes(yytext);	
 					  BEGIN( ExampleDoc );
 					}
-<ClassDoc,Doc,JavaDoc>{B}*("\\"|"@")"relate"[sd]{B}*    { 
+<ClassDoc,Doc,JavaDoc>{B}*{CMD}"relate"[sd]{B}*    { 
   					  lastDocRelContext = YY_START;
   					  BEGIN( ClassDocRelates ); 
 					}
@@ -3497,18 +3535,18 @@ VAR	  [vV][aA][rR]
   					  yyLineNr++;
 					  BEGIN( Doc );
   					}
-<PageDoc>"\\refitem".*"\n"		{
+<PageDoc>{CMD}"refitem".*"\n"		{
   					  current->doc+=yytext;
   					}
-<PageDoc>("\\"|"@")"section"{B}+	{
+<PageDoc>{CMD}"section"{B}+		{
   					  sectionType=SectionInfo::Section;
   					  BEGIN(SectionLabel);
   					}
-<PageDoc>("\\"|"@")"subsection"{B}+	{
+<PageDoc>{CMD}"subsection"{B}+		{
   					  sectionType=SectionInfo::Subsection;
   					  BEGIN(SectionLabel);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")mgroup{B}+ {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"mgroup"{B}+ {
   					  //printf("--> mgroup found!\n");
   					  lastMemberGroupContext = YY_START;
 					  if (memberGroupId!=-1)
@@ -3525,7 +3563,7 @@ VAR	  [vV][aA][rR]
 					  }
 					  BEGIN(GroupHeader);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")endmgroup/[^a-z_A-Z0-9] {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"endmgroup"/[^a-z_A-Z0-9] {
   					  //printf("--> endmgroup found!\n");
   					  memberGroupId = -1;
 					  current->mGrpId = -1;
@@ -3537,26 +3575,26 @@ VAR	  [vV][aA][rR]
 								);
   					  BEGIN(lastMemberGroupContext);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")anchor{B}+ {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
   					  lastAnchorContext = YY_START;
   					  sectionType=SectionInfo::Anchor;
 					  BEGIN(AnchorLabel);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>"\\\\verbatim"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,JavaDoc,ClassDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
 					  current->doc+="\\\\verbatim";
 					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")"verbatim"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\verbatim";
   					  BEGIN(SkipVerbatim);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>"\\addindex"{B}+[^\n]+ {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
   					  current->doc+=yytext;
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>"\\\\code"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,JavaDoc,ClassDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
   					  current->doc+="\\\\code";
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>("\\"|"@")"code"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"code"/[^a-z_A-Z0-9] {
   					  lastCodeState=YY_START;
 					  current->doc+="\\code";
 					  BEGIN(SkipCode);
@@ -3566,7 +3604,7 @@ VAR	  [vV][aA][rR]
 					  current->doc+="<PRE>";
 					  BEGIN(SkipCode);
   					}
-<SkipVerbatim>("\\"|"@")"endverbatim"/[^a-z_A-Z0-9] {
+<SkipVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					  BEGIN(lastVerbState);
   					}
@@ -3594,7 +3632,7 @@ VAR	  [vV][aA][rR]
 <SkipVerbatim>.				{
   					  current->doc+=*yytext;
   					}
-<SkipCode>("\\"|"@")"endcode"		{
+<SkipCode>{CMD}"endcode"		{
   					  current->doc+="\\endcode";
 					  BEGIN(lastCodeState);
   					}
@@ -3646,20 +3684,20 @@ VAR	  [vV][aA][rR]
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>"//"  	{ current->doc += yytext; }
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>"\\\\f"[$\[\]] {
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>"\\f$"	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="$"; 
 							  BEGIN(ReadFormulaShort); 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>"\\f["	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>{CMD}"f["	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="\\["; 
 							  BEGIN(ReadFormulaLong); 
 							}
-<ReadFormulaShort>"\\f$"				{
+<ReadFormulaShort>{CMD}"f$"				{
   							  formulaText+="$";
 							  if (lastFormulaContext==ClassDocBrief || 
 							      lastFormulaContext==LineDoc || 
@@ -3670,7 +3708,7 @@ VAR	  [vV][aA][rR]
 							    current->doc += addFormula();
 							  BEGIN(lastFormulaContext);
   							}
-<ReadFormulaLong>"\\f]"					{
+<ReadFormulaLong>{CMD}"f]"					{
 							  formulaText+="\\]";
 							  if (lastFormulaContext==ClassDocBrief ||
 							      lastFormulaContext==LineDoc ||
@@ -3719,7 +3757,7 @@ VAR	  [vV][aA][rR]
 <PageDocTitle>\n			{ yyLineNr++; current->args+=" "; }
 <PageDocTitle>[^\n\<]			{ current->args+=yytext; }
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
-<ClassDoc,Doc,JavaDoc>("\\"|"@")"ingroup"{B}+   { 
+<ClassDoc,Doc,JavaDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
   					  BEGIN( GroupName ); 
@@ -3732,7 +3770,7 @@ VAR	  [vV][aA][rR]
 <GroupName>\n				{
   					  yyLineNr++; BEGIN( lastGroupContext );
   					}
-<ClassDoc,Doc>{B}*("\\brief"|"@short")	{ 
+<ClassDoc,Doc>{B}*{CMD}("brief"|"short")	{ 
   					  lastBriefContext=YY_START;
   					  BEGIN( ClassDocBrief ); 
 					}
@@ -3751,27 +3789,14 @@ VAR	  [vV][aA][rR]
 					}
 <ClassDocBrief>"\n"			{ yyLineNr++ ; current->brief += " "; }
 <ClassDocBrief>"<"{BR}{ATTR}">"
-<ClassDocBrief>{BS}/("\\"|"@")"ingroup"	{
+<ClassDocBrief>{BS}/{CMD}"ingroup"	{
   					  current->brief=current->brief.stripWhiteSpace();
 					  BEGIN( lastBriefContext ); 
   					}
-<ClassDocBrief>{BS}/("\\"|"@")("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
+<ClassDocBrief>{BS}/{CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
                                           BEGIN( lastBriefContext ); 
                                         }
-  /*
-<ClassDocBrief>{BS}/("\\"|"@")"author"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"internal" { BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"version"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"date"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"param"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"exception" { BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"return"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\sa"|"@see")	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"bug"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"warning"	 { BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"par"{BN}+ { BEGIN( lastBriefContext ); }
-  */
-<ClassDocBrief>{BS}/("\\brief"|"@short"){BN}+ {
+<ClassDocBrief>{BS}/{CMD}("brief"|"short"){BN}+ {
   					  lastBriefContext=YY_START;
   					  BEGIN( ClassDocBrief ); 
 					}
@@ -3860,7 +3885,7 @@ VAR	  [vV][aA][rR]
 					  newDocState();
   					}
 <Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
-<Doc,AfterDoc,LineDoc,ClassDoc>"\\\\"	{ current->doc += yytext; }
+<Doc,AfterDoc,LineDoc,ClassDoc>("\\\\"|"@@")	{ current->doc += yytext; }
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }
@@ -3897,13 +3922,13 @@ VAR	  [vV][aA][rR]
 					  BEGIN(lastAfterDocContext);
   					}
 <AfterDocBrief>"."/{BN}			{ BEGIN(AfterDoc); }
-<LineDoc,AfterDocBrief,AfterDocLine>("\\"|"@")"internal"	{ 
+<LineDoc,AfterDocBrief,AfterDocLine>{CMD}"internal"	{ 
                                           current->brief+="\\internal"; 
 					}
-<Doc,AfterDoc>("\\"|"@")"internal"	{ 
+<Doc,AfterDoc>{CMD}"internal"		{ 
                                           current->doc+="\\internal"; 
 					}
-<AfterDoc>("\\"|"@")"brief"		{ BEGIN(AfterDocBrief); }
+<AfterDoc>{CMD}"brief"			{ BEGIN(AfterDocBrief); }
 <AfterDoc>"/*"|"//"			{ current->doc+=yytext; }
 <AfterDoc>^{B}*"*"+/[^/]			
 <AfterDoc>\n				{ current->doc+=yytext; yyLineNr++; }
@@ -3937,8 +3962,8 @@ VAR	  [vV][aA][rR]
 					  BEGIN( lastCContext ) ;
 					}
 <SkipComment>[^\*\n]+
-<*>.
 <*>\n					{ yyLineNr++ ; }
+<*>.
 <SkipComment>"//"|"/*"
 <*>"/*"					{ lastCContext = YY_START ;
 					  BEGIN( SkipComment ) ;
@@ -4062,7 +4087,6 @@ void parseMain(Entry *rt)
   global_root   = rt;
   current       = new Entry;
   inputString   = rt->program;
-  //printf("parseDoc=`%s'\n",inputString);
   inputPosition = 0;
   ifCount=0;
   scanYYrestart( scanYYin );
@@ -4083,6 +4107,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
   currentIncludeFile.resize(0);
   includeFileOffset=0;
   includeFileLength=0;
+  currentListIndentLevel=0;
   if (!docString) return;
   linkRef  = "";
   linkText = "";
@@ -4094,6 +4119,26 @@ void parseDocument(OutputList &ol,const QCString &docString)
   scanYYlex();
   if (insideArgumentList) { insideArgumentList=FALSE; outDoc->endItemList(); }
   if (inBlock()) endBlock();
+  if (currentListIndentLevel!=0)
+  {
+    if (!refName.isEmpty())
+    {
+      warn("Warning: Documentation block of %s ended in the middle " 
+	   "of a list (indent level %d)!\n",refName.data(),
+	   currentListIndentLevel);
+    }
+    else if (!exampleName.isEmpty())
+    {
+      warn("Warning: Documentation block of %s ended in the middle " 
+	   "of a list (indent level %d)!\n",exampleName.data(),
+	   currentListIndentLevel);
+    }
+    else
+    {
+      warn("Warning: Documentation block ended in the middle " 
+	   "of a list (indent level %d)!\n",currentListIndentLevel);
+    }
+  }
   ol+=*outDoc;
   delete outDoc;
   return;

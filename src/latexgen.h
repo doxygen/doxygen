@@ -76,6 +76,7 @@ class LatexGenerator : public OutputGenerator
     void startTextLink(const char *,const char *);
     void endTextLink();
     void writeHtmlLink(const char *,const char *);
+    void writeMailLink(const char *);
     void startTypewriter() { t << "{\\tt "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();

@@ -80,6 +80,7 @@ class HtmlGenerator : public OutputGenerator
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
     void writeHtmlLink(const char *url,const char *text);
+    void writeMailLink(const char *url);
     void startTypewriter() { t << "<code>"; }
     void endTypewriter()   { t << "</code>"; }
     void startGroupHeader();

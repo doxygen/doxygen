@@ -33,7 +33,6 @@ class ExampleList;
 class ExampleDict;
 class OutputList;
 
-
 class MemberDef : public Definition
 {
   public:

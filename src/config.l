@@ -965,7 +965,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard header. Notice: only use this tag if you know what you are doing!\n";
     t << "\n";
   }
-  t << "LATEX_HEADER          =\n";
+  t << "LATEX_HEADER         =\n";
   if (!sl)
   {
     t << "\n";

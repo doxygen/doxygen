@@ -45,6 +45,7 @@ class ExampleDict : public QDict<Example>
 {
   public:
     ExampleDict(int size=17) : QDict<Example>(size) {}
+   ~ExampleDict() {}
 };
 
 #endif

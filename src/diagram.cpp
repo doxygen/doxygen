@@ -31,6 +31,7 @@
 #include "util.h"
 #include "latexgen.h"
 #include "htmlgen.h"
+#include "doxygen.h"
 
 //-----------------------------------------------------------------------------
 
@@ -150,9 +151,21 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
 {
   if (cd->isLinkable())
   {
+    QCString *dest;
+    QCString ref=cd->getReference();
     t << "<area ";
-    if (cd->getReference()) t << "doxygen=\"" << cd->getReference() << ":\" ";
-    t << "href=\"" << cd->getOutputFileBase() << ".html\" ";
+    if (!ref.isEmpty()) 
+    {
+      t << "doxygen=\"" << ref << ":";
+      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      t << "\" ";
+    }
+    t << "href=\"";
+    if (!ref.isEmpty())
+    {
+      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    }
+    t << cd->getOutputFileBase() << ".html\" ";
     t << "ALT=\"" << cd->name(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
     t << (x+w) << "," << (y+h) << "\">" << endl;
@@ -217,8 +230,10 @@ void DiagramItem::addChild(DiagramItem *di)
 void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
                              Protection prot,Specifier virt,const char *ts)
 {
+  if (cd->visited) return; // error in the class diagram
   DiagramItem *di=new DiagramItem(parent, diagram->at(level)->count(), 
                                   cd,prot,virt,ts);
+  cd->visited=TRUE;
   if (parent) parent->addChild(di);
   di->move(count()*gridWidth,level*gridHeight);
   append(di);
@@ -229,7 +244,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   while (bcd)
   {
     ClassDef *ccd=bcd->classDef;
-    if (ccd && ccd->isVisibleInHierarchy()) count++;
+    if (ccd && ccd->isVisibleInHierarchy() && !ccd->visited) count++;
     bcd=bcl->next();
   }
   if (count>0 && (prot!=Private || !doBases))
@@ -249,7 +264,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
     while (bcd)
     {
       ClassDef *ccd=bcd->classDef;
-      if (ccd && ccd->isVisibleInHierarchy())
+      if (ccd && ccd->isVisibleInHierarchy() && !ccd->visited)
       {
         row->insertClass(di,ccd,doBases,bcd->prot,
             doBases?bcd->virt:Normal,
@@ -883,10 +898,23 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
   }
 }
 
+
+void clearVisitFlags()
+{
+  ClassListIterator cli(classList);
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
+  {
+    cd->visited=FALSE;
+  }
+}
+
 ClassDiagram::ClassDiagram(ClassDef *root)
 {
+  clearVisitFlags();
   base  = new TreeDiagram(root,TRUE);
   base->computeLayout();
+  clearVisitFlags();
   super = new TreeDiagram(root,FALSE);
   super->computeLayout();
   DiagramItem *baseItem  = base->first()->first();

@@ -32,6 +32,7 @@
 #include "config.h"
 #include "htmlhelp.h"
 #include "example.h"
+#include "version.h"
 
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
@@ -1878,3 +1879,16 @@ void setFileNameForSections(QList<QCString> *anchorList,const char *fileName)
   }
 }
 
+//----------------------------------------------------------------------
+
+QCString substituteKeywords(QCString &s,const char *title)
+{
+  if (title) s = substitute(s,"$title",title);
+  s = substitute(s,"$datetime",dateToString(TRUE));
+  s = substitute(s,"$date",dateToString(FALSE));
+  s = substitute(s,"$doxygenversion",versionString);
+  s = substitute(s,"$projectname",Config::projectName);
+  s = substitute(s,"$projectnumber",Config::projectNumber);
+  return s;
+}
+    
