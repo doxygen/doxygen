@@ -22,7 +22,7 @@ class PageInfo
   public:
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
-      doc(d), title(t), todoId(0), testId(0) {}
+      doc(d), title(t), todoId(0), testId(0),inGroup(0) {}
 
     // where the page definition was found
     QCString defFileName;
@@ -36,6 +36,9 @@ class PageInfo
     // ids
     int todoId;
     int testId;
+
+    // is this page part of a group
+    GroupDef *inGroup;
 };
 
 class PageSDict : public SDict<PageInfo>

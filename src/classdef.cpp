@@ -617,6 +617,37 @@ ArgumentList *ClassDef::outerTemplateArguments() const
     return tempArgs;
   }
 }
+
+
+static void writeTemplateSpec(OutputList &ol,ArgumentList *al,
+            const QCString &pageType,const QCString &name)
+{
+  if (al) // class is a template
+  {
+    ol.startSubsubsection(); 
+    ol.docify("template<");
+    Argument *a=al->first();
+    while (a)
+    {
+      ol.docify(a->type);
+      if (!a->name.isEmpty())
+      {
+        ol.docify(" ");
+        ol.docify(a->name);
+      }
+      if (a->defval.length()!=0)
+      {
+        ol.docify(" = ");
+        ol.docify(a->defval);
+      } 
+      a=al->next();
+      if (a) ol.docify(", ");
+    }
+    ol.docify("> "+pageType.lower()+" "+name);
+    ol.endSubsubsection();
+    ol.writeString("\n");
+  }
+}
     
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
@@ -945,32 +976,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.endGroupHeader();
     ol.startTextBlock();
     
-    ArgumentList *al=outerTempArgList;
-    if (al) // class is a template
-    {
-      ol.startSubsubsection(); 
-      ol.docify("template<");
-      Argument *a=al->first();
-      while (a)
-      {
-        ol.docify(a->type);
-        if (!a->name.isEmpty())
-        {
-          ol.docify(" ");
-          ol.docify(a->name);
-        }
-        if (a->defval.length()!=0)
-        {
-          ol.docify(" = ");
-          ol.docify(a->defval);
-        } 
-        a=al->next();
-        if (a) ol.docify(", ");
-      }
-      ol.docify("> "+pageType.lower()+" "+name());
-      ol.endSubsubsection();
-      ol.writeString("\n");
-    }
+    writeTemplateSpec(ol,outerTempArgList,pageType,name());
     
     // repeat brief description
     if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
@@ -1008,6 +1014,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.newParagraph();
     writeSourceDef(ol,name());
     ol.endTextBlock();
+  }
+  else
+  {
+    writeTemplateSpec(ol,outerTempArgList,pageType,name());
   }
   
   typedefMembers.countDocMembers();

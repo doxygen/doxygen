@@ -494,12 +494,9 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->countMembers()>0)
-          {
-            if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
-            t << "{"; //Module Documentation}\n";
-            found=TRUE;
-          }
+          if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+          t << "{"; //Module Documentation}\n";
+          found=TRUE;
           gd=groupList.next();
         }
       }
@@ -619,20 +616,14 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->countMembers()>0)
-          {
-            t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
-            found=TRUE;
-          }
+          t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
+          found=TRUE;
           gd=groupList.next();
         }
         while (gd)
         {
-          if (gd->countMembers()>0)
-          {
-            if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
-            t << "{" << gd->getOutputFileBase() << "}\n";
-          }
+          if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
+          t << "{" << gd->getOutputFileBase() << "}\n";
           gd=groupList.next();
         }
       }
@@ -734,24 +725,20 @@ void LatexGenerator::endIndexSection(IndexSections is)
         t << "}\n";
         PageSDictIterator pdi(*pageSDict);
         PageInfo *pi=pdi.toFirst();
-        if (pi)
+        bool first=TRUE;
+        for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          QCString pageName;
-          if (Config::caseSensitiveNames)
-            pageName=pi->name.copy();
-          else
-            pageName=pi->name.lower();
-          t << "\\input{" << pageName << "}\n";
-        }
-        for (++pdi;(pi=pdi.current());++pdi)
-        {
-          if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
-          QCString pageName;
-          if (Config::caseSensitiveNames)
-            pageName=pi->name.copy();
-          else
-            pageName=pi->name.lower();
-          t << "{" << pageName << "}\n";
+          if (!pi->inGroup)
+          {
+            QCString pageName;
+            if (Config::caseSensitiveNames)
+              pageName=pi->name.copy();
+            else
+              pageName=pi->name.lower();
+            if (Config::compactLatexFlag || first) t << "\\input" ; else t << "\\include";
+            t << "{" << pageName << "}\n";
+            first=FALSE;
+          }
         }
       }
       break;

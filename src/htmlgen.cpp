@@ -60,8 +60,6 @@ static const char *defaultStyleSheet =
       "FONT.charliteral   { color: #008080 }\n";
 
 
-HtmlHelp *HtmlGenerator::htmlHelp = 0;
-
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
   if (!Config::headerFile.isEmpty()) header=fileToString(Config::headerFile);

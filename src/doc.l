@@ -756,7 +756,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLMASK   [a-z_A-Z0-9\~\:\?\@\#\.\-\+\/\=]+
+URLMASK   [a-z_A-Z0-9\~\:\?\@\%\#\.\-\+\/\=]+
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
@@ -963,10 +963,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <DocLinkText>.				{ linkText += *yytext; }
 <DocLinkText>"\n"			{ linkText += " "; }
-<DocLink,DocLinkText>{CMD}"endlink" { // <- needed for things like \endlink. 
+<DocLink,DocLinkText>{CMD}"endlink" 	{ // <- needed for things like \endlink. 
   					  //printf("GenerateLink className=`%s' linkRef=`%s' linkText=`%s'\n",
 					  //        className.data(),linkRef.data(),linkText.data());
-					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText.stripWhiteSpace());
+					  if (!generateLink(*outDoc,className,linkRef,inSeeBlock,linkText.stripWhiteSpace()))
+					  {
+					    warn(yyFileName,yyLineNr,"Warning: link to unknown section %s in the documentation of this entity!",linkRef.data());
+					  }
   					  BEGIN( DocScan ); 
 					}
 <DocScan>{CMD}"endlink"/[^a-z_A-Z0-9]   { warn(yyFileName,yyLineNr,
@@ -2007,6 +2010,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan,DocEmphasis,DocBold,DocCode>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
   					}
+<DocEmphasis>{FILEMASK}			{
+  					  outDoc->startEmphasis();
+					  generateFileRef(*outDoc,yytext);
+					  outDoc->endEmphasis();
+					  BEGIN( DocScan );
+					}
 <DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startEmphasis();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -2019,6 +2028,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
+<DocBold>{FILEMASK}			{
+  					  outDoc->startBold();
+					  generateFileRef(*outDoc,yytext);
+					  outDoc->endBold();
+					  BEGIN( DocScan );
+					}
 <DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startBold();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -2029,6 +2044,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->startBold();
   					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
 					  outDoc->endBold();
+					  BEGIN( DocScan );
+					}
+<DocCode>{FILEMASK}			{
+  					  outDoc->startTypewriter();
+					  generateFileRef(*outDoc,yytext);
+					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}
 <DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()!\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {

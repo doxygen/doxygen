@@ -73,5 +73,6 @@ int countNamespaces();
 int countAnnotatedClasses();
 int countNamespaceMembers();
 int countIncludeFiles();
+int countRelatedPages();
 
 #endif

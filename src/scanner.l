@@ -3000,6 +3000,11 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <ExampleDoc,PageDoc,ClassDoc>"\n"			{ yyLineNr++ ; current->doc+=yytext; }
 <ExampleDoc,PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }
+<ExampleDoc,PageDoc>{CMD}"ingroup"{B}+			{
+  							  lastGroupContext = YY_START;
+							  lineCount();
+							  BEGIN( GroupName );
+  							}
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
 <Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }

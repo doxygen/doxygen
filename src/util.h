@@ -144,6 +144,7 @@ void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 QCString convertNameToFile(const char *name,bool allowDots=FALSE);
+QCString convertToHtml(const QCString &s);
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
@@ -151,3 +152,4 @@ QCString stripScope(const char *name);
 int iSystem(const char *command);
 
 #endif
+

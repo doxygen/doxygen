@@ -81,3 +81,6 @@ sub GenerateDep {
 xml_dtd.h: doxygen.dtd
 	cat doxygen.dtd | sed -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >xml_dtd.h 
 
+treeview.h: treeview.js
+	cat treeview.js | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >treeview.h 
+
