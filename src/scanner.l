@@ -141,6 +141,7 @@ static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
 static QCString         *pSkipDoc;
+static QCString         autoGroupName;
 
 static bool             insideFormula;
 
@@ -166,6 +167,18 @@ static void initParser()
   isTypedef = FALSE;
 }
 
+static void initEntry()
+{
+  current->protection = protection ;
+  current->mtype      = mtype;
+  current->virt       = virt;
+  current->stat       = gstat;
+  current->mGrpId     = memberGroupId;
+  if (!autoGroupName.isEmpty())
+  {
+    current->groups->append(new QCString(autoGroupName));
+  }
+}
 //-----------------------------------------------------------------------------
 
 static void lineCount()
@@ -311,7 +324,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly") 
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{") 
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -469,7 +482,6 @@ TITLE     [tT][iI][tT][lL][eE]
 					  if (sec)
 					  {
 					    current->name    = yyFileName;
-					    current->name    = current->name;
 					    current->section = sec;
 					    current_root->addSubEntry(current);
 					    current          = new Entry;
@@ -824,11 +836,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //printf("Found using declaration %s\n",yytext);
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
-					  current->protection = protection ;
-				          current->mtype      = mtype;
-					  current->virt       = virt;
-					  current->stat       = gstat;
-					  current->mGrpId     = memberGroupId;
+					  initEntry();
 					  BEGIN(Using);
   					}
 <UsingDirective>{SCOPENAME}		{ current->name=yytext;
@@ -837,11 +845,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //printf("Found using directive %s\n",yytext);
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
-					  current->protection = protection ;
-				          current->mtype      = mtype;
-					  current->virt       = virt;
-					  current->stat       = gstat;
-					  current->mGrpId     = memberGroupId;
+					  initEntry();
 					  BEGIN(Using);
   					}
 <Using>";"				{ BEGIN(FindMembers); }
@@ -874,11 +878,19 @@ TITLE     [tT][iI][tT][lL][eE]
 					  else
 					    BEGIN( EndTemplate );
   					}
+<EndTemplate>"<<"			{
+  					  current->name+=yytext;
+  					  *currentTemplateSpec+=yytext; 
+  					}
 <EndTemplate>"<"			{ 
   					  current->name+='<';
   					  *currentTemplateSpec+='<'; 
 					  sharpCount++; 
 					}
+<EndTemplate>">>"			{
+  					  current->name+=yytext;
+  					  *currentTemplateSpec+=yytext; 
+  					}
 <EndTemplate>">"			{
   					  current->name+='>';
 					  *currentTemplateSpec+='>';
@@ -1000,11 +1012,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->section    = Entry::DEFINE_SEC;
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
-					  current->protection = protection ;
-				          current->mtype      = mtype;
-					  current->virt       = virt;
-					  current->stat       = gstat;
-					  current->mGrpId     = memberGroupId;
+					  initEntry();
 					  BEGIN(FindMembers);
   					}
 <DefineEnd>\\[\r]?\n			{
@@ -1092,7 +1100,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<FindMembers,FindFields>"//@{"|"/*@{"	{
+<FindMembers,FindFields>"//"([!*]?){B}*"@{"|"/*"([!*]?){B}*"@{"	{
 					  if (memberGroupId!=NOGROUP)
 					  {
   					    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
@@ -1130,13 +1138,13 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN( Doc );
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//@}"|"/*@}*/"	{
-					  if (memberGroupId==NOGROUP)
+<FindMembers,FindFields,ReadInitializer>"//"([!*]?){B}*"@}"|"/*"([!*]?){B}*"@}"{B}*"*/"	{
+					  if (memberGroupId==NOGROUP && autoGroupName.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-                                                 "Warning: end of member group without matching begin.");
+                                                 "Warning: end of group without matching begin.");
 					  }
-					  else
+					  else if (memberGroupId!=NOGROUP) // end of member group
 					  {
   					    memberHeaderDict.insert(memberGroupId,
 					                            new QCString(memberGroupHeader.stripWhiteSpace())
@@ -1145,9 +1153,28 @@ TITLE     [tT][iI][tT][lL][eE]
 					      	               new QCString(memberGroupDocs)
 							      );
 					    memberGroupId=NOGROUP;
-					    if (YY_START!=ReadInitializer) current->mGrpId=NOGROUP;
+					    if (YY_START!=ReadInitializer) 
+					    {
+					      current->mGrpId=NOGROUP;
+					    }
 					    memberGroupHeader.resize(0);
 					    memberGroupDocs.resize(0);
+					  }
+					  else if (!autoGroupName.isEmpty()) // end of group
+					  {
+					    QCString *s = current->groups->first();
+					    int i=0;
+					    while (s)
+					    {
+					      if (*s==autoGroupName)
+					      {
+					         current->groups->remove(i);
+					         break;
+					      }
+					      s=current->groups->next();
+					      i++;
+					    }
+					    autoGroupName.resize(0);
 					  }
   					}
 <FindMembers>"="			{
@@ -1285,7 +1312,6 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <FindMembers>[;,]			{ 
   					  QCString oldType = current->type.copy();
-					  QCString oldDocs = current->doc.copy();
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine = yyLineNr;
@@ -1308,20 +1334,18 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr;
 					  //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
 					  current_root->addSubEntry( current ) ;
-					  current = new Entry ;
-					  // variable found 
-					  current->section = Entry::EMPTY_SEC ;
-					  current->protection = protection;
-				          current->mtype = Method;
-					  current->virt = Normal; 
-					  current->stat = gstat;
-					  current->mGrpId = memberGroupId;
-					  if ( *yytext == ',' )
+					  if ( *yytext == ',')
 					  {
+					    current = new Entry(*current);
+					    current->name.resize(0);
 					    int i=oldType.length(); 
 					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
 					    current->type = oldType.left(i);
-					    current->doc  = oldDocs;
+					  }
+					  else
+					  {
+					    current = new Entry ;
+					    initEntry();
 					  }
 					  BEGIN( FindMembers ) ;
 					}
@@ -1398,11 +1422,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    // add to the scope surrounding the enum (copy!)
 					    current_root->parent->addSubEntry(current);
 					    current             = new Entry ;
-					    current->protection = protection ;
-                                            current->mtype      = mtype;
-					    current->virt       = virt;
-					    current->stat       = gstat;
-					    current->mGrpId     = memberGroupId;
+					    initEntry();
 					  }
 					  else // probably a redundant , 
 					  {
@@ -1471,11 +1491,7 @@ TITLE     [tT][iI][tT][lL][eE]
 						 )
 					      { // namespaces and interfaces ends with a closing bracket without semicolon
 						current->reset();
-						current->protection = protection ;
-                                                current->mtype = mtype;
-						current->virt = virt;
-						current->stat = gstat;
-						current->mGrpId = memberGroupId;
+						initEntry();
 						BEGIN( FindMembers ) ;
 					      }
 					      else
@@ -1498,11 +1514,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //printf("Adding compound %s %s %s\n",current->type.data(),current->name.data(),current->args.data());
 					  current_root->addSubEntry( current ) ;
 					  current = new Entry;
-					  current->protection = protection ;
-                                          current->mtype = mtype;
-					  current->virt = virt;
-					  current->stat = gstat;
-					  current->mGrpId = memberGroupId;
+					  initEntry();
   					  BEGIN(MemberSpecSkip); 
   					}
 <MemberSpec>([*&]*{BN}*)*{ID}("["[a-z_A-Z0-9]*"]")* { // the [] part could be improved.
@@ -1587,11 +1599,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    msArgs.resize(0);
 					    isTypedef=FALSE;
 					    current->reset();
-					    current->protection = protection ;
-					    current->mtype = mtype;
-					    current->virt = virt;
-					    current->stat = gstat;
-					    current->mGrpId = memberGroupId;
+					    initEntry();
 					    BEGIN( FindMembers );
 					  }
   					}					
@@ -2021,11 +2029,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
-					  current->protection = protection;
-					  current->mtype = mtype;
-					  current->virt = virt;
-					  current->stat = gstat;
-					  current->mGrpId = memberGroupId;
+					  initEntry();
 					  lastCurlyContext = FindMembers;
 					  if( *yytext == '{' )
 					  {
@@ -2652,7 +2656,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  if (current->todoId!=0)
 					  {
 					    RefItem *item = todoList.getRefItem(current->todoId);
-					    item->text += "<p>";
+					    item->text += " <p>";
 					    item->text += current->brief;
 					  }
 					  else
@@ -2682,7 +2686,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  if (current->testId!=0)
 					  {
 					    RefItem *item = testList.getRefItem(current->testId);
-					    item->text += "<p>";
+					    item->text += " <p>";
 					    item->text += current->brief;
 					  }
 					  else
@@ -3024,6 +3028,22 @@ TITLE     [tT][iI][tT][lL][eE]
 							  lineCount();
 							  BEGIN( GroupName );
   							}
+<ClassDoc,Doc,JavaDoc>{CMD}"{"				{
+  							  if (current->section == Entry::GROUPDOC_SEC)
+							  {
+							    autoGroupName=current->name;
+							  }
+							  else if (current->section == Entry::MEMBERGRP_SEC)
+							  {
+					                    memberGroupId = newMemberGroupId();
+					                    current->mGrpId = memberGroupId;
+					                    lastMemberGroupLine = yyLineNr;
+							  }
+							  else
+							  {
+							    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
+							  }
+  							}
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
 <Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
@@ -3122,11 +3142,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    //printf("Add docs for class %s\n",current->name.data());
 					    current_root->addSubEntry(current);
 					    current = new Entry ;
-					    current->protection = protection ;
-					    current->mtype = mtype;
-					    current->virt = virt;
-					    current->stat = gstat;
-					    current->mGrpId = memberGroupId;
+					    initEntry();
 					    BEGIN( FindMembers );
 					  }
 					}
@@ -3175,7 +3191,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
 <ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
-					  if (!current->doc.isEmpty()) current->doc+="<p>";
+					  if (!current->doc.isEmpty()) current->doc+=" <p>";
 					  if (lastBriefContext==TodoParam || lastBriefContext==TestParam)
 					  {
 					    unput('\n');
@@ -3389,23 +3405,19 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN(lastAfterDocContext);
   					}
 <ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
-					  current->doc += "\n\n";
-					  warn(yyFileName,yyLineNr,
-                                              "Warning: unexpected end of "
-				              "documentation block."
-					      );
-					  BEGIN( lastDocContext );
+                                          // defer "*/" to a later time
+  					  unput('/');
+  					  unput('*');
+					  // insert \n and decrement the line number to compensate for the artifical newline
+					  unput('\n');
+					  yyLineNr--;
 					}
 <FileDocArg1>"*/"			{
   					  current->name = yyFileName;
   					  current->doc += "\n\n";
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
-					  current->protection = protection ;
-					  current->mtype = mtype;
-					  current->virt = virt;
-					  current->stat = gstat;
-					  current->mGrpId = memberGroupId;
+					  initEntry();
 					  BEGIN( FindMembers );
   					}
 <Doc>"*/"				{ 

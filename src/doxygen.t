@@ -53,9 +53,6 @@ sub GenerateDep {
 #$ GenerateDep("pre.cpp","pre.l");
 	$(LEX) -PpreYY -t pre.l >pre.cpp 
 
-#$ GenerateDep("tag.cpp","tag.l");
-	$(LEX) -PtagYY -t tag.l >tag.cpp 
-
 #$ GenerateDep("config.cpp","config.l");
 	$(LEX) -PconfigYY -t config.l >config.cpp 
 

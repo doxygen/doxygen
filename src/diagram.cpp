@@ -997,7 +997,8 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 
   QCString epsBaseName=(QCString)path+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  QFile f1(epsName.data());
+  QFile f1;
+  f1.setName(epsName.data());
   if (!f1.open(IO_WriteOnly))
   {
     err("Could not open file %s for writing\n",convertToQCString(f1.name()).data());
@@ -1234,11 +1235,11 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   f1.close();
   if (Config::usePDFLatexFlag)
   {
-    QCString epstopdfCmd(4096);
-    //epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
-    //               epsBaseName.data(),epsBaseName.data());
+    QCString epstopdfArgs(4096);
+    epstopdfArgs.sprintf("\"%s.eps\" -outfile=\"%s.pdf\"",
+                   epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using `%s'\n",epstopdfCmd.data());
-    if (iSystem(epstopdfCmd)!=0)
+    if (iSystem("epstopdf",epstopdfArgs)!=0)
     {
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
        return;

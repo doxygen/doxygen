@@ -71,14 +71,10 @@ class OutputList
     { forall(&OutputGenerator::writeStyleInfo,part); }
     void startFile(const char *name,const char *title,bool external)
     { forall(&OutputGenerator::startFile,name,title,external); }
-    void startPlainFile(const char *name)
-    { forall(&OutputGenerator::startPlainFile,name); }
     void writeFooter(int fase,bool external)
     { forall(&OutputGenerator::writeFooter,fase,external); }
     void endFile() 
     { forall(&OutputGenerator::endFile); }
-    void endPlainFile() 
-    { forall(&OutputGenerator::endPlainFile); }
     void startTitleHead(const char *fileName) 
     { forall(&OutputGenerator::startTitleHead,fileName); }
     void endTitleHead(const char *fileName,const char *name)
@@ -313,8 +309,8 @@ class OutputList
     { forall(&OutputGenerator::writeSectionRefItem,page,lab,title); }
     void writeSectionRefAnchor(const char *page,const char *lab, const char *title)
     { forall(&OutputGenerator::writeSectionRefAnchor,page,lab,title); }
-    void addToIndex(const char *s1,const char *s2)
-    { forall(&OutputGenerator::addToIndex,s1,s2); }
+    void addIndexItem(const char *s1,const char *s2)
+    { forall(&OutputGenerator::addIndexItem,s1,s2); }
     void writeSynopsis() 
     { forall(&OutputGenerator::writeSynopsis); }
     void startClassDiagram()
@@ -388,6 +384,32 @@ class OutputList
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()
     { forall(&OutputGenerator::endFontClass); }
+
+#if 0
+    void startPlainFile(const char *name)
+    { forall(&OutputGenerator::startPlainFile,name); }
+    void endPlainFile() 
+    { forall(&OutputGenerator::endPlainFile); }
+#else // this is to work around a bug in the SGI MipsPro compiler
+    void startPlainFile(const char *name)
+    { 
+      OutputGenerator *og=outputs->first();
+      while (og)
+      {
+        if (og->isEnabled()) (og->startPlainFile)(name);
+        og=outputs->next();
+      }
+    }
+    void endPlainFile() 
+    { 
+      OutputGenerator *og=outputs->first();
+      while (og)
+      {
+        if (og->isEnabled()) (og->endPlainFile)();
+        og=outputs->next();
+      }
+    }
+#endif
 
   private:
     void debug();

@@ -21,6 +21,7 @@
 #include "outputlist.h"
 #include "language.h"
 #include "doc.h"
+#include "doxygen.h"
 
 ClassList::ClassList() : QList<ClassDef>()
 {
@@ -67,6 +68,10 @@ void ClassList::writeDeclaration(OutputList &ol)
             ol.endMemberHeader();
             ol.startMemberList();
             found=TRUE;
+          }
+          if (!Config::genTagFile.isEmpty()) 
+          {
+            tagFile << "    <class>" << convertToXML(cd->name()) << "</class>" << endl;
           }
           ol.startMemberItem(FALSE);
           switch (cd->compoundType())

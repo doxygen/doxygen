@@ -39,6 +39,7 @@ Entry::Entry()
   tArgList = 0;
   mtArgList = 0;
   mGrpId = -1;
+  tagInfo = 0;
   reset();
 }
 
@@ -75,6 +76,7 @@ Entry::Entry(const Entry &e)
   initLines   = e.initLines;
   todoId      = e.todoId;
   testId      = e.testId;
+  tagInfo     = e.tagInfo;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -157,6 +159,7 @@ Entry::Entry(const Entry &e)
       //printf("appending argument %s %s\n",a->type.data(),a->name.data());
     }
   }
+
 }
 
 Entry::~Entry()
@@ -170,6 +173,7 @@ Entry::~Entry()
   delete argList;
   delete tArgList;
   delete mtArgList;
+  delete tagInfo;
   num--;
 }
 
@@ -233,6 +237,7 @@ void Entry::reset()
   groups->clear();
   anchors->clear();
   argList->clear();
+  if (tagInfo) { delete tagInfo; tagInfo=0; }
   if (tArgList) { delete tArgList; tArgList=0; }
   if (mtArgList) { delete mtArgList; mtArgList=0; }
 }

@@ -119,10 +119,16 @@ void FileDef::writeDocumentation(OutputList &ol)
   startFile(ol,diskname,pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trFileReference(docname));
-  endTitle(ol,getOutputFileBase(),getOutputFileBase());
+  endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
   
-  if (!Config::genTagFile.isEmpty()) tagFile << "&" << name() << ":\n";
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  <compound kind=\"file\">" << endl;
+    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
+    tagFile << "    <filename>" << convertToXML(diskname) << ".html</filename>" << endl;
+  }
   
   ol.startTextBlock();
   //brief=brief.stripWhiteSpace();
@@ -272,7 +278,11 @@ void FileDef::writeDocumentation(OutputList &ol)
               nd->getOutputFileBase(),
               0,
               nd->name()
-                            );
+          );
+          if (!Config::genTagFile.isEmpty()) 
+          {
+             tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+          }
         }
         else
         {
@@ -422,6 +432,12 @@ void FileDef::writeDocumentation(OutputList &ol)
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
   ol.enableAll();
+
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  </compound>" << endl;
+  }
+
   endFile(ol);
 }
 
@@ -497,6 +513,7 @@ void FileDef::addMembersToMemberGroup()
 /*! Adds member definition \a md to the list of all members of this file */
 void FileDef::insertMember(MemberDef *md)
 {
+  //printf("%s:FileDef::insertMember(%s)\n",name().data(),md->name().data());
   allMemberList.append(md); 
   switch(md->memberType())
   {
@@ -524,11 +541,7 @@ void FileDef::insertMember(MemberDef *md)
       else
         enumMembers.append(md);
       break;
-    case MemberDef::EnumValue:    
-      //if (Config::sortMembersFlag)
-      //  enumValMembers.inSort(md); 
-      //else
-      //  enumValMembers.append(md);
+    case MemberDef::EnumValue:    // enum values are shown inside their enums
       break;
     case MemberDef::Prototype:    
       if (Config::sortMembersFlag)
@@ -690,5 +703,14 @@ void FileDef::generateXML(QTextStream &t)
     t << "      </sectionlist>" << endl;
   }
   t << "    </compounddef>" << endl;
+}
+
+bool FileDef::generateSourceFile() const 
+{ 
+  return !isReference() && 
+         (Config::sourceBrowseFlag || 
+           (Config::verbatimHeaderFlag && guessSection(name())==Entry::HEADER_SEC) 
+         ) &&
+         name().right(4)!=".doc" && name().right(4)!=".txt"; 
 }
 

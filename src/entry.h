@@ -93,6 +93,13 @@ class ArgumentList : public QList<Argument>
 
 typedef QListIterator<Argument> ArgumentListIterator;
 
+struct TagInfo 
+{
+  QCString tagName;
+  QCString fileName;
+  QCString anchor;
+};
+
 /*! Raw entry. parseMain() in scanner.l will generate a tree of these
  *  entries.
  */
@@ -200,6 +207,7 @@ class Entry
     int		startLine;    // start line of entry in the source
     int         todoId;       // id of the todo item of this entry
     int         testId;       // id of the test item of this entry
+    TagInfo    *tagInfo;      // tag file info
     static int  num;          // counts the total number of entries
   private:
     Entry &operator=(const Entry &); 

@@ -22,8 +22,6 @@
 #include <qlist.h>
 #include <qintdict.h>
 
-//#include "definition.h"
-
 #define NOGROUP -1
 
 class MemberDef;

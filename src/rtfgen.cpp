@@ -671,7 +671,7 @@ void RTFGenerator::beginRTFDocument()
     }    
     if (array.at(index) != 0)
     {
-      QCString key(iter.currentKey());
+      QCString key(convertToQCString(iter.currentKey()));
       msg("Style '%s' redefines \\s%d.\n", key.data(), index);
     }
     array.at(index) = style;      
@@ -810,8 +810,11 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          beginRTFChapter();
-          found=TRUE;
+          if (!gd->isReference())
+          {
+            beginRTFChapter();
+            found=TRUE;
+          }
           gd=groupList.next();
         }
       }
@@ -965,10 +968,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         while (gd)
         {
-          t << "\\par " << Rtf_Style_Reset << endl;
-          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << gd->getOutputFileBase();
-          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          if (!gd->isReference())
+          {
+            t << "\\par " << Rtf_Style_Reset << endl;
+            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+            t << gd->getOutputFileBase();
+            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          }
           gd=groupList.next();
         }
       }
@@ -1519,7 +1525,7 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
     t << "}" << endl;
 
     // make an index entry
-    addToIndex(name,0);
+    addIndexItem(name,0);
 
     //if (name)
     //{
@@ -1566,8 +1572,8 @@ void RTFGenerator::startMemberDoc(const char *clname,
   DBG_RTF(t << "{\\comment startMemberDoc}" << endl)
   if (memname && memname[0]!='@')
   {
-    addToIndex(memname,clname);
-    addToIndex(clname,memname);
+    addIndexItem(memname,clname);
+    addIndexItem(clname,memname);
   }
   t << Rtf_Style_Reset << Rtf_Style["Heading4"]->reference;
   //styleStack.push(Rtf_Style_Heading4);
@@ -1619,7 +1625,7 @@ void RTFGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 //  writeDoxyAnchor(0,clName,anchor,0);
 //}
 
-void RTFGenerator::addToIndex(const char *s1,const char *s2)
+void RTFGenerator::addIndexItem(const char *s1,const char *s2)
 {
   if (s1)
   {

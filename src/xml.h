@@ -19,6 +19,7 @@ class QTextStream;
 
 void generateXML();
 void writeXMLString(QTextStream &t,const char *s);
+void writeXMLString(QTextStream &t,const char *s);
 void writeXMLLink(QTextStream &t,const char *compoundRef,const char *memAnchor,
                                  const char *text);
 

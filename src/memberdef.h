@@ -118,6 +118,7 @@ class MemberDef : public Definition
     bool isInline() const                 { return (memSpec&Entry::Inline)!=0; }
     bool isExplicit() const               { return (memSpec&Entry::Explicit)!=0; }
     bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
+    bool isExternal() const               { return explExt; }
 
     // output info
     bool isLinkableInProject();
@@ -142,6 +143,7 @@ class MemberDef : public Definition
     void setMemberClass(ClassDef *cd)     { classDef=cd; }
     void setSectionList(MemberList *sl)   { section=sl; }
     void setGroupDef(GroupDef *gd)        { group=gd; }
+    void setExplicitExternal(bool b)      { explExt=b; }
     
     void makeRelated()                    { related=TRUE; } 
 
@@ -269,6 +271,7 @@ class MemberDef : public Definition
     MemberGroup *memberGroup; // group's member definition
 
     GroupDef *group;          // group in which this member is in
+    bool explExt;             // member was explicitly declared external
 
 
     // disable copying of member defs

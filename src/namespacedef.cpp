@@ -198,7 +198,12 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   parseText(ol,theTranslator->trNamespaceReference(name()));
   endTitle(ol,getOutputFileBase(),name());
   
-  if (!Config::genTagFile.isEmpty()) tagFile << "%" << name() << ":\n";
+  if (!Config::genTagFile.isEmpty())
+  {
+    tagFile << "  <compound kind=\"namespace\">" << endl;
+    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+  }
   
   ol.startTextBlock();
     
@@ -346,7 +351,12 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
-  //ol.enableAll();
+
+  if (!Config::genTagFile.isEmpty()) 
+  {
+    tagFile << "  </compound>" << endl;
+  }
+
   ol.popGeneratorState();
   endFile(ol);
 }

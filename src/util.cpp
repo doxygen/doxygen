@@ -17,6 +17,9 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "qtbc.h"
 #include <qregexp.h>
@@ -110,8 +113,8 @@ void TextGeneratorXMLImpl::writeLink(const char *extRef,const char *file,
 //------------------------------------------------------------------------
 
     
-/*! Implements an interruptable system call on Unix */
-int iSystem(const char *command)
+/*! Implements an interruptable system call on Unix/Windows */
+int iSystem(const char *command,const char *args)
 {
 #ifndef _WIN32
   /*! taken from the system() manpage on my Linux box */
@@ -122,10 +125,14 @@ int iSystem(const char *command)
   if (pid==-1) return -1;
   if (pid==0)
   {
+    char buf[4096];
+    strcpy(buf,command);
+    strcat(buf," ");
+    strcat(buf,args);
     const char * argv[4];
     argv[0] = "sh";
     argv[1] = "-c";
-    argv[2] = command;
+    argv[2] = buf;
     argv[3] = 0;
     execve("/bin/sh",(char * const *)argv,environ);
     exit(127);
@@ -142,7 +149,33 @@ int iSystem(const char *command)
     }
   }
 #else
-  return system(command);
+  SHELLEXECUTEINFO sInfo = {
+    sizeof(SHELLEXECUTEINFO),   /* structure size */
+    SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
+    NULL,                       /* window handle */
+    NULL,                       /* action to perform: open */
+    command,                    /* file to execute */
+    args,                       /* argument list */ 
+    NULL,                       /* use current working dir */
+    SW_HIDE,                    /* minimize on start-up */
+    0,                          /* application instance handle */
+    NULL,                       /* ignored: id list */
+    NULL,                       /* ignored: class name */
+    NULL,                       /* ignored: key class */
+    0,                          /* ignored: hot key */
+    NULL,                       /* ignored: icon */
+    NULL                        /* resulting application handle */
+  };
+  if (!ShellExecuteEx(&sInfo))
+  {
+    return -1;
+  }
+  else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
+  {
+    WaitForSingleObject(sInfo.hProcess,INFINITE); 
+  }
+  return 0;
+  //return system(command);
 #endif
 }
 
@@ -305,13 +338,17 @@ QCString stripFromPath(const QCString &path)
 int guessSection(const char *name)
 {
   QCString n=((QCString)name).lower();
-  if (n.right(2)==".c"   ||
+  if (n.right(2)==".c"   || // source
       n.right(3)==".cc"  ||
       n.right(4)==".cxx" ||
       n.right(4)==".cpp" ||
-      n.right(4)==".c++"
+      n.right(4)==".c++" ||
+      n.right(3)==".ii"  || // inline
+      n.right(4)==".ixx" ||
+      n.right(4)==".ipp" ||
+      n.right(4)==".i++"
      ) return Entry::SOURCE_SEC;
-  if (n.right(2)==".h"   ||
+  if (n.right(2)==".h"   || // header
       n.right(3)==".hh"  ||
       n.right(4)==".hxx" ||
       n.right(4)==".hpp" ||
@@ -1257,14 +1294,14 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
  */
 void stripIrrelevantConstVolatile(QCString &s)
 {
-  int i,j;
+  int i;
   if (s=="const")    { s.resize(0); return; }
   if (s=="volatile") { s.resize(0); return; }
   i = s.find("const ");
   if (i!=-1) 
   {
     // no & or * after the const
-    if ((j=s.find('*',i+6))==-1 && (j=s.find('&',i+6))==-1)
+    if (s.find('*',i+6)==-1 && s.find('&',i+6)==-1)
     {
       s=s.left(i)+s.right(s.length()-i-6); 
     }
@@ -1273,7 +1310,7 @@ void stripIrrelevantConstVolatile(QCString &s)
   if (i!=-1) 
   {
     // no & or * after the volatile
-    if ((j=s.find('*',i+9))==-1 && (j=s.find('&',i+9))==-1)
+    if (s.find('*',i+9)==-1 && s.find('&',i+9)==-1)
     {
       s=s.left(i)+s.right(s.length()-i-9); 
     }
@@ -1993,9 +2030,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  //printf("  >member name found\n");
   if ((mn=functionNameDict[mName])) // name is known
   {
+    //printf("  >member name found\n");
     NamespaceDef *fnd=0;
     int scopeOffset=scopeName.length();
     do
@@ -2298,13 +2335,11 @@ bool generateRef(OutputList &ol,const char *scName,
   if (bracePos!=-1) argsStr=tmpName.right(tmpName.length()-bracePos);
   
   // create a default link text if none was explicitly given
-  bool explicitLink=TRUE;
   if (linkText.isEmpty())
   {
     //if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
     linkText=nameStr;
     if (linkText.left(2)=="::") linkText=linkText.right(linkText.length()-2);
-    explicitLink=FALSE;
   } 
   //printf("scope=`%s' name=`%s' arg=`%s' linkText=`%s'\n",
   //       scopeStr.data(),nameStr.data(),argsStr.data(),linkText.data());
@@ -2445,12 +2480,12 @@ bool generateLink(OutputList &ol,const char *clName,
     {
       SectionInfo *si=0;
       if (!pi->name.isEmpty()) si=sectionDict[pi->name];
-      ol.writeObjectLink(0,gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
       writePageRef(ol,gd->getOutputFileBase(),si ? si->label.data() : 0);
     }
     else
     {
-      ol.writeObjectLink(0,pi->name,0,lt);  
+      ol.writeObjectLink(pi->getReference(),pi->getOutputFileBase(),0,lt);  
       writePageRef(ol,pi->name,0);
     }
     return TRUE;
@@ -2877,3 +2912,23 @@ QCString stripScope(const char *name)
   return result;
 }
 
+QCString convertToXML(const char *s)
+{
+  QCString result;
+  if (s==0) return result;
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
+      case '&':  result+="&amp;";  break;
+      case '\'': result+="&apos;"; break; 
+      case '"':  result+="&quot;"; break;
+      default:   result+=c;        break;         
+    }
+  }
+  return result;
+}

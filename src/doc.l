@@ -995,7 +995,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocIndexWord>[^\n]+			{
   					  //printf("Adding %s to index\n",yytext);
-					  outDoc->addToIndex(yytext,0);
+					  outDoc->addIndexItem(yytext,0);
   					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}("arg"|"li")/{BN}	        { 

@@ -175,7 +175,7 @@ class ManGenerator : public OutputGenerator
     void writeSectionRef(const char *,const char *,const char *) {}
     void writeSectionRefItem(const char *,const char *,const char *) {}
     void writeSectionRefAnchor(const char *,const char *,const char *) {}
-    void addToIndex(const char *,const char *) {}
+    void addIndexItem(const char *,const char *) {}
     void startIndent()        {}
     void endIndent()          {}
     void writeSynopsis();

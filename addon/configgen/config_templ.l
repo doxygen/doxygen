@@ -891,6 +891,15 @@ void checkConfig()
     if (!dp.exists() || !dp.isFile())
     {
       err("Warning: the dot tool could not be found at %s\n",Config::dotPath.data());
+      Config::dotPath="";
+    }
+    else
+    {
+      Config::dotPath=dp.dirPath(TRUE)+"/";
+#if defined(_WIN32) // convert slashes
+      uint i=0,l=Config::dotPath.length();
+      for (i=0;i<l;i++) if (Config::dotPath.at(i)=='/') Config::dotPath.at(i)='\\';
+#endif
     }
   }
   else // make sure the string is empty but not null!

@@ -704,7 +704,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject()) count++;
+    if (nd->isLinkableInProject() && nd->countMembers()>0) count++;
   }
   return count;
 }
@@ -726,7 +726,7 @@ void writeNamespaceIndex(OutputList &ol)
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
+  FTVHelp  *ftvHelp  = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
   bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   if (hasHtmlHelp)
@@ -1677,8 +1677,11 @@ int countGroups()
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
-    gd->visited=FALSE;
-    count++;
+    if (!gd->isReference())
+    {
+      gd->visited=FALSE;
+      count++;
+    }
   }
   return count;
 }
@@ -1751,7 +1754,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
     //parseText(ol,gd->groupTitle());
     //ol.endTextLink();
     
-    ol.writeIndexItem(0,gd->getOutputFileBase(),gd->groupTitle());
+    ol.writeIndexItem(gd->getReference(),gd->getOutputFileBase(),gd->groupTitle());
+    if (gd->isReference()) 
+    { 
+      ol.startTypewriter(); 
+      ol.docify(" [external]");
+      ol.endTypewriter();
+    }
     
     //ol.writeStartAnnoItem(0,gd->getOutputFileBase(),0,gd-);
     //parseText(ol,gd->groupTitle());
@@ -1962,20 +1971,14 @@ void writeGroupIndex(OutputList &ol)
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    //if(!Config::htmlHelpGroupsOnly)
-    //{
-        htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
-        htmlHelp->incContentsDepth();
-    //}
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
+    htmlHelp->incContentsDepth();
   }
   if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
-    //if(!Config::htmlHelpGroupsOnly)
-    //{
-        ftvHelp->addContentsItem(TRUE,0,"modules",0,htmlHelpTitle); 
-        ftvHelp->incContentsDepth();
-    //}
+    ftvHelp->addContentsItem(TRUE,0,"modules",0,ftvHelpTitle); 
+    ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trModulesDescription());
   ol.endTextBlock();
