@@ -1,6 +1,6 @@
 
 all: FORCE
-	DOXYGEN_DOCDIR=$(DOXYGEN); \
+	DOXYGEN_DOCDIR=$(DOXYDOCS); \
 	export DOXYGEN_DOCDIR; \
         VERSION=$(VERSION) ; \
 	export VERSION; \

@@ -43,7 +43,7 @@ bool isId(char c)
 QCString stripAnnonymousScope(const QCString &s)
 {
   QCString result=s;
-  int i;
+  int i=0;
   while (!result.isEmpty() && result.at(0)=='@' && (i=result.find("::"))!=-1)
   { 
     result=result.right(result.length()-i-2);
@@ -1058,7 +1058,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //printf("Search for name=%s args=%s in scope=%s\n",
   //          memberName.data(),args,scopeName.data());
   
-  int is,im,pm=0;
+  int is,im=0,pm=0;
   // strip common part of the scope from the scopeName
   while ((is=scopeName.findRev("::"))!=-1 && 
          (im=memberName.find("::",pm))!=-1 &&
@@ -1745,7 +1745,7 @@ void setFileNameForSections(QList<QCString> *anchorList,const char *fileName)
   QCString *s=anchorList->first();
   while (s)
   {
-    SectionInfo *si;
+    SectionInfo *si=0;
     if (!s->isEmpty() && (si=sectionDict[*s])) si->fileName=fileName;
     s=anchorList->next();
   }

@@ -885,7 +885,7 @@ BN	[ \t\r\n]
   					}
   */
 <CopyLine>{ID}/{BN}*"("			{
-  					  Define *def;
+  					  Define *def=0;
 					  //printf("Search for define %s\n",yytext);
 					  if (includeStack.isEmpty() &&
 					      Config::macroExpansionFlag &&

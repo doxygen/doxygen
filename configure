@@ -20,12 +20,15 @@ f_debug=NO
 f_shared=YES
 f_make=NO
 f_perl=NO
-f_qt_include=NO 
-f_qt_library=NO
 f_plf_auto=NO
+f_prefix=/usr/local
+f_insttool=install
 
 while test -n "$1"; do
   case $1 in
+    --prefix)
+       shift; f_prefix=$1
+       ;;
     --shared)
        f_shared=YES
        ;;
@@ -38,12 +41,6 @@ while test -n "$1"; do
     --debug)
        f_debug=YES
        ;;
-    --qt-includes)
-       shift; f_qt_include=$1
-       ;;
-    --qt-libs)
-       shift; f_qt_library=$1
-       ;;
     --platform)
        shift; f_platform=$1
        ;;
@@ -52,6 +49,9 @@ while test -n "$1"; do
        ;;
     --perl)
        shift; f_perl=$1
+       ;;
+    --install)
+       shift; f_insttool=$1
        ;;
     -h | -help | --help)
        f_help=y
@@ -68,8 +68,8 @@ done
 if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
-          [--perl name] [--make name] [--qt-includes name] [--qt-libs name] 
-          [--platform target]
+          [--perl name] [--make name] [--platform target] [--prefix]
+          [--install]
 
 Options: 
 
@@ -84,17 +84,17 @@ Options:
   --perl name         Use \`name' as the name of the perl interpreter 
 		      [default: autodetect]
 
-  --make name         Use \`name' as the name of the make tool
+  --make name         Use \`name' as the name of the GNU make tool
 		      [default: autodetect]
-
-  --qt-includes path  Use \`path' as the path to the qt include directory 
-                      [default: autodetect]      
-
-  --qt-libs path      Use \`path' as the path to the qt library directory
-                      [default: autodetect]
 
   --platform target   Do not detect platform but use \`target' instead.
                       See PLATFORMS for a list of possibilities
+
+  --prefix dir        Installation prefix directory
+                      [default: /usr/local]
+  
+  --install name      name of the GNU install tool
+                      [default: install]
 
 EOF
   test "$f_error" = y && exit 1
@@ -189,63 +189,30 @@ fi
 #- check for qt --------------------------------------------------------------
 
 echo -n "  Checking for Qt..."
-if test "$f_qt_include" = NO; then
-  qt_incdirs="/usr/lib/qt/include /usr/local/qt/include /usr/include/qt /usr/include /usr/X11R6/include/X11/qt"
-  test -n "$QTDIR" && qt_incdirs="$QTDIR/include $QTDIR $qt_incdirs"
-  
-  qt_incdir=NO
-  for i in $qt_incdirs; do
-    if test -r "$i/qlist.h"; then
-      qt_incdir=$i
-      break 
-    else 
-      echo "Tried include directory $i..."
-    fi 
-  done
-  f_qt_include="$qt_incdir"
-fi
-
-if test "$f_qt_library" = NO; then
-  qt_libdirs="/usr/lib/qt/lib /usr/X11R6/lib /usr/lib /usr/local/qt/lib /usr/lib/qt"
-  if test -n "$LD_LIBRARY_PATH"; then
-    qt_ldpaths=`echo $LD_LIBRARY_PATH | sed 's%:% %'`
-    qt_libdirs="$qt_ldpaths $qt_libdirs"
-  fi
-  test -n "$QTDIR" && qt_libdirs="$QTDIR/lib $QTDIR $qt_libdirs"
-
-  qt_libdir=NO
-  for i in $qt_libdirs; do
-    try="ls -1 $i/libqt*"
-    if test=`eval $try 2>/dev/null`; then
-      qt_libdir=$i;
-      break 
-    else
-      echo "Tried library directory $i..."
-    fi
-  done
-  f_qt_library="$qt_libdir"
-fi
-
-if test "$f_qt_include" = NO || test "$f_qt_library" = NO; then
-  if test "$f_qt_include" = NO && test "$f_qt_library" = NO; then
-    echo "not found!"
-    echo
-  elif test "$f_qt_include" = NO; then
-    echo "include files not found!"
-  else
-    echo "libraries not found!"
-  fi
+if test -z "$QTDIR"; then
+  echo "QTDIR not set!"
+  echo
+  echo "tmake requires the QTDIR environment variable to be set."
+  echo "check your Qt installation!"
   exit 2
+else
+  if ! test -d "$QTDIR/lib"; then
+    echo "QTDIR is set, but library directory does not exist!"
+    exit 2
+  fi
+  if ! test -d "$QTDIR/include"; then
+    echo "QTDIR is set, but include directory does not exist!"
+    exit 2
+  fi
+  echo " headers $QTDIR/include,"
+  echo "                     libraries $QTDIR/lib"  
 fi
-
-echo "libraries: $f_qt_library"
-echo "                    headers: $f_qt_include"
-
+  
 # - check for make ------------------------------------------------------------
 
-echo -n "  Checking for make tool... "
+echo -n "  Checking for GNU make tool... "
 if test "$f_make" = NO; then
-  make_names="make gmake pmake"
+  make_names="gmake make"
   make_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
   make_prog=NO
   for i in $make_names; do
@@ -312,6 +279,11 @@ MAKE      = $f_make
 PERL      = $f_perl
 RM        = rm -f
 VERSION   = `cat VERSION`
+INSTALL   = $f_prefix
+INSTTOOL  = $f_insttool
+DOXYDOCS  = $PWD
+
+export TMAKEPATH
 EOF
 
 touch .tmakeconfig
