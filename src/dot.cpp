@@ -23,6 +23,8 @@
 #include "message.h"
 #include "util.h"
 #include "config.h"
+#include "language.h"
+#include "scanner.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -55,7 +57,11 @@ static const char *edgeStyleMap[] =
 static bool convertMapFile(QTextStream &t,const char *mapName)
 {
   QFile f(mapName);
-  if (!f.open(IO_ReadOnly)) return FALSE;
+  if (!f.open(IO_ReadOnly)) 
+  {
+    err("Error opening map file %s for inclusion in the docs!\n",mapName);
+    return FALSE;
+  }
   const int maxLineLen=1024;
   char buf[maxLineLen];
   char url[maxLineLen];
@@ -1016,11 +1022,10 @@ static void findMaximalDotGraph(DotNode *root,
     // remove temporary dot file
     thisDir.remove(baseName+"_tmp.dot");
     
-  } while (maxDistance-minDistance>1);
+  } while ((maxDistance-minDistance)>1);
 
   if (!lastFit)
   {
-    //printf("Using last fit %d\n",minDistance);
     writeDotGraph(root,
                   format,
                   baseName,
@@ -1082,6 +1087,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
+       QDir::setCurrent(oldDir);
        return;
     }
     // run dot again to create an image map
@@ -1090,6 +1096,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
+       QDir::setCurrent(oldDir);
        return;
     }
     out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
@@ -1101,18 +1108,20 @@ void DotClassGraph::writeGraph(QTextStream &out,
   }
   else if (format==EPS) // run dot to create a .eps image
   {
-    QCString dotCmd;
+    QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
+       QDir::setCurrent(oldDir);
        return;
     }
     int width,height;
     if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
     {
       err("Error: Could not extract bounding box from .eps!\n");
+      QDir::setCurrent(oldDir);
       return;
     }
     int maxWidth = 420; /* approx. page width in points */
@@ -1125,7 +1134,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
            "\\end{center}\n"
            "\\end{figure}\n";
   }
-  thisDir.remove(baseName+".dot");
+  //thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1240,12 +1249,13 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   if (format==GIF)
   {
     // run dot to create a .gif image
-    QCString dotCmd;
+    QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
       return;
     }
 
@@ -1255,11 +1265,13 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
       return;
     }
 
     out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-      << mapName << "_map\"></center>" << endl;
+        << mapName << "_map\">";
+    out << "</center>" << endl;
     out << "<map name=\"" << mapName << "_map\">" << endl;
     convertMapFile(out,baseName+".map");
     out << "</map><p>" << endl;
@@ -1268,18 +1280,20 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   else if (format==EPS)
   {
     // run dot to create a .eps image
-    QCString dotCmd;
+    QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
       return;
     }
     int width,height;
     if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
     {
       err("Error: Could not extract bounding box from .eps!\n");
+      QDir::setCurrent(oldDir);
       return;
     }
     int maxWidth = 420; /* approx. page width in points */
@@ -1302,3 +1316,57 @@ bool DotInclDepGraph::isTrivial() const
 {
   return m_startNode->m_children==0;
 }
+
+//-------------------------------------------------------------
+
+void generateGraphLegend(const char *path)
+{
+  QFile dotFile((QCString)path+"/graph_legend.dot");
+  if (!dotFile.open(IO_WriteOnly))
+  {
+    err("Could not open file %s for writing\n",
+        convertToQCString(dotFile.name()).data());
+    return;
+  }
+  QTextStream dotText(&dotFile); 
+  dotText << "digraph inheritance\n";
+  dotText << "{\n";
+  dotText << "  Node7 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
+  dotText << "  Node8 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node8 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_publicbase.html\"];\n";
+  dotText << "  Node9 -> Node8 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node9 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"red\",URL=\"$class_truncated.html\"];\n";
+  dotText << "  Node11 -> Node7 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_protectedbase.html\"];\n";
+  dotText << "  Node12 -> Node7 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node12 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_privatebase.html\"];\n";
+  dotText << "  Node13 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey\"];\n";
+  dotText << "  Node14 -> Node7 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_used.html\"];\n";
+  dotText << "}\n";
+  dotFile.close();
+
+  QDir d(path);
+  // store the original directory
+  if (!d.exists()) 
+  { 
+    err("Error: Output dir %s does not exist!\n",path); exit(1);
+  }
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // goto the html output directory (i.e. path)
+  QDir::setCurrent(d.absPath());
+
+  // run dot to generate the a .gif image from the graph
+  QCString dotCmd(4096);
+  dotCmd.sprintf("%sdot -Tgif graph_legend.dot -o graph_legend.gif",
+                   Config::dotPath.data());
+  if (system(dotCmd)!=0)
+  {
+      err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
+      return;
+  }
+  QDir::setCurrent(oldDir);
+}
+  

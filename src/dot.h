@@ -154,3 +154,6 @@ class DotInclDepGraph
     int             m_maxDistance;
     bool            m_inverse;
 };
+
+void generateGraphLegend(const char *path);
+

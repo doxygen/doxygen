@@ -796,7 +796,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   FileDef *fd;
   if ((fd=findFileDef(imageNameDict,fileName,ambig)))
   {
-    QFile inImage(fd->absFilePath().data());
+    QFile inImage(QString(fd->absFilePath().data()));
     if (inImage.open(IO_ReadOnly))
     {
       result = fileName;
@@ -816,7 +816,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
-      QFile outImage(outputFile.data());
+      QFile outImage(QString(outputFile.data()));
       if (outImage.open(IO_WriteOnly)) // copy the image
       {
 	char *buffer = new char[inImage.size()];
@@ -1300,19 +1300,28 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    insideArgumentList=TRUE;
 					  }
 					}
-<DocScan>{CMD}"par"{B}+			{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"par"{B}*			{
   					  BEGIN(DocPar);
   					}
 <DocPar>[^\n]*{BN}			{
-  				          endArgumentList();
-					  if (inBlock()) endBlock();  
-					  inParBlock=TRUE;
-  					  outDoc->startDescList();
-					  outDoc->startBold();
-					  outDoc->docify(((QCString)yytext).stripWhiteSpace());
-					  outDoc->endBold();
-					  outDoc->endDescTitle();
-					  outDoc->writeDescItem();
+  					  QCString title=QCString(yytext).stripWhiteSpace();
+					  bool b = inBlock();
+					  if (!title.isEmpty())
+					  {
+  				            endArgumentList();
+					    if (b) endBlock();  
+					    inParBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    outDoc->docify(title);
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+					    outDoc->newParagraph();
+					  }
 					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}"warning"/{BN}	{ 
@@ -2397,7 +2406,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  BEGIN( NextSemi );
   					}
 <FindMembers>{B}*"typename"{BN}+	{ lineCount(); }
-<FindMembers>{B}*"namespace"{BN}+	{ 
+<FindMembers>{B}*"namespace"{BN}*/[^a-z_A-Z0-9]	{ 
   					  isTypedef=FALSE;
 					  current->section = Entry::NAMESPACE_SEC;
 					  current->type = "namespace" ;
@@ -2411,6 +2420,16 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  isTypedef=FALSE;
 					  current->section = Entry::NAMESPACE_SEC;
 					  current->type = "module" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount();
+  					  BEGIN( CompoundName ); 
+					}
+<FindMembers>{B}*"library"{BN}+		{ 
+  					  isTypedef=FALSE;
+					  current->section = Entry::NAMESPACE_SEC;
+					  current->type = "library" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
@@ -4852,8 +4871,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  copyArgString = &current->args;
 					  BEGIN( ReadFuncArgType ) ;
   					}
-<ClassDocFunc>"("({B}*"*")+		{
-  					  current->name+="(*";
+<ClassDocFunc>"("({ID}"::")*({B}*"*")+		{
+  					  current->name+=yytext;
   					  BEGIN( ClassDocFuncPtr );
   					}
 <ClassDocFuncPtr>{SCOPENAME}		{

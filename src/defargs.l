@@ -270,7 +270,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    {
 					      a->type = g_curArgTypeName.stripWhiteSpace();  
 					    }
-					    a->array  = g_curArgArray.copy();
+					    a->array  = removeRedundantWhiteSpace(g_curArgArray);
 					    a->defval = g_curArgDefValue.copy();
 					    a->docs   = g_curArgDocs.stripWhiteSpace();
 					    //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());

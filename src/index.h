@@ -62,6 +62,7 @@ void writeGroupIndex(OutputList &ol);
 void writeNamespaceIndex(OutputList &ol);
 void writeNamespaceMemberIndex(OutputList &ol);
 void writeGraphicalClassHierarchy(OutputList &ol);
+void writeGraphInfo(OutputList &ol);
 
 int countClassHierarchy();
 int countClassMembers();

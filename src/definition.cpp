@@ -324,21 +324,22 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
     parseText(ol,theTranslator->trReferencedBy());
     ol.docify(" ");
 
-    QCString defLine=theTranslator->trWriteList(sourceRefList->count());
+    QCString ldefLine=theTranslator->trWriteList(sourceRefList->count());
 
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(defLine,index,&matchLen))!=-1)
+    while ((newIndex=marker.match(ldefLine,index,&matchLen))!=-1)
     {
       bool ok;
-      parseText(ol,defLine.mid(index,newIndex-index));
-      uint entryIndex = defLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      parseText(ol,ldefLine.mid(index,newIndex-index));
+      uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
       MemberDef *md=sourceRefList->at(entryIndex);
       if (ok && md)
       {
         QCString scope=md->getScopeString();
         QCString name=md->name();
+        //printf("class=%p scope=%s scopeName=%s\n",md->memberClass(),scope.data(),scopeName);
         if (!scope.isEmpty() && scope!=scopeName)
         {
           name.prepend(scope+"::");
@@ -358,7 +359,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
       }
       index=newIndex+matchLen;
     } 
-    parseText(ol,defLine.right(defLine.length()-index));
+    parseText(ol,ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
   }
   ol.popGeneratorState();

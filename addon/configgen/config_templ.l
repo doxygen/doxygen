@@ -326,9 +326,9 @@ void configStrToVal()
 	   "Using the default of 1024 pixels!\n");
       width=1024;
     }
-    else if (width<250) // clip to lower bound
+    else if (width<100) // clip to lower bound
     {
-      width=250;
+      width=100;
     }
     else if (width>30000) // clip to upper bound
     {
@@ -351,9 +351,9 @@ void configStrToVal()
 	   "Using the default of 1024 pixels!\n");
       height=1024;
     }
-    else if (height<250) // clip to lower bound
+    else if (height<100) // clip to lower bound
     {
-      height=250;
+      height=100;
     }
     else if (height>30000) // clip to upper bound
     {
@@ -625,6 +625,28 @@ void checkConfig()
     err("Could not create output directory %s\n",Config::manOutputDir.data());
     exit(1);
   }
+
+  // expand the relative stripFromPath values
+  char *sfp = Config::stripFromPath.first();
+  while (sfp)
+  {
+    QCString path = sfp;
+    if (path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':'))
+    {
+      QFileInfo fi(path);
+      if (fi.exists() && fi.isDir())
+      {
+	int i = Config::stripFromPath.at();
+	Config::stripFromPath.remove();
+	if (Config::stripFromPath.at()==i) // did not remove last item
+	  Config::stripFromPath.insert(i,fi.absFilePath()+"/");
+	else
+	  Config::stripFromPath.append(fi.absFilePath()+"/");
+      }
+    }
+    sfp = Config::stripFromPath.next();
+  }
+  
   
   // Test to see if HTML header is valid
   if (!Config::headerFile.isEmpty())

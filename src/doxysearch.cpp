@@ -204,7 +204,7 @@ void printFooter()
 
 //----------------------------------------------------------------------------
 
-void message(char *fmt,...)
+void message(const char *fmt,...)
 {
   printHeader();
   printf("<h2>");
@@ -413,7 +413,7 @@ void searchIndex(const char *word,SearchResults *results)
 
 //----------------------------------------------------------------------------
 
-int sortResults(const void *a1,const void *a2)
+extern "C" int sortResults(const void *a1,const void *a2)
 {
   SearchDoc **d1=(SearchDoc **)a1;
   SearchDoc **d2=(SearchDoc **)a2;

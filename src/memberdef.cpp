@@ -484,14 +484,14 @@ void MemberDef::writeDeclaration(OutputList &ol,
   //printf("md->name()=`%s' Protection=%d\n",name().data(),protection());
   if (inGroup && protection()==Private && !Config::extractPrivateFlag) return;
 
-  QCString type=typeString();
-  // strip `static' keyword from type
-  if (type.left(7)=="static ") type=type.right(type.length()-7);
-  // strip `friend' keyword from type
-  if (type.left(7)=="friend ") type=type.right(type.length()-7);
+  QCString ltype=type.copy();
+  // strip `static' keyword from ltype
+  if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
+  // strip `friend' keyword from ltype
+  if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");
   i=-1;
-  if ((type.isEmpty() || (i=r.match(type,0,&l))==-1) || !enumUsed())
+  if ((ltype.isEmpty() || (i=r.match(ltype,0,&l))==-1) || !enumUsed())
   {
     
     if (!Config::genTagFile.isEmpty())
@@ -541,20 +541,20 @@ void MemberDef::writeDeclaration(OutputList &ol,
     
     // search for the last anonymous scope in the member type
     ClassDef *annoClassDef=0;
-    //while (i!=-1 && cname.find(type.mid(i,l))!=-1)
+    //while (i!=-1 && cname.find(ltype.mid(i,l))!=-1)
     //{
-    //  i=r.match(type,i+l,&l);
+    //  i=r.match(ltype,i+l,&l);
     //}
     int il=i-1,ir=i+l;
     if (i!=-1) // found anonymous scope in type
     {
       // extract anonymous scope
-      while (il>=0 && (isId(type.at(il)) || type.at(il)==':' || type.at(il)=='@')) il--;
+      while (il>=0 && (isId(ltype.at(il)) || ltype.at(il)==':' || ltype.at(il)=='@')) il--;
       if (il>0) il++;
-      while (ir<(int)type.length() && (isId(type.at(ir)) || type.at(ir)==':' || type.at(ir)=='@')) ir++;
+      while (ir<(int)ltype.length() && (isId(ltype.at(ir)) || ltype.at(ir)==':' || ltype.at(ir)=='@')) ir++;
 
-      //QCString annName = type.mid(i,l);
-      QCString annName = type.mid(il,ir-il);
+      //QCString annName = ltype.mid(i,l);
+      QCString annName = ltype.mid(il,ir-il);
       
       // if inside a class or namespace try to prepend the scope name
       if ((cd || nd) && annName.left(cname.length())!=cname) 
@@ -612,7 +612,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (i!=-1) // member has an anonymous type
     {
       //printf("annoClassDef=%p annMemb=%p scopeName=`%s' anonymous=`%s'\n",
-      //    annoClassDef,annMemb,cname.data(),type.mid(i,l).data());
+      //    annoClassDef,annMemb,cname.data(),ltype.mid(i,l).data());
 
       if (annoClassDef) // type is an anonymous compound
       {
@@ -624,7 +624,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
         {
           ol.writeNonBreakableSpace();
         }
-        QCString varName=type.right(type.length()-ir).stripWhiteSpace();
+        QCString varName=ltype.right(ltype.length()-ir).stripWhiteSpace();
         ol.docify("}");
         if (varName.isEmpty() && (name().isEmpty() || name().at(0)=='@')) 
         {
@@ -639,27 +639,27 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         if (getAnonymousEnumType()) // type is an anonymous enum
         {
-          linkifyText(ol,cname,name(),type.left(i),TRUE); 
+          linkifyText(ol,cname,name(),ltype.left(i),TRUE); 
           ol+=*getAnonymousEnumType()->enumDecl();
-          linkifyText(ol,cname,name(),type.right(type.length()-i-l),TRUE); 
+          linkifyText(ol,cname,name(),ltype.right(ltype.length()-i-l),TRUE); 
         }
         else
         {
-          type = type.left(i) + " { ... } " + type.right(type.length()-i-l);
-          linkifyText(ol,cname,name(),type,TRUE); 
+          ltype = ltype.left(i) + " { ... } " + ltype.right(ltype.length()-i-l);
+          linkifyText(ol,cname,name(),ltype,TRUE); 
         }
       }
     }
     else
     {
-      linkifyText(ol,cname,name(),type,TRUE); 
+      linkifyText(ol,cname,name(),ltype,TRUE); 
     }
     bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-    if (htmlOn && Config::htmlAlignMemberFlag && !type.isEmpty())
+    if (htmlOn && Config::htmlAlignMemberFlag && !ltype.isEmpty())
     {
       ol.disable(OutputGenerator::Html);
     }
-    if (!type.isEmpty()) ol.docify(" ");
+    if (!ltype.isEmpty()) ol.docify(" ");
     if (htmlOn) 
     {
       ol.enable(OutputGenerator::Html);
@@ -821,16 +821,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // prepend scope if there is any. TODO: make this optional for C only docs
     if (scopeName) doxyName.prepend((QCString)scopeName+"::");
 
-    QCString def = definition();
+    QCString ldef = definition();
     if (isEnumerate()) 
     {
       if (name().at(0)=='@')
       {
-        def = "anonymous enum";
+        ldef = "anonymous enum";
       }
       else
       {
-        def.prepend("enum ");
+        ldef.prepend("enum ");
       }
     }
     int i=0,l;
@@ -844,7 +844,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     HtmlHelp *htmlHelp = 0;
     if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
-    if ((isVariable() || isTypedef()) && (i=r.match(def,0,&l))!=-1)
+    if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
     {
       // find enum type and insert it in the definition
       MemberListIterator vmli(*ml);
@@ -852,7 +852,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       bool found=FALSE;
       for ( ; (vmd=vmli.current()) && !found ; ++vmli)
       {
-        if (vmd->isEnumerate() && def.mid(i,l)==vmd->name())
+        if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
         {
           ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
           ol.startMemberDoc(cname,name(),anchor(),name());
@@ -860,9 +860,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             htmlHelp->addIndexItem(cname,name(),cfname,anchor());
           }
-          linkifyText(ol,scopeName,name(),def.left(i));
+          linkifyText(ol,scopeName,name(),ldef.left(i));
           ol+=*vmd->enumDecl();
-          linkifyText(ol,scopeName,name(),def.right(def.length()-i-l));
+          linkifyText(ol,scopeName,name(),ldef.right(ldef.length()-i-l));
 
           found=TRUE;
         }
@@ -877,16 +877,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           htmlHelp->addIndexItem(cname,name(),cfname,anchor());
         }
         // strip anonymous compound names from definition
-        int si=def.find(' '),pi,ei=i+l;
+        int si=ldef.find(' '),pi,ei=i+l;
         if (si==-1) si=0;
-        while ((pi=r.match(def,i+l,&l))!=-1) ei=i=pi+l;
-        // first si characters of def contain compound type name
-        ol.docify(def.left(si));
+        while ((pi=r.match(ldef,i+l,&l))!=-1) ei=i=pi+l;
+        // first si characters of ldef contain compound type name
+        ol.docify(ldef.left(si));
         ol.docify(" { ... } ");
-        // last ei characters of def contain pointer/reference specifiers
-        int ni=def.find("::",si);
+        // last ei characters of ldef contain pointer/reference specifiers
+        int ni=ldef.find("::",si);
         if (ni>=ei) ei=ni+2;
-        linkifyText(ol,scopeName,name(),def.right(def.length()-ei));
+        linkifyText(ol,scopeName,name(),ldef.right(ldef.length()-ei));
       }
     }
     else
@@ -931,19 +931,19 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           int ir=cName.findRev('>');
           if (il!=-1 && ir!=-1 && ir>il)
           {
-            def=addTemplateNames(def,
+            ldef=addTemplateNames(ldef,
                 cName.left(il),          /* class without template spec */
                 cName.mid(il,ir-il+1)    /* templ spec */
                                 ); 
           }
           else if (scopeAl)
           {
-            def=addTemplateNames(def,cName,tempArgListToString(scopeAl));
+            ldef=addTemplateNames(ldef,cName,tempArgListToString(scopeAl));
           }
         }
       }
       ol.startMemberDocName();
-      linkifyText(ol,scopeName,name(),def);
+      linkifyText(ol,scopeName,name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
       if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
       {
@@ -965,16 +965,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       }
     }
 
-    Specifier virt=virtualness();
+    Specifier lvirt=virtualness();
     MemberDef *rmd=reimplements();
-    while (rmd && virt==Normal)
+    while (rmd && lvirt==Normal)
     {
-      virt = rmd->virtualness()==Normal ? Normal : Virtual;
+      lvirt = rmd->virtualness()==Normal ? Normal : Virtual;
       rmd  = rmd->reimplements();
     }
 
     if (isStatic() || protection()!=Public || 
-        virt!=Normal || isSignal() || isFriend() || 
+        lvirt!=Normal || isSignal() || isFriend() || 
         isRelated() || isSlot() ||
         getMemberSpecifiers()!=0 
        )
@@ -995,8 +995,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isStatic())              sl.append("static");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
-        if      (virt==Virtual)           sl.append("virtual");
-        else if (virt==Pure)              sl.append("pure virtual");
+        if      (lvirt==Virtual)          sl.append("virtual");
+        else if (lvirt==Pure)              sl.append("pure virtual");
         if      (isSignal())              sl.append("signal");
         if      (isSlot())                sl.append("slot");
       }
@@ -1163,7 +1163,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (bmd && (bcd=bmd->memberClass()))
     {
 #if 0
-      if (virt!=Normal) // search for virtual member of the deepest base class
+      if (lvirt!=Normal) // search for virtual member of the deepest base class
       {
         MemberDef *lastBmd=bmd;
         while (lastBmd) 

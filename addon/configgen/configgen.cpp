@@ -762,7 +762,7 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Spanish and Russian\n"
+                    "Spanish, Russian, Croatian and Polish.\n"
                    );
   ConfigString::addFixedValue("outputLanguage","English");
   ConfigString::addFixedValue("outputLanguage","Dutch");
@@ -771,11 +771,12 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Czech");
   ConfigString::addFixedValue("outputLanguage","Swedish");
   ConfigString::addFixedValue("outputLanguage","German");
-  ConfigString::addFixedValue("outputLanguage","Russian");
-  ConfigString::addFixedValue("outputLanguage","Japanese");
   ConfigString::addFixedValue("outputLanguage","Finnish");
+  ConfigString::addFixedValue("outputLanguage","Japanese");
   ConfigString::addFixedValue("outputLanguage","Spanish");
+  ConfigString::addFixedValue("outputLanguage","Russian");
   ConfigString::addFixedValue("outputLanguage","Croatian");
+  ConfigString::addFixedValue("outputLanguage","Polish");
   ConfigBool::add(  "noIndexFlag",
                     "DISABLE_INDEX",
                     "FALSE",
@@ -821,7 +822,7 @@ void init()
                     "HIDE_UNDOC_CLASSES",
                     "FALSE",
                     "hide undocumented members.",
-                    "If the HIDE_UNDOC_CLASSESS tag is set to YES, Doxygen will hide all \n"
+                    "If the HIDE_UNDOC_CLASSES tag is set to YES, Doxygen will hide all \n"
                     "undocumented classes that are normally visible in the class hierarchy. \n"
                     "If set to NO (the default) these class will be included in the various \n"
                     "overviews. This option has no effect if EXTRACT_ALL is enabled. \n"
@@ -1555,7 +1556,7 @@ void init()
                     "this value, doxygen will try to truncate the graph, so that it fits within \n"
                     "the specified constraint. Beware that most browsers cannot cope with very \n"
                     "large images. \n",
-                    250,30000
+                    100,30000
                 );
   addDependency("maxDotGraphWidth","haveDotFlag");
   ConfigInt::add(   "maxDotGraphHeight",
@@ -1567,7 +1568,7 @@ void init()
                     "this value, doxygen will try to truncate the graph, so that it fits within \n"
                     "the specified constraint. Beware that most browsers cannot cope with very \n"
                     "large images. \n",
-                    250,30000
+                    100,30000
                 );
   addDependency("maxDotGraphHeight","haveDotFlag");
  

@@ -685,12 +685,17 @@ Public/Protected/Private/... section.
   sectioning command is encountered.
 
 <hr>
-\subsection cmdpar \par (paragraph title) { paragraph }
+\subsection cmdpar \par [(paragraph title)] { paragraph }
 
   \addindex \par
-  Starts a paragraph with a user defined heading. The heading is 
-  specified using the paragraph title argument and extends until the end of the
-  line. The paragraph will be indented. 
+  If a paragraph title is given this command starts a paragraph with a 
+  user defined heading. The heading extends until the end of the
+  line. The paragraph following the command will be indented.
+
+  If no paragraph title is given this command will start a new paragraph.
+  This will also work inside other paragraph commands 
+  (like \\param or \\warning) without ending the that command. 
+ 
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   The \\par command ends when a blank line or some other 

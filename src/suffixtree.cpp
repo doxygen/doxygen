@@ -325,7 +325,7 @@ void SuffixTree::insertWord(const char *word,int index,bool inName)
 {
   QCString suffix=word;
   uint i;
-  for (i=2;i<suffix.length()-1;i++) 
+  for (i=2;i<suffix.length();i++) 
   {
     //printf("Inserting suffix %s\n",suffix.right(i).data());
     nodes+=root->insert(suffix.right(i),index,inName?1:0,FALSE);
