@@ -49,6 +49,7 @@ LatexGenerator::LatexGenerator()
 {
   dir=Config::latexOutputDir;
   col=0;
+  insideTabbing=FALSE;
 }
 
 LatexGenerator::~LatexGenerator()
@@ -196,7 +197,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->hasDocumentation() || gd->countMembers()>0)
+          if (gd->isLinkableInProject() || gd->countMembers()>0)
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; //Module Documentation}\n";
@@ -212,7 +213,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->hasDocumentation())
+          if (nd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
@@ -228,7 +229,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (cd && !found)
         {
-          if (!cd->isReference() && cd->isVisible())
+          if (cd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; //Compound Documentation}\n";
@@ -247,7 +248,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
           FileDef *fd=fn->first();
           while (fd)
           {
-            if (fd->hasDocumentation() && !fd->isReference())
+            if (fd->isLinkableInProject())
             {
               if (isFirst)
               {
@@ -317,7 +318,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->hasDocumentation() || gd->countMembers()>0)
+          if (gd->isLinkableInProject() || gd->countMembers()>0)
           {
             t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -326,7 +327,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (gd)
         {
-          if (gd->hasDocumentation() || gd->countMembers()>0)
+          if (gd->isLinkableInProject() || gd->countMembers()>0)
           {
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
@@ -341,7 +342,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->hasDocumentation() || nd->countMembers()>0)
+          if (nd->isLinkableInProject() || nd->countMembers()>0)
           {
             t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -350,7 +351,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (nd)
         {
-          if (nd->hasDocumentation() || nd->countMembers()>0)
+          if (nd->isLinkableInProject() || nd->countMembers()>0)
           {
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << nd->getOutputFileBase() << "}\n";
@@ -365,11 +366,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (cd && !found)
         {
-          //if (cd->classFile()[0]!='@' && !cd->getReference() &&
-          //    (cd->hasDocumentation() || !hideClassFlag) &&
-          //    (cd->protection()!=Private || extractPrivateFlag)
-          //   ) 
-          if (!cd->isReference() && cd->isVisible())
+          if (cd->isLinkableInProject())
           {
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -378,11 +375,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (cd)
         {
-          //if (cd->classFile()[0]!='@' && !cd->getReference() &&
-          //    (cd->hasDocumentation() || !hideClassFlag) &&
-          //    (cd->protection()!=Private || extractPrivateFlag)
-          //   )
-          if (!cd->isReference() && cd->isVisible())
+          if (cd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << cd->getOutputFileBase() << "}\n";
@@ -400,7 +393,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
           FileDef *fd=fn->first();
           while (fd)
           {
-            if (fd->hasDocumentation() && !fd->isReference())
+            if (fd->isLinkableInProject())
             {
               if (isFirst)
               {
@@ -791,13 +784,18 @@ void LatexGenerator::docify(const char *str)
         case '^':  t << "$^\\wedge$";    break;
         case '&':  t << "\\&";           break;
         case '*':  t << "$\\ast$";       break;
-        case '_':  t << "\\_\\-";        break;
+        case '_':  t << "\\_"; 
+                   if (!insideTabbing) t << "\\-";  
+                   break;
         case '{':  t << "\\{";           break;
         case '}':  t << "\\}";           break;
         case '<':  t << "$<$";           break;
         case '>':  t << "$>$";           break;
         case '|':  t << "$|$";           break;
         case '~':  t << "$\\sim$";       break;
+        case ']':  if (pc=='[') t << "$\\,$";
+                   t << "]";             
+                   break;
         case '-':  if (*p=='>') 
                      { t << " $\\rightarrow$ "; p++; }
                    else
@@ -824,7 +822,7 @@ void LatexGenerator::docify(const char *str)
               }
               else // ascii char => see if we can insert hypenation hint
               {
-                if (isupper(c) && islower(pc)) t << "\\-";
+                if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
                 t << (char)c;    
               }
             } 
@@ -900,7 +898,7 @@ void LatexGenerator::docify(const char *str)
               default: // normal ascii char 
               { 
                 // see if we can insert an hyphenation hint
-                if (isupper(c) && islower(pc)) t << "\\-";
+                if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
                 t << (char)c;    
               }
             }
@@ -955,3 +953,56 @@ void LatexGenerator::writeFormula(const char *,const char *text)
 {
   t << text;
 }
+
+void LatexGenerator::startMemberItem(bool,int annType) 
+{ 
+  if (!insideTabbing)
+  {
+    t << "\\item " << endl; 
+    switch(annType)
+    {
+      case 0: break;
+      case 1:
+      default: 
+        t << "\\begin{tabbing}" << endl;
+        t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill" << endl;
+        insideTabbing=TRUE;
+        break;
+    }
+  }
+}
+
+void LatexGenerator::endMemberItem(bool,const char *,const char *,bool endItem) 
+{
+  if (endItem)
+  {
+    t << endl << "\\end{tabbing}";
+    insideTabbing=FALSE;
+  }
+  if (insideTabbing)
+  {
+    t << "\\\\";
+  } 
+  t << endl; 
+}
+
+void LatexGenerator::writeNonBreakableSpace() 
+{
+  if (insideTabbing)
+    t << "\\>";
+  else
+    t << "\\ "; 
+}
+
+void LatexGenerator::startMemberList()  
+{ 
+  if (!insideTabbing)
+    t << "\\begin{CompactItemize}" << endl; 
+}
+
+void LatexGenerator::endMemberList()    
+{
+  if (!insideTabbing)
+    t << "\\end{CompactItemize}"   << endl; 
+}
+

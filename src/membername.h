@@ -70,7 +70,6 @@ class MemberNameInfo : public QList<MemberInfo>
 {
   public:
     MemberNameInfo(const char *name);  
-   ~MemberNameInfo();
     const char *memberName() const { return name; }
     int compareItems(GCI item1,GCI item2);
   private:

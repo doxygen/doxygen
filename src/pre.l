@@ -294,9 +294,6 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   len=0;
   result.resize(0);
   int cc;
-  // TODO: use a checkNextChar function.
-  //while ((cc=getNextChar(expr,rest,j))!=EOF && cc==' ') len++;
-  //if (cc!='(') return FALSE;
   while ((cc=getCurrentChar(expr,rest,j))!=EOF && cc==' ') 
   { 
     len++; 
@@ -329,8 +326,8 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   }
   else
   {
-    while ((argCount<def->nargs || def->varArgs) && 
-	((cc=getNextChar(expr,rest,j))!=EOF) && !done
+    while (!done && (argCount<def->nargs || def->varArgs) && 
+	((cc=getNextChar(expr,rest,j))!=EOF)
 	  )
     {
       char c=(char)cc;
@@ -586,13 +583,17 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 
 	if (replaced) // expand the macro and rescan the expression
 	{
+	    
 	  //printf("replacing `%s'->`%s'\n",expr.mid(p,len).data(),expMacro.data());
 	  QCString resultExpr=expMacro;
 	  QCString restExpr=expr.right(expr.length()-len-p);
 	  processConcatOperators(resultExpr);
-	  expandedDict->insert(macroName,def);
-	  expandExpression(resultExpr,&restExpr,0);
-	  expandedDict->remove(macroName);
+	  if (!def->nonRecursive)
+	  {
+	    expandedDict->insert(macroName,def);
+	    expandExpression(resultExpr,&restExpr,0);
+	    expandedDict->remove(macroName);
+	  }
 	  expr=expr.left(p)+resultExpr+restExpr;
 	  i=p;
 	  //printf("new expression: %s\n",expr.data());
@@ -708,7 +709,6 @@ bool computeExpression(const QCString &expr)
   expandExpression(e,0,0);
   e = removeIdsAndMarkers(e);
   if (e.length()==0) return FALSE;
-  //printf("computeExpession(%s)\n",e.data());
   return parseCppExpression(e);
 }
 
@@ -890,7 +890,8 @@ BN	[ \t\r\n]
 					  if (includeStack.isEmpty() &&
 					      Config::macroExpansionFlag &&
 					      /* (expandDefine=fileDefineCache->findDefine(yyFileName,yytext)) */
-					      (def=fileDefineDict->find(yytext)) 
+					      (def=fileDefineDict->find(yytext)) &&
+					      (!Config::onlyPredefinedFlag || def->isPredefined)
 					     )
 					  {
 					    //printf("Found it!\n");
@@ -899,6 +900,7 @@ BN	[ \t\r\n]
 					    if (def->nargs==-1) // no function macro
 					    {
 					      QCString result = expandMacro(defArgsStr);
+					      //printf("result=`%s'\n",result.data());
 					      outputArray(result,result.length());
 					    }
 					    else // zero or more arguments
@@ -918,12 +920,14 @@ BN	[ \t\r\n]
   					  if (includeStack.isEmpty() && 
 					      Config::macroExpansionFlag &&
 					      (def=fileDefineDict->find(yytext)) &&
-					      def->nargs==-1
+					      def->nargs==-1 &&
+					      (!Config::onlyPredefinedFlag || def->isPredefined)
 					     )
 					  {
 					    //printf("Found it!\n");
                                             QCString name=yytext;
 					    QCString result=expandMacro(name); 
+					    //printf("result=`%s'\n",result.data());
 					    outputArray(result,result.length());
 					  }
 					  else
@@ -948,6 +952,7 @@ BN	[ \t\r\n]
 					  roundCount--;
 					  if (roundCount==0)
 					  {
+					    //printf("defArgsStr=`%s'\n",defArgsStr.data());
 					    QCString result=expandMacro(defArgsStr);
 					    if (findDefArgContext==CopyLine)
 					    {
@@ -986,6 +991,9 @@ BN	[ \t\r\n]
 <ReadString>"\""			{
   					  defArgsStr+=*yytext;
 					  BEGIN(FindDefineArgs);
+  					}
+<ReadString>"//"|"/*"			{
+  					  defArgsStr+=yytext;
   					}
 <ReadString>.				{
   					  defArgsStr+=*yytext;
@@ -1273,7 +1281,7 @@ BN	[ \t\r\n]
 					    //{
 					    //  addDefine();
 					    //}
-					    if (!Config::onlyPredefinedFlag && (def=fileDefineDict->find(defName))==0)
+					    if (/*!Config::onlyPredefinedFlag &&*/ (def=fileDefineDict->find(defName))==0)
 					    {
 					      fileDefineDict->insert(defName,newDefine());
 					    }
@@ -1300,7 +1308,7 @@ BN	[ \t\r\n]
   					}
 <DefineArg>","{B}*			{ defArgsStr+=yytext; }
 <DefineArg>"("{B}*                      { defArgsStr+=yytext; }
-<DefineArg>")"{B}*			{
+<DefineArg>{B}*")"{B}*			{
                                           defArgsStr+=yytext; 
 					  QCString tmp=(QCString)"#define "+defName+defArgsStr;
 					  outputArray(tmp.data(),tmp.length());
@@ -1421,7 +1429,7 @@ BN	[ \t\r\n]
 					  {
 					    addDefine();
 					  }
-					  if (!Config::onlyPredefinedFlag && (def=fileDefineDict->find(defName))==0)
+					  if (/*!Config::onlyPredefinedFlag &&*/ (def=fileDefineDict->find(defName))==0)
 					  {
 					    fileDefineDict->insert(defName,newDefine());
 					  }
@@ -1460,6 +1468,9 @@ BN	[ \t\r\n]
   					  defText += *yytext;
 					  BEGIN(DefineText);
   					}
+<SkipSingleQuote,SkipDoubleQuote>\\.	{
+  					  defText += yytext;
+					}
 <SkipSingleQuote>\'			{
   					  defText += *yytext;
 					  BEGIN(DefineText);
@@ -1629,6 +1640,7 @@ void preprocessFile(const char *fileName,BufStr &output)
     int i_equals=ds.find('=');
     int i_obrace=ds.find('(');
     int i_cbrace=ds.find(')');
+    bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
     
     if (i_obrace==0) continue; // no define name
     
@@ -1676,6 +1688,8 @@ void preprocessFile(const char *fileName,BufStr &output)
       def->name = ds.left(i_obrace);
       def->definition = definition; 
       def->nargs = count;
+      def->isPredefined = TRUE;
+      def->nonRecursive = nonRecursive;
       fileDefineDict->insert(def->name,def);
 
       //printf("#define `%s' `%s' #nargs=%d\n",
@@ -1694,10 +1708,13 @@ void preprocessFile(const char *fileName,BufStr &output)
       }
       else // simple define with argument
       {
-	def->name = ds.left(i_equals);
+	int ine=i_equals - (nonRecursive ? 1 : 0);
+	def->name = ds.left(ine);
 	def->definition = ds.right(ds.length()-i_equals-1);
       }
       def->nargs = -1;
+      def->isPredefined = TRUE;
+      def->nonRecursive = nonRecursive;
       fileDefineDict->insert(def->name,def);
 
       //printf("#define `%s' `%s' #nargs=%d\n",

@@ -394,7 +394,7 @@ Formulas should be valid commands in \f$\mbox{\LaTeX}\f$'s math-mode.
 
 \warning Currently, Doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may have to be necessary to remove the
-file formula.repository that is written in the html directory to 
+file <code>formula.repository</code> that is written in the html directory to 
 a rid of an incorrect formula
 
 \subsection preprocessing Preprocessing
@@ -404,7 +404,7 @@ build-in C-preprocessor.
 
 By default doxygen does only partial preprocessing. That is, it 
 evaluates conditional compilation statements (like \#if) and 
-evaluates macro definitions, but is does not perform macro expansion.
+evaluates macro definitions, but it does not perform macro expansion.
 
 So if you have the following code fragment
 \verbatim
@@ -508,6 +508,25 @@ Notice also that preprocessor definitions that are normally defined
 automatically by the preprocessor (like \c __cplusplus), have to be defined 
 by hand with doxygen's parser (this is done because these defines
 are often platform/compiler specific).
+
+In some cases you may want to substitute a macro name or function by 
+something else without exposing the result to further macro substitution.
+You can do this but using the <code>:=</code> operator instead of 
+<code>=</code>
+
+As an example suppose we have the following piece of code:
+\verbatim
+#define QList QListT
+class QListT
+{
+};
+\endverbatim
+
+Then the only way to get doxygen interpret this as a class definition
+for class QList is to define:
+\verbatim
+PREDEFINED = QListT:=QList
+\endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
 even more flexibility you can always write an input filter and specify it on 

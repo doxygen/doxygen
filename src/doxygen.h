@@ -74,11 +74,11 @@ class BufStr : public QCString
     const int spareRoom; // 10Kb extra room to avoid frequent resizing
 };
 
-typedef QList<QCString>     StringList;
+typedef QList<QCString>    StringList;
 typedef QDict<MemberDef>   MemberDict;
 typedef QDict<ClassDef>    ClassDict;
 typedef QDict<FileDef>     FileDict;
-typedef QDict<QCString>     StringDict;
+typedef QDict<QCString>    StringDict;
 typedef QDict<PageInfo>    PageDict;
 typedef QDict<GroupDef>    GroupDict;
 
@@ -123,5 +123,6 @@ extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
+extern int documentedIncludeFiles;
 
 #endif

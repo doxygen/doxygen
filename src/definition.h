@@ -26,44 +26,72 @@
 class Definition
 {
   public:
-    //! create a new definition
+    /*! create a new definition */
     Definition(const char *name,const char *b=0,const char *d=0);
-    //! destroys the definition
+    /*! destroys the definition */
     virtual ~Definition();
-    //! returns the name of the definition
+    /*! returns the name of the definition */
     QCString name() const { return n; }
-    //! returns the base name of the output file that contains this definition.
+    /*! returns the base name of the output file that contains this 
+     *  definition. 
+     */
     virtual QCString getOutputFileBase() const = 0;
-    //! returns the detailed description of this definition
+    /*! returns the detailed description of this definition */
     QCString documentation() const { return doc; }
-    //! returns the brief description of this definition
+    /*! returns the brief description of this definition */
     QCString briefDescription() const { return brief; }
-    //! sets a new name for the definition
+    /*! sets a new \a name for the definition */
     void setName(const char *name) { n=name; }
-    //! sets the documentation of this definition
+    /*! sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d) 
       { 
-        doc=d; doc=doc.stripWhiteSpace();
+        doc=((QCString)d).stripWhiteSpace();
       }
-    //! sets the brief description of this definition
+    /*! sets the brief description of this definition to \a b.
+     *  A dot is added to the sentence if not available.
+     */
     void setBriefDescription(const char *b) 
       { 
-        brief=b; brief=brief.stripWhiteSpace(); 
+        brief=((QCString) b).stripWhiteSpace(); 
         int bl=brief.length(); 
-        if (bl>0 && brief.at(bl-1)!='.' && brief.at(bl-1)!='!' && 
-            brief.at(bl-1)!='?') brief+='.'; 
+        if (bl>0) // add puntuation if needed
+        {
+          switch(brief.at(bl-1))
+          {
+            case '.': case '!': case '?': break;
+            default: brief+='.'; break;
+          }
+        }
       }
-    //! returns TRUE iff the definition is documented
+    /*! returns TRUE iff the definition is documented */
     virtual bool hasDocumentation() 
       { return !doc.isNull() || !brief.isNull() || Config::extractAllFlag; }
+
+    virtual bool isLinkableInProject() = 0;
+    virtual bool isLinkable() = 0;
+
+    bool isReference() { return !ref.isEmpty(); }
+    void setReference(const char *r) { ref=r; }
+    QCString getReference() { return ref; }
+
+    /*! returns the base file name that corresponds with the \a name of this 
+     *  definition. This replaces a number of special characters in the
+     *  name by string that are more suitable to use in file names.
+     *  The function getOutputFileBase() also uses this function in most cases.
+     *  \sa setName(),Definition()
+     */
     QCString nameToFile(const char *name);
 
+    /*! Add the list of anchors that mark the sections that are found in the 
+     * documentation.
+     */
     void addSectionsToDefinition(QList<QCString> *anchorList);
 
   private: 
     QCString n;     // name of the definition
     QCString brief; // brief description
     QCString doc;   // detailed description
+    QCString ref;   // reference to external documentation
     SectionList *sectionList; // list of all sections
 };
 

@@ -43,6 +43,14 @@ class GroupDef : public Definition
     void addNamespace(const NamespaceDef *def);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
+    bool isLinkableInProject()
+    {
+      return hasDocumentation() && !isReference();
+    }
+    bool isLinkable()
+    {
+      return isLinkableInProject() || isReference();
+    }
 
   private: 
     QCString title;                      // title of the group

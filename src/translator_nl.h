@@ -269,6 +269,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Class:  result+=" Class"; break;
         case ClassDef::Struct: result+=" Struct"; break;
         case ClassDef::Union:  result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
       }
       result+=" Referentie";
       return result;

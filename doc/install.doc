@@ -79,15 +79,15 @@ The following binaries should now be available:
 
 Doxygen was developed and tested under Linux using the following tools:
 <ul>
-<li>GCC version 2.8.1
+<li>EGCS version 2.91.66
 <li>GNU flex version 2.5.4
 <li>GNU bison version 1.25
-<li>GNU make version 3.77
-<li>Perl version 5.001 (patch level 1m)
-<li>VIM version 5.3
+<li>GNU make version 3.76.1
+<li>Perl version 5.005_02 
+<li>VIM version 5.4
 <li>Netscape 4.04 & 4.5
 <li>Troll Tech's tmake version 1.2 (included in the distribution) 
-<li>teTeX version 0.4
+<li>teTeX version 0.9
 </ul>
 
 \htmlonly

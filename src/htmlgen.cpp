@@ -26,6 +26,10 @@
 #include "logos.h"
 #include "diagram.h"
 
+#define GROUP_COLOR "#ff8080"
+
+HtmlHelp *HtmlGenerator::htmlHelp = 0;
+
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
   if (Config::headerFile.length()>0) header=fileToString(Config::headerFile);
@@ -51,6 +55,7 @@ void HtmlGenerator::init()
     exit(1);
   }
   writeLogo(Config::htmlOutputDir);
+  writeNullImage(Config::htmlOutputDir);
 }
 
 void HtmlGenerator::startFile(const char *name,const char *title,bool external)
@@ -59,6 +64,7 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
+  lastFile = fileName;
   if (header.length()==0) 
   {
     t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
@@ -158,14 +164,16 @@ void HtmlGenerator::writeStyleInfo(int part)
   if (part==0)
   {
     startPlainFile("doxygen.css"); 
-    t 
       //<< "H1 { border-width: thin; border: solid; text-align: center }" << endl
-      << "H1 { text-align: center }" << endl
-      << "A.el { text-decoration: none; font-weight: bold }" << endl
-      << "DL.el { margin-left: -1cm }" << endl
-      << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl
-      << "DIV.in { margin-left: 16 }" << endl
-      << endl;
+    t << "H1 { text-align: center }" << endl;
+    t << "A.el { text-decoration: none; font-weight: bold }" << endl;
+    t << "DL.el { margin-left: -1cm }" << endl;
+    t << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl;
+    t << "DIV.in { margin-left: 16 }" << endl;
+    t << "A.gl:link { color: #ffffff }" << endl;
+    t << "A.gl:visited { color: #ffffff }" << endl;
+    t << "A.gl { text-decoration: none; font-weight: bold; background-color: " << GROUP_COLOR << " }" << endl;
+    t << endl;
     endPlainFile();
   }
 }
@@ -209,6 +217,10 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
   {
     t << "</b>";
   }
+  //if (Config::htmlHelpFlag && f)
+  //{
+  //  htmlHelp->addItem(name,((QCString)f)+".html");
+  //}
 }
 
 void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
@@ -219,6 +231,10 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
   t << "<a class=\"el\" href=\"" << f << ".html\">";
   docify(name);
   t << "</a> ";
+  //if (Config::htmlHelpFlag && f)
+  //{
+  //  htmlHelp->addItem(name, ((QCString)f)+".html");
+  //}
 }
 
 void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
@@ -232,6 +248,10 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   t << "\">";
   docify(name);
   t << "</a>";
+  //if (Config::htmlHelpFlag && f && htmlHelp->depth()>0)
+  //{
+  //  htmlHelp->addItem(name,((QCString)f)+".html");
+  //}
 }
 
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
@@ -401,16 +421,56 @@ void HtmlGenerator::endMemberList()
   }
 }
 
-void HtmlGenerator::startMemberItem() 
+// annonymous type:
+//  0 = single column right aligned
+//  1 = double column left aligned
+//  2 = single column left aligned
+void HtmlGenerator::startMemberItem(bool inGroup,int annoType) 
 { 
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<tr><td align=right valign=top>"; 
+    t << "<tr>";
+    if (inGroup)
+      t << "<td bgcolor=\"" << GROUP_COLOR << "\">";
+    else
+      t << "<td>";
+    t << "<img src=\"null.gif\"></td><td><img src=\"null.gif\"></td>";
+    switch(annoType)
+    {
+      case 0:  t << "<td nowrap align=right valign=top>"; break;
+      case 1:  t << "<td nowrap>"; break;
+      default: t << "<td nowrap valign=top>"; break;
+    }
   }
   else
   {
     t << "<li>"; 
   }
+}
+
+void HtmlGenerator::endMemberItem(bool inGroup,
+                          const char *fileName,const char *headerName,bool) 
+{ 
+  if (Config::htmlAlignMemberFlag)
+  {
+    if (inGroup)
+    {
+      t << "&nbsp;</td><td";
+      if (headerName)
+      {
+        t << " align=right valign=top><a class=\"gl\" href=\"" 
+          << fileName << ".html\">&nbsp;" << headerName << "&nbsp;</a>";
+      }
+      else
+      {
+        t << ">";
+      }
+      t << "</td><td bgcolor=\"" << GROUP_COLOR 
+        << "\"><img src=\"null.gif\">";
+    }
+    t << "</td></tr>"; 
+  }
+  t << endl; 
 }
 
 void HtmlGenerator::insertMemberAlign() 
@@ -421,20 +481,12 @@ void HtmlGenerator::insertMemberAlign()
   }
 }
 
-void HtmlGenerator::endMemberItem() 
-{ 
-  if (Config::htmlAlignMemberFlag)
-  {
-    t << "</td></tr>"; 
-  }
-  t << endl; 
-}
-
 void HtmlGenerator::startMemberDescription() 
 { 
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<tr><td></td><td><font size=-1><em>"; 
+    t << "<tr><td><img src=null.gif></td><td><img src=null.gif></td>"
+         "<td></td><td><font size=-1><em>"; 
   }
   else
   {
@@ -458,7 +510,7 @@ void HtmlGenerator::startMemberSections()
 {
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<table border=0 cellpadding=0 cellspacing=1>" << endl;
+    t << "<table border=0 cellpadding=0 cellspacing=0>" << endl;
   }
 }
 
@@ -474,7 +526,7 @@ void HtmlGenerator::startMemberHeader()
 {
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<tr><td colspan=2><br><h2>";
+    t << "<tr><td colspan=4><br><h2>";
   }
   else
   {
@@ -494,9 +546,35 @@ void HtmlGenerator::endMemberHeader()
   }
 }
 
+void HtmlGenerator::memberGroupSpacing(bool inGroup)
+{
+  t << "<tr><td";
+  if (inGroup)
+  {
+         // left vertical table line
+    t << " bgcolor=\"" << GROUP_COLOR << "\" height=1><img src=\"null.gif\">"
+         // white space
+         "</td><td colspan=4></td>"
+         // right vertical table line
+         "<td bgcolor=\"" << GROUP_COLOR << "\"><img src=\"null.gif\">";
+  }
+  else
+  {
+         // one pixel height of whitespace
+    t << " height=1>";
+  }
+  t << "</td></tr>" << endl;
+}
+
+void HtmlGenerator::memberGroupSeparator()
+{
+  t << "<tr><td colspan=6 height=1 bgcolor=\"" << GROUP_COLOR 
+    << "\"><img src=\"null.gif\"></td></tr>" << endl;
+}
+
 void HtmlGenerator::startMemberSubtitle()
 {
-  if (Config::htmlAlignMemberFlag) t << "<tr><td colspan=2>";
+  if (Config::htmlAlignMemberFlag) t << "<tr><td colspan=4>";
 }
 
 void HtmlGenerator::endMemberSubtitle()
@@ -504,3 +582,36 @@ void HtmlGenerator::endMemberSubtitle()
   if (Config::htmlAlignMemberFlag) t << "<br><br></td></tr>" << endl;
 }
 
+void HtmlGenerator::startIndexList() 
+{ 
+  t << "<ul>"  << endl; 
+  //if (Config::htmlHelpFlag)
+  //{
+  //  if (htmlHelp->depth()==0) htmlHelp->addItem(lastTitle,lastFile);
+  //  htmlHelp->incDepth();
+  //}
+}
+
+void HtmlGenerator::endIndexList()
+{
+  t << "</ul>" << endl;
+  //if (Config::htmlHelpFlag)
+  //{
+  //  htmlHelp->decDepth();
+  //}
+}
+
+void HtmlGenerator::startAlfabeticalIndexList()
+{
+  t << "<multicol cols=5><dl compact>" << endl;
+}
+
+void HtmlGenerator::endAlfabeticalIndexList()
+{
+  t << "</dl></multicol>" << endl;
+}
+
+void HtmlGenerator::writeIndexHeading(const char *s)
+{
+  t << "<dt><b><big>" << s << "</big></b><dd>" << endl;
+}

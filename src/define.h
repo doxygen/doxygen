@@ -42,6 +42,8 @@ class Define
     int nargs;
     bool undef;
     bool varArgs;
+    bool isPredefined;
+    bool nonRecursive;
 };
 
 class DefineList : public QList<Define>

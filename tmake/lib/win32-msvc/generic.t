@@ -38,8 +38,11 @@
 	Project('CONFIG += windows' );
     }
     if ( Config("qt") ) {
-	$moc_aware = 1;
+	Project('CONFIG *= moc');
 	AddIncludePath(Project("TMAKE_INCDIR_QT"));
+	if ( Config("release") ) {
+	    Project('DEFINES += NO_DEBUG');
+	}
 	if ( Config("opengl") ) {
 	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_OPENGL');
 	}
@@ -47,6 +50,7 @@
 	    if ( Project("TMAKE_QT_DLL") ) {
 		Project('DEFINES -= QT_DLL');
 		Project('DEFINES *= QT_MAKEDLL');
+		Project('TMAKE_LFLAGS += $$TMAKE_LFLAGS_QT_DLL');
 	    }
 	} else {
 	    if ( Project("TMAKE_QT_DLL") ) {
@@ -56,7 +60,9 @@
 	    if ( Project("TMAKE_QT_DLL") ) {
 		my $qtver =FindHighestLibVersion($ENV{"QTDIR"} . "/lib", "qt");
 		Project("TMAKE_LIBS /= s/qt.lib/qt${qtver}.lib/");
-		Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_DLL');
+		if ( !Config("dll") ) {
+		    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_DLL');
+		}
 	    }
 	}
     }
@@ -94,6 +100,9 @@
 	Project('TMAKE_LFLAGS *= $$TMAKE_LFLAGS_CONSOLE_ANY');
 	Project('TMAKE_LIBS   *= $$TMAKE_LIBS_CONSOLE');
     }
+    if ( Config("moc") ) {
+	$moc_aware = 1;
+    }
     Project('TMAKE_LIBS += $$LIBS');
     Project('TMAKE_FILETAGS = HEADERS SOURCES DEF_FILE RC_FILE TARGET TMAKE_LIBS DESTDIR DLLDESTDIR $$FILETAGS');
     foreach ( split(/\s/,Project("TMAKE_FILETAGS")) ) {
@@ -115,7 +124,6 @@
 	Project('TMAKE_LIBS *= $$RES_FILE');
     }
     StdInit();
-    $project{"DESTDIR"} = FixPath($project{"DESTDIR"});
     if ( Project("VERSION") ) {
 	$project{"VER_MAJ"} = $project{"VERSION"};
 	$project{"VER_MAJ"} =~ s/\.\d+$//;
@@ -137,7 +145,7 @@ CC	=	#$ Expand("TMAKE_CC");
 CXX	=	#$ Expand("TMAKE_CXX");
 CFLAGS	=	#$ Expand("TMAKE_CFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
 CXXFLAGS=	#$ Expand("TMAKE_CXXFLAGS"); ExpandGlue("DEFINES","-D"," -D","");
-INCPATH	=	#$ ExpandGlue("INCPATH",'-I"','" -I"','"');
+INCPATH	=	#$ ExpandPath("INCPATH",'-I',' -I','');
 #$ !Project("TMAKE_APP_OR_DLL") && DisableOutput();
 LINK	=	#$ Expand("TMAKE_LINK");
 LFLAGS	=	#$ Expand("TMAKE_LFLAGS");

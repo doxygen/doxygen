@@ -226,14 +226,18 @@ void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4),a1,a2,a3,a4) 
 FORALL1(const char *a1,a1)
 FORALL1(char a1,a1)
 FORALL1(int a1,a1)
+FORALL1(bool a1,a1)
 FORALL1(IndexSections a1,a1)
 FORALL2(const char *a1,const char *a2,a1,a2)
 FORALL2(int a1,bool a2,a1,a2)
+FORALL2(bool a1,int a2,a1,a2)
+FORALL2(bool a1,bool a2,a1,a2)
 FORALL3(ClassDiagram &a1,const char *a2,const char *a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,const char *a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,bool a3,a1,a2,a3)
 FORALL3(uchar a1,uchar a2,uchar a3,a1,a2,a3)
 FORALL4(const char *a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
+FORALL4(bool a1,const char *a2,const char *a3,bool a4,a1,a2,a3,a4)
 
 
 //--------------------------------------------------------------------------

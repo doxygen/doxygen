@@ -116,6 +116,7 @@ Thanks go to:
     (which is even useful for GUI-less applications like doxygen :-)
 <li>My brother <a href="http://www.stack.nl/~fidget/index.html">Frank</a>
     for rendering the logos.
+<li>Harm van der Heijden for adding HTML help support.
 <li>
 Arnt Gulbrandsen, 
 Adam P. Jenkins, 
@@ -174,9 +175,9 @@ Feiyi Wang,
 Robert J. Clark,
 Matthias Baas,
 Walter Mueller, 
-William van Dieten, and
-Joshua Jensen and
-many others for suggestions, patches and bug reports.
+William van Dieten,
+Joshua Jensen,
+and many others for suggestions, patches and bug reports.
 </ul>
 */
 

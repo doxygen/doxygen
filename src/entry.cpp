@@ -35,6 +35,7 @@ Entry::Entry()
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
   tArgList = 0;
+  mtArgList = 0;
   mGrpId = -1;
   reset();
 }
@@ -76,6 +77,7 @@ Entry::Entry(const Entry &e)
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry(copy) tArgList=0\n");
   tArgList = 0;
+  mtArgList = 0;
 
   // deep copy of the child entry list
   QListIterator<Entry> eli(*e.sublist);
@@ -131,6 +133,20 @@ Entry::Entry(const Entry &e)
       //printf("appending argument %s %s\n",a->type.data(),a->name.data());
     }
   }
+
+  // deep copy template argument list
+  if (e.mtArgList)
+  {
+    mtArgList = new ArgumentList;
+    mtArgList->setAutoDelete(TRUE);
+    //printf("Entry::Entry(copy) new tArgList=%p\n",tArgList);
+    QListIterator<Argument> mtali(*e.mtArgList);
+    for (;(a=mtali.current());++mtali)
+    {
+      mtArgList->append(new Argument(*a));
+      //printf("appending argument %s %s\n",a->type.data(),a->name.data());
+    }
+  }
 }
 
 Entry::~Entry()
@@ -143,6 +159,7 @@ Entry::~Entry()
   delete anchors;
   delete argList;
   delete tArgList;
+  delete mtArgList;
   num--;
 }
 
@@ -181,6 +198,8 @@ void Entry::reset()
   brief.resize(0);
   inside.resize(0);
   fileName.resize(0);
+  scopeSpec.resize(0);
+  memberSpec.resize(0);
   mGrpId = -1;
   section = EMPTY_SEC;
   sig     = FALSE;
@@ -195,6 +214,7 @@ void Entry::reset()
   anchors->clear();
   argList->clear();
   if (tArgList) { delete tArgList; tArgList=0; }
+  if (mtArgList) { delete mtArgList; mtArgList=0; }
 }
 
 
@@ -260,6 +280,18 @@ int Entry::getSize()
         +a->name.length()+1
         +a->defval.length()+1;
       a=tArgList->next();
+    }
+  }
+  if (mtArgList)
+  {
+    a=mtArgList->first();
+    while (e)
+    {
+      size+=sizeof(Argument);
+      size+=a->type.length()+1
+        +a->name.length()+1
+        +a->defval.length()+1;
+      a=mtArgList->next();
     }
   }
   return size;

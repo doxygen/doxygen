@@ -14,7 +14,7 @@
 # TMake project file for doxytag
 
 TEMPLATE     =  doxytag.t
-CONFIG       =	console warn_on qt release
+CONFIG       =	console warn_on qt $extraopts
 HEADERS      =  suffixtree.h searchindex.h logos.h version.h
 SOURCES      =	doxytag.cpp suffixtree.cpp searchindex.cpp \
 		logos.cpp version.cpp 

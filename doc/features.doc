@@ -23,10 +23,10 @@
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
 <li>Outputs documentation in on-line format (HTML and man page) and off-line 
-    format (LaTeX) simulatiously (one can be disabled if desired). 
+    format (LaTeX) simulatiously (any one can be disabled if desired). 
     Both formats are optimized for ease of reading.
-<li>Allows documentation of files, classes, templates, variables, functions, 
-    typedefs, enums and defines. 
+<li>Allows documentation of files, namespaces, classes, structs, unions, 
+    templates, variables, functions, typedefs, enums and defines. 
 <li>Includes a full C preprocessor to allow proper parsing of conditional 
     code fragments and to allow expansion of all or part of the define macros.
 <li>Automatically detects public, protected and private sections, as well as
@@ -46,7 +46,7 @@
     of a member function or class. Most documentation systems (such as Javadoc) only
     support the former, others (such as Qt) only the latter.
 <li>You can type normal HTML tags in your documentation. Doxygen will convert
-    them to Latex automatically.
+    them to their equivalent Latex and man-page counterparts automatically.
 <li>Allows references to documentation generated for other projects 
     (or another part of the same project) in a location independent way.
 <li>Allows inclusion of source code examples that are automatically 
@@ -58,6 +58,8 @@
     file.
 <li>Documentation and search engine can be transferred to another 
     location or machine without regenerating the documentation.
+<li>Doxygen can generate index and project files that can
+    be converted into compressed HTML by MicroSoft's HTML help workshop.
 <li>Can cope with large projects easily.
 </UL>
 

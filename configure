@@ -1,0 +1,355 @@
+#! /bin/sh
+#
+# $Id$
+#
+# Copyright (C) 1997-1999 by Dimitri van Heesch.
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+# 
+# All output generated with Doxygen is not covered by this license.
+# 
+# shell script to configure doxygen
+
+bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
+
+f_debug=NO
+f_shared=YES
+f_make=NO
+f_perl=NO
+f_qt_include=NO 
+f_qt_library=NO
+f_plf_auto=NO
+
+while test -n "$1"; do
+  case $1 in
+    --shared)
+       f_shared=YES
+       ;;
+    --static)
+       f_shared=NO
+       ;;
+    --release)
+       f_debug=NO
+       ;;
+    --debug)
+       f_debug=YES
+       ;;
+    --qt-includes)
+       shift; f_qt_include=$1
+       ;;
+    --qt-libs)
+       shift; f_qt_library=$1
+       ;;
+    --platform)
+       shift; f_platform=$1
+       ;;
+    --make)
+       shift; f_make=$1
+       ;;
+    --perl)
+       shift; f_perl=$1
+       ;;
+    -h | -help | --help)
+       f_help=y
+       ;;
+    *)
+       echo $1: unknown argument
+       f_help=y
+       f_error=y
+       ;;
+  esac
+  shift
+done
+
+if test "$f_help" = y; then
+  cat <<EOF
+Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
+          [--perl name] [--make name] [--qt-includes name] [--qt-libs name] 
+          [--platform target]
+
+Options: 
+
+  --help              Print this message
+
+  --shared | --static Build using shared or static linking
+		      [default: shared]
+
+  --release | --debug Build for release or debug 
+		      [default: release]
+
+  --perl name         Use \`name' as the name of the perl interpreter 
+		      [default: autodetect]
+
+  --make name         Use \`name' as the name of the make tool
+		      [default: autodetect]
+
+  --qt-includes path  Use \`path' as the path to the qt include directory 
+                      [default: autodetect]      
+
+  --qt-libs path      Use \`path' as the path to the qt library directory
+                      [default: autodetect]
+
+  --platform target   Do not detect platform but use \`target' instead.
+                      See PLATFORMS for a list of possibilities
+
+EOF
+  test "$f_error" = y && exit 1
+  exit 0;
+fi
+
+u_release=`(uname -r) 2>/dev/null` || u_release=unknown
+u_system=`(uname -s) 2>/dev/null` || u_system=unknown
+
+if test -z "$f_platform"; then
+  f_platforms="`cat PLATFORMS`"
+  
+  case "$u_system:$u_release" in
+    AIX*)
+      f_platform=aix-xlc
+      ;;
+    dgux:*)
+      f_platform=dgux-g++
+      ;;
+    FreeBSD:*)
+      f_platform=freebsd-g++
+      ;;
+    GNU:*)
+      f_platform=gnu-g++
+      ;;
+    HP-UX:*)
+      f_platform=hpux-g++
+      ;;
+    IRIX64:*)
+      f_platform=irix-64
+      ;;
+    IRIX:*)
+      f_platform=irix-n32
+      ;;
+    Linux:*)
+      f_platform=linux-g++
+      ;;
+    NetBSD:*)
+      f_platform=netbsd-g++
+      ;;
+    OpenBSD:*)
+      f_platform=openbsd-g++
+      ;;
+    OSF1:*)
+      f_platform=osf1-g++
+      ;;
+    QNX:*)
+      f_platform=qnx-g++
+      ;;
+    *:3.2)
+      f_platform=sco-g++
+      ;;
+    SunOS:4*)
+      f_platform=sunos-g++
+      ;;
+    SunOS:5*)
+      f_platform=solaris-cc
+      ;;
+    ULTRIX:*)
+      f_platform=ultrix-g++
+      ;;
+    UNIX_SV:4.2*)
+      f_platform=unixware-g++
+      ;;
+    *)
+    echo
+    echo "Your platform was not recognised by this configure script"
+    echo "Please use the -platform option to specify one of platforms"
+    echo "in this list:"
+    echo
+    for p in $f_platforms
+    do
+      echo "    $0 $* -platform $p"
+    done
+    echo
+    exit 2
+  esac 
+  echo "  Autodetected platform $f_platform... "
+  f_plf_auto=YES
+fi
+
+if test "$f_plf_auto" = NO; then
+  echo -n "  Checking for platform $f_platform... "
+  if test '!' -d tmake/lib/$f_platform; then
+    echo "not supported!" 
+    echo
+    exit 2
+  fi
+  echo "supported"
+fi
+
+#- check for qt --------------------------------------------------------------
+
+echo -n "  Checking for Qt..."
+if test "$f_qt_include" = NO; then
+  qt_incdirs="/usr/lib/qt/include /usr/local/qt/include /usr/include/qt /usr/include /usr/X11R6/include/X11/qt"
+  test -n "$QTDIR" && qt_incdirs="$QTDIR/include $QTDIR $qt_incdirs"
+  
+  qt_incdir=NO
+  for i in $qt_incdirs; do
+    if test -r "$i/qlist.h"; then
+      qt_incdir=$i
+      break 
+    else 
+      echo "Tried include directory $i..."
+    fi 
+  done
+  f_qt_include="$qt_incdir"
+fi
+
+if test "$f_qt_library" = NO; then
+  qt_libdirs="/usr/lib/qt/lib /usr/X11R6/lib /usr/lib /usr/local/qt/lib /usr/lib/qt"
+  if test -n "$LD_LIBRARY_PATH"; then
+    qt_ldpaths=`echo $LD_LIBRARY_PATH | sed 's%:% %'`
+    qt_libdirs="$qt_ldpaths $qt_libdirs"
+  fi
+  test -n "$QTDIR" && qt_libdirs="$QTDIR/lib $QTDIR $qt_libdirs"
+
+  qt_libdir=NO
+  for i in $qt_libdirs; do
+    try="ls -1 $i/libqt*"
+    if test=`eval $try 2>/dev/null`; then
+      qt_libdir=$i;
+      break 
+    else
+      echo "Tried library directory $i..."
+    fi
+  done
+  f_qt_library="$qt_libdir"
+fi
+
+if test "$f_qt_include" = NO || test "$f_qt_library" = NO; then
+  if test "$f_qt_include" = NO && test "$f_qt_library" = NO; then
+    echo "not found!"
+    echo
+  elif test "$f_qt_include" = NO; then
+    echo "include files not found!"
+  else
+    echo "libraries not found!"
+  fi
+  exit 2
+fi
+
+echo "libraries: $f_qt_library"
+echo "                    headers: $f_qt_include"
+
+# - check for make ------------------------------------------------------------
+
+echo -n "  Checking for make tool... "
+if test "$f_make" = NO; then
+  make_names="make gmake pmake"
+  make_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  make_prog=NO
+  for i in $make_names; do
+    for j in $make_dirs; do
+      if test -x "$j/$i"; then
+        make_prog="$j/$i"
+        break 2
+      fi
+    done
+  done
+  f_make="$make_prog" 
+fi
+
+if test "$f_make" = NO; then
+  echo "not found!";
+  echo
+  exit 2
+fi
+echo "using $f_make"
+
+# - check for perl ------------------------------------------------------------
+
+echo -n "  Checking for perl... "
+if test "$f_perl" = NO; then
+  perl_names="perl perl5"
+  perl_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  perl_prog=NO
+  perl_found=NO
+  for i in $perl_names; do
+    for j in $perl_dirs; do
+      if test -x "$j/$i"; then
+        perl_found=YES
+        if $j/$i -e 'require 5.000;' 2>/dev/null ; then
+          perl_prog="$j/$i"
+          break 2
+        fi
+      fi
+    done
+  done
+  f_perl="$perl_prog" 
+fi
+
+if test "$f_perl" = NO; then
+  if test "$perl_found" = YES; then
+    echo "version is too old (5.000 or higher is required)."
+  else
+    echo "not found!";
+  fi
+  echo
+  exit 2
+fi
+echo "using $f_perl";
+
+# -----------------------------------------------------------------------------
+
+test -f .makeconfig && rm .makeconfig
+test -f .tmakeconfig && rm .tmakeconfig
+
+cat > .makeconfig <<EOF
+DOXYGEN   = $PWD
+TMAKEPATH = $PWD/tmake/lib/$f_platform
+TMAKE     = $PWD/tmake/bin/tmake
+MAKE      = $f_make
+PERL      = $f_perl
+RM        = rm -f
+VERSION   = `cat VERSION`
+EOF
+
+touch .tmakeconfig
+if test "$f_shared" = NO; then
+cat > .tmakeconfig <<EOF
+TMAKE_LFLAGS = -static
+EOF
+fi
+
+for i in Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in ; do
+     SRC=$i
+     DST=`echo $i|sed 's%\(.*\).in$%\1%'`
+     TIME=`date`
+     cat > $DST <<EOF
+#
+# This file was generated from `basename $i` on $TIME
+#
+
+EOF
+     cat .makeconfig $SRC >> $DST
+     echo "  Created $DST from $SRC..."
+done
+
+for i in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in ; do
+     SRC=$i
+     DST=`echo $i|sed 's%\(.*\).in$%\1%'`
+     TIME=`date`
+     cat > $DST <<EOF
+#
+# This file was generated from `basename $i` on $TIME
+#
+
+EOF
+     if test "$f_debug" = NO; then
+       cat $SRC .tmakeconfig | sed -e "s/\$extraopts/release/g" >> $DST
+     else
+       cat $SRC .tmakeconfig | sed -e "s/\$extraopts/debug/g" >> $DST
+     fi
+     echo "  Created $DST from $SRC..."
+done
+

@@ -324,14 +324,18 @@ QCString unhtmlify(const char *str)
   			             classFile=yytext;
 				     BEGIN( SearchMemberRef );
   				   }
-<SearchMemberRef>"#"		   {
+<SearchMemberRef,ReadClassFile>"#" {
+  				     if (YY_START==ReadClassFile)
+				     {
+				       classFile=yyFileName;
+				     }
 				     BEGIN( ReadMemberRef );
 				   }
 <ReadMemberRef>[a-z_A-Z0-9]+	   {
 				     memberRef=yytext;
 				     BEGIN( SearchMemberName );
 				   }
-<SearchMemberName>"<strong>"	   {
+<SearchMemberName>"<strong>"|"<b>" { // <strong> is for qt-1.44, <b> is for qt-2.00  
 			             BEGIN( ReadMemberName );
 				   }
 <SearchMemberName>[a-z_A-Z~]	   {

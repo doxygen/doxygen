@@ -96,6 +96,12 @@ class OutputList
     { forall(&OutputGenerator::startEnumList); }
     void endEnumList() 
     { forall(&OutputGenerator::endEnumList); }
+    void startAlfabeticalIndexList()
+    { forall(&OutputGenerator::startAlfabeticalIndexList); }
+    void endAlfabeticalIndexList()
+    { forall(&OutputGenerator::endAlfabeticalIndexList); }
+    void writeIndexHeading(const char *s)
+    { forall(&OutputGenerator::writeIndexHeading,s); }
     void writeIndexItem(const char *ref,const char *file,const char *text)
     { forall(&OutputGenerator::writeIndexItem,ref,file,text); }
     void docify(const char *s)
@@ -145,10 +151,14 @@ class OutputList
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 
     { forall(&OutputGenerator::endMemberList); }
-    void startMemberItem() 
-    { forall(&OutputGenerator::startMemberItem); }
-    void endMemberItem() 
-    { forall(&OutputGenerator::endMemberItem); }
+    void startMemberItem(bool b1,int i1) 
+    { forall(&OutputGenerator::startMemberItem,b1,i1); }
+    void endMemberItem(bool b1,const char *n1,const char *n2,bool b2) 
+    { forall(&OutputGenerator::endMemberItem,b1,n1,n2,b2); }
+    void memberGroupSpacing(bool b) 
+    { forall(&OutputGenerator::memberGroupSpacing,b); }
+    void memberGroupSeparator() 
+    { forall(&OutputGenerator::memberGroupSeparator); }
     void insertMemberAlign() 
     { forall(&OutputGenerator::insertMemberAlign); }
     void writeRuler() 
@@ -287,6 +297,8 @@ class OutputList
     { forall(&OutputGenerator::endQuickIndexItem); }
     void writeFormula(const char *n,const char *t)
     { forall(&OutputGenerator::writeFormula,n,t); }
+    void writeNonBreakableSpace()
+    { forall(&OutputGenerator::writeNonBreakableSpace); }
 
   private:
     void debug();
@@ -296,14 +308,18 @@ class OutputList
     FORALLPROTO1(const char *);
     FORALLPROTO1(char);
     FORALLPROTO1(int);
+    FORALLPROTO1(bool);
     FORALLPROTO1(IndexSections);
     FORALLPROTO2(const char *,const char *);
     FORALLPROTO2(int,bool);
+    FORALLPROTO2(bool,int);
+    FORALLPROTO2(bool,bool);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
+    FORALLPROTO4(bool,const char *,const char *,bool);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

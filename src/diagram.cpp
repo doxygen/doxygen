@@ -148,7 +148,7 @@ static void writeVectorBox(QTextStream &t,DiagramItem *di,
 
 static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
 {
-  if (cd->hasDocumentation() || cd->isReference())
+  if (cd->isLinkable())
   {
     t << "<area ";
     if (cd->getReference()) t << "doxygen=\"" << cd->getReference() << ":\" ";
@@ -229,10 +229,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   while (bcd)
   {
     ClassDef *ccd=bcd->classDef;
-    if (ccd && ccd->isVisibleExt()
-        //(ccd->protection()!=Private || extractPrivateFlag) &&
-        //(ccd->hasDocumentation() || !hideClassFlag)
-       ) count++;
+    if (ccd && ccd->isVisibleInHierarchy()) count++;
     bcd=bcl->next();
   }
   if (count>0 && (prot!=Private || !doBases))
@@ -252,10 +249,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
     while (bcd)
     {
       ClassDef *ccd=bcd->classDef;
-      if (ccd && ccd->isVisibleExt()
-          //(ccd->protection()!=Private || extractPrivateFlag) &&
-          //(ccd->hasDocumentation() || !hideClassFlag)
-         )
+      if (ccd && ccd->isVisibleInHierarchy())
       {
         row->insertClass(di,ccd,doBases,bcd->prot,
             doBases?bcd->virt:Normal,
@@ -519,8 +513,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
         
         if (bitmap)
         {
-          bool hasDocs=di->getClassDef()->hasDocumentation() ||
-                       di->getClassDef()->isReference();
+          bool hasDocs=di->getClassDef()->isLinkable();
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,
               hasDocs,di->getChildren()->count()>0); 
           if (!firstRow) writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
@@ -553,8 +546,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
             y = (baseRows-1)*(cellHeight+labelVertSpacing)+
               di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
           }
-          bool hasDocs=di->getClassDef()->hasDocumentation() ||
-                       di->getClassDef()->isReference();
+          bool hasDocs=di->getClassDef()->isLinkable();
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,hasDocs); 
           if (!firstRow) writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
         }

@@ -223,15 +223,17 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
   declinfoYYlex();
 
   cl=scope.copy();
+  //printf("scope=`%s'\n",scope.data());
   int il,ir;
   if ((il=cl.find('<'))!=-1 && (ir=cl.findRev('>'))!=-1) // split up scope and template arguments
   {
-    if (ir==-1) ir=cl.length(); else ir++;
-    ctl=removeRedundantWhiteSpace(cl.mid(il,ir-il));
-    cl=cl.left(il)+cl.right(cl.length()-ir);
+    ctl=removeRedundantWhiteSpace(cl.mid(il,ir-il+1));
+    cl=cl.left(il)+cl.right(cl.length()-ir-1);
   }
+  //printf("cl=`%s' ctl=`%s'\n",cl.data(),ctl.data());
   n=removeRedundantWhiteSpace(name);
-  if ((il=n.find('<'))!=-1 && n.left(8)!="operator")
+  if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)
+    // TODO: handle cases like where n="operator<< <T>" 
   {
     ftl=removeRedundantWhiteSpace(n.right(n.length()-il));
     n=n.left(il);

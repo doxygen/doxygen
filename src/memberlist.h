@@ -38,10 +38,16 @@ class MemberList : public QList<MemberDef>
     int defineCount() const    { return defCnt;     }
     int friendCount() const    { return friendCnt;  }
     void countDecMembers();
-    void countDocMembers();
+    void countDocMembers(bool inGroup=FALSE);
     int totalCount() const 
          { return varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
                   protoCnt+defCnt+friendCnt; }
+    void writePlainDeclarations(OutputList &ol,ClassDef *cd,
+               NamespaceDef *nd,FileDef *fd,bool inGroup=FALSE);
+    void writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+               const char *title,const char *subtitle,bool inGroup=FALSE);
+    void writeDocumentation(OutputList &ol,const char *scopeName,
+               MemberDef::MemberType m);
 
   private:
     int varCnt,funcCnt,enumCnt,enumValCnt,typeCnt,protoCnt,defCnt,friendCnt; 

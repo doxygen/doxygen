@@ -1,0 +1,15 @@
+all: FORCE
+	set DOXYGEN_DOCDIR=file:///$(DOXYGEN)
+	set VERSION=$(VERSION)
+	$(DOXYGEN)\bin\doxygen
+	@del ..\latex\refman.tex
+	@copy doxygen_logo*.gif ..\html
+	@copy Makefile.latex ..\latex\Makefile
+	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen_manual.tex >..\latex\doxygen_manual.tex
+	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen.sty >..\latex\doxygen.sty 
+	@copy doxygen_logo.eps ..\latex
+
+clean: 
+	del /s /q ..\html ..\latex
+
+FORCE:

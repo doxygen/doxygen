@@ -20,7 +20,7 @@
     $vc_cpp_opt_common  = '/YX /FD /c';
     $project{"VC_BASE_CPP_RELEASE"} = $vc_cpp_opt_release . $vc_cpp_def_release . $vc_cpp_opt_common;
     $project{"VC_BASE_CPP_DEBUG"}   = $vc_cpp_opt_debug   . $vc_cpp_def_debug   . $vc_cpp_opt_common;
-    ExpandGlue("INCPATH",'/I "','" /I "','"');
+    ExpandPath("INCPATH",'/I ',' /I ','');
     if ( $text ne "" ) { $vc_inc = $text . " ";  $text = ""; } else { $vc_inc = ""; }
     ExpandGlue("DEFINES",'/D "','" /D "','"');
     if ( $text ne "" ) { $vc_def = $text . " ";  $text = ""; } else { $vc_def = ""; }

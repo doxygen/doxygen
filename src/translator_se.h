@@ -382,6 +382,7 @@ class TranslatorSwedish : public Translator
         case ClassDef::Class:  result+=" Klass"; break;
         case ClassDef::Struct: result+=" Strukt"; break;
         case ClassDef::Union:  result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
       }
       result+="referens";
       return result;

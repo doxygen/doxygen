@@ -167,7 +167,7 @@ static void generateClassLink(OutputList &ol,const char *clName)
   QCString className=clName;
   if (className.length()==0) return;
   ClassDef *cd;
-  if ((cd=getClass(className)) && cd->isVisible())
+  if ((cd=getClass(className)) && cd->isLinkable())
   {
     if (exampleBlock)
     {
@@ -202,8 +202,7 @@ static bool getLink(const char *className,
   QCString m=memberName;
   QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
-  if (getDefs(c,m,"()",md,cd,fd,nd) &&
-      (md->hasDocumentation() || md->isReference()))
+  if (getDefs(c,m,"()",md,cd,fd,nd) && md->isLinkable())
   {
     //printf("Found!\n");
     if (exampleBlock)
@@ -218,24 +217,35 @@ static bool getLink(const char *className,
 	anchorCount++;
       }
     }
-    if (cd)
+    Definition *d=0;
+    if (cd) d=cd; else if (cd) d=nd; else d=fd;
+
+    if (d)
     {
-      result.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),
-	                        md->anchor(),memberName);
+      result.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+	                   md->anchor(),memberName);
       return TRUE;
-    }
-    else if (nd)
-    {
-      result.writeCodeLink(nd->getReference(),nd->getOutputFileBase(),
-	                        md->anchor(),memberName);
-      return TRUE;
-    }
-    else if (fd)
-    {
-      result.writeCodeLink(fd->getReference(),fd->getOutputFileBase(),
-	                        md->anchor(),memberName);
-      return TRUE;
-    }
+
+    } 
+
+//    if (cd)
+//    {
+//      result.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),
+//	                        md->anchor(),memberName);
+//      return TRUE;
+//    }
+//    else if (nd)
+//    {
+//      result.writeCodeLink(nd->getReference(),nd->getOutputFileBase(),
+//	                        md->anchor(),memberName);
+//      return TRUE;
+//    }
+//    else if (fd)
+//    {
+//      result.writeCodeLink(fd->getReference(),fd->getOutputFileBase(),
+//	                        md->anchor(),memberName);
+//      return TRUE;
+//    }
   }
   
   return FALSE;
@@ -372,7 +382,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  bool ambig;
                                           FileDef *fd;
 					  if ((fd=findFileDef(&inputNameDict,yytext,ambig)) &&
-					      fd->hasDocumentation())
+					      fd->isLinkable())
 					  {
 					    code->writeCodeLink(0,fd->getOutputFileBase(),0,yytext);
 					  }

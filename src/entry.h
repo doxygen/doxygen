@@ -36,6 +36,7 @@ struct Argument
   Argument() {}
   Argument(const Argument &a) 
   { 
+    attrib=a.attrib.copy();
     type=a.type.copy(); 
     name=a.name.copy(); 
     defval=a.defval.copy(); 
@@ -44,6 +45,7 @@ struct Argument
   {
     if (this!=&a)
     {
+      attrib=a.attrib.copy();
       type=a.type.copy(); 
       name=a.name.copy(); 
       defval=a.defval.copy(); 
@@ -51,6 +53,7 @@ struct Argument
     return *this;
   }
   
+  QCString attrib;  // argument attribute (IDL only)
   QCString type;    // argument type
   QCString name;    // argument name (if any)
   QCString defval;  // argument default value (if any)
@@ -101,8 +104,10 @@ class Entry
       GROUPDOC_SEC     = 0x00800000,
       NAMESPACE_SEC    = 0x01000000,
       NAMESPACEDOC_SEC = 0x02000000,
-      COMPOUND_MASK    = CLASS_SEC | STRUCT_SEC | UNION_SEC,
-      COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC,
+      INTERFACE_SEC    = 0x04000000,
+      INTERFACEDOC_SEC = 0x08000000,
+      COMPOUND_MASK    = CLASS_SEC | STRUCT_SEC | UNION_SEC | INTERFACE_SEC,
+      COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC | INTERFACEDOC_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
       FILE_MASK        = SOURCE_SEC | HEADER_SEC
     };
@@ -128,6 +133,9 @@ class Entry
     QCString     args;        // member argument string
     ArgumentList *argList;    // member arguments as a list
     ArgumentList *tArgList;   // template argument list
+    ArgumentList *mtArgList;  // member template argument list
+    QCString     scopeSpec;   // template specialization of the scope
+    QCString     memberSpec;  // template specialization of the member
     QCString	 program;     // the program text
     QCString     body;        // the function body
     QCString     includeFile; // include file (2 arg of \class, must be unique)
@@ -138,7 +146,6 @@ class Entry
     QCString     inside;      // name of the class in which documents are found
     QCString     exception;   // throw specification
     int          mGrpId;      // member group id
-    QCString     mGrpHeader;  // member group header
     QList<Entry>    *sublist; // entries that are children of this one
     QList<BaseInfo> *extends; // list of base classes
     QList<QCString> *groups;  // list of groups this entry belongs to

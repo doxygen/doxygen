@@ -1,52 +1,36 @@
 <!doctype HTML public "-//W3C//DTD HTML 3.2//EN">
 <html><head><title>
-tmake User's Guide
+User's Guide - tmake
 </title></head><body bgcolor="#ffffff">
-<p><h1 align=center>tmake User's Guide</h1>
-
-
-<hr>
-<h2>License Statement</h2>
-
-Copyright (C) 1996-1998 by Troll Tech AS.  All rights reserved.<p>
-
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose and without fee is hereby granted, provided
-that this copyright notice appears in all copies.
-No representations are made about the suitability of this software for any
-purpose. It is provided "as is" without express or implied warranty.
+<p><h1 align=center>User's Guide - tmake</h1>
 
 
 <hr>
 <h2>Introduction</h2>
 
-tmake is an easy-to-use tool for creating and maintaining makefiles across
-many platforms and compilers. The idea is that you should spend your time
-writing code, not makefiles.
+tmake is an easy-to-use tool from Troll Tech to create and maintain
+makefiles for software projects.  It can be a painful task to manage
+makefiles manually, especially if you develop for more than one platform
+or use more than one compiler.  tmake automates and streamlines this
+process and lets you spend your valuable time on writing code, not
+makefiles.
 
 <p>
-We wrote tmake because we spent too much time maintaining makefiles for
-Windows and Unix compilers. Being the developer of the multi-platform GUI
-toolkit <a href="http://www.troll.no/qt">Qt</a>, Troll Tech must provide
-Qt makefiles for more than 30 different OS/compiler combinations.
+Our main motivation for developing tmake was that we spent far too much
+time maintaining makefiles for <a href="http://www.troll.no/qt">Qt</a>,
+our cross-platform GUI toolkit. Qt supports around 15 flavors of Unix,
+Microsoft Windows, and around 15 different C++ compilers.  We looked at
+GNU autoconf, but it was Unix-specific and not flexible enough in our
+opinion. Our makefile system also had to deal with Qt <a
+href="http://www.troll.no/qt/metaobjects.html">meta object compiler</a>
+(moc) issues. The moc program extracts meta information from C++ files and
+generates a C++ file with data tables etc.  It takes extra work to add
+makefile rules for the moc and wanted to automate this task.
 
 <p>
-We looked at GNU autoconf, but it was Unix-specific and not flexible
-enough in our opinion. Our makefile system also had to deal with Qt
-<a href="http://www.troll.no/qt/metaobjects.html">meta object
-compiler</a> (moc) issues. The moc program extracts meta information from
-C++ files and generates a C++ file with data tables etc.  It takes work to
-add makefile rules for the moc and wanted to automate this task.
-
-<p>
-The tmake project was started around mid 1996 and version 1.0 was released
-in September 1997. It soon became a success and is now widely used among
-Qt programmers.
-
-<p>
-tmake is written in Perl and requires perl version 5 or newer. You do not
-need to be familiar with Perl programming to use tmake, but you should
-learn Perl if you want to write your own makefile templates.
+tmake is written in Perl and requires that you have installed perl version
+5 or newer. Basic use of tmake requires no perl knowledge, but if you know
+perl you can extend tmake and write your own makefile templates.
 
 <p>
 <b>Windows users:</b> The tmake distribution for Win32 includes tmake.exe
@@ -56,9 +40,14 @@ perl scripts.  You can download perl for Win32 (Windows NT and 95) from <a
 href="http://www.activestate.com">www.activestate.com</a>
 
 <p>
-Feedback is highly appreciated. Contact the author hanord@troll.no if you
-have ideas, patches etc. for tmake.
+tmake is free software and you may use, copy, modify and distribute tmake
+and its documentation for any purpose and without any fee.  See the
+LICENSE file for details.
 
+<p>
+Feedback is highly appreciated. Contact the author, Haavard Nord <a
+href="mailto:hanord@troll.no">(hanord@troll.no)</a>, if you have ideas,
+patches etc. for tmake.
 
 <hr>
 <h2>Installation</h2>
@@ -66,7 +55,7 @@ have ideas, patches etc. for tmake.
 <ol>
 <li>Make sure you have perl version 5 or later installed (optional
 for Windows users).
-<li>Unpack the tmake tar.gz or zip archive.
+<li>Unpack the tmake tar.gz archive for Unix or the tmake .zip file for Windows.
 <li>Set the TMAKEPATH environment variable to the directories
 containing the template files (see below).
 <li>Add the tmake/bin directory to your PATH.
@@ -84,14 +73,15 @@ Here are some examples:<p>
     setenv PATH $PATH:/local/tmake/bin
 </pre>
 
-<strong>Windows NT and Windows 95:</strong><pre>
+<strong>Microsoft Windows:</strong><pre>
     set TMAKEPATH=c:\tmake\lib\win32-msvc
     set PATH=%PATH%;c:\tmake\bin
 </pre>
 
 <p>
-The template directory name has the form <em>platform</em>-<em>compiler</em>.
-Each template directory contains template files and a configuration file.
+The template directory name has the form <em>platform</em>-<em>compiler</em>
+and contains a platform configuration file (tmake.conf) and tmake template
+files.
 
 <p>
 Supported platforms: AIX, Data General, FreeBSD, HPUX, SGI Irix, Linux,
@@ -99,8 +89,7 @@ NetBSD, OpenBSD, OSF1/DEC, SCO, Solaris, SunOS, Ultrix, Unixware and
 Win32.
 
 <p>
-Have a look at the tmake/lib directory to see if your platform-compiler
-combination is supported. If it's not there, please tell us.
+You can find your platform-compiler combination in the <tt>tmake/lib</tt>.
 
 <p>
 <b>Unix users:</b> tmake requires that perl is in /usr/bin. If your
@@ -114,7 +103,7 @@ make a small shell script which invokes tmake with the correct perl.
 Let's assume you have a small Qt application consisting of one C++ header
 file and two source files.
 
-First you need to create a project file, e.g. hello.pro:<pre>
+First you need to create a tmake project file, e.g. hello.pro:<pre>
   HEADERS   =  hello.h
   SOURCES   =  hello.cpp main.cpp
   TARGET    =  hello
@@ -173,7 +162,7 @@ these files:
 
 <p>
 The hello.pro project file above does not have a <code>TEMPLATE</code> or
-a <code>CONFIG</code> tag.  The default template is <tt>app</tt> (the .t
+a <code>CONFIG</code> variable.  The default template is <tt>app</tt> (the .t
 extension is optional) and the default configuration is <tt>qt warn_on
 release</tt>.
 
@@ -191,7 +180,7 @@ above:<pre>
 <h4>Makefile Configuration</h4>
 
 <p>
-The <code>CONFIG</code> tag is recognized by both the app.t and lib.t
+The <code>CONFIG</code> variable is recognized by both the app.t and lib.t
 templates and specifies what compiler options to use and which extra
 libraries to link in.
 
@@ -247,7 +236,7 @@ These options defines the application/library type:
     <td>&nbsp;</td>
     <td>x11</td>
     <td>&nbsp;</td>
-    <td>The target is a X11 application (app.t only).</td>
+    <td>The target is a X11 application or library.</td>
   </tr>
   <tr>
     <td>&nbsp;</td>
@@ -265,7 +254,7 @@ These options defines the application/library type:
     <td>&nbsp;</td>
     <td>dll</td>
     <td>&nbsp;</td>
-    <td>The target is a shared object/DLL (app.t only).</td>
+    <td>The target is a shared object/DLL.</td>
   </tr>
   <tr>
     <td>&nbsp;</td>
@@ -283,7 +272,7 @@ read:<pre>
 </pre>
 
 <p>
-The most common tmake options and project tags are described here.
+The most common tmake options and project variables are described here.
 See the tmake <a href="tmake_ref.html">reference manual</a> for
 details.<p>
 
@@ -294,7 +283,7 @@ details.<p>
 The application template, app.t, lets you compile and link executable
 programs or shared objects (DLLs).
 
-This template recognizes several tags.
+This template recognizes several variabless.
 <p>
 <table border="0">
     <tr>
@@ -372,10 +361,9 @@ The library template, lib.t, lets you compile and create static or shared
 libraries.
 
 <p>
-The lib.t template supports the same project tags as app.t, but also
+The lib.t template supports the same project variables as app.t, but also
 <code>VERSION</code>.  <code>VERSION</code> is the version number of the
-target library, e.g. 1.40.  The version is important for Unix shared
-libraries, but ignored on Windows.
+target library, e.g. 1.40.  The version is important for shared libraries.
 
 
 
@@ -383,7 +371,7 @@ libraries, but ignored on Windows.
 
 The subdirs template, subdirs.t, lets you invoke make in subdirectories.
 
-<p>The <code>SUBDIRS</code> tag contains the name of all subdirectories to
+<p>The <code>SUBDIRS</code> variable contains the name of all subdirectories to
 be processed.
 
 
@@ -418,29 +406,130 @@ template):<pre>
 
 
 <hr>
-<h2><a name="usage"></a>Program Usage: tmake</h2>
+<h2>Project File Syntax</h2>
+
+The tmake project file has a very simple syntax.  You may set
+project variables, append to project variables, remove from
+project variable and substitute project variables.
+
+To set a project variable:<pre>
+    HEADERS = gui.h xml.h url.h
+</pre>
+
+If you cannot fit everything on one line, use '\' to split it up:<pre>
+    HEADERS = gui.h \
+	      xml.h \
+	      url.h
+</pre>
+
+<p>
+Project variables contains lists of items (such as header files,
+compiler options etc.) and use whitespace to separate the items.
+This means that tmake cannot deal with items containing whitespace.
+The INCLUDEPATH variable is an exception. If INCLUDEPATH contains
+one or more semicolons (;), tmake uses the semicolon to separate
+the include directories, hence you can have include directories
+containing whitespace (this is quite common on Windows).
+
+<p>
+Here is an example:<pre>
+    INCLUDEPATH = C:\Program Files\DBLib\Include;C:\qt\include
+</pre>
+
+<p>
+tmake supports <em>project variable expension</em>. Use $$ to expand
+any project variable:<pre>
+    ALLFILES = $$HEADERS $$SOURCES
+</pre>
+
+<p>
+Most often you assign some value to a project variable, but you can
+also add to, remove from or replace parts of a project variable.<pre>
+    A   = abc
+    X   = xyz
+    A  += def			# A = abc def
+    X  *= xyz			# X = xyz
+    B   = $$A			# B = abc def
+    B  -= abc			# B = def
+    X  /= s/y/Y/		# X = xYz
+</pre>
+The *= operation adds the value if the variable does not already contain it.
+The /= operation performs regular expression substitution.
+
+<p>
+You can also set variables from the command line when running the tmake
+program. For instance, if you want to generate a makefile with debug
+information:<pre>
+    tmake "CONFIG+=debug" hello.pro
+</pre>
+
+<p>
+Use the <tt>unix:</tt> or <tt>win32:</tt> (conditional) qualifier if you want a
+platform-specific variable:<pre>
+    SOURCES	   =   common.cpp   # common for all platforms
+    unix:SOURCES   +=  unix.cpp	    # additional sources for Unix
+    win32:SOURCES  +=  win32.cpp    # additional sources for Windows
+    unix:LIBS	   +=  -lm	    # on Unix we need the math lib
+</pre>
+If none of the platforms match, tmake looks for the variable in CONFIG
+variable:<pre>
+    debug:SOURCES  +=  dbgstuff.cpp # additional source for debugging
+</pre>
+
+Finally, you can set platform and compiler-dependent variables:<pre>
+    linux-g++:TMAKE_CFLAGS = -fno-rtti
+</pre>
+
+<p>
+You may define your own project variables to be used by custom templates.  A
+project variable is stored in <code>%project</code>, which is an associative
+Perl array.  Access it like this: <code>$project{"var"}</code> or via the
+function <code>Project("var")</code>. For example, after reading
+"hello.pro", <code>$project{"SOURCES"}</code> contains "hello.cpp
+main.cpp".<p>
+
+
+<hr>
+<h2><a name="usage"></a>Running tmake</h2>
 
 Usage:<pre>
-  tmake [options] <em>project-file</em>
+  tmake [options] <em>project files or project settings</em>
 </pre>
 Options:<pre>
   -e expr    Evaluate the Perl expression.  Ignores the template file.
   -nodepend  Don't generate dependency information.
   -o <em>file</em>    Write output to <em>file</em> instead of stdout.
-  -p <em>file</em>    Load an additional project file.
   -t <em>file</em>    Specify a template <em>file</em>.
   -unix      Force tmake into Unix mode.
   -v         Verbose/debugging on.
   -win32     Force tmake into Win32 mode.
 </pre>
 
-The -t option overrides any <code>TEMPLATE</code> tag in the project file.
+The -t option overrides any <code>TEMPLATE</code> variable in the project file.
 <p>
 The default project file extension is ".pro". The default template file
 extension is ".t".  If you do not specify these extension tmake will
 automatically add them for you.
-<p>
 
+<p>
+Example of basic use:<pre>
+    tmake hello -o Makefile
+</pre>
+
+<p>
+Example of how to create a makefile with debugging information:<pre>
+    tmake "CONFIG+=debug" hello -o Makefile
+</pre>
+
+<p>
+Exmaple of how to specify a TMAKEPATH:<pre>
+    tmake "TMAKEPATH=/local/tmake/lib/hpux-g++" hello.pro -o Makefile
+</pre>
+
+Example of how to evaluate a perl expression (print names of headers
+and source files):<pre>
+    tmake hello -e 'Expand("HEADERS","SOURCES")'
+</pre>
 
 <hr>
 <h2><a name="progen"></a>The progen Utility</h2>
@@ -478,12 +567,12 @@ settings in your project file:<pre>
   solaris-cc:TMAKE_CC     = /opt/bin/CC_5.0
   solaris-cc:TMAKE_CFLAGS = -pts
   unix:TMAKE_LIBS         = -lXext
-  win32:INCLUDE_PATH      = c:\myinclude
+  win32:INCLUDEPATH       = c:\myinclude
   win32-borland:DEFINES   = NO_BOOL
 </pre>
 
-You can prefix a project tag with unix: or win32: to make it specific for
-either Unix or Windows. You can also prefix tags with
+You can prefix a project variable with unix: or win32: to make it specific for
+either Unix or Windows. You can also prefix a variable with
 <em>platform-compiler</em> 
 
 <h4>Your Own Templates</h4>
@@ -496,10 +585,10 @@ can do with tmake.  First you need to know how tmake works.
 When you run tmake, it first reads the <tt>tmake.conf</tt> file.
 This configuration file has the same syntax as the project file.
 
-tmake then reads the project file and sets the project tags it
+tmake then reads the project file and sets the project variables it
 finds, e.g. <code>HEADERS</code>, <code>SOURCES</code> etc.
 
-All tags and values are stored in a global associative Perl hash
+All variables and values are stored in a global associative Perl hash
 array called <code>project</code>.  For example,
 <code>$project{"SOURCES"}</code> contains "hello.cpp main.cpp"
 after processing hello.pro.

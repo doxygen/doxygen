@@ -286,6 +286,7 @@ class TranslatorSpanish : public Translator
         case ClassDef::Class:  result+=" Clase"; break;
         case ClassDef::Struct: result+=" Estructura"; break;
         case ClassDef::Union:  result+=" Unión"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
       }
       result+=" Referencia";
       return result;
