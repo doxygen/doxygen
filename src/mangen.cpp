@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -350,7 +350,7 @@ void ManGenerator::endDescItem()
   firstCol=TRUE;
 }
 
-void ManGenerator::startMemberItem(bool,int annType) 
+void ManGenerator::startMemberItem(int annType) 
 { 
   if (firstCol && !insideTabbing) t << ".in +1c\n";
   t << "\n.ti -1c\n.RI \""; 
@@ -358,7 +358,7 @@ void ManGenerator::startMemberItem(bool,int annType)
   if (annType!=0) insideTabbing=TRUE;
 }
 
-void ManGenerator::endMemberItem(bool,const char *,const char *,bool endItem) 
+void ManGenerator::endMemberItem(bool endItem) 
 { 
   if (endItem)
   {

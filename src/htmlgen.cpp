@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -29,6 +29,9 @@
 #include "dot.h"
 
 #define GROUP_COLOR "#ff8080"
+
+//#define DBG_HTML(x) x;
+#define DBG_HTML(x) 
 
 HtmlHelp *HtmlGenerator::htmlHelp = 0;
 
@@ -541,9 +544,9 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
 
 void HtmlGenerator::startMemberList()  
 { 
+  DBG_HTML(t << "<!-- startMemberList -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    //t << endl << "<p><table border=0 cellspacing=2 cellpadding=0>" << endl; 
   }
   else
   {
@@ -553,9 +556,9 @@ void HtmlGenerator::startMemberList()
 
 void HtmlGenerator::endMemberList()    
 { 
+  DBG_HTML(t << "<!-- endMemberList -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    //t << "</table>" << endl; 
   }
   else
   {
@@ -567,16 +570,17 @@ void HtmlGenerator::endMemberList()
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(bool inGroup,int annoType) 
+void HtmlGenerator::startMemberItem(int annoType) 
 { 
+  DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "<tr>";
-    if (inGroup)
-      t << "<td bgcolor=\"" << GROUP_COLOR << "\">";
-    else
-      t << "<td>";
-    t << "<img src=\"null.gif\"></td><td><img src=\"null.gif\"></td>";
+    //if (inGroup)
+    //  t << "<td bgcolor=\"" << GROUP_COLOR << "\">";
+    //else
+    //t << "<td>";
+    //t << "<img src=\"null.gif\"></td><td><img src=\"null.gif\"></td>";
     switch(annoType)
     {
       case 0:  t << "<td nowrap align=right valign=top>"; break;
@@ -590,26 +594,26 @@ void HtmlGenerator::startMemberItem(bool inGroup,int annoType)
   }
 }
 
-void HtmlGenerator::endMemberItem(bool inGroup,
-                          const char *fileName,const char *headerName,bool) 
+void HtmlGenerator::endMemberItem(bool) 
 { 
+  //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    if (inGroup)
-    {
-      t << "&nbsp;</td><td";
-      if (headerName)
-      {
-        t << " align=right valign=top><a class=\"gl\" href=\"" 
-          << fileName << ".html\">&nbsp;" << headerName << "&nbsp;</a>";
-      }
-      else
-      {
-        t << ">";
-      }
-      t << "</td><td bgcolor=\"" << GROUP_COLOR 
-        << "\"><img src=\"null.gif\">";
-    }
+    //if (inGroup)
+    //{
+    //  t << "&nbsp;</td><td";
+    //  if (headerName)
+    //  {
+    //    t << " align=right valign=top><a class=\"gl\" href=\"" 
+    //      << fileName << ".html\">&nbsp;" << headerName << "&nbsp;</a>";
+    //  }
+    //  else
+    //  {
+    //    t << ">";
+    //  }
+    //  t << "</td><td bgcolor=\"" << GROUP_COLOR 
+    //    << "\"><img src=\"null.gif\">";
+    //}
     t << "</td></tr>"; 
   }
   t << endl; 
@@ -617,6 +621,7 @@ void HtmlGenerator::endMemberItem(bool inGroup,
 
 void HtmlGenerator::insertMemberAlign() 
 { 
+  DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "&nbsp;</td><td valign=top>"; 
@@ -625,10 +630,12 @@ void HtmlGenerator::insertMemberAlign()
 
 void HtmlGenerator::startMemberDescription() 
 { 
+  DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<tr><td><img src=null.gif></td><td><img src=null.gif></td>"
-         "<td></td><td><font size=-1><em>"; 
+    //t << "<tr><td><img src=null.gif></td><td><img src=null.gif></td>"
+    //     "<td></td><td><font size=-1><em>"; 
+    t << "<tr><td>&nbsp;</td><td><font size=-1><em>"; 
   }
   else
   {
@@ -638,6 +645,7 @@ void HtmlGenerator::startMemberDescription()
 
 void HtmlGenerator::endMemberDescription()   
 { 
+  DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "</em></font><br><br></td></tr>" << endl; 
@@ -650,6 +658,7 @@ void HtmlGenerator::endMemberDescription()
 
 void HtmlGenerator::startMemberSections()
 {
+  DBG_HTML(t << "<!-- startMemberSections -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "<table border=0 cellpadding=0 cellspacing=0>" << endl;
@@ -658,6 +667,7 @@ void HtmlGenerator::startMemberSections()
 
 void HtmlGenerator::endMemberSections()
 {
+  DBG_HTML(t << "<!-- endMemberSections -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "</table>" << endl;
@@ -666,9 +676,10 @@ void HtmlGenerator::endMemberSections()
 
 void HtmlGenerator::startMemberHeader()
 {
+  DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    t << "<tr><td colspan=4><br><h2>";
+    t << "<tr><td colspan=2><br><h2>";
   }
   else
   {
@@ -678,6 +689,7 @@ void HtmlGenerator::startMemberHeader()
 
 void HtmlGenerator::endMemberHeader()
 {
+  DBG_HTML(t << "<!-- endMemberHeader -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
     t << "</h2></td></tr>" << endl;
@@ -688,39 +700,15 @@ void HtmlGenerator::endMemberHeader()
   }
 }
 
-void HtmlGenerator::memberGroupSpacing(bool inGroup)
-{
-  t << "<tr><td";
-  if (inGroup)
-  {
-         // left vertical table line
-    t << " bgcolor=\"" << GROUP_COLOR << "\" height=1><img src=\"null.gif\">"
-         // white space
-         "</td><td colspan=4></td>"
-         // right vertical table line
-         "<td bgcolor=\"" << GROUP_COLOR << "\"><img src=\"null.gif\">";
-  }
-  else
-  {
-         // one pixel height of whitespace
-    t << " height=1>";
-  }
-  t << "</td></tr>" << endl;
-}
-
-void HtmlGenerator::memberGroupSeparator()
-{
-  t << "<tr><td colspan=6 height=1 bgcolor=\"" << GROUP_COLOR 
-    << "\"><img src=\"null.gif\"></td></tr>" << endl;
-}
-
 void HtmlGenerator::startMemberSubtitle()
 {
-  if (Config::htmlAlignMemberFlag) t << "<tr><td colspan=4>";
+  DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
+  if (Config::htmlAlignMemberFlag) t << "<tr><td colspan=2>";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
+  DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
   if (Config::htmlAlignMemberFlag) t << "<br><br></td></tr>" << endl;
 }
 
@@ -773,7 +761,7 @@ void HtmlGenerator::writeImage(const char *name,const char *,const char *)
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
-  t << endl << "<p><table width=100%% cellpadding=2 cellspacing=0 border=0><tr><td class=\"md\"><b>" << endl; 
+  t << endl << "<p><table width=100% cellpadding=2 cellspacing=0 border=0><tr><td class=\"md\"><b>" << endl; 
 }
 
 void HtmlGenerator::endMemberDoc()     

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
@@ -466,9 +466,15 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   {
     QCString baseName;
     QCString diskName=n->m_url.copy();
-    int i=diskName.find('$'); /* should not return -1 */
-    ASSERT(i!=-1);
-    diskName=diskName.right(diskName.length()-i-1);
+    int i=diskName.find('$'); 
+    if (i!=-1)
+    {
+      diskName=diskName.right(diskName.length()-i-1);
+    }
+    else /* take the label name as the file name (and strip any template stuff) */
+    {
+      diskName=convertNameToFile(n->m_label);
+    }
     baseName.sprintf("inherit_graph_%s",diskName.data());
     QCString dotName=baseName+".dot";
     QCString gifName=baseName+".gif";
@@ -650,8 +656,10 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
         n->colorConnectedNodes(curColor);
         curColor++;
         const DotNode *dn=n->findDocNode();
-        ASSERT(dn!=0);
-        if (dn!=0) m_rootSubgraphs->inSort(dn);
+        if (dn!=0) 
+          m_rootSubgraphs->inSort(dn);
+        else
+          m_rootSubgraphs->inSort(n);
       }
     }
   }

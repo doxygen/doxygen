@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -65,11 +65,10 @@ class MemberDef : public Definition
    ~MemberDef(); 
     
     void writeLink(OutputList &ol,
-                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   MemberGroup *mg);
+                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclaration(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   int prevGroupId,bool inGroup); 
+                   bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName/*,MemberType m*/);
     void warnIfUndocumented();
@@ -180,10 +179,8 @@ class MemberDef : public Definition
     NamespaceDef *getNamespace() { return nspace; }
     void setNamespace(NamespaceDef *nd) { nspace=nd; }
 
-    // grouping related members
-    void setGroupId(int groupId);
-    int groupId() const          { return grpId; }
-    QCString groupHeader() const { return grpHeader; }
+    // member group related members
+    void setMemberGroup(MemberGroup *grp);
     MemberGroup *getMemberGroup() const { return memberGroup; }
     
     void setFromAnnonymousScope(bool b) { annScope=b; }    
@@ -237,8 +234,8 @@ class MemberDef : public Definition
     ArgumentList *tArgList;   // template argument list of function template
     ArgumentList *scopeTAL;   // template argument list of class template
     ArgumentList *membTAL;    // template argument list of class template
-    int grpId;                // group id
-    QCString grpHeader;       // group header
+    //int grpId;                // group id
+    //QCString grpHeader;       // group header
     MemberGroup *memberGroup; // group's member definition
 
     GroupDef *group;          // group in which this member is in

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -1634,8 +1634,9 @@ static void substEnvVarsInString(QCString &s)
   while ((i=re.match(s,p,&l))!=-1)
   {
     //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    const char *env=getenv(s.mid(i+2,l-3));
-    s = s.left(i)+QCString(env)+s.right(s.length()-i-l);
+    QCString env=getenv(s.mid(i+2,l-3));
+    substEnvVarsInString(env); // recursively expand variables if needed.
+    s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+l;
   }
   //printf("substEnvVarInString(%s) end\n",s.data());

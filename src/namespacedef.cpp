@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -33,13 +33,17 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
   //memList = new MemberList;
   usingList = 0;
   setReference(ref);
+  memberGroupList = new MemberGroupList;
+  memberGroupList->setAutoDelete(TRUE);
+  memberGroupDict = new MemberGroupDict(1009);
 }
 
 NamespaceDef::~NamespaceDef()
 {
   delete classList;
-  //delete memList;
   delete usingList;
+  delete memberGroupList;
+  delete memberGroupDict;
 }
 
 void NamespaceDef::insertUsedFile(const char *f)
@@ -52,7 +56,28 @@ void NamespaceDef::insertClass(ClassDef *cd)
   classList->append(cd);
 }
 
-void NamespaceDef::insertMember(MemberDef *md)
+void NamespaceDef::addMemberToGroup(MemberDef *md,int groupId)
+{
+  if (groupId!=-1)
+  {
+    QCString *pGrpHeader = memberHeaderDict[groupId];
+    QCString *pDocs      = memberDocDict[groupId];
+    if (pGrpHeader)
+    {
+      MemberGroup *mg = memberGroupDict->find(groupId);
+      if (mg==0)
+      {
+        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+        memberGroupDict->insert(groupId,mg);
+        memberGroupList->append(mg);
+      }
+      mg->insertMember(md);
+      md->setMemberGroup(mg);
+    }
+  }
+}
+
+void NamespaceDef::insertMember(MemberDef *md,int groupId)
 {
   //memList->append(md);
   allMemberList.append(md); 
@@ -66,13 +91,20 @@ void NamespaceDef::insertMember(MemberDef *md)
     case MemberDef::Prototype:    protoMembers.inSort(md); break;
     case MemberDef::Define:       defineMembers.inSort(md); break;
     default:
-       err("NamespaceDef::insertMembers(): unexpected member insert in file!\n");
+       err("NamespaceDef::insertMembers(): unexpected member inserted in namespace!\n");
   }
+  addMemberToGroup(md,groupId);
 }
 
 void NamespaceDef::computeAnchors()
 {
   setAnchors('a',&allMemberList);
+  //MemberGroupListIterator mgli(*memberGroupList);
+  //MemberGroup *mg;
+  //for (;(mg=mgli.current());++mgli)
+  //{
+  //  mg->setAnchors();
+  //}
 }
 
 void NamespaceDef::writeDocumentation(OutputList &ol)
@@ -131,7 +163,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           clName = clName.right(clName.length()-name().length()-2);
         }
         
-        ol.startMemberItem(FALSE,0);
+        ol.startMemberItem(0);
         switch (cd->compoundType())
         {
           case ClassDef::Class:      ol.writeString("class");      break;
@@ -156,11 +188,19 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           ol.docify(clName);
           ol.endBold();
         }
-        ol.endMemberItem(FALSE,0,0,FALSE);
+        ol.endMemberItem(FALSE);
       }
       cd=classList->next();
     }
     if (found) ol.endMemberList();
+  }
+
+  /* write user defined member groups */
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->writeDeclarations(ol,0,this,0,0);
   }
   
   allMemberList.writeDeclarations(ol,0,this,0,0,0,0);

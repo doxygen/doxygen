@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -40,6 +40,7 @@
 #include "defargs.h"
 #include "language.h"
 #include "outputlist.h"
+#include "membergroup.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -48,7 +49,6 @@
 #define YY_NEVER_INTERACTIVE 1
   
 
-MemberGroupDict memberGroupDict(1009); // dictionary of the member groups heading
   
 /* -----------------------------------------------------------------
  *
@@ -81,7 +81,6 @@ static int              lastSquareContext;
 static int              lastCodeState;
 static int              lastAfterDocContext;
 static int              lastGroupContext;
-static int              lastMemberGroupContext;
 static int              lastFormulaContext;
 static int              lastAnchorContext;
 static int              lastInitializerContext;
@@ -115,7 +114,9 @@ static QCString         exampleName;
 static QCString         htmlUrl,htmlText;
 static QCString         currentIncludeFile;
 static QCString         msType,msName,msArgs;
-static int              memberGroupId = -1;
+static int              memberGroupId = NOGROUP;
+static QCString         memberGroupHeader;
+static QCString         memberGroupDocs;
 static int              includeFileOffset = 0;
 static int              includeFileLength = 0;
 static bool             firstLine;
@@ -196,7 +197,7 @@ static void initParser()
   roundCount = 0;
   curlyCount = 0;
   ifCount = 0;
-  memberGroupId = -1;
+  memberGroupId = NOGROUP;
   sig = FALSE;
   slot = FALSE;
   gstat = FALSE;
@@ -861,6 +862,7 @@ SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLMASK   [a-z_A-Z0-9\~\:\@\#\.\-\+\/]+
+WORD      ([a-z_A-Z0-9]+([^\n ]*[a-z_A_Z0-9])?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BOLD	  [bB]
@@ -972,6 +974,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 %x	GroupDocArg2
 %x	GroupName
 %x	GroupHeader
+%x	StoreGroupDocs
 %x	AfterDoc
 %x	AfterDocBrief
 %x	AfterDocLine
@@ -1061,10 +1064,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 %%
 
 <*>\x06[^\x06]*\x06			{ // new file
-  					  if (memberGroupId!=-1)
+  					  if (memberGroupId!=NOGROUP)
 					  {
-					    warn("Warning: Missing \\endmgroup in file %s\n",yyFileName);
-					    memberGroupId=-1;
+					    warn("Warning: Missing //@} in file %s\n",yyFileName);
+					    memberGroupId=NOGROUP;
 					  }
   					  yyLineNr= 0 ; // there is always an extra newline at the start of the file
 					  int i; 
@@ -1756,18 +1759,18 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  warn("Warning: \\endcode without <PRE> or \\code "
     					       "in the documentation of %s\n",refName.data()); 
 					}
-<DocScan>{SCOPEMASK}"("[a-z_A-Z,:\<\> \t\*\&]+")"	{
+<DocScan>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")"	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
   					}
 <DocScan>{SCOPEMASK}(("()")?)          	{ 
 					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					} 
-<DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
+<DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
 				          QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
-<DocScan>({SCOPEMASK}"::")?"operator"[^(\r\n.,]*"("[a-z_A-Z,\<\> \t\*\&]*")"	{ 
+<DocScan>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+"("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
     					  QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
@@ -1984,7 +1987,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
   					}
-<DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+<DocEmphasis>{WORD}			{ 
   					  outDoc->startEmphasis();
   					  linkifyText(*outDoc,className,0,yytext);
 					  outDoc->endEmphasis();
@@ -1996,7 +1999,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
   					}
-<DocBold>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+<DocBold>{WORD}				{ 
   					  outDoc->startBold();
   					  linkifyText(*outDoc,className,0,yytext);
 					  outDoc->endBold();
@@ -2008,7 +2011,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  outDoc->endBold();
 					  BEGIN( DocScan );
   					}
-<DocCode>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+<DocCode>{WORD}				{ 
   					  outDoc->startTypewriter();
   					  linkifyText(*outDoc,className,0,yytext);
 					  outDoc->endTypewriter();
@@ -2380,6 +2383,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->virt       = virt;
 					  current->stat       = gstat;
 					  current->slot       = slot;
+					  current->mGrpId     = memberGroupId;
 					  BEGIN(Using);
   					}
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
@@ -2552,6 +2556,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->virt       = virt;
 					  current->stat       = gstat;
 					  current->slot       = slot;
+					  current->mGrpId     = memberGroupId;
 					  BEGIN(FindMembers);
   					}
 <DefineEnd>\\[\r]?\n			{
@@ -2634,6 +2639,46 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  {
 					    current->doc.resize(0);
 					    BEGIN(AfterDoc);
+					  }
+  					}
+<FindMembers>"//@{"|"/*@{*/"		{
+					  if (memberGroupId!=NOGROUP)
+					  {
+  					    warn("Warning: ignoring nested member group "
+					         "at line %d of %s. Previous command was found at line %d\n",
+						 yyLineNr,yyFileName,lastMemberGroupLine);
+					  }
+					  else if (memberGroupHeader.isEmpty())
+					  {
+					    warn("Warning: member group has empty header "
+						 "at line %d of %s.\n",yyLineNr,yyFileName);
+					    memberGroupHeader="[No header specified!]";
+					  }
+					  else
+					  {
+					    memberGroupId = newMemberGroupId();
+					    current->mGrpId = memberGroupId;
+					    lastMemberGroupLine = yyLineNr;
+					  }
+  					}
+<FindMembers>"//@}"|"/*@}*/"		{
+					  if (memberGroupId==NOGROUP)
+					  {
+					    warn("Warning: end of member group without matching begin "
+						 "at line %d of %s.\n",yyLineNr,yyFileName);
+					  }
+					  else
+					  {
+  					    memberHeaderDict.insert(memberGroupId,
+					                            new QCString(memberGroupHeader.stripWhiteSpace())
+					  			  );
+					    memberDocDict.insert(memberGroupId,
+					      	               new QCString(memberGroupDocs)
+							      );
+					    memberGroupId=NOGROUP;
+					    current->mGrpId=NOGROUP;
+					    memberGroupHeader.resize(0);
+					    memberGroupDocs.resize(0);
 					  }
   					}
 <FindMembers>"="			{
@@ -2773,6 +2818,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    current->section = Entry::VARIABLE_SEC ;
 					    current->fileName = yyFileName;
 					    current->startLine = yyLineNr;
+					    //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
 					    current_root->addSubEntry( current ) ;
 					    current = new Entry ;
 					    // variable found 
@@ -2782,6 +2828,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    current->sig = sig = FALSE;
 					    current->virt = Normal; 
 					    current->stat = gstat;
+					    current->mGrpId = memberGroupId;
 					  }
 					  // skip expression or bitfield if needed
 					  if ( *yytext == ':') 
@@ -2856,9 +2903,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>","				{
-					  //printf("adding `%s' `%s' `%s' to enum `%s'\n",
+					  //printf("adding `%s' `%s' `%s' to enum `%s' (mGrpId=%d)\n",
 					  //     current->type.data(), current->name.data(),
-					  //     current->args.data(), current_root->name.data());
+					  //     current->args.data(), current_root->name.data(),current->mGrpId);
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
 					  current->type       = "@"; // enum marker
@@ -2876,6 +2923,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->virt       = virt;
 					  current->stat       = gstat;
 					  current->slot       = slot;
+					  current->mGrpId     = memberGroupId;
   					}
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
@@ -2944,6 +2992,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 						current->virt = virt;
 						current->stat = gstat;
 						current->slot = slot;
+						current->mGrpId = memberGroupId;
 						BEGIN( FindMembers ) ;
 					      }
 					      else
@@ -2971,6 +3020,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->virt = virt;
 					  current->stat = gstat;
 					  current->slot = slot;
+					  current->mGrpId = memberGroupId;
   					  BEGIN(MemberSpecSkip); 
   					}
 <MemberSpec>([*&]*{BN}*)*{ID}("["[a-z_A-Z0-9]*"]")* { // the [] part could be improved.
@@ -3036,6 +3086,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    varEntry->startLine = yyLineNr;
 					    varEntry->doc = current->doc.copy();
 					    varEntry->brief = current->brief.copy();
+					    varEntry->mGrpId = current->mGrpId;
 					    //printf("Add: type=`%s',name=`%s',args=`%s'\n",
 					    //      varEntry->type.data(),varEntry->name.data(),varEntry->args.data());
 					    current_root->addSubEntry(varEntry);
@@ -3052,6 +3103,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    current->virt = virt;
 					    current->stat = gstat;
 					    current->slot = slot;
+					    current->mGrpId = memberGroupId;
 					    BEGIN( FindMembers );
 					  }
   					}					
@@ -3900,6 +3952,15 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}
+<JavaDoc>"<"{TABLE}{ATTR}">"		{ 
+  					  current->doc+=yytext;
+					  int i;
+					  for (i=yyleng-1;i>=0;i--)
+					  {
+					    unput(yytext[i]);
+					  }
+					  BEGIN( tmpDocType );
+  					}
 <Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"){B}*	{
 					  current->section = Entry::MEMBERDOC_SEC;
 					  current->fileName = yyFileName;
@@ -4009,6 +4070,17 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
  					  BEGIN( ExampleDocArg1 );
 					}
+<Doc,JavaDoc>{CMD}"name"{B}+ 		{
+  					  //printf("--> mgroup found!\n");
+					  current->section = Entry::MEMBERGRP_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+  					  //lastMemberGroupContext = lastDocContext;
+					  //lastDocContext = StoreGroupDocs;
+					  memberGroupHeader.resize(0);
+					  memberGroupDocs.resize(0);
+					  BEGIN(GroupHeader);
+  					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
 					  BEGIN( ExampleDoc );
@@ -4070,12 +4142,18 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  yyLineNr++;
 					  BEGIN( Doc );
   					}
-<GroupDocArg2>.*			{
-					  current->type = yytext;
+<GroupDocArg2>[^\n\*]+			{
+					  current->type += yytext;
 					  current->type = current->type.stripWhiteSpace();
-					  newDocState();
+  					}
+<GroupDocArg2>.				{
+					  current->type += yytext;
   					}
 <GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; }
+<GroupDocArg2>"*/"			{ 
+  					  unput('/');unput('*');
+ 					  newDocState();
+  					}
 <GroupDocArg2>"\n"			{
  					  newDocState();
   					}
@@ -4149,34 +4227,27 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  sectionType=SectionInfo::Subsection;
   					  BEGIN(SectionLabel);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"mgroup"{B}+ {
-  					  //printf("--> mgroup found!\n");
-  					  lastMemberGroupContext = YY_START;
-					  if (memberGroupId!=-1)
-					  {
-  					    warn("Warning: ignoring nested mgroup command "
-					         "at line %d of %s. Previous command was found at line %d\n",
-						 yyLineNr,yyFileName,lastMemberGroupLine);
-					  }
-					  else
-					  {
-					    memberGroupId   = newMemberGroupId();
-					    current->mGrpId = memberGroupId;
-					    lastMemberGroupLine = yyLineNr;
-					  }
-					  BEGIN(GroupHeader);
+<GroupHeader>.				{ memberGroupHeader+=*yytext; }
+<GroupHeader>"*/"			{
+  					  unput('/');unput('*');
+					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
+					  newDocState();
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"endmgroup"/[^a-z_A-Z0-9] {
-  					  //printf("--> endmgroup found!\n");
-  					  memberGroupId = -1;
-					  current->mGrpId = -1;
+<GroupHeader>\n				{
+  					  yyLineNr++;
+					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
+					  newDocState();
   					}
-<GroupHeader>[^\n]*/"\n"		{
-					  QCString header = ((QCString)yytext).stripWhiteSpace();
-  					  memberGroupDict.insert(memberGroupId,
-					                         new MemberGroup(memberGroupId,header)
-								);
-  					  BEGIN(lastMemberGroupContext);
+<StoreGroupDocs>"$"			{
+  					  //printf("StoreGroupDocs memberGroupId=%d brief=`%s' doc=`%s'!\n",memberGroupId,current->brief.data(),current->doc.data());
+					  memberGroupDocs=current->brief.stripWhiteSpace();
+					  current->doc = current->doc.stripWhiteSpace();
+					  if (!memberGroupDocs.isEmpty() && !current->doc.isEmpty())
+					  {
+					    memberGroupDocs+="\n\n";
+					  }
+					  memberGroupDocs+=current->doc;
+					  BEGIN(lastDocContext);
   					}
 <ExampleDoc,Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
   					  lastAnchorContext = YY_START;
@@ -4326,6 +4397,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
 <ExampleDoc,PageDoc,ClassDocBrief,SkipCode,ClassDoc>{B}*"*/"  	{
   					  checkDocs();
+					  //printf("current->section=%x\n",current->section);
 					  if (YY_START==SkipCode) // premature end of code block
 					  {
 					    err("Error: comment block ended inside \\code ... \\endcode block at line %d in %s!\n",
@@ -4339,6 +4411,11 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					    current->doc += "\n\n";
   					    BEGIN( lastDocContext ); 
 					  }
+					  else if (current->section==Entry::MEMBERGRP_SEC)
+					  {
+					    unput('$');
+					    BEGIN( StoreGroupDocs );
+					  }
 					  else
 					  {
   					    current->doc += "\n\n";
@@ -4350,8 +4427,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    current->virt = virt;
 					    current->stat = gstat;
 					    current->slot = slot;
+					    current->mGrpId = memberGroupId;
+					    BEGIN( FindMembers );
 					  }
-					  BEGIN( FindMembers );
 					}
 <PageDoc>"<"{TITLE}">"			{ 
   					  current->args.resize(0); 
@@ -4682,6 +4760,7 @@ void parseCompounds(Entry *rt)
       slot = FALSE;
       gstat = FALSE;
       virt = Normal;
+      current->mGrpId = memberGroupId = ce->mGrpId;
       scanYYlex() ;
       delete current; current=0;
       ce->program.resize(0);
@@ -4805,11 +4884,6 @@ void parseText(OutputList &ol,const QCString &txtString)
   scanYYrestart( scanYYin ); 
   BEGIN( Text );
   scanYYlex();
-  if (memberGroupId!=-1)
-  {
-    warn("Warning: Missing \\endmgroup in file %s\n",yyFileName);
-    memberGroupId=-1;
-  }
   ol+=*outDoc;
   delete outDoc; outDoc=0;
   return;

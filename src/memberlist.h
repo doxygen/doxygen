@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -38,8 +38,8 @@ class MemberList : public QList<MemberDef>
     int protoCount() const     { return protoCnt;   }
     int defineCount() const    { return defCnt;     }
     int friendCount() const    { return friendCnt;  }
-    void countDecMembers();
-    void countDocMembers(bool inGroup=FALSE);
+    void countDecMembers(bool inGroup);
+    void countDocMembers();
     int totalCount() const 
          { return //varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
                   //protoCnt+defCnt+friendCnt; 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -117,21 +117,21 @@ static void addMember(const char *name,const char *anchor,const char *args)
     if (cd) // member of a class
     {
       md->setMemberClass(cd);
-      cd->insertMember(md); 
+      cd->insertMember(md,-1); /* TODO: store group info */
       mnd=&memberNameDict;
       mnl=&memberNameList;
     }
     else if (nd) // member of a namespace
     {
       md->setNamespace(nd);
-      nd->insertMember(md);
+      nd->insertMember(md,-1); /* TODO: store group info */
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }
     else // member of a file
     {
       md->setFileDef(fd);
-      fd->insertMember(md);
+      fd->insertMember(md,-1); /* TODO: store group info */
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }

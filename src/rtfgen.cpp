@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Parker Waechter & Dimitri van Heesch.
  *
@@ -1516,35 +1516,20 @@ void RTFGenerator::writeFormula(const char *,const char *text)
   t << text;
 }
 
-void RTFGenerator::startMemberItem(bool,int) 
+void RTFGenerator::startMemberItem(int) 
 { 
   t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl; // set style to apropriate depth
 }
 
-void RTFGenerator::endMemberItem(bool,const char *,const char *,bool) 
+void RTFGenerator::endMemberItem(bool) 
 {
   newParagraph();
-
-#ifdef DELETEDCODE
-  if (insideTabbing && endItem)
-  {
-    t << endl << "\\end{tabbing}";
-    //printf("RTFGenerator::endMemberItem() insideTabbing=FALSE\n");
-    insideTabbing=FALSE;
-  }
-  if (insideTabbing)
-  {
-    t << "\\\\";
-  } 
-  t << endl; 
-#endif
 }
 
 void RTFGenerator::writeAnchor(const char *name) 
 { 
   t << "{\\bkmkstart " << formatBmkStr(name) << "}" << endl;
   t << "{\\bkmkend " << formatBmkStr(name) << "}" << endl;
-  //t << "\\label{" << name << "}" << endl; 
 }
 
 void RTFGenerator::WriteRTFReference(const char *label)

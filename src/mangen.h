@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -91,10 +91,10 @@ class ManGenerator : public OutputGenerator
     void writeListItem();
     void startMemberList();
     void endMemberList();
-    void startMemberItem(bool,int);
-    void endMemberItem(bool,const char *,const char *,bool);
-    void memberGroupSpacing(bool) {}
-    void memberGroupSeparator() {}
+    void startMemberItem(int);
+    void endMemberItem(bool);
+    //void memberGroupSpacing(bool) {}
+    //void memberGroupSeparator() {}
     void writeRuler()    {}
     void writeAnchor(const char *) {}
     void startCodeFragment();

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -21,32 +21,41 @@
 #include <qlist.h>
 #include <qintdict.h>
 
-#include "definition.h"
+//#include "definition.h"
+
+#define NOGROUP -1
 
 class MemberDef;
+class ClassDef;
+class NamespaceDef;
+class FileDef;
 class MemberList;
+class GroupDef;
 class OutputList;
+class Definition;
 
-class MemberGroup : public Definition
+class MemberGroup /* : public Definition */
 {
   public:
-    MemberGroup(int id,const char *header);
+    MemberGroup(int id,const char *header,const char *docs);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
-    QCString getOutputFileBase() const { return fileName; }
+    int groupId() const { return grpId; }
     void insertMember(MemberDef *);
-    void writeDocumentation(OutputList &ol);
-    MemberList *members() const { return memberList; } 
-    void addDocumentation();
-
-    bool isLinkableInProject();
-    bool isLinkable();
+    void setAnchors();
+    void writePlainDeclarations(OutputList &ol,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+    void writeDeclarations(OutputList &ol,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+    QCString documentation() { return doc; }
 
   private: 
-    MemberList *memberList;             // list of all members in the group
+    MemberList     *memberList;      // list of all members in the group
     int grpId;
     QCString grpHeader;
     QCString fileName;                   // base name of the generated file
+    Definition *scope;
+    QCString doc;
 };
 
 class MemberGroupList : public QList<MemberGroup>
@@ -65,6 +74,14 @@ class MemberGroupDict : public QIntDict<MemberGroup>
   public:
     MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
    ~MemberGroupDict() {}
+};
+
+class MemberGroupDictIterator : public QIntDictIterator<MemberGroup>
+{
+  public:
+    MemberGroupDictIterator(const MemberGroupDict &d) : 
+      QIntDictIterator<MemberGroup>(d) {}
+   ~MemberGroupDictIterator() {}
 };
 
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -42,8 +42,6 @@ class TranslatorGerman : public Translator
     { return "erneute Implementation in"; }
     QCString trIncludeFile()
     { return "Include-Datei"; }
-	QCString trNamespaces()
-	{ return "Namensbereiche"; }
     // end of obsolete functions
     //--------------------------------------------------------------------
 
@@ -402,7 +400,7 @@ class TranslatorGerman : public Translator
 
     QCString trNamespaceList()
       // used as the title of page containing all the index of all namespaces.
-    { return "Liste der Namensbereiche"; }
+    { return ""; }
     QCString trNamespaceListDescription(bool extractAll)
       // used as an introduction to the namespace list
     {
@@ -555,7 +553,217 @@ class TranslatorGerman : public Translator
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Dokumentation der Namensbereiche"; }
+
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in the documentation before the list of all
+     *  namespaces in a file.
+     */
+    virtual QCString trNamespaces()
+    { return "Namensbereiche"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990728
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is put at the bottom of a class documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Class", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Die Dokumentation für diese";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Union:      result+=" Variante"; break;
+        case ClassDef::Interface:  result+="s Interface"; break;
+        case ClassDef::Exception:  result+=" Ausnahme"; break;
+      }
+      result+=" wurde erzeugt aufgrund der Datei";
+      if (single) result+=":"; else result+="en:";
+      return result;
+    }
+
+    /*! This is in the (quick) index as a link to the alphabetical compound
+     * list.
+     */
+    virtual QCString trAlphabeticalList()
+    { return "Alphabetische Liste"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990901
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the heading text for the retval command. */
+    virtual QCString trReturnValues()
+    { return "R&uuml;ckgabewerte"; }
+
+    /*! This is in the (quick) index as a link to the main page (index.html)
+     */
+    virtual QCString trMainPage()
+    { return "Hauptseite"; }
+
+    /*! This is used in references to page that are put in the LaTeX 
+     *  documentation. It should be an abbreviation of the word page.
+     */
+    virtual QCString trPageAbbreviation()
+    { return "S."; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991003
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSources()
+    {
+      return "Quellen";
+    }
+    virtual QCString trDefinedAtLineInSourceFile()
+    {
+      return "Definiert in Zeile @0 der Datei @1.";
+    }
+    virtual QCString trDefinedInSourceFile()
+    {
+      return "Definiert in Datei @0.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991205
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDeprecated()
+    {
+      return "Veraltet";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.0.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! this text is put before a collaboration diagram */
+    virtual QCString trCollaborationDiagram(const char *clName)
+    {
+      return (QCString)"Zusammengeh&ouml;rigkeiten von "+clName+":";
+    }
+    /*! this text is put before an include dependency graph */
+    virtual QCString trInclDepGraph(const char *fName)
+    {
+      return (QCString)"Include-Abhängikeitsdiagramm f&uuml;r "+fName+":";
+    }
+    /*! header that is put before the list of constructor/destructors. */
+    virtual QCString trConstructorDocumentation()
+    {
+      return "Beschreibung der Konstruktoren und Destruktoren"; 
+    }
+    /*! Used in the file documentation to point to the corresponding sources. */
+    virtual QCString trGotoSourceCode()
+    {
+      return "gehe zum Quellcode dieser Datei";
+    }
+    /*! Used in the file sources to point to the corresponding documentation. */
+    virtual QCString trGotoDocumentation()
+    {
+      return "gehe zur Dokumentation dieser Datei";
+    }
+    /*! Text for the \pre command */
+    virtual QCString trPrecondition()
+    {
+      return "Vorbedingung";
+    }
+    /*! Text for the \post command */
+    virtual QCString trPostcondition()
+    {
+      return "Nachbedingung";
+    }
+    /*! Text for the \invariant command */
+    virtual QCString trInvariant()
+    {
+      return "Invariant";
+    }
+    /*! Text shown before a multi-line variable/enum initialization */
+    virtual QCString trInitialValue()
+    {
+      return "Initialisierung:";
+    }
+    /*! Text used the source code in the file index */
+    virtual QCString trCode()
+    {
+      return "code";
+    }
+    virtual QCString trGraphicalHierarchy()
+    {
+      return "Grafische Darstellung der Klassenhierarchie";
+    }
+    virtual QCString trGotoGraphicalHierarchy()
+    {
+      return "gehe zur grafischen Darstellung der Klassenhierarchie";
+    }
+    virtual QCString trGotoTextualHierarchy()
+    {
+      return "gehe zur textbasierten Darstellung der Klassenhierarchie";
+    }
+    virtual QCString trPageIndex()
+    {
+      return "Seitenindex";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trNote()
+    {
+      return "Bemerkung";
+    }
+
+    virtual QCString trPublicTypes()
+    {
+      return "&Ouml;ffentliche Typen";
+    }
+    virtual QCString trPublicAttribs()
+    {
+      return "&Ouml;ffentliche Attribute";
+    }
+    virtual QCString trStaticPublicAttribs()
+    {
+      return "Statische &ouml;ffentliche Attribute";
+    }
+    virtual QCString trProtectedTypes()
+    {
+      return "Gesch&uuml;tzte Typen";
+    }
+    virtual QCString trProtectedAttribs()
+    {
+      return "Gesch&uuml;tzte Attribute";
+    }
+    virtual QCString trStaticProtectedAttribs()
+    {
+      return "Statische gesch&uuml;tzte Attribute";
+    }
+    virtual QCString trPrivateTypes()
+    {
+      return "Private Typen";
+    }
+    virtual QCString trPrivateAttribs()
+    {
+      return "Private Attribute";
+    }
+    virtual QCString trStaticPrivateAttribs()
+    {
+      return "Statische private Attribute";
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.1.1
+    //////////////////////////////////////////////////////////////////////////
+
 };
+
 
 #endif
 

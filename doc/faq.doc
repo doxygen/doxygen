@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -34,6 +34,17 @@ You should use the \\mainpage command inside a comment block like this:
  */
 \endverbatim
 
+<li><b>When I set EXTRACT_ALL to NO non of my function are shown in the documentation.</b></li>
+
+In order for global functions, variables, enums, typedefs, and defines 
+to be documented you should document the file in which these commands are
+located using a (non-empty) comment block containing a \file (or @file) 
+command. 
+
+Alternatively, you can put all members in a group (or module)
+using the \ingroup command and then document the group using a comment
+block containing the \defgroup command.
+ 
 <li><b>How can I avoid that some code fragment is parsed by Doxyen?</b>
 <p>
 You can use Doxygen's preprocessor for this: 

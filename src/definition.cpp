@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -36,6 +36,8 @@ Definition::~Definition()
 
 QCString Definition::nameToFile(const char *name)
 {
+  return convertNameToFile(name);
+#if 0
   QCString result;
   char c;
   const char *p=name;
@@ -61,6 +63,7 @@ QCString Definition::nameToFile(const char *name)
     }
   }
   return result;
+#endif
 }
 
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
@@ -280,10 +283,7 @@ bool Definition::hasDocumentation()
 { 
   return !doc.isEmpty() ||              // has detailed docs
          !brief.isEmpty() ||            // has brief description
-         (Config::sourceBrowseFlag && 
-          startBodyLine!=-1 && 
-          bodyDef
-         ) ||                          // has a source reference
+         /*(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) || // has a source reference */
          Config::extractAllFlag;       // extract everything
 }
 

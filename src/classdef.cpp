@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -79,7 +79,9 @@ ClassDef::ClassDef(const char *nm,CompoundType ct,const char *ref,const char *fN
   fileDef=0;
   usesImplClassDict=0;
   usesIntfClassDict=0;
-  //printf("*** New class `%s' *** \n",nm);
+  memberGroupList = new MemberGroupList;
+  memberGroupList->setAutoDelete(TRUE);
+  memberGroupDict = new MemberGroupDict(257);
 }
 
 // destroy the class definition
@@ -94,6 +96,8 @@ ClassDef::~ClassDef()
   delete usesImplClassDict;
   delete usesIntfClassDict;
   delete incInfo;
+  delete memberGroupList;
+  delete memberGroupDict;
 }
 
 // inserts a base class in the inheritance list
@@ -112,27 +116,48 @@ void ClassDef::insertSuperClass(ClassDef *cd,Protection p,
   inheritedBy->inSort(new BaseClassDef(cd,p,s,t));
 }
 
-// adds new member definition to the class
-void ClassDef::insertMember(const MemberDef *md)
+void ClassDef::addMemberToGroup(MemberDef *md,int groupId)
 {
-  //printf("adding %s::%s\n",name(),md->name());
+  if (groupId!=-1)
+  {
+    QCString *pGrpHeader = memberHeaderDict[groupId];
+    QCString *pDocs      = memberDocDict[groupId];
+    if (pGrpHeader)
+    {
+      MemberGroup *mg = memberGroupDict->find(groupId);
+      if (mg==0)
+      {
+        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+        memberGroupDict->insert(groupId,mg);
+        memberGroupList->append(mg);
+      }
+      mg->insertMember(md);
+      md->setMemberGroup(mg);
+    }
+  }
+}
+
+// adds new member definition to the class
+void ClassDef::insertMember(MemberDef *md,int groupId)
+{
+  //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
   {
+    /*************************************************/
+    /* insert member in the appropriate member group */
+    /*************************************************/
+    addMemberToGroup(md,groupId);
+    
+    /********************************************/
+    /* insert member in the declaration section */
+    /********************************************/
     if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
     {
       related.append(md);
-      if (Config::sortMembersFlag)
-        relatedMembers.inSort(md);
-      else
-        relatedMembers.append(md);
     }
     else if (md->isFriend())
     {
       friends.append(md);
-      if (Config::sortMembersFlag)
-        relatedMembers.inSort(md);
-      else
-        relatedMembers.append(md);
     }
     else
     {
@@ -140,34 +165,18 @@ void ClassDef::insertMember(const MemberDef *md)
       {
         case MemberDef::Signal:
           signals.append(md);
-          if (Config::sortMembersFlag)
-            functionMembers.inSort(md);
-          else
-            functionMembers.append(md);
           break;
         case MemberDef::Slot:
           switch (md->protection())
           {
             case Protected: 
               proSlots.append(md); 
-              if (Config::sortMembersFlag)
-                functionMembers.inSort(md); 
-              else
-                functionMembers.append(md);
               break;
             case Public:    
               pubSlots.append(md); 
-              if (Config::sortMembersFlag)
-                functionMembers.inSort(md); 
-              else
-                functionMembers.append(md);
               break;
             case Private:   
               priSlots.append(md);
-              if (Config::sortMembersFlag)
-                functionMembers.inSort(md); 
-              else
-                functionMembers.append(md);
               break;
           }
           break;
@@ -235,6 +244,57 @@ void ClassDef::insertMember(const MemberDef *md)
               }
             }
           }
+          break; 
+      }
+    }
+
+    /*******************************************************/
+    /* insert member in the detailed documentation section */
+    /*******************************************************/
+    if ((md->isRelated() && 
+          (Config::extractPrivateFlag || md->protection()!=Private)
+        ) || md->isFriend()
+       )
+    {
+      if (Config::sortMembersFlag)
+        relatedMembers.inSort(md);
+      else
+        relatedMembers.append(md);
+    }
+    else
+    {
+      switch (md->memberType())
+      {
+        case MemberDef::Signal:
+          if (Config::sortMembersFlag)
+            functionMembers.inSort(md);
+          else
+            functionMembers.append(md);
+          break;
+        case MemberDef::Slot:
+          switch (md->protection())
+          {
+            case Protected: 
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
+              break;
+            case Public:    
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
+              break;
+            case Private:   
+              if (Config::sortMembersFlag)
+                functionMembers.inSort(md); 
+              else
+                functionMembers.append(md);
+              break;
+          }
+          break;
+        default: // any of the other members
           if (md->protection()!=Private || Config::extractPrivateFlag)
           {
             switch (md->memberType())
@@ -279,32 +339,50 @@ void ClassDef::insertMember(const MemberDef *md)
                   variableMembers.append(md);
                 break;
               default:
-                printf("Unexpected member type %d found!\n",md->memberType());
+                err("Unexpected member type %d found!\n",md->memberType());
             }
           }
           break; 
       }
     }
   }
-  // check if we should add this member in the `all members' list
-  if (1 /*md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag*/)
+
+  MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
+  MemberNameInfo *mni=0;
+  if ((mni=(*allMemberNameInfoDict)[md->name()]))
   {
-    MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
-    MemberNameInfo *mni=0;
-    if ((mni=(*allMemberNameInfoDict)[md->name()]))
-    {
-      mni->append(mi);
-    }
-    else
-    {
-      mni = new MemberNameInfo(md->name());
-      mni->append(mi);
-      allMemberNameInfoList->inSort(mni);
-      allMemberNameInfoDict->insert(mni->memberName(),mni);
-    }
+    mni->append(mi);
+  }
+  else
+  {
+    mni = new MemberNameInfo(md->name());
+    mni->append(mi);
+    allMemberNameInfoList->inSort(mni);
+    allMemberNameInfoDict->insert(mni->memberName(),mni);
   }
 }
 
+
+void ClassDef::computeMemberGroups()
+{
+  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+  MemberNameInfo *mni;
+  for (;(mni=mnili.current());++mnili)
+  {
+    MemberNameInfoIterator mnii(*mni);
+    MemberInfo *mi;
+    for (mnii.toFirst();(mi=mnii.current());++mnii)
+    {
+      MemberDef *md=mi->memberDef;
+      MemberGroup *mg = md->getMemberGroup();
+      if (mg && memberGroupDict->find(mg->groupId())==0)
+      {
+        memberGroupDict->insert(mg->groupId(),mg);
+        memberGroupList->append(mg);
+      }
+    }
+  }
+}
 
 // compute the anchors for all members
 void ClassDef::computeAnchors()
@@ -330,6 +408,12 @@ void ClassDef::computeAnchors()
   setAnchors('s',&pubTypes);
   setAnchors('t',&proTypes);
   setAnchors('u',&priTypes);
+  //MemberGroupListIterator mgli(*memberGroupList);
+  //MemberGroup *mg;
+  //for (;(mg=mgli.current());++mgli)
+  //{
+  //  mg->setAnchors();
+  //}
 }
 
 // add a file name to the used files set
@@ -597,6 +681,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   // write member groups
   ol.startMemberSections();
+
+  // write user defined member groups
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->writeDeclarations(ol,this,0,0,0);
+  }
 
   // non static public members
   pubTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicTypes(),0); 
@@ -1174,10 +1266,13 @@ bool ClassDef::hasNonReferenceSuperClass()
 //  htmlHelp->decContentsDepth();
 //}
 
-void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md)
+void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 {
   //ol.insertMemberAlign();
-  //printf("ClassName=`%s'\n",name().data());
+  //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
+
+  if (inGroup && md && md->memberClass()==this) return;
+  
   switch(compType)
   {
     case Class:  ol.docify("class"); break;
@@ -1193,24 +1288,45 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md)
     ol.writeObjectLink(0,0,md->anchor(),cn);
   }
   ol.docify(" {");
-  ol.endMemberItem(FALSE,0,0,FALSE); // TODO: pass correct group parameters
+  ol.endMemberItem(FALSE); 
 
   // insert members of this class
-  pubMembers.writePlainDeclarations(ol,this,0,0,0); 
-  pubSlots.writePlainDeclarations(ol,this,0,0,0); 
-  signals.writePlainDeclarations(ol,this,0,0,0); 
-  pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
-  proMembers.writePlainDeclarations(ol,this,0,0,0); 
-  proSlots.writePlainDeclarations(ol,this,0,0,0); 
-  proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
-  if (Config::extractPrivateFlag)
+  if (inGroup)
   {
-    priMembers.writePlainDeclarations(ol,this,0,0,0); 
-    priSlots.writePlainDeclarations(ol,this,0,0,0); 
-    priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->writePlainDeclarations(ol,this,0,0,0);
+    }
   }
-  friends.writePlainDeclarations(ol,this,0,0,0);
-  related.writePlainDeclarations(ol,this,0,0,0); 
+  else
+  {
+    pubTypes.writePlainDeclarations(ol,this,0,0,0); 
+    pubMembers.writePlainDeclarations(ol,this,0,0,0); 
+    pubAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    pubSlots.writePlainDeclarations(ol,this,0,0,0); 
+    signals.writePlainDeclarations(ol,this,0,0,0); 
+    pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+    pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    proTypes.writePlainDeclarations(ol,this,0,0,0); 
+    proMembers.writePlainDeclarations(ol,this,0,0,0); 
+    proAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    proSlots.writePlainDeclarations(ol,this,0,0,0); 
+    proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+    proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    if (Config::extractPrivateFlag)
+    {
+      priTypes.writePlainDeclarations(ol,this,0,0,0); 
+      priMembers.writePlainDeclarations(ol,this,0,0,0); 
+      priAttribs.writePlainDeclarations(ol,this,0,0,0); 
+      priSlots.writePlainDeclarations(ol,this,0,0,0); 
+      priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+      priStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    }
+    friends.writePlainDeclarations(ol,this,0,0,0);
+    related.writePlainDeclarations(ol,this,0,0,0); 
+  }
 }
 
 /*! a link to this class is possible within this project */
