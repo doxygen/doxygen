@@ -976,7 +976,7 @@ void checkConfig()
   }
 
 #undef PUTENV
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__GNUC__)
 #define PUTENV _putenv
 #else
 #define PUTENV putenv

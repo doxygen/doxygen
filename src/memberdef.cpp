@@ -866,9 +866,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString scopeName = scName;
   if (container->definitionType()==TypeGroup)
   {
-    if (getClassDef()) scopeName=getClassDef()->name();
-    else if (getNamespaceDef()) scopeName=getClassDef()->name();
-    else if (getFileDef()) scopeName=getClassDef()->name();
+    if (getClassDef())          scopeName=getClassDef()->name();
+    else if (getNamespaceDef()) scopeName=getNamespaceDef()->name();
+    else if (getFileDef())      scopeName=getFileDef()->name();
   }
   
   bool hasDocs = detailsAreVisible();

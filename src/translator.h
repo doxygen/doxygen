@@ -1195,7 +1195,14 @@ class Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      return "Classes";
+      if (Config::optimizeForCFlag)
+      {
+        return "Data Structures";
+      }
+      else
+      {
+        return "Classes";
+      }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)

@@ -2211,19 +2211,20 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
       // write members
       struct MemInfo
       {
+        MemInfo(MemberList *l,const QCString &n) { list=l; name=n; }
         MemberList *list;
         QCString name;
       };
       MemInfo memberLists[] = 
       {
-        { &gd->defineMembers,  theTranslator->trDefines()           },
-        { &gd->typedefMembers, theTranslator->trTypedefs()          },
-        { &gd->enumMembers,    theTranslator->trEnumerations()      },
-        { &gd->enumValMembers, theTranslator->trEnumerationValues() },
-        { &gd->funcMembers,    theTranslator->trFunctions()         },
-        { &gd->varMembers,     theTranslator->trVariables()         },
-        { &gd->protoMembers,   theTranslator->trFuncProtos()        },
-        { 0,0 }
+        MemInfo(&gd->defineMembers,  theTranslator->trDefines()),
+        MemInfo(&gd->typedefMembers, theTranslator->trTypedefs()),
+        MemInfo(&gd->enumMembers,    theTranslator->trEnumerations()),
+        MemInfo(&gd->enumValMembers, theTranslator->trEnumerationValues()),
+        MemInfo(&gd->funcMembers,    theTranslator->trFunctions()),
+        MemInfo(&gd->varMembers,     theTranslator->trVariables()),
+        MemInfo(&gd->protoMembers,   theTranslator->trFuncProtos()),
+        MemInfo(0,0)
       };
 
       MemberList *members;
