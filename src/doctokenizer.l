@@ -324,6 +324,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 %x St_TitleV
 %x St_Code
 %x St_HtmlOnly
+%x St_ManOnly
 %x St_LatexOnly
 %x St_XmlOnly
 %x St_Verbatim
@@ -500,6 +501,14 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_HtmlOnly>[^\\@\n$]+    |
 <St_HtmlOnly>\n            |
 <St_HtmlOnly>.             {
+  			 g_token->verb+=yytext;
+  		       }
+<St_ManOnly>{CMD}"endmanonly" {
+                         return RetVal_OK;
+                       }
+<St_ManOnly>[^\\@\n$]+    |
+<St_ManOnly>\n            |
+<St_ManOnly>.             {
   			 g_token->verb+=yytext;
   		       }
 <St_LatexOnly>{CMD}"endlatexonly" {
@@ -878,6 +887,12 @@ void doctokenizerYYsetStateHtmlOnly()
 {
   g_token->verb="";
   BEGIN(St_HtmlOnly);
+}
+
+void doctokenizerYYsetStateManOnly()
+{
+  g_token->verb="";
+  BEGIN(St_ManOnly);
 }
 
 void doctokenizerYYsetStateXmlOnly()

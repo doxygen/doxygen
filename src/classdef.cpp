@@ -934,6 +934,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   QCString pageTitle=displayName().copy();
   QCString pageType;
   QCString cType=compoundTypeString();
+  //printf("ClassDef::writeDocumentation() cType=%s\n",cType.data());
   toupper(cType.at(0));
   pageType+=" ";
   pageType+=cType;
@@ -941,7 +942,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (m_tempArgs) pageTitle.prepend(" Template");
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  ol.parseText(theTranslator->trCompoundReference(displayName(),m_compType,m_tempArgs!=0));
+  ol.parseText(theTranslator->trCompoundReference(displayName(),
+               m_isObjC && m_compType==Interface ? Class : m_compType,
+               m_tempArgs!=0));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
@@ -1039,7 +1042,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
-    Doxygen::tagFile << "\">" << endl;
+    Doxygen::tagFile << "\"";
+    if (isObjectiveC()) { Doxygen::tagFile << " objc=\"yes\""; }
+    Doxygen::tagFile << ">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
     if (m_tempArgs)
@@ -1371,7 +1376,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.disable(OutputGenerator::Man);
     ol.writeRuler();
-    ol.parseText(theTranslator->trGeneratedFromFiles(m_compType,m_files.count()==1));
+    ol.parseText(theTranslator->trGeneratedFromFiles(
+          m_isObjC && m_compType==Interface ? Class : m_compType,
+          m_files.count()==1));
 
     bool first=TRUE;
     const char *file = m_files.first();
@@ -1498,7 +1505,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.parseText(theTranslator->trIncludingInheritedMembers());
   
   //ol.startItemList();
-  ol.writeString("<table>\n");
+  ol.writeString("<p><table>\n");
   
   //MemberNameInfo *mni=m_allMemberNameInfoList->first();
   MemberNameInfoSDict::Iterator mnii(*m_allMemberNameInfoSDict); 
@@ -1526,24 +1533,45 @@ void ClassDef::writeMemberList(OutputList &ol)
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
           ol.writeString("  <tr class=\"memlist\"><td>");
-          //Definition *bd = md->getGroupDef();
-          //if (bd==0) bd=cd;
-          ol.writeObjectLink(md->getReference(),
-                             md->getOutputFileBase(),
-                             md->anchor(),name);
+          if (cd->isObjectiveC())
+          {
+            if (md->isObjCMethod())
+            {
+              if (md->isStatic())
+                ol.writeString("+&nbsp;</td><td>");
+              else
+                ol.writeString("-&nbsp;</td><td>");
+            }
+            else
+              ol.writeString("</td><td>");
+          }
+          if (md->isObjCMethod())
+          {
+            ol.writeObjectLink(md->getReference(),
+                md->getOutputFileBase(),
+                md->anchor(),md->name());
+          }
+          else
+          {
+            //Definition *bd = md->getGroupDef();
+            //if (bd==0) bd=cd;
+            ol.writeObjectLink(md->getReference(),
+                md->getOutputFileBase(),
+                md->anchor(),name);
 
-          if ( md->isFunction() || md->isSignal() || md->isSlot() ||
-               (md->isFriend() && md->argsString())) 
-            ol.docify(md->argsString());
-          else if (md->isEnumerate())
-            ol.parseText(" "+theTranslator->trEnumName());
-          else if (md->isEnumValue())
-            ol.parseText(" "+theTranslator->trEnumValue());
-          else if (md->isTypedef())
-            ol.docify(" typedef");
-          else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
-            ol.docify(" class");
-          //ol.writeString("\n");
+            if ( md->isFunction() || md->isSignal() || md->isSlot() ||
+                (md->isFriend() && md->argsString())) 
+              ol.docify(md->argsString());
+            else if (md->isEnumerate())
+              ol.parseText(" "+theTranslator->trEnumName());
+            else if (md->isEnumValue())
+              ol.parseText(" "+theTranslator->trEnumValue());
+            else if (md->isTypedef())
+              ol.docify(" typedef");
+            else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
+              ol.docify(" class");
+            //ol.writeString("\n");
+          }
           ol.writeString("</td>");
           memberWritten=TRUE;
         }
@@ -1554,17 +1582,32 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           //ol.writeListItem();
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
+          if (cd->isObjectiveC())
+          {
+            if (md->isObjCMethod())
+            {
+              if (md->isStatic())
+                ol.writeString("+&nbsp;</td><td>");
+              else
+                ol.writeString("-&nbsp;</td><td>");
+            }
+            else
+              ol.writeString("</td><td>");
+          }
           ol.startBold();
           ol.docify(md->name());
           ol.endBold();
-          if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
-            ol.docify(md->argsString());
-          else if (md->isEnumerate())
-            ol.parseText(" "+theTranslator->trEnumName());
-          else if (md->isEnumValue())
-            ol.parseText(" "+theTranslator->trEnumValue());
-          else if (md->isTypedef())
-            ol.docify(" typedef");
+          if (!md->isObjCMethod())
+          {
+            if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
+              ol.docify(md->argsString());
+            else if (md->isEnumerate())
+              ol.parseText(" "+theTranslator->trEnumName());
+            else if (md->isEnumValue())
+              ol.parseText(" "+theTranslator->trEnumValue());
+            else if (md->isTypedef())
+              ol.docify(" typedef");
+          }
           ol.writeString(" (");
           ol.parseText(theTranslator->trDefinedIn()+" ");
           if (cd->isLinkable())
@@ -1589,7 +1632,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("</td>");
           ol.writeString("<td>");
         }
-        if ((prot!=Public || virt!=Normal || 
+        if (
+            (prot!=Public || virt!=Normal || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||

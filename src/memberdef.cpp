@@ -144,21 +144,24 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     {
       QCString n=a->type;
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
-      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
+      if (a->type!="...")
+      {
+        if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
+        linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
+      }
     }
     if (!md->isDefine())
     {
       ol.endParameterType();
       ol.startParameterName(defArgList->count()<2);
     }
-    if (!a->name.isEmpty()) // argument has a name
+    if (!a->name.isEmpty() || (a->name.isEmpty() && a->type=="...")) // argument has a name
     { 
       ol.docify(" ");
       ol.disable(OutputGenerator::Man);
       ol.startEmphasis();
       ol.enable(OutputGenerator::Man);
-      ol.docify(a->name);
+      if (a->name.isEmpty()) ol.docify(a->type); else ol.docify(a->name);
       ol.disable(OutputGenerator::Man);
       ol.endEmphasis();
       ol.enable(OutputGenerator::Man);
@@ -191,7 +194,8 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
         {
           //printf("Found parameter keyword %s\n",a->attrib.data());
           // strip [ and ]
-          key=a->attrib.mid(1,a->attrib.length()-2)+":";
+          key=a->attrib.mid(1,a->attrib.length()-2);
+          if (key!=",") key+=":"; // for normal keywords add colon
         }
         ol.endParameterName(FALSE,FALSE);
         ol.startParameterType(FALSE,key);
@@ -800,9 +804,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (prot!=Public)
     {
       Doxygen::tagFile << "\" protection=\"";
-      if (prot==Protected)    Doxygen::tagFile << "public";
+      if (prot==Protected)    Doxygen::tagFile << "protected";
       else if (prot==Package) Doxygen::tagFile << "package";
-      else /* Private */      Doxygen::tagFile << "protected"; 
+      else /* Private */      Doxygen::tagFile << "private"; 
     }
     if (virt!=Normal)
     {
@@ -1321,6 +1325,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startMemberDocName(isObjCMethod());
       if (isObjCMethod())
       {
+        // strip scope name
+        int ep = ldef.find("::");
+        if (ep!=-1) 
+        {
+          int sp=ldef.findRev(' ',ep);
+          if (sp!=-1)
+          {
+            ldef=ldef.left(sp+1)+ldef.mid(ep+2);
+          }
+        }
+        // strip keywords
         int dp = ldef.find(':');
         if (dp!=-1)
         {

@@ -200,8 +200,9 @@ Entry::~Entry()
 
 void Entry::addSubEntry(Entry *current)
 {
-  //printf("Entry %d with name %s type 0x%x added\n",
-  //    current->num,current->name.data(),current->section);
+  //printf("Entry %d with name %s type 0x%x added to %s type 0x%x\n",
+  //    current->num,current->name.data(),current->section,
+  //    name.data(),section);
   //printf("Entry::addSubEntry(%s) %p\n",current->name.data(),current->tArgList);
   current->parent=this;
   sublist->append(current);  

@@ -200,6 +200,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::HtmlOnly: 
       m_t << s->text(); 
       break;
+    case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::XmlOnly: 
       /* nothing */ 

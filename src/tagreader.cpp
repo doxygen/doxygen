@@ -55,8 +55,8 @@ class TagMemberInfo
 class TagClassInfo
 {
   public:
-    enum Kind { Class, Struct, Union, Interface, Exception };
-    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); }
+    enum Kind { Class, Struct, Union, Interface, Exception, Protocol, Category };
+    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; }
    ~TagClassInfo() { delete bases; delete templateArguments; }
     QString name;
     QString filename;
@@ -65,6 +65,7 @@ class TagClassInfo
     QList<TagMemberInfo> members;
     QList<QString> *templateArguments;
     Kind kind;
+    bool isObjC;
 };
 
 /*! Container for namespace specific info that can be read from a tagfile */
@@ -194,6 +195,7 @@ class TagFileParser : public QXmlDefaultHandler
     {
       m_curString = "";
       QString kind = attrib.value("kind");
+      QString isObjC = attrib.value("objc");
       if (kind=="class")
       {
         m_curClass = new TagClassInfo;
@@ -224,6 +226,18 @@ class TagFileParser : public QXmlDefaultHandler
         m_curClass->kind = TagClassInfo::Exception;
         m_state = InClass;
       }
+      else if (kind=="protocol")
+      {
+        m_curClass = new TagClassInfo;
+        m_curClass->kind = TagClassInfo::Protocol;
+        m_state = InClass;
+      }
+      else if (kind=="category")
+      {
+        m_curClass = new TagClassInfo;
+        m_curClass->kind = TagClassInfo::Category;
+        m_state = InClass;
+      }
       else if (kind=="file")
       {
         m_curFile = new TagFileInfo;
@@ -252,6 +266,10 @@ class TagFileParser : public QXmlDefaultHandler
       else
       {
         err("Error: Unknown compound attribute `%s' found!\n",kind.data());
+      }
+      if (isObjC=="yes" && m_curClass)
+      {
+        m_curClass->isObjC = TRUE; 
       }
     }
     void endCompound()
@@ -1004,6 +1022,8 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Union:     ce->section = Entry::UNION_SEC;     break;
       case TagClassInfo::Interface: ce->section = Entry::INTERFACE_SEC; break;
       case TagClassInfo::Exception: ce->section = Entry::EXCEPTION_SEC; break;
+      case TagClassInfo::Protocol:  ce->section = Entry::PROTOCOL_SEC;  break;
+      case TagClassInfo::Category:  ce->section = Entry::CATEGORY_SEC;  break;
     }
     ce->name     = tci->name;
     addDocAnchors(ce,tci->docAnchors);
@@ -1011,6 +1031,7 @@ void TagFileParser::buildLists(Entry *root)
     ti->tagName  = m_tagName;
     ti->fileName = tci->filename;
     ce->tagInfo = ti;
+    ce->objc = tci->isObjC;
     // transfer base class list
     if (tci->bases)
     {

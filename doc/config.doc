@@ -676,7 +676,7 @@ function's detailed documentation block.
  in the directories. If left blank the following patterns are tested:
  <code>
  *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
- *.h++ *.idl *.odl *.cs
+ *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm
  </code>
 
 \anchor cfg_recursive

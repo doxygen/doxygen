@@ -204,7 +204,8 @@ int main(int argc,char **argv)
         {
           numParams++;
         }
-        if (strcmp(mem->typeString()->latin1(),"void")!=0)
+        const char *type = mem->typeString()->latin1();
+        if (type && strcmp(type, "void"))
         {
           numParams++; // count non-void return types as well
         }

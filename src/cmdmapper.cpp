@@ -103,6 +103,8 @@ CommandMap cmdMap[] =
   { "_internalref",  CMD_INTERNALREF },
   { "dot",           CMD_DOT },
   { "enddot",        CMD_ENDDOT },
+  { "manonly",       CMD_MANONLY },
+  { "endmanonly",    CMD_ENDMANONLY },
   { 0,               0 }
 };
 

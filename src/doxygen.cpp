@@ -491,7 +491,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       }
       else // put #include in the class documentation without link
       {
-        cd->setIncludeFile(0,iName,local,FALSE);
+        cd->setIncludeFile(0,iName,local,TRUE);
       }
     }
   }
@@ -729,6 +729,10 @@ static void addClassToContext(Entry *root)
       case Entry::PROTOCOLDOC_SEC:
         sec=ClassDef::Protocol; 
         break;
+      case Entry::CATEGORY_SEC:
+      case Entry::CATEGORYDOC_SEC:
+        sec=ClassDef::Category; 
+        break;
       case Entry::EXCEPTION_SEC:
       case Entry::EXCEPTIONDOC_SEC:
         sec=ClassDef::Exception; 
@@ -811,6 +815,22 @@ static void addClassToContext(Entry *root)
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->insertUsedFile(root->fileName);
 
+    //int bi;
+    //if (root->objc && (bi=fullName.find('<'))!=-1 && root->extends->count()==0)
+    //{
+    //  // add protocols as base classes
+    //  int be=fullName.find('>'),len;
+    //  static QRegExp re("[A-Z_a-z][A-Z_a-z0-9]*");
+    //  int p=0;
+    //  while ((p=re.match(fullName,bi+1,&len))!=-1 && p<be)
+    //  {
+    //    QCString baseName = fullName.mid(p,len);
+    //    printf("Adding artifical base class %s to %s\n",baseName.data(),fullName.data());
+    //    root->extends->append(new BaseInfo(baseName,Public,Normal));
+    //    bi=p+len; 
+    //  }
+    //}
+
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
     Doxygen::classSDict.append(fullName,cd);
@@ -824,7 +844,8 @@ static void addClassToContext(Entry *root)
 static void buildClassList(Entry *root)
 {
   if (
-        (root->section & Entry::COMPOUND_MASK) && !root->name.isEmpty()
+        ((root->section & Entry::COMPOUND_MASK) || 
+         root->section==Entry::OBJCIMPL_SEC) && !root->name.isEmpty()
      )
   {
     addClassToContext(root);
@@ -2232,11 +2253,12 @@ static void buildFunctionList(Entry *root)
           )
          )
       {
-        Debug::print(Debug::Functions,0,"--> member of class %s!\n",rname.data(),cd->name().data());
+        Debug::print(Debug::Functions,0,"--> member %s of class %s!\n",
+            rname.data(),cd->name().data());
         addMethodToClass(root,cd,rname,isFriend);
       }
       else if (root->parent && 
-               !(root->parent->section & Entry::COMPOUND_MASK) &&
+               !((root->parent->section & Entry::COMPOUND_MASK) || root->parent->section==Entry::OBJCIMPL_SEC) &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesDup) &&
                root->type.left(7)!="extern " &&
@@ -2310,24 +2332,6 @@ static void buildFunctionList(Entry *root)
                   md->setDocsForDefinition(!root->proto);
                   ArgumentList *argList = new ArgumentList;
                   stringToArgumentList(root->args,argList);
-                  //printf("root->argList=%p\n",root->argList);
-                  //if (root->argList)
-                  //{
-                  //  ArgumentListIterator ali1(*root->argList);
-                  //  ArgumentListIterator ali2(*argList);
-                  //  Argument *sa,*da;
-                  //  for (;(sa=ali1.current()) && (da=ali2.current());++ali1,++ali2)
-                  //  {
-                  //    printf("sa->name=%s (doc=%s) da->name=%s (doc=%s)\n",
-                  //        sa->name.data(),sa->docs.data(),
-                  //        da->name.data(),da->docs.data()
-                  //        );
-                  //    if (!sa->docs.isEmpty() && da->docs.isEmpty())
-                  //    {
-                  //      da->docs=sa->docs.copy();
-                  //    }
-                  //  }
-                  //}
                   if (root->proto)
                   {
                     //printf("setDeclArgumentList to %p\n",argList);
@@ -2359,19 +2363,6 @@ static void buildFunctionList(Entry *root)
                 // merge ingroup specifiers
                 if (md->getGroupDef()==0 && root->groups->first()!=0)
                 {
-                  //printf("new member is grouped, existing member not\n");
-                  // if we do addMemberToGroups here an undocumented declaration may prevent 
-                  // the documented implementation below it from being added 
-                  //addMemberToGroups(root,md);
-                  //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-                  //if (gd)
-                  //{
-                  //  bool success = gd->insertMember(md);
-                  //  if (success)
-                  //  {
-                  //    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
-                  //  }
-                  //}
                   addMemberToGroups(root,md);
                 }
                 else if (md->getGroupDef()!=0 && root->groups->count()==0)
@@ -3302,6 +3293,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   ClassDef *instanceClass = templateClass->insertTemplateInstance(
                      root->fileName,root->startLine,templSpec,freshInstance);
   if (isArtificial) instanceClass->setClassIsArtificial();
+  instanceClass->setIsObjectiveC(root->objc);
 
   if (freshInstance)
   {
@@ -4207,9 +4199,16 @@ static bool findGlobalMember(Entry *root,
   }
   else // got docs for an undefined member!
   {
-    warn(root->fileName,root->startLine,
-         "Warning: documented function `%s' was not defined.",decl
-        );
+    if (root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
+    {
+      // probably a local member ObjC method not found in the interface 
+    }
+    else
+    {
+      warn(root->fileName,root->startLine,
+           "Warning: documented function `%s' was not defined.",decl
+          );
+    }
   }
   return TRUE;
 }
@@ -4752,7 +4751,9 @@ static void findMember(Entry *root,
             delete nl;
           } 
         } 
-        if (count==0 && !(isFriend && funcType=="class"))
+        if (count==0 && !(isFriend && funcType=="class") && 
+            (root->parent==0 || root->parent->section!=Entry::OBJCIMPL_SEC)
+           )
         {
           int candidates=0;
           if (mn->count()>0)
@@ -5189,6 +5190,32 @@ static void findMemberDocumentation(Entry *root)
   for (;(e=eli.current());++eli)
   {
     if (e->section!=Entry::ENUM_SEC) findMemberDocumentation(e);
+  }
+}
+
+//----------------------------------------------------------------------
+
+static void findObjCMethodDefinitions(Entry *root)
+{
+  EntryListIterator eli(*root->sublist);
+  Entry *objCImpl;
+  for (;(objCImpl=eli.current());++eli)
+  {
+    if (objCImpl->section==Entry::OBJCIMPL_SEC)
+    {
+      //printf("Found ObjC class implementation %s\n",objCImpl->name.data());
+      EntryListIterator seli(*objCImpl->sublist);
+      Entry *objCMethod;
+      for (;(objCMethod=seli.current());++seli)
+      {
+        if (objCMethod->section==Entry::FUNCTION_SEC)
+        {
+          //Printf("  Found ObjC method definition %s\n",objCMethod->name.data());
+          findMember(objCMethod, objCMethod->type+" "+objCImpl->name+"::"+objCMethod->name+" "+objCMethod->args, FALSE,TRUE);
+          objCMethod->section=Entry::EMPTY_SEC;
+        }
+      }
+    }
   }
 }
 
@@ -8129,6 +8156,7 @@ void parseInput()
   findEnumDocumentation(root);
   
   msg("Searching for member function documentation...\n");
+  findObjCMethodDefinitions(root);
   findMemberDocumentation(root); // may introduce new members !
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
