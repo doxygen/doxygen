@@ -1148,14 +1148,14 @@ EXTRA_PACKAGES = times
 \anchor cfg_xml_schema
 <dt>\c XML_SCHEMA <dd>
  \addindex XML_SCHEMA
- The XML_SCHEMA file can be used to specify an XML schema,
+ The XML_SCHEMA tag can be used to specify an XML schema,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
 
 \anchor cfg_xml_dtd
 <dt>\c XML_DTD <dd>
  \addindex XML_DTD
- The XML_DTD file can be used to specify an XML DTD,
+ The XML_DTD tag can be used to specify an XML DTD,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
 

@@ -39,7 +39,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorCatalan : public Translator
+class TranslatorCatalan : public TranslatorAdapter_1_2_17
 {
   public:
 
@@ -309,12 +309,12 @@ class TranslatorCatalan : public Translator
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="totes les funcions, variables, definicions, enumeracions, i definicions de tipus";
-	if (!extractAll) result+="documentades ";
+        if (!extractAll) result+="documentades ";
       }
       else
       {
         result+="tots els membres de l'arxiu";
-	if (!extractAll) result+="documentat ";
+        if (!extractAll) result+="documentat ";
       }
       result+=" amb enllaços ";
       if (extractAll) 
@@ -1091,7 +1091,7 @@ class TranslatorCatalan : public Translator
         "<li>Una sageta puntejada de color porpra indica que una classe és continguda o usada per una altra classe."
         " La sageta s'etiqueta amb la variable o variables a través de les quals la classe o estructura apuntada és accessible.\n"
         "<li>Una sageta puntejada de color groc indica la relació entre una instància template i la classe template de què ha set instanciada."
-	" La sageta s'etiqueta amb els paràmetres template de la instància.\n"
+        " La sageta s'etiqueta amb els paràmetres template de la instància.\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
@@ -1399,7 +1399,6 @@ class TranslatorCatalan : public Translator
     {
       return "Taula de Continguts";
     }
-
 };
 
 #endif

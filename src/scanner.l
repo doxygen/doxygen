@@ -4295,7 +4295,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment,SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
                                           bool handled=FALSE;
                                           if ( useOverrideCommands)
                                           {

@@ -2166,16 +2166,18 @@ void Config::create()
                  );
   cs = addString(
                     "XML_SCHEMA",
-		    "The XML_SCHEMA file can be used to specify an XML schema, \n"
+		    "The XML_SCHEMA tag can be used to specify an XML schema, \n"
 		    "which can be used by a validating XML parser to check the \n"
 		    "syntax of the XML files. \n"
                  );
+  cs->addDependency("GENERATE_XML");
   cs = addString(
                     "XML_DTD",
-		    "The XML_DTD file can be used to specify an XML DTD, \n"
+		    "The XML_DTD tag can be used to specify an XML DTD, \n"
 		    "which can be used by a validating XML parser to check the \n"
 		    "syntax of the XML files. \n"
                  );
+  cs->addDependency("GENERATE_XML");
   //--------------------------------------------------------------------------
   addInfo(  "DEF","configuration options for the AutoGen Definitions output");
   //--------------------------------------------------------------------------

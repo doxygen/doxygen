@@ -26,6 +26,7 @@
 #include "doctokenizer.h"
 #include "cmdmapper.h"
 #include "config.h"
+#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -35,6 +36,7 @@ static int g_commentState;
 TokenInfo *g_token = 0;
 static int g_inputPos = 0;
 static const char *g_inputString;
+static QCString g_fileName;
 
 struct DocLexerContext
 {
@@ -265,7 +267,6 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 %x St_IntRef
 
 %%
-   /* TODO: \~lang_id */
 <St_Para>\r               /* skip carriage return */
 <St_Para>^{LISTITEM}      { /* list item */ 
                          QCString text=yytext;
@@ -585,19 +586,20 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 <St_Comment>[^-\n]+       /* inside html comment */
 <St_Comment>.             /* inside html comment */
 <*>\n                  { 
-                         printf("Error: Unexpected new line character at line %d\n",yylineno); 
+                         warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
 <*>.                   { 
-                         printf("Error: Unexpected character `%s' at line %d\n",yytext,yylineno); 
+                         warn(g_fileName,yylineno,"Error: Unexpected character `%s'",yytext); 
 		       }
 %%
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYinit(const char *input)
+void doctokenizerYYinit(const char *input,const char *fileName)
 {
   g_inputString = input;
   g_inputPos = 0;
+  g_fileName = fileName;
   BEGIN(St_Para);
 }
 

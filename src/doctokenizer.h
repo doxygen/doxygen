@@ -107,7 +107,7 @@ extern FILE *doctokenizerYYin;
 const char *tokToString(int token);
 
 // operations on the scanner
-void doctokenizerYYinit(const char *input);
+void doctokenizerYYinit(const char *input,const char *fileName);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();
 bool doctokenizerYYpopContext();

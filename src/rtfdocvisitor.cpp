@@ -443,6 +443,7 @@ void RTFDocVisitor::visitPre(DocSimpleSect *s)
 {
   m_t << "{"; // start desc
   m_t << "{\\b "; // start bold
+  m_t << "\\par" << endl;
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -956,7 +957,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   {
     filter(x->title());
   }
-  m_t << "}"; // end bold
+  m_t << ":}"; // end bold
   m_t << "\\par" << endl;
   incIndentLevel();
   m_t << rtf_Style_Reset << getStyle("DescContinue");
@@ -964,7 +965,9 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
 
 void RTFDocVisitor::visitPost(DocXRefItem *)
 {
-  m_t << "}" << endl; // end param list
+  m_t << "\\par" << endl;
+  decIndentLevel();
+  m_t << "}" << endl; // end xref item
 }
 
 void RTFDocVisitor::visitPre(DocInternalRef *ref)

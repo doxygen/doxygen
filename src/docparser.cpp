@@ -860,7 +860,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 {
   int retval = RetVal_OK;
 
-  doctokenizerYYinit(doc);
+  doctokenizerYYinit(doc,g_fileName);
 
   // first parse any number of paragraphs
   bool isFirst=FALSE;
@@ -4043,7 +4043,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_paramsFound.clear();
   
   doctokenizerYYlineno=startLine;
-  doctokenizerYYinit(input);
+  doctokenizerYYinit(input,g_fileName);
 
   // build abstract syntax tree
   DocRoot *root = new DocRoot;

@@ -22,7 +22,8 @@
 
 class TranslatorSerbian : public TranslatorAdapter_1_2_17
 {
-  QCString decode(const QCString& sInput)
+private:
+   QCString decode(const QCString& sInput)
    { 
 #ifdef _WIN32
      return ISO88592ToWin1250(sInput);
