@@ -37,7 +37,6 @@ class TranslatorAdapterCVS : public Translator
         vs += versionString;  // the one from the version.cpp
         return createUpdateNeededMessage(idLanguage(), vs);
     }
-
 //-----------------------------------------------------------------------
 // The things below this line should go to the new
 // TranslatorAdapter_1_2_x, as public methods.  The things above
@@ -45,19 +44,31 @@ class TranslatorAdapterCVS : public Translator
 // The first five lines below should be uncommented, and the
 // release number at the fifth of those lines should be set.
 
-// class TranslatorAdapter_1_2_8 : public TranslatorAdapterCVS
+// class TranslatorAdapter_1_2_x : public TranslatorAdapterCVS
 // {
 //   public:
 //     virtual QCString updateNeededMessage() 
-//     { return createUpdateNeededMessage(idLanguage(),"release 1.2.7"); }
+//     { return createUpdateNeededMessage(idLanguage(),"release 1.2.x"); }
    
     // Put new adapter methods below...
     // 
     
 };
 
+class TranslatorAdapter_1_2_11 : public TranslatorAdapterCVS
+{
+  public:
+    virtual QCString updateNeededMessage() 
+    { return createUpdateNeededMessage(idLanguage(),"release 1.2.11"); }
+   
+    // Put new adapter methods below...
+    // 
+    virtual QCString trReferences()
+    { return english.trReferences(); }
+    
+};
 
-class TranslatorAdapter_1_2_7 : public TranslatorAdapterCVS
+class TranslatorAdapter_1_2_7 : public TranslatorAdapter_1_2_11
 {
   public:
     virtual QCString updateNeededMessage() 

@@ -1361,6 +1361,17 @@ class TranslatorEnglish : public Translator
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "References";
+    }
+
 };
 
 #endif

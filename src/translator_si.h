@@ -21,7 +21,7 @@
 #define TRANSLATOR_SI_H
 
 
-class TranslatorSlovene : public Translator
+class TranslatorSlovene : public TranslatorAdapter_1_2_11
 {
   public:
     QCString idLanguage()
@@ -50,11 +50,11 @@ class TranslatorSlovene : public Translator
     QCString trDetailedDescription()
     { return "Podroben opis"; }
     QCString trMemberTypedefDocumentation()
-    { return "Opis <code> uporabni¹ko definiranih tipov (typedef) </code>"; }
+    { return "Opis uporabni¹ko definiranih tipov"; }
     QCString trMemberEnumerationDocumentation()
-    { return "Opis komponent <code> na¹tevnih tipov </code>"; }
+    { return "Opis komponent  na¹tevnih tipov"; }
     QCString trEnumerationValueDocumentation()
-    { return "Opis vrednosti <code> na¹tevnih tipov (enum) </code> "; }
+    { return "Opis vrednosti na¹tevnih tipov (enum) "; }
     QCString trMemberFunctionDocumentation()
     { return "Opis metod"; }
     QCString trMemberDataDocumentation()
@@ -231,7 +231,7 @@ class TranslatorSlovene : public Translator
     QCString trParameters()
     { return "Parametri"; }
     QCString trExceptions()
-    { return "Prekinitve (Exceptions)"; }
+    { return "Prekinitve"; }
     QCString trGeneratedBy()
     { return "Izdelano s pomoèjo"; }
     
@@ -240,7 +240,7 @@ class TranslatorSlovene : public Translator
 //////////////////////////////////////////////////////////////////////////
     
     QCString trNamespaceList()
-    { return "seznam imenskih prostorov"; }
+    { return "imenski prostori"; }
     QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Seznam ";
@@ -267,14 +267,14 @@ class TranslatorSlovene : public Translator
                                     bool /*isTemplate*/)
       // used as the title of the HTML page of a class/struct/union
     {
-      QCString result="Opis ";
+      QCString result="";
       switch(compType)
       {
-        case ClassDef::Class:  result+=" razreda "; break;
-        case ClassDef::Struct: result+=" strukture "; break;
-        case ClassDef::Union:  result+=" unije "; break;
-        case ClassDef::Interface:  result+=" vmesnika (interface) "; break;
-        case ClassDef::Exception:  result+=" prekinitve (exception) "; break;
+        case ClassDef::Class:  result+=" Razred "; break;
+        case ClassDef::Struct: result+=" Struktura "; break;
+        case ClassDef::Union:  result+=" Mno¾ica "; break;
+        case ClassDef::Interface:  result+=" IDL vmesnik "; break;
+        case ClassDef::Exception:  result+=" IDL prekinitev "; break;
       }
 	  result += (QCString)clName;
       
@@ -283,14 +283,14 @@ class TranslatorSlovene : public Translator
     QCString trFileReference(const char *fileName)
       // used as the title of the HTML page of a file
     {
-      QCString result="Vsebina datoteke "; 
+      QCString result="Datoteka "; 
 	  result+=fileName;
 	  return result;
     }
     QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
-      QCString result ="Opis imenskega prostora ";
+      QCString result ="Imenski prostor ";
 	  result+=namespaceName;
       
       return result;
@@ -497,7 +497,8 @@ class TranslatorSlovene : public Translator
           "direktno ali indirektno vkljuèuje. Pravokotniki ponazarjajo datoteke, pu¹èice "
 	  "predstavljajo relacije med njimi. "
 	  "Èrn pravokotnik ponazarja datoteko "+fName+". Pu¹èice A->B ponazarjajo "
-	  "usmerjeno relacijo \"A vkljuèuje B\".";
+	  "usmerjeno relacijo \"A vkljuèuje B\"."
+;
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()

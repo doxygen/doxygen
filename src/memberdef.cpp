@@ -1459,6 +1459,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // write reference to the source
     writeSourceDef(ol,cname);
     writeSourceRefs(ol,cname);
+    writeSourceReffedBy(ol,cname);
     writeInlineCode(ol,cname);
 
     ol.endIndent();

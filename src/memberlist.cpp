@@ -44,7 +44,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 {
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
-  return strcmp(c1->name(),c2->name());
+  return stricmp(c1->name(),c2->name());
 }
 
 /*! Count the number of members in this list that are visible in
@@ -573,5 +573,14 @@ void MemberList::addListReferences(Definition *def)
       mg->addListReferences(def);
     }
   }
+}
+
+//--------------------------------------------------------------------------
+
+int MemberSDict::compareItems(GCI item1, GCI item2)
+{
+  MemberDef *c1=(MemberDef *)item1;
+  MemberDef *c2=(MemberDef *)item2;
+  return stricmp(c1->name(),c2->name());
 }
 

@@ -4958,7 +4958,7 @@ static void addSourceReferences()
     for (mni.toFirst();(md=mni.current());++mni)
     {
       NamespaceDef *nd=md->getNamespaceDef();
-      FileDef *fd=md->getBodyDef();
+      FileDef *fd=md->getFileDef();
       GroupDef *gd=md->getGroupDef();
       if (fd && md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
           ((nd && nd->isLinkableInProject()) ||
@@ -6075,7 +6075,8 @@ static int readDir(QFileInfo *fi,
             QStrList *exclPatList,
             StringList *resultList,
             StringDict *resultDict,
-            bool errorIfNotExist
+            bool errorIfNotExist,
+            bool recursive
            )
 {
   QDir dir((const char *)fi->absFilePath());
@@ -6126,13 +6127,14 @@ static int readDir(QFileInfo *fi,
         if (resultList) resultList->append(rs);
         if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
       }
-      else if (Config_getBool("RECURSIVE") && 
+      else if (recursive &&
           cfi->isDir() && cfi->fileName()!="." && 
           cfi->fileName()!="..")
       {
         cfi->setFile(cfi->absFilePath());
         totalSize+=readDir(cfi,fnList,fnDict,exclDict,
-            patList,exclPatList,resultList,resultDict,errorIfNotExist);
+            patList,exclPatList,resultList,resultDict,errorIfNotExist,
+            recursive);
       }
     }
     ++it;
@@ -6188,6 +6190,7 @@ static int readFileOrDirectory(const char *s,
                         QStrList *exclPatList,
                         StringList *resultList,
                         StringDict *resultDict,
+                        bool recursive,
                         bool errorIfNotExist=TRUE
                        )
 {
@@ -6233,7 +6236,8 @@ static int readFileOrDirectory(const char *s,
       }
       else if (fi.isDir()) // readable dir
         totalSize+=readDir(&fi,fnList,fnDict,exclDict,patList,
-            exclPatList,resultList,resultDict,errorIfNotExist);
+            exclPatList,resultList,resultDict,errorIfNotExist,
+            recursive);
     }
   }
   return totalSize;
@@ -6615,7 +6619,9 @@ void parseInput()
   compoundKeywordDict.insert("union",(void *)8);
   compoundKeywordDict.insert("interface",(void *)8);
   compoundKeywordDict.insert("exception",(void *)8);
-  
+
+  bool alwaysRecursive = Config_getBool("RECURSIVE");
+    
   /**************************************************************************
    *             Read and preprocess input                                  *
    **************************************************************************/
@@ -6632,7 +6638,8 @@ void parseInput()
       pl = Config_getList("FILE_PATTERNS");
     }
     readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
-                        &Config_getList("EXCLUDE_PATTERNS"),0,0);
+                        &Config_getList("EXCLUDE_PATTERNS"),0,0,
+                        alwaysRecursive);
     s=includePathList.next(); 
   }
   
@@ -6643,7 +6650,8 @@ void parseInput()
   {
     readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
                         &Config_getList("EXAMPLE_PATTERNS"),
-                        0,0,0);
+                        0,0,0,
+                        (alwaysRecursive || Config_getBool("EXAMPLE_RECURSIVE")));
     s=examplePathList.next(); 
   }
 
@@ -6653,9 +6661,18 @@ void parseInput()
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
-                        0,0,0);
+                        0,0,0,
+                        alwaysRecursive);
     s=imagePathList.next(); 
   }
+
+  QDictIterator<FileName> fndi(*Doxygen::imageNameDict);
+  FileName *fn;
+  for (;(fn=fndi.current());++fndi)
+  {
+    printf("File Name %s\n",fn->fileName());
+  }
+  
 
   msg("Searching for dot files...\n");
   QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
@@ -6663,7 +6680,8 @@ void parseInput()
   while (s)
   {
     readFileOrDirectory(s,0,Doxygen::dotFileNameDict,0,0,
-                        0,0,0);
+                        0,0,0,
+                        alwaysRecursive);
     s=dotFileList.next(); 
   }
 
@@ -6673,7 +6691,9 @@ void parseInput()
   while (s)
   {
     readFileOrDirectory(s,0,0,0,&Config_getList("FILE_PATTERNS"),
-                        0,0,&excludeNameDict,FALSE);
+                        0,0,&excludeNameDict,
+                        alwaysRecursive,
+                        FALSE);
     s=excludeList.next();
   }
 
@@ -6692,7 +6712,8 @@ void parseInput()
         Doxygen::inputNameDict,&excludeNameDict,
                                    &Config_getList("FILE_PATTERNS"),
                                    &Config_getList("EXCLUDE_PATTERNS"),
-                                   &inputFiles,0);
+                                   &inputFiles,0,
+                                   alwaysRecursive);
     s=inputList.next();
   }
   

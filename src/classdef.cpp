@@ -1267,8 +1267,11 @@ void ClassDef::writeMemberList(OutputList &ol)
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+          Definition *bd = md->getGroupDef();
+          if (bd==0) bd=cd;
+          ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
               md->anchor(),name);
+
           if ( md->isFunction() || md->isSignal() || md->isSlot() ||
                (md->isFriend() && md->argsString())) 
             ol.docify(md->argsString());
@@ -2238,23 +2241,18 @@ void ClassDef::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
       //imd->setBriefDescription(md->briefDescription());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
       insertMember(imd);
-      //printf("Adding member=%s%s to class %s\n",imd->name().data(),imd->argsString(),imd->getClassDef()->name().data());
+      //printf("Adding member=%s %s%s to class %s templSpec %s\n",
+      //    imd->typeString(),imd->name().data(),imd->argsString(),
+      //    imd->getClassDef()->name().data(),templSpec);
       // insert imd in the list of all members
       //printf("Adding member=%s class=%s\n",imd->name().data(),name().data());
-#if 0
-      MemberName *mn;
-      if ((mn=Doxygen::memberNameDict[imd->name()]))
-      {
-        mn->append(md);
-      }
-      else
+      MemberName *mn = Doxygen::memberNameSDict[imd->name()];
+      if (mn==0)
       {
         mn = new MemberName(imd->name());
-        mn->append(md);
-        Doxygen::memberNameDict.insert(imd->name(),mn);
-        Doxygen::memberNameList.append(mn);
+        Doxygen::memberNameSDict.append(imd->name(),mn);
       }
-#endif
+      mn->append(imd);
     }
   }
 }
@@ -2377,4 +2375,29 @@ void ClassDef::addListReferences()
   variableMembers.addListReferences(this);
   propertyMembers.addListReferences(this);
 }
+
+MemberDef *ClassDef::getMemberByName(const QCString &name) 
+{
+  MemberDef *xmd = 0;
+  MemberNameInfo *mni = m_allMemberNameInfoSDict->find(name);
+  if (mni)
+  {
+    const int maxInheritanceDepth = 100000;
+    int mdist=maxInheritanceDepth;
+    MemberNameInfoIterator mnii(*mni);
+    MemberInfo *mi;
+    for (mnii.toFirst();(mi=mnii.current());++mnii)
+    {
+      ClassDef *mcd=mi->memberDef->getClassDef();
+      int m=minClassDistance(this,mcd);
+      if (m<mdist && mcd->isLinkable())
+      {
+        mdist=m;
+        xmd=mi->memberDef;
+      }
+    }
+  }
+  return xmd;
+}
+
 

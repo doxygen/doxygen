@@ -32,6 +32,9 @@ The following output formats are \e directly supported by doxygen:
 <dd>Generated if \c GENERATE_RTF is set to \c YES in the configuration file.<p>
     Note that the RTF output probably only looks nice with Microsoft's 
     Word 97. If you have success with other programs, please let me know.
+<dt><b>XML</b>
+<dd>Generated if \c GENERATE_XML is set to \c YES in the configuration file.<p>
+    Note that the XML output is still under development. 
 </dl>
 
 The following output formats are \e indirectly supported by doxygen:

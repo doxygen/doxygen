@@ -1307,18 +1307,6 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
-                    "SOURCE_BROWSER",
-                    "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
-                    "be generated. Documented entities will be cross-referenced with these sources. \n",
-                    FALSE
-                 );
-  cb = addBool(
-                    "INLINE_SOURCES",
-                    "Setting the INLINE_SOURCES tag to YES will include the body \n"
-                    "of functions and classes directly in the documentation. \n",
-                    FALSE
-                 );
-  cb = addBool(
                     "STRIP_CODE_COMMENTS",
                     "Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct \n"
                     "doxygen to hide any special comment blocks from generated source code \n"
@@ -1557,6 +1545,14 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank all files are included. \n"
                  );
+  cb = addBool(
+                    "EXAMPLE_RECURSIVE",
+                    "If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be \n"
+                    "searched for input files to be used with the \\include or \\dontinclude \n"
+                    "commands irrespective of the value of the RECURSIVE tag. \n"
+                    "Possible values are YES and NO. If left blank NO is used. \n",
+                    FALSE
+                 );
   cl = addList(
                     "IMAGE_PATH",
                     "The IMAGE_PATH tag can be used to specify one or more files or \n"
@@ -1581,7 +1577,35 @@ void Config::create()
                     "files to browse. \n",
                     FALSE
                 );    
-  
+  //-----------------------------------------------------------------------------------------------
+  addInfo(  "Source Browser","configuration options related to source browsing");
+  //-----------------------------------------------------------------------------------------------
+  cb = addBool(
+                    "SOURCE_BROWSER",
+                    "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
+                    "be generated. Documented entities will be cross-referenced with these sources. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "INLINE_SOURCES",
+                    "Setting the INLINE_SOURCES tag to YES will include the body \n"
+                    "of functions and classes directly in the documentation. \n",
+                    FALSE
+                 );
+  cb = addBool(     "REFERENCED_BY_RELATION",
+                    "If the REFERENCED_BY_RELATION tag is set to YES (the default) \n"
+		    "then for each documented function all documented \n"
+		    "functions referencing it will be listed. \n",
+                    TRUE
+              );
+  cb->addDependency("SOURCE_BROWSER");
+  cb = addBool(     "REFERENCES_RELATION",
+                    "If the REFERENCES_RELATION tag is set to YES (the default) \n"
+		    "then for each documented function all documented entities \n"
+		    "called/used by that function will be listed. \n",
+                    TRUE
+              );
+  cb->addDependency("SOURCE_BROWSER");
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Index","configuration options related to the alphabetical class index");
   //-----------------------------------------------------------------------------------------------

@@ -2134,9 +2134,19 @@ void writePageIndex(OutputList &ol)
     ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trRelatedPagesDescription());
-  //ol.newParagraph();
   ol.endTextBlock();
-  ol.startItemList();
+  {
+    // UGLY HACK!
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Html);
+    ol.startIndexList();
+    ol.enableAll();
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
+    ol.startItemList();
+    ol.popGeneratorState();
+  }
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
@@ -2162,15 +2172,23 @@ void writePageIndex(OutputList &ol)
         ol.docify(" [external]");
         ol.endTypewriter();
       }
-      //ol.writeStartAnnoItem("pages",pageName,0,pageTitle);
-      ////ol.writeObjectLink(0,pageName,0,pageTitle);
-      //ol.writeEndAnnoItem(pageName);
       ol.writeString("\n");
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
       if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
     }
   }
-  ol.endItemList();
+  {
+    // UGLY HACK!
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Html);
+    ol.endIndexList();
+    ol.enableAll();
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
+    ol.endItemList();
+    ol.popGeneratorState();
+  }
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
@@ -2273,7 +2291,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
         htmlHelp->addContentsItem(isDir,gd->groupTitle(),gd->getOutputFileBase()); 
         htmlHelp->incContentsDepth();
     }
-    if(ftvHelp)
+    if (ftvHelp)
     {
         ftvHelp->addContentsItem(isDir,gd->getReference(),gd->getOutputFileBase(),
                                  0,gd->groupTitle()); 

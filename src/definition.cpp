@@ -44,8 +44,8 @@ Definition::Definition(const char *df,int dl,
   m_sectionDict=0, 
   m_startBodyLine=m_endBodyLine=-1, 
   m_bodyDef=0;
-  m_sourceRefList=0;
-  m_sourceRefDict=0;
+  m_sourceRefByDict=0;
+  m_sourceRefsDict=0;
   m_todoId=0;
   m_testId=0;
   m_bugId=0;
@@ -55,8 +55,8 @@ Definition::Definition(const char *df,int dl,
 Definition::~Definition()
 {
   delete m_sectionDict;
-  delete m_sourceRefList;
-  delete m_sourceRefDict;
+  delete m_sourceRefByDict;
+  delete m_sourceRefsDict;
 }
 
 
@@ -346,16 +346,17 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 /*! Write a reference to the source code fragments in which this 
  *  definition is used.
  */
-void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
+void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
+    const QCString &text,MemberSDict *members)
 {
   ol.pushGeneratorState();
-  if (Config_getBool("SOURCE_BROWSER") && m_sourceRefList)
+  if (Config_getBool("SOURCE_BROWSER") && members)
   {
     ol.newParagraph();
-    parseText(ol,theTranslator->trReferencedBy());
+    parseText(ol,text);
     ol.docify(" ");
 
-    QCString ldefLine=theTranslator->trWriteList(m_sourceRefList->count());
+    QCString ldefLine=theTranslator->trWriteList(members->count());
 
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
@@ -365,7 +366,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
       bool ok;
       parseText(ol,ldefLine.mid(index,newIndex-index));
       uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      MemberDef *md=m_sourceRefList->at(entryIndex);
+      MemberDef *md=members->at(entryIndex);
       if (ok && md)
       {
         QCString scope=md->getScopeString();
@@ -391,11 +392,27 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
           ol.docify(name);
           ol.popGeneratorState();
         }
+        else if (md->isLinkable() && md->getOuterScope())
+        {
+          Definition *d = md->getOuterScope();
+          // for HTML write a real link
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputGenerator::Html);
+          ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+                             md->anchor(),name);
+          ol.popGeneratorState();
+
+          // for the other output formats just mention the name
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Html);
+          ol.docify(name);
+          ol.popGeneratorState();
+        }
         else
         {
           ol.docify(name);
         }
-        ol.docify("()");
+        if (md->isFunction()) ol.docify("()");
       }
       index=newIndex+matchLen;
     } 
@@ -406,6 +423,16 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
   ol.popGeneratorState();
 }
 
+void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
+{
+  writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_sourceRefByDict);
+}
+
+void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
+{
+  writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_sourceRefsDict);
+}
+
 bool Definition::hasDocumentation() const
 { 
   return !m_doc.isEmpty() ||             // has detailed docs
@@ -413,27 +440,48 @@ bool Definition::hasDocumentation() const
          Config_getBool("EXTRACT_ALL");       // extract everything
 }
 
-void Definition::addSourceReference(MemberDef *md)
+void Definition::addSourceReferencedBy(MemberDef *md)
 {
   if (md)
   {
-    QCString name=md->name();
-    QCString scope=md->getScopeString();
+    QCString name  = md->name();
+    QCString scope = md->getScopeString();
 
     if (!scope.isEmpty())
     {
       name.prepend(scope+"::");
     }
 
-    if (m_sourceRefList==0)
+    if (m_sourceRefByDict==0)
     {
-      m_sourceRefDict = new MemberDict(53);
-      m_sourceRefList = new MemberList;
+      m_sourceRefByDict = new MemberSDict;
     }
-    if (m_sourceRefDict->find(name)==0)
+    if (m_sourceRefByDict->find(name)==0)
     {
-      m_sourceRefDict->insert(name,md);
-      m_sourceRefList->inSort(md);
+      m_sourceRefByDict->inSort(name,md);
+    }
+  }
+}
+
+void Definition::addSourceReferences(MemberDef *md)
+{
+  if (md)
+  {
+    QCString name  = md->name();
+    QCString scope = md->getScopeString();
+
+    if (!scope.isEmpty())
+    {
+      name.prepend(scope+"::");
+    }
+
+    if (m_sourceRefsDict==0)
+    {
+      m_sourceRefsDict = new MemberSDict;
+    }
+    if (m_sourceRefsDict->find(name)==0)
+    {
+      m_sourceRefsDict->inSort(name,md);
     }
   }
 }
@@ -473,5 +521,12 @@ QCString Definition::qualifiedName() const
 QCString Definition::localName() const
 {
   return m_localName;
+}
+
+void Definition::setBodySegment(int bls,int ble) 
+{
+  //printf("setBodySegment(%d,%d) for %s\n",bls,ble,name().data());
+  m_startBodyLine=bls; 
+  m_endBodyLine=ble; 
 }
 

@@ -986,6 +986,7 @@ void TagFileParser::buildLists(Entry *root)
       for (;(argName=sli.current());++sli)
       {
         Argument *a = new Argument;
+        a->type = "class";
         a->name = *argName;
         al->append(a);
       }

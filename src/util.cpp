@@ -3230,6 +3230,8 @@ QCString substituteTemplateArgumentsInString(
         ++formAli,actArg=actualArgs->next()
         )
     {
+      //printf("n=%s formArg->type=%s formArg->name=%s\n",
+      //    n.data(),formArg->type.data(),formArg->name.data());
       if (formArg->type=="class" || formArg->type=="typename")
       {
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument

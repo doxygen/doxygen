@@ -90,6 +90,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_enabled_sections ENABLED_SECTIONS
 <li> \refitem cfg_example_path EXAMPLE_PATH
 <li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
+<li> \refitem cfg_example_recursive EXAMPLE_RECURSIVE
 <li> \refitem cfg_exclude EXCLUDE
 <li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
 <li> \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
@@ -157,6 +158,8 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_project_number PROJECT_NUMBER
 <li> \refitem cfg_quiet QUIET
 <li> \refitem cfg_recursive RECURSIVE
+<li> \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
+<li> \refitem cfg_references_relation REFERENCES_RELATION
 <li> \refitem cfg_repeat_brief REPEAT_BRIEF
 <li> \refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
 <li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
@@ -318,18 +321,6 @@ followed by the descriptions of the tags grouped by category.
  that is typed after a \\internal command is included. If the tag is set
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
-
-\anchor cfg_source_browser
-<dt>\c SOURCE_BROWSER <dd>
- \addindex SOURCE_BROWSER
- If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will
- be generated. Documented entities will be cross-referenced with these sources.
-
-\anchor cfg_inline_sources
-<dt>\c INLINE_SOURCES <dd>
- \addindex INLINE_SOURCES
- Setting the \c INLINE_SOURCES tag to \c YES will include the body
- of functions, classes and enums directly into the documentation.
 
 \anchor cfg_strip_code_comments
 <dt>\c STRIP_CODE_COMMENTS <dd>
@@ -588,6 +579,14 @@ followed by the descriptions of the tags grouped by category.
  directories that contain example code fragments that are included (see
  the \\include command in section \ref cmdinclude "\\include").
 
+\anchor cfg_example_recursive
+<dt>\c EXAMPLE_RECURSIVE <dd>
+ \addindex EXAMPLE_RECURSIVE
+ If the \c EXAMPLE_RECURSIVE tag is set to \c YES then subdirectories will be
+ searched for input files to be used with the \\include or \\dontinclude 
+ commands irrespective of the value of the \c RECURSIVE tag. 
+ Possible values are \c YES and \c NO. If left blank \c NO is used. 
+
 \anchor cfg_example_patterns
 <dt>\c EXAMPLE_PATTERNS <dd>
  \addindex EXAMPLE_PATTERNS
@@ -623,6 +622,37 @@ followed by the descriptions of the tags grouped by category.
  If the \c FILTER_SOURCE_FILES tag is set to \c YES, the input filter (if set using
  \c INPUT_FILTER ) will be used to filter the input files when producing source 
  files to browse.
+
+</dl>
+
+\subsection sourcebrowser_index Source browsing related options
+\anchor cfg_source_browser
+<dl>
+
+<dt>\c SOURCE_BROWSER <dd>
+ \addindex SOURCE_BROWSER
+ If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will
+ be generated. Documented entities will be cross-referenced with these sources.
+
+\anchor cfg_inline_sources
+<dt>\c INLINE_SOURCES <dd>
+ \addindex INLINE_SOURCES
+ Setting the \c INLINE_SOURCES tag to \c YES will include the body
+ of functions, classes and enums directly into the documentation.
+
+\anchor cfg_referenced_by_relation
+<dt>\c REFERENCED_BY_RELATION <dd>
+ \addindex REFERENCED_BY_RELATION
+ If the \c REFERENCED_BY_RELATION tag is set to \c YES (the default)
+ then for each documented function all documented
+ functions referencing it will be listed. 
+
+\anchor cfg_references_relation
+<dt>\c REFERENCE_RELATION <dd>
+ \addindex REFERENCES_RELATION
+ If the \c REFERENCES_RELATION tag is set to \c YES (the default)
+ then for each documented function all documented entities
+ called/used by that function will be listed. 
 
 </dl>
 
@@ -1144,7 +1174,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex HAVE_DOT
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
  available from the path. This tool is part of 
- <a href="http://www.graphviz.org/">Graphviz</a>, a graph 
+ <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
  visualization toolkit from AT&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
  

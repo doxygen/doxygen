@@ -199,6 +199,13 @@ void LatexGenerator::init()
     << "\tmakeindex refman.idx" << endl
     << "\techo \"Rerunning latex....\"" << endl
     << "\tlatex refman.tex" << endl
+    << "\tlatex_count=5" << endl
+    << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $latex_count -gt 0 ] ;\\" << endl
+    << "\t    do \\" << endl
+    << "\t      echo \"Rerunning latex....\" ;\\" << endl
+    << "\t      latex refman.tex ;\\" << endl
+    << "\t      latex_count=`expr $latex_count - 1` ;\\" << endl
+    << "\t    done" << endl << endl
     << "clean:" << endl
     << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out" << endl;
 }
@@ -1257,6 +1264,119 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
 //  docifyStatic(t,str);
 //}
 
+/*!
+ * Function converts Latin2 character to latex strin] representin the same
+ * character.
+ */
+void LatexGenerator::latin2ToLatex(unsigned char c)
+{
+  switch (c)
+  {
+    case 0xA1: t << c;          break;
+    case 0xA2: t << c;          break;
+    case 0xA3: t << c;          break;
+    case 0xA4: t << c;          break;
+    case 0xA5: t << c;          break;
+    case 0xA6: t << "\\'{S}";   break;
+    case 0xA7: t << c;          break;
+    case 0xA8: t << c;          break;
+    case 0xA9: t << "\\v{S}";   break;
+    case 0xAA: t << "\\c{S}";   break;
+    case 0xAB: t << "\\v{T}";   break;
+    case 0xAC: t << "\\'{Z}";   break;
+    case 0xAD: t << c;          break;
+    case 0xAE: t << "\\v{Z}";   break;
+    case 0xAF: t << "\\.{Z}";   break;
+
+    case 0xB0: t << c;          break;
+    case 0xB1: t << c;          break;
+    case 0xB2: t << c;          break;
+    case 0xB3: t << c;          break;
+    case 0xB4: t << c;          break;
+    case 0xB5: t << c;          break;
+    case 0xB6: t << "\\'{s}";   break;
+    case 0xB7: t << c;          break;
+    case 0xB8: t << c;          break;
+    case 0xB9: t << "\\v{s}";   break;
+    case 0xBA: t << "\\c{s}";   break;
+    case 0xBB: t << "\\v{t}";   break;
+    case 0xBC: t << "\\'{z}";   break;
+    case 0xBD: t << c;          break;
+    case 0xBE: t << "\\v{z}";   break;
+    case 0xBF: t << "\\.{z}";   break;
+
+    case 0xC0: t << "\\'{R}";   break;
+    case 0xC1: t << "\\'{A}";   break;
+    case 0xC2: t << "\\^{A}";   break;
+    case 0xC3: t << "\\u{A}";   break;
+    case 0xC4: t << "\\\"{A}";  break;
+    case 0xC5: t << "\\'{L}";   break;
+    case 0xC6: t << "\\'{C}";   break;
+    case 0xC7: t << "\\c{C}";   break;
+    case 0xC8: t << "\\v{C}";   break;
+    case 0xC9: t << "\\'{E}";   break;
+    case 0xCA: t << "\\c{E}";   break;
+    case 0xCB: t << "\\\"{E}";  break;
+    case 0xCC: t << "\\v{E}";   break;
+    case 0xCD: t << "\\'{I}";   break;
+    case 0xCE: t << "\\^{I}";   break;
+    case 0xCF: t << "\\v{D}";   break;
+
+    case 0xD0: t << "\\bar{D}"; break;
+    case 0xD1: t << "\\'{N}";   break;
+    case 0xD2: t << "\\v{N}";   break;
+    case 0xD3: t << "\\'{O}";   break;
+    case 0xD4: t << "\\^{O}";   break;
+    case 0xD5: t << "\\H{O}";   break;
+    case 0xD6: t << "\\\"{O}";  break;
+    case 0xD7: t << c;          break;
+    case 0xD8: t << "\\v{R}";   break;
+    case 0xD9: t << c;          break;
+    case 0xDA: t << "\\'{U}";   break;
+    case 0xDB: t << "\\H{U}";   break;
+    case 0xDC: t << "\\\"{U}";  break;
+    case 0xDD: t << "\\'{Y}";   break;
+    case 0xDE: t << "\\c{T}";   break;
+    case 0xDF: t << "\\ss";     break;
+
+    case 0xE0: t << "\\'{r}";   break;
+    case 0xE1: t << "\\'{a}";   break;
+    case 0xE2: t << "\\^{a}";   break;
+    case 0xE3: t << c;          break;
+    case 0xE4: t << "\\\"{a}";  break;
+    case 0xE5: t << "\\'{l}";   break;
+    case 0xE6: t << "\\'{c}";   break;
+    case 0xE7: t << "\\c{c}";   break;
+    case 0xE8: t << "\\v{c}";   break;
+    case 0xE9: t << "\\'{e}";   break;
+    case 0xEA: t << c;          break;
+    case 0xEB: t << "\\\"{e}";  break;
+    case 0xEC: t << "\\v{e}";   break;
+    case 0xED: t << "\\'{\\i}"; break;
+    case 0xEE: t << "\\^{\\i}"; break;
+    case 0xEF: t << "\\v{d}";   break;
+
+    case 0xF0: t << "\\bar{d}"; break;
+    case 0xF1: t << "\\'{n}";   break;
+    case 0xF2: t << "\\v{n}";   break;
+    case 0xF3: t << "\\'{o}";   break;
+    case 0xF4: t << "\\^{o}";   break;
+    case 0xF5: t << "\\H{o}";   break;
+    case 0xF6: t << "\\\"{o}";  break;
+    case 0xF7: t << c;          break;
+    case 0xF8: t << "\\v{r}";   break;
+    case 0xF9: t << c;          break;
+    case 0xFA: t << "\\'{u}";   break;
+    case 0xFB: t << "\\H{u}";   break;
+    case 0xFC: t << "\\\"{u}";  break;
+    case 0xFD: t << "\\'{y}";   break;
+    case 0xFE: t << c;          break;
+    case 0xFF: t << c;          break;
+
+    default: t << c;
+  }
+}
+
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
@@ -1266,6 +1386,7 @@ void LatexGenerator::docify(const char *str)
   static bool isRussian   = theTranslator->idLanguage()=="russian";
   static bool isUkrainian = theTranslator->idLanguage()=="ukrainian";
   static bool isChinese   = theTranslator->idLanguage()=="chinese";
+  static bool isLatin2    = theTranslator->idLanguageCharset()=="iso-8859-2";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1360,6 +1481,19 @@ void LatexGenerator::docify(const char *str)
                  t << (char)c;
                }
              }
+	     else if (isLatin2)
+	     {
+               if (c>=128)
+               {
+                 latin2ToLatex(c);
+               }
+               else
+               { 
+                 // see if we can insert an hyphenation hint
+                 if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+                 t << (char)c;
+               }
+	     }
              else // language is other than Czech, Russian or Japanese
              {
                switch(c)
