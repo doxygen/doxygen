@@ -213,6 +213,7 @@ static void initParser()
   lastDefGroup.groupname.resize(0);
   insideFormula = FALSE;
   insideCode=FALSE;
+  previous = 0;
 }
 
 static void initEntry()
@@ -225,6 +226,7 @@ static void initEntry()
   current->mGrpId     = memberGroupId;
   current->relates    = memberGroupRelates.copy();
   current->inside     = memberGroupInside.copy();
+  current->objc       = insideObjC;
   if (!autoGroupStack.isEmpty())
   {
     //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
@@ -1133,6 +1135,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    current->bodyLine  = yyLineNr;
 					    current->section = Entry::FUNCTION_SEC;
 					    current->protection = protection = Public ;
+					    current->objc = TRUE;
 					    current->virt = Virtual;
 					    current->stat=yytext[0]=='+';
 					    current->mtype = mtype = Method;
@@ -2141,7 +2144,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
 #ifdef COMMENTSCAN
   					  Entry *tmp = current;
-					  current = previous;
+					  if (previous)
+					  {
+					    current = previous;
+					  }
   					  handleGroupStartCommand(current->name);
 					  current = tmp;
 					  initEntry();
@@ -2749,7 +2755,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  unput(';');
 					  BEGIN( MemberSpec ) ;
   					}
-<MemberSpec>([*&]*{BN}*)*{ID}("["[a-z_A-Z0-9]*"]")* { // the [] part could be improved.
+<MemberSpec>([*&]*{BN}*)*{ID}("["[^\]\n]*"]")* { // the [] part could be improved.
   					  lineCount();
   					  int i=0,l=yyleng,j;
 					  while (i<l && (!isId(yytext[i]))) i++;
@@ -6405,7 +6411,7 @@ static void parseCompounds(Entry *rt)
       setContext();
       yyLineNr = ce->startLine ;
       insideObjC = ce->objc;
-      //printf("---> Inner block starts at line %d\n",yyLineNr);
+      //printf("---> Inner block starts at line %d objC=%d\n",yyLineNr,insideObjC);
       //current->reset();
       if (current) delete current;
       current = new Entry;
@@ -6621,6 +6627,7 @@ void handleGroupStartCommand(const char *header)
 void handleGroupEndCommand()
 {
   endGroup();
+  previous=0;
 }
 
 

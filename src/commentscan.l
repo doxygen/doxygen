@@ -43,6 +43,7 @@
 #include "membergroup.h"
 #include "reflist.h"
 #include "code.h"
+#include "debug.h"
 
 // forward declarations
 static void handleBrief(const QCString &);
@@ -602,9 +603,19 @@ static inline void setOutput(OutputContext ctx)
   switch(inContext)
   {
     case OutputDoc:
+      if (current->docFile.isEmpty())
+      {
+        current->docFile = yyFileName;
+        current->docLine = yyLineNr;
+      }
       pOutputString = &current->doc;
       break;
     case OutputBrief:
+      if (current->briefFile.isEmpty())
+      {
+        current->briefFile = yyFileName;
+        current->briefLine = yyLineNr;
+      }
       pOutputString = &current->brief;
       break;
     case OutputXRef:
@@ -667,8 +678,7 @@ OL	  [oO][lL]
 DL	  [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
-CODE      [cC][oO][dD][eE]
-DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{CODE}
+DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -1421,7 +1431,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					    BEGIN( Comment );
 					  }
   					}
-<SkipGuardedSection>{CMD}"else"/{NW}]	{
+<SkipGuardedSection>{CMD}"else"/{NW}	{
   					  if (guards.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
@@ -2011,18 +2021,16 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
 {
   //fprintf(stderr,"parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
   //    isBrief,isJavaDocStyle,lineNr);
+
   initParser();
   guards.setAutoDelete(TRUE);
   guards.clear();
-  //current_root   = rootEntry;
   current        = curEntry;
-  //previous       = prevEntry;
   inputString    = comment;
   if (inputString==0) return FALSE; // avoid empty strings
   inputPosition  = 0;
   yyLineNr       = lineNr;
   yyFileName     = fileName;
-  //inBody         = foundInBody;
   protection     = prot;
   needNewEntry   = FALSE;
   xrefKind       = XRef_None;
@@ -2040,11 +2048,20 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
   }
 
+  // strip any leading/trailing whitespace
+  current->doc=current->doc.stripWhiteSpace();
+
   if (current->section==Entry::FILEDOC_SEC && current->doc.isEmpty())
   {
     // to allow a comment block with just a @file command.
     current->doc="\n\n";
   }
+
+  Debug::print(Debug::CommentScan,0,"CommentScanner\n%s:%d\n"
+               "input=[%s]\nbrief=[%s]\ndocs=[%s]\n------------\n",
+	       fileName.data(),lineNr,comment.data(),
+	       current->brief.data(),current->doc.data()
+              );
   
   checkFormula();
   prot = protection;

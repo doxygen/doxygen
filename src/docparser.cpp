@@ -41,8 +41,15 @@
 #include "searchindex.h"
 #include "language.h"
 
+// debug off
 #define DBG(x) do {} while(0)
+
+// debug to stdout
 //#define DBG(x) printf x
+
+// debug to stderr
+//#define myprintf(x...) fprintf(stderr,x)
+//#define DBG(x) myprintf x
 
 #define INTERNAL_ASSERT(x) do {} while(0)
 //#define INTERNAL_ASSERT(x) if (!(x)) DBG(("INTERNAL_ASSERT(%s) failed retval=0x%x: file=%s line=%d\n",#x,retval,__FILE__,__LINE__)); 
@@ -3347,7 +3354,8 @@ int DocParamList::parse(const QString &cmdName)
       g_hasReturnCommand=TRUE;
       checkArgumentName(g_token->name,FALSE);
     }
-    m_params.append(g_token->name);
+    //m_params.append(g_token->name);
+    handleLinkedWord(this,m_params);
     tok=doctokenizerYYlex();
   }
   doctokenizerYYsetStatePara();

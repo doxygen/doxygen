@@ -48,6 +48,7 @@ static int          sharpCount;
 static bool         classTempListFound;
 static bool         funcTempListFound;
 static QCString      exceptionString;
+static bool          insideObjC;
 
 static void addType()
 {
@@ -116,6 +117,16 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 <Start>"operator"/({B}*"["{B}*"]")* 	{ // operator rule must be before {ID} rule
   				  name += yytext;
   				  BEGIN(Operator);
+  				}
+<Start>{ID}{B}*"("{B}*{ID}{B}*")" { // Objective-C class categories
+  				  if (!insideObjC) 
+				  {
+				    REJECT;
+				  }
+				  else 
+				  {
+				    name += yytext;
+				  }
   				}
 <Start>(~{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
@@ -213,7 +224,7 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 /*@ ----------------------------------------------------------------------------
  */
 
-void parseFuncDecl(const QCString &decl,QCString &cl,QCString &t,
+void parseFuncDecl(const QCString &decl,bool objC,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
   inputString   = decl;
@@ -222,6 +233,7 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &t,
   inputPosition      = 0;
   classTempListFound = FALSE;
   funcTempListFound  = FALSE;
+  insideObjC = objC;
   scope.resize(0);
   className.resize(0);
   classTempList.resize(0);

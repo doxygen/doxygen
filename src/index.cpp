@@ -92,7 +92,6 @@ void countDataStructures()
 
 static void startIndexHierarchy(OutputList &ol,int level)
 {
-  // UGLY HACK!
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Html);
@@ -106,7 +105,6 @@ static void startIndexHierarchy(OutputList &ol,int level)
 
 static void endIndexHierarchy(OutputList &ol,int level)
 {
-  // UGLY HACK!
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Html);
@@ -1695,7 +1693,7 @@ void writeQuickMemberIndex(OutputList &ol,bool *charUsed,int page,
 
 //----------------------------------------------------------------------------
 
-static void writeMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
+static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
 {
   if (documentedClassMembers[hl]==0) return;
 
@@ -1791,31 +1789,34 @@ static void writeMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
   ol.popGeneratorState();
 }
 
-void writeMemberIndex(OutputList &ol)
+void writeClassMemberIndex(OutputList &ol)
 {
-  writeMemberIndexFiltered(ol,CMHL_All);
-  writeMemberIndexFiltered(ol,CMHL_Functions);
-  writeMemberIndexFiltered(ol,CMHL_Variables);
-  writeMemberIndexFiltered(ol,CMHL_Typedefs);
-  writeMemberIndexFiltered(ol,CMHL_Enums);
-  writeMemberIndexFiltered(ol,CMHL_EnumValues);
-  writeMemberIndexFiltered(ol,CMHL_Properties);
-  writeMemberIndexFiltered(ol,CMHL_Events);
-  writeMemberIndexFiltered(ol,CMHL_Related);
+  writeClassMemberIndexFiltered(ol,CMHL_All);
+  writeClassMemberIndexFiltered(ol,CMHL_Functions);
+  writeClassMemberIndexFiltered(ol,CMHL_Variables);
+  writeClassMemberIndexFiltered(ol,CMHL_Typedefs);
+  writeClassMemberIndexFiltered(ol,CMHL_Enums);
+  writeClassMemberIndexFiltered(ol,CMHL_EnumValues);
+  writeClassMemberIndexFiltered(ol,CMHL_Properties);
+  writeClassMemberIndexFiltered(ol,CMHL_Events);
+  writeClassMemberIndexFiltered(ol,CMHL_Related);
 
-  QCString title = theTranslator->trCompoundMembers();
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  if (documentedClassMembers[CMHL_All]>0)
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,title,"functions"); 
-  }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"functions",0,title); 
+    QCString title = theTranslator->trCompoundMembers();
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,title,"functions"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"functions",0,title); 
+    }
   }
 }
 
@@ -2193,19 +2194,22 @@ void writeFileMemberIndex(OutputList &ol)
   writeFileMemberIndexFiltered(ol,FMHL_EnumValues);
   writeFileMemberIndexFiltered(ol,FMHL_Defines);
 
-  QCString title = theTranslator->trFileMembers();
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  if (documentedFileMembers[FMHL_All]>0)
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,title,"globals"); 
-  }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"globals",0,title); 
+    QCString title = theTranslator->trFileMembers();
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,title,"globals"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"globals",0,title); 
+    }
   }
 }
 
@@ -2309,19 +2313,22 @@ void writeNamespaceMemberIndex(OutputList &ol)
   writeNamespaceMemberIndexFiltered(ol,NMHL_Enums);
   writeNamespaceMemberIndexFiltered(ol,NMHL_EnumValues);
 
-  QCString title = theTranslator->trNamespaceMembers();
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
+  if (documentedNamespaceMembers[NMHL_All]>0)
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,title,"namespacemembers"); 
-  }
-  if (hasFtvHelp)
-  {
-    FTVHelp *ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,title); 
+    QCString title = theTranslator->trNamespaceMembers();
+    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+    if (hasHtmlHelp)
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addContentsItem(FALSE,title,"namespacemembers"); 
+    }
+    if (hasFtvHelp)
+    {
+      FTVHelp *ftvHelp = FTVHelp::getInstance();
+      ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,title); 
+    }
   }
 }
 

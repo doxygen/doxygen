@@ -59,7 +59,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   startFile(ol,pageName,pageName,title());
 
-  if (getOuterScope()!=Doxygen::globalScope)
+  if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
   {
     getOuterScope()->writeNavigationPath(ol);
   }

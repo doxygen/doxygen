@@ -217,10 +217,10 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
 void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
 { 
   if (b==0) return;
-  //printf("Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
+  //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
   m_brief=QCString(b).stripWhiteSpace();
   int bl=m_brief.length(); 
-  if (bl>0) // add puntuation if needed
+  if (bl>0) // add punctuation if needed
   {
     switch(m_brief.at(bl-1))
     {

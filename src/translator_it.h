@@ -19,6 +19,8 @@
  *
  * Revision history
  *
+ *  2005/03: translated new items used since version 1.4.1
+ *           removed unused methods listed in Petr Prikryl February 28 translator report
  *  2004/09: translated new items used since version 1.3.9
  *  2004/06: translated new items used since version 1.3.8
  *  2003/11: translated new items used since version 1.3.3
@@ -28,7 +30,7 @@
  *  2002/08: translated new items used since version 1.2.17
  *  2002/07: translated new items used since version 1.2.16
  *  2002/06: modified trRelatedPagesDescription() method
- *           correct typo in trInclByDepGraph() method
+ *           corrected typo in trInclByDepGraph() method
  *  2002/01: translated new items used since version 1.2.13
  *           updated e-mail address
  *  2001/11: corrected the translation fixing the issues reported by the translator.pl script
@@ -72,7 +74,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_4_1
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -212,10 +214,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     QCString trFileList()
     { return "Lista dei file"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    QCString trHeaderFiles()
-    { return "Lista dei file header"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
      {
@@ -333,10 +331,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    QCString trHeaderFilesDescription()
-    { return "Questi sono gli header file che compongono l'API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription()
     { return "Questa è la lista di tutti gli esempi:"; }
@@ -349,14 +343,7 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     QCString trModulesDescription()
     { return "Questa è la lista di tutti i moduli:"; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    QCString trNoDescriptionAvailable()
-    { return "Descrizione non disponibile"; }
-
     // index titles (the project name is prepended for these)
-
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation()
@@ -496,12 +483,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     { return "Documentazione dei tipi enumerati"; }
 
     /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for enumeration values
-     */
-    QCString trEnumerationValueDocumentation()
-    { return "Documentazione dei valori dei tipi enumerati"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation()
@@ -555,17 +536,9 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     QCString trForInternalUseOnly()
     { return "Solo per uso interno."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    QCString trReimplementedForInternalReasons()
-    { return "Reimplementato per motivi interni; l'API non è stata modificata.";}
-
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Avvertimento"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    QCString trBugsAndLimitations()
-    { return "Bug e limitazioni"; }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion()
@@ -846,10 +819,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trSources()
-    {
-      return "Sorgenti";
-    }
     QCString trDefinedAtLineInSourceFile()
     {
       return "Definizione alla linea @0 del file @1.";
@@ -1142,11 +1111,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfacce";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1178,11 +1142,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     virtual QCString trPackages()
     {
       return "Package";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Documentazione dei package";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1287,17 +1246,6 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     virtual QCString trMember(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Membr" : "membr"));
-      result+=(singular ? "o" : "i");
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Camp" : "camp"));
       result+=(singular ? "o" : "i");
       return result;
     }
@@ -1560,6 +1508,20 @@ class TranslatorItalian : public TranslatorAdapter_1_4_1
     {
       QCString result((first_capital ? "Directory" : "directory"));
       return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Questa è una funzione membro sovraccaricata (overloaded), "
+              "fornita per comodità. Differisce dalla funzione di cui sopra"
+              "unicamente per gli argomenti passati.";
     }
 
 };

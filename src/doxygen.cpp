@@ -1909,7 +1909,7 @@ static void buildVarList(Entry *root)
       }
     }
     
-    QCString scope,name=root->name.copy();
+    QCString scope,name=removeRedundantWhiteSpace(root->name);
 
     // find the scope of this variable 
     Entry *p = root->parent;
@@ -1939,7 +1939,7 @@ static void buildVarList(Entry *root)
            addVariableToClass(root,  // entry
                               cd,    // class to add member to
                               MemberDef::Friend, // type of member
-                              root->name, // name of the member
+                              name, // name of the member
                               FALSE,  // from Anonymous scope
                               0,      // anonymous member
                               Public, // protection
@@ -1986,11 +1986,12 @@ static void buildVarList(Entry *root)
     
     if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
     {
-      // TODO: clean up this mess!
       MemberDef *md=0;
-#if 0
+
       // if cd is an annonymous scope we insert the member 
-      // into a non-annonymous scope as well.
+      // into a non-annonymous scope as well. This is needed to
+      // be able to refer to it using \var or \fn
+
       //int indentDepth=0;
       int si=scope.find('@');
       //int anonyScopes = 0;
@@ -2019,14 +2020,16 @@ static void buildVarList(Entry *root)
                                  );
             added=TRUE;
           }
-          else // annonymous scope inside namespace or file => put variable in the global scope
+          else // anonymous scope inside namespace or file => put variable in the global scope
           {
-            md=addVariableToFile(root,mtype,pScope,name,TRUE,0); 
+            if (mtype==MemberDef::Variable)
+            {
+              md=addVariableToFile(root,mtype,pScope,name,TRUE,0); 
+            }
             added=TRUE;
           }
         }
       }
-#endif
       //printf("name=`%s' scope=%s scope.right=%s indentDepth=%d anonyScopes=%d\n",
       //                   name.data(),scope.data(),
       //                   scope.right(scope.length()-si).data(),
@@ -2266,7 +2269,8 @@ static void buildFunctionList(Entry *root)
         int te=rname.find('>');
         if (ts==-1 || te==-1)
         {
-          isMember=TRUE;
+          NamespaceDef *nd = Doxygen::namespaceSDict.find(rname.left(memIndex));
+          isMember=nd==0;
         }
         else
         {
@@ -2289,11 +2293,12 @@ static void buildFunctionList(Entry *root)
         addMethodToClass(root,cd,rname,isFriend);
       }
       else if (root->parent && 
-               !((root->parent->section & Entry::COMPOUND_MASK) || root->parent->section==Entry::OBJCIMPL_SEC) &&
+               !((root->parent->section & Entry::COMPOUND_MASK) 
+                 || root->parent->section==Entry::OBJCIMPL_SEC
+                ) &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesDup) &&
-               root->type.left(7)!="extern " &&
-               root->type.left(8)!="typedef " 
+               root->type.left(7)!="extern " && root->type.left(8)!="typedef " 
               )
       // no member => unrelated function 
       {
@@ -4341,10 +4346,10 @@ static void findMember(Entry *root,
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
                "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
-               "memSpec=%d\n",
+               "memSpec=%d isObjC=%d\n",
                root,funcDecl.data(),root->relates.data(),overloaded,isFunc,root->mGrpId,
                root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
-               root->memSpec
+               root->memSpec,root->objc
               );
 
   QCString scopeName;
@@ -4427,7 +4432,7 @@ static void findMember(Entry *root,
   else
   {
     // extract information from the declarations
-    parseFuncDecl(funcDecl,scopeName,funcType,funcName,
+    parseFuncDecl(funcDecl,root->objc,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
   }
@@ -4648,6 +4653,11 @@ static void findMember(Entry *root,
             if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
             ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
+            if (tcd==0 && stripAnonymousNamespaceScope(cd->name())==scopeName)
+            {
+              // don't be fooled by anonymous scopes
+              tcd=cd;
+            }
             //printf("Looking for %s inside nd=%s result=%p\n",
             //    scopeName.data(),nd?nd->name().data():"<none>",tcd);
 
@@ -5177,6 +5187,16 @@ static void findMember(Entry *root,
             //Doxygen::memberNameList.append(mn);
             //Doxygen::memberNameDict.insert(funcName,mn);
             Doxygen::memberNameSDict.append(funcName,mn);
+          }
+        }
+        if (root->relatesDup)
+        {
+          if (!findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+          {
+            warn(root->fileName,root->startLine,
+               "Warning: Cannot determine file/namespace for relatedalso function\n%s",
+               fullFuncDecl.data()
+              );   
           }
         }
       }
@@ -6124,7 +6144,7 @@ static void generateClassDocs()
   writeHierarchicalIndex(*outputList);
 
   msg("Generating member index...\n");
-  writeMemberIndex(*outputList);
+  writeClassMemberIndex(*outputList);
 
   if (Doxygen::exampleSDict->count()>0)
   {
@@ -7196,9 +7216,12 @@ static bool patternMatch(QFileInfo *fi,QStrList *patList)
   bool found=FALSE;
   if (patList)
   { 
-    char *pattern=patList->first();
-    while (pattern && !found)
+    QCString pattern=patList->first();
+    while (!pattern.isEmpty() && !found)
     {
+      int i=pattern.find('=');
+      if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
+
       //printf("Matching `%s' against pattern `%s'\n",fi->fileName().data(),pattern);
 #if defined(_WIN32) // windows
       QRegExp re(pattern,FALSE,TRUE); // case insensitive match 

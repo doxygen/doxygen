@@ -1994,6 +1994,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
+					  if (QCString(yytext)=="typedef")
+					  {
+					    addType();
+  					    g_name+=yytext; 
+					  }
 					  endFontClass();
   					}
 <Body>{KEYWORD}/{B}* 			{

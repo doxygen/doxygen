@@ -1165,10 +1165,21 @@ void PerlModDocVisitor::visitPre(DocParamList *pl)
   leaveText();
   m_output.openHash()
     .openList("parameters");
-  QStrListIterator li(pl->parameters());
-  const char *s;
-  for (li.toFirst();(s=li.current());++li)
+  //QStrListIterator li(pl->parameters());
+  //const char *s;
+  QListIterator<DocNode> li(pl->parameters());
+  DocNode *param;
+  for (li.toFirst();(param=li.current());++li)
   {
+    QCString s;
+    if (param->kind()==DocNode::Kind_Word)
+    {
+      s = ((DocWord*)param)->word(); 
+    }
+    else if (param->kind()==DocNode::Kind_LinkedWord)
+    {
+      s = ((DocLinkedWord*)param)->word(); 
+    }
     m_output.openHash()
       .addFieldQuotedString("name", s)
       .closeHash();

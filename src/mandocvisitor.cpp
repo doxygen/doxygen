@@ -804,13 +804,22 @@ void ManDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
   m_t << "\\fI";
-  QStrListIterator li(pl->parameters());
-  const char *s;
+  //QStrListIterator li(pl->parameters());
+  //const char *s;
+  QListIterator<DocNode> li(pl->parameters());
+  DocNode *param;
   bool first=TRUE;
-  for (li.toFirst();(s=li.current());++li)
+  for (li.toFirst();(param=li.current());++li)
   {
     if (!first) m_t << ","; else first=FALSE;
-    m_t << s;
+    if (param->kind()==DocNode::Kind_Word)
+    {
+      visit((DocWord*)param); 
+    }
+    else if (param->kind()==DocNode::Kind_LinkedWord)
+    {
+      visit((DocLinkedWord*)param); 
+    }
   }
   m_t << "\\fP ";
 }

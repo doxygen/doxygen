@@ -49,24 +49,28 @@ void writeIndex(OutputList &ol);
 void writeHierarchicalIndex(OutputList &ol);
 void writeAlphabeticalIndex(OutputList &ol);
 void writeClassHierarchy(OutputList &ol);
-void writeFileIndex(OutputList &ol);
-void writeSourceIndex(OutputList &ol);
 void writeAnnotatedIndex(OutputList &ol);
 void writeAnnotatedClassList(OutputList &ol);
-void writeMemberIndex(OutputList &ol);
 void writeMemberList(OutputList &ol,bool useSections);
+
+void writeSourceIndex(OutputList &ol);
 void writeHeaderIndex(OutputList &ol);
 void writeHeaderFileList(OutputList &ol);
+
 void writeExampleIndex(OutputList &ol);
 void writePageIndex(OutputList &ol);
-void writeFileMemberIndex(OutputList &ol);
+void writeFileIndex(OutputList &ol);
+void writeNamespaceIndex(OutputList &ol);
 void writeGroupIndex(OutputList &ol);
 void writeDirIndex(OutputList &ol);
-void writeNamespaceIndex(OutputList &ol);
+void writePackageIndex(OutputList &ol);
+
+void writeClassMemberIndex(OutputList &ol);
+void writeFileMemberIndex(OutputList &ol);
 void writeNamespaceMemberIndex(OutputList &ol);
+
 void writeGraphicalClassHierarchy(OutputList &ol);
 void writeGraphInfo(OutputList &ol);
-void writePackageIndex(OutputList &ol);
 
 void countDataStructures();
 

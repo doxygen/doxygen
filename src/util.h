@@ -180,7 +180,7 @@ QCString stripScope(const char *name);
 int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
 QCString convertToHtml(const char *s);
 QCString convertToXML(const char *s);
-const char * getOverloadDocs();
+QCString getOverloadDocs();
 void addMembersToMemberGroup(MemberList *ml,
                              MemberGroupSDict *memberGroupSDict,
                              Definition *context);

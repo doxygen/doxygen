@@ -103,7 +103,9 @@ void FormulaList::generateBitmaps(const char *path)
   {
     //printf("Running latex...\n");
     //system("latex _formulas.tex </dev/null >/dev/null");
-    if (iSystem("latex","_formulas.tex")!=0)
+    QCString latexCmd = Config_getString("LATEX_CMD_NAME");
+    if (latexCmd.isEmpty()) latexCmd="latex";
+    if (iSystem(latexCmd,"_formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look for typos in _formulas.tex!\n");
       formulaError=TRUE;

@@ -18,8 +18,60 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <qdict.h>
+
 #include "qtbc.h"
 #include "debug.h"
+
+//------------------------------------------------------------------------
+
+struct LabelMap
+{
+  const char *name;
+  Debug::DebugMask event;
+};
+
+static LabelMap s_labels[] =
+{
+  { "findmembers",  Debug::FindMembers  },
+  { "functions",    Debug::Functions    },
+  { "variables",    Debug::Variables    },
+  { "preprocessor", Debug::Preprocessor },
+  { "classes",      Debug::Classes      },
+  { "commentcnv",   Debug::CommentCnv   },
+  { "commentscan",  Debug::CommentScan  },
+  { "validate",     Debug::Validate     },
+  { "printtree",    Debug::PrintTree    },
+  { "time",         Debug::Time         },
+  { "extcmd",       Debug::ExtCmd       },
+  { 0,             (Debug::DebugMask)0  }
+};
+
+class LabelMapper
+{
+  public:
+    LabelMapper() : m_map(17) 
+    {
+      m_map.setAutoDelete(TRUE);
+      LabelMap *p = s_labels;
+      while (p->name)
+      {
+        m_map.insert(p->name,new Debug::DebugMask(p->event));
+        p++;
+      }
+    }
+    Debug::DebugMask *find(const char *s) const 
+    {
+      if (s==0) return 0;
+      return m_map.find(s);
+    }
+  private:
+    QDict<Debug::DebugMask> m_map;
+};
+
+static LabelMapper g_labelMapper;
+
+//------------------------------------------------------------------------
 
 Debug::DebugMask Debug::curMask = Debug::Quiet;
 int Debug::curPrio = 0;
@@ -38,29 +90,8 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
 static int labelToEnumValue(const char *l)
 {
   QCString label=l;
-  label=label.lower();
-  if (label=="findmembers") 
-    return Debug::FindMembers;
-  else if (label=="functions")
-    return Debug::Functions;
-  else if (label=="variables")
-    return Debug::Variables;
-  else if (label=="preprocessor")
-    return Debug::Preprocessor;
-  else if (label=="classes")
-    return Debug::Classes;
-  else if (label=="commentcnv")
-    return Debug::CommentCnv;
-  else if (label=="validate")
-    return Debug::Validate;
-  else if (label=="printtree")
-    return Debug::PrintTree;
-  else if (label=="time")
-    return Debug::Time;
-  else if (label=="extcmd")
-    return Debug::ExtCmd;
-  else
-    return 0;
+  Debug::DebugMask *event = g_labelMapper.find(label.lower());
+  if (event) return *event; else return 0;
 }
 
 void Debug::setFlag(const char *lab)
@@ -82,3 +113,4 @@ bool Debug::isFlagSet(DebugMask mask)
 {
   return (curMask & mask)!=0;
 }
+

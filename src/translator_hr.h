@@ -62,11 +62,14 @@
 // 2005/02/28
 // - Removed obsolete (unused) methods
 //
+// 2005/03/21
+// - Added strings for 1.4.1
+//
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_4_1
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1237,6 +1240,20 @@ class TranslatorCroatian : public TranslatorAdapter_1_4_1
       if (!singular) result+="i"; 
       return result; 
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return decode("Ovo je preoptereæena funkcija (overload). "
+              "Razlikuje se od navedene metode "
+              "samo po vrsti argumenata koje prihvata.");
+    }
+
 };
 
 #endif

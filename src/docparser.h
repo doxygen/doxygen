@@ -206,7 +206,7 @@ class DocLinkedWord : public DocNode
                   const QString &ref,const QString &file,
                   const QString &anchor);
     QString word() const       { return m_word; }
-    Kind kind() const          { return Kind_Word; }
+    Kind kind() const          { return Kind_LinkedWord; }
     DocNode *parent() const    { return m_parent; }
     QString file() const       { return m_file; }
     QString relPath() const    { return m_relPath; }
@@ -993,7 +993,8 @@ class DocParamList : public DocNode
     virtual ~DocParamList()         { delete m_paragraph; }
     Kind kind() const               { return Kind_ParamList; }
     DocNode *parent() const         { return m_parent; }
-    const QStrList &parameters()    { return m_params; }
+    //const QStrList &parameters()    { return m_params; }
+    const QList<DocNode> &parameters()    { return m_params; }
     DocParamSect::Type type() const { return m_type; }
     DocParamSect::Direction direction() const { return m_dir; }
     void markFirst(bool b=TRUE)     { m_isFirst=b; }
@@ -1011,7 +1012,8 @@ class DocParamList : public DocNode
   private:
     DocNode *               m_parent;
     DocPara *               m_paragraph;
-    QStrList                m_params;
+    //QStrList                m_params;
+    QList<DocNode>          m_params;
     DocParamSect::Type      m_type;
     DocParamSect::Direction m_dir;
     bool                    m_isFirst;
