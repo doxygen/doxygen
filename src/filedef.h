@@ -117,6 +117,7 @@ class FileDef : public Definition
     {
       return isLinkableInProject() || isReference();
     }
+    bool isIncluded(const QCString &name) const;
 
     void writeDocumentation(OutputList &ol);
     void writeSource(OutputList &ol);

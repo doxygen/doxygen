@@ -681,11 +681,11 @@ class IFile : public ICompound
   public:
     virtual IGraph *includeDependencyGraph() const = 0;
     virtual IGraph *includedByDependencyGraph() const = 0;
+    virtual IDocProgramListing *source() const = 0;
 
     // file:
     //  includes()
     //  includedBy()
-    //  IDocProgramListing *source()
     //  ICompound *innerNamespaces()
     //  ICompoundIterator *innerClasses()
 };

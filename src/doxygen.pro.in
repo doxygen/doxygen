@@ -26,6 +26,7 @@ win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\lib
 win32-borland:LIBS         += qtools.lib png.lib doxygen.lib doxycfg.lib shell32.lib 
 win32-borland:TMAKE_LFLAGS += -L..\lib -L$(BCB)\lib\psdk
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+win32-g++:TMAKE_CXXFLAGS   += -D_WIN32 -D__CYGWIN__ -DALL_STATIC
 INCLUDEPATH                += ../qtools ../libpng .
 DESTDIR                    =  ../bin
 TARGET                     =  doxygen

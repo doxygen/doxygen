@@ -588,6 +588,9 @@ int main(int argc,char **argv)
 
       printf("==== included by dependency graph ==== \n");
       DumpGraph(file->includedByDependencyGraph());
+
+      printf("==== source ====\n");
+      DumpDoc(file->source(),0);
     }
     
     comp->release();

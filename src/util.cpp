@@ -1332,9 +1332,11 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    NamespaceList *usingNamespaces,
                    ClassList *usingClasses)
 {
-  //printf("match argument start %s:%s <-> %s:%s\n",
+  //printf("match argument start %s:%s <-> %s:%s using nsp=%p class=%p\n",
   //    srcA->type.data(),srcA->name.data(),
-  //    dstA->type.data(),dstA->name.data());
+  //    dstA->type.data(),dstA->name.data(),
+  //    usingNamespaces,
+  //    usingClasses);
 
   // TODO: resolve any typedefs names that are part of srcA->type
   //       before matching. This should use className and namespaceName

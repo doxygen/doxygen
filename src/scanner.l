@@ -3770,10 +3770,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipSection>"//"|"*/"			  					
 <ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
-                                          // previous section enabled => absorb else
+                                          // previous section enabled => skip now
+  					  depthIf=1;
+  					  BEGIN(SkipSection);
   					}
 <ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
-                                          // section was enable => skip now
+                                          // section was enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}

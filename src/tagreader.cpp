@@ -91,11 +91,19 @@ class TagPackageInfo
     QStringList classList;
 };
 
+class TagIncludeInfo
+{
+  public:
+    QString id;
+    QString name;
+    bool isLocal;
+};
+
 /*! Container for file specific info that can be read from a tagfile */
 class TagFileInfo
 {
   public:
-    TagFileInfo() { members.setAutoDelete(TRUE); }
+    TagFileInfo() { members.setAutoDelete(TRUE); includes.setAutoDelete(TRUE); }
     QString name;
     QString path;
     QString filename;
@@ -103,6 +111,7 @@ class TagFileInfo
     QList<TagMemberInfo> members;
     QStringList classList;
     QStringList namespaceList;
+    QList<TagIncludeInfo> includes;
 };
 
 /*! Container for group specific info that can be read from a tagfile */
@@ -431,6 +440,25 @@ class TagFileParser : public QXmlDefaultHandler
         err("Error: Unexpected tag `base' found\n");
       }
     }
+    void startIncludes(const QXmlAttributes& attrib )
+    {
+      if (m_state==InFile && m_curFile)
+      {
+        m_curIncludes = new TagIncludeInfo;
+        m_curIncludes->id = attrib.value("id");
+        m_curIncludes->isLocal = attrib.value("local")=="yes" ? TRUE : FALSE;
+        m_curFile->includes.append(m_curIncludes);
+      }
+      else
+      {
+        err("Error: Unexpected tag `includes' found\n");
+      }
+      m_curString="";
+    }
+    void endIncludes()
+    {
+      m_curIncludes->name = m_curString;
+    }
     void endTemplateArg()
     {
       if (m_state==InClass && m_curClass)
@@ -541,6 +569,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("name",        new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("base",        new StartElementHandler(this,&TagFileParser::startBase));
       m_startElementHandlers.insert("filename",    new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("includes",    new StartElementHandler(this,&TagFileParser::startIncludes));
       m_startElementHandlers.insert("path",        new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("anchor",      new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("arglist",     new StartElementHandler(this,&TagFileParser::startStringValue));
@@ -560,6 +589,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_endElementHandlers.insert("name",        new EndElementHandler(this,&TagFileParser::endName));
       m_endElementHandlers.insert("base",        new EndElementHandler(this,&TagFileParser::endBase));
       m_endElementHandlers.insert("filename",    new EndElementHandler(this,&TagFileParser::endFilename));
+      m_endElementHandlers.insert("includes",    new EndElementHandler(this,&TagFileParser::endIncludes));
       m_endElementHandlers.insert("path",        new EndElementHandler(this,&TagFileParser::endPath));
       m_endElementHandlers.insert("anchor",      new EndElementHandler(this,&TagFileParser::endAnchor));
       m_endElementHandlers.insert("arglist",     new EndElementHandler(this,&TagFileParser::endArglist));
@@ -612,6 +642,7 @@ class TagFileParser : public QXmlDefaultHandler
     }
     void dump();
     void buildLists(Entry *root);
+    void addIncludes();
     
   private:
     void buildMemberList(Entry *ce,QList<TagMemberInfo> &members);
@@ -631,6 +662,7 @@ class TagFileParser : public QXmlDefaultHandler
     TagGroupInfo              *m_curGroup;
     TagPageInfo               *m_curPage;
     TagMemberInfo             *m_curMember;
+    TagIncludeInfo            *m_curIncludes;
     QCString                   m_curString;
     QString                    m_tagName;
     State                      m_state;
@@ -751,6 +783,13 @@ void TagFileParser::dump()
       msg("    name: `%s'\n",md->name.data());
       msg("    anchor: `%s'\n",md->anchor.data());
       msg("    arglist: `%s'\n",md->arglist.data());
+    }
+
+    QListIterator<TagIncludeInfo> mii(fd->includes);
+    TagIncludeInfo *ii;
+    for (;(ii=mii.current());++mii)
+    {
+      msg("  includes id: %s name: %s\n",ii->id.data(),ii->name.data());
     }
   }
 
@@ -1113,6 +1152,44 @@ void TagFileParser::buildLists(Entry *root)
   }
 }
 
+void TagFileParser::addIncludes()
+{
+  TagFileInfo *tfi = m_tagFileFiles.first();
+  while (tfi)
+  {
+    FileName *fn = Doxygen::inputNameDict->find(tfi->name);
+    if (fn)
+    {
+      FileNameIterator fni(*fn);
+      FileDef *fd;
+      for (;(fd=fni.current());++fni)
+      {
+        if (fd->getPath()==QCString(m_tagName+":"+tfi->path))
+        {
+          QListIterator<TagIncludeInfo> mii(tfi->includes);
+          TagIncludeInfo *ii;
+          for (;(ii=mii.current());++mii)
+          {
+            FileName *ifn = Doxygen::inputNameDict->find(ii->name);
+            FileNameIterator ifni(*ifn);
+            FileDef *ifd;
+            for (;(ifd=ifni.current());++ifni)
+            {
+              printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
+                      ifd->getOutputFileBase().data(),ii->id.data());
+              if (ifd->getOutputFileBase()==QCString(ii->id))
+              {
+                fd->addIncludeDependency(ifd,ii->name,ii->isLocal);
+              }
+            }
+          }
+        }
+      } 
+    }
+    tfi = m_tagFileFiles.next();
+  }
+}
+
 void parseTagFile(Entry *root,const char *fullName,const char *tagName)
 {
   QFileInfo fi(fullName);
@@ -1126,5 +1203,6 @@ void parseTagFile(Entry *root,const char *fullName,const char *tagName)
   reader.setErrorHandler( &errorHandler );
   reader.parse( source );
   handler.buildLists(root);
+  handler.addIncludes();
 }
 

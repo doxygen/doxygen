@@ -19,6 +19,7 @@ CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =  config.h	
 SOURCES      =	config.cpp 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+win32-g++:TMAKE_CXXFLAGS   += -D_WIN32 -D__CYGWIN__ -DALL_STATIC
 INCLUDEPATH                += ../qtools
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib

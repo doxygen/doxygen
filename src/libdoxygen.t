@@ -62,6 +62,9 @@ sub GenerateDep {
 #$ GenerateDep("doc.cpp","doc.l");
 	$(LEX) -PdocYY -t doc.l >doc.cpp
 
+#$ GenerateDep("commentcnv.cpp","commentcnv.l");
+	$(LEX) -PcommentcnvYY -t commentcnv.l >commentcnv.cpp
+
 #$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
 	$(LEX) -PcppExpYY -t constexp.l >ce_lex.cpp 
 
