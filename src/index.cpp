@@ -930,7 +930,11 @@ void writeFileIndex(OutputList &ol)
           path=stripFromPath(fd->getPath().copy());
         }
         QCString fullName=fd->name();
-        if (!path.isEmpty()) fullName.prepend(path+"/");
+        if (!path.isEmpty()) 
+        {
+          if (path.at(path.length()-1)!='/') fullName.prepend("/");
+          fullName.prepend(path);
+        }
 
         // --------------- LaTeX/RTF only -------------------------
 #if 0

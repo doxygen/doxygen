@@ -32,7 +32,16 @@ struct RefItem
   bool written;
 };
 
-/*! Singleton for the one and only RefList */
+/*! @brief List of cross-referenced items 
+ * 
+ *  This class represents a list of items that are put
+ *  at a certain point in the documentation by some special command 
+ *  and are collected in a list. The items cross-reference the 
+ *  documentation and the list.
+ *
+ *  Examples are the todo list, the test list and the bug list,
+ *  introduced by the \\todo, \\test, and \\bug commands respectively.
+ */
 class RefList
 {
   public:
@@ -62,9 +71,5 @@ class RefList
     QIntDictIterator<RefItem> *m_dictIterator;
     BaseOutputDocInterface::SectionTypes m_type;
 };
-
-//extern RefList todoList;
-//extern RefList testList;
-//extern RefList bugList;
 
 #endif

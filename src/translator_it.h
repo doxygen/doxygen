@@ -19,6 +19,8 @@
  *
  * Revision history
  *
+ *  2002/07: modified trRelatedPagesDescription() method
+ *           correct typo in trInclByDepGraph() method
  *  2002/01: translated new items used since version 1.2.13
  *           updated e-mail address
  *  2001/11: corrected the translation fixing the issues reported by the translator.pl script
@@ -62,7 +64,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public Translator
+class TranslatorItalian : public TranslatorAdapter_1_2_16
 {
   public:
 
@@ -333,7 +335,7 @@ class TranslatorItalian : public Translator
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription()
-    { return "Questa è la lista di tutte le pagine di documentazione collegate fra loro:"; }
+    { return "Questa è la lista di tutte le pagine di documentazione generale:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription()
@@ -1011,7 +1013,7 @@ class TranslatorItalian : public Translator
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Queato grafo mostra quali file includono direttamente o indirettamente questo file:";
+      return "Questo grafo mostra quali altri file includono direttamente o indirettamente questo file:";
     }
     virtual QCString trSince()
     {

@@ -638,7 +638,7 @@ class TranslatorEnglish : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=(QCString)clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -1390,6 +1390,18 @@ class TranslatorEnglish : public Translator
     virtual QCString trImplementedInList(int numEntries)
     {
       return "Implemented in "+trWriteList(numEntries)+".";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Table of Contents";
     }
 
 };

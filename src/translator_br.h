@@ -23,7 +23,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public Translator
+class TranslatorBrazilian: public TranslatorAdapter_1_2_16
 {
   public:
 

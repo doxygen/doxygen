@@ -2148,7 +2148,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
   /*- Function argument reading rules ---------------------------------------*/
 
-<ReadFuncArgType>[^ \/\r\t\n\)\(\"\']+	{ *copyArgString+=yytext; 
+<ReadFuncArgType>[^ \/\r\t\n\)\(\"\']+  { *copyArgString+=yytext; 
   					  fullArgString+=yytext;
   					}
 <CopyArgString>[^\n\\\"\']+		{ *copyArgString+=yytext; 
@@ -2183,7 +2183,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN( currentArgumentContext );
 					}
 	/* a special comment */
-<ReadFuncArgType>("/*"[*!]|"//"[/!])("<"?)	{ 
+<ReadFuncArgType,ReadTempArgs>("/*"[*!]|"//"[/!])("<"?)	{ 
                                           if (currentArgumentContext==DefineEnd)
 					  {
 					    // for defines we interpret a comment
@@ -3934,7 +3934,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           BEGIN( lastBriefContext ); 
                                         }
 <ClassDocBrief>{BS}{CMD}("brief"|"short"){BN}+ {
-  					  lastBriefContext=YY_START;
+  					  //lastBriefContext=YY_START;
 					}
 <ClassDocBrief>.			{ current->brief += *yytext; }
 <ClassDocDefine>{ID}/"("		{

@@ -839,7 +839,7 @@ void RTFGenerator::beginRTFDocument()
 void RTFGenerator::beginRTFChapter()
 {
   t <<"\n";
-  DBG_RTF(t << "{\\comment Begin Chapter}\n")
+  DBG_RTF(t << "{\\comment BeginRTFChapter}\n")
   t << Rtf_Style_Reset;
 
   // if we are compact, no extra page breaks...
@@ -859,7 +859,7 @@ void RTFGenerator::beginRTFChapter()
 void RTFGenerator::beginRTFSection()
 {
   t <<"\n";
-  DBG_RTF(t << "{\\comment Begin Section}\n")
+  DBG_RTF(t << "{\\comment BeginRTFSection}\n")
   t << Rtf_Style_Reset;
 
   // if we are compact, no extra page breaks...
@@ -896,11 +896,13 @@ void RTFGenerator::endFile()
 
 void RTFGenerator::startProjectNumber()
 {
+  DBG_RTF(t <<"{\\comment startProjectNumber }" << endl)
   t << " ";
 }
 
 void RTFGenerator::endProjectNumber()
 {
+  DBG_RTF(t <<"{\\comment endProjectNumber }" << endl)
 }
 
 void RTFGenerator::startIndexSection(IndexSections is)
@@ -1093,7 +1095,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
         t << Rtf_Style_Reset << Rtf_Style["SubTitle"]->reference << endl; // set to title style
 
-        t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par";
+        t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
         if (logoFilename)
         {
           t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE " << logoFilename;
@@ -1131,14 +1133,23 @@ void RTFGenerator::endIndexSection(IndexSections is)
         DBG_RTF(t << "{\\comment Table of contents}\n")
         t << "\\vertalt\n";
         t << Rtf_Style_Reset << endl;
+        t << Rtf_Style["Heading1"]->reference;
+        t << theTranslator->trRTFTableOfContents() << "\\par"<< endl;
+        t << Rtf_Style_Reset << "\\par" << endl;
         t << "{\\field\\fldedit {\\*\\fldinst TOC \\\\f \\\\*MERGEFORMAT}{\\fldrslt Table of contents}}\\par\n";
         t << Rtf_Style_Reset << endl;
-
       }
       break;
     case isMainPage:
       t << "\\par " << Rtf_Style_Reset << endl;
-      t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
+      if (!Doxygen::mainPage || Doxygen::mainPage->title.isEmpty())
+      {
+        t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
+      }
+      else
+      {
+        t << "{\\tc \\v " << substitute(Doxygen::mainPage->title,"%","") << "}"<< endl;
+      }
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
       if (Config_getBool("GENERATE_TREEVIEW")) t << "main"; else t << "index";
       t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1369,10 +1380,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
 void RTFGenerator::lastIndexPage()
 {
-  DBG_RTF(t <<"{\\comment Begining Body of RTF Document}\n")
+  DBG_RTF(t <<"{\\comment Beginning Body of RTF Document}\n")
   // end page and setup for rest of document
-  t <<"\\sect \\sbkpage \\pgnrestart\n";
-  t <<"\\sect \\sectd \\sbknone \\pgndec\n";
+  t <<"\\sect \\sbkpage \\pgndec \\pgnrestart\n";
+  t <<"\\sect \\sectd \\sbknone\n";
 
   // set footer
   t <<"{\\footer "<< Rtf_Style["Footer"]->reference << "{\\chpgn}}\n";
@@ -1386,9 +1397,8 @@ void RTFGenerator::writeStyleInfo(int)
 
 void RTFGenerator::lineBreak()
 {
+  DBG_RTF(t << "{\\comment (lineBreak)}"    << endl)
   t << "\\par" << endl;
-  //newParagraph();
-  //t << "\\line" << endl;
 }
 
 void RTFGenerator::writeString(const char *text)
@@ -1403,7 +1413,6 @@ void RTFGenerator::startIndexList()
   incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_LCList_DepthStyle() << endl;
   newParagraph();
-  m_omitParagraph=TRUE;
 }
 
 void RTFGenerator::endIndexList()
@@ -1412,7 +1421,6 @@ void RTFGenerator::endIndexList()
   newParagraph();
   t << "}";
   decrementIndentLevel();
-  m_omitParagraph=TRUE;
 }
 
 /*! start bullet list */
@@ -1431,7 +1439,6 @@ void RTFGenerator::endItemList()
   DBG_RTF(t << "{\\comment (endItemList level=" << m_listLevel << ")}" << endl)
   t << "}";
   decrementIndentLevel();
-  m_omitParagraph=TRUE;
 }
 
 /*! start enumeration list */
@@ -1442,10 +1449,6 @@ void RTFGenerator::startEnumList()  // starts an enumeration list
   incrementIndentLevel();
   listItemInfo[m_listLevel].isEnum = TRUE;
   listItemInfo[m_listLevel].number = 1;
-  //t << Rtf_Style_Reset << Rtf_EList_DepthStyle() << endl;
-  //newParagraph();
-  //m_omitParagraph=TRUE;
-
 }
 
 /*! end enumeration list */
@@ -1455,7 +1458,6 @@ void RTFGenerator::endEnumList()
   DBG_RTF(t << "{\\comment (endEnumList)}" << endl)
   t << "}";
   decrementIndentLevel();
-  m_omitParagraph=TRUE;
 }
 
 /*! write bullet or enum item */
@@ -1474,7 +1476,6 @@ void RTFGenerator::writeListItem()
   {
     t << Rtf_BList_DepthStyle() << endl;
   }
-  m_omitParagraph=TRUE;
 }
 
 void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
@@ -1494,7 +1495,6 @@ void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
     t << endl;
   }
   newParagraph();
-  m_omitParagraph=TRUE;
 }
 
 //void RTFGenerator::writeIndexFileItem(const char *,const char *text)
@@ -1914,6 +1914,7 @@ void RTFGenerator::endMemberDoc()
 void RTFGenerator::startDoxyAnchor(const char *,const char *,
                                    const char *,const char *)
 {
+  DBG_RTF(t << "{\\comment startDoxyAnchor}" << endl)
 }
 
 void RTFGenerator::endDoxyAnchor(const char *fName,const char *anchor)
@@ -1929,6 +1930,7 @@ void RTFGenerator::endDoxyAnchor(const char *fName,const char *anchor)
     ref+=anchor;
   }
 
+  DBG_RTF(t << "{\\comment endDoxyAnchor}" << endl)
   t << "{\\bkmkstart ";
   t << formatBmkStr(ref);
   t << "}" << endl;
@@ -2050,7 +2052,6 @@ void RTFGenerator::endDescList()
   DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
   newParagraph();
   decrementIndentLevel();
-  m_omitParagraph = TRUE;
   t << "}";
 }
 
@@ -2082,6 +2083,7 @@ void RTFGenerator::startSection(const char *,const char *title,bool sub)
 
 void RTFGenerator::endSection(const char *lab,bool)
 {
+  DBG_RTF(t << "{\\comment (endSection)}"    << endl)
   newParagraph();
   // make bookmark
   writeAnchor(0,lab);
@@ -2269,6 +2271,7 @@ void RTFGenerator::endMemberItem(bool)
 
 void RTFGenerator::writeAnchor(const char *fileName,const char *name)
 {
+  DBG_RTF(t <<"{\\comment writeAncheor }" << endl)
   t << "{\\bkmkstart ";
   if (fileName) t << formatBmkStr(fileName);
   if (fileName && name) t << "_";
@@ -2300,7 +2303,6 @@ void RTFGenerator::endCodeFragment()
   //t << Rtf_Style_Reset << styleStack.top() << endl;
   DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
   t << "}" << endl;
-  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::writeNonBreakableSpace(int)
@@ -2418,7 +2420,6 @@ void RTFGenerator::endDescTableData()
 {
   DBG_RTF(t << "{\\comment (endDescTableData) }"    << endl)
   newParagraph();
-  m_omitParagraph=TRUE;
 }
 
 // a style for list formatted as a "bulleted list"
@@ -2485,7 +2486,7 @@ const char * RTFGenerator::Rtf_Code_DepthStyle()
 
 void RTFGenerator::startTextBlock(bool dense)
 {
-  DBG_RTF(t << "{\\comment Start TextBlock}" << endl)
+  DBG_RTF(t << "{\\comment startTextBlock}" << endl)
   t << "{" << endl;
   t << Rtf_Style_Reset;
   if (dense) // no spacing between "paragraphs"
@@ -2501,15 +2502,16 @@ void RTFGenerator::startTextBlock(bool dense)
 void RTFGenerator::endTextBlock()
 {
   newParagraph();
-  DBG_RTF(t << "{\\comment End TextBlock}" << endl)
+  DBG_RTF(t << "{\\comment endTextBlock}" << endl)
   t << "}" << endl;
-  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::newParagraph()
 {
+  DBG_RTF(t << "{\\comment (newParagraph)}"    << endl)
   if (!m_omitParagraph) t << "\\par" << endl;
-  m_omitParagraph = FALSE;
+  // Suppress multiple paragraphs in a row
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::startMemberSubtitle()
@@ -2936,7 +2938,6 @@ void RTFGenerator::endParamList()
   DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
   newParagraph();
   decrementIndentLevel();
-  m_omitParagraph = TRUE;
   t << "}";
 }
 

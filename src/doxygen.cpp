@@ -1441,6 +1441,56 @@ static int findFunctionPtr(const QCString &type,int *pLength=0)
   }
 }
 
+
+/*! Returns TRUE iff \a type is a class within scope \a context.
+ *  Used to detect variable declarations that look like function prototypes.
+ */
+static bool isVarWithConstructor(Entry *root)
+{
+  static QRegExp initChars("[0-9\"'&*!^]+");
+  static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
+  if (root->type.isEmpty()) return FALSE;
+  Definition *ctx = 0;
+  //printf("isVarWithConstructor(%s,%s)\n",root->parent->name.data(),
+  //                                          root->type.data());
+  if (root->parent->name) ctx=Doxygen::namespaceSDict.find(root->parent->name);
+  bool typeIsClass=getResolvedClass(ctx,root->type)!=0;
+  if (typeIsClass) // now we still have to check if the arguments are 
+                   // types or values. Since we do not have complete type info
+                   // we need to rely on heuristics :-(
+  {
+    //printf("typeIsClass\n");
+    ArgumentList *al = root->argList;
+    if (al==0) return FALSE; // empty arg list -> function prototype.
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      //printf("a->name=%s a->type=%s\n",a->name.data(),a->type.data());
+      if (!a->name.isEmpty() || !a->defval.isEmpty()) return FALSE; // arg has (type,name) pair -> function prototype
+      if (a->type.isEmpty() || getResolvedClass(ctx,a->type)!=0) return FALSE; // arg type is a known type
+      if (a->type.find(initChars)==0) return TRUE; // argument type starts with typical initializer char
+      QCString resType=resolveTypeDef(ctx,a->type);
+      if (resType.isEmpty()) resType=a->type;
+      int len;
+      if (idChars.match(resType,0,&len)==0) // resType starts with identifier
+      {
+        resType=resType.left(len);
+        //printf("resType=%s\n",resType.data());
+        if (resType=="int"    || resType=="long" || resType=="float" || 
+            resType=="double" || resType=="char" || resType=="signed" || 
+            resType=="const"  || resType=="unsigned") 
+        {
+          return FALSE; // type keyword -> function prototype
+        }
+      }
+    }
+    return TRUE;
+  }
+  // return type not a class -> function prototype
+  return FALSE;
+}
+
 //----------------------------------------------------------------------
 // Searches the Entry tree for Variable documentation sections.
 // If found they are stored in their class or in the global list.
@@ -1454,6 +1504,9 @@ void buildVarList(Entry *root)
        ) ||
        (root->section==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
         findFunctionPtr(root->type)!=-1
+       ) ||
+       (root->section==Entry::FUNCTION_SEC && // class variable initialized by constructor
+        isVarWithConstructor(root)
        )
       ) 
      ) // documented variable
@@ -7661,6 +7714,17 @@ void generateOutput()
   {
     msg("Generating AutoGen DEF output...\n");
     generateDEF();
+  }
+  if (Config_getBool("GENERATE_HTMLHELP") && !Config_getString("HHC_LOCATION").isEmpty())
+  {
+    msg("Running html help compiler...\n");
+    QString oldDir = QDir::currentDirPath();
+    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    if (iSystem(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
+    {
+      err("Error: failed to run html help compiler on index.hhp");
+    }
+    QDir::setCurrent(oldDir);
   }
 }
 

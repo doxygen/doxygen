@@ -1,0 +1,9 @@
+The files Doxygen.dsw and Doxygen.dsp can
+be used to build doxygen from within 
+Microsoft's Developer Studio 6.0.
+
+These files are created and maintained by 
+Simon Goodwin <simon.goodwin@atd.co.uk>. 
+Please contact him in case of question or
+problems with these files. 
+

@@ -1613,7 +1613,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       convertMapFile(tmpout,baseName+".map");
       if (!tmpstr.isEmpty())
       {
-        out << "<map name=\"" << mapName << "\">" << endl;
+        out << "<map name=\"" << mapName << "_map\">" << endl;
         out << tmpstr;
         out << "</map>" << endl;
       }
