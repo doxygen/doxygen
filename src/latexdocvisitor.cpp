@@ -44,6 +44,18 @@ static QString escapeLabelName(const char *s)
   return result;
 }
 
+const int maxLevels=5;
+static const char *secLabels[maxLevels] = 
+   { "section","subsection","subsubsection","paragraph","subparagraph" };
+
+static const char *getSectionName(int level)
+{
+  int l = level;
+  if (Config_getBool("COMPACT_LATEX")) l++;
+  if (Doxygen::insideMainPage) l--;
+  return secLabels[QMIN(maxLevels-1,l)];
+}
+
 QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 {
   QString result;
@@ -187,13 +199,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "{\\bf ";      else m_t << "} ";
+      if (s->enable()) m_t << "{\\bf ";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\em ";     else m_t << "} ";
+      if (s->enable()) m_t << "{\\em ";     else m_t << "\\/}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\tt ";   else m_t << "} ";
+      if (s->enable()) m_t << "{\\tt ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
@@ -219,6 +231,8 @@ void LatexDocVisitor::visit(DocStyleChange *s)
         m_t << "\\end{alltt}\\normalsize " << endl;
       }
       break;
+    case DocStyleChange::Div:  /* HTML only */ break;
+    case DocStyleChange::Span: /* HTML only */ break;
   }
 }
 
@@ -476,26 +490,7 @@ void LatexDocVisitor::visitPre(DocSection *s)
   {
     m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
   }
-  if (Config_getBool("COMPACT_LATEX"))
-  {
-    switch(s->level())
-    {
-      case 1: m_t << "\\subsubsection{"; break;
-      case 2: m_t << "\\paragraph{";     break;
-      case 3: m_t << "\\subparagraph{";  break;
-      case 4: m_t << "\\subparagraph{";  break;
-    }
-  }
-  else
-  {
-    switch(s->level())
-    {
-      case 1: m_t << "\\subsection{";    break;
-      case 2: m_t << "\\subsubsection{"; break;
-      case 3: m_t << "\\paragraph{";     break;
-      case 4: m_t << "\\subparagraph{";  break;
-    }
-  }
+  m_t << "\\" << getSectionName(s->level()) << "{";
   filter(s->title());
   m_t << "}\\label{" << s->anchor() << "}" << endl;
 }
@@ -667,27 +662,7 @@ void LatexDocVisitor::visitPost(DocHRef *)
 void LatexDocVisitor::visitPre(DocHtmlHeader *header)
 {
   if (m_hide) return;
-  if (Config_getBool("COMPACT_LATEX"))
-  {
-    switch(header->level())
-    {
-      case 1:  m_t << "\\subsection*{";    break;
-      case 2:  m_t << "\\subsubsection*{"; break;
-      case 3:  m_t << "\\paragraph*{";     break;
-      default: m_t << "\\subparagraph*{";  break;
-    }
-  }
-  else
-  {
-    switch(header->level())
-    {
-      case 1:  m_t << "\\section*{"; break;
-      case 2:  m_t << "\\subsection*{"; break;
-      case 3:  m_t << "\\subsubsection*{"; break;
-      case 4:  m_t << "\\paragraph*{"; break;
-      default: m_t << "\\subparagraph*{"; break;
-    }
-  }
+  m_t << "\\" << getSectionName(header->level()) << "*{";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlHeader *) 
@@ -835,7 +810,6 @@ void LatexDocVisitor::visitPost(DocRef *)
 {
   if (m_hide) return;
   endLink();
-  m_t << " ";
 }
 
 void LatexDocVisitor::visitPre(DocSecRefItem *)
@@ -968,7 +942,6 @@ void LatexDocVisitor::visitPost(DocInternalRef *)
 {
   if (m_hide) return;
   endLink();
-  m_t << " ";
 }
 
 void LatexDocVisitor::visitPre(DocCopy *)

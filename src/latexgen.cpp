@@ -257,6 +257,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
       << "            colorlinks=true," << endl
       << "            linkcolor=blue" << endl
       << "           ]{hyperref}" << endl
+      << "\\usepackage{pspicture}" << endl
       << "\\else" << endl
       << "\\usepackage[pdftex," << endl
       << "            pagebackref=true," << endl
@@ -287,7 +288,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
   }
   t << "\\makeindex\n"
     "\\setcounter{tocdepth}{1}\n"
-    "\\setlength{\\footrulewidth}{0.4pt}\n"
+    "\\renewcommand{\\footrulewidth}{0.4pt}\n"
     "\\begin{document}\n";
   if (theTranslator->idLanguage()=="greek") t << "\\selectlanguage{greek}\n";
   t << "\\begin{titlepage}\n"

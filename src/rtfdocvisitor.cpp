@@ -277,6 +277,8 @@ void RTFDocVisitor::visit(DocStyleChange *s)
         m_t << "}" << endl;
       }
       break;
+    case DocStyleChange::Div:  /* HTML only */ break;
+    case DocStyleChange::Span: /* HTML only */ break;
   }
 }
 

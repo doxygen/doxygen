@@ -124,6 +124,12 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Preformatted:
          if (s->enable()) printf("<pre>"); else printf("</pre>");
          break;
+        case DocStyleChange::Div:
+         if (s->enable()) printf("<div>"); else printf("</div>");
+         break;
+        case DocStyleChange::Span:
+         if (s->enable()) printf("<span>"); else printf("</span>");
+         break;
       }
     }
     void visit(DocVerbatim *s)

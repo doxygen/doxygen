@@ -465,6 +465,10 @@ QCString MemberDef::getOutputFileBase() const
   {
     return nspace->getOutputFileBase();
   }
+  //else if (group)
+  //{
+  //  return group->getOutputFileBase();
+  //}
   else if (fileDef)
   {
     return fileDef->getOutputFileBase();

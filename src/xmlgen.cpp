@@ -450,6 +450,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
 
+  // group members are only visible in their group
+  //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
+
   QCString memType;
   bool isFunc=FALSE;
   switch (md->memberType())
@@ -482,18 +485,16 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   t << "      <memberdef kind=\"";
   //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
   t << memType << "\" id=\"";
-  t << md->getOutputFileBase()
-    << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
-    << md->anchor();
-  t << "\"";
-  t << " virt=\"";
-  switch (md->virtualness())
+  if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
   {
-    case Normal:  t << "normal";       break;
-    case Virtual: t << "virtual";      break;
-    case Pure:    t << "pure-virtual"; break;
-    default: ASSERT(0);
+    t << md->getGroupDef()->getOutputFileBase();
   }
+  else
+  {
+    t << md->getOutputFileBase();
+  }
+  t << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+    << md->anchor();
   t << "\" prot=\"";
   switch(md->protection())
   {
@@ -503,6 +504,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   }
   t << "\" static=\"";
   if (md->isStatic()) t << "yes"; else t << "no";
+
   t << "\"";
 
   if (isFunc)
@@ -510,6 +512,22 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     ArgumentList *al = md->argumentList();
     t << " const=\"";
     if (al && al->constSpecifier)    t << "yes"; else t << "no"; 
+
+    t << "\" explicit=\"";
+    if (md->isExplicit()) t << "yes"; else t << "no";
+
+    t << "\" inline=\"";
+    if (md->isInline()) t << "yes"; else t << "no";
+
+	t << "\" virt=\"";
+	switch (md->virtualness())
+	{
+	case Normal:  t << "normal";       break;
+	case Virtual: t << "virtual";      break;
+	case Pure:    t << "pure-virtual"; break;
+	default: ASSERT(0);
+	}
+
     t << "\"";
   }
 
@@ -518,6 +536,10 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     ArgumentList *al = md->argumentList();
     t << " volatile=\"";
     if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
+
+	t << "\" mutable=\"";
+	if (md->isMutable()) t << "yes"; else t << "no";
+
     t << "\"";
   }
 

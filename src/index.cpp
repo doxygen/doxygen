@@ -2755,6 +2755,7 @@ void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
+    Doxygen::insideMainPage=TRUE;
     ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->doc,FALSE);
 
     if (!Config_getString("GENERATE_TAGFILE").isEmpty())
@@ -2776,6 +2777,7 @@ void writeIndex(OutputList &ol)
        Doxygen::mainPage->writeDocAnchorsToTagFile();
        Doxygen::tagFile << "  </compound>" << endl;
     }
+    Doxygen::insideMainPage=FALSE;
   }
   
   endFile(ol);
@@ -2912,6 +2914,7 @@ void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
+    Doxygen::insideMainPage=TRUE;
     ol.disable(OutputGenerator::Man);
     startFile(ol,Doxygen::mainPage->name,0,Doxygen::mainPage->title);
     //SectionInfo *si=0;
@@ -2927,6 +2930,7 @@ void writeIndex(OutputList &ol)
     ol.endTextBlock();
     endFile(ol);
     ol.enable(OutputGenerator::Man);
+    Doxygen::insideMainPage=FALSE;
   }
 
   ol.popGeneratorState();

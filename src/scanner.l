@@ -121,11 +121,10 @@ static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
 static bool             useOverrideCommands = FALSE;
-static bool             insideIDL = FALSE;
-static bool             insideJava = FALSE;
-static bool             insideCS = FALSE;
-static bool             insidePHP = FALSE;
-static bool             insidePHPCode = FALSE;
+static bool             insideIDL = FALSE;		//!< processing IDL code?
+static bool             insideJava = FALSE;		//!< processing Java code?
+static bool             insideCS = FALSE;		//!< processing C# code?
+static bool             insidePHP = FALSE;		//!< processing PHP code?
 static bool             insideCppQuote = FALSE;
 
 static int              argRoundCount;
@@ -451,7 +450,7 @@ static void setContext()
   insideJava = fileName.right(5)==".java";
   insideCS   = fileName.right(3)==".cs";
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
-               fileName.right(4)==".inc";
+               fileName.right(4)==".inc" || fileName.right(6)==".phtml";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -536,6 +535,7 @@ OL	  [oO][lL]
 DL	  [dD][lL]
 TITLE     [tT][iI][tT][lL][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 
 %option noyywrap
 
@@ -670,6 +670,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	JavaImport
 %x	CSAccessorDecl
 %x	PreLineCtrl
+%x	DefinePHP
+%x	DefinePHPEnd
 
 %%
 
@@ -755,16 +757,22 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN( FindMembers );
   					}
 <FindMembersPHP>"<?"("php"?)            { // PHP code start
-                                          insidePHPCode = TRUE;
                                            BEGIN( FindMembers );
 					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
 <FindMembers>"?>"                       { // PHP code end
-                                          insidePHPCode = FALSE;
-                                          BEGIN( FindMembersPHP );
+					  if (insidePHP)
+					    BEGIN( FindMembersPHP );
+					  else
+					    REJECT;
                                         }
 
+<FindMembers>{PHPKW}			{ if (insidePHP)
+					    BEGIN( NextSemi );
+					  else
+					    REJECT;
+					}
 <FindMembers>{B}*("properties"|"__property"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
   					  current->mtype = mtype = Property;
 					  current->protection = protection = Public ;
@@ -1263,12 +1271,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->name+=*yytext;
   					  // *currentTemplateSpec+=*yytext; 
 					}
+<FindMembers>"define"{BN}*"("{BN}*["']	{
+					  if (insidePHP)
+					  {
+					    current->bodyLine = yyLineNr;
+					    BEGIN( DefinePHP );
+					  }
+					  else
+					    REJECT;
+					}
 <FindMembers,FindMemberName>{SCOPENAME}	{
 					  lineCount();
-//                                        if ( insidePHP && strcmp(yytext,"define")==0)
-//                                        {
-//                                          BEGIN(DefinePHP);
-//                                        }
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
@@ -1362,10 +1375,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  insideCppQuote=FALSE;
 					  BEGIN(FindMembers);
   					}
-<FindMembers>{B}*"#"			{ lastCPPContext = YY_START; 
-					  BEGIN( SkipCPP ) ; 
+<FindMembers>{B}*"#"			{ if (insidePHP)
+					    REJECT;
+					  lastCPPContext = YY_START;
+					  BEGIN( SkipCPP ) ;
 					}
-<FindMembers>{B}*"#"{B}*"define"	{
+<FindMembers>{B}*"#"{B}*"define"	{ if (insidePHP)
+					    REJECT;
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
@@ -1428,6 +1444,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  initEntry();
 					  BEGIN(FindMembers);
   					}
+<DefinePHPEnd>";"			{
+  					  //printf("End define\n");
+					  current->fileName   = yyFileName;
+					  current->startLine  = yyLineNr;
+					  current->type.resize(0);
+  					  current->args       = current->args.simplifyWhiteSpace();
+  					  current->name       = current->name.stripWhiteSpace();
+					  current->section    = Entry::ENUM_SEC;  //HACK!
+					  current_root->addSubEntry(current);
+					  current             = new Entry ;
+					  initEntry();
+					  BEGIN(FindMembers);
+  					}
+<DefinePHPEnd>.
 <DefineEnd>\\[\r]?\n			{
   					  yyLineNr++;
   					}
@@ -1443,7 +1473,19 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <DefineEnd>.				
-					
+<DefinePHP>{ID}["']{BN}*","{BN}*	{
+  					  current->name = yytext;
+					  current->name = current->name.stripWhiteSpace();
+					  current->name = current->name.left(current->name.length()-1).stripWhiteSpace();
+					  current->name = current->name.left(current->name.length()-1);
+					  current->args = "(";
+  					  current->bodyLine = yyLineNr;
+  					  lastRoundContext = DefinePHPEnd;
+  					  pCopyRoundString = &current->args;
+					  roundCount = 0;
+  					  BEGIN( CopyRound );
+					}
+
 <FindMembers>[*&]+			{ current->name += yytext ; 
   					  addType( current );
 					}
@@ -1864,6 +1906,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   */
 <ReadBody>[^\r\n\#{}"'/]*		{ current->program += yytext ; }
 <ReadBody>"//".*			{ current->program += yytext ; }
+<ReadBody>"#".*				{ if (! insidePHP)
+					    REJECT;
+					  current->program += yytext ;
+					}
 <ReadBody>\"				{ current->program += yytext ; 
                                           pCopyQuotedString = &current->program;
                                           lastStringContext=YY_START;
@@ -2242,7 +2288,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
   /*- Function argument reading rules ---------------------------------------*/
 
-<ReadFuncArgType>[^ \/\r\t\n\)\(\"\']+  { *copyArgString+=yytext; 
+<ReadFuncArgType>[^ \/\r\t\n\)\(\"\'#]+ { *copyArgString+=yytext; 
   					  fullArgString+=yytext;
   					}
 <CopyArgString>[^\n\\\"\']+		{ *copyArgString+=yytext; 
@@ -2300,6 +2346,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    else
 					      BEGIN( CopyArgComment );
 					  }
+  					}
+	/* a non-special comment */
+<ReadFuncArgType,ReadTempArgs>"/*"	{
+  					  lastCContext = YY_START;
+					  BEGIN( SkipComment );
+  					}
+<ReadFuncArgType,ReadTempArgs>"//"	{
+  					  lastCContext = YY_START;
+					  BEGIN( SkipCxxComment );
+  					}
+<ReadFuncArgType,ReadTempArgs>"#"	{
+  					  if (! insidePHP)
+  					    REJECT;
+  					  lastCContext = YY_START;
+					  BEGIN( SkipCxxComment );
   					}
 	/* `)' followed by a special comment */
 <ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<"	{
@@ -2432,7 +2493,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN( FuncQual ) ;
 					}
   /*
-<FuncQual>"#"				{ lastCPPContext = YY_START;
+<FuncQual>"#"				{ if (insidePHP)
+  					    REJECT;
+  					  lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}
   */
@@ -2525,7 +2588,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  roundCount=0;
 					  BEGIN( FuncRound ) ;
 					}
-<Function>"#"				{ lastCPPContext = YY_START;
+<Function>"#"				{ if (insidePHP)
+  					    REJECT;
+  					  lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}	
 <Function>":"				{
@@ -2709,8 +2774,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   				          BEGIN( SkipString ); 
 					}
 <SkipCurly>^{B}*"#"			{ 
+  				          if (insidePHP)
+  				            REJECT;
   				          //addToBody(yytext);
-  					  BEGIN( SkipCurlyCpp ); 
+  					  BEGIN( SkipCurlyCpp );
 					}
 <SkipCurly,SkipInits>\n			{
   					  yyLineNr++;
@@ -2745,6 +2812,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      "(doxygen could be confused by a macro call without semicolon)"
 					     );
 					  BEGIN( FindMembers );
+  					}
+<SkipInits,SkipCurly,SkipCurlyCpp>"#"   {
+  				          if (! insidePHP)
+  				            REJECT;
+  				          //addToBody(yytext);
+  					  lastCContext = YY_START;
+					  BEGIN(SkipCxxComment);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>.	{
   				          //addToBody(yytext);
@@ -3704,24 +3778,64 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->doc+=yytext;
 					  BEGIN(AnchorLabel);
   					}
-<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
 					  current->doc+="\\\\verbatim";
+					}
+<JavaDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
+					  current->brief+="\\\\verbatim";
 					}
 <Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\verbatim";
   					  BEGIN(SkipVerbatim);
   					}
+<JavaDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] 	{
+					  lastVerbState=YY_START;
+					  current->brief+="\\verbatim";
+  					  BEGIN(SkipVerbatim);
+  					}
+<Doc,PageDoc,ClassDoc>{CMD}"latexonly"/[^a-z_A-Z0-9] {
+					  lastVerbState=YY_START;
+					  current->doc+="\\latexonly";
+  					  BEGIN(SkipVerbatim);
+  					}
+<JavaDoc>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
+					  lastVerbState=YY_START;
+					  current->brief+="\\latexonly";
+  					  BEGIN(SkipVerbatim);
+  					}
+<Doc,PageDoc,ClassDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
+					  lastVerbState=YY_START;
+					  current->doc+="\\htmlonly";
+  					  BEGIN(SkipVerbatim);
+  					}
+<JavaDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] 	{
+					  lastVerbState=YY_START;
+					  current->brief+="\\htmlonly";
+  					  BEGIN(SkipVerbatim);
+  					}
 <Doc,PageDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
   					  current->doc+=yytext;
   					}
+<JavaDoc>{CMD}"addindex"{B}+[^\n]+ 	{
+  					  current->brief+=yytext;
+  					}
 <Doc,PageDoc,ClassDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
   					  current->doc+="\\\\code";
+  					}
+<JavaDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
+  					  current->brief+="\\\\code";
   					}
 <Doc,PageDoc,ClassDoc>{CMD}"code"/[^a-z_A-Z0-9] {
   					  lastCodeState=YY_START;
 					  current->doc+="\\code";
 					  pSkipDoc=&current->doc;
+					  BEGIN(SkipCode);
+					}
+<JavaDoc>{CMD}"code"/[^a-z_A-Z0-9] 	{
+  					  lastCodeState=YY_START;
+					  current->brief+="\\code";
+					  pSkipDoc=&current->brief;
 					  BEGIN(SkipCode);
 					}
 <Doc,PageDoc,ClassDoc>"<"{PRE}{ATTR}">" {
@@ -3736,27 +3850,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  pSkipDoc=&current->brief;
 					  BEGIN(SkipCode);
   					}
-<JavaDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
-					  current->brief+="\\\\verbatim";
-					}
-<JavaDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] 	{
-					  lastVerbState=YY_START;
-					  current->brief+="\\verbatim";
-  					  BEGIN(SkipVerbatim);
-  					}
-<JavaDoc>{CMD}"addindex"{B}+[^\n]+ 	{
-  					  current->brief+=yytext;
-  					}
-<JavaDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
-  					  current->brief+="\\\\code";
-  					}
-<JavaDoc>{CMD}"code"/[^a-z_A-Z0-9] 	{
-  					  lastCodeState=YY_START;
-					  current->brief+="\\code";
-					  pSkipDoc=&current->brief;
-					  BEGIN(SkipCode);
-					}
-<SkipVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9] {
+<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					  BEGIN(lastVerbState);
   					}
@@ -4580,6 +4674,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    BEGIN(EndCppQuote);
 					  }
+					}
+<*>"#"				        {	
+  					  if (! insidePHP)
+  					    REJECT;
+  					  lastCContext = YY_START ;
+					  BEGIN( SkipCxxComment ) ;
 					}
 <*>.
 <SkipComment>"//"|"/*"

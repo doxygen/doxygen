@@ -275,7 +275,8 @@ class DocStyleChange : public DocNode
 {
   public:
     enum Style { Bold, Italic, Code, Center, Small, 
-                 Subscript, Superscript, Preformatted
+                 Subscript, Superscript, Preformatted,
+                 Span, Div
                };
     DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
                    const HtmlAttribList *attribs=0) : 

@@ -691,7 +691,10 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=" >"; // insert extra space for layouting (nested) templates
     }
-    else if (i>0 && i<l-1 && c==',' && !isspace(s.at(i-1)) && isId(s.at(i+1)))
+    else if (i>0 && c==',' && !isspace(s.at(i-1))
+             && ((i<l-1 && isId(s.at(i+1)))
+                 || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
+                 || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
     {
       result+=", ";
     }
@@ -711,12 +714,13 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     }
     else if (!isspace(c) ||
 	      ( i>0 && i<l-1 && 
-                (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
-                isId(s.at(i+1))
+                (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']')
+                 && (isId(s.at(i+1)) || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))
+                     || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3))))
               ) 
             )
     {
-      if (c=='*' || c=='&' || c=='@')
+      if (c=='*' || c=='&' || c=='@' || c=='$')
       {  
         uint rl=result.length();
 	if (rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) result+=' ';
@@ -2432,7 +2436,7 @@ bool resolveRef(/* in */  const char *scName,
     ClassDef *cd=0;
     NamespaceDef *nd=0;
 
-    if (scopePos==-1 && isLowerCase(tsName))
+    if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
     { // link to lower case only name => do not try to autolink 
       return FALSE;
     }

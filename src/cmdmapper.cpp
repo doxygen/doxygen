@@ -181,6 +181,8 @@ CommandMap htmlTagMap[] =
   { "h4",         HTML_H4 },
   { "h5",         HTML_H5 },
   { "h6",         HTML_H6 },
+  { "span",       HTML_SPAN },
+  { "div",        HTML_DIV },
   { 0,            0 }
 };
 

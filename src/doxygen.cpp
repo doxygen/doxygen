@@ -108,6 +108,7 @@ QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be e
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 
 PageInfo      *Doxygen::mainPage = 0;           
+bool           Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 QTextStream    Doxygen::tagFile;
 NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
@@ -2548,14 +2549,24 @@ static void transferFunctionDocumentation()
 
 
               // copy group info.
-              //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
-              //{
-              //  mdef->setGroupDef(mdec->getGroupDef(),mdec->getGroupPri(),mdec->docFile(),mdec->docLine(),mdec->hasDocumentation());
-              //}
-              //else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
-              //{
-              //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
-              //}
+              if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
+              {
+                mdec->setGroupDef(mdef->getGroupDef(),
+                                  mdef->getGroupPri(),
+                                  mdef->docFile(),
+                                  mdef->docLine(),
+                                  mdef->hasDocumentation()
+                                 );
+              }
+              else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
+              {
+                mdef->setGroupDef(mdec->getGroupDef(),
+                                  mdec->getGroupPri(),
+                                  mdec->docFile(),
+                                  mdec->docLine(),
+                                  mdec->hasDocumentation()
+                                 );
+              }
 
               mdec->mergeRefItems(mdef);
               mdef->mergeRefItems(mdec);
@@ -7850,7 +7861,6 @@ void parseInput()
 
   msg("Building member list...\n"); // using class info only !
   buildFunctionList(root);
-  transferFunctionDocumentation();
 
   msg("Searching for friends...\n");
   findFriends();
@@ -7884,6 +7894,7 @@ void parseInput()
   msg("Searching for member function documentation...\n");
   findMemberDocumentation(root); // may introduce new members !
   transferRelatedFunctionDocumentation();
+  transferFunctionDocumentation();
   
   msg("Searching for members imported via using declarations...\n");
   findUsingDeclImports(root);

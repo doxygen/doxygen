@@ -104,14 +104,26 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
 {
   const char *p=s.data();
   char c;
-  bool hasBlanks=FALSE;
+  bool needsEscaping=FALSE;
   if (p)
   {
-    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
-    if (hasBlanks) 
-      t << "\"" << s << "\"";
+    while ((c=*p++)!=0 && !needsEscaping) 
+      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"');
+    if (needsEscaping)
+    { 
+      t << "\"";
+      p=s.data();
+      while (*p)
+      {
+	if (*p=='"') t << "\\"; // escape quotes
+	t << *p++;
+      }
+      t << "\"";
+    }
     else
+    {
       t << s;
+    }
   }
 }
 
@@ -121,13 +133,10 @@ void ConfigOption::writeStringList(QTextStream &t,QStrList &l)
   bool first=TRUE;
   while (p)
   {
-    char c;
-    const char *s=p;
-    bool hasBlanks=FALSE;
-    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
+    QCString s=p;
     if (!first) t << "                         ";
     first=FALSE;
-    if (hasBlanks) t << "\"" << s << "\""; else t << s;
+    writeStringValue(t,s);
     p = l.next();
     if (p) t << " \\" << endl;
   }

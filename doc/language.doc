@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.14-20020317), 28 languages 
+Currently (version 1.3-rc3-20030215), 28 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Catalan, Chinese, Chinese Traditional, Croatian, 
 Czech, Danish, Dutch, English, Finnish, 
@@ -91,7 +91,7 @@ when the translator was updated.
       <TD>Danish</TD>  
       <TD>Erik S&oslash;e S&oslash;rensen</TD>
       <TD>erik@NOSPAM.mail.nu</TD>
-      <TD>1.2.7</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Dutch</TD>  
@@ -115,7 +115,7 @@ when the translator was updated.
       <TD>French</TD>  
       <TD>Xavier Outhier</TD>
       <TD>xouthier@NOSPAM.yahoo.fr</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>German</TD>  
@@ -243,7 +243,7 @@ when the translator was updated.
   \hline
   Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
   \hline
-  Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
+  Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & up-to-date \\
   \hline
   Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} & up-to-date \\
   \hline
@@ -251,7 +251,7 @@ when the translator was updated.
   \hline
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & obsolete \\
   \hline
-  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & 1.2.17 \\
+  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
   \hline
   German & Jens Seidel & {\tt jensseidel@users.sf.net} & up-to-date \\
   \hline

@@ -65,6 +65,7 @@ class Doxygen
     static PageSDict                *exampleSDict;
     static PageSDict                *pageSDict;
     static PageInfo                 *mainPage;
+    static bool                      insideMainPage;
     static FileNameDict             *includeNameDict;
     static FileNameDict             *exampleNameDict;
     static FileNameDict             *inputNameDict;
