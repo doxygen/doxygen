@@ -86,12 +86,12 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              padCount     = 0 ;
-static int              todoStartContext = 0;
-static QCString         todoString;
-static int              testStartContext = 0;
-static QCString         testString;
-static int              bugStartContext = 0;
-static QCString         bugString;
+static int              slStartContext = 0;
+static QCString         slString;
+//static int              testStartContext = 0;
+//static QCString         testString;
+//static int              bugStartContext = 0;
+//static QCString         bugString;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -200,6 +200,7 @@ static void initEntry()
   }
 }
 
+
 //-----------------------------------------------------------------------------
 
 /// remove any automatic grouping and add new one (if given)
@@ -232,8 +233,11 @@ static int newMemberGroupId()
   return curGroupId++;
 }
 
+// forward declarations
 static void startGroup();
+static void startGroupInDoc();
 static void endGroup();
+
 //-----------------------------------------------------------------------------
 
 static void lineCount()
@@ -426,6 +430,45 @@ static void prependScope()
   }
 }
 
+//-----------------------------------------------------------------------------
+
+static void addSpecialItem(const char *listName)
+{
+  ListItemInfo *lii=0;
+  RefList *refList = Doxygen::specialLists->find(listName);
+  ASSERT(refList!=0);
+  if (current->sli)
+  {
+    QListIterator<ListItemInfo> slii(*current->sli);
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      if (strcmp(lii->type,listName)==0) break;
+    }
+  }
+  if (lii) // already found item of same type before
+  {
+    RefItem *item = refList->getRefItem(lii->itemId);
+    item->text += " <p>";
+    item->text += current->brief;
+  }
+  else // new item
+  {
+    int itemId  = refList->addRefItem();
+    char anchorLabel[12];
+    sprintf(anchorLabel,"_%s%06d",listName,itemId);
+    RefItem *item = refList->getRefItem(itemId);
+    item->text = current->brief.copy();
+    item->listAnchor = anchorLabel;
+    current->addSpecialListItem(listName,itemId);
+    QCString cmdString;
+    cmdString.sprintf("\\%s %d\n",listName,itemId);
+    current->doc += cmdString;
+    sectionType=SectionInfo::Anchor;
+    sectionLabel=anchorLabel;
+    addSection();
+  }
+  current->brief  = slString.copy(); // restore orginial brief desc.
+}
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -444,10 +487,11 @@ static int yyread(char *buf,int max_size)
 
 %}
 
+       /* start command character */
 CMD	  ("\\"|"@")
 SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")
 BN        [ \t\n\r]
-BL        [ \t\r]*"\n"
+BL        [ \t\r]*"\n" 
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
@@ -1450,7 +1494,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}"|"/*"([!*]?){B}*{CMD}"}"{B}*"*/"	{
+                                          if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
+                                          {
+                                            warn(yyFileName,yyLineNr,
+	                                        "Warning: end of group without matching begin.");
+                                          }
   					  endGroup();
+                                          memberGroupHeader.resize(0);
   					}
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
@@ -1957,7 +2007,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <ReadBody>.				{ current->program += yytext ; }
 
-<FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {
+<FindMembers>"("/({BN}*{ID}{BN}*"::")*{ID}{BN}*")"{BN}*"(" | /* typedef void (A::func_t)(args...) */
+<FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -3145,6 +3196,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  yyLineNr++;  
+					  startGroupInDoc();
 					  BEGIN( lastDocContext );
   					}
 <Doc,JavaDoc>{CMD}"name"{B}+ 		{
@@ -3169,23 +3221,23 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->brief+=yytext;
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
-  					  todoStartContext = YY_START;
+  					  slStartContext = YY_START;
 					  lastBriefContext = TodoParam; // this is where we will continue at the end of the argument
-					  todoString = current->brief.copy(); // these will be swapped later on.
+					  slString = current->brief.copy(); // these will be swapped later on.
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"test"/[^a-z_A-Z0-9]	{
-  					  testStartContext = YY_START;
+  					  slStartContext = YY_START;
 					  lastBriefContext = TestParam; // this is where we will continue at the end of the argument
-					  testString = current->brief.copy(); // these will be swapped later on.
+					  slString = current->brief.copy(); // these will be swapped later on.
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"bug"/[^a-z_A-Z0-9]	{
-  					  bugStartContext = YY_START;
+  					  slStartContext = YY_START;
 					  lastBriefContext = BugParam; // this is where we will continue at the end of the argument
-					  bugString = current->brief.copy(); // these will be swapped later on.
+					  slString = current->brief.copy(); // these will be swapped later on.
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
   					}
@@ -3193,91 +3245,25 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <TodoParam>"//"                         |
 <TodoParam>"/*"                         |
 <TodoParam>.				{
-  					  if (current->todoId!=0)
-					  {
-					    RefItem *item = todoList.getRefItem(current->todoId);
-					    item->text += " <p>";
-					    item->text += current->brief;
-					  }
-					  else
-					  {
-  					    int todoItemId  = todoList.addRefItem();
-					    char anchorLabel[12];
-					    sprintf(anchorLabel,"_todo%06d",todoItemId);
-					    RefItem *item = todoList.getRefItem(todoItemId);
-					    item->text = current->brief.copy();
-					    item->listAnchor = anchorLabel;
-					    current->todoId = todoItemId;
-					    QCString todoCmdString;
-					    todoCmdString.sprintf("\\todo %d\n",todoItemId);
-					    current->doc += todoCmdString;
-					    sectionType=SectionInfo::Anchor;
-					    sectionLabel=anchorLabel;
-					    addSection();
-					  }
-  					  unput(*yytext);
-					  current->brief  = todoString.copy(); // restore orginial brief desc.
-					  BEGIN(todoStartContext);
+                                          addSpecialItem("todo");
+					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+					  BEGIN(slStartContext);
   					}
 <TestParam>\n                           |
 <TestParam>"//"                         |
 <TestParam>"/*"                         |
 <TestParam>.				{
-  					  if (current->testId!=0)
-					  {
-					    RefItem *item = testList.getRefItem(current->testId);
-					    item->text += " <p>";
-					    item->text += current->brief;
-					  }
-					  else
-					  {
-  					    int testItemId  = testList.addRefItem();
-					    char anchorLabel[12];
-					    sprintf(anchorLabel,"_test%06d",testItemId);
-					    RefItem *item = testList.getRefItem(testItemId);
-					    item->text = current->brief.copy();
-					    item->listAnchor = anchorLabel;
-					    current->testId = testItemId;
-					    QCString testCmdString;
-					    testCmdString.sprintf("\\test %d\n",testItemId);
-					    current->doc += testCmdString;
-					    sectionType=SectionInfo::Anchor;
-					    sectionLabel=anchorLabel;
-					    addSection();
-					  }
-  					  unput(*yytext);
-					  current->brief  = testString.copy(); // restore orginial brief desc.
-					  BEGIN(testStartContext);
+                                          addSpecialItem("test");
+					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+					  BEGIN(slStartContext);
   					}
 <BugParam>\n                            |
 <BugParam>"//"                          |
 <BugParam>"/*"                          |
 <BugParam>.				{
-  					  if (current->bugId!=0)
-					  {
-					    RefItem *item = bugList.getRefItem(current->bugId);
-					    item->text += " <p>";
-					    item->text += current->brief;
-					  }
-					  else
-					  {
-  					    int bugItemId  = bugList.addRefItem();
-					    char anchorLabel[12];
-					    sprintf(anchorLabel,"_bug%06d",bugItemId);
-					    RefItem *item = bugList.getRefItem(bugItemId);
-					    item->text = current->brief.copy();
-					    item->listAnchor = anchorLabel;
-					    current->bugId = bugItemId;
-					    QCString bugCmdString;
-					    bugCmdString.sprintf("\\bug %d\n",bugItemId);
-					    current->doc += bugCmdString;
-					    sectionType=SectionInfo::Anchor;
-					    sectionLabel=anchorLabel;
-					    addSection();
-					  }
-  					  unput(*yytext);
-					  current->brief  = bugString.copy(); // restore orginial brief desc.
-					  BEGIN(bugStartContext);
+                                          addSpecialItem("bug");
+					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+					  BEGIN(slStartContext);
   					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
@@ -3453,11 +3439,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <GroupHeader>"*/"			{
   					  unput('/');unput('*');
 					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
+					  startGroupInDoc();
 					  newDocState();
   					}
 <GroupHeader>\n				{
   					  yyLineNr++;
 					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
+					  startGroupInDoc();
 					  newDocState();
   					}
 <StoreGroupDocs>"$"			{
@@ -3619,27 +3607,19 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 							  BEGIN( GroupName );
   							}
 <ClassDoc,Doc,JavaDoc>{CMD}"{"				{
-  							  if (current->section==Entry::GROUPDOC_SEC )
+                                                          if (memberGroupId==NOGROUP && current->section==Entry::GROUPDOC_SEC)
 							  {
-							    autoGroupStack.push(new Grouping(current->name,
-											     current->groupingPri()
-											     ));
-							  }
-							  else if (current->section == Entry::MEMBERGRP_SEC)
-							  {
-					                    memberGroupId = newMemberGroupId();
-                                                            memberGroupRelates = current->relates.copy();
-                                                            memberGroupInside = current->inside.copy();
-					                    current->mGrpId = memberGroupId;
-					                    lastMemberGroupLine = yyLineNr;
-							  }
-							  else
-							  {
-							    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
+							    startGroupInDoc();
 							  }
   							}
 <ClassDoc,Doc,JavaDoc>{CMD}"}"				{
+                                                          if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
+                                                          {
+                                                             warn(yyFileName,yyLineNr,
+	                                                          "Warning: end of group without matching begin.");
+                                                          }
   							  endGroup();
+                                                          memberGroupHeader.resize(0);
   							}
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
@@ -3841,17 +3821,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  yyLineNr++;
   					}
 <SkipSection>"//"|"*/"			  					
-<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
                                           // previous section enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
                                           // section was enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
                                           // section enabled => absorb endif
   					}
 
@@ -3914,8 +3894,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ClassDocBrief>"\n"			{ 
 					  // allow \todo in brief description
 					  if (lastBriefContext==TodoParam &&
-					      (todoStartContext==LineDoc ||
-					       todoStartContext==AfterDocLine
+					      (slStartContext==LineDoc ||
+					       slStartContext==AfterDocLine
 					      )
 					     )
 					  {
@@ -3924,8 +3904,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else if
 					     (lastBriefContext==TestParam &&
-					      (testStartContext==LineDoc ||
-					       testStartContext==AfterDocLine
+					      (slStartContext==LineDoc ||
+					       slStartContext==AfterDocLine
 					      )
 					     )
 					  {
@@ -3934,8 +3914,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else if
 					     (lastBriefContext==BugParam &&
-					      (bugStartContext==LineDoc ||
-					       bugStartContext==AfterDocLine
+					      (slStartContext==LineDoc ||
+					       slStartContext==AfterDocLine
 					      )
 					     )
 					  {
@@ -4307,12 +4287,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 static void startGroup()
 {
-  if (memberGroupId!=NOGROUP)
-  {
-    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
-	"Previous command was found at line %d.",lastMemberGroupLine);
-  }
-  else if (!lastDefGroup.groupname.isEmpty())
+  if (!lastDefGroup.groupname.isEmpty())
   {
     setCurrentGroup( &lastDefGroup.groupname, lastDefGroup.pri );   
     autoGroupStack.push(new Grouping(lastDefGroup));
@@ -4320,12 +4295,21 @@ static void startGroup()
   }
   else 
   {
+    if (memberGroupId!=NOGROUP)
+    {
+      //warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
+      //	"Previous command was found at line %d.",lastMemberGroupLine);
+      endGroup();
+    }
     if (memberGroupHeader.isEmpty())
     {
       // warn( yyFileName, yyLineNr, "Warning: member group does not have a header" );
       memberGroupHeader="[NOHEADER]";
     }
     memberGroupId = newMemberGroupId();
+    Doxygen::memberHeaderDict.insert(memberGroupId,
+	new QCString(memberGroupHeader.stripWhiteSpace())
+			   );
     memberGroupRelates = current->relates.copy();
     memberGroupInside = current->inside.copy();
     current->mGrpId = memberGroupId;
@@ -4333,18 +4317,39 @@ static void startGroup()
   }
 }
 
-static void endGroup()
+static void startGroupInDoc()
 {
-  if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
+  if (current->section==Entry::GROUPDOC_SEC ) /* scope for a non-member group: @defgroup */
   {
-    warn(yyFileName,yyLineNr,
-	"Warning: end of group without matching begin.");
+    autoGroupStack.push(new Grouping(current->name,
+	  current->groupingPri()
+	  ));
   }
-  else if (memberGroupId!=NOGROUP) // end of member group
+  else if (current->section == Entry::MEMBERGRP_SEC) /* scope for a member group: @name */
   {
+    if (memberGroupId!=NOGROUP)
+    {
+      endGroup();
+    }
+    memberGroupId = newMemberGroupId();
     Doxygen::memberHeaderDict.insert(memberGroupId,
 	new QCString(memberGroupHeader.stripWhiteSpace())
 			   );
+    memberGroupRelates = current->relates.copy();
+    memberGroupInside = current->inside.copy();
+    current->mGrpId = memberGroupId;
+    lastMemberGroupLine = yyLineNr;
+  }
+  else
+  {
+    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
+  }
+}
+
+static void endGroup()
+{
+  if (memberGroupId!=NOGROUP) // end of member group
+  {
     Doxygen::memberDocDict.insert(memberGroupId,
 	new QCString(memberGroupDocs)
 			);
@@ -4356,7 +4361,6 @@ static void endGroup()
       current->mGrpId=NOGROUP;
       current->relates.resize(0);
     }
-    memberGroupHeader.resize(0);
     memberGroupDocs.resize(0);
   }
   else if (!autoGroupStack.isEmpty()) // end of group
@@ -4366,11 +4370,18 @@ static void endGroup()
     if( parent ) {
       setCurrentGroup( &parent->groupname, parent->pri );
     } else {
-      setCurrentGroup( NULL, Grouping::GROUPING_LOWEST );
+      setCurrentGroup( 0, Grouping::GROUPING_LOWEST );
     }
     delete current;
   }
 }
+
+static void forceEndGroup()
+{
+  while (memberGroupId!=NOGROUP || !autoGroupStack.isEmpty()) endGroup();
+}
+
+//----------------------------------------------------------------------------
 
 static void newDocState()
 {
@@ -4451,8 +4462,10 @@ static void parseCompounds(Entry *rt)
       memberGroupInside.resize(0);
       
       scanYYlex() ;
+      forceEndGroup();
       delete current; current=0;
       ce->program.resize(0);
+
 
       if (depthIf>0)
       {
@@ -4482,10 +4495,14 @@ void parseMain(Entry *rt)
   scanYYrestart( scanYYin );
   BEGIN( FindMembers );
   scanYYlex();
+
+  forceEndGroup();
+
   if (depthIf>0)
   {
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
   }
+
   rt->program.resize(0);
   delete current; current=0;
   parseCompounds(rt);

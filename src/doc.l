@@ -1072,6 +1072,40 @@ bool findDocsForMemberOrCompound(const char *commandName,
 }
 
 /* ----------------------------------------------------------------- */
+
+static void writeSpecialItem(const char *commandString)
+{
+  QCString cmd = commandString; // format "\test 20" or "\todo 4"
+  int sepPos=cmd.find(' ');
+  QCString listName = cmd.mid(1,cmd.length()-sepPos-1); // i.e. "test" or "todo"
+  RefList *refList = Doxygen::specialLists->find(cmd.mid(1,sepPos-1));
+  ASSERT(refList!=0);
+  if (Config_getBool(refList->optionName()))
+  {
+    QCString numStr=cmd.right(cmd.length()-sepPos-1); // i.e. "20" or "4"
+    bool ok; int num = numStr.toUInt(&ok);
+    RefItem *item = refList->getRefItem(num);
+    ASSERT(item!=0);
+    if (insideItemList)
+    {
+      forceEndItemList();
+    }
+    endArgumentList();
+    if (inBlock()) endBlock();
+    currentListIndent.push("P");
+    outDoc->startSimpleSect(refList->sectionType(),
+                            refList->listName(),
+			    item->listAnchor,
+			    refList->sectionTitle()+": "
+			   );
+    outDoc->writeDescItem();
+    internalParseDocument(item->text);
+    outDoc->endSimpleSect();
+    currentListIndent.pop();
+  }
+}
+
+/* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
@@ -1655,71 +1689,10 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>"\\todo "[0-9]+		{ // this tag is generated in an earlier pass
-  					  if (Config_getBool("GENERATE_TODOLIST"))
-					  {
-					    QCString numStr=yytext;
-					    numStr=numStr.right(numStr.length()-6);
-					    bool ok; int num = numStr.toUInt(&ok);
-					    RefItem *item = todoList.getRefItem(num);
-					    ASSERT(item!=0);
-  					    if (insideItemList)
-					    {
-					      forceEndItemList();
-					    }
-					    endArgumentList();
-					    if (inBlock()) endBlock();
-					    currentListIndent.push("P");
-					    outDoc->startSimpleSect(BaseOutputDocInterface::Todo,"todo",item->listAnchor,theTranslator->trTodo()+": ");
-					    outDoc->writeDescItem();
-					    internalParseDocument(item->text);
-					    outDoc->endSimpleSect();
-					    currentListIndent.pop();
-					  }
-  					}
-<DocScan>"\\test "[0-9]+		{ // this tag is generated in an earlier pass
-  				          if (Config_getBool("GENERATE_TESTLIST"))
-					  {
-  					    QCString numStr=yytext;
-					    numStr=numStr.right(numStr.length()-6);
-					    bool ok; int num = numStr.toUInt(&ok);
-					    RefItem *item = testList.getRefItem(num);
-					    ASSERT(item!=0);
-  					    if (insideItemList)
-					    {
-					      forceEndItemList();
-					    }
-  					    endArgumentList();
-					    if (inBlock()) endBlock();
-					    currentListIndent.push("P");
-  					    outDoc->startSimpleSect(BaseOutputDocInterface::Test,"test",item->listAnchor,theTranslator->trTest()+": ");
-					    outDoc->writeDescItem();
-					    internalParseDocument(item->text);
-					    outDoc->endSimpleSect();
-					    currentListIndent.pop();
-					  }
-  					}
-<DocScan>"\\bug "[0-9]+			{ // this tag is generated in an earlier pass
-  				          if (Config_getBool("GENERATE_BUGLIST"))
-					  {
-  					    QCString numStr=yytext;
-					    numStr=numStr.right(numStr.length()-5);
-					    bool ok; int num = numStr.toUInt(&ok);
-					    RefItem *item = bugList.getRefItem(num);
-					    ASSERT(item!=0);
-  					    if (insideItemList)
-					    {
-					      forceEndItemList();
-					    }
-  					    endArgumentList();
-					    if (inBlock()) endBlock();
-					    currentListIndent.push("P");
-  					    outDoc->startSimpleSect(BaseOutputDocInterface::Bug,"bug",item->listAnchor,theTranslator->trBug()+": ");
-					    outDoc->writeDescItem();
-					    internalParseDocument(item->text);
-					    outDoc->endSimpleSect();
-					    currentListIndent.pop();
-					  }
+<DocScan>"\\todo "[0-9]+		| /* generated labels */
+<DocScan>"\\test "[0-9]+		|
+<DocScan>"\\bug "[0-9]+			{ 
+                                          writeSpecialItem(yytext);
   					}
 <DocScan>{CMD}"deprecated"{BSEP}	{
   					  if (insideItemList)

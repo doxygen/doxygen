@@ -32,6 +32,7 @@
 #include "formula.h"
 #include "section.h"
 #include "membergroup.h"
+#include "reflist.h"
 //#include "packagedef.h"
 
 class PageSList;
@@ -81,7 +82,6 @@ class Doxygen
     static QTextStream tagFile;
     static SectionDict sectionDict;
     static StringDict namespaceAliasDict;
-    //static GroupList groupList;
     static GroupSDict groupSDict;
     static NamespaceSDict namespaceSDict;
     static FormulaList formulaList;
@@ -92,8 +92,8 @@ class Doxygen
     static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
     static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
     static QDict<void> expandAsDefinedDict;
-    //static PackageSDict packageDict;
     static NamespaceDef *globalScope;
+    static QDict<RefList> *specialLists; // array of special lists: todo, test, bug ...
 };
 
 void initDoxygen();

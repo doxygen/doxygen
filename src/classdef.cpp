@@ -2462,7 +2462,7 @@ QCString ClassDef::className() const
 
 void ClassDef::addListReferences()
 {
-  addRefItem(todoId(),testId(),bugId(),
+  addRefItem(specialListItems(),
              theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),name()
             );

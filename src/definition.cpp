@@ -52,6 +52,7 @@ Definition::Definition(const char *df,int dl,
   m_bugId=0;
   m_outerScope=Doxygen::globalScope;
   m_partOfGroups=0;
+  m_specialListItems=0;
 }
 
 Definition::~Definition()
@@ -60,6 +61,7 @@ Definition::~Definition()
   delete m_sourceRefByDict;
   delete m_sourceRefsDict;
   delete m_partOfGroups;
+  delete m_specialListItems;
 }
 
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
@@ -561,4 +563,44 @@ void Definition::makePartOfGroup(GroupDef *gd)
   m_partOfGroups->append(gd);
 }
 
+void Definition::setRefItems(const QList<ListItemInfo> *sli)
+{
+  if (sli)
+  {
+    // deep copy the list
+    if (m_specialListItems==0) 
+    {
+      m_specialListItems=new QList<ListItemInfo>;
+      m_specialListItems->setAutoDelete(TRUE);
+    }
+    QListIterator<ListItemInfo> slii(*sli);
+    ListItemInfo *lii;
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      m_specialListItems->append(new ListItemInfo(*lii));
+    } 
+  }
+}
+
+int Definition::getSpecialListId(const char *listName) const
+{
+  if (m_specialListItems)
+  {
+    QListIterator<ListItemInfo> slii(*m_specialListItems);
+    ListItemInfo *lii;
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      if (strcmp(lii->type,listName)==0)
+      {
+        return lii->itemId;
+      }
+    }
+  }
+  return -1;
+}
+
+const QList<ListItemInfo> *Definition::specialListItems() const
+{
+  return m_specialListItems;
+}
 

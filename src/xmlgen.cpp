@@ -429,7 +429,6 @@ class XMLGenerator : public OutputDocInterface
       XML_DB(("(startSimpleSect)\n"));
       m_t << "<simplesect kind=\"" << sectionTypeToString(st) << "\">"; 
       startNestedPar();
-      m_inParStack.top() = TRUE;
     }
     void endSimpleSect()         
     {

@@ -42,13 +42,13 @@
 
 const int indentLevels = 10;
 
-struct ListItemInfo
+struct RTFListItemInfo
 {
   bool isEnum;
   int number;
 };
 
-static ListItemInfo listItemInfo[indentLevels];
+static RTFListItemInfo listItemInfo[indentLevels];
 static QCString title;
 static QCString subject;
 static QCString comments;

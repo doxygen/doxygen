@@ -21,6 +21,7 @@
 
 #include "qtbc.h"
 #include <qintdict.h>
+#include "outputgen.h"
 
 /*! This struct represents an item in the list of references. */
 struct RefItem
@@ -39,18 +40,31 @@ class RefList
     RefItem *getRefItem(int todoItemId);
     RefItem *getFirstRefItem();
     RefItem *getNextRefItem();
+    QCString listName() const;
+    QCString optionName() const;
+    QCString pageTitle() const;
+    QCString sectionTitle() const;
+    BaseOutputDocInterface::SectionTypes sectionType() const;
 
-    RefList();
+    RefList(const char *listName,const char *optionName,
+            const char *pageTitle,const char *secTitle,
+            BaseOutputDocInterface::SectionTypes type
+           );
    ~RefList();
 
   private:
     int m_id;
+    QCString m_listName;
+    QCString m_optionName;
+    QCString m_pageTitle;
+    QCString m_secTitle;
     QIntDict<RefItem> *m_dict;
     QIntDictIterator<RefItem> *m_dictIterator;
+    BaseOutputDocInterface::SectionTypes m_type;
 };
 
-extern RefList todoList;
-extern RefList testList;
-extern RefList bugList;
+//extern RefList todoList;
+//extern RefList testList;
+//extern RefList bugList;
 
 #endif
