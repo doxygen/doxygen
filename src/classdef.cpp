@@ -98,6 +98,8 @@ ClassDef::ClassDef(
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
   m_membersMerged = FALSE;
+  QCString ns;
+  extractNamespaceName(m_name,m_className,ns);
 
   if (((QCString)defFileName).right(5)!=".java" && 
       guessSection(defFileName)==Entry::SOURCE_SEC)
@@ -132,7 +134,7 @@ QCString ClassDef::displayName() const
   QCString n;
   if (Config_getBool("HIDE_SCOPE_NAMES"))
   {
-    n=localName();
+    n=m_className;
   }
   else
   {
@@ -2519,14 +2521,15 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
 QCString ClassDef::className() const
 {
-  QCString className=m_localName;
-  Definition *p=getOuterScope();
-  while (p && p->definitionType()==TypeClass)
-  {
-    className.prepend(p->localName()+"::");
-    p=p->getOuterScope();
-  }
-  return className;
+  //QCString className=m_localName;
+  //Definition *p=getOuterScope();
+  //while (p && p->definitionType()==TypeClass)
+  //{
+  //  className.prepend(p->localName()+"::");
+  //  p=p->getOuterScope();
+  //}
+  //return className;
+  return m_className;
 };
 
 void ClassDef::addListReferences()

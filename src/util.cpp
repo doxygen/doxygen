@@ -1674,7 +1674,9 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       equal=srcAType.at(srcPos)==dstAType.at(dstPos);
       if (equal) srcPos++,dstPos++; 
     }
-    if (srcPos<srcAType.length() && dstPos<dstAType.length())
+    uint srcATypeLen=srcAType.length();
+    uint dstATypeLen=dstAType.length();
+    if (srcPos<srcATypeLen && dstPos<dstATypeLen)
     {
       // if nothing matches or the match ends in the middle or at the
       // end of a string then there is no match
@@ -1685,15 +1687,20 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       }
       if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
       {
+        //printf("partial match srcPos=%d dstPos=%d!\n",srcPos,dstPos);
         // check if a name if already found -> if no then there is no match
         if (!srcA->name.isEmpty() || !dstA->name.isEmpty()) 
         {
           NOMATCH
           return FALSE;
         }
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (srcPos<srcAType.length() || dstPos<dstAType.length()) 
+        // types only
+        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
+        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
+        if (srcPos<srcATypeLen || 
+            dstPos<dstATypeLen ||
+            (srcPos==srcATypeLen && dstPos==dstATypeLen)
+           ) 
         {
           NOMATCH
           return FALSE;
@@ -1702,15 +1709,15 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       else
       {
         // otherwise we assume that a name starts at the current position.
-        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+        while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
+        while (dstPos<dstATypeLen && isId(dstAType.at(dstPos))) dstPos++;
 
         // if nothing more follows for both types then we assume we have
         // found a match. Note that now `signed int' and `signed' match, but
         // seeing that int is not a name can only be done by looking at the
         // semantics.
 
-        if (srcPos!=srcAType.length() || dstPos!=dstAType.length()) 
+        if (srcPos!=srcATypeLen || dstPos!=dstATypeLen) 
         { 
           NOMATCH
           return FALSE; 
@@ -3065,14 +3072,17 @@ void extractNamespaceName(const QCString &scopeName,
   while (p>=0 && (i=clName.findRev("::",p))!=-1) 
     // see if the first part is a namespace (and not a class)
   {
+    //printf("Trying %s\n",clName.left(i).data());
     if (i>0 && (nd=getResolvedNamespace(clName.left(i))) && getClass(clName.left(i))==0)
     {
+      //printf("found!\n");
       namespaceName=nd->name().copy();
       className=clName.right(clName.length()-i-2);
       goto done;
     } 
     p=i-2; // try a smaller piece of the scope
   }
+  //printf("not found!\n");
 
   // not found, so we just have to guess.
   className=scopeName.copy();
@@ -3814,9 +3824,9 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
 {
   switch (c)
   {
-    case 0xA1: t << c;          break;
+    case 0xA1: t << "\\k{A}";   break;
     case 0xA2: t << c;          break;
-    case 0xA3: t << c;          break;
+    case 0xA3: t << "\\L{}";    break;
     case 0xA4: t << c;          break;
     case 0xA5: t << c;          break;
     case 0xA6: t << "\\'{S}";   break;
@@ -3831,9 +3841,9 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xAF: t << "\\.{Z}";   break;
 
     case 0xB0: t << c;          break;
-    case 0xB1: t << c;          break;
+    case 0xB1: t << "\\k{a}";   break;
     case 0xB2: t << c;          break;
-    case 0xB3: t << c;          break;
+    case 0xB3: t << "\\l{}";    break;
     case 0xB4: t << c;          break;
     case 0xB5: t << c;          break;
     case 0xB6: t << "\\'{s}";   break;
@@ -3857,7 +3867,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xC7: t << "\\c{C}";   break;
     case 0xC8: t << "\\v{C}";   break;
     case 0xC9: t << "\\'{E}";   break;
-    case 0xCA: t << "\\c{E}";   break;
+    case 0xCA: t << "\\k{E}";   break;
     case 0xCB: t << "\\\"{E}";  break;
     case 0xCC: t << "\\v{E}";   break;
     case 0xCD: t << "\\'{I}";   break;
@@ -3891,7 +3901,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xE7: t << "\\c{c}";   break;
     case 0xE8: t << "\\v{c}";   break;
     case 0xE9: t << "\\'{e}";   break;
-    case 0xEA: t << c;          break;
+    case 0xEA: t << "\\k{e}";   break;
     case 0xEB: t << "\\\"{e}";  break;
     case 0xEC: t << "\\v{e}";   break;
     case 0xED: t << "\\'{\\i}"; break;

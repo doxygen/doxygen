@@ -174,7 +174,7 @@ class TranslatorCzech : public Translator
      */
     inline QCString decode(const QCString & sInput)
     { 
-      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
       {
         return sInput;
       }
@@ -196,7 +196,7 @@ class TranslatorCzech : public Translator
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
       {
         return "windows-1250";
       }

@@ -1397,9 +1397,10 @@ void writeAlphabeticalClassList(OutputList &ol)
       }
       else if (cd) // a real class, insert a link
       {
-        QCString namesp;
-        if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
-        QCString cname=cd->className();
+        QCString namesp,cname;
+        //if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
+        //QCString cname=cd->className();
+        extractNamespaceName(cd->name(),cname,namesp);
 
         ol.writeObjectLink(cd->getReference(),
                            cd->getOutputFileBase(),0,cname);
@@ -2401,30 +2402,36 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       {
         if (members->count()>0)
         {
-          if(htmlHelp)
-          {
-            htmlHelp->addContentsItem(TRUE, convertToHtml(pMemInfo->name), gd->getOutputFileBase(),0);
-            htmlHelp->incContentsDepth();
-          }
-
-          if(ftvHelp)
-          {
-
-            ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, pMemInfo->name);
-            ftvHelp->incContentsDepth();
-          }
-
+          bool first=TRUE;
           MemberDef *md=members->first();
           while (md)
           {
-            GroupDef *gd=md->getGroupDef();
-            if(htmlHelp)
+            if (md->isDetailedSectionVisible(TRUE))
             {
-              htmlHelp->addContentsItem(FALSE,md->name(),gd->getOutputFileBase(),md->anchor()); 
-            }
-            if(ftvHelp)
-            {
-              ftvHelp->addContentsItem(FALSE,gd->getReference(),gd->getOutputFileBase(),md->anchor(),md->name()); 
+              if (first)
+              {
+                first=FALSE;
+                if(htmlHelp)
+                {
+                  htmlHelp->addContentsItem(TRUE, convertToHtml(pMemInfo->name), gd->getOutputFileBase(),0);
+                  htmlHelp->incContentsDepth();
+                }
+                if(ftvHelp)
+                {
+
+                  ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, pMemInfo->name);
+                  ftvHelp->incContentsDepth();
+                }
+              }
+              GroupDef *gd=md->getGroupDef();
+              if(htmlHelp)
+              {
+                htmlHelp->addContentsItem(FALSE,md->name(),gd->getOutputFileBase(),md->anchor()); 
+              }
+              if(ftvHelp)
+              {
+                ftvHelp->addContentsItem(FALSE,gd->getReference(),gd->getOutputFileBase(),md->anchor(),md->name()); 
+              }
             }
             md=members->next();
           }
@@ -2830,41 +2837,44 @@ void writeIndex(OutputList &ol)
   //  parseText(ol,projPrefix+theTranslator->trPackageList());
   //  ol.endIndexSection(isPackageIndex);
   //}
-  if (documentedGroups>0)
+  if (!Config_getBool("LATEX_HIDE_INDICES"))
   {
-    ol.startIndexSection(isModuleIndex);
-    ol.parseText(projPrefix+theTranslator->trModuleIndex());
-    ol.endIndexSection(isModuleIndex);
-  }
-  if (documentedNamespaces>0)
-  {
-    ol.startIndexSection(isNamespaceIndex);
-    ol.parseText(projPrefix+theTranslator->trNamespaceIndex());
-    ol.endIndexSection(isNamespaceIndex);
-  }
-  if (hierarchyClasses>0)
-  {
-    ol.startIndexSection(isClassHierarchyIndex);
-    ol.parseText(projPrefix+theTranslator->trHierarchicalIndex());
-    ol.endIndexSection(isClassHierarchyIndex);
-  }
-  if (annotatedClasses>0)
-  {
-    ol.startIndexSection(isCompoundIndex);
-    ol.parseText(projPrefix+theTranslator->trCompoundIndex());
-    ol.endIndexSection(isCompoundIndex);
-  }
-  if (documentedFiles>0)
-  {
-    ol.startIndexSection(isFileIndex);
-    ol.parseText(projPrefix+theTranslator->trFileIndex());
-    ol.endIndexSection(isFileIndex);
-  }
-  if (indexedPages>0)
-  {
-    ol.startIndexSection(isPageIndex);
-    ol.parseText(projPrefix+theTranslator->trPageIndex());
-    ol.endIndexSection(isPageIndex);
+    if (documentedGroups>0)
+    {
+      ol.startIndexSection(isModuleIndex);
+      ol.parseText(projPrefix+theTranslator->trModuleIndex());
+      ol.endIndexSection(isModuleIndex);
+    }
+    if (documentedNamespaces>0)
+    {
+      ol.startIndexSection(isNamespaceIndex);
+      ol.parseText(projPrefix+theTranslator->trNamespaceIndex());
+      ol.endIndexSection(isNamespaceIndex);
+    }
+    if (hierarchyClasses>0)
+    {
+      ol.startIndexSection(isClassHierarchyIndex);
+      ol.parseText(projPrefix+theTranslator->trHierarchicalIndex());
+      ol.endIndexSection(isClassHierarchyIndex);
+    }
+    if (annotatedClasses>0)
+    {
+      ol.startIndexSection(isCompoundIndex);
+      ol.parseText(projPrefix+theTranslator->trCompoundIndex());
+      ol.endIndexSection(isCompoundIndex);
+    }
+    if (documentedFiles>0)
+    {
+      ol.startIndexSection(isFileIndex);
+      ol.parseText(projPrefix+theTranslator->trFileIndex());
+      ol.endIndexSection(isFileIndex);
+    }
+    if (indexedPages>0)
+    {
+      ol.startIndexSection(isPageIndex);
+      ol.parseText(projPrefix+theTranslator->trPageIndex());
+      ol.endIndexSection(isPageIndex);
+    }
   }
   ol.lastIndexPage();
   //if (documentedPackages>0)

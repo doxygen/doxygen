@@ -414,6 +414,9 @@ class ClassDef : public Definition
 
     /*! TRUE if the class is defined in a source file rather than a header file. */
     bool m_isLocal;
+
+    /*! class name with outer class scope, but without namespace scope. */
+    QCString m_className;
 };
 
 /*! \brief Class that contains information about a usage relation. 

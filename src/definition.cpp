@@ -31,13 +31,19 @@
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
 {
+  //QCString ns;
   m_defFileName = df;
   m_defLine = dl;
   m_name=name; 
   if (m_name!="<globalScope>") 
+  {
+    //extractNamespaceName(m_name,m_localName,ns);
     m_localName=stripScope(name);
+  }
   else
+  {
     m_localName=name;
+  }
   //printf("m_localName=%s\n",m_localName.data());
   m_brief=b; 
   m_doc=d; 

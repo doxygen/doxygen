@@ -15,11 +15,11 @@
 # 
 
 all: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
-	$(MAKE) -f Makefile.libdoxycfg $@
-	$(MAKE) -f Makefile.libdoxygen $@
-	$(MAKE) -f Makefile.doxygen    $@
-	$(MAKE) -f Makefile.doxytag    $@
-	$(MAKE) -f Makefile.doxysearch $@
+	$(MAKE) -f Makefile.libdoxycfg PERL=$(PERL) $@
+	$(MAKE) -f Makefile.libdoxygen PERL=$(PERL) $@
+	$(MAKE) -f Makefile.doxygen    PERL=$(PERL) $@
+	$(MAKE) -f Makefile.doxytag    PERL=$(PERL) $@
+	$(MAKE) -f Makefile.doxysearch PERL=$(PERL) $@
 
 Makefile.libdoxygen: libdoxygen.pro libdoxygen.t 
 	$(ENV) $(PERL) $(TMAKE) libdoxygen.pro >Makefile.libdoxygen

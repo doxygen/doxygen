@@ -3217,24 +3217,34 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					  {
 					    if ((insideJava || insideCS) && 
-						current->stat && 
+						/*current->stat && */
 						current->name.isEmpty() && 
 						current->type.isEmpty()
 					       )
 					    {
 					      // static Java initializer
 					      needsSemi = FALSE;
+					      if (current->stat)
+					      {
+						current->name="[static initializer]";
+					      }
+					      else
+					      {
+						current->name="[instance initializer]";
+					      }
+                                              unput(*yytext); 
+					      BEGIN( Function );
 					    }
 					    else
 					    {
 					      needsSemi = TRUE;
+					      current->type.resize(0);
+					      current->name.resize(0);
+					      current->args.resize(0);
+					      current->argList->clear();
+					      curlyCount=0;
+					      BEGIN( SkipCurlyBlock );
 					    }
-					    current->type.resize(0);
-					    current->name.resize(0);
-					    current->args.resize(0);
-					    current->argList->clear();
-					    curlyCount=0;
-					    BEGIN( SkipCurlyBlock );
 					  }
   					}
 <CSAccessorDecl>"{"			{ curlyCount++; }

@@ -1218,6 +1218,13 @@ void Config::check()
     PUTENV(buf);
   }
   
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
+  {
+    // don't show inline info for Java output, since Java has no inline 
+    // concept.
+    Config_getBool("INLINE_INFO")=FALSE;
+  }
+  
 }
 
 void Config::init()

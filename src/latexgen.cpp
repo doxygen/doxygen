@@ -460,7 +460,6 @@ void LatexGenerator::startProjectNumber()
 void LatexGenerator::startIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
-  bool &hideIndex = Config_getBool("LATEX_HIDE_INDICES");
   QCString &latexHeader = Config_getString("LATEX_HEADER");
   switch (is)
   {
@@ -492,46 +491,28 @@ void LatexGenerator::startIndexSection(IndexSections is)
     //  t << "{"; //Package Index}\n"
     //  break;
     case isModuleIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Module Index}\n"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Module Index}\n"
       break;
     case isNamespaceIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Namespace Index}\"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Namespace Index}\"
       break;
     case isClassHierarchyIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Hierarchical Index}\n"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Hierarchical Index}\n"
       break;
     case isCompoundIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Annotated Compound Index}\n"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Annotated Compound Index}\n"
       break;
     case isFileIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Annotated File Index}\n"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Annotated File Index}\n"
       break;
     case isPageIndex:
-      if (!hideIndex)
-      {
-        if (compactLatex) t << "\\section"; else t << "\\chapter";
-        t << "{"; //Annotated Page Index}\n"
-      }
+      if (compactLatex) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Annotated Page Index}\n"
       break;
     case isModuleDocumentation:
       {
@@ -626,7 +607,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
 void LatexGenerator::endIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
-  bool &hideIndex = Config_getBool("LATEX_HIDE_INDICES");
   QCString &latexHeader = Config_getString("LATEX_HEADER");
   switch (is)
   {
@@ -648,22 +628,22 @@ void LatexGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isModuleIndex:
-      if (!hideIndex) t << "}\n\\input{modules}\n";
+      t << "}\n\\input{modules}\n";
       break;
     case isNamespaceIndex:
-      if (!hideIndex) t << "}\n\\input{namespaces}\n";
+      t << "}\n\\input{namespaces}\n";
       break;
     case isClassHierarchyIndex:
-      if (!hideIndex) t << "}\n\\input{hierarchy}\n";
+      t << "}\n\\input{hierarchy}\n";
       break;
     case isCompoundIndex:
-      if (!hideIndex) t << "}\n\\input{annotated}\n";
+      t << "}\n\\input{annotated}\n";
       break;
     case isFileIndex:
-      if (!hideIndex) t << "}\n\\input{files}\n";
+      t << "}\n\\input{files}\n";
       break;
     case isPageIndex:
-      if (!hideIndex) t << "}\n\\input{pages}\n";
+      t << "}\n\\input{pages}\n";
       break;
     case isModuleDocumentation:
       {
