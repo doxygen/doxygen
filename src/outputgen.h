@@ -33,13 +33,12 @@ class DotGfxHierarchyTable;
 class OutputGenerator
 {
   public:
-    enum OutputType { Html, Latex, Man, RTF };
+    enum OutputType { Html, Latex, Man, RTF, XML };
 
     OutputGenerator();
     virtual ~OutputGenerator();
 
     virtual OutputGenerator *copy() = 0;
-    //virtual OutputGenerator *clone() = 0;
     virtual void append(const OutputGenerator *) = 0;
     virtual void enable() = 0;
     virtual void disable() = 0;
@@ -52,7 +51,6 @@ class OutputGenerator
     virtual void startFile(const char *name,const char *title,bool ext) = 0;
     virtual void writeFooter(int,bool) = 0;
     virtual void endFile() = 0;
-    //virtual void writeIndex() = 0;
     virtual void startIndexSection(IndexSections) = 0;
     virtual void endIndexSection(IndexSections) = 0;
     virtual void startProjectNumber() = 0;
@@ -130,7 +128,6 @@ class OutputGenerator
     virtual void startCodeAnchor(const char *label) = 0;
     virtual void endCodeAnchor() = 0;
     virtual void writeLatexSpacing() = 0;
-    //virtual void writeLatexLabel(const char *clName,const char *anchor) = 0;
     virtual void writeStartAnnoItem(const char *type,const char *file,
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
@@ -180,7 +177,6 @@ class OutputGenerator
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;
-    //virtual void generateExternalIndex() = 0;
     virtual void startClassDiagram() = 0;
     virtual void endClassDiagram(ClassDiagram &,const char *,const char *) = 0;
     virtual void startColorFont(uchar r,uchar g,uchar b) = 0;

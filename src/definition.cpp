@@ -48,9 +48,9 @@ Definition::~Definition()
   delete sourceRefDict;
 }
 
-QCString Definition::nameToFile(const char *name)
+QCString Definition::nameToFile(const char *name,bool allowDots)
 {
-  return convertNameToFile(name);
+  return convertNameToFile(name,allowDots);
 #if 0
   QCString result;
   char c;

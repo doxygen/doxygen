@@ -12,26 +12,14 @@
  *
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef XML_H
+#define XML_H
 
-#ifndef DOXYWIZARD
-#include "qtbc.h"
-#endif
-#include <qstrlist.h>
-#include <qfile.h>
+class QTextStream;
 
-extern void parseConfig(const QCString &config);
-extern void writeTemplateConfig(QFile *f,bool shortList);
-extern void checkConfig();
-extern void configStrToVal();
-extern void substituteEnvironmentVars();
-
-struct Config
-{
-  static void init();
-
-#CONFIG Header
-};
+void generateXML();
+void writeXMLString(QTextStream &t,const char *s);
+void writeXMLLink(QTextStream &t,const char *compoundRef,const char *memAnchor,
+                                 const char *text);
 
 #endif

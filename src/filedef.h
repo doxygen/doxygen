@@ -131,6 +131,9 @@ class FileDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
 
+    void generateXML(QTextStream &t);
+    void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
+
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
@@ -140,7 +143,6 @@ class FileDef : public Definition
     MemberList protoMembers;
     MemberList typedefMembers;
     MemberList enumMembers;
-    MemberList enumValMembers;
     MemberList funcMembers;
     MemberList varMembers;
     

@@ -985,8 +985,6 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   output << ":\\begin{figure}[H]\n"
             "\\begin{center}\n"
             "\\leavevmode\n";
-  //output << "\\setlength{\\epsfysize}{" << realHeight << "cm}\n";
-  //output << "\\epsfbox{" << fileName << ".eps}\n"
   output << "\\includegraphics[height=" << realHeight << "cm]{" 
                                         << fileName << "}" << endl;
   output << "\\end{center}\n"
@@ -994,7 +992,9 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   
   //printf("writeFigure rows=%d cols=%d\n",rows,cols);
 
-  QFile f1((QCString)path+"/"+fileName+".eps");
+  QCString epsBaseName=(QCString)path+"/"+fileName;
+  QCString epsName=epsBaseName+".eps";
+  QFile f1(epsName.data());
   if (!f1.open(IO_WriteOnly))
   {
     err("Could not open file %s for writing\n",convertToQCString(f1.name()).data());
@@ -1227,6 +1227,19 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   t << "\n% ----- relations -----\n\n";
   base->drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
   super->drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+
+  f1.close();
+  if (Config::usePDFLatexFlag)
+  {
+    QCString epstopdfCmd(4096);
+    epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+                   epsBaseName.data(),epsBaseName.data());
+    if (iSystem(epstopdfCmd)!=0)
+    {
+       err("Error: Problems running epstopdf. Check your TeX installation!\n");
+       return;
+    }
+  }
 }
 
 

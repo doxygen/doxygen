@@ -73,6 +73,8 @@ Entry::Entry(const Entry &e)
   memSpec     = e.memSpec;
   initializer = e.initializer;
   initLines   = e.initLines;
+  todoId      = e.todoId;
+  testId      = e.testId;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -214,6 +216,8 @@ void Entry::reset()
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
+  todoId = 0;
+  testId = 0;
   section = EMPTY_SEC;
   sig     = FALSE;
   virt    = Normal;

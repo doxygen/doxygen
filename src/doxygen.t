@@ -75,3 +75,5 @@ sub GenerateDep {
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
 	-rm ce_parse.c	
 
+xml_dtd.h: doxygen.dtd
+	cat doxygen.dtd | sed -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >xml_dtd.h 

@@ -999,6 +999,22 @@ void init()
                     "The ENABLE_SECTIONS tag can be used to enable conditional \n"
                     "documentation sections, marked by \\if sectionname ... \\endif. \n"
                  );
+  ConfigBool::add(  "generateTodoList",
+                    "GENERATE_TODOLIST",
+                    "TRUE",
+                    "do we want a todo list?",
+                    "The GENERATE_TODOLIST tag can be used to enable (YES) or \n"
+                    "disable (NO) the todo list. This list is created by putting \\todo \n"
+                    "commands in the documentation.\n"
+                 );
+  ConfigBool::add(  "generateTestList",
+                    "GENERATE_TESTLIST",
+                    "TRUE",
+                    "do we want a test list?",
+                    "The GENERATE_TESTLIST tag can be used to enable (YES) or \n"
+                    "disable (NO) the test list. This list is created by putting \\test \n"
+                    "commands in the documentation.\n"
+                 );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------
@@ -1293,6 +1309,15 @@ void init()
                     "This makes the output suitable for online browsing using a pdf viewer. \n"
                  );
   addDependency("pdfHyperFlag","generateLatex");
+  ConfigBool::add(  "usePDFLatexFlag",
+                    "USE_PDFLATEX",
+                    "FALSE",
+                    "use pdflatex instead of plain latex",
+                    "If the USE_PDFLATEX tag is set to YES, pdflatex will be used instead of \n"
+                    "plain latex in the generated Makefile. Set this option to YES to get a \n"
+                    "higher quality PDF documentation. \n"
+                 );   
+  addDependency("usePDFLatexFlag","generateLatex");
   ConfigBool::add(  "latexBatchModeFlag",
                     "LATEX_BATCHMODE",
                     "FALSE",
@@ -1383,6 +1408,18 @@ void init()
                     "the generated man pages (default is the subroutine's section .3) \n"
                    );
   addDependency("manExtension","generateMan");
+  //-----------------------------------------------------------------------------------------------
+  ConfigInfo::add(  "XML","configuration options related to the XML output");
+  //-----------------------------------------------------------------------------------------------
+  ConfigBool::add(  "generateXML",
+                    "GENERATE_XML",
+                    "FALSE",
+                    "generate XML output",
+                    "If the GENERATE_XML tag is set to YES Doxygen will \n"
+                    "generate an XML file that captures the structure of \n"
+                    "the code including all documentation. Warning: This feature \n"
+                    "is still experimental and very incomplete.\n"
+                 );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------

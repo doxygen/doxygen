@@ -560,7 +560,7 @@ class TranslatorGerman : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Die Dokumentation für diese";
+      QCString result=(QCString)"Die Dokumentation f&uuml;r diese";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasse"; break;
@@ -634,10 +634,11 @@ class TranslatorGerman : public Translator
     {
       return (QCString)"Zusammengeh&ouml;rigkeiten von "+clName+":";
     }
+    //RK: Apparently Jens missed the Umlaut here. Corrected that.
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Include-Abhängikeitsdiagramm f&uuml;r "+fName+":";
+      return (QCString)"Include-Abh&auml;ngikeitsdiagramm f&uuml;r "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -700,9 +701,10 @@ class TranslatorGerman : public Translator
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
+    //RK: had to change here because of the new command \remark
     virtual QCString trNote()
     {
-      return "Bemerkung";
+      return "Zu beachten";
     }
 
     virtual QCString trPublicTypes()
@@ -742,9 +744,123 @@ class TranslatorGerman : public Translator
       return "Statische private Attribute";
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.1.1
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.3
+//////////////////////////////////////////////////////////////////////////
+
+//RK: Started from here
+    /*! Used as a marker that is put before a todo item */
+    virtual QCString trTodo()
+    {
+      return "Noch zu erledigen";
+    }
+    /*! Used as the header of the todo list */
+    virtual QCString trTodoList()
+    {
+      return "Liste der zu erledigenden Dinge";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trReferencedBy()
+    {
+      return "Wird benutzt von";
+    }
+    virtual QCString trRemarks()
+    {
+      return "Bemerkungen";
+    }
+    virtual QCString trAttention()
+    {
+      return "Achtung";
+    }
+    virtual QCString trInclByDepGraph()
+    {
+      return "Dieser Graph zeigt, welche Datei direkt oder "
+             "indirekt diese Datei enth&auml;lt:";
+    }
+    virtual QCString trSince()
+    {
+      return "Seit";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    virtual QCString trLegendTitle()
+    {
+      return "Erkl&auml;rung des Graphen";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    virtual QCString trLegendDocs()
+    {
+      return 
+        "Diese Seite erkl&auml;rt die Interpretation der von doxygen "
+        "erzeugten Graphen.<p>\n"
+        "Beispiel:\n"
+        "\\code\n"
+        "/*! Wegen Verk&uuml;rzung unsichtbare Klasse */\n"
+        "class Invisible { };\n\n"
+        "/*! Klasse verk&uuml;rzt dargestellt, Vererbunsbeziehung ist versteckt */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* Nicht mit doxygen-Kommentaren dokumentierte Klasse */\n"
+        "class Undocumented { };\n\n"
+        "/*! Mithilfe &ouml;ffentlicher Vererbung vererbte Klasse */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Mithilfe gesch&uumltzter Vererbung vererbte Klasse */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Mithilfe privater Vererbung vererbte Klasse */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Von der Klasse Inherited benutzte Klasse */\n"
+        "class Used { };\n\n"
+        "/*! Superklasse, die von mehreren anderen Klassen erbt */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "Setzen des Tags \\c MAX_DOT_GRAPH_HEIGHT in der Konfigurationsdatei "
+        "auf 200 liefert den folgenden Graphen:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "Die Rechtecke in obigem Graphen bedeuten:\n"
+        "<ul>\n"
+        "<li>Ein schwarz gef&uuml;lltes Rechteck stellt die Struktur oder "
+        "Klasse dar, f&uuml;die der Graph erzeug wurde.\n"
+        "<li>Ein Rechteck mit schwarzem Rahmen kennzeichnet eine dokumentierte "
+        " Struktur oder Klasse.\n"
+        "<li>Ein Rechteck mit grauem Rahmen kennzeichnet eine undokumentierte "
+        " Struktur oder Klasse.\n"
+        "<li>Ein Rechteck mit rotem Rahmen kennzeichnet eine dokumentierte "
+        " Struktur oder Klasse, f&uuml;r die nicht alle Vererbungs-/"
+        "Enthaltenseinsbeziehungen dargestellt werden. Ein Graph wird gek&uuml;rzt, "
+        "wenn er nicht in die angegebenen Schranken passt."  
+        "</ul>\n"
+        "Die Pfeile bedeuten:\n"
+        "<ul>\n"
+        "<li>Ein dunkelblauer Pfeil stellt eine &ouml;ffentliche Vererbungsbeziehung "
+        "zwischen zwei Klassen dar.\n"
+        "<li>Ein dunkelgr&uuml;ner Pfeil stellt gesch&uuml;tzte Vererbung dar.\n"
+        "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.\n"
+        "<li>Ein gestrichelter violetter Pfeil beutet, dass eine Klasse in einer "
+        "anderen enthalten ist oder von einer anderen benutzt wird. Am Pfeil "
+        "stehen die Variable(n), mit deren Hilfe auf die Struktur oder Klasse "
+        "an der Pfeilspize zugegriffen werden kann. \n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    virtual QCString trLegend()
+    {
+      return "Legende";
+    }
 
 };
 

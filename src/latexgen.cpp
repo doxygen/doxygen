@@ -157,10 +157,20 @@ void LatexGenerator::init()
     << "refman.ps: refman.dvi" << endl
     << "\tdvips -o refman.ps refman.dvi" << endl
     << endl
-    << "refman.pdf: refman.ps" << endl
-    << "\tps2pdf refman.ps refman.pdf" << endl
-    << endl
-    << "refman_2on1.ps: refman.ps" << endl
+    << "refman.pdf: refman.ps" << endl;
+    if (Config::usePDFLatexFlag) // use pdflatex instead of latex
+    {
+      t << "\tpdflatex refman.tex" << endl;
+      t << "\tmakeindex refman.idx" << endl;
+      t << "\tpdflatex refman.tex" << endl << endl;
+    }
+    else // otherwise use ps2pdf: not as nice :(
+         // especially from the font point of view
+    {
+      t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
+    }
+    
+  t << "refman_2on1.ps: refman.ps" << endl
     << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
     << endl
     << "refman_2on1.pdf: refman_2on1.ps" << endl
@@ -185,7 +195,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
   if (Config::latexBatchModeFlag) t << "\\batchmode" << endl;
   if (Config::paperType=="a4wide") paperName="a4"; else paperName=Config::paperType;
   t << "\\documentclass[" << paperName << "paper";
-  if (Config::pdfHyperFlag) t << ",ps2pdf";
+  //if (Config::pdfHyperFlag) t << ",ps2pdf";
   t << "]{";
   if (Config::compactLatexFlag) t << "article"; else t << "book";
   t << "}\n";
@@ -197,12 +207,20 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{doxygen}\n";
   if (Config::pdfHyperFlag) 
   {
-    t << "\\usepackage{times}" << endl
-      << "\\usepackage[backref=true," << endl
+    t << "\\usepackage{times}" << endl;
+    t << "\\ifx\\pdfoutput\\undefined" << endl
+      << "\\usepackage[ps2pdf," << endl
       << "            pagebackref=true," << endl
       << "            colorlinks=true," << endl
       << "            linkcolor=blue" << endl
-      << "           ]{hyperref}" << endl;
+      << "           ]{hyperref}" << endl
+      << "\\else" << endl
+      << "\\usepackage[pdftex," << endl
+      << "            pagebackref=true," << endl
+      << "            colorlinks=true," << endl
+      << "            linkcolor=blue" << endl
+      << "           ]{hyperref}" << endl
+      << "\\fi" << endl;
   }
   // Try to get the command for switching on the language
   // support
@@ -479,7 +497,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
@@ -560,7 +578,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isMainPage:
-      t << "}\n\\input{index}\n";
+      t << "}\n\\label{index}";
+      if (Config::pdfHyperFlag) t << "\\hypertarget{index}{}";
+      t << "\\input{index}\n";
       break;
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
@@ -610,7 +630,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -619,7 +639,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (nd)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << nd->getOutputFileBase() << "}\n";
@@ -686,13 +706,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
         PageInfo *pi=exampleList.first();
         if (pi)
         {
-          t << "\\input{" << convertSlashes(pi->name,TRUE) << "-example}\n";
+          t << "\\input{" << convertFileName(pi->name) << "-example}\n";
           pi=exampleList.next();
         }
         while (pi)
         {
           if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
-          t << "{" << convertSlashes(pi->name,TRUE) << "-example}\n";
+          t << "{" << convertFileName(pi->name) << "-example}\n";
           pi=exampleList.next();
         }
       }
@@ -1076,7 +1096,7 @@ void LatexGenerator::writeSectionRef(const char *,const char *lab,
     if (strcmp(lab,text)!=0) // lab!=text
     {
       // todo: don't hardcode p. here!
-      t << "{\\bf " << text << "} (p.\\,\\pageref{" << lab << "})";
+      t << "{\\bf " << text << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
     }
     else
     {

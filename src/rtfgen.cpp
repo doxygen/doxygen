@@ -666,7 +666,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             beginRTFChapter();
             found=TRUE;
@@ -840,7 +840,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             t << "\\par " << Rtf_Style["Reset"] << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -852,7 +852,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         while (nd)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             t << "\\par " << Rtf_Style["Reset"] << endl;
             beginRTFSection();
@@ -941,7 +941,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           t << "\\par " << Rtf_Style["Reset"] << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertSlashes(pi->name,TRUE);
+          t << convertFileName(pi->name);
           t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           pi=exampleList.next();
         }
@@ -950,7 +950,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << "\\par " << Rtf_Style["Reset"] << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertSlashes(pi->name,TRUE);
+          t << convertFileName(pi->name);
           t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           pi=exampleList.next();
         }

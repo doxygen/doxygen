@@ -35,6 +35,7 @@ class ExampleList;
 class ExampleDict;
 class OutputList;
 class GroupDef;
+class QTextStream;
 
 struct SourceReference
 {
@@ -208,6 +209,8 @@ class MemberDef : public Definition
     bool visibleMemberGroup(bool hideNoHeader);
 
     QCString getScopeString() const;
+    
+    void generateXML(QTextStream &t,Definition *def);
     
   private:
     ClassDef   *classDef;     // member of or related to 

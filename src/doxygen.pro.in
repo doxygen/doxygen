@@ -25,7 +25,8 @@ HEADERS      =	doxygen.h scanner.h classdef.h classlist.h memberdef.h \
 		namespacedef.h version.h language.h translator.h \
 		translator_nl.h translator_se.h translator_cz.h translator_fr.h \
 		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
-                translator_ru.h translator_pl.h dot.h rtfgen.h
+                translator_ru.h translator_pl.h dot.h rtfgen.h xml.h xml_dtd.h \
+                reflist.h
 SOURCES      =	doxygen.cpp scanner.cpp classdef.cpp classlist.cpp memberdef.cpp \
 	        membername.cpp index.cpp memberlist.cpp \
 		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
@@ -35,7 +36,9 @@ SOURCES      =	doxygen.cpp scanner.cpp classdef.cpp classlist.cpp memberdef.cpp 
 		tag.cpp filename.cpp declinfo.cpp defargs.cpp define.cpp \
 		diagram.cpp gifenc.cpp image.cpp namespacedef.cpp \
 		version.cpp language.cpp definition.cpp formula.cpp debug.cpp \
-		membergroup.cpp htmlhelp.cpp dot.cpp rtfgen.cpp
+		membergroup.cpp htmlhelp.cpp dot.cpp rtfgen.cpp xml.cpp \
+                reflist.cpp
 win32:INCLUDEPATH += .
+win32:LIBS   += shell32.lib
 TARGET       =	../bin/doxygen
 OBJECTS_DIR  =  ../objects

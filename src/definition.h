@@ -79,7 +79,7 @@ class Definition
      *  The function getOutputFileBase() also uses this function in most cases.
      *  \sa setName(),Definition()
      */
-    QCString nameToFile(const char *name);
+    QCString nameToFile(const char *name,bool allowDot=FALSE);
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
