@@ -277,6 +277,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <FuncQual>"="{B}*"0"		  	{ 
 					  argList->pureSpecifier=TRUE;
 					}
+<*>\n
 <*>.
 
 %%

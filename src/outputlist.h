@@ -120,6 +120,8 @@ class OutputList
     { forall(&OutputGenerator::endTextLink); }
     void writeHtmlLink(const char *url,const char *text)
     { forall(&OutputGenerator::writeHtmlLink,url,text); }
+    void writeMailLink(const char *url)
+    { forall(&OutputGenerator::writeMailLink,url); } 
     void writeStartAnnoItem(const char *type,const char *file, 
                             const char *path,const char *name)
     { forall(&OutputGenerator::writeStartAnnoItem,type,file,path,name); }

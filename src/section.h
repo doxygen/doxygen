@@ -29,6 +29,7 @@ struct SectionInfo
   enum SectionType { Section, Subsection, Anchor };
   SectionInfo(const char *l,const char *t,SectionType st)
     { label=l; title=t; type=st; definition=0; }
+ ~SectionInfo() {}
   QCString label; 
   QCString title;
   SectionType type;

@@ -77,5 +77,6 @@ QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 void writePageRef(OutputList &ol,const char *cn,const char *mn);
+QCString substituteKeywords(QCString &s,const char *title);
 
 #endif

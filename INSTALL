@@ -1,4 +1,4 @@
-DOXYGEN Version 0.49-991205
+DOXYGEN Version 1.0.0
 
 CONTENTS
 --------
@@ -15,8 +15,8 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 
 1.  Unpack the archive, unless you already have:
    
-     gunzip doxygen-0.49-991205.src.tar.gz    # uncompress the archive
-     tar xf doxygen-0.49-991205.src.tar       # unpack it
+     gunzip doxygen-1.0.0.src.tar.gz    # uncompress the archive
+     tar xf doxygen-1.0.0.src.tar       # unpack it
 
 2.  Run the configure script:
  
@@ -135,6 +135,21 @@ The manual should now be here latex/doxygen_manual.ps
 KNOWN CONFIGURATION PROBLEMS
 
 QT RELATED PROBLEMS:
+- The Qt include files and libraries are not a sub directory of the
+  directory pointed to by QTDIR on some systems.
+  (for instance on Red Hat 6.0 includes are in /usr/include/qt and
+   libs are in /usr/lib)
+  
+  The solution:
+  - goto the root of doxygen distribution
+  - do "mkdir qt"
+  - do "cd qt"
+  - do "ln -s your-qt-include-dir-here include",
+  - do "ln -s your-qt-lib-dir-here lib",
+  - do "export QTDIR=$PWD" (or "setenv QTDIR $PWD if you have a csh)
+  
+  Now install doxygen as described above.  
+
 - Qt-2.01 contains a bug that makes some special characters appear as 
   question marks (?) in the HTML output.
 
@@ -215,6 +230,9 @@ HP-UX / DIGITAL UNIX PROBLEMS:
  #if defined (MSDOS) && !defined (__TURBOC__)
 ------------------------------------------------------------------------------
 
+  The generated scanner.cpp that comes with doxygen is build with this
+  patch applied.  
+
 GCC 2.7.2.X PROBLEMS
 
 Old versions of the GNU compiler have problems with constant strings
@@ -234,4 +252,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (05 December 1999)
+Dimitri van Heesch (27 December 1999)

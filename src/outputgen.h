@@ -81,6 +81,7 @@ class OutputGenerator
     virtual void startTextLink(const char *file,const char *anchor) = 0;
     virtual void endTextLink() = 0;
     virtual void writeHtmlLink(const char *url,const char *text) = 0;
+    virtual void writeMailLink(const char *url) = 0;
     virtual void startTypewriter() = 0;
     virtual void endTypewriter() = 0;
     virtual void startGroupHeader() = 0;

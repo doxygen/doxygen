@@ -262,7 +262,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (incFile)
   {
     QCString nm=incName.copy();
-    if (incName.isEmpty()) nm=incFile->name();
+    if (incName.isEmpty()) 
+    {
+      nm=incFile->name();
+      if (Config::fullPathNameFlag)
+      {
+        nm.prepend(stripFromPath(incFile->getPath().copy()));
+      }
+    }
     ol.startTypewriter();
     ol.docify("#include <");
     ol.disable(OutputGenerator::Html);
@@ -837,7 +844,14 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   startFile(ol,fileName+"-include",name()+" Include File");
   startTitle(ol,0);
   QCString n=incName.copy();
-  if (incName.isEmpty()) n=incFile->name();
+  if (incName.isEmpty()) 
+  {
+    n=incFile->name();
+    if (Config::fullPathNameFlag)
+    {
+      n.prepend(stripFromPath(incFile->getPath().copy()));
+    }
+  }
   parseText(ol,n);
   endTitle(ol,0,0);
   parseText(ol,theTranslator->trVerbatimText(incFile->name()));

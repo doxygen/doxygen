@@ -78,11 +78,17 @@ void FileDef::writeDocumentation(OutputList &ol)
 {
   //funcList->countDecMembers();
   
+  QCString fn = name();
+  if (Config::fullPathNameFlag)
+  {
+    fn.prepend(stripFromPath(getPath().copy()));
+  }
+  
   QCString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trFileReference(name()));
-  endTitle(ol,getOutputFileBase(),name());
+  parseText(ol,theTranslator->trFileReference(fn));
+  endTitle(ol,getOutputFileBase(),fn);
   //ol.newParagraph();
   
   if (Config::genTagFile.length()>0) tagFile << "&" << name() << ":\n";
@@ -322,10 +328,15 @@ void FileDef::writeDocumentation(OutputList &ol)
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
+  QCString fn=name();
+  if (Config::fullPathNameFlag)
+  {
+    fn.prepend(stripFromPath(getPath().copy()));
+  }
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,sourceName(),name()+" Source File");
+  startFile(ol,sourceName(),fn+" Source File");
   startTitle(ol,0);
-  parseText(ol,name());
+  parseText(ol,fn);
   endTitle(ol,0,0);
   //parseText(ol,theTranslator->trVerbatimText(incFile->name()));
   //ol.writeRuler();

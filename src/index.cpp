@@ -55,7 +55,7 @@ QCString abbreviate(const char *s,const char *name)
   QCString start1=(QCString)"The "+name+" class ";
   QCString start2=(QCString)"The "+name+" widget ";
   QCString start3=(QCString)"The "+name+" file ";
-  result=result.simplifyWhiteSpace();
+  result=result.stripWhiteSpace();
   // strip trailing .
   if (result.length()>0 && result.at(result.length()-1)=='.') 
     result=result.left(result.length()-1);

@@ -59,6 +59,7 @@ struct MemberInfo
 {
   MemberInfo(MemberDef *md,Protection p,Specifier v) :
         memberDef(md), prot(p), virt(v) {}
+ ~MemberInfo() {}
   MemberDef *memberDef;
   Protection prot;
   Specifier virt;
@@ -70,6 +71,7 @@ class MemberNameInfo : public QList<MemberInfo>
 {
   public:
     MemberNameInfo(const char *name);  
+   ~MemberNameInfo() {}
     const char *memberName() const { return name; }
     int compareItems(GCI item1,GCI item2);
   private:
