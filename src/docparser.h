@@ -349,7 +349,7 @@ class DocWhiteSpace : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, LatexOnly, XmlOnly, Verbatim };
+    enum Type { Code, HtmlOnly, LatexOnly, XmlOnly, Verbatim, Dot };
     DocVerbatim(DocNode *parent,const QString &context,
                 const QString &text, Type t,bool isExample,
                 const QString &exampleFile) : 
@@ -372,6 +372,7 @@ class DocVerbatim : public DocNode
     bool     m_isExample;
     QString  m_exampleFile;
 };
+
 
 /*! @brief Node representing an included text block from file */
 class DocInclude : public DocNode
@@ -595,7 +596,6 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     QString height() const     { return m_height; }
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocDotFile>::accept(this,v); }
-
   private:
     DocNode *m_parent;
     QString  m_name;

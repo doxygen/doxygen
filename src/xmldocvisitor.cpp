@@ -189,6 +189,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::XmlOnly: 
       m_t << s->text();
       break;
+    case DocVerbatim::Dot: 
+      m_t << "<dot>";
+      filter(s->text());
+      m_t << "</dot>";
+      break;
   }
 }
 

@@ -101,6 +101,8 @@ CommandMap cmdMap[] =
   { "%",             CMD_PERCENT },
   { "~",             CMD_LANGSWITCH },
   { "_internalref",  CMD_INTERNALREF },
+  { "dot",           CMD_DOT },
+  { "enddot",        CMD_ENDDOT },
   { 0,               0 }
 };
 

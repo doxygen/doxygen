@@ -3686,12 +3686,22 @@ int DocPara::handleCommand(const QString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_DOT:
+      {
+        doctokenizerYYsetStateDot();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: dot section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDLATEXONLY:
     case CMD_ENDXMLONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDDOT:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
       break; 
     case CMD_PARAM:
@@ -4585,6 +4595,7 @@ int DocSection::parse()
 
 void DocText::parse()
 {
+  DBG(("DocText::parse() start\n"));
   g_nodeStack.push(this);
   doctokenizerYYsetStateText();
   
@@ -4658,6 +4669,7 @@ void DocText::parse()
 
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
+  DBG(("DocText::parse() end\n"));
 }
 
 
@@ -4665,6 +4677,7 @@ void DocText::parse()
 
 void DocRoot::parse()
 {
+  DBG(("DocRoot::parse() start\n"));
   g_nodeStack.push(this);
   doctokenizerYYsetStatePara();
   int retval=0;
@@ -4717,7 +4730,7 @@ void DocRoot::parse()
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid anchor id `%s'",g_token->sectionId.data());
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid anchor id `%s'; ignoring section",g_token->sectionId.data());
       retval = 0;
     }
   }
@@ -4734,6 +4747,7 @@ void DocRoot::parse()
 
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
+  DBG(("DocRoot::parse() end\n"));
 }
 
 //--------------------------------------------------------------------------

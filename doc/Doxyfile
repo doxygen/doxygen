@@ -48,3 +48,4 @@ PERL_PATH         = /usr/local/bin/perl
 SEARCHENGINE      = NO
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
+STRIP_CODE_COMMENTS = NO

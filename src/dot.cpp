@@ -26,6 +26,7 @@
 #include "language.h"
 #include "scanner.h"
 #include "defargs.h"
+#include "docparser.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -96,6 +97,8 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   const int maxLineLen=1024;
   char buf[maxLineLen];
   char url[maxLineLen];
+  char ref[maxLineLen];
+  bool isRef = FALSE;
   int x1,y1,x2,y2;
   while (!f.atEnd())
   {
@@ -106,6 +109,13 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
+      
+      if ( strcmp(url,"\\ref") == 0 )
+      {
+        isRef = TRUE;
+        sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
+      }
+  
       // later versions of graphviz corrected the y coordinate order
       // the rule is that y2>=y1, so test and switch if needed
       if (y2<y1)
@@ -124,9 +134,27 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
       }
       if (urlOnly)
       {
-          t << "<area href=\"" << url << "\" shape=\"rect\" coords=\"" 
-            << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-            << " alt=\"\">" << endl;
+        t << "<area href=\"";
+
+        if ( isRef )
+        {
+          // handle doxygen \ref tag URL reference
+          QCString *dest;
+          DocRef *df = new DocRef( (DocNode*) 0, url );
+          if (!df->ref().isEmpty())
+          {
+            if ((dest=Doxygen::tagDestinationDict[df->ref()])) t << *dest << "/";
+          }
+          if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
+          if (!df->anchor().isEmpty()) t << "#" << df->anchor();
+        }
+        else
+        {
+          t << url;
+        }
+        t << "\" shape=\"rect\" coords=\"" 
+          << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
+          << " alt=\"\">" << endl;
       }
       else // name and external reference are separated by a $
       {
@@ -2220,7 +2248,7 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir)
   QTextOStream tmpout(&result);
   convertMapFile(tmpout, outFile, TRUE);
   QDir().remove(outFile);
-  //printf("result=%s\n",result.data());
+// printf("result=%s\n",result.data());
 
   QDir::setCurrent(oldDir);
   return result;

@@ -328,8 +328,8 @@ static void writeDefaultStyleSheetPart1(QTextStream &t)
   t << "\\RequirePackage{calc}\n";
   t << "\\RequirePackage{array}\n";
   t << "\\pagestyle{fancyplain}\n";
-  t << "\\addtolength{\\headwidth}{\\marginparsep}\n";
-  t << "\\addtolength{\\headwidth}{\\marginparwidth}\n";
+  //t << "\\addtolength{\\headwidth}{\\marginparsep}\n";
+  //t << "\\addtolength{\\headwidth}{\\marginparwidth}\n";
   t << "\\newcommand{\\clearemptydoublepage}{\\newpage{\\pagestyle{empty}";
   t << "\\cleardoublepage}}\n";
   if (!Config_getBool("COMPACT_LATEX")) 

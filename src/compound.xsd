@@ -313,6 +313,7 @@
       <xsd:element name="small" type="docMarkupType" />
       <xsd:element name="htmlonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
+      <xsd:element name="dot" type="xsd:string" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />

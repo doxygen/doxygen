@@ -263,6 +263,31 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::LatexOnly: 
       m_t << s->text(); 
       break;
+    case DocVerbatim::Dot: 
+      {
+        static int dotindex = 1;
+        QCString fileName(4096);
+
+        fileName.sprintf("%s%d", 
+            (Config_getString("LATEX_OUTPUT")+"/inline_dotgraph_").data(), 
+            dotindex++
+           );
+        QFile file(fileName);
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s for writing\n",fileName.data());
+        }
+        file.writeBlock( s->text(), s->text().length() );
+        file.close();
+
+        m_t << "\\begin{center}\n";
+        startDotFile(fileName,"","",FALSE);
+        endDotFile(FALSE);
+        m_t << "\\end{center}\n";
+
+        file.remove();
+      }
+      break;
   }
 }
 
@@ -742,58 +767,13 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  QString baseName=df->file();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  } 
-  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
-  if (baseName.right(4)==".dot")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
-  QString outDir = Config_getString("LATEX_OUTPUT");
-  QString name = df->file();
-  writeDotGraphFromFile(name,outDir,baseName,EPS);
-  if (df->hasCaption())
-  {
-    m_t << "\\begin{figure}[H]" << endl;
-    m_t << "\\begin{center}" << endl;
-  }
-  else
-  {
-    m_t << "\\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!df->width().isEmpty())
-  {
-    m_t << "[width=" << df->width() << "]";
-  }
-  else if (!df->height().isEmpty())
-  {
-    m_t << "[height=" << df->height() << "]";
-  }
-  m_t << "{" << baseName << "}";
-
-  if (df->hasCaption())
-  {
-    m_t << "\\caption{";
-  }
+  startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void LatexDocVisitor::visitPost(DocDotFile *df) 
 {
   if (m_hide) return;
-  m_t << "}" << endl; // end mbox or caption
-  if (df->hasCaption())
-  {
-    m_t << "\\end{center}" << endl;
-    m_t << "\\end{figure}" << endl;
-  }
+  endDotFile(df->hasCaption());
 }
 
 void LatexDocVisitor::visitPre(DocLink *lnk)
@@ -1014,5 +994,65 @@ void LatexDocVisitor::popEnabled()
   ASSERT(v!=0);
   m_hide = *v;
   delete v;
+}
+
+void LatexDocVisitor::startDotFile(const QString &fileName,
+                                   const QString &width,
+                                   const QString &height,
+                                   bool hasCaption
+                                  )
+{
+  QString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
+  {
+    baseName=baseName.left(baseName.length()-4);
+  }
+  if (baseName.right(4)==".dot")
+  {
+    baseName=baseName.left(baseName.length()-4);
+  }
+  QString outDir = Config_getString("LATEX_OUTPUT");
+  QString name = fileName;
+  writeDotGraphFromFile(name,outDir,baseName,EPS);
+  if (hasCaption)
+  {
+    m_t << "\\begin{figure}[H]" << endl;
+    m_t << "\\begin{center}" << endl;
+  }
+  else
+  {
+    m_t << "\\mbox{";
+  }
+  m_t << "\\includegraphics";
+  if (!width.isEmpty())
+  {
+    m_t << "[width=" << width << "]";
+  }
+  else if (!height.isEmpty())
+  {
+    m_t << "[height=" << height << "]";
+  }
+  m_t << "{" << baseName << "}";
+
+  if (hasCaption)
+  {
+    m_t << "\\caption{";
+  }
+}
+
+void LatexDocVisitor::endDotFile(bool hasCaption)
+{
+  if (m_hide) return;
+  m_t << "}" << endl; // end mbox or caption
+  if (hasCaption)
+  {
+    m_t << "\\end{center}" << endl;
+    m_t << "\\end{figure}" << endl;
+  }
 }
 
