@@ -552,7 +552,14 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
  */
 bool MemberDef::isBriefSectionVisible() const
 {
-    bool hasDocs = hasDocumentation();
+    //printf("Member %s grpId=%d docs=%s file=%s args=%s\n",
+    //    name().data(),
+    //    grpId,grpId==-1?"<none>":Doxygen::memberDocDict[grpId]->data(),
+    //    getFileDef()->name().data(),
+    //    argsString());
+    bool hasDocs = hasDocumentation() || 
+                    // part of a documented member group
+                   (grpId!=-1 && !Doxygen::memberDocDict[grpId]->isEmpty());
   
     // only include static members with file/namespace scope if 
     // explicitly enabled in the config file
@@ -609,6 +616,12 @@ bool MemberDef::isBriefSectionVisible() const
                                      !hasDocs
                                     );
 
+    //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d"
+    //       "visibleIfPrivate=%d visibleIfDocVirtual=%d visibltIfNotDefaultCDTor=%d "
+    //       "visibleIfFriendCompound=%d\n",visibleIfStatic,visibleIfDocumented,
+    //       visibleIfEnabled,visibleIfPrivate,visibleIfDocVirtual,visibleIfNotDefaultCDTor,
+    //       visibleIfFriendCompound);
+    
     bool visible = visibleIfStatic     && visibleIfDocumented      && 
                    visibleIfEnabled    && visibleIfPrivate         &&
                    visibleIfDocVirtual && visibleIfNotDefaultCDTor && 

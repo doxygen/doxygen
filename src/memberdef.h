@@ -245,6 +245,12 @@ class MemberDef : public Definition
     }
     void setBodyMember(MemberDef *md) { bodyMemb = md; }
     void setDocsForDefinition(bool b) { docsForDefinition = b; }
+
+    // declaration <-> definition relation
+    void setMemberDefinition(MemberDef *md) { memDef=md; }
+    void setMemberDeclaration(MemberDef *md) { memDec=md; }
+    MemberDef *memberDefinition() const { return memDef; }
+    MemberDef *memberDeclaration() const { return memDec; }
         
     bool visited;
     
@@ -270,8 +276,6 @@ class MemberDef : public Definition
     QCString init;            // initializer
     int initLines;            // number of lines in the initializer
     QCString decl;            // member declaration in class
-    //QCString declFile;        // file where the declaration was found
-    //int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
     MemberDef *bodyMemb;      // Member containing the definition
@@ -281,7 +285,6 @@ class MemberDef : public Definition
     bool    stat;             // is it a static function?
     int     memSpec;          // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
-    //bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
     bool annScope;            // member is part of an annoymous scope

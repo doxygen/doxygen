@@ -25,7 +25,8 @@ class PageInfo
   public:
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
-      doc(d), title(t), sectionDict(0),specialListItems(0),m_inGroup(0) {}
+      doc(d), title(t), context(0), sectionDict(0),specialListItems(0),m_inGroup(0)
+       {}
 
     // where the page definition was found
     QCString defFileName;
@@ -39,6 +40,9 @@ class PageInfo
     // external reference? if so then this is the tag file name
     QCString reference;
     QCString fileName;
+
+    // class, file or namespace in which the page was found
+    Definition *context;
 
     // functions to get a uniform interface with Definitions
     QCString getOutputFileBase() const { return fileName; }

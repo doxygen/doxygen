@@ -1039,7 +1039,11 @@ ALIASES  = "english=\if english" \
 
   \addindex \\anchor
   This command places an invisible, named anchor into the documentation
-  to which you can refer with the \\ref command.
+  to which you can refer with the \\ref command. 
+
+  \note Anchors can currently only be put into a comment block
+  that is marked as a page (using \ref cmdpage "\\page") or mainpage
+  (\ref cmdmainpage "\\mainpage"). 
 
   \sa section \ref cmdref "\\ref".
 

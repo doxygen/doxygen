@@ -200,11 +200,38 @@ static void addRelatedPage(Entry *root)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
   //printf("addRelatedPage() %s gd=%p\n",root->name.data(),gd);
-  addRelatedPage(root->name,root->args,root->doc,root->anchors,
+  PageInfo *pi = addRelatedPage(root->name,root->args,root->doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
       gd,root->tagInfo
      );
+  if (pi)
+  {
+    // see if the function is inside a namespace
+    Definition *ctx = 0;
+
+    if (root->parent->section & Entry::COMPOUND_MASK ) // inside class
+    {
+       QCString fullName=removeRedundantWhiteSpace(root->parent->name);
+       fullName=stripAnonymousNamespaceScope(fullName);
+       fullName=stripTemplateSpecifiersFromScope(fullName);
+       ctx=getClass(fullName);
+    }
+    if (ctx==0 && root->parent->section == Entry::NAMESPACE_SEC ) // inside namespace
+    {
+      QCString nscope=removeAnonymousScopes(root->parent->name);
+      if (!nscope.isEmpty())
+      {
+        ctx = getResolvedNamespace(nscope);
+      }
+    }
+    if (ctx==0) // inside file
+    {
+      bool ambig;
+      ctx=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+    }
+    pi->context = ctx;
+  }
 }
 
 
@@ -1919,7 +1946,6 @@ static void buildFunctionList(Entry *root)
           isMember=memIndex<ts || memIndex>te;
         }
       }
-      
       if (root->parent && 
           !root->parent->name.isEmpty() &&
           (root->parent->section & Entry::COMPOUND_MASK) && 
@@ -1967,7 +1993,8 @@ static void buildFunctionList(Entry *root)
             if (rnd) rnsName = rnd->name().copy();
             NamespaceList *unl = fd ? fd->getUsedNamespaces() : 0;
             ClassList     *ucl = fd ? fd->getUsedClasses() : 0;
-            //printf("matching arguments for %s\n",md->name().data());
+            //printf("matching arguments for %s%s %s%s\n",
+            //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             if ( 
                 matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,unl,ucl)
                )
@@ -2060,7 +2087,6 @@ static void buildFunctionList(Entry *root)
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,FALSE,
               MemberDef::Function,tArgList,root->argList);
-          //printf("new member %p\n",md);
 
 
           if (root->tagInfo) 
@@ -2297,100 +2323,112 @@ static void transferFunctionDocumentation()
   MemberName *mn;
   for (;(mn=mnli.current());++mnli)
   {
-    MemberDef *md,*mdef=0,*mdec=0;
-    MemberNameIterator mni(*mn);
+    //printf("memberName=%s count=%d\n",mn->memberName(),mn->count());
+    MemberDef *mdef=0,*mdec=0;
+    MemberNameIterator mni1(*mn);
     /* find a matching function declaration and definition for this function */
-    for (;(md=mni.current());++mni)
+    for (;(mdec=mni1.current());++mni1)
     {
-      if (md->isPrototype()) 
-        mdec=md;
-      else if (md->isVariable() && md->isExternal()) 
-        mdec=md;
-      
-      if (md->isFunction() && !md->isStatic() && !md->isPrototype()) 
-        mdef=md;
-      else if (md->isVariable() && !md->isExternal() && !md->isStatic())
-        mdef=md;
-    }
-    //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
-    //    mdef, mdef ? mdef->name().data() : "",
-    //    mdec, mdec ? mdec->name().data() : "");
-    if (mdef && mdec && 
-        matchArguments(mdef->argumentList(),mdec->argumentList())
-       ) /* match found */
-    {
-        //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
-        //    mn->memberName(),
-        //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
-        //    mdec->getFileDef()->name().data(),mdec->documentation().data()
-        //   );
-
-        // first merge argument documentation
-        transferArgumentDocumentation(mdec->argumentList(),mdef->argumentList());
-
-        /* copy documentation between function definition and declaration */
-        if (!mdec->briefDescription().isEmpty())
+      if (mdec->isPrototype() ||
+          (mdec->isVariable() && mdec->isExternal()) 
+         )
+      {
+        MemberNameIterator mni2(*mn);
+        for (;(mdef=mni2.current());++mni2)
         {
-          mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
-        }
-        else if (!mdef->briefDescription().isEmpty())
-        {
-          mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
-        }
-        if (!mdef->documentation().isEmpty())
-        {
-          //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
-          mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
-          mdec->setDocsForDefinition(mdef->isDocsForDefinition());
-          ArgumentList *mdefAl = new ArgumentList;
-          stringToArgumentList(mdef->argsString(),mdefAl);
-          if (mdef->argumentList())
+          if (
+              (mdef->isFunction() && !mdef->isStatic() && !mdef->isPrototype()) ||
+              (mdef->isVariable() && !mdef->isExternal() && !mdef->isStatic())
+             )
           {
-            transferArgumentDocumentation(mdef->argumentList(),mdefAl);
-          }
-          mdec->setArgumentList(mdefAl);
-        }
-        else if (!mdec->documentation().isEmpty())
-        {
-          //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
-          mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
-          mdef->setDocsForDefinition(mdec->isDocsForDefinition());
-          ArgumentList *mdecAl = new ArgumentList;
-          stringToArgumentList(mdec->argsString(),mdecAl);
-          if (mdec->argumentList())
-          {
-            transferArgumentDocumentation(mdec->argumentList(),mdecAl);
-          }
-          mdef->setDeclArgumentList(mdecAl);
-        }
-        if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
-        {
-          mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
-          mdef->setBodyDef(mdec->getBodyDef());
-          mdef->setBodyMember(mdec);
-        }
-        else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
-        {
-          mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
-          mdec->setBodyDef(mdef->getBodyDef());
-          mdec->setBodyMember(mdef);
-        }
-        mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
-        mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
-        
+            //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
+            //    mdef, mdef ? mdef->name().data() : "",
+            //    mdec, mdec ? mdec->name().data() : "");
+            if (mdef && mdec && 
+                matchArguments(mdef->argumentList(),mdec->argumentList())
+               ) /* match found */
+            {
+              //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
+              //    mn->memberName(),
+              //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
+              //    mdec->getFileDef()->name().data(),mdec->documentation().data()
+              //    );
 
-        // copy group info.
-        //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
-        //{
-        //  mdef->setGroupDef(mdec->getGroupDef(),mdec->getGroupPri(),mdec->docFile(),mdec->docLine(),mdec->hasDocumentation());
-        //}
-        //else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
-        //{
-        //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
-        //}
+              // first merge argument documentation
+              transferArgumentDocumentation(mdec->argumentList(),mdef->argumentList());
 
-        mdec->setRefItems(mdef->specialListItems());
-        mdef->setRefItems(mdec->specialListItems());
+              /* copy documentation between function definition and declaration */
+              if (!mdec->briefDescription().isEmpty())
+              {
+                mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
+              }
+              else if (!mdef->briefDescription().isEmpty())
+              {
+                mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
+              }
+              if (!mdef->documentation().isEmpty())
+              {
+                //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
+                mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
+                mdec->setDocsForDefinition(mdef->isDocsForDefinition());
+                ArgumentList *mdefAl = new ArgumentList;
+                stringToArgumentList(mdef->argsString(),mdefAl);
+                if (mdef->argumentList())
+                {
+                  transferArgumentDocumentation(mdef->argumentList(),mdefAl);
+                }
+                mdec->setArgumentList(mdefAl);
+              }
+              else if (!mdec->documentation().isEmpty())
+              {
+                //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
+                mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
+                mdef->setDocsForDefinition(mdec->isDocsForDefinition());
+                ArgumentList *mdecAl = new ArgumentList;
+                stringToArgumentList(mdec->argsString(),mdecAl);
+                if (mdec->argumentList())
+                {
+                  transferArgumentDocumentation(mdec->argumentList(),mdecAl);
+                }
+                mdef->setDeclArgumentList(mdecAl);
+              }
+              if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
+              {
+                //printf("body mdec->mdef %d-%d\n",mdec->getStartBodyLine(),mdef->getEndBodyLine());
+                mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
+                mdef->setBodyDef(mdec->getBodyDef());
+                mdef->setBodyMember(mdec);
+              }
+              else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
+              {
+                //printf("body mdef->mdec %d-%d\n",mdef->getStartBodyLine(),mdec->getEndBodyLine());
+                mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
+                mdec->setBodyDef(mdef->getBodyDef());
+                mdec->setBodyMember(mdef);
+              }
+              mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
+              mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
+
+
+              // copy group info.
+              //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
+              //{
+              //  mdef->setGroupDef(mdec->getGroupDef(),mdec->getGroupPri(),mdec->docFile(),mdec->docLine(),mdec->hasDocumentation());
+              //}
+              //else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
+              //{
+              //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
+              //}
+
+              mdec->setRefItems(mdef->specialListItems());
+              mdef->setRefItems(mdec->specialListItems());
+
+              mdef->setMemberDeclaration(mdec);
+              mdec->setMemberDefinition(mdef);
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -5972,7 +6010,16 @@ static void generatePageDocs()
         outputList->endSection(si->label,si->type);
       }
       outputList->startTextBlock();
-      parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
+      QCString scName;
+      if (pi->context && 
+          (pi->context->definitionType()==Definition::TypeClass ||
+           pi->context->definitionType()==Definition::TypeNamespace
+          )
+         )
+      {
+        scName=pi->context->name();
+      }
+      parseDoc(*outputList,pi->defFileName,pi->defLine,scName,0,pi->doc);
       outputList->endTextBlock();
       endFile(*outputList);
       //outputList->enable(OutputGenerator::Man);

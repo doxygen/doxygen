@@ -164,6 +164,9 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  g_curArgTypeName+=g_curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
+<ReadFuncArgType>"<="|">="|"->"|">>"|"<<" { // handle operators in defargs
+  					  g_curArgTypeName+=yytext;
+  					}
 <ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
 					  if (YY_START==ReadFuncArgType)
 					  {
@@ -175,10 +178,10 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    g_curArgDefValue+=*yytext;
 					    g_copyArgValue=&g_curArgDefValue;
 					  }
-  					  g_readArgContext = YY_START; 
+					  g_readArgContext = YY_START; 
 					  if (*yytext=='(')
 					  {
-  					    g_argRoundCount=0; 
+					    g_argRoundCount=0; 
 					    BEGIN( CopyArgRound ); 
 					  }
 					  else if (*yytext=='{')
@@ -249,67 +252,74 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    BEGIN( ReadDocBlock );
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
-					  g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
-					  g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
-					  //printf("curArgType=`%s' curArgDefVal=`%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
-					  int l=g_curArgTypeName.length();
-					  if (l>0)
+  					  if (*yytext==')' && g_curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
-					    int i=l-1;
-					    while (i>=0 && (isspace(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
-					    while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
-					    //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
-					    Argument *a = new Argument; 
-					    a->attrib = g_curArgAttrib.copy();
-					    //printf("a->type=%s a->name=%s i=%d l=%d\n",
-					    //	a->type.data(),a->name.data(),i,l);
-					    a->array.resize(0);
-					    if (i==l-1 && g_curArgTypeName.at(i)==')') // function argument
-					    {
-					      int bi=g_curArgTypeName.find('(');
-					      int fi=bi-1;
-					      //printf("func arg fi=%d\n",fi);
-					      while (fi>=0 && isId(g_curArgTypeName.at(fi))) fi--;
-					      if (fi>=0)
-					      {
-					        a->type  = g_curArgTypeName.left(fi+1);
-					        a->name  = g_curArgTypeName.mid(fi+1,bi-fi-1);
-						a->array = g_curArgTypeName.right(l-bi);
-					      }
-					      else
-					      {
-						a->type = g_curArgTypeName;
-					      }
-					    }
-					    else if (i>=0 && g_curArgTypeName.at(i)!=':')
-					    { // type contains a name
-					      a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
-					      a->name = g_curArgTypeName.right(l-i-1);
-					    }
-					    else // assume only the type was specified, try to determine name later 
-					    {
-					      a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
-					    }
-					    //printf("a->type=%s a->name=%s a->array=%s\n",a->type.data(),a->name.data());
-					    a->array  += removeRedundantWhiteSpace(g_curArgArray);
-					    a->defval = g_curArgDefValue.copy();
-					    a->docs   = g_curArgDocs.stripWhiteSpace();
-					    //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
-					    g_argList->append(a);
-					  }
-					  g_curArgAttrib.resize(0);
-					  g_curArgTypeName.resize(0);
-  					  g_curArgDefValue.resize(0);
-					  g_curArgArray.resize(0);
-					  g_curArgDocs.resize(0);
-					  if (*yytext==')')
-					  {
-					    BEGIN(FuncQual);
-					    //printf(">>> end of argument list\n");
+					    g_curArgTypeName+=*yytext;
 					  }
 					  else
 					  {
-					    BEGIN( ReadFuncArgType );
+					    g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
+					    g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
+					    //printf("curArgType=`%s' curArgDefVal=`%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
+					    int l=g_curArgTypeName.length();
+					    if (l>0)
+					    {
+					      int i=l-1;
+					      while (i>=0 && (isspace(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
+					      //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
+					      Argument *a = new Argument; 
+					      a->attrib = g_curArgAttrib.copy();
+					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
+					      //	a->type.data(),a->name.data(),i,l);
+					      a->array.resize(0);
+					      if (i==l-1 && g_curArgTypeName.at(i)==')') // function argument
+					      {
+						int bi=g_curArgTypeName.find('(');
+						int fi=bi-1;
+						//printf("func arg fi=%d\n",fi);
+						while (fi>=0 && isId(g_curArgTypeName.at(fi))) fi--;
+						if (fi>=0)
+						{
+						  a->type  = g_curArgTypeName.left(fi+1);
+						  a->name  = g_curArgTypeName.mid(fi+1,bi-fi-1);
+						  a->array = g_curArgTypeName.right(l-bi);
+						}
+						else
+						{
+						  a->type = g_curArgTypeName;
+						}
+					      }
+					      else if (i>=0 && g_curArgTypeName.at(i)!=':')
+					      { // type contains a name
+						a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
+						a->name = g_curArgTypeName.right(l-i-1);
+					      }
+					      else // assume only the type was specified, try to determine name later 
+					      {
+						a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
+					      }
+					      //printf("a->type=%s a->name=%s a->array=%s\n",a->type.data(),a->name.data());
+					      a->array  += removeRedundantWhiteSpace(g_curArgArray);
+					      a->defval = g_curArgDefValue.copy();
+					      a->docs   = g_curArgDocs.stripWhiteSpace();
+					      //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
+					      g_argList->append(a);
+					    }
+					    g_curArgAttrib.resize(0);
+					    g_curArgTypeName.resize(0);
+					    g_curArgDefValue.resize(0);
+					    g_curArgArray.resize(0);
+					    g_curArgDocs.resize(0);
+					    if (*yytext==')')
+					    {
+					      BEGIN(FuncQual);
+					      //printf(">>> end of argument list\n");
+					    }
+					    else
+					    {
+					      BEGIN( ReadFuncArgType );
+					    }
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>{ID}	{ 
