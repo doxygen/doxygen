@@ -124,6 +124,7 @@ extern int documentedFunctions;
 extern int documentedMembers;
 extern int documentedDefines;
 extern int documentedFiles;
+extern int documentedHtmlFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
 extern int documentedNamespaceMembers;

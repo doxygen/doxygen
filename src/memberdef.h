@@ -24,14 +24,16 @@
 #include "entry.h"
 #include "definition.h"
 
-class FileDef;
 class ClassDef;
 class NamespaceDef;
+class GroupDef;
+class FileDef;
 class MemberList;
 class MemberGroup;
 class ExampleList;
 class ExampleDict;
 class OutputList;
+class GroupDef;
 
 class MemberDef : public Definition
 {
@@ -62,10 +64,12 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     
-    void writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
-                   FileDef *fd,MemberGroup *mg);
-    void writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
-               int prevGroupId,bool inGroup); 
+    void writeLink(OutputList &ol,
+                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                   MemberGroup *mg);
+    void writeDeclaration(OutputList &ol,
+                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                   int prevGroupId,bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName/*,MemberType m*/);
     void warnIfUndocumented();
@@ -83,6 +87,12 @@ class MemberDef : public Definition
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
     MemberType memberType() const        { return mtype; }
+    GroupDef *groupDef() const           { return group; }
+    FileDef *getFileDef()                { return fileDef; }
+    FileDef *getFileDec()                { return fileDec; }
+    bool isRelated() const               { return related; }
+    bool isStatic() const                { return stat; }
+    bool isInline() const                { return inLine; }
     void setMemberType(MemberType t)     { mtype=t; }
     void setDefinition(const char *d)    { def=d; }
     void setDefFile(const char *f)       { defFile=f; }
@@ -96,13 +106,9 @@ class MemberDef : public Definition
                                            init=init.stripWhiteSpace();
                                            initLines=init.contains('\n');
                                          }
-    FileDef *getFileDef()                { return fileDef; }
-    FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
     void makeRelated()                   { related=TRUE; } 
-    bool isRelated() const               { return related; }
-    bool isStatic() const                { return stat; }
-    bool isInline() const                { return inLine; }
+    void setGroupDef(GroupDef *gd)       { group=gd; }
     bool hasDocumentation()  // overrides hasDocumentation in definition.h
       { return Definition::hasDocumentation(); }
 
@@ -236,6 +242,7 @@ class MemberDef : public Definition
     int grpId;                // group id
     QCString grpHeader;       // group header
     MemberGroup *memberGroup; // group's member definition
+    GroupDef *group;          // group in which this member is in
 
     // disable copying of member defs
     MemberDef(const MemberDef &);

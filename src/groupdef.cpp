@@ -25,13 +25,18 @@
 #include "namespacedef.h"
 #include "language.h"
 #include "util.h"
+#include "memberlist.h"
+#include "message.h"
 
-GroupDef::GroupDef(const char *na,const char *t) : Definition(na)
+GroupDef::GroupDef(const char *na,const char *t) : 
+   Definition(na)
 {
   fileList = new FileList;
   classList = new ClassList;
 //  groupList = new GroupList;
-//  name = n;
+
+  allMemberList = new MemberList;
+  allMemberDict = new QDict<MemberDef>;
   if (t) 
     title = t;
   else
@@ -64,6 +69,28 @@ void GroupDef::addNamespace(const NamespaceDef *def)
   namespaceList->append(def);
 }
 
+void GroupDef::addMember(const MemberDef *md)
+{
+  QCString funcDecl=md->name()+md->argsString();
+  if (allMemberDict->find(funcDecl)==0)
+  {
+    allMemberList->append(md); 
+    allMemberDict->insert(funcDecl,md);
+    switch(md->memberType())
+    {
+      case MemberDef::Variable:     varMembers.inSort(md); break;
+      case MemberDef::Function:     funcMembers.inSort(md); break;
+      case MemberDef::Typedef:      typedefMembers.inSort(md); break;
+      case MemberDef::Enumeration:  enumMembers.inSort(md); break;
+      case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
+      case MemberDef::Prototype:    protoMembers.inSort(md); break;
+      case MemberDef::Define:       defineMembers.inSort(md); break;
+      default:
+         err("FileDef::insertMembers(): unexpected member insert in file!\n");
+    }
+  }
+}
+
 //void GroupDef::addGroup(const GroupDef *def)
 //{
 //  groupList->append(def);
@@ -71,7 +98,13 @@ void GroupDef::addNamespace(const NamespaceDef *def)
 
 int GroupDef::countMembers() const
 {
-  return fileList->count()+classList->count();
+  return fileList->count()+classList->count()+allMemberList->count();
+}
+
+/*! Compute the HTML anchor names for all members in the class */ 
+void GroupDef::computeAnchors()
+{
+  setAnchors('a',allMemberList);
 }
 
 void GroupDef::writeDocumentation(OutputList &ol)
@@ -100,20 +133,29 @@ void GroupDef::writeDocumentation(OutputList &ol)
     //ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
   }
+  ol.startMemberSections();
   if (fileList->count()>0)
   {
-    ol.startGroupHeader();
+    ol.startMemberHeader();
     parseText(ol,theTranslator->trFiles());
-    ol.endGroupHeader();
-    ol.startIndexList();
+    ol.endMemberHeader();
     FileDef *fd=fileList->first();
     while (fd)
     {
-      ol.writeStartAnnoItem("file ",fd->getOutputFileBase(),0,fd->name());
-      ol.writeEndAnnoItem(fd->name());
+      ol.startMemberItem(FALSE,0);
+      ol.docify("file");
+      ol.insertMemberAlign();
+      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+      ol.endMemberItem(FALSE,0,0,FALSE);
+      if (!fd->briefDescription().isEmpty() && Config::briefMemDescFlag)
+      {
+        ol.startMemberDescription();
+        parseDoc(ol,0,0,fd->briefDescription());
+        ol.endMemberDescription();
+        ol.newParagraph();
+      }
       fd=fileList->next();
     }
-    ol.endIndexList();
   }
   if (classList->count()>0)
   {
@@ -123,10 +165,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
     {
       if (!found)
       {
-        ol.startGroupHeader();
+        ol.startMemberHeader();
         parseText(ol,theTranslator->trCompounds());
-        ol.endGroupHeader();
-        ol.startIndexList();
+        ol.endMemberHeader();
         found=TRUE;
       }
       QCString type;
@@ -138,24 +179,35 @@ void GroupDef::writeDocumentation(OutputList &ol)
         case ClassDef::Interface:  type="interface";  break;
         case ClassDef::Exception:  type="exception";  break;
       }
-      ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->name());
-      ol.writeEndAnnoItem(cd->name());
+      ol.startMemberItem(FALSE,0);
+      ol.docify(type);
+      ol.insertMemberAlign();
+      ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+      ol.endMemberItem(FALSE,0,0,FALSE);
+      if (!cd->briefDescription().isEmpty() && Config::briefMemDescFlag)
+      {
+        ol.startMemberDescription();
+        parseDoc(ol,0,0,cd->briefDescription());
+        ol.endMemberDescription();
+        ol.newParagraph();
+      }
       cd=classList->next();
     }
-    ol.endIndexList();
   }
+  if (allMemberList->count()>0)
+  {
+    allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
+  }
+  ol.endMemberSections();
   //int dl=doc.length();
   //doc=doc.stripWhiteSpace();
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
     ol.pushGeneratorState();
-    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    //if (latexOn) ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
     ol.writeAnchor("_details");
-    //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
@@ -173,7 +225,76 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
+  defineMembers.countDocMembers();
+  if (defineMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trDefineDocumentation());
+    ol.endGroupHeader();
+    defineMembers.writeDocumentation(ol,name());
+  }
+  
+  protoMembers.countDocMembers(); 
+  if (protoMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
+    ol.endGroupHeader();
+    protoMembers.writeDocumentation(ol,name());
+  }
+
+  typedefMembers.countDocMembers();
+  if (typedefMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trTypedefDocumentation());
+    ol.endGroupHeader();
+    typedefMembers.writeDocumentation(ol,name());
+  }
+  
+  enumMembers.countDocMembers();
+  if (enumMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trEnumerationTypeDocumentation());
+    ol.endGroupHeader();
+    enumMembers.writeDocumentation(ol,name());
+  }
+
+  enumValMembers.countDocMembers();
+  if (enumValMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trEnumerationValueDocumentation());
+    ol.endGroupHeader();
+    enumValMembers.writeDocumentation(ol,name());
+  }
+
+  funcMembers.countDocMembers();
+  if (funcMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trFunctionDocumentation());
+    ol.endGroupHeader();
+    funcMembers.writeDocumentation(ol,name());
+  }
+  
+  varMembers.countDocMembers();
+  if (varMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trVariableDocumentation());
+    ol.endGroupHeader();
+    varMembers.writeDocumentation(ol,name());
+  }
+
   endFile(ol); 
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }

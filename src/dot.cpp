@@ -159,7 +159,7 @@ class DotNodeList : public QList<DotNode>
    ~DotNodeList() {}
    int compareItems(GCI item1,GCI item2)
    {
-     return strcasecmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
+     return stricmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
    }
 };
 

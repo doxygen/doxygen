@@ -19,6 +19,7 @@
 
 #include <qlist.h>
 #include "memberdef.h"
+class GroupDef;
 
 class MemberList : public QList<MemberDef> 
 { 
@@ -44,9 +45,11 @@ class MemberList : public QList<MemberDef>
                   //protoCnt+defCnt+friendCnt; 
                   m_count;
          }
-    void writePlainDeclarations(OutputList &ol,ClassDef *cd,
-               NamespaceDef *nd,FileDef *fd,bool inGroup=FALSE);
-    void writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+    void writePlainDeclarations(OutputList &ol,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               bool inGroup=FALSE);
+    void writeDeclarations(OutputList &ol,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                const char *title,const char *subtitle,bool inGroup=FALSE);
     void writeDocumentation(OutputList &ol,const char *scopeName
                /*,MemberDef::MemberType m*/);

@@ -163,7 +163,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
   
-  /*memList->*/allMemberList.writeDeclarations(ol,0,this,0,0,0);
+  allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
   ol.endMemberSections();
   
   if (!briefDescription().isEmpty() || !documentation().isEmpty())

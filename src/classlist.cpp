@@ -34,7 +34,7 @@ int ClassList::compareItems(GCI item1, GCI item2)
   //int prefixLength = Config::ignorePrefix.length();
   //int i1 = c1->name().left(prefixLength)==Config::ignorePrefix ? prefixLength : 0;
   //int i2 = c2->name().left(prefixLength)==Config::ignorePrefix ? prefixLength : 0;
-  return strcasecmp(c1->name().data()+getPrefixIndex(c1->name()),
+  return stricmp(c1->name().data()+getPrefixIndex(c1->name()),
                     c2->name().data()+getPrefixIndex(c2->name())
                    );
 }

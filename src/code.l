@@ -301,10 +301,11 @@ static bool getLink(const char *className,
   ClassDef     *cd;
   FileDef      *fd;
   NamespaceDef *nd;
+  GroupDef     *gd;
   QCString m=memberName;
   QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
-  if (getDefs(c,m,"()",md,cd,fd,nd) && md->isLinkable())
+  if (getDefs(c,m,"()",md,cd,fd,nd,gd) && md->isLinkable())
   {
     //printf("Found!\n");
     if (g_exampleBlock)
@@ -326,7 +327,7 @@ static bool getLink(const char *className,
       }
     }
     Definition *d=0;
-    if (cd) d=cd; else if (cd) d=nd; else d=fd;
+    if (cd) d=cd; else if (cd) d=nd; else if (fd) d=fd; else d=gd;
 
     if (d)
     {

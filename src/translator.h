@@ -553,25 +553,25 @@ class Translator
      *  these are for the member sections of a class, struct or union 
      */
     virtual QCString trPublicMembers()
-    { return "Public Members"; }
+    { return "Public Methods"; }
     virtual QCString trPublicSlots()
     { return "Public Slots"; }
     virtual QCString trSignals()
     { return "Signals"; }
     virtual QCString trStaticPublicMembers()
-    { return "Static Public Members"; }
+    { return "Static Public Methods"; }
     virtual QCString trProtectedMembers()
-    { return "Protected Members"; }
+    { return "Protected Methods"; }
     virtual QCString trProtectedSlots()
     { return "Protected Slots"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Static Protected Members"; }
+    { return "Static Protected Methods"; }
     virtual QCString trPrivateMembers()
-    { return "Private Members"; }
+    { return "Private Methods"; }
     virtual QCString trPrivateSlots()
     { return "Private Slots"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Static Private Members"; }
+    { return "Static Private Methods"; }
     /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
@@ -814,6 +814,47 @@ class Translator
     virtual QCString trPageIndex()
     {
       return "Page Index";
+    }
+    virtual QCString trNote()
+    {
+      return "Note";
+    }
+
+    virtual QCString trPublicTypes()
+    {
+      return "Public Types";
+    }
+    virtual QCString trPublicAttribs()
+    {
+      return "Public Attributes";
+    }
+    virtual QCString trStaticPublicAttribs()
+    {
+      return "Static Public Attributes";
+    }
+    virtual QCString trProtectedTypes()
+    {
+      return "Protected Types";
+    }
+    virtual QCString trProtectedAttribs()
+    {
+      return "Protected Attributes";
+    }
+    virtual QCString trStaticProtectedAttribs()
+    {
+      return "Static Protected Attributes";
+    }
+    virtual QCString trPrivateTypes()
+    {
+      return "Private Types";
+    }
+    virtual QCString trPrivateAttribs()
+    {
+      return "Private Attributes";
+    }
+    virtual QCString trStaticPrivateAttribs()
+    {
+      return "Static Private Attributes";
     }
 };
 

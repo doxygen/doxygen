@@ -134,7 +134,7 @@ void MemberGroup::writeDocumentation(OutputList &ol)
     ol.docify(">");
   }
   ol.startMemberSections();
-  memberList->writeDeclarations(ol,cd,nd,fd,"Synopsis",0,TRUE);
+  memberList->writeDeclarations(ol,cd,nd,fd,0,"Synopsis",0,TRUE);
   ol.endMemberSections();
 
   if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 

@@ -51,7 +51,7 @@ ps: docs
 pdf: docs
 	cd latex ; $(MAKE)
 
-archive: distclean
+archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz tmake doc wintools examples bin objects \
 	       src configure configure.bin Makefile.in Makefile.win.in INSTALL \
 	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION

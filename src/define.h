@@ -53,7 +53,7 @@ class DefineList : public QList<Define>
    ~DefineList() {}
     int compareItems(GCI i1,GCI i2) 
     {
-      return strcasecmp(((Define *)i1)->name,((Define *)i2)->name); 
+      return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
 };
 
@@ -65,7 +65,7 @@ class DefineName : public QList<Define>
     const char *nameString() const { return name; }
     int compareItems(GCI i1,GCI i2) 
     {
-      return strcasecmp(((Define *)i1)->name,((Define *)i2)->name); 
+      return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
     
   private:

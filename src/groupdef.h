@@ -19,7 +19,10 @@
 
 #include "qtbc.h"
 #include <qlist.h>
+#include <qdict.h>
 #include "definition.h"
+#include "memberlist.h"
+#include "memberdef.h"
 
 class FileList;
 class ClassList;
@@ -41,6 +44,7 @@ class GroupDef : public Definition
     void addFile(const FileDef *def); 
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
+    void addMember(const MemberDef *def);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject()
@@ -51,13 +55,25 @@ class GroupDef : public Definition
     {
       return isLinkableInProject() || isReference();
     }
+    void computeAnchors();
 
   private: 
-    QCString title;                      // title of the group
-    QCString fileName;                   // base name of the generated file
+    QCString title;                     // title of the group
+    QCString fileName;                  // base name of the generated file
     FileList *fileList;                 // list of all files in the group
     ClassList *classList;               // list of all classes in the group
     NamespaceList *namespaceList;       // list of all namespace in the group
+
+    MemberList *allMemberList;          // list of all members in the group
+    QDict<MemberDef> *allMemberDict;
+    // members sorted to type
+    MemberList defineMembers;
+    MemberList protoMembers;
+    MemberList typedefMembers;
+    MemberList enumMembers;
+    MemberList enumValMembers;
+    MemberList funcMembers;
+    MemberList varMembers;
 };
 
 class GroupList : public QList<GroupDef>

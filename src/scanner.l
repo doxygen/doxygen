@@ -130,6 +130,7 @@ static bool             inDeprecatedBlock;
 static bool             inVersionBlock;
 static bool             inDateBlock;
 static bool             inBugBlock;
+static bool             inNoteBlock;
 static bool             inPreBlock;
 static bool             inPostBlock;
 static bool             inInvarBlock;
@@ -214,6 +215,7 @@ static void initParser()
   inVersionBlock = FALSE;
   inDateBlock = FALSE;
   inBugBlock = FALSE;
+  inNoteBlock = FALSE;
   inPreBlock = FALSE;
   inPostBlock = FALSE;
   inInvarBlock = FALSE;
@@ -643,7 +645,7 @@ static void tryEndItemList()
 static bool inBlock()
 {
   return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
-         inVersionBlock || inDateBlock || inWarningBlock || inBugBlock ||
+         inVersionBlock || inDateBlock || inWarningBlock || inBugBlock || inNoteBlock ||
 	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
 	 inPostBlock || inInvarBlock;
 }
@@ -657,7 +659,7 @@ static void endBlock()
     }
     outDoc->endDescList();
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
-    inVersionBlock=inDateBlock=inBugBlock=inWarningBlock=
+    inVersionBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
     inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
     inInvarBlock=FALSE;
 }
@@ -899,6 +901,7 @@ TR	  [tT][rR]
 TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
+DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 
 %option noyywrap
 
@@ -1039,6 +1042,7 @@ VAR	  [vV][aA][rR]
 %x	CopyArgSharp
 %x	CopyArgComment
 %x	CopyArgCommentLine
+%x	SkipUnionSwitch
 %x	ReadFuncArgType
 %x	ReadTempArgs
 %x	Specialization
@@ -1050,6 +1054,7 @@ VAR	  [vV][aA][rR]
 %x	CopyString
 %x	CopyRound
 %x	CopyCurly
+%x	IDLUnionCase
 
 %%
 
@@ -1297,7 +1302,25 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"pre"[s]?/{BN}		{
+<DocScan>{CMD}"note"[s]?/{BN}		{
+  				          endArgumentList();
+  					  if (!inNoteBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inNoteBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trNote()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+  					}
+<DocScan>{CMD}"pre"/{BN}		{
   				          endArgumentList();
   					  if (!inPreBlock)
 					  {
@@ -1315,7 +1338,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"post"[s]?/{BN}		{
+<DocScan>{CMD}"post"/{BN}		{
   				          endArgumentList();
   					  if (!inPostBlock)
 					  {
@@ -1333,7 +1356,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"invariant"[s]?/{BN}	{
+<DocScan>{CMD}"invariant"/{BN}		{
   				          endArgumentList();
   					  if (!inInvarBlock)
 					  {
@@ -1516,7 +1539,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocException);
   					}
 <DocScan>"\\capt".*
-<DocParam>([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")	{
+<DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM} {
 					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
@@ -1746,7 +1769,7 @@ VAR	  [vV][aA][rR]
 <DocScan>{CMD}"b"{BN}+			{ BEGIN( DocBold ); }
 <DocScan>{CMD}"c"{BN}+                  { BEGIN( DocCode ); }
 <DocScan>{CMD}"l"{BN}+		
-<DocScan>{CMD}"n"			{ outDoc->lineBreak(); }
+<DocScan>"\\n"/[^a-z_A-Z0-9]		{ outDoc->lineBreak(); }
 <DocScan>{CMD}"include"{BN}+		{ BEGIN( DocInclude ); }
 <DocScan>{CMD}"dontinclude"{BN}+	{ BEGIN( DocDontInclude ); }
 <DocScan>{CMD}"skip"{BN}+	 	{ BEGIN( DocSkipKey ); }	
@@ -2422,6 +2445,10 @@ VAR	  [vV][aA][rR]
 					  {
 					    BEGIN(CppQuote);
 					  }
+					  else if (insideIDL && strcmp(yytext,"case")==0)
+					  {
+					    BEGIN(IDLUnionCase);
+					  }
 					  else
 					  {
 					    lineCount();
@@ -2445,6 +2472,10 @@ VAR	  [vV][aA][rR]
   					  insideCppQuote=TRUE;
   					  BEGIN(FindMembers);
   					}
+<IDLUnionCase>"::"
+<IDLUnionCase>":"			{ BEGIN(FindMembers); }
+<IDLUnionCase>\n			{ yyLineNr++; }
+<IDLUnionCase>.
 <EndCppQuote>")"			{
   					  insideCppQuote=FALSE;
 					  BEGIN(FindMembers);
@@ -3581,19 +3612,28 @@ VAR	  [vV][aA][rR]
 					  BEGIN( ClassVar );
 					}
 <ClassVar>{ID}				{
-					  if (isTypedef)
+  					  if (insideIDL && strcmp(yytext,"switch")==0)
 					  {
-					  //  typedefDict.insert(yytext,new QCString(current->name));
-					  //  current->type.prepend("typedef ");
-					  //  current->extends
-					    current->extends->append(
-					      new BaseInfo(yytext,Public,Normal)
-					    );
+					    // Corba IDL style union
+					    roundCount=0;
+					    BEGIN(SkipUnionSwitch);
 					  }
-  					  current->type += ' ' ;
-					  current->type += current->name ;
-					  current->name = yytext ;
-					  //BEGIN( FindMembers );
+					  else
+					  {
+					    if (isTypedef)
+					    {
+					      //  typedefDict.insert(yytext,new QCString(current->name));
+					      //  current->type.prepend("typedef ");
+					      //  current->extends
+					      current->extends->append(
+						  new BaseInfo(yytext,Public,Normal)
+								      );
+					    }
+					    current->type += ' ' ;
+					    current->type += current->name ;
+					    current->name = yytext ;
+					    //BEGIN( FindMembers );
+					  }
   					}
 <ClassVar>[(\[]				{
                                           // probably a function anyway
@@ -3702,6 +3742,17 @@ VAR	  [vV][aA][rR]
 					  curlyCount=0;
 					  BEGIN( Curly ) ;
 					}
+<SkipUnionSwitch>"("			{
+  					  roundCount++;
+  					}
+<SkipUnionSwitch>")"			{
+  					  if (--roundCount==0)
+					  {
+					    BEGIN(ClassVar);
+					  }
+  					}
+<SkipUnionSwitch>\n			{ yyLineNr++; }
+<SkipUnionSwitch>.			
 <Comment>{BN}+				{ current->program += yytext ;
 					  lineCount() ;
 					}
@@ -3797,7 +3848,7 @@ VAR	  [vV][aA][rR]
  					} 
 <JavaDoc>"@"				{
   					  unput(*yytext);
-					  BEGIN(Doc);
+					  BEGIN(ClassDoc);
   					}
 <JavaDoc>^{B}*"*"+/[^/]			{
   					  //printf("---> removing %s\n",yytext);
@@ -3820,7 +3871,7 @@ VAR	  [vV][aA][rR]
 					  current->brief+=".";
 					  BEGIN( tmpDocType );
 					}
-<JavaDoc>{CMD}("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
+<JavaDoc>{CMD}("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note") { 
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}

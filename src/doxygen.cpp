@@ -141,6 +141,7 @@ int annotatedClasses;
 int hierarchyClasses;
 int documentedFunctions;
 int documentedMembers;
+int documentedHtmlFiles;
 int documentedFiles;
 int documentedGroups;
 int documentedNamespaces;
@@ -432,6 +433,48 @@ static bool addNamespace(Entry *root,ClassDef *cd)
   return FALSE;
 }
 
+static void addClassToGroups(Entry *root,ClassDef *cd)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      gd->addClass(cd);
+      //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
+    }
+  }
+}
+
+static void addMemberToGroups(Entry *root,MemberDef *md)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      GroupDef *mgd = md->groupDef();
+      if (mgd==0)
+      {
+        gd->addMember(md);
+        md->setGroupDef(gd);
+      }
+      else if (mgd!=gd)
+      {
+        warn("Warning: Member %s found in multiple groups.!\n"
+             "The member will be put in group %s, and not in group %s",
+              md->name().data(),mgd->name().data(),gd->name().data()
+            );
+      }
+      //printf("Member %s: in group %s\n",md->name().data(),s->data());
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------
 // build a list of all classes mentioned in the documentation
@@ -518,6 +561,7 @@ void buildClassList(Entry *root)
           //   );
           fd->insertClass(cd);
         }
+        addClassToGroups(root,cd);
       }
       else // new class
       {
@@ -555,17 +599,7 @@ void buildClassList(Entry *root)
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
         cd->setBodyDef(fd);
 
-        QListIterator<QCString> sli(*root->groups);
-        QCString *s;
-        for (;(s=sli.current());++sli)
-        {
-          GroupDef *gd=0;
-          if (!s->isEmpty() && (gd=groupDict[*s]))
-          {
-            gd->addClass(cd);
-            //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
-          }
-        }
+        addClassToGroups(root,cd);
 
         // see if the class is found inside a namespace 
         bool found=addNamespace(root,cd);
@@ -1340,6 +1374,8 @@ void buildMemberList(Entry *root)
         cd->insertMember(md);
         // add file to list of used files
         cd->insertUsedFile(root->fileName);
+
+        addMemberToGroups(root,md);
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
@@ -1493,6 +1529,7 @@ void buildMemberList(Entry *root)
             functionNameDict.insert(name,mn);
             functionNameList.inSort(mn);
           }
+          addMemberToGroups(root,md);
         }
         else
         {
@@ -1874,7 +1911,7 @@ void computeClassRelations(Entry *root)
 }
 
 //-----------------------------------------------------------------------
-// compute the references (anchors in HTML) for each member in the class
+// compute the references (anchors in HTML) for each function in the file
 
 void computeMemberReferences()
 {
@@ -1884,13 +1921,6 @@ void computeMemberReferences()
     cd->computeAnchors();
     cd=classList.next();
   } 
-}
-
-//-----------------------------------------------------------------------
-// compute the references (anchors in HTML) for each function in the file
-
-void computeFunctionReferences()
-{
   FileName *fn=inputNameList.first();
   while (fn)
   {
@@ -1907,6 +1937,12 @@ void computeFunctionReferences()
   {
     nd->computeAnchors();
     nd=namespaceList.next();
+  }
+  GroupDef *gd=groupList.first();
+  while (gd)
+  {
+    gd->computeAnchors();
+    gd=groupList.next();
   }
 }
 
@@ -1994,6 +2030,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
   md->setDefLine(root->startLine);
   if (root->inLine && !md->isInline()) md->setInline(TRUE);
   md->addSectionsToDefinition(root->anchors);
+  addMemberToGroups(root,md);
   if (cd) cd->insertUsedFile(root->fileName);
   if (root->mGrpId!=-1)
   {
@@ -3373,7 +3410,7 @@ void computeMemberRelations()
         //       mcd->name().data(),md->name().data(),
         //       bmcd->name().data(),bmd->name().data()
         //      );
-        if (md!=bmd && bmcd && mcd && mcd->isBaseClass(bmcd))
+        if (md!=bmd &&  bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd))
         {
           //printf(" Base argList=`%s'\n Super argList=`%s'\n",
           //        argListToString(bmd->argumentList()).data(),
@@ -3386,7 +3423,14 @@ void computeMemberRelations()
                 mcd->isLinkable() && bmcd->isLinkable()
                )
             {
-              md->setReimplements(bmd);
+              MemberDef *rmd;
+              if ((rmd=md->reimplements())==0 ||
+                  minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->memberClass())
+                 )
+              {
+                //printf("setting (new) reimplements member\n");
+                md->setReimplements(bmd);
+              }
               bmd->insertReimplementedBy(md);
             }
           }  
@@ -3450,7 +3494,7 @@ void buildCompleteMemberLists()
 
 void generateFileDocs()
 {
-  if (documentedFiles==0) return;
+  if (documentedHtmlFiles==0) return;
   writeFileIndex(*outputList);
   
   if (inputNameList.count()>0)
@@ -4628,15 +4672,17 @@ void readFormulaRepository()
 void usage(const char *name)
 {
   msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2000\n\n",versionString);
-  msg("You can use doxygen in two ways:\n\n");
+  msg("You can use doxygen in three ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
-  msg("    If -s is specified the comments in the config file will be omitted.\n");
   msg("    If - is used for configName doxygen will write to standard output.\n\n");
-  msg("2) Use doxygen to generate documentation using an existing ");
+  msg("2) Use doxygen to update an old configuration file:\n");
+  msg("    %s [-s] -u [configName]\n\n",name);
+  msg("3) Use doxygen to generate documentation using an existing ");
   msg("configuration file:\n");
   msg("    %s [configName]\n\n",name);
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
+  msg("If -s is specified the comments in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   exit(1);
 }
@@ -4672,6 +4718,7 @@ int main(int argc,char **argv)
   const char *debugLabel;
   bool genConfig=FALSE;
   bool shortList=FALSE;
+  bool updateConfig=FALSE;
   while (optind<argc && argv[optind][0]=='-' && 
                (isalpha(argv[optind][1]) || argv[optind][1]=='?')
         )
@@ -4689,6 +4736,9 @@ int main(int argc,char **argv)
         break;
       case 's':
         shortList=TRUE;
+        break;
+      case 'u':
+        updateConfig=TRUE;
         break;
       case 'h':
       case '?':
@@ -4711,21 +4761,19 @@ int main(int argc,char **argv)
     exit(1);
   }
 
-  compoundKeywordDict.insert("class",(void *)8);
-  compoundKeywordDict.insert("struct",(void *)8);
-  compoundKeywordDict.insert("union",(void *)8);
-  compoundKeywordDict.insert("interface",(void *)8);
-  compoundKeywordDict.insert("exception",(void *)8);
-  
   QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
   QCString config;
   if (optind>=argc)
   { 
     if (configFileInfo1.exists()) 
+    {
       config=fileToString("Doxyfile");
+      configName="Doxyfile";
+    }
     else if (configFileInfo2.exists())
     {
       config=fileToString("doxyfile");
+      configName="doxyfile";
     }
     else
     {
@@ -4734,11 +4782,31 @@ int main(int argc,char **argv)
     }
   }
   else
+  {
     config=fileToString(argv[optind]);
+    configName=argv[optind];
+  }
 
   parseConfig(config); 
+
+  if (updateConfig)
+  {
+    generateConfigFile(configName,shortList);
+    exit(1);
+  }
+  
   checkConfig();
+
+  /**************************************************************************
+   *            Initialize some global constants
+   **************************************************************************/
+  
   spaces.fill(' ',Config::tabSize);
+  compoundKeywordDict.insert("class",(void *)8);
+  compoundKeywordDict.insert("struct",(void *)8);
+  compoundKeywordDict.insert("union",(void *)8);
+  compoundKeywordDict.insert("interface",(void *)8);
+  compoundKeywordDict.insert("exception",(void *)8);
   
   /**************************************************************************
    *            Initialize output generators                                *
@@ -4943,9 +5011,6 @@ int main(int argc,char **argv)
   msg("Computing member references...\n");
   computeMemberReferences(); 
 
-  msg("Computing function references...\n");
-  computeFunctionReferences();
-  
   msg("Computing member relations...\n");
   computeMemberRelations();
 
@@ -4990,7 +5055,7 @@ int main(int argc,char **argv)
   hierarchyClasses           = countClassHierarchy();
   documentedMembers          = countClassMembers();
   documentedFunctions        = countFileMembers();
-  documentedFiles            = countFiles();
+  countFiles(documentedHtmlFiles,documentedFiles);
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();

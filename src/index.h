@@ -65,7 +65,7 @@ void writeGraphicalClassHierarchy(OutputList &ol);
 int countClassHierarchy();
 int countClassMembers();
 int countFileMembers();
-int countFiles();
+void countFiles(int &htmlFiles,int &files);
 int countGroups();
 int countNamespaces();
 int countAnnotatedClasses();
