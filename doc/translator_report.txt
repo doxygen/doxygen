@@ -1,4 +1,4 @@
-(1.3.8-20040825)
+(1.3.8-20040907)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
 Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
 Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 1 translators are up-to-date, 29 translators are based on
+Of them, 2 translators are up-to-date, 28 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,6 +17,7 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 201 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorDutch
   TranslatorEnglish
 
 ----------------------------------------------------------------------
@@ -32,7 +33,6 @@ must be implemented to become up-to-date:
   TranslatorItalian               1.3.9 	 6 methods to implement
   TranslatorHungarian             1.3.9 	 6 methods to implement
   TranslatorGerman                1.3.9 	 6 methods to implement
-  TranslatorDutch                 1.3.9 	 6 methods to implement
   TranslatorDanish                1.3.9 	 6 methods to implement
   TranslatorCzech                 1.3.9 	 6 methods to implement
   TranslatorCroatian              1.3.9 	 6 methods to implement
@@ -192,21 +192,6 @@ TranslatorCzech   (TranslatorAdapter_1_3_9)  6 methods to implement
 
 TranslatorDanish   (TranslatorAdapter_1_3_9)  6 methods to implement
 ----------------
-
-  Implements 195 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
-
-
-TranslatorDutch   (TranslatorAdapter_1_3_9)  6 methods to implement
----------------
 
   Implements 195 of the required methods.
 

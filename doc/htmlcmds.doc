@@ -39,6 +39,8 @@ only exception).
 <li><tt>\<DD\></tt>    Starts an item description.
 <li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
+<li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
+<li><tt>\</DIV></tt>   Ends a section with a specific style (HTML only)
 <li><tt>\<DL\></tt>    Starts a description list.
 <li><tt>\</DL\></tt>   Ends a description list.
 <li><tt>\<DT\></tt>    Starts an item title.
@@ -71,6 +73,8 @@ only exception).
 <li><tt>\</PRE\></tt>  Ends a preformatted fragment.
 <li><tt>\<SMALL\></tt> Starts a section of text displayed in a smaller font.
 <li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
+<li><tt>\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
+<li><tt>\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
 <li><tt>\<STRONG\></tt> Starts a section of bold text.
 <li><tt>\</STRONG\></tt> Ends a section of bold text.
 <li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.

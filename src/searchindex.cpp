@@ -21,14 +21,16 @@
 #include <qfile.h>
 
 
-// file format:
+// file format: (all multi-byte values are stored in big endian format)
 //   4 byte header
-//   256*256*4 byte index
+//   256*256*4 byte index (4 bytes)
 //   for each index entry: a zero terminated list of words 
-//   for each word: a 0 terminated string + 4 bytes stats index
+//   for each word: a \0 terminated string + 4 byte offset to the stats info
 //   padding bytes to align at 4 byte boundary
-//   for each word: a counter + for each url containing the word 8 bytes statistics
-//   for each url: a 0 terminated string
+//   for each word: the number of urls (4 bytes) 
+//               + for each url containing the word 8 bytes statistics
+//                 (4 bytes index to url string + 4 bytes frequency counter)
+//   for each url: a \0 terminated string
 
 const int numIndexEntries = 256*256;
 
@@ -37,17 +39,21 @@ const int numIndexEntries = 256*256;
 IndexWord::IndexWord(const char *word) : m_word(word), m_urls(17)
 {
   m_urls.setAutoDelete(TRUE);
+  //printf("IndexWord::IndexWord(%s)\n",word);
 }
 
-void IndexWord::addUrlIndex(int idx)
+void IndexWord::addUrlIndex(int idx,bool hiPriority)
 {
+  //printf("IndexWord::addUrlIndex(%d,%d)\n",idx,hiPriority);
   URLInfo *ui = m_urls.find(idx);
   if (ui==0)
   {
+    //printf("URLInfo::URLInfo(%d)\n",idx);
     ui=new URLInfo(idx,0);
     m_urls.insert(idx,ui);
   }
-  ui->freq++;
+  ui->freq+=2;
+  if (hiPriority) ui->freq|=1; // mark as high priority document
 }
 
 //--------------------------------------------------------------------
@@ -62,6 +68,7 @@ SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlInd
 
 void SearchIndex::setCurrentDoc(const char *name,const char *baseName,const char *anchor)
 {
+  //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   QCString url=baseName+Config_getString("HTML_FILE_EXTENSION");
   if (anchor) url+=(QCString)"#"+anchor;  
   m_urlIndex++;
@@ -79,9 +86,11 @@ static int charsToIndex(const char *word)
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const char *word)
+void SearchIndex::addWord(const char *word,bool hiPriority)
 {
-  QString wStr=QString(word).lower();
+  //printf("SearchIndex::addWord(%s,%d)\n",word,hiPriority);
+  //QString wStr=QString(word).lower();
+  QString wStr(word);
   if (wStr.isEmpty()) return;
   IndexWord *w = m_words[wStr];
   if (w==0)
@@ -91,9 +100,9 @@ void SearchIndex::addWord(const char *word)
     w = new IndexWord(wStr);
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx]->append(w);
-    m_words.insert(word,w);
+    m_words.insert(wStr,w);
   }
-  w->addUrlIndex(m_urlIndex);
+  w->addUrlIndex(m_urlIndex,hiPriority);
 }
 
 
@@ -256,21 +265,6 @@ void SearchIndex::write(const char *fileName)
       writeString(f,url->url);
     }
   }
-
-  //for (wdi.toFirst();(iw=wdi.current());++wdi)
-  //{
-  //  printf("Word %s:\n",wdi.currentKey().data());
-  //  QIntDictIterator<URLInfo> udi(iw->urls());
-  //  URLInfo *ui;
-  //  for (udi.toFirst();(ui=udi.current());++udi)
-  //  {
-  //    printf("  url[%d]=(name=%s,url=%s),freq=%d\n",
-  //        ui->urlIdx,
-  //        m_urls[ui->urlIdx]->name.data(),
-  //        m_urls[ui->urlIdx]->url.data(),
-  //        ui->freq);
-  //  }
-  //}
 
   delete urlOffsets;
   delete wordStatOffsets;

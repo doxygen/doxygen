@@ -1,3 +1,4 @@
+<?
 function readInt($file)
 {
   $b1 = ord(fgetc($file)); $b2 = ord(fgetc($file));
@@ -60,10 +61,15 @@ function search($file,$word,&$statsList)
         }
         $w = readString($file);
       }
-      $totalFreq=0;
+      $totalHi=0;
+      $totalFreqHi=0;
+      $totalFreqLo=0;
       for ($count=$start;$count<sizeof($statsList);$count++)
       {
         $statInfo = &$statsList[$count];
+        $multiplier = 1;
+        // whole word matches have a double weight
+        if ($statInfo["full"]) $multiplier=2;
         fseek($file,$statInfo["index"]); 
         $numDocs = readInt($file);
         $docInfo = array();
@@ -72,11 +78,22 @@ function search($file,$word,&$statsList)
         {
           $idx=readInt($file); 
           $freq=readInt($file); 
-          $docInfo[$i]=array("idx"=>$idx,"freq"=>$freq,"rank"=>0.0);
-          $totalFreq+=$freq;
-          if ($statInfo["full"]) $totalFreq+=$freq;
+          $docInfo[$i]=array("idx"  => $idx,
+                             "freq" => $freq>>1,
+                             "rank" => 0.0,
+                             "hi"   => $freq&1
+                            );
+          if ($freq&1) // word occurs in high priority doc
+          {
+            $totalHi++;
+            $totalFreqHi+=$freq*$multiplier;
+          }
+          else // word occurs in low priority doc
+          {
+            $totalFreqLo+=$freq*$multiplier;
+          }
         }
-        // read name an url info for the doc
+        // read name and url info for the doc
         for ($i=0;$i<$numDocs;$i++)
         {
           fseek($file,$docInfo[$i]["idx"]);
@@ -85,15 +102,28 @@ function search($file,$word,&$statsList)
         }
         $statInfo["docs"]=$docInfo;
       }
+      $totalFreq=($totalHi+1)*$totalFreqLo + $totalFreqHi;
       for ($count=$start;$count<sizeof($statsList);$count++)
       {
         $statInfo = &$statsList[$count];
+        $multiplier = 1;
+        // whole word matches have a double weight
+        if ($statInfo["full"]) $multiplier=2;
         for ($i=0;$i<sizeof($statInfo["docs"]);$i++)
         {
           $docInfo = &$statInfo["docs"];
           // compute frequency rank of the word in each doc
-          $statInfo["docs"][$i]["rank"]=
-            (float)$docInfo[$i]["freq"]/$totalFreq;
+          $freq=$docInfo[$i]["freq"];
+          if ($docInfo[$i]["hi"])
+          {
+            $statInfo["docs"][$i]["rank"]=
+              (float)($freq*$multiplier+$totalFreqLo)/$totalFreq;
+          }
+          else
+          {
+            $statInfo["docs"][$i]["rank"]=
+              (float)($freq*$multiplier)/$totalFreq;
+          }
         }
       }
     }
@@ -113,7 +143,6 @@ function combine_results($results,&$docs)
       if (in_array($key, array_keys($docs)))
       {
         $docs[$key]["rank"]+=$rank;
-        $docs[$key]["rank"]*=2; // multiple matches increases rank 
       }
       else
       {
@@ -130,25 +159,6 @@ function combine_results($results,&$docs)
     }
   }
   return $docs;
-}
-
-function normalize_ranking(&$docs)
-{
-  $maxRank = 0.0000001;
-  // compute maximal rank
-  foreach ($docs as $doc) 
-  {
-    if ($doc["rank"]>$maxRank)
-    {
-      $maxRank=$doc["rank"];
-    }
-  }
-  reset($docs);
-  // normalize rankings
-  while (list ($key, $val) = each ($docs)) 
-  {
-    $docs[$key]["rank"]*=100/$maxRank;
-  }
 }
 
 function filter_results($docs,&$requiredWords,&$forbiddenWords)
@@ -284,7 +294,7 @@ function main()
     if (!in_array($word,$foundWords))
     {
       $foundWords[]=$word;
-      search($file,strtolower($word),$results);
+      search($file,$word,$results);
     }
     $word=strtok(" ");
   }
@@ -293,8 +303,6 @@ function main()
   // filter out documents with forbidden word or that do not contain
   // required words
   $filteredDocs = filter_results($docs,$requiredWords,$forbiddenWords);
-  // normalize rankings so they are in the range [0-100]
-  normalize_ranking($filteredDocs);
   // sort the results based on rank
   $sorted = array();
   sort_results($filteredDocs,$sorted);

@@ -1001,7 +1001,8 @@ void Config::check()
     alias=alias.stripWhiteSpace();
     if (alias.find(re)!=0)
     {
-      config_err("Illegal alias format `%s'. Use \"name=value\"\n",alias.data());
+      config_err("Illegal alias format `%s'. Use \"name=value\"\n",
+	  alias.data());
     }
     s=aliasList.next();
   }

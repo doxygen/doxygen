@@ -1678,15 +1678,15 @@ void generateXML()
       generateXMLForClass(cd,t);
     }
   }
-  {
-    ClassSDict::Iterator cli(Doxygen::hiddenClasses);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      msg("Generating XML output for class %s\n",cd->name().data());
-      generateXMLForClass(cd,t);
-    }
-  }
+  //{
+  //  ClassSDict::Iterator cli(Doxygen::hiddenClasses);
+  //  ClassDef *cd;
+  //  for (cli.toFirst();(cd=cli.current());++cli)
+  //  {
+  //    msg("Generating XML output for class %s\n",cd->name().data());
+  //    generateXMLForClass(cd,t);
+  //  }
+  //}
   NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)

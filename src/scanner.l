@@ -1101,10 +1101,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ObjCReturnType>")"			{
   					  BEGIN( ObjCMethod );
   					}
-<ObjCParams>{ID}{BN}*/":"		{ // Keyword of parameter
-  					  lineCount();
-					  QCString keyw = QCString(yytext).stripWhiteSpace();
-					  current->name += keyw;
+<ObjCParams>({ID})?":"			{ // Keyword of parameter
+					  QCString keyw = yytext;
+					  keyw=keyw.left(keyw.length()-1); // strip :
+					  if (keyw.isEmpty())
+					  {
+					    current->name += " :";
+					  }
+					  else
+					  {
+					    current->name += keyw+":";
+					  }
 					  if (current->argList->getLast()->type.isEmpty())
 					  {
 					    current->argList->getLast()->type="id";
@@ -1121,19 +1128,25 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->argList->getLast()->attrib="[,]";
   					  current->argList->getLast()->type="...";
   					}
+   /*
 <ObjCParams>":"				{ 
 					  current->name += ':';
 					}
+   */
 <ObjCParams>"("				{
   					  BEGIN( ObjCParamType );
   					}
 <ObjCParamType>[^)]*			{
-  					  current->argList->getLast()->type=yytext;
+  					  current->argList->getLast()->type=QCString(yytext).stripWhiteSpace();
   					}
-<ObjCParamType>")"{B}*			{
+<ObjCParamType>")"/{B}*			{
   					  BEGIN( ObjCParams );
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
+					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
+					  {
+					    current->argList->getLast()->type="id";
+					  }
   					  current->args = argListToString(current->argList);
 					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
@@ -1143,6 +1156,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           //printf("Type=%s Name=%s args=%s\n",
 					  //    current->type.data(),current->name.data(),argListToString(current->argList).data()
 					  //    );
+					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
+					  {
+					    current->argList->getLast()->type="id";
+					  }
+  					  current->args = argListToString(current->argList);
                                           unput('{');
   					  BEGIN( Function );
   					}
@@ -2094,12 +2112,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  yyLineNr++;
   					}
 <ReadInitializer>"@\""			{ 
+  					  printf("insideCS=%d\n",insideCS);
   					  current->initializer+=yytext;
-                                          if (!insideCS) REJECT;
-					  // C# verbatim string
-					  lastSkipVerbStringContext=YY_START;
-					  pSkipVerbString=&current->initializer;
-					  BEGIN(SkipVerbString);
+                                          if (!insideCS && !insideObjC) 
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+					    // C#/ObjC verbatim string
+					    lastSkipVerbStringContext=YY_START;
+					    pSkipVerbString=&current->initializer;
+					    BEGIN(SkipVerbString);
+					  }
 					}
 <SkipVerbString>[^\n"]+			{
 					  *pSkipVerbString+=yytext;
@@ -3589,7 +3614,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
     					  if (insideObjC && *yytext=='(') // class category
 					  {
 					    current->name+='(';
-					    current->section=Entry::CATEGORY_SEC;
+                                            if (current->section!=Entry::OBJCIMPL_SEC)
+                                            {
+					      current->section=Entry::CATEGORY_SEC;
+                                            }
 					    BEGIN( ClassCategory );
 					  }
 					  else

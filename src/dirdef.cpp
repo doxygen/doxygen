@@ -207,6 +207,7 @@ void DirDef::writePathFragment(OutputList &ol)
   if (getOuterScope()!=Doxygen::globalScope && 
       getOuterScope()->definitionType()==Definition::TypeDir)
   {
+    //printf("getOuterScope %s\n",getOuterScope()->name().data());
     ((DirDef*)getOuterScope())->writePathFragment(ol);
     ol.writeString("&nbsp;/&nbsp;");
   }
@@ -236,6 +237,7 @@ DirDef *DirDef::createNewDir(const char *path)
   {
     //printf("Adding new dir %s\n",path);
     dir = new DirDef(path);
+    //printf("createNewDir %s short=%s\n",path,dir->shortName().data());
     Doxygen::directories.inSort(path,dir);
   }
   return dir;
@@ -267,7 +269,7 @@ DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
   while ((i=path.find('/',p))!=-1)
   {
     QCString part=path.left(i+1);
-    if (!matchPath(part,Config_getList("STRIP_FROM_PATH")))
+    if (!matchPath(part,Config_getList("STRIP_FROM_PATH")) && part!="/")
     {
       dir=createNewDir(part); 
     }
@@ -316,13 +318,16 @@ void buildDirectories()
     //printf("New dir %s\n",dir->displayName().data());
     QCString name = dir->name();
     int i=name.findRev('/',name.length()-2);
-    if (i!=-1)
+    if (i>0)
     {
       DirDef *parent = Doxygen::directories.find(name.left(i+1));
       //if (parent==0) parent=root;
-      if (parent) parent->addSubDir(dir); 
-      //printf("DirDef::addSubdir(): Adding subdir\n%s to\n%s\n",
-      //    dir->displayName().data(), parent->displayName().data());
+      if (parent) 
+      {
+        parent->addSubDir(dir); 
+        //printf("DirDef::addSubdir(): Adding subdir\n%s to\n%s\n",
+        //  dir->displayName().data(), parent->displayName().data());
+      }
     }
   }
 }
