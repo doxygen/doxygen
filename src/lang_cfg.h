@@ -14,6 +14,7 @@
 #define LANG_PT
 #define LANG_HU
 #define LANG_KR
+#define LANG_KE
 #define LANG_RO
 #define LANG_SI
 #define LANG_CN

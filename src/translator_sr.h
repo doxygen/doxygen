@@ -19,8 +19,9 @@
 #define TRANSLATOR_SR_H
 
 // translation by Dejan D. M. Milosavljevic <dmilos@email.com>;<dmilosx@ptt.yu>  
+// // 10x 2 Ivana Miletic for gramatical consutation.
 
-class TranslatorSerbian : public TranslatorAdapter_1_3_3
+class TranslatorSerbian : public Translator
 {                                
 private:
    QCString decode(const QCString& sInput)
@@ -306,7 +307,7 @@ private:
       
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="funkcija, promenjiva, makro zamena, enum-a, i typedef-va";
+        result+="funkcija, promenjiva, makro zamena, enum-ova, i typedef-ova";
       }
       else
       {
@@ -319,6 +320,7 @@ private:
         result+="datoteke u kojima se nalaze:";
       else 
         result+=" dokumentaciju:";
+
       return decode( result );
     }
 
@@ -491,7 +493,7 @@ private:
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "Dokumetacija enum tipa"; }
+    { return "Dokumetacija enum-a"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
@@ -534,7 +536,7 @@ private:
       QCString result=(QCString)"Napravljeno "+date;
       if (projName) result+=(QCString)" za "+projName;
       result+=(QCString)" od";
-      return result;
+      return decode( result );
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
@@ -563,7 +565,7 @@ private:
 
     /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
-    { return decode("Gre¹ke i ogranièenja"); }
+    { return decode( "Gre¹ke i ogranièenja" ); }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -971,7 +973,7 @@ private:
     }
     virtual QCString trPrivateTypes()
     {
-      return "Privatni tipovi";
+      return decode( "Privatni tipovi" );
     }
     virtual QCString trPrivateAttribs()
     {
@@ -1011,7 +1013,7 @@ private:
     }
     virtual QCString trAttention()
     {
-      return decode("Pa¾nja");;
+      return decode( "Pa¾nja" );
     }
     virtual QCString trInclByDepGraph()
     {
@@ -1135,12 +1137,12 @@ private:
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return "Osobine";
+      return decode( "Osobine" );
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Dokumentacija osobina";
+      return decode( "Dokumentacija osobina" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1202,12 +1204,12 @@ private:
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return decode("Gre¹ka");;
+      return decode( "Gre¹ka" );
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode("Spisak gre¹aka");;
+      return decode( "Spisak gre¹aka" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1256,7 +1258,7 @@ private:
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return decode("Sadr¾aj");;
+      return decode( "Sadr¾aj" );
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1265,7 +1267,7 @@ private:
      */
     virtual QCString trClass(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Klas" : "klas"));
+      QCString result( (first_capital ? "Klas" : "klas") );
       result+= (singular ? "a" : "e");
       return result; 
     }
@@ -1358,7 +1360,7 @@ private:
     {                                                                         
       QCString result((first_capital ? "Autor" : "autor"));
       result+= (singular ? "" : "i");
-      return result; 
+      return decode( result ); 
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1369,7 +1371,7 @@ private:
      */
     virtual QCString trReferences()
     {
-      return "Koristi";
+      return decode( "Koristi" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1389,7 +1391,7 @@ private:
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Definisano u " + trWriteList(numEntries) + "." ;
+      return decode( "Definisano u " + trWriteList(numEntries) + "." );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1424,12 +1426,12 @@ private:
      */
     virtual QCString trEvents()
     {
-      return "Dogaðaji";
+      return decode( "Dogaðaji" );
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Dokumentacija dogaðaja";
+      return decode( "Dokumentacija dogaðaja" );
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3
@@ -1439,35 +1441,35 @@ private:
      */
     virtual QCString trPackageTypes()
     { 
-      return "Tipovi u Paketu";
+      return decode( "Tipovi u Paketu" );
     }
     /*! Used as a heading for a list of Java class functions with package 
      * scope. 
      */
     virtual QCString trPackageMembers()
     { 
-      return "Funkcije u paketu";
+      return decode( "Funkcije u paketu" );
     }
     /*! Used as a heading for a list of static Java class functions with 
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     { 
-      return "Statièke funkcije u paketu";  // Zajednicke funkcije u paketu
+      return decode( "Statièke funkcije u paketu" );  // Zajednicke funkcije u paketu
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
      */
     virtual QCString trPackageAttribs()
     { 
-      return "Atributi u paketu"; // Clanovi u paketu
+      return decode( "Atributi u paketu" ); // Clanovi u paketu
     }
     /*! Used as a heading for a list of static Java class variables with 
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     { 
-      return "Statièki atributi u paketu";  // Zajednicki clanovi u paketu
+      return  decode( "Statièki atributi u paketu" );  // Zajednicki clanovi u paketu
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1479,21 +1481,77 @@ private:
      */
     virtual QCString trAll()
     {
-      return "Sve";
+      return decode( "Sve" );
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Graf pozivanja finkcija:";
+      return decode( "Graf pozivanja funkcija:" );
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return decode("Tra¾i");
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return decode( "Rezultati pretra¾ivanja" );
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return decode("Nema dokumenta koji odgovaraju va¹em upitu");
+      }
+      else if (numDocuments==1)
+      { // 10x 2 Ivana Miletic 4 gramatical consutation.
+        return decode("Naðen je <b>1</b> dokument koji odgovara va¹em upitu.");
+      }
+    else if (numDocuments<5) 
+    {  // 10x 2 Ivana Miletic 4 gramatical consutation.
+      return decode("Naðena su <b>$num</b> dokumenta koji odgovaraju va¹em upitu."
+                    "Najbolji su prikazani prvi.");
+    }
+    else 
+    {  // 10x 2 Ivana Miletic 4 gramatical consutation.
+      return decode("Naðeno je <b>$num</b> dokumenata koji odgovaraju va¹em upitu."
+        "Najbolji su prikazani prvi.");
+    }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return decode( "Pronaðeno:" );
     }
 
  
 };
 
-// sh - ¹ - shashavo
-// dj - ð - djordje
-// ch - è - chasha
-// cc - æ - cciccifu
-// zz - ¾ - zzaba
+// sh -    ¹ - shashavo  (,š)
+// dj -    ð - djordje
+// ch - È, è - chasha
+// cc -    æ - cciccifu
+// zz -    ¾ - zzaba     
 
 #endif

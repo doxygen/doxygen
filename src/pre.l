@@ -636,6 +636,23 @@ static int getNextId(const QCString &expr,int p,int *l)
 	p++;
       }
     }
+    else if (c=='/') // skip C Comment
+    {
+      char pc=c;
+      if (p<(int)expr.length()) 
+      {
+	c=expr.at(++p);
+        if (c=='*')  // Start of C comment
+        { 
+  	  while (p<(int)expr.length() && !(pc=='*' && c=='/'))
+	  {
+	    pc=c;
+	    c=expr.at(++p);
+	  }
+	  p++;
+        }
+      }
+    }
   }
   return -1;
 }
@@ -777,6 +794,20 @@ QCString removeIdsAndMarkers(const char *s)
 	p++;
 	while ((c=*p) && isId(c)) p++;
       }
+      else if (c=='/') // skip C comments
+      {
+	char pc=c;
+	c=*++p;
+	if (c=='*') // start of C comment
+	{ 
+	  while (*p && !(pc=='*' && c=='/')) // search end of comment
+	  {
+	    pc=c;
+	    c=*++p;
+	  }
+	  p++;
+	}
+      }
       else 
       {
 	result+=c;
@@ -786,6 +817,7 @@ QCString removeIdsAndMarkers(const char *s)
       }
     }
   }
+  //printf("removeIdsAndMarkers(%s)=%s\n",s,result.data());
   return result;
 }
 
@@ -810,6 +842,23 @@ QCString removeMarkers(const char *s)
 	}
 	p+=2;
       }
+      else if (c=='/') // skip C comments
+      {
+	result+=c;
+	char pc=c;
+	c=*++p;
+	if (c=='*') // start of C comment
+	{ 
+	  while (*p && !(pc=='*' && c=='/')) // search end of comment
+	  {
+	    result+=c;
+	    pc=c;
+	    c=*++p;
+	  }
+	  result+=c;
+	  p++;
+	}
+      }
       else
       {
 	result+=c;
@@ -817,6 +866,7 @@ QCString removeMarkers(const char *s)
       }
     }
   }
+  //printf("RemoveMarkers(%s)=%s\n",s,result.data());
   return result;
 }
 
@@ -1061,6 +1111,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x      Ifdef
 %x      Ifndef
 %x	SkipCComment
+%x	CopyCComment
 %x	SkipVerbatim
 %x	SkipCPPComment
 %x	RemoveCComment
@@ -1622,23 +1673,24 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_argDict->insert(argName,new int(g_defArgs)); 
 					  g_defArgs++;
   					}
-<DefineText>"/**"|"/*!"			{
+  /*
+<DefineText>"/ **"|"/ *!"			{
   					  g_defText+=yytext;
 					  g_defLitText+=yytext;
 					  g_insideComment=TRUE;
   					}
-<DefineText>"*/"			{
+<DefineText>"* /"			{
   					  g_defText+=yytext;
 					  g_defLitText+=yytext;
 					  g_insideComment=FALSE;
   					}
-<DefineText>"/*"|"/**<"|"/*!<"		{
-  					  outputArray(yytext,yyleng);
-					  g_defText+=' ';
-					  g_defLitText+=' ';
+  */
+<DefineText>"/*"			{
+					  g_defText+=yytext;
+					  g_defLitText+=yytext;
 					  g_lastCContext=YY_START;
 					  g_commentCount=1;
-  					  BEGIN(SkipCComment);
+  					  BEGIN(CopyCComment);
   					}
 <DefineText>"//"			{
   				          outputChar('/');outputChar('/');
@@ -1678,6 +1730,24 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipCComment,SkipVerbatim>.		{
   					  outputChar(*yytext);
+  					}
+<CopyCComment>[^*]+			{
+					  g_defLitText+=yytext;
+					  g_defText+=yytext;
+  					}
+<CopyCComment>"*/"			{
+					  g_defLitText+=yytext;
+					  g_defText+=yytext;
+  					  BEGIN(g_lastCContext);
+  					}
+<CopyCComment>\n			{ 
+  					  g_yyLineNr++;
+					  g_defLitText+=yytext;
+					  g_defText+=yytext;
+  					}
+<CopyCComment>.				{
+					  g_defLitText+=yytext;
+					  g_defText+=yytext;
   					}
 <RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }
 <RemoveCComment>"//"			

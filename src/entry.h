@@ -293,6 +293,7 @@ class Entry
     QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
+    bool        objc;         //!< Objective-C construct
     enum 
     {
       GROUPDOC_NORMAL,        //<! defgroup

@@ -101,6 +101,7 @@ HEADERS      =	bufstr.h \
 		translator_it.h \
 		translator_je.h \
 		translator_jp.h \
+		translator_ke.h \
 		translator_kr.h \
 		translator_nl.h \
 		translator_no.h \
@@ -188,7 +189,7 @@ INCLUDEPATH                += ../qtools
 INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5
 win32:INCLUDEPATH          += .
-win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12
+win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen
 OBJECTS_DIR                =  ../objects

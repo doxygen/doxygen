@@ -67,6 +67,9 @@
 #ifdef LANG_HU
 #include "translator_hu.h"
 #endif
+#ifdef LANG_KE
+#include "translator_ke.h"
+#endif
 #ifdef LANG_KR
 #include "translator_kr.h"
 #endif
@@ -226,6 +229,10 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("korean"))
   {
     theTranslator=new TranslatorKorean;
+  }
+  else if (L_EQUAL("korean-en"))
+  {
+    theTranslator=new TranslatorKoreanEn;
   }
 #endif
 #ifdef LANG_RO

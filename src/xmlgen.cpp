@@ -1377,7 +1377,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     GroupDef *sgd;
     for (gli.toFirst();(sgd=gli.current());++gli)
     {
-      t << "    <innergroup refid=\"" << gd->getOutputFileBase()
+      t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
         << "\">" << convertToXML(sgd->groupTitle()) 
         << "</innergroup>" << endl;
     }

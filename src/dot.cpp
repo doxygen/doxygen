@@ -99,10 +99,10 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   char buf[maxLineLen];
   char url[maxLineLen];
   char ref[maxLineLen];
-  bool isRef = FALSE;
   int x1,y1,x2,y2;
   while (!f.atEnd())
   {
+    bool isRef = FALSE;
     int numBytes = f.readLine(buf,maxLineLen);
     buf[numBytes-1]='\0';
     //printf("ReadLine `%s'\n",buf);

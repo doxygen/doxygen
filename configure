@@ -27,7 +27,7 @@ f_prefix=/usr
 f_insttool=NO
 f_english=NO
 f_wizard=NO
-f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca
+f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca
 
 while test -n "$1";  do
   case $1 in
@@ -225,6 +225,27 @@ fi
  
 if test "$f_wizard" = YES; then
   echo -n "  Checking for Qt..."
+  if test -d "/usr/lib/qt3/lib"; then
+    if test -d "/usr/lib/qt3/include"; then
+      if test -x "/usr/lib/qt3/bin/moc"; then
+        QTDIR="/usr/lib/qt3";
+      fi
+    fi
+  fi
+  if test -d "/usr/lib/qt2/lib"; then
+    if test -d "/usr/lib/qt2/include"; then
+      if test -x "/usr/lib/qt2/bin/moc"; then
+        QTDIR="/usr/lib/qt2";
+      fi
+    fi
+  fi
+  if test -d "/usr/lib/qt/lib"; then
+    if test -d "/usr/lib/qt/include"; then
+      if test -x "/usr/lib/qt/bin/moc"; then
+        QTDIR="/usr/lib/qt";
+      fi
+    fi
+  fi
   if test -z "$QTDIR"; then
     echo "QTDIR not set!"
     echo
@@ -486,7 +507,7 @@ done
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,RO,SI,CN,NO,BR,
+	@allowed=(NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,
 		  DK,SK,UA,GR,TW,SR,CA);
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;

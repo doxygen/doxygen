@@ -128,6 +128,7 @@ static bool             insideJava = FALSE;		//!< processing Java code?
 static bool             insideCS = FALSE;		//!< processing C# code?
 static bool             insidePHP = FALSE;		//!< processing PHP code?
 static bool             insideCppQuote = FALSE;
+static bool             insideObjC = FALSE;             //!< processing Objective C code?
 
 static int              argRoundCount;
 static int              argSharpCount;
@@ -440,6 +441,7 @@ static void setContext()
   insideCS   = fileName.right(3)==".cs";
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
                fileName.right(4)==".inc" || fileName.right(6)==".phtml";
+  insideObjC = fileName.right(2)==".m";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -604,6 +606,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	Array
 %x	ReadBody
 %x	ReadNSBody
+%x	ReadBodyIntf
 %x	Using
 %x	UsingDirective
 %x	NameSpaceDocArg1
@@ -722,6 +725,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	DefinePHPEnd
 %x	OldStyleArgs
 %x	SkipVerbString
+%x      ObjCMethod
+%x      ObjCReturnType
+%x      ObjCParams
+%x      ObjCParamType
 
 %%
 
@@ -907,6 +914,102 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->argList->clear();
 					  lineCount() ;
 					}
+<FindMembers>{B}*"@private"{BN}+	{
+  					  current->protection = protection = Private ;
+					  current->mtype = mtype = Method;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+  					}
+<FindMembers>{B}*"@protected"{BN}+	{
+  					  current->protection = protection = Protected ;
+					  current->mtype = mtype = Method;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+  					}
+<FindMembers>{B}*"@public"{BN}+	{
+  					  current->protection = protection = Public ;
+					  current->mtype = mtype = Method;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+  					}
+<FindMembers>[\-+]{BN}*			{
+  					  if (!insideObjC) 
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+					    current->protection = protection = Public ;
+					    current->stat=yytext[0]=='+';
+					    current->mtype = mtype = Method;
+					    current->type.resize(0); 
+					    current->name.resize(0); 
+					    current->args.resize(0);
+					    current->argList->clear();
+					    BEGIN( ObjCMethod );
+					  }
+  					}
+<ObjCMethod>"("				{ // start of method's return type
+  					  BEGIN( ObjCReturnType );
+  					}
+<ObjCMethod>{ID}			{ // found method name
+  					  if (current->type.isEmpty())
+					  {
+					    current->type = "id";
+					  }
+					  current->name = yytext;
+  					}
+<ObjCMethod>":"				{ // start of parameter list
+  					  Argument *a = new Argument;
+					  current->argList->append(a);
+  					  BEGIN( ObjCParams );
+  					}
+<ObjCReturnType>[^)]*			{ // TODO: check if nested braches are possible.
+  					  current->type = yytext;
+  					}
+<ObjCReturnType>")"			{
+  					  BEGIN( ObjCMethod );
+  					}
+<ObjCParams>{ID}/":"			{ // Keyword of parameter
+  					  current->argList->getLast()->attrib=(QCString)"["+yytext+"]";
+  					}
+<ObjCParams>{ID}			{ // name of parameter
+  					  current->argList->getLast()->name=yytext;
+  					}
+<ObjCParams>":"				{ }
+<ObjCParams>"("				{
+  					  BEGIN( ObjCParamType );
+  					}
+<ObjCParams>{BN}*			{
+  					  lineCount();
+					  if (current->argList->getLast()->type.isEmpty())
+					  {
+					    current->argList->getLast()->type="id";
+					  }
+  					  Argument *a = new Argument;
+					  current->argList->append(a);
+  					}
+<ObjCParamType>[^)]*			{
+  					  current->argList->last()->type=yytext;
+  					}
+<ObjCParamType>")"			{
+  					  BEGIN( ObjCParams );
+  					}
+<ObjCMethod,ObjCParams>";"		{ // end of method declaration
+  					  current->args = argListToString(current->argList);
+					  printf("argList=%s\n",current->args.data());
+  					  unput(';');
+  					  BEGIN( Function );
+  					}
 <FindMembers>{BN}{1,80}			{
   					  lineCount();
   					}
@@ -1034,6 +1137,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    addType( current ) ;
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
+  					}
+<FindMembers>{B}*"@interface"{BN}+	{ // Objective-C interface
+					  lineCount();
+  					  isTypedef=FALSE;
+					  current->section = Entry::INTERFACE_SEC;
+					  current->objc = insideObjC = TRUE;
+					  current->protection = protection = Public ;
+					  addType( current ) ;
+					  current->type += " interface" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
@@ -1466,7 +1582,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
-<FindMembers,ReadBody,ReadNSBody,SkipCurly,SkipCurlyCpp>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
+<FindMembers,ReadBody,ReadNSBody,ReadBodyIntf,SkipCurly,SkipCurlyCpp>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
                                           yyLineNr = atoi(&yytext[1]);
 					  //printf("setting line number to %d\n",yyLineNr);
 					  lastPreLineCtrlContext = YY_START;
@@ -2019,33 +2135,33 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody,ReadNSBody>[^\r\n\#{}"@'/]*	{ current->program += yytext ; }
-<ReadBody,ReadNSBody>"//".*		{ current->program += yytext ; }
-<ReadBody,ReadNSBody>"#".*		{ if (! insidePHP)
+<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/]*	{ current->program += yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>"//".*		{ current->program += yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>"#".*		{ if (! insidePHP)
 					    REJECT;
 					  current->program += yytext ;
 					}
-<ReadBody,ReadNSBody>@\"		{ current->program += yytext ; 
+<ReadBody,ReadNSBody,ReadBodyIntf>@\"	{ current->program += yytext ; 
                                           pSkipVerbString = &current->program;
                                           lastSkipVerbStringContext=YY_START;
                                           BEGIN( SkipVerbString );
 					}
-<ReadBody,ReadNSBody>\"			{ current->program += yytext ; 
+<ReadBody,ReadNSBody,ReadBodyIntf>\"	{ current->program += yytext ; 
                                           pCopyQuotedString = &current->program;
                                           lastStringContext=YY_START;
                                           BEGIN( CopyString );
 					}
-<ReadBody,ReadNSBody>"/*"{B}*		{ current->program += yytext ;
-					  lastContext = ReadBody ;
+<ReadBody,ReadNSBody,ReadBodyIntf>"/*"{B}*		{ current->program += yytext ;
+					  lastContext = YY_START ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody,ReadNSBody>"/*"{BL}		{ current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>"/*"{BL}		{ current->program += yytext ;
 					  ++yyLineNr ;
-					  lastContext = ReadBody ;
+					  lastContext = YY_START ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody,ReadNSBody>{CHARLIT}          { current->program += yytext; }
-<ReadBody,ReadNSBody>"{"                { current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{CHARLIT}          { current->program += yytext; }
+<ReadBody,ReadNSBody,ReadBodyIntf>"{"                { current->program += yytext ;
 					  ++curlyCount ;
 					}
 <ReadBody,ReadNSBody>"}"		{ //err("ReadBody count=%d\n",curlyCount);
@@ -2081,20 +2197,27 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					      current->type = current->type.simplifyWhiteSpace();
   					      current->name = current->name.stripWhiteSpace();
 					      //printf("adding `%s' `%s' `%s' brief=%s\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data());
-					      current_root->addSubEntry( current ) ;
-					      current = new Entry(*current);
-					      if (current->section==Entry::NAMESPACE_SEC || 
-						  current->section==Entry::INTERFACE_SEC ||
-						  insideJava || insidePHP || insideCS
-						 )
-					      { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
-						current->reset();
-						initEntry();
-						BEGIN( FindMembers ) ;
+					      if (insideObjC) // method definition follows
+					      {
+				                BEGIN( ReadBodyIntf ) ;
 					      }
 					      else
 					      {
-						BEGIN( MemberSpec ) ;
+					        current_root->addSubEntry( current ) ;
+						current = new Entry(*current);
+						if (current->section==Entry::NAMESPACE_SEC || 
+						    current->section==Entry::INTERFACE_SEC ||
+						    insideJava || insidePHP || insideCS
+						   )
+						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
+						  current->reset();
+						  initEntry();
+						  BEGIN( FindMembers ) ;
+						}
+						else
+						{
+						  BEGIN( MemberSpec ) ;
+						}
 					      }
 					    }
 					  }
@@ -2262,11 +2385,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   */
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
-<ReadBody,ReadNSBody>{BN}+				{ current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{BN}+	{ current->program += yytext ;
 					  lineCount() ;
 					}
-<ReadBody,ReadNSBody>.			{ current->program += yytext ; }
-<ReadBody,ReadNSBody>"'#"		{ current->program += yytext ; }
+<ReadBodyIntf>"@end"			{ // end of Objective C block
+					  current_root->addSubEntry( current ) ;
+  					  current=new Entry;
+					  initEntry();
+					  insideObjC=FALSE;
+					  BEGIN( FindMembers ); 
+  					}
+<ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>"'#"	{ current->program += yytext ; }
 
 <FindMembers>"("/({BN}*{ID}{BN}*"::")*{ID}{BN}*")"{BN}*"(" | /* typedef void (A::func_t)(args...) */
 <FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
@@ -5299,6 +5429,7 @@ static void parseCompounds(Entry *rt)
       strcpy( yyFileName, ce->fileName ) ;
       setContext();
       yyLineNr = ce->startLine ;
+      insideObjC = ce->objc;
       //printf("---> Inner block starts at line %d\n",yyLineNr);
       //current->reset();
       current = new Entry;
@@ -5314,7 +5445,7 @@ static void parseCompounds(Entry *rt)
           current->protection = protection = Public ; 
 	else if (ce->fileName.right(5)==".java")
           current->protection = protection = Package ; 
-	else
+	else 
           current->protection = protection = Private ;
       }
       else if (ce->section == Entry::ENUM_SEC ) // enum
@@ -5329,7 +5460,18 @@ static void parseCompounds(Entry *rt)
 	}
 	current->protection = protection = ce->protection;
       }
-      else // named struct, union, or interface
+      else if (ce->section==Entry::INTERFACE_SEC)
+      {
+	if (ce->objc)
+	{
+	  current->protection = protection = Protected ;
+	}
+	else
+	{
+	  current->protection = protection = Public ;
+	}
+      }
+      else // named struct, union
       {
 	current->protection = protection = Public ;
       }
