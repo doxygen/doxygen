@@ -187,6 +187,11 @@ void statistics()
 
 static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
                    ArgumentList *al,bool over_load,NamespaceSDict *nl=0);
+static void findMember(Entry *root,
+                       QCString funcDecl,
+                       bool overloaded,
+                       bool isFunc
+                      );
 
 const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
@@ -2914,7 +2919,7 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
 {
   QDict<int> *templateNames = new QDict<int>(17);
   templateNames->setAutoDelete(TRUE);
-  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   if (templateArguments)
   {
     ArgumentListIterator ali(*templateArguments);
@@ -3108,12 +3113,7 @@ static void findUsedClassesForClass(Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = usedClassName+templSpec;
-
-          //if (!typeName.isEmpty())
-          //{
-          //  usedName=typeName;
-          //}
-          //printf("usedName=`%s'\n",usedName.data());
+          //printf("usedName=%s\n",usedName.data());
 
           bool delTempNames=FALSE;
           if (templateNames==0)
@@ -3147,7 +3147,7 @@ static void findUsedClassesForClass(Entry *root,
                 if (usedCd)
                 {
                   if (isArtificial) usedCd->setClassIsArtificial();
-                  Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
+                  Debug::print(Debug::Classes,0,"    Adding used class `%s' (1)\n", usedCd->name().data());
                   instanceCd->addUsedClass(usedCd,md->name());
                   usedCd->addUsedByClass(instanceCd,md->name());
                 }
@@ -3160,10 +3160,10 @@ static void findUsedClassesForClass(Entry *root,
             ClassDef *usedCd=findClassWithinClassContext(masterCd,usedName);
             //printf("Looking for used class: result=%p master=%p\n",usedCd,masterCd);
 
-            if (usedCd /*&& usedCd!=masterCd*/) 
+            if (usedCd) 
             {
               found=TRUE;
-              Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
+              Debug::print(Debug::Classes,0,"    Adding used class `%s' (2)\n", usedCd->name().data());
               instanceCd->addUsedClass(usedCd,md->name()); // class exists 
               usedCd->addUsedByClass(instanceCd,md->name());
             }
@@ -3192,7 +3192,7 @@ static void findUsedClassesForClass(Entry *root,
           if (usedCd)
           {
             if (isArtificial) usedCd->setClassIsArtificial();
-             Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
+            Debug::print(Debug::Classes,0,"    Adding used class `%s' (3)\n", usedCd->name().data());
             instanceCd->addUsedClass(usedCd,md->name()); 
             usedCd->addUsedByClass(instanceCd,md->name());
           }
@@ -3297,6 +3297,7 @@ static bool findTemplateInstanceRelation(Entry *root,
 
   if (freshInstance)
   {
+    Debug::print(Debug::Classes,0,"      found fresh instance!\n");
     Doxygen::classSDict.append(instanceClass->name(),instanceClass);
     instanceClass->setTemplateBaseClassNames(templateNames);
 
@@ -3305,6 +3306,7 @@ static bool findTemplateInstanceRelation(Entry *root,
     Entry *templateRoot = classEntries.find(templateClass->name());
     if (templateRoot)
     {
+      Debug::print(Debug::Classes,0,"        template root found %s!\n",templateRoot->name.data());
       ArgumentList *templArgs = new ArgumentList;
       stringToArgumentList(templSpec,templArgs);
       findBaseClassesForClass(templateRoot,templateClass,instanceClass,
@@ -3316,11 +3318,16 @@ static bool findTemplateInstanceRelation(Entry *root,
     }
     else
     {
+      Debug::print(Debug::Classes,0,"        no template root entry found!\n");
       // TODO: what happened if we get here?
     }
 
     //Debug::print(Debug::Classes,0,"    Template instance %s : \n",instanceClass->name().data());
     //ArgumentList *tl = templateClass->templateArguments();
+  }
+  else
+  {
+    Debug::print(Debug::Classes,0,"      instance already exists!\n");
   }
   return TRUE;
 }
@@ -4199,11 +4206,8 @@ static bool findGlobalMember(Entry *root,
   }
   else // got docs for an undefined member!
   {
-    if (root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
-    {
-      // probably a local member ObjC method not found in the interface 
-    }
-    else
+    if (root->type!="friend class" && root->type!="friend struct" &&
+        root->type!="friend union")
     {
       warn(root->fileName,root->startLine,
            "Warning: documented function `%s' was not defined.",decl
@@ -4389,8 +4393,8 @@ static void findMember(Entry *root,
                 funcArgs,funcTempList,exceptions
                );
   }
-  //printf("scopeName=`%s' funcType=`%s' funcName=`%s'\n",
-  //    scopeName.data(),funcType.data(),funcName.data());
+  //printf("scopeName=`%s' funcType=`%s' funcName=`%s' funcArgs=`%s'\n",
+  //    scopeName.data(),funcType.data(),funcName.data(),funcArgs.data());
 
   // the class name can also be a namespace name, we decide this later.
   // if a related class name is specified and the class name could
@@ -4751,9 +4755,11 @@ static void findMember(Entry *root,
             delete nl;
           } 
         } 
-        if (count==0 && !(isFriend && funcType=="class") && 
-            (root->parent==0 || root->parent->section!=Entry::OBJCIMPL_SEC)
-           )
+        if (count==0 && root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
+        {
+          goto localObjCMethod;
+        }
+        if (count==0 && !(isFriend && funcType=="class"))
         {
           int candidates=0;
           if (mn->count()>0)
@@ -5048,6 +5054,59 @@ static void findMember(Entry *root,
                    "documented.", 
                    className.data(),funcName.data()
                   );
+      }
+    }
+    else if (root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
+    {
+localObjCMethod:
+      ClassDef *cd;
+      //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
+      if (Config_getBool("EXTRACT_LOCAL_METHODS") && (cd=getClass(scopeName)))
+      {
+        bool ambig;
+        //printf("Local objective C method `%s' of class `%s' found\n",root->name.data(),cd->name().data());
+        MemberDef *md=new MemberDef(
+            root->fileName,root->startLine,
+            funcType,funcName,funcArgs,exceptions,
+            root->protection,root->virt,root->stat,FALSE,
+            MemberDef::Function,0,root->argList);
+        if (root->tagInfo) 
+        {
+          md->setAnchor(root->tagInfo->anchor);
+          md->setReference(root->tagInfo->tagName);
+        }
+        md->makeImplementationDetail();
+        md->setMemberClass(cd);
+        md->setDefinition(funcDecl);
+        md->enableCallGraph(root->callGraph);
+        md->setDocumentation(root->doc,root->docFile,root->docLine);
+        md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+        md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+        md->setDocsForDefinition(!root->proto);
+        md->setPrototype(root->proto);
+        md->addSectionsToDefinition(root->anchors);
+        md->setBodySegment(root->bodyLine,root->endBodyLine);
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+        md->setBodyDef(fd);
+        md->setMemberSpecifiers(root->memSpec);
+        md->setMemberGroupId(root->mGrpId);
+        cd->insertMember(md);
+        cd->insertUsedFile(root->fileName);
+        md->setRefItems(root->sli);
+        if ((mn=Doxygen::memberNameSDict[root->name]))
+        {
+          mn->append(md);
+        }
+        else 
+        {
+          mn = new MemberName(root->name);
+          mn->append(md);
+          Doxygen::memberNameSDict.append(root->name,mn);
+        }
+      }
+      else
+      {
+        // local objective C method found for class without interface
       }
     }
     else // unrelated not overloaded member found

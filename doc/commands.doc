@@ -109,6 +109,7 @@ documentation:
 \refitem cmdparam \\param
 \refitem cmdpost \\post
 \refitem cmdpre \\pre
+\refitem cmdproperty \\property
 \refitem cmdref \\ref
 \refitem cmdrelates \\relates
 \refitem cmdrelatesalso \\relatesalso
@@ -538,6 +539,16 @@ See section \ref memgroup for an example.
   \sa section \ref cmdsection "\\section", section 
               \ref cmdsubsection "\\subsection", and section 
               \ref cmdref "\\ref".
+
+<hr>
+\section cmdproperty \property (qualified property name)
+
+  \addindex \\property
+  Indicates that a comment block contains documentation for a
+  property (either global or as a member of a class). 
+  This command is equivalent to \\var and \\fn.
+
+  \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
 
 <hr>
 \section cmdrelates \relates <name>

@@ -92,6 +92,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_extra_packages EXTRA_PACKAGES
 \refitem cfg_extract_all EXTRACT_ALL
 \refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
+\refitem cfg_extract_local_methods EXTRACT_LOCAL_METHODS
 \refitem cfg_extract_private EXTRACT_PRIVATE
 \refitem cfg_extract_static EXTRACT_STATIC
 \refitem cfg_file_patterns FILE_PATTERNS
@@ -466,6 +467,14 @@ followed by the descriptions of the tags grouped by category.
  defined locally in source files will be included in the documentation. 
  If set to NO only classes defined in header files are included. Does not
  have any effect for Java sources.
+
+\anchor cfg_extract_local_methods
+<dt>\c EXTRACT_LOCAL_METHODS <dd>
+ \addindex EXTRACT_LOCAL_METHODS
+ This flag is only useful for Objective-C code. When set to \c YES local 
+ methods, which are defined in the implementation section but not in
+ the interface are included in the documentation.
+ If set to \c NO (the default) only methods in the interface are included.
 
 \anchor cfg_hide_undoc_members
 <dt>\c HIDE_UNDOC_MEMBERS <dd>

@@ -339,8 +339,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endParameterType); }
     void startParameterName(bool one)
     { forall(&OutputGenerator::startParameterName,one); }
-    void endParameterName(bool last,bool one)
-    { forall(&OutputGenerator::endParameterName,last,one); }
+    void endParameterName(bool last,bool one,bool bracket)
+    { forall(&OutputGenerator::endParameterName,last,one,bracket); }
     void startParameterList(bool openBracket)
     { forall(&OutputGenerator::startParameterList,openBracket); }
     void endParameterList()
@@ -388,6 +388,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);
+    FORALLPROTO3(bool,bool,bool);
     FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);

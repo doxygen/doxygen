@@ -252,13 +252,14 @@ static void checkArgumentName(const QString &name,bool isParam)
   while ((i=re.match(name,p,&l))!=-1)
   {
     QString aName=name.mid(i,l);
-    //printf("aName=%s\n",aName.data());
+    //printf("aName=`%s'\n",aName.data());
     ArgumentListIterator ali(*al);
     Argument *a;
     bool found=FALSE;
     for (ali.toFirst();(a=ali.current());++ali)
     {
       QString argName = g_memberDef->isDefine() ? a->type : a->name;
+      //printf("argName=`%s'\n",argName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName) 
       {
@@ -4085,6 +4086,8 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag <%s> found", tagName.data());
+      m_children.append(new DocWord(this, "<"+tagName+">"));
+      break;
       break;
     default:
       // we should not get here!

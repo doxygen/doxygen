@@ -351,7 +351,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startParameterType(bool,const char *) = 0;
     virtual void endParameterType() = 0;
     virtual void startParameterName(bool) = 0;
-    virtual void endParameterName(bool,bool) = 0;
+    virtual void endParameterName(bool,bool,bool) = 0;
     virtual void startParameterList(bool) = 0;
     virtual void endParameterList() = 0;
 

@@ -1266,7 +1266,7 @@ class TrManager:
                     self.numLang -= 1    # the couple will be counted as one
         
         # Extract the version of Doxygen.
-        f = file(os.path.join(self.doxy_path, 'version'))
+        f = file(os.path.join(self.doxy_path, 'VERSION'))
         self.doxVersion = f.readline().strip()
         f.close()
         

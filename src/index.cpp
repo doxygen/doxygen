@@ -1650,7 +1650,8 @@ void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter
          ) 
       { 
         found=TRUE; 
-        isFunc=md->isFunction() || md->isSlot() || md->isSignal(); 
+        isFunc=!md->isObjCMethod() && 
+                (md->isFunction() || md->isSlot() || md->isSignal()); 
       }
       md=mn->next();
     }

@@ -125,6 +125,9 @@ class MemberDef : public Definition
     bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
     bool isGettable() const               { return (memSpec&Entry::Gettable)!=0; }
     bool isSettable() const               { return (memSpec&Entry::Settable)!=0; }
+    bool isReadable() const               { return (memSpec&Entry::Readable)!=0; }
+    bool isWritable() const               { return (memSpec&Entry::Writable)!=0; }
+    bool isImplementation() const         { return m_implOnly; }
     bool isExternal() const               { return explExt; }
     bool isObjCMethod() const;
     bool isConstructor() const;
@@ -229,6 +232,7 @@ class MemberDef : public Definition
     MemberGroup *getMemberGroup() const { return memberGroup; }
     void setMemberGroupId(int id) { grpId=id; }
     int getMemberGroupId() const { return grpId; }
+    void makeImplementationDetail() { m_implOnly=TRUE; } 
     
     // anonymous scope members
     void setFromAnonymousScope(bool b) { annScope=b; }    
@@ -360,6 +364,10 @@ class MemberDef : public Definition
     int m_inbodyLine;
     QCString m_inbodyFile;
     QCString m_inbodyDocs;
+
+    // objective-c
+    bool m_implOnly; // function found in implementation but not 
+                     // in the interface
 };
 
 #endif
