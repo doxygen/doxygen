@@ -559,6 +559,8 @@ void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
              const char *title,const char *subtitle,bool inGroup)
 {
+  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",
+  //    title,subtitle);
   countDecMembers(inGroup);
   if (totalCount()==0) return;
   if (title) 

@@ -25,8 +25,8 @@ to get the latest distribution and unpack it.
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
 <UL>
-<LI>Troll Tech's GUI toolkit <A HREF="http://www.troll.no/dl">Qt</A>
-    \latexonly(see {\tt http://www.troll.no/dl})\endlatexonly.
+<LI>Troll Tech's GUI toolkit <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
+    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
     \addindex Qt
 <LI>The <a href="ftp://prep.ai.mit.edu/pub/gnu">GNU</a> tools 
     flex, bison and make

@@ -1650,11 +1650,59 @@ static void substEnvVarsInStrList(QStrList &sl)
   {
     QCString result(s);
     substEnvVarsInString(result);
-
-    // replace the string in the list and go to the next item.
-    sl.insert(sl.at(),result); // insert new item before current item.
-    sl.next();                 // current item is now the old item
-    int i=sl.at();
+    
+    int l=result.length();
+    int i,p=0;
+    // skip spaces
+    // search for a "word"
+    for (i=0;i<l;i++)
+    {
+      char c;
+      // skip until start of new word
+      for (;i<l && ((c=result.at(i))==' ' || c=='\t');i++) 
+      p=i; // p marks the start index of the word
+      // skip until end of a word
+      for (;i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"');i++);
+      if (i<l) // not at the end of the string
+      {
+	if (c=='"') // word within quotes
+	{
+	  p=i+1;
+	  for (i++;i<l;i++)
+	  {
+	    c=result.at(i);
+	    if (c=='"') // end quote
+	    {
+	      // replace the string in the list and go to the next item.
+	      sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
+	      sl.next();                 // current item is now the old item
+	      p=i+1;
+	      break; 
+	    }
+	    else if (c=='\\') // skip escaped stuff
+	    {
+	      i++;
+	    }
+	  }
+	}
+	else if (c==' ' || c=='\t') // separator
+	{
+	  // replace the string in the list and go to the next item.
+	  sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
+	  sl.next();                 // current item is now the old item
+	  p=i+1;
+	}
+      }
+    }
+    if (p!=l) // add the leftover as a string
+    {
+      // replace the string in the list and go to the next item.
+      sl.insert(sl.at(),result.right(l-p)); // insert new item before current item.
+      sl.next();                 // current item is now the old item
+    }
+    
+    // remove the old unexpanded string from the list
+    i=sl.at();
     sl.remove(); // current item index changes if the last element is removed.
     if (sl.at()==i)     // not last item
       s = sl.current();

@@ -252,7 +252,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
-  static QRegExp regExp("[a-z_A-Z0-9:]+");
+  static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
   QCString txtStr=text;
   OutputList result(&ol);
   int matchLen;
@@ -860,8 +860,8 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
   int p2=t2.length();
   for (;;)
   {
-    int i1=t1.findRev("::",p1);
-    int i2=t2.findRev("::",p2);
+    int i1=p1==0 ? -1 : t1.findRev("::",p1);
+    int i2=p2==0 ? -1 : t2.findRev("::",p2);
     if (i1==-1 && i2==-1)
     {
       return;

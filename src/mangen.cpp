@@ -224,8 +224,8 @@ void ManGenerator::codify(const char *str)
                     t << spaces.left(spacesToNextTabStop); 
                     col+=spacesToNextTabStop; 
                     break;
-        case '\n':  t << "\n.br\n"; firstCol=TRUE; col=0; break;
-        case '\\':  t << "\\\\"; col++; break;
+        case '\n':  t << "\n"; firstCol=TRUE; col=0; break;
+        case '\\':  t << "\\"; col++; break;
         default:    t << c; firstCol=FALSE; col++; break;
       }
     }
