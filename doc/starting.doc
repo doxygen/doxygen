@@ -61,20 +61,20 @@ Makefile. It contains of a number of assignments (tags) of the form:
 <tt>TAGNAME = VALUE1 VALUE2 ... </tt><br>
 
 You can probably leave the values of most tags in a generated template 
-configuration file to their default value. 
+configuration file to their default value.  See section \ref config for 
+more details about the configuration file. 
+For a small project consisting of a few C and/or C++ source 
+and header files, you can leave
+\ref cfg_input "INPUT" tag empty and doxygen will search for sources in
+the current directory. 
 
-The \ref cfg_input "INPUT" tag is the only tag for which you are required to 
-provide a value. See section \ref config for more details about the 
-configuration file. For a small project consisting of a few C and/or C++ source 
-and header files, you can add the names of the files after the 
-\ref cfg_input "INPUT" tag. 
-
-If you have a larger project consisting of a source directory or tree this may 
-become tiresome. In this case you should put the root directory or 
+If you have a larger project consisting of a source directory or tree 
+you should put the root directory or 
 directories after the \ref cfg_input "INPUT" tag, and add one or more file 
 patterns to the \ref cfg_file_patterns "FILE_PATTERNS" tag 
 (for instance <code>*.cpp *.h</code>). Only files that match one of the 
-patterns will be parsed (if the patterns are omitted all files will be parsed).
+patterns will be parsed (if the patterns are omitted a list of 
+source extensions is used).
 For recursive parsing of a source tree you must set 
 the \ref cfg_recursive "RECURSIVE" tag to \c YES. To further fine-tune the 
 list of files that is parsed the \ref cfg_exclude "EXCLUDE" and 
@@ -85,8 +85,9 @@ documentation that doxygen is aware of), you can still get an idea of
 what the documented result would be. To do so, you must set 
 the \ref cfg_extract_all "EXTRACT_ALL" tag in the configuration file 
 to \c YES. Then, doxygen will pretend everything in your sources is documented. 
-Please note that warnings of undocumented members will not be generated as 
-long as \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
+Please note that as a consequence warnings about undocumented members 
+will not be generated as long as \ref cfg_extract_all "EXTRACT_ALL" is 
+set to \c YES.
 
 To analyse an existing piece of software it is useful to cross-reference 
 a (documented) entity with its definition in the source files. Doxygen will

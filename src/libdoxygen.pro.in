@@ -23,6 +23,7 @@ HEADERS      =	bufstr.h \
 		constexp.h \
 		cppvalue.h \
 		debug.h \
+                defgen.h \
 		doxygen.h \
 		scanner.h \
 		doc.h \
@@ -92,7 +93,7 @@ HEADERS      =	bufstr.h \
 		unistd.h \
 		util.h \
 		version.h \
-                xmlgen.h
+                xmlgen.h 
 SOURCES      =	ce_lex.cpp \
                 ce_parse.cpp \
 		classdef.cpp \
@@ -100,6 +101,7 @@ SOURCES      =	ce_lex.cpp \
 		code.cpp \
 		cppvalue.cpp \
 		debug.cpp \
+                defgen.cpp \
 		declinfo.cpp \
 		defargs.cpp \
 		define.cpp \
@@ -143,7 +145,7 @@ SOURCES      =	ce_lex.cpp \
 		translator.cpp \
 		util.cpp \
 		version.cpp \
-                xmlgen.cpp
+                xmlgen.cpp 
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200

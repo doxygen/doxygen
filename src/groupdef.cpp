@@ -309,10 +309,10 @@ bool GroupDef::containsGroup(const GroupDef *def)
 
 void GroupDef::addGroup(const GroupDef *def)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
-    groupList->inSort(def);
-  else
-    groupList->append(def);
+  //if (Config_getBool("SORT_MEMBER_DOCS"))
+  //  groupList->inSort(def);
+  //else
+  groupList->append(def);
 }
 
 void GroupDef::addParentGroup(const GroupDef *def)
@@ -382,6 +382,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   
   ol.startMemberSections();
+
+  // write list of files
   if (fileList->count()>0)
   {
     ol.startMemberHeader();
@@ -411,6 +413,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
     ol.endMemberList();
   }
+
+  // write list of namespaces
   if (namespaceList->count()>0)
   {
     ol.startMemberHeader();
@@ -440,6 +444,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
     ol.endMemberList();
   }
+
+  // write list of groups
   if (groupList->count()>0)
   {
     ol.startMemberHeader();
@@ -469,8 +475,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.endMemberList();
   }
 
+  // write list of classes
   classSDict->writeDeclaration(ol);
 
+  // write list of members
   if (allMemberList->count()>0)
   {
     /* write user defined member groups */

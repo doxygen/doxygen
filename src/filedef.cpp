@@ -51,8 +51,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
   includedByList = new QList<IncludeInfo>;
   includedByList->setAutoDelete(TRUE);
   includedByDict = new QDict<IncludeInfo>(61);
-  namespaceList = new NamespaceList;
-  namespaceDict = new NamespaceDict(7);
+  namespaceSDict = new NamespaceSDict;
   srcDefDict = 0;
   srcMemberDict = 0;
   usingDirList = 0;
@@ -74,8 +73,7 @@ FileDef::~FileDef()
   delete classSDict;
   delete includeDict;
   delete includeList;
-  delete namespaceList;
-  delete namespaceDict;
+  delete namespaceSDict;
   delete srcDefDict;
   delete srcMemberDict;
   delete usingDirList;
@@ -267,11 +265,12 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   ol.startMemberSections();
 
-  if (namespaceList->count()>0)
+  if (namespaceSDict->count()>0)
   {
-    NamespaceDef *nd=namespaceList->first();
+    NamespaceSDict::Iterator ndi(*namespaceSDict);
+    NamespaceDef *nd;
     bool found=FALSE;
-    while (nd)
+    for (ndi.toFirst();(nd=ndi.current());++ndi)
     {
       if (nd->name().find('@')==-1)
       {
@@ -306,7 +305,6 @@ void FileDef::writeDocumentation(OutputList &ol)
         }
         ol.endMemberItem(FALSE);
       }
-      nd=namespaceList->next();
     }
     if (found) ol.endMemberList();
   }
@@ -533,13 +531,12 @@ void FileDef::insertClass(ClassDef *cd)
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
 void FileDef::insertNamespace(NamespaceDef *nd)
 {
-  if (!nd->name().isEmpty() && namespaceDict->find(nd->name())==0)
+  if (!nd->name().isEmpty() && namespaceSDict->find(nd->name())==0)
   {
     if (Config_getBool("SORT_MEMBER_DOCS"))
-      namespaceList->inSort(nd);
+      namespaceSDict->inSort(nd->name(),nd);
     else
-      namespaceList->append(nd);
-    namespaceDict->insert(nd->name(),nd);
+      namespaceSDict->append(nd->name(),nd);
   }
 }
 

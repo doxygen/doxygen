@@ -73,6 +73,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString &scopeName,MemberDef *md)
 {
   ArgumentList *argList=md->argumentList();
+  //printf("writeDefArgumentList `%s' %p\n",md->name().data(),argList);
   if (argList==0) return; // member has no function like argument list
   if (!md->isDefine()) ol.docify(" ");
 
@@ -441,28 +442,6 @@ QCString MemberDef::getOutputFileBase() const
       );
   return "dummy";
 }
-
-//void MemberDef::setScopeDefTemplateArguments(ArgumentList *tal)
-//{
-//  // copy function arguments (if any)
-//  if (tal)
-//  {
-//    scopeTAL = new ArgumentList;
-//    scopeTAL->setAutoDelete(TRUE);
-//    copyArgumentList(tal,scopeTAL);
-//  }
-//}
-//
-//void MemberDef::setMemberDefTemplateArguments(ArgumentList *tal)
-//{
-//  // copy function arguments (if any)
-//  if (tal)
-//  {
-//    membTAL = new ArgumentList;
-//    membTAL->setAutoDelete(TRUE);
-//    copyArgumentList(tal,membTAL);
-//  }
-//}
 
 void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 {
@@ -962,6 +941,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (scopeName) doxyName.prepend((QCString)scopeName+"::");
 
     QCString ldef = definition();
+    //printf("member `%s' def=`%s'\n",name().data(),ldef.data());
     if (isEnumerate()) 
     {
       if (name().at(0)=='@')
@@ -1090,10 +1070,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startMemberDocName();
       linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
-      if (hasOneLineInitializer()
-          //!init.isEmpty() && initLines==0 && // one line initializer
-          //   ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
-         ) // add initializer
+      if (hasOneLineInitializer()) // add initializer
       {
         if (!isDefine()) 
         {
@@ -1566,19 +1543,6 @@ QCString MemberDef::getScopeString() const
   return result;
 }
 
-
-//Definition *MemberDef::getCompoundDef() const
-//{
-//    NamespaceDef *nd=getNamespaceDef();
-//    ClassDef     *cd=getClassDef();
-//    FileDef      *fd=getFileDef();
-//    GroupDef     *gd=getGroupDef();
-//    Definition   *d = 0;
-//    if (cd) d=cd; else if (nd) d=nd; else if (gd) d=gd; else d=fd;
-//    ASSERT(d!=0);
-//    return d;
-//}
-
 QCString MemberDef::anchor() const
 {
   if (m_templateMaster) return m_templateMaster->anchor();
@@ -1649,7 +1613,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
                    );
   imd->argList = actualArgList;
   imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
-  // TODO: init other member variables.
+  // TODO: init other member variables (if needed).
   return imd; 
 }
 
@@ -1690,7 +1654,16 @@ void MemberDef::addListReference(Definition *d)
   {
     memLabel=theTranslator->trMember(TRUE,TRUE);
   }
+  QCString memName = name();
+  if (!Config_getBool("HIDE_SCOPE_NAMES"))
+  {
+    Definition *pd=getOuterScope();
+    if (pd && pd!=Doxygen::globalScope)
+    {
+      memName.prepend(pd->name()+"::");
+    }
+  }
   addRefItem(todoId(),testId(),bugId(),memLabel,
-      d->getOutputFileBase()+":"+anchor(),name(),argsString());
+      d->getOutputFileBase()+":"+anchor(),memName,argsString());
 }
 

@@ -490,6 +490,70 @@ void DotNode::writeXML(QTextStream &t)
 }
 
 
+void DotNode::writeDEF(QTextStream &t)
+{
+  char* nodePrefix = "        node-";
+
+  t << "      node = {" << endl;
+  t << nodePrefix << "id    = " << m_number << ';' << endl;
+  t << nodePrefix << "label = '" << m_label << "';" << endl;
+
+  if (!m_url.isEmpty())
+  {
+    QCString url(m_url);
+    char *refPtr = url.data();
+    char *urlPtr = strchr(url.data(),'$');
+    if (urlPtr)
+    {
+      *urlPtr++='\0';
+      t << nodePrefix << "link = {" << endl << "  "
+        << nodePrefix << "link-id = '" << urlPtr << "';" << endl;
+
+      if (*refPtr!='\0')
+      {
+        t << "  " << nodePrefix << "link-external = '"
+          << refPtr << "';" << endl;
+      }
+      t << "        };" << endl;
+    }
+  }
+  if (m_children)
+  {
+    QListIterator<DotNode> nli(*m_children);
+    QListIterator<EdgeInfo> eli(*m_edgeInfo);
+    DotNode *childNode;
+    EdgeInfo *edgeInfo;
+    for (;(childNode=nli.current());++nli,++eli)
+    {
+      edgeInfo=eli.current();
+      t << "        node-child = {" << endl;
+      t << "          child-id = '" << childNode->m_number << "';" << endl;
+      t << "          relation = ";
+
+      switch(edgeInfo->m_color)
+      {
+        case EdgeInfo::Blue:    t << "public-inheritance"; break;
+        case EdgeInfo::Green:   t << "protected-inheritance"; break;
+        case EdgeInfo::Red:     t << "private-inheritance"; break;
+        case EdgeInfo::Purple:  t << "usage"; break;
+        case EdgeInfo::Orange:  t << "template-instance"; break;
+        case EdgeInfo::Grey:    ASSERT(0); break;
+      }
+      t << ';' << endl;
+
+      if (!edgeInfo->m_label.isEmpty()) 
+      {
+        t << "          edgelabel = <<_EnD_oF_dEf_TeXt_" << endl
+          << edgeInfo->m_label << endl
+          << "_EnD_oF_dEf_TeXt_;" << endl;
+      }
+      t << "        }; /* node-child */" << endl;
+    } /* for (;childNode...) */
+  }
+  t << "      }; /* node */" << endl;
+}
+
+
 void DotNode::clearWriteFlag()
 {
   m_written=FALSE;
@@ -1310,6 +1374,16 @@ void DotClassGraph::writeXML(QTextStream &t)
   for (;(node=dni.current());++dni)
   {
     node->writeXML(t);
+  }
+}
+
+void DotClassGraph::writeDEF(QTextStream &t)
+{
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *node;
+  for (;(node=dni.current());++dni)
+  {
+    node->writeDEF(t);
   }
 }
 

@@ -489,21 +489,21 @@ static bool inBlock()
 
 static void endBlock()
 {
-    if (inParamBlock || inRetValBlock || inExceptionBlock) 
-    {
-      outDoc->endDescTableData();
-      outDoc->endDescTable();
-      outDoc->endParamList();
-    }
-    else
-    {
-      outDoc->endDescList();
-    }
-    currentListIndent.pop();
-    inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
-    inVersionBlock=inSinceBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
-    inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
-    inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
+  if (inParamBlock || inRetValBlock || inExceptionBlock) 
+  {
+    outDoc->endDescTableData();
+    outDoc->endDescTable();
+    outDoc->endParamList();
+  }
+  else
+  {
+    outDoc->endDescList();
+  }
+  currentListIndent.pop();
+  inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
+  inVersionBlock=inSinceBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
+  inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
+  inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
 }
 
 //-----------------------------------------------------------------
@@ -625,17 +625,10 @@ static void forceEndItemList()
     {
        case 'O': outDoc->endEnumList(); break;
        case 'U': outDoc->endItemList(); break;
-       case 'D':
-	if (inBlock()) 
-	{
-	  currentListIndent.push("D"); // hack!
-	  endBlock(); 
-	}
-	else 
-	{
-	  outDoc->endDescription(); 
-	}
-	break;
+       case 'D': outDoc->endDescription(); break;
+       case 'P': break; // do not end paragraphs
+       default:
+	  err("Unexpected list indent token `%c'\n",c);
     }
   }
   insideItemList=FALSE;
@@ -1030,9 +1023,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->writeString(yytext);
   					}
 <DocHtmlScan,DocLatexScan>.|\n		{
-  					  char c[2];
-					  c[0]=*yytext;c[1]='\0';
-  					  outDoc->writeString(c);
+  					  outDoc->writeString(yytext);
   					}
 <DocScan>"\\postheader"/{BN}
 <DocScan>"\\functionindex"/{BN}		{ /* writeMemberList(*outDoc,FALSE);*/ }
@@ -1077,13 +1068,18 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->codify(c);
   					}
 <DocScan>{CMD}"internal"/{BN}	        { 
-					  if (!Config_getBool("INTERNAL_DOCS"))
-					  {
+					  //if (!Config_getBool("INTERNAL_DOCS"))
+					  //{
+  					  //  BEGIN( DocInternal ); 
+					  //}
+					  //else
+					  //{
 					    outDoc->newParagraph();
+					    outDoc->startBold();
 					    scanString(theTranslator->trForInternalUseOnly()+"\n");
-					    //outDoc->writeString("For internal use only.\n");
-  					    BEGIN( DocInternal ); 
-					  }
+					    outDoc->endBold();
+					    outDoc->newParagraph();
+					  //}
 					}
 <DocScan>"\\reimp"/{BN}			{
   					  outDoc->newParagraph();
@@ -1172,7 +1168,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   				            endArgumentList();
 					    if (b) endBlock();  
 					    inParBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Par);
 					    outDoc->docify(title);
 					    outDoc->endDescTitle();
@@ -1190,7 +1186,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inWarningBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Warning);
 					    scanString(theTranslator->trWarning()+": ");
 					    outDoc->endDescTitle();
@@ -1207,7 +1203,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inRemarkBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Remark);
 					    scanString(theTranslator->trRemarks()+": ");
 					    outDoc->endDescTitle();
@@ -1224,7 +1220,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inAttentionBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Attention);
 					    scanString(theTranslator->trAttention()+": ");
 					    outDoc->endDescTitle();
@@ -1241,7 +1237,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inNoteBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Note);
 					    scanString(theTranslator->trNote()+": ");
 					    outDoc->endDescTitle();
@@ -1258,7 +1254,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inPreBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Pre);
 					    scanString(theTranslator->trPrecondition()+": ");
 					    outDoc->endDescTitle();
@@ -1275,7 +1271,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inPostBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Post);
 					    scanString(theTranslator->trPostcondition()+": ");
 					    outDoc->endDescTitle();
@@ -1292,7 +1288,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inInvarBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Invar);
 					    scanString(theTranslator->trInvariant()+": ");
 					    outDoc->endDescTitle();
@@ -1309,7 +1305,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inVersionBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Version);
 					    scanString(theTranslator->trVersion()+": ");
 					    outDoc->endDescTitle();
@@ -1326,7 +1322,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inSinceBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Since);
 					    scanString(theTranslator->trSince()+": ");
 					    outDoc->endDescTitle();
@@ -1343,7 +1339,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inDateBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Date);
 					    scanString(theTranslator->trDate()+": ");
 					    outDoc->endDescTitle();
@@ -1364,7 +1360,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    ASSERT(item!=0);
 					    endArgumentList();
 					    if (inBlock()) endBlock();
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startDescList(BaseOutputDocInterface::Todo);
 					    outDoc->writeObjectLink(0,"todo",item->listAnchor,theTranslator->trTodo()+": ");
 					    outDoc->endDescTitle();
@@ -1384,7 +1380,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    ASSERT(item!=0);
   					    endArgumentList();
 					    if (inBlock()) endBlock();
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Test);
 					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
 					    outDoc->endDescTitle();
@@ -1404,7 +1400,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    ASSERT(item!=0);
   					    endArgumentList();
 					    if (inBlock()) endBlock();
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Bug);
 					    outDoc->writeObjectLink(0,"bug",item->listAnchor,theTranslator->trBug()+": ");
 					    outDoc->endDescTitle();
@@ -1420,7 +1416,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inDeprecatedBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startDescList(BaseOutputDocInterface::Deprecated);
 					    scanString(theTranslator->trDeprecated()+": ");
 					    outDoc->endDescTitle();
@@ -1439,7 +1435,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  tagText=tagText.left(tagText.length()-1);
   				          endArgumentList();
 					  if (inBlock()) endBlock();
-					  currentListIndent.push("D");
+					  currentListIndent.push("P");
   					  outDoc->startDescList(BaseOutputDocInterface::RCS);
 					  scanString(tagName+": ");
 					  outDoc->endDescTitle();
@@ -1454,7 +1450,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inAuthorBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Author);
 					    bool singular = ((QString)yytext).find('s')==-1;
 					    scanString(theTranslator->trAuthor(TRUE,singular)+": ");
@@ -1472,7 +1468,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
   					    outDoc->startDescList(BaseOutputDocInterface::Return);
 					    scanString(theTranslator->trReturns()+": ");
 					    outDoc->endDescTitle();
@@ -1485,7 +1481,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startDescList(BaseOutputDocInterface::See);
 					    scanString(theTranslator->trSeeAlso()+": ");
 					    outDoc->endDescTitle();
@@ -1498,7 +1494,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"{BSEP}	{
 					  QCString t=yytext;
-  					  if (/*t.contains('\n')>1 &&*/ insideItemList)
+  					  if (insideItemList)
 					  {
 					    forceEndItemList();
 					  }
@@ -1507,7 +1503,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inParamBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startParamList(BaseOutputDocInterface::Param);
 					    scanString(theTranslator->trParameters()+": ");
   					    outDoc->endDescTitle();
@@ -1531,7 +1527,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inRetValBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startParamList(BaseOutputDocInterface::RetVal);
 					    scanString(theTranslator->trReturnValues()+": ");
   					    outDoc->endDescTitle();
@@ -1555,7 +1551,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    if (inBlock()) endBlock();
 					    inExceptionBlock=TRUE;
-					    currentListIndent.push("D");
+					    currentListIndent.push("P");
 					    outDoc->startParamList(BaseOutputDocInterface::Exception);
 					    scanString(theTranslator->trExceptions()+": ");
   					    outDoc->endDescTitle();

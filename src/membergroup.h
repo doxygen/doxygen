@@ -91,13 +91,6 @@ class MemberGroupListIterator : public QListIterator<MemberGroup>
       QListIterator<MemberGroup>(l) {}
 };
 
-class MemberGroupDict : public QIntDict<MemberGroup>
-{
-  public:
-    MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
-   ~MemberGroupDict() {}
-};
-
 class MemberGroupSDict : public SIntDict<MemberGroup>
 {
   public:
@@ -105,12 +98,19 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
    ~MemberGroupSDict() {}
 };
 
-class MemberGroupDictIterator : public QIntDictIterator<MemberGroup>
-{
-  public:
-    MemberGroupDictIterator(const MemberGroupDict &d) : 
-      QIntDictIterator<MemberGroup>(d) {}
-   ~MemberGroupDictIterator() {}
-};
+//class MemberGroupDict : public QIntDict<MemberGroup>
+//{
+//  public:
+//    MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
+//   ~MemberGroupDict() {}
+//};
+
+//class MemberGroupDictIterator : public QIntDictIterator<MemberGroup>
+//{
+//  public:
+//    MemberGroupDictIterator(const MemberGroupDict &d) : 
+//      QIntDictIterator<MemberGroup>(d) {}
+//   ~MemberGroupDictIterator() {}
+//};
 
 #endif

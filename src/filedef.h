@@ -35,8 +35,7 @@ class ClassList;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
-class NamespaceList;
-class NamespaceDict;
+class NamespaceSDict;
 class MemberGroupSDict;
 class PackageDef;
 
@@ -171,15 +170,15 @@ class FileDef : public Definition
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
 
+    NamespaceSDict *namespaceSDict;
+    ClassSDict *classSDict;
+
   private: 
     
-    ClassSDict *classSDict;
     QDict<IncludeInfo> *includeDict;
     QList<IncludeInfo> *includeList;
     QDict<IncludeInfo> *includedByDict;
     QList<IncludeInfo> *includedByList;
-    NamespaceDict *namespaceDict;
-    NamespaceList *namespaceList;
     NamespaceList *usingDirList;
     ClassList *usingDeclList;
     //DefineList *defineList;

@@ -147,7 +147,7 @@ class NamespaceDict : public QDict<NamespaceDef>
 class NamespaceSDict : public SDict<NamespaceDef>
 {
   public:
-    NamespaceSDict(int size) : SDict<NamespaceDef>(size) {}
+    NamespaceSDict(int size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
     int compareItems(GCI item1,GCI item2)
     {

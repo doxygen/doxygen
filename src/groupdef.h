@@ -100,6 +100,12 @@ class GroupDef : public Definition
 
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
+
+    FileList *      getFiles() const        { return fileList; }
+    ClassSDict *    getClasses() const      { return classSDict; }
+    NamespaceList * getNamespaces() const   { return namespaceList; }
+    GroupList *     getSubGroups() const    { return groupList; }
+    PageSDict *     getPages() const        { return pageDict; }
     
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);

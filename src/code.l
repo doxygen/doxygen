@@ -699,9 +699,11 @@ static bool getLink(const char *className,
 	g_anchorCount++;
       }
     }
-    Definition *d=0;
-    if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+    //Definition *d=0;
+    //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
+    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	            md->getBodyDef() : md->getOuterScope();
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));

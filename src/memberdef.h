@@ -196,10 +196,6 @@ class MemberDef : public Definition
       argList = al;
     }
     ArgumentList *templateArguments() const { return tArgList; }
-    //void setScopeDefTemplateArguments(ArgumentList *t);
-    //ArgumentList *scopeDefTemplateArguments() const { return scopeTAL; }
-    //void setMemberDefTemplateArguments(ArgumentList *t);
-    //ArgumentList *memberDefTemplateArguments() const { return membTAL; }
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
     QList<ArgumentList> *definitionTemplateParameterLists() const 
     { return m_defTmpArgLists; }

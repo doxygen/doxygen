@@ -27,7 +27,7 @@
 //    - changed trPageDocumentation() "Seitenbeschreibung" to
 //      "Zusätzliche Informationen"
 //    - removed old trGeneratedFrom()
-//    - changed "/*!" to "/*" (documentation is inherited from translator.h
+//    - changed "/*!" to "/*" (documentation is inherited from translator_en.h
 //      (INHERIT_DOCS = YES), there's no need to make changes twice)
 //    - Update for "new since 1.2.4" version
 //
@@ -52,20 +52,21 @@
 //   2001/07/24 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - trClassDocumentation() updated as in the English translator.
 //
-// Todo: 
+//  2001/11/30 Oliver Brandt (o.brandt@tu-bs.de) and
+//             Jens Seidel (jensseidel@users.sourceforge.net)
+//    - trReferences() implemented.
+//    - trCompoundReference(), trLegendDocs() updated
+//    - Removed some TODO's
+//
+// Todo:
 //   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
 //     strings (see translator_en.h)
-//   - translation of "compound"
 //   - see FIXME
-//   - was ist richtig: "Liste aller dokumentierter Elemente" oder
-//                      "Liste aller dokumentierten Elemente" (aktuell)
-//     (nach "aller" suchen)
-//     "Mithilfe" oder "Mit Hilfe"
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_2_11
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -180,7 +181,16 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
 
     /* This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { return "Übersicht"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Datenstrukturen";
+      }
+      else
+      {
+        return "Übersicht";
+      }
+    }
 
     /* This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
@@ -192,7 +202,16 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
 
     /* This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { return "Elementübersicht"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Datenstruktur-Elemente";
+      }
+      else
+      {
+        return "Datenstruktur-Elemente";
+      }
+    }
 
     /* This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
@@ -232,8 +251,8 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
 	return "Hier folgt die Aufzählung aller Datenstrukturen "
 	       "mit einer Kurzbeschreibung:";
       else
-	return "Hier folgt die Aufzählung aller Klassen, Strukturen "
-	       "und Varianten mit einer Kurzbeschreibung:"; // FIXME: "interfaces" = ??
+	return "Hier folgt die Aufzählung aller Klassen, Strukturen, "
+	       "Varianten und Schnittstellen mit einer Kurzbeschreibung:";
     }
 
     /* This is an introduction to the page with all class members. */
@@ -247,7 +266,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         result+="Klassenelemente mit Verweisen auf ";
       if (extractAll) {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-          result+="die struct/union Dokumentation zu jedem Element:";
+          result+="die Dokumentation zu jedem Element:";
         else 
           result+="die Klassendokumentation zu jedem Element:";
       } else { 
@@ -264,8 +283,15 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
     {
       QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
-      result+="Dateielemente mit Verweisen auf ";
-      if (extractAll) result+="die Dateidokumentation zu jedem Element:";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        result+="Funktionen, Variablen, Makros, Aufzählungen und Typendefinitionen mit Verweisen auf ";
+      }
+      else
+      {
+        result+="Dateielemente mit Verweisen auf ";
+      }
+      if (extractAll) result+="die Dokumentation zu jedem Element:";
       else result+="die zugehörigen Dateien:";
       return result;
     }
@@ -314,11 +340,11 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	return "Datenstruktur-Verzeichnis"; 
+	return "Datenstruktur-Verzeichnis";
       else
-	return "Datenstruktur-Verzeichnis"; // FIXME: war compound
+	return "Datenstruktur-Verzeichnis";
     }
 
     /* This is used in LaTeX as the title of the chapter with the
@@ -454,7 +480,16 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { return "Übersicht"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Datenstrukturen";
+      }
+      else
+      {
+        return "Übersicht";
+      }
+    }
 
     /*  This is used in the standard footer of each page and indicates when 
      *  the page was generated 
@@ -565,16 +600,17 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
     /* used as the title of the HTML page of a class/struct/union */
     virtual QCString trCompoundReference(const char *clName,
                                  ClassDef::CompoundType compType,
-                                 bool /*isTemplate*/) // FIXME
+                                 bool isTemplate)
     {
       QCString result=(QCString)clName+" ";
+      if (isTemplate) result+="Template ";
       switch(compType)
       {
-        case ClassDef::Class:  result+=" Klassen"; break;
-        case ClassDef::Struct: result+=" Strukturen"; break;
-        case ClassDef::Union:  result+=" Varianten"; break;
-        case ClassDef::Interface:  result+=" Interface"; break;
-        case ClassDef::Exception:  result+=" Exception"; break;
+        case ClassDef::Class:  result+="Klassen"; break;
+        case ClassDef::Struct: result+="Struktur"; break;
+        case ClassDef::Union:  result+="Varianten"; break;
+        case ClassDef::Interface:  result+="Schnittstellen"; break;
+        case ClassDef::Exception:  result+="Ausnahmen"; break;
       }
       result+="referenz";
       return result;
@@ -742,7 +778,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         case ClassDef::Class:      result+=" Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
-        case ClassDef::Interface:  result+="s Interface"; break;
+        case ClassDef::Interface:  result+=" Schnittstelle"; break;
         case ClassDef::Exception:  result+=" Ausnahme"; break;
       }
       result+=" wurde erzeugt aufgrund der Datei";
@@ -904,7 +940,14 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
 
     virtual QCString trPublicAttribs()
     {
-      return "Öffentliche Attribute";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Datenfelder";
+      }
+      else
+      {
+        return "Öffentliche Attribute";
+      }
     }
 
     virtual QCString trStaticPublicAttribs()
@@ -1015,6 +1058,8 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         "class Undocumented { };\n\n"
         "/*! Mithilfe öffentlicher Vererbung vererbte Klasse */\n"
         "class PublicBase : public Truncated { };\n\n"
+        "/*! Eine Template Klasse */\n"
+        "template<class T> class Templ { };\n\n"
         "/*! Mithilfe geschützter Vererbung vererbte Klasse */\n"
         "class ProtectedBase { };\n\n"
         "/*! Mithilfe privater Vererbung vererbte Klasse */\n"
@@ -1026,13 +1071,14 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
         "                  public Undocumented\n"
+        "                  public Templ<int>\n"
         "{\n"
         "  private:\n"
         "    Used *m_usedClass;\n"
         "};\n"
-        "\\endcode\n"
+        "\\endcode\n\n"
         "Setzen des Tags \\c MAX_DOT_GRAPH_HEIGHT in der Konfigurationsdatei "
-        "auf 200 liefert den folgenden Graphen:"
+        "auf 240 liefert den folgenden Graphen:"
         "<p><center><img src=\"graph_legend.gif\"></center>\n"
         "<p>\n"
         "Die Rechtecke in obigem Graphen bedeuten:\n"
@@ -1046,7 +1092,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         "<li>Ein Rechteck mit rotem Rahmen kennzeichnet eine dokumentierte "
         "Struktur oder Klasse, für die nicht alle Vererbungs-/"
         "Enthaltenseinsbeziehungen dargestellt werden. Ein Graph wird gekürzt, "
-        "wenn er nicht in die angegebenen Schranken passt."  
+        "wenn er nicht in die angegebenen Schranken passt.\n"
         "</ul>\n"
         "Die Pfeile bedeuten:\n"
         "<ul>\n"
@@ -1054,10 +1100,13 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
         "zwischen zwei Klassen dar.\n"
         "<li>Ein dunkelgrüner Pfeil stellt geschützte Vererbung dar.\n"
         "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.\n"
-        "<li>Ein gestrichelter violetter Pfeil bedeutet, dass eine Klasse in einer "
-        "anderen enthalten ist oder von einer anderen benutzt wird. Am Pfeil "
-        "stehen die Variable(n), mit deren Hilfe auf die Struktur oder Klasse "
-        "an der Pfeilspitze zugegriffen werden kann.\n"
+        "<li>Ein gestrichelter violetter Pfeil bedeutet, dass eine Klasse in "
+        "einer anderen enthalten ist oder von einer anderen benutzt wird. Am "
+        "Pfeil stehen die Variable(n), mit deren Hilfe auf die Struktur oder "
+        "Klasse an der Pfeilspitze zugegriffen werden kann.\n"
+        "<li>Ein gestrichelter gelber Pfeil kennzeichnet eine Verknüpfung "
+        "zwischen einer Template Instanz und der Template Klasse von welcher "
+        "es abstammt. Neben dem Pfeil sind die Template Parameter aufgeführt.\n"
         "</ul>\n";
     }
 
@@ -1171,13 +1220,13 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
     /* Used as a marker that is put before a \bug item */
     virtual QCString trBug()
     {
-      return "Bug";
+      return "Fehler";
     }
 
     /* Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return "Bug Liste";
+      return "Liste der bekannten Fehler";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1280,7 +1329,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
      */
     virtual QCString trField(bool, bool singular)
     {
-      QCString result("Feld"); // FIXME
+      QCString result("Feld");
       if (!singular)  result+="er";
       return result;
     }
@@ -1309,7 +1358,17 @@ class TranslatorGerman : public TranslatorAdapter_1_2_11
       if (!singular)  result+="en";
       return result;
     }
-    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /* This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Benutzt";
+    }    
 };
 
 #endif

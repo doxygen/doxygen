@@ -1527,7 +1527,7 @@ void Config::create()
                     "If the value of the INPUT tag contains directories, you can use the \n"
                     "FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp \n"
                     "and *.h) to filter out the source-files in the directories. If left \n"
-                    "blank file matching one of the following patterns are included: \n"
+                    "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
 		    "*.h++ *.idl \n"
                  );
@@ -1931,11 +1931,11 @@ void Config::create()
   cs->addDependency("GENERATE_MAN");
   cb = addBool(
                     "MAN_LINKS",
-                    "If the MAN_LINKS tag is set to YES and Doxygen generates man output,\n"
-                    "then it will generate one additional man file for each entity\n"
-                    "documented in the real man page(s). These additional files\n"
-                    "only source the real man page, but without them the man command\n"
-                    "would be unable to find the correct page. The default is NO.\n",
+                    "If the MAN_LINKS tag is set to YES and Doxygen generates man output, \n"
+                    "then it will generate one additional man file for each entity \n"
+                    "documented in the real man page(s). These additional files \n"
+                    "only source the real man page, but without them the man command \n"
+                    "would be unable to find the correct page. The default is NO. \n",
                     FALSE
                    );
   cb->addDependency("GENERATE_MAN");
@@ -1951,6 +1951,18 @@ void Config::create()
 		    "moment. \n",
 		    FALSE
                  );
+  //--------------------------------------------------------------------------
+  addInfo(  "DEF","configuration options for the AutoGen Definitions output");
+  //--------------------------------------------------------------------------
+  cb = addBool("GENERATE_AUTOGEN_DEF",
+
+               "If the GENERATE_AUTOGEN_DEF tag is set to YES Doxygen will \n"
+               "generate an AutoGen Definitions (see autogen.sf.net) file \n"
+	       "that captures the structure of the code including all \n"
+	       "documentation. Note that this feature is still experimental \n"
+	       "and incomplete at the moment. \n",
+
+               FALSE );
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------

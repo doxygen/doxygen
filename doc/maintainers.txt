@@ -37,8 +37,8 @@ Hungarian
 F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari@diatronltd.com
 
 Italian 
+Alessandro Falappa: alessandro@falappa.net 
 Ahmed Aldo Faisal: aaf23@cam.ac.uk
-Alessandro Falappa: a.falappa@flashnet.it
 
 Japanese 
 Kenji Nagamatsu: naga@joyful.club.ne.jp
@@ -71,7 +71,6 @@ Spanish
 Francisco Oltra Thennet: foltra@puc.cl
 
 Swedish 
-Samuel H&auml;agglund: sahag96@nts.mh.se
 XeT Erixon: xet@hem.passagen.se
 
 Ukrainian

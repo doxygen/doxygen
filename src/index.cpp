@@ -2338,14 +2338,14 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     // write subgroups
     if (hasSubGroups)
     {
-      ol.startItemList();
+      ol.startIndexList();
       QListIterator<GroupDef> gli(*gd->groupList);
       GroupDef *subgd = 0;
       for (gli.toLast();(subgd=gli.current());--gli)
       {
         writeGroupTreeNode(ol,subgd,TRUE);
       }
-      ol.endItemList(); 
+      ol.endIndexList(); 
     }
 
 
@@ -2544,14 +2544,14 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 
 void writeGroupHierarchy(OutputList &ol)
 {
-  ol.startItemList();
+  ol.startIndexList();
   GroupSDict::Iterator gli(Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
     writeGroupTreeNode(ol,gd,FALSE);
   }
-  ol.endItemList(); 
+  ol.endIndexList(); 
 }
 
 //----------------------------------------------------------------------------

@@ -30,6 +30,8 @@
 #include "doc.h"
 #include "dot.h"
 #include "code.h"
+#include "page.h"
+#include "filename.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -164,6 +166,7 @@ template<class T> class ValStack
  *  Its methods are called when some XML text or markup
  *  needs to be written.
  */
+// TODO: htmlonly, latexonly 
 class XMLGenerator : public OutputDocInterface
 {
   public:
@@ -228,7 +231,8 @@ class XMLGenerator : public OutputDocInterface
     void writeString(const char *text) 
     {
       startParMode();
-      m_t << text;
+      //m_t << text;
+      docify(text);
     }
     void startItemList()       
     { 
@@ -823,6 +827,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   // + source references
   // + source referenced by
   // - body code 
+  // - template arguments 
+  //     (templateArguments(), definitionTemplateParameterLists())
   
   if (md->memberType()==MemberDef::EnumValue) return;
 
@@ -1115,11 +1121,11 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
   // + detailed description
   // - template arguments
   // - include file
-  // - member groups
+  // + member groups
   // + inheritance diagram
   // + list of direct super classes
   // + list of direct sub classes
-  // - list of inner classes
+  // + list of inner classes
   // + collaboration diagram
   // - list of all members
   // + user defined member sections
@@ -1188,6 +1194,17 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
     }
   }
 
+  ClassSDict *cl = cd->getInnerClasses();
+  if (cl)
+  {
+    ClassSDict::Iterator cli(*cl);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+    }
+  }
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1247,9 +1264,9 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
 
 static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
 {
-  // - contained class definitions
-  // - contained namespace definitions
-  // - member groups
+  // + contained class definitions
+  // + contained namespace definitions
+  // + member groups
   // + normal members
   // + brief desc
   // + detailed desc
@@ -1263,6 +1280,28 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
   writeXMLString(t,nd->name());
   t << "</compoundname>" << endl;
 
+  ClassSDict *cl = nd->classSDict;
+  if (cl)
+  {
+    ClassSDict::Iterator cli(*cl);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+    }
+  }
+  NamespaceSDict *nl = nd->namespaceSDict;
+  if (nl)
+  {
+    NamespaceSDict::Iterator nli(*nl);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
+        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+    }
+  }
   MemberGroupSDict::Iterator mgli(*nd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1295,9 +1334,9 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
   // + includedby files
   // + include graph
   // + included by graph
-  // - contained class definitions
-  // - contained namespace definitions
-  // - member groups
+  // + contained class definitions
+  // + contained namespace definitions
+  // + member groups
   // + normal members
   // + brief desc
   // + detailed desc
@@ -1356,6 +1395,29 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
     t << "    </invincdepgraph>" << endl;
   }
 
+  ClassSDict *cl = fd->classSDict;
+  if (cl)
+  {
+    ClassSDict::Iterator cli(*cl);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+    }
+  }
+  NamespaceSDict *nl = fd->namespaceSDict;
+  if (nl)
+  {
+    NamespaceSDict::Iterator nli(*nl);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
+        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+    }
+  }
+
   MemberGroupSDict::Iterator mgli(*fd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1383,6 +1445,113 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "  </compounddef>" << endl;
 }
 
+static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
+{
+  // + members
+  // + member groups
+  // + files
+  // + classes
+  // + namespaces
+  // - packages
+  // + pages
+  // + child groups
+  // - examples
+  // + brief description
+  // + detailed description
+
+  t << "  <compounddef id=\"" 
+    << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
+  t << "    <name>" << convertToXML(gd->name()) << "</name>" << endl;
+  t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>" << endl;
+
+  FileList *fl = gd->getFiles();
+  if (fl)
+  {
+    QListIterator<FileDef> fli(*fl);
+    FileDef *fd = fl->first();
+    for (fli.toFirst();(fd=fli.current());++fli)
+    {
+      t << "    <innerfile refid=\"" << fd->getOutputFileBase() 
+        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
+    }
+  }
+  ClassSDict *cl = gd->getClasses();
+  if (cl)
+  {
+    ClassSDict::Iterator cli(*cl);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+        << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+    }
+  }
+  NamespaceList *nl = gd->getNamespaces();
+  if (nl)
+  {
+    NamespaceListIterator nli(*nl);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
+        << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+    }
+  }
+  PageSDict *pl = gd->getPages();
+  if (pl)
+  {
+    PageSDict::Iterator pli(*pl);
+    PageInfo *pi;
+    for (pli.toFirst();(pi=pli.current());++pli)
+    {
+      t << "    <innerpage refid=\"" << pi->getOutputFileBase()
+        << "\"/>" << convertToXML(pi->title) << "</innerpage>" << endl;
+    }
+  }
+
+  MemberGroupSDict::Iterator mgli(*gd->memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    generateXMLSection(gd,t,mg->members(),"user-defined",mg->header());
+  }
+
+  generateXMLSection(gd,t,&gd->decDefineMembers,"define");
+  generateXMLSection(gd,t,&gd->decProtoMembers,"prototype");
+  generateXMLSection(gd,t,&gd->decTypedefMembers,"typedef");
+  generateXMLSection(gd,t,&gd->decEnumMembers,"enum");
+  generateXMLSection(gd,t,&gd->decFuncMembers,"func");
+  generateXMLSection(gd,t,&gd->decVarMembers,"var");
+
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->briefDescription());
+  t << "    </briefdescription>" << endl;
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->documentation());
+  t << "    </detaileddescription>" << endl;
+  t << "  </compounddef>" << endl;
+}
+
+static void generateXMLForPage(PageInfo *pi,QTextStream &t)
+{
+  // + name
+  // + title
+  // + documentation
+
+  t << "  <compounddef id=\"";
+  if (Config_getBool("CASE_SENSE_NAMES")) t << pi->name; else t << pi->name.lower();
+  t << "\">" << endl;
+  t << "    <name>" << pi->name << "</name>" << endl;
+  SectionInfo *si = Doxygen::sectionDict.find(pi->name);
+  if (si)
+  {
+    t << "    <title>" << si->title << "</title>" << endl;
+  }
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,pi->defFileName,pi->defLine,0,0,pi->doc);
+  t << "    </detaileddescription>" << endl;
+  t << "  </compounddef>" << endl;
+}
 
 void generateXML()
 {
@@ -1391,8 +1560,9 @@ void generateXML()
   // + namespaces
   // + files
   // - packages
-  // - groups
-  // - related pages
+  // + groups
+  // + related pages
+  // - examples
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   if (outputDirectory.isEmpty())
@@ -1475,6 +1645,19 @@ void generateXML()
         generateXMLForFile(fd,t);
       }
     }
+    GroupSDict::Iterator gli(Doxygen::groupSDict);
+    GroupDef *gd;
+    for (;(gd=gli.current());++gli)
+    {
+      generateXMLForGroup(gd,t);
+    }
+    PageSDict::Iterator pdi(*Doxygen::pageSDict);
+    PageInfo *pi=0;
+    for (pdi.toFirst();(pi=pdi.current());++pdi)
+    {
+      generateXMLForPage(pi,t);
+    }
+
     //t << "  </compoundlist>" << endl;
   }
   t << "</doxygen>" << endl;

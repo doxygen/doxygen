@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.11-20011111), 24 languages 
+Currently (version 1.2.12-20011125), 24 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -53,8 +53,8 @@ when the translator was updated.
   <TR BGCOLOR="#ffffff">
       <TD>Brazilian</TD>  
       <TD>Fabio "FJTC" Jun Takada Chino</TD>
-      <TD>chino@NOSPAM.grad.icmc.sc.usp.br</TD>
-      <TD>1.2.11</TD>
+      <TD>chino@NOSPAM.icmc.sc.usp.br</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Chinese</TD>  
@@ -66,7 +66,7 @@ when the translator was updated.
       <TD>Croatian</TD>  
       <TD>Boris Bralo</TD>
       <TD>boris.bralo@NOSPAM.zg.tel.hr</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Czech</TD>  
@@ -84,7 +84,7 @@ when the translator was updated.
       <TD>Dutch</TD>  
       <TD>Dimitri van Heesch</TD>
       <TD>dimitri@NOSPAM.stack.nl</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>English</TD>  
@@ -102,13 +102,13 @@ when the translator was updated.
       <TD>French</TD>  
       <TD>Xavier Outhier</TD>
       <TD>xouthier@NOSPAM.yahoo.fr</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>German</TD>  
       <TD>Jens Seidel<br>Jens Breitenstein</TD>
       <TD>jensseidel@NOSPAM.users.sf.net<br>Jens.Breitenstein@NOSPAM.tlc.de</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Hungarian</TD>  
@@ -120,7 +120,7 @@ when the translator was updated.
       <TD>Italian</TD>  
       <TD>Ahmed Aldo Faisal<br>Alessandro Falappa</TD>
       <TD>aaf23@NOSPAM.cam.ac.uk<br>a.falappa@NOSPAM.flashnet.it</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
@@ -132,7 +132,7 @@ when the translator was updated.
       <TD>Korean</TD>  
       <TD>Richard Kim</TD>
       <TD>ryk@NOSPAM.dspwiz.com</TD>
-      <TD>1.1.0</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Norwegian</TD>  
@@ -150,7 +150,7 @@ when the translator was updated.
       <TD>Portuguese</TD>  
       <TD>Rui Godinho Lopes</TD>
       <TD>ruiglopes@NOSPAM.yahoo.com</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Romanian</TD>  
@@ -174,7 +174,7 @@ when the translator was updated.
       <TD>Slovene</TD>  
       <TD>Matjaz Ostroversnik</TD>
       <TD>matjaz.ostroversnik@NOSPAM.zrs-tk.si</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Spanish</TD>  
@@ -184,8 +184,8 @@ when the translator was updated.
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Swedish</TD>  
-      <TD>Samuel H&auml;agglund<br>XeT Erixon</TD>
-      <TD>sahag96@NOSPAM.nts.mh.se<br>xet@NOSPAM.hem.passagen.se</TD>
+      <TD>XeT Erixon</TD>
+      <TD>xet@NOSPAM.hem.passagen.se</TD>
       <TD>1.0.0</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -205,42 +205,42 @@ when the translator was updated.
   {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
   \hline
   \hline
-  Brazilian & Fabio "FJTC" Jun Takada Chino & {\tt chino@grad.icmc.sc.usp.br} & 1.2.11 \\
+  Brazilian & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & up-to-date \\
   \hline
   Chinese & Wei Liu & {\tt liuwei@asiainfo.com} & 1.2.11 \\
    & Wang Weihan & {\tt wangweihan@capinfo.com.cn} &  \\
   \hline
-  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & 1.2.11 \\
+  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & up-to-date \\
   \hline
   Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
   \hline
   Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
   \hline
-  Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} & 1.2.11 \\
+  Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} & up-to-date \\
   \hline
   English & Dimitri van Heesch & {\tt dimitri@stack.nl} & up-to-date \\
   \hline
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & 1.0.0 \\
   \hline
-  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & 1.2.11 \\
+  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
   \hline
-  German & Jens Seidel & {\tt jensseidel@users.sf.net} & 1.2.11 \\
+  German & Jens Seidel & {\tt jensseidel@users.sf.net} & up-to-date \\
    & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} &  \\
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} & 1.2.11 \\
+  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} & up-to-date \\
    & Alessandro Falappa & {\tt a.falappa@flashnet.it} &  \\
   \hline
   Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} & 1.2.5 \\
   \hline
-  Korean & Richard Kim & {\tt ryk@dspwiz.com} & 1.1.0 \\
+  Korean & Richard Kim & {\tt ryk@dspwiz.com} & up-to-date \\
   \hline
   Norwegian & Lars Erik Jordet & {\tt larsej@stud.ifd.hibu.no} & 1.2.2 \\
   \hline
   Polish & Grzegorz Kowal & {\tt g\_kowal@poczta.onet.pl} & 1.2.1 \\
   \hline
-  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & 1.2.11 \\
+  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & up-to-date \\
   \hline
   Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.1 \\
   \hline
@@ -248,12 +248,11 @@ when the translator was updated.
   \hline
   Slovak & Stanislav Kudl\'{a}\v{c} & {\tt qwerty1@pobox.sk} & 1.2.11 \\
   \hline
-  Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & 1.2.11 \\
+  Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & up-to-date \\
   \hline
   Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} & 1.2.7 \\
   \hline
-  Swedish & Samuel H\"{a}agglund & {\tt sahag96@nts.mh.se} & 1.0.0 \\
-   & XeT Erixon & {\tt xet@hem.passagen.se} &  \\
+  Swedish & XeT Erixon & {\tt xet@hem.passagen.se} & 1.0.0 \\
   \hline
   Ukrainian & Olexij Tkatchenko & {\tt olexij.tkatchenko@gmx.de} & 1.2.11 \\
   \hline
