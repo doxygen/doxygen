@@ -81,10 +81,6 @@ autolink/html/index.html: autolink.cpp autolink.cfg
 
 tag/html/index.html: tag.cpp tag.cfg 
 	$(DOXYDIR)\doxygen tag.cfg
-	cd tag\html 
-	echo perl installdox -lexample.tag@../../example/html >runperl.bat
-	runperl.bat
-	cd ..\..
 
 restypedef/html/index.html: restypedef.cpp restypedef.cfg 
 	$(DOXYDIR)\doxygen restypedef.cfg

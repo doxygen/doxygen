@@ -1475,17 +1475,17 @@ QCString MemberDef::getScopeString() const
 }
 
 
-Definition *MemberDef::getCompoundDef() const
-{
-    NamespaceDef *nd=getNamespaceDef();
-    ClassDef     *cd=getClassDef();
-    FileDef      *fd=getFileDef();
-    GroupDef     *gd=getGroupDef();
-    Definition   *d = 0;
-    if (cd) d=cd; else if (nd) d=nd; else if (gd) d=gd; else d=fd;
-    ASSERT(d!=0);
-    return d;
-}
+//Definition *MemberDef::getCompoundDef() const
+//{
+//    NamespaceDef *nd=getNamespaceDef();
+//    ClassDef     *cd=getClassDef();
+//    FileDef      *fd=getFileDef();
+//    GroupDef     *gd=getGroupDef();
+//    Definition   *d = 0;
+//    if (cd) d=cd; else if (nd) d=nd; else if (gd) d=gd; else d=fd;
+//    ASSERT(d!=0);
+//    return d;
+//}
 
 QCString MemberDef::anchor() const
 {

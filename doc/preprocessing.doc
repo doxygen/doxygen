@@ -66,9 +66,10 @@ allows you to expand only those defines that you explicitly
 specify. For this you have to set the 
 \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" tag to \c YES
 and specify the macro definitions after 
-the \ref cfg_predefined "PREDEFINED" tag.  
+the \ref cfg_predefined "PREDEFINED" or 
+\ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
 
-As an example, suppose you have the following obfusciated code fragment
+As an example, suppose you have the following obfuscated code fragment
 of an abstract base class called \c IUnknown:
 
 \verbatim
