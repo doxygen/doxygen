@@ -837,13 +837,13 @@ EXTRA_PACKAGES = times
  put in front of it. If left blank `man' will be used as the default path.
  A directory man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
-</dl>
 
 \anchor cfg_man_extension
 <dt>\c MAN_EXTENSION <dd>
  \addindex MAX_EXTENSION
  The \c MAN_EXTENSION tag determines the extension that is added to
  the generated man pages (default is the subroutine's section .3)
+</dl>
 
 \subsection config_prepro Preprocessor related options
 \anchor cfg_enable_preprocessing
