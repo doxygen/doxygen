@@ -71,6 +71,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 <li> \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 <li> \refitem cfg_bin_abspath BIN_ABSPATH 
+<li> \refitem cfg_binary_toc BINARY_TOC
 <li> \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 <li> \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 <li> \refitem cfg_cgi_name CGI_NAME 
@@ -93,6 +94,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
 <li> \refitem cfg_exclude EXCLUDE
 <li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
+<li> \refitem cfg_expand_as_defined EXPAND_AS_PREDEFINED
 <li> \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
 <li> \refitem cfg_ext_doc_paths EXT_DOC_PATHS
 <li> \refitem cfg_extra_packages EXTRA_PACKAGES
@@ -100,7 +102,10 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_extract_private EXTRACT_PRIVATE
 <li> \refitem cfg_extract_static EXTRACT_STATIC
 <li> \refitem cfg_file_patterns FILE_PATTERNS
+<li> \refitem cfg_filter_source_files FILTER_SOURCE_FILES
 <li> \refitem cfg_full_path_names FULL_PATH_NAMES
+<li> \refitem cfg_generate_buglist GENERATE_BUGLIST
+<li> \refitem cfg_generate_chi GENERATE_CHI
 <li> \refitem cfg_generate_html GENERATE_HTML
 <li> \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 <li> \refitem cfg_generate_latex GENERATE_LATEX
@@ -159,12 +164,14 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
+<li> \refitem cfg_show_used_files SHOW_USED_FILES
 <li> \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
 <li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
+<li> \refitem cfg_toc_expand TOC_EXPAND
 <li> \refitem cfg_treeview_width TREEVIEW_WIDTH
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
 <li> \refitem cfg_warn_format WARN_FORMAT
@@ -430,6 +437,13 @@ followed by the descriptions of the tags grouped by category.
  disable (NO) the test list. This list is created by 
  putting \ref cmdtest "\\test" commands in the documentation.
 
+\anchor cfg_generate_buglist
+<dt>\c GENERATE_BUGLIST <dd>
+ \addindex GENERATE_BUGLIST
+ The GENERATE_BUGLIST tag can be used to enable (YES) or
+ disable (NO) the bug list. This list is created by 
+ putting \ref cmdbug "\\bug" commands in the documentation.
+
 \anchor cfg_aliases
 <dt>\c ALIASES <dd>
  \addindex ALIASES
@@ -464,6 +478,13 @@ followed by the descriptions of the tags grouped by category.
  of C sources only. Doxygen will then generate output that is more tailored 
  for C. For instance some of the names that are used will be different. 
  The list of all members will be omitted, etc. 
+
+\anchor cfg_show_used_files
+<dt>\c SHOW_USED_FILES <dd>
+ \addindex SHOW_USED_FILES
+ Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
+ at the bottom of the documentation of classes and structs. If set to \c YES the
+ list will mention the files that were used to generate the documentation.
 
 </dl>
 
@@ -743,6 +764,27 @@ followed by the descriptions of the tags grouped by category.
  and you can search for words in the documentation 
  (which basically renders \c doxysearch obsolete on Windows). 
  The HTML workshop also contains a viewer for compressed HTML files.
+
+\anchor cfg_generate_chi
+<dt>\c GENERATE_CHI <dd>
+ \addindex GENERATE_CHI
+ If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c GENERATE_CHI flag
+ controls if a separate .chi index file is generated (<code>YES</code>) or that
+ it should be included in the master .chm file (<code>NO</code>).
+
+\anchor cfg_binary_toc
+<dt>\c BINARY_TOC <dd>
+ \addindex BINARY_TOC
+ If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c BINARY_TOC flag
+ controls whether a binary table of contents is generated (<code>YES</code>) or a
+ normal table of contents (<code>NO</code>) in the .chm file.
+
+\anchor cfg_toc_expand
+<dt>\c TOC_EXPAND <dd>
+ \addindex TOC_EXPAND
+ The \c TOC_EXPAND flag can be set YES to add extra items for 
+ group members to the table of contents of the Html help documentation 
+ and to the tree view.
 
 \anchor cfg_disable_index
 <dt>\c DISABLE_INDEX <dd>

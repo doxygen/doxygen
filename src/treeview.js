@@ -103,7 +103,7 @@ function propagateChangesInState(folder)
  
 function hideFolder() 
 { 
-  if (browserVersion == 1) { 
+  if (browserVersion == 1 || browserVersion == 3) { 
     if (this.navObj.style.display == "none") 
       return 
     this.navObj.style.display = "none" 
@@ -171,6 +171,8 @@ function drawFolder(leftSide)
       doc.yPos=8 
     doc.write("<layer id='folder" + this.id + "' top=" + doc.yPos + " visibility=hidden>") 
   } 
+  if (browserVersion == 3) 
+    doc.write("<div id='folder" + this.id + "' style='display:none;'>") 
    
   doc.write("\n<table ") 
   if (browserVersion == 1) 
@@ -199,6 +201,9 @@ function drawFolder(leftSide)
   if (browserVersion == 2) { 
     doc.write("</layer>") 
   } 
+  if (browserVersion == 3) { 
+    doc.write("</div>") 
+  } 
  
   if (browserVersion == 1) { 
     this.navObj = doc.all["folder"+this.id] 
@@ -209,7 +214,11 @@ function drawFolder(leftSide)
     this.iconImg = this.navObj.document.images["folderIcon"+this.id] 
     this.nodeImg = this.navObj.document.images["nodeIcon"+this.id] 
     doc.yPos=doc.yPos+this.navObj.clip.height 
-  } 
+  } else if (browserVersion == 3) {
+    this.navObj = doc.getElementById("folder"+this.id)
+    this.iconImg = doc.images.namedItem("folderIcon"+this.id)
+    this.nodeImg = doc.images.namedItem("nodeIcon"+this.id)
+  }
 } 
  
 function outputFolderLink() 
@@ -276,7 +285,7 @@ function Item(itemDescription, tagName, itemLink) // Constructor
  
 function hideItem() 
 { 
-  if (browserVersion == 1) { 
+  if (browserVersion == 1 || browserVersion == 3) { 
     if (this.navObj.style.display == "none") 
       return 
     this.navObj.style.display = "none" 
@@ -310,6 +319,8 @@ function drawItem(leftSide)
 { 
   if (browserVersion == 2) 
     doc.write("<layer id='item" + this.id + "' top=" + doc.yPos + " visibility=hidden>") 
+  if (browserVersion == 3) 
+    doc.write("<div id='item" + this.id + "' style='display:block;'>") 
      
   doc.write("\n<table ") 
   if (browserVersion == 1) 
@@ -340,6 +351,8 @@ function drawItem(leftSide)
    
   if (browserVersion == 2) 
     doc.write("</layer>") 
+  if (browserVersion == 3) 
+    doc.write("</div>")
  
   if (browserVersion == 1) { 
     this.navObj = doc.all["item"+this.id] 
@@ -348,7 +361,10 @@ function drawItem(leftSide)
     this.navObj = doc.layers["item"+this.id] 
     this.iconImg = this.navObj.document.images["itemIcon"+this.id] 
     doc.yPos=doc.yPos+this.navObj.clip.height 
-  } 
+  } else if (browserVersion == 3) {
+    this.navObj = doc.getElementById("item"+this.id)
+    this.iconImg = doc.images.namedItem("itemIcon"+this.id)
+  }
 } 
  
  
@@ -357,7 +373,7 @@ function drawItem(leftSide)
  
 function display() 
 { 
-  if (browserVersion == 1) 
+  if (browserVersion == 1 || browserVersion == 3) 
     this.navObj.style.display = "block" 
   else 
     this.navObj.visibility = "show" 
@@ -419,15 +435,18 @@ function initializeDocument()
   else 
     if (doc.layers) 
       browserVersion = 2 //NS4 
-    else 
-      browserVersion = 0 //other 
+    else if(navigator.userAgent.toLowerCase().indexOf('gecko') != -1)
+        browserVersion = 3 //mozilla
+      else 
+        browserVersion = 0 //other 
 
   foldersTree.initialize(0, 1, "") 
   foldersTree.display()
   
   if (browserVersion > 0) 
   { 
-    doc.write("<layer top="+indexOfEntries[nEntries-1].navObj.top+">&nbsp;</layer>") 
+    if(browserVersion != 3)
+      doc.write("<layer top="+indexOfEntries[nEntries-1].navObj.top+">&nbsp;</layer>") 
  
     // close the whole tree 
     clickOnNode(0) 

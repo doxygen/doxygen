@@ -58,15 +58,16 @@ typedef QDict<MemberName>  MemberNameDict;
 
 struct MemberInfo
 {
-  MemberInfo(MemberDef *md,Protection p,Specifier v) :
-        memberDef(md), prot(p), virt(v),ambigClass(0) {}
+  MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
+        memberDef(md), prot(p), virt(v), inherited(inh), ambigClass(0) {}
  ~MemberInfo() {}
   MemberDef *memberDef;
   Protection prot;
-  Specifier virt;
-  QCString scopePath;
-  QCString ambiguityResolutionScope; 
-  ClassDef *ambigClass;
+  Specifier  virt;
+  bool       inherited;
+  QCString   scopePath;
+  QCString   ambiguityResolutionScope; 
+  ClassDef  *ambigClass;
 };
 
 class MemberNameInfo : public QList<MemberInfo>

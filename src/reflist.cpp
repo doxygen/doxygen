@@ -22,7 +22,8 @@
 RefList todoList;
 /*! The test criteria list */
 RefList testList;
-
+/*! The bug list */
+RefList bugList;
 
 /*! Create a todo list */
 RefList::RefList() 
@@ -63,7 +64,7 @@ int RefList::addRefItem()
  */
 RefItem *RefList::getRefItem(int itemId)
 {
-  return m_dict->find(itemId);
+  return m_dict ? m_dict->find(itemId) : 0;
 }
 
 /*! Returns the first item in the dictionary or 0 if 
@@ -72,7 +73,7 @@ RefItem *RefList::getRefItem(int itemId)
  */
 RefItem *RefList::getFirstRefItem()
 {
-  return m_dictIterator->toFirst();
+  return m_dictIterator ? m_dictIterator->toFirst() : 0;
 }
 
 /*! Returns the next item in the dictionary or 0 if
@@ -81,6 +82,6 @@ RefItem *RefList::getFirstRefItem()
  */
 RefItem *RefList::getNextRefItem()
 {
-  return m_dictIterator->operator++();
+  return m_dictIterator ? m_dictIterator->operator++() : 0;
 }
 

@@ -853,7 +853,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
  *  all active output formats.
  */
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
-                                   const char *scopeName,
+                                   const char *scName,
                                    Definition *container
                                   )
 {
@@ -861,6 +861,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if (getClassDef()==0 && isStatic() && !Config::extractStaticFlag) return;
   // hide member that are documented in their own group
   if (group!=0 && container->definitionType()!=TypeGroup) return;
+
+  // if this member is in a group find the real scope name.
+  QCString scopeName = scName;
+  if (container->definitionType()==TypeGroup)
+  {
+    if (getClassDef()) scopeName=getClassDef()->name();
+    else if (getNamespaceDef()) scopeName=getClassDef()->name();
+    else if (getFileDef()) scopeName=getClassDef()->name();
+  }
   
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
@@ -876,6 +885,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     QCString cname  = container->name();
     QCString cfname = container->getOutputFileBase();  
 
+    
     // get member name
     QCString doxyName=name().copy();
     // prepend scope if there is any. TODO: make this optional for C only docs

@@ -379,6 +379,30 @@ static void addParameter()
   }
 }
 
+void setParameterList(MemberDef *md)
+{
+  g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
+  ArgumentList *al = md->argumentList();
+  if (al==0) return; 
+  Argument *a = al->first();
+  while (a)
+  {
+    g_parmName = a->name.copy();
+    g_parmType = a->type.copy();
+    int i = g_parmType.find('*');
+    if (i!=-1) 
+      g_parmType = g_parmType.left(i);
+    i = g_parmType.find('&');
+    if (i!=-1) 
+      g_parmType = g_parmType.left(i);
+    if (g_parmType.left(6)=="const ") 
+      g_parmType = g_parmType.right(g_parmType.length()-6);
+    g_parmType=g_parmType.stripWhiteSpace();
+    addParameter();
+    a = al->next();
+  }
+}
+
 static void generateClassLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
@@ -1032,9 +1056,9 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  while (e>=0 && (text.at(e)==')' || isspace(yytext[e]))) e--;
 					  QCString varname = text.mid(s+1,e-s);
 					  QCString tmp=varname.copy();
-					  g_code->docify(text.left(s+1));
+					  g_code->codify(text.left(s+1));
 					  generateClassLink(*g_code,tmp.data());
-					  g_code->docify(text.right(yyleng-e-1));
+					  g_code->codify(text.right(yyleng-e-1));
 					  addType();
   					  g_name+=varname; 
 					}
@@ -1046,7 +1070,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<FuncCall,Body,MemberCall>\"		{
+<FuncCall,Body,MemberCall,MemberCall2>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -25,12 +25,11 @@ class TranslatorJapanese : public Translator
   public:
     QCString idLanguage()
     { return "japanese"; }
-    QCString idLanguageCharset()
-    { return "euc-jp"; }
-    
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
-    { return "a4j"; }
+    { return "english"; }
+    QCString idLanguageCharset()
+    { return "euc-jp"; }
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions()
@@ -414,7 +413,7 @@ class TranslatorJapanese : public Translator
 
     /*! this text is generated when the \warning command is used. */
     QCString trWarning()
-    { return "注意"; }
+    { return "警告"; }
 
     /*! this text is generated when the \bug command is used. */
     QCString trBugsAndLimitations()
@@ -452,7 +451,9 @@ class TranslatorJapanese : public Translator
     QCString trGeneratedBy()
     { return ""; }
 
-    // new since 0.49-990307
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990307
+//////////////////////////////////////////////////////////////////////////
     
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList()
@@ -747,12 +748,12 @@ class TranslatorJapanese : public Translator
     /*! Text for the \pre command */
     QCString trPrecondition()
     {
-      return "前提条件";
+      return "事前条件";
     }
     /*! Text for the \post command */
     QCString trPostcondition()
     {
-      return "Postcondition";
+      return "事後条件";
     }
     /*! Text for the \invariant command */
     QCString trInvariant()
@@ -784,6 +785,249 @@ class TranslatorJapanese : public Translator
     QCString trPageIndex()
     {
       return "ページ索引";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+    
+    QCString trNote()
+    {
+      return "覚え書き";
+    }
+    QCString trPublicTypes()
+    {
+      return "公開型";
+    }
+    QCString trPublicAttribs()
+    {
+      return "公開属性";
+    }
+    QCString trStaticPublicAttribs()
+    {
+      return "静的公開属性";
+    }
+    QCString trProtectedTypes()
+    {
+      return "保護型";
+    }
+    QCString trProtectedAttribs()
+    {
+      return "保護属性";
+    }
+    QCString trStaticProtectedAttribs()
+    {
+      return "静的保護属性";
+    }
+    QCString trPrivateTypes()
+    {
+      return "非公開型";
+    }
+    QCString trPrivateAttribs()
+    {
+      return "非公開属性";
+    }
+    QCString trStaticPrivateAttribs()
+    {
+      return "静的非公開属性";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a todo item */
+    QCString trTodo()
+    {
+      return "TODO";
+    }
+    /*! Used as the header of the todo list */
+    QCString trTodoList()
+    {
+      return "TODOリスト";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trReferencedBy()
+    {
+      return "次で参照されています。";
+    }
+    QCString trRemarks()
+    {
+      return "意見";
+    }
+    QCString trAttention()
+    {
+      return "注意";
+    }
+    QCString trInclByDepGraph()
+    {
+	return "このグラフは、このファイルがどのファイルから直接、間接的に"
+             "インクルードされているかを示しています。";
+    }
+    QCString trSince()
+    {
+      return "Since";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    QCString trLegendTitle()
+    {
+      return "グラフの凡例";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    QCString trLegendDocs()
+    {
+      return 
+        "このページでは、doxygen で生成されたグラフをどのようにみたらよいかを"
+        "説明します。<p>\n"
+        "次の例を考えてみます。\n"
+        "\\code\n"
+        "/*! 省略されて見えないクラス */\n"
+        "class Invisible { };\n\n"
+        "/*! 省略されたクラス(継承関係は隠されている) */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* doxygen コメントによるドキュメントがないクラス */\n"
+        "class Undocumented { };\n\n"
+        "/*! public で継承されたクラス */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! protected で継承されたクラス */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! private で継承されたクラス */\n"
+        "class PrivateBase { };\n\n"
+        "/*! 継承されたクラスで使われているクラス */\n"
+        "class Used { };\n\n"
+        "/*! 複数のクラスを継承している上位クラス */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "設定ファイル中で、タグ \\c MAX_DOT_GRAPH_HEIGHT が 200 にセットされた"
+        "場合、次のようなグラフとなります。"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "上のグラフ内のボックスには次のような意味があります。\n"
+        "<ul>\n"
+        "<li>黒く塗りつぶされたボックスは、このグラフに対応する構造体やクラスを"
+        "表します。\n"
+        "<li>黒枠のボックスはドキュメントがある構造体やクラスを表します。\n"
+        "<li>灰色の枠のボックスはドキュメントがない構造体やクラスを表します。\n"
+        "<li>赤枠のボックスはドキュメントがある構造体やクラスを表しますが、"
+	  "指定されたサイズに収まらないために継承・包含関係をすべて図示する"
+	  "ことができなかったことを示します。"
+        "</ul>\n"
+        "矢印には次のような意味があります。\n"
+        "<ul>\n"
+        "<li>青い矢印は二つのクラス間の public 継承関係を示します。\n"
+        "<li>緑の矢印は protected 継承関係を示します。\n"
+        "<li>赤の矢印は private 継承関係を示します。\n"
+        "<li>紫の破線矢印は、そのクラスが他のクラスに含まれていたり、"
+	  "利用されていることを示します。また、矢印が指しているクラスや構造体を"
+	  "どの変数でアクセスできるかを矢印のラベルとして示しています。\n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    QCString trLegend()
+    {
+      return "凡例";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.0
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a test item */
+    QCString trTest()
+    {
+      return "テスト";
+    }
+    /*! Used as the header of the test list */
+    QCString trTestList()
+    {
+      return "テストリスト";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    QCString trDCOPMethods()
+    {
+      return "DCOPメソッド";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    QCString trProperties()
+    {
+      return "プロパティ";
+    }
+    /*! Used as a section header for IDL property documentation */
+    QCString trPropertyDocumentation()
+    {
+      return "プロパティの解説";
+    }
+
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return "インターフェース";
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      return "クラス";
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return (QCString)"パッケージ "+name;
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return "パッケージリスト";
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return "簡易説明を持つパッケージです。";
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return "パッケージ";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return "パッケージの解説";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "値:";
     }
 };
 

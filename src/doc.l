@@ -1120,6 +1120,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
 				        }
+  /*
 <DocScan>{CMD}"bug"[s]?{BN}+		{
   				          endArgumentList();
   					  if (!inBugBlock)
@@ -1139,6 +1140,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
+  */
 <DocScan>{CMD}"note"[s]?{BN}+		{
   				          endArgumentList();
   					  if (!inNoteBlock)
@@ -1308,6 +1310,28 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					    internalParseDocument(item->text);
+					    outDoc->endDescList();
+					    currentListIndent.pop();
+					  }
+  					}
+<DocScan>"\\bug "[0-9]+			{ // this tag is generated in an earlier pass
+  				          if (Config::generateBugList)
+					  {
+  					    QCString numStr=yytext;
+					    numStr=numStr.right(numStr.length()-5);
+					    bool ok; int num = numStr.toUInt(&ok);
+					    RefItem *item = bugList.getRefItem(num);
+					    ASSERT(item!=0);
+  					    endArgumentList();
+					    if (inBlock()) endBlock();
+					    currentListIndent.push("D");
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    outDoc->writeObjectLink(0,"bug",item->listAnchor,theTranslator->trBug()+": ");
 					    outDoc->endBold();
 					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();

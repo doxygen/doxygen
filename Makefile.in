@@ -1,3 +1,4 @@
+DOCDIR = $(INSTALL)/share/doc/packages/doxygen
 
 #all: src/version.cpp configgen doxywizard 
 #	cd qtools ; $(MAKE)
@@ -45,25 +46,26 @@ distclean: clean
 	-rm -f addon/xmlgen/Makefile addon/xmlgen/Makefile.xmlgen
 	-rm -f addon/xmlgen/*.o
 
+
 install: doxywizard_install
 	$(INSTTOOL) -d $(INSTALL)/bin
-	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
+	$(INSTTOOL) -d $(DOCDIR)
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxysearch $(INSTALL)/bin
-	cp -r doc $(INSTALL)/doc/doxygen
-	cp -r examples $(INSTALL)/doc/doxygen
-	echo "DOXYGEN  = $(INSTALL)" > $(INSTALL)/doc/doxygen/doc/Makefile
-	echo "DOXYDOCS = .." >> $(INSTALL)/doc/doxygen/doc/Makefile
-	echo "VERSION  = $(VERSION)" >> $(INSTALL)/doc/doxygen/doc/Makefile
-	cat doc/Makefile.in >> $(INSTALL)/doc/doxygen/doc/Makefile
-	cd $(INSTALL)/doc/doxygen/examples ; $(MAKE)
-	cd $(INSTALL)/doc/doxygen/doc ; $(MAKE)
-	rm -rf $(INSTALL)/doc/doxygen/doc
-	cd $(INSTALL)/doc/doxygen/latex ; $(MAKE)
-	cp $(INSTALL)/doc/doxygen/latex/doxygen_manual.pdf $(INSTALL)/doc/doxygen
-	cp $(INSTALL)/doc/doxygen/latex/doxygen_manual.ps $(INSTALL)/doc/doxygen
-	rm -rf $(INSTALL)/doc/doxygen/latex
+	cp -r doc $(DOCDIR)
+	cp -r examples $(DOCDIR)
+	echo "DOXYGEN  = $(INSTALL)" > $(DOCDIR)/doc/Makefile
+	echo "DOXYDOCS = .." >> $(DOCDIR)/doc/Makefile
+	echo "VERSION  = $(VERSION)" >> $(DOCDIR)/doc/Makefile
+	cat doc/Makefile.in >> $(DOCDIR)/doc/Makefile
+	cd $(DOCDIR)/examples ; $(MAKE)
+	cd $(DOCDIR)/doc ; $(MAKE)
+	rm -rf $(DOCDIR)/doc
+	cd $(DOCDIR)/latex ; $(MAKE)
+	cp $(DOCDIR)/latex/doxygen_manual.pdf $(INSTALL)/doc/doxygen
+	cp $(DOCDIR)/latex/doxygen_manual.ps $(INSTALL)/doc/doxygen
+	rm -rf $(DOCDIR)/latex
 
 docs: FORCE
 	cd examples ; $(MAKE)

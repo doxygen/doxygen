@@ -472,7 +472,8 @@ void ClassDef::insertMember(MemberDef *md)
     
   }
 
-  MemberInfo *mi = new MemberInfo((MemberDef *)md,Public,Normal);
+  MemberInfo *mi = new MemberInfo((MemberDef *)md,
+                       md->protection(),md->virtualness(),FALSE);
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoDict)[md->name()]))
   {
@@ -1112,48 +1113,52 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   // write the list of used files (not for man pages)
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
-  ol.writeRuler();
-  parseText(ol,theTranslator->trGeneratedFromFiles(compType,files.count()==1));
-  
-  bool first=TRUE;
-  const char *file = files.first();
-  while (file)
+
+  if (Config::showUsedFilesFlag)
   {
-    bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
-    if (fd)
+    ol.disable(OutputGenerator::Man);
+    ol.writeRuler();
+    parseText(ol,theTranslator->trGeneratedFromFiles(compType,files.count()==1));
+
+    bool first=TRUE;
+    const char *file = files.first();
+    while (file)
     {
-      if (first)
+      bool ambig;
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
+      if (fd)
       {
-        first=FALSE;   
-        ol.startItemList();
-      }
+        if (first)
+        {
+          first=FALSE;   
+          ol.startItemList();
+        }
 
-      ol.writeListItem();
-      QCString path=fd->getPath().copy();
-      if (Config::fullPathNameFlag)
-      {
-        ol.docify(stripFromPath(path));
-      }
+        ol.writeListItem();
+        QCString path=fd->getPath().copy();
+        if (Config::fullPathNameFlag)
+        {
+          ol.docify(stripFromPath(path));
+        }
 
-      if (fd->generateSourceFile())
-      {
-        ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+        if (fd->generateSourceFile())
+        {
+          ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+        }
+        else if (fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+              fd->name());
+        }
+        else
+        {
+          ol.docify(fd->name());
+        }
       }
-      else if (fd->isLinkable())
-      {
-        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-            fd->name());
-      }
-      else
-      {
-        ol.docify(fd->name());
-      }
+      file=files.next();
     }
-    file=files.next();
+    if (!first) ol.endItemList();
   }
-  if (!first) ol.endItemList();
 
   // write Author section (Man only)
   ol.enable(OutputGenerator::Man);
@@ -1204,14 +1209,18 @@ void ClassDef::writeMemberList(OutputList &ol)
       ClassDef  *cd=md->getClassDef();
       
       // compute the protection level for this member
-      Protection protect=md->protection();
-      if (mi->prot==Protected) // inherited protection
+      Protection prot=md->protection();
+      if (mi->prot==Protected) // inherited protection: Protected
       {
-        if (protect==Public) protect=Protected;
+        if (prot==Public) prot=Protected;
+      }
+      else if (mi->prot==Private) // inherited protection: Private
+      {
+        prot=Private;
       }
       
-      //printf("Member %s of class %s mi->prot=%d prot=%d\n",
-      //    md->name().data(),cd->name().data(),mi->prot,protect);
+      //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
+      //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
 
       Specifier virt=md->virtualness();
       MemberDef *rmd=md->reimplements();
@@ -1224,7 +1233,9 @@ void ClassDef::writeMemberList(OutputList &ol)
       if (cd && !md->name().isEmpty() && md->name()[0]!='@' && 
           (
            md->isFriend() || 
-           (mi->prot!=Private && (protect!=Private || Config::extractPrivateFlag))
+           (/*mi->prot!=Private &&*/ 
+            (prot!=Private || Config::extractPrivateFlag)
+           )
           )
          )
       {
@@ -1280,7 +1291,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString(")");
           memberWritten=TRUE;
         }
-        if ((protect!=Public || virt!=Normal || 
+        if ((prot!=Public || virt!=Normal || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config::inlineInfoFlag) ||
              md->isSignal() || md->isSlot() ||
@@ -1299,8 +1310,8 @@ void ClassDef::writeMemberList(OutputList &ol)
                                        sl.append("inline");
             if (md->isExplicit())      sl.append("explicit");
             if (md->isMutable())       sl.append("mutable");
-            if (protect==Protected)    sl.append("protected");
-            else if (protect==Private) sl.append("private");
+            if (prot==Protected)       sl.append("protected");
+            else if (prot==Private)    sl.append("private");
             if (virt==Virtual)         sl.append("virtual");
             else if (virt==Pure)       sl.append("pure virtual");
             if (md->isStatic())        sl.append("static");
@@ -1500,12 +1511,10 @@ void ClassDef::mergeMembers()
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
     ClassDef *bClass=bcd->classDef; 
-    // merge the members of bClass with the onces from cd
     
+    // merge the members in the base class of this inheritance branch first
     bClass->mergeMembers();
-    // the all member list of the branch until bClass is now complete
-    // so we can merge it with cd
-    
+
     MemberNameInfoList *srcMnl  = bClass->memberNameInfoList();
     MemberNameInfoDict *dstMnd  =         memberNameInfoDict();
     MemberNameInfoList *dstMnl  =         memberNameInfoList();
@@ -1602,7 +1611,7 @@ void ClassDef::mergeMembers()
           {
             Specifier virt=srcMi->virt;
             if (srcMi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            MemberInfo *newMi = new MemberInfo(srcMd,bcd->prot,virt);
+            MemberInfo *newMi = new MemberInfo(srcMd,bcd->prot,virt,TRUE);
             newMi->scopePath=bClass->name()+"::"+srcMi->scopePath;
             if (ambigue)
             {
@@ -1645,7 +1654,7 @@ void ClassDef::mergeMembers()
         MemberInfo *mi;
         for (;(mi=mnii.current());++mnii)
         {
-          Protection prot = mi->memberDef->protection();
+          Protection prot = mi->prot;
           if (bcd->prot==Protected)
           {
             if (prot==Public) prot=Protected;
@@ -1655,15 +1664,15 @@ void ClassDef::mergeMembers()
             prot=Private;
           }
           //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
-          //    name().data(),mi->memberDef->name().data(),mi->memberDef->protection(),
+          //    name().data(),mi->memberDef->name().data(),mi->prot,
           //    bcd->prot,prot);
           
-          if (prot!=Private)
+          if (mi->prot!=Private)
           {
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
             
-            MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt);
+            MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
             newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();

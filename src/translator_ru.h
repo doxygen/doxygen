@@ -14,6 +14,11 @@
  *
  */
 
+/*
+ *  Russian translation by Andrey V. Stolyarov <crocodil<AT>croco.net>
+ *  released Feb 14, 2001
+ */
+
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
@@ -32,48 +37,55 @@ class TranslatorRussian : public Translator
     }
     QCString trRelatedFunctions()
     {
-	return "Связанные Функции";
+	return "Связанные функции";
     }
     QCString trRelatedSubscript()
     {
-	return "(Обратите внимание, что эти функции не члены класса)";
+	return "(Обратите внимание, что эти функции - не члены класса)";
     }
     QCString trDetailedDescription()
     {
-	return "Детальное Описание";
+	return "Детальное описание";
     }
     QCString trMemberTypedefDocumentation()
     {
 	// Need additional translation
-	return "Описание Членов typedef";
+	return "Описание typedef-членов";
     }
     QCString trMemberEnumerationDocumentation()
     {
-	return "Описание Членов Перечислимого Типа";
+	return "Описание членов перечислимого типа";
     }
     QCString trMemberFunctionDocumentation()
     {
-	return "Описание Функции Члена";
+	return "Описание функций-членов";
     }
     QCString trMemberDataDocumentation()
     {
-	return "Описание Данных Члена";
+      if (Config::optimizeForCFlag)
+      {
+        return "Описание полей";
+      }
+      else
+      {
+        return "Описание переменных-членов";
+      }
     }
     QCString trMore()
     {
-	return "Еще...";
+	return "Дальше...";
     }
     QCString trListOfAllMembers()
     {
-	return "Cписок всех членов класса";
+	return "Cписок всех членов класса.";
     }
     QCString trMemberList()
     {
-	return "Список Членов";
+	return "Список членов";
     }
     QCString trThisIsTheListOfAllMembers()
     {
-	return "Это полный список членов ";
+	return "Это полный список членов класса/структуры ";
     }
     QCString trIncludeIncludingInheritedMembers()
     {
@@ -82,7 +94,7 @@ class TranslatorRussian : public Translator
     QCString trGeneratedAutomatically(const char *s)
     { QCString result="Автоматически создано системой Doxygen";
       if (s) result+=(QCString)" для "+s;
-      result+=" из исходного текста."; 
+      result+=" по файлам исходного текста."; 
       return result;
     }
     QCString trEnumName()
@@ -99,7 +111,7 @@ class TranslatorRussian : public Translator
     }
     QCString trVerbatimText(const char* f)
     {
-	return (QCString)"Это прямая вставка текста из "+f+"включаемого файла";
+	return (QCString)"Это прямая вставка текста из включаемого файла"+f;
     }
     QCString trModules()
     {
@@ -111,29 +123,52 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundList()
     {
-	// Need additional translation
-	return "Составной список (compound list)";
+      if (Config::optimizeForCFlag)
+      {
+        return "Структуры данных";
+      }
+      else
+      {
+        // doubtful translation; originally - "Compound List"
+        return "Список составных объектов";
+      }
     }
     QCString trFileList()
     {
-	return "Список Файлов";
+	return "Список файлов";
     }
     QCString trHeaderFiles()
     {
-	return "Список Заголовочных Файлов";
+	return "Заголовочные файлы";
     }
     QCString trCompoundMembers()
     {
-	// Need additional translation
-	return "Составные члены (compound members)";
+      if (Config::optimizeForCFlag)
+      {
+        return "Поля структур";
+      }
+      else
+      {
+        return "Члены-данные";
+      }
     }
     QCString trFileMembers()
     {
-	return "Члены Файла";
+      if (Config::optimizeForCFlag)
+      {
+        return "Глобальные имена";
+      }
+      else
+      {
+         // doubtful translation 
+         // (originally - "File members", but not good for Russian)
+        return "Члены файла";
+      }
     }
     QCString trRelatedPages()
     {
-	return "Связанные Страницы";
+         // non-verbatim translation: originally "related pages"
+	return "См. также: ";
     }
     QCString trExamples()
     {
@@ -145,8 +180,8 @@ class TranslatorRussian : public Translator
     }
     QCString trClassHierarchyDescription()
     {
-	// Need additional translation
-	return "Этот список (inheritance) тупо отсортирован, почти по алфафиту";
+	return "Это дерево наследования отсортировано приблизительно "
+               "(но не совсем) по алфавиту";
     }
     QCString trFileListDescription(bool extractAll)
     {
@@ -157,36 +192,52 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundListDescription()
     {
-	return "Краткое описание классов, структур, объединений и "
-	       "интерфейсов:";
+      if (Config::optimizeForCFlag)
+      {
+        return "Структуры данных и их краткое описание: ";
+      }
+      else
+      {
+	return "Классы, структуры, объединения и интерфейсы " 
+	       "и их краткое описание: ";
+      }
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
 	// Need additional translation
 	QCString result="Список всех ";
 	if(!extractAll) result+="документированных ";
-	result+="членов класса которые связаны с ";
+	result+="членов классов со ссылками на ";
 	if(extractAll)
-	    result+="the class documentation for each member:";
+	    result+="документацию по классу для каждого члена:";
 	else
-	    result+="the classes the belong to:";
+	    result+="классы, к которым они принадлежат:";
 	return result;
     }
     QCString trFileMembersDescription(bool extractAll)
     {
-	// Need additional translation
-	QCString result="Список всех ";
-	if(!extractAll) result+="документированных ";
-	result+="членов файла, которые (links) указывают на";
-	if(extractAll)
-	    result+="the class documentation for each member:";
-	else
-	    result+="the classes the belong to:";
-	return result;
+      QCString result="Список всех ";
+      if (!extractAll) result+="документированных ";
+
+      if (Config::optimizeForCFlag)
+      {
+        result+="функций, переменных, макроопределений, "
+                "перечислений и определений типов";
+      }
+      else
+      {
+        result+="членов файлов ";
+      }
+      result+=" со ссылками на ";
+      if (extractAll)
+        result+="файлы, к которым они принадлежат:";
+      else
+        result+="документацию:";
+      return result;
     }
     QCString trHeaderFilesDescription()
     {
-	return "Список заголовочных файлов, которые представляют API:";
+	return "Список заголовочных файлов, составляющих API:";
     }
     QCString trExamplesDescription()
     {
@@ -194,8 +245,7 @@ class TranslatorRussian : public Translator
     }
     QCString trRelatedPagesDescription()
     {
-	// Need additional translation
-	return "Список всех страниц документации связанных с этой темой:";
+	return "Список всех родственных страниц документации:";
     }
     QCString trModulesDescription()
     {
@@ -203,7 +253,7 @@ class TranslatorRussian : public Translator
     }
     QCString trNoDescriptionAvailable()
     {
-	return "Нет описания";
+	return "Описание отсутствует";
     }
     QCString trDocumentation()
     {
@@ -211,7 +261,7 @@ class TranslatorRussian : public Translator
     }
     QCString trModuleIndex()
     {
-	return "Индекс модулей";
+	return "Указатель модулей";
     }
     QCString trHierarchicalIndex()
     {
@@ -219,41 +269,48 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundIndex()
     {
-	// Need additional translation
-	return "Составной список";
+      if (Config::optimizeForCFlag)
+      {
+        return "Список структур данных";
+      }
+      else
+      {
+          // originally "compound index"
+        return "Список классов и структур";
+      }
     }
     QCString trFileIndex()
     {
-	return "Индекс Файлов";
+	return "Список файлов";
     }
     QCString trModuleDocumentation()
     {
-	return "Документация по Модулям";
+	return "Документация по модулям";
     }
     QCString trClassDocumentation()
     {
-	return "Документация по Классам";
+	return "Документация по классам";
     }
     QCString trFileDocumentation()
     {
-	return "Документация по Файлам";
+	return "Документация по файлам";
     }
     QCString trExampleDocumentation()
     {
-	return "Примеры к Документации";
+	return "Описания примеров";
     }
     QCString trPageDocumentation()
     {
-	return "Документация по Страницам";
+	return "Документация по страницам";
     }
     QCString trReferenceManual()
     {
-	return "Справочное Описание";
+           // originally reference manual
+	return "Краткий справочник";
     }
     QCString trDefines()
     {
-	// Need Translation
-	return "Определения (Defines)";
+	return "Определения";
     }
     QCString trFunctionPrototypes()
     {
@@ -265,20 +322,19 @@ class TranslatorRussian : public Translator
     }
     QCString trEnumerations()
     {
-	// Need Translation
-	return "Перечисления (Enumerations)";
+	return "Перечисления";
     }
     QCString trFunctions()
     {
-	return "Функции:";
+	return "Функции";
     }
     QCString trVariables()
     {
-	return "Переменные:";
+	return "Переменные";
     }
     QCString trEnumerationValues()
     {
-	return "Значение перечислимого типа";
+	return "Значения перечислимого типа";
     }
     QCString trAuthor()
     {
@@ -286,7 +342,7 @@ class TranslatorRussian : public Translator
     }
     QCString trDefineDocumentation()
     {	
-	return "Документация по определениям (defines)";
+	return "Документация по определениям";
     }
     QCString trFunctionPrototypeDocumentation()
     {
@@ -314,8 +370,16 @@ class TranslatorRussian : public Translator
     }
     QCString trCompounds()
     {
-	// need translation
-	return "Compounds";
+      if (Config::optimizeForCFlag)
+      {
+        return "Структуры данных";
+      }
+      else
+      { 
+          // originally "compounds"
+        return "Составные типы";
+      }
+
     }
     QCString trFiles()
     {
@@ -325,16 +389,16 @@ class TranslatorRussian : public Translator
     {
 	QCString result=(QCString)"Создано "+date;
 	if(projName) result+=(QCString)" для "+projName;
-	result+=(QCString)" с использованием";
+	result+=(QCString)" с помощью ";
 	return result;
     }
     QCString trWrittenBy()
     {
-	return "Создано с использованием";
+	return "написанного";
     }
     QCString trClassDiagram(const char* clName)
     {
-	return (QCString)"Диаграмма наследования для "+clName;
+	return (QCString)"Диаграмма наследования для "+clName+":";
     }
     QCString trForInternalUseOnly()
     {
@@ -342,9 +406,8 @@ class TranslatorRussian : public Translator
     }
     QCString trReimplementedForInternalREasons()
     {
-	// need translation
-	return "Переписано по необходимости о которой вам знать не нужно;"
-	       " програмный интерфейс не изменен.";
+	return "Реализация изменена по внутренним причинам;"
+	       " Интерфейсная часть не изменилась.";
     }
     QCString trWarning()
     {
@@ -372,7 +435,7 @@ class TranslatorRussian : public Translator
     }
     QCString trSeeAlso()
     {
-	return "Смотри";
+	return "См. также";
     }
     QCString trParameters()
     {
@@ -384,16 +447,14 @@ class TranslatorRussian : public Translator
     }
     QCString trGeneratedBy()
     {
-	return "Создано с использованием";
+	return "Создано при помощи";
     }
     QCString trNamespaceList()
     {
-	// Need translation
-	return "Список Пространств Имен";
+	return "Список пространств имен (namespaces)";
     }
     QCString trNamespaceListDescription(bool extractAll)
     {
-	// Need translation
 	QCString result="Список всех ";
 	if(!extractAll) result+="документированных ";
 	result+="пространств имен с кратким описанием:";
@@ -406,44 +467,53 @@ class TranslatorRussian : public Translator
     QCString trRelatedFunctionDocumentation()
     {
 	// need translation
-	return "Документация по друзьям класса и связанным с ними функциям";
+	return "Документация по друзьям класса и связанным функциям";
     }
     QCString trCompoundReference(const char* clName,
                                  ClassDef::CompoundType compType,
-                                 bool /*isTemplate*/)
+                                 bool isTemplate)
     {
-	QCString result=(QCString)clName+" ";
+	QCString result=(QCString)"Описание ";
+        if (isTemplate){ 
+	  	switch(compType)
+	  	{
+	  	    case ClassDef::Struct: result+="шаблонной "; break;
+	  	    case ClassDef::Class: 
+	  	    case ClassDef::Union: 
+	  	    case ClassDef::Interface: 
+	  	    case ClassDef::Exception: 
+					result+="шаблонного "; break;
+	  	}
+	}   
 	switch(compType)
 	{
-	    case ClassDef::Class: result+=" Класс"; break;
-	    case ClassDef::Struct: result+=" Структура"; break;
-	    case ClassDef::Union: result+=" Объединение"; break;
-	    case ClassDef::Interface: result+=" Интерфейс"; break;
-	    case ClassDef::Exception: result+=" Исключение"; break;
+	    case ClassDef::Class: result+="класса "; break;
+	    case ClassDef::Struct: result+="структуры "; break;
+	    case ClassDef::Union: result+="объединения "; break;
+	    case ClassDef::Interface: result+="интерфейса "; break;
+	    case ClassDef::Exception: result+="исключения "; break;
 	}
-	result+=" Описание";
+	result+=clName;
 	return result;
     }
     QCString trFileReference(const char* fileName)
     {
 	QCString result;
-	result+=(QCString)"Описание Файла "+fileName;
+	result+=(QCString)"Описание файла "+fileName;
 	return result;
     }
     QCString trNamespaceReference(const char* namespaceName)
     {
-	// need translation
 	QCString result=(QCString)"Описание пространства имен "+namespaceName;
 	return result;
     }
     QCString trPublicMembers()
     {
-	return "Открытые Методы";
+	return "Открытые члены";
     }
     QCString trPublicSlots()
     {
-	// need translation
-	return "Открытые Слоты (Slots)";
+	return "Открытые слоты";
     }
     QCString trSignals()
     {
@@ -451,34 +521,31 @@ class TranslatorRussian : public Translator
     }
     QCString trStaticPublicMembers()
     {
-	return "Статические Открытые Методы";
+	return "Статические открытые члены";
     }
     QCString trProtectedMembers()
     {
-	return "Защищенные Методы";
+	return "Защищенные члены";
     }
     QCString trProtectedSlots()
     {
-	// need translation
-	return "Защищенные Слоты (Slots)";
+	return "Защищенные слоты";
     }
     QCString trStaticProtectedSlots()
     {
-	// need translation
-	return "Статические Защищенные Слоты (Slots)";
+	return "Статические защищенные слоты";
     }
     QCString trPrivateMembers()
     {
-	return "Закрытые Методы";
+	return "Закрытые члены";
     }
     QCString trPrivateSlots()
     {
-	// need translation
-	return "Закрытые Слоты (Slots)";
+	return "Закрытые слоты";
     }
     QCString trStaticPrivateMembers()
     {
-	return "Статические Закрытые Методы";
+	return "Закрытые статические члены";
     }
     QCString trWriteList(int numEntries)
     {
@@ -492,20 +559,27 @@ class TranslatorRussian : public Translator
 		if(i<numEntries-2)
 		    result+=", ";
 		else
-		    result+=", и ";
+		    result+=" и ";
 	    }
 	}
 	return result;
     }
     QCString trInheritsList(int numEntries)
     {
-	// need translation
-	return "Дети (Inherits) "+trWriteList(numEntries)+".";
+	return "Унаследован от "+trWriteList(numEntries)+".";
     }
     QCString trInheritedByList(int numEntries)
     {
-	// need translation
-	return "Предки (Inherited By) "+trWriteList(numEntries)+".";
+	return "Наследуется "+trWriteList(numEntries)+".";
+    }
+
+    QCString trReimplementedFromList(int numEntries)
+    {
+        // Originally: "reimplemented from"
+        // This translation assumes numEntries is always 1
+        //    which is true as of 1.2.5 and it's hard for me to 
+        //    imagine a situation when it could be wrong. 
+      return "Переопределяет метод предка "+trWriteList(numEntries)+".";
     }
     QCString trReimplementedInList(int numEntries)
     {
@@ -513,31 +587,30 @@ class TranslatorRussian : public Translator
     }
     QCString trNamespaceMembers()
     {
-	// Need translation
-	return "Члены Пространства Имен";
+	return "Члены пространств имен";
     }
     QCString trNamespaceMemberDescription(bool extractAll)
     {
 	QCString result="Список всех ";
 	if(!extractAll) result+="документированных ";
-	result+="членов пространства имен со ссылками на ";
+	result+="членов пространств имен со ссылками на ";
 	if(extractAll)
-	    result+="документацию по каждому члену";
+	    result+="документацию по каждому члену:";
 	else
-	    result+="документацию по пространству имен к которому они принадлежат";
+	    result+="пространства имен, к которым они принадлежат:";
 	return result;
     }
     QCString trNamespaceIndex()
     {
-	return "Индекс Пространства Имен";
+	return "Индекс пространств имен";
     }
     QCString trNamespaceDocumentation()
     {
-	return "Документация Пространства Имен";
+	return "Документация пространств имен";
     }
     QCString trNamespaces()
     {
-	return "Пространства Имен";
+	return "Пространства имен";
     }
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
     {
@@ -559,7 +632,7 @@ class TranslatorRussian : public Translator
     }
     QCString trAlphabeticalList()
     {
-	return "Алфавитный Список";
+	return "Алфавитный список";
     }
     QCString trReturnValues()
     {
@@ -567,8 +640,7 @@ class TranslatorRussian : public Translator
     }
     QCString trMainPage()
     {
-	// need translation
-	return "Начальная Страница (Main Page)";
+	return "Главная страница";
     }
     QCString trPageAbbreviation()
     {
@@ -580,11 +652,11 @@ class TranslatorRussian : public Translator
     }
     QCString trDefinedAtLineInSourceFile()
     {
-	return "Определено в строке @0 файла @1.";
+	return "Определяется в строке @0 файла @1.";
     }
     QCString trDefinedInSourceFile()
     {
-	return "Определено в файле @0.";
+	return "Определяется в файле @0.";
     }
     QCString trDeprecated()
     {
@@ -592,40 +664,36 @@ class TranslatorRussian : public Translator
     }
     QCString trCollaborationDiagram(const char* clName)
     {
-	// need translation
-	return (QCString)"Диаграмма связей для "+clName+":";
+           // originally "collaboration diagram"
+	return (QCString)"Диаграмма использования для "+clName+":";
     }
     QCString trInclDepGraph(const char* fName)
     {
-	// need translation
-	return (QCString)"Граф зависимостей для "+fName+":";
+	return (QCString)"Граф зависимостей по включениям "
+                         "файлов для "+fName+":";
     }
     QCString trConstructorDocumentation()
     {
-	return "Документация по Конструктору и Деструктору";
+	return "Документация по конструктору и деструктору";
     }
     QCString trGotoSourceCode()
     {
-	// need translation
-	return "Смотри исходные тексты этого файла.";
+	return "Перейти к исходному тексту этого файла.";
     }
     QCString trGotoDocumentation()
     {
-	return "Смотри документацию по этому файлу.";
+	return "Перейти к документации на этот файл.";
     }
     QCString trPrecondition()
     {
-	// need translation
-	return "Начальное условие (Precondition)";
+	return "Предусловие";
     }
     QCString trPostcondition()
     {
-	// need translation
-	return "Конечное условие (Postcondition)";
+	return "Постусловие";
     }
     QCString trInvariant()
     {
-	// need translation
 	return "Инвариант";
     }
     QCString trInitialValue()
@@ -634,26 +702,23 @@ class TranslatorRussian : public Translator
     }
     QCString trCode()
     {
-	return "исходные тексты";
+	return "исходный текст";
     }
     QCString trGraphicalHierarchy()
     {
-	// need translation
-	return "Графическая Иерархия Класса (ов?)";
+	return "Графическая иерархия класса(ов)";
     }
     QCString trGotoGraphicalHierarchy()
     {
-	// need translation
-	return "Смотри графическую иерархию класса";
+	return "Перейти к графической иерархии";
     }
     QCString trGotoTextualHierarchy()
     {
-	// need translation
-	return "Смотри текстовую иерархию класса";
+	return "Перейти к текстовой иерархии";
     }
     QCString trPageIndex()
     {
-	return "Индекс Страниц";
+	return "Индекс страниц";
     }
     QCString trNote()
     {
@@ -661,47 +726,54 @@ class TranslatorRussian : public Translator
     }
     QCString trPublicTypes()
     {
-	return "Открытые Типы";
+	return "Открытые типы";
     }
     QCString trPublicAttribs()
     {
-	return "Открытые Аттрибуты";
+      if (Config::optimizeForCFlag)
+      {
+        return "Поля данных";
+      }
+      else
+      {
+	return "Открытые атрибуты";
+      }
     }
     QCString trStaticPublicAttribs()
     {
-	return "Статические Открытые Аттрибуты";
+	return "Открытые статические атрибуты";
     }
     QCString trProtectedTypes()
     {
-	return "Защищенные Типы";
+	return "Защищенные типы";
     }
     QCString trProtectedAttribs()
     {
-	return "Защищенные Аттрибуты";
+	return "Защищенные атрибуты";
     }
     QCString trStaticProtectedAttribs()
     {
-	return "Статические Защищенные Аттрибуты";
+	return "Статические защищенные  атрибуты";
     }
     QCString trPrivateTypes()
     {
-	return "Закрытые Типы";
+	return "Закрытые типы";
     }
     QCString trPrivateAttribs()
     {
-	return "Закрытые Аттрибуты";
+	return "Закрытые атрибуты";
     }
     QCString trStaticPrivateAttribs()
     {
-	return "Статические Закрытые Аттрибуты";
+	return "Закрытые статические атрибуты";
     }
     QCString trTodo()
     {
-      return "Todo";
+      return "Необходимо сделать:";
     }
     QCString trTodoList()
     {
-      return "Список Оставшихся Дел";
+      return "Список дел";
     }
     QCString trReferencedBy()
     {
@@ -718,21 +790,21 @@ class TranslatorRussian : public Translator
     QCString trInclByDepGraph()
     {
       return "Этот граф показывает, какие файлы прямо или "
-             "косвенно включают этот файл:";
+             "косвенно включают данный файл:";
     }
     QCString trSince()
     {
-      return "После";
+      return "Начиная с";
     }
     QCString trLegendTitle()
     {
-      return "Толкование графа";
+      return "Условные обозначения";
     }
     QCString trLegendDocs()
     {
       return 
-        "Эта страница обьясняет, как понимать графы, которые генерирует "
-        "doxygen.<p>\n"
+        //"Условные обозначения на графах, генерируемых программой "
+        //"doxygen.<p>\n"
         "Рассмотрим следующий пример:\n"
         "\\code\n"
         "/*! Невидимый класс из-за усечения */\n"
@@ -747,9 +819,9 @@ class TranslatorRussian : public Translator
         "class ProtectedBase { };\n\n"
         "/*! Класс, использующий закрытое наследование */\n"
         "class PrivateBase { };\n\n"
-        "/*! Класс, используемый классом Inherited */\n"
+        "/*! Класс, используемый в классе Inherited */\n"
         "class Used { };\n\n"
-        "/*! Класс, порожденный от других классов */\n"
+        "/*! Суперкласс, унаследованный от нескольких классов */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -759,34 +831,35 @@ class TranslatorRussian : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Если \\c MAX_DOT_GRAPH_HEIGHT тэг в конфигурационном файле "
-        "установлен в 200, получится следующий граф:"
+        "Если тэг \\c MAX_DOT_GRAPH_HEIGHT в конфигурационном файле "
+        "имеет значение 200, получим следующий граф:"
         "<p><center><img src=\"graph_legend.gif\"></center>\n"
         "<p>\n"
-        "Прямоугольники в этом графе имеют следующее значение:\n"
+        "Прямоугольники в этом графе имеют следующие значения:\n"
         "<ul>\n"
-        "<li>Заполненный чернный прямоугольник представляет структуру или класс, "
-	"для которого создан граф.\n"
+        "<li>Заполненный черный прямоугольник представляет структуру или класс, "
+	"для которого создан данный граф.\n"
         "<li>Прямоугольник с черной границей обозначает документированную структуру или класс.\n"
-        "<li>Прямоугольник с серой границей обозначает документированную структуру или класс.\n"
+        "<li>Прямоугольник с серой границей обозначает недокументированную структуру или класс.\n"
         "<li>Прямоугольник с красной границей обозначает документированную структуру или класс, для которого\n"
-        " не все отношения наследования/содержания показаны. Граф усечен, "
-        "если он не поместился в указанных границах."
+        " не все отношения наследования/содержания показаны. Граф усекается, "
+        "если он не поместился в указанные границы."
         "</ul>\n"
-        "Стрелки имеют следующее значение:\n"
+        "Стрелки имеют следующие значения:\n"
         "<ul>\n"
         "<li>Темносиняя стрелка используется для изображения отношения открытого наследования "
         "между двумя классами.\n"
         "<li>Темнозеленая стрелка используется при защищенном наследовании.\n"
-        "<li>Темнозеленая стрелка используется при закрытом наследовании.\n"
-        "<li>Фиолетовая стрелка используется, если класс содержится в или используется другим классом"
-        ". Стрелка маркированна переменной, "
+        "<li>Темнокрасная стрелка используется при закрытом наследовании.\n"
+        "<li>Фиолетовая пунктирная стрелка используется, если класс содержится "
+        "в другом классе или используется другим классом. "
+        "Стрелка маркируется именем переменной, "
         "через которую доступен указываемый класс или структура. \n"
         "</ul>\n";
     }
     QCString trLegend()
     {
-      return "толкование";
+      return "обозначения";
     }
     QCString trTest()
     {
@@ -794,34 +867,57 @@ class TranslatorRussian : public Translator
     }
     QCString trTestList()
     {
-      return "Список Тестов";
+      return "Список тестов";
     }
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
       return "Методы DCOP";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.2
-//////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
       return "Свойства";
     }
-    /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Документация Свойств";
+      return "Документация свойств";
     }
 
 
+    virtual QCString trInterfaces()
+    {
+      return "Интерфейсы";
+    }
+    virtual QCString trClasses()
+    {
+      return "Классы";
+    }
+    virtual QCString trPackage(const char *name)
+    {
+      return (QCString)"Пакет "+name;
+    }
+    virtual QCString trPackageList()
+    {
+      return "Список пакетов";
+    }
+    virtual QCString trPackageListDescription()
+    {
+      return "Список пакетов с кратким описанием (если есть):";
+    }
+    virtual QCString trPackages()
+    {
+      return "Пакеты";
+    }
+    virtual QCString trPackageDocumentation()
+    {
+      return "Документация пакетов";
+    }
+    virtual QCString trDefineValue()
+    {
+      return "Значение:";
+    }
 };
 
 #endif

@@ -42,6 +42,7 @@ Definition::Definition(const char *df,int dl,
   sourceRefDict=0;
   m_todoId=0;
   m_testId=0;
+  m_bugId=0;
 }
 
 Definition::~Definition()
@@ -356,6 +357,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
     {
       initParseCodeContext();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
+      if (definitionType()==TypeMember) setParameterList((MemberDef *)this);
       ol.startCodeFragment();
       parseCode(ol,scopeName,codeFragment,FALSE,0,
           bodyDef,actualStart,actualEnd,TRUE);

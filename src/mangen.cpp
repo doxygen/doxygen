@@ -95,6 +95,10 @@ void ManGenerator::startFile(const char *name,const char *,bool)
   {
     fileName=fileName.right(fileName.length()-10);
   }
+  else if (fileName.left(6)=="group_")
+  {
+    fileName=fileName.right(fileName.length()-6);
+  }
 
   int i;
   if ((i=fileName.findRev('.'))!=-1)
@@ -102,7 +106,9 @@ void ManGenerator::startFile(const char *name,const char *,bool)
     fileName=fileName.left(i); 
   }
   if (convertToQCString(fileName.right(2))!=Config::manExtension) 
+  {
     fileName+=Config::manExtension;
+  }
   startPlainFile(fileName);
   firstCol=TRUE;
 }
@@ -114,7 +120,7 @@ void ManGenerator::endFile()
 
 void ManGenerator::endTitleHead(const char *,const char *name)
 {
-  t << ".TH " << name << " 3 \"" << dateToString(FALSE) << "\" \"";
+  t << ".TH \"" << name << "\" 3 \"" << dateToString(FALSE) << "\" \"";
   if (Config::projectName.isEmpty()) 
     t << "Doxygen";
   else

@@ -5,6 +5,7 @@
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (June 1999)
  * Updates:
+ *        2001/02: translated new items used since version 1.2.4
  *        2000/11: modified slightly the translation in trLegendDocs() function,
  *                 translated new items used since version 1.2.1 and 1.2.2
  *        2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
@@ -998,6 +999,50 @@ class TranslatorItalian : public Translator
       return "Documentazione delle Proprietà";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return "Interfacce";
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      return "Classi";
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return (QCString)"Package "+name;
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return "Lista dei package";
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return "Questi sono i package e una loro breve descrizione (se disponibile):";
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return "Package";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return "Documentazione dei package";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "Valore:";
+    }
 };
 
 #endif

@@ -27,6 +27,11 @@ extern void checkConfig();
 extern void configStrToVal();
 extern void substituteEnvironmentVars();
 
+/*! \brief Namespace for configuration variables
+ *
+ *  This struct acts as a namespace that holds the global static variables
+ *  read from a user-supplied configuration file.
+ */
 struct Config
 {
   static void init();

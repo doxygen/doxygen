@@ -51,5 +51,6 @@ class RefList
 
 extern RefList todoList;
 extern RefList testList;
+extern RefList bugList;
 
 #endif

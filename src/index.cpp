@@ -408,7 +408,6 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 }
 
 
-#if 0
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
@@ -416,8 +415,8 @@ void writeClassTree(BaseClassList *cl)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag && Config::htmlHelpGroupsOnly;
-  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  && Config::htmlHelpGroupsOnly;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -448,7 +447,7 @@ void writeClassTree(BaseClassList *cl)
         }
         if (hasFtvHelp)
         {
-            ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
         }
       }
       if (hasChildren)
@@ -472,8 +471,8 @@ void writeClassTree(ClassList *cl)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag && Config::htmlHelpGroupsOnly;
-  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  && Config::htmlHelpGroupsOnly;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -513,7 +512,6 @@ void writeClassTree(ClassList *cl)
     }
   }
 }
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -1937,13 +1935,13 @@ void writeExampleIndex(OutputList &ol)
     {
       ol.writeObjectLink(0,n,0,pi->title);
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->title,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,n,0,pi->title);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),n,0,pi->title);
     }
     else
     {
       ol.writeObjectLink(0,n,0,pi->name);
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->name,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,n,0,pi->name);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),n,0,pi->name);
     }
     ol.writeString("\n");
   }
@@ -2207,85 +2205,192 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
       ol.endIndexList(); 
     }
 
-#if 0
-    // write namespaces
-    NamespaceList *namespaceList=gd->namespaceList;
-    if (namespaceList->count()>0)
+
+    if (Config::htmlHelpTocExpandFlag)
     {
+      // write members
+      struct MemInfo
+      {
+        MemberList *list;
+        QCString name;
+      };
+      MemInfo memberLists[] = 
+      {
+        { &gd->defineMembers,  theTranslator->trDefines()           },
+        { &gd->typedefMembers, theTranslator->trTypedefs()          },
+        { &gd->enumMembers,    theTranslator->trEnumerations()      },
+        { &gd->enumValMembers, theTranslator->trEnumerationValues() },
+        { &gd->funcMembers,    theTranslator->trFunctions()         },
+        { &gd->varMembers,     theTranslator->trVariables()         },
+        { &gd->protoMembers,   theTranslator->trFuncProtos()        },
+        { 0,0 }
+      };
+
+      MemberList *members;
+      MemInfo *pMemInfo;
+      for (pMemInfo=&memberLists[0]; (members=pMemInfo->list) ; pMemInfo++)
+      {
+        if (members->count()>0)
+        {
+          if(htmlHelp)
+          {
+            htmlHelp->addContentsItem(TRUE, convertToHtml(pMemInfo->name), gd->getOutputFileBase(),0);
+            htmlHelp->incContentsDepth();
+          }
+
+          if(ftvHelp)
+          {
+
+            ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, pMemInfo->name);
+            ftvHelp->incContentsDepth();
+          }
+
+          MemberDef *md=members->first();
+          while (md)
+          {
+            GroupDef *gd=md->getGroupDef();
+            if(htmlHelp)
+            {
+              htmlHelp->addContentsItem(FALSE,md->name(),gd->getOutputFileBase(),md->anchor()); 
+            }
+            if(ftvHelp)
+            {
+              ftvHelp->addContentsItem(FALSE,gd->getReference(),gd->getOutputFileBase(),md->anchor(),md->name()); 
+            }
+            md=members->next();
+          }
+
+          if(htmlHelp) htmlHelp->decContentsDepth();
+          if(ftvHelp)  ftvHelp->decContentsDepth();
+
+        }
+      }
+
+      // write namespaces
+      NamespaceList *namespaceList=gd->namespaceList;
+      if (namespaceList->count()>0)
+      {
+        if(htmlHelp)
+        {
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces()), gd->getOutputFileBase(), 0);
+          htmlHelp->incContentsDepth();
+        }
+
+        if(ftvHelp)
+        {
+
+          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trNamespaces());
+          ftvHelp->incContentsDepth();
+        }
+
         NamespaceDef *nsd=namespaceList->first();
         while (nsd)
         {
-            if(htmlHelp)
-                htmlHelp->addContentsItem(FALSE,convertToHtml(nsd->name()).data(),nsd->getOutputFileBase()); 
-            if(ftvHelp)
-                ftvHelp->addContentsItem(FALSE,convertToHtml(nsd->name()).data(),nsd->getOutputFileBase()); 
-            nsd=namespaceList->next();
+          if(htmlHelp)
+          {
+            htmlHelp->addContentsItem(FALSE, convertToHtml(nsd->name()), nsd->getOutputFileBase());
+          }
+          if(ftvHelp)
+          {
+            ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name()));
+          }
+          nsd=namespaceList->next();
         }
-    }
+        if (htmlHelp) htmlHelp->decContentsDepth();
+        if (ftvHelp)  ftvHelp->decContentsDepth();
+      }
 
-    // write classes
-    writeClassTree(gd->classList);
-
-    // write members
-    MemberList memberLists[7] = {
-        gd->defineMembers,
-        gd->typedefMembers,
-        gd->enumMembers,
-        gd->enumValMembers,
-        gd->funcMembers,
-        gd->varMembers,
-        gd->protoMembers
-    };
-    MemberList members;
-    for (int i=0;i<7;i++)
-    {
-        members=memberLists[i];
-        if (members.count()>0)
+      // write classes
+      if(gd->classList->count()>0)
+      {
+        if(htmlHelp)
         {
-            MemberDef *md=members.first();
-            while (md)
-            {
-                if(htmlHelp)
-                    htmlHelp->addContentsItem(FALSE,md->name(),md->getGroupDef()->getOutputFileBase().data(),md->anchor()); 
-                if(ftvHelp)
-                    ftvHelp->addContentsItem(FALSE,md->name(),md->getGroupDef()->getOutputFileBase().data(),md->anchor()); 
-                md=members.next();
-            }
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trClasses()), gd->getOutputFileBase(), 0);
+          htmlHelp->incContentsDepth();
         }
-    }
-       
-    // write file list
-    FileList *fileList=gd->fileList;
-    if (fileList->count()>0)
-    {
+
+        if(ftvHelp)
+        {
+
+          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trClasses());
+          ftvHelp->incContentsDepth();
+        }
+
+        writeClassTree(gd->classList);
+        if(htmlHelp) htmlHelp->decContentsDepth();
+        if(ftvHelp)  ftvHelp->decContentsDepth();
+      }
+
+      // write file list
+      FileList *fileList=gd->fileList;
+      if (fileList->count()>0)
+      {
+        if(htmlHelp)
+        {
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trFiles()), gd->getOutputFileBase(), 0);
+          htmlHelp->incContentsDepth();
+        }
+
+        if(ftvHelp)
+        {
+
+          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trFiles());
+          ftvHelp->incContentsDepth();
+        }
+
         FileDef *fd=fileList->first();
         while (fd)
         {
-            if(htmlHelp)
-                htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase().data()); 
-            if(ftvHelp)
-                ftvHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase().data()); 
-            fd=fileList->next();
+          if(htmlHelp)
+            htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase());
+          if(ftvHelp)
+            ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
+          fd=fileList->next();
         }
-    }
-    
-    // write examples
-    PageSDictIterator eli(*(gd->exampleDict));
-    {
+        if(htmlHelp)
+          htmlHelp->decContentsDepth();
+        if(ftvHelp)
+          ftvHelp->decContentsDepth();
+      }
+
+      // write examples
+      if (gd->exampleDict->count()>0)
+      {
+        if(htmlHelp)
+        {
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trExamples()), gd->getOutputFileBase(), 0);
+          htmlHelp->incContentsDepth();
+        }
+
+        if(ftvHelp)
+        {
+          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trExamples());
+          ftvHelp->incContentsDepth();
+        }
+
+        PageSDictIterator eli(*(gd->exampleDict));
         PageInfo *pi=eli.toFirst();
         while (pi)
         {
-            if(htmlHelp)
-                htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
-            if(ftvHelp)
-                ftvHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
-            pi=++eli;
+          if(htmlHelp)
+          {
+            htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
+          }
+          if(ftvHelp)
+          {
+            ftvHelp->addContentsItem(FALSE,pi->getReference(),convertToHtml(pi->name)+"-example",0,convertNameToFile(pi->name)); 
+          }
+          pi=++eli;
         }
-    }
-#endif
 
-    if(htmlHelp) htmlHelp->decContentsDepth();
-    if(ftvHelp)  ftvHelp->decContentsDepth();
+        if (htmlHelp) htmlHelp->decContentsDepth();
+        if (ftvHelp)  ftvHelp->decContentsDepth();
+      }
+    }
+    
+    if (htmlHelp) htmlHelp->decContentsDepth();
+    if (ftvHelp)  ftvHelp->decContentsDepth();
+    
     gd->visited=TRUE;
   }
 }
