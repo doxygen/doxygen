@@ -19,7 +19,7 @@
 %{
 
 #include <qfile.h>
-#include <qcstring.h>
+#include <qstring.h>
 #include <qstack.h>
 #include <qdict.h>
 
@@ -36,7 +36,7 @@ static int g_commentState;
 TokenInfo *g_token = 0;
 static int g_inputPos = 0;
 static const char *g_inputString;
-static QCString g_fileName;
+static QString g_fileName;
 
 struct DocLexerContext
 {
@@ -122,69 +122,68 @@ static int computeIndent(const char *str,int length)
   return indent;
 }
 
-/*! converts input string \a opt into a list of Options. Each
- *  option is a name, value pair. The result is stored in g_token->options
+/*! converts input string \a opt into a list of Html Attributes. Each
+ *  attribute is a name, value pair. The result is stored in g_token->attribs
  */
-static void parseOptions(const QCString &opt)
+static void parseHtmlAttribs(const char *att)
 {
-  //printf("parseOptions(%s)\n",opt.data());
-  QCString options=opt;
-  g_token->options.clear();
-  int len = options.length();
+  //printf("parseHtmlAttribs(%s)\n",opt.data());
+  QCString attribs=att;
+  int len = attribs.length();
   char c;
-  int i=0,startName,endName,startOption,endOption;
+  int i=0,startName,endName,startAttrib,endAttrib;
   while (i<len)
   {
-    c=options.at(i);
+    c=attribs.at(i);
     // skip spaces
-    while (i<len && c==' ') { c=options.at(++i); }
+    while (i<len && c==' ') { c=attribs.at(++i); }
     startName=i;
     // search for end of name
-    while (i<len && c!=' ' && c!='=') { c=options.at(++i); }
+    while (i<len && c!=' ' && c!='=') { c=attribs.at(++i); }
     endName=i;
-    Option *opt = new Option;
-    opt->name  = options.mid(startName,endName-startName).lower(); 
+    HtmlAttrib opt;
+    opt.name  = attribs.mid(startName,endName-startName).lower(); 
     // skip spaces
-    while (i<len && c==' ') { c=options.at(++i); } 
-    if (options.at(i)=='=') // option has value
+    while (i<len && c==' ') { c=attribs.at(++i); } 
+    if (attribs.at(i)=='=') // option has value
     {
       i++;
       // skip spaces
-      while (i<len && c==' ') { c=options.at(++i); } 
-      if (options.at(i)=='\'') // option '...'
+      while (i<len && c==' ') { c=attribs.at(++i); } 
+      if (attribs.at(i)=='\'') // option '...'
       {
 	i++;
-	startOption=i;
+	startAttrib=i;
 	// search for matching quote 
-        while (i<len && c!='\'') { c=options.at(++i); } 
-	endOption=i;
+        while (i<len && c!='\'') { c=attribs.at(++i); } 
+	endAttrib=i;
 	i++;
       }
-      else if (options.at(i)=='"') // option "..."
+      else if (attribs.at(i)=='"') // option "..."
       {
 	i++;
-	startOption=i;
+	startAttrib=i;
 	// search for matching quote 
-        while (i<len && c!='"') { c=options.at(++i); } 
-	endOption=i;
+        while (i<len && c!='"') { c=attribs.at(++i); } 
+	endAttrib=i;
 	i++;
       }
       else // value without any quotes
       {
-	startOption=i;
+	startAttrib=i;
 	// search for separator
-        while (i<len && c!=' ') { c=options.at(++i); } 
-	endOption=i;
+        while (i<len && c!=' ') { c=attribs.at(++i); } 
+	endAttrib=i;
 	i++;
       }
-      opt->value  = options.mid(startOption,endOption-startOption); 
+      opt.value  = attribs.mid(startAttrib,endAttrib-startAttrib); 
     }
     else // start next option
     {
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
     //    opt->name.data(),opt->value.data());
-    g_token->options.append(opt);
+    g_token->attribs.append(&opt);
   }
 }
 
@@ -241,7 +240,7 @@ WORD1     [^ \t\n\r\\@<>&$#,.]+
 WORD2     "."|","
 WORD1NQ   [^ \t\n\r\\@<>&$#,."]+ 
 WORD2NQ   "."|","
-HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">" 
+HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
 
 %option noyywrap
 %option yylineno
@@ -269,14 +268,14 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 %%
 <St_Para>\r               /* skip carriage return */
 <St_Para>^{LISTITEM}      { /* list item */ 
-                         QCString text=yytext;
+                         QString text=yytext;
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
 			 g_token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*\n{LISTITEM}     { /* list item on next line */ 
-                         QCString text=yytext;
+                         QString text=yytext;
 			 text=text.right(text.length()-text.find('\n')-1);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
@@ -284,12 +283,12 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
                          return TK_LISTITEM;
                        }
 <St_Para>^{ENDLIST}       { /* end list */ 
-                         int dotPos = QCString(yytext).findRev('.');
+                         int dotPos = QString(yytext).findRev('.');
 			 g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*\n{ENDLIST}      { /* end list on next line */ 
-                         QCString text=yytext;
+                         QString text=yytext;
 			 text=text.right(text.length()-text.find('\n')-1);
                          int dotPos = text.findRev('.');
 			 g_token->indent     = computeIndent(text,dotPos);
@@ -302,7 +301,7 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 <St_Para>{SPCMD3}      {
   			 g_token->name = "form";
 			 bool ok;
-			 g_token->id = QCString(yytext).right(yyleng-6).toInt(&ok);
+			 g_token->id = QString(yytext).right(yyleng-6).toInt(&ok);
 			 ASSERT(ok);
 			 return TK_COMMAND;
   		       }
@@ -320,7 +319,7 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 			 return TK_URL;
                        }
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
-                         QCString tagName(yytext+1);
+                         QString tagName(yytext+1);
 			 int i=tagName.find(':');
   			 g_token->name = tagName.left(i);
 			 g_token->text = tagName.mid(i+1,tagName.length()-i-2);
@@ -334,13 +333,14 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 
                          g_token->name = yytext;
+			 g_token->attribs.clear();
                          int startNamePos=1;
                          if (g_token->name.at(1)=='/') startNamePos++;
-                         int optSep = g_token->name.find(' ');
-                         if (optSep!=-1) // tag has one or more options
+                         int attSep = g_token->name.find(' ');
+                         if (attSep!=-1) // tag has one or more options
                          {
-                           parseOptions(g_token->name.mid(optSep+1,g_token->name.length()-optSep-2));
-                           g_token->name=g_token->name.mid(startNamePos,optSep-1).lower();
+                           parseHtmlAttribs(g_token->name.mid(attSep+1,g_token->name.length()-attSep-2));
+                           g_token->name=g_token->name.mid(startNamePos,attSep-1).lower();
                          }
                          else // tag without options, strip brackets
                          {
@@ -539,7 +539,7 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
   			 return 0;
                        }
 <St_XRefItem>[0-9]+\n  {
-  			 QCString numStr=yytext;
+  			 QString numStr=yytext;
 			 numStr=numStr.left(yyleng-1);
 			 g_token->id=numStr.toInt();
 			 return RetVal_OK;
@@ -567,7 +567,7 @@ HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">"
 			 return TK_WORD;  
   		       }
 <St_File>"\""[^\n\"]+"\"" {
-  		         QCString text=yytext;
+  		         QString text=yytext;
 			 g_token->name = text.mid(1,text.length()-2);
 			 return TK_WORD;
   		       }
@@ -615,25 +615,25 @@ void doctokenizerYYsetStateTitle()
 
 void doctokenizerYYsetStateCode()
 {
-  g_token->verb.resize(0);
+  g_token->verb="";
   BEGIN(St_Code);
 }
 
 void doctokenizerYYsetStateHtmlOnly()
 {
-  g_token->verb.resize(0);
+  g_token->verb="";
   BEGIN(St_HtmlOnly);
 }
 
 void doctokenizerYYsetStateLatexOnly()
 {
-  g_token->verb.resize(0);
+  g_token->verb="";
   BEGIN(St_LatexOnly);
 }
 
 void doctokenizerYYsetStateVerbatim()
 {
-  g_token->verb.resize(0);
+  g_token->verb="";
   BEGIN(St_Verbatim);
 }
 

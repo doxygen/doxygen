@@ -790,9 +790,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
       ol.endTextLink();
       ol.popGeneratorState();
-      ol.disable(OutputGenerator::Man);
       ol.newParagraph();
-      ol.enable(OutputGenerator::Man);
     }
   }
   ol.writeSynopsis();

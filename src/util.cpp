@@ -2569,9 +2569,11 @@ bool generateLink(OutputDocInterface &od,const char *clName,
     }
     else if (compound) // link to compound
     {
-      if (lt==0 && compound->definitionType()==Definition::TypeGroup)
+      if (lt==0 && anchor.isEmpty() &&                      /* compound link */
+          compound->definitionType()==Definition::TypeGroup /* is group */ 
+         )
       {
-        linkText=((GroupDef *)compound)->groupTitle();
+        linkText=((GroupDef *)compound)->groupTitle(); // use group's title as link
       }
       od.writeObjectLink(compound->getReference(),
                          compound->getOutputFileBase(),anchor,linkText);

@@ -336,8 +336,11 @@ void HtmlGenerator::writeStyleInfo(int part)
       }
       else
       {
+        // convert style sheet to string
+        QCString fileStr = fileToString(cssname);
+        // write the string into the output dir
         startPlainFile(cssfi.fileName());
-        t << fileToString(cssname);
+        t << fileStr;
         endPlainFile();
       }
     }

@@ -45,6 +45,7 @@ HEADERS      =	bufstr.h \
 		formula.h \
 		ftvhelp.h \
 		groupdef.h \
+		htmlattrib.h \
                 htmldocvisitor.h \
 		htmlgen.h \
 		htmlhelp.h \
@@ -55,6 +56,7 @@ HEADERS      =	bufstr.h \
                 latexdocvisitor.h \
 		latexgen.h \
 		logos.h \
+		mandocvisitor.h \
 		mangen.h \
 		memberdef.h \
 		membergroup.h \
@@ -152,6 +154,7 @@ SOURCES      =	ce_lex.cpp \
                 latexdocvisitor.cpp \
 		latexgen.cpp \
 		logos.cpp \
+		mandocvisitor.cpp \
 		mangen.cpp \
 		memberdef.cpp \
 		membergroup.cpp \

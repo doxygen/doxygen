@@ -1899,7 +1899,7 @@ static void buildFunctionList(Entry *root)
   {
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  `%s' `%s'::`%s' `%s' relates=`%s' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d memSpec=%d proto=%d\n",
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d memSpec=%d proto=%d docFile=%s\n",
                  root->type.data(),
                  root->parent->name.data(),
                  root->name.data(),
@@ -1913,7 +1913,8 @@ static void buildFunctionList(Entry *root)
                  //root->mtArgList ? (int)root->mtArgList->count() : -1,
                  root->mGrpId,
                  root->memSpec,
-                 root->proto
+                 root->proto,
+                 root->docFile.data()
                 );
 
     bool isFriend=root->type.find("friend ")!=-1;

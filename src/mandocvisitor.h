@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _LATEXDOCVISITOR_H
-#define _LATEXDOCVISITOR_H
+#ifndef _MANDOCVISITOR_H
+#define _MANDOCVISITOR_H
 
 #include "docvisitor.h"
 
@@ -26,10 +26,10 @@ class BaseCodeDocInterface;
 class QString;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
-class LatexDocVisitor : public DocVisitor
+class ManDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    ManDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -130,10 +130,6 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
     
     void filter(const char *str);
-    void startLink(const QString &ref,const QString &file,
-                   const QString &anchor);
-    void endLink();
-    QString escapeMakeIndexChars(const char *s);
 
     //--------------------------------------
     // state variables
