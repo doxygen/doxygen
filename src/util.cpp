@@ -158,6 +158,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
     else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
     {
       WaitForSingleObject(sInfo.hProcess,INFINITE); 
+      CloseHandle(sInfo.hProcess);
     }
   }
   return 0;

@@ -368,7 +368,7 @@ class OutputGenerator : public BaseOutputDocInterface
     QStack<bool> *genStack;
 };
 
-/*! \brief Base Interface used for generating documentation.
+/*! \brief Interface used for generating documentation.
  *
  *  This abstract class is used by the documentation block
  *  parser to generate the output for a specific format. 

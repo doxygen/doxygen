@@ -950,9 +950,13 @@ void checkConfig()
     }
   }
 
+#undef PUTENV
 #if defined(_WIN32)
-  if (Config::haveDotFlag) _putenv("DOTFONTPATH=.");
+#define PUTENV _putenv
+#else
+#define PUTENV putenv
 #endif
+  if (Config::haveDotFlag) PUTENV("DOTFONTPATH=.");
   
 }
 

@@ -81,6 +81,7 @@ extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
 extern int documentedPages;
+extern int indexedPages;
 extern int documentedPackages;
 
 void startTitle(OutputList &ol,const char *fileName);

@@ -218,7 +218,7 @@ class TranslatorDutch : public Translator
     QCString trAuthors()
     { return "Auteur(s)"; }
     QCString trReturns()
-    { return "Retourneerd"; }
+    { return "Retourneert"; }
     QCString trSeeAlso()
     { return "Zie ook"; }
     QCString trParameters()

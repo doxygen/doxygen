@@ -116,8 +116,11 @@ void Definition::writeDocAnchorsToTagFile()
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
-      if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
-      Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+      if (!si->generated)
+      {
+        if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
+        Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+      }
     }
   }
 }

@@ -140,6 +140,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_man_output MAN_OUTPUT
 <li> \refitem cfg_max_dot_graph_height MAX_DOT_GRAPH_HEIGHT
 <li> \refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
+<li> \refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
 <li> \refitem cfg_output_directory OUTPUT_DIRECTORY
 <li> \refitem cfg_output_language OUTPUT_LANGUAGE
 <li> \refitem cfg_paper_type PAPER_TYPE
@@ -444,6 +445,14 @@ followed by the descriptions of the tags grouped by category.
  put the command \\sideeffect (or \@sideeffect) in the documentation, which 
  will result in a user defined paragraph with heading "Side Effects:".
  You can put \\n's in the value part of an alias to insert newlines.
+
+\anchor cfg_optimize_output_for_c
+<dt>\c OPTIMIZE_OUTPUT_FOR_C
+ \addindex OPTIMIZE_OUTPUT_FOR_C
+ Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
+ of C sources only. Doxygen will then generate output that is more tailored 
+ for C. For instance some of the names that are used will be different. 
+ The list of all members will be omitted, etc. 
 
 </dl>
 

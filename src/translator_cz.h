@@ -20,24 +20,30 @@
 
 #include "translator.h"
 
-// The translation from English to Czech by Vlastimil Havran.
-// In the cases where are more translations possible I hope
-// that I have selected the most reasonable text. If not, please,
-// mail the comments and text proposals to
+// The first translation from English to Czech was started by
+// Vlastimil Havran. He wrote:
+// 
+//   "In the cases where are more translations possible I hope
+//    that I have selected the most reasonable text. If not, please,
+//    mail the comments and text proposals to
 //
-// havran@fel.cvut.cz, 1999/04/11
+//    havran@fel.cvut.cz, 1999/04/11"
+//    
+// The prototype version of Czech strings with diacritics was
+// implemented by Petr Prikryl (prikrylp@skil.cz), 2000/06/20. As
+// Vlastimil was quite busy at the time, he agreed that Petr be the
+// second maintainer.
 //
 // Updates:
 // --------
-// 2000/06/20 
-//  - The prototype version of Czech strings with diacritics implemented by
-//    Petr Prikryl (prikrylp@skil.cz).  (Vlastimil Havran is still
-//    the maintainer.)  The translation was based on translator.h
-//    of Doxygen versison 1.1.4 (from scratch).
+// 2000/06/20 (Petr Prikryl)
+//  - The prototype version of Czech strings with diacritics. The
+//    translation was based on translator.h of Doxygen version
+//    1.1.4 (from scratch).
 //
 // 2000/07/10 (Petr Prikryl)
 //  - Updated version based on 1.1.5 sources (including important updates
-//    of the up-to-1.1.4 strings). Czech strings this file were written
+//    of the up-to-1.1.4 strings). Czech strings in this file were written
 //    in windows-1250 encoding. On-line decoding into iso-8859-2 ensured
 //    via conditional compilation if the sources are compiled under UNIX.
 //
@@ -73,14 +79,19 @@
 //    
 // 2000/10/17 (Petr Prikryl)
 //  - Update for "new since 1.2.2" version. 
+//
+// 2001/01/09 (Petr Prikryl)
+//  - Update for "new since 1.2.4" version. As I do not use Java,
+//    I tried my best to guess the Czech terminology for the Java.
+//    Let me know if some wording should be changed/improved.
 //         
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
 // of the private inline Decode(), or calling the WinToISO() method
 // for on-line encoding conversion. If you want to maintain the
-// source in the iso-8859-2, do convert the source encoding, change
-// the conditional definition of the inline Decode() using the
+// source in the iso-8859-2, do convert the encoding of the source,
+// change the conditional definition of the inline Decode() using the
 // method ISO88592ToWin1250() -- for conversion of strings for the
 // Windows version. The version which does not call the function is
 // probably slightly faster.
@@ -1125,6 +1136,46 @@ class TranslatorCzech : public Translator
     virtual QCString trPropertyDocumentation()
     {
       return Decode("Dokumentace k vlastnosti");
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return Decode("Rozhraní");
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      return Decode("Tøídy");
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return Decode((QCString)"Balík "+name);
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return Decode("Seznam balíkù");
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return Decode("Zde naleznete seznam balíkù se struèným popisem "
+                    "(pokud byl uveden):");
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return Decode("Balíky");
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return Decode("Dokumentace balíku");
     }
 };
 

@@ -21,6 +21,7 @@
 #include "qtbc.h"
 #include "classdef.h"
 #include "util.h"
+#include "config.h"
 
 class Translator
 {
@@ -167,7 +168,16 @@ class Translator
     
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { return "Member Data Documentation"; }
+    { 
+      if (Config::optimizeForCFlag)
+      {
+        return "Field Documentation"; 
+      }
+      else
+      {
+        return "Member Data Documentation"; 
+      }
+    }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
@@ -231,7 +241,16 @@ class Translator
     
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { return "Compound List"; }
+    { 
+      if (Config::optimizeForCFlag)
+      {
+        return "Data Structures";
+      }
+      else
+      {
+        return "Compound List"; 
+      }
+    }
     
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
@@ -243,11 +262,29 @@ class Translator
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { return "Compound Members"; }
+    { 
+      if (Config::optimizeForCFlag)
+      {
+        return "Data Fields"; 
+      }
+      else
+      {
+        return "Compound Members"; 
+      }
+    }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { return "File Members"; }
+    { 
+      if (Config::optimizeForCFlag)
+      {
+        return "Globals"; 
+      }
+      else
+      {
+        return "File Members"; 
+      }
+    }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
@@ -278,8 +315,17 @@ class Translator
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { return "Here are the classes, structs, "
-             "unions and interfaces with brief descriptions:"; 
+    { 
+      
+      if (Config::optimizeForCFlag)
+      {
+        return "Here are the data structures with brief descriptions:"; 
+      }
+      else
+      {
+        return "Here are the classes, structs, "
+               "unions and interfaces with brief descriptions:"; 
+      }
     }
 
     /*! This is an introduction to the page with all class members. */
@@ -300,11 +346,20 @@ class Translator
     {
       QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
-      result+="file members with links to ";
+      
+      if (Config::optimizeForCFlag)
+      {
+        result+="functions, variables, defines, enums, and typedefs";
+      }
+      else
+      {
+        result+="file members";
+      }
+      result+=" with links to ";
       if (extractAll) 
-        result+="the file documentation for each member:";
-      else 
         result+="the files they belong to:";
+      else 
+        result+="the documentation:";
       return result;
     }
 
@@ -353,7 +408,16 @@ class Translator
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { return "Compound Index"; }
+    {
+      if (Config::optimizeForCFlag)
+      { 
+        return "Data Structure Index";
+      }
+      else
+      {
+        return "Compound Index"; 
+      }
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
@@ -487,7 +551,16 @@ class Translator
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { return "Compounds"; }
+    { 
+      if (Config::optimizeForCFlag)
+      {
+        return "Data Structures"; 
+      }
+      else
+      {
+        return "Compounds"; 
+      }
+    }
 
     /*! This is used in the documentation of a group before the list of 
      *  links to documented files
@@ -919,7 +992,14 @@ class Translator
     }
     virtual QCString trPublicAttribs()
     {
-      return "Public Attributes";
+      if (Config::optimizeForCFlag)
+      {
+        return "Data Fields";
+      }
+      else
+      {
+        return "Public Attributes";
+      }
     }
     virtual QCString trStaticPublicAttribs()
     {

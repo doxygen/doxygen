@@ -1046,6 +1046,15 @@ void init()
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
                  );
+  ConfigBool::add(  "optimizeForCFlag",
+                    "OPTIMIZE_OUTPUT_FOR_C",
+                    "FALSE",
+                    "do we parse C code?",
+                    "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources \n"
+                    "only. Doxygen will then generate output that is more tailored for C. \n"
+                    "For instance some of the names that are used will be different. The list \n"
+                    "of all members will be omitted, etc. \n"
+                 );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------
@@ -1306,7 +1315,7 @@ void init()
                     "GENERATE_TREEVIEW",
                     "FALSE",
                     "should a folder tree view be generated?",
-                    "If the GENERATE_TREEVIEW tag is set to YES, a side pannel will be\n"
+                    "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
                     "generated containing a tree-like index structure (just like the one that \n"
                     "is generated for HTML Help). For this to work a browser that supports \n"
                     "JavaScript and frames is required (for instance Netscape 4.0+ \n"

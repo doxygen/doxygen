@@ -1240,9 +1240,9 @@ BN	[ \t\r\n]
 					}
 <IgnoreLine>.
 <Command>.
-<UndefName>{ID}			{
+<UndefName>{ID}				{
   					  Define *def;
-  					  if ((def=isDefined(yytext)))
+  					  if ((def=isDefined(yytext)) && !def->isPredefined)
 					  {
 					    //printf("undefining %s\n",yytext);
 					    def->undef=TRUE;
