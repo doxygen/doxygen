@@ -631,23 +631,23 @@ void writeNamespaceIndex(OutputList &ol)
     if (nd->isLinkableInProject())
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
-      ol.docify(" (");
       if (!nd->briefDescription().isEmpty())
       {
+        ol.docify(" (");
         OutputList briefOutput(&ol);
         parseDoc(briefOutput,
                  nd->getDefFileName(),nd->getDefLine(),
                  nd->name(),0,
                  abbreviate(nd->briefDescription(),nd->name()));
         ol+=briefOutput;
+        ol.docify(")");
       }
-      else
-      {
-        ol.startEmphasis();
-        parseText(ol,theTranslator->trNoDescriptionAvailable());
-        ol.endEmphasis();
-      }
-      ol.docify(")");
+      //else
+      //{
+      //  ol.startEmphasis();
+      //  parseText(ol,theTranslator->trNoDescriptionAvailable());
+      //  ol.endEmphasis();
+      //}
       ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
@@ -707,23 +707,23 @@ void writeAnnotatedClassList(OutputList &ol)
         default:                   type="interface"; break;
       }
       ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
-      ol.docify(" (");
       if (!cd->briefDescription().isEmpty())
       {
+        ol.docify(" (");
         OutputList briefOutput(&ol);
         parseDoc(briefOutput,
                  cd->getDefFileName(),cd->getDefLine(),
                  cd->name(),0,
                  abbreviate(cd->briefDescription(),cd->name()));
         ol+=briefOutput;
+        ol.docify(")");
       }
-      else
-      {
-        ol.startEmphasis();
-        parseText(ol,theTranslator->trNoDescriptionAvailable());
-        ol.endEmphasis();
-      }
-      ol.docify(")");
+      //else
+      //{
+      //  ol.startEmphasis();
+      //  parseText(ol,theTranslator->trNoDescriptionAvailable());
+      //  ol.endEmphasis();
+      //}
       ol.writeEndAnnoItem(cd->getOutputFileBase());
       if (Config::generateHtml && Config::htmlHelpFlag)
       {

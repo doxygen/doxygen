@@ -1309,7 +1309,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  if ( *yytext == ',' )
 					  {
 					    int i=oldType.length(); 
-					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]==' ')) i--;
+					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
 					    current->type = oldType.left(i);
 					    current->doc  = oldDocs;
 					  }

@@ -68,7 +68,7 @@ It can help you in three ways:
      for this manual).
 </ol>
 
-Doxygen is developed on <a href="http://www.linux.org">Linux</a>, 
+Doxygen is developed under <a href="http://www.linux.org">Linux</a>, 
 but is set-up to be highly portable. As a result, it runs on most 
 other UNIX flavors as well. Furthermore, an executable for 
 Windows 9x/NT is also available.

@@ -1235,13 +1235,15 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   if (Config::usePDFLatexFlag)
   {
     QCString epstopdfCmd(4096);
-    epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
-                   epsBaseName.data(),epsBaseName.data());
+    //epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+    //               epsBaseName.data(),epsBaseName.data());
+    //printf("Converting eps using `%s'\n",epstopdfCmd.data());
     if (iSystem(epstopdfCmd)!=0)
     {
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
        return;
     }
+    printf("done\n");
   }
 }
 

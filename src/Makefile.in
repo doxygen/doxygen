@@ -20,18 +20,18 @@ all: Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
 	$(MAKE) -f Makefile.doxysearch $@
 
 Makefile.doxygen: doxygen.pro doxygen.t 
-	$(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
 
 Makefile.doxytag: doxytag.pro doxytag.t 
-	$(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
 
 Makefile.doxysearch: doxysearch.pro
-	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
 
 tmake: 
-	$(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
-	$(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
-	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
 
 clean: Makefile.doxygen Makefile.doxytag Makefile.doxysearch
 	$(MAKE) -f Makefile.doxygen    clean 

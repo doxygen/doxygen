@@ -1717,14 +1717,16 @@ static void buildMemberList(Entry *root)
                )
             {
               // see if we need to create a new member
-              found=nsName==rnsName || // members are in the same namespace
-                    ((fd!=0 && // no external reference
+              found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
+                    ((fd!=0 &&                          // no external reference and
                       fd->absFilePath()==root->fileName // prototype in the same file
                      ) || 
-                     md->getGroupDef()!=0 // member is part of a group
+                     md->getGroupDef()!=0               // member is part of a group
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
               
+              //printf("combining function with prototype found=%d `%s'<->`%s'!\n",
+              //    found,fd->absFilePath().data(),root->fileName.data());
               // merge members documentation and properties
               mergeArguments(root->argList,md->argumentList());
               if (!md->documentation() && !root->doc.isEmpty())
@@ -1963,12 +1965,16 @@ static void transferFunctionDocumentation()
       if (md->isPrototype()) mdec=md;
       if (md->isFunction() && !md->isStatic() && !md->isPrototype()) mdef=md;
     }
+    //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
+    //    mdef, mdef ? mdef->name().data() : "",
+    //    mdec, mdec ? mdec->name().data() : "");
     if (mdef && mdec && 
         matchArguments(mdef->argumentList(),mdec->argumentList())
        ) /* match found */
     {
       //printf("Found member %s: def in %s and dec in %s\n",
-      //    mn->memberName(),mdef->getFileDef()->name(),mdec->getFileDef()->name());
+      //    mn->memberName(),mdef->getFileDef()->name().data(),
+      //    mdec->getFileDef()->name().data());
       
       /* copy documentation between function definition and declaration */
       if (mdec->briefDescription())
@@ -2520,6 +2526,8 @@ static void addMemberDocs(Entry *root,
   }
   else  
   {
+    //printf("Adding docs md->docs=`%s' root->docs=`%s'!\n",
+    //     md->documentation().data(),root->doc.data());
     // documentation outside a compound overrides the documentation inside it
     if ( /* !md->isStatic() && !root->stat &&   do not replace doc of a static */
         (
@@ -5118,29 +5126,19 @@ static void copyStyleSheet()
 static void readFiles(BufStr &output)
 {
   QCString *s=inputFiles.first();
-//  char *p=output.data();
   while (s)
   {
     QCString fileName=*s;
 
-    //int fileSize=fi->fileInfo()->size();
     int fileNameSize=fileName.length();
-    //int streamLength=fileSize+fileNameSize+4; 
-
-    //QCString fileText(streamLength);
 
     // add begin filename marker
-//    *p++=0x06; 
     output.addChar(0x06);
     // copy filename
-//    memcpy(p,fileName.data(),fileNameSize);
-//    p+=fileNameSize;
     output.addArray(fileName.data(),fileNameSize);
     
     // add end filename marker
-//    *p++=0x06;
     output.addChar(0x06);
-//    *p++='\n'; // to make ^ work while scanning the first line of a file!
     output.addChar('\n');
     if (Config::preprocessingFlag)
     {
@@ -5158,10 +5156,7 @@ static void readFiles(BufStr &output)
     s=inputFiles.next();
     //printf("-------> adding new line\n");
   }
-//  *p++='\0';
   output.addChar(0);
-  //printf("Output after preprocessing:\n---------\n%s\n----------\n",output.data());
-  //printf("Final length = %d\n",p-output.data());
 }
 
 //----------------------------------------------------------------------------
@@ -5177,7 +5172,8 @@ static int readDir(QFileInfo *fi,
             QStrList *patList,
             QStrList *exclPatList,
             StringList *resultList,
-            StringDict *resultDict
+            StringDict *resultDict,
+            bool errorIfNotExist
            )
 {
   QDir dir((const char *)fi->absFilePath());
@@ -5193,7 +5189,7 @@ static int readDir(QFileInfo *fi,
   {
     if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
     { // file should not be excluded
-      if (!cfi->exists() || !cfi->isReadable())
+      if ((!cfi->exists() || !cfi->isReadable()) && errorIfNotExist)
       {
          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
       }
@@ -5233,7 +5229,7 @@ static int readDir(QFileInfo *fi,
       {
         cfi->setFile(cfi->absFilePath());
         totalSize+=readDir(cfi,fnList,fnDict,exclDict,
-            patList,exclPatList,resultList,resultDict);
+            patList,exclPatList,resultList,resultDict,errorIfNotExist);
       }
     }
     ++it;
@@ -5288,7 +5284,8 @@ static int readFileOrDirectory(const char *s,
                         QStrList *patList,
                         QStrList *exclPatList,
                         StringList *resultList,
-                        StringDict *resultDict
+                        StringDict *resultDict,
+                        bool errorIfNotExist=TRUE
                        )
 {
   QFileInfo fi(s);
@@ -5297,7 +5294,7 @@ static int readFileOrDirectory(const char *s,
   {
     if (exclDict==0 || exclDict->find(fi.absFilePath())==0)
     {
-      if (!fi.exists() || !fi.isReadable())
+      if ((!fi.exists() || !fi.isReadable()) && errorIfNotExist)
       {
         err("Error: source %s is not a readable file or directory... skipping.\n",s);
       }
@@ -5333,7 +5330,7 @@ static int readFileOrDirectory(const char *s,
       }
       else if (fi.isDir()) // readable dir
         totalSize+=readDir(&fi,fnList,fnDict,exclDict,patList,
-            exclPatList,resultList,resultDict);
+            exclPatList,resultList,resultDict,errorIfNotExist);
     }
   }
   return totalSize;
@@ -5725,7 +5722,7 @@ int main(int argc,char **argv)
   while (s)
   {
     readFileOrDirectory(s,0,0,0,&Config::filePatternList,
-                        0,0,&excludeNameDict);
+                        0,0,&excludeNameDict,FALSE);
     s=Config::excludeSources.next();
   }
 

@@ -18,7 +18,7 @@ all: $(CFGGENBIN_DIR)/configgen config.h config.l doxywizard.cpp doxywizard.h \
 	$(MAKE) -f Makefile.doxywizard $@
 
 Makefile.doxywizard: doxywizard.pro doxywizard.t
-	$(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
 
 config.l: $(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.l
 	$(CFGGENBIN_DIR)/configgen $(CFGGENSRC_DIR)/config_templ.l >config.l
@@ -36,7 +36,7 @@ $(CFGGENBIN_DIR)/configgen: $(CFGGENSRC_DIR)/configgen.cpp
 	$(MAKE) -C $(CFGGENSRC_DIR) 
 
 tmake: 
-	$(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
 
 clean: Makefile.doxywizard 
 	$(MAKE) -f Makefile.doxywizard clean 

@@ -189,6 +189,7 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al,bool br=TRUE)
   while (a)
   {
     ol.docify(a->type);
+    ol.docify(" ");
     ol.docify(a->name);
     if (a->defval.length()!=0)
     {
