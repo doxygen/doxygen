@@ -141,8 +141,8 @@ class Entry
     QCString     scopeSpec;   // template specialization of the scope
     QCString     memberSpec;  // template specialization of the member
     QCString	 program;     // the program text
-    //QCString     body;        // the function body
     int          bodyLine;    // line number of the definition in the source
+    int          endBodyLine; // line number where the definition ends
     QCString     includeFile; // include file (2 arg of \class, must be unique)
     QCString     includeName; // include name (3 arg of \class)
     QCString     doc;         // documentation block (partly parsed)

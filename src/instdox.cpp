@@ -39,8 +39,18 @@ void writeInstallScript()
     char *s=Config::tagFileList.first();
     while (s)
     {
-      QFileInfo fi(s);
-      t << "\"" << fi.fileName() << "\", \"\"";
+      QCString tagLine=s;
+      QCString fileName;
+      int eqPos = tagLine.find('=');
+      if (eqPos!=-1) // strip destination part
+      {
+        fileName = tagLine.left(eqPos).stripWhiteSpace();
+      }
+      else
+      {
+        fileName = tagLine;
+      }
+      t << "\"" << fileName << "\", \"\"";
       s=Config::tagFileList.next();
       if (s) t << ", ";
     }

@@ -141,7 +141,7 @@ int guessSection(const char *name)
 //  if (n)
 //  {
 //    Define *def=defineDict[n]; 
-//    if (def && def->nargs==0 && !def->definition.isNull())
+//    if (def && def->nargs==0 && !def->definition.isEmpty())
 //    {
 //      return def->definition;
 //    }
@@ -153,7 +153,7 @@ int guessSection(const char *name)
 QCString resolveTypedefs(const QCString &n)
 {
   QCString *subst=typedefDict[n];
-  if (subst && !subst->isNull())
+  if (subst && !subst->isEmpty())
   {
     return *subst;
   }
@@ -863,6 +863,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   {
     QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
     QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
+    if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
+    if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
     
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
@@ -1489,7 +1491,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
  * instead of :: the # symbol may also be used.
  */
 
-void generateRef(OutputList &ol,const char *scName,
+bool generateRef(OutputList &ol,const char *scName,
                  const char *name,bool inSeeBlock,const char *rt)
 {
   //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
@@ -1502,7 +1504,7 @@ void generateRef(OutputList &ol,const char *scName,
   {
     ClassDef *cd=0;
     NamespaceDef *nd=0;
-    if (linkText.isNull()) linkText=tmpName;
+    if (linkText.isEmpty()) linkText=tmpName;
     // check if this is a class or namespace reference
     if (scName!=tmpName && getScopeDefs(scName,name,cd,nd))
     {
@@ -1525,13 +1527,13 @@ void generateRef(OutputList &ol,const char *scName,
         }
       }
       // link has been written, stop now.
-      return;
+      return TRUE;
     }
     else if (scName==tmpName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
     {
       ol.docify(linkText);
       // text has been written, stop now.
-      return;
+      return FALSE;
     }
     // continue search...
     linkText = rt; 
@@ -1552,7 +1554,7 @@ void generateRef(OutputList &ol,const char *scName,
   
   // create a default link text if none was explicitly given
   bool explicitLink=TRUE;
-  if (linkText.isNull())
+  if (linkText.isEmpty())
   {
     //if (!scopeUser.isEmpty()) linkText=scopeUser+"::";
     linkText=nameStr;
@@ -1612,7 +1614,7 @@ void generateRef(OutputList &ol,const char *scName,
     // for functions we add the arguments if explicitly specified or else "()"
     if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
     {
-      if (argsStr.isNull())
+      if (argsStr.isEmpty())
         ol.writeString("()");
       else
         ol.docify(argsStr);
@@ -1630,7 +1632,7 @@ void generateRef(OutputList &ol,const char *scName,
         writePageRef(ol,cName,aName);
       }
     }
-    return;
+    return TRUE;
   }
   else if (inSeeBlock && !nameStr.isEmpty() && (gd=groupDict[nameStr]))
   { // group link
@@ -1642,7 +1644,7 @@ void generateRef(OutputList &ol,const char *scName,
       ol.docify(gd->groupTitle());
     }
     ol.endTextLink();
-    return;
+    return TRUE;
   }
 
   // nothing found
@@ -1651,9 +1653,9 @@ void generateRef(OutputList &ol,const char *scName,
   else 
   {
     ol.docify(linkText);
-    if (!argsStr.isNull()) ol.docify(argsStr);
+    if (!argsStr.isEmpty()) ol.docify(argsStr);
   }
-  return;
+  return FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -1661,8 +1663,9 @@ void generateRef(OutputList &ol,const char *scName,
 // file, class or member from text `lr' within the context of class `clName'. 
 // This link has the text 'lt' (if not 0), otherwise `lr' is used as a
 // basis for the link's text.
+// returns TRUE if a link could be generated.
 
-void generateLink(OutputList &ol,const char *clName,
+bool generateLink(OutputList &ol,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
   QCString linkRef=lr;
@@ -1673,11 +1676,20 @@ void generateLink(OutputList &ol,const char *clName,
   GroupDef *gd;
   bool ambig;
   if (linkRef.length()==0) // no reference name!
+  {
     ol.docify(lt);
+    return FALSE;
+  }
   else if ((pageDict[linkRef])) // link to a page
+  {
     ol.writeObjectLink(0,linkRef,0,lt);  
+    return TRUE;
+  }
   else if ((exampleDict[linkRef])) // link to an example
+  {
     ol.writeObjectLink(0,linkRef+"-example",0,lt);
+    return TRUE;
+  }
   else if ((gd=groupDict[linkRef])) // link to a group
   {
     ol.startTextLink(gd->getOutputFileBase(),0);
@@ -1686,13 +1698,19 @@ void generateLink(OutputList &ol,const char *clName,
     else
       ol.docify(gd->groupTitle());
     ol.endTextLink();
+    return TRUE;
   }
   else if ((fd=findFileDef(&inputNameDict,linkRef,ambig))
        && fd->isLinkable())
+  {
         // link to documented input file
     ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
+    return TRUE;
+  }
   else // probably a class or member reference
-    generateRef(ol,clName,lr,inSeeBlock,lt);
+  {
+    return generateRef(ol,clName,lr,inSeeBlock,lt);
+  }
 }
 
 void generateFileRef(OutputList &ol,const char *name,const char *text)
@@ -1782,7 +1800,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   ambig=FALSE;
   QCString name=n;
   QCString path;
-  if (name.isNull()) return 0;
+  if (name.isEmpty()) return 0;
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
@@ -1790,7 +1808,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     name=name.right(name.length()-slashPos-1); 
   }
   //printf("findFileDef path=`%s' name=`%s'\n",path.data(),name.data());
-  if (name.isNull()) return 0;
+  if (name.isEmpty()) return 0;
   FileName *fn;
   if ((fn=(*fnDict)[name]))
   {
@@ -1805,7 +1823,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       FileDef *lastMatch=0;
       while (fd)
       {
-        if (path.isNull() || fd->getPath().right(path.length())==path) 
+        if (path.isEmpty() || fd->getPath().right(path.length())==path) 
         { 
           count++; 
           lastMatch=fd; 
@@ -1837,7 +1855,7 @@ void showFileDefMatches(const FileNameDict *fnDict,const char *n)
     FileDef *fd=fn->first();
     while (fd)
     {
-      if (path.isNull() || fd->getPath().right(path.length())==path)
+      if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
         msg("   %s\n",fd->absFilePath().data());
       }

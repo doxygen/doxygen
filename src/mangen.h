@@ -149,6 +149,12 @@ class ManGenerator : public OutputGenerator
     void writeGrave(char c)   { t << c << "\\*:"; firstCol=FALSE; }
     void writeCirc(char c)    { t << c << "\\*^"; firstCol=FALSE; }
     void writeTilde(char c)   { t << c << "\\*~"; firstCol=FALSE; } 
+    void writeRing(char c)    { t << c << "\\*0"; /* just a wild guess, 
+                                                     need to check! */ 
+                                                  firstCol=FALSE; }
+    void writeSharpS()        { t << "s\\*:";     /* just a wild guess,
+                                                     need to check! */
+                                                  firstCol=FALSE; }
     void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fR\""; firstCol=FALSE; }
     void startDescList();

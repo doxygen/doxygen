@@ -262,7 +262,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (incFile)
   {
     QCString nm=incName.copy();
-    if (incName.isNull()) nm=incFile->name();
+    if (incName.isEmpty()) nm=incFile->name();
     ol.startTypewriter();
     ol.docify("#include <");
     ol.disable(OutputGenerator::Html);
@@ -418,7 +418,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   bool exampleFlag=hasExamples();
   if (!briefDescription().isEmpty() || 
       !documentation().isEmpty() || 
-      (bodyLine!=-1 && bodyDef) ||
+      (startBodyLine!=-1 && bodyDef) ||
       exampleFlag)
   {
     ol.writeRuler();
@@ -494,7 +494,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       //ol.endDescItem();
       ol.endDescList();
     }
-    writeSourceRef(ol);
+    writeSourceRef(ol,name());
   }
   
   pubMembers.countDocMembers();
@@ -837,7 +837,7 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   startFile(ol,fileName+"-include",name()+" Include File");
   startTitle(ol,0);
   QCString n=incName.copy();
-  if (incName.isNull()) n=incFile->name();
+  if (incName.isEmpty()) n=incFile->name();
   parseText(ol,n);
   endTitle(ol,0,0);
   parseText(ol,theTranslator->trVerbatimText(incFile->name()));

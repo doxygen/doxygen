@@ -674,6 +674,42 @@ class TranslatorFrench : public Translator
       return "Liste par ordre alphabétique";
     }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990901
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the heading text for the retval command. */
+    virtual QCString trReturnValues()
+    { return "Valeurs retournées"; }
+
+    /*! This is in the (quick) index as a link to the main page (index.html)
+     */
+    virtual QCString trMainPage()
+    { return "Page Principale"; }
+
+    /*! This is used in references to page that are put in the LaTeX
+     *  documentation. It should be an abbreviation of the word page.
+     */
+    virtual QCString trPageAbbreviation()
+    { return "p "; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991003
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSources()
+    {
+      return "Sources";
+    }
+    virtual QCString trDefinedAtLineInSourceFile()
+    {
+      return "Définition à la ligne @0 du fichier @1.";
+    }
+    virtual QCString trDefinedInSourceFile()
+    {
+      return "Définition dans le fichier @0.";
+    }
 };
 
 #endif

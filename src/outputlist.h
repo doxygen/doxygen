@@ -263,6 +263,10 @@ class OutputList
     { forall(&OutputGenerator::writeCirc,c); }
     void writeTilde(char c)
     { forall(&OutputGenerator::writeTilde,c); }
+    void writeRing(char c)
+    { forall(&OutputGenerator::writeRing,c); }
+    void writeSharpS()
+    { forall(&OutputGenerator::writeSharpS); }
     void startMemberDescription() 
     { forall(&OutputGenerator::startMemberDescription); }
     void endMemberDescription() 

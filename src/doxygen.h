@@ -116,6 +116,7 @@ extern FormulaList formulaList;
 extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
 extern PageInfo *mainPage;
+extern StringDict tagDestinationDict; 
 
 extern int annotatedClasses;
 extern int hierarchyClasses;

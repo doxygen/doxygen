@@ -93,6 +93,7 @@ documentation:
 <li> \refitem cmdskipline \skipline 
 <li> \refitem cmdstruct \struct 
 <li> \refitem cmdsubsection \subsection 
+<li> \refitem cmdthrow \throw
 <li> \refitem cmdtypedef \typedef
 <li> \refitem cmdunion \union 
 <li> \refitem cmduntil \until
@@ -229,6 +230,12 @@ Doxygen. Unrecognized commands are treated as normal text.
   documentation contained in the comment block. All examples are placed
   in a list. The source code is scanned for documented members and classes.
   If any are found, the names are cross-referenced with the documentation. 
+  Source files or directories can be specified using the 
+  \c EXAMPLE_PATH tag of Doxygen's configuration file.
+
+  If \<file-name\> itself is not unique for the set of example files specified
+  by the \c EXAMPLE_PATH tag, you can include part of the absolute path
+  to disambiguate it.
 
   If more that one source file is needed for the example,
   the \\include command can be used.
@@ -583,7 +590,19 @@ Doxygen. Unrecognized commands are treated as normal text.
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
   example.
 
+  \par Note: 
+  the tag \\exceptions is a synonym for this tag.
+
   \sa Section \ref cmdjdexception "@exception".
+
+<hr>
+\subsection cmdthrow \throw <exception-object> { exception description }
+
+  \addindex \throw
+  Equivalent to \\exception (see section \ref cmdexception "\\exception").
+
+  \par Note: 
+  the tag \\throws is a synonym for this tag.
 
 <hr>
 \subsection cmdreturn \return { description of the return value }
@@ -798,6 +817,10 @@ Doxygen. Unrecognized commands are treated as normal text.
   The command takes the name of an include file as an argument. 
   Source files or directories can be specified using the 
   \c EXAMPLE_PATH tag of Doxygen's configuration file.
+
+  If \<file-name\> itself is not unique for the set of example files specified
+  by the \c EXAMPLE_PATH tag, you can include part of the absolute path
+  to disambiguate it.
 
   Using the \\include command is equivalent to inserting the file into 
   the documentation block and surrounding it 
@@ -1199,6 +1222,10 @@ The following command JavaDoc command are support.
 \subsection cmdjdexception @exception <exception-object> { exception-description }
   \addindex @exception
   Equivalent to \\exception (see section \ref cmdexception "\\exception").
+  Also synonymous to \@exceptions and \\exceptions.
+\subsection cmdjdthrows @throw <exception-object> { exception-description }
+  Equivalent to \\throw (see section \ref cmdthrow "\\throw").
+  Also synonymous to \@exception and \\exception.
 \subsection cmdjdreturn @return { description of the return value }
   \addindex @return
   Equivalent to \\return (see section \ref cmdreturn "\\return").

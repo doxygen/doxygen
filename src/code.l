@@ -72,65 +72,65 @@ typedef QList<CodeClassDef> CodeClassList;
 typedef QDict<CodeClassDef> CodeClassDict;
 typedef QList<CodeVarDef>   CodeVarList; 
 
-static CodeClassList codeClassList;
-static CodeClassDict codeClassDict(17);
-static CodeVarList codeVarList;
-static CodeVarList codeParmList;
-
 /* -----------------------------------------------------------------
- *
  *	statics
  */
   
-static const char * inputString;     //!< the code fragment as text
-static int	    inputPosition;   //!< read offset during parsing 
-static int          inputLines;      //!< number of line in the code fragment
-static int	    yyLineNr;        //!< current line number
-static int	    lastCContext;
-static int	    lastSpecialCContext;
-static int          lastStringContext;
-static int	    bracketCount = 0;
-static int	    curlyCount   = 0;
-static int	    sharpCount   = 0;
-static QCString     type;
-static QCString     name;
-static QCString     args;
-static QCString     parmType;
-static QCString     parmName;
-static bool         inClass;
-static QCString     classScope;
-static OutputList   *code;
-static CodeClassDef ccd;
-static CodeVarDef   cvd;
-static bool         exampleBlock;
-static QCString     exampleName;
-static QCString     exampleFile;
-static int          anchorCount;
-static FileDef     *sourceFileDef;
-static QCString     lastVariable;
+static CodeClassList g_codeClassList;
+static CodeClassDict g_codeClassDict(17);
+static CodeVarList   g_codeVarList;
+static CodeVarList   g_codeParmList;
+static const char *  g_inputString;     //!< the code fragment as text
+static int	     g_inputPosition;   //!< read offset during parsing 
+static int           g_inputLines;      //!< number of line in the code fragment
+static int	     g_yyLineNr;        //!< current line number
+static int	     g_lastCContext;
+static int	     g_lastSpecialCContext;
+static int           g_lastStringContext;
+static int	     g_bracketCount = 0;
+static int	     g_curlyCount   = 0;
+static int	     g_sharpCount   = 0;
+static QCString      g_type;
+static QCString      g_name;
+static QCString      g_args;
+static QCString      g_parmType;
+static QCString      g_parmName;
+static bool          g_inClass;
+static QCString      g_classScope;
+static OutputList *  g_code;
+static CodeClassDef  g_ccd;
+static CodeVarDef    g_cvd;
+static bool          g_exampleBlock;
+static QCString      g_exampleName;
+static QCString      g_exampleFile;
+static int           g_anchorCount;
+static FileDef *     g_sourceFileDef;
+static bool          g_includeCodeFragment;
 
-// start a new line of code, inserting a line number if sourceFileDef
+// start a new line of code, inserting a line number if g_sourceFileDef
 // is TRUE. If a definition starts at the current line, then the line
 // number is linked to the documentation of that definition.
 static void startCodeLine(OutputList &ol)
 {
-  if (sourceFileDef)
+  if (g_sourceFileDef)
   {
     QCString lineNumber,lineAnchor;
-    lineNumber.sprintf("%05d ",yyLineNr);
-    lineAnchor.sprintf("l%05d",yyLineNr);
-    Definition *d   = sourceFileDef->getSourceDefinition(yyLineNr);
-    QCString anchor = sourceFileDef->getSourceAnchor(yyLineNr);
-    if (d && d->isLinkableInProject())
+    lineNumber.sprintf("%05d",g_yyLineNr);
+    lineAnchor.sprintf("l%05d",g_yyLineNr);
+    Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
+    QCString anchor = g_sourceFileDef->getSourceAnchor(g_yyLineNr);
+    if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
       ol.startCodeAnchor(lineAnchor);
       ol.writeCodeLink(d->getReference(),d->getOutputFileBase(),
-	                   anchor,lineNumber);
+	               anchor,lineNumber);
       ol.endCodeAnchor();
+      ol.codify(" ");
     }
     else
     {
       ol.codify(lineNumber);
+      ol.codify(" ");
     }
   }
   ol.startCodeLine(); 
@@ -149,18 +149,18 @@ static void codifyLines(char *text)
     while ((c=*p++) && c!='\n');
     if (c=='\n')
     {
-      yyLineNr++;
+      g_yyLineNr++;
       *(p-1)='\0';
-      code->codify(sp);
-      code->endCodeLine();
-      if (yyLineNr<inputLines) 
+      g_code->codify(sp);
+      g_code->endCodeLine();
+      if (g_yyLineNr<g_inputLines) 
       {
-	startCodeLine(*code);
+	startCodeLine(*g_code);
       }
     }
     else
     {
-      code->codify(sp);
+      g_code->codify(sp);
       done=TRUE;
     }
   }
@@ -183,11 +183,11 @@ static void writeMultiLineCodeLink(OutputList &ol,
     while ((c=*p++) && c!='\n');
     if (c=='\n')
     {
-      yyLineNr++;
+      g_yyLineNr++;
       *(p-1)='\0';
       ol.writeCodeLink(ref,file,anchor,sp);
       ol.endCodeLine();
-      if (yyLineNr<inputLines) 
+      if (g_yyLineNr<g_inputLines) 
       {
 	startCodeLine(ol);
       }
@@ -202,58 +202,59 @@ static void writeMultiLineCodeLink(OutputList &ol,
 
 static void addType()
 {
-  if (name=="const") { name.resize(0); return; }
-  if (type.length()) type += ' ' ;
-  type += name ;
-  name.resize(0) ;
-  if (type.length()) type += ' ' ;
-  type += args ;
-  args.resize(0) ;
+  if (g_name=="const") { g_name.resize(0); return; }
+  if (g_type.length()) g_type += ' ' ;
+  g_type += g_name ;
+  g_name.resize(0) ;
+  if (g_type.length()) g_type += ' ' ;
+  g_type += g_args ;
+  g_args.resize(0) ;
 }
 
 static void addParmType()
 {
-  if (parmName=="const") { parmName.resize(0); return; }
-  if (parmType.length()) parmType += ' ' ;
-  parmType += parmName ;
-  parmName.resize(0) ;
+  if (g_parmName=="const") { g_parmName.resize(0); return; }
+  if (g_parmType.length()) g_parmType += ' ' ;
+  g_parmType += g_parmName ;
+  g_parmName.resize(0) ;
 }
 
 static void setClassScope(const QCString &name)
 {
+  //printf("setClassScope(%s)\n",name.data());
   QCString n=name;
   n=n.simplifyWhiteSpace();
   int index;
   if ((index=n.find("::"))!=-1)
-    classScope=n.left(index);
+    g_classScope=n.left(index);
   else
-    classScope.resize(0);
-  //printf("--->New class scope `%s'\n",classScope.data());
+    g_classScope.resize(0);
+  //printf("--->New class scope `%s'\n",g_classScope.data());
 }
 
 static void addVariable()
 {
-  cvd.name=name.copy().simplifyWhiteSpace();
-  cvd.type=type.copy().simplifyWhiteSpace();
-  if (type.length()==0) 
+  g_cvd.name=g_name.copy().simplifyWhiteSpace();
+  g_cvd.type=g_type.copy().simplifyWhiteSpace();
+  if (g_type.length()==0) 
     return;
-  else if ((getClass(cvd.type)) || (codeClassDict[cvd.type])) 
+  else if ((getClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
   {
-    cvd.classScope=classScope;
-    codeVarList.append(new CodeVarDef(cvd)); // add it to a list
+    g_cvd.classScope=g_classScope;
+    g_codeVarList.append(new CodeVarDef(g_cvd)); // add it to a list
   }
 }
 
 static void addParameter()
 {
-  cvd.name=parmName.copy().simplifyWhiteSpace();
-  cvd.type=parmType.copy().simplifyWhiteSpace();
-  if (cvd.type.length()==0) 
+  g_cvd.name=g_parmName.copy().simplifyWhiteSpace();
+  g_cvd.type=g_parmType.copy().simplifyWhiteSpace();
+  if (g_cvd.type.length()==0) 
     return;
-  else if ((getClass(cvd.type)) || (codeClassDict[cvd.type])) 
+  else if ((getClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
   {
-    cvd.classScope=classScope;
-    codeParmList.append(new CodeVarDef(cvd)); // add it to a list
+    g_cvd.classScope=g_classScope;
+    g_codeParmList.append(new CodeVarDef(g_cvd)); // add it to a list
   }
 }
 
@@ -264,19 +265,19 @@ static void generateClassLink(OutputList &ol,char *clName)
   ClassDef *cd;
   if ((cd=getClass(className)) && cd->isLinkable())
   {
-    if (exampleBlock)
+    if (g_exampleBlock)
     {
       QCString anchor;
-      anchor.sprintf("_a%d",anchorCount);
-      //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),exampleName.data(),
-      //                                   exampleFile.data());
-      if (cd->addExample(anchor,exampleName,exampleFile))
+      anchor.sprintf("_a%d",g_anchorCount);
+      //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+      //                                   g_exampleFile.data());
+      if (cd->addExample(anchor,g_exampleName,g_exampleFile))
       {
 	bool latexOn = ol.isEnabled(OutputGenerator::Latex);
 	if (latexOn) ol.disable(OutputGenerator::Latex);
 	ol.writeAnchor(anchor);
 	if (latexOn) ol.enable(OutputGenerator::Latex);
-	anchorCount++;
+	g_anchorCount++;
       }
     }
     //ol.writeCodeLink(cd->getReference(),cd->getOutputFileBase(),0,className);
@@ -302,19 +303,19 @@ static bool getLink(const char *className,
   if (getDefs(c,m,"()",md,cd,fd,nd) && md->isLinkable())
   {
     //printf("Found!\n");
-    if (exampleBlock)
+    if (g_exampleBlock)
     {
       QCString anchor;
-      anchor.sprintf("a%d",anchorCount);
-      //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),exampleName.data(),
-      //                                  exampleFile.data());
-      if (md->addExample(anchor,exampleName,exampleFile))
+      anchor.sprintf("a%d",g_anchorCount);
+      //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+      //                                  g_exampleFile.data());
+      if (md->addExample(anchor,g_exampleName,g_exampleFile))
       {
 	bool latexEnabled = result.isEnabled(OutputGenerator::Latex);
 	if (latexEnabled) result.disable(OutputGenerator::Latex);
 	result.writeAnchor(anchor);
 	if (latexEnabled) result.enable(OutputGenerator::Latex);
-	anchorCount++;
+	g_anchorCount++;
       }
     }
     Definition *d=0;
@@ -352,17 +353,17 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
   //                          varName,memName,classScope.data());
-  CodeVarDef *cvd=codeParmList.last();
-  while (cvd && cvd->name!=varName) cvd=codeParmList.prev();
+  CodeVarDef *cvd=g_codeParmList.last();
+  while (cvd && cvd->name!=varName) cvd=g_codeParmList.prev();
   if (!cvd)
   {
-    cvd=codeVarList.last();
-    while (cvd && cvd->name!=varName) cvd=codeVarList.prev();
+    cvd=g_codeVarList.last();
+    while (cvd && cvd->name!=varName) cvd=g_codeVarList.prev();
   }
   if (cvd) // variable found
   {
     //printf("variable found type=%s!\n",cvd->type.data());
-    CodeClassDef *ccd=codeClassDict[cvd->type];
+    CodeClassDef *ccd=g_codeClassDict[cvd->type];
     if (ccd)
     {
       //printf("Class found!\n");
@@ -402,7 +403,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
   }
   else
   {
-    ClassDef *vcd = getClass(classScope);
+    ClassDef *vcd = getClass(g_classScope);
     if (vcd)
     {
       //printf("Found class for variable `%s'\n",varName);
@@ -465,7 +466,7 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
 {
   OutputList result(&ol);
   CodeClassDef *ccd=0;
-  QCString locScope=classScope.copy();
+  QCString locScope=g_classScope.copy();
   QCString locFunc=removeWhiteSpace(funcName);
   int i=locFunc.findRev("::");
   if (i>0)
@@ -474,9 +475,9 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
     locFunc=locFunc.right(locFunc.length()-i-2);
   }
   //printf("generateFunctionLink(%s) classScope=%s\n",locFunc.data(),locScope.data());
-  if (locScope.length()>0 && (ccd=codeClassDict[locScope]))
+  if (locScope.length()>0 && (ccd=g_codeClassDict[locScope]))
   {
-    //printf("using classScope %s\n",classScope.data());
+    //printf("using classScope %s\n",g_classScope.data());
     char *s=ccd->bases.first();
     while (s)
     {
@@ -502,7 +503,7 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
 /*! counts the number of lines in the input */
 static int countLines()
 {
-  const char *p=inputString;
+  const char *p=g_inputString;
   char c;
   int count=1;
   while ((c=*p++)) if (c=='\n') count++; 
@@ -517,9 +518,9 @@ static int countLines()
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-    while( c < max_size && inputString[inputPosition] )
+    while( c < max_size && g_inputString[g_inputPosition] )
     {
-	*buf = inputString[inputPosition++] ;
+	*buf = g_inputString[g_inputPosition++] ;
 	c++; buf++;
     }
     return c;
@@ -554,12 +555,12 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
 <*>\x0d
 <Body>^([ \t]*"#"[ \t]"include"[ \t]*)("<"|"\"") {
-					  code->codify(yytext);
+					  g_code->codify(yytext);
   					  BEGIN( ReadInclude ); 
 					}
 <Body>("class"|"struct"|"union")[ \t\n]+ { 
                                           codifyLines(yytext);
-					  //code->codify(yytext);
+					  //g_code->codify(yytext);
   					  BEGIN( ClassName ); 
 					}
 <ReadInclude>[a-z_A-Z0-9.]+(("/"[a-z_A-Z0-9.]+)*)/(">"|"\"")  {
@@ -569,24 +570,24 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  if ((fd=findFileDef(&inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {
-					    code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
+					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
 					  }
 					  else
 					  {
-					    code->codify(yytext);
+					    g_code->codify(yytext);
 					  }
 					  char c=yyinput();
 					  QCString text;
 					  text+=c;
-					  code->codify(text);
+					  g_code->codify(text);
 					  BEGIN( Body );
   					}
 <Body>^[ \t]*"#"			{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
 					}
 <SkipCPP>.				{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <SkipCPP>\\\n				{ 
   					  codifyLines(yytext);
@@ -596,283 +597,285 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  BEGIN( Body ) ;
 					}
 <SkipCPP>"//"				{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Body>"{"				{ 
-  					  code->codify(yytext);
-  					  curlyCount++;
-  					  type.resize(0); name.resize(0);
+  					  g_code->codify(yytext);
+  					  g_curlyCount++;
+  					  g_type.resize(0); 
+					  g_name.resize(0);
 					}
 <Body>"}"				{ 
-  					  code->codify(yytext);
-  					  inClass=FALSE; 
-					  if (--curlyCount<=0) 
+  					  g_code->codify(yytext);
+  					  g_inClass=FALSE; 
+					  if (--g_curlyCount<=0) 
 					  {
-					    classScope.resize(0);
-					    codeParmList.clear();
+					    g_classScope.resize(0);
+					    g_codeParmList.clear();
 					  }
 					}
 <ClassName>";"				{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					  BEGIN( Body ); 
 					}
 <ClassName>[*&]+          		{
 					  addType();
-					  code->codify(yytext);
+					  g_code->codify(yytext);
 					}
 <ClassName>{ID}			        {
-					  ccd.name=yytext;
+					  g_ccd.name=yytext;
 					  addType();
-					  generateClassLink(*code,yytext);
+					  generateClassLink(*g_code,yytext);
 					}
 <ClassName>[ \t\n]*":"[ \t\n]*		{
   					  codifyLines(yytext);
   					  BEGIN( Bases ); 
 					}
 <Bases,ClassName>[ \t]*"{"[ \t]*	{
-  					  code->codify(yytext);
-					  curlyCount++;
-					  inClass=TRUE;
-					  if (ccd.name.length()>0)
+  					  g_code->codify(yytext);
+					  g_curlyCount++;
+					  g_inClass=TRUE;
+					  if (g_ccd.name.length()>0)
 					  {
-					    classScope=ccd.name.copy();
-					    CodeClassDef *cd=new CodeClassDef(ccd);
-					    codeClassList.append(cd);
-					    codeClassDict.insert(cd->name,cd);
+					    g_classScope=g_ccd.name.copy();
+					    CodeClassDef *cd=new CodeClassDef(g_ccd);
+					    g_codeClassList.append(cd);
+					    g_codeClassDict.insert(cd->name,cd);
 					  }
 					  BEGIN( Body );
  					}
 <Bases>"virtual"			{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Bases>"public"				{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Bases>"protected"			{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Bases>"private"			{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Bases>{ID}	                        { 
-					  //printf("%s:addBase(%s)\n",ccd.name.data(),yytext);
-  					  ccd.bases.inSort(yytext); 
-					  generateClassLink(*code,yytext);
+					  //printf("%s:addBase(%s)\n",g_ccd.name.data(),yytext);
+  					  g_ccd.bases.inSort(yytext); 
+					  generateClassLink(*g_code,yytext);
 					}
 <Bases>"<"                              { 
-  					  code->codify(yytext);
-  					  sharpCount=1;
+  					  g_code->codify(yytext);
+  					  g_sharpCount=1;
 					  BEGIN ( SkipSharp );
 					}
 <SkipSharp>"<"                          {
-  					  code->codify(yytext);
-  					  ++sharpCount; 
+  					  g_code->codify(yytext);
+  					  ++g_sharpCount; 
 					}
 <SkipSharp>">"                          { 
-  					  code->codify(yytext);
-  					  if (--sharpCount<=0)
+  					  g_code->codify(yytext);
+  					  if (--g_sharpCount<=0)
 					  BEGIN ( Bases );
 					}
 <Bases>","                              { 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
   					
 
 <Body>("asm"|"auto"|"break"|"case"|"catch"|"continue"|"default"|"delete"|"do"|"else"|"for"|"goto"|"if"|"new"|"return"|"switch"|"this"|"throw"|"try"|"typedef"|"while")([ \t\n]*)/"(" {
   					  codifyLines(yytext);
-  				          name.resize(0);type.resize(0);
+  				          g_name.resize(0);g_type.resize(0);
   					}
 <Body>("asm"|"auto"|"break"|"case"|"catch"|"continue"|"default"|"delete"|"do"|"else"|"for"|"goto"|"if"|"new"|"return"|"switch"|"this"|"throw"|"try"|"typedef"|"while")([ \t\n]*) {
   					  codifyLines(yytext);
-  				          name.resize(0);type.resize(0);
+  				          g_name.resize(0);g_type.resize(0);
   					}
   /*
 <Body>([a-z_A-Z~][a-z_A-Z0-9]*)/([ \t]*)	{ 
-					  generateClassLink(*code,yytext);
+					  generateClassLink(*g_code,yytext);
 					  addType();
   					  name+=yytext; 
 					}
   */
 <Body>{SCOPENAME}/[ \t\n]* { 
-					  generateClassLink(*code,yytext);
+					  generateClassLink(*g_code,yytext);
   					  //codifyLines(yytext);
 					  addType();
-  					  name+=yytext; 
+  					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}*"("		{
   					  addType();
 					  //if (type.length()==0)
 					  QCString tmp=yytext;
-					  generateFunctionLink(*code,yytext);
+					  generateFunctionLink(*g_code,yytext);
 					  //else
-  					  //  code->codify(yytext);
-  					  bracketCount=1;
-					  args.resize(0);
-  					  name+=yytext; 
+  					  //  g_code->codify(yytext);
+  					  g_bracketCount=1;
+					  g_args.resize(0);
+  					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
 <FuncCall,Body,MemberCall>\"		{
-  					  code->codify(yytext);
-  					  lastStringContext=YY_START;
+  					  g_code->codify(yytext);
+  					  g_lastStringContext=YY_START;
   					  BEGIN( SkipString );
   					}
 <SkipString>[^\"\\]*			{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <SkipString>"//"|"/*"			{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					}
 <SkipString>\"				{
-  					  code->codify(yytext);
-  					  BEGIN( lastStringContext );
+  					  g_code->codify(yytext);
+  					  BEGIN( g_lastStringContext );
   					}
 <SkipString>\\.				{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
 <Body>":"				{
-  					  code->codify(yytext);
-  					  name.resize(0);type.resize(0);
+  					  g_code->codify(yytext);
+  					  g_name.resize(0);g_type.resize(0);
   					}
-<Body>"'"."'"				{
-  					  code->codify(yytext);
+<Body,MemberCall,MemberCall2,FuncCall>"'"((\\.)|(.))"'"	{
+  					  g_code->codify(yytext);
   					}
 <Body>"."|"->"				{ 
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					  BEGIN( MemberCall ); 
 					}
 <MemberCall>{SCOPENAME}/{B}*"(" 	{
-  					  if (name.length()>0)
-					    generateMemberLink(*code,name,yytext);
+  					  if (g_name.length()>0)
+					    generateMemberLink(*g_code,g_name,yytext);
 					  else
-  					    code->codify(yytext);
-  					  name.resize(0);type.resize(0);
-					  bracketCount=0;
+  					    g_code->codify(yytext);
+  					  g_name.resize(0);g_type.resize(0);
+					  g_bracketCount=0;
 					  BEGIN(FuncCall);
   					}
 <MemberCall>[^a-z_A-Z0-9(\n]		{ 
-  					  code->codify(yytext);
-    					  type.resize(0);
-					  name.resize(0);
+  					  g_code->codify(yytext);
+    					  g_type.resize(0);
+					  g_name.resize(0);
 					  BEGIN(Body); 
 					}
 <Body>[,=;\[]				{
-  					  code->codify(yytext);
-  					  if (type.length()>0) 
+  					  g_code->codify(yytext);
+  					  if (g_type.length()>0) 
 					    addVariable();
-					  name.resize(0);
-					  if (*yytext!=',') type.resize(0);
-					  args.resize(0);
+					  g_name.resize(0);
+					  if (*yytext!=',') g_type.resize(0);
+					  g_args.resize(0);
   					}
 <Body>[0-9]+				{
-					  code->codify(yytext);
+					  g_code->codify(yytext);
 					}
 <MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]* {
 					  addParmType();
-					  parmName=yytext; 
-					  generateClassLink(*code,yytext);
+					  g_parmName=yytext; 
+					  generateClassLink(*g_code,yytext);
 					}
 <MemberCall2,FuncCall>,			{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					  addParameter();
-					  parmType.resize(0);parmName.resize(0);
+					  g_parmType.resize(0);g_parmName.resize(0);
 					}
 <MemberCall2,FuncCall>"("		{
-  					  code->codify(yytext);
-  					  bracketCount++; 
+  					  g_code->codify(yytext);
+  					  g_bracketCount++; 
 					}
 <MemberCall2,FuncCall>")"		{ 
-  					  code->codify(yytext);
-  					  if (--bracketCount<=0) 
-					  name.resize(0);args.resize(0);
-					  parmType.resize(0);parmName.resize(0);
+  					  g_code->codify(yytext);
+  					  if (--g_bracketCount<=0) 
+					  g_name.resize(0);g_args.resize(0);
+					  g_parmType.resize(0);g_parmName.resize(0);
   					  BEGIN( Body ); 
 					}
 <MemberCall2,FuncCall>")"[ \t\n]*";"	{
   					  codifyLines(yytext);
-  					  bracketCount=0;
-					  if (!inClass && type.length()>0)
+  					  g_bracketCount=0;
+					  if (!g_inClass && g_type.length()>0)
 					    addVariable();
-					  name.resize(0);type.resize(0);
-					  parmType.resize(0);parmName.resize(0);
+					  g_name.resize(0);g_type.resize(0);
+					  g_parmType.resize(0);g_parmName.resize(0);
   					  BEGIN( Body );
   					}
 <MemberCall2,FuncCall>")"[ \t\n]*"{" 	{
 					  addParameter();
-					  parmType.resize(0);parmName.resize(0);
-					  if (name.length()>0) setClassScope(name);
+					  g_parmType.resize(0);g_parmName.resize(0);
+					  if (g_name.find("::")!=-1) setClassScope(g_name);
   					  codifyLines(yytext);
-					  curlyCount++;
-  					  type.resize(0); name.resize(0);
+					  g_curlyCount++;
+  					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
   					}
 <MemberCall2,FuncCall>")"[ \t\n]*":" 	{
 					  addParameter();
-					  parmType.resize(0);parmName.resize(0);
-					  if (name.length()>0) setClassScope(name);
+					  g_parmType.resize(0);g_parmName.resize(0);
+					  if (g_name.find("::")!=-1) setClassScope(g_name);
   					  codifyLines(yytext);
-  					  type.resize(0); name.resize(0);
+  					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( SkipInits );
   					}
 <SkipInits>"{"				{ 
-  					  code->codify(yytext);
-					  curlyCount++; 
+  					  g_code->codify(yytext);
+					  g_curlyCount++; 
 					  BEGIN( Body ); 
 					}
 <SkipInits>{ID}				{
-					  generateClassLink(*code,yytext);
+					  generateClassLink(*g_code,yytext);
   					}
 <FuncCall>([a-z_A-Z][a-z_A-Z0-9]*)/"("	{
-					  generateFunctionLink(*code,yytext);
+					  generateFunctionLink(*g_code,yytext);
 					}
 <FuncCall>([a-z_A-Z][a-z_A-Z0-9]*)/("."|"->") { 
-  					  code->codify(yytext);
-					  args=yytext; 
+  					  g_code->codify(yytext);
+					  g_args=yytext; 
 					  BEGIN( MemberCall2 ); 
 					}
 <MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*"(") { 
-  					  if (args.length()>0)
-					    generateMemberLink(*code,args,yytext);
+  					  if (g_args.length()>0)
+					    generateMemberLink(*g_code,g_args,yytext);
 					  else
-  					    code->codify(yytext);
-					  args.resize(0);
+  					    g_code->codify(yytext);
+					  g_args.resize(0);
 					  BEGIN( FuncCall );
 					}
 <MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*("."|"->")) {
-  					  code->codify(yytext);
-    					  args=yytext;
+  					  g_code->codify(yytext);
+    					  g_args=yytext;
     					}
 <SkipComment>"//"			{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					}
 <SkipComment>[^*/\n]+			{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
   					}
 <SkipComment>[ \t]*"*/"			{ 
-  					  code->codify(yytext);
-  					  BEGIN( lastCContext ) ; 
+  					  g_code->codify(yytext);
+  					  BEGIN( g_lastCContext ) ; 
 					}
-<SkipCxxComment>.*\n			{ 
-  					  codifyLines(yytext);
-					  BEGIN( lastCContext ) ;
+<SkipCxxComment>.*/\n			{ 
+  					  //codifyLines(yytext);
+  					  g_code->codify(yytext);
+					  BEGIN( g_lastCContext ) ;
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*{B}*"/*"[*!]/[^/*] {
-  					  yyLineNr+=QCString(yytext).contains('\n');
+  					  g_yyLineNr+=QCString(yytext).contains('\n');
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)* {
-  					  yyLineNr+=QCString(yytext).contains('\n');
-                                          code->endCodeLine();
-                                          if (yyLineNr<inputLines) 
+  					  g_yyLineNr+=QCString(yytext).contains('\n');
+                                          g_code->endCodeLine();
+                                          if (g_yyLineNr<g_inputLines) 
                                           {
-                                            startCodeLine(*code);
+                                            startCodeLine(*g_code);
                                           }
-  					  BEGIN(lastSpecialCContext);
+  					  BEGIN(g_lastSpecialCContext);
   					}
 <RemoveSpecialCComment>"*/"		{
-  					  BEGIN(lastSpecialCContext);
+  					  BEGIN(g_lastSpecialCContext);
   					}
 <RemoveSpecialCComment>[^*\n]+
 <RemoveSpecialCComment>"//"|"/*"
-<RemoveSpecialCComment>\n  { yyLineNr++; }
+<RemoveSpecialCComment>\n  { g_yyLineNr++; }
 <RemoveSpecialCComment>.
   /*
 <SkipSpecialComment>"//"
@@ -880,9 +883,9 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  BEGIN( lastDContext ) ;
   					}
 <SkipSpecialComment>[ \t]*"* /"[ \t\n]*"\n"/"/ *"  {
-  					  //code->codify("\n");
+  					  //g_code->codify("\n");
 					  //QCString lineText=yytext;
-  					  //yyLineNr+=lineText.contains('\n');
+  					  //g_yyLineNr+=lineText.contains('\n');
   					  BEGIN( lastDContext ) ;
   					}
 <SkipSpecialComment>.	
@@ -899,59 +902,60 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					}
  */
 <*>\n({B}*"//"[!/][^\n]*\n)*		{ // remove special one-line comment
-  					  yyLineNr+=((QCString)yytext).contains('\n');
-                                          code->endCodeLine();
-                                          if (yyLineNr<inputLines) 
+  					  g_yyLineNr+=((QCString)yytext).contains('\n');
+                                          g_code->endCodeLine();
+                                          if (g_yyLineNr<g_inputLines) 
                                           {
-                                            startCodeLine(*code);
+                                            startCodeLine(*g_code);
                                           }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
-  					  yyLineNr++;
-                                          code->endCodeLine();
-                                          if (yyLineNr<inputLines) 
+  					  g_yyLineNr++;
+                                          g_code->endCodeLine();
+                                          if (g_yyLineNr<g_inputLines) 
                                           {
-                                            startCodeLine(*code);
+                                            startCodeLine(*g_code);
                                           }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
   					  char c[2]; c[0]='\n'; c[1]=0;
   					  codifyLines(c);
   					}
-<*>\n{B}*"/*"[!*]/[^/*]			{
-					  lastSpecialCContext = YY_START;
-					  yyLineNr++;
+<*>\n{B}*"/*"[!*]/[^/*] 		{
+					  g_lastSpecialCContext = YY_START;
+					  g_yyLineNr++;
 					  BEGIN(RemoveSpecialCComment);
 					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
-					  lastSpecialCContext = YY_START;
+					  g_lastSpecialCContext = YY_START;
 					  BEGIN(RemoveSpecialCComment);
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
-					  lastSpecialCContext = YY_START;
+					  g_lastSpecialCContext = YY_START;
 					  BEGIN(RemoveSpecialCComment);
 					}
+<*>"/*"("!"?)"*/"			{}
 <*>"/*"					{ 
-  					  code->codify(yytext);
-  					  lastCContext = YY_START ;
+  					  g_code->codify(yytext);
+  					  g_lastCContext = YY_START ;
 					  BEGIN( SkipComment ) ;
 					}
 <*>"//"					{ 
-  					  code->codify(yytext);
-  					  lastCContext = YY_START ;
+  					  g_code->codify(yytext);
+  					  g_lastCContext = YY_START ;
 					  BEGIN( SkipCxxComment ) ;
 					}
 <*>\n					{
   					  codifyLines(yytext); 
   					}
 <*>.					{
-  					  code->codify(yytext);
+  					  g_code->codify(yytext);
 					}
   /*
 <*>([ \t\n]*"\n"){2,}			{ // combine multiple blank lines
   					  //QCString sepLine=yytext;
-  					  //code->codify("\n\n");
-  					  //yyLineNr+=sepLine.contains('\n'); 
+  					  //g_code->codify("\n\n");
+  					  //g_yyLineNr+=sepLine.contains('\n'); 
   					  //char sepLine[3]="\n\n";
   					  codifyLines(yytext);
 					}
@@ -964,46 +968,54 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
 void initParseCodeContext()
 {
-  codeClassList.setAutoDelete(TRUE);
-  codeVarList.setAutoDelete(TRUE);
-  codeParmList.setAutoDelete(TRUE);
-  codeClassDict.clear();
-  codeClassList.clear();
-  codeVarList.clear();
-  codeParmList.clear();
-  ccd.bases.clear();
-  anchorCount = 0;
+  g_codeClassList.setAutoDelete(TRUE);
+  g_codeVarList.setAutoDelete(TRUE);
+  g_codeParmList.setAutoDelete(TRUE);
+  g_codeClassDict.clear();
+  g_codeClassList.clear();
+  g_codeVarList.clear();
+  g_codeParmList.clear();
+  g_ccd.bases.clear();
+  g_anchorCount = 0;
 }
 
 void parseCode(OutputList &ol,const char *className,const QCString &s, 
-                  bool exBlock, const char *exName,FileDef *fd)
+                  bool exBlock, const char *exName,FileDef *fd,
+		  int startLine,int endLine,bool inlineFragment)
 {
-  code = new OutputList(&ol);
+  g_code = new OutputList(&ol);
   if (s.isEmpty()) return;
-  inputString   = s;
-  inputPosition = 0;
-  inputLines    = countLines();
-  yyLineNr      = 1;
-  curlyCount    = 0;
-  bracketCount  = 0;
-  sharpCount    = 0;
-  classScope    = className;
-  exampleBlock  = exBlock; 
-  exampleName   = exName;
-  sourceFileDef = fd;
-  exampleFile   = convertSlashes(exampleName,TRUE)+"-example";
-  startCodeLine(*code);
-  type.resize(0);
-  name.resize(0);
-  args.resize(0);
-  parmName.resize(0);
-  parmType.resize(0);
+  g_inputString   = s;
+  g_inputPosition = 0;
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = countLines();
+  if (startLine!=-1)
+    g_yyLineNr    = startLine;
+  else
+    g_yyLineNr    = 1;
+  g_curlyCount    = 0;
+  g_bracketCount  = 0;
+  g_sharpCount    = 0;
+  g_classScope    = className;
+  g_exampleBlock  = exBlock; 
+  g_exampleName   = exName;
+  g_sourceFileDef = fd;
+  g_exampleFile   = convertSlashes(g_exampleName,TRUE)+"-example";
+  g_includeCodeFragment = inlineFragment;
+  startCodeLine(*g_code);
+  g_type.resize(0);
+  g_name.resize(0);
+  g_args.resize(0);
+  g_parmName.resize(0);
+  g_parmType.resize(0);
   codeYYrestart( codeYYin );
   BEGIN( Body );
   codeYYlex();
-  //if (yyLineNr<=inputLines) code->endCodeLine();
-  ol+=*code;
-  delete code;
+  //if (g_yyLineNr<=g_inputLines) code->endCodeLine();
+  ol+=*g_code;
+  delete g_code;
   return;
 }
 

@@ -82,6 +82,8 @@ void MemberList::countDocMembers(bool inGroup)
   MemberDef *md=first();
   while (md)
   {
+    //printf("%s MemberList::countDocMembers() details=%d\n",
+    //    md->name().data(),md->detailsAreVisible());
     if ((Config::extractAllFlag || md->detailsAreVisible()) &&
         (md->groupId()==-1 || inGroup))
     {

@@ -77,9 +77,9 @@ void MemberGroup::writeDocumentation(OutputList &ol)
     if (!documentation().isEmpty() || Config::repeatBriefFlag)
     {
       bool htmlEnabled = ol.isEnabled(OutputGenerator::Html);
-      bool latexEnabled = ol.isEnabled(OutputGenerator::Html);
-      if (htmlEnabled) ol.disableAllBut(OutputGenerator::Html);
-      if (latexEnabled) ol.disableAllBut(OutputGenerator::Html);
+      bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
+      if (htmlEnabled) ol.disable(OutputGenerator::Html);
+      if (latexEnabled) ol.disable(OutputGenerator::Latex);
       ol.startTextLink(0,"_details");
       parseText(ol,theTranslator->trMore());
       ol.endTextLink();

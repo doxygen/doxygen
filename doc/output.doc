@@ -22,11 +22,11 @@
 The following output formats are \e directly supported by doxygen:
 <dl>
 <dt><b>HTML</b>
-<dd>Generated if GENERATE_HTML is set to YES in the configuration file.
+<dd>Generated if \c GENERATE_HTML is set to \c YES in the configuration file.
 <dt>\f$\mbox{\LaTeX}\f$
-<dd>Generated if GENERATE_LATEX is set to YES in the configuration file.
+<dd>Generated if \c GENERATE_LATEX is set to \c YES in the configuration file.
 <dt><b>Man pages</b>
-<dd>Generated if GENERATE_MAN is set to YES in the configuration file.
+<dd>Generated if \c GENERATE_MAN is set to \c YES in the configuration file.
 </dl>
 
 The following output formats are \e indirectly supported by doxygen:
@@ -42,7 +42,7 @@ The following output formats are \e indirectly supported by doxygen:
 <dd>Generated from the \f$\mbox{\LaTeX}\f$ output by
     running <code>make pdf</code> in the output directory.
     In order to get hyperlinks in the pdf file, 
-    \c PDF_HYPERLINKS should be set to \c YES.
+    \c PDF_HYPERLINKS should be set to \c YES in the configuration file.
 </dl>
 
 */

@@ -66,6 +66,7 @@ Entry::Entry(const Entry &e)
   startLine   = e.startLine;
   mGrpId      = e.mGrpId;
   bodyLine    = e.bodyLine;
+  endBodyLine = e.endBodyLine;
   inLine      = e.inLine;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
@@ -203,6 +204,7 @@ void Entry::reset()
   scopeSpec.resize(0);
   memberSpec.resize(0);
   bodyLine = -1;
+  endBodyLine = -1;
   mGrpId = -1;
   section = EMPTY_SEC;
   sig     = FALSE;

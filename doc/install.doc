@@ -29,7 +29,6 @@ following to build the executable:
     \addindex Qt
 <LI>The <a href="ftp://prep.ai.mit.edu/pub/gnu">GNU</a> tools 
     flex, bison and make
-    \latexonly(see {\tt ftp://prep.ai.mit.edu/pub/gnu})\endlatexonly.
     \addindex flex
     \addindex bison
     \addindex make
@@ -38,6 +37,8 @@ following to build the executable:
     \latexonly(see {\tt http://www.perl.com})\endlatexonly.
     \addindex perl
 </UL>
+For platform specific installation instructions see the \c INSTALL file
+that is included in the package.
 
 \addindex HTTP
 \addindex CGI
@@ -45,17 +46,25 @@ To use the search engine \c doxysearch, you will also need
 a HTTP daemon running on the target system and permission to execute a 
 CGI binary.
 
-Once you have Qt installed correctly, you can simply enter:
+If you are running Unix, and have Qt installed correctly, you can simply enter
+\verbatim
+configure
+\endverbatim
+to set up the makefiles for your platform. For Windows this step can be
+skipped.
+
+To override the auto detected platform you can specify
+\verbatim
+configure --platform platform-type
+\endverbatim
+See the \c PLATFORMS file for a list of possible platforms. 
+For more configuration options use <code>configure --help</code>
+
+To compile and link the sources enter
 \verbatim
 make
 \endverbatim
-to get a list of all supported platforms/compilers.
-Typing <tt>make</tt> followed by your platform will compile doxygen.
-For Linux you can enter the following:
-\verbatim
-make linux-g++
-\endverbatim
-
+in the root of the distribution.
 Doxygen should compile without errors or warnings.
 If it does not, please send the compilation errors or warnings along 
 with a description of your platform to 
@@ -66,6 +75,11 @@ directory of the distribution.
 You may want to copy these files to a location in your path 
 (\c /usr/local/bin for instance) or add the \c bin
 directory of the distribution to your search path.
+
+On Unix you can also type:
+\verbatim
+make install
+\endverbatim
 
 The following binaries should now be available:
 <UL>
@@ -85,8 +99,8 @@ Doxygen was developed and tested under Linux using the following tools:
 <li>GNU make version 3.76.1
 <li>Perl version 5.005_02 
 <li>VIM version 5.4
-<li>Netscape 4.04 & 4.5
-<li>Troll Tech's tmake version 1.2 (included in the distribution) 
+<li>Netscape 4.61
+<li>Troll Tech's tmake version 1.3 (included in the distribution) 
 <li>teTeX version 0.9
 </ul>
 

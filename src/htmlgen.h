@@ -76,8 +76,7 @@ class HtmlGenerator : public OutputGenerator
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
     void writeCodeLink(const char *ref,const char *f,
-                       const char *anchor,const char *name)
-           { writeObjectLink(ref,f,anchor,name); col+=strlen(name); }
+                       const char *anchor,const char *name);
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
     void writeHtmlLink(const char *url,const char *text);
@@ -161,6 +160,8 @@ class HtmlGenerator : public OutputGenerator
     void writeGrave(char c)   { t << "&" << c << "grave;"; }
     void writeCirc(char c)    { t << "&" << c << "circ;"; }
     void writeTilde(char c)   { t << "&" << c << "tilde;"; } 
+    void writeRing(char c)    { t << "&" << c << "ring;"; }
+    void writeSharpS()        { t << "&szlig;"; }
     void startDescList()      { t << "<dl compact><dt>" << endl; }
     void endDescTitle()       {}
     void writeDescItem()      { t << "<dd>" << endl; }

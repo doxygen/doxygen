@@ -543,7 +543,7 @@ static bool inBlock()
 
 static void endBlock()
 {
-    if (inParamBlock || inRetValBlock) 
+    if (inParamBlock || inRetValBlock || inExceptionBlock) 
     {
       outDoc->endDescTableData();
       outDoc->endDescTable();
@@ -657,7 +657,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   FileDef *fd;
   if ((fd=findFileDef(&imageNameDict,fileName,ambig)))
   {
-    QFile inImage(fd->absFilePath());
+    QFile inImage(fd->absFilePath().data());
     if (inImage.open(IO_ReadOnly))
     {
       result = fileName;
@@ -985,6 +985,8 @@ VAR	  [vV][aA][rR]
 <DocScan,Text>"&"[AEIOUaeiou]"grave;"	{ outDoc->writeGrave(yytext[1]);  }
 <DocScan,Text>"&"[AEIOUaeiou]"circ;"	{ outDoc->writeCirc(yytext[1]);   }
 <DocScan,Text>"&"[ANOano]"tilde;"	{ outDoc->writeTilde(yytext[1]);  }
+<DocScan,Text>"&szlig;"			{ outDoc->writeSharpS();          }
+<DocScan,Text>"&[aA]ring;"		{ outDoc->writeRing(yytext[1]);   }
 <DocScan,DocHtmlScan,DocLatexScan>"$("[a-z_A-Z]+")"	{ 
   					  QCString envvar=&yytext[2];
   					  envvar=envvar.left(envvar.length()-1);
@@ -1074,6 +1076,7 @@ VAR	  [vV][aA][rR]
 					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText);
   					  BEGIN( DocScan ); 
 					}
+  /*
 <DocScan>"@ref"{B}+			{
   					  BEGIN(DocRef);
   					}
@@ -1081,6 +1084,7 @@ VAR	  [vV][aA][rR]
   					  generateLink(*outDoc,className,yytext,TRUE,0);
 					  BEGIN( DocScan );
   					}
+  */
 <DocScan>("\\"|"@")"endlink"/[^a-z_A-Z0-9]      { warn("Warning: \\endlink without \\link "
     					         "in documentation of %s\n", refName.data()); 
 					}
@@ -1154,7 +1158,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inBugBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Bugs and limitations: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trBugsAndLimitations()+": ");
 					    outDoc->endBold();
@@ -1298,23 +1301,28 @@ VAR	  [vV][aA][rR]
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>("\\"|"@")"exception"{BN}+	{
+<DocScan>("\\"|"@")("exception"|"throw")s?{BN}+	{
   					  endArgumentList();
 					  if (!inExceptionBlock)
 					  {
 					    if (inBlock()) endBlock();
 					    inExceptionBlock=TRUE;
 					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Exceptions: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trExceptions()+": ");
 					    outDoc->endBold();
   					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					    outDoc->startDescTable();
+					  }
+					  else
+					  {
+					    outDoc->endDescTableData();
 					  }
 					  BEGIN(DocException);
   					}
 <DocScan>"\\capt".*
-<DocParam>([a-z_A-Z0-9:]+)|("\"".*"\"")	{
+<DocParam>([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")	{
 					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
@@ -1324,11 +1332,12 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocScan);
   					}
 <DocException>{SCOPENAME}		{
-  					  outDoc->writeDescItem();
+					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
 					  outDoc->endEmphasis();
-					  outDoc->docify(" - ");
+					  outDoc->endDescTableTitle();
+					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
 <DocScan>"\\section "{ID}"\n"		{
@@ -1352,13 +1361,13 @@ VAR	  [vV][aA][rR]
 					    outDoc->writeAnchor(sec->label);
 					  }
   					}
-<DocScan>"\\ref"			{
+<DocScan>("\\"|"@")"ref"		{
   					  BEGIN(DocRefName);
   					}
 <DocScan>"\\refitem"			{
   					  BEGIN(DocRefItem);
   					}
-<DocRefName>{ID}			{
+<DocRefName>{SCOPENAME}			{
   					  QCString ref=yytext;
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[ref]))
@@ -1378,14 +1387,14 @@ VAR	  [vV][aA][rR]
 					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
 					    }
 					  }
-					  else
+					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
 					  {
 					    warn("Warning: reference to unknown section %s!\n",yytext);
-					    outDoc->writeBoldString("unknown reference!");
+					    outDoc->writeBoldString(" unknown reference!");
 					  }
 					  BEGIN(DocScan);
   					}
-<DocRefName>{ID}/{B}+"\""		{
+<DocRefName>{SCOPENAME}/{B}+"\""	{
   					  sectionRef=yytext;
 					  BEGIN(DocRefArgStart);
   					}
@@ -1407,7 +1416,7 @@ VAR	  [vV][aA][rR]
 					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
 					    }
 					  }
-					  else
+					  else if (!generateLink(*outDoc,className,yytext,TRUE,text))
 					  {
 					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
 					    outDoc->writeBoldString("unknown reference!");
@@ -2053,7 +2062,7 @@ VAR	  [vV][aA][rR]
 <UsingDirective>{SCOPENAME}		{ current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
-					  printf("Found using directive %s\n",yytext);
+					  //printf("Found using directive %s\n",yytext);
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  current->protection = protection ;
@@ -2413,6 +2422,7 @@ VAR	  [vV][aA][rR]
 					  }
 					  else
 					  {
+					    current->endBodyLine = yyLineNr;
 					    QCString &cn = current->name;
 					    //QCString rn = stripAnnonymousScope(current_root->name);
 					    QCString rn = current_root->name.copy();
@@ -2782,12 +2792,12 @@ VAR	  [vV][aA][rR]
 					}
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
 <FuncQual>{BN}*"throw"{BN}*"("		{ 
-  					  current->exception = " throw(" ;
+  					  current->exception = " throw (" ;
 					  lineCount() ;
 					  BEGIN( ExcpRound ) ;
 					}
 <FuncQual>{BN}*"raises"{BN}*"("         {
-  					  current->exception = " raises(" ;
+  					  current->exception = " raises (" ;
 					  lineCount() ;
 					  BEGIN( ExcpRound ) ;
   					}
@@ -2843,7 +2853,7 @@ VAR	  [vV][aA][rR]
 					      tempName=current->name;
 					    else
 					      tempName=current->name.left(tempArg);
-					    if (current->type.isNull() && tempName.find("operator")==-1 && 
+					    if (current->type.isEmpty() && tempName.find("operator")==-1 && 
 						(tempName.find('*')!=-1 || tempName.find('&')!=-1))
 					    {
 					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n",
@@ -2861,7 +2871,7 @@ VAR	  [vV][aA][rR]
 					  {
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
 					    QRegExp re("([^)]*)");
-					    if (!current->type.isNull() && 
+					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
 					      //printf("Scanner.l: found function variable!\n");
@@ -2920,7 +2930,10 @@ VAR	  [vV][aA][rR]
   					  if( bracketCount )
 					    --bracketCount ;
 					  else
+					  {
+					    previous->endBodyLine=yyLineNr;
 					    BEGIN( lastCurlyContext ) ;
+					  }
 					}
 <SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
   					  if ( bracketCount )
@@ -2930,6 +2943,7 @@ VAR	  [vV][aA][rR]
 					  }
 					  else
 					  {
+					    current->endBodyLine=yyLineNr;
 					    lineCount();
 					    tempEntry = current; // temporarily switch to the previous entry
 					    current = previous;
@@ -3846,6 +3860,7 @@ VAR	  [vV][aA][rR]
 					  newDocState();
   					}
 <Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
+<Doc,AfterDoc,LineDoc,ClassDoc>"\\\\"	{ current->doc += yytext; }
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }

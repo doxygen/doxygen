@@ -118,6 +118,7 @@ bool     Config::htmlHelpFlag        = FALSE;
 bool     Config::alphaIndexFlag      = FALSE;
 bool     Config::pdfHyperFlag        = FALSE;
 bool     Config::alwaysDetailsFlag   = FALSE;
+bool     Config::inlineSourceFlag    = FALSE;
 bool     Config::autoBriefFlag       = TRUE;
 bool     Config::warningFlag         = TRUE; 
 bool     Config::generateHtml        = TRUE;
@@ -256,6 +257,7 @@ static int yyread(char *buf,int max_size)
 <Start>"PDF_HYPERLINKS"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::pdfHyperFlag; }
 <Start>"INHERIT_DOCS"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inheritDocsFlag; }
 <Start>"INLINE_INFO"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inlineInfoFlag; }
+<Start>"INLINE_SOURCES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::inlineSourceFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -448,6 +450,7 @@ void Config::init()
   Config::alphaIndexFlag      = FALSE;
   Config::pdfHyperFlag        = FALSE;
   Config::alwaysDetailsFlag   = FALSE;
+  Config::inlineSourceFlag    = FALSE;
   Config::warningFlag         = TRUE; 
   Config::generateHtml        = TRUE;
   Config::generateLatex       = TRUE;
@@ -651,12 +654,19 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# If the SOURCE_BROWSER tag is set to YES than the body of a member or\n";
-    t << "# function will be appended as a block of code to the documentation of.\n";
-    t << "# that member or function.\n";
+    t << "# If the SOURCE_BROWSER tag is set to YES then a list of source files will\n";
+    t << "# be generated. Documented entities will be cross-referenced with these sources.\n";
     t << "\n";
   }
   t << "SOURCE_BROWSER       = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# Setting the INLINE_SOURCES tag to YES will include the body\n";
+    t << "# of functions and classes directly in the documentation.\n";
+    t << "\n";
+  }
+  t << "INLINE_SOURCES       = NO\n";
   if (!sl)
   {
     t << "\n";

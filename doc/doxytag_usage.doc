@@ -85,7 +85,7 @@ doxytag -t example.tag example/html
   documentation. Because the tag file does not specify where the 
   documentation is located, you will have to specify that by running the 
   installdox script that doxygen generates 
-  (See \ref installdox_usage for more information). 
+  (See section \ref installdox_usage for more information). 
 
   Note that this is actually a feature because if you (or someone else)
   moves the external documentation to a different 

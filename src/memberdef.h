@@ -147,7 +147,7 @@ class MemberDef : public Definition
     
     // tag file related members
     //void setReference(const char *r) { external=r; } 
-    //bool isReference() { return !external.isNull(); }
+    //bool isReference() { return !external.isEmpty(); }
 
     // argument related members
     ArgumentList *argumentList() const { return argList; }

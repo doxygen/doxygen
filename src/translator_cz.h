@@ -451,7 +451,7 @@ class TranslatorCzech : public Translator
       switch(compType)
       {
         case ClassDef::Class:      result+="tuto tridu"; break;
-        case ClassDef::Struct:     result+="tuto struktury"; break;
+        case ClassDef::Struct:     result+="tuto strukturu"; break;
         case ClassDef::Union:      result+="tuto unii"; break;
         case ClassDef::Interface:  result+="toto rozhrani"; break;
       }
@@ -483,7 +483,24 @@ class TranslatorCzech : public Translator
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation()
-    { return "p."; }
+    { return "str."; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991003
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSources()
+    {
+      return "Zdrojove soubory";
+    }
+    virtual QCString trDefinedAtLineInSourceFile()
+    {
+      return "Definice v souboru @1 na radce @0";
+    }
+    virtual QCString trDefinedInSourceFile()
+    {
+      return "Definice v souboru @0.";
+    }    
 };
 
 #endif // TRANSLATOR_CZ_H

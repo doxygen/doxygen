@@ -26,7 +26,7 @@
 
 Definition::Definition(const char *name,const char *b,const char *d)
 {
-  n=name; brief=b; doc=d; sectionList=0, bodyLine=-1, bodyDef=0;
+  n=name; brief=b; doc=d; sectionList=0, startBodyLine=endBodyLine=-1, bodyDef=0;
 }
 
 Definition::~Definition()
@@ -93,11 +93,76 @@ void Definition::setBriefDescription(const char *b)
   }
 }
 
+/*! Reads a fragment of code from file \a fileName starting at 
+ * line \a startLine and ending at line \a endLine. The fragment is
+ * stored in \a result. If FALSE is returned the code fragment could not be
+ * found.
+ *
+ * The file is scanned for a opening bracket ('{') from \a startLine onward.
+ * The line actually containing the bracket is returned via startLine.
+ * The file is scanned for a closing bracket ('}') from \a endLine backward.
+ * The line actually containing the bracket is returned via endLine.
+ */
+static bool readCodeFragment(const char *fileName,
+                      int &startLine,int &endLine,QCString &result)
+{
+  //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
+  if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
+  QFile f(fileName);
+  if (f.open(IO_ReadOnly))
+  {
+    int c=0;
+    int lineNr=1;
+    // skip until the startLine has reached
+    while (lineNr<startLine && !f.atEnd())
+    {
+      while ((c=f.getch())!='\n' && c!=-1) /* skip */;
+      lineNr++; 
+    }
+    if (!f.atEnd())
+    {
+      // skip until the opening bracket is found
+      while (lineNr<=endLine && !f.atEnd() && c!='{')
+      {
+        while ((c=f.getch())!='{' && c!=-1) if (c=='\n') lineNr++; 
+      }
+      if (c=='{') 
+      {
+        // copy until end of line
+        result+=c;
+        startLine=lineNr;
+        const int maxLineLength=4096;
+        char lineStr[maxLineLength];
+        char *p=lineStr;
+        while ((c=f.getch())!='\n' && c!=-1) *p++=c;
+        //printf("First line str=`%s' atEnd=%d lineNr=%d endLine=%d\n",lineStr.data(),f.atEnd(),lineNr,endLine);
+        *p++='\n';
+        *p++='\0';
+        while (lineNr<endLine && !f.atEnd())
+        {
+          //printf("adding line=`%s' lineNr=%d\n",lineStr.data(),lineNr);
+          result+=lineStr;  
+          f.readLine(lineStr,maxLineLength);
+          lineNr++; 
+        }
+        p=lineStr+strlen(lineStr);
+        while (--p>=lineStr && *p!='}') /* skip */;
+        *(++p)='\n';
+        *(++p)='\0';
+        result+=lineStr;
+        endLine=lineNr;
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
 /*! Write a reference to the source code defining this definition */
-void Definition::writeSourceRef(OutputList &ol)
+void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
 {
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config::sourceBrowseFlag && bodyLine!=-1 && bodyDef)
+  if (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef)
   {
     ol.newParagraph();
 
@@ -107,8 +172,8 @@ void Definition::writeSourceRef(OutputList &ol)
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
       QString lineStr,anchorStr;
-      lineStr.sprintf("%d",bodyLine);
-      anchorStr.sprintf("l%05d",bodyLine);
+      lineStr.sprintf("%d",startBodyLine);
+      anchorStr.sprintf("l%05d",startBodyLine);
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
         // write text left from linePos marker
@@ -179,14 +244,32 @@ void Definition::writeSourceRef(OutputList &ol)
       err("Error: translation error: invalid markers in trDefinedInSourceFile()\n");
     }
   }
+  if (Config::inlineSourceFlag && startBodyLine!=-1 && 
+      endBodyLine>=startBodyLine && bodyDef)
+  {
+    //printf("Source Fragment %s: %d-%d\n",name().data(),
+    //        startBodyLine,endBodyLine);
+    QCString codeFragment;
+    int actualStart=startBodyLine,actualEnd=endBodyLine;
+    if (readCodeFragment(bodyDef->absFilePath(),
+          actualStart,actualEnd,codeFragment)
+       )
+    {
+      //printf("Read:\n`%s'\n\n",codeFragment.data());
+      ol.startCodeFragment();
+      parseCode(ol,scopeName,codeFragment,FALSE,0,
+          bodyDef,actualStart,actualEnd,TRUE);
+      ol.endCodeFragment();
+    }
+  }
 }
 
 bool Definition::hasDocumentation() 
 { 
-  return !doc.isNull() ||              // has detailed docs
-         !brief.isNull() ||            // has brief description
+  return !doc.isEmpty() ||              // has detailed docs
+         !brief.isEmpty() ||            // has brief description
          (Config::sourceBrowseFlag && 
-          bodyLine!=-1 && 
+          startBodyLine!=-1 && 
           bodyDef
          ) ||                          // has a source reference
          Config::extractAllFlag;       // extract everything

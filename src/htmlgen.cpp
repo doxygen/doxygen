@@ -105,9 +105,24 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
 
 void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
 {
-  t << "<a ";
-  if (s) t << "doxygen=\"" << s << "\" ";
-  t << "href=\"" << l << "\">";
+  QCString *dest;
+  if (s) 
+  {
+    t << "<a class=\"qindexRef\"";
+    t << "doxygen=\"" << s << ":";
+    if ((dest=tagDestinationDict[s])) t << *dest << "/";
+    t << "\" ";
+  }
+  else
+  {
+    t << "<a class=\"qindex\"";
+  }
+  t << "href=\""; 
+  if (s)
+  {
+    if ((dest=tagDestinationDict[s])) t << *dest << "/";
+  }
+  t << l << "\">";
 }
 
 void HtmlGenerator::endQuickIndexItem()
@@ -182,14 +197,19 @@ void HtmlGenerator::writeStyleInfo(int part)
   {
     startPlainFile("doxygen.css"); 
     t << "H1 { text-align: center }" << endl;
+    t << "A.qindex {}" << endl;
+    t << "A.qindexRef {}" << endl;
     t << "A.el { text-decoration: none; font-weight: bold }" << endl;
+    t << "A.elRef { font-weight: bold }" << endl;
+    t << "A.code { text-decoration: none; font-weight: normal; color: #4444ee }" << endl;
+    t << "A.codeRef { font-weight: normal; color: #4444ee }" << endl;
+    t << "A.gl:link { color: #ffffff }" << endl;
+    t << "A.gl:visited { color: #ffffff }" << endl;
+    t << "A.gl { text-decoration: none; font-weight: bold; background-color: " << GROUP_COLOR << " }" << endl;
     t << "DL.el { margin-left: -1cm }" << endl;
     t << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl;
     t << "DIV.in { margin-left: 16 }" << endl;
     t << "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }" << endl;
-    t << "A.gl:link { color: #ffffff }" << endl;
-    t << "A.gl:visited { color: #ffffff }" << endl;
-    t << "A.gl { text-decoration: none; font-weight: bold; background-color: " << GROUP_COLOR << " }" << endl;
     t << "TD.md { background-color: #f2f2ff }" << endl;
     t << endl;
     endPlainFile();
@@ -220,12 +240,26 @@ void HtmlGenerator::writeString(const char *text)
 void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
                                    const char *name)
 {
+  QCString *dest;
   t << "<li>";
   if (ref || f)
   {
-    t << "<a class=\"el\" ";
-    if (ref) t << "doxygen=\"" << ref << ":\" ";
+    if (ref) 
+    {
+      t << "<a class=\"elRef\" ";
+      t << "doxygen=\"" << ref << ":";
+      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      t << "\" ";
+    }
+    else
+    {
+      t << "<a class=\"el\" ";
+    }
     t << "href=\"";
+    if (ref)
+    {
+      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    }
     if (f) t << f << ".html\">";
   }
   else
@@ -264,18 +298,56 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
                                     const char *anchor, const char *name)
 {
-  t << "<a class=\"el\" ";
-  if (ref) t << "doxygen=\"" << ref << ":\" ";
+  QCString *dest;
+  if (ref) 
+  {
+    t << "<a class=\"elRef\" ";
+    t << "doxygen=\"" << ref << ":";
+    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    t << "\" ";
+  }
+  else
+  {
+    t << "<a class=\"el\" ";
+  }
   t << "href=\"";
+  if (ref)
+  {
+    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+  }
   if (f) t << f << ".html";
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
   t << "</a>";
-  //if (Config::htmlHelpFlag && f && htmlHelp->depth()>0)
-  //{
-  //  htmlHelp->addItem(name,((QCString)f)+".html");
-  //}
+}
+
+void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
+                                  const char *anchor, const char *name)
+{
+  QCString *dest;
+  if (ref) 
+  {
+    t << "<a class=\"codeRef\" ";
+    t << "doxygen=\"" << ref << ":";
+    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+    t << "\" ";
+  }
+  else
+  {
+    t << "<a class=\"code\" ";
+  }
+  t << "href=\"";
+  if (ref)
+  {
+    if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+  }
+  if (f) t << f << ".html";
+  if (anchor) t << "#" << anchor;
+  t << "\">";
+  docify(name);
+  t << "</a>";
+  col+=strlen(name);
 }
 
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
@@ -666,7 +738,7 @@ void HtmlGenerator::endIndexList()
 
 void HtmlGenerator::startAlphabeticalIndexList()
 {
-  t << "<table align=center width=95% border=0 cellspacing=0 cellpadding=0>" << endl;
+  t << "<table align=center width=\"95%\" border=0 cellspacing=0 cellpadding=0>" << endl;
 }
 
 void HtmlGenerator::endAlphabeticalIndexList()
