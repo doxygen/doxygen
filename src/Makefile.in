@@ -38,7 +38,7 @@ tmake:
 	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
 	$(ENV) $(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
 
-clean: Makefile.libdoxygen Makefile.doxygen Makefile.doxytag 
+clean: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile.doxytag 
 	$(MAKE) -f Makefile.libdoxygen clean 
 	$(MAKE) -f Makefile.libdoxycfg clean 
 	$(MAKE) -f Makefile.doxygen    clean 

@@ -853,7 +853,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION"));
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
     Doxygen::searchIndex->addWord(localName().lower());
   }
 

@@ -207,6 +207,8 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
   m_docLine = docLine;
 }
 
+#define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
+
 void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
 { 
   if (b==0) return;
@@ -219,7 +221,7 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
     {
       case '.': case '!': case '?': break;
       default: 
-        if (isupper(m_brief.at(0))) m_brief+='.'; 
+        if (uni_isupper(m_brief.at(0))) m_brief+='.'; 
         break;
     }
   }

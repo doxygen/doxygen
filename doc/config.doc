@@ -356,7 +356,7 @@ followed by the descriptions of the tags grouped by category.
   The new default is to treat a multi-line C++ comment block as a detailed
   description. Set this tag to YES if you prefer the old behaviour instead.
   Note that setting this tag to YES also means that rational rose comments
-  are not recognised any more.
+  are not recognized any more.
 
 \anchor cfg_details_at_top
 <dt>\c DETAILS_AT_TOP <dd>
@@ -371,7 +371,7 @@ followed by the descriptions of the tags grouped by category.
  \addindex INHERIT_DOCS
  If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
  member inherits the documentation from any documented member that it
- reimplements.
+ re-implements.
 
 \anchor cfg_distribute_group_doc
 <dt>\c DISTRIBUTE_GROUP_DOC <dd>
@@ -940,7 +940,7 @@ function's detailed documentation block.
   If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c CHM_FILE tag can
   be used to specify the file name of the resulting .chm file. You
   can add a path in front of the file if the result should not be
-  written to the html output dir.
+  written to the html output directory.
 
 \anchor cfg_hhc_location 
 <dt>\c HHC_LOCATION <dd>
@@ -989,7 +989,7 @@ function's detailed documentation block.
 \anchor cfg_generate_treeview
 <dt>\c GENERATE_TREEVIEW <dd>
  \addindex GENERATE_TREEVIEW
- If the \c GENERATE_TREEVIEW tag is set to YES, a side pannel will be
+ If the \c GENERATE_TREEVIEW tag is set to YES, a side panel will be
  generated containing a tree-like index structure (just like the one that
  is generated for HTML Help). For this to work a browser that supports
  JavaScript and frames is required (for instance Mozilla 1.0+, Netscape 6.0+
@@ -1132,7 +1132,7 @@ EXTRA_PACKAGES = times
 <dt>\c GENERATE_RTF <dd>
  \addindex GENERATE_RTF
  If the \c GENERATE_RTF tag is set to \c YES doxygen will generate RTF output.
- The RTF output is optimised for Word 97 and may not look too pretty with
+ The RTF output is optimized for Word 97 and may not look too pretty with
  other readers/editors.
 
 \anchor cfg_rtf_output
@@ -1165,7 +1165,7 @@ EXTRA_PACKAGES = times
 <dt>\c RTF_STYLESHEET_FILE <dd>
  \addindex RTF_STYLESHEET_FILE
  Load stylesheet definitions from file. Syntax is similar to doxygen's
- config file, i.e. a series of assigments. You only have to provide
+ config file, i.e. a series of assignments. You only have to provide
  replacements, missing definitions are set to their default value.
 
  See also section \ref doxygen_usage for information on how to generate
@@ -1441,7 +1441,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
  generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
  super classes. Setting the tag to \c NO turns the diagrams off.
- Note that this option is superceded by the HAVE_DOT option below. 
+ Note that this option is superseded by the HAVE_DOT option below. 
  This is only a fallback. It is recommended to install and use dot, 
  since it yields more powerful graphs. 
 
@@ -1555,7 +1555,7 @@ note that a graph may be further truncated if the graph's image dimensions are
 not sufficient to fit the graph (see 
 \ref cfg_max_dot_graph_width "MAX_DOT_GRAPH_WIDTH" and 
 \ref cfg_max_dot_graph_height "MAX_DOT_GRAPH_HEIGHT"). 
-If 0 is used fot the depth value (the default), the graph is 
+If 0 is used for the depth value (the default), the graph is 
 not depth-constraint.
 
 \anchor cfg_max_dot_graph_width 

@@ -73,11 +73,24 @@ docs: FORCE
 pdf: docs
 	cd latex ; $(MAKE)
 
+DISTFILES =  Doxyfile libpng libmd5 addon tmake doc wintools examples bin lib objects \
+             qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
+             Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
+             VERSION packages
+
 archive: clean
-	tar zcvf dx`date +%y%m%d`.tgz Doxyfile libpng libmd5 addon tmake doc wintools examples bin lib objects \
-	       qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
-               Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
-               VERSION packages
+	tar zcvf dx`date +%y%m%d`.tgz $(DISTFILES)
+
+DISTDIR = doxygen-`echo $(VERSION) | tr - _`
+
+dist: clean
+	rm -rf $(DISTDIR)
+	mkdir $(DISTDIR)
+	cp -a $(DISTFILES) README $(DISTDIR)
+	find $(DISTDIR) \( -name "CVS" -o -name ".cvsignore" \) \
+  	               -print0 | xargs -0 rm -rf
+	tar zcvf $(DISTDIR).src.tar.gz $(DISTDIR)
+	rm -rf $(DISTDIR)
 
 src/version.cpp: Makefile
 	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp

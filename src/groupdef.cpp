@@ -427,7 +427,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION"));
+    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
     Doxygen::searchIndex->addWord(localName().lower());
   }
 

@@ -938,11 +938,12 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
         node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
       }
     }
-    char md5_sig[16];
+    uchar md5_sig[16];
     QCString sigStr(33);
-    md5_buffer(buf.ascii(),buf.length(),md5_sig);
-    md5_sig_to_string(md5_sig,sigStr.data(),33);
-    if (checkAndUpdateMd5Signature(baseName,sigStr))
+    MD5Buffer(buf.ascii(),buf.length(),md5_sig);
+    MD5SigToString(md5_sig,sigStr.data(),33);
+    if (checkAndUpdateMd5Signature(baseName,sigStr) || 
+        !QFileInfo(mapName).exists())
     { 
       // image was new or has changed
       QCString dotName=baseName+".dot";
@@ -1478,10 +1479,10 @@ QCString computeMd5Signature(DotNode *root,
       pn->write(md5stream,gt,format,TRUE,FALSE,distance,backArrows);
     }
   }
-  char md5_sig[16];
+  uchar md5_sig[16];
   QCString sigStr(33);
-  md5_buffer(buf.ascii(),buf.length(),md5_sig);
-  md5_sig_to_string(md5_sig,sigStr.data(),33);
+  MD5Buffer(buf.ascii(),buf.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;
 }
@@ -1492,9 +1493,9 @@ static bool findMaximalDotGraph(DotNode *root,
                                 QDir &thisDir,
                                 DotNode::GraphType gt,
                                 GraphOutputFormat format,
-                                bool lrRank=FALSE,
-                                bool renderParents=FALSE,
-                                bool backArrows=TRUE
+                                bool lrRank /*=FALSE*/,
+                                bool renderParents /*=FALSE*/,
+                                bool backArrows /*=TRUE*/
                                )
 {
   int minDistance=1; // min distance that shows only direct children.
@@ -1505,10 +1506,6 @@ static bool findMaximalDotGraph(DotNode *root,
   int maxDotGraphWidth  = Config_getInt("MAX_DOT_GRAPH_WIDTH");
   int maxDotGraphHeight = Config_getInt("MAX_DOT_GRAPH_HEIGHT");
   int lastFit=minDistance;
-
-  QCString md5 = computeMd5Signature(root,gt,format,lrRank,
-                              renderParents,maxDistance,backArrows);
-  if (!checkAndUpdateMd5Signature(baseName,md5)) return FALSE;
 
   // binary search for the maximal inheritance depth that fits in a reasonable
   // sized image (dimensions: Config_getInt("MAX_DOT_GRAPH_WIDTH"), Config_getInt("MAX_DOT_GRAPH_HEIGHT"))
@@ -1631,9 +1628,28 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  if (findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),baseName,
-        thisDir,m_graphType,format,!isTBRank,m_graphType==DotNode::Inheritance))
+  QCString md5 = computeMd5Signature(m_startNode,        // root
+                                     m_graphType,        // gt
+                                     format,             // format
+                                     !isTBRank,          // lrRank
+                                     m_graphType==DotNode::Inheritance, // renderParent
+                                     QMIN(m_recDepth,m_maxDistance),    // maxDist
+                                     TRUE                               // backArrows
+                                    );
+  if (checkAndUpdateMd5Signature(baseName,md5) ||
+      !QFileInfo(baseName+".map").exists()
+     )
   {
+    findMaximalDotGraph(m_startNode,                       // root
+                        QMIN(m_recDepth,m_maxDistance),    // maxDist
+                        baseName,                          // baseName
+                        thisDir,                           // thisDir
+                        m_graphType,                       // gt
+                        format,                            // format
+                        !isTBRank,                         // lrRank
+                        m_graphType==DotNode::Inheritance, // renderParents
+                        TRUE                               // backArrows
+                       );
     if (format==BITMAP) // run dot to create a bitmap image
     {
       QCString dotArgs(maxCmdLine);
@@ -1686,7 +1702,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
   }
 
-  if (format==BITMAP) // run dot to create a bitmap image
+  if (format==BITMAP && generateImageMap) // run dot to create a image map
   {
     QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
     out << "<p><center><img src=\"" << baseName << "." 
@@ -1879,11 +1895,28 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   if (m_inverse) mapName+="dep";
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
-  if (findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),
-                      baseName,thisDir,DotNode::Dependency,format,
-                      FALSE,FALSE,!m_inverse)
+  QCString md5 = computeMd5Signature(m_startNode,         // root
+                                     DotNode::Dependency, // gt
+                                     format,              // format
+                                     FALSE,               // lrRank
+                                     FALSE,               // renderParents
+                                     QMIN(m_recDepth,m_maxDistance), // maxDist
+                                     !m_inverse           // backArrows
+                                    );
+  if (checkAndUpdateMd5Signature(baseName,md5) ||
+      !QFileInfo(baseName+".map").exists()
      )
   {
+    findMaximalDotGraph(m_startNode,                     // root
+                        QMIN(m_recDepth,m_maxDistance),  // maxDist
+                        baseName,                        // baseName
+                        thisDir,                         // thisDir
+                        DotNode::Dependency,             // gt
+                        format,                          // format
+                        FALSE,                           // lrRank
+                        FALSE,                           // renderParents
+                        !m_inverse                       // backArrows
+    );
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
@@ -1943,7 +1976,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
   }
 
-  if (format==BITMAP)
+  if (format==BITMAP && generateImageMap)
   {
     out << "<p><center><img src=\"" << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
@@ -2045,14 +2078,31 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
   QDir thisDir;
 
   QCString baseName=m_diskName+"_cgraph";
-  //baseName=convertNameToFile(baseName);
   QCString mapName=baseName;
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
-  if (findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),
-                      baseName,thisDir,DotNode::CallGraph,format,
-                      TRUE,FALSE,FALSE))
+  QCString md5 = computeMd5Signature(m_startNode,         // root
+                                     DotNode::CallGraph,  // gt
+                                     format,              // format
+                                     TRUE,                // lrRank
+                                     FALSE,               // renderParents
+                                     QMIN(m_recDepth,m_maxDistance), // maxDist
+                                     FALSE                // backArrows
+                                    );
+  if (checkAndUpdateMd5Signature(baseName,md5) ||
+      !QFileInfo(baseName+".map").exists()
+     )
   {
+    findMaximalDotGraph(m_startNode,                      // root
+                        QMIN(m_recDepth,m_maxDistance),   // maxDist
+                        baseName,                         // baseName
+                        thisDir,                          // thisDir
+                        DotNode::CallGraph,               // gt
+                        format,                           // format
+                        TRUE,                             // lrRank
+                        FALSE,                            // renderParents
+                        FALSE                             // backArrows
+                       );
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
@@ -2108,7 +2158,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     }
   }
 
-  if (format==BITMAP)
+  if (format==BITMAP && generateImageMap)
   {
     out << "<p><center><img src=\"" << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"

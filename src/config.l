@@ -19,7 +19,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -1489,7 +1488,7 @@ void Config::create()
                     "will interpret the first line (until the first dot) of a JavaDoc-style \n"
                     "comment as the brief description. If set to NO, the JavaDoc \n"
                     "comments will behave just like the Qt-style comments (thus requiring an \n"
-                    "explict @brief command for a brief description. \n",
+                    "explicit @brief command for a brief description. \n",
                     FALSE
                  );
   cb = addBool(
@@ -1513,7 +1512,7 @@ void Config::create()
                     "INHERIT_DOCS",
                     "If the INHERIT_DOCS tag is set to YES (the default) then an undocumented \n"
                     "member inherits the documentation from any documented member that it \n"
-                    "reimplements. \n",
+                    "re-implements. \n",
                     TRUE
                  );
   cb = addBool(
@@ -2007,7 +2006,7 @@ void Config::create()
                     "If the GENERATE_HTMLHELP tag is set to YES, the CHM_FILE tag can \n"
                     "be used to specify the file name of the resulting .chm file. You \n"
 		    "can add a path in front of the file if the result should not be \n"
-		    "written to the html output dir. \n"
+		    "written to the html output directory. \n"
                    );
   cs->addDependency("GENERATE_HTML");
   cs = addString(
@@ -2187,7 +2186,7 @@ void Config::create()
   cb = addBool(
                     "GENERATE_RTF",
                     "If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output \n"
-                    "The RTF output is optimised for Word 97 and may not look very pretty with \n"
+                    "The RTF output is optimized for Word 97 and may not look very pretty with \n"
                     "other RTF readers or editors.\n",
                     FALSE
                  );
@@ -2222,7 +2221,7 @@ void Config::create()
   cs = addString(
                     "RTF_STYLESHEET_FILE",
                     "Load stylesheet definitions from file. Syntax is similar to doxygen's \n"
-                    "config file, i.e. a series of assigments. You only have to provide \n"
+                    "config file, i.e. a series of assignments. You only have to provide \n"
                     "replacements, missing definitions are set to their default value. \n"
                    );
   cs->setWidgetType(ConfigString::File);
@@ -2277,9 +2276,7 @@ void Config::create()
                     "GENERATE_XML",
                     "If the GENERATE_XML tag is set to YES Doxygen will \n"
                     "generate an XML file that captures the structure of \n"
-                    "the code including all documentation. Note that this \n"
-		    "feature is still experimental and incomplete at the \n"
-		    "moment. \n",
+                    "the code including all documentation. \n",
 		    FALSE
                  );
   cs = addString(
@@ -2500,7 +2497,7 @@ void Config::create()
                     "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
                     "generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base or \n"
                     "super classes. Setting the tag to NO turns the diagrams off. Note that this \n"
-		    "option is superceded by the HAVE_DOT option below. This is only a fallback. It is \n"
+		    "option is superseded by the HAVE_DOT option below. This is only a fallback. It is \n"
 		    "recommended to install and use dot, since it yields more powerful graphs. \n",
                     TRUE
                  );
@@ -2540,7 +2537,7 @@ void Config::create()
   cb = addBool(
                     "UML_LOOK",
                     "If the UML_LOOK tag is set to YES doxygen will generate inheritance and \n"
-	            "collaboration diagrams in a style similiar to the OMG's Unified Modeling \n"
+	            "collaboration diagrams in a style similar to the OMG's Unified Modeling \n"
 		    "Language. \n",
 	            FALSE
 	      );

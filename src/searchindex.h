@@ -57,7 +57,7 @@ class SearchIndex
 {
   public:
     SearchIndex();
-    void setCurrentDoc(const char *name,const char *url);
+    void setCurrentDoc(const char *name,const char *baseName,const char *anchor=0);
     void addWord(const char *word);
     void write(const char *file);
   private:
