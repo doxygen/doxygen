@@ -51,6 +51,7 @@ followed by the descriptions of the tags grouped by category.
 \begin{CompactList}
 \endlatexonly
 <li> \refitem cfg_allexternals ALLEXTERNALS 
+<li> \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 <li> \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 <li> \refitem cfg_bin_abspath BIN_ABSPATH 
 <li> \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
@@ -121,6 +122,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
+<li> \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
@@ -260,6 +262,12 @@ followed by the descriptions of the tags grouped by category.
  If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
  brief descriptions will be completely suppressed.
 
+\anchor cfg_always_detailed_sec
+<dt>\c ALWAYS_DETAILED_SEC <dd>
+If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
+Doxygen will generate a detailed section even if there is only a brief
+description.
+
 \anchor cfg_full_path_names
 <dt>\c FULL_PATH_NAMES <dd>
  \addindex FULL_PATH_NAMES
@@ -342,12 +350,22 @@ followed by the descriptions of the tags grouped by category.
 
 \anchor cfg_inline_info
 <dt>\c INLINE_INFO <dd>
+ \addindex INLINE_INFO 
  If the \c INLINE_INFO tag is set to \c YES (the default) then a tag [inline]
  is inserted in the documentation for inline members.
 
+\anchor cfg_sort_member_docs
+<dt>\c SORT_MEMBER_DOCS <dd>
+ \addindex SORT_MEMBER_DOCS
+ If the SORT_MEMBER_DOCS tag is set to YES (the default) then doxygen
+ will sort the (detailed) documentation of file and class members
+ alphabetically by member name. If set to NO the members will appear in
+ declaration order.
+
 \anchor cfg_tab_size
 <dt>\c TAB_SIZE <dd>
-  the TAB_SIZE tag can be used to set the number of spaces in a tab.
+  \addindex TAB_SIZE
+  the \c TAB_SIZE tag can be used to set the number of spaces in a tab.
   Doxygen uses this value to replace tabs by spaces in code fragments.
 
 </dl>

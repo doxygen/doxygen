@@ -499,6 +499,7 @@ class TranslatorFrench : public Translator
         case ClassDef::Struct:     result+="la structure "; break;
         case ClassDef::Union:      result+="l'union "; break;
         case ClassDef::Interface:  result+="l'interface "; break;
+        case ClassDef::Exception:  result+="l'exception "; break;
       }
 
       result+=(QCString)clName;
@@ -659,6 +660,7 @@ class TranslatorFrench : public Translator
         case ClassDef::Struct:     result+="structure"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
+        case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" a été générée à partir ";
       if (single) result+=" du fichier suivant :"; 

@@ -495,12 +495,11 @@ Go to the <a href="diagrams.html">next</a> section or return to the
   Doxygen uses the "dot" tool to generate the following graphs:
   <ul>
   <li>if \ref cfg_graphical_hierarchy "GRAPHICAL_HIERARCHY" is set to \c YES, 
-      a graphical representation of the class diagram will be drawn, along 
+      a graphical representation of the class hierarchy will be drawn, along 
       with the textual one. Currently this feature is supported for HTML only.\n
       <b>Warning:</b> When you have a very large class hierarchy where many 
-      classes derive from a common
-      base class, the resulting image may become too big to handle for some 
-      browsers.
+      classes derive from a common base class, the resulting image may become 
+      too big to handle for some browsers.
   <li>if \ref cfg_include_graph "INCLUDE_GRAPH" is set to \c YES, an include 
       dependency graph is generated for each documented file that includes at 
       least one other file. This feature is currently supported for HTML and RTF 

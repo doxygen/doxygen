@@ -1,4 +1,4 @@
-DOXYGEN Version 1.1.0-20000220
+DOXYGEN Version 1.1.0-20000227
 
 CONTENTS
 --------
@@ -15,8 +15,8 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 
 1.  Unpack the archive, unless you already have:
    
-     gunzip doxygen-1.1.0-20000220.src.tar.gz    # uncompress the archive
-     tar xf doxygen-1.1.0-20000220.src.tar       # unpack it
+     gunzip doxygen-1.1.0-20000227.src.tar.gz    # uncompress the archive
+     tar xf doxygen-1.1.0-20000227.src.tar       # unpack it
 
 2.  Run the configure script:
  
@@ -71,7 +71,7 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 INSTALLATION INSTRUCTIONS FOR WINDOWS:
 --------------------------------------
 
-Currently, only Microsoft Visual C++ (version 5.0) is supported. 
+Currently, only Microsoft Visual C++ (version 5.0 or higher) is supported. 
 (For other compilers you may need to edit the perl script in wintools/make.pl
 a bit). Let me know what you had to change if you got Doxygen working with 
 another windows compiler. 
@@ -252,4 +252,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (20 February 2000)
+Dimitri van Heesch (27 February 2000)

@@ -91,6 +91,7 @@ FormulaDict    formulaDict(1009);       // all formulas
 FormulaDict    formulaNameDict(1009);   // the label name of all formulas
 StringDict     tagDestinationDict(257); // all tag locations
                                         // a member group
+QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
 OutputList     *outputList = 0;         // list of output generating objects
 
 PageInfo       *mainPage = 0;
@@ -369,7 +370,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
 /*! Input is a scopeName, output is the scopename split into a
  *  namespace part (as large as possible) and a classname part.
  */
-void extractNamespaceName(const QCString &scopeName,
+static void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName)
 {
   QCString clName=scopeName.copy();
@@ -439,7 +440,8 @@ void buildClassList(Entry *root)
 {
   if (
        ((root->section & Entry::COMPOUNDDOC_MASK) ||
-       ((root->section & Entry::COMPOUND_MASK))) && 
+        ((root->section & Entry::COMPOUND_MASK))
+       ) && 
        !root->name.isEmpty()
      )
   {
@@ -453,14 +455,16 @@ void buildClassList(Entry *root)
     else 
     {
       fullName=stripAnnonymousNamespaceScope(fullName);
-      //printf("new class with name %s\n",fullName.data());
+      Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
 
       bool ambig;
       ClassDef *cd;
       //printf("findFileDef(%s)\n",root->fileName.data());
       FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+
       if ((cd=getClass(fullName))) 
       {
+        Debug::print(Debug::Classes,0,"  Existing class!\n",fullName.data());
         if (cd->templateArguments()==0)
         {
           //printf("existing ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
@@ -529,7 +533,17 @@ void buildClassList(Entry *root)
           case Entry::INTERFACE_SEC:
           case Entry::INTERFACEDOC_SEC:
             sec=ClassDef::Interface; break;
+          case Entry::EXCEPTION_SEC:
+          case Entry::EXCEPTIONDOC_SEC:
+            sec=ClassDef::Exception; break;
         }
+        Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)!\n",fullName.data(),root->section);
+        QCString className;
+        QCString namespaceName;
+        extractNamespaceName(fullName,className,namespaceName);
+
+        //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
+        
         ClassDef *cd=new ClassDef(fullName,sec);
         cd->setDocumentation(root->doc); // copy docs to definition
         cd->setBriefDescription(root->brief);
@@ -553,12 +567,25 @@ void buildClassList(Entry *root)
           }
         }
 
+        // see if the class is found inside a namespace 
         bool found=addNamespace(root,cd);
 
         cd->setFileDef(fd);
         if (cd->hasDocumentation())
         {
           addIncludeFile(cd,fd,root);
+        }
+        
+        // namespace is part of the class name
+        if (!found && !namespaceName.isEmpty())
+        {
+          NamespaceDef *nd = namespaceDict[namespaceName];
+          if (nd)
+          {
+            cd->setNamespace(nd);
+            nd->insertClass(cd);
+            found=TRUE;
+          }
         }
         
         // if the class is not in a namespace then we insert 
@@ -968,8 +995,9 @@ void buildVarList(Entry *root)
   QRegExp re("([^)]*)");
   int i=-1;
   if (!root->name.isEmpty() &&
-      root->type!="class" && root->type!="interface" && 
-      root->type!="struct" && root->type!="union" &&
+      //root->type!="class" && root->type!="interface" && 
+      //root->type!="struct" && root->type!="union" &&
+      (root->type.isEmpty() || compoundKeywordDict.find(root->type)==0) &&
       (
        (root->section==Entry::VARIABLE_SEC 
        ) ||
@@ -1006,7 +1034,6 @@ void buildVarList(Entry *root)
     }
     else
     {
-      //QRegExp re("([^)]*)");
       i=root->type.find(re,0);
       if (i!=-1) // function variable
       {
@@ -1016,14 +1043,17 @@ void buildVarList(Entry *root)
     }
     
     QCString scope,name=root->name.copy();
-    //bool stat=root->stat;
+    //int si;
+    //if ((si=name.findRev("::"))!=-1)
+    //{
+    //  scope=name.left(si);
+    //  name=name.right(name.length()-si-2);
+    //}
 
-    // find the scope of this variable (stripping the annonymous part
-    // at the beginning
+    // find the scope of this variable 
     Entry *p = root->parent;
     while ((p->section & Entry::SCOPE_MASK))
     {
-      //QCString scopeName = stripAnnonymousScope(p->name);
       QCString scopeName = p->name.copy();
       if (!scopeName.isEmpty())
       {
@@ -1064,7 +1094,6 @@ void buildVarList(Entry *root)
     else
       mtype=MemberDef::Variable;
 
-    //printf("name=`%s' scope=%s\n",name.data(),scope.data());
     QCString classScope=stripAnnonymousNamespaceScope(scope);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
     scope=classScope;
@@ -1423,7 +1452,11 @@ void buildMemberList(Entry *root)
           NamespaceDef *nd = 0;
           if (root->parent->section == Entry::NAMESPACE_SEC )
           {
-            nd = namespaceDict[root->parent->name];
+            QCString nscope=removeAnnonymousScopes(root->parent->name);
+            if (!nscope.isEmpty())
+            {
+              nd = namespaceDict[nscope];
+            }
           }
 
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
@@ -1544,6 +1577,8 @@ void findFriends()
 void transferFunctionDocumentation()
 {
   //printf("transferFunctionDocumentation()\n");
+
+  // find matching function declaration and definitions.
   MemberNameListIterator mnli(functionNameList);
   MemberName *mn;
   for (;(mn=mnli.current());++mnli)
@@ -1590,6 +1625,42 @@ void transferFunctionDocumentation()
         mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
         mdec->setBodyDef(mdef->getFileDef());
       }
+    }
+  }
+}
+
+void transferRelatedFunctionDocumentation()
+{
+  // find match between function declaration and definition for 
+  // related functions
+  MemberNameListIterator mnli(functionNameList);
+  MemberName *mn;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    /* find a matching function declaration and definition for this function */
+    for (mni.toFirst();(md=mni.current());++mni) // for each global function
+    {
+      //printf("  Function `%s'\n",md->name().data());
+      MemberName *rmn;
+      if ((rmn=memberNameDict[md->name()])) // check if there is a member with the same name
+      {
+        //printf("  Member name found\n");
+        MemberDef *rmd;
+        MemberNameIterator rmni(*rmn);
+        for (rmni.toFirst();(rmd=rmni.current());++rmni) // for each member with the same name
+        {
+          //printf("  Member found: related=`%d'\n",rmd->isRelated());
+          if (rmd->isRelated() && // related function
+              matchArguments(md->argumentList(),rmd->argumentList()) // match argument lists
+             )
+          {
+            //printf("  Found related member `%s'\n",md->name().data());
+            md->makeRelated();
+          } 
+        }
+      } 
     }
   }
 }
@@ -1685,7 +1756,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         }
         if (found)
         {
-          //printf(">>> Documented base class = %s\n",bi->name.data());
+          Debug::print(Debug::Classes,0,"    Documented base class `%s'\n",bi->name.data());
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
@@ -1694,7 +1765,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         }
         else if (insertUndocumented)
         {
-          //printf(">>> Undocumented base class = %s\n",bi->name.data());
+          Debug::print(Debug::Classes,0,"    Undocumented base class `%s'\n",bi->name.data());
           baseClass=new ClassDef(baseClassName,ClassDef::Class);
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
@@ -1712,6 +1783,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         else
         {
           //printf(">>> base class %s not found!\n",bi->name.data());
+          Debug::print(Debug::Classes,0,"    Base class `%s' not found\n",bi->name.data());
         }
       }
       if (scopeOffset==0)
@@ -1759,7 +1831,7 @@ void computeClassRelations(Entry *root)
   {
     ClassDef *cd;
     QCString bName=stripAnnonymousNamespaceScope(root->name);
-    //printf("Class %s\n",bName.data());
+    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
       //printf("Class %s %d\n",cd->name().data(),root->extends->count());
@@ -2007,15 +2079,17 @@ static bool findUnrelatedFunction(Entry *root,
   QCString n=name;
   if (n.isEmpty()) return FALSE;
   if (n.find("::")!=-1) return FALSE; // skip undefined class members
-  //printf("findUnrelatedFunction(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
-  //        namespaceName.data(),name,tempArg,decl);
+  Debug::print(Debug::FindMembers,0,
+       "2. findUnrelatedFunction(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
+          namespaceName.data(),name,tempArg,decl);
   MemberName *mn=functionNameDict[n+tempArg]; // look in function dictionary
   if (mn==0)
   {
-    mn=functionNameDict[n]; // try with template arguments
+    mn=functionNameDict[n]; // try without template arguments
   }
   if (mn) // function name defined
   {
+    Debug::print(Debug::FindMembers,0,"3. Found function scope\n");
     //int count=0;
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -2028,6 +2102,9 @@ static bool findUnrelatedFunction(Entry *root,
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
       //printf("NamespaceList %p\n",nl);
+
+      // search in the list of namespaces that are imported via a 
+      // using declaration
       bool viaUsingDirective = nl && nd && nl->find(nd)!=-1;
 
       if ((namespaceName.isEmpty() && nd==0) ||  // not in a namespace
@@ -2035,8 +2112,8 @@ static bool findUnrelatedFunction(Entry *root,
           viaUsingDirective                        // member in `using' namespace
          )     
       {
-        //printf("Adding docs `%s' to member `%s' in namespace `%s'\n",
-        //    root->doc.data(),md->name().data(),namespaceName.data());
+        Debug::print(Debug::FindMembers,0,"4. Try to add member `%s' to scope `%s'\n",
+            md->name().data(),namespaceName.data());
         //printf("Searching for match between %s and %s\n",
         //    argListToString(md->argumentList()).data(),
         //    argListToString(root->argList).data());
@@ -2047,7 +2124,7 @@ static bool findUnrelatedFunction(Entry *root,
           matchArguments(md->argumentList(),root->argList,0,nsName);
         if (matching) // add docs to the member
         {
-          //printf("Match found\n");
+          Debug::print(Debug::FindMembers,0,"5. Match found\n");
           addMemberDocs(root,md,decl,FALSE);
           found=TRUE;
         }
@@ -2235,26 +2312,14 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
                );
   //printf("scopeName=`%s'\n",scopeName.data());
   
-  bool isSpecialization = !root->scopeSpec.isEmpty() && 
-                    root->scopeSpec != tempArgListToString(root->tArgList);
+  //bool isSpecialization = !root->scopeSpec.isEmpty() && 
+  //                  root->scopeSpec != tempArgListToString(root->tArgList);
     
-  //printf("1. scopeName=`%s' specialization=%d\n",
-  //       scopeName.data(),isSpecialization
-  //      );
-  // include template specifier in the scope if needed
-  if (!scopeName.isEmpty() && !root->scopeSpec.isEmpty() && isSpecialization)
-  {
-    //scopeName = insertTemplateSpecifierInScope(
-    //                  scopeName,removeRedundantWhiteSpace(root->scopeSpec));
-    //printf("2. scopeName=`%s'\n",scopeName.data());
-  }
-
   // if this is a member template inside non template class, the parser puts 
   // template specifier in scopeSepc, so we copy it to the right location here
   if (scopeName.isEmpty() && !root->scopeSpec.isEmpty() &&
       root->memberSpec.isEmpty() && funcTempList.isEmpty()
-          )
-    // template specifier that was found is for a function
+     ) // template specifier that was found is for a function
   {
     funcTempList = root->scopeSpec;
   }
@@ -2263,10 +2328,10 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   // if a related class name is specified and the class name could
   // not be derived from the function declaration, then use the
   // related field.
-  //printf("scopeName=`%s' classTempList=`%s' className=`%s'\n",
-  //    scopeName.data(),classTempList.data(),className.data());
-  if (/*scopeName.isEmpty() &&*/ !related.isEmpty() && !isRelated)
-  {
+  //printf("scopeName=`%s' className=`%s' namespaceName=`%s'\n",
+  //    scopeName.data(),className.data(),namespaceName.data());
+  if (!related.isEmpty() && !isRelated) 
+  {                             // related member, prefix user specified scope
     isRelated=TRUE;
     //scopeName=resolveDefines(related);
     if (!scopeName.isEmpty() && scopeName!=related)
@@ -2274,8 +2339,16 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
     else 
       scopeName=related.copy();
   }
-  else if (/*scopeName.isEmpty() &&*/ related.isEmpty() && root->parent && 
-           !root->parent->name.isEmpty())
+
+  // split scope into a namespace and a class part
+  extractNamespaceName(scopeName,className,namespaceName);
+  //printf("scopeName=`%s' className=`%s' namespaceName=`%s'\n",
+  //       scopeName.data(),className.data(),namespaceName.data());
+  
+  if (related.isEmpty() && 
+      root->parent && 
+      !root->parent->name.isEmpty()
+     ) // prefix scope in which the member was found
   {
     Entry *p=root->parent;
     while (p) // get full scope as class name
@@ -2285,29 +2358,64 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           && !sc.isEmpty() && sc[0]!='@'
          )
       {
+        QCString cn;
+        QCString nn;
+        extractNamespaceName(sc,cn,nn);
+        if (leftScopeMatch(nn,namespaceName) || namespaceName.isEmpty())
+        {
+          namespaceName=nn.copy();
+        }
+        if (leftScopeMatch(cn,className) || className.isEmpty())
+        {
+          className=cn.copy();
+        }
+        
+        //printf("sc=`%s' cn=`%s' nn=`%s'\n",sc.data(),cn.data(),nn.data());
+        
         //printf("p->name=`%s' scopeName=`%s' classTempList=%s\n",
         //       p->name.data(),scopeName.data(),classTempList.data());
 
-        QCString tryScope;
+        QCString tryClass;
 
-        if (scopeName.find('<')==-1 && !classTempList.isEmpty())
-          tryScope=insertTemplateSpecifierInScope(scopeName,classTempList);
+        if (className.find('<')==-1 && !classTempList.isEmpty())
+          tryClass=insertTemplateSpecifierInScope(className,classTempList);
         else
-          tryScope=scopeName.copy();
+          tryClass=className.copy();
         
-        //printf("tryScope=%s\n",tryScope.data()); 
+        //printf("tryClass=%s\n",tryClass.data()); 
         
-        if (leftScopeMatch(tryScope,sc))
+        if (leftScopeMatch(tryClass,cn))
           break; // scope already present, so stop now
+
         // prepend name to scope
         if (!scopeName.isEmpty()) scopeName.prepend("::");
         scopeName.prepend(sc);
+        break;
       }
       p=p->parent;
     } 
     //printf("3. scopeName=`%s'\n",scopeName.data());
     //printf("result: scope=%s\n",scopeName.data());
   }
+
+  namespaceName=removeAnnonymousScopes(namespaceName);
+  // merge class and namespace scopes again
+  if (!namespaceName.isEmpty())
+  {
+    if (className.isEmpty())
+    {
+      scopeName=namespaceName;
+    }
+    else
+    {
+      scopeName=namespaceName+"::"+className;
+    }
+  }
+  else if (!className.isEmpty())
+  {
+    scopeName=className;
+  }
+  //printf("new scope=`%s'\n",scopeName.data());
 
   if (!scopeName.isEmpty() && 
       scopeName.find('<')==-1 && 
@@ -2322,8 +2430,6 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
     }
   }
   
-  // see if (part of) the scope name is a namespace name
-  extractNamespaceName(scopeName,className,namespaceName);
 
   QCString tempScopeName=scopeName.copy();
   int ti=tempScopeName.find('<');
@@ -2613,7 +2719,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
             }
           } 
         } 
-        if (count==0) 
+        if (count==0 && !(isFriend && funcType=="class"))
           warn("Warning: no matching member found for \n%s\n"
                  "in file %s at line %d\n",
                  fullFuncDecl.data(),root->fileName.data(),root->startLine);   
@@ -2846,8 +2952,8 @@ void findMemberDocumentation(Entry *root)
   int i,l;
   QRegExp re("([a-zA-Z0-9: ]*\\*+[ \\*]*");
   Debug::print(Debug::FindMembers,0,
-         "root->type=`%s' root->name=`%s' root->args=`%s' section=%x root->inLine=%d\n",
-          root->type.data(),root->name.data(),root->args.data(),root->section,root->inLine
+         "root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->inLine=%d\n",
+          root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->inLine
          );
   bool isFunc=TRUE;
   if ((i=re.match(root->type,0,&l))!=-1) // func variable/typedef to func ptr
@@ -2883,8 +2989,10 @@ void findMemberDocumentation(Entry *root)
     ((root->section==Entry::FUNCTION_SEC ||   // function
       (root->section==Entry::VARIABLE_SEC && 
       !root->type.isEmpty() && root->type.left(8)!="typedef " &&
-       root->type!="class"  && root->type!="interface" && 
-       root->type!="struct" && root->type!="union")
+       compoundKeywordDict.find(root->type)==0
+       /*root->type!="class"  && root->type!="interface" && 
+       root->type!="struct" && root->type!="union"*/
+      )
      ) && 
      (!root->doc.isEmpty() || !root->brief.isEmpty() || 
       root->bodyLine!=-1 || root->mGrpId!=-1 /*|| Config::extractAllFlag*/
@@ -2896,6 +3004,7 @@ void findMemberDocumentation(Entry *root)
     //    root->name.data(),root->args.data(),root->exception.data());
     //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
     //printf("Inside=%s\n Relates=%s\n",root->inside.data(),root->relates.data());
+
     if (!root->type.isEmpty())
     {
         findMember(root,
@@ -2906,7 +3015,6 @@ void findMemberDocumentation(Entry *root)
             root->exception,
             root->relates,
             FALSE,isFunc);
-      //}
     }
     else
     {
@@ -3364,7 +3472,7 @@ void generateFileDocs()
         {
           fd->writeDocumentation(*outputList);
         }
-        if (src) // TODO: can this be TRUE for tag files?
+        if (src && !fd->isReference()) // TODO: can this be TRUE for tag files?
         {
           fd->writeSource(*outputList);
         }
@@ -4602,6 +4710,12 @@ int main(int argc,char **argv)
     generateConfigFile(configName,shortList);
     exit(1);
   }
+
+  compoundKeywordDict.insert("class",(void *)8);
+  compoundKeywordDict.insert("struct",(void *)8);
+  compoundKeywordDict.insert("union",(void *)8);
+  compoundKeywordDict.insert("interface",(void *)8);
+  compoundKeywordDict.insert("exception",(void *)8);
   
   QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
   QCString config;
@@ -4818,6 +4932,7 @@ int main(int argc,char **argv)
   
   msg("Searching for member function documentation...\n");
   findMemberDocumentation(root); // may introduce new members !
+  transferRelatedFunctionDocumentation();
   
   msg("Freeing entry tree\n");
   delete root;

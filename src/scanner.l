@@ -2189,11 +2189,22 @@ VAR	  [vV][aA][rR]
 					  lineCount();
   					  BEGIN( ClassName ); 
 					}
-<FindMembers>{B}*"interface"{BN}+ 	{
+<FindMembers>{B}*"interface"{BN}+ 	{ // M$/Corba IDL interface
   					  isTypedef=FALSE;
 					  current->section = Entry::INTERFACE_SEC;
 					  addType( current ) ;
 					  current->type += " interface" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount();
+					  BEGIN( ClassName );
+  					}
+<FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
+  					  isTypedef=FALSE;
+					  current->section = Entry::EXCEPTION_SEC;
+					  addType( current ) ;
+					  current->type += " exception" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
@@ -2897,7 +2908,7 @@ VAR	  [vV][aA][rR]
 					    while (p)
 					    {
 					      // only look for class scopes, not namespace scopes
-					      if (p->section & Entry::COMPOUND_MASK)
+					      if ((p->section & Entry::COMPOUND_MASK) && !p->name.isEmpty())
 					      {
 						//printf("Trying scope `%s'\n",p->name.data());
 						int i=p->name.findRev("::");
@@ -3514,8 +3525,9 @@ VAR	  [vV][aA][rR]
 					  lastClassTemplSpecContext = ClassVar;
 					  BEGIN( ClassTemplSpec );
 					}
-<ClassTemplSpec>">"({BN}*{SCOPENAME})?	{
+<ClassTemplSpec>">"({BN}*"::"{BN}*{SCOPENAME})?	{
 					  current->name += yytext;
+					  lineCount();
   					  if (--sharpCount<=0)
 					  {
 					    current->name = removeRedundantWhiteSpace(current->name);
@@ -3580,7 +3592,7 @@ VAR	  [vV][aA][rR]
 <BasesProt>"public"                     { baseProt = Public; }
 <BasesProt>"protected"                  { baseProt = Protected; }
 <BasesProt>"private"                    { baseProt = Private; }
-<BasesProt>{BN}				{}
+<BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")*{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
   					  //current->extends->append(
@@ -3634,7 +3646,10 @@ VAR	  [vV][aA][rR]
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  baseProt=Private;
+					  if (current->section == Entry::INTERFACE_SEC)
+					    baseProt=Public;
+					  else
+					    baseProt=Private;
 					  baseVirt=Normal;
 					  baseName.resize(0);
 					  BEGIN(BasesProt);
@@ -3846,6 +3861,12 @@ VAR	  [vV][aA][rR]
 					}
 <Doc,JavaDoc>{B}*{CMD}"interface"{B}* 	{
   					  current->section = Entry::INTERFACEDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( ClassDocArg1 ); 
+					}
+<Doc,JavaDoc>{B}*{CMD}"idlexcept"{B}* 	{
+  					  current->section = Entry::EXCEPTIONDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  BEGIN( ClassDocArg1 ); 

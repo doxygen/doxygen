@@ -440,6 +440,7 @@ class TranslatorGerman : public Translator
         case ClassDef::Struct: result+=" Strukturen"; break;
         case ClassDef::Union:  result+=" Varianten"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Exception:  result+=" Exception"; break;
       }
       result+="referenz";
       return result;

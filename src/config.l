@@ -144,9 +144,9 @@ bool     Config::includeGraphFlag    = TRUE;
 bool     Config::gfxHierarchyFlag    = TRUE;
 bool     Config::showIncFileFlag     = TRUE;
 bool     Config::stripCommentsFlag   = TRUE;
+bool     Config::sortMembersFlag     = TRUE;
 int      Config::tabSize             = 8;
 int      Config::colsInAlphaIndex    = 5;
-
 
 /* -----------------------------------------------------------------
  *
@@ -281,6 +281,7 @@ static int yyread(char *buf,int max_size)
 <Start>"RTF_HYPERLINKS"[ \t]*"="        { BEGIN(GetBool);    b=&Config::rtfHyperFlag; }
 <Start>"SHOW_INCLUDE_FILES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::showIncFileFlag; }
 <Start>"STRIP_CODE_COMMENTS"[ \t]*"="   { BEGIN(GetBool);    b=&Config::stripCommentsFlag; }
+<Start>"SORT_MEMBER_DOCS"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::sortMembersFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -499,6 +500,7 @@ void Config::init()
   Config::gfxHierarchyFlag    = TRUE;
   Config::showIncFileFlag     = TRUE;
   Config::stripCommentsFlag   = TRUE;
+  Config::sortMembersFlag     = TRUE;
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
@@ -641,7 +643,7 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t <<"\n";
-    t << "# If the ALWAYS_DETAILS_SEC and REPEAT_BRIEF tags are both set to YES then\n";
+    t << "# If the ALWAYS_DETAILED_SEC and REPEAT_BRIEF tags are both set to YES then\n";
     t << "# Doxygen will generate a detailed section even if there is only a brief\n";
     t << "# description.\n"; 
     t <<"\n";
@@ -752,7 +754,7 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# if the INHERIT_DOCS tag is set to YES (the default) then an undocumented\n";
+    t << "# If the INHERIT_DOCS tag is set to YES (the default) then an undocumented\n";
     t << "# member inherits the documentation from any documented member that it\n";
     t << "# reimplements.\n";
     t << "\n";
@@ -761,7 +763,7 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# if the INLINE_INFO tag is set to YES (the default) then a tag [inline]\n";
+    t << "# If the INLINE_INFO tag is set to YES (the default) then a tag [inline]\n";
     t << "# is inserted in the documentation for inline members.\n";
     t << "\n";
   }
@@ -769,7 +771,17 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# the TAB_SIZE tag can be used to set the number of spaces in a tab.\n";
+    t << "# If the SORT_MEMBER_DOCS tag is set to YES (the default) then doxygen\n";
+    t << "# will sort the (detailed) documentation of file and class members \n";
+    t << "# alphabetically by member name. If set to NO the members will appear in\n";
+    t << "# declaration order.\n";
+    t << "\n";
+  }
+  t << "SORT_MEMBER_DOCS     = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The TAB_SIZE tag can be used to set the number of spaces in a tab.\n";
     t << "# Doxygen uses this value to replace tabs by spaces in code fragments.\n";
     t << "\n";
   }

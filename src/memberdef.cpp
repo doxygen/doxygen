@@ -863,7 +863,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //if (cd && (!isRelated() || templateArguments()!=0) && 
       //    ((al=scopeDefTemplateArguments()) || (al=cd->templateArguments()))
       //   ) 
-      if (scopeAl) // class template prefix
+      if (scopeAl && !related) // class template prefix
       {
         writeTemplatePrefix(ol,scopeAl);
       }

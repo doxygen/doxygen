@@ -388,6 +388,7 @@ class TranslatorSwedish : public Translator
         case ClassDef::Struct: result+=" strukt"; break;
         case ClassDef::Union:  result+=" union"; break;
         case ClassDef::Interface:  result+=" gränssnitt"; break;
+        case ClassDef::Exception:  result+=" exception"; break;
       }
       result+="referens";
       return result;
@@ -525,6 +526,7 @@ class TranslatorSwedish : public Translator
         case ClassDef::Struct:     result+="denna strukt "; break;
         case ClassDef::Union:      result+="denna union "; break;
         case ClassDef::Interface:  result+="detta gränssnitt "; break;
+        case ClassDef::Exception:  result+="exception "; break;
       }
       result+="var genererad från följande fil";
       if (single) result+=":"; else result+="er:";

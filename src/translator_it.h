@@ -538,6 +538,7 @@ class TranslatorItalian : public Translator
         case ClassDef::Struct: result+="la struct "; break;
         case ClassDef::Union:  result+="la union "; break;
         case ClassDef::Interface:  result+="l'interfaccia "; break;
+        case ClassDef::Exception:  result+="exception "; break;
       }
       result+=(QCString)clName;
       return result;
@@ -699,6 +700,7 @@ class TranslatorItalian : public Translator
         case ClassDef::Struct:     result+="struct"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interfaccia"; break;
+        case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" è stata generata a partire ";
       if (single) result+="dal seguente file:";

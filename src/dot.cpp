@@ -136,7 +136,14 @@ static bool isLeaf(ClassDef *cd)
     for ( ; (bcd=bcli.current()); ++bcli )
     {
       ClassDef *bClass = bcd->classDef;
-      if (bClass->isLinkable() || !isLeaf(bClass)) return FALSE;
+      //if (bClass->isLinkable() || !isLeaf(bClass)) return FALSE;
+      
+      // if class is not a leaf
+      if (!isLeaf(bClass)) return FALSE;
+      // or class is not documented in this project
+      if (!Config::allExtFlag && !bClass->isLinkableInProject()) return FALSE;
+      // or class is not documented and all ALLEXTERNALS = YES
+      if (Config::allExtFlag && !bClass->isLinkable()) return FALSE;    
     }
   }
   return TRUE;
@@ -523,7 +530,12 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     //printf("Trying %s superClasses=%d\n",cd->name().data(),cd->superClasses()->count());
-    if (cd->isLinkable() && isLeaf(cd)) // root class in the graph
+    if (isLeaf(cd) &&
+        (
+         (!Config::allExtFlag && cd->isLinkableInProject()) ||
+         (Config::allExtFlag && cd->isLinkable())
+        )
+       ) // root class in the graph
     {
       //printf("Inserting root class %s\n",cd->name().data());
       DotNode *n = new DotNode(m_curNodeNumber++,
@@ -593,7 +605,10 @@ int DotGfxUsageGraph::m_curNodeNumber;
 void DotGfxUsageGraph::addClass(ClassDef *cd,DotNode *n,int prot,
                                 const char *label,int distance)
 {
-  if (cd->isLinkable())
+  if (
+      (!Config::allExtFlag && cd->isLinkableInProject()) ||
+      (Config::allExtFlag && cd->isLinkable())
+     )
   {
     //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
     //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
@@ -735,7 +750,7 @@ static void findMaximalDotGraph(DotNode *root,int maxDist,
 
     QCString dotCmd;
     // create annotated dot file
-    dotCmd.sprintf("dot -Tdot %s.dot -o %s_tmp.dot\n",baseName.data(),baseName.data());
+    dotCmd.sprintf("dot -Tdot %s.dot -o %s_tmp.dot",baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -807,7 +822,7 @@ void DotGfxUsageGraph::writeGraph(QTextStream &out,
 
   // run dot to create a .gif image
   QCString dotCmd;
-  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif\n",baseName.data(),baseName.data());
+  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
   if (system(dotCmd)!=0)
   {
      err("Problems running dot. Check your installation!\n");
@@ -848,27 +863,42 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
   for (;(ii=ili.current());++ili)
   {
     FileDef *bfd = ii->fileDef;
-    QCString in  = bfd ? bfd->absFilePath() : ii->includeName;
-    DotNode *bn  = m_usedNodes->find(in);
-    if (bn) // file is already a node in the graph
+    QCString in  = ii->includeName;
+    bool doc=TRUE,src=FALSE;
+    if (bfd)
     {
-      n->addChild(bn,0,0,0);
-      bn->addParent(n);
-      bn->setDistance(distance);
+      in  = bfd->absFilePath();  
+      doc = bfd->isLinkableInProject();
+      src = bfd->generateSource() || (!bfd->isReference() && Config::sourceBrowseFlag);
     }
-    else
+    if (doc || src)
     {
-      bn = new DotNode(
-          m_curNodeNumber++,
-          ii->includeName,
-          bfd ? (bfd->getReference()+"$"+bfd->getOutputFileBase()).data() : 0,
-          distance
-         );
-      if (distance>m_maxDistance) m_maxDistance=distance;
-      n->addChild(bn,0,0,0);
-      bn->addParent(n);
-      m_usedNodes->insert(in,bn);
-      if (bfd) buildGraph(bn,bfd,distance+1);
+      QCString url=bfd ? bfd->getOutputFileBase().data() : "";
+      if (!doc && src)
+      {
+        url+="-source";
+      }
+      DotNode *bn  = m_usedNodes->find(in);
+      if (bn) // file is already a node in the graph
+      {
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+      }
+      else
+      {
+        bn = new DotNode(
+                          m_curNodeNumber++,
+                          ii->includeName,
+                          bfd ? (bfd->getReference()+"$"+url).data() : 0,
+                          distance
+                        );
+        if (distance>m_maxDistance) m_maxDistance=distance;
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        m_usedNodes->insert(in,bn);
+        if (bfd) buildGraph(bn,bfd,distance+1);
+      }
     }
   }
 }
@@ -876,6 +906,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
 DotInclDepGraph::DotInclDepGraph(FileDef *fd)
 {
   m_maxDistance = 0;
+  ASSERT(fd!=0);
   m_diskName  = fd->getOutputFileBase().copy();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->name(),
@@ -918,7 +949,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,const char *path)
 
   // run dot to create a .gif image
   QCString dotCmd;
-  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif\n",baseName.data(),baseName.data());
+  dotCmd.sprintf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
   if (system(dotCmd)!=0)
   {
      err("Problems running dot. Check your installation!\n");

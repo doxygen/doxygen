@@ -99,6 +99,7 @@ class MemberDef : public Definition
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
+    void makeRelated()                   { related=TRUE; } 
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
     bool isInline() const                { return inLine; }

@@ -269,6 +269,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           case ClassDef::Struct: ol.writeString("struct"); break;
           case ClassDef::Union:  ol.writeString("union");  break;
           case ClassDef::Interface:  ol.writeString("interface");  break;
+          case ClassDef::Exception:  ol.writeString("exception");  break;
         }
         ol.writeString(" ");
         ol.insertMemberAlign();

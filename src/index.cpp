@@ -211,7 +211,7 @@ void writeClassHierarchy(OutputList &ol)
     ClassDef *cd=cli.current();
     if (!hasVisibleRoot(cd->baseClasses()))
     {
-      if (cd->isVisibleInHierarchy()) // WAS: isVisible()!
+      if (cd->isVisibleInHierarchy()) 
       {
         if (!started)
         {
@@ -399,7 +399,7 @@ void writeFileIndex(OutputList &ol)
     {
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSource() || Config::sourceBrowseFlag;
-      if (doc || src)
+      if ((doc || src) && !fd->isReference())
       {
         //ol.writeIndexItem(fd->getReference(),fd->diskName(),
         //    fd->name());
