@@ -26,6 +26,8 @@ f_plf_auto=NO
 f_prefix=/usr
 f_insttool=install
 f_english=NO
+f_configgen=NO
+f_wizard=NO
 
 while test -n "$1";  do
   case $1 in
@@ -62,6 +64,12 @@ while test -n "$1";  do
     --install)
        shift; f_insttool=$1
        ;;
+    --with-configgen)
+       f_configgen=YES
+       ;;
+    --with-doxywizard)
+       f_wizard=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -78,7 +86,8 @@ if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--make name] [--dot name] [--platform target] 
-          [--prefix dir] [--install name] [--english-only]
+          [--prefix dir] [--install name] [--english-only] 
+          [--with-configgen] [--with-doxywizard]
 
 Options: 
 
@@ -110,6 +119,13 @@ Options:
                         [default: install]
 
   --english-only        Include support for English only.
+
+  --with-configgen      Build the configuration generator. This is only
+                        useful for doxygen developers that want to add
+                        new configuration options.
+
+  --with-doxywizard     Build the GUI frontend for doxygen. This
+                        requires Qt 2.x.x
 
 EOF
   test "$f_error" = y && exit 1
@@ -316,6 +332,7 @@ TMAKE     = $PWD/tmake/bin/tmake
 MAKE      = $f_make
 PERL      = $f_perl
 RM        = rm -f
+CP        = cp
 VERSION   = `cat VERSION`
 INSTALL   = $f_prefix
 INSTTOOL  = $f_insttool
@@ -343,8 +360,9 @@ TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi
 
-for i in Makefile.in src/Makefile.in examples/Makefile.in \
-         doc/Makefile.in ; do
+f_inmakefiles="Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in"
+
+for i in $f_inmakefiles ; do
      SRC=$i
      DST=`echo $i|sed 's%\(.*\).in$%\1%'`
      TIME=`date`
@@ -355,11 +373,26 @@ for i in Makefile.in src/Makefile.in examples/Makefile.in \
 
 EOF
      cat .makeconfig $SRC >> $DST
+     if test $i = Makefile.in; then
+       echo "configgen:" >> $DST
+       if test $f_configgen = YES; then
+         echo "	$(MAKE) -C addon/configgen" >> $DST
+       fi
+       echo "doxywizard:" >> $DST
+       if test $f_wizard = YES; then
+         echo "	\$(MAKE) -C addon/doxywizard" >> $DST
+       fi
+       echo "doxywizard_install:" >> $DST
+       if test $f_wizard = YES; then
+         echo "	\$(MAKE) -C addon/doxywizard install" >> $DST
+       fi
+     fi
      echo "  Created $DST from $SRC..."
 done
 
-for i in src/doxygen.pro.in src/doxytag.pro.in \
-         src/doxysearch.pro.in ; do
+f_inprofiles="src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in" 
+
+for i in $f_inprofiles ; do
      SRC=$i
      DST=`echo $i|sed 's%\(.*\).in$%\1%'`
      TIME=`date`

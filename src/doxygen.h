@@ -79,7 +79,6 @@ class BufStr : public QCString
 
 typedef QList<QCString>    StringList;
 typedef QDict<MemberDef>   MemberDict;
-typedef QDict<ClassDef>    ClassDict;
 typedef QDict<FileDef>     FileDict;
 typedef QDict<QCString>    StringDict;
 typedef QDict<PageInfo>    PageDict;

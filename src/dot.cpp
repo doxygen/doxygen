@@ -166,6 +166,18 @@ class DotNodeList : public QList<DotNode>
 
 //--------------------------------------------------------------------
 
+
+/*! helper function that deletes all nodes in a connected graph, given
+ *  one of the graph's nodes
+ */
+static void deleteNodes(DotNode *node)
+{
+  static DotNodeList deletedNodes;
+  deletedNodes.setAutoDelete(TRUE);
+  node->deleteNode(deletedNodes); // collect nodes to be deleted.
+  deletedNodes.clear(); // actually remove the nodes.
+}
+
 DotNode::DotNode(int n,const char *lab,const char *url,int distance,bool isRoot)
   : m_number(n), m_label(lab), m_url(url), m_isRoot(isRoot)
 {
@@ -237,39 +249,32 @@ void DotNode::removeParent(DotNode *n)
   if (m_parents) m_parents->remove(n);
 }
 
-void DotNode::deleteNode()
+void DotNode::deleteNode(DotNodeList &deletedList)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
   m_deleted=TRUE;
-  if (m_parents!=0)
+  if (m_parents!=0) // delete all parent nodes of this node
   {
     QListIterator<DotNode> dnlip(*m_parents);
     DotNode *pn;
     for (dnlip.toFirst();(pn=dnlip.current());++dnlip)
     {
-      pn->removeChild(this);
-      if (!pn->m_deleted)
-      {
-        pn->deleteNode();
-      }
-      // do not access pn after this!
+      //pn->removeChild(this);
+      pn->deleteNode(deletedList);
     }
   }
-  if (m_children!=0)
+  if (m_children!=0) // delete all child nodes of this node
   {
     QListIterator<DotNode> dnlic(*m_children);
     DotNode *cn;
     for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
     {
-      cn->removeParent(this);
-      if (!cn->m_deleted)
-      {
-        cn->deleteNode();
-      }
-      // do not access cn after this!
+      //cn->removeParent(this);
+      cn->deleteNode(deletedList);
     }
   }
-  delete this;
+  // add this node to the list of deleted nodes.
+  deletedList.append(this);
 }
 
 void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
@@ -684,7 +689,7 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
   {
     DotNode *oldNode=n;
     n=m_rootNodes->next();
-    oldNode->deleteNode(); 
+    deleteNodes(oldNode); 
   }
   delete m_rootNodes;
   delete m_usedNodes;
@@ -792,7 +797,7 @@ bool DotGfxUsageGraph::isTrivial() const
 
 DotGfxUsageGraph::~DotGfxUsageGraph()
 {
-  m_startNode->deleteNode();
+  deleteNodes(m_startNode);
   delete m_usedNodes;
 }
 
@@ -1011,7 +1016,7 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd)
 
 DotInclDepGraph::~DotInclDepGraph()
 {
-  m_startNode->deleteNode();
+  deleteNodes(m_startNode);
   delete m_usedNodes;
 }
 

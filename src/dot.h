@@ -56,7 +56,7 @@ class DotNode
                  );
     void setDistance(int distance);
     void addParent(DotNode *n);
-    void deleteNode();
+    void deleteNode(DotNodeList &deletedList);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int  number() const { return m_number; }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -15,34 +15,29 @@
  *
  */
 
-#ifndef CLASSLIST_H
-#define CLASSLIST_H
+#ifndef QTBC_H
+#define QTBC_H
 
-#include <qlist.h>
-#include <qdict.h>
+/*! This file contains some hacks to make Doxygen work with 
+ *  Qt version 2.00 and Qt version 1.xx 
+ */
 
-#include "classdef.h"
+#include <qglobal.h>
 
-class ClassList : public QList<ClassDef>
-{ 
-  public:
-    ClassList();
-   ~ClassList();
-   
-   int compareItems(GCI item1,GCI item2);
-};
+#if QT_VERSION >= 200
 
-class ClassListIterator : public QListIterator<ClassDef>
-{
-  public:
-    ClassListIterator(const ClassList &list);
-};
+#define GCI QCollection::Item
 
-class ClassDict : public QDict<ClassDef>
-{
-  public:
-    ClassDict(int size) : QDict<ClassDef>(size) {}
-   ~ClassDict() {}
-};
+#include <qcstring.h>
+#include <qstring.h>
+inline QCString convertToQCString(const QString &s) { return s.local8Bit(); }
+
+#else /* QT_VERSION < 200 */
+
+#include <qstring.h>
+#define QCString QString
+inline QCString convertToQCString(const QCString &s) { return s; }
+
+#endif
 
 #endif

@@ -62,6 +62,7 @@ documentation:
 <li> \refitem cmde \e
 <li> \refitem cmdendcode \endcode
 <li> \refitem cmdendhtmlonly \endhtmlonly
+<li> \refitem cmdendif \endif
 <li> \refitem cmdendlatexonly \endlatexonly
 <li> \refitem cmdendlink \endlink
 <li> \refitem cmdendverbatim \endverbatim
@@ -74,6 +75,7 @@ documentation:
 <li> \refitem cmdfile \file
 <li> \refitem cmdfn \fn
 <li> \refitem cmdhtmlonly \htmlonly
+<li> \refitem cmdif \if
 <li> \refitem cmdimage \image
 <li> \refitem cmdinclude \include
 <li> \refitem cmdingroup \ingroup
@@ -241,10 +243,12 @@ Doxygen. Unrecognized commands are treated as normal text.
   in a list. The source code is scanned for documented members and classes.
   If any are found, the names are cross-referenced with the documentation. 
   Source files or directories can be specified using the 
-  \c EXAMPLE_PATH tag of Doxygen's configuration file.
+  \ref cfg_example_path "EXAMPLE_PATH" 
+  tag of Doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
-  by the \c EXAMPLE_PATH tag, you can include part of the absolute path
+  by the 
+  \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part of the absolute path
   to disambiguate it.
 
   If more that one source file is needed for the example,
@@ -553,6 +557,16 @@ Doxygen. Unrecognized commands are treated as normal text.
   a deprecated entity. Can be used to describe alternatives, 
   expected life span, etc.
 
+
+<hr>
+\subsection cmdendif \endif 
+
+  \addindex \endif
+  Ends a conditional section that was started with \c \if.
+  For each \c \if one and only one matching \c \endif must follow.
+
+  \sa \ref cmdif "\\if"
+
 <hr>
 \subsection cmdexception \exception <exception-object> { exception description }
 
@@ -570,6 +584,37 @@ Doxygen. Unrecognized commands are treated as normal text.
 
   \par Note: 
   the tag \\exceptions is a synonym for this tag.
+
+<hr>
+\subsection cmdif \if <section-label>
+
+  \addindex \if
+  Starts a conditional documentation section. The section ends 
+  with a matching \c \endif command. A conditional section is
+  disable by default. To enable it you must put the
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  tag in the configuration
+  file. Conditional blocks can be nested. A nested section is
+  only enabled if all enclosing sections are enabled as well.
+
+  \par Example:
+\verbatim
+  /*! Uncoditionally shown documentation.
+   *  \if Cond1
+   *    Only included if Cond1 is set.
+   *  \endif
+   *  \if Cond2
+   *    Only included if Cond2 is set.
+   *    \if Cond3
+   *      Only included if Cond2 and Cond3 are set.
+   *    \endif
+   *    More text.
+   *  \endif
+   *  Unconditional text.
+   */
+\endverbatim  
+
+  \sa section \ref cmdendif "\\endif".
 
 <hr>
 \subsection cmdinvariant \invariant { description of invariant }
@@ -832,8 +877,9 @@ Doxygen. Unrecognized commands are treated as normal text.
   verbatim including it in the documentation (as the \\include command does). 
   This is useful if you want to divide the source file into smaller pieces and
   add documentation between the pieces.
-  Source files or directories can be specified using the \c EXAMPLE_PATH tag 
-  of Doxygen's configuration file.
+  Source files or directories can be specified using the 
+  \ref cfg_example_path "EXAMPLE_PATH" 
+  tag of Doxygen's configuration file.
 
   The class and member declarations and definitions inside the code fragment
   are `remembered' during the parsing of the comment block that contained 
@@ -863,22 +909,26 @@ Doxygen. Unrecognized commands are treated as normal text.
   This command can be used to include a source file as a block of code.
   The command takes the name of an include file as an argument. 
   Source files or directories can be specified using the 
-  \c EXAMPLE_PATH tag of Doxygen's configuration file.
+  \ref cfg_example_path "EXAMPLE_PATH" 
+  tag of Doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
-  by the \c EXAMPLE_PATH tag, you can include part of the absolute path
-  to disambiguate it.
+  by the 
+  \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part 
+  of the absolute path to disambiguate it.
 
   Using the \\include command is equivalent to inserting the file into 
   the documentation block and surrounding it 
-  with \\code and \\endcode commands.
+  with \ref cmdcode "\\code" and \ref cmdendcode "\\endcode" commands.
 
   The main purpose of the \\include command is to avoid code 
   duplication in case of example blocks that consist of multiple
   source and header files.
 
   For a line by line description of a source files use the 
-  \\dontinclude command in combination with the \\line, \\skip, \\skipline, 
+  \ref cmddontinclude "\\dontinclude" command in combination with 
+  the \ref cmdline "\\line", \ref cmdskip "\\skip", 
+  \ref cmdskipline "\\skipline", 
   and \\until commands. 
 
   \sa section \ref cmdexample "\\example" and \ref cmddontinclude "\\dontinclude".

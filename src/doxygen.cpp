@@ -1265,12 +1265,7 @@ void buildMemberList(Entry *root)
         md->setDefLine(root->startLine);
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
-        //md->setBody(root->body);
         md->setBodySegment(root->bodyLine,root->endBodyLine);
-        //if (root->mGrpId!=-1) 
-        //{
-        //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-        //}
         md->setInline(root->inLine);
         bool ambig;
         md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
@@ -1597,9 +1592,15 @@ void findFriends()
             else if (!mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
               fmd->setBriefDescription(mmd->briefDescription());
             if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
+            {
               mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
+              mmd->setBodyDef(fmd->getBodyDef());
+            }
             else if (mmd->getStartBodyLine()!=-1 && fmd->getStartBodyLine()==-1)
+            {
               fmd->setBodySegment(mmd->getStartBodyLine(),mmd->getEndBodyLine());
+              fmd->setBodyDef(mmd->getBodyDef());
+            }
           }
         }
       }
@@ -1724,7 +1725,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
-      ClassDef *baseClass=getClass(baseClassName);
+      ClassDef *baseClass=getResolvedClass(baseClassName);
       if (baseClassName!=root->name) // check for base class with the same name, 
         // look in the outer scope for a match
       {
@@ -1744,7 +1745,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           // but for now, we only look for the unspecializated base class.
           templSpec=baseClassName.right(baseClassName.length()-i);
           baseClassName=baseClassName.left(i);
-          baseClass=getClass(baseClassName);
+          baseClass=getResolvedClass(baseClassName);
           //printf("baseClass=%p baseClass=%s templSpec=%s\n",
           //        baseClass,baseClassName.data(),templSpec.data());
         }
@@ -1766,7 +1767,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 QCString fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(fName))!=0 && baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -1775,7 +1776,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           {
             NamespaceList *nl = nd->getUsedNamespaces();
             QCString fName = nd->name()+"::"+baseClassName;
-            found = (baseClass=getClass(fName))!=0 && root->name!=fName;
+            found = (baseClass=getResolvedClass(fName))!=0 && root->name!=fName;
             if (nl) // try to prepend any of the using namespace scopes.
             {
               NamespaceListIterator nli(*nl);
@@ -1783,7 +1784,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(fName))!=0 && baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -4935,7 +4936,7 @@ int main(int argc,char **argv)
   s=Config::imagePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,&imageNameDict,0,&Config::imagePatternList,
+    readFileOrDirectory(s,0,&imageNameDict,0,0,
                         0,0,0);
     s=Config::imagePath.next(); 
   }

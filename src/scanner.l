@@ -836,6 +836,13 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   return result;
 }
 
+QCString extractName(const QCString &s)
+{
+  uint i=0;
+  while (i<s.length() && isId(s.at(i))) i++;
+  return s.left(i);
+}
+
 /* ----------------------------------------------------------------- */
 
 //static void addToBody(const char *text);
@@ -2823,6 +2830,16 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    current->type=current->type.simplifyWhiteSpace();
 					    current->args=current->args.simplifyWhiteSpace();
 					    current->name=current->name.stripWhiteSpace();
+					    if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
+					    {
+					      // add typedef to dictionary
+					      QCString dest = extractName(current->type.right(current->type.length()-8));
+					      if (!dest.isEmpty())
+					      {		
+						//printf(">>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
+					        typedefDict.insert(current->name, new QCString(dest));
+					      }
+					    }
 					    current->section = Entry::VARIABLE_SEC ;
 					    current->fileName = yyFileName;
 					    current->startLine = yyLineNr;
@@ -3707,12 +3724,11 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  {
 					    if (isTypedef)
 					    {
-					      //  typedefDict.insert(yytext,new QCString(current->name));
-					      //  current->type.prepend("typedef ");
-					      //  current->extends
-					      current->extends->append(
-						  new BaseInfo(yytext,Public,Normal)
-								      );
+					      QCString dest = extractName(current->name);
+					      typedefDict.insert(yytext,new QCString(current->name));
+					      //current->extends->append(
+					      //   new BaseInfo(yytext,Public,Normal)
+					      //		      );
 					    }
 					    current->type += ' ' ;
 					    current->type += current->name ;

@@ -203,11 +203,37 @@ int guessSection(const char *name)
 ClassDef *getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-//  QCString *subst = typedefDict[name];
-//  if (subst)
-//    return classDict[subst->data()];
-//  else
   return classDict[name];
+}
+
+ClassDef *getResolvedClass(const char *name)
+{
+  if (name==0 || name[0]=='\0') return 0;
+  QCString *subst = typedefDict[name];
+  if (subst) // there is a typedef with this name
+  {
+    int count=0; // recursion detection guard
+    QCString *newSubst;
+    while ((newSubst=typedefDict[*subst]) && count<10)
+    {
+      subst=newSubst;
+      count++;
+    }
+    if (count==10)
+    {
+      warn("Warning: possible recursive typedef dependency detected for %s!\n",name);
+      return classDict[name];
+    }
+    else
+    {
+      //printf("getClass: subst %s->%s\n",name,subst->data());
+      return classDict[subst->data()];
+    }
+  }
+  else
+  {
+    return classDict[name];
+  }
 }
 
 QCString removeRedundantWhiteSpace(const QCString &s)
@@ -249,21 +275,45 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
      );
 }
 
-void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text)
+void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text,bool autoBreak)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
   QCString txtStr=text;
-  OutputList result(&ol);
+  int strLen = txtStr.length();
+  //printf("linkifyText strtxt=%s strlen=%d\n",txtStr.data(),strLen);
   int matchLen;
   int index=0;
   int newIndex;
   int skipIndex=0;
+  int floatingIndex=0;
   // read a word from the text string
   while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
   {
     // add non-word part to the result
-    result.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
+    floatingIndex+=newIndex-skipIndex;
+    if (strLen>30 && floatingIndex>25 && autoBreak) // try to insert a split point
+    {
+      QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
+      int splitLength = splitText.length();
+      int i=splitText.find('<');
+      if (i==-1) i=splitText.find(',');
+      if (i==-1) i=splitText.find(' ');
+      if (i!=-1) // add a link-break at i in case of Html output
+      {
+        ol.docify(splitText.left(i+1));
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.lineBreak();
+        ol.popGeneratorState();
+        ol.docify(splitText.right(splitLength-i-1));
+      } 
+      floatingIndex=splitLength-i-1;
+    }
+    else
+    {
+      ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
+    }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
     ClassDef     *cd=0;
@@ -300,7 +350,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
           // add link to the result
           if (cd->isLinkable())
           {
-            result.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             found=TRUE;
           }
         }
@@ -328,7 +378,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
         if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
         if (d && d->isLinkable())
         {
-          result.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+          ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
                                  md->anchor(),word);
           found=TRUE;
         }
@@ -336,20 +386,19 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
 
       if (!found) // add word to the result
       {
-        result.docify(word);
+        ol.docify(word);
       }
     }
     else
     {
-      result.docify(word);
+      ol.docify(word);
     }
     // set next start point in the string
     skipIndex=index=newIndex+matchLen;
+    floatingIndex+=matchLen;
   }
   // add last part of the string to the result.
-  result.docify(txtStr.right(txtStr.length()-skipIndex));
-  //printf("linkify: %s\n",result.data());
-  ol+=result; 
+  ol.docify(txtStr.right(txtStr.length()-skipIndex));
 }
 
 

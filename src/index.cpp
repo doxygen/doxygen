@@ -167,6 +167,11 @@ void writeClassHierarchy(OutputList &ol)
   for (;cli.current(); ++cli)
   {
     ClassDef *cd=cli.current();
+    //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
+    //             cd->name().data(),
+    //              hasVisibleRoot(cd->baseClasses()),
+    //              cd->isVisibleInHierarchy()
+    //      );
     if (!hasVisibleRoot(cd->baseClasses()))
     {
       if (cd->isVisibleInHierarchy()) 
@@ -197,11 +202,11 @@ void writeClassHierarchy(OutputList &ol)
           ol.writeIndexItem(0,0,cd->name());
           //if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
         }
-      }
-      if (!cd->visited && cd->superClasses()->count()>0) 
-      {
-        writeClassTree(ol,cd->superClasses(),cd->visited);
-        cd->visited=TRUE;
+        if (!cd->visited && cd->superClasses()->count()>0) 
+        {
+          writeClassTree(ol,cd->superClasses(),cd->visited);
+          cd->visited=TRUE;
+        }
       }
     }
   }
