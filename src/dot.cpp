@@ -1160,9 +1160,9 @@ void DotClassGraph::writeGraph(QTextStream &out,
     if (Config::usePDFLatexFlag)
     {
       QCString epstopdfArgs(4096);
-      epstopdfArgs.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs)!=0)
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);
@@ -1357,9 +1357,9 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     if (Config::usePDFLatexFlag)
     {
       QCString epstopdfArgs(4096);
-      epstopdfArgs.sprintf("\"%s.eps\" -outfile=\"%s.pdf\"",
+      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs)!=0)
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);

@@ -1236,10 +1236,10 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   if (Config::usePDFLatexFlag)
   {
     QCString epstopdfArgs(4096);
-    epstopdfArgs.sprintf("\"%s.eps\" -outfile=\"%s.pdf\"",
+    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using `%s'\n",epstopdfCmd.data());
-    if (iSystem("epstopdf",epstopdfArgs)!=0)
+    if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
     {
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
        return;

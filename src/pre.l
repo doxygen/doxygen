@@ -828,7 +828,7 @@ void addDefine()
   if (mn==0)
   {
     mn = new MemberName(g_defName);
-    functionNameList.inSort(mn);
+    functionNameList.append(mn);
     functionNameDict.insert(g_defName,mn);
   }
   mn->append(md);
