@@ -19,7 +19,9 @@
 #include "debug.h"
 #include "graphhandler.h"
 #include "sectionhandler.h"
+#include "paramhandler.h"
 #include "loamhandler.h"
+#include "memberhandler.h"
 
 //----------------------------------------------------------------------------
 

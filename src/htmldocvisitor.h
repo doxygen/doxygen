@@ -76,8 +76,8 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocHtmlList *) ;
     void visitPre(DocHtmlListItem *);
     void visitPost(DocHtmlListItem *);
-    void visitPre(DocHtmlPre *);
-    void visitPost(DocHtmlPre *);
+    //void visitPre(DocHtmlPre *);
+    //void visitPost(DocHtmlPre *);
     void visitPre(DocHtmlDescList *);
     void visitPost(DocHtmlDescList *);
     void visitPre(DocHtmlDescTitle *);

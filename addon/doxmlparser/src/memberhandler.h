@@ -23,14 +23,15 @@
 
 #include "basehandler.h"
 #include "baseiterator.h"
-#include "paramhandler.h"
-#include "linkedtexthandler.h"
-#include "dochandler.h"
+#include "stringimpl.h"
 
 class MainHandler;
 class CompoundHandler;
 class SectionHandler;
 class ParamHandler;
+class LinkedTextImpl;
+class LinkedTextHandler;
+class DocHandler;
 
 struct MemberReference : public IMemberReference
 {
@@ -159,25 +160,14 @@ class MemberHandler : public IDefine,
     { return m_isConst; }
     virtual bool isVolatile() const 
     { return m_isVolatile; }
-    virtual ILinkedTextIterator *type() const 
-    { return new LinkedTextIterator(m_type); }
-    virtual const IString *typeString() const
-    { MemberHandler *that = (MemberHandler *)this;
-      that->m_typeString = LinkedTextHandler::toString(m_type); 
-      return &m_typeString;
-    }
-    virtual IParamIterator *parameters() const 
-    { return new ParamIterator(m_params); }
-    virtual IParamIterator *templateParameters() const 
-    { return m_hasTemplateParamList ? new ParamIterator(m_templateParams) : 0; }
-    virtual IMemberReferenceIterator *references() const 
-    { return new MemberReferenceIterator(m_references); }
-    virtual IMemberReferenceIterator *referencedBy() const 
-    { return new MemberReferenceIterator(m_referencedBy); }
-    virtual ILinkedTextIterator *initializer() const
-    { return new LinkedTextIterator(m_initializer); }
-    virtual ILinkedTextIterator *exceptions() const
-    { return new LinkedTextIterator(m_exception); }
+    virtual ILinkedTextIterator *type() const;
+    virtual const IString *typeString() const;
+    virtual IParamIterator *parameters() const;
+    virtual IParamIterator *templateParameters() const;
+    virtual IMemberReferenceIterator *references() const;
+    virtual IMemberReferenceIterator *referencedBy() const;
+    virtual ILinkedTextIterator *initializer() const;
+    virtual ILinkedTextIterator *exceptions() const;
     virtual int bodyStart() const 
     { return m_bodyStart; }
     virtual int bodyEnd() const 
@@ -188,12 +178,9 @@ class MemberHandler : public IDefine,
     { return m_defLine; }
     virtual IMemberReference *reimplements() const
     { return m_reimplements; }
-    virtual IMemberReferenceIterator *reimplementedBy() const
-    { return new MemberReferenceIterator(m_reimplementedBy); }
-    virtual IDocRoot *briefDescription() const
-    { return m_brief; }
-    virtual IDocRoot *detailedDescription() const
-    { return m_detailed; }
+    virtual IMemberReferenceIterator *reimplementedBy() const;
+    virtual IDocRoot *briefDescription() const;
+    virtual IDocRoot *detailedDescription() const;
 
     // IEnum
     virtual IMemberIterator *enumValues() const;

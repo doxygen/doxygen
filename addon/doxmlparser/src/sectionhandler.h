@@ -22,7 +22,6 @@
 #include <doxmlintf.h>
 
 #include "basehandler.h"
-#include "memberhandler.h"
 
 class MainHandler;
 
@@ -50,8 +49,7 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
     { return &m_kindString; }
     virtual SectionKind kind() const 
     { return m_kind; }
-    virtual IMemberIterator *members() const 
-    { return new MemberIterator(m_members); }
+    virtual IMemberIterator *members() const;
     virtual bool isStatic() const
     { 
       return m_kind==PubStatFuncs || m_kind==PubStatAttribs || 

@@ -3827,18 +3827,14 @@ void filterLatexString(QTextStream &t,const char *str,
           case '>':  t << "$>$";           break;
           case '|':  t << "$|$";           break;
           case '~':  t << "$\\sim$";       break;
-          case '[':  if (Config_getBool("PDF_HYPERLINKS")) 
+          case '[':  if (Config_getBool("PDF_HYPERLINKS") || insideItem) 
                        t << "\\mbox{[}"; 
-                     else if (insideItem)
-                       t << "\\[";
                      else
                        t << "[";
                      break;
           case ']':  if (pc=='[') t << "$\\,$";
-                     if (Config_getBool("PDF_HYPERLINKS"))
+                     if (Config_getBool("PDF_HYPERLINKS") || insideItem)
                        t << "\\mbox{]}";
-                     else if (insideItem)
-                       t << "\\]";
                      else
                        t << "]";             
                      break;

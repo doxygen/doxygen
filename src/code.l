@@ -521,7 +521,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
   {
     QCString scope   = name.left(scopeEnd);
     QCString locName = name.right(name.length()-scopeEnd-2);
-    //printf("name=%s scope=%s\n",locName.data(),scope.data());
+    //printf("explicit scope: name=%s scope=%s\n",locName.data(),scope.data());
     ClassDef *mcd = getClass(scope); // TODO: check namespace as well
     if (mcd && !locName.isEmpty())
     {
@@ -539,20 +539,21 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
-    //printf("local var `%s'\n",name.data());
+    //printf("local var `%s' mcd=%s\n",name.data(),mcd->name().data());
     g_theCallContext.setClass(mcd);
-    return 0;
   }
-
-  // look for a class member 
-  mcd = getClass(g_classScope);
-  if (mcd)
+  else
   {
-    MemberDef *md=mcd->getMemberByName(name);
-    if (md) 
+    // look for a class member 
+    mcd = getClass(g_classScope);
+    if (mcd)
     {
-      g_theCallContext.setClass(stripClassName(md->typeString()));
-      return md;
+      MemberDef *md=mcd->getMemberByName(name);
+      if (md) 
+      {
+	g_theCallContext.setClass(stripClassName(md->typeString()));
+	return md;
+      }
     }
   }
 
@@ -613,6 +614,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
+  //printf("generateClassOrGlobalLink(clName=%s)\n",clName);
   if (*clName=='~') // correct for matching negated values i.s.o. destructors.
   {
     g_code->codify("~");
@@ -634,6 +636,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int 
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
+    //printf("is linkable class %s\n",clName);
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -654,10 +657,12 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int 
     if (cd==0) // not a class, see if it is a global enum/variable/typedef.
     {
       MemberDef *md = setCallContextForVar(clName);
+      //printf("is a global md=%p\n",md);
       if (md)
       {
         Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                md->getBodyDef() : md->getOuterScope();
+	//printf("definition %s\n",d?d->name().data():"<none>");
         if (md->getGroupDef()) d = md->getGroupDef();
 	if (d && d->isLinkable() && md->isLinkable())
 	{

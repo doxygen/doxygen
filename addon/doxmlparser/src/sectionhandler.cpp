@@ -16,6 +16,7 @@
 #include "mainhandler.h"
 #include "compoundhandler.h"
 #include "sectionhandler.h"
+#include "memberhandler.h"
 #include "debug.h"
 
 class SectionTypeMap
@@ -126,4 +127,8 @@ void SectionHandler::initialize(CompoundHandler *ch)
   }
 }
 
+IMemberIterator *SectionHandler::members() const 
+{ 
+  return new MemberIterator(m_members); 
+}
 

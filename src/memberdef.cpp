@@ -1271,6 +1271,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.newParagraph();
       ol.popGeneratorState();
     }
+    else if(!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
+            !Config_getBool("BRIEF_MEMBER_DESC")))
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::RTF);
+      ol.newParagraph();
+      ol.popGeneratorState();
+    }
+
 
     //printf("***** defArgList=%p name=%s docs=%s hasDocs=%d\n",
     //     defArgList, 
@@ -1375,7 +1384,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       // write class that contains a member that is reimplemented by this one
       if (bcd->isLinkable())
       {
+        ol.disable(OutputGenerator::RTF);
         ol.newParagraph();
+        ol.enableAll();
 
         QCString reimplFromLine; 
         if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
@@ -1449,7 +1460,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         mli.toFirst();
         // write the list of classes that overwrite this member
+        ol.disable(OutputGenerator::RTF);
         ol.newParagraph();
+        ol.enableAll();
 
         QCString reimplInLine;
         if (virt==Pure || (classDef && classDef->compoundType()==ClassDef::Interface))

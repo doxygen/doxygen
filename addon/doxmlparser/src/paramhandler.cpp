@@ -15,6 +15,7 @@
 
 #include "paramhandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
 #include "debug.h"
 
 TemplateParamListHandler::TemplateParamListHandler(IBaseHandler *parent) : m_parent(parent)
@@ -127,5 +128,14 @@ void ParamHandler::startDefVal(const QXmlAttributes& /*attrib*/)
   debug(2,"member defVal\n");
 }
 
+ILinkedTextIterator *ParamHandler::type() const 
+{ 
+  return new LinkedTextIterator(m_type); 
+}
+
+ILinkedTextIterator *ParamHandler::defaultValue() const 
+{ 
+  return new LinkedTextIterator(m_defVal); 
+}
 
 

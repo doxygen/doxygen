@@ -24,7 +24,9 @@
 #include "stringimpl.h"
 #include "basehandler.h"
 #include "baseiterator.h"
-#include "linkedtexthandler.h"
+
+class LinkedTextImpl;
+class LinkedTextHandler;
 
 
 class ParamHandler : public IParam, public BaseHandler<ParamHandler>
@@ -43,14 +45,12 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
     virtual ~ParamHandler();
 
     // IParam
-    virtual ILinkedTextIterator *type() const 
-    { return new LinkedTextIterator(m_type); }
+    virtual ILinkedTextIterator *type() const;
     virtual const IString * declarationName() const { return &m_declName; }
     virtual const IString * definitionName() const { return &m_defName; }
     virtual const IString * attrib() const { return &m_attrib; } 
     virtual const IString * arraySpecifier() const { return &m_array; }
-    virtual ILinkedTextIterator *defaultValue() const 
-    { return new LinkedTextIterator(m_defVal); }
+    virtual ILinkedTextIterator *defaultValue() const;
 
   private:
     IBaseHandler *m_parent;

@@ -28,7 +28,7 @@
 #include "message.h"
 
 RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(0) 
+  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(1) 
 {
 }
 
@@ -48,7 +48,7 @@ void RTFDocVisitor::incIndentLevel()
 
 void RTFDocVisitor::decIndentLevel()
 {
-  if (m_indentLevel>0) m_indentLevel--;
+  if (m_indentLevel>1) m_indentLevel--;
 }
 
   //--------------------------------------
@@ -258,6 +258,21 @@ void RTFDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Small:
       if (s->enable()) m_t << "{\\sub ";  else m_t << "} ";
+      break;
+    case DocStyleChange::Preformatted:
+      if (s->enable())
+      {
+        m_t << "{" << endl;
+        m_t << "\\par" << endl;
+        m_t << rtf_Style_Reset << getStyle("CodeExample");
+        m_insidePre=TRUE;
+      }
+      else
+      {
+        m_insidePre=FALSE;
+        m_t << "\\par" << endl; 
+        m_t << "}" << endl;
+      }
       break;
   }
 }
@@ -585,20 +600,20 @@ void RTFDocVisitor::visitPost(DocHtmlListItem *)
 {
 }
 
-void RTFDocVisitor::visitPre(DocHtmlPre *)
-{
-  m_t << "{" << endl;
-  m_t << "\\par" << endl;
-  m_t << rtf_Style_Reset << getStyle("CodeExample");
-  m_insidePre=TRUE;
-}
+//void RTFDocVisitor::visitPre(DocHtmlPre *)
+//{
+//  m_t << "{" << endl;
+//  m_t << "\\par" << endl;
+//  m_t << rtf_Style_Reset << getStyle("CodeExample");
+//  m_insidePre=TRUE;
+//}
 
-void RTFDocVisitor::visitPost(DocHtmlPre *) 
-{
-  m_insidePre=FALSE;
-  m_t << "\\par" << endl; 
-  m_t << "}" << endl;
-}
+//void RTFDocVisitor::visitPost(DocHtmlPre *) 
+//{
+//  m_insidePre=FALSE;
+//  m_t << "\\par" << endl; 
+//  m_t << "}" << endl;
+//}
 
 void RTFDocVisitor::visitPre(DocHtmlDescList *)
 {
@@ -875,8 +890,8 @@ void RTFDocVisitor::visitPost(DocLanguage *)
 void RTFDocVisitor::visitPre(DocParamSect *s)
 {
   m_t << "{"; // start param list
-  m_t << "{\\b "; // start bold
   m_t << "\\par" << endl;
+  m_t << "{\\b "; // start bold
   switch(s->type())
   {
     case DocParamSect::Param: 
@@ -896,7 +911,7 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
 
 void RTFDocVisitor::visitPost(DocParamSect *)
 {
-  m_t << "\\par" << endl;
+  //m_t << "\\par" << endl;
   decIndentLevel();
   m_t << "}" << endl;
 }

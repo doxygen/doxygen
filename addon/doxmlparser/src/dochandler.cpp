@@ -13,9 +13,12 @@
  *
  */
 
+#include <qmap.h>
+
 #include "dochandler.h"
 #include "debug.h"
-#include <qmap.h>
+#include "linkedtexthandler.h"
+
 
 //----------------------------------------------------------------------
 
@@ -95,7 +98,8 @@ void dochandler_exit()
 //----------------------------------------------------------------------
 
 MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
-  : m_children(children), m_curString(curString), m_curMarkup(IDocMarkup::Normal)
+  : m_children(children), m_curString(curString), 
+    m_curMarkup(IDocMarkup::Normal), m_headingLevel(0)
 {
   addStartHandler("bold",this,&MarkupHandler::startBold);
   addEndHandler("bold",this,&MarkupHandler::endBold);
@@ -117,6 +121,27 @@ MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
 
   addStartHandler("superscript",this,&MarkupHandler::startSuperscript);
   addEndHandler("superscript",this,&MarkupHandler::endSuperscript);
+
+  addStartHandler("preformatted",this,&MarkupHandler::startPreformatted);
+  addEndHandler("preformatted",this,&MarkupHandler::endPreformatted);
+
+  addStartHandler("heading1",this,&MarkupHandler::startHeading1);
+  addEndHandler("heading1",this,&MarkupHandler::endHeading1);
+  
+  addStartHandler("heading2",this,&MarkupHandler::startHeading2);
+  addEndHandler("heading2",this,&MarkupHandler::endHeading2);
+
+  addStartHandler("heading3",this,&MarkupHandler::startHeading3);
+  addEndHandler("heading3",this,&MarkupHandler::endHeading3);
+
+  addStartHandler("heading4",this,&MarkupHandler::startHeading4);
+  addEndHandler("heading4",this,&MarkupHandler::endHeading4);
+
+  addStartHandler("heading5",this,&MarkupHandler::startHeading5);
+  addEndHandler("heading5",this,&MarkupHandler::endHeading5);
+
+  addStartHandler("heading6",this,&MarkupHandler::startHeading6);
+  addEndHandler("heading6",this,&MarkupHandler::endHeading6);
 }
 
 MarkupHandler::~MarkupHandler()
@@ -127,7 +152,7 @@ void MarkupHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,m_curMarkup));
+    m_children.append(new TextNode(m_curString,m_curMarkup,m_headingLevel));
     debug(2,"addTextNode() text=%s markup=%x\n",m_curString.data(),m_curMarkup);
     m_curString="";
   }
@@ -230,6 +255,117 @@ void MarkupHandler::endSuperscript()
   m_children.append(new MarkupModifierNode(IDocMarkup::Superscript,FALSE));
   m_curMarkup &= ~IDocMarkup::Superscript;
 }
+
+void MarkupHandler::startPreformatted(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,TRUE));
+  m_curMarkup |= IDocMarkup::Preformatted;
+}
+
+void MarkupHandler::endPreformatted()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Preformatted,FALSE));
+  m_curMarkup &= ~IDocMarkup::Preformatted;
+}
+
+void MarkupHandler::startHeading1(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,1));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=1;
+}
+
+void MarkupHandler::endHeading1()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,1));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
+void MarkupHandler::startHeading2(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,2));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=2;
+}
+
+void MarkupHandler::endHeading2()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,2));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
+void MarkupHandler::startHeading3(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,3));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=3;
+}
+
+void MarkupHandler::endHeading3()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,3));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
+void MarkupHandler::startHeading4(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,4));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=4;
+}
+
+void MarkupHandler::endHeading4()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,4));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
+void MarkupHandler::startHeading5(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,5));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=5;
+}
+
+void MarkupHandler::endHeading5()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,5));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
+void MarkupHandler::startHeading6(const QXmlAttributes & /*attrib*/)
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,TRUE,6));
+  m_curMarkup |= IDocMarkup::Heading;
+  m_headingLevel=6;
+}
+
+void MarkupHandler::endHeading6()
+{
+  addTextNode();
+  m_children.append(new MarkupModifierNode(IDocMarkup::Heading,FALSE,6));
+  m_curMarkup &= ~IDocMarkup::Heading;
+  m_headingLevel=0;
+}
+
 
 //----------------------------------------------------------------------
 // ListItemHandler
@@ -345,6 +481,69 @@ void ItemizedListHandler::startItemizedListItem(const QXmlAttributes& attrib)
 IDocIterator *ItemizedListHandler::elements() const
 {
   return new ItemizedListIterator(*this);
+}
+
+//----------------------------------------------------------------------
+// TocListHandler
+//----------------------------------------------------------------------
+
+TocListHandler::TocListHandler(IBaseHandler *parent) : m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("toclist",this,&TocListHandler::endTocList);
+  addStartHandler("tocitem",this,&TocListHandler::startTocItem);
+}
+
+TocListHandler::~TocListHandler()
+{
+}
+
+void TocListHandler::startTocList(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+}
+
+void TocListHandler::endTocList()
+{
+  m_parent->setDelegate(0);
+}
+
+void TocListHandler::startTocItem(const QXmlAttributes& attrib)
+{
+  TocItemHandler *tiHandler = new TocItemHandler(this);
+  tiHandler->startTocItem(attrib);
+  m_children.append(tiHandler);
+}
+
+IDocIterator *TocListHandler::elements() const
+{
+  return new TocListIterator(*this);
+}
+
+//----------------------------------------------------------------------
+// TocItemHandler
+//----------------------------------------------------------------------
+
+TocItemHandler::TocItemHandler(IBaseHandler *parent) : m_parent(parent)
+{
+  addEndHandler("tocitem",this,&TocItemHandler::endTocItem);
+}
+
+TocItemHandler::~TocItemHandler()
+{
+}
+
+void TocItemHandler::startTocItem(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  m_id = attrib.value("id");
+  m_curString="";
+}
+
+void TocItemHandler::endTocItem()
+{
+  m_title = m_curString;
+  m_parent->setDelegate(0);
 }
 
 //----------------------------------------------------------------------
@@ -663,9 +862,15 @@ void TitleHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
-        m_curString.data(),m_markupHandler->markup());
+    m_children.append(
+                      new TextNode(
+                                   m_curString,
+                                   m_markupHandler->markup(),
+                                   m_markupHandler->headingLevel()
+                                  )
+                     );
+    debug(2,"addTextNode() text=\"%s\" markup=%x headingLevel=%d\n",
+        m_curString.data(),m_markupHandler->markup(),m_markupHandler->headingLevel());
     m_curString="";
   }
 }
@@ -731,7 +936,7 @@ void SimpleSectHandler::startParagraph(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 VariableListEntryHandler::VariableListEntryHandler(IBaseHandler *parent)
-   : m_parent(parent), m_description(0)
+   : m_parent(parent), m_description(0), m_linkedTextHandler(0)
 {
   addStartHandler("term",this,&VariableListEntryHandler::startTerm);
   addEndHandler("term",this,&VariableListEntryHandler::endTerm);
@@ -772,12 +977,13 @@ void VariableListEntryHandler::endListItem()
 void VariableListEntryHandler::startTerm(const QXmlAttributes& /*attrib*/)
 {
   m_curString="";
+  m_linkedTextHandler = new LinkedTextHandler(this,m_term);
+  m_linkedTextHandler->start("term");
 }
 
 void VariableListEntryHandler::endTerm()
 {
-  m_term = m_curString;
-  debug(2,"term=%s\n",m_term.data());
+  delete m_linkedTextHandler;
 }
 
 void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
@@ -787,6 +993,10 @@ void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
   m_description->startParagraph(attrib);
 }
 
+ILinkedTextIterator *VariableListEntryHandler::term() const 
+{ 
+  return new LinkedTextIterator(m_term); 
+}
 
 
 //----------------------------------------------------------------------
@@ -881,7 +1091,7 @@ void HighlightHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,IDocMarkup::Normal));
+    m_children.append(new TextNode(m_curString,IDocMarkup::Normal,0));
     debug(2,"addTextNode() text=\"%s\"\n",
         m_curString.data());
     m_curString="";
@@ -958,7 +1168,7 @@ void CodeLineHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,IDocMarkup::Normal));
+    m_children.append(new TextNode(m_curString,IDocMarkup::Normal,0));
     debug(2,"addTextNode() text=\"%s\"\n",
         m_curString.data());
     m_curString="";
@@ -1059,6 +1269,32 @@ void FormulaHandler::endFormula()
 {
   m_text = m_curString;
   debug(2,"formula id=`%s' text=`%s'\n",m_id.data(),m_text.data());
+  m_parent->setDelegate(0);
+}
+
+//----------------------------------------------------------------------
+// AnchorHandler
+//----------------------------------------------------------------------
+
+AnchorHandler::AnchorHandler(IBaseHandler *parent)
+  : m_parent(parent)
+{
+  addEndHandler("anchor",this,&AnchorHandler::endAnchor);
+}
+
+AnchorHandler::~AnchorHandler()
+{
+}
+
+void AnchorHandler::startAnchor(const QXmlAttributes& attrib)
+{
+  m_id = attrib.value("id");
+  m_parent->setDelegate(this);
+}
+
+void AnchorHandler::endAnchor()
+{
+  debug(2,"anchor id=`%s'\n",m_id.data());
   m_parent->setDelegate(0);
 }
 
@@ -1298,33 +1534,45 @@ IDocIterator *TableHandler::rows() const
 }
 
 //----------------------------------------------------------------------
-// PreformattedHandler
+// CopyHandler
 //----------------------------------------------------------------------
 
-PreformattedHandler::PreformattedHandler(IBaseHandler *parent)
-  :  m_parent(parent)
+CopyHandler::CopyHandler(IBaseHandler *parent) 
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
-  addEndHandler("preformatted",this,&PreformattedHandler::endPreformatted);
+  
+  addEndHandler("copydoc",this,&CopyHandler::endCopy);
+
+  addStartHandler("para",this,&CopyHandler::startParagraph);
 }
 
-PreformattedHandler::~PreformattedHandler()
+CopyHandler::~CopyHandler()
 {
 }
 
-void PreformattedHandler::startPreformatted(const QXmlAttributes&)
+void CopyHandler::startCopy(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
+  debug(2,"start copy handler\n");
 }
 
-void PreformattedHandler::endPreformatted()
+void CopyHandler::endCopy()
 {
+  debug(2,"end copy handler\n");
   m_parent->setDelegate(0);
 }
 
-IDocIterator *PreformattedHandler::contents() const
+void CopyHandler::startParagraph(const QXmlAttributes& attrib)
 {
-  return new PreformattedIterator(*this);
+  ParagraphHandler *parHandler = new ParagraphHandler(this);
+  parHandler->startParagraph(attrib);
+  m_children.append(parHandler);
+}
+
+IDocIterator *CopyHandler::contents() const
+{
+  return new CopyIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -1332,17 +1580,20 @@ IDocIterator *PreformattedHandler::contents() const
 //----------------------------------------------------------------------
 
 VerbatimHandler::VerbatimHandler(IBaseHandler *parent)
-  :  m_parent(parent)
+  :  m_parent(parent), m_type(IDocVerbatim::Invalid)
 {
   addEndHandler("verbatim",this,&VerbatimHandler::endVerbatim);
+  addEndHandler("latexonly",this,&VerbatimHandler::endVerbatim);
+  addEndHandler("htmlonly",this,&VerbatimHandler::endVerbatim);
 }
 
 VerbatimHandler::~VerbatimHandler()
 {
 }
 
-void VerbatimHandler::startVerbatim(const QXmlAttributes&)
+void VerbatimHandler::startVerbatim(const QXmlAttributes&,Types type)
 {
+  m_type = type;
   m_parent->setDelegate(this);
   m_curString="";
 }
@@ -1352,6 +1603,7 @@ void VerbatimHandler::endVerbatim()
   m_text = m_curString;
   m_parent->setDelegate(0);
 }
+
 
 //----------------------------------------------------------------------
 // SymbolHandler
@@ -1418,8 +1670,9 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("dotfile",this,&ParagraphHandler::startDotFile);
   addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
   addStartHandler("table",this,&ParagraphHandler::startTable);
-  addStartHandler("preformatted",this,&ParagraphHandler::startPreformatted);
   addStartHandler("verbatim",this,&ParagraphHandler::startVerbatim);
+  addStartHandler("latexonly",this,&ParagraphHandler::startHtmlOnly);
+  addStartHandler("htmlonly",this,&ParagraphHandler::startLatexOnly);
   addStartHandler("umlaut",this,&ParagraphHandler::startUmlaut);
   addStartHandler("acute",this,&ParagraphHandler::startAcute);
   addStartHandler("grave",this,&ParagraphHandler::startGrave);
@@ -1430,6 +1683,9 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("ring",this,&ParagraphHandler::startRing);
   addStartHandler("nbsp",this,&ParagraphHandler::startNbsp);
   addStartHandler("copy",this,&ParagraphHandler::startCopy);
+  addStartHandler("anchor",this,&ParagraphHandler::startAnchor);
+  addStartHandler("copydoc",this,&ParagraphHandler::startCopyDoc);
+  addStartHandler("toclist",this,&ParagraphHandler::startTocList);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -1586,19 +1842,27 @@ void ParagraphHandler::startTable(const QXmlAttributes& attrib)
   m_children.append(th);
 }
 
-void ParagraphHandler::startPreformatted(const QXmlAttributes& attrib)
-{
-  addTextNode();
-  PreformattedHandler *ph = new PreformattedHandler(this);
-  ph->startPreformatted(attrib);
-  m_children.append(ph);
-}
-
 void ParagraphHandler::startVerbatim(const QXmlAttributes& attrib)
 {
   addTextNode();
   VerbatimHandler *vh = new VerbatimHandler(this);
-  vh->startVerbatim(attrib);
+  vh->startVerbatim(attrib,IDocVerbatim::Verbatim);
+  m_children.append(vh);
+}
+
+void ParagraphHandler::startHtmlOnly(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  VerbatimHandler *vh = new VerbatimHandler(this);
+  vh->startVerbatim(attrib,IDocVerbatim::HtmlOnly);
+  m_children.append(vh);
+}
+
+void ParagraphHandler::startLatexOnly(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  VerbatimHandler *vh = new VerbatimHandler(this);
+  vh->startVerbatim(attrib,IDocVerbatim::LatexOnly);
   m_children.append(vh);
 }
 
@@ -1682,13 +1946,43 @@ void ParagraphHandler::startCopy(const QXmlAttributes& attrib)
   m_children.append(sh);
 }
 
+void ParagraphHandler::startAnchor(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  AnchorHandler *ah = new AnchorHandler(this);
+  ah->startAnchor(attrib);
+  m_children.append(ah);
+}
+
+void ParagraphHandler::startCopyDoc(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  CopyHandler *ch = new CopyHandler(this);
+  ch->startCopy(attrib);
+  m_children.append(ch);
+}
+
+void ParagraphHandler::startTocList(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  TocListHandler *th = new TocListHandler(this);
+  th->startTocList(attrib);
+  m_children.append(th);
+}
+
 void ParagraphHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
-        m_curString.data(),m_markupHandler->markup());
+    m_children.append(
+                      new TextNode(
+                                   m_curString,
+                                   m_markupHandler->markup(),
+                                   m_markupHandler->headingLevel()
+                                  )
+                     );
+    debug(2,"addTextNode() text=\"%s\" markup=%x headingLevel=%d\n",
+        m_curString.data(),m_markupHandler->markup(),m_markupHandler->headingLevel());
     m_curString="";
   }
 }
@@ -1738,9 +2032,14 @@ void DocSectionHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
-        m_curString.data(),m_markupHandler->markup());
+    m_children.append(
+                      new TextNode(m_curString,
+                                   m_markupHandler->markup(),
+                                   m_markupHandler->headingLevel()
+                                  )
+                     );
+    debug(2,"addTextNode() text=\"%s\" markup=%x headingLevel=%d\n",
+        m_curString.data(),m_markupHandler->markup(),m_markupHandler->headingLevel());
     m_curString="";
   }
 }

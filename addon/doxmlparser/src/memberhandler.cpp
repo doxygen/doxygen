@@ -18,6 +18,8 @@
 #include "dochandler.h"
 #include "mainhandler.h"
 #include "linkedtexthandler.h"
+#include "paramhandler.h"
+#include "compoundhandler.h"
 #include "debug.h"
 
 //------------------------------------------------------------------------------
@@ -451,4 +453,60 @@ IMemberIterator *MemberHandler::enumValues() const
   return new MemberIterator(m_enumValues); 
 }
 
+ILinkedTextIterator *MemberHandler::type() const 
+{ 
+  return new LinkedTextIterator(m_type); 
+}
+
+const IString *MemberHandler::typeString() const
+{ 
+  MemberHandler *that = (MemberHandler *)this;
+  that->m_typeString = LinkedTextHandler::toString(m_type); 
+  return &m_typeString;
+}
+
+IParamIterator *MemberHandler::parameters() const 
+{ 
+  return new ParamIterator(m_params); 
+}
+
+IParamIterator *MemberHandler::templateParameters() const 
+{ 
+  return m_hasTemplateParamList ? new ParamIterator(m_templateParams) : 0; 
+}
+
+IMemberReferenceIterator *MemberHandler::references() const 
+{ 
+  return new MemberReferenceIterator(m_references); 
+}
+
+IMemberReferenceIterator *MemberHandler::referencedBy() const 
+{ 
+  return new MemberReferenceIterator(m_referencedBy); 
+}
+
+ILinkedTextIterator *MemberHandler::initializer() const
+{ 
+  return new LinkedTextIterator(m_initializer); 
+}
+
+ILinkedTextIterator *MemberHandler::exceptions() const
+{ 
+  return new LinkedTextIterator(m_exception); 
+}
+
+IMemberReferenceIterator *MemberHandler::reimplementedBy() const
+{ 
+  return new MemberReferenceIterator(m_reimplementedBy); 
+}
+
+IDocRoot *MemberHandler::briefDescription() const
+{ 
+  return m_brief; 
+}
+    
+IDocRoot *MemberHandler::detailedDescription() const
+{ 
+  return m_detailed; 
+}
 

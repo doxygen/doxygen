@@ -38,7 +38,7 @@ class DocVerbatim;
 class DocXRefItem;
 class DocHtmlList;
 class DocHtmlListItem;
-class DocHtmlPre;
+//class DocHtmlPre;
 class DocHtmlDescList;
 class DocHtmlDescTitle;
 class DocHtmlDescData;
@@ -75,6 +75,7 @@ class DocText;
 class DocVisitor
 {
   public:
+    virtual ~DocVisitor() {}
     /*! @name Visitor functions for leaf nodes 
      *  @{
      */
@@ -119,8 +120,8 @@ class DocVisitor
     virtual void visitPost(DocHtmlListItem *) = 0;
     virtual void visitPre(DocHtmlListItem *) = 0;
     virtual void visitPost(DocHtmlList *) = 0;
-    virtual void visitPre(DocHtmlPre *) = 0;
-    virtual void visitPost(DocHtmlPre *) = 0;
+    //virtual void visitPre(DocHtmlPre *) = 0;
+    //virtual void visitPost(DocHtmlPre *) = 0;
     virtual void visitPre(DocHtmlDescList *) = 0;
     virtual void visitPost(DocHtmlDescList *) = 0;
     virtual void visitPre(DocHtmlDescTitle *) = 0;
