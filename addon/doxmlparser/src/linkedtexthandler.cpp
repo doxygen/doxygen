@@ -16,7 +16,7 @@
 #include "debug.h"
 #include <doxmlintf.h>
 
-class LT_Text : public ILT_Text
+class LT_Text : public LinkedTextImpl, public ILT_Text
 {
   public:
     LT_Text(const QString &text) : m_text(text) {}
@@ -24,12 +24,12 @@ class LT_Text : public ILT_Text
 
     // ILT_Text
     virtual QString text() const { return m_text; }
-    virtual Kind kind() const { return Kind_Text; }
+    virtual Kind kind() const { return LinkedTextImpl::Kind_Text; }
   private:
     QString m_text;
 };
 
-class LT_Ref : public ILT_Ref
+class LT_Ref : public LinkedTextImpl, public ILT_Ref
 {
   public:
     LT_Ref() {}
@@ -44,7 +44,7 @@ class LT_Ref : public ILT_Ref
     virtual QString id() const { return m_refId; }
     virtual TargetKind targetKind() const { return m_targetKind; }
     virtual QString external() const { return m_extId; }
-    virtual Kind kind() const { return Kind_Ref; }
+    virtual Kind kind() const { return LinkedTextImpl::Kind_Ref; }
     
   private:
     QString    m_refId;
@@ -54,7 +54,7 @@ class LT_Ref : public ILT_Ref
 };
 
 LinkedTextHandler::LinkedTextHandler(IBaseHandler *parent,
-                                     QList<ILinkedText> &children
+                                     QList<LinkedTextImpl> &children
                                     ) 
  : m_parent(parent), m_children(children)
 {
@@ -110,11 +110,11 @@ void LinkedTextHandler::endRef()
   m_ref=0;
 }
 
-QString LinkedTextHandler::toString(const QList<ILinkedText> &list) 
+QString LinkedTextHandler::toString(const QList<LinkedTextImpl> &list) 
 {
-  QListIterator<ILinkedText> li(list);
+  QListIterator<LinkedTextImpl> li(list);
   QString result;
-  ILinkedText *lt;
+  LinkedTextImpl *lt;
   for (li.toFirst();(lt=li.current());++li)
   {
     switch(lt->kind())

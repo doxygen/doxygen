@@ -20,6 +20,53 @@
 #include "graphhandler.h"
 #include "sectionhandler.h"
 
+//----------------------------------------------------------------------------
+
+class CompoundIdIterator : public ICompoundIterator,
+                           public QListIterator<QString>
+{
+  public:
+    CompoundIdIterator(const MainHandler *m,const QList<QString> &list) :
+      QListIterator<QString>(list), m_mainHandler(m) {}
+    virtual ~CompoundIdIterator() {}
+
+    virtual void toFirst()
+    { 
+      QListIterator<QString>::toFirst(); 
+    }
+    virtual void toLast()
+    { 
+      QListIterator<QString>::toLast(); 
+    }
+    virtual void toNext()
+    { 
+      QListIterator<QString>::operator++(); 
+    }
+    virtual void toPrev()
+    { 
+      QListIterator<QString>::operator--(); 
+    }
+    virtual ICompound *current() const
+    { 
+      QString *id = QListIterator<QString>::current(); 
+      return id ? m_mainHandler->compoundById(*id) : 0;
+    }
+    virtual void release()
+    { delete this; }
+
+  private:
+    const MainHandler *m_mainHandler;
+};
+
+//----------------------------------------------------------------------------
+
+ICompound *RelatedCompound::compound() const 
+{ 
+  return m_parent->m_mainHandler->compoundById(m_id); 
+}
+
+//----------------------------------------------------------------------------
+
 class CompoundErrorHandler : public QXmlErrorHandler
 {
     public:
@@ -62,7 +109,6 @@ class CompoundTypeMap
       m_map.insert("file",new int(ICompound::File));
       m_map.insert("group",new int(ICompound::Group));
       m_map.insert("page",new int(ICompound::Page));
-      m_map.insert("package",new int(ICompound::Package));
     }
     virtual ~CompoundTypeMap()
     {
@@ -104,6 +150,7 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   m_subClasses.setAutoDelete(TRUE);
   m_sections.setAutoDelete(TRUE);
   m_memberNameDict.setAutoDelete(TRUE);
+  m_innerClasses.setAutoDelete(TRUE);
 
   addStartHandler("doxygen");
   addEndHandler("doxygen");
@@ -135,6 +182,9 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
 
   addStartHandler("collaborationgraph",this,&CompoundHandler::startCollaborationGraph);
 
+  addStartHandler("innerclass",this,&CompoundHandler::startInnerClass);
+  addEndHandler("innerclass");
+
 }
 
 CompoundHandler::~CompoundHandler()
@@ -143,6 +193,8 @@ CompoundHandler::~CompoundHandler()
   delete m_brief;
   delete m_detailed;
   delete m_programListing;
+  delete m_inheritanceGraph;
+  delete m_collaborationGraph;
 }
 
 void CompoundHandler::startSection(const QXmlAttributes& attrib)
@@ -198,31 +250,56 @@ void CompoundHandler::endCompoundName()
   debug(2,"Compound name `%s'\n",m_name.data());
 }
 
+void CompoundHandler::startInnerClass(const QXmlAttributes& attrib)
+{
+  m_innerClasses.append(new QString(attrib.value("refid")));
+}
+
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 {
-  RelatedClass *sc=new RelatedClass(
+  IRelatedCompound::Protection prot = IRelatedCompound::Public;
+  QString protString = attrib.value("prot");
+  if (protString=="protected") prot = IRelatedCompound::Protected;
+  else if (protString=="private") prot = IRelatedCompound::Private;
+
+  IRelatedCompound::Kind kind = IRelatedCompound::Normal;
+  QString kindString = attrib.value("virt");
+  if (kindString=="virtual") kind = IRelatedCompound::Virtual;
+  
+  RelatedCompound *sc=new RelatedCompound(
+          this,
           attrib.value("refid"),
-          attrib.value("prot"),
-          attrib.value("virt")
+          prot,
+          kind
          );
   debug(2,"super class id=`%s' prot=`%s' virt=`%s'\n",
-      sc->m_id.data(),
-      sc->m_protection.data(),
-      sc->m_virtualness.data());
+      attrib.value("refid").data(),
+      protString.data(),
+      kindString.data());
   m_superClasses.append(sc);
 }
 
 void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
 {
-  RelatedClass *sc = new RelatedClass(
+  IRelatedCompound::Protection prot = IRelatedCompound::Public;
+  QString protString = attrib.value("prot");
+  if (protString=="protected") prot = IRelatedCompound::Protected;
+  else if (protString=="private") prot = IRelatedCompound::Private;
+
+  IRelatedCompound::Kind kind = IRelatedCompound::Normal;
+  QString kindString = attrib.value("virt");
+  if (kindString=="virtual") kind = IRelatedCompound::Virtual;
+  
+  RelatedCompound *sc = new RelatedCompound(
+          this,
           attrib.value("refid"),
-          attrib.value("prot"),
-          attrib.value("virt")
+          prot,
+          kind
          );
   debug(2,"sub class id=`%s' prot=`%s' virt=`%s'\n",
-      sc->m_id.data(),
-      sc->m_protection.data(),
-      sc->m_virtualness.data());
+      attrib.value("refid").data(),
+      protString.data(),
+      kindString.data());
   m_subClasses.append(sc);
 }
 
@@ -242,9 +319,9 @@ bool CompoundHandler::parseXML(const QString &compId)
 void CompoundHandler::initialize(MainHandler *mh)
 {
   m_mainHandler = mh;
-  QListIterator<ISection> msi(m_sections);
+  QListIterator<SectionHandler> msi(m_sections);
   SectionHandler *sec;
-  for (;(sec=(SectionHandler *)msi.current());++msi)
+  for (;(sec=msi.current());++msi)
   {
     sec->initialize(this);
   }
@@ -260,6 +337,24 @@ void CompoundHandler::insertMember(MemberHandler *mh)
     m_memberNameDict.insert(mh->name(),mhl);
   }
   mhl->append(mh);
+}
+
+ICompound *CompoundHandler::toICompound() const
+{
+  switch (m_kind)
+  {
+    case IClass::Class:         return (IClass *)this;
+    case IStruct::Struct:       return (IStruct *)this;
+    case IUnion::Union:         return (IUnion *)this;
+    case IException::Exception: return (IException *)this;
+    case IInterface::Interface: return (IInterface *)this;
+    case INamespace::Namespace: return (INamespace *)this;
+    case IFile::File:           return (IFile *)this;
+    case IGroup::Group:         return (IGroup *)this;
+    case IPage::Page:           return (IPage *)this;
+    default:   return 0;
+  }
+  return 0;
 }
 
 void CompoundHandler::release()
@@ -319,5 +414,20 @@ IGraph *CompoundHandler::inheritanceGraph() const
 IGraph *CompoundHandler::collaborationGraph() const 
 { 
   return m_collaborationGraph; 
+}
+
+IRelatedCompoundIterator *CompoundHandler::baseClasses() const
+{
+  return new RelatedCompoundIterator(m_superClasses);
+}
+
+IRelatedCompoundIterator *CompoundHandler::derivedClasses() const
+{
+  return new RelatedCompoundIterator(m_subClasses);
+}
+
+ICompoundIterator *CompoundHandler::nestedClasses() const
+{
+  return new CompoundIdIterator(m_mainHandler,m_innerClasses);
 }
 

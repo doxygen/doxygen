@@ -201,7 +201,7 @@ ICompound *MainHandler::compoundById(const QString &id) const
   if (ch) // compound already in memory
   {
     ch->addref(); // returning alias -> increase reference counter
-    return ch;
+    return ch->toICompound(); 
   }
   CompoundEntry *ce = m_compoundDict.find(id);
   if (ce==0) return 0; // id not found
@@ -219,7 +219,7 @@ ICompound *MainHandler::compoundById(const QString &id) const
   MainHandler *that = (MainHandler *)this;
   ch->initialize(that);
   that->m_compoundsLoaded.insert(id,ch);
-  return ch;
+  return ch->toICompound();
 }
 
 void MainHandler::unloadCompound(CompoundHandler *ch)

@@ -606,6 +606,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
   {
     src->addSourceReferences(dst);
   }
+
 }
 
 static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
@@ -752,6 +753,22 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
       //  xmd->typeString(),xmd->argsString(),
       //  xmd->getClassDef()->name().data());
 
+      if (g_exampleBlock)
+      {
+	QCString anchor;
+	anchor.sprintf("a%d",g_anchorCount);
+	//printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+	//                                  g_exampleFile.data());
+	if (xmd->addExample(anchor,g_exampleName,g_exampleFile))
+	{
+	  ol.pushGeneratorState();
+	  ol.disable(OutputGenerator::Latex);
+	  ol.writeAnchor(0,anchor);
+	  ol.popGeneratorState();
+	  g_anchorCount++;
+	}
+      }
+
       g_theCallContext.setClass(stripClassName(xmd->typeString()));
 
       Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
@@ -771,6 +788,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 	    xd->getOutputFileBase(),xmd->getBodyAnchor(),memName);
 	return TRUE;
       }
+
     }
   }
   
@@ -1081,7 +1099,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_type.resize(0); 
 					  g_name.resize(0);
 					}
-<Body>"}"				{ 
+<Body,MemberCall,MemberCall2>"}"	{ 
                                           g_theVarContext.popScope();
 
   					  if (g_scopeStack.pop()==SCOPEBLOCK) 
@@ -1099,6 +1117,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_currentMemberDef=0;
 					    g_currentDefinition=0;
 					  }
+					  BEGIN(Body);
 					}
 <ClassName,ClassVar>";"			{ 
   					  g_code->codify(yytext);
@@ -1629,7 +1648,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( MemberCall2 ); 
 					}
-<FuncCall,MemberCall2>("("{B}*("*"{B}*)*[a-z_A-Z][a-z_A-Z0-9]*{B}*")"{B}*)/("."|"->") { 
+<FuncCall,MemberCall2>("("{B}*("*"{B}*)+[a-z_A-Z][a-z_A-Z0-9]*{B}*")"{B}*)/("."|"->") { 
   					  g_code->codify(yytext);
 					  int s=0;while (!isId(yytext[s])) s++;
                                           int e=yyleng-1;while (!isId(yytext[e])) e--;

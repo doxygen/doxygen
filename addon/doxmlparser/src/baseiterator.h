@@ -32,4 +32,19 @@ template<class Intf,class ElemIntf,class ElemImpl> class BaseIterator :
     virtual void release() { delete this; }
 };
 
+template<class Intf,class ElemIntf,class ElemImpl,class Intermediate> 
+        class BaseIteratorVia : 
+        public Intf, public QListIterator<ElemImpl>
+{
+  public:
+    BaseIteratorVia(const QList<ElemImpl> &list) : QListIterator<ElemImpl>(list) {}
+    virtual ~BaseIteratorVia() {}
+    virtual ElemIntf *toFirst() { return static_cast<Intermediate *>(QListIterator<ElemImpl>::toFirst()); }
+    virtual ElemIntf *toLast()  { return static_cast<Intermediate *>(QListIterator<ElemImpl>::toLast()); }
+    virtual ElemIntf *toNext()  { return static_cast<Intermediate *>(QListIterator<ElemImpl>::operator++()); }
+    virtual ElemIntf *toPrev()  { return static_cast<Intermediate *>(QListIterator<ElemImpl>::operator--()); }
+    virtual ElemIntf *current() const { return static_cast<Intermediate *>(QListIterator<ElemImpl>::current()); }
+    virtual void release() { delete this; }
+};
+
 #endif

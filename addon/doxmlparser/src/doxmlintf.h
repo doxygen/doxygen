@@ -7,13 +7,13 @@ class IMember;
 class IDocIterator;
 class ICompound;
 class ISection;
+class INode;
 
 class ILinkedText
 {
   public:
     enum Kind { Kind_Text, Kind_Ref };
     virtual Kind kind() const = 0;
-    virtual ~ILinkedText() {}
 };
 
 class ILT_Text : public ILinkedText
@@ -52,7 +52,6 @@ class IParam
     virtual QString attrib() const = 0;
     virtual QString arraySpecifier() const = 0;
     virtual ILinkedTextIterator *defaultValue() const = 0;
-    virtual ~IParam() {}
 };
 
 class IParamIterator
@@ -71,7 +70,6 @@ class IMemberReference
   public:
     virtual IMember *member() const = 0;
     virtual QString memberName() const = 0;
-    virtual ~IMemberReference() {}
 };
 
 class IMemberReferenceIterator 
@@ -90,7 +88,6 @@ class IEnumValue
   public:
     virtual QString name() const = 0;
     virtual QString initializer() const = 0;
-    virtual ~IEnumValue() {}
 };
 
 class IEnumValueIterator 
@@ -142,7 +139,6 @@ class IDoc
       Root                // 30 -> IDocRoot
     };
     virtual Kind kind() const = 0;
-    virtual ~IDoc() {}
 };
 
 class IDocMarkup : public IDoc
@@ -232,7 +228,8 @@ class IDocSimpleSect : public IDoc
                  Todo, Test, RCS, EnumValues, 
                  Examples
     };
-    virtual Types sectionType() const = 0;
+    virtual Types type() const = 0;
+    virtual QString typeString() const = 0;
     virtual IDocTitle *title() const = 0;
     virtual IDocPara *description() const = 0;
 };
@@ -411,7 +408,7 @@ class IChildNode
     enum NodeRelation { PublicInheritance, ProtectedInheritance,
                         PrivateInheritance, Usage, TemplateInstance
                       };
-    virtual QString id() const = 0;
+    virtual INode * node() const = 0;
     virtual NodeRelation relation() const = 0;
     virtual QString relationString() const = 0;
     virtual IEdgeLabelIterator *edgeLabels() const = 0;
@@ -452,7 +449,6 @@ class IGraph
 {
   public:
     virtual INodeIterator *nodes() const = 0;
-    virtual ~IGraph() {}
 };
 
 class IMember 
@@ -488,7 +484,6 @@ class IMember
     virtual IEnumValueIterator *enumValues() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
-    virtual ~IMember() {}
 };
 
 class IMemberIterator 
@@ -524,7 +519,6 @@ class ISection
     virtual bool isPublic() const = 0;
     virtual bool isPrivate() const = 0;
     virtual bool isProtected() const = 0;
-    virtual ~ISection() {}
 };
 
 class ISectionIterator 
@@ -541,19 +535,43 @@ class ISectionIterator
 class ICompound 
 {
   public:
+    /*! Represents the kind of compounds recognised by doxygen. */
     enum CompoundKind { Invalid=0,
                         Class, Struct, Union, Interface, Exception,
-                        Namespace, File, Group, Page, Package 
+                        Namespace, File, Group, Page
                       };
+    /*! Returns the name of this compound */
     virtual QString name() const = 0;
+
+    /*! Returns the id of this compound. The id is a
+     *  unique string representing a specific compound object.
+     */
     virtual QString id()   const = 0;
+
+    /*! Returns the kind of compound. See #CompoundKind for possible
+     *  values.
+     */
     virtual CompoundKind kind() const = 0;
+
+    /*! Returns a string representation of the compound kind.
+     *  @see kind()
+     */
     virtual QString kindString() const = 0;
+
+    /*! Returns an iterator for the different member sections in this
+     *  compound.
+     */
     virtual ISectionIterator *sections() const = 0;
+
+    /*! Returns a tree-structured representation of the brief
+     *  description that is attached to this compound.
+     */
     virtual IDocRoot *briefDescription() const = 0;
+
+    /*! Returns a tree-structured representation of the detailed
+     *  description that is attached to this compound.
+     */
     virtual IDocRoot *detailedDescription() const = 0;
-    virtual IGraph *inheritanceGraph() const = 0;
-    virtual IGraph *collaborationGraph() const = 0;
 
     /*! Returns an interface to a member given its id. 
      *  @param id The member id.
@@ -561,7 +579,8 @@ class ICompound
     virtual IMember *memberById(const QString &id) const = 0;
 
     /*! Returns a list of all members within the compound having a certain 
-     *  name. Overloading is the reason why there can be more than one member. 
+     *  name. Member overloading is the reason why there can be more than 
+     *  one member. 
      *  @param name The name of the member.
      */
     virtual IMemberIterator *memberByName(const QString &name) const = 0;
@@ -570,33 +589,6 @@ class ICompound
      *  zero, the memory for the compound will be released.
      */
     virtual void release() = 0;
-
-    // TODO:
-    // class:
-    //  IRelatedCompoundIterator *baseClasses()
-    //  IRelatedCompoundIterator *derivedClasses()
-    //  ICompoundIterator *innerClasses()
-    //  ITemplateParamListIterator *templateParamLists()
-    //  listOfAllMembers()
-    //  IDotGraph *inheritanceGraph()
-    //  IDotGraph *collaborationGraph()
-    //  locationFile()
-    //  locationLine()
-    //  locationBodyStartLine()
-    //  locationBodyEndLine()
-    // namespace:
-    //  ICompound *innerNamespaces()
-    // file:
-    //  includes()
-    //  includedBy()
-    //  IDotGraph *includeDependencyGraph()
-    //  IDotGraph *includedByDependencyGraph()
-    //  IDocProgramListing *source()
-    // group:
-    //  Title()
-    //  innerFile()
-    //  innerPage()
-    // page:
 };
 
 class ICompoundIterator 
@@ -608,6 +600,94 @@ class ICompoundIterator
     virtual void toPrev() = 0;
     virtual ICompound *current() const = 0;
     virtual void release() = 0;
+};
+
+class IRelatedCompound
+{
+  public:
+    enum Protection { Public, Protected, Private };
+    enum Kind { Normal, Virtual };
+    virtual ICompound *compound() const = 0;
+    virtual Protection protection() const = 0;
+    virtual Kind kind() const = 0;
+
+};
+
+class IRelatedCompoundIterator 
+{
+  public:
+    virtual IRelatedCompound *toFirst() = 0;
+    virtual IRelatedCompound *toLast() = 0;
+    virtual IRelatedCompound *toNext() = 0;
+    virtual IRelatedCompound *toPrev() = 0;
+    virtual IRelatedCompound *current() const = 0;
+    virtual void release() = 0;
+};
+
+class IClass : public ICompound
+{
+  public:
+    virtual IGraph *inheritanceGraph() const = 0;
+    virtual IGraph *collaborationGraph() const = 0;
+    virtual IRelatedCompoundIterator *baseClasses() const = 0;
+    virtual IRelatedCompoundIterator *derivedClasses() const = 0;
+    virtual ICompoundIterator *nestedClasses() const = 0;
+
+    // TODO:
+    // class:
+    //  ITemplateParamListIterator *templateParamLists()
+    //  listOfAllMembers()
+    //  locationFile()
+    //  locationLine()
+    //  locationBodyStartLine()
+    //  locationBodyEndLine()
+};
+
+class IStruct : public ICompound
+{
+};
+
+class IUnion : public ICompound
+{
+};
+
+class IInterface : public ICompound
+{
+};
+
+class IException : public ICompound
+{
+};
+
+class INamespace : public ICompound
+{
+    // namespace:
+    //  ICompound *innerNamespaces()
+    //  ICompoundIterator *innerClasses()
+};
+
+class IFile : public ICompound
+{
+    // file:
+    //  includes()
+    //  includedBy()
+    //  IDotGraph *includeDependencyGraph()
+    //  IDotGraph *includedByDependencyGraph()
+    //  IDocProgramListing *source()
+    //  ICompound *innerNamespaces()
+    //  ICompoundIterator *innerClasses()
+};
+
+class IGroup : public ICompound
+{
+    // group:
+    //  Title()
+    //  innerFile()
+    //  innerPage()
+};
+
+class IPage : public ICompound
+{
 };
 
 /*! Root node of the object model. */

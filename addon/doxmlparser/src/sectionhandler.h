@@ -26,13 +26,12 @@
 
 class MainHandler;
 
-
 class SectionIterator : 
-     public BaseIterator<ISectionIterator,ISection,ISection>
+     public BaseIterator<ISectionIterator,ISection,SectionHandler>
 {
   public:
-    SectionIterator(const QList<ISection> &list) : 
-      BaseIterator<ISectionIterator,ISection,ISection>(list) {}
+    SectionIterator(const QList<SectionHandler> &list) : 
+      BaseIterator<ISectionIterator,ISection,SectionHandler>(list) {}
 };
 
 

@@ -28,11 +28,50 @@ class ParagraphHandler;
 
 //-----------------------------------------------------------------------------
 
+class DocImpl : public IDoc { public: virtual ~DocImpl() {} };
+
+#define DEFINE_CLS_IMPL(cls) \
+  class cls##Impl : public I##cls, public DocImpl { public: virtual ~cls##Impl() {} }
+
+DEFINE_CLS_IMPL(DocMarkup);
+DEFINE_CLS_IMPL(DocPara);
+DEFINE_CLS_IMPL(DocText);
+DEFINE_CLS_IMPL(DocMarkupModifier);
+DEFINE_CLS_IMPL(DocItemizedList);
+DEFINE_CLS_IMPL(DocOrderedList);
+DEFINE_CLS_IMPL(DocListItem);
+DEFINE_CLS_IMPL(DocParameterList);
+DEFINE_CLS_IMPL(DocParameter);
+DEFINE_CLS_IMPL(DocTitle);
+DEFINE_CLS_IMPL(DocSimpleSect);
+DEFINE_CLS_IMPL(DocRef);
+DEFINE_CLS_IMPL(DocVariableList);
+DEFINE_CLS_IMPL(DocVariableListEntry);
+DEFINE_CLS_IMPL(DocHRuler);
+DEFINE_CLS_IMPL(DocLineBreak);
+DEFINE_CLS_IMPL(DocULink);
+DEFINE_CLS_IMPL(DocEMail);
+DEFINE_CLS_IMPL(DocLink);
+DEFINE_CLS_IMPL(DocProgramListing);
+DEFINE_CLS_IMPL(DocCodeLine);
+DEFINE_CLS_IMPL(DocHighlight);
+DEFINE_CLS_IMPL(DocFormula);
+DEFINE_CLS_IMPL(DocImage);
+DEFINE_CLS_IMPL(DocDotFile);
+DEFINE_CLS_IMPL(DocIndexEntry);
+DEFINE_CLS_IMPL(DocTable);
+DEFINE_CLS_IMPL(DocRow);
+DEFINE_CLS_IMPL(DocEntry);
+DEFINE_CLS_IMPL(DocSection);
+DEFINE_CLS_IMPL(DocRoot);
+
+//-----------------------------------------------------------------------------
+
 
 /*! \brief Node representing a piece of text.
  *
  */
-class TextNode : public IDocText
+class TextNode : public DocTextImpl
 {
   public:
     TextNode(const QString &t,int markup) 
@@ -40,7 +79,7 @@ class TextNode : public IDocText
     virtual ~TextNode() {}
 
     // IDocText
-    virtual Kind kind() const { return Text; }
+    virtual Kind kind() const { return DocImpl::Text; }
     virtual QString text() const { return m_text; }
     virtual int markup() const { return m_markup; }
   
@@ -54,7 +93,7 @@ class TextNode : public IDocText
 /*! \brief Node representing a change in the markup style.
  *
  */
-class MarkupModifierNode : public IDocMarkupModifier
+class MarkupModifierNode : public DocMarkupModifierImpl
 {
   public:
     MarkupModifierNode(int markup,bool enabled) 
@@ -62,7 +101,7 @@ class MarkupModifierNode : public IDocMarkupModifier
     virtual ~MarkupModifierNode() {}
   
     // IDocMarkupModifier
-    virtual Kind kind() const { return MarkupModifier; }
+    virtual Kind kind() const { return DocImpl::MarkupModifier; }
     virtual bool enabled() const { return m_enabled; }
     virtual int markup() const { return m_markup; }
 
@@ -80,7 +119,7 @@ class MarkupModifierNode : public IDocMarkupModifier
 class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
 {
   public:
-    MarkupHandler(QList<IDoc> &children,QString &curString);
+    MarkupHandler(QList<DocImpl> &children,QString &curString);
     virtual ~MarkupHandler();
     int markup() const { return m_curMarkup; }
 
@@ -103,8 +142,8 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
   private:
     void addTextNode();
 
-    QList<IDoc>    &m_children;
-    QString        &m_curString;
+    QList<DocImpl>  &m_children;
+    QString         &m_curString;
     int             m_curMarkup;
 };
 
@@ -122,7 +161,7 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
 //           bold, computeroutput, emphasis, center,
 //           small, subscript, superscript. 
 //
-class ParagraphHandler : public IDocPara, 
+class ParagraphHandler : public DocParaImpl, 
                          public BaseHandler<ParagraphHandler>
 {
     friend class ParagraphIterator;
@@ -152,21 +191,21 @@ class ParagraphHandler : public IDocPara,
     virtual ~ParagraphHandler();
 
     // IDocPara
-    virtual Kind kind() const { return Para; }
+    virtual Kind kind() const { return DocImpl::Para; }
     virtual IDocIterator *contents() const;
 
   private:
     void addTextNode();
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
     MarkupHandler  *m_markupHandler;
 };
 
-class ParagraphIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class ParagraphIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     ParagraphIterator(const ParagraphHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -174,7 +213,7 @@ class ParagraphIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
 /*! \brief Node representing a list item.
  *
  */
-class ListItemHandler : public IDocListItem, public BaseHandler<ListItemHandler>
+class ListItemHandler : public DocListItemImpl, public BaseHandler<ListItemHandler>
 {
     friend class ListItemIterator;
   public:
@@ -185,19 +224,19 @@ class ListItemHandler : public IDocListItem, public BaseHandler<ListItemHandler>
     virtual void startParagraph(const QXmlAttributes& attrib);
 
     // IDocItem
-    virtual Kind kind() const { return ListItem; }
+    virtual Kind kind() const { return DocImpl::ListItem; }
     virtual IDocIterator *contents() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
 };
 
-class ListItemIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class ListItemIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     ListItemIterator(const ListItemHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 
@@ -206,7 +245,7 @@ class ListItemIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
 /*! \brief Node representing list of items.
  *
  */
-class OrderedListHandler : public IDocOrderedList, public BaseHandler<OrderedListHandler>
+class OrderedListHandler : public DocOrderedListImpl, public BaseHandler<OrderedListHandler>
 {
     friend class OrderedListIterator;
   public:
@@ -217,19 +256,19 @@ class OrderedListHandler : public IDocOrderedList, public BaseHandler<OrderedLis
     virtual void startOrderedListItem(const QXmlAttributes& attrib);
 
     // IDocOrderedList
-    virtual Kind kind() const { return OrderedList; }
+    virtual Kind kind() const { return DocImpl::OrderedList; }
     virtual IDocIterator *elements() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
 };
 
-class OrderedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class OrderedListIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     OrderedListIterator(const OrderedListHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 
@@ -238,7 +277,7 @@ class OrderedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
 /*! \brief Node representing list of items.
  *
  */
-class ItemizedListHandler : public IDocItemizedList, public BaseHandler<ItemizedListHandler>
+class ItemizedListHandler : public DocItemizedListImpl, public BaseHandler<ItemizedListHandler>
 {
     friend class ItemizedListIterator;
   public:
@@ -249,19 +288,19 @@ class ItemizedListHandler : public IDocItemizedList, public BaseHandler<Itemized
     virtual void startItemizedListItem(const QXmlAttributes& attrib);
 
     // IDocItemizedList
-    virtual Kind kind() const { return ItemizedList; }
+    virtual Kind kind() const { return DocImpl::ItemizedList; }
     virtual IDocIterator *elements() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
 };
 
-class ItemizedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class ItemizedListIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     ItemizedListIterator(const ItemizedListHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 
@@ -269,7 +308,7 @@ class ItemizedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
 /*! \brief Node representing a parameter.
  *
  */
-class ParameterHandler : public IDocParameter, 
+class ParameterHandler : public DocParameterImpl, 
                          public BaseHandler<ParameterHandler>
 {
   public:
@@ -282,7 +321,7 @@ class ParameterHandler : public IDocParameter,
     virtual void startParagraph(const QXmlAttributes& attrib);
 
     // IDocParameter
-    virtual Kind kind() const { return Parameter; }
+    virtual Kind kind() const { return DocImpl::Parameter; }
     virtual QString name() const { return m_name; }
     virtual IDocPara *description() const { return m_description; }
 
@@ -297,7 +336,7 @@ class ParameterHandler : public IDocParameter,
 /* \brief Node representing a parameter list.
  *
  */
-class ParameterListHandler : public IDocParameterList, 
+class ParameterListHandler : public DocParameterListImpl, 
                              public BaseHandler<ParameterListHandler>
 {
     friend class ParameterListIterator;
@@ -310,7 +349,7 @@ class ParameterListHandler : public IDocParameterList,
     virtual void startParameterDescription(const QXmlAttributes& attrib);
 
     // IDocParameterList
-    virtual Kind kind() const { return ParameterList; }
+    virtual Kind kind() const { return DocImpl::ParameterList; }
     virtual Types listType() const { return m_type; }
     virtual IDocIterator *params() const;
 
@@ -321,11 +360,11 @@ class ParameterListHandler : public IDocParameterList,
     Types                    m_type;
 };
 
-class ParameterListIterator : public BaseIterator<IDocIterator,IDoc,ParameterHandler>
+class ParameterListIterator : public BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>
 {
   public:
     ParameterListIterator(const ParameterListHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,ParameterHandler>(handler.m_parameters) {}
+      BaseIteratorVia<IDocIterator,IDoc,ParameterHandler,DocImpl>(handler.m_parameters) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -333,7 +372,7 @@ class ParameterListIterator : public BaseIterator<IDocIterator,IDoc,ParameterHan
 /* \brief Node representing a horizontal ruler
  *
  */
-class LineBreakHandler : public IDocLineBreak, public BaseHandler<LineBreakHandler>
+class LineBreakHandler : public DocLineBreakImpl, public BaseHandler<LineBreakHandler>
 {
   public:
     LineBreakHandler(IBaseHandler *parent);
@@ -343,7 +382,7 @@ class LineBreakHandler : public IDocLineBreak, public BaseHandler<LineBreakHandl
     void endLineBreak();
 
     // IDocLineBreak
-    virtual Kind kind() const { return LineBreak; }
+    virtual Kind kind() const { return DocImpl::LineBreak; }
 
   private:
     IBaseHandler   *m_parent;
@@ -354,7 +393,7 @@ class LineBreakHandler : public IDocLineBreak, public BaseHandler<LineBreakHandl
 /* \brief Node representing a link to section
  *
  */
-class LinkHandler : public IDocLink, public BaseHandler<LinkHandler>
+class LinkHandler : public DocLinkImpl, public BaseHandler<LinkHandler>
 {
   public:
     LinkHandler(IBaseHandler *parent);
@@ -364,7 +403,7 @@ class LinkHandler : public IDocLink, public BaseHandler<LinkHandler>
     void endLink();
 
     // IDocLink
-    virtual Kind kind() const { return Link; }
+    virtual Kind kind() const { return DocImpl::Link; }
     virtual QString refId() const { return m_ref; }
     virtual QString text() const { return m_text; }
 
@@ -380,7 +419,7 @@ class LinkHandler : public IDocLink, public BaseHandler<LinkHandler>
 /* \brief Node representing a link to an email address
  *
  */
-class EMailHandler : public IDocEMail, public BaseHandler<EMailHandler>
+class EMailHandler : public DocEMailImpl, public BaseHandler<EMailHandler>
 {
   public:
     EMailHandler(IBaseHandler *parent);
@@ -390,7 +429,7 @@ class EMailHandler : public IDocEMail, public BaseHandler<EMailHandler>
     void endEMail();
 
     // IDocEMail
-    virtual Kind kind() const { return EMail; }
+    virtual Kind kind() const { return DocImpl::EMail; }
     virtual QString address() const { return m_address; }
 
   private:
@@ -404,7 +443,7 @@ class EMailHandler : public IDocEMail, public BaseHandler<EMailHandler>
 /* \brief Node representing a link to an URL
  *
  */
-class ULinkHandler : public IDocULink, public BaseHandler<ULinkHandler>
+class ULinkHandler : public DocULinkImpl, public BaseHandler<ULinkHandler>
 {
   public:
     ULinkHandler(IBaseHandler *parent);
@@ -414,7 +453,7 @@ class ULinkHandler : public IDocULink, public BaseHandler<ULinkHandler>
     void endULink();
 
     // IDocULink
-    virtual Kind kind() const { return ULink; }
+    virtual Kind kind() const { return DocImpl::ULink; }
     virtual QString url() const { return m_url; }
     virtual QString text() const { return m_text; }
 
@@ -429,7 +468,7 @@ class ULinkHandler : public IDocULink, public BaseHandler<ULinkHandler>
 /* \brief Node representing a horizontal ruler
  *
  */
-class HRulerHandler : public IDocHRuler, public BaseHandler<HRulerHandler>
+class HRulerHandler : public DocHRulerImpl, public BaseHandler<HRulerHandler>
 {
   public:
     HRulerHandler(IBaseHandler *parent);
@@ -439,7 +478,7 @@ class HRulerHandler : public IDocHRuler, public BaseHandler<HRulerHandler>
     void endHRuler();
 
     // IDocHRuler
-    virtual Kind kind() const { return HRuler; }
+    virtual Kind kind() const { return DocImpl::HRuler; }
 
   private:
     IBaseHandler   *m_parent;
@@ -450,7 +489,7 @@ class HRulerHandler : public IDocHRuler, public BaseHandler<HRulerHandler>
 /* \brief Node representing a reference to another item
  *
  */
-class RefHandler : public IDocRef, public BaseHandler<RefHandler>
+class RefHandler : public DocRefImpl, public BaseHandler<RefHandler>
 {
   public:
     RefHandler(IBaseHandler *parent);
@@ -459,7 +498,7 @@ class RefHandler : public IDocRef, public BaseHandler<RefHandler>
     void endRef();
 
     // IDocRef
-    virtual Kind kind() const { return Ref; }
+    virtual Kind kind() const { return DocImpl::Ref; }
     virtual QString refId() const { return m_refId; }
     virtual TargetKind targetKind() const { return m_targetKind; }
     virtual QString external() const { return m_extId; }
@@ -482,7 +521,7 @@ class RefHandler : public IDocRef, public BaseHandler<RefHandler>
 // children handled by MarkupHandler: 
 //           bold, computeroutput, emphasis, center,
 //           small, subscript, superscript. 
-class TitleHandler : public IDocTitle, public BaseHandler<TitleHandler>
+class TitleHandler : public DocTitleImpl, public BaseHandler<TitleHandler>
 {
     friend class TitleIterator;
   public:
@@ -494,20 +533,20 @@ class TitleHandler : public IDocTitle, public BaseHandler<TitleHandler>
     void addTextNode();
 
     // IDocTitle
-    virtual Kind kind() const { return Title; }
+    virtual Kind kind() const { return DocImpl::Title; }
     virtual IDocIterator *title() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
     MarkupHandler  *m_markupHandler;
 };
 
-class TitleIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class TitleIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     TitleIterator(const TitleHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -516,7 +555,7 @@ class TitleIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
  *
  */
 // children: title, para
-class SimpleSectHandler : public IDocSimpleSect, 
+class SimpleSectHandler : public DocSimpleSectImpl, 
                           public BaseHandler<SimpleSectHandler>
 {
   public:
@@ -528,8 +567,9 @@ class SimpleSectHandler : public IDocSimpleSect,
     virtual void startParagraph(const QXmlAttributes& attrib);
 
     // IDocSimpleSect
-    virtual Kind kind() const { return SimpleSect; }
-    virtual Types sectionType() const { return m_type; }
+    virtual Kind kind() const { return DocImpl::SimpleSect; }
+    virtual Types type() const { return m_type; }
+    virtual QString typeString() const { return m_typeString; }
     virtual IDocTitle *title() const { return m_title; }
     virtual IDocPara *description() const { return m_paragraph; }
 
@@ -537,6 +577,7 @@ class SimpleSectHandler : public IDocSimpleSect,
     IBaseHandler            *m_parent;
     ParagraphHandler        *m_paragraph;
     Types                    m_type;
+    QString                  m_typeString;
     TitleHandler            *m_title;
 };
 
@@ -545,7 +586,7 @@ class SimpleSectHandler : public IDocSimpleSect,
 /* \brief Node representing an named item of a VariableList.
  *
  */
-class VariableListEntryHandler : public IDocVariableListEntry, 
+class VariableListEntryHandler : public DocVariableListEntryImpl, 
                                  public BaseHandler<VariableListEntryHandler>
 {
   public:
@@ -561,7 +602,7 @@ class VariableListEntryHandler : public IDocVariableListEntry,
     virtual ~VariableListEntryHandler();
 
     // IDocVariableListEntry
-    virtual Kind kind() const { return VariableListEntry; }
+    virtual Kind kind() const { return DocImpl::VariableListEntry; }
     virtual QString term() const { return m_term; }
     virtual IDocPara *description() const { return m_description; }
 
@@ -577,7 +618,7 @@ class VariableListEntryHandler : public IDocVariableListEntry,
  *
  */
 // children: varlistentry, listitem
-class VariableListHandler : public IDocVariableList, 
+class VariableListHandler : public DocVariableListImpl, 
                             public BaseHandler<VariableListHandler>
 {
     friend class VariableListIterator;
@@ -592,7 +633,7 @@ class VariableListHandler : public IDocVariableList,
     virtual ~VariableListHandler();
 
     // IDocVariableList
-    virtual Kind kind() const { return VariableList; }
+    virtual Kind kind() const { return DocImpl::VariableList; }
     virtual IDocIterator *entries() const;
 
   private:
@@ -601,11 +642,11 @@ class VariableListHandler : public IDocVariableList,
     VariableListEntryHandler *m_curEntry;
 };
 
-class VariableListIterator : public BaseIterator<IDocIterator,IDoc,VariableListEntryHandler>
+class VariableListIterator : public BaseIteratorVia<IDocIterator,IDoc,VariableListEntryHandler,DocImpl>
 {
   public:
     VariableListIterator(const VariableListHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,VariableListEntryHandler>(handler.m_entries) {}
+      BaseIteratorVia<IDocIterator,IDoc,VariableListEntryHandler,DocImpl>(handler.m_entries) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -614,7 +655,7 @@ class VariableListIterator : public BaseIterator<IDocIterator,IDoc,VariableListE
  *
  */
 // children: ref
-class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandler>
+class HighlightHandler : public DocHighlightImpl, public BaseHandler<HighlightHandler>
 {
     friend class HighlightIterator;
   public:
@@ -625,7 +666,7 @@ class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandl
     virtual void startRef(const QXmlAttributes&);
 
     // IDocHighlight
-    virtual Kind kind() const { return Highlight; }
+    virtual Kind kind() const { return DocImpl::Highlight; }
     virtual HighlightKind highlightKind() const { return m_hl; }
     virtual IDocIterator *codeElements() const;
 
@@ -635,14 +676,14 @@ class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandl
     IBaseHandler   *m_parent;
     HighlightKind  m_hl;
     QString        m_hlString;
-    QList<IDoc>    m_children;
+    QList<DocImpl> m_children;
 };
 
-class HighlightIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class HighlightIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     HighlightIterator(const HighlightHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -651,7 +692,7 @@ class HighlightIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
  *
  */
 // children: linenumber, highlight, anchor, ref
-class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
+class CodeLineHandler : public DocCodeLineImpl, public BaseHandler<CodeLineHandler>
 {
     friend class CodeLineIterator;
   public:
@@ -667,7 +708,7 @@ class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
     virtual ~CodeLineHandler();
 
     // IDocCodeLine
-    virtual Kind kind() const { return CodeLine; }
+    virtual Kind kind() const { return DocImpl::CodeLine; }
     virtual int lineNumber() const { return m_lineNumber; }
     virtual QString refId() const { return m_refId; }
     virtual IDocIterator *codeElements() const;
@@ -678,14 +719,14 @@ class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
     IBaseHandler   *m_parent;
     int            m_lineNumber;
     QString        m_refId;
-    QList<IDoc> m_children;
+    QList<DocImpl> m_children;
 };
 
-class CodeLineIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class CodeLineIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     CodeLineIterator(const CodeLineHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -694,7 +735,7 @@ class CodeLineIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
  *
  */
 // children: codeline, linenumber
-class ProgramListingHandler : public IDocProgramListing, public BaseHandler<ProgramListingHandler>
+class ProgramListingHandler : public DocProgramListingImpl, public BaseHandler<ProgramListingHandler>
 {
     friend class ProgramListingIterator;
   public:
@@ -707,7 +748,7 @@ class ProgramListingHandler : public IDocProgramListing, public BaseHandler<Prog
     virtual ~ProgramListingHandler();
 
     // IDocProgramListing
-    virtual Kind kind() const { return ProgramListing; }
+    virtual Kind kind() const { return DocImpl::ProgramListing; }
     virtual IDocIterator *codeLines() const;
 
   private:
@@ -718,11 +759,11 @@ class ProgramListingHandler : public IDocProgramListing, public BaseHandler<Prog
 
 //-----------------------------------------------------------------------------
 
-class ProgramListingIterator : public BaseIterator<IDocIterator,IDoc,CodeLineHandler>
+class ProgramListingIterator : public BaseIteratorVia<IDocIterator,IDoc,CodeLineHandler,DocImpl>
 {
   public:
     ProgramListingIterator(const ProgramListingHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,CodeLineHandler>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,CodeLineHandler,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -731,7 +772,7 @@ class ProgramListingIterator : public BaseIterator<IDocIterator,IDoc,CodeLineHan
  *
  */
 // children: -
-class FormulaHandler : public IDocFormula, public BaseHandler<FormulaHandler>
+class FormulaHandler : public DocFormulaImpl, public BaseHandler<FormulaHandler>
 {
   public:
     FormulaHandler(IBaseHandler *parent);
@@ -740,7 +781,7 @@ class FormulaHandler : public IDocFormula, public BaseHandler<FormulaHandler>
     void endFormula();
 
     // IDocFormula
-    virtual Kind kind() const { return Formula; }
+    virtual Kind kind() const { return DocImpl::Formula; }
     virtual QString id() const { return m_id; }
     virtual QString text() const { return m_text; }
 
@@ -756,7 +797,7 @@ class FormulaHandler : public IDocFormula, public BaseHandler<FormulaHandler>
  *
  */
 // children: -
-class ImageHandler : public IDocImage, public BaseHandler<ImageHandler>
+class ImageHandler : public DocImageImpl, public BaseHandler<ImageHandler>
 {
   public:
     ImageHandler(IBaseHandler *parent);
@@ -765,7 +806,7 @@ class ImageHandler : public IDocImage, public BaseHandler<ImageHandler>
     void endImage();
 
     // IDocImage
-    virtual Kind kind() const { return Image; }
+    virtual Kind kind() const { return DocImpl::Image; }
     virtual QString name() const { return m_name; }
     virtual QString caption() const { return m_caption; }
 
@@ -781,7 +822,7 @@ class ImageHandler : public IDocImage, public BaseHandler<ImageHandler>
  *
  */
 // children: -
-class DotFileHandler : public IDocDotFile, public BaseHandler<DotFileHandler>
+class DotFileHandler : public DocDotFileImpl, public BaseHandler<DotFileHandler>
 {
   public:
     DotFileHandler(IBaseHandler *parent);
@@ -790,7 +831,7 @@ class DotFileHandler : public IDocDotFile, public BaseHandler<DotFileHandler>
     void endDotFile();
 
     // IDocDotFile
-    virtual Kind kind() const { return DotFile; }
+    virtual Kind kind() const { return DocImpl::DotFile; }
     virtual QString name() const { return m_name; }
     virtual QString caption() const { return m_caption; }
 
@@ -806,7 +847,7 @@ class DotFileHandler : public IDocDotFile, public BaseHandler<DotFileHandler>
  *
  */
 // children: -
-class IndexEntryHandler : public IDocIndexEntry, public BaseHandler<IndexEntryHandler>
+class IndexEntryHandler : public DocIndexEntryImpl, public BaseHandler<IndexEntryHandler>
 {
   public:
     IndexEntryHandler(IBaseHandler *parent);
@@ -819,7 +860,7 @@ class IndexEntryHandler : public IDocIndexEntry, public BaseHandler<IndexEntryHa
     void endSecondaryIE();
 
     // IDocIndexEntry
-    virtual Kind kind() const { return IndexEntry; }
+    virtual Kind kind() const { return DocImpl::IndexEntry; }
     virtual QString primary() const { return m_primary; }
     virtual QString secondary() const { return m_secondary; }
 
@@ -835,7 +876,7 @@ class IndexEntryHandler : public IDocIndexEntry, public BaseHandler<IndexEntryHa
  *
  */
 // children: para
-class EntryHandler : public IDocEntry, public BaseHandler<EntryHandler>
+class EntryHandler : public DocEntryImpl, public BaseHandler<EntryHandler>
 {
     friend class EntryIterator;
   public:
@@ -846,19 +887,19 @@ class EntryHandler : public IDocEntry, public BaseHandler<EntryHandler>
     void startParagraph(const QXmlAttributes& attrib);
 
     // IDocEntry
-    virtual Kind kind() const { return Entry; }
+    virtual Kind kind() const { return DocImpl::Entry; }
     virtual IDocIterator *contents() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
 };
 
-class EntryIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class EntryIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     EntryIterator(const EntryHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -867,7 +908,7 @@ class EntryIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
  *
  */
 // children: entry
-class RowHandler : public IDocRow, public BaseHandler<RowHandler>
+class RowHandler : public DocRowImpl, public BaseHandler<RowHandler>
 {
     friend class RowIterator;
   public:
@@ -878,7 +919,7 @@ class RowHandler : public IDocRow, public BaseHandler<RowHandler>
     void startEntry(const QXmlAttributes& attrib);
 
     // IDocRow
-    virtual Kind kind() const { return Row; }
+    virtual Kind kind() const { return DocImpl::Row; }
     virtual IDocIterator *entries() const;
 
   private:
@@ -886,11 +927,11 @@ class RowHandler : public IDocRow, public BaseHandler<RowHandler>
     QList<EntryHandler>  m_children;
 };
 
-class RowIterator : public BaseIterator<IDocIterator,IDoc,EntryHandler>
+class RowIterator : public BaseIteratorVia<IDocIterator,IDoc,EntryHandler,DocImpl>
 {
   public:
     RowIterator(const RowHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,EntryHandler>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,EntryHandler,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -899,7 +940,7 @@ class RowIterator : public BaseIterator<IDocIterator,IDoc,EntryHandler>
  *
  */
 // children: row, caption
-class TableHandler : public IDocTable, public BaseHandler<TableHandler>
+class TableHandler : public DocTableImpl, public BaseHandler<TableHandler>
 {
     friend class TableIterator;
   public:
@@ -912,7 +953,7 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
     void endCaption();
 
     // IDocTable
-    virtual Kind kind() const { return Table; }
+    virtual Kind kind() const { return DocImpl::Table; }
     virtual IDocIterator *rows() const;
     virtual int numColumns() const { return m_numColumns; }
     virtual QString caption() const { return m_caption; }
@@ -924,11 +965,11 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
     QString            m_caption;
 };
 
-class TableIterator : public BaseIterator<IDocIterator,IDoc,RowHandler>
+class TableIterator : public BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImpl>
 {
   public:
     TableIterator(const TableHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,RowHandler>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImpl>(handler.m_children) {}
 };
 
 
@@ -941,7 +982,7 @@ class TableIterator : public BaseIterator<IDocIterator,IDoc,RowHandler>
 // children handled by MarkupHandler: 
 //           bold, computeroutput, emphasis, center,
 //           small, subscript, superscript. 
-class DocSectionHandler : public IDocSection, public BaseHandler<DocSectionHandler>
+class DocSectionHandler : public DocSectionImpl, public BaseHandler<DocSectionHandler>
 {
     friend class DocSectionIterator;
   public:
@@ -953,24 +994,24 @@ class DocSectionHandler : public IDocSection, public BaseHandler<DocSectionHandl
     void addTextNode();
 
     // IDocSection
-    virtual Kind kind() const { return Section; }
+    virtual Kind kind() const { return DocImpl::Section; }
     virtual QString id() const { return m_id; }
     virtual int level() const { return m_level; }
     virtual IDocIterator *title() const;
 
   private:
     IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
+    QList<DocImpl>  m_children;
     MarkupHandler  *m_markupHandler;
     QString         m_id;
     int             m_level;
 };
 
-class DocSectionIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class DocSectionIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     DocSectionIterator(const DocSectionHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -979,7 +1020,7 @@ class DocSectionIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
  *
  */
 // children: para, title, sect1, sect2, sect3
-class DocHandler : public IDocRoot, public BaseHandler<DocHandler>
+class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
 {
     friend class DocIterator;
   public:
@@ -995,19 +1036,19 @@ class DocHandler : public IDocRoot, public BaseHandler<DocHandler>
     virtual ~DocHandler();
     
     // IDocRoot
-    virtual Kind kind() const { return Root; }
+    virtual Kind kind() const { return DocImpl::Root; }
     virtual IDocIterator *contents() const;
 
   private:
     IBaseHandler *m_parent;
-    QList<IDoc> m_children;
+    QList<DocImpl> m_children;
 };
 
-class DocIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class DocIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
     DocIterator(const DocHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
 void dochandler_init();

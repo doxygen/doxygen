@@ -39,19 +39,23 @@ GraphHandler::GraphHandler(IBaseHandler *parent,const char *endTag)
   addEndHandler(endTag,this,&GraphHandler::endGraph);
   addStartHandler("node",this,&GraphHandler::startNode);
   m_nodes.setAutoDelete(TRUE);
+  m_nodeDict = new QDict<NodeHandler>(1009);
 }
 
 GraphHandler::~GraphHandler()
 {
+  delete m_nodeDict;
 }
 
 void GraphHandler::startGraph(const QXmlAttributes &)
 {
+  debug(2,"startGraph\n");
   m_parent->setDelegate(this);
 }
 
 void GraphHandler::endGraph()
 {
+  debug(2,"endGraph\n");
   m_parent->setDelegate(0);
 }
 
@@ -60,6 +64,7 @@ void GraphHandler::startNode(const QXmlAttributes &attrib)
   NodeHandler *n = new NodeHandler(this);
   n->startNode(attrib);
   m_nodes.append(n);
+  m_nodeDict->insert(attrib.value("id"),n);
 }
 
 INodeIterator *GraphHandler::nodes() const
@@ -67,10 +72,15 @@ INodeIterator *GraphHandler::nodes() const
   return new NodeIterator(*this);
 }
 
+NodeHandler *GraphHandler::getNodeById(const QString &id) const
+{
+  return m_nodeDict->find(id);
+}
+
 //------------------------------------------------------------------------
 
-NodeHandler::NodeHandler(IBaseHandler *parent)
-   : m_parent(parent)
+NodeHandler::NodeHandler(GraphHandler *gh)
+   : m_parent(gh), m_graph(gh)
 {
   addEndHandler("node",this,&NodeHandler::endNode);
   addStartHandler("link",this,&NodeHandler::startLink);
@@ -87,12 +97,14 @@ NodeHandler::~NodeHandler()
 
 void NodeHandler::startNode(const QXmlAttributes &attrib)
 {
+  debug(2,"startNode\n");
   m_parent->setDelegate(this);
   m_id = attrib.value("id");
 }
 
 void NodeHandler::endNode()
 {
+  debug(2,"endNode\n");
   m_parent->setDelegate(0);
 }
 
@@ -117,7 +129,7 @@ void NodeHandler::endLabel()
 
 void NodeHandler::startChildNode(const QXmlAttributes &attrib)
 {
-  ChildNodeHandler *cnh = new ChildNodeHandler(this);
+  ChildNodeHandler *cnh = new ChildNodeHandler(this,m_graph);
   cnh->startChildNode(attrib);
   m_children.append(cnh);
 }
@@ -129,9 +141,10 @@ IChildNodeIterator *NodeHandler::children() const
 
 //------------------------------------------------------------------------
 
-ChildNodeHandler::ChildNodeHandler(IBaseHandler *parent)
-  : m_parent(parent)
+ChildNodeHandler::ChildNodeHandler(IBaseHandler *parent,GraphHandler *gh)
+  : m_parent(parent), m_graph(gh)
 {
+  addEndHandler("childnode",this,&ChildNodeHandler::endChildNode);
   addStartHandler("edgelabel",this,&ChildNodeHandler::startEdgeLabel);
   m_edgeLabels.setAutoDelete(TRUE);
 }
@@ -142,6 +155,7 @@ ChildNodeHandler::~ChildNodeHandler()
 
 void ChildNodeHandler::startChildNode(const QXmlAttributes &attrib)
 {
+  debug(2,"startChildNode\n");
   m_id             = attrib.value("id");
   m_relationString = attrib.value("relation");
   m_relation       = s_edgeRelationMapper->stringToNodeRelation(m_relationString);
@@ -150,6 +164,7 @@ void ChildNodeHandler::startChildNode(const QXmlAttributes &attrib)
 
 void ChildNodeHandler::endChildNode()
 {
+  debug(2,"endChildNode\n");
   m_parent->setDelegate(0);
 }
 
@@ -166,12 +181,17 @@ IEdgeLabelIterator *ChildNodeHandler::edgeLabels() const
   return new EdgeLabelIterator(*this);
 }
 
+INode *ChildNodeHandler::node() const
+{
+  return m_graph->getNodeById(m_id);
+}
 
 //-----------------------------------------------------------------------
 
 EdgeLabelHandler::EdgeLabelHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
+  addEndHandler("edgelabel",this,&EdgeLabelHandler::endEdgeLabel);
 }
 
 EdgeLabelHandler::~EdgeLabelHandler()
