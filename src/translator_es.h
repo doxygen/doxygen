@@ -30,9 +30,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
   public:
     virtual QCString idLanguage()
     { return "spanish"; }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString latexBabelPackage() 
-    { return ""; }
 
     /*! Used to get the LaTeX command(s) for the language support. 
      *  This method should return string with commands that switch
@@ -129,12 +126,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
     virtual QCString trDefinedIn()
     { return "definido en"; }
 
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    virtual QCString trVerbatimText(const char *f)
-    { return (QCString)"Este es el texto al pie de la letra del archivo "+f+" adjunto."; }
-    
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
@@ -412,12 +403,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
     virtual QCString trCompounds()
     { return "Clases"; }
 
-    /*! This is used in the documentation of a group before the list of 
-     *  links to documented files
-     */
-    virtual QCString trFiles()
-    { return "Archivos"; }
-
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
      */
@@ -464,10 +449,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return "Fecha"; }
-
-    /*! this text is generated when the \\author command is used. */
-    virtual QCString trAuthors()
-    { return "Autor(es)"; }
 
     /*! this text is generated when the \return command is used. */
     virtual QCString trReturns()

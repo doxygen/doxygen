@@ -1209,8 +1209,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           if (!insidePHP) 
 					  {
 					    current->type += " abstract ";
+					    current->virt = Pure;
 					  }
-					  current->virt = Pure;
+					  else
+					  {
+					    current->memSpec|=Entry::Abstract;
+					  }
 					  lineCount();
 					}
 <FindMembers>{B}*"inline"{BN}+		{ current->memSpec|=Entry::Inline;
@@ -3295,6 +3299,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    }
 					  }
 					  //printf("Adding entry `%s'\n",current->name.data());
+					  if ( insidePHP)
+					  {
+					    if (current->type.left(6) == "final " )
+					    {
+					      current->type = current->type.mid(6);
+					      current->memSpec |= Entry::Final;
+					    }
+					    if (current->type.left(9) == "abstract " )
+					    {
+					      current->type = current->type.mid(9);
+					      current->memSpec |= Entry::Abstract;
+					    }
+					  }
 					  if ( insidePHP && current->type.left(8) != "function" )
 					  {
 					    initEntry();

@@ -37,15 +37,12 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
      */
     virtual QCString idLanguage()
     { return "greek"; }
-		virtual QCString latexBabelPackage()
-		{
-			return "greek";	
-		}
-     virtual QCString latexLanguageSupportCommand()
-     {
-       return "\\usepackage[greek,english]{babel}\n\\usepackage[iso-8859-7]{inputenc}\n";
-     }
-     
+
+    virtual QCString latexLanguageSupportCommand()
+    {
+      return "\\usepackage[greek,english]{babel}\n\\usepackage[iso-8859-7]{inputenc}\n";
+    }
+
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {

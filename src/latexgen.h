@@ -98,6 +98,8 @@ class LatexGenerator : public OutputGenerator
     void endAnonTypeScope(int);
     void startMemberItem(int);
     void endMemberItem();
+    void startMemberTemplateParams() {}
+    void endMemberTemplateParams() {}
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -106,7 +108,7 @@ class LatexGenerator : public OutputGenerator
     void startMemberGroup();
     void endMemberGroup(bool);
     
-    void insertMemberAlign() {}
+    void insertMemberAlign(bool) {}
 
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
     void writeAnchor(const char *fileName,const char *name);

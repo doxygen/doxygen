@@ -15,6 +15,8 @@
  *   Version: 1.3.8 (2004/06/30)
  *
  * History:
+ * 	 1.3.9
+ *		- Updated to Doxygen 1.3.9
  * 	 1.3.8
  *		- Updated to Doxygen 1.3.8
  *   1.3.3:
@@ -32,7 +34,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_3_9
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -1547,6 +1549,53 @@ class TranslatorBrazilian : public TranslatorAdapter_1_3_9
     {
       return  "Código-Fonte de " + filename;
     }
-    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Hierarquia de Diretórios"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Documentação do Directório"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Diretórios"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Esta Hierarquia de Diretórios está parcialmente ordenada (ordem alfabética)"; }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    {
+        QCString result = "Referência do diretório ";
+     	result += dirName;
+     	return result;
+    }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Diretório" : "diretório"));
+      if (!singular) result+="s";
+      return result; 
+    }
 };
 #endif

@@ -189,7 +189,7 @@ static const char *defaultStyleSheet =
 "}\n"
 ".mdescLeft {\n"
 "       padding: 0px 8px 4px 8px;\n"
-"	font-size: 14px;\n"
+"	font-size: 12px;\n"
 "	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
 "	border-top: 1px none #E0E0E0;\n"
@@ -200,7 +200,7 @@ static const char *defaultStyleSheet =
 "}\n"
 ".mdescRight {\n"
 "       padding: 0px 8px 4px 8px;\n"
-"	font-size: 14px;\n"
+"	font-size: 12px;\n"
 "	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
 "	border-top: 1px none #E0E0E0;\n"
@@ -216,11 +216,11 @@ static const char *defaultStyleSheet =
 "	border-right-width: 1px;\n"
 "	border-bottom-width: 1px;\n"
 "	border-left-width: 1px;\n"
-"	border-top-style: solid;\n"
 "	border-top-color: #E0E0E0;\n"
 "	border-right-color: #E0E0E0;\n"
 "	border-bottom-color: #E0E0E0;\n"
 "	border-left-color: #E0E0E0;\n"
+"	border-top-style: solid;\n"
 "	border-right-style: none;\n"
 "	border-bottom-style: none;\n"
 "	border-left-style: none;\n"
@@ -234,16 +234,71 @@ static const char *defaultStyleSheet =
 "	border-right-width: 1px;\n"
 "	border-bottom-width: 1px;\n"
 "	border-left-width: 1px;\n"
-"	border-top-style: solid;\n"
 "	border-top-color: #E0E0E0;\n"
 "	border-right-color: #E0E0E0;\n"
 "	border-bottom-color: #E0E0E0;\n"
 "	border-left-color: #E0E0E0;\n"
+"	border-top-style: solid;\n"
 "	border-right-style: none;\n"
 "	border-bottom-style: none;\n"
 "	border-left-style: none;\n"
 "	background-color: #FAFAFA;\n"
 "	font-size: 13px;\n"
+"}\n"
+".memTemplItemLeft {\n"
+"	padding: 1px 0px 0px 8px;\n"
+"	margin: 4px;\n"
+"	border-top-width: 1px;\n"
+"	border-right-width: 1px;\n"
+"	border-bottom-width: 1px;\n"
+"	border-left-width: 1px;\n"
+"	border-top-color: #E0E0E0;\n"
+"	border-right-color: #E0E0E0;\n"
+"	border-bottom-color: #E0E0E0;\n"
+"	border-left-color: #E0E0E0;\n"
+"	border-top-style: none;\n"
+"	border-right-style: none;\n"
+"	border-bottom-style: none;\n"
+"	border-left-style: none;\n"
+"	background-color: #FAFAFA;\n"
+"	font-size: 12px;\n"
+"}\n"
+".memTemplItemRight {\n"
+"	padding: 1px 8px 0px 8px;\n"
+"	margin: 4px;\n"
+"	border-top-width: 1px;\n"
+"	border-right-width: 1px;\n"
+"	border-bottom-width: 1px;\n"
+"	border-left-width: 1px;\n"
+"	border-top-color: #E0E0E0;\n"
+"	border-right-color: #E0E0E0;\n"
+"	border-bottom-color: #E0E0E0;\n"
+"	border-left-color: #E0E0E0;\n"
+"	border-top-style: none;\n"
+"	border-right-style: none;\n"
+"	border-bottom-style: none;\n"
+"	border-left-style: none;\n"
+"	background-color: #FAFAFA;\n"
+"	font-size: 13px;\n"
+"}\n"
+".memTemplParams {\n"
+"	padding: 1px 0px 0px 8px;\n"
+"	margin: 4px;\n"
+"	border-top-width: 1px;\n"
+"	border-right-width: 1px;\n"
+"	border-bottom-width: 1px;\n"
+"	border-left-width: 1px;\n"
+"	border-top-color: #E0E0E0;\n"
+"	border-right-color: #E0E0E0;\n"
+"	border-bottom-color: #E0E0E0;\n"
+"	border-left-color: #E0E0E0;\n"
+"	border-top-style: solid;\n"
+"	border-right-style: none;\n"
+"	border-bottom-style: none;\n"
+"	border-left-style: none;\n"
+"       color: #606060;\n"
+"	background-color: #FAFAFA;\n"
+"	font-size: 12px;\n"
 "}\n"
 ".search     { color: #003399;\n"
 "              font-weight: bold;\n"
@@ -866,7 +921,8 @@ void HtmlGenerator::startMemberItem(int annoType)
     {
       case 0:  t << "<td class=\"memItemLeft\" nowrap align=\"right\" valign=\"top\">"; break;
       case 1:  t << "<td class=\"memItemLeft\" nowrap>"; break;
-      default: t << "<td class=\"memItemLeft\" nowrap valign=\"top\">"; break;
+      case 2:  t << "<td class=\"memItemLeft\" nowrap valign=\"top\">"; break;
+      default: t << "<td class=\"memTemplParams\" nowrap colspan=\"2\">"; break;
     }
   }
   else
@@ -885,13 +941,27 @@ void HtmlGenerator::endMemberItem()
   t << endl; 
 }
 
+void HtmlGenerator::startMemberTemplateParams()
+{
+}
 
-void HtmlGenerator::insertMemberAlign() 
+void HtmlGenerator::endMemberTemplateParams()
+{
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  {
+    t << "</td></tr>" << endl;
+    t << "<tr><td class=\"memTemplItemLeft\" nowrap align=\"right\" valign=\"top\">";
+  }
+}
+
+
+void HtmlGenerator::insertMemberAlign(bool templ) 
 { 
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">"; 
+    QCString className = templ ? "memTemplItemRight" : "memItemRight";
+    t << "&nbsp;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
   }
 }
 

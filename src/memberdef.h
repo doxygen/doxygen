@@ -132,6 +132,8 @@ class MemberDef : public Definition
     bool isSettable() const               { return (memSpec&Entry::Settable)!=0; }
     bool isReadable() const               { return (memSpec&Entry::Readable)!=0; }
     bool isWritable() const               { return (memSpec&Entry::Writable)!=0; }
+    bool isFinal() const                  { return (memSpec&Entry::Final)!=0; }
+    bool isAbstract() const               { return (memSpec&Entry::Abstract)!=0; }
     bool isImplementation() const         { return m_implOnly; }
     bool isExternal() const               { return explExt; }
     bool isTemplateSpecialization() const { return tspec; }

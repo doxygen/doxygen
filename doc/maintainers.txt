@@ -13,7 +13,7 @@ TranslatorAfrikaans
 Johan Prinsloo: johan@zippysnoek.com
 
 TranslatorBrazilian
-Fabio "FJTC" Jun Takada Chino: chino@icmc.sc.usp.br
+Fabio "FJTC" Jun Takada Chino: jun-chino@uol.com.br
 
 TranslatorCatalan
 Albert Mora: amora@iua.upf.es

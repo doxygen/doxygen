@@ -4453,6 +4453,20 @@ static void findMember(Entry *root,
   }
   scopeName=stripTemplateSpecifiersFromScope(
       removeRedundantWhiteSpace(scopeName),FALSE,&funcSpec); 
+
+  // funcSpec contains the last template specifiers of the given scope.
+  // If this method does not have any template arguments or they are 
+  // empty while funcSpec is not empty we assume this is a 
+  // specialization of a method. If not, we clear the funcSpec and treat
+  // this as a normal method of a template class.
+  if (!(root->tArgLists && 
+        root->tArgLists->count()>0 &&
+        root->tArgLists->first()->count()==0
+       )
+     ) 
+  {
+    funcSpec.resize(0);
+  }
   
   // split scope into a namespace and a class part
   extractNamespaceName(scopeName,className,namespaceName,TRUE);
@@ -4897,7 +4911,7 @@ static void findMember(Entry *root,
         }
         else
         {
-          //printf("Specialized member %s of unknown scope %s%s found!\n",
+          //printf("*** Specialized member %s of unknown scope %s%s found!\n",
           //        scopeName.data(),funcName.data(),funcArgs.data());
         }
       }

@@ -93,7 +93,7 @@ class ManGenerator : public OutputGenerator
     void endMemberSections() {}
     void startMemberHeader();
     void endMemberHeader();
-    void insertMemberAlign() {}
+    void insertMemberAlign(bool) {}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     void writeListItem();
@@ -103,6 +103,8 @@ class ManGenerator : public OutputGenerator
     void endAnonTypeScope(int);
     void startMemberItem(int);
     void endMemberItem();
+    void startMemberTemplateParams() {}
+    void endMemberTemplateParams() {}
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();

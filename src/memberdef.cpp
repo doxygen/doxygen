@@ -178,7 +178,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
     if (!a->name.isEmpty() || (a->name.isEmpty() && a->type=="...")) // argument has a name
     { 
-      if (!hasFuncPtrType);
+      if (!hasFuncPtrType)
       {
         ol.docify(" ");
       }
@@ -886,8 +886,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
   ClassDef *annoClassDef=getClassDefOfAnonymousType();
 
   // start a new member declaration
+  bool isAnonymous = annoClassDef || annMemb || annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  ol.startMemberItem((annoClassDef || annMemb || annEnumType) ? 1 : 0);
+  ol.startMemberItem( isAnonymous ? 1 : tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
@@ -915,8 +916,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   if (tArgList)
   {
+    if (!isAnonymous) ol.startMemberTemplateParams();
     writeTemplatePrefix(ol,tArgList);
-    //ol.lineBreak();
+    if (!isAnonymous) ol.endMemberTemplateParams();
   }
 
   QCString ltype(type);
@@ -1001,7 +1003,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
   else
   {
-    ol.insertMemberAlign();
+    ol.insertMemberAlign(tArgList!=0);
   }
 
   // write name
@@ -1433,7 +1435,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
        isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
        isSignal() || isSlot() ||
        isStatic() || (classDef && classDef!=container) ||
-       isSettable() || isGettable() || isReadable() || isWritable()
+       isSettable() || isGettable() || isReadable() || isWritable() ||
+       isFinal() || isAbstract()
       )
      )
   {
@@ -1455,6 +1458,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if      (isSettable())            sl.append("set");
       if      (isReadable())            sl.append("read");
       if      (isWritable())            sl.append("write");
+      if      (isFinal())               sl.append("final");
+      if      (isAbstract())            sl.append("abstract");
       if      (protection()==Protected) sl.append("protected");
       else if (protection()==Private)   sl.append("private");
       else if (protection()==Package)   sl.append("package");

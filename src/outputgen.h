@@ -307,13 +307,15 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endAnonTypeScope(int) = 0;
     virtual void startMemberItem(int) = 0;
     virtual void endMemberItem() = 0;
+    virtual void startMemberTemplateParams() = 0;
+    virtual void endMemberTemplateParams() = 0;
     virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
     virtual void endMemberGroupDocs() = 0;
     virtual void startMemberGroup() = 0;
     virtual void endMemberGroup(bool) = 0;
-    virtual void insertMemberAlign() = 0;
+    virtual void insertMemberAlign(bool) = 0;
     virtual void startMemberDoc(const char *,const char *,
                                 const char *,const char *) = 0;
     virtual void endMemberDoc(bool) = 0;

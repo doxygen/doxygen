@@ -106,9 +106,11 @@ class RTFGenerator : public OutputGenerator
     void endAnonTypeScope(int) {}
     void startMemberItem(int);
     void endMemberItem();
+    void startMemberTemplateParams() {}
+    void endMemberTemplateParams() {}
     //void memberGroupSpacing(bool) {}
     //void memberGroupSeparator() {}
-    void insertMemberAlign() {}
+    void insertMemberAlign(bool) {}
 
     void writeRuler() { rtfwriteRuler_thin(); }
 	

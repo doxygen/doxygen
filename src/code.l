@@ -1807,6 +1807,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   					  g_code->codify(yytext);
 					  g_curlyCount++;
 					  g_inClass=TRUE;
+					  if (YY_START==ClassVar)
+					  {
+					    g_curClassName = g_name.copy();
+					  }
   					  if (g_searchingForBody)
 					  {
 					    g_searchingForBody=FALSE;
@@ -2397,12 +2401,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					    BEGIN( SkipInits );
 					  }
   					}
-<CallEnd>("const"|"volatile")({BN}+("const"|"volatile"))*{BN}*/";" {
+<CallEnd>("const"|"volatile")({BN}+("const"|"volatile"))*{BN}*/[;=] {
 					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<CallEnd,OldStyleArgs>("const"|"volatile")*({BN}+("const"|"volatile"))*"{" {
+<CallEnd,OldStyleArgs>("const"|"volatile")*({BN}+("const"|"volatile"))*{BN}*"{" {
                                           if (g_insideBody)
 					  {
 					    g_theVarContext.pushScope();
