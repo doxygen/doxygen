@@ -104,7 +104,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
-\refitem cfg_generate_todolist GENERATE_DEPRECIATELIST
+\refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
 \refitem cfg_generate_html GENERATE_HTML
 \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 \refitem cfg_generate_latex GENERATE_LATEX

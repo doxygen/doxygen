@@ -1272,7 +1272,7 @@ static void addPerlModDocBlock(PerlModOutput &output,
   if (stext.isEmpty())
     output.addField(name).add("{}");
   else {
-    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE);
+    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE,0);
     output.openHash(name);
     PerlModDocVisitor *visitor = new PerlModDocVisitor(output);
     root->accept(visitor);

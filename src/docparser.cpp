@@ -63,6 +63,7 @@ static bool         g_hasParamCommand;
 static MemberDef *  g_memberDef;
 static QDict<void>  g_paramsFound;
 static bool         g_isExample;
+static QCString     g_exampleName;
 static SectionDict *g_sectionDict;
 
 // include file state
@@ -811,7 +812,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateHtmlOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_fileName));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: htmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -820,7 +821,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateLatexOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_fileName));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: latexonly section ended without end marker",doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
           }
@@ -3168,7 +3169,7 @@ void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type 
         tokToString(tok),cmdName.data());
     return;
   }
-  DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_fileName);
+  DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_exampleName);
   DocNode *n1 = m_children.last();
   DocNode *n2 = n1!=0 ? m_children.prev() : 0;
   bool isFirst = n1==0 || // no last node
@@ -3389,7 +3390,7 @@ void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
         tokToString(tok),cmdName.data());
     return;
   }
-  DocInclude *inc = new DocInclude(this,g_token->name,g_context,t,g_isExample,g_fileName);
+  DocInclude *inc = new DocInclude(this,g_token->name,g_context,t,g_isExample,g_exampleName);
   m_children.append(inc);
   inc->parse();
 }
@@ -3564,7 +3565,7 @@ int DocPara::handleCommand(const QString &cmdName)
           if (g_token->verb.at(i)=='\n') li=i+1;
           i++;
         }
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_fileName));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: code section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3573,7 +3574,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateHtmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_fileName));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: htmlonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3582,7 +3583,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateLatexOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_fileName));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: latexonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3591,7 +3592,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateVerbatim();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim,g_isExample,g_fileName));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: verbatim section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -4652,6 +4653,7 @@ void DocRoot::parse()
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,MemberDef *md,
                             const char *input,bool isExample,
+                            const char *exampleName,
                             SectionDict *sections)
 {
   
@@ -4671,6 +4673,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_includeFileOffset = 0;
   g_includeFileLength = 0;
   g_isExample = isExample;
+  g_exampleName = exampleName;
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
@@ -4721,6 +4724,7 @@ DocNode *validatingParseText(const char *input)
   g_includeFileOffset = 0;
   g_includeFileLength = 0;
   g_isExample = FALSE;
+  g_exampleName = "";
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();

@@ -2126,7 +2126,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ReadBody,ReadNSBody>{BN}+				{ current->program += yytext ;
 					  lineCount() ;
 					}
-<ReadBody,ReadNSBody>.				{ current->program += yytext ; }
+<ReadBody,ReadNSBody>.			{ current->program += yytext ; }
+<ReadBody,ReadNSBody>"'#"		{ current->program += yytext ; }
 
 <FindMembers>"("/({BN}*{ID}{BN}*"::")*{ID}{BN}*")"{BN}*"(" | /* typedef void (A::func_t)(args...) */
 <FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
@@ -2337,6 +2338,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCContext = YY_START;
 					  BEGIN( SkipCxxComment );
   					}
+<ReadFuncArgType,ReadTempArgs>"'#"	{ if (! insidePHP)
+                                            REJECT;
+  					  *copyArgString+=yytext; 
+  					  fullArgString+=yytext; 
+					}
 <ReadFuncArgType,ReadTempArgs>"#"	{
   					  if (! insidePHP)
   					    REJECT;
@@ -4590,10 +4596,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <Doc>"*/"				{ 
   				          checkDocs();
   					  current->doc += "\n\n";
-					  //printf("End of docs at line %d\n",yyLineNr);
+					  //printf("End of docs at line %d: %s\n",yyLineNr,current->doc.data());
 					  if (lastDocContext==SkipCurly && Config_getBool("HIDE_IN_BODY_DOCS"))
 					  {
 					    current->doc.resize(0);
+					  }
+					  if (current->section==Entry::GROUPDOC_SEC)
+					  {
+					    current_root->addSubEntry(current);
+					    current = new Entry ;
+					    initEntry();
 					  }
   					  BEGIN( lastDocContext ); 
 					}

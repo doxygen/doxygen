@@ -3769,7 +3769,8 @@ static void addMemberDocs(Entry *root,
   fullName+=md->name();
   if (al)
   {
-    mergeArguments(md->argumentList(),al);
+    //printf("merging arguments (1)\n");
+    mergeArguments(md->argumentList(),al,TRUE);
   }
   else
   {
@@ -3781,7 +3782,8 @@ static void addMemberDocs(Entry *root,
                       )
        ) 
     {
-      mergeArguments(md->argumentList(),root->argList);
+      //printf("merging arguments (2)\n");
+      mergeArguments(md->argumentList(),root->argList,TRUE);
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -6283,7 +6285,8 @@ static void generateExampleDocs()
                          pd->getOuterScope()?pd->getOuterScope()->name().data():0, // context
                          0,                                        // memberDef
                          pd->documentation()+"\n\\include "+pd->name(),          // docs
-                         TRUE                                      // is example
+                         TRUE,                                      // is example
+                         pd->name()
                         );
     endFile(*outputList);
   }

@@ -1909,7 +1909,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
 
 // merges the initializer of two argument lists
 // pre:  the types of the arguments in the list should match.
-void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
+void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwrite)
 {
   //printf("mergeArguments `%s', `%s'\n",
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
@@ -1951,13 +1951,20 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
       }
       else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
       {
-        if (srcA->docs.isEmpty() && !dstA->docs.isEmpty())
+        if (forceNameOverwrite)
         {
           srcA->name = dstA->name.copy();
         }
-        else if (!srcA->docs.isEmpty() && dstA->docs.isEmpty())
+        else
         {
-          dstA->name = srcA->name.copy();
+          if (srcA->docs.isEmpty() && !dstA->docs.isEmpty())
+          {
+            srcA->name = dstA->name.copy();
+          }
+          else if (!srcA->docs.isEmpty() && dstA->docs.isEmpty())
+          {
+            dstA->name = srcA->name.copy();
+          }
         }
       }
     }
