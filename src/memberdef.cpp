@@ -1538,21 +1538,24 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
   else if (xmlType==enum_t) // enum
   {
     t << "              <enumvaluelist>" << endl;
-    MemberListIterator emli(*enumFields);
-    MemberDef *emd;
-    for (emli.toFirst();(emd=emli.current());++emli)
+    if (enumFields)
     {
-      t << "                <enumvalue>" << endl;
-      t << "                  <name>";
-      writeXMLString(t,emd->name());
-      t << "</name>" << endl;
-      if (!emd->init.isEmpty())
+      MemberListIterator emli(*enumFields);
+      MemberDef *emd;
+      for (emli.toFirst();(emd=emli.current());++emli)
       {
-        t << "                  <initializer>";
-        writeXMLString(t,emd->init);
-        t << "</initializer>" << endl;
+        t << "                <enumvalue>" << endl;
+        t << "                  <name>";
+        writeXMLString(t,emd->name());
+        t << "</name>" << endl;
+        if (!emd->init.isEmpty())
+        {
+          t << "                  <initializer>";
+          writeXMLString(t,emd->init);
+          t << "</initializer>" << endl;
+        }
+        t << "                </enumvalue>" << endl;
       }
-      t << "                </enumvalue>" << endl;
     }
     t << "              </enumvaluelist>" << endl;
   }

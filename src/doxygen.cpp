@@ -137,10 +137,51 @@ void clearAll()
   delete mainPage; mainPage=0;
 }
 
-//bool           unrelatedFunctionsUsed;
-
-//ClassDef unrelatedClass("nothing",ClassDef::Class); 
-                                       // dummy class for unrelated functions
+void statistics()
+{
+  fprintf(stderr,"--- inputNameDict stats ----\n");
+  inputNameDict->statistics();
+  fprintf(stderr,"--- includeNameDict stats ----\n");
+  includeNameDict->statistics();
+  fprintf(stderr,"--- exampleNameDict stats ----\n");
+  exampleNameDict->statistics();
+  fprintf(stderr,"--- imageNameDict stats ----\n");
+  imageNameDict->statistics();
+  fprintf(stderr,"--- classDict stats ----\n");
+  classDict.statistics();
+  fprintf(stderr,"--- namespaceDict stats ----\n");
+  namespaceDict.statistics();
+  fprintf(stderr,"--- memberNameDict stats ----\n");
+  memberNameDict.statistics();
+  fprintf(stderr,"--- functionNameDict stats ----\n");
+  functionNameDict.statistics();
+  fprintf(stderr,"--- sectionDict stats ----\n");
+  sectionDict.statistics();
+  fprintf(stderr,"--- excludeNameDict stats ----\n");
+  excludeNameDict.statistics();
+  fprintf(stderr,"--- aliasDict stats ----\n");
+  aliasDict.statistics();
+  fprintf(stderr,"--- typedefDict stats ----\n");
+  typedefDict.statistics();
+  fprintf(stderr,"--- namespaceAliasDict stats ----\n");
+  namespaceAliasDict.statistics();
+  fprintf(stderr,"--- groupDict stats ----\n");
+  groupDict.statistics();
+  fprintf(stderr,"--- formulaDict stats ----\n");
+  formulaDict.statistics();
+  fprintf(stderr,"--- formulaNameDict stats ----\n");
+  formulaNameDict.statistics();
+  fprintf(stderr,"--- tagDestinationDict stats ----\n");
+  tagDestinationDict.statistics();
+  fprintf(stderr,"--- compoundKeywordDict stats ----\n");
+  compoundKeywordDict.statistics();
+  fprintf(stderr,"--- expandAsDefinedDict stats ----\n");
+  expandAsDefinedDict.statistics();
+  fprintf(stderr,"--- memberHeaderDict stats ----\n");
+  memberHeaderDict.statistics();
+  fprintf(stderr,"--- memberDocDict stats ----\n");
+  memberDocDict.statistics();
+}
 
 int annotatedClasses;
 int hierarchyClasses;
@@ -813,6 +854,8 @@ static void buildNamespaceList(Entry *root)
         // the empty string test is needed for extract all case
         nd->setBriefDescription(root->brief);
         nd->insertUsedFile(root->fileName);
+        nd->setBodySegment(root->bodyLine,root->endBodyLine);
+        nd->setBodyDef(fd);
         // add class to the list
         namespaceList.inSort(nd);
         namespaceDict.insert(fullName,nd);
@@ -4190,6 +4233,7 @@ static void generateFileDocs()
 
 static void addSourceReferences()
 {
+  // add source references for class definitions
   ClassListIterator cli(classList);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
@@ -4200,6 +4244,19 @@ static void addSourceReferences()
       fd->addSourceRef(cd->getStartBodyLine(),cd,0);
     }
   }
+  // add source references for namespace definitions
+  NamespaceListIterator nli(namespaceList);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    FileDef *fd=nd->getBodyDef();
+    if (fd && nd->isLinkableInProject() && nd->getStartBodyLine()!=-1)
+    {
+      fd->addSourceRef(nd->getStartBodyLine(),nd,0);
+    }
+  }
+  
+  // add source references for member names
   MemberNameListIterator mnli(memberNameList);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
@@ -4441,11 +4498,6 @@ static void findDefineDocumentation(Entry *root)
             md->setMaxInitLines(root->initLines);
             if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
             addMemberToGroups(root,md);
-            //FileDef *fd=md->getFileDef();
-            //if (fd && root->mGrpId!=-1)
-            //{
-            //  fd->addMemberToGroup(md,root->mGrpId);
-            //}
           }
           md=mn->next();
         }
@@ -4476,16 +4528,8 @@ static void findDefineDocumentation(Entry *root)
               bool ambig;
               md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
-              //if (root->mGrpId!=-1 && md->getMemberGroup()==0) 
-              //{
-              //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-              //}
               if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
               addMemberToGroups(root,md);
-              //if (root->mGrpId!=-1)
-              //{
-              //  fd->addMemberToGroup(md,root->mGrpId);
-              //}
             }
           }
           md=mn->next();
@@ -5979,6 +6023,8 @@ int main(int argc,char **argv)
   if (Config::generateHtml) writeDoxFont(Config::htmlOutputDir);
   if (Config::generateRTF)  writeDoxFont(Config::rtfOutputDir);
 
+  //statistics();
+  
   // count the number of documented elements in the lists we have built. 
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.

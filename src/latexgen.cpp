@@ -407,11 +407,11 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   writeDefaultStyleSheetPart1(t);
   t << "Generated at " << dateToString(TRUE);
   if (Config::projectName.isEmpty()) t << " for " << Config::projectName << " ";
-  t << "by doxygen written by Dimitri van Heesch \\copyright{} 1997-2000";
+  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2000";
   writeDefaultStyleSheetPart2(t);
   t << "Generated at " << dateToString(TRUE);
   if (Config::projectName.isEmpty()) t << " for " << Config::projectName << " ";
-  t << "by doxygen written by Dimitri van Heesch \\copyright{} 1997-2000";
+  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2000";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -778,14 +778,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch \\copyright{} 1997-2000";
+        t << " Dimitri van Heesch \\copyright~1997-2000";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch \\copyright{} 1997-2000";
+        t << " Dimitri van Heesch \\copyright~1997-2000";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }

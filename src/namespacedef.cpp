@@ -251,9 +251,13 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     ol.startTextBlock();
-    if (!briefDescription().isEmpty())
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
     {
       ol+=briefOutput;
+    }
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag &&
+        !documentation().isEmpty())
+    {
       ol.newParagraph();
     }
     if (!documentation().isEmpty())

@@ -478,6 +478,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   }
 }
 
+/*! Add a member to all groups it is contained in */
 void addMemberToGroups(Entry *root,MemberDef *md)
 {
   QListIterator<QCString> sli(*root->groups);

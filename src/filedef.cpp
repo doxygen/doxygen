@@ -318,11 +318,12 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
-    if (!briefDescription().isEmpty())
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
     {
       ol+=briefOutput;
     }
-    if (!briefDescription().isEmpty() && !documentation().isEmpty())
+    if (!briefDescription().isEmpty() && Config::repeatBriefFlag && 
+        !documentation().isEmpty())
     {
       ol.newParagraph();
     }

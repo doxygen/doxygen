@@ -407,7 +407,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_enabled_sections
 <dt>\c ENABLED_SECTIONS <dd>
  \addindex ENABLED_SECTIONS
- The \c ENABLE_SECTIONS tag can be used to enable conditional
+ The \c ENABLED_SECTIONS tag can be used to enable conditional
  documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
  \ref cmdendif "\\endif" blocks.
 

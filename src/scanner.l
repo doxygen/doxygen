@@ -87,6 +87,7 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              ifCount      = 0 ;
+static int              padCount     = 0 ;
 static int              todoStartContext = 0;
 static QCString         todoString = 0;
 static int              testStartContext = 0;
@@ -1267,6 +1268,11 @@ TITLE     [tT][iI][tT][lL][eE]
 					  *pCopyCurlyString+=*yytext;
   					}
 <FindMembers>":"			{
+  					  if (current->type.isEmpty()) // bit pad field
+					  {
+					    addType(current);
+					    current->name.sprintf("__pad%d__",padCount++);
+					  }
   					  BEGIN(BitFields);
 					  current->bitfields+=":";
   					}
@@ -3485,6 +3491,7 @@ static void parseCompounds(Entry *rt)
       //printf("-- %s ---------\n%s\n---------------\n",
       //  ce->name.data(),ce->program.data());
       // init scanner state
+      padCount=0;
       inputString = ce->program;
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;

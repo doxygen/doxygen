@@ -278,16 +278,19 @@ static QCString stringize(const QCString &s)
  */
 static void processConcatOperators(QCString &expr)
 {
+  //printf("processConcatOperators: in=`%s'\n",expr.data());
   QRegExp r("[ \\t\\n]*##[ \\t\\n]*"); 
   int l,n,i=0;
   if (expr.isEmpty()) return;
   while ((n=r.match(expr,i,&l))!=-1)
   {
+    //printf("Match: `%s'\n",expr.data()+i);
     if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
     {
       // remove no-rescan marker after ID
       l+=2;
     }
+    //printf("found `%s'\n",expr.mid(n,l).data());
     // remove the ## operator and the surrounding whitespace
     expr=expr.left(n)+expr.right(expr.length()-n-l);
     int k=n-1;
@@ -298,14 +301,15 @@ static void processConcatOperators(QCString &expr)
       expr=expr.left(k-1)+expr.right(expr.length()-k-1);
       n-=2;
     }
-    i=n+l;
+    i=n;
   }
+  //printf("processConcatOperators: out=`%s'\n",expr.data());
 }
 
 /*! replaces the function macro \a def whose argument list starts at
  * \a pos in expression \a expr. 
  * Notice that this routine may scan beyond the \a expr string if needed.
- * The characters from the input file will be read.
+ * In that case the characters will be read from the input file.
  * The replacement string will be returned in \a result and the 
  * length of the (unexpanded) argument list is stored in \a len.
  */ 
@@ -338,7 +342,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   int argCount=0;
   bool done=FALSE;
   
-  // FASE 1: read the macro arguments
+  // PHASE 1: read the macro arguments
   if (def->nargs==0)
   {
     while ((cc=getNextChar(expr,rest,j))!=EOF)
@@ -442,7 +446,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     }
   }
 
-  // FASE 2: apply the macro function
+  // PHASE 2: apply the macro function
   if (argCount==def->nargs || 
       (argCount>def->nargs && def->varArgs)) // matching parameters lists
   {
@@ -486,7 +490,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	    while (l<(int)d.length() && d.at(l)==' ') l++;
 	    if (l<(int)d.length()-1 && d.at(l)=='#' && d.at(l+1)=='#') hash=TRUE;
 	  }
-	  //printf("request key %s result %s\n",key.data(),args[key]->data());
+	  //printf("request key %s result %s\n",key.data(),argTable[key]->data());
 	  if (key.length()>1 && (subst=argTable[key])) 
 	  {
 	    QCString substArg=*subst;
@@ -817,12 +821,12 @@ void addDefine()
   //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
 }
 
-static void outputChar(char c)
+static inline void outputChar(char c)
 {
   if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
 } 
 
-static void outputArray(const char *a,int len)
+static inline void outputArray(const char *a,int len)
 {
   if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addArray(a,len);
 }
@@ -1007,7 +1011,7 @@ BN	[ \t\r\n]
 <CopyLine>{ID}/{BN}*"("			{
   					  Define *def=0;
 					  //printf("Search for define %s\n",yytext);
-					  if (g_includeStack.isEmpty() &&
+					  if ((g_includeStack.isEmpty() || g_curlyCount>0) &&
 					      Config::macroExpansionFlag &&
 					      /* (expandDefine=fileDefineCache->findDefine(g_yyFileName,yytext)) */
 					      (def=g_fileDefineDict->find(yytext)) &&
@@ -1037,7 +1041,7 @@ BN	[ \t\r\n]
 <CopyLine>{ID}				{
                                           Define *def=0;
 					  //printf("Search for define %s\n",yytext);
-  					  if (g_includeStack.isEmpty() && 
+  					  if ((g_includeStack.isEmpty() || g_curlyCount>0) && 
 					      Config::macroExpansionFlag &&
 					      (def=g_fileDefineDict->find(yytext)) &&
 					      def->nargs==-1 &&
@@ -1557,7 +1561,7 @@ BN	[ \t\r\n]
   					  outputChar('\n');
   					  Define *def=0;
 					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());
-					  if (g_includeStack.isEmpty()) 
+					  if (g_includeStack.isEmpty() || g_curlyCount>0) 
 					  {
 					    addDefine();
 					  }
