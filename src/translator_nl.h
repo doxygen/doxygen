@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -218,7 +218,7 @@ class TranslatorDutch : public Translator
     QCString trForInternalUseOnly()
     { return "Alleen voor intern gebruik."; }
     QCString trReimplementedForInternalReasons()
-    { return "Om interne rederene opnieuwd ge&iuml;mplemented; "
+    { return "Om interne redenen opnieuwd ge&iuml;mplemented; "
              "de API wordt er niet door be&iuml;nvloed."; 
     }
     QCString trWarning()
@@ -975,6 +975,21 @@ class TranslatorDutch : public Translator
       return "Gebruikt";
     }
 
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementeert "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Wordt ge&iuml;mplementeerd door "+trWriteList(numEntries)+".";
+    }
 };
 
 #endif

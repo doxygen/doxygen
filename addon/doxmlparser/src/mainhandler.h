@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -22,47 +22,60 @@
 #include <doxmlintf.h>
 #include "memberhandler.h"
 
+struct CompoundEntry;
+
+struct IndexEntry
+{
+    QString id;
+    QString name;
+};
+
+struct MemberEntry : public IndexEntry
+{
+    CompoundEntry *compound;
+};
+
+struct CompoundEntry : public IndexEntry
+{
+    CompoundEntry(int size) : memberDict(size) 
+    { memberDict.setAutoDelete(TRUE); }
+    QDict<MemberEntry> memberDict;
+};
+
 class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
 {
   public:
     virtual void startCompound(const QXmlAttributes& attrib);
+    virtual void startMember(const QXmlAttributes& attrib);
+    virtual void endMember();
+    virtual void startName(const QXmlAttributes& attrib);
+    virtual void endName();
     MainHandler();
     virtual ~MainHandler();
 
-    ICompoundIterator *compounds() const
-    {
-      return new CompoundIterator(m_compounds);
-    }
-    ICompound *compoundById(const QString &id) const
-    {
-      return m_compoundDict[id];
-    }
-    virtual ICompound *compoundByName(const QString &name) const
-    {
-      return name.isEmpty() ? 0 : m_compoundNameDict[name]; 
-    }
-    virtual IMember *memberById(const QString &id) const
-    {
-      return m_memberDict[id];
-    }
-    virtual IMemberIterator *memberByName(const QString &name) const
-    {
-      QList<IMember> *ml = m_memberNameDict[name];
-      if (ml==0) return 0;
-      return new MemberIterator(*ml); 
-    }
-    virtual void release() { delete this; }
-    void insertMemberById(const QString &id,IMember *h);
-    void insertMemberByName(const QString &name,IMember *h);
+    // IDoxygen
+    ICompoundIterator *compounds() const;
+    ICompound *compoundById(const QString &id) const;
+    virtual ICompound *compoundByName(const QString &name) const;
+    virtual ICompound *memberById(const QString &id) const;
+    virtual ICompoundIterator *memberByName(const QString &name) const;
 
-    void initialize();
+    virtual void release();
+    void setDebugLevel(int level);
+    bool readXMLDir(const char *dirName);
+    void dump();
+    void unloadCompound(CompoundHandler *ch);
 
   private:
-    QList<ICompound>       m_compounds;
-    QDict<ICompound>       m_compoundDict;
-    QDict<ICompound>       m_compoundNameDict;
-    QDict<IMember>         m_memberDict;
-    QDict<QList<IMember> > m_memberNameDict;
+    CompoundEntry               *m_curCompound;
+    MemberEntry                 *m_curMember;
+    QList<CompoundEntry>         m_compounds;
+    QDict<CompoundEntry>         m_compoundDict;
+    QDict<CompoundEntry>         m_compoundNameDict;
+    QDict<MemberEntry>           m_memberDict;
+    QDict<QList<CompoundEntry> > m_memberNameDict;
+    QString                      m_xmlDirName;
+    QDict<CompoundHandler>       m_compoundsLoaded;
 };
 
 #endif

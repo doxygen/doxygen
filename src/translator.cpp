@@ -266,6 +266,6 @@ QCString Translator::JapaneseEucToSjis( const QCString & sInput )
 	}
     }
 
-  return result.local8Bit();
+  return result.latin1();
 
 }

@@ -3,11 +3,13 @@ CONFIG       =	console staticlib warn_on $extraopts
 HEADERS      =	basehandler.h mainhandler.h \
                 compoundhandler.h sectionhandler.h \
                 memberhandler.h paramhandler.h \
-                dochandler.h linkedtexthandler.h
+                dochandler.h linkedtexthandler.h \
+                debug.h
 SOURCES      =	mainhandler.cpp \
                 compoundhandler.cpp sectionhandler.cpp \
                 memberhandler.cpp paramhandler.cpp \
-                dochandler.cpp linkedtexthandler.cpp
+                dochandler.cpp linkedtexthandler.cpp \
+                basehandler.cpp debug.cpp
 unix:LIBS                  += -L../../../lib -lqtools 
 win32:INCLUDEPATH          += .
 win32-mingw:LIBS           += -L../../../lib -lqtools 

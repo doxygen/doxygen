@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -449,11 +449,16 @@ class RefHandler : public IDocRef, public BaseHandler<RefHandler>
     // IDocRef
     virtual Kind kind() const { return Ref; }
     virtual QString refId() const { return m_refId; }
+    virtual TargetKind targetKind() const { return m_targetKind; }
+    virtual QString external() const { return m_extId; }
+    virtual QString text() const { return m_linkText; }
 
   private:
     IBaseHandler   *m_parent;
-    QString        m_refId;
-    QString        m_linkText;
+    QString         m_refId;
+    QString         m_extId;
+    QString         m_linkText;
+    TargetKind      m_targetKind;
 };
 
 //-----------------------------------------------------------------------------
@@ -582,7 +587,7 @@ class VariableListHandler : public IDocVariableList, public BaseHandler<Variable
 /*! \brief Node representing a highlighted text fragment.
  *
  */
-// children: -
+// TODO: children: ref
 class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandler>
 {
   public:
@@ -590,14 +595,17 @@ class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandl
     virtual ~HighlightHandler();
     void startHighlight(const QXmlAttributes& attrib);
     void endHighlight();
+    virtual void startRef(const QXmlAttributes&);
 
     // IDocHighlight
     virtual Kind kind() const { return Highlight; }
 
   private:
+    void addTextNode();
+    
     IBaseHandler   *m_parent;
     QString        m_class;
-    QString        m_text;
+    QList<IDoc> m_children;
 };
 
 //-----------------------------------------------------------------------------
@@ -914,5 +922,8 @@ class DocIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
     DocIterator(const DocHandler &handler) : 
       BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
 };
+
+void dochandler_init();
+void dochandler_exit();
 
 #endif

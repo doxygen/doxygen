@@ -93,9 +93,11 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_example_recursive EXAMPLE_RECURSIVE
 <li> \refitem cfg_exclude EXCLUDE
 <li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
+<li> \refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
 <li> \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
 <li> \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
 <li> \refitem cfg_ext_doc_paths EXT_DOC_PATHS
+<li> \refitem cfg_external_groups EXTERNAL_GROUPS
 <li> \refitem cfg_extra_packages EXTRA_PACKAGES
 <li> \refitem cfg_extract_all EXTRACT_ALL
 <li> \refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
@@ -567,8 +569,11 @@ followed by the descriptions of the tags grouped by category.
  If the value of the \c INPUT tag contains directories, you can use the 
  \c FILE_PATTERNS tag to specify one or more wildcard patterns 
  (like \c *.cpp and \c *.h ) to filter out the source-files 
- in the directories. If left blank all files are included 
- (i.e. wildcard <tt>*</tt>).
+ in the directories. If left blank the following patterns are tested:
+ <code>
+ *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
+ *.h++ *.idl *.odl
+ </code>
 
 \anchor cfg_recursive
 <dt>\c RECURSIVE <dd>
@@ -583,6 +588,12 @@ followed by the descriptions of the tags grouped by category.
  The \c EXCLUDE tag can be used to specify files and/or directories that should
  excluded from the \c INPUT source files. This way you can easily exclude a
  subdirectory from a directory tree whose root is specified with the \c INPUT tag.
+
+\anchor cfg_exclude_symlinks
+<dt>\c EXCLUDE_SYMLINKS <dd>
+ \addindex EXCLUDE_SYMLINKS
+ The \c EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
+ that are symbolic links (a Unix filesystem feature) are excluded from the input.
 
 \anchor cfg_exclude_patterns
 <dt>\c EXCLUDE_PATTERNS <dd>
@@ -1168,6 +1179,13 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  in the class index. If set to \c NO only the inherited external classes
  will be listed.
 
+\anchor cfg_external_groups
+<dt>\c EXTERNAL_GROUPS <dd>
+ \addindex EXTERNAL_GROUPS
+ If the \c EXTERNAL_GROUPS tag is set to \c YES all external groups will be listed
+ in the modules index. If set to \c NO, only the current project's groups will
+ be listed.
+ 
 \anchor cfg_perl_path
 <dt>\c PERL_PATH <dd>
  \addindex PERL_PATH

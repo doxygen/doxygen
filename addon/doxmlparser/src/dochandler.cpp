@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -14,6 +14,7 @@
  */
 
 #include "dochandler.h"
+#include "debug.h"
 #include <qmap.h>
 
 class TypeNameMapper
@@ -51,8 +52,17 @@ class TypeNameMapper
     QMap<QString,SimpleSectHandler::Types> m_typeNameMap;
 };
 
-static TypeNameMapper g_typeMapper;
+static TypeNameMapper *s_typeMapper;
 
+void dochandler_init()
+{
+  s_typeMapper = new TypeNameMapper;
+}
+
+void dochandler_exit()
+{
+  delete s_typeMapper;
+}
   
 //----------------------------------------------------------------------
 // MarkupHandler
@@ -92,7 +102,7 @@ void MarkupHandler::addTextNode()
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,m_curMarkup));
-    printf("addTextNode() text=%s markup=%x\n",m_curString.data(),m_curMarkup);
+    debug(2,"addTextNode() text=%s markup=%x\n",m_curString.data(),m_curMarkup);
     m_curString="";
   }
 }
@@ -216,12 +226,12 @@ ListItemHandler::~ListItemHandler()
 void ListItemHandler::startListItem(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start list item handler\n");
+  debug(2,"start list item handler\n");
 }
 
 void ListItemHandler::endListItem()
 {
-  printf("end list item handler\n");
+  debug(2,"end list item handler\n");
   m_parent->setDelegate(0);
 }
 
@@ -336,7 +346,7 @@ void ParameterHandler::startParameterName(const QXmlAttributes& /*attrib*/)
 void ParameterHandler::endParameterName()
 {
   m_name = m_curString;
-  printf("parameter %s\n",m_name.data());
+  debug(2,"parameter %s\n",m_name.data());
   m_curString="";
   m_parent->setDelegate(0);
 }
@@ -386,9 +396,9 @@ void ParameterListHandler::startParameterList(const QXmlAttributes& attrib)
   else if (kind=="param")     m_type=Param;
   else
   {
-    printf("Error: invalid parameterlist type: %s\n",kind.data());
+    debug(1,"Error: invalid parameterlist type: %s\n",kind.data());
   }
-  printf("parameterlist kind=%s\n",kind.data());
+  debug(2,"parameterlist kind=%s\n",kind.data());
   m_parent->setDelegate(this);
 }
 
@@ -432,7 +442,7 @@ LinkHandler::~LinkHandler()
 void LinkHandler::startLink(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  printf("Start link\n");
+  debug(2,"Start link\n");
   m_ref = attrib.value("linkend");
   m_curString="";
 }
@@ -442,7 +452,7 @@ void LinkHandler::endLink()
   m_text = m_curString;
   m_curString="";
   m_parent->setDelegate(0);
-  printf("End link\n");
+  debug(2,"End link\n");
 }
 
 //----------------------------------------------------------------------
@@ -462,7 +472,7 @@ EMailHandler::~EMailHandler()
 void EMailHandler::startEMail(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("Start email\n");
+  debug(2,"Start email\n");
   m_curString="";
 }
 
@@ -471,7 +481,7 @@ void EMailHandler::endEMail()
   m_address = m_curString;
   m_curString="";
   m_parent->setDelegate(0);
-  printf("End email\n");
+  debug(2,"End email\n");
 }
 
 //----------------------------------------------------------------------
@@ -491,7 +501,7 @@ ULinkHandler::~ULinkHandler()
 void ULinkHandler::startULink(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  printf("Start ulink\n");
+  debug(2,"Start ulink\n");
   m_url = attrib.value("url");
   m_curString="";
 }
@@ -501,7 +511,7 @@ void ULinkHandler::endULink()
   m_text = m_curString;
   m_curString="";
   m_parent->setDelegate(0);
-  printf("End ulink\n");
+  debug(2,"End ulink\n");
 }
 
 //----------------------------------------------------------------------
@@ -521,13 +531,13 @@ LineBreakHandler::~LineBreakHandler()
 void LineBreakHandler::startLineBreak(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("Start linebreak\n");
+  debug(2,"Start linebreak\n");
 }
 
 void LineBreakHandler::endLineBreak()
 {
   m_parent->setDelegate(0);
-  printf("End linebreak\n");
+  debug(2,"End linebreak\n");
 }
 
 //----------------------------------------------------------------------
@@ -547,13 +557,13 @@ HRulerHandler::~HRulerHandler()
 void HRulerHandler::startHRuler(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("Start hruler\n");
+  debug(2,"Start hruler\n");
 }
 
 void HRulerHandler::endHRuler()
 {
   m_parent->setDelegate(0);
-  printf("End hruler\n");
+  debug(2,"End hruler\n");
 }
 
 //----------------------------------------------------------------------
@@ -573,9 +583,12 @@ RefHandler::~RefHandler()
 void RefHandler::startRef(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  m_refId = attrib.value("idref");
-  m_anchor = attrib.value("anchor");
-  printf("Start ref refId=%s anchor=%s\n",m_refId.data(),m_anchor.data());
+  m_refId = attrib.value("refid");
+  m_refId = attrib.value("external");
+  ASSERT(attrib.value("kindref")=="compound" || 
+         attrib.value("kindref")=="member");
+  m_targetKind = attrib.value("kindref")=="compound" ?  Compound : Member;
+  debug(2,"Start ref refId=%s\n",m_refId.data());
   m_curString="";
 }
 
@@ -583,7 +596,7 @@ void RefHandler::endRef()
 {
   m_linkText = m_curString;
   m_parent->setDelegate(0);
-  printf("End ref: text=`%s'\n",m_linkText.data());
+  debug(2,"End ref: text=`%s'\n",m_linkText.data());
 }
 
 
@@ -609,7 +622,7 @@ TitleHandler::~TitleHandler()
 void TitleHandler::startTitle(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("Start title\n");
+  debug(2,"Start title\n");
   m_curString="";
 }
 
@@ -617,7 +630,7 @@ void TitleHandler::endTitle()
 {
   addTextNode();
   m_parent->setDelegate(0);
-  printf("End title\n");
+  debug(2,"End title\n");
 }
 
 void TitleHandler::addTextNode()
@@ -625,7 +638,7 @@ void TitleHandler::addTextNode()
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    printf("addTextNode() text=\"%s\" markup=%x\n",
+    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
         m_curString.data(),m_markupHandler->markup());
     m_curString="";
   }
@@ -661,14 +674,14 @@ SimpleSectHandler::~SimpleSectHandler()
 
 void SimpleSectHandler::startSimpleSect(const QXmlAttributes& attrib)
 {
-  m_type = g_typeMapper.stringToType(attrib.value("kind"));
-  printf("start simple section %s\n",attrib.value("kind").data());
+  m_type = s_typeMapper->stringToType(attrib.value("kind"));
+  debug(2,"start simple section %s\n",attrib.value("kind").data());
   m_parent->setDelegate(this);
 }
 
 void SimpleSectHandler::endSimpleSect()
 {
-  printf("end simple section\n");
+  debug(2,"end simple section\n");
   m_parent->setDelegate(0);
 }
 
@@ -708,25 +721,25 @@ VariableListEntryHandler::~VariableListEntryHandler()
 void VariableListEntryHandler::startVarListEntry(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start varlistentry\n");
+  debug(2,"start varlistentry\n");
 }
 
 void VariableListEntryHandler::endVarListEntry()
 {
   m_parent->setDelegate(0);
-  printf("end varlistentry\n");
+  debug(2,"end varlistentry\n");
 }
 
 void VariableListEntryHandler::startListItem(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start listitem\n");
+  debug(2,"start listitem\n");
 }
 
 void VariableListEntryHandler::endListItem()
 {
   m_parent->setDelegate(0);
-  printf("end listitem\n");
+  debug(2,"end listitem\n");
 }
 
 void VariableListEntryHandler::startTerm(const QXmlAttributes& /*attrib*/)
@@ -737,7 +750,7 @@ void VariableListEntryHandler::startTerm(const QXmlAttributes& /*attrib*/)
 void VariableListEntryHandler::endTerm()
 {
   m_term = m_curString;
-  printf("term=%s\n",m_term.data());
+  debug(2,"term=%s\n",m_term.data());
 }
 
 void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
@@ -769,12 +782,12 @@ VariableListHandler::~VariableListHandler()
 void VariableListHandler::startVariableList(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start variablelist\n");
+  debug(2,"start variablelist\n");
 }
 
 void VariableListHandler::endVariableList()
 {
-  printf("end variablelist\n");
+  debug(2,"end variablelist\n");
   m_parent->setDelegate(0);
 }
 
@@ -799,7 +812,9 @@ void VariableListHandler::startListItem(const QXmlAttributes& attrib)
 HighlightHandler::HighlightHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
+  m_children.setAutoDelete(TRUE);
   addEndHandler("highlight",this,&HighlightHandler::endHighlight);
+  addStartHandler("ref",this,&HighlightHandler::startRef);
 }
 
 HighlightHandler::~HighlightHandler()
@@ -815,9 +830,28 @@ void HighlightHandler::startHighlight(const QXmlAttributes& attrib)
 
 void HighlightHandler::endHighlight()
 {
-  m_text = m_curString;
-  printf("highlight class=`%s' text=`%s'\n",m_class.data(),m_text.data());
+  addTextNode();
+  debug(2,"highlight class=`%s'\n",m_class.data());
   m_parent->setDelegate(0);
+}
+
+void HighlightHandler::startRef(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  RefHandler *rh = new RefHandler(this);
+  m_children.append(rh);
+  rh->startRef(attrib);
+}
+
+void HighlightHandler::addTextNode()
+{
+  if (!m_curString.isEmpty())
+  {
+    m_children.append(new TextNode(m_curString,IDocMarkup::Normal));
+    debug(2,"addTextNode() text=\"%s\"\n",
+        m_curString.data());
+    m_curString="";
+  }
 }
 
 //----------------------------------------------------------------------
@@ -842,20 +876,20 @@ CodeLineHandler::~CodeLineHandler()
 void CodeLineHandler::startCodeLine(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start codeline\n");
+  debug(2,"start codeline\n");
 }
 
 void CodeLineHandler::endCodeLine()
 {
   addTextNode();
-  printf("end codeline\n");
+  debug(2,"end codeline\n");
   m_parent->setDelegate(0);
 }
 
 void CodeLineHandler::startLineNumber(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  printf("start linenumber\n");
+  debug(2,"start linenumber\n");
   m_lineNumber = attrib.value("line").toInt();
   m_refId = attrib.value("refid");
 }
@@ -886,7 +920,7 @@ void CodeLineHandler::addTextNode()
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,IDocMarkup::Normal));
-    printf("addTextNode() text=\"%s\"\n",
+    debug(2,"addTextNode() text=\"%s\"\n",
         m_curString.data());
     m_curString="";
   }
@@ -914,12 +948,12 @@ ProgramListingHandler::~ProgramListingHandler()
 void ProgramListingHandler::startProgramListing(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start programlisting\n");
+  debug(2,"start programlisting\n");
 }
 
 void ProgramListingHandler::endProgramListing()
 {
-  printf("end programlisting\n");
+  debug(2,"end programlisting\n");
   m_parent->setDelegate(0);
 }
 
@@ -972,7 +1006,7 @@ void FormulaHandler::startFormula(const QXmlAttributes& attrib)
 void FormulaHandler::endFormula()
 {
   m_text = m_curString;
-  printf("formula id=`%s' text=`%s'\n",m_id.data(),m_text.data());
+  debug(2,"formula id=`%s' text=`%s'\n",m_id.data(),m_text.data());
   m_parent->setDelegate(0);
 }
 
@@ -1000,7 +1034,7 @@ void ImageHandler::startImage(const QXmlAttributes& attrib)
 void ImageHandler::endImage()
 {
   m_caption = m_curString;
-  printf("image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
+  debug(2,"image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
   m_parent->setDelegate(0);
 }
 
@@ -1028,7 +1062,7 @@ void DotFileHandler::startDotFile(const QXmlAttributes& attrib)
 void DotFileHandler::endDotFile()
 {
   m_caption = m_curString;
-  printf("image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
+  debug(2,"image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
   m_parent->setDelegate(0);
 }
 
@@ -1052,13 +1086,13 @@ IndexEntryHandler::~IndexEntryHandler()
 
 void IndexEntryHandler::startIndexEntry(const QXmlAttributes& /*attrib*/)
 {
-  printf("start index entry\n");
+  debug(2,"start index entry\n");
   m_parent->setDelegate(this);
 }
 
 void IndexEntryHandler::endIndexEntry()
 {
-  printf("index entry primary=`%s' secondary=`%s'\n",
+  debug(2,"index entry primary=`%s' secondary=`%s'\n",
       m_primary.data(),m_secondary.data());
   m_parent->setDelegate(0);
 }
@@ -1171,7 +1205,7 @@ void TableHandler::startTable(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_numColumns = attrib.value("cols").toInt();
-  printf("table cols=%d\n",m_numColumns);
+  debug(2,"table cols=%d\n",m_numColumns);
 }
 
 void TableHandler::endTable()
@@ -1237,13 +1271,13 @@ ParagraphHandler::~ParagraphHandler()
 void ParagraphHandler::startParagraph(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("para\n");
+  debug(2,"para\n");
 }
 
 void ParagraphHandler::endParagraph()
 {
   addTextNode();
-  printf("end para\n");
+  debug(2,"end para\n");
   m_parent->setDelegate(0);
 }
 
@@ -1388,7 +1422,7 @@ void ParagraphHandler::addTextNode()
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    printf("addTextNode() text=\"%s\" markup=%x\n",
+    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
         m_curString.data(),m_markupHandler->markup());
     m_curString="";
   }
@@ -1423,7 +1457,7 @@ DocSectionHandler::~DocSectionHandler()
 void DocSectionHandler::startDocSection(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  printf("Start docsection\n");
+  debug(2,"Start docsection\n");
   m_id = attrib.value("id");
   m_curString="";
 }
@@ -1432,7 +1466,7 @@ void DocSectionHandler::endDocSection()
 {
   addTextNode();
   m_parent->setDelegate(0);
-  printf("End docsection\n");
+  debug(2,"End docsection\n");
 }
 
 void DocSectionHandler::addTextNode()
@@ -1440,7 +1474,7 @@ void DocSectionHandler::addTextNode()
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    printf("addTextNode() text=\"%s\" markup=%x\n",
+    debug(2,"addTextNode() text=\"%s\" markup=%x\n",
         m_curString.data(),m_markupHandler->markup());
     m_curString="";
   }
@@ -1483,12 +1517,12 @@ DocHandler::~DocHandler()
 void DocHandler::startDoc(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("start dochandler\n");
+  debug(2,"start dochandler\n");
 }
 
 void DocHandler::endDoc()
 {
-  printf("end dochandler\n");
+  debug(2,"end dochandler\n");
   m_parent->setDelegate(0);
 }
 

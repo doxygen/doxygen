@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -364,6 +364,13 @@ class Translator
 
     virtual QCString trReferences() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trImplementedFromList(int numEntries) = 0;
+    virtual QCString trImplementedInList(int numEntries) = 0;
+    
 };
 
 #endif

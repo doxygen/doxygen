@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -32,6 +32,7 @@
 #include "code.h"
 #include "page.h"
 #include "filename.h"
+#include "version.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -997,7 +998,7 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
   } 
 }
 
-static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
+static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,Definition *def)
 {
 
   // + declaration/definition arg lists
@@ -1015,6 +1016,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   
   if (md->memberType()==MemberDef::EnumValue) return;
 
+  ti << "    <member id=\"" << md->getOutputFileBase() 
+     << "_1" << md->anchor() << "\">" << md->name() << "</member>" << endl;
+  
   QCString scopeName;
   if (md->getClassDef()) 
     scopeName=md->getClassDef()->name();
@@ -1250,7 +1254,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   t << "      </memberdef>" << endl;
 }
 
-static void generateXMLSection(Definition *d,QTextStream &t,
+static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
                       MemberList *ml,const char *kind,const char *header=0)
 {
   if (ml->count()==0) return; // empty list
@@ -1264,13 +1268,12 @@ static void generateXMLSection(Definition *d,QTextStream &t,
   MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    generateXMLForMember(md,t,d);
+    generateXMLForMember(md,ti,t,d);
   }
   t << "      </sectiondef>" << endl;
 }
 
-
-static void generateXMLForClass(ClassDef *cd,QTextStream &t)
+static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
 {
   // + brief description
   // + detailed description
@@ -1292,6 +1295,21 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
+  ti << "  <compound id=\"" << cd->getOutputFileBase() 
+     << "\"><name>" << cd->name() << "</name>" << endl;
+  
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString fileName=outputDirectory+"/xml/"+cd->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  QTextStream t(&f);
+
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
   t << "  <compounddef id=\"" 
     << cd->getOutputFileBase() << "\" kind=\"" 
     << cd->compoundTypeString() << "\">" << endl;
@@ -1364,32 +1382,32 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(cd,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header());
   }
 
-  generateXMLSection(cd,t,&cd->pubTypes,"public-type");
-  generateXMLSection(cd,t,&cd->pubMembers,"public-func");
-  generateXMLSection(cd,t,&cd->pubAttribs,"public-attrib");
-  generateXMLSection(cd,t,&cd->pubSlots,"public-slot");
-  generateXMLSection(cd,t,&cd->signals,"signal");
-  generateXMLSection(cd,t,&cd->dcopMethods,"dcop-func");
-  generateXMLSection(cd,t,&cd->properties,"property");
-  generateXMLSection(cd,t,&cd->pubStaticMembers,"public-static-func");
-  generateXMLSection(cd,t,&cd->pubStaticAttribs,"public-static-attrib");
-  generateXMLSection(cd,t,&cd->proTypes,"protected-type");
-  generateXMLSection(cd,t,&cd->proMembers,"protected-func");
-  generateXMLSection(cd,t,&cd->proAttribs,"protected-attrib");
-  generateXMLSection(cd,t,&cd->proSlots,"protected-slot");
-  generateXMLSection(cd,t,&cd->proStaticMembers,"protected-static-func");
-  generateXMLSection(cd,t,&cd->proStaticAttribs,"protected-static-attrib");
-  generateXMLSection(cd,t,&cd->priTypes,"private-type");
-  generateXMLSection(cd,t,&cd->priMembers,"private-func");
-  generateXMLSection(cd,t,&cd->priAttribs,"private-attrib");
-  generateXMLSection(cd,t,&cd->priSlots,"private-slot");
-  generateXMLSection(cd,t,&cd->priStaticMembers,"private-static-func");
-  generateXMLSection(cd,t,&cd->priStaticAttribs,"private-static-attrib");
-  generateXMLSection(cd,t,&cd->friends,"signal");
-  generateXMLSection(cd,t,&cd->related,"related");
+  generateXMLSection(cd,ti,t,&cd->pubTypes,"public-type");
+  generateXMLSection(cd,ti,t,&cd->pubMembers,"public-func");
+  generateXMLSection(cd,ti,t,&cd->pubAttribs,"public-attrib");
+  generateXMLSection(cd,ti,t,&cd->pubSlots,"public-slot");
+  generateXMLSection(cd,ti,t,&cd->signals,"signal");
+  generateXMLSection(cd,ti,t,&cd->dcopMethods,"dcop-func");
+  generateXMLSection(cd,ti,t,&cd->properties,"property");
+  generateXMLSection(cd,ti,t,&cd->pubStaticMembers,"public-static-func");
+  generateXMLSection(cd,ti,t,&cd->pubStaticAttribs,"public-static-attrib");
+  generateXMLSection(cd,ti,t,&cd->proTypes,"protected-type");
+  generateXMLSection(cd,ti,t,&cd->proMembers,"protected-func");
+  generateXMLSection(cd,ti,t,&cd->proAttribs,"protected-attrib");
+  generateXMLSection(cd,ti,t,&cd->proSlots,"protected-slot");
+  generateXMLSection(cd,ti,t,&cd->proStaticMembers,"protected-static-func");
+  generateXMLSection(cd,ti,t,&cd->proStaticAttribs,"protected-static-attrib");
+  generateXMLSection(cd,ti,t,&cd->priTypes,"private-type");
+  generateXMLSection(cd,ti,t,&cd->priMembers,"private-func");
+  generateXMLSection(cd,ti,t,&cd->priAttribs,"private-attrib");
+  generateXMLSection(cd,ti,t,&cd->priSlots,"private-slot");
+  generateXMLSection(cd,ti,t,&cd->priStaticMembers,"private-static-func");
+  generateXMLSection(cd,ti,t,&cd->priStaticAttribs,"private-static-attrib");
+  generateXMLSection(cd,ti,t,&cd->friends,"friend");
+  generateXMLSection(cd,ti,t,&cd->related,"related");
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
@@ -1421,9 +1439,12 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
     }
   t << "/>" << endl;
   t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
 }
 
-static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
+static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
 {
   // + contained class definitions
   // + contained namespace definitions
@@ -1435,6 +1456,22 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
   // - files containing (parts of) the namespace definition
 
   if (nd->isReference()) return; // skip external references
+
+  ti << "  <compound id=\"" << nd->getOutputFileBase() 
+     << "\"><name>" << nd->name() << "</name>" << endl;
+  
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString fileName=outputDirectory+"/xml/"+nd->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  QTextStream t(&f);
+  
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
   t << "  <compounddef id=\"" 
     << nd->getOutputFileBase() << "\" kind=\"namespace\">" << endl;
   t << "    <compoundname>";
@@ -1467,15 +1504,15 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(nd,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header());
   }
 
-  generateXMLSection(nd,t,&nd->decDefineMembers,"define");
-  generateXMLSection(nd,t,&nd->decProtoMembers,"prototype");
-  generateXMLSection(nd,t,&nd->decTypedefMembers,"typedef");
-  generateXMLSection(nd,t,&nd->decEnumMembers,"enum");
-  generateXMLSection(nd,t,&nd->decFuncMembers,"func");
-  generateXMLSection(nd,t,&nd->decVarMembers,"var");
+  generateXMLSection(nd,ti,t,&nd->decDefineMembers,"define");
+  generateXMLSection(nd,ti,t,&nd->decProtoMembers,"prototype");
+  generateXMLSection(nd,ti,t,&nd->decTypedefMembers,"typedef");
+  generateXMLSection(nd,ti,t,&nd->decEnumMembers,"enum");
+  generateXMLSection(nd,ti,t,&nd->decFuncMembers,"func");
+  generateXMLSection(nd,ti,t,&nd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,nd->getDefFileName(),nd->getDefLine(),0,0,nd->briefDescription());
@@ -1487,9 +1524,12 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
     << nd->getDefFileName() << "\" line=\"" 
     << nd->getDefLine() << "\"/>" << endl;
   t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
 }
 
-static void generateXMLForFile(FileDef *fd,QTextStream &t)
+static void generateXMLForFile(FileDef *fd,QTextStream &ti)
 {
   // + includes files
   // + includedby files
@@ -1507,6 +1547,21 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
   
   if (fd->isReference()) return; // skip external references
   
+  ti << "  <compound id=\"" << fd->getOutputFileBase() 
+     << "\"><name>" << fd->name() << "</name>" << endl;
+  
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString fileName=outputDirectory+"/xml/"+fd->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  QTextStream t(&f);
+
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
   t << "  <compounddef id=\"" 
     << fd->getOutputFileBase() << "\" kind=\"file\">" << endl;
   t << "    <compoundname>";
@@ -1583,15 +1638,15 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(fd,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header());
   }
 
-  generateXMLSection(fd,t,&fd->decDefineMembers,"define");
-  generateXMLSection(fd,t,&fd->decProtoMembers,"prototype");
-  generateXMLSection(fd,t,&fd->decTypedefMembers,"typedef");
-  generateXMLSection(fd,t,&fd->decEnumMembers,"enum");
-  generateXMLSection(fd,t,&fd->decFuncMembers,"func");
-  generateXMLSection(fd,t,&fd->decVarMembers,"var");
+  generateXMLSection(fd,ti,t,&fd->decDefineMembers,"define");
+  generateXMLSection(fd,ti,t,&fd->decProtoMembers,"prototype");
+  generateXMLSection(fd,ti,t,&fd->decTypedefMembers,"typedef");
+  generateXMLSection(fd,ti,t,&fd->decEnumMembers,"enum");
+  generateXMLSection(fd,ti,t,&fd->decFuncMembers,"func");
+  generateXMLSection(fd,ti,t,&fd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->briefDescription());
@@ -1604,9 +1659,12 @@ static void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "    </programlisting>" << endl;
   t << "    <location file=\"" << fd->getDefFileName() << "\"/>" << endl;
   t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
 }
 
-static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
+static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
 {
   // + members
   // + member groups
@@ -1620,6 +1678,23 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
   // + brief description
   // + detailed description
 
+  if (gd->isReference()) return; // skip external references
+
+  ti << "  <compound id=\"" << gd->getOutputFileBase() 
+     << "\"><name>" << gd->name() << "</name>" << endl;
+  
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString fileName=outputDirectory+"/xml/"+gd->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+
+  QTextStream t(&f);
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
   t << "  <compounddef id=\"" 
     << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
   t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>" << endl;
@@ -1674,15 +1749,15 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(gd,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header());
   }
 
-  generateXMLSection(gd,t,&gd->decDefineMembers,"define");
-  generateXMLSection(gd,t,&gd->decProtoMembers,"prototype");
-  generateXMLSection(gd,t,&gd->decTypedefMembers,"typedef");
-  generateXMLSection(gd,t,&gd->decEnumMembers,"enum");
-  generateXMLSection(gd,t,&gd->decFuncMembers,"func");
-  generateXMLSection(gd,t,&gd->decVarMembers,"var");
+  generateXMLSection(gd,ti,t,&gd->decDefineMembers,"define");
+  generateXMLSection(gd,ti,t,&gd->decProtoMembers,"prototype");
+  generateXMLSection(gd,ti,t,&gd->decTypedefMembers,"typedef");
+  generateXMLSection(gd,ti,t,&gd->decEnumMembers,"enum");
+  generateXMLSection(gd,ti,t,&gd->decFuncMembers,"func");
+  generateXMLSection(gd,ti,t,&gd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->briefDescription());
@@ -1691,14 +1766,34 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
   writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
 }
 
-static void generateXMLForPage(PageInfo *pi,QTextStream &t)
+static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
 {
   // + name
   // + title
   // + documentation
 
+  if (pi->isReference()) return;
+  
+  ti << "  <compound id=\"" << pi->getOutputFileBase() 
+     << "\"><name>" << pi->name << "</name>" << endl;
+  
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString fileName=outputDirectory+"/xml/"+pi->getOutputFileBase()+".xml";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+
+  QTextStream t(&f);
+  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
   t << "  <compounddef id=\"";
   if (Config_getBool("CASE_SENSE_NAMES")) t << pi->name; else t << pi->name.lower();
   t << "\" kind=\"page\">" << endl;
@@ -1712,6 +1807,9 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &t)
   writeXMLDocBlock(t,pi->defFileName,pi->defLine,0,0,pi->doc);
   t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
+  t << "</doxygen>" << endl;
+
+  ti << "  </compound>" << endl;
 }
 
 void generateXML()
@@ -1769,7 +1867,7 @@ void generateXML()
     return;
   }
   
-  QCString fileName=outputDirectory+"/xml/doxygen.xml";
+  QCString fileName=outputDirectory+"/xml/index.xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1779,48 +1877,45 @@ void generateXML()
   QTextStream t(&f);
   t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
   //t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
-  t << "<doxygen>" << endl;
-  if (Doxygen::classSDict.count()+Doxygen::inputNameList.count()>0)
+  t << "<doxygen version=\"" << versionString << "\">" << endl;
+  //t << "  <compoundlist>" << endl;
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *cd;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    //t << "  <compoundlist>" << endl;
-    ClassSDict::Iterator cli(Doxygen::classSDict);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      generateXMLForClass(cd,t);
-    }
-    NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
-    NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
-    {
-      generateXMLForNamespace(nd,t);
-    }
-    FileNameListIterator fnli(Doxygen::inputNameList);
-    FileName *fn;
-    for (;(fn=fnli.current());++fnli)
-    {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
-      {
-        generateXMLForFile(fd,t);
-      }
-    }
-    GroupSDict::Iterator gli(Doxygen::groupSDict);
-    GroupDef *gd;
-    for (;(gd=gli.current());++gli)
-    {
-      generateXMLForGroup(gd,t);
-    }
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    PageInfo *pi=0;
-    for (pdi.toFirst();(pi=pdi.current());++pdi)
-    {
-      generateXMLForPage(pi,t);
-    }
-
-    //t << "  </compoundlist>" << endl;
+    generateXMLForClass(cd,t);
   }
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    generateXMLForNamespace(nd,t);
+  }
+  FileNameListIterator fnli(Doxygen::inputNameList);
+  FileName *fn;
+  for (;(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      generateXMLForFile(fd,t);
+    }
+  }
+  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupDef *gd;
+  for (;(gd=gli.current());++gli)
+  {
+    generateXMLForGroup(gd,t);
+  }
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  {
+    generateXMLForPage(pi,t);
+  }
+
+  //t << "  </compoundlist>" << endl;
   t << "</doxygen>" << endl;
 }
 

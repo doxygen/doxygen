@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -13,6 +13,7 @@
  *
  */
 #include "linkedtexthandler.h"
+#include "debug.h"
 #include <doxmlintf.h>
 
 class LT_Text : public ILT_Text
@@ -46,9 +47,9 @@ class LT_Ref : public ILT_Ref
     virtual Kind kind() const { return Kind_Ref; }
     
   private:
-    QString m_refId;
-    QString m_extId;
-    QString m_text;
+    QString    m_refId;
+    QString    m_extId;
+    QString    m_text;
     TargetKind m_targetKind;
 };
 
@@ -79,7 +80,7 @@ void LinkedTextHandler::end()
   if (!m_curString.isEmpty())
   {
     m_children.append(new LT_Text(m_curString));
-    printf("LinkedTextHandler: add text `%s'\n",m_curString.data());
+    debug(2,"LinkedTextHandler: add text `%s'\n",m_curString.data());
     m_curString="";
   }
   m_parent->setDelegate(0);
@@ -90,7 +91,7 @@ void LinkedTextHandler::startRef(const QXmlAttributes& attrib)
   if (!m_curString.isEmpty())
   {
     m_children.append(new LT_Text(m_curString));
-    printf("LinkedTextHandler: add text `%s'\n",m_curString.data());
+    debug(2,"LinkedTextHandler: add text `%s'\n",m_curString.data());
     m_curString="";
   }
   ASSERT(m_ref==0);
@@ -98,15 +99,34 @@ void LinkedTextHandler::startRef(const QXmlAttributes& attrib)
   m_ref->setRefId(attrib.value("refid"));
   m_ref->setExtId(attrib.value("external"));
   ASSERT(attrib.value("kindref")=="compound" || attrib.value("kindref")=="member");
-  m_ref->setTargetKind(attrib.value("kindref")=="compound" ? Compound : Member);
+  m_ref->setTargetKind(attrib.value("kindref")=="compound" ? ILT_Ref::Compound : ILT_Ref::Member);
 }
 
 void LinkedTextHandler::endRef()
 {
   m_ref->setText(m_curString);
   m_children.append(m_ref);
-  printf("LinkedTextHandler: add ref `%s'\n",m_ref->text().data());
+  debug(2,"LinkedTextHandler: add ref `%s'\n",m_ref->text().data());
   m_ref=0;
 }
 
+QString LinkedTextHandler::toString(const QList<ILinkedText> &list) 
+{
+  QListIterator<ILinkedText> li(list);
+  QString result;
+  ILinkedText *lt;
+  for (li.toFirst();(lt=li.current());++li)
+  {
+    switch(lt->kind())
+    {
+      case ILinkedText::Kind_Text:
+        result+=dynamic_cast<ILT_Text*>(lt)->text();
+        break;
+      case ILinkedText::Kind_Ref:
+        result+=dynamic_cast<ILT_Ref *>(lt)->text();
+        break;
+    }
+  }
+  return result;
+}
 

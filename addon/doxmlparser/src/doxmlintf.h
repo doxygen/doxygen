@@ -5,12 +5,15 @@
 
 class IMember;
 class IDocIterator;
+class ICompound;
+class ISection;
 
 class ILinkedText
 {
   public:
     enum Kind { Kind_Text, Kind_Ref };
     virtual Kind kind() const = 0;
+    virtual ~ILinkedText() {}
 };
 
 class ILT_Text : public ILinkedText
@@ -49,6 +52,7 @@ class IParam
     virtual QString attrib() const = 0;
     virtual QString arraySpecifier() const = 0;
     virtual ILinkedTextIterator *defaultValue() const = 0;
+    virtual ~IParam() {}
 };
 
 class IParamIterator
@@ -67,6 +71,7 @@ class IMemberReference
   public:
     virtual IMember *member() const = 0;
     virtual QString memberName() const = 0;
+    virtual ~IMemberReference() {}
 };
 
 class IMemberReferenceIterator 
@@ -85,6 +90,7 @@ class IEnumValue
   public:
     virtual QString name() const = 0;
     virtual QString initializer() const = 0;
+    virtual ~IEnumValue() {}
 };
 
 class IEnumValueIterator 
@@ -136,6 +142,7 @@ class IDoc
       Root                // 30 -> IDocRoot
     };
     virtual Kind kind() const = 0;
+    virtual ~IDoc() {}
 };
 
 class IDocMarkup : public IDoc
@@ -234,7 +241,7 @@ class IDocRef : public IDoc
 {
   public:
     enum TargetKind { Member, Compound };
-    virtual QString id() const = 0;
+    virtual QString refId() const = 0;
     virtual TargetKind targetKind() const = 0;
     virtual QString external() const = 0;
     virtual QString text() const = 0;
@@ -340,11 +347,19 @@ class IDocIterator
 class IMember 
 {
   public:
-    virtual QString kind() const = 0;
+    enum MemberKind { Invalid=0,
+                      Define, Property, Variable, Typedef, Enum,
+                      Function, Signal, Prototype, Friend, DCOP, Slot
+                    };
+    virtual ICompound *compound() const = 0;
+    virtual ISection *section() const = 0;
+    virtual MemberKind kind() const = 0;
+    virtual QString kindString() const = 0;
     virtual QString id() const = 0;
     virtual QString protection() const = 0;
     virtual QString virtualness() const = 0;
     virtual ILinkedTextIterator *type() const = 0;
+    virtual QString typeString() const = 0;
     virtual QString name() const = 0;
     virtual bool isConst() const = 0;
     virtual bool isVolatile() const = 0;
@@ -362,6 +377,7 @@ class IMember
     virtual IEnumValueIterator *enumValues() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
+    virtual ~IMember() {}
 };
 
 class IMemberIterator 
@@ -378,8 +394,26 @@ class IMemberIterator
 class ISection 
 {
   public:
-    virtual QString kind() const = 0;
+    enum SectionKind { Invalid=0,
+                       UserDefined,
+                       PubTypes, PubFuncs, PubAttribs, PubSlots,
+                       Signals, DCOPFuncs, Properties,
+                       PubStatFuncs, PubStatAttribs,
+                       ProTypes, ProFuncs, ProAttribs, ProSlots,
+                       ProStatFuncs, ProStatAttribs,
+                       PriTypes, PriFuncs, PriAttribs, PriSlots,
+                       PriStatFuncs, PriStatAttribs, 
+                       Friend, Related, Defines, Prototypes, Typedefs,
+                       Enums, Functions, Variables
+                     };
+    virtual QString kindString() const = 0;
+    virtual SectionKind kind() const = 0;
     virtual IMemberIterator *members() const = 0;
+    virtual bool isStatic() const = 0;
+    virtual bool isPublic() const = 0;
+    virtual bool isPrivate() const = 0;
+    virtual bool isProtected() const = 0;
+    virtual ~ISection() {}
 };
 
 class ISectionIterator 
@@ -396,21 +430,42 @@ class ISectionIterator
 class ICompound 
 {
   public:
+    enum CompoundKind { Invalid=0,
+                        Class, Struct, Union, Interface, Exception,
+                        Namespace, File, Group, Page, Package 
+                      };
     virtual QString name() const = 0;
     virtual QString id()   const = 0;
-    virtual QString kind() const = 0;
+    virtual CompoundKind kind() const = 0;
+    virtual QString kindString() const = 0;
     virtual ISectionIterator *sections() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
+
+    /*! Returns an interface to a member given its id. 
+     *  @param id The member id.
+     */
+    virtual IMember *memberById(const QString &id) const = 0;
+
+    /*! Returns a list of all members within the compound having a certain 
+     *  name. Overloading is the reason why there can be more than one member. 
+     *  @param name The name of the member.
+     */
+    virtual IMemberIterator *memberByName(const QString &name) const = 0;
+
+    /*! Decreases the reference counter for this compound. If it reaches
+     *  zero, the memory for the compound will be released.
+     */
+    virtual void release() = 0;
 };
 
 class ICompoundIterator 
 {
   public:
-    virtual ICompound *toFirst() = 0;
-    virtual ICompound *toLast() = 0;
-    virtual ICompound *toNext() = 0;
-    virtual ICompound *toPrev() = 0;
+    virtual void toFirst() = 0;
+    virtual void toLast() = 0;
+    virtual void toNext() = 0;
+    virtual void toPrev() = 0;
     virtual ICompound *current() const = 0;
     virtual void release() = 0;
 };
@@ -419,6 +474,7 @@ class ICompoundIterator
 class IDoxygen 
 {
   public:
+
     /*! Returns an iterator that can be used to iterate over the list
      *  of compounds found in the project.
      */
@@ -435,28 +491,43 @@ class IDoxygen
      */
     virtual ICompound *compoundByName(const QString &name) const = 0;
 
-    /*! Returns an interface to a member given its id. 
+    /*! Returns an interface to a compound containing a member given it the
+     *  member's id. Given the ICompound interface one can use the same id
+     *  to obtain the IMember interface.
      *  @param id The member id.
      */
-    virtual IMember *memberById(const QString &id) const = 0;
+    virtual ICompound *memberById(const QString &id) const = 0;
 
-    /*! Returns a list of all members with a certain name. 
+    /*! Returns a list of all compounds containing at least one members 
+     *  with a certain name. Each compound can be asked to return the
+     *  list of members with that name.
      *  @param name The name of the member.
      */
-    virtual IMemberIterator *memberByName(const QString &name) const = 0;
-    
+    virtual ICompoundIterator *memberByName(const QString &name) const = 0;
+
     /*! Releases the memory for the object hierarchy obtained by 
      *  createdObjecModelFromXML(). First release all iterators before calling
      *  this function.
      */
     virtual void release() = 0;
+
+    /*! Sets the debug level.
+     *  - 0 all debugging messages are disabled (the default).
+     *  - 1 display important messages only
+     *  - 2 display any messages.
+     */
+    virtual void setDebugLevel(int level) = 0;
+
+    /*! Reads an XML directory produced by doxygen and builds up a data 
+     *  structure representing the contents of the XML files in the directory. 
+     */
+    virtual bool readXMLDir(const char *xmlDirName) = 0;
 };
 
-/*! Factory method that creates an object model given an XML file generated
- *  by doxygen.
- *  @param xmlFileName The name of the XML to parse.
- *  @returns An iterface to the object model.
+/*! Factory method that creates an empty object model for a doxygen generated XML file.
+ *  Use the readXMLDir() method to build the model from an XML output 
+ *  directory containing doxygen output.
  */
-IDoxygen *createObjectModelFromXML(const char *xmlFileName);
+IDoxygen *createObjectModel();
 
 #endif

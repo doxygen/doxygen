@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,6 +15,7 @@
 
 #include "paramhandler.h"
 #include "memberhandler.h"
+#include "debug.h"
 
 ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
 {
@@ -41,12 +42,13 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
 
 ParamHandler::~ParamHandler()
 {
+  delete m_linkedTextHandler;
 }
 
 void ParamHandler::startParam(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  printf("param\n");
+  debug(2,"param\n");
 }
 
 void ParamHandler::endParam()
@@ -59,39 +61,39 @@ void ParamHandler::startType(const QXmlAttributes& /*attrib*/)
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_type);
   m_linkedTextHandler->start("type");
-  printf("param type\n");
+  debug(2,"param type\n");
 }
 
 void ParamHandler::endDeclName()
 {
   m_declName = m_curString.stripWhiteSpace();
-  printf("member declName=`%s'\n",m_declName.data());
+  debug(2,"member declName=`%s'\n",m_declName.data());
 }
 
 void ParamHandler::endDefName()
 {
   m_defName = m_curString.stripWhiteSpace();
-  printf("member defName=`%s'\n",m_defName.data());
+  debug(2,"member defName=`%s'\n",m_defName.data());
 }
 
 void ParamHandler::endAttrib()
 {
   m_attrib = m_curString.stripWhiteSpace();
-  printf("member attrib=`%s'\n",m_attrib.data());
+  debug(2,"member attrib=`%s'\n",m_attrib.data());
 }
 
 void ParamHandler::endArray()
 {
   m_array = m_curString.stripWhiteSpace();
-  printf("member array=`%s'\n",m_array.data());
+  debug(2,"member array=`%s'\n",m_array.data());
 }
 
 void ParamHandler::startDefVal(const QXmlAttributes& /*attrib*/)
 {
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_defVal);
-  m_linkedTextHandler->start("type");
-  printf("member defVal\n");
+  m_linkedTextHandler->start("defval");
+  debug(2,"member defVal\n");
 }
 
 

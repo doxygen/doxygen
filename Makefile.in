@@ -10,6 +10,7 @@ clean: FORCE
 	cd addon/doxywizard ; $(MAKE) clean
 	cd addon/doxmlparser/src ; $(MAKE) clean
 	cd addon/doxmlparser/test ; $(MAKE) clean
+	cd addon/doxmlparser/examples/metrics ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
@@ -18,6 +19,7 @@ distclean: clean
 	cd addon/doxywizard ; $(MAKE) distclean
 	cd addon/doxmlparser/src ; $(MAKE) distclean
 	cd addon/doxmlparser/test ; $(MAKE) distclean
+	cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html

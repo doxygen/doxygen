@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -151,7 +151,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_2_13
 {
   private:
     /*! The decode() inline assumes the source written in the 

@@ -1,79 +1,154 @@
+Summary: A documentation system for C/C++.
 Name: doxygen
-Version: 1.2.13.1
-Summary: documentation system for C, C++ and IDL
-Release: 4
-Source: doxygen-%{version}.src.tar.gz
-
-Copyright: GPL
-Group: unsorted
-URL: http://www.stack.nl/~dimitri/doxygen
-Packager: Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
-BuildRoot: /var/tmp/doxygen-%{version}.root
-
-# requires Perl for tmake (Troll's make)
-BuildPrereq: perl tetex
+Version: 1.2.13_20020121
+Release: 1
+Epoch: 1
+Source0: ftp://ftp.stack.nl/pub/users/dimitri/%{name}-%{version}.src.tar.gz
+Patch: doxygen-1.2.7-redhat.patch
+Patch1: doxygen-1.2.12-qt2.patch
+Group: Development/Tools
+License: GPL
+Url: http://www.stack.nl/~dimitri/doxygen/index.html
+Prefix: %{_prefix}
+BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 %description
-Doxygen is a documentation system for C and C++. It can generate an
-on-line class browser (in HTML) and/or an off-line reference manual
-(in LaTeX) from a set of documented source files. The documentation is
-extracted directly from the sources. Doxygen is developed on a Linux
-platform, but it runs on most other UNIX flavors as well. An
-executable for Windows 95/NT is also available.
+Doxygen can generate an online class browser (in HTML) and/or a
+reference manual (in LaTeX) from a set of documented source files. The
+documentation is extracted directly from the sources. Doxygen can
+also be configured to extract the code structure from undocumented
+source files.
 
-Author:
---------
-    Dimitri van Heesch <dimitri@stack.nl>
+%package doxywizard
+Summary: A GUI for creating and editing configuration files.
+Group: User Interface/X
+Requires: %{name} = %{version}
+BuildPrereq: qt-devel => 2.3.0
+Requires: qt >= 2.3.0
 
-%description -l de
-Doxygen ist ein Dokumentationssystem für C und C++. Es kann eine
-Klassenübersicht (in HTML) und/oder eine Referenz (in LaTeX) aus
-dokumentierten Quelldateien erzeugen. Die Dokumentation wird direkt aus
-den Quellen extrahiert. Doxygen wird auf einer Linux-Plattform
-entwickelt, funktioniert aber genauso auf den meisten andern Unix
-Dialekten. Das Programm ist auch für Windows 95/NT erhältlich.
-
-Autor:
---------
-    Dimitri van Heesch <dimitri@stack.nl>
+%description doxywizard
+Doxywizard is a GUI for creating and editing configuration files that
+are used by doxygen.
 
 %prep
-%setup -n doxygen-%{version}
+%setup -q
+%patch -p1 -b .redhat
+%patch1 -p1 -b .qt2
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard 
-# the next path is Suse specific
-QTDIR=/usr/lib/qt2
-PATH=${QTDIR}/bin:$PATH
-export QTDIR PATH
-make
+QTDIR="" && . /etc/profile.d/qt.sh
+export OLD_PO_FILE_INPUT=yes
+
+./configure --prefix %{_prefix} --shared --release --with-doxywizard
+make all docs
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install install_docs INSTALL=$RPM_BUILD_ROOT/usr \
-                          DOCDIR=$RPM_BUILD_ROOT%{_docdir}/doxygen
-install -m 644 LICENSE LANGUAGE.HOWTO PLATFORMS README VERSION \
-        $RPM_BUILD_ROOT%{_docdir}/doxygen
+rm -rf ${RPM_BUILD_ROOT}
 
-find $RPM_BUILD_ROOT -name CVS -type d -depth -exec rm -r {} \;
+export OLD_PO_FILE_INPUT=yes
+make install INSTALL=$RPM_BUILD_ROOT%{_prefix}
+
+%clean
+rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%attr(755,root,root) /usr/bin/*
-%doc %{_docdir}/doxygen
+%doc LANGUAGE.HOWTO README examples html
+%{_bindir}/doxygen
+%{_bindir}/doxysearch
+%{_bindir}/doxytag
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+%files doxywizard
+%defattr(-,root,root)
+%{_bindir}/doxywizard
 
 %changelog
-* Sun Jun 10 2001 Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
- - update to 1.2.8.1
-* Tue Jun 5 2001 Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
- - update to 1.2.8
- - enable XML-Generator
-* Mon Apr 16 2001 Jens Seidel <jensseidel@users.sourceforge.net>
- - new decription (english, german)
- - use of %{_docdir}
- - added README, LICENSE, ... to install section
-* Mon Mar 13 2000 Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
- - inital version build with rpmify
+* Sun Jan 06 2002 Than Ngo <than@redhat.com> 1.2.13.1-1
+- update to 1.2.13.1
+
+* Sun Dec 30 2001 Jeff Johnson <jbj@redhat.com> 1.2.13-1
+- update to 1.2.13
+
+* Sun Nov 18 2001 Than Ngo <than@redhat.com> 1.2.12-1
+- update to 1.2.12
+- s/Copyright/License
+
+* Wed Sep 12 2001 Tim Powers <timp@redhat.com>
+- rebuild with new gcc and binutils
+
+* Wed Jun 13 2001 Than Ngo <than@redhat.com>
+- update tp 1.2.8.1
+- make doxywizard as separat package
+- fix to use install as default
+
+* Tue Jun 05 2001 Than Ngo <than@redhat.com>
+- update to 1.2.8
+
+* Tue May 01 2001 Than Ngo <than@redhat.com>
+- update to 1.2.7
+- clean up specfile
+- patch to use RPM_OPT_FLAG
+
+* Wed Mar 14 2001 Jeff Johnson <jbj@redhat.com>
+- update to 1.2.6
+
+* Wed Feb 28 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- rebuild
+
+* Tue Dec 26 2000 Than Ngo <than@redhat.com>
+- update to 1.2.4
+- remove excludearch ia64
+- bzip2 sources
+
+* Mon Dec 11 2000 Than Ngo <than@redhat.com>
+- rebuild with the fixed fileutils
+
+* Mon Oct 30 2000 Jeff Johnson <jbj@redhat.com>
+- update to 1.2.3.
+
+* Sun Oct  8 2000 Jeff Johnson <jbj@redhat.com>
+- update to 1.2.2.
+- enable doxywizard.
+
+* Sat Aug 19 2000 Preston Brown <pbrown@redhat.com>
+- 1.2.1 is latest stable, so we upgrade before Winston is released.
+
+* Wed Jul 12 2000 Prospector <bugzilla@redhat.com>
+- automatic rebuild
+
+* Tue Jul  4 2000 Jakub Jelinek <jakub@redhat.com>
+- Rebuild with new C++
+
+* Fri Jun 30 2000 Florian La Roche <laroche@redhat.de>
+- fix QTDIR detection
+
+* Fri Jun 09 2000 Preston Brown <pbrown@redhat.com>
+- compile on x86 w/o optimization, revert when compiler fixed!!
+
+* Wed Jun 07 2000 Preston Brown <pbrown@redhat.com>
+- use newer RPM macros
+
+* Tue Jun  6 2000 Jeff Johnson <jbj@redhat.com>
+- add to distro.
+
+* Tue May  9 2000 Tim Powers <timp@redhat.com>
+- rebuilt for 7.0
+
+* Wed Feb  2 2000 Bernhard Rosenkraenzer <bero@redhat.com>
+- recompile with current Qt (2.1.0/1.45)
+
+* Wed Jan  5 2000 Jeff Johnson <jbj@redhat.com>
+- update to 1.0.0.
+- recompile with qt-2.0.1 if available.
+- relocatable package.
+
+* Mon Nov  8 1999 Tim Powers <timp@redhat.com>
+-updated to 0.49-991106
+
+* Tue Jul 13 1999 Tim Powers <timp@redhat.com>
+- updated source
+- cleaned up some stuff in the spec file
+
+* Thu Apr 22 1999 Jeff Johnson <jbj@redhat.com>
+- Create Power Tools 6.0 package.

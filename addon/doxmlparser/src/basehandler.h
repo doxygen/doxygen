@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,11 +20,14 @@
 #include <qdict.h>
 #include <qstring.h>
 
+#include "debug.h"
+
 class IBaseHandler
 {
   public:
     virtual void setDelegate(QXmlDefaultHandler *delegate) = 0;
     virtual QXmlDefaultHandler *delegate() const = 0;
+    virtual ~IBaseHandler() {}
 };
 
 class IFallBackHandler
@@ -33,6 +36,7 @@ class IFallBackHandler
     virtual bool handleStartElement(const QString & name, 
                                     const QXmlAttributes & attrib) = 0;
     virtual bool handleEndElement(const QString &name) = 0;
+    virtual ~IFallBackHandler() {}
 };
 
 template<class T> class ElementMapper
@@ -104,9 +108,15 @@ template<class T> class ElementMapper
     QDict<EndElementHandlerT>   m_endHandlers;
 };
 
-template<class T> class BaseHandler : public IBaseHandler, 
-                                      public QXmlDefaultHandler,
-                                      public ElementMapper<T>
+struct LocatorContainer
+{
+    static QXmlLocator *s_theLocator;
+};
+
+template<class T> class BaseHandler : public QXmlDefaultHandler,
+                                      public ElementMapper<T>,
+                                      public LocatorContainer,
+                                      public IBaseHandler
 {
   public:
     BaseHandler() : m_delegateHandler(0), m_fallBackHandler(0)
@@ -136,7 +146,9 @@ template<class T> class BaseHandler : public IBaseHandler,
       if (!m_skipUntil.isEmpty()) // skip mode 
       {
         if (m_skipUntil==name) m_skipCount++;
-        printf("skipping start tag %s count=%d\n",name.data(),m_skipCount);
+        debug(1,"line %d, col %d: skipping start tag %s count=%d\n",
+            s_theLocator->lineNumber(),s_theLocator->columnNumber(),
+            name.data(),m_skipCount);
         return TRUE; 
       }
 
@@ -150,7 +162,9 @@ template<class T> class BaseHandler : public IBaseHandler,
                !m_fallBackHandler->handleStartElement(name,attrib)
               )
       {
-        printf("found unexpected tag `%s', skipping until matching end tag\n",name.data());
+        debug(1,"line %d, col %d: found unexpected tag `%s', skipping until matching end tag\n",
+            s_theLocator->lineNumber(),s_theLocator->columnNumber(),
+            name.data());
         m_skipUntil = name;
         m_skipCount=1;
       }
@@ -167,7 +181,9 @@ template<class T> class BaseHandler : public IBaseHandler,
       if (name==m_skipUntil)
       {
         m_skipCount--;
-        printf("skipping end tag %s count=%d\n",name.data(),m_skipCount);
+        debug(1,"line %d, col %d: skipping end tag %s count=%d\n",
+            s_theLocator->lineNumber(),s_theLocator->columnNumber(),
+            name.data(),m_skipCount);
         if (m_skipCount==0)
         {
           m_skipUntil="";
@@ -198,7 +214,9 @@ template<class T> class BaseHandler : public IBaseHandler,
         return m_delegateHandler->skippedEntity(s);
       }
       
-      printf("Skipped unhandled entity %s\n",s.data());
+      debug(1,"line %d, col %d: Skipped unhandled entity %s\n",
+          s_theLocator->lineNumber(),s_theLocator->columnNumber(),
+          s.data());
       return TRUE;
     }
 
@@ -235,6 +253,12 @@ template<class T> class BaseHandler : public IBaseHandler,
     IFallBackHandler *fallBackHandler() const
     {
       return m_fallBackHandler;
+    }
+
+    void setDocumentLocator( QXmlLocator * locator )
+    {
+      debug(2,"setDocumentLocator(%p)\n",locator);
+      s_theLocator = locator;
     }
 
   protected:
