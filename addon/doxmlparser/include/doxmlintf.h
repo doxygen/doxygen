@@ -131,8 +131,8 @@ class IDoc
     enum Kind 
     { 
       Invalid = 0,        //  0
-      Para = 1,           //  1 -> IDocPara
-      Text = 2,           //  2 -> IDocText
+      Para,               //  1 -> IDocPara
+      Text,               //  2 -> IDocText
       MarkupModifier,     //  3 -> IDocMarkupModifier
       ItemizedList,       //  4 -> IDocItemizedList
       OrderedList,        //  5 -> IDocOrderedList
@@ -160,7 +160,9 @@ class IDoc
       Row,                // 27 -> IDocRow
       Entry,              // 28 -> IDocEntry
       Section,            // 29 -> IDocSection
-      Root,               // 30 -> IDocRoot
+      Preformatted,       // 30 -> IDocPreformatted
+      Symbol,             // 31 -> IDocSymbol
+      Root                // 32 -> IDocRoot
     };
     virtual Kind kind() const = 0;
 };
@@ -177,10 +179,8 @@ class IDocMarkup : public IDoc
       Subscript      = 0x08,
       Superscript    = 0x10,
       SmallFont      = 0x20,
-      Center         = 0x40,
-      Preformatted   = 0x80
+      Center         = 0x40
     };
-
 };
 
 class IDocPara : public IDoc
@@ -391,6 +391,24 @@ class IDocSection : public IDoc
     virtual const IString * id() const = 0; 
     virtual int level() const = 0;
     virtual IDocIterator *title() const = 0;
+};
+
+class IDocPreformatted : public IDoc
+{
+  public:
+    virtual IDocIterator *contents() const = 0; 
+};
+
+class IDocSymbol : public IDoc
+{
+  public:
+    enum Types 
+    { Invalid = 0,
+      Umlaut, Acute, Grave, Circ, Tilde, Szlig, Cedil, Ring, Nbsp, Copy
+    };
+    virtual Types type() const = 0;
+    virtual const IString * typeString() const = 0;
+    virtual char letter() const = 0;
 };
 
 class IDocRoot : public IDoc
@@ -737,15 +755,15 @@ class IClass : public ICompound
     virtual IRelatedCompoundIterator *baseCompounds() const = 0;
     virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
     virtual ICompoundIterator *nestedCompounds() const = 0;
+	virtual IParamIterator *templateParameters() const = 0;
+	virtual const IString *locationFile() const = 0;
+	virtual int locationLine() const = 0;
+	virtual int locationBodyStartLine() const = 0;
+	virtual int locationBodyEndLine() const = 0;
 
     // TODO:
     // class:
-    //  ITemplateParamListIterator *templateParamLists()
     //  listOfAllMembers()
-    //  locationFile()
-    //  locationLine()
-    //  locationBodyStartLine()
-    //  locationBodyEndLine()
 };
 
 /*! \brief The interface to a struct in the object model. 
@@ -756,6 +774,10 @@ class IStruct : public ICompound
     virtual ICompoundIterator *nestedCompounds() const = 0;
     virtual IRelatedCompoundIterator *baseCompounds() const = 0;
     virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
+	virtual const IString *locationFile() const = 0;
+	virtual int locationLine() const = 0;
+	virtual int locationBodyStartLine() const = 0;
+	virtual int locationBodyEndLine() const = 0;
 };
 
 /*! \brief The interface to a union in the object model. 
@@ -822,6 +844,8 @@ class IGroup : public ICompound
  */
 class IPage : public ICompound
 {
+  public:
+    virtual const IDocTitle *title() const = 0;
 };
 
 /*! Root node of the object model. */

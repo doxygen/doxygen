@@ -485,6 +485,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
 
   if (addToAllList)
   {
+    //printf("=======> adding member %s to class %s\n",md->name().data(),name().data());
     MemberInfo *mi = new MemberInfo((MemberDef *)md,
                                      prot,md->virtualness(),FALSE);
     MemberNameInfo *mni=0;
@@ -2505,6 +2506,7 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
 {
   MemberDef *xmd = 0;
   MemberNameInfo *mni = m_allMemberNameInfoSDict->find(name);
+  //printf("getMemberByName(%s)=%p\n",name.data(),mni);
   if (mni)
   {
     const int maxInheritanceDepth = 100000;
@@ -2514,6 +2516,7 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       ClassDef *mcd=mi->memberDef->getClassDef();
+      //printf("found member in %s\n",mcd->name().data());
       int m=minClassDistance(this,mcd);
       if (m<mdist && mcd->isLinkable())
       {

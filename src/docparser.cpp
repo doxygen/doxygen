@@ -1740,6 +1740,33 @@ int DocHtmlHeader::parse()
               }
               goto endheader;
             }
+            else if (tagId==HTML_H4 && g_token->endTag) // found </h4> tag
+            {
+              if (m_level!=4)
+              {
+                warn(g_fileName,doctokenizerYYlineno,"Error: <h%d> ended with </h4>",
+                    m_level); 
+              }
+              goto endheader;
+            }
+            else if (tagId==HTML_H5 && g_token->endTag) // found </h5> tag
+            {
+              if (m_level!=5)
+              {
+                warn(g_fileName,doctokenizerYYlineno,"Error: <h%d> ended with </h5>",
+                    m_level); 
+              }
+              goto endheader;
+            }
+            else if (tagId==HTML_H6 && g_token->endTag) // found </h6> tag
+            {
+              if (m_level!=6)
+              {
+                warn(g_fileName,doctokenizerYYlineno,"Error: <h%d> ended with </h6>",
+                    m_level); 
+              }
+              goto endheader;
+            }
             else
             {
               warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected html tag <%s%s> found within <h%d> context",
@@ -3500,6 +3527,27 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
     case HTML_H3:
       {
         DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,3);
+        m_children.append(header);
+        retval = header->parse();
+      }
+      break;
+    case HTML_H4:
+      {
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,4);
+        m_children.append(header);
+        retval = header->parse();
+      }
+      break;
+    case HTML_H5:
+      {
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,5);
+        m_children.append(header);
+        retval = header->parse();
+      }
+      break;
+    case HTML_H6:
+      {
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,6);
         m_children.append(header);
         retval = header->parse();
       }

@@ -144,7 +144,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_2_2
     QCString result="Her følger en liste over alle ";
       if (!extractAll) result+="dokumenterte ";
       result+="klassemedlemmer med lenker til ";
-      if (extractAll) result+="klassedokumentasjonen for hvert medlem:";
+      if (!extractAll) result+="klassedokumentasjonen for hvert medlem:";
       else result+="klassene som de tilhører:";
       return result;
     }

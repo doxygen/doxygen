@@ -234,13 +234,17 @@ OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {BLANK}+[^(\r\n.,]+
 OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
-LNKWORD1  {SCOPEMASK}({FUNCARG}({BLANK}*("const"|"volatile"))?)?
+LNKWORD1  {SCOPEMASK}
+CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
 WORD1     [^ \t\n\r\\@<>&$#,.]+ 
 WORD2     "."|","
 WORD1NQ   [^ \t\n\r\\@<>&$#,."]+ 
 WORD2NQ   "."|","
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
+HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
+HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
+HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 
 %option noyywrap
 %option yylineno
@@ -354,11 +358,29 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
                          g_token->name = yytext;
                          return TK_SYMBOL;
                        }
-<St_Para>{LNKWORD1}/[^a-z_A-Z0-9]    |
+
+  /********* patterns for linkable words ******************/
+
+<St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html 
+				  * tag to be recognized as a templated classes 
+				  */ 
+                         g_token->name = yytext;
+                         return TK_LNKWORD;
+  			}
+<St_Para>{LNKWORD1}                  |
+<St_Para>{LNKWORD1}{FUNCARG}         |
 <St_Para>{LNKWORD2}    {
                          g_token->name = yytext;
                          return TK_LNKWORD;
   		       }
+<St_Para>{LNKWORD1}{FUNCARG}{CVSPEC}[^a-z_A-Z0-9] {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.left(g_token->name.length()-1);
+			 unput(yytext[yyleng-1]);
+                         return TK_LNKWORD;
+                       }
+  /********* patterns for normal words ******************/
+
 <St_Para,St_Text>{WORD1} |
 <St_Para,St_Text>{WORD2} { /* function call */ 
                          g_token->name = yytext;
@@ -370,6 +392,9 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
 			  */ 
 			 goto find_rule;
                        }
+
+  /*******************************************************/
+
 <St_Para,St_Text>{BLANK}+      |
 <St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */ 
                          g_token->chars=yytext;

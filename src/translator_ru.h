@@ -20,8 +20,6 @@
  * Andrey V. Stolyarov released Feb 14, 2001
  * Alexandr V. Chelpanov <cav@cryptopro.ru> released Apr 21, 2001
  *
- * Доступны так же перевод примеров на русский язык по email (см. выше)
- *
  * При переводе заголовков слова list и documentation убраны.
  *
  * Modules переведено как группы, так как модули чаще всего в русском 
@@ -50,7 +48,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_2_18
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -277,7 +275,7 @@ class TranslatorRussian : public TranslatorAdapter_1_2_18
           result+="членов структур данных со ссылками на ";
         else
           result+="членов классов со ссылками на ";
-        if(extractAll)
+        if(!extractAll)
         {
           if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
             result+="документацию по структуре для каждого члена.";
@@ -1416,6 +1414,23 @@ class TranslatorRussian : public TranslatorAdapter_1_2_18
     virtual QCString trDeprecatedList()
     {
       return decode( "Список устаревших определений и описаний" );
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return decode( "События" );
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return decode( "Cобытия" );
     }
 };
 

@@ -82,7 +82,7 @@ IMember *MemberReference::member() const
 //------------------------------------------------------------------------------
 
 
-EnumValueHandler::EnumValueHandler(IBaseHandler *parent) : m_parent(parent)
+EnumValueHandler::EnumValueHandler(IBaseHandler *parent) : m_parent(parent), m_brief(0), m_detailed(0)
 {
   addEndHandler("enumvalue",this,&EnumValueHandler::endEnumValue);
 
@@ -90,6 +90,11 @@ EnumValueHandler::EnumValueHandler(IBaseHandler *parent) : m_parent(parent)
   addEndHandler("name",this,&EnumValueHandler::endName);
   addStartHandler("initializer",this,&EnumValueHandler::startInitializer);
   addEndHandler("initializer",this,&EnumValueHandler::endInitializer);
+
+  addStartHandler("briefdescription",this,&EnumValueHandler::startBriefDesc);
+
+  addStartHandler("detaileddescription",this,&EnumValueHandler::startDetailedDesc);
+
 }
 
 void EnumValueHandler::startEnumValue(const QXmlAttributes& /*attrib*/)
@@ -121,6 +126,21 @@ void EnumValueHandler::endInitializer()
 {
   m_initializer = m_curString;
 }
+
+void EnumValueHandler::startBriefDesc(const QXmlAttributes& attrib)
+{
+  DocHandler *docHandler = new DocHandler(this);
+  docHandler->startDoc(attrib);
+  m_brief = docHandler;
+}
+
+void EnumValueHandler::startDetailedDesc(const QXmlAttributes& attrib)
+{
+  DocHandler *docHandler = new DocHandler(this);
+  docHandler->startDoc(attrib);
+  m_detailed = docHandler;
+}
+
 
 //------------------------------------------------------------------------------
 

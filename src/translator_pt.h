@@ -269,7 +269,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_18
         result+=" documentadas";
       }
       result+=" com links para ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

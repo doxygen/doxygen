@@ -32,7 +32,8 @@ class MemberHandler;
 class CompoundHandler;
 class SectionHandler;
 class ParamHandler;
-
+class TemplateParamListHandler;
+class TitleHandler;
 
 class RelatedCompound : public IRelatedCompound
 {
@@ -97,6 +98,8 @@ class CompoundHandler : public IClass,
     virtual void startInnerFile(const QXmlAttributes& attrib);
     virtual void startInnerGroup(const QXmlAttributes& attrib);
     virtual void startParam(const QXmlAttributes& attrib);
+    virtual void startTitle(const QXmlAttributes& attrib);
+    virtual void startTemplateParamList(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
@@ -126,39 +129,48 @@ class CompoundHandler : public IClass,
     IRelatedCompoundIterator *derivedCompounds() const;
     ICompoundIterator *nestedCompounds() const;
     ICompoundIterator *nestedGroup() const;
+    const IString *locationFile() const { return &m_defFile; }
+    int locationLine() const { return m_defLine; }
+    int locationBodyStartLine() const { return m_defBodyStart; }
+    int locationBodyEndLine() const { return m_defBodyEnd; }
 
     // IFile implementation
     IGraph *includeDependencyGraph() const; 
     IGraph *includedByDependencyGraph() const;
     IDocProgramListing *source() const;
+
+    // IPage implementation
+    const IDocTitle *title() const;
     
   private:
-    QList<RelatedCompound>  m_superClasses;
-    QList<RelatedCompound>  m_subClasses;
-    QList<SectionHandler>   m_sections;
-    QList<ParamHandler>     m_templateParams;
-    DocHandler             *m_brief;
-    DocHandler             *m_detailed;
-    ProgramListingHandler  *m_programListing;
-    StringImpl              m_id;
-    StringImpl              m_kindString;
-    CompoundKind            m_kind;
-    StringImpl              m_name;
-    QString                 m_defFile;
-    int                     m_defLine;
-    QString                 m_xmlDir;
-    int                     m_refCount;
-    QDict<MemberHandler>          m_memberDict;
-    QDict<QList<MemberHandler> >  m_memberNameDict;
-    MainHandler            *m_mainHandler;
-    GraphHandler           *m_inheritanceGraph;
-    GraphHandler           *m_collaborationGraph;
-    GraphHandler           *m_includeDependencyGraph;
-    GraphHandler           *m_includedByDependencyGraph;
-    QList<QString>          m_innerCompounds;
-    ProgramListingHandler  *m_source;
-    bool                    m_hasTemplateParams;
-
+    QList<RelatedCompound>         m_superClasses;
+    QList<RelatedCompound>         m_subClasses;
+    QList<SectionHandler>          m_sections;
+    QList<ParamHandler>            m_params;
+    DocHandler*                    m_brief;
+    DocHandler*                    m_detailed;
+    ProgramListingHandler*         m_programListing;
+    StringImpl                     m_id;
+    StringImpl                     m_kindString;
+    CompoundKind                   m_kind;
+    StringImpl                     m_name;
+    StringImpl                     m_defFile;
+    int                            m_defLine;
+    int                            m_defBodyStart;
+    int                            m_defBodyEnd;
+    QString                        m_xmlDir;
+    int                            m_refCount;
+    QDict<MemberHandler>           m_memberDict;
+    QDict<QList<MemberHandler> >   m_memberNameDict;
+    MainHandler*                   m_mainHandler;
+    GraphHandler*                  m_inheritanceGraph;
+    GraphHandler*                  m_collaborationGraph;
+    GraphHandler*                  m_includeDependencyGraph;
+    GraphHandler*                  m_includedByDependencyGraph;
+    QList<QString>                 m_innerCompounds;
+    ProgramListingHandler*         m_source;
+    TemplateParamListHandler*      m_templateParamList;
+    TitleHandler*                  m_titleHandler;
 };
 
 void compoundhandler_init();

@@ -28,9 +28,9 @@ class ManGenerator : public OutputGenerator
     ManGenerator();
    ~ManGenerator();
     
-    OutputGenerator *copy()  { return new ManGenerator; } 
+    //OutputGenerator *copy()  { return new ManGenerator; } 
     //OutputGenerator *clone() { return new ManGenerator(*this); }
-    void append(const OutputGenerator *o);
+    //void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==Man) active=TRUE;  }

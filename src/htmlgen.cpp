@@ -110,11 +110,11 @@ HtmlGenerator::~HtmlGenerator()
   //printf("HtmlGenerator::~HtmlGenerator()\n");
 }
 
-void HtmlGenerator::append(const OutputGenerator *g)
-{
-  t << g->getContents();
-  col+=((HtmlGenerator *)g)->col;
-}
+//void HtmlGenerator::append(const OutputGenerator *g)
+//{
+//  t << g->getContents();
+//  col+=((HtmlGenerator *)g)->col;
+//}
 
 void HtmlGenerator::init()
 {

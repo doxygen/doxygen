@@ -987,7 +987,7 @@ class DocSimpleListItem : public DocNode
     DocPara *m_paragraph;
 };
 
-/*! @brief Node representing a Html list item */
+/*! @brief Node representing a HTML list item */
 class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
 {
   public:
@@ -1006,7 +1006,7 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
     int            m_itemNum;
 };
 
-/*! @brief Node representing a Html description data */
+/*! @brief Node representing a HTML description data */
 class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
 {
   public:
@@ -1024,7 +1024,7 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
 };
 
 
-/*! @brief Node representing a Html list item */
+/*! @brief Node representing a preformatted HTML section */
 class DocHtmlPre : public CompAccept<DocHtmlPre>, public DocNode
 {
   public:
@@ -1041,7 +1041,7 @@ class DocHtmlPre : public CompAccept<DocHtmlPre>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a Html table cell */
+/*! @brief Node representing a HTML table cell */
 class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
 {
   public:
@@ -1067,7 +1067,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
     HtmlAttribList  m_attribs;
 };
 
-/*! @brief Node representing a Html table caption */
+/*! @brief Node representing a HTML table caption */
 class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
 {
   public:
@@ -1084,7 +1084,7 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a Html table row */
+/*! @brief Node representing a HTML table row */
 class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
 {
   public:
@@ -1102,7 +1102,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a Html table */
+/*! @brief Node representing a HTML table */
 class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
 {
   public:

@@ -191,7 +191,7 @@ class TranslatorSwedish : public TranslatorEnglish
     QCString result="Här följer en lista över alla ";
       if (!extractAll) result+="dokumenterade ";
       result+="klassmedlemmar med länkar till ";
-      if (extractAll) result+="klassdokumentationen för varje medlem:";
+      if (!extractAll) result+="klassdokumentationen för varje medlem:";
       else result+="klasserna som de tillhör:";
       return result;
     }

@@ -241,7 +241,7 @@ class TranslatorFinnish : public TranslatorEnglish
       QCString result="T‰‰ll‰ on lista kaikista "; // "Here is a list of all "
       if (!extractAll) result+="dokumentoiduista "; // "documented "
       result+="luokan j‰senist‰ linkitettyn‰ "; // "class members with links to "
-      if (extractAll) 
+      if (!extractAll) 
         result+="jokaisen j‰senen luokkadokumentaatioon:"; // "the class documentation for each member:"
       else 
         result+="luokkaan johon ne kuuluvat:"; // "the classes they belong to:"

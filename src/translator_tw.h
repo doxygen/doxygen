@@ -277,7 +277,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_2_16
         result+="類別成員";
       }
       result+=", 並且帶有連結至";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

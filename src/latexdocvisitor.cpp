@@ -623,18 +623,21 @@ void LatexDocVisitor::visitPre(DocHtmlHeader *header)
   {
     switch(header->level())
     {
-      case 1: m_t << "\\subsection*{"; break;
-      case 2: m_t << "\\subsubsection*{"; break;
-      case 3: m_t << "\\paragraph*{"; break;
+      case 1:  m_t << "\\subsection*{";    break;
+      case 2:  m_t << "\\subsubsection*{"; break;
+      case 3:  m_t << "\\paragraph*{";     break;
+      default: m_t << "\\subparagraph*{";  break;
     }
   }
   else
   {
     switch(header->level())
     {
-      case 1: m_t << "\\section*{"; break;
-      case 2: m_t << "\\subsection*{"; break;
-      case 3: m_t << "\\subsubsection*{"; break;
+      case 1:  m_t << "\\section*{"; break;
+      case 2:  m_t << "\\subsection*{"; break;
+      case 3:  m_t << "\\subsubsection*{"; break;
+      case 4:  m_t << "\\paragraph*{"; break;
+      default: m_t << "\\subparagraph*{"; break;
     }
   }
 }

@@ -152,9 +152,9 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       m_t << "</programlisting>"; 
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "<preformatted>";
+      m_t << "<verbatim>";
       filter(s->text());
-      m_t << "</preformatted>"; 
+      m_t << "</verbatim>"; 
       break;
     case DocVerbatim::HtmlOnly: 
       m_t << "<htmlonly>";
@@ -193,9 +193,9 @@ void XmlDocVisitor::visit(DocInclude *inc)
       m_t << "</htmlonly>";
       break;
     case DocInclude::VerbInclude: 
-      m_t << "<preformatted>";
+      m_t << "<verbatim>";
       filter(inc->text());
-      m_t << "</preformatted>"; 
+      m_t << "</verbatim>"; 
       break;
   }
 }
@@ -693,12 +693,14 @@ void XmlDocVisitor::visitPost(DocInternalRef *)
   m_t << " ";
 }
 
-void XmlDocVisitor::visitPre(DocCopy *)
+void XmlDocVisitor::visitPre(DocCopy *c)
 {
+  m_t << "<copydoc link=\"" << c->link() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocCopy *)
 {
+  m_t << "</copydoc>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocText *)

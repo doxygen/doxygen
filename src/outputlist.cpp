@@ -36,23 +36,23 @@ OutputList::OutputList(bool)
   outputs->setAutoDelete(TRUE);
 }
 
-OutputList::OutputList(const OutputList *olist)
-{
-  //printf("OutputList::OutputList() deep copy\n");
-  outputs = new QList<OutputGenerator>;
-  outputs->setAutoDelete(TRUE);
-
-  QList<OutputGenerator> *ol=olist->outputs;
-  OutputGenerator *og=ol->first();
-  while (og)
-  {
-    OutputGenerator *ogc=og->copy();
-    outputs->append(ogc); 
-    if (og->isEnabled()) ogc->enable(); else ogc->disable();  
-    og=ol->next();
-  }
-  //printf("OutputList::OutputList dst=%d res=%d\n",ol->count(),outputs->count());
-}
+//OutputList::OutputList(const OutputList *olist)
+//{
+//  //printf("OutputList::OutputList() deep copy\n");
+//  outputs = new QList<OutputGenerator>;
+//  outputs->setAutoDelete(TRUE);
+//
+//  QList<OutputGenerator> *ol=olist->outputs;
+//  OutputGenerator *og=ol->first();
+//  while (og)
+//  {
+//    OutputGenerator *ogc=og->copy();
+//    outputs->append(ogc); 
+//    if (og->isEnabled()) ogc->enable(); else ogc->disable();  
+//    og=ol->next();
+//  }
+//  //printf("OutputList::OutputList dst=%d res=%d\n",ol->count(),outputs->count());
+//}
 
 OutputList::~OutputList()
 {
@@ -60,23 +60,23 @@ OutputList::~OutputList()
   delete outputs;
 }
 
-OutputList &OutputList::operator=(const OutputList &olist)
-{
-  if (this!=&olist)
-  {
-    QList<OutputGenerator> *ol=olist.outputs;
-    OutputGenerator *ogsrc=ol->first();
-    OutputGenerator *ogdst=outputs->first();
-    //printf("OutputList::operator= src=%d dst=%d\n",outputs->count(),ol->count());
-    while (ogdst)
-    {
-      ogdst=ogsrc->copy();
-      ogsrc=ol->next();
-      ogdst=outputs->next();
-    }
-  }
-  return *this;
-}
+//OutputList &OutputList::operator=(const OutputList &olist)
+//{
+//  if (this!=&olist)
+//  {
+//    QList<OutputGenerator> *ol=olist.outputs;
+//    OutputGenerator *ogsrc=ol->first();
+//    OutputGenerator *ogdst=outputs->first();
+//    //printf("OutputList::operator= src=%d dst=%d\n",outputs->count(),ol->count());
+//    while (ogdst)
+//    {
+//      ogdst=ogsrc->copy();
+//      ogsrc=ol->next();
+//      ogdst=outputs->next();
+//    }
+//  }
+//  return *this;
+//}
 
 void OutputList::add(const OutputGenerator *og)
 {

@@ -65,6 +65,7 @@ static const char *  g_inputString;     //!< the code fragment as text
 static int	     g_inputPosition;   //!< read offset during parsing 
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
+static bool          g_needsTermination;
 
 static bool          g_exampleBlock;
 static QCString      g_exampleName;
@@ -923,7 +924,17 @@ static int countLines()
   const char *p=g_inputString;
   char c;
   int count=1;
-  while ((c=*p++)) if (c=='\n') count++; 
+  while ((c=*p)) 
+  { 
+    p++ ; 
+    if (c=='\n') count++;  
+  }
+  if (p>g_inputString && *(p-1)!='\n') 
+  { // last line does not end with a \n, so we add an extra
+    // line and explicitly terminate the line after parsing.
+    count++, 
+    g_needsTermination=TRUE; 
+  } 
   return count;
 }
 
@@ -1989,14 +2000,17 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   g_inputString   = s;
   g_inputPosition = 0;
   g_currentFontClass = 0;
+  g_needsTermination = FALSE;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
   else
     g_inputLines  = countLines();
+
   if (startLine!=-1)
     g_yyLineNr    = startLine;
   else
     g_yyLineNr    = 1;
+
   g_curlyCount    = 0;
   g_bodyCurlyCount    = 0;
   g_bracketCount  = 0;
@@ -2027,7 +2041,7 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   codeYYrestart( codeYYin );
   BEGIN( Body );
   codeYYlex();
-  if (g_inputLines==1)
+  if (g_needsTermination)
   {
     endFontClass();
     g_code->endCodeLine();

@@ -255,6 +255,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
   					  if (*yytext==')' && g_curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
 					    g_curArgTypeName+=*yytext;
+					    BEGIN(FuncQual);
 					  }
 					  else
 					  {

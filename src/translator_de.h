@@ -272,7 +272,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_17
         result+="Strukturen und Varianten mit Verweisen auf ";
       else
         result+="Klassenelemente mit Verweisen auf ";
-      if (extractAll) {
+      if (!extractAll) {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
           result+="die Dokumentation zu jedem Element:";
         else 

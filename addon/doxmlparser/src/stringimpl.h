@@ -9,6 +9,8 @@ class StringImpl : public QString, public IString
   public:
     StringImpl() {}
     StringImpl(const QString &str) : QString(str) {}
+    StringImpl &operator=(const QString &str) 
+    { QString::operator=(str); return *this; }
     virtual ~StringImpl() {}
 
     // IString 

@@ -31,9 +31,9 @@ class RTFGenerator : public OutputGenerator
     static void writeStyleSheetFile(QFile &f);
     static void writeExtensionsFile(QFile &file);
 
-    OutputGenerator *copy();
+    //OutputGenerator *copy();
     //OutputGenerator *clone() { return new RTFGenerator(*this); }
-    void append(const OutputGenerator *o);
+    //void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==RTF) active=TRUE;  }

@@ -278,7 +278,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_2_17
         result+="documentats ";
       }
       result+=" amb enllaços a ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

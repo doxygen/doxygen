@@ -47,6 +47,7 @@ QString linkedTextToString(ILinkedTextIterator *ti)
  */
 void DumpDoc(IDoc *doc,int level)
 {
+  if (doc==0) return;
   QString indent;
   indent.fill(' ',level);
   //printf("      doc node kind=`%d'\n",doc->kind());
@@ -374,6 +375,29 @@ void DumpDoc(IDoc *doc,int level)
         InPrint(("<section/>\n"));
       }
       break;
+    case IDoc::Preformatted:
+      {
+        InPrint(("<preformatted>\n"));
+        IDocPreformatted *pf = dynamic_cast<IDocPreformatted*>(doc);
+        ASSERT(pf!=0);
+        IDocIterator *di = pf->contents();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        di->release();
+        InPrint(("<preformatted/>\n"));
+      }
+      break;
+    case IDoc::Symbol:
+      {
+        IDocSymbol *sym = dynamic_cast<IDocSymbol*>(doc);
+        ASSERT(sym!=0);
+        InPrint(("<symbol type=%s letter=%c/>\n",
+              sym->typeString()->latin1(),sym->letter()));
+      }
+      break;
     case IDoc::Root:
       {
         InPrint(("<root>\n"));
@@ -391,6 +415,7 @@ void DumpDoc(IDoc *doc,int level)
       break;
 
     default:
+      printf("Found unsupported node type %d!\n",doc->kind());
       break;
   }
 }
@@ -463,7 +488,7 @@ int main(int argc,char **argv)
 
   IDoxygen *dox = createObjectModel();
 
-  dox->setDebugLevel(0);
+  dox->setDebugLevel(4);
 
   if (!dox->readXMLDir(argv[1]))
   {
@@ -478,6 +503,7 @@ int main(int argc,char **argv)
   {
     printf("Compound name=%s id=%s kind=%s\n",
         comp->name()->latin1(),comp->id()->latin1(),comp->kindString()->latin1());
+
     ISectionIterator *sli = comp->sections();
     ISection *sec;
     for (sli->toFirst();(sec=sli->current());sli->toNext())

@@ -33,9 +33,6 @@ class HtmlGenerator : public OutputGenerator
     static void writeHeaderFile(QFile &f);
     static void writeFooterFile(QFile &f);
    
-    OutputGenerator *copy() { return new HtmlGenerator; }
-    //OutputGenerator *clone() { return new HtmlGenerator(*this); }
-    void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
     void disable() { active=FALSE; }
     void enableIf(OutputType o)  { if (o==Html) active=TRUE;  }
@@ -46,15 +43,12 @@ class HtmlGenerator : public OutputGenerator
 
     void printDoc(DocNode *);
 
-    
-    //void generateExternalIndex();
     void startFile(const char *name,const char *manName,
                    const char *title,bool external);
     void writeFooter(int,bool);
     void endFile();
     void clearBuffer();
 
-    //void writeIndex();
     void startIndexSection(IndexSections) {}
     void endIndexSection(IndexSections) {}
     void startProjectNumber();
@@ -75,11 +69,6 @@ class HtmlGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList()  { t << "<ul>"  << endl; }
     void endItemList()    { t << "</ul>" << endl; }
-    //void startEnumList()  { t << "<ol>"  << endl; }
-    //void endEnumList()    { t << "</ol>" << endl; }
-    //void startAlphabeticalIndexList();
-    //void endAlphabeticalIndexList();
-    //void writeIndexHeading(const char *s);
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -91,7 +80,6 @@ class HtmlGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    //void writeMailLink(const char *url);
     void startTypewriter() { t << "<code>"; }
     void endTypewriter()   { t << "</code>"; }
     void startGroupHeader();
@@ -125,15 +113,9 @@ class HtmlGenerator : public OutputGenerator
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
     void endCodeFragment()   { t << "</pre></div>"; } 
-    //void startPreFragment() { t << "<pre>"; }
-    //void endPreFragment()   { t << "</pre>"; }
-    //void startVerbatimFragment() { t << "<div class=\"fragment\"><pre>"; }
-    //void endVerbatimFragment()   { t << "</pre></div>"; } 
     void writeLineNumber(const char *,const char *,const char *,int);
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }
-    //void writeBoldString(const char *text) 
-    //                     { t << "<b>"; docify(text); t << "</b>"; }
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
@@ -146,15 +128,12 @@ class HtmlGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(); 
-    //void writeDoxyAnchor(const char *fName,const char *clName,
-    //                     const char *anchor,const char *name);
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor,const char *name);
     void endDoxyAnchor(const char *fName,const char *anchor);
     void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\"></a>"; }
     void endCodeAnchor() { }
     void writeLatexSpacing() {}
-    //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; }
@@ -166,63 +145,26 @@ class HtmlGenerator : public OutputGenerator
     void endCenter()          { t << "</center>" << endl; }
     void startSmall()         { t << "<small>" << endl; }
     void endSmall()           { t << "</small>" << endl; }
-    //void startSubscript()     { t << "<sub>"; }
-    //void endSubscript()       { t << "</sub>"; }
-    //void startSuperscript()   { t << "<sup>"; }
-    //void endSuperscript()     { t << "</sup>"; }
-    //void startTable(bool,int) 
-    //                          { t << "<table border=1 cellspacing=3 cellpadding=3>"; }
-    //void endTable(bool hasCaption) 
-    //                          { if (!hasCaption) t << "</tr>"; 
-    //                            t << "</table>" << endl; 
-    //                          }
-    //void startCaption()       { t << "</tr><caption align=\"bottom\">"; }
-    //void endCaption()         { t << "</caption>" << endl; }
-    //void nextTableRow()       { t << "<tr><td>"; }
-    //void endTableRow()        { t << "</tr>" << endl; }
-    //void nextTableColumn()    { t << "<td>"; }
-    //void endTableColumn()     { t << "</td>"; }
-    //void writeCopyright()     { t << "&copy;"; }
-    //void writeQuote()         { t << "&quot;"; }
-    //void writeUmlaut(char c)  { t << "&" << c << "uml;"; }
-    //void writeAcute(char c)   { t << "&" << c << "acute;"; }
-    //void writeGrave(char c)   { t << "&" << c << "grave;"; }
-    //void writeCirc(char c)    { t << "&" << c << "circ;"; }
-    //void writeTilde(char c)   { t << "&" << c << "tilde;"; } 
-    //void writeRing(char c)    { t << "&" << c << "ring;"; }
-    //void writeSharpS()        { t << "&szlig;"; }
-    //void writeCCedil(char c)  { t << "&" << c << "cedil;"; }
     void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
     void endDescList()        { t << "</dl>"; }
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *);
     void endParamList();
-    //void endDescTitle()       { t << "</b>"; }
     void writeDescItem()      { t << "<dd>" << endl; }
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
-    //void writeSectionRef(const char *,const char *,const char *,const char *);
-    //void writeSectionRefItem(const char *,const char *,const char *);
-    //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *);
     void startIndent();
     void endIndent();
     void writeSynopsis() {}
     void startClassDiagram();
     void endClassDiagram(ClassDiagram &,const char *,const char *);
-    //void startColorFont(uchar r,uchar g,uchar b);
-    //void endColorFont();
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
     void startQuickIndexItem(const char *,const char *);
     void endQuickIndexItem();
-    //void writeFormula(const char *,const char *);
     void writeNonBreakableSpace(int);
-    //void startImage(const char *,const char *,bool);
-    //void endImage(bool);
-    //void startDotFile(const char *,bool);
-    //void endDotFile(bool);
     
     void startDescTable()
     { t << "<table border=0 cellspacing=2 cellpadding=0>" << endl; }
@@ -236,7 +178,6 @@ class HtmlGenerator : public OutputGenerator
     { t << "<td>" << endl; }
     void endDescTableData()
     { t << "</td></tr>" << endl; }
-    //static void docifyStatic(QTextStream &t,const char *str);
     
     void startDotGraph();
     void endDotGraph(DotClassGraph &g);
@@ -261,14 +202,6 @@ class HtmlGenerator : public OutputGenerator
 
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
     void endFontClass() { t << "</span>"; }
-
-    //void startHtmlOnly()  {}
-    //void endHtmlOnly()    {}
-    //void startLatexOnly() {}
-    //void endLatexOnly()   {}
-
-    //void startSectionRefList();
-    //void endSectionRefList();
 
     void writeCodeAnchor(const char *anchor) 
     { t << "<a name=\"" << anchor << "\"></a>"; }

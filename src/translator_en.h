@@ -278,7 +278,7 @@ class TranslatorEnglish : public Translator
         result+="class members";
       }
       result+=" with links to ";
-      if (extractAll) 
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {

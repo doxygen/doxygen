@@ -696,7 +696,8 @@ static void addClassToContext(Entry *root)
     QCString namespaceName;
     extractNamespaceName(fullName,className,namespaceName);
 
-    //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
+    //printf("New class: namespace `%s' name=`%s' brief=`%s' docs=`%s'\n",
+    //    className.data(),namespaceName.data(),root->brief.data(),root->doc.data());
 
     QCString tagName;
     QCString refFileName;
@@ -1777,6 +1778,10 @@ void addMethodToClass(Entry *root,ClassDef *cd,
     name=name.left(i); 
   }
 
+  //printf("root->name=`%s; root->args=`%s' root->argList=`%s'\n", 
+  //    root->name.data(),root->args.data(),argListToString(root->argList).data()
+  //   );
+
   // adding class member
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
@@ -2043,6 +2048,7 @@ static void buildFunctionList(Entry *root)
                 //}
                 if (root->proto)
                 {
+                  //printf("setDeclArgumentList to %p\n",argList);
                   md->setDeclArgumentList(argList);
                 }
                 else
@@ -4463,7 +4469,6 @@ static void findMember(Entry *root,
                 //    );
                 
                 md->setDefinitionTemplateParameterLists(root->tArgLists);
-                //md->setMemberDefTemplateArguments(root->mtArgList);
                 md->setArgumentList(argList);
               }
               else // no match -> delete argument list
@@ -5377,7 +5382,7 @@ static void buildCompleteMemberLists()
   ClassSDict::Iterator cli(Doxygen::classSDict);
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (!cd->isReference() && // not an external class
+    if (// !cd->isReference() && // not an external class
          cd->subClasses()->count()==0 && // is a root of the hierarchy
          cd->baseClasses()->count()>0) // and has at least one base class
     {

@@ -62,21 +62,21 @@ ManGenerator::~ManGenerator()
 {
 }
 
-void ManGenerator::append(const OutputGenerator *g)
-{
-  QCString r=g->getContents();
-  if (upperCase)
-    t << r.upper();
-  else
-    t << r;
-  if (!r.isEmpty())
-    firstCol = r.at(r.length()-1)=='\n';
-  else
-    firstCol = ((ManGenerator *)g)->firstCol;
-  col+=((ManGenerator *)g)->col;
-  inHeader=((ManGenerator *)g)->inHeader;
-  paragraph=FALSE;
-}
+//void ManGenerator::append(const OutputGenerator *g)
+//{
+//  QCString r=g->getContents();
+//  if (upperCase)
+//    t << r.upper();
+//  else
+//    t << r;
+//  if (!r.isEmpty())
+//    firstCol = r.at(r.length()-1)=='\n';
+//  else
+//    firstCol = ((ManGenerator *)g)->firstCol;
+//  col+=((ManGenerator *)g)->col;
+//  inHeader=((ManGenerator *)g)->inHeader;
+//  paragraph=FALSE;
+//}
 
 void ManGenerator::init()
 {

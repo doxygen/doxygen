@@ -195,7 +195,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
       QCString result="Ez az összes ";
       if (!extractAll) result+="dokumentált ";
       result+="osztály összetevõ listája ";
-      if (extractAll) 
+      if (!extractAll) 
         result+="hivatkozással a hozzájuk tartózó osztály dokumentációra:";
       else 
         result+="az õket tartalmazó osztály megjelölésével:";

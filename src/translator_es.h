@@ -206,7 +206,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
       QCString result="Lista de";
       if (!extractAll) result+=" toda la documentación de";
       result+=" los miembros de la clase con enlaces a ";
-      if (extractAll) 
+      if (!extractAll) 
         result+=" la documentación de cada clase:";
       else 
         result+=" la clase de la que forman parte:";

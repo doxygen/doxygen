@@ -76,7 +76,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
     if (strncmp(buf,"rect",4)==0)
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
-      sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y2,&x2,&y1);
+      sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
       // later versions of graphviz corrected the y coordinate order
       // the rule is that y2>=y1, so test and switch if needed
       if (y2<y1)

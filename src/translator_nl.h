@@ -123,7 +123,7 @@ class TranslatorDutch : public Translator
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
       result+="klasse members met links naar ";
-      if (extractAll) result+="de klasse documentatie voor elke member:";
+      if (!extractAll) result+="de klasse documentatie voor elke member:";
       else result+="de klassen waartoe ze behoren:";
       return result;
     }
