@@ -25,14 +25,14 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.17-20020804), 27 languages 
+Currently (version 1.2.14-20020317), 28 languages 
 are supported (sorted alphabetically): 
-Brazilian Portuguese, Chinese, Chinese Traditional, Croatian, Czech, 
-Danish, Dutch, English, Finnish, French, 
-German, Greek, Hungarian, Italian, Japanese, 
-Korean, Norwegian, Polish, Portuguese, Romanian, 
-Russian, Serbian, Slovak, Slovene, Spanish, 
-Swedish, and Ukrainian.
+Brazilian Portuguese, Catalan, Chinese, Chinese Traditional, Croatian, 
+Czech, Danish, Dutch, English, Finnish, 
+French, German, Greek, Hungarian, Italian, 
+Japanese, Korean, Norwegian, Polish, Portuguese, 
+Romanian, Russian, Serbian, Slovak, Slovene, 
+Spanish, Swedish, and Ukrainian.
 
 The table of information related to the supported languages follows.
 It is sorted by language alphabetically.  The <b>Status</b> column
@@ -55,6 +55,12 @@ when the translator was updated.
       <TD>Brazilian Portuguese</TD>  
       <TD>Fabio "FJTC" Jun Takada Chino</TD>
       <TD>chino@NOSPAM.icmc.sc.usp.br</TD>
+      <TD>up-to-date</TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>Catalan</TD>  
+      <TD>Albert Mora</TD>
+      <TD>amora@NOSPAM.iua.upf.es</TD>
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -157,7 +163,7 @@ when the translator was updated.
       <TD>Polish</TD>  
       <TD>Piotr Kaminski<br>Grzegorz Kowal</TD>
       <TD>Piotr.Kaminski@NOSPAM.ctm.gdynia.pl<br>g_kowal@NOSPAM.poczta.onet.pl</TD>
-      <TD>1.2.16</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Portuguese</TD>  
@@ -181,7 +187,7 @@ when the translator was updated.
       <TD>Serbian</TD>  
       <TD>Dejan Milosavljevic</TD>
       <TD>dmilos@NOSPAM.email.com</TD>
-      <TD>1.2.16</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Slovak</TD>  
@@ -226,6 +232,8 @@ when the translator was updated.
   \hline
   Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & up-to-date \\
   \hline
+  Catalan & Albert Mora & {\tt amora@iua.upf.es} & up-to-date \\
+  \hline
   Chinese & Wei Liu & {\tt liuwei@asiainfo.com} & 1.2.13 \\
    & Wang Weihan & {\tt wangweihan@capinfo.com.cn} &  \\
   \hline
@@ -262,7 +270,7 @@ when the translator was updated.
   \hline
   Norwegian & Lars Erik Jordet & {\tt lej@circuitry.no} & 1.2.2 \\
   \hline
-  Polish & Piotr Kaminski & {\tt Piotr.Kaminski@ctm.gdynia.pl} & 1.2.16 \\
+  Polish & Piotr Kaminski & {\tt Piotr.Kaminski@ctm.gdynia.pl} & 1.2.17 \\
    & Grzegorz Kowal & {\tt g\_kowal@poczta.onet.pl} &  \\
   \hline
   Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & up-to-date \\
@@ -271,7 +279,7 @@ when the translator was updated.
   \hline
   Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
   \hline
-  Serbian & Dejan Milosavljevic & {\tt dmilos@email.com} & 1.2.16 \\
+  Serbian & Dejan Milosavljevic & {\tt dmilos@email.com} & 1.2.17 \\
   \hline
   Slovak & Stanislav Kudl\'{a}\v{c} & {\tt skudlac@pobox.sk} & up-to-date \\
   \hline

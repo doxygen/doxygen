@@ -552,6 +552,8 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
  */
 bool MemberDef::isBriefSectionVisible() const
 {
+    bool hasDocs = hasDocumentation();
+  
     // only include static members with file/namespace scope if 
     // explicitly enabled in the config file
     bool visibleIfStatic = !(getClassDef()==0 && 
@@ -562,7 +564,7 @@ bool MemberDef::isBriefSectionVisible() const
     // only include members is the are documented or 
     // HIDE_UNDOC_MEMBERS is NO in the config file
     bool visibleIfDocumented = (!Config_getBool("HIDE_UNDOC_MEMBERS") || 
-                                hasDocumentation() || 
+                                hasDocs || 
                                 isDocumentedFriendClass()
                                );
 
@@ -574,6 +576,15 @@ bool MemberDef::isBriefSectionVisible() const
                               !Config_getBool("REPEAT_BRIEF")
                              );
 
+    // Hide friend (class|struct|union) declarations if HIDE_FRIEND_COMPOUNDS is true
+    bool visibleIfFriendCompound = !(Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+                                     isFriend() &&
+                                     (type=="friend class" || 
+                                      type=="friend struct" ||
+                                      type=="friend union"
+                                     )
+                                    );
+    
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a group
     bool visibleIfPrivate = (protection()!=Private || 
@@ -581,8 +592,28 @@ bool MemberDef::isBriefSectionVisible() const
                              mtype==Friend
                             );
     
-    bool visible = visibleIfStatic && visibleIfDocumented && 
-                   visibleIfEnabled && visibleIfPrivate && !annScope;
+    // hide member if it overrides a member in a superclass and has no
+    // documentation
+    bool visibleIfDocVirtual = (reimplements() || hasDocs);
+
+    // true if this member is a constructor or destructor
+    bool cOrDTor = isConstructor() || isDestructor();
+
+    // hide default constructors or destructors (no args) without
+    // documentation
+    bool visibleIfNotDefaultCDTor = !(cOrDTor &&
+                                     defArgList &&
+                                     (defArgList->isEmpty() ||
+                                      defArgList->first()->type == "void"
+                                     ) &&
+                                     !hasDocs
+                                    );
+
+    bool visible = visibleIfStatic     && visibleIfDocumented      && 
+                   visibleIfEnabled    && visibleIfPrivate         &&
+                   visibleIfDocVirtual && visibleIfNotDefaultCDTor && 
+                   visibleIfFriendCompound &&
+                   !annScope;
     //printf("MemberDef::isBriefSectionVisible() %d\n",visible);
     return visible;
 }
@@ -896,9 +927,11 @@ bool MemberDef::isDetailedSectionLinkable() const
          // is documented enum value
          (mtype==EnumValue && !briefDescription().isEmpty()) || 
          // has brief description that is part of the detailed description
-         (!briefDescription().isEmpty() && 
-          Config_getBool("ALWAYS_DETAILED_SEC") && 
-          Config_getBool("REPEAT_BRIEF")
+         (!briefDescription().isEmpty() &&           // has brief docs
+          (Config_getBool("ALWAYS_DETAILED_SEC") &&  // they or visible in
+           Config_getBool("REPEAT_BRIEF") ||         // detailed section or
+           !Config_getBool("BRIEF_MEMBER_DESC")      // they are explicitly not
+          )                                          // shown in brief section
          ) ||
          // has a multi-line initialization block
          //(initLines>0 && initLines<maxInitLines) || 
@@ -1196,9 +1229,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     
     /* write brief description */
     if (!brief.isEmpty() && 
-        (Config_getBool("REPEAT_BRIEF")  
-         /* || (!Config_getBool("BRIEF_MEMBER_DESC") && documentation().isEmpty())*/
-        ) /* || !annMemb */
+        (Config_getBool("REPEAT_BRIEF") || 
+         !Config_getBool("BRIEF_MEMBER_DESC")
+        ) 
        )  
     { 
       parseDoc(ol,briefFile(),briefLine(),scopeName,this,brief);
@@ -1493,10 +1526,15 @@ void MemberDef::warnIfUndocumented()
   else
     t="file", d=fd;
 
-  if (d && d->isLinkable() && !isLinkable() && !isDocumentedFriendClass()
-      && name().find('@')==-1)
+  if (d && d->isLinkable() && !isLinkable() && 
+      !isDocumentedFriendClass() && 
+      name().find('@')==-1 &&
+      (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
+     )
+  {
    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s of %s %s is not documented.",
         name().data(),t,d->name().data());
+  }
 }
 
 
@@ -1728,5 +1766,15 @@ Specifier MemberDef::virtualness() const
     rmd = rmd->reimplements();
   }
   return v;
+}
+
+bool MemberDef::isConstructor() const            
+{ 
+  return classDef ? name()==classDef->localName() : FALSE; 
+}
+
+bool MemberDef::isDestructor() const
+{ 
+  return name().find('~')!=-1 && name().find("operator")==-1; 
 }
 

@@ -235,7 +235,11 @@ OPCAST    {BLANK}+[^(\r\n.,]+
 OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
 LNKWORD1  {SCOPEMASK}({FUNCARG}({BLANK}*("const"|"volatile"))?)?
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD      [^ \t\n\r\\@<>&$#,.]+ 
+WORD1     [^ \t\n\r\\@<>&$#,.]+ 
+WORD2     "."|","
+WORD1NQ   [^ \t\n\r\\@<>&$#,."]+ 
+WORD2NQ   "."|","
+HTMLTAG   "<"(("/")?){ID}({BLANK}+{ATTRIB})*">" 
 
 %option noyywrap
 %option yylineno
@@ -243,6 +247,10 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
 %x St_Para
 %x St_Comment
 %x St_Title
+%x St_TitleN
+%x St_TitleQ
+%x St_TitleA
+%x St_TitleV
 %x St_Code
 %x St_HtmlOnly
 %x St_LatexOnly
@@ -317,13 +325,13 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
 			 g_token->text = tagName.mid(i+1,tagName.length()-i-2);
 			 return TK_RCSTAG;
   		       }
-<St_Para>"$("{ID}")"      { /* environment variable */
+<St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
 			 QCString value = getenv(name);
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
-<St_Para>"<"(("/")?){ID}({BLANK}+{ATTRIB})*">" { /* html tag */ 
+<St_Para>{HTMLTAG}     { /* html tag */ 
                          g_token->name = yytext;
                          int startNamePos=1;
                          if (g_token->name.at(1)=='/') startNamePos++;
@@ -349,11 +357,8 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
                          g_token->name = yytext;
                          return TK_LNKWORD;
   		       }
-<St_Para>"."|","       {
-                         g_token->name = yytext;
-                         return TK_WORD;
-  		       }
-<St_Para>{WORD}        { /* function call */ 
+<St_Para>{WORD1}       |
+<St_Para>{WORD2}       { /* function call */ 
                          g_token->name = yytext;
                          return TK_WORD;
 
@@ -383,7 +388,7 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
 <St_HtmlOnly>{CMD}"endhtmlonly" {
                          return RetVal_OK;
                        }
-<St_HtmlOnly>[^\\@\n]+     |
+<St_HtmlOnly>[^\\@\n$]+    |
 <St_HtmlOnly>\n            |
 <St_HtmlOnly>.             {
   			 g_token->verb+=yytext;
@@ -404,26 +409,87 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
 <St_Verbatim>.             { /* Verbatim text */
   			 g_token->verb+=yytext;
   		       }
-<St_Title>"&"{ID}";"   { /* symbol */
-                         g_token->name = yytext;
-  		         return TK_SYMBOL;
-                       }
-<St_Title>{SPCMD1}     |   
-<St_Title>{SPCMD2}     { /* special command */ 
-                         g_token->name = yytext+1;
-                         return TK_COMMAND;
-                       }
-<St_Title>{WORD}       { /* word */
-                         g_token->name = yytext;
-			 return TK_WORD;
-                       }
+<St_Title>"\""	       { // quoted title
+  			 BEGIN(St_TitleQ);
+  		       } 
 <St_Title>[ \t]+       {
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
                        }
-<St_Title>\n	       { /* new line => end of title */
+<St_Title>.	       { // non-quoted title
+  			 unput(*yytext);
+			 BEGIN(St_TitleN);
+                       }
+<St_Title>\n	       {
+  			 return 0;
+  		       }
+<St_TitleN>"&"{ID}";"  { /* symbol */
+                         g_token->name = yytext;
+  		         return TK_SYMBOL;
+                       }
+<St_TitleN>{SPCMD1}    |   
+<St_TitleN>{SPCMD2}    { /* special command */ 
+                         g_token->name = yytext+1;
+                         return TK_COMMAND;
+                       }
+<St_TitleN>{WORD1}     |
+<St_TitleN>{WORD2}     { /* word */
+                         g_token->name = yytext;
+			 return TK_WORD;
+                       }
+<St_TitleN>[ \t]+      {
+                         g_token->chars=yytext;
+  			 return TK_WHITESPACE;
+                       }
+<St_TitleN>\n	       { /* new line => end of title */
+                         unput(*yytext);
   			 return 0;
                        }
+<St_TitleQ>"&"{ID}";"  { /* symbol */
+                         g_token->name = yytext;
+  		         return TK_SYMBOL;
+                       }
+<St_TitleQ>{SPCMD1}    |   
+<St_TitleQ>{SPCMD2}    { /* special command */ 
+                         g_token->name = yytext+1;
+                         return TK_COMMAND;
+                       }
+<St_TitleQ>{WORD1NQ}   |
+<St_TitleQ>{WORD2NQ}   { /* word */
+                         g_token->name = yytext;
+			 return TK_WORD;
+                       }
+<St_TitleQ>[ \t]+      {
+                         g_token->chars=yytext;
+  			 return TK_WHITESPACE;
+                       }
+<St_TitleQ>"\""	       { /* closing quote => end of title */
+  			 BEGIN(St_TitleA);
+  			 return 0;
+                       }
+<St_TitleQ>\n	       { /* new line => end of title */
+                         unput(*yytext);
+  			 return 0;
+                       }
+<St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
+  			 g_token->name = yytext;
+			 g_token->name = g_token->name.left(
+			       g_token->name.find('=')).stripWhiteSpace();
+  			 BEGIN(St_TitleV);
+  		       }
+<St_TitleV>[^ \t\r\n]+ { // attribute value
+  			 g_token->chars = yytext;
+			 BEGIN(St_TitleN);
+			 return TK_WORD;
+  		       }
+<St_TitleV,St_TitleA>. {
+  			 unput(*yytext);
+  			 return 0;
+                       }
+<St_TitleV,St_TitleA>\n	 {
+  			 return 0;
+                       }
+
 <St_Ref>{ID}	       {
   			 g_token->name=yytext;
 			 return TK_WORD;
@@ -458,8 +524,8 @@ WORD      [^ \t\n\r\\@<>&$#,.]+
                          g_token->name = yytext+1;
                          return TK_COMMAND;
                        }
-<St_Ref2>[^ \t\n\r\\@<&$"]+  |
-<St_Ref2>[^ \t\n\r\\@<&$"]+"("[^\n")]*")"({BLANK}*("const"|"volatile"))? {
+<St_Ref2>{WORD1NQ}     |
+<St_Ref2>{WORD2NQ}     {
                          /* word */
                          g_token->name = yytext;
 			 return TK_WORD;

@@ -58,12 +58,12 @@ tools should be installed.
     \addindex Qt
     This is needed to build the GUI front-end. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
-    <a href="http://www.tug.org/">teTeX 1.0</a>.<br>
-    \latexonly(see {\tt http://www.tug.org/})\endlatexonly.
+    <a href="http://www.tug.org/">teTeX 1.0</a>
+    \latexonly \\par (see {\tt http://www.tug.org/})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.research.att.com/sw/tools/graphviz/">
-    the Graph visualization toolkit version 1.5</a><br>
-    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
+    the Graph visualization toolkit version 1.5</a>
+    \latexonly \\par (see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
@@ -142,17 +142,17 @@ Compilation is now done by performing the following steps:
     <code>index.html</code> in the 
     html directory).
     
-<li>Optional: Generate a PostScript and PDF version of the manual
-    (you will need <code>latex</code> and <code>dvips</code> and
-     the ghostscript package for this).
+<li>Optional: Generate a PDF version of the manual
+    (you will need <code>pdflatex</code>, <code>makeindex</code>, and
+     <code>egrep</code> for this).
 
 \verbatim
     make pdf
 \endverbatim
 
-    The PostScript manual <code>doxygen_manual.ps</code> will be located 
-    in the latex directory of the distribution. Just send it to a 
-    PostScript printer to print it or use <code>ghostview</code> to view it. 
+    The PDF manual <code>doxygen_manual.pdf</code> will be located 
+    in the latex directory of the distribution. Just 
+    view and print it via the acrobat reader. 
 
 </ol>
 

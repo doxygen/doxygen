@@ -433,11 +433,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   enumValMembers.append(md);
                 break;
               case MemberDef::Function:
-                if (md->name()==localName() ||         // constructor
-                    (md->name().find('~')!=-1 &&  // hack to detect destructor
-                     md->name().find("operator")==-1
-                    )
-                   )
+                if (md->isConstructor() || md->isDestructor())
                 {
                   constructors.append(md);
                 }

@@ -42,10 +42,10 @@ recursively scanned.
 To simplify the creation of a configuration file, doxygen can create a 
 template configuration file for you. To do this call \c doxygen with the \c -g 
 option:
-
 \verbatim
 doxygen -g <config-file>
 \endverbatim
+
 where \<config-file\> is the name of the configuration file. If you omit
 the file name, a file named \c Doxyfile will be created. If a file with the
 name \<config-file\> already exists, doxygen will rename it to 

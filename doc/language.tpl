@@ -62,8 +62,8 @@ Just follow these steps:
     defines which language translators will be compiled into doxygen
     executable.  It is a kind of configuration file.  If you are sure that
     you do not need some of the languages, you can remove (comment out)
-    definitions of symbols for the languages, or you can say \c #undef
-    instead of \c #define for them.
+    definitions of symbols for the languages, or you can say \c \#undef
+    instead of \c \#define for them.
 <li>Edit language.cpp:
     Add a 
 \verbatim
@@ -93,7 +93,7 @@ Just follow these steps:
 <li>Edit <code>translator_xx.h</code>:
    <ul>
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> 
-       twice (i.e. in the \c #ifndef and \c #define preprocessor commands at 
+       twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at 
        the beginning of the file).
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 

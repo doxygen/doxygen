@@ -4,6 +4,9 @@
 Brazilian
 Fabio "FJTC" Jun Takada Chino: chino@icmc.sc.usp.br
 
+Catalan
+Albert Mora: amora@iua.upf.es
+
 Chinese
 Wei Liu: liuwei@asiainfo.com
 Wang Weihan: wangweihan@capinfo.com.cn

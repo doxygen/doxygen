@@ -1239,14 +1239,11 @@ void HtmlGenerator::endSectionRefList()
   t << "</multicol>" << endl;
 }
 
+
 void HtmlGenerator::printDoc(DocNode *n)
 {
-#ifdef ENABLE_NEW_PARSER
   HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this);
   n->accept(visitor);
   delete visitor; 
-#else
-  n=n;
-#endif
 }
 

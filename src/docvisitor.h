@@ -51,7 +51,6 @@ class DocAnchor;
 class DocIndexEntry;
 class DocInternal;
 class DocHRef;
-class DocCopy;
 class DocInclude;
 class DocIncOperator;
 class DocHtmlHeader;
@@ -67,6 +66,7 @@ class DocLinkedWord;
 class DocParamSect;
 class DocParamList;
 class DocInternalRef;
+class DocCopy;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -83,7 +83,6 @@ class DocVisitor
     virtual void visit(DocLineBreak *) = 0;
     virtual void visit(DocHorRuler *) = 0;
     virtual void visit(DocAnchor *) = 0;
-    virtual void visit(DocCopy *) = 0;
     virtual void visit(DocInclude *) = 0;
     virtual void visit(DocIncOperator *) = 0;
     virtual void visit(DocFormula *) = 0;
@@ -158,6 +157,8 @@ class DocVisitor
     virtual void visitPost(DocXRefItem *) = 0;
     virtual void visitPre(DocInternalRef *) = 0;
     virtual void visitPost(DocInternalRef *) = 0;
+    virtual void visitPre(DocCopy *) = 0;
+    virtual void visitPost(DocCopy *) = 0;
 };
 
 #endif

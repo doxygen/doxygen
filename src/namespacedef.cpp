@@ -31,7 +31,8 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref) : 
    Definition(df,dl,name)
 {
-  fileName=(QCString)"namespace"+name;
+  fileName="namespace";
+  fileName+=name;
   classSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
   m_innerCompounds = new SDict<Definition>(17);

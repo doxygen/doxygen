@@ -16,6 +16,9 @@
  *
  */
 
+#ifndef _DOT_H
+#define _DOT_H
+
 #include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
@@ -171,3 +174,4 @@ void generateGraphLegend(const char *path);
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);
 
+#endif

@@ -27,7 +27,7 @@ Version: $(VERSION)
 
 <h2>Introduction</h2>
 Doxygen is a documentation system for C++, C, Java, IDL 
-(Corba, Microsoft, and KDE-DCOP flavors) and to some extend PHP. 
+(Corba, Microsoft, and KDE-DCOP flavors) and to some extent PHP. 
 
 It can help you in three ways:
 <ol>
@@ -179,8 +179,8 @@ Thanks go to:
 <li>Petr Prikryl for coordinating the internationalisation support.
     All language maintainers for providing translations into many languages.
 <li>Erik Jan Lingen of <a href="http://www.habanera.nl/">Habanera</a>, Mark
-    Roddy, Paul Schwartz, Charles Duffy, Vadym Voznyuk, Philip Walton and
-    Dwight Browne for donating money.
+    Roddy, Paul Schwartz, Charles Duffy, Vadym Voznyuk, Philip Walton,
+    Dwight Browne, and Andreas Fredriksson for donating money.
 <li>The Comms group of <a href="http://www.symbian.com">Symbian</a> for donating
     an ultra cool <a href="http://www.psion.com/revoplus">Revo plus</a> 
     organizer!

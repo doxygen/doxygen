@@ -199,6 +199,7 @@ static void addRelatedPage(Entry *root)
   {
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
+  //printf("addRelatedPage() %s gd=%p\n",root->name.data(),gd);
   addRelatedPage(root->name,root->args,root->doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
@@ -1448,27 +1449,52 @@ static bool isVarWithConstructor(Entry *root)
 {
   static QRegExp initChars("[0-9\"'&*!^]+");
   static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
-  if (root->type.isEmpty()) return FALSE;
+  bool result=FALSE;
+  bool typeIsClass;
   Definition *ctx = 0;
-  //printf("isVarWithConstructor(%s,%s)\n",root->parent->name.data(),
-  //                                          root->type.data());
+  if (root->parent && root->parent->section&Entry::COMPOUND_MASK)
+  { // inside a class
+    result=FALSE;
+    goto done;
+  }
+  if (root->type.isEmpty()) 
+  {
+    result=FALSE;
+    goto done;
+  }
   if (root->parent->name) ctx=Doxygen::namespaceSDict.find(root->parent->name);
-  bool typeIsClass=getResolvedClass(ctx,root->type)!=0;
+  typeIsClass=getResolvedClass(ctx,root->type)!=0;
   if (typeIsClass) // now we still have to check if the arguments are 
                    // types or values. Since we do not have complete type info
                    // we need to rely on heuristics :-(
   {
     //printf("typeIsClass\n");
     ArgumentList *al = root->argList;
-    if (al==0) return FALSE; // empty arg list -> function prototype.
+    if (al==0 || al->isEmpty()) 
+    {
+      result=FALSE; // empty arg list -> function prototype.
+      goto done;
+    }
     ArgumentListIterator ali(*al);
     Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
       //printf("a->name=%s a->type=%s\n",a->name.data(),a->type.data());
-      if (!a->name.isEmpty() || !a->defval.isEmpty()) return FALSE; // arg has (type,name) pair -> function prototype
-      if (a->type.isEmpty() || getResolvedClass(ctx,a->type)!=0) return FALSE; // arg type is a known type
-      if (a->type.find(initChars)==0) return TRUE; // argument type starts with typical initializer char
+      if (!a->name.isEmpty() || !a->defval.isEmpty()) 
+      {
+        result=FALSE; // arg has (type,name) pair -> function prototype
+        goto done;
+      }
+      if (a->type.isEmpty() || getResolvedClass(ctx,a->type)!=0) 
+      {
+        result=FALSE; // arg type is a known type
+        goto done;
+      }
+      if (a->type.find(initChars)==0) 
+      {
+        result=TRUE; // argument type starts with typical initializer char
+        goto done;
+      }
       QCString resType=resolveTypeDef(ctx,a->type);
       if (resType.isEmpty()) resType=a->type;
       int len;
@@ -1480,14 +1506,17 @@ static bool isVarWithConstructor(Entry *root)
             resType=="double" || resType=="char" || resType=="signed" || 
             resType=="const"  || resType=="unsigned") 
         {
-          return FALSE; // type keyword -> function prototype
+          result=FALSE; // type keyword -> function prototype
+          goto done;
         }
       }
     }
-    return TRUE;
+    result=TRUE;
   }
-  // return type not a class -> function prototype
-  return FALSE;
+done:
+  //printf("isVarWithConstructor(%s,%s)=%d\n",root->parent->name.data(),
+  //                                       root->type.data(),result);
+  return result;
 }
 
 //----------------------------------------------------------------------
@@ -3380,7 +3409,8 @@ static void computeClassRelations()
         bName.right(2)!="::")
     {
       if (!root->name.isEmpty() && root->name[0]!='@' &&
-          (guessSection(root->fileName)==Entry::HEADER_SEC || Config_getBool("EXTRACT_LOCAL_CLASSES"))
+          (guessSection(root->fileName)==Entry::HEADER_SEC || Config_getBool("EXTRACT_LOCAL_CLASSES")) &&
+          (root->protection!=Private || Config_getBool("EXTRACT_PRIVATE"))
          )
         warn_undoc(
                    root->fileName,root->startLine,
@@ -3560,9 +3590,14 @@ static void addListReferences()
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
+    QCString name = pi->name;
+    if (pi->getGroupDef())
+    {
+      name = pi->getGroupDef()->getOutputFileBase().copy();
+    }
     addRefItem(pi->specialListItems,
                theTranslator->trPage(TRUE,TRUE),
-               pi->name,pi->title);
+               name,pi->title);
   }
 }
 
@@ -5830,69 +5865,6 @@ static void findMainPage(Entry *root)
 
 //----------------------------------------------------------------------------
 
-///*! Search for all Java package statements 
-// */
-//static void buildPackageList(Entry *root)
-//{
-//  if (root->section == Entry::PACKAGE_SEC || root->section == Entry::PACKAGEDOC_SEC && !root->name.isEmpty())
-//  {
-//    PackageDef *pd=0;
-//    if ((pd=Doxygen::packageDict.find(root->name))==0)
-//    {
-//      QCString tagName;
-//      if (root->tagInfo)
-//      {
-//        tagName=root->tagInfo->tagName;
-//      }
-//      pd = new PackageDef(root->fileName,root->startLine,root->name,tagName);
-//      Doxygen::packageDict.inSort(root->name,pd);
-//      pd->setDocumentation(root->doc,root->docFile,root->docLine);
-//      pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-//    } 
-//    else
-//    {
-//      if (!pd->documentation() && !root->doc.isEmpty())
-//      {
-//        pd->setDocumentation(root->doc,root->docFile,root->docLine);
-//      }
-//      if (!pd->briefDescription() && !root->brief.isEmpty())
-//      {
-//        pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-//      }
-//    }
-//    bool ambig;
-//    FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-//    if (fd)
-//    {
-//      fd->setPackageDef(pd);
-//    }
-//  }
-//  EntryListIterator eli(*root->sublist);
-//  Entry *e;
-//  for (;(e=eli.current());++eli)
-//  {
-//    buildPackageList(e);
-//  }
-//}
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-/*! Add Java classes to their respective packages */
-//static void addClassesToPackages()
-//{
-//  ClassDef *cd;
-//  ClassSDict::Iterator cli(Doxygen::classSDict);
-//  for (;(cd=cli.current());++cli)
-//  {
-//    PackageDef *pd = cd->packageDef();
-//    if (pd) pd->addClass(cd);
-//  }
-//}
-
-//----------------------------------------------------------------------------
-
 static void resolveUserReferences()
 {
   QDictIterator<SectionInfo> sdi(Doxygen::sectionDict);
@@ -5904,35 +5876,6 @@ static void resolveUserReferences()
     //        si->fileName.data());
     PageInfo *pi=0;
 
-    // if this section is in a page and the page is in a group, then we
-    // have to adjust the link file name to point to the group.
-    if (!si->fileName.isEmpty() && 
-        (pi=Doxygen::pageSDict->find(si->fileName)) &&
-        pi->getGroupDef())
-    {
-      si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
-    }
-
-
-    if (si->definition)
-    {
-      // TODO: there should be one function in Definition that returns
-      // the file to link to, so we can avoid the following tests.
-      GroupDef *gd=0;
-      if (si->definition->definitionType()==Definition::TypeMember)
-      {
-        gd = ((MemberDef *)si->definition)->getGroupDef();
-      }
-      
-      if (gd)
-      {
-        si->fileName=gd->getOutputFileBase().copy();
-      }
-      else
-      {
-        si->fileName=si->definition->getOutputFileBase().copy();
-      }
-    }
     // hack: the items of a todo/test/bug/deprecated list are all fragments from 
     // different files, so the resulting section's all have the wrong file 
     // name (not from the todo/test/bug/deprecated list, but from the file in 
@@ -5943,12 +5886,48 @@ static void resolveUserReferences()
     for (rli.toFirst();(rl=rli.current());++rli)
     {
       QCString label="_"+rl->listName(); // "_todo", "_test", ...
-      if (si->label==label)
+      if (si->label.left(label.length())==label)
       {
+        si->fileName=rl->listName();
         si->generated=TRUE;
         break;
       }
     }
+
+    //printf("start: si->label=%s si->fileName=%s\n",si->label.data(),si->fileName.data());
+    if (!si->generated)
+    {
+      // if this section is in a page and the page is in a group, then we
+      // have to adjust the link file name to point to the group.
+      if (!si->fileName.isEmpty() && 
+          (pi=Doxygen::pageSDict->find(si->fileName)) &&
+          pi->getGroupDef())
+      {
+        si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
+      }
+
+      if (si->definition)
+      {
+        // TODO: there should be one function in Definition that returns
+        // the file to link to, so we can avoid the following tests.
+        GroupDef *gd=0;
+        if (si->definition->definitionType()==Definition::TypeMember)
+        {
+          gd = ((MemberDef *)si->definition)->getGroupDef();
+        }
+
+        if (gd)
+        {
+          si->fileName=gd->getOutputFileBase().copy();
+        }
+        else
+        {
+          //si->fileName=si->definition->getOutputFileBase().copy();
+          //printf("Setting si->fileName to %s\n",si->fileName.data());
+        }
+      }
+    }
+    //printf("end: si->label=%s si->fileName=%s\n",si->label.data(),si->fileName.data());
   }
 }
 
@@ -5959,6 +5938,7 @@ static void resolveUserReferences()
 
 static void generatePageDocs()
 {
+  //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageSDict->count());
   if (documentedPages==0) return;
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
@@ -6756,9 +6736,10 @@ static int readFileOrDirectory(const char *s,
             if (resultList || resultDict)
             {
               rs=new QCString(fi.absFilePath());
+              if (resultList) resultList->append(rs);
+              if (resultDict) resultDict->insert(fi.absFilePath(),rs);
             }
-            if (resultList) resultList->append(rs);
-            if (resultDict) resultDict->insert(fi.absFilePath(),rs);
+
             if (killDict) killDict->insert(fi.absFilePath(),(void *)0x8);
           }
         }
@@ -6858,6 +6839,7 @@ void initDoxygen()
   
   initPreprocessor();
 
+  Doxygen::sectionDict.setAutoDelete(TRUE);
 }
 
 void readConfiguration(int argc, char **argv)
@@ -7293,6 +7275,7 @@ void parseInput()
   QDict<void> *killDict = new QDict<void>(10007);
   int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");
+  inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
   while (s)
   {

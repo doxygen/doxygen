@@ -22,12 +22,16 @@ HEADERS      =	bufstr.h \
                 cmdmapper.h \
                 code.h \
 		commentcnv.h \
+                config.h \
 		constexp.h \
 		cppvalue.h \
 		debug.h \
+                declinfo.h \
+                defargs.h \
                 defgen.h \
-		doxygen.h \
-		scanner.h \
+                define.h \
+                definition.h \
+                diagram.h \
 		doc.h \
                 docparser.h \
                 doctokenizer.h \
@@ -41,12 +45,14 @@ HEADERS      =	bufstr.h \
 		formula.h \
 		ftvhelp.h \
 		groupdef.h \
+                htmldocvisitor.h \
 		htmlgen.h \
 		htmlhelp.h \
 		image.h \
 		index.h \
 		instdox.h \
 		language.h \
+                latexdocvisitor.h \
 		latexgen.h \
 		logos.h \
 		mangen.h \
@@ -75,9 +81,11 @@ HEADERS      =	bufstr.h \
 		translator.h \
 		translator_adapter.h \
 		translator_br.h \
+		translator_ca.h \
 		translator_cn.h \
 		translator_cz.h \
 		translator_de.h \
+		translator_dk.h \
 		translator_en.h \
 		translator_es.h \
 		translator_fi.h \
@@ -96,6 +104,10 @@ HEADERS      =	bufstr.h \
 		translator_ru.h \
 		translator_se.h \
 		translator_si.h \
+		translator_sk.h \
+		translator_sr.h \
+		translator_tw.h \
+		translator_ua.h \
 		treeview.h \
 		unistd.h \
 		util.h \
@@ -127,12 +139,14 @@ SOURCES      =	ce_lex.cpp \
 		formula.cpp \
 		ftvhelp.cpp \
 		groupdef.cpp \
+                htmldocvisitor.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \
 		image.cpp \
 		index.cpp \
 		instdox.cpp \
 		language.cpp \
+                latexdocvisitor.cpp \
 		latexgen.cpp \
 		logos.cpp \
 		mangen.cpp \
