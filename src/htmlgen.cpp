@@ -831,7 +831,7 @@ void HtmlGenerator::endAlphabeticalIndexList()
 void HtmlGenerator::writeIndexHeading(const char *s)
 {
   t << "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"ah\">&nbsp;&nbsp;" << s 
-    << "&nbsp;&nbsp;</td</tr></table>";
+    << "&nbsp;&nbsp;</td></tr></table>";
 }
 
 void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)
@@ -940,7 +940,7 @@ void HtmlGenerator::startParameterType(bool first)
   if (first)
   {
     DBG_HTML(t << "<!-- startFirstParameterType -->" << endl;)
-    t << "          <td class=\"md\">";
+    t << "          <td class=\"md\" nowrap>";
   }
   else
   {
@@ -948,14 +948,14 @@ void HtmlGenerator::startParameterType(bool first)
     t << "        <tr>" << endl;
     t << "          <td></td>" << endl;
     t << "          <td></td>" << endl;
-    t << "          <td class=\"md\">";
+    t << "          <td class=\"md\" nowrap>";
   }
 }
 
 void HtmlGenerator::endParameterType()
 {
   DBG_HTML(t << "<!-- endParameterType -->" << endl;)
-  t << "</td>" << endl;
+  t << "&nbsp;</td>" << endl;
 }
 
 void HtmlGenerator::startParameterName(bool oneArgOnly)

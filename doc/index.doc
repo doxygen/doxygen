@@ -73,7 +73,7 @@ but is set-up to be highly portable. As a result, it runs on most
 other Unix flavors as well. Furthermore, an executable for 
 Windows 9x/NT is also available.
 
-This manual is divided into two parts, each of which is divided into several 
+This manual is divided into three parts, each of which is divided into several 
 sections.
 
 The first part forms a user manual:
@@ -117,10 +117,16 @@ The second part forms a reference manual:
               used within the documentation.
 <li>Section \ref htmlcmds shows an overview of the HTML commands that
               can be used within the documentation.
+</ul>
+
+The third part provides information for developers:
+
+<ul>
+<li>Section \ref arch gives a global overview of how doxygen is internally
+    structured.
 <li>Section \ref langhowto explains how to add support for new
               output languages.
 </ul>
-
 
 <h2>Projects using doxygen</h2>
 

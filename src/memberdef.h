@@ -129,6 +129,7 @@ class MemberDef : public Definition
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup=FALSE) const;
     bool isDetailedSectionLinkable() const;
+    bool isDocumentedFriendClass() const;
 
     // set functions
     void setMemberType(MemberType t)      { mtype=t; }

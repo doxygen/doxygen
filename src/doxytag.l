@@ -220,6 +220,7 @@ QCString unhtmlify(const char *str)
 <Start>^"<li>"  		   { 
 				     BEGIN( SearchClassFile );
 				   } 
+<Start>^"<td"[^\n]*"<h1 align=center>" | // Qt-3.x.x+
 <Start>^"<h1 align=center>"	   { // Qt variant
   				     BEGIN( ReadClassName );
 			           }

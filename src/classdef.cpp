@@ -2264,7 +2264,7 @@ bool ClassDef::isReference() const
 {
   if (m_templateMaster)
   {
-    return m_templateMaster->getReference();
+    return m_templateMaster->isReference();
   }
   else
   {

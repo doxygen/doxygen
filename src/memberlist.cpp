@@ -250,20 +250,20 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             bool fmdVisible = fmd->isBriefSectionVisible();
             while (fmd)
             {
-              /* in html we start a new line after a number of items */
-              if (numVisibleEnumValues>enumValuesPerLine
-                  && (enumMemCount%enumValuesPerLine)==0
-                 )
-              {
-                typeDecl.pushGeneratorState();
-                typeDecl.disableAllBut(OutputGenerator::Html);
-                typeDecl.lineBreak(); 
-                typeDecl.writeString("&nbsp;&nbsp;");
-                typeDecl.popGeneratorState();
-              }
-
               if (fmdVisible)
               {
+                /* in html we start a new line after a number of items */
+                if (numVisibleEnumValues>enumValuesPerLine
+                    && (enumMemCount%enumValuesPerLine)==0
+                   )
+                {
+                  typeDecl.pushGeneratorState();
+                  typeDecl.disableAllBut(OutputGenerator::Html);
+                  typeDecl.lineBreak(); 
+                  typeDecl.writeString("&nbsp;&nbsp;");
+                  typeDecl.popGeneratorState();
+                }
+
                 if (fmd->hasDocumentation()) // enum value has docs
                 {
                   if (!Config_getString("GENERATE_TAGFILE").isEmpty())

@@ -534,7 +534,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QCString result=(QCString)"Generated at "+date;
+      QCString result=(QCString)"Generated on "+date;
       if (projName) result+=(QCString)" for "+projName;
       result+=(QCString)" by";
       return result;

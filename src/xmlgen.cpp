@@ -28,12 +28,14 @@
 #include "defargs.h"
 #include "outputgen.h"
 #include "doc.h"
+#include "dot.h"
+#include "code.h"
 
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
 
-static QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
+QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
 {
   switch (t)
   {
@@ -62,15 +64,19 @@ static QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
   return "illegal";
 }
 
-static inline void writeXMLString(QTextStream &t,const char *s)
+inline void writeXMLString(QTextStream &t,const char *s)
 {
   t << convertToXML(s);
 }
 
-static void writeXMLLink(QTextStream &t,const char *compoundId,
+void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
                   const char *anchorId,const char *text)
 {
   t << "<ref idref=\"" << compoundId << "\"";
+  if (extRef)
+  {
+    t << " external=\"" << extRef << "\"";
+  }
   if (anchorId)
   {
     t << " anchor=\"" << anchorId << "\"";
@@ -93,10 +99,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
                    const char *anchor,const char *text
                   ) const
     {
-      if (extRef==0) 
-      { writeXMLLink(m_t,file,anchor,text); } 
-      else // external references are not supported for XML
-      { writeXMLString(m_t,text); }
+      writeXMLLink(m_t,extRef,file,anchor,text);
     }
   private:
     QTextStream &m_t;
@@ -418,26 +421,12 @@ class XMLGenerator : public OutputDocInterface
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor, const char *text) 
     {
-      if (ref) // TODO: add support for external references
-      {
-        docify(text);
-      }
-      else
-      {
-        writeXMLLink(m_t,file,anchor,text);
-      }
+      writeXMLLink(m_t,ref,file,anchor,text);
     }
     void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *text) 
     {
-      if (ref) // TODO: add support for external references
-      {
-        docify(text);
-      }
-      else
-      {
-        writeXMLLink(m_t,file,anchor,text);
-      }
+      writeXMLLink(m_t,ref,file,anchor,text);
     }
     void startHtmlLink(const char *url)
     {
@@ -628,14 +617,22 @@ class XMLGenerator : public OutputDocInterface
     void endPageRef(const char *,const char *) 
     {
     }
+    void startLineNumber()
+    {
+      m_t << "<linenumber>";
+    }
+    void endLineNumber()
+    {
+      m_t << "</linenumber>";
+    }
     void startCodeLine() 
     {
       startParMode();
-      m_t << "<linenumber>"; // non DocBook
+      m_t << "<codeline>"; // non DocBook
     }
     void endCodeLine() 
     {
-      m_t << "</linenumber>"; // non DocBook
+      m_t << "</codeline>" << endl; // non DocBook
     }
     void startCodeAnchor(const char *id) 
     {
@@ -740,6 +737,8 @@ class XMLGenerator : public OutputDocInterface
     ValStack<bool> m_inParStack;  
     ValStack<bool> m_inListStack;
     bool m_inParamList;
+    
+    friend void writeXMLCodeBlock(QTextStream &t,FileDef *fd);
 };
 
 void writeXMLDocBlock(QTextStream &t,
@@ -758,6 +757,21 @@ void writeXMLDocBlock(QTextStream &t,
            text      // actual text
           );
   xmlGen->endParMode();
+  t << xmlGen->getContents();
+  delete xmlGen;
+}
+
+void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
+{
+  initParseCodeContext();
+  XMLGenerator *xmlGen = new XMLGenerator;
+  xmlGen->m_inParStack.push(TRUE);
+  parseCode(*xmlGen,
+            0,
+            fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+            FALSE,
+            0,
+            fd);
   t << xmlGen->getContents();
   delete xmlGen;
 }
@@ -952,19 +966,18 @@ void generateXMLClassSection(ClassDef *cd,QTextStream &t,MemberList *ml,const ch
 
 void generateXMLForClass(ClassDef *cd,QTextStream &t)
 {
-  // brief description
-  // detailed description
-  // template arguments
-  // include files
-  // inheritance diagram
-  // list of direct super classes
-  // list of direct sub classes
-  // collaboration diagram
-  // list of all members
-  // user defined member sections
-  // standard member sections
-  // detailed documentation
-  // detailed member documentation
+  // + brief description
+  // + detailed description
+  // - template arguments
+  // - include files
+  // + inheritance diagram
+  // + list of direct super classes
+  // + list of direct sub classes
+  // + collaboration diagram
+  // - list of all members
+  // + user defined member sections
+  // + standard member sections
+  // + detailed member documentation
   
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0) return; // skip generated template instances.
@@ -1071,6 +1084,20 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->documentation());
   t << "    </detaileddescription>" << endl;
+  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);
+  if (!inheritanceGraph.isTrivial())
+  {
+    t << "    <inheritancegraph>" << endl;
+    inheritanceGraph.writeXML(t);
+    t << "    </inheritancegraph>" << endl;
+  }
+  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation);
+  if (!collaborationGraph.isTrivial())
+  {
+    t << "    <collaborationgraph>" << endl;
+    collaborationGraph.writeXML(t);
+    t << "    </collaborationgraph>" << endl;
+  }
   t << "  </compounddef>" << endl;
 }
 
@@ -1118,6 +1145,9 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->documentation());
   t << "    </detaileddescription>" << endl;
+  t << "    <sourcecode>" << endl;
+  writeXMLCodeBlock(t,fd);
+  t << "    </sourcecode>" << endl;
   t << "  </compounddef>" << endl;
 }
 

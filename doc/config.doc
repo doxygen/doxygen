@@ -166,6 +166,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_short_names SHORT_NAMES
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 <li> \refitem cfg_show_used_files SHOW_USED_FILES
+<li> \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 <li> \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
@@ -1069,6 +1070,14 @@ EXTRA_PACKAGES = times
  this tag can be used to specify a list of macro names that should be expanded.
  The macro definition that is found in the sources will be used.
  Use the \c PREDEFINED tag if you want to use a different macro definition.
+
+\anchor cfg_skip_function_macros
+<dt>\c SKIP_FUNCTION_MACROS <dd>
+ \addindex SKIP_FUNCTION_MACROS
+ If the \c SKIP_FUNCTION_MACROS tag is set to \c YES (the default) then 
+ doxygen's preprocessor will remove all function-like macros that are alone 
+ on a line and do not end with a semicolon. Such function macros are typically 
+ used for boiler-plate code, and will confuse the parser if not removed. 
 
 </dl>
 \subsection config_extref External reference options

@@ -365,6 +365,7 @@ QCString resolveTypeDef(Definition *d,const QCString &name)
   //printf("resolveTypeDef(%s,%s)\n",d ? d->name().data() : "<none>",name.data());
   QCString result;
   if (name.isEmpty()) return result;
+
   Definition *mContext=d;
   MemberDef *md=0;
   while (mContext && md==0)
@@ -409,26 +410,6 @@ QCString resolveTypeDef(Definition *d,const QCString &name)
   }
   return result;
   
-#if 0
-  QCString typeName;
-  if (!name.isEmpty()) 
-  {
-    TypedefInfo *ti = Doxygen::typedefDict[name];
-    if (ti)
-    {
-      int count=0;
-      typeName=ti->value;
-      TypedefInfo *newTi;
-      while ((newTi=Doxygen::typedefDict[typeName]) && count<10)
-      {
-        if (typeName==newTi->value) break; // prevent lock-up
-        typeName=newTi->value;
-        count++;
-      }
-    }
-  }
-  return typeName;
-#endif
 }
 
 /*! Get a class definition given its name. 
@@ -472,16 +453,11 @@ ClassDef *getResolvedClass(
                            QCString *pTemplSpec
                           )
 {
-  //printf("getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>",
-  //                                   n);
+  //printf("getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
   QCString name = n;
   if (name.isEmpty()) return 0;
   if (scope==0) scope=Doxygen::globalScope;
   int i = name.findRev("::");
-  //QCString subst = 0;
-  //if (i!=-1) subst = Doxygen::typedefDict[name.right(name.length()-i-2)];
-  //if (subst==0) subst = Doxygen::typedefDict[name],i=-1;
-  //if (subst) // there is a typedef with this name
   QCString subst;
   if (i!=-1)
   {
@@ -491,11 +467,17 @@ ClassDef *getResolvedClass(
   {
     subst = resolveTypeDef(scope,name);
   }
+  //printf("  typedef subst=`%s'\n",subst.data());
   
   if (!subst.isEmpty())
   {
+    // strip * and & from n
+    int ip=subst.length()-1;
+    while (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
+    subst=subst.left(ip+1);
+
     if (pIsTypeDef) *pIsTypeDef=TRUE;
-    //printf("getResolvedClass `%s'->`%s'\n",name.data(),subst->data());
+    //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
     if (subst==name) // avoid resolving typedef struct foo foo; 
     {
       return Doxygen::classSDict.find(name);
@@ -503,15 +485,24 @@ ClassDef *getResolvedClass(
     int count=0; // recursion detection guard
     QCString newSubst;
     QCString typeName = subst;
+  
     if (i!=-1) typeName.prepend(name.left(i)+"::");
     while (!(newSubst=resolveTypeDef(scope,typeName)).isEmpty() 
            && count<10)
     {
       if (typeName==newSubst) 
       {
-        return Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
+        ClassDef *cd = Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
+        //printf("  getClass: exit `%s' %p\n",subst.data(),cd);
+        return cd;
       }
       subst=newSubst;
+      // strip * and & from n
+      int ip=subst.length()-1;
+      while (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
+      subst=subst.left(ip+1);
+      //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
+
       typeName=newSubst;
       if (i!=-1) typeName.prepend(name.left(i)+"::");
       count++;
@@ -523,9 +514,9 @@ ClassDef *getResolvedClass(
     }
     else
     {
-      //printf("getClass: subst %s->%s\n",name.data(),typeName.data());
       int i;
       ClassDef *cd = Doxygen::classSDict.find(typeName);
+      //printf("  getClass: subst %s->%s cd=%p\n",name.data(),typeName.data(),cd);
       if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
       {
         if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
@@ -899,8 +890,33 @@ void setAnchors(char id,MemberList *ml,int groupId)
 }
 
 //----------------------------------------------------------------------------
-// read a file with `name' to a string.
 
+int filterCRLF(char *buf,int len)
+{
+  char *ps=buf;
+  char *pd=buf;
+  char c;
+  int i;
+  for (i=0;i<len;i++)
+  {
+    c=*ps++;
+    if (c=='\r')
+    {
+      if (*ps=='\n') ps++; // DOS: CR+LF -> LF
+      *pd++='\n'; // MAC: CR -> LF
+    }
+    else
+    {
+      *pd++=c;
+    }
+  }
+  return len+pd-ps;
+}
+
+/*! reads a file with name \a name and returns it as a string. If \a filter
+ *  is TRUE the file will be filtered by any user specified input filter.
+ *  If \a name is "-" the string will be read from standard input. 
+ */
 QCString fileToString(const char *name,bool filter)
 {
   if (name==0 || name[0]==0) return 0;
@@ -921,7 +937,7 @@ QCString fileToString(const char *name,bool filter)
         totalSize+=bSize;
         contents.resize(totalSize+bSize); 
       }
-      totalSize+=size+2;
+      totalSize = filterCRLF(contents.data(),totalSize+size)+2;
       contents.resize(totalSize);
       contents.at(totalSize-2)='\n'; // to help the scanner
       contents.at(totalSize-1)='\0';
@@ -951,6 +967,11 @@ QCString fileToString(const char *name,bool filter)
           contents[fsize]='\n'; // to help the scanner
         contents[fsize+1]='\0';
         f.close();
+        int newSize = filterCRLF(contents.data(),fsize+2);
+        if (newSize!=fsize+2) 
+        {
+          contents.resize(newSize);
+        }
         return contents;
       }
     }
@@ -972,7 +993,7 @@ QCString fileToString(const char *name,bool filter)
         totalSize+=bSize;
         contents.resize(totalSize+bSize); 
       }
-      totalSize+=size+2;
+      totalSize = filterCRLF(contents.data(),totalSize+size)+2;
       contents.resize(totalSize);
       contents.at(totalSize-2)='\n'; // to help the scanner
       contents.at(totalSize-1)='\0';
@@ -3212,7 +3233,7 @@ QCString substituteTemplateArgumentsInString(
         }
         else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty())
         {
-          result += formArg->defval;
+          result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs);
           found=TRUE;
         }
       }
