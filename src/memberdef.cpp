@@ -29,6 +29,8 @@
 #include "membergroup.h"
 #include "scanner.h"
 #include "groupdef.h"
+#include "defargs.h"
+#include "xml.h"
 
 //-----------------------------------------------------------------------------
 
@@ -117,13 +119,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     {
       QCString n=a->type.left(vp);
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(ol,scopeName,md->name(),n);
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n);
     }
     else // non-function pointer type
     {
       QCString n=a->type;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(ol,scopeName,md->name(),n);
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n);
     }
     if (!a->name.isEmpty()) // argument has a name
     { 
@@ -143,14 +145,14 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (vp!=-1) // write the part of the argument type 
                 // that comes after the name
     {
-      linkifyText(ol,scopeName,md->name(),a->type.right(a->type.length()-vp));
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),a->type.right(a->type.length()-vp));
     }
     if (!a->defval.isEmpty()) // write the default value
     {
       QCString n=a->defval;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       ol.docify(" = ");
-      linkifyText(ol,scopeName,md->name(),n); 
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n); 
     }
     a=argList->next();
     if (a) 
@@ -639,20 +641,20 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         if (getAnonymousEnumType()) // type is an anonymous enum
         {
-          linkifyText(ol,cname,name(),ltype.left(i),TRUE); 
+          linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype.left(i),TRUE); 
           ol+=*getAnonymousEnumType()->enumDecl();
-          linkifyText(ol,cname,name(),ltype.right(ltype.length()-i-l),TRUE); 
+          linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype.right(ltype.length()-i-l),TRUE); 
         }
         else
         {
           ltype = ltype.left(i) + " { ... } " + ltype.right(ltype.length()-i-l);
-          linkifyText(ol,cname,name(),ltype,TRUE); 
+          linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype,TRUE); 
         }
       }
     }
     else
     {
-      linkifyText(ol,cname,name(),ltype,TRUE); 
+      linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype,TRUE); 
     }
     bool htmlOn = ol.isEnabled(OutputGenerator::Html);
     if (htmlOn && Config::htmlAlignMemberFlag && !ltype.isEmpty())
@@ -679,7 +681,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
       //if (manOn)   ol.enable(OutputGenerator::Man);
     }
     else
+    {
       ol.insertMemberAlign();
+    }
     
     // write name
     if (!name().isEmpty() && name().at(0)!='@')
@@ -734,7 +738,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       if (!isDefine()) ol.writeString(" ");
       //ol.docify(argsString());
-      linkifyText(ol,cname,name(),argsString()); 
+      linkifyText(TextGeneratorOLImpl(ol),cname,name(),argsString()); 
     }
     
     if (excpString())
@@ -748,12 +752,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       if (!isDefine()) 
       {
         ol.writeString(" = "); 
-        linkifyText(ol,cname,name(),init.simplifyWhiteSpace());
+        linkifyText(TextGeneratorOLImpl(ol),cname,name(),init.simplifyWhiteSpace());
       }
       else 
       {
         ol.writeNonBreakableSpace();
-        linkifyText(ol,cname,name(),init);
+        linkifyText(TextGeneratorOLImpl(ol),cname,name(),init);
       }
     }
 
@@ -860,9 +864,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             htmlHelp->addIndexItem(cname,name(),cfname,anchor());
           }
-          linkifyText(ol,scopeName,name(),ldef.left(i));
+          linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.left(i));
           ol+=*vmd->enumDecl();
-          linkifyText(ol,scopeName,name(),ldef.right(ldef.length()-i-l));
+          linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.right(ldef.length()-i-l));
 
           found=TRUE;
         }
@@ -886,7 +890,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         // last ei characters of ldef contain pointer/reference specifiers
         int ni=ldef.find("::",si);
         if (ni>=ei) ei=ni+2;
-        linkifyText(ol,scopeName,name(),ldef.right(ldef.length()-ei));
+        linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.right(ldef.length()-ei));
       }
     }
     else
@@ -943,25 +947,25 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         }
       }
       ol.startMemberDocName();
-      linkifyText(ol,scopeName,name(),ldef);
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
       if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
       {
         if (!isDefine()) 
         {
           ol.docify(" = "); 
-          linkifyText(ol,scopeName,name(),init.simplifyWhiteSpace());
+          linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),init.simplifyWhiteSpace());
         }
         else 
         {
           ol.writeNonBreakableSpace();
-          linkifyText(ol,scopeName,name(),init);
+          linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),init);
         }
       }
       if (excpString()) // add exception list
       {
         ol.docify(" ");
-        linkifyText(ol,scopeName,name(),excpString());
+        linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),excpString());
       }
     }
 
@@ -1389,3 +1393,180 @@ QCString MemberDef::getScopeString() const
   else if (getNamespaceDef()) result=getNamespaceDef()->name();
   return result;
 }
+
+void MemberDef::generateXML(QTextStream &t,Definition *def)
+{
+  if (mtype==EnumValue) return;
+
+  QCString scopeName;
+  if (getClassDef()) 
+    scopeName=getClassDef()->name();
+  else if (getNamespaceDef()) 
+    scopeName=getNamespaceDef()->name();
+    
+  t << "            <";
+  enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType;
+  switch (mtype)
+  {
+    case Define:      t << "definedef";   xmlType=define_t;   break;
+    case EnumValue:   // fall through
+    case Variable:    t << "variabledef"; xmlType=variable_t; break;
+    case Typedef:     t << "typedef";     xmlType=typedef_t;  break;
+    case Enumeration: t << "enumdef";     xmlType=enum_t;     break;
+    case Function:    // fall through
+    case Signal:      // fall through
+    case Prototype:   // fall through
+    case Friend:      // fall through
+    case Slot:        t << "functiondef"; xmlType=function_t; break;
+  }
+  t << " id=\"";
+  t << def->getOutputFileBase()
+    << ":"
+    << anchor();
+  t << "\"";
+  if (xmlType==function_t && virtualness()!=Normal) 
+    // functions has an extra "virt" attribute
+  {
+    t << " virt=\"";
+    switch (virtualness())
+    {
+      case Virtual: t << "virtual";      break;
+      case Pure:    t << "pure-virtual"; break;
+      default: ASSERT(0);
+    }
+    t << "\"";
+  }
+  t << ">" << endl;
+  
+  if (xmlType!=define_t && xmlType!=enum_t &&    // These don't have types.
+      (xmlType!=function_t || !type.isEmpty()) // Type is optional here.
+     )
+  {
+    t << "              <type>";
+    if (xmlType==typedef_t && type.left(8)=="typedef ")
+      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),
+          type.right(type.length()-8)); // strip "typedef "
+    else if (xmlType==function_t && type.left(8)=="virtual ")
+      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),
+          type.right(type.length()-8)); // strip "virtual "
+    else
+      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),type);
+    t << "</type>" << endl;
+  }
+
+  t << "              <name>";
+  writeXMLString(t,name());
+  t << "</name>" << endl;
+  if (xmlType==function_t) //function
+  {
+    t << "              <paramlist>" << endl;
+    ArgumentList *declAl = new ArgumentList;
+    ArgumentList *defAl = argList;
+    stringToArgumentList(args,declAl);
+    if (declAl->count()>0)
+    {
+      ArgumentListIterator declAli(*declAl);
+      ArgumentListIterator defAli(*defAl);
+      Argument *a;
+      for (declAli.toFirst();(a=declAli.current());++declAli)
+      {
+        Argument *defArg = defAli.current();
+        t << "                <param>" << endl;
+        if (!a->attrib.isEmpty())
+        {
+          t << "                  <attributes>";
+          writeXMLString(t,a->attrib);
+          t << "</attributes>" << endl;
+        }
+        if (!a->type.isEmpty())
+        {
+          t << "                  <type>";
+          linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),a->type);
+          t << "</type>" << endl;
+        }
+        if (!a->name.isEmpty())
+        {
+          t << "                  <declname>";
+          writeXMLString(t,a->name); 
+          t << "</declname>" << endl;
+        }
+        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
+        {
+          t << "                  <defname>";
+          writeXMLString(t,defArg->name);
+          t << "</defname>" << endl;
+        }
+        if (!a->array.isEmpty())
+        {
+          t << "                  <array>"; 
+          writeXMLString(t,a->array); 
+          t << "</array>" << endl;
+        }
+        if (!a->defval.isEmpty())
+        {
+          t << "                  <defval>";
+          linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),a->defval);
+          t << "</defval>" << endl;
+        }
+        t << "                </param>" << endl;
+        if (defArg) ++defAli;
+      }
+    }
+    delete declAl;
+    t << "              </paramlist>" << endl;
+  }
+  else if (xmlType==define_t && !args.isEmpty()) // define
+  {
+    t << "              <defparamlist>" << endl;
+    ArgumentListIterator ali(*argList);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      t << "                <defarg>" << a->type << "</defarg>" << endl;
+    }
+    t << "              </defparamlist>" << endl;
+    if (!init.isEmpty())
+    {
+      t << "             <initializer>";
+      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),init);
+      t << "</initializer>" << endl;
+    }
+  }
+  else if (xmlType==enum_t) // enum
+  {
+    t << "              <enumvaluelist>" << endl;
+    MemberListIterator emli(*enumFields);
+    MemberDef *emd;
+    for (emli.toFirst();(emd=emli.current());++emli)
+    {
+      t << "                <enumvalue>" << endl;
+      t << "                  <name>";
+      writeXMLString(t,emd->name());
+      t << "</name>" << endl;
+      if (!emd->init.isEmpty())
+      {
+        t << "                  <initializer>";
+        writeXMLString(t,emd->init);
+        t << "</initializer>" << endl;
+      }
+      t << "                </enumvalue>" << endl;
+    }
+    t << "              </enumvaluelist>" << endl;
+  }
+  t << "            </";
+  switch (mtype)
+  {
+    case Define:      t << "definedef";   break;
+    case EnumValue:   // fall through
+    case Variable:    t << "variabledef"; break;
+    case Typedef:     t << "typedef";     break;
+    case Enumeration: t << "enumdef";     break;
+    case Function:    // fall through
+    case Signal:      // fall through
+    case Prototype:   // fall through
+    case Friend:      // fall through
+    case Slot:        t << "functiondef"; break;
+  }
+  t << ">" << endl;
+}
+

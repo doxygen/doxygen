@@ -8,6 +8,7 @@ clean: FORCE
 	cd src ; $(MAKE) clean
 	cd addon/configgen ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
+	cd addon/xmlread ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
@@ -32,10 +33,12 @@ distclean: clean
 	-rm -f addon/configgen/obj/*.o
 	-rm -f addon/doxywizard/obj/*.o
 	-rm -f addon/doxywizard/moc/moc_*
+	-rm -f addon/xmlread/xmlread.pro 
+	-rm -f addon/xmlread/Makefile addon/xmlread/Makefile.xmlread
+	-rm -f addon/xmlread/*.o
 
 install: doxywizard_install
 	$(INSTTOOL) -d $(INSTALL)/bin
-	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
 	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin

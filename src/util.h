@@ -23,6 +23,9 @@
 #include <qtextstream.h>
 #include <ctype.h>
 
+#include "outputlist.h"
+#include "xml.h"
+
 class ClassDef;
 class FileDef;
 class MemberList;
@@ -36,12 +39,69 @@ class ClassList;
 class BaseClassList;
 class GroupDef;
 class NamespaceList;
+class OutputList;
+
+class TextGeneratorIntf
+{
+  public:
+    virtual void writeString(const char *) const = 0;
+    virtual void writeBreak() const = 0;
+    virtual void writeLink(const char *extRef,const char *file,
+                      const char *anchor,const char *text
+                     ) const = 0; 
+};
+
+class TextGeneratorOLImpl : public TextGeneratorIntf
+{
+  public:
+    TextGeneratorOLImpl(OutputList &ol) : m_ol(ol) {}
+    void writeString(const char *s) const
+    { m_ol.docify(s); }
+    void writeBreak() const
+    { 
+      m_ol.pushGeneratorState();
+      m_ol.disableAllBut(OutputGenerator::Html);
+      m_ol.lineBreak();
+      m_ol.popGeneratorState();
+    }
+    void writeLink(const char *extRef,const char *file,
+                   const char *anchor,const char *text
+                  ) const
+    {
+      m_ol.writeObjectLink(extRef,file,anchor,text);
+    }
+  private:
+    OutputList &m_ol;
+};
+
+class TextGeneratorXMLImpl : public TextGeneratorIntf
+{
+  public:
+    TextGeneratorXMLImpl(QTextStream &t) : m_t(t) {}
+    void writeString(const char *s) const
+    { 
+      writeXMLString(m_t,s); 
+    }
+    void writeBreak() const {}
+    void writeLink(const char *extRef,const char *file,
+                   const char *anchor,const char *text
+                  ) const
+    {
+      if (extRef==0) 
+      { writeXMLLink(m_t,file,anchor,text); } 
+      else // external references are not supported for XML
+      { writeXMLString(m_t,text); }
+    }
+  private:
+    QTextStream &m_t;
+};
+
+extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
+                        const char *text,bool autoBreak=FALSE,bool external=TRUE);
 
 extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
-extern void linkifyText(OutputList &ol,const char *clName,const char *name,
-                        const char *text,bool autoBreak=FALSE,bool external=TRUE);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, 
                     ClassDef *&cd,FileDef *&fd, 
@@ -58,7 +118,7 @@ extern bool matchArguments(ArgumentList *,ArgumentList *,
                            NamespaceList *usingList=0);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
 extern QCString substituteClassNames(const QCString &s);
-extern QCString convertSlashes(const QCString &s,bool dots=FALSE);
+extern QCString convertFileName(const QCString &s);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
@@ -92,7 +152,7 @@ QCString removeAnnonymousScopes(const QCString &s);
 void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
-QCString convertNameToFile(const char *name);
+QCString convertNameToFile(const char *name,bool allowDots=FALSE);
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);

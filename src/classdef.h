@@ -42,6 +42,7 @@ class MemberNameInfoDict;
 class UsesClassDict;
 class MemberGroupList;
 class MemberGroupDict;
+class QTextStream;
 struct IncludeInfo;
 
 class ClassDef : public Definition
@@ -126,6 +127,9 @@ class ClassDef : public Definition
 
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+
+    void generateXML(QTextStream &t);
+    void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
    
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);

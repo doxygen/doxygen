@@ -113,6 +113,7 @@ documentation:
 <li> \refitem cmdskipline \skipline
 <li> \refitem cmdstruct \struct
 <li> \refitem cmdsubsection \subsection
+<li> \refitem cmdtest \test
 <li> \refitem cmdthrow \throw
 <li> \refitem cmdtodo \todo
 <li> \refitem cmdtypedef \typedef
@@ -807,7 +808,7 @@ Public/Protected/Private/... section.
 
   Synonymous to \\see.
 
-  \sa section \ref autolink "\\autolink" for information on how to create links 
+  \sa section \ref autolink "autolink" for information on how to create links 
       to objects.
 
 <hr>
@@ -821,6 +822,16 @@ Public/Protected/Private/... section.
   line or some other sectioning command is encountered. 
 
 <hr>
+\subsection cmdtest \test { paragraph describing a test case }
+
+  \addindex \test
+  Starts a paragraph where a test case can be described. 
+  The description will also add the test case to a separate test list. 
+  The two instances of the description will be cross-referenced.
+  Each test case in the test list will be preceded by a header that
+  indicates the origin of the test case.
+
+<hr>
 \subsection cmdthrow \throw <exception-object> { exception description }
 
   \addindex \throw
@@ -830,11 +841,14 @@ Public/Protected/Private/... section.
   the tag \\throws is a synonym for this tag.
 
 <hr>
-\subsection cmdtodo \todo ( one line todo description )
+\subsection cmdtodo \todo { paragraph describing what is to be done }
 
   \addindex \todo
-  Adds a TODO item to the documentation. The item will also be added
-  to a TODO list. Both instances of the item will be cross-referenced.
+  Starts a paragraph where a TODO item is described. 
+  The description will also add an item to a separate TODO list. 
+  The two instances of the description will be cross-referenced.
+  Each item in the TODO list will be preceded by a header that
+  indicates the origin of the item.
 
 <hr>
 \subsection cmdversion \version { version number }
@@ -907,7 +921,7 @@ Public/Protected/Private/... section.
   the \\link and \\endlink commands serves as text for a link to 
   the \<link-object\> specified as the first argument of \\link.
   
-  See section \ref autolink "\\autolink" for more information on automatically 
+  See section \ref autolink "autolink" for more information on automatically 
   generated links and valid link-objects.
 
   \b Note:
@@ -1150,7 +1164,7 @@ Public/Protected/Private/... section.
   \par Note:
   For nested lists, HTML commands should be used.
 
-  Equivalent to \ref cmdli "\\cmdli"
+  Equivalent to \ref cmdli "\\li"
 
 
 <hr>
@@ -1176,7 +1190,7 @@ Public/Protected/Private/... section.
   will result in the following text:<br><br>
      ... This function returns \c void and not \c int ...
 
-  Equivalent to \ref cmdp "\\cmdp"
+  Equivalent to \ref cmdp "\\p"
 
 <hr>
 \subsection cmdcode \code
@@ -1396,7 +1410,7 @@ Public/Protected/Private/... section.
   \par Note:
   For nested lists, HTML commands should be used.
 
-  Equivalent to \ref cmdarg "\\cmdarg"
+  Equivalent to \ref cmdarg "\\arg"
 
 <hr>
 \subsection cmdp \p <word>
@@ -1413,7 +1427,7 @@ Public/Protected/Private/... section.
   This will result in the following text:<br><br>
   ... the \p x and \p y coordinates are used to ...
 
-  Equivalent to \ref cmdc "\\cmdc"
+  Equivalent to \ref cmdc "\\c"
  
 <hr>
 \subsection cmdverbatim \verbatim

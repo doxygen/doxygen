@@ -17,6 +17,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "qtbc.h"
 #include <qfile.h>
@@ -165,29 +168,58 @@ void FormulaList::generateBitmaps(const char *path)
       const double scaleFactor = 16.0/3.0; 
       int gx = (((int)((x2-x1)*scaleFactor))+3)&~2;
       int gy = (((int)((y2-y1)*scaleFactor))+3)&~2;
-      char gsCmd[256];
       // Then we run ghostscript to convert the postscript to a pixmap
       // The pixmap is a truecolor image, where only black and white are
       // used.  
 #ifdef _WIN32
-      sprintf(gsCmd,"gswin32 -q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
-                    "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
-                    gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
-                    formBase.data(),formBase.data()
+      char gsArgs[256];
+      sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
+                     "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
+                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
+                     formBase.data(),formBase.data()
              );
+      // gswin32 is a GUI api which will pop up a window and run
+      // asynchronously. To prevent both, we use ShellExecuteEx and
+      // WaitForSingleObject (thanks to Robert Golias for the code)
+      SHELLEXECUTEINFO sInfo = {
+        sizeof(SHELLEXECUTEINFO),   /* structure size */
+        SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
+        NULL,                       /* window handle */
+        NULL,                       /* action to perform: open */
+        "gswin32.exe",              /* file to execute */
+        gsArgs,                     /* argument list */ 
+        NULL,                       /* use current working dir */
+        SW_HIDE                     /* minimize on start-up */
+        0,                          /* application instance handle */
+        NULL,                       /* ignored: id list */
+        NULL,                       /* ignored: class name */
+        NULL,                       /* ignored: key class */
+        0,                          /* ignored: hot key */
+        NULL,                       /* ignored: icon */
+        NULL                        /* resulting application handle */
+      };
+      if (!ShellExecuteEx(&sInfo))
+      {
+        err("Problem running ghostscript. Check your installation!\n");
+        return;
+      }
+      else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
+      {
+        WaitForSingleObject(sInfo.hProcess,INFINITE); 
+      }
 #else
+      char gsCmd[256];
       sprintf(gsCmd,"gs -q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                     "-sOutputFile=%s.pnm -DNOPAUSE -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
-#endif
-      //printf("Running ghostscript...\n");
       if (iSystem(gsCmd)!=0)
       {
         err("Problem running ghostscript. Check your installation!\n");
         return;
       }
+#endif
       f.setName(formBase+".pnm");
       uint imageX=0,imageY=0;
       // we read the generated image again, to obtain the pixel data.

@@ -52,6 +52,8 @@
 #include "htmlhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
+#include "xml.h"
+#include "reflist.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -170,6 +172,78 @@ const char *getOverloadDocs()
       
 //----------------------------------------------------------------------------
 
+static void addTodoItem(Entry *root,const char *prefix,
+                        const char *name,const char *title=0)
+{
+  //printf("addTodoItem(%s) todoId=%d\n",name,root->todoId);
+  if (root->todoId==0 || !Config::generateTodoList) return;
+  RefItem *item = todoList.getRefItem(root->todoId);
+  ASSERT(item!=0);
+  if (item->written) return;
+  
+  Entry *page = new Entry;
+  page->section = Entry::PAGEDOC_SEC;
+  page->fileName = "generated";
+  page->startLine = 1;
+  page->name = "todo";
+  page->args = theTranslator->trTodoList();
+  page->doc += "<dl><dt>\\anchor ";
+  page->doc += item->listAnchor;
+  page->doc += "\n";
+  page->doc += prefix;
+  page->doc += " \\ref ";
+  page->doc += name;
+  page->doc += " \"";
+  if (title && title[0]!='\0')
+    page->doc += title;
+  else
+    page->doc += name;
+  page->doc += "\":</dt>\n<dd>";
+  page->doc += item->text;
+  page->doc += "</dd></dl>\n";
+  root->addSubEntry(page);
+
+  item->written=TRUE;
+}
+
+//----------------------------------------------------------------------------
+
+static void addTestItem(Entry *root,const char *prefix,
+                        const char *name,const char *title=0)
+{
+  //printf("addTestItem(%s) testId=%d\n",name,root->testId);
+  if (root->testId==0 || !Config::generateTestList) return;
+  RefItem *item = testList.getRefItem(root->testId);
+  ASSERT(item!=0);
+  if (item->written) return;
+  
+  Entry *page = new Entry;
+  page->section = Entry::PAGEDOC_SEC;
+  page->fileName = "generated";
+  page->startLine = 1;
+  page->name = "test";
+  page->args = theTranslator->trTestList();
+  page->doc += "<dl><dt>\\anchor ";
+  page->doc += item->listAnchor;
+  page->doc += "\n";
+  page->doc += prefix;
+  page->doc += " \\ref ";
+  page->doc += name;
+  page->doc += " \"";
+  if (title && title[0]!='\0')
+    page->doc += title;
+  else
+    page->doc += name;
+  page->doc += "\":</dt>\n<dd>";
+  page->doc += item->text;
+  page->doc += "</dd></dl>\n";
+  root->addSubEntry(page);
+
+  item->written=TRUE;
+}
+
+//----------------------------------------------------------------------------
+
 
 static void buildGroupList(Entry *root)
 {
@@ -195,6 +269,8 @@ static void buildGroupList(Entry *root)
       groupList.append(gd);
       groupDict.insert(root->name,gd);
       addGroupToGroups(root,gd);
+      addTodoItem(root,"group",gd->name());
+      addTestItem(root,"group",gd->name());
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -278,6 +354,8 @@ static void buildFileList(Entry *root)
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
           }
         }
+        addTodoItem(root,"file",fd->name());
+        addTestItem(root,"file",fd->name());
       }
     }
     else
@@ -507,6 +585,8 @@ static void buildClassList(Entry *root)
           fd->insertClass(cd);
         }
         addClassToGroups(root,cd);
+        addTodoItem(root,"class",cd->name());
+        addTestItem(root,"class",cd->name());
         if (!root->subGrouping) cd->setSubGrouping(FALSE);
       }
       else // new class
@@ -547,6 +627,8 @@ static void buildClassList(Entry *root)
         if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
         addClassToGroups(root,cd);
+        addTodoItem(root,"class",cd->name());
+        addTestItem(root,"class",cd->name());
 
         // see if the class is found inside a namespace 
         bool found=addNamespace(root,cd);
@@ -584,6 +666,8 @@ static void buildClassList(Entry *root)
         // the empty string test is needed for extract all case
         cd->setBriefDescription(root->brief);
         cd->insertUsedFile(root->fileName);
+
+        
         // add class to the list
         classList.inSort(cd);
         //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
@@ -656,6 +740,8 @@ static void buildNamespaceList(Entry *root)
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
         addNamespaceToGroups(root,nd);
+        addTodoItem(root,"namespace",nd->name());
+        addTestItem(root,"namespace",nd->name());
       }
       else /* if (!root->doc.isEmpty() || 
                   !root->brief.isEmpty() || 
@@ -670,6 +756,8 @@ static void buildNamespaceList(Entry *root)
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
+        addTodoItem(root,"namespace",nd->name());
+        addTestItem(root,"namespace",nd->name());
 
         bool ambig;
         // file definition containing the namespace nd
@@ -792,6 +880,8 @@ static void findUsingDirectives(Entry *root)
         // add class to the list
         namespaceList.inSort(nd);
         namespaceDict.insert(root->name,nd);
+        addTodoItem(root,"namespace",nd->name());
+        addTestItem(root,"namespace",nd->name());
       }
     }
   }
@@ -805,7 +895,7 @@ static void findUsingDirectives(Entry *root)
 
 //----------------------------------------------------------------------
 
-void findUsingDeclarations(Entry *root)
+static void findUsingDeclarations(Entry *root)
 {
   if (root->section==Entry::USINGDECL_SEC)
   {
@@ -1004,6 +1094,8 @@ static MemberDef *addVariableToClass(
     // add the member to the class
   }
   cd->insertMember(md);
+  addTodoItem(root,"member",cd->name()+"::"+md->name());
+  addTestItem(root,"member",cd->name()+"::"+md->name());
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileName);
@@ -1089,6 +1181,16 @@ static MemberDef *addVariableToFile(
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
+        if (nscope.isEmpty())
+        {
+          addTodoItem(root,"member",md->name());
+          addTestItem(root,"member",md->name());
+        }
+        else
+        {
+          addTodoItem(root,"member",nscope+"::"+md->name());
+          addTestItem(root,"member",nscope+"::"+md->name());
+        }
         return md;
       }
       md=mn->next();
@@ -1125,6 +1227,8 @@ static MemberDef *addVariableToFile(
   {
     nd->insertMember(md); 
     md->setNamespace(nd);
+    addTodoItem(root,"member",nd->name()+"::"+md->name());
+    addTestItem(root,"member",nd->name()+"::"+md->name());
   }
   else
   {
@@ -1133,6 +1237,8 @@ static MemberDef *addVariableToFile(
     {
       fd->insertMember(md);
       md->setFileDef(fd); 
+      addTodoItem(root,"member",md->name());
+      addTestItem(root,"member",md->name());
     }
   }
 
@@ -1526,6 +1632,8 @@ static void buildMemberList(Entry *root)
         cd->insertMember(md);
         // add file to list of used files
         cd->insertUsedFile(root->fileName);
+        addTodoItem(root,"member",cd->name()+"::"+md->name());
+        addTestItem(root,"member",cd->name()+"::"+md->name());
 
         addMemberToGroups(root,md);
       }
@@ -1682,6 +1790,8 @@ static void buildMemberList(Entry *root)
           {
             nd->insertMember(md); 
             md->setNamespace(nd);
+            addTodoItem(root,"member",nd->name()+"::"+md->name());
+            addTestItem(root,"member",nd->name()+"::"+md->name());
           }
           else
           {
@@ -1696,6 +1806,8 @@ static void buildMemberList(Entry *root)
               // add member to the file
               fd->insertMember(md);
               md->setFileDef(fd); 
+              addTodoItem(root,"member",md->name());
+              addTestItem(root,"member",md->name());
             }
           }
 
@@ -1921,11 +2033,12 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
       ClassDef *baseClass=getResolvedClass(baseClassName);
+      //printf("baseClassName=`%s' baseClass=%p\n",baseClassName.data(),baseClass);
       if (baseClassName!=root->name) // check for base class with the same name, 
         // look in the outer scope for a match
       {
         Debug::print(
-            Debug::Classes,0,"baseClass %s of %s found (%s and %s)\n",
+            Debug::Classes,0,"    baseClass %s of %s found (%s and %s)\n",
             baseClassName.data(),
             root->name.data(),
             (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
@@ -2183,6 +2296,11 @@ static void addMemberDocs(Entry *root,
   md->setDefinition(fDecl);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
+  QCString fullName;
+  if (cd) fullName = cd->name();
+  else if (nd) fullName = nd->name();
+  if (!fullName.isEmpty()) fullName+="::";
+  fullName+=md->name();
   if (al)
   {
     mergeArguments(md->argumentList(),al);
@@ -2209,6 +2327,8 @@ static void addMemberDocs(Entry *root,
       doc+=root->doc;
     }
     md->setDocumentation(doc); 
+    addTodoItem(root,"member",fullName);
+    addTestItem(root,"member",fullName);
   }
   else  
   {
@@ -2256,6 +2376,8 @@ static void addMemberDocs(Entry *root,
       md->setBodyDef(fd);
     }
 
+    addTodoItem(root,"member",fullName);
+    addTestItem(root,"member",fullName);
     
   }
   //md->setDefFile(root->fileName);
@@ -3131,6 +3253,8 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           mn->inSort(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
+          addTodoItem(root,"member",cd->name()+"::"+md->name());
+          addTestItem(root,"member",cd->name()+"::"+md->name());
         }
       }
       else // unrelated function with the same name as a member
@@ -3247,6 +3371,8 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           mn->inSort(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
+          addTodoItem(root,"member",cd->name()+"::"+md->name());
+          addTestItem(root,"member",cd->name()+"::"+md->name());
           if (newMemberName)
           {
             //printf("Adding memberName=%s\n",mn->memberName());
@@ -3482,11 +3608,15 @@ static void findEnums(Entry *root)
         }
         nd->insertMember(md);
         md->setNamespace(nd);
+        addTodoItem(root,"member",nd->name()+"::"+md->name());
+        addTestItem(root,"member",nd->name()+"::"+md->name());
       }
       else if (isGlobal)
       {
         md->setDefinition(name);
         fd->insertMember(md);
+        addTodoItem(root,"member",md->name());
+        addTestItem(root,"member",md->name());
       }
       else if (cd)
       {
@@ -3500,6 +3630,8 @@ static void findEnums(Entry *root)
         }
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
+        addTodoItem(root,"member",cd->name()+"::"+md->name());
+        addTestItem(root,"member",cd->name()+"::"+md->name());
       }
       md->setDocumentation(root->doc);
       md->setBriefDescription(root->brief);
@@ -4252,15 +4384,18 @@ static void buildPageList(Entry *root)
           baseName=baseName.left(baseName.length()-4);
         else if (baseName.right(5)==".html")
           baseName=baseName.left(baseName.length()-5);
+
+        QCString title=root->args.stripWhiteSpace();
         pi=new PageInfo(root->fileName,root->startLine,
-                        baseName, root->doc,
-                        root->args.stripWhiteSpace());
+                        baseName, root->doc,title);
         QCString pageName;
         if (Config::caseSensitiveNames)
           pageName=pi->name.copy();
         else
           pageName=pi->name.lower();
         setFileNameForSections(root->anchors,pageName);
+        addTodoItem(root,"page",pageName,title);
+        addTestItem(root,"page",pageName,title);
 
         pageList.append(pi);
         pageDict.insert(baseName,pi);
@@ -4271,13 +4406,20 @@ static void buildPageList(Entry *root)
           // a page name is a label as well!
           SectionInfo *si=new SectionInfo(
               pi->name,pi->title,SectionInfo::Section);
-          si->fileName=pageName+".html";
+          si->fileName=pageName;
           //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
           //printf("Adding section info %s\n",pi->name.data());
           sectionDict.insert(pageName,si);
         }
       }
     }
+  }
+  else if (root->section == Entry::MAINPAGEDOC_SEC)
+  {
+    QCString title=root->args.stripWhiteSpace();
+    if (title.isEmpty()) title=theTranslator->trMainPage();
+    addTodoItem(root,"page","index",title);
+    addTestItem(root,"page","index",title);
   }
   EntryListIterator eli(*root->sublist);
   Entry *e;
@@ -4294,10 +4436,16 @@ static void findMainPage(Entry *root)
     if (mainPage==0)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
+      QCString title=root->args.stripWhiteSpace();
       mainPage = new PageInfo(root->fileName,root->startLine,
-                              "index", root->doc,
-                              root->args.stripWhiteSpace());
+                              "index", root->doc,title);
       setFileNameForSections(root->anchors,"index");
+          
+      // a page name is a label as well!
+      SectionInfo *si=new SectionInfo(
+          mainPage->name,mainPage->title,SectionInfo::Section);
+      si->fileName="index";
+      sectionDict.insert("index",si);
     }
     else
     {
@@ -4330,6 +4478,14 @@ static void resolveUserReferences()
       //         si->definition->name().data(),
       //         si->definition->getOutputFileBase().data());
       si->fileName=si->definition->getOutputFileBase().copy();
+    }
+    // hack: the items of a todo/test list are all fragments from different files, 
+    // so the resulting section's all have the wrong file name (not from the
+    // todo/test list, but from the file in which they are defined). We correct this
+    // here by looking at the generated section labels!
+    if (si->label.left(5)=="_todo" || si->label.left(5)=="_test") 
+    {
+      si->fileName=si->label.mid(1,4); // extract "todo" or "test"
     }
   }
 }
@@ -4408,7 +4564,7 @@ static void buildExampleList(Entry *root)
         PageInfo *pi=new PageInfo(root->fileName,root->startLine,
                                   root->name,root->doc,root->args);
         setFileNameForSections(root->anchors,
-                               convertSlashes(pi->name,TRUE)+"-example"
+                               convertFileName(pi->name)+"-example"
                               );
         exampleList.inSort(pi);
         exampleDict.insert(root->name,pi);
@@ -4440,7 +4596,7 @@ static void generateExampleDocs()
   while (pi)
   {
     msg("Generating docs for example %s...\n",pi->name.data());
-    QCString n=convertSlashes(pi->name,TRUE)+"-example";
+    QCString n=convertFileName(pi->name)+"-example";
     startFile(*outputList,n,"Example Documentation");
     startTitle(*outputList,n);
     outputList->docify(pi->name);
@@ -5604,12 +5760,6 @@ int main(int argc,char **argv)
   msg("Building example list...\n");
   buildExampleList(root);
   
-  msg("Building page list...\n");
-  buildPageList(root);
-
-  msg("Search for main page...\n");
-  findMainPage(root);
-  
   msg("Searching for documented variables...\n");
   buildVarList(root);
 
@@ -5636,6 +5786,12 @@ int main(int argc,char **argv)
   findMemberDocumentation(root); // may introduce new members !
   transferRelatedFunctionDocumentation();
   
+  msg("Building page list...\n");
+  buildPageList(root);
+
+  msg("Search for main page...\n");
+  findMainPage(root);
+
   msg("Freeing entry tree\n");
   delete root;
   
@@ -5793,6 +5949,12 @@ int main(int argc,char **argv)
     writeGraphicalClassHierarchy(*outputList);
   }
 
+  if (Config::generateXML) 
+  {
+    msg("Generating XML output\n");
+    generateXML();
+  }
+
   if (formulaList.count()>0 && Config::generateHtml)
   {
     msg("Generating bitmaps for formulas in HTML...\n");
@@ -5812,9 +5974,11 @@ int main(int argc,char **argv)
     HtmlHelp::getInstance()->finalize();
   }
 
+
   if (Config::generateHtml) removeDoxFont(Config::htmlOutputDir);
   if (Config::generateRTF)  removeDoxFont(Config::rtfOutputDir);
 
   delete tag;
+
   return 0;
 }

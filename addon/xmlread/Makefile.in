@@ -1,0 +1,12 @@
+all clean depend: Makefile.xmlread 
+	$(MAKE) -f Makefile.xmlread $@
+
+distclean: clean
+	$(RM) -f Makefile.xmlread
+
+tmake:
+	$(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
+
+Makefile.xmlread: xmlread.pro
+	$(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
+

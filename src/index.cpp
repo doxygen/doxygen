@@ -578,7 +578,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject() && nd->countMembers()>0) count++;
+    if (nd->isLinkableInProject()) count++;
   }
   return count;
 }
@@ -614,7 +614,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->isLinkableInProject() && nd->countMembers()>0)
+    if (nd->isLinkableInProject())
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
@@ -1386,7 +1386,7 @@ void writeExampleIndex(OutputList &ol)
   while (pi)
   {
     ol.writeListItem();
-    QCString n=convertSlashes(pi->name,TRUE)+"-example";
+    QCString n=convertFileName(pi->name)+"-example";
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
@@ -1513,7 +1513,7 @@ void writeGroupList(OutputList &ol)
 
 void writeGraphInfo(OutputList &ol)
 {
-  if (!Config::haveDotFlag) return;
+  if (!Config::haveDotFlag || !Config::generateHtml) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   generateGraphLegend(Config::htmlOutputDir);

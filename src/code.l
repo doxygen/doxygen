@@ -1506,7 +1506,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   g_searchingForBody = FALSE;
   g_insideBody = FALSE;
   g_bracketCount = 0;
-  g_exampleFile   = convertSlashes(g_exampleName,TRUE)+"-example";
+  g_exampleFile   = convertFileName(g_exampleName)+"-example";
   g_includeCodeFragment = inlineFragment;
   startCodeLine(*g_code);
   g_type.resize(0);

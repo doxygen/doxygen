@@ -28,13 +28,6 @@ FileName::~FileName()
 {
 }
 
-//static QCString convertSlashes(const char *s)
-//{
-//  QCString result=s;
-//  int i,l=result.length();
-//  for (i=0;i<l;i++) if (result.at(i)=='/') result.at(i)='_';
-//  return result;
-//}
 
 void FileName::generateDiskNames()
 {
@@ -48,7 +41,7 @@ void FileName::generateDiskNames()
     // skip references
     while (fd && fd->isReference()) fd=next();
     // name if unique, so diskname is simply the name
-    fd->diskname=name;
+    fd->diskname=convertFileName(name);
   }
   else if (count>1) // multiple occurrences of the same file name
   {
@@ -90,7 +83,7 @@ void FileName::generateDiskNames()
       {
         QCString prefix = fd->path.right(fd->path.length()-j-1);
         fd->setName(prefix+name);
-        fd->diskname=convertSlashes(prefix+name);
+        fd->diskname=convertFileName(prefix+name);
       }
       fd=next();
     }

@@ -39,7 +39,7 @@ static const char *edgeColorMap[] =
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
-  "grey50"         // Undocumented
+  "grey75"         // Undocumented
 };
 
 static const char *edgeStyleMap[] =
@@ -319,7 +319,7 @@ void DotNode::writeBox(QTextStream &t,
                        bool hasNonReachableChildren)
 {
   const char *labCol = 
-          m_url.isEmpty() ? "grey50" :  // non link
+          m_url.isEmpty() ? "grey75" :  // non link
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
@@ -1141,13 +1141,23 @@ void DotClassGraph::writeGraph(QTextStream &out,
       QDir::setCurrent(oldDir);
       return;
     }
+    if (Config::usePDFLatexFlag)
+    {
+      QCString epstopdfCmd(4096);
+      epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+                     baseName.data(),baseName.data());
+      if (iSystem(epstopdfCmd)!=0)
+      {
+         err("Error: Problems running epstopdf. Check your TeX installation!\n");
+         QDir::setCurrent(oldDir);
+         return;
+      }
+    }
     int maxWidth = 420; /* approx. page width in points */
    
     out << "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
-           //"\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
-           //"\\epsfbox{" << baseName << ".eps}\n"
            "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
                                       << "pt]{" << baseName << "}\n"
            "\\end{center}\n"
@@ -1321,6 +1331,18 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       QDir::setCurrent(oldDir);
       return;
     }
+    if (Config::usePDFLatexFlag)
+    {
+      QCString epstopdfCmd(4096);
+      epstopdfCmd.sprintf("epstopdf \"%s.eps\" -outfile=\"%s.pdf\"",
+                     baseName.data(),baseName.data());
+      if (iSystem(epstopdfCmd)!=0)
+      {
+         err("Error: Problems running epstopdf. Check your TeX installation!\n");
+         QDir::setCurrent(oldDir);
+         return;
+      }
+    }
     int maxWidth = 420; /* approx. page width in points */
    
     out << "\\begin{figure}[H]\n"
@@ -1368,7 +1390,7 @@ void generateGraphLegend(const char *path)
   dotText << "  Node12 -> Node7 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
   dotText << "  Node12 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_privatebase.html\"];\n";
   dotText << "  Node13 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey50\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey75\"];\n";
   dotText << "  Node14 -> Node7 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
   dotText << "  Node14 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_used.html\"];\n";
   dotText << "}\n";

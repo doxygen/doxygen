@@ -374,7 +374,7 @@ TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in"
+f_inmakefiles="Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -390,7 +390,7 @@ EOF
      if test $i = Makefile.in; then
        echo "configgen:" >> $DST
        if test $f_configgen = YES; then
-         echo "	$(MAKE) -C addon/configgen" >> $DST
+         echo "	\$(MAKE) -C addon/configgen" >> $DST
        fi
        echo "doxywizard:" >> $DST
        if test $f_wizard = YES; then
@@ -404,7 +404,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in" 
+f_inprofiles="src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

@@ -282,13 +282,36 @@ ClassDef *getResolvedClass(const char *name)
     else
     {
       //printf("getClass: subst %s->%s\n",name,subst->data());
-      return classDict[subst->data()];
+      int i;
+      ClassDef *cd = classDict[subst->data()];
+      if (cd==0 && (i=subst->find('<'))>0) // try unspecialized version as well
+      {
+        return classDict[subst->left(i)];
+      }
+      else
+      {
+        return cd;
+      }
     }
   }
   else
   {
     return classDict[name];
   }
+}
+
+static bool findOperator(const QCString &s,int i)
+{
+  int b = s.findRev("operator",i);
+  if (b==-1) return FALSE; // not found
+  b+=8;
+  while (b<i) // check if there are only spaces inbetween 
+              // the operator and the >
+  {
+    if (!isspace(s.at(b))) return FALSE;
+    b++;
+  }
+  return TRUE;
 }
 
 QCString removeRedundantWhiteSpace(const QCString &s)
@@ -301,15 +324,15 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   {
     char c=s.at(i);
     if (i<l-2 && c=='<' &&  // current char is a <
-        (isId(s.at(i+1)) || isspace(s.at(i+1))) && // next char is a id char or space
-        (i<8 || s.mid(i-8,8)!="operator") // string in front is not "operator"
+        (isId(s.at(i+1)) || isspace(s.at(i+1))) && // next char is an id char or space
+        (i<8 || !findOperator(s,i)) // string in front is not "operator"
        )
     {
       result+="< "; // insert extra space for layouting (nested) templates
     }
     else if (i>0 && c=='>' && // current char is a >
-             (isId(s.at(i-1)) || isspace(s.at(i-1))) && // prev char is a id char or space
-             (i<8 || s.mid(i-8,8)!="operator") // string in front is not "operator"
+             (isId(s.at(i-1)) || isspace(s.at(i-1))) && // prev char is an id char or space
+             (i<8 || !findOperator(s,i)) // string in front is not "operator"
             )
     {
       result+=" >"; // insert extra space for layouting (nested) templates
@@ -346,7 +369,8 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
      );
 }
 
-void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text,bool autoBreak,bool external)
+
+void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *name,const char *text,bool autoBreak,bool external)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
@@ -373,18 +397,22 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
       if (i==-1) i=splitText.find(' ');
       if (i!=-1) // add a link-break at i in case of Html output
       {
-        ol.docify(splitText.left(i+1));
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.lineBreak();
-        ol.popGeneratorState();
-        ol.docify(splitText.right(splitLength-i-1));
+        //ol.docify(splitText.left(i+1));
+        //ol.pushGeneratorState();
+        //ol.disableAllBut(OutputGenerator::Html);
+        //ol.lineBreak();
+        //ol.popGeneratorState();
+        //ol.docify(splitText.right(splitLength-i-1));
+        out.writeString(splitText.left(i+1));
+        out.writeBreak();
+        out.writeString(splitText.right(splitLength-i-1));
       } 
       floatingIndex=splitLength-i-1;
     }
     else
     {
-      ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
+      //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
+      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex)); 
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
@@ -422,7 +450,8 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
           // add link to the result
           if (external ? cd->isLinkable() : cd->isLinkableInProject())
           {
-            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+            //ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             found=TRUE;
           }
         }
@@ -450,7 +479,9 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
         if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
         if (d && (external ? d->isLinkable() : d->isLinkableInProject()))
         {
-          ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+          //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+          //                       md->anchor(),word);
+          out.writeLink(d->getReference(),d->getOutputFileBase(),
                                  md->anchor(),word);
           found=TRUE;
         }
@@ -458,19 +489,22 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
 
       if (!found) // add word to the result
       {
-        ol.docify(word);
+        //ol.docify(word);
+        out.writeString(word);
       }
     }
     else
     {
-      ol.docify(word);
+      //ol.docify(word);
+      out.writeString(word);
     }
     // set next start point in the string
     skipIndex=index=newIndex+matchLen;
     floatingIndex+=matchLen;
   }
   // add last part of the string to the result.
-  ol.docify(txtStr.right(txtStr.length()-skipIndex));
+  //ol.docify(txtStr.right(txtStr.length()-skipIndex));
+  out.writeString(txtStr.right(txtStr.length()-skipIndex));
 }
 
 
@@ -2016,7 +2050,7 @@ bool generateLink(OutputList &ol,const char *clName,
   }
   else if ((pi=exampleDict[linkRef])) // link to an example
   {
-    ol.writeObjectLink(0,convertSlashes(pi->name,TRUE)+"-example",0,lt);
+    ol.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
     return TRUE;
   }
   else if ((gd=groupDict[linkRef])) // link to a group
@@ -2034,6 +2068,7 @@ bool generateLink(OutputList &ol,const char *clName,
   {
         // link to documented input file
     ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,lt);
+    writePageRef(ol,fd->getOutputFileBase(),0);
     return TRUE;
   }
   else // probably a class or member reference
@@ -2084,13 +2119,13 @@ QCString substituteClassNames(const QCString &s)
 
 //----------------------------------------------------------------------
 
-QCString convertSlashes(const QCString &s,bool dots)
+QCString convertFileName(const QCString &s)
 {
   QCString result;
   int i,l=s.length();
   for (i=0;i<l;i++)
   {
-    if (s.at(i)!='/' && (!dots || s.at(i)!='.'))
+    if (s.at(i)!='/' && s.at(i)!='.')
     {
       if (Config::caseSensitiveNames)
       {
@@ -2299,7 +2334,7 @@ bool hasVisibleRoot(BaseClassList *bcl)
   return FALSE;
 }
 
-QCString convertNameToFile(const char *name)
+QCString convertNameToFile(const char *name,bool allowDots)
 {
   QCString result;
   char c;
@@ -2316,6 +2351,7 @@ QCString convertNameToFile(const char *name)
       case '|': result+="_p_"; break;
       case '!': result+="_e_"; break;
       case ',': result+="_x_"; break;
+      case '.': if (allowDots) result+="."; else result+="_"; break;
       case ' ': break;
       default: 
         if (Config::caseSensitiveNames)
@@ -2325,6 +2361,7 @@ QCString convertNameToFile(const char *name)
         break;
     }
   }
+  //printf("convertNameToFile(%s)=`%s'\n",name,result.data());
   return result;
 }
 

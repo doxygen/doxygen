@@ -197,6 +197,8 @@ class Entry
     QList<QCString> *anchors; // list of anchors defined in this entry
     QCString	fileName;     // file this entry was extracted from
     int		startLine;    // start line of entry in the source
+    int         todoId;       // id of the todo item of this entry
+    int         testId;       // id of the test item of this entry
     static int  num;          // counts the total number of entries
   private:
     Entry &operator=(const Entry &); 

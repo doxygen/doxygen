@@ -33,6 +33,7 @@
 #include "example.h"
 #include "outputlist.h"
 #include "dot.h"
+#include "xml.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -1763,3 +1764,126 @@ void ClassDef::determineIntfUsageRelation()
   }
 }
 #endif
+
+void ClassDef::generateXMLSection(QTextStream &t,MemberList *ml,const char *type)
+{
+  if (ml->count()>0)
+  {
+    t << "        <sectiondef type=\"" << type << "\">" << endl;
+    t << "          <memberlist>" << endl;
+    MemberListIterator mli(*ml);
+    MemberDef *md;
+    for (mli.toFirst();(md=mli.current());++mli)
+    {
+      md->generateXML(t,this);
+    }
+    t << "          </memberlist>" << endl;
+    t << "        </sectiondef>" << endl;
+  }
+}
+
+void ClassDef::generateXML(QTextStream &t)
+{
+  t << "    <compounddef id=\"" 
+    << getOutputFileBase() << "\" type=\"";
+  switch(compType)
+  {
+    case Class:  t << "class";     break;
+    case Struct: t << "struct";    break;
+    case Union:  t << "union";     break;
+    default:     t << "interface"; break;
+  } 
+  t << "\">" << endl;
+  t << "      <compoundname>"; 
+  writeXMLString(t,name()); 
+  t << "</compoundname>" << endl;
+  if (inherits->count()>0)
+  {
+    t << "      <basecompoundlist>" << endl;
+    BaseClassListIterator bcli(*inherits);
+    BaseClassDef *bcd;
+    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    {
+      t << "        <basecompoundref idref=\"" 
+        << bcd->classDef->getOutputFileBase()
+        << "\" prot=\"";
+      switch (bcd->prot)
+      {
+        case Public:    t << "public";    break;
+        case Protected: t << "protected"; break;
+        case Private:   t << "private";   break;
+      }
+      t << "\" virt=\"";
+      switch(bcd->virt)
+      {
+        case Normal:  t << "non-virtual";  break;
+        case Virtual: t << "virtual";      break;
+        case Pure:    t <<"pure-virtual"; break;
+      }
+      t << "\"/>" << endl;
+    }
+    t << "      </basecompoundlist>" << endl;
+  }
+  if (inheritedBy->count()>0)
+  {
+    t << "      <derivedcompoundlist>" << endl;
+    BaseClassListIterator bcli(*inheritedBy);
+    BaseClassDef *bcd;
+    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    {
+      t << "        <derivedcompoundref idref=\"" 
+        << bcd->classDef->getOutputFileBase()
+        << "\" prot=\"";
+      switch (bcd->prot)
+      {
+        case Public:    t << "public";    break;
+        case Protected: t << "protected"; break;
+        case Private:   t << "private";   break;
+      }
+      t << "\" virt=\"";
+      switch(bcd->virt)
+      {
+        case Normal:  t << "non-virtual";  break;
+        case Virtual: t << "virtual";      break;
+        case Pure:    t << "pure-virtual"; break;
+      }
+      t << "\"/>" << endl;
+    }
+    t << "      </derivedcompoundlist>" << endl;
+  }
+  int numMembers = 
+    pubTypes.count()+pubMembers.count()+pubAttribs.count()+
+    pubSlots.count()+signals.count()+pubStaticMembers.count()+
+    pubStaticAttribs.count()+proTypes.count()+proMembers.count()+
+    proAttribs.count()+proSlots.count()+proStaticMembers.count()+
+    proStaticAttribs.count()+priTypes.count()+priMembers.count()+
+    priAttribs.count()+priSlots.count()+priStaticMembers.count()+
+    priStaticAttribs.count()+friends.count()+related.count();
+  if (numMembers>0)
+  {
+    t << "      <sectionlist>" << endl;
+    generateXMLSection(t,&pubTypes,"public-type");
+    generateXMLSection(t,&pubMembers,"public-func");
+    generateXMLSection(t,&pubAttribs,"public-attrib");
+    generateXMLSection(t,&pubSlots,"public-slot");
+    generateXMLSection(t,&signals,"signal");
+    generateXMLSection(t,&pubStaticMembers,"public-static-func");
+    generateXMLSection(t,&pubStaticAttribs,"public-static-attrib");
+    generateXMLSection(t,&proTypes,"protected-type");
+    generateXMLSection(t,&proMembers,"protected-func");
+    generateXMLSection(t,&proAttribs,"protected-attrib");
+    generateXMLSection(t,&proSlots,"protected-slot");
+    generateXMLSection(t,&proStaticMembers,"protected-static-func");
+    generateXMLSection(t,&proStaticAttribs,"protected-static-attrib");
+    generateXMLSection(t,&priTypes,"private-type");
+    generateXMLSection(t,&priMembers,"private-func");
+    generateXMLSection(t,&priAttribs,"private-attrib");
+    generateXMLSection(t,&priSlots,"private-slot");
+    generateXMLSection(t,&priStaticMembers,"private-static-func");
+    generateXMLSection(t,&priStaticAttribs,"private-static-attrib");
+    generateXMLSection(t,&friends,"signal");
+    generateXMLSection(t,&related,"related");
+    t << "      </sectionlist>" << endl;
+  }
+  t << "    </compounddef>" << endl;
+}

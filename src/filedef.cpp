@@ -39,8 +39,8 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
 {
   path=p;
   filepath=path+nm;
-  filename=nameToFile(nm);
-  diskname=filename.copy();
+  filename=nameToFile(nm,TRUE);
+  diskname=nameToFile(nm,FALSE);
   setReference(lref);
   classList     = new ClassList;
   includeList   = new QList<IncludeInfo>;
@@ -388,16 +388,6 @@ void FileDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name());
   }
 
-  //enumValMembers.countDocMembers();
-  //if (enumValMembers.totalCount()>0 )
-  //{
-  //  ol.writeRuler();
-  //  ol.startGroupHeader();
-  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
-  //  ol.endGroupHeader();
-  //  enumValMembers.writeDocumentation(ol,name());
-  //}
-
   funcMembers.countDocMembers();
   if (funcMembers.totalCount()>0 )
   {
@@ -532,10 +522,10 @@ void FileDef::insertMember(MemberDef *md)
         enumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      if (Config::sortMembersFlag)
-        enumValMembers.inSort(md); 
-      else
-        enumValMembers.append(md);
+      //if (Config::sortMembersFlag)
+      //  enumValMembers.inSort(md); 
+      //else
+      //  enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
       if (Config::sortMembersFlag)
@@ -658,33 +648,44 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
   }
 }
 
-//-----------------------------------------------------------------------------
-
-#if 0
-/*! Creates a file list. */
-FileList::FileList() : QList<FileDef>()
+void FileDef::generateXMLSection(QTextStream &t,MemberList *ml,const char *type)
 {
+  if (ml->count()>0)
+  {
+    t << "        <sectiondef type=\"" << type << "\">" << endl;
+    t << "          <memberlist>" << endl;
+    MemberListIterator mli(*ml);
+    MemberDef *md;
+    for (mli.toFirst();(md=mli.current());++mli)
+    {
+      md->generateXML(t,this);
+    }
+    t << "          </memberlist>" << endl;
+    t << "        </sectiondef>" << endl;
+  }
 }
 
-/*! Destroys a file list */
-FileList::~FileList()
+void FileDef::generateXML(QTextStream &t)
 {
+  t << "    <compounddef id=\"" 
+    << getOutputFileBase() << "\" type=\"file\">" << endl;
+  t << "      <compoundname>";
+  writeXMLString(t,name());
+  t << "</compoundname>" << endl;
+  int numMembers = defineMembers.count()+protoMembers.count()+
+                   typedefMembers.count()+enumMembers.count()+
+                   funcMembers.count()+varMembers.count();
+  if (numMembers>0)
+  {
+    t << "      <sectionlist>" << endl;
+    generateXMLSection(t,&defineMembers,"define");
+    generateXMLSection(t,&protoMembers,"prototype");
+    generateXMLSection(t,&typedefMembers,"typedef");
+    generateXMLSection(t,&enumMembers,"enum");
+    generateXMLSection(t,&funcMembers,"func");
+    generateXMLSection(t,&varMembers,"var");
+    t << "      </sectionlist>" << endl;
+  }
+  t << "    </compounddef>" << endl;
 }
 
-/*! Compares two files by name. */
-int FileList::compareItems(GCI item1, GCI item2)
-{
-  FileDef *f1=(FileDef *)item1;
-  FileDef *f2=(FileDef *)item2;
-  ASSERT(f1!=0 && f2!=0);
-  return Config::fullPathNameFlag ? 
-         stricmp(f1->absFilePath(),f2->absFilePath()) : 
-         stricmp(f1->name(),f2->name());
-}
-
-/*! Create a file list iterator. */
-FileListIterator::FileListIterator(const FileList &cllist) :
-  QListIterator<FileDef>(cllist)
-{
-}
-#endif

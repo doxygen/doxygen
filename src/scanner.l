@@ -42,6 +42,7 @@
 #include "language.h"
 #include "outputlist.h"
 #include "membergroup.h"
+#include "reflist.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -93,9 +94,10 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              ifCount      = 0 ;
-static int              todoAnchor   = 0 ;
 static int              todoStartContext = 0;
 static QCString         todoString = 0;
+static int              testStartContext = 0;
+static QCString         testString = 0;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -237,6 +239,7 @@ static void initParser()
 //-----------------------------------------------------------------------------
 
 void scanString(const char *s);
+void internalParseDocument(const char *s);
 
 //-----------------------------------------------------------------------------
 
@@ -897,11 +900,12 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup") 
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
-FILE      ([a-z_A-Z0-9\.\\:\/\-\+]+)|("\""[^\n\"]+"\"")
+FILE      ([a-z_A-Z0-9\\:\/\-\+]+("."[a-z_A-Z0-9\\:\/\-\+]+)*)|("\""[^\n\"]+"\"")
 FILEMASK  [a-z_A-Z0-9\.\\:\/\-\+]+"."[a-z_A-Z0-9\.\-\+]*[a-z_A-Z0-9\-\+]
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
@@ -1086,6 +1090,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 %x	DocLatexImageName
 %x	DocLatexImageWidth
 %x      TodoParam
+%x      TestParam
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1278,7 +1283,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
     					       "in documentation."
                                               ); 
 					}
-<DocScan>{CMD}"addindex"/{BN}		{
+<DocScan>{CMD}"addindex"{B}+		{
   					  BEGIN(DocIndexWord);
   					}
 <DocScan>"\\form#"[0-9]+		{
@@ -1529,6 +1534,46 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					    outDoc->writeDescItem();
 					  }
   					}
+<DocScan>"\\todo "[0-9]+		{ // this tag is generated in an earlier pass
+  					  if (Config::generateTodoList)
+					  {
+					    QCString numStr=yytext;
+					    numStr=numStr.right(numStr.length()-6);
+					    bool ok; int num = numStr.toUInt(&ok);
+					    RefItem *item = todoList.getRefItem(num);
+					    ASSERT(item!=0);
+					    endArgumentList();
+					    if (inBlock()) endBlock();
+					    outDoc->startDescList();
+					    outDoc->startBold();
+					    outDoc->writeObjectLink(0,"todo",item->listAnchor,theTranslator->trTodo()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					    internalParseDocument(item->text);
+					    outDoc->endDescList();
+					  }
+  					}
+<DocScan>"\\test "[0-9]+		{ // this tag is generated in an earlier pass
+  				          if (Config::generateTestList)
+					  {
+  					    QCString numStr=yytext;
+					    numStr=numStr.right(numStr.length()-6);
+					    bool ok; int num = numStr.toUInt(&ok);
+					    RefItem *item = testList.getRefItem(num);
+					    ASSERT(item!=0);
+  					    endArgumentList();
+					    if (inBlock()) endBlock();
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					    internalParseDocument(item->text);
+					    outDoc->endDescList();
+					  }
+  					}
 <DocScan>{CMD}"deprecated"/{BN}		{
   					  endArgumentList();
 					  if (!inDeprecatedBlock)
@@ -1560,6 +1605,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  scanString(tagName+": ");
 					  outDoc->endBold();
 					  outDoc->endDescTitle();
+					  outDoc->writeDescItem();
 					  scanString(tagText);
 					  outDoc->endDescList();
   					}
@@ -1760,7 +1806,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  BEGIN(DocScan);
   					}
-<DocRefName>{SCOPENAME}			{
+<DocRefName>{SCOPENAME}|{FILE}		{
   					  QCString ref=yytext;
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[ref]))
@@ -1789,7 +1835,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  BEGIN(DocScan);
   					}
-<DocRefName>{SCOPENAME}{B}+/"\""	{
+<DocRefName>({SCOPENAME}|{FILE}){B}+/"\""	{
   					  sectionRef=yytext;
 					  sectionRef=sectionRef.stripWhiteSpace();
 					  BEGIN(DocRefArgStart);
@@ -1922,7 +1968,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  BEGIN(DocScan);
   					}
-<DocScan,DocRefName>{SCOPEMASK}("()")?		{
+<DocScan,DocRefName>{SCOPEMASK}("()")?	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  BEGIN(DocScan);
   					}
@@ -2178,7 +2224,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocEmphasis>{WORD}			{ 
   					  outDoc->startEmphasis();
-  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
+  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
@@ -2196,7 +2242,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocBold>{WORD}				{ 
   					  outDoc->startBold();
-  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
+  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
 					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
@@ -2208,7 +2254,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocCode>{WORD}				{ 
   					  outDoc->startTypewriter();
-  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
+  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}
@@ -4233,7 +4279,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  current->brief+=".";
 					  BEGIN( tmpDocType );
 					}
-<JavaDoc>{CMD}("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note") { 
+<JavaDoc>{B}*/{SECTIONCMD}		{ 
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}
@@ -4381,50 +4427,74 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
 <SkipHtmlComment>.
-<LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"{B}+	{
+<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
   					  todoStartContext = YY_START;
-					  todoString.resize(0);
-					  BEGIN(TodoParam);
+					  lastBriefContext = TodoParam; // this is where we will continue at the end of the argument
+					  todoString = current->brief.copy(); // these will be swapped later on.
+					  BEGIN(ClassDocBrief);
   					}
-<TodoParam>[^*/\n]+			{
-  					  todoString+=yytext;
+<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"test"/[^a-z_A-Z0-9]	{
+  					  testStartContext = YY_START;
+					  lastBriefContext = TestParam; // this is where we will continue at the end of the argument
+					  testString = current->brief.copy(); // these will be swapped later on.
+					  BEGIN(ClassDocBrief);
   					}
+<TodoParam>\n                           |
 <TodoParam>.				{
-  					  todoString+=*yytext;
-  					}
-<TodoParam>"\n"|"*/"			{
-					  char anchorLabel[12];
-					  sprintf(anchorLabel,"_todo%06d",todoAnchor++);
-					  QCString todoItemNum;
-					  todoItemNum.sprintf("%d",todoAnchor);
-					  sectionType=SectionInfo::Anchor;
-					  sectionLabel=anchorLabel;
-					  addSection();
-					  current->doc += "\\anchor "+sectionLabel+"\n";
-					  current->doc += "<p><b>\\link todo ";
-					  current->doc += theTranslator->trTodo();
-					  current->doc += ":\\endlink </b>"; 
-					  current->doc += todoString + "<p>";
-					  Entry *page = new Entry;
-					  page->section = Entry::PAGEDOC_SEC;
-					  page->fileName = yyFileName;
-					  page->startLine = yyLineNr;
-					  page->name = "todo";
-					  page->args = theTranslator->trTodoList();
-					  page->doc += "\\ref ";
-					  page->doc += anchorLabel;
-					  page->doc += " \""+todoItemNum+"\"\n"+todoString+"<p>";
-					  global_root->addSubEntry(page);
-					  if (*yytext=='*')
+  					  if (current->todoId!=0)
 					  {
-					    unput('/');unput('*');
+					    RefItem *item = todoList.getRefItem(current->todoId);
+					    item->text += "<p>";
+					    item->text += current->brief;
 					  }
 					  else
 					  {
-					    unput('\n');
+  					    int todoItemId  = todoList.addRefItem();
+					    char anchorLabel[12];
+					    sprintf(anchorLabel,"_todo%06d",todoItemId);
+					    RefItem *item = todoList.getRefItem(todoItemId);
+					    item->text = current->brief.copy();
+					    item->listAnchor = anchorLabel;
+					    current->todoId = todoItemId;
+					    QCString todoCmdString;
+					    todoCmdString.sprintf("\\todo %d\n",todoItemId);
+					    current->doc += todoCmdString;
+					    sectionType=SectionInfo::Anchor;
+					    sectionLabel=anchorLabel;
+					    addSection();
 					  }
+  					  unput(*yytext);
+					  current->brief  = todoString.copy(); // restore orginial brief desc.
 					  BEGIN(todoStartContext);
-					}
+  					}
+<TestParam>\n                           |
+<TestParam>.				{
+  					  if (current->testId!=0)
+					  {
+					    RefItem *item = testList.getRefItem(current->testId);
+					    item->text += "<p>";
+					    item->text += current->brief;
+					  }
+					  else
+					  {
+  					    int testItemId  = testList.addRefItem();
+					    char anchorLabel[12];
+					    sprintf(anchorLabel,"_test%06d",testItemId);
+					    RefItem *item = testList.getRefItem(testItemId);
+					    item->text = current->brief.copy();
+					    item->listAnchor = anchorLabel;
+					    current->testId = testItemId;
+					    QCString testCmdString;
+					    testCmdString.sprintf("\\test %d\n",testItemId);
+					    current->doc += testCmdString;
+					    sectionType=SectionInfo::Anchor;
+					    sectionLabel=anchorLabel;
+					    addSection();
+					  }
+  					  unput(*yytext);
+					  current->brief  = testString.copy(); // restore orginial brief desc.
+					  BEGIN(testStartContext);
+  					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
 					  BEGIN( ExampleDoc );
@@ -4715,7 +4785,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
 <Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
 <LineDoc,JavaDoc>"//"					{ current->brief += yytext; }
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>("\\\\"|"@@")"f"[$\[\]] {
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f$"	{ 
@@ -4766,6 +4836,18 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    BEGIN( lastDocContext );
 					  }
 					  else if (YY_START==ClassDocBrief &&
+					      lastBriefContext==TodoParam)
+					  {
+					    unput('/');unput('*'); // make sure we have something to read
+					    BEGIN( TodoParam );
+					  }
+					  else if (YY_START==ClassDocBrief &&
+					      lastBriefContext==TestParam)
+					  {
+					    unput('/');unput('*'); // make sure we have something to read
+					    BEGIN( TestParam );
+					  }
+					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
   					    current->doc += "\n\n";
@@ -4799,18 +4881,18 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <PageDocTitle>\n			{ yyLineNr++; current->args+=" "; }
 <PageDocTitle>[^\n\<]			{ current->args+=yytext; }
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
-<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"ingroup"{B}+   { 
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
   					  BEGIN( GroupName ); 
 					}
-<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
                                           current->subGrouping = FALSE; 
                                         }
-<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 100000; // ON
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 0; // OFF
   					}
 <GroupName>{ID}				{
@@ -4837,16 +4919,46 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
 					  if (!current->doc.isEmpty()) current->doc+="<p>";
-  					  yyLineNr++; 
+					  if (lastBriefContext==TodoParam || lastBriefContext==TestParam)
+					  {
+					    unput('\n');
+					  }
+					  else
+					  {
+					    yyLineNr++;
+					  }
 					  BEGIN( lastBriefContext );
 					}
-<ClassDocBrief>"\n"			{ yyLineNr++ ; current->brief += " "; }
+<ClassDocBrief>"\n"			{ 
+					  // allow \todo in brief description
+					  if (lastBriefContext==TodoParam &&
+					      (todoStartContext==LineDoc ||
+					       todoStartContext==AfterDocLine
+					      )
+					     )
+					  {
+					    unput('\n'); // make sure we have something to read
+					    BEGIN( TodoParam );
+					  }
+					  else if
+					     (lastBriefContext==TestParam &&
+					      (testStartContext==LineDoc ||
+					       testStartContext==AfterDocLine
+					      )
+					     )
+					  {
+					    unput('\n'); // make sure we have something to read
+					    BEGIN( TestParam );
+					  }
+					  else
+					  {
+					    current->brief += " "; 
+  					    yyLineNr++ ; 
+					  }
+					}
 <ClassDocBrief>"<"{BR}{ATTR}">"
-<ClassDocBrief>{BS}/{CMD}"ingroup"	{
+<ClassDocBrief>{BS}/{SECTIONCMD}	{ 
   					  current->brief=current->brief.stripWhiteSpace();
-					  BEGIN( lastBriefContext ); 
-  					}
-<ClassDocBrief>{BS}/{CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
                                           BEGIN( lastBriefContext ); 
                                         }
 <ClassDocBrief>{BS}/{CMD}("brief"|"short"){BN}+ {
@@ -4971,14 +5083,33 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  BEGIN(AfterDoc);
   					}
 <AfterDocLine>.				{ current->brief+=yytext; }
+<AfterDocBrief>{BS}({BL}|"\\n\\n")	{ 
+  					  current->brief=current->brief.stripWhiteSpace();
+					  yyLineNr++;
+					  BEGIN( AfterDoc );
+					}
 <AfterDocBrief>"/*"|"//"		{ current->brief+=yytext; }
-<AfterDocBrief>^{B}*"*"+/[^/\n]            
+<AfterDocBrief>{B}*/{SECTIONCMD}	{
+  					  current->brief=current->brief.stripWhiteSpace();
+  					  BEGIN( AfterDoc );
+  					}
 <AfterDocBrief>\n			{ current->brief+=yytext; yyLineNr++; }
 <AfterDocBrief>.			{ current->brief+=*yytext; }
-<AfterDocBrief>^{B}*"*"/[^/\n]{BL}	{ yyLineNr++; 
+
+  /*
+<AfterDocBrief>"<"{BR}{ATTR}">"
+<AfterDocBrief>{BS}/{CMD}"ingroup"	{
+  					  current->brief=current->brief.stripWhiteSpace();
+					  BEGIN( lastBriefContext ); 
+  					}
+<AfterDocBrief>{BS}/{SECTIONCMD}	{ 
+                                          BEGIN( lastBriefContext ); 
+                                        }
+<AfterDocBrief>{BS}/[^/\n]{BL}		{ yyLineNr++; 
   					  if (!current->brief.stripWhiteSpace().isEmpty())
 					    BEGIN(AfterDoc); 
 					}
+  */
 <AfterDocBrief>"*/"			{
                                           if (afterDocTerminator!=0)
 					    unput(afterDocTerminator);
@@ -5032,11 +5163,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"{B}+ { 
   				         current->doc += yytext; 
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
   					  current->doc+=' '; 
 					}
 <DefLineDoc,LineDoc,ClassDoc,Doc>"/*"   { current->doc += yytext; }
@@ -5096,6 +5227,25 @@ void scanString(const char *s)
   inputPosition = oldInputPosition;
   BEGIN( oldRule );
 }
+
+void internalParseDocument(const char *s)
+{
+  const char *oldInputString = inputString;
+  int oldInputPosition = inputPosition;
+  int oldRule = YY_START;
+  YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
+  yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));  
+  inputString  = s;
+  inputPosition = 0;
+  BEGIN( DocScan );
+  scanYYlex();
+  yy_delete_buffer(YY_CURRENT_BUFFER);
+  yy_switch_to_buffer(oldBuffer);
+  inputString = oldInputString;
+  inputPosition = oldInputPosition;
+  BEGIN( oldRule );
+}
+
 
 //----------------------------------------------------------------------------
 
