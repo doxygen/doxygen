@@ -5,8 +5,8 @@ distclean: clean
 	$(RM) -f Makefile.xmlread
 
 tmake:
-	$(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
 
 Makefile.xmlread: xmlread.pro
-	$(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
+	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlread.pro >Makefile.xmlread
 

@@ -337,8 +337,6 @@ VERSION   = `cat VERSION`
 INSTALL   = $f_prefix
 INSTTOOL  = $f_insttool
 DOXYDOCS  = ..
-
-export TMAKEPATH
 EOF
 
 if test "$f_dot" != NO; then
