@@ -159,6 +159,9 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addStartHandler("location",this,&MemberHandler::startLocation);
   addEndHandler("location");
 
+  addStartHandler("templateparamlist",this,&MemberHandler::startTemplateParamList);
+  addEndHandler("templateparamlist",this,&MemberHandler::endTemplateParamList);
+
   m_type.setAutoDelete(TRUE);
   m_initializer.setAutoDelete(TRUE);
   m_exception.setAutoDelete(TRUE);
@@ -172,6 +175,8 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   m_defLine=0;
   m_bodyStart=0;
   m_bodyEnd=0;
+  m_insideTemplateParamList=FALSE;
+  m_hasTemplateParamList=FALSE;
 }
 
 MemberHandler::~MemberHandler()
@@ -313,7 +318,14 @@ void MemberHandler::startParam(const QXmlAttributes& attrib)
 {
   ParamHandler *paramHandler = new ParamHandler(this);
   paramHandler->startParam(attrib);
-  m_params.append(paramHandler);
+  if (m_insideTemplateParamList)
+  {
+    m_templateParams.append(paramHandler);
+  }
+  else
+  {
+    m_params.append(paramHandler);
+  }
 }
 
 void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
@@ -321,6 +333,17 @@ void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
   EnumValueHandler *evh = new EnumValueHandler(this);
   evh->startEnumValue(attrib);
   m_enumValues.append(evh);
+}
+
+void MemberHandler::startTemplateParamList(const QXmlAttributes&)
+{
+  m_insideTemplateParamList = TRUE;
+  m_hasTemplateParamList = TRUE;
+}
+
+void MemberHandler::endTemplateParamList()
+{
+  m_insideTemplateParamList = FALSE;
 }
 
 void MemberHandler::initialize(MainHandler *mh)

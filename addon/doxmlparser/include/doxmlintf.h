@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ *
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #ifndef _DOXMLINTF_H
 #define _DOXMLINTF_H
 
@@ -480,7 +495,8 @@ class IMember
     virtual const IString * name() const = 0;
     virtual bool isConst() const = 0;
     virtual bool isVolatile() const = 0;
-    virtual IParamIterator *params() const = 0;
+    virtual IParamIterator *parameters() const = 0;
+    virtual IParamIterator *templateParameters() const = 0;
     virtual ILinkedTextIterator *initializer() const = 0;
     virtual ILinkedTextIterator *exceptions() const = 0;
     virtual IMemberReferenceIterator *references() const = 0; 
@@ -507,27 +523,79 @@ class IMemberIterator
     virtual void release() = 0;
 };
 
+/*! \brief The interface to a section in the object model. 
+ *
+ *  A compound can have a number of sections, where each
+ *  section contains a set of members with the properties implied by
+ *  the section kind. The kind() method returns the kind of the section.
+ *  The members of the section can be accessed via members(). Apart
+ *  from using kind(), some of the individual properties of the section can 
+ *  also be inspected via isStatic(), isPublic(), isProtected() and 
+ *  isPrivate().
+ */
 class ISection 
 {
   public:
-    enum SectionKind { Invalid=0,
-                       UserDefined,
-                       PubTypes, PubFuncs, PubAttribs, PubSlots,
-                       Signals, DCOPFuncs, Properties,
-                       PubStatFuncs, PubStatAttribs,
-                       ProTypes, ProFuncs, ProAttribs, ProSlots,
-                       ProStatFuncs, ProStatAttribs,
-                       PriTypes, PriFuncs, PriAttribs, PriSlots,
-                       PriStatFuncs, PriStatAttribs, 
-                       Friend, Related, Defines, Prototypes, Typedefs,
-                       Enums, Functions, Variables
-                     };
+    /*! Possible section types */
+    enum SectionKind 
+    { Invalid=0,
+      UserDefined,         //!< A user defined member group 
+      PubTypes,            //!< Public member typedefs
+      PubFuncs,            //!< Public member functions
+      PubAttribs,          //!< Public member attributes 
+      PubSlots,            //!< Public Qt Slots
+      Signals,             //!< Qt Signals
+      DCOPFuncs,           //!< KDE-DCOP interface functions
+      Properties,          //!< IDL properties
+      PubStatFuncs,        //!< Public static member functions
+      PubStatAttribs,      //!< Public static attributes
+      ProTypes,            //!< Protected member typedefs
+      ProFuncs,            //!< Protected member functions
+      ProAttribs,          //!< Protected member attributes
+      ProSlots,            //!< Protected slots
+      ProStatFuncs,        //!< Protected static member functions
+      ProStatAttribs,      //!< Protected static member attributes
+      PriTypes,            //!< Private member typedefs
+      PriFuncs,            //!< Private member functions
+      PriAttribs,          //!< Private member attributes
+      PriSlots,            //!< Private Qt slots
+      PriStatFuncs,        //!< Private static member functions
+      PriStatAttribs,      //!< Private static member attributes
+      Friend,              //!< Friends
+      Related,             //!< Function marked as related
+      Defines,             //!< Preprocessor defines
+      Prototypes,          //!< Global function prototypes
+      Typedefs,            //!< Global typedefs
+      Enums,               //!< Enumerations
+      Functions,           //!< Global functions
+      Variables            //!< Global variables
+    };
+    
+    /*! Returns a string representation of the value returned by kind() */
     virtual const IString * kindString() const = 0;
+    
+    /*! Returns what kind of section this is */
     virtual SectionKind kind() const = 0;
+    
+    /*! Returns an iterator for the members of this section */
     virtual IMemberIterator *members() const = 0;
+    
+    /*! Returns \c true if this section contains statics */
     virtual bool isStatic() const = 0;
+    
+    /*! Returns \c true if this section belongs to a 
+     *  public section of a class 
+     */
     virtual bool isPublic() const = 0;
+    
+    /*! Returns \c true if this section belongs to a 
+     *  private section of a class 
+     */
     virtual bool isPrivate() const = 0;
+    
+    /*! Returns \c true if this section belongs to a 
+     *  protected section of a class 
+     * */
     virtual bool isProtected() const = 0;
 };
 
@@ -542,6 +610,31 @@ class ISectionIterator
     virtual void release() = 0;
 };
 
+/*! \brief The interface to a compound in the object model. 
+ *
+ *  A compound has a name which can be obtained via the name() method 
+ *  and a unique id, which is return via the id() method.
+ *  A compound consists zero or more members which are grouped into sections. 
+ *  The sections() method can be used to access the individual sections. 
+ *  Alternatively, members can be obtained by name or id. There are 
+ *  different types of compounds. The kind() method returns what kind of 
+ *  compound this is. Depending on the return value one can dynamically 
+ *  cast an interface pointer to an more specialised interface that provides 
+ *  additional methods.
+ *  Example:
+ *  \code
+ *  ICompound *comp=...;
+ *  if (comp->kind()==ICompound::Class)
+ *  {
+ *    IClass *cls = dynamic_cast<IClass*>(comp);
+ *    // use methods of IClass
+ *  }
+ *  \endcode
+ *  The documentation that is provided by a compound is available via
+ *  the briefDescription() and detailedDescription() methods.
+ *  To avoid excessive memory usage, release() should be called (once) on each 
+ *  compound interface pointer that is no longer needed.
+ */
 class ICompound 
 {
   public:
@@ -634,14 +727,16 @@ class IRelatedCompoundIterator
     virtual void release() = 0;
 };
 
+/*! \brief The interface to a class in the object model. 
+ */
 class IClass : public ICompound
 {
   public:
     virtual IGraph *inheritanceGraph() const = 0;
     virtual IGraph *collaborationGraph() const = 0;
-    virtual IRelatedCompoundIterator *baseClasses() const = 0;
-    virtual IRelatedCompoundIterator *derivedClasses() const = 0;
-    virtual ICompoundIterator *nestedClasses() const = 0;
+    virtual IRelatedCompoundIterator *baseCompounds() const = 0;
+    virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
+    virtual ICompoundIterator *nestedCompounds() const = 0;
 
     // TODO:
     // class:
@@ -653,35 +748,56 @@ class IClass : public ICompound
     //  locationBodyEndLine()
 };
 
+/*! \brief The interface to a struct in the object model. 
+ */
 class IStruct : public ICompound
 {
+  public:
+    virtual ICompoundIterator *nestedCompounds() const = 0;
+    virtual IRelatedCompoundIterator *baseCompounds() const = 0;
+    virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
 };
 
+/*! \brief The interface to a union in the object model. 
+ */
 class IUnion : public ICompound
 {
+  public:
+    virtual ICompoundIterator *nestedCompounds() const = 0;
 };
 
+/*! \brief The interface to a Java/IDL interface in the object model. 
+ */
 class IInterface : public ICompound
 {
+  public:
+    virtual IRelatedCompoundIterator *baseCompounds() const = 0;
+    virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
 };
 
+/*! \brief The interface to a Java/IDL exception in the object model. 
+ */
 class IException : public ICompound
 {
 };
 
+/*! \brief The interface to a namespace in the object model. 
+ */
 class INamespace : public ICompound
 {
-    // namespace:
-    //  ICompound *innerNamespaces()
-    //  ICompoundIterator *innerClasses()
+  public:
+    virtual ICompoundIterator *nestedCompounds() const = 0;
 };
 
+/*! \brief The interface to a file in the object model. 
+ */
 class IFile : public ICompound
 {
   public:
     virtual IGraph *includeDependencyGraph() const = 0;
     virtual IGraph *includedByDependencyGraph() const = 0;
     virtual IDocProgramListing *source() const = 0;
+    virtual ICompoundIterator *nestedCompounds() const = 0;
 
     // file:
     //  includes()
@@ -690,14 +806,20 @@ class IFile : public ICompound
     //  ICompoundIterator *innerClasses()
 };
 
+/*! \brief The interface to a group in the object model. 
+ */
 class IGroup : public ICompound
 {
+  public:
+    virtual ICompoundIterator *nestedCompounds() const = 0;
     // group:
     //  Title()
     //  innerFile()
     //  innerPage()
 };
 
+/*! \brief The interface to a page in the object model. 
+ */
 class IPage : public ICompound
 {
 };

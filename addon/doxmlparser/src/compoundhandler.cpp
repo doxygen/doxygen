@@ -145,13 +145,15 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   : m_brief(0), m_detailed(0), m_programListing(0),
     m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
     m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0),
-    m_includeDependencyGraph(0), m_includedByDependencyGraph(0)
+    m_includeDependencyGraph(0), m_includedByDependencyGraph(0),
+    m_hasTemplateParams(FALSE)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
   m_sections.setAutoDelete(TRUE);
   m_memberNameDict.setAutoDelete(TRUE);
-  m_innerClasses.setAutoDelete(TRUE);
+  m_innerCompounds.setAutoDelete(TRUE);
+  m_templateParams.setAutoDelete(TRUE);
 
   addStartHandler("doxygen");
   addEndHandler("doxygen");
@@ -190,6 +192,20 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("innerclass",this,&CompoundHandler::startInnerClass);
   addEndHandler("innerclass");
 
+  addStartHandler("innernamespace",this,&CompoundHandler::startInnerNamespace);
+  addEndHandler("innernamespace");
+
+  addStartHandler("innerfile",this,&CompoundHandler::startInnerFile);
+  addEndHandler("innerfile");
+
+  addStartHandler("innergroup",this,&CompoundHandler::startInnerGroup);
+  addEndHandler("innergroup");
+
+  addStartHandler("templateparamlist");
+  addEndHandler("templateparamlist");
+
+  addStartHandler("param",this,&CompoundHandler::startParam);
+  addEndHandler("param");
 }
 
 CompoundHandler::~CompoundHandler()
@@ -259,7 +275,30 @@ void CompoundHandler::endCompoundName()
 
 void CompoundHandler::startInnerClass(const QXmlAttributes& attrib)
 {
-  m_innerClasses.append(new QString(attrib.value("refid")));
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startInnerNamespace(const QXmlAttributes& attrib)
+{
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startInnerFile(const QXmlAttributes& attrib)
+{
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startInnerGroup(const QXmlAttributes& attrib)
+{
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startParam(const QXmlAttributes& attrib)
+{
+  m_hasTemplateParams = TRUE;
+  ParamHandler *ph = new ParamHandler(this);
+  ph->startParam(attrib);
+  m_templateParams.append(ph);
 }
 
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
@@ -445,23 +484,28 @@ IGraph *CompoundHandler::includedByDependencyGraph() const
   return m_includedByDependencyGraph;
 }
 
-IRelatedCompoundIterator *CompoundHandler::baseClasses() const
+IRelatedCompoundIterator *CompoundHandler::baseCompounds() const
 {
   return new RelatedCompoundIterator(m_superClasses);
 }
 
-IRelatedCompoundIterator *CompoundHandler::derivedClasses() const
+IRelatedCompoundIterator *CompoundHandler::derivedCompounds() const
 {
   return new RelatedCompoundIterator(m_subClasses);
 }
 
-ICompoundIterator *CompoundHandler::nestedClasses() const
+ICompoundIterator *CompoundHandler::nestedCompounds() const
 {
-  return new CompoundIdIterator(m_mainHandler,m_innerClasses);
+  return new CompoundIdIterator(m_mainHandler,m_innerCompounds);
 }
 
 IDocProgramListing *CompoundHandler::source() const
 {
   return m_programListing;
+}
+
+IParamIterator *CompoundHandler::templateParameters() const
+{
+  return m_hasTemplateParams ? new ParamIterator(m_templateParams) : 0;
 }
 

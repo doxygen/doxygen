@@ -76,6 +76,7 @@ QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
   return "illegal";
 }
 
+
 inline void writeXMLString(QTextStream &t,const char *s)
 {
   t << convertToXML(s);
@@ -707,14 +708,14 @@ class XMLGenerator : public OutputDocInterface
     {
       XML_DB(("(writeAnchor)\n"));
       startParMode();
-      m_t << "<anchor id=\"" << id << "_" << name << "\"/>";
+      m_t << "<anchor id=\"" << id << "_1" << name << "\"/>";
     }
     void writeSectionRef(const char *,const char *id,
                          const char *name,const char *text) 
     {
       XML_DB(("(writeSectionRef)\n"));
       startParMode();
-      m_t << "<link linkend=\"" << id << "_" << name << "\">";
+      m_t << "<link linkend=\"" << id << "_1" << name << "\">";
       docify(text);
       m_t << "</link>";
     }
@@ -773,7 +774,7 @@ class XMLGenerator : public OutputDocInterface
     void endTextLink() 
     {
       XML_DB(("(endTextLink)\n"));
-      m_t << "<ulink>";
+      m_t << "</ulink>";
     }
     void startPageRef() 
     {
@@ -938,6 +939,56 @@ class XMLGenerator : public OutputDocInterface
     friend void writeXMLCodeBlock(QTextStream &t,FileDef *fd);
 };
 
+static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char *name,int indent)
+{
+  QCString indentStr;
+  indentStr.fill(' ',indent);
+  if (al)
+  {
+    t << indentStr << "<templateparamlist>" << endl;
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      t << indentStr << "  <param>" << endl;
+      if (!a->type.isEmpty())
+      {
+        t << indentStr <<  "    <type>";
+        linkifyText(TextGeneratorXMLImpl(t),name,0,a->type);
+        t << "</type>" << endl;
+      }
+      if (!a->name.isEmpty())
+      {
+        t << indentStr <<  "    <declname>" << a->name << "</declname>" << endl;
+        t << indentStr <<  "    <defname>" << a->name << "</defname>" << endl;
+      }
+      if (!a->defval.isEmpty())
+      {
+        t << indentStr << "    <defval>";
+        linkifyText(TextGeneratorXMLImpl(t),name,0,a->defval);
+        t << "</defval>" << endl;
+      }
+      t << indentStr << "  </param>" << endl;
+    }
+    t << indentStr << "</templateparamlist>" << endl;
+  }
+}
+
+static void writeMemberTemplateLists(MemberDef *md,QTextStream &t)
+{
+  ClassDef *cd = md->getClassDef();
+  const char *cname = cd ? cd->name().data() : 0;
+  if (md->templateArguments()) // function template prefix
+  {
+    writeTemplateArgumentList(md->templateArguments(),t,cname,8);
+  }
+}
+
+static void writeTemplateList(ClassDef *cd,QTextStream &t)
+{
+  writeTemplateArgumentList(cd->templateArguments(),t,cd->name(),4);
+}
+
 static void writeXMLDocBlock(QTextStream &t,
                       const QCString &fileName,
                       int lineNr,
@@ -1021,7 +1072,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // + source references
   // + source referenced by
   // - body code 
-  // - template arguments 
+  // + template arguments 
   //     (templateArguments(), definitionTemplateParameterLists())
   
   if (md->memberType()==MemberDef::EnumValue) return;
@@ -1091,6 +1142,10 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       md->memberType()!=MemberDef::Enumeration
      )
   {
+    if (md->memberType()!=MemberDef::Typedef)
+    {
+      writeMemberTemplateLists(md,t);
+    }
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),typeStr);
@@ -1278,44 +1333,6 @@ static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
   t << "      </sectiondef>" << endl;
 }
 
-static void writeTemplateLists(Definition *d,QTextStream &t)
-{
-  if (d->definitionType()==Definition::TypeClass)
-  {
-    if (d->getOuterScope()) writeTemplateLists(d->getOuterScope(),t);
-    ClassDef *cd = (ClassDef *)d;
-    ArgumentList *al = cd->templateArguments();
-    if (al)
-    {
-      t << "    <templateparamlist>" << endl;
-      ArgumentListIterator ali(*al);
-      Argument *a;
-      for (ali.toFirst();(a=ali.current());++ali)
-      {
-        t << "      <param>" << endl;
-        if (!a->type.isEmpty())
-        {
-          t << "        <type>";
-          linkifyText(TextGeneratorXMLImpl(t),d->name(),0,a->type);
-          t << "</type>" << endl;
-        }
-        if (!a->name.isEmpty())
-        {
-          t << "        <name>" << a->name << "</name>" << endl;
-        }
-        if (!a->defval.isEmpty())
-        {
-          t << "        <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),d->name(),0,a->defval);
-          t << "</defval>" << endl;
-        }
-        t << "      </param>" << endl;
-      }
-      t << "    </templateparamlist>" << endl;
-    }
-  }
-}
-
 static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
 {
   t << "    <listofallmembers>" << endl;
@@ -1333,7 +1350,7 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
       if (d==0) d = cd;
       Protection prot = mi->prot;
       Specifier virt=md->virtualness();
-      t << "      <member refid=\"" << d->getOutputFileBase() << "_" <<
+      t << "      <member refid=\"" << d->getOutputFileBase() << "_1" <<
         md->anchor() << "\" prot=\"";
       switch (prot)
       {
@@ -1351,7 +1368,7 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
       t << "\"";
       if (!mi->ambiguityResolutionScope.isEmpty())
       {
-        t << " ambiguityscope=\"" << mi->ambiguityResolutionScope << "\"";
+        t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope) << "\"";
       }
       t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" << 
            convertToXML(md->name()) << "</name></member>" << endl;
@@ -1425,7 +1442,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Virtual: t << "virtual";      break;
         case Pure:    t <<"pure-virtual"; break;
       }
-      t << "\"/>" << endl;
+      t << "\">" << convertToXML(bcd->classDef->displayName()) 
+        << "</basecompoundref>" << endl;
     }
   }
   if (cd->subClasses()->count()>0)
@@ -1450,7 +1468,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Virtual: t << "virtual";      break;
         case Pure:    t << "pure-virtual"; break;
       }
-      t << "\"/>" << endl;
+      t << "\">" << convertToXML(bcd->classDef->displayName()) 
+        << "</basecompoundref>" << endl;
     }
   }
 
@@ -1465,7 +1484,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
     }
   }
-  writeTemplateLists(cd,t);
+  writeTemplateList(cd,t);
   writeListOfAllMembers(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
@@ -1831,6 +1850,18 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     {
       t << "    <innerpage refid=\"" << pi->getOutputFileBase()
         << "\"/>" << convertToXML(pi->title) << "</innerpage>" << endl;
+    }
+  }
+
+  GroupList *gl = gd->getSubGroups();
+  if (gl)
+  {
+    GroupListIterator gli(*gl);
+    GroupDef *sgd;
+    for (gli.toFirst();(sgd=gli.current());++gli)
+    {
+      t << "    <innergroup refid=\"" << gd->getOutputFileBase()
+        << "\"/>" << convertToXML(sgd->groupTitle()) << "</innergroup>" << endl;
     }
   }
 

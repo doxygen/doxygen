@@ -473,10 +473,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Introduction}\n"
       break;
-    case isPackageIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Package Index}\n"
-      break;
+    //case isPackageIndex:
+    //  if (compactLatex) t << "\\section"; else t << "\\chapter";
+    //  t << "{"; //Package Index}\n"
+    //  break;
     case isModuleIndex:
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Module Index}\n"
@@ -501,21 +501,21 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatex) t << "\\section"; else t << "\\chapter";
       t << "{"; //Annotated Page Index}\n"
       break;
-    case isPackageDocumentation:
-      {
-        PackageSDict::Iterator pdi(Doxygen::packageDict);
-        PackageDef *pd=pdi.toFirst();
-        bool found=FALSE;
-        while (pd && !found)
-        {
-          if (compactLatex) t << "\\section"; else t << "\\chapter";
-          t << "{"; 
-          found=TRUE;
-          ++pdi;
-          pd=pdi.current();
-        }
-      }
-      break;
+//    case isPackageDocumentation:
+//      {
+//        PackageSDict::Iterator pdi(Doxygen::packageDict);
+//        PackageDef *pd=pdi.toFirst();
+//        bool found=FALSE;
+//        while (pd && !found)
+//        {
+//          if (compactLatex) t << "\\section"; else t << "\\chapter";
+//          t << "{"; 
+//          found=TRUE;
+//          ++pdi;
+//          pd=pdi.current();
+//        }
+//      }
+//      break;
     case isModuleDocumentation:
       {
         GroupSDict::Iterator gli(Doxygen::groupSDict);
@@ -629,9 +629,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
         t << "\\input{" << indexName << "}\n";
       }
       break;
-    case isPackageIndex:
-      t << "}\n\\input{packages}\n";
-      break;
+    //case isPackageIndex:
+    //  t << "}\n\\input{packages}\n";
+    //  break;
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
       break;
@@ -650,27 +650,27 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageIndex:
       t << "}\n\\input{pages}\n";
       break;
-    case isPackageDocumentation:
-      {
-        PackageSDict::Iterator pdi(Doxygen::packageDict);
-        PackageDef *pd=pdi.toFirst();
-        bool found=FALSE;
-        while (pd && !found)
-        {
-          t << "}\n\\input{" << pd->getOutputFileBase() << "}\n";
-          found=TRUE;
-          ++pdi;
-          pd=pdi.current();
-        }
-        while (pd)
-        {
-          if (compactLatex) t << "\\input"; else t << "\\include";
-          t << "{" << pd->getOutputFileBase() << "}\n";
-          ++pdi;
-          pd=pdi.current();
-        }
-      }
-      break;
+    //case isPackageDocumentation:
+    //  {
+    //    PackageSDict::Iterator pdi(Doxygen::packageDict);
+    //    PackageDef *pd=pdi.toFirst();
+    //    bool found=FALSE;
+    //    while (pd && !found)
+    //    {
+    //      t << "}\n\\input{" << pd->getOutputFileBase() << "}\n";
+    //      found=TRUE;
+    //      ++pdi;
+    //      pd=pdi.current();
+    //    }
+    //    while (pd)
+    //    {
+    //       if (compactLatex) t << "\\input"; else t << "\\include";
+    //     t << "{" << pd->getOutputFileBase() << "}\n";
+    //      ++pdi;
+    //      pd=pdi.current();
+    //    }
+    //  }
+    //  break;
     case isModuleDocumentation:
       {
         GroupSDict::Iterator gli(Doxygen::groupSDict);
@@ -1761,7 +1761,15 @@ void LatexGenerator::startDotFile(const char *name,bool hasCaption)
   else
     t << "\\mbox{";
   t << "\\includegraphics";
-  t << "{" << baseName << ".eps}";
+  if( Config_getBool("USE_PDFLATEX") )
+  {
+    t << "{" << baseName << ".pdf}";
+  }
+  else
+  {
+    t << "{" << baseName << ".eps}";
+  }
+
   if (hasCaption) 
     t << "\\caption{";
   else

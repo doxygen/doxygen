@@ -106,6 +106,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual void startInitializer(const QXmlAttributes& attrib);
     virtual void startException(const QXmlAttributes& attrib);
     virtual void startEnumValue(const QXmlAttributes& attrib);
+    virtual void startTemplateParamList(const QXmlAttributes &attrib);
+    virtual void endTemplateParamList();
 
     MemberHandler(IBaseHandler *parent);
     virtual ~MemberHandler();
@@ -136,8 +138,10 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
       that->m_typeString = LinkedTextHandler::toString(m_type); 
       return &m_typeString;
     }
-    virtual IParamIterator *params() const 
+    virtual IParamIterator *parameters() const 
     { return new ParamIterator(m_params); }
+    virtual IParamIterator *templateParameters() const 
+    { return m_hasTemplateParamList ? new ParamIterator(m_templateParams) : 0; }
     virtual IMemberReferenceIterator *references() const 
     { return new MemberReferenceIterator(m_references); }
     virtual IMemberReferenceIterator *referencedBy() const 
@@ -186,6 +190,7 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
     QList<ParamHandler> m_params;
+    QList<ParamHandler> m_templateParams;
     QList<MemberReference> m_references;
     QList<MemberReference> m_referencedBy;
     MemberReference *m_reimplements;
@@ -198,6 +203,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     bool m_isVolatile;
     LinkedTextHandler *m_linkedTextHandler;
     QList<EnumValueHandler> m_enumValues;
+    bool m_insideTemplateParamList;
+    bool m_hasTemplateParamList;
 };
 
 class MemberIterator : public BaseIterator<IMemberIterator,IMember,MemberHandler>

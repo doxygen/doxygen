@@ -596,22 +596,22 @@ void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
 }
 
 // TODO: fix this: a nested template class can have multiple outer templates
-ArgumentList *ClassDef::outerTemplateArguments() const
-{
-  int ti;
-  ClassDef *pcd=0;
-  int pi=0;
-  if (m_tempArgs) return m_tempArgs;
-  // find the outer most class scope
-  while ((ti=name().find("::",pi))!=-1 && 
-      (pcd=getClass(name().left(ti)))==0
-        ) pi=ti+2;
-  if (pcd)
-  {
-    return pcd->templateArguments();
-  }
-  return 0;
-}
+//ArgumentList *ClassDef::outerTemplateArguments() const
+//{
+//  int ti;
+//  ClassDef *pcd=0;
+//  int pi=0;
+//  if (m_tempArgs) return m_tempArgs;
+//  // find the outer most class scope
+//  while ((ti=name().find("::",pi))!=-1 && 
+//      (pcd=getClass(name().left(ti)))==0
+//        ) pi=ti+2;
+//  if (pcd)
+//  {
+//    return pcd->templateArguments();
+//  }
+//  return 0;
+//}
 
 static void searchTemplateSpecs(/*in*/  Definition *d,
                                 /*out*/ QList<ArgumentList> &result,
@@ -684,6 +684,68 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
     ol.writeString("\n");
   }
 }
+
+// write the detailed description for this class
+void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput, const QCString &pageType, bool exampleFlag)
+{
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+      !documentation().isEmpty() || 
+      /*(Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
+      exampleFlag)
+  {
+    ol.writeRuler();
+    ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
+      ol.writeAnchor(0,"_details");
+    ol.popGeneratorState();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trDetailedDescription());
+    ol.endGroupHeader();
+    ol.startTextBlock();
+    
+    writeTemplateSpec(ol,this,pageType);
+    
+    // repeat brief description
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
+    {
+      ol+=briefOutput;
+    }
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
+        !documentation().isEmpty())
+    {
+      ol.newParagraph();
+    }
+    // write documentation
+    if (!documentation().isEmpty())
+    {
+      ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::RTF);
+        ol.newParagraph();
+      ol.popGeneratorState();
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+    }
+    // write examples
+    if (exampleFlag)
+    {
+      ol.startDescList(BaseOutputDocInterface::Examples);
+      parseText(ol,theTranslator->trExamples()+": ");
+      ol.endDescTitle();
+      ol.writeDescItem();
+      ol.newParagraph();
+      writeExample(ol,m_exampleSDict);
+      //ol.endDescItem();
+      ol.endDescList();
+    }
+    ol.newParagraph();
+    writeSourceDef(ol,name());
+    ol.endTextBlock();
+  }
+  else
+  {
+    writeTemplateSpec(ol,this,pageType);
+  }
+}
     
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
@@ -691,16 +753,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write title
   QCString pageTitle=name().copy();
   QCString pageType;
-  ArgumentList *outerTempArgList = outerTemplateArguments();
   QCString cType=compoundTypeString();
   toupper(cType.at(0));
   pageType+=" ";
   pageType+=cType;
   pageTitle+=pageType+" Reference";
-  if (outerTempArgList) pageTitle.prepend(" Template");
+  if (m_tempArgs) pageTitle.prepend(" Template");
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trCompoundReference(displayName(),m_compType,outerTempArgList!=0));
+  parseText(ol,theTranslator->trCompoundReference(displayName(),m_compType,m_tempArgs!=0));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
@@ -714,24 +775,27 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (!briefDescription().isEmpty())
   {
     parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
-    ol+=briefOutput;
-    ol.writeString(" \n");
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(0,"_details");
-    
-    if (Config_getBool("REPEAT_BRIEF") || 
-        !documentation().isEmpty() || 
-        exampleFlag
-       )
+    if (!Config_getBool("DETAILS_AT_TOP")) 
     {
-      parseText(ol,theTranslator->trMore());
+      ol+=briefOutput;
+      ol.writeString(" \n");
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.startTextLink(0,"_details");
+    
+      if (Config_getBool("REPEAT_BRIEF") || 
+          !documentation().isEmpty() || 
+          exampleFlag
+         )
+      {
+        parseText(ol,theTranslator->trMore());
+      }
+      ol.endTextLink();
+      ol.popGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.newParagraph();
+      ol.enable(OutputGenerator::Man);
     }
-    ol.endTextLink();
-    ol.popGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.newParagraph();
-    ol.enable(OutputGenerator::Man);
   }
   ol.writeSynopsis();
   
@@ -990,6 +1054,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   ol.endTextBlock();
   
+  // write detailed description if the user wants it near the top
+  if (Config_getBool("DETAILS_AT_TOP")) {
+    writeDetailedDescription(ol,briefOutput,pageType,exampleFlag);
+  }
+
   // write member groups
   ol.startMemberSections();
 
@@ -1062,64 +1131,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.endMemberSections();
     
   // write detailed description
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty() || 
-      /*(Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
-      exampleFlag)
-  {
-    ol.writeRuler();
-    ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-      ol.writeAnchor(0,"_details");
-    ol.popGeneratorState();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
-    ol.endGroupHeader();
-    ol.startTextBlock();
-    
-    writeTemplateSpec(ol,this,pageType);
-    
-    // repeat brief description
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-    {
-      ol+=briefOutput;
-    }
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
-        !documentation().isEmpty())
-    {
-      ol.newParagraph();
-    }
-    // write documentation
-    if (!documentation().isEmpty())
-    {
-      ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::RTF);
-        ol.newParagraph();
-      ol.popGeneratorState();
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
-    }
-    // write examples
-    if (exampleFlag)
-    {
-      ol.startDescList(BaseOutputDocInterface::Examples);
-      parseText(ol,theTranslator->trExamples()+": ");
-      ol.endDescTitle();
-      ol.writeDescItem();
-      ol.newParagraph();
-      writeExample(ol,m_exampleSDict);
-      //ol.endDescItem();
-      ol.endDescList();
-    }
-    ol.newParagraph();
-    writeSourceDef(ol,name());
-    ol.endTextBlock();
+  if (!Config_getBool("DETAILS_AT_TOP")) {
+    writeDetailedDescription(ol,briefOutput,pageType,exampleFlag);
   }
-  else
-  {
-    writeTemplateSpec(ol,this,pageType);
-  }
-
   
   
   typedefMembers.writeDocumentation(ol,name(),this,

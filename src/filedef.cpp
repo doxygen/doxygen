@@ -98,6 +98,57 @@ void FileDef::distributeMemberGroupDocumentation()
   }
 }
 
+void FileDef::writeDetailedDocumentation(OutputList &ol)
+{
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+      !documentation().isEmpty() 
+     )
+  {
+    ol.writeRuler();
+    ol.pushGeneratorState();
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
+    ol.writeAnchor(0,"_details"); 
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trDetailedDescription());
+    ol.endGroupHeader();
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
+    {
+      parseDoc(ol,filepath,1,0,0,briefDescription());
+    }
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
+        !documentation().isEmpty())
+    {
+      ol.newParagraph();
+    }
+    if (!documentation().isEmpty())
+    {
+      //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
+      //  doc+='.';
+      parseDoc(ol,filepath,1,0,0,documentation()+"\n");
+    }
+    //printf("Writing source ref for file %s\n",name().data());
+    if (Config_getBool("SOURCE_BROWSER")) 
+    {
+      ol.newParagraph();
+      QCString refText = theTranslator->trDefinedInSourceFile();
+      int fileMarkerPos = refText.find("@0");
+      if (fileMarkerPos!=-1) // should always pass this.
+      {
+        parseText(ol,refText.left(fileMarkerPos)); //text left from marker 1
+        ol.writeObjectLink(0,getSourceFileBase(),
+            0,name());
+        parseText(ol,refText.right(
+              refText.length()-fileMarkerPos-2)); // text right from marker 2
+      }
+    }
+  }
+}
+
 /*! Write the documentation page for this file to the file of output
     generators \a ol. 
 */
@@ -132,15 +183,13 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   
   ol.startTextBlock();
-  //brief=brief.stripWhiteSpace();
-  //int bl=brief.length();
-  OutputList briefOutput(&ol); 
-  if (briefDescription()) 
+  if (Config_getBool("DETAILS_AT_TOP"))
   {
-    //if (brief.at(bl-1)!='.' && brief.at(bl-1)!='!' && brief.at(bl!='?')) 
-    //  brief+='.';
-    parseDoc(briefOutput,filepath,1,0,0,briefDescription());
-    ol+=briefOutput;
+    writeDetailedDocumentation(ol);
+  }
+  else if (briefDescription()) 
+  {
+    parseDoc(ol,filepath,1,0,0,briefDescription());
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
@@ -198,6 +247,8 @@ void FileDef::writeDocumentation(OutputList &ol)
           const char *locStr = (ii->local || isIDLorJava) ? "yes" : "no";
           Doxygen::tagFile << "    <includes id=\"" 
                            << convertToXML(fd->getOutputFileBase()) 
+                           << "\" name=\"" 
+                           << convertToXML(fd->name())
                            << "\" local=\"" << locStr << "\">" 
                            << convertToXML(ii->includeName)
                            << "</includes>" 
@@ -347,56 +398,9 @@ void FileDef::writeDocumentation(OutputList &ol)
   decVarMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trVariables(),0);
   ol.endMemberSections();
 
-  //doc=doc.stripWhiteSpace();
-  //int bl=brief.length();
-  //int dl=doc.length();
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty() 
-      /* || startBodyLine!=-1 */
-     )
+  if (!Config_getBool("DETAILS_AT_TOP"))
   {
-    ol.writeRuler();
-    ol.pushGeneratorState();
-    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    //if (latexOn) ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.writeAnchor(0,"_details"); 
-    //if (latexOn) ol.enable(OutputGenerator::Latex);
-    ol.popGeneratorState();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
-    ol.endGroupHeader();
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-    {
-      ol+=briefOutput;
-    }
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
-        !documentation().isEmpty())
-    {
-      ol.newParagraph();
-    }
-    if (!documentation().isEmpty())
-    {
-      //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
-      //  doc+='.';
-      parseDoc(ol,filepath,1,0,0,documentation()+"\n");
-    }
-    //printf("Writing source ref for file %s\n",name().data());
-    if (Config_getBool("SOURCE_BROWSER")) 
-    {
-      ol.newParagraph();
-      QCString refText = theTranslator->trDefinedInSourceFile();
-      int fileMarkerPos = refText.find("@0");
-      if (fileMarkerPos!=-1) // should always pass this.
-      {
-        parseText(ol,refText.left(fileMarkerPos)); //text left from marker 1
-        ol.writeObjectLink(0,getSourceFileBase(),
-            0,name());
-        parseText(ol,refText.right(
-              refText.length()-fileMarkerPos-2)); // text right from marker 2
-      }
-    }
+    writeDetailedDocumentation(ol);
   }
 
   docDefineMembers.writeDocumentation(ol,name(),this,

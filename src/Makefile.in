@@ -53,6 +53,6 @@ clean: Makefile.libdoxygen Makefile.doxygen Makefile.doxytag Makefile.doxysearch
 distclean: clean
 	-$(RM) scanner.cpp doc.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp \
-	       declinfo.cpp defargs.cpp
+	       declinfo.cpp defargs.cpp commentcnv.cpp
 
 FORCE:

@@ -119,6 +119,7 @@ class FileDef : public Definition
     }
     bool isIncluded(const QCString &name) const;
 
+    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeSource(OutputList &ol);
     friend void generatedFileNames();

@@ -1481,6 +1481,14 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
+                    "DETAILS_AT_TOP",
+                    "If the DETAILS_AT_TOP tag is set to YES then Doxygen \n"
+                    "will output the detailed description near the top, like JavaDoc.\n"
+                    "If set to NO, the detailed description appears after the member \n"
+                    "documentation. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "INHERIT_DOCS",
                     "If the INHERIT_DOCS tag is set to YES (the default) then an undocumented \n"
                     "member inherits the documentation from any documented member that it \n"

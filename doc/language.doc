@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.15-20020421), 26 languages 
+Currently (version 1.2.15-20020430), 26 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Chinesetraditional, Croatian, Czech, 
 Danish, Dutch, English, Finnish, French, 

@@ -96,6 +96,7 @@ class TagIncludeInfo
   public:
     QString id;
     QString name;
+    QString text;
     bool isLocal;
 };
 
@@ -446,6 +447,7 @@ class TagFileParser : public QXmlDefaultHandler
       {
         m_curIncludes = new TagIncludeInfo;
         m_curIncludes->id = attrib.value("id");
+        m_curIncludes->name = attrib.value("name");
         m_curIncludes->isLocal = attrib.value("local")=="yes" ? TRUE : FALSE;
         m_curFile->includes.append(m_curIncludes);
       }
@@ -457,7 +459,7 @@ class TagFileParser : public QXmlDefaultHandler
     }
     void endIncludes()
     {
-      m_curIncludes->name = m_curString;
+      m_curIncludes->text = m_curString;
     }
     void endTemplateArg()
     {
@@ -1170,16 +1172,21 @@ void TagFileParser::addIncludes()
           TagIncludeInfo *ii;
           for (;(ii=mii.current());++mii)
           {
+            //printf("ii->name=`%s'\n",ii->name.data());
             FileName *ifn = Doxygen::inputNameDict->find(ii->name);
-            FileNameIterator ifni(*ifn);
-            FileDef *ifd;
-            for (;(ifd=ifni.current());++ifni)
+            ASSERT(ifn!=0);
+            if (ifn)
             {
-              printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
-                      ifd->getOutputFileBase().data(),ii->id.data());
-              if (ifd->getOutputFileBase()==QCString(ii->id))
+              FileNameIterator ifni(*ifn);
+              FileDef *ifd;
+              for (;(ifd=ifni.current());++ifni)
               {
-                fd->addIncludeDependency(ifd,ii->name,ii->isLocal);
+                //printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
+                //        ifd->getOutputFileBase().data(),ii->id.data());
+                if (ifd->getOutputFileBase()==QCString(ii->id))
+                {
+                  fd->addIncludeDependency(ifd,ii->text,ii->isLocal);
+                }
               }
             }
           }

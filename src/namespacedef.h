@@ -43,6 +43,8 @@ class NamespaceDef : public Definition
     DefType definitionType() { return TypeNamespace; }
     QCString getOutputFileBase() const;
     void insertUsedFile(const char *fname);
+    
+    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
 
     void insertClass(ClassDef *cd);

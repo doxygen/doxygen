@@ -198,9 +198,9 @@ During parsing the following steps take place:
 <ul>
 <li> The special commands inside the documentation are executed. See
      section \ref commands for an overview of all commands.
-<li> If a line starts with some whitespace followed by one or more asterixes 
+<li> If a line starts with some whitespace followed by one or more asterisks 
      (<tt>*</tt>) and then optionally more whitespace, 
-     then all whitespace and asterixes are removed.
+     then all whitespace and asterisks are removed.
 <li> All resulting blank lines are treated as a paragraph separators.
      This saves you from placing new-paragraph commands yourself 
      in order to make the generated documentation readable.
