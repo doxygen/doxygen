@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -124,6 +124,7 @@ static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
 static bool             insideIDL = FALSE;
+static bool             insideJava = FALSE;
 static bool             insideCppQuote = FALSE;
 
 static int              argRoundCount;
@@ -374,6 +375,10 @@ A         [aA]
 BR	  [bB][rR]
 PRE       [pP][rR][eE]
 TABLE	  [tT][aA][bB][lL][eE]
+P	  [pP]
+UL        [uU][lL]
+OL	  [oO][lL]
+DL	  [dD][lL]
 TITLE     [tT][iI][tT][lL][eE]
 
 %option noyywrap
@@ -493,6 +498,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	IDLUnionCase
 %x	NSAliasName
 %x	NSAliasArg
+%x	PackageName
 
 %%
 
@@ -507,7 +513,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
 					    yyFileName[i] = yytext[i+1] ;
 					  yyFileName[i] = 0 ;
-					  insideIDL = i>4 && strcmp(&yyFileName[i-4],".idl")==0;
+					  insideIDL  = i>4 && strcmp(&yyFileName[i-4],".idl")==0;
+					  insideJava = i>5 && strcmp(&yyFileName[i-5],".java")==0;
 					  msg("Parsing file %s...\n",yyFileName);
 					  current_root  = global_root ;
 					  initParser();
@@ -653,6 +660,22 @@ TITLE     [tT][iI][tT][lL][eE]
 <FindMembers>{BN}+			{
   					  lineCount();
   					}
+<FindMembers>{B}*"package"{BN}+ 	{ // Java package
+  					  lineCount();
+					  BEGIN(PackageName);
+  					}
+<PackageName>{ID}("."{ID})*		{
+  					  current->name = yytext;
+                                          current->fileName = yyFileName; 
+                                          current->startLine = yyLineNr; 
+  					  current->section=Entry::PACKAGE_SEC;
+					  current_root->addSubEntry(current);
+					  current = new Entry ;
+					  initEntry();
+  					}
+<PackageName>";"			{
+  					  BEGIN(FindMembers);
+  					}
 <FindMembers>{B}*"static"{BN}+     	{ //current->type += " static ";
   					  current->stat = TRUE;
 					  lineCount();
@@ -664,6 +687,10 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <FindMembers>{B}*"virtual"{BN}+    	{ current->type += " virtual ";
 					  current->virt = Virtual;
+					  lineCount();
+					}
+<FindMembers>{B}*"abstract"{BN}+    	{ current->type += " abstract ";
+					  current->virt = Pure;
 					  lineCount();
 					}
 <FindMembers>{B}*"inline"{BN}+		{ current->memSpec|=Entry::Inline;
@@ -903,7 +930,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  addType( current );
 					  current->name=n.left(n.length()-2);
 					}
-<FindMembers>{SCOPENAME}{BN}*/"<"	{
+<FindMembers>{SCOPENAME}{BN}*/"<"	{ // Note: this could be a return type!
   					  sharpCount=0;
 					  lineCount();
 					  addType( current );
@@ -982,6 +1009,13 @@ TITLE     [tT][iI][tT][lL][eE]
   					  *currentTemplateSpec+=*yytext; 
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
+  					  // correct for misinterpreting return type as scope name: example: A<T> func()
+  					  if (YY_START==FindMembers && current->tArgList && current->mtArgList==0)
+					  {
+					    current->mtArgList=current->tArgList;
+					    current->tArgList=0;
+					    current->scopeSpec.resize(0);
+					  }
 					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
@@ -991,16 +1025,30 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    BEGIN(IDLUnionCase);
 					  }
-					  else
+					  else 
 					  {
 					    if (YY_START==FindMembers)
 					    {
 					      addType( current ) ;
-					      current->name  = yytext;
+					    }
+					    if (insideJava && strcmp(yytext,"public")==0)
+					    {
+					      current->protection = Public;
+					    }
+					    else if (insideJava && strcmp(yytext,"protected")==0)
+					    {
+					      current->protection = Protected;
+					    }
+					    else if (insideJava && strcmp(yytext,"private")==0)
+					    {
+					      current->protection = Private;
 					    }
 					    else
 					    {
-					      current->name += yytext;
+					      if (YY_START==FindMembers)
+					        current->name  = yytext;
+					      else
+						current->name += yytext;
 					    }
 					    QCString tmp=yytext;
 					    if (nameIsOperator(tmp)) 
@@ -1337,6 +1385,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    current = new Entry(*current);
 					    current->name.resize(0);
+					    current->args.resize(0);
+					    current->initializer.resize(0);
 					    int i=oldType.length(); 
 					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
 					    current->type = oldType.left(i);
@@ -1486,9 +1536,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					      current_root->addSubEntry( current ) ;
 					      current = new Entry(*current);
 					      if (current->section==Entry::NAMESPACE_SEC || 
-						  current->section==Entry::INTERFACE_SEC
+						  current->section==Entry::INTERFACE_SEC ||
+						  insideJava
 						 )
-					      { // namespaces and interfaces ends with a closing bracket without semicolon
+					      { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						current->reset();
 						initEntry();
 						BEGIN( FindMembers ) ;
@@ -2219,6 +2270,14 @@ TITLE     [tT][iI][tT][lL][eE]
 					    roundCount=0;
 					    BEGIN(SkipUnionSwitch);
 					  }
+					  else if (insideJava && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
+					  {
+  					    current->type.resize(0);
+					    baseProt=Public;
+                                            baseVirt=Normal;
+					    baseName.resize(0);
+					    BEGIN( BasesProt ) ;
+					  }
 					  else
 					  {
 					    if (isTypedef)
@@ -2274,20 +2333,30 @@ TITLE     [tT][iI][tT][lL][eE]
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
-  					  //current->extends->append(
-					  //  new BaseInfo(yytext,baseProt,baseVirt)
-					  //) ;
-  					  bool globalScope = *yytext==':' && baseName.isEmpty();
+  					  QCString bName = yytext;
+					  bName = bName.stripWhiteSpace();
+  					  bool globalScope = bName.at(0)==':' && baseName.isEmpty();
   					  if (!globalScope)
-  					    baseName += yytext;
+  					    baseName += bName;
 					  else
-					    baseName += (yytext+2);
+					    baseName += (bName.data()+2);
 					  current->args += ' ';
 					  if (!globalScope)
-					    current->args += yytext;
+					    current->args += bName;
 					  else
-					    current->args += (yytext+2);
+					    current->args += (bName.data()+2);
 					}
+<Bases>{BN}*{ID}("."{ID})*		{ // Java style class
+    					  QCString name = yytext;
+					  int i=name.findRev('.');
+					  if (i!=-1) // strip part before dots
+					  {
+					    name=name.right(name.length()-i-1);
+					  }
+					  baseName += name;
+					  current->args += ' ';
+					  current->args += name;
+    					}
 <ClassVar>"<"   	                { current->name += *yytext;
   					  sharpCount=1; 
 					  lastSkipSharpContext = YY_START;
@@ -2322,13 +2391,14 @@ TITLE     [tT][iI][tT][lL][eE]
 <SkipRound>")"				{ if (--roundCount<=0)
 					    BEGIN ( lastSkipRoundContext );
 					}
-<Bases>","				{ current->args += ',' ; 
+<Bases>","|({BN}+"implements"{BN}*)	{ lineCount();
+                                          current->args += ',' ; 
 					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (!baseName.isEmpty())
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  if (current->section == Entry::INTERFACE_SEC)
+					  if (current->section == Entry::INTERFACE_SEC || insideJava)
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -2484,7 +2554,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}
-<JavaDoc>"<"{TABLE}{ATTR}">"		{ 
+<JavaDoc>"<"({TABLE}|{UL}|{OL}|{DL}){ATTR}|{P}">"	{  // end brief upon encountering any of these
   					  //current->doc+=yytext;
 					  int i;
 					  for (i=yyleng-1;i>=0;i--)
@@ -2986,7 +3056,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  if (!removeSlashes)
 					    *pSkipDoc+=yytext;
   					}
-<SkipCode>^{B}*"*"+		
+<SkipCode>^{B}*"*"+/{B}+		
 <SkipCode>"//"				{
   					  *pSkipDoc+=yytext;
   					}

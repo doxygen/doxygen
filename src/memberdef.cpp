@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -658,6 +658,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       writeTemplatePrefix(ol,tArgList,FALSE);
     }
+    else if (membTAL)
+    {
+      writeTemplatePrefix(ol,membTAL,FALSE);
+    }
     
     if (i!=-1) // member has an anonymous type
     {
@@ -818,7 +822,14 @@ void MemberDef::writeDeclaration(OutputList &ol,
         ol.disableAllBut(OutputGenerator::Html);
         ol.endEmphasis();
         ol.docify(" ");
-        ol.startTextLink(0,anchor());
+        if (group!=0 && gd==0) // forward link to the group
+        {
+          ol.startTextLink(group->getOutputFileBase(),anchor());
+        }
+        else
+        {
+          ol.startTextLink(0,anchor());
+        }
         parseText(ol,theTranslator->trMore());
         ol.endTextLink();
         ol.startEmphasis();
@@ -1396,7 +1407,7 @@ bool MemberDef::isLinkable()
 bool MemberDef::detailsAreVisible() const          
 { 
   return !documentation().isEmpty() || // has detailed docs
-         (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
+         //(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
          (!briefDescription().isEmpty() && 

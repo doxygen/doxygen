@@ -1012,14 +1012,10 @@ QStringList qt_makeFilterList( const QString &filter )
     if ( filter.isEmpty() )
 	return QStringList();
 
-    int i = filter.find( ' ', 0 );
-    QChar sep( ' ' );
-    if ( i == -1 ) {
-	if ( filter.find( ';', 0 ) != -1 ) {
-	    sep = QChar( ';' );
-	    i = filter.find( sep, 0 );
-	}
-    }
+    QChar sep( ';' );
+    int i = filter.find( sep, 0 );
+    if ( i == -1 && filter.find( ' ', 0 ) != -1 )
+	sep = QChar( ' ' );
 
     QStringList lst = QStringList::split( sep, filter );
     QStringList lst2;
@@ -1027,22 +1023,7 @@ QStringList qt_makeFilterList( const QString &filter )
 
     for ( ; it != lst.end(); ++it ) {
 	QString s = *it;
-	if ( s[ (int)s.length() - 1 ] == ';' )
-	    s.remove( s.length() - 1, 1 );
-	if ( s[0] == '\"' ) {
-	    s.remove( 0, 1 );
-	    while( ++it != lst.end() ) {
-		QString s2 = *it;
-		s += " "+s2;
-		if ( s2[(int)s2.length() -1] == '\"' ) {
-		    s.remove( s.length() -1, 1 );
-		    break;
-		}
-	    }
-	}
-	lst2 << s;
-	if ( it == lst.end() )
-	    break;
+	lst2 << s.stripWhiteSpace();
     }
     return lst2;
 }

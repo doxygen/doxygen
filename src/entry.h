@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -107,6 +107,7 @@ class Entry
 {
   public:
 
+    /*! Kind of entries that are supported */
     enum Sections { 
       CLASS_SEC        = 0x00000001, 
       STRUCT_SEC       = 0x00000002,
@@ -150,7 +151,8 @@ class Entry
       USINGDIR_SEC     = 0x01100000,
       MAINPAGEDOC_SEC  = 0x01200000,
       MEMBERGRP_SEC    = 0x01300000,
-      USINGDECL_SEC    = 0x01400000
+      USINGDECL_SEC    = 0x01400000,
+      PACKAGE_SEC      = 0x01500000
     };
     enum MemberSpecifier
     {
@@ -167,48 +169,48 @@ class Entry
     void	addSubEntry (Entry* e) ;
     void        reset();
 
-    int        section;       // entry type (see Sections);
-    Protection protection;    // class protection
-    MethodTypes mtype;        // signal, slot, (dcop) method, or property?
-    bool stat;                // static ?
-    bool explicitExternal;    // explicitly defined as external?
-    bool proto;               // prototype ?
-    int  memSpec;             // member specifiers
-    int  initLines;           // define/variable initializer lines to show 
-    bool subGrouping;         // automatically group class members?
-    Specifier    virt;        // virtualness of the entry 
-    Entry       *parent;      // parent node in the tree
-    QCString	 type;        // member type 
-    QCString	 name;        // member name
-    QCString     args;        // member argument string
-    QCString     bitfields;   // member's bit fields
-    ArgumentList *argList;    // member arguments as a list
-    ArgumentList *tArgList;   // template argument list
-    ArgumentList *mtArgList;  // member template argument list
-    QCString     scopeSpec;   // template specialization of the scope
-    QCString     memberSpec;  // template specialization of the member
-    QCString	 program;     // the program text
-    QCString     initializer; // initial value (for variables)
-    QCString     includeFile; // include file (2 arg of \class, must be unique)
-    QCString     includeName; // include name (3 arg of \class)
-    QCString     doc;         // documentation block (partly parsed)
-    QCString     relates;     // related class (doc block)
-    QCString     brief;       // brief description (doc block)
-    QCString     inside;      // name of the class in which documents are found
-    QCString     exception;   // throw specification
-    int          bodyLine;    // line number of the definition in the source
-    int          endBodyLine; // line number where the definition ends
-    int          mGrpId;      // member group id
-    QList<Entry>    *sublist; // entries that are children of this one
-    QList<BaseInfo> *extends; // list of base classes
-    QList<QCString> *groups;  // list of groups this entry belongs to
-    QList<QCString> *anchors; // list of anchors defined in this entry
-    QCString	fileName;     // file this entry was extracted from
-    int		startLine;    // start line of entry in the source
-    int         todoId;       // id of the todo item of this entry
-    int         testId;       // id of the test item of this entry
-    TagInfo    *tagInfo;      // tag file info
-    static int  num;          // counts the total number of entries
+    int        section;       //!< entry type (see Sections);
+    Protection protection;    //!< class protection
+    MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
+    bool stat;                //!< static ?
+    bool explicitExternal;    //!< explicitly defined as external?
+    bool proto;               //!< prototype ?
+    int  memSpec;             //!< member specifiers
+    int  initLines;           //!< define/variable initializer lines to show 
+    bool subGrouping;         //!< automatically group class members?
+    Specifier    virt;        //!< virtualness of the entry 
+    Entry       *parent;      //!< parent node in the tree
+    QCString	 type;        //!< member type 
+    QCString	 name;        //!< member name
+    QCString     args;        //!< member argument string
+    QCString     bitfields;   //!< member's bit fields
+    ArgumentList *argList;    //!< member arguments as a list
+    ArgumentList *tArgList;   //!< template argument list
+    ArgumentList *mtArgList;  //!< member template argument list
+    QCString     scopeSpec;   //!< template specialization of the scope
+    QCString     memberSpec;  //!< template specialization of the member
+    QCString	 program;     //!< the program text
+    QCString     initializer; //!< initial value (for variables)
+    QCString     includeFile; //!< include file (2 arg of \class, must be unique)
+    QCString     includeName; //!< include name (3 arg of \class)
+    QCString     doc;         //!< documentation block (partly parsed)
+    QCString     relates;     //!< related class (doc block)
+    QCString     brief;       //!< brief description (doc block)
+    QCString     inside;      //!< name of the class in which documents are found
+    QCString     exception;   //!< throw specification
+    int          bodyLine;    //!< line number of the definition in the source
+    int          endBodyLine; //!< line number where the definition ends
+    int          mGrpId;      //!< member group id
+    QList<Entry>    *sublist; //!< entries that are children of this one
+    QList<BaseInfo> *extends; //!< list of base classes
+    QList<QCString> *groups;  //!< list of groups this entry belongs to
+    QList<QCString> *anchors; //!< list of anchors defined in this entry
+    QCString	fileName;     //!< file this entry was extracted from
+    int		startLine;    //!< start line of entry in the source
+    int         todoId;       //!< id of the todo item of this entry
+    int         testId;       //!< id of the test item of this entry
+    TagInfo    *tagInfo;      //!< tag file info
+    static int  num;          //!< counts the total number of entries
   private:
     Entry &operator=(const Entry &); 
 } ;

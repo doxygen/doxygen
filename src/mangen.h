@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -109,7 +109,7 @@ class ManGenerator : public OutputGenerator
     void startPreFragment() { startCodeFragment(); }
     void endPreFragment() { endCodeFragment(); }
     void startCodeLine() {}
-    void endCodeLine() { t << endl; col=0; }
+    void endCodeLine() { codify("\n"); col=0; }
     void writeBoldString(const char *text) 
                          { t << "\\fB"; docify(text); t << "\\fR"; firstCol=FALSE; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }

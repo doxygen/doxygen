@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -124,7 +124,8 @@ class TagFileParser : public QXmlDefaultHandler
                  InNamespace,
                  InGroup,
                  InPage,
-                 InMember
+                 InMember,
+                 InPackage
                };
     class StartElementHandler
     {
@@ -203,6 +204,10 @@ class TagFileParser : public QXmlDefaultHandler
       {
         m_curPage = new TagPageInfo;
         m_state = InPage;
+      }
+      else if (kind=="package")
+      {
+        m_state = InPackage;
       }
       else
       {
@@ -746,7 +751,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     }
     else if (tmi->kind=="typedef")
     {
-      me->section = Entry::TYPEDEF_SEC;
+      me->section = Entry::VARIABLE_SEC; //Entry::TYPEDEF_SEC;
       me->mtype = Method;
     }
     else if (tmi->kind=="enumeration")

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -144,7 +144,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
     << "align=\"middle\" border=0 width=110 height=53>\n"
     << "</a> $doxygenversion written by"
     << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
-    << " &copy;&nbsp;1997-2000</small></address>\n"
+    << " &copy;&nbsp;1997-2001</small></address>\n"
     << "</body>\n"
     << "</html>\n";
 }
@@ -235,7 +235,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
     default:
       if (footer.isEmpty())
         t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;"
-             "1997-2000</small></address>\n</body>\n</html>\n";
+             "1997-2001</small></address>\n</body>\n</html>\n";
       break;
       
   }
@@ -430,7 +430,9 @@ void HtmlGenerator::endTextLink()
 
 void HtmlGenerator::writeHtmlLink(const char *url,const char *text)
 {
-  t << "<a href=\"";
+  t << "<a ";
+  if (Config::ftvHelpFlag) t << "target=\"top\" ";
+  t << "href=\"";
   if (url) t << url;
   t << "\">"; 
   docify(text);

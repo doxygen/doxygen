@@ -35,6 +35,7 @@
 **
 **********************************************************************/
 
+#define QT_XML_CPP
 #include "qxml.h"
 #include "qtextcodec.h"
 #include "qbuffer.h"
@@ -80,7 +81,7 @@
 #define XMLERR_EDECLORSDDECLEXPECTED      "EDecl or SDDecl expected while reading the XML declaration"
 #define XMLERR_SDDECLEXPECTED             "SDDecl expected while reading the XML declaration"
 #define XMLERR_WRONGVALUEFORSDECL         "wrong value for standalone declaration"
-#define XMLERR_UNPARSEDENTITYREFERENCE    "unparsed entity reference"
+#define XMLERR_UNPARSEDENTITYREFERENCE    "unparsed entity reference in wrong context"
 #define XMLERR_INTERNALGENERALENTITYINDTD "internal general entity reference not allowed in DTD"
 #define XMLERR_EXTERNALGENERALENTITYINDTD "external parsed general entity reference not allowed in DTD"
 #define XMLERR_EXTERNALGENERALENTITYINAV  "external parsed general entity reference not allowed in attribute value"
@@ -2733,13 +2734,14 @@ bool QXmlSimpleReader::parseContent()
 		next();
 		break;
 	    case Ref:
-		// reference may be CharData; so clear string to be safe
 		if ( !charDataRead) {
-		    charDataRead = TRUE;
+		    // reference may be CharData; so clear string to be safe
 		    stringClear();
+		    parseOk = parseReference( charDataRead, InContent );
+		} else {
+		    bool tmp;
+		    parseOk = parseReference( tmp, InContent );
 		}
-		// parse reference
-		parseOk = parseReference( charDataRead, InContent );
 		break;
 	    case Lt:
 		// call the handler for CharData
@@ -2976,6 +2978,12 @@ bool QXmlSimpleReader::parseMisc()
 		if ( !parseOk ) {
 		    d->error = XMLERR_ERRORPARSINGPI;
 		    goto parseError;
+		}
+		if ( contentHnd ) {
+		    if ( !contentHnd->processingInstruction(name(),string()) ) {
+			d->error = contentHnd->errorString();
+			goto parseError;
+		    }
 		}
 		return TRUE;
 	    case Comment2:
@@ -3241,8 +3249,8 @@ parseError:
 bool QXmlSimpleReader::parseDoctype()
 {
     // some init-stuff
-    d->systemId = "";
-    d->publicId = "";
+    d->systemId = QString::null;
+    d->publicId = QString::null;
 
     const signed char Init             =  0;
     const signed char Doctype          =  1; // read the doctype
@@ -3420,8 +3428,8 @@ parseError:
 bool QXmlSimpleReader::parseExternalID( bool allowPublicID )
 {
     // some init-stuff
-    d->systemId = "";
-    d->publicId = "";
+    d->systemId = QString::null;
+    d->publicId = QString::null;
 
     const signed char Init             =  0;
     const signed char Sys              =  1; // parse 'SYSTEM'
@@ -3687,6 +3695,12 @@ bool QXmlSimpleReader::parseMarkupdecl()
 		    d->error = XMLERR_ERRORPARSINGPI;
 		    goto parseError;
 		}
+		if ( contentHnd ) {
+		    if ( !contentHnd->processingInstruction(name(),string()) ) {
+			d->error = contentHnd->errorString();
+			goto parseError;
+		    }
+		}
 		return TRUE;
 	    case Dash:
 		if ( !parseOk ) {
@@ -3812,13 +3826,13 @@ bool QXmlSimpleReader::parsePEReference( EntityRecognitionContext context )
 			}
 		    }
 		} else {
-		    if        ( context == InEntityValue ) {
+		    if ( context == InEntityValue ) {
 			// Included in literal
 			xmlRef = d->parameterEntities.find( ref() )
 			    .data().replace( QRegExp("\""), "&quot;" ).replace( QRegExp("'"), "&apos;" )
 			    + xmlRef;
 		    } else if ( context == InDTD ) {
-			// Included as PE ### correct???
+			// Included as PE
 			xmlRef = QString(" ") +
 			    d->parameterEntities.find( ref() ).data() +
 			    QString(" ") + xmlRef;
@@ -4896,6 +4910,7 @@ bool QXmlSimpleReader::parseEntityDecl()
     const signed char PEVal            = 15; // parse entity value
     const signed char PEEID            = 16; // parse ExternalID
     const signed char WsE              = 17; // white space read
+    const signed char EDDone           = 19; // done, but also report an external, unparsed entity decl
     const signed char Done             = 18;
 
     const signed char InpWs            = 0; // white space
@@ -4914,8 +4929,8 @@ bool QXmlSimpleReader::parseEntityDecl()
 	{ Ws2,   -1,     -1,      -1,    -1,     -1      }, // Name
 	{ -1,    -1,     EValue,  -1,    -1,     ExtID   }, // Ws2
 	{ WsE,   -1,     -1,      Done,  -1,     -1      }, // EValue
-	{ Ws3,   -1,     -1,      Done,  -1,     -1      }, // ExtID
-	{ -1,    -1,     -1,      Done,  Ndata,  -1      }, // Ws3
+	{ Ws3,   -1,     -1,      EDDone,-1,     -1      }, // ExtID
+	{ -1,    -1,     -1,      EDDone,Ndata,  -1      }, // Ws3
 	{ Ws4,   -1,     -1,      -1,    -1,     -1      }, // Ndata
 	{ -1,    -1,     -1,      -1,    NNam,   NNam    }, // Ws4
 	{ WsE,   -1,     -1,      Done,  -1,     -1      }, // NNam
@@ -5008,6 +5023,9 @@ bool QXmlSimpleReader::parseEntityDecl()
 	    case WsE:
 		eat_ws();
 		break;
+	    case EDDone:
+		next();
+		break;
 	    case Done:
 		next();
 		break;
@@ -5031,8 +5049,7 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    d->error = XMLERR_ERRORPARSINGENTITYVALUE;
 		    goto parseError;
 		}
-		if (  d->entities.find( name() ) == d->entities.end() &&
-			d->externEntities.find( name() ) == d->externEntities.end() ) {
+		if (  !entityExist( name() ) ) {
 		    d->entities.insert( name(), string() );
 		    if ( declHnd ) {
 			if ( !declHnd->internalEntityDecl( name(), string() ) ) {
@@ -5047,16 +5064,6 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    d->error = XMLERR_ERRORPARSINGEXTERNALID;
 		    goto parseError;
 		}
-		if (  d->entities.find( name() ) == d->entities.end() &&
-			d->externEntities.find( name() ) == d->externEntities.end() ) {
-		    d->externEntities.insert( name(), QXmlSimpleReaderPrivate::ExternEntity( d->publicId, d->systemId, "" ) );
-		    if ( declHnd ) {
-			if ( !declHnd->externalEntityDecl( name(), d->publicId, d->systemId ) ) {
-			    d->error = declHnd->errorString();
-			    goto parseError;
-			}
-		    }
-		}
 		break;
 	    case Ndata:
 		if ( !parseOk ) {
@@ -5069,11 +5076,10 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    d->error = XMLERR_ERRORPARSINGNAME;
 		    goto parseError;
 		}
-		if (  d->entities.find( name() ) == d->entities.end() &&
-			d->externEntities.find( name() ) == d->externEntities.end() ) {
+		if (  !entityExist( name() ) ) {
 		    d->externEntities.insert( name(), QXmlSimpleReaderPrivate::ExternEntity( d->publicId, d->systemId, ref() ) );
-		    if ( declHnd ) {
-			if ( !declHnd->externalEntityDecl( name(), d->publicId, d->systemId ) ) {
+		    if ( dtdHnd ) {
+			if ( !dtdHnd->unparsedEntityDecl( name(), d->publicId, d->systemId, ref() ) ) {
 			    d->error = declHnd->errorString();
 			    goto parseError;
 			}
@@ -5091,8 +5097,7 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    d->error = XMLERR_ERRORPARSINGENTITYVALUE;
 		    goto parseError;
 		}
-		if (  d->parameterEntities.find( name() ) == d->parameterEntities.end() &&
-			d->externParameterEntities.find( name() ) == d->externParameterEntities.end() ) {
+		if (  !entityExist( name() ) ) {
 		    d->parameterEntities.insert( name(), string() );
 		    if ( declHnd ) {
 			if ( !declHnd->internalEntityDecl( QString("%")+name(), string() ) ) {
@@ -5107,8 +5112,7 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    d->error = XMLERR_ERRORPARSINGEXTERNALID;
 		    goto parseError;
 		}
-		if (  d->parameterEntities.find( name() ) == d->parameterEntities.end() &&
-			d->externParameterEntities.find( name() ) == d->externParameterEntities.end() ) {
+		if (  !entityExist( name() ) ) {
 		    d->externParameterEntities.insert( name(), QXmlSimpleReaderPrivate::ExternParameterEntity( d->publicId, d->systemId ) );
 		    if ( declHnd ) {
 			if ( !declHnd->externalEntityDecl( QString("%")+name(), d->publicId, d->systemId ) ) {
@@ -5118,6 +5122,17 @@ bool QXmlSimpleReader::parseEntityDecl()
 		    }
 		}
 		break;
+	    case EDDone:
+		if (  !entityExist( name() ) ) {
+		    d->externEntities.insert( name(), QXmlSimpleReaderPrivate::ExternEntity( d->publicId, d->systemId, QString::null ) );
+		    if ( declHnd ) {
+			if ( !declHnd->externalEntityDecl( name(), d->publicId, d->systemId ) ) {
+			    d->error = declHnd->errorString();
+			    goto parseError;
+			}
+		    }
+		}
+		return TRUE;
 	    case Done:
 		return TRUE;
 	    case -1:
@@ -5741,154 +5756,8 @@ bool QXmlSimpleReader::parseReference( bool &charDataRead, EntityRecognitionCont
 		next();
 		break;
 	    case DoneN:
-		if        ( ref() == "amp" ) {
-		    if ( context == InEntityValue ) {
-			// Bypassed
-			stringAddC( '&' ); stringAddC( 'a' ); stringAddC( 'm' ); stringAddC( 'p' ); stringAddC( ';' );
-		    } else {
-			// Included or Included in literal
-			stringAddC( '&' );
-		    }
-		    charDataRead = TRUE;
-		} else if ( ref() == "lt" ) {
-		    if ( context == InEntityValue ) {
-			// Bypassed
-			stringAddC( '&' ); stringAddC( 'l' ); stringAddC( 't' ); stringAddC( ';' );
-		    } else {
-			// Included or Included in literal
-			stringAddC( '<' );
-		    }
-		    charDataRead = TRUE;
-		} else if ( ref() == "gt" ) {
-		    if ( context == InEntityValue ) {
-			// Bypassed
-			stringAddC( '&' ); stringAddC( 'g' ); stringAddC( 't' ); stringAddC( ';' );
-		    } else {
-			// Included or Included in literal
-			stringAddC( '>' );
-		    }
-		    charDataRead = TRUE;
-		} else if ( ref() == "apos" ) {
-		    if ( context == InEntityValue ) {
-			// Bypassed
-			stringAddC( '&' ); stringAddC( 'a' ); stringAddC( 'p' ); stringAddC( 'o' ); stringAddC( 's' ); stringAddC( ';' );
-		    } else {
-			// Included or Included in literal
-			stringAddC( '\'' );
-		    }
-		    charDataRead = TRUE;
-		} else if ( ref() == "quot" ) {
-		    if ( context == InEntityValue ) {
-			// Bypassed
-			stringAddC( '&' ); stringAddC( 'q' ); stringAddC( 'u' ); stringAddC( 'o' ); stringAddC( 't' ); stringAddC( ';' );
-		    } else {
-			// Included or Included in literal
-			stringAddC( '"' );
-		    }
-		    charDataRead = TRUE;
-		} else {
-		    QMap<QString,QString>::Iterator it;
-		    it = d->entities.find( ref() );
-		    if ( it != d->entities.end() ) {
-			// "Internal General"
-			switch ( context ) {
-			    case InContent:
-				// Included
-				xmlRef = it.data() + xmlRef;
-				charDataRead = FALSE;
-				break;
-			    case InAttributeValue:
-				// Included in literal
-				xmlRef = it.data().replace( QRegExp("\""), "&quot;" ).replace( QRegExp("'"), "&apos;" )
-					+ xmlRef;
-				charDataRead = FALSE;
-				break;
-			    case InEntityValue:
-				{
-				    // Bypassed
-				    stringAddC( '&' );
-				    for ( int i=0; i<(int)ref().length(); i++ ) {
-					stringAddC( ref()[i] );
-				    }
-				    stringAddC( ';');
-				    charDataRead = TRUE;
-				}
-				break;
-			    case InDTD:
-				// Forbidden
-				d->error = XMLERR_INTERNALGENERALENTITYINDTD;
-				charDataRead = FALSE;
-				break;
-			}
-		    } else {
-			QMap<QString,QXmlSimpleReaderPrivate::ExternEntity>::Iterator itExtern;
-			itExtern = d->externEntities.find( ref() );
-			if ( itExtern != d->externEntities.end() ) {
-			    // "External Parsed General"
-			    switch ( context ) {
-				case InContent:
-				    // Included if validating
-				    if ( contentHnd ) {
-					if ( !contentHnd->skippedEntity( ref() ) ) {
-					    d->error = contentHnd->errorString();
-					    goto parseError;
-					}
-				    }
-				    charDataRead = FALSE;
-				    break;
-				case InAttributeValue:
-				    // Forbidden
-				    d->error = XMLERR_EXTERNALGENERALENTITYINAV;
-				    charDataRead = FALSE;
-				    break;
-				case InEntityValue:
-				    {
-					// Bypassed
-					stringAddC( '&' );
-					for ( int i=0; i<(int)ref().length(); i++ ) {
-					    stringAddC( ref()[i] );
-					}
-					stringAddC( ';');
-					charDataRead = TRUE;
-				    }
-				    break;
-				case InDTD:
-				    // Forbidden
-				    d->error = XMLERR_EXTERNALGENERALENTITYINDTD;
-				    charDataRead = FALSE;
-				    break;
-			    }
-			} else {
-			    // "Unparsed" ### or is the definition of unparsed entities different?
-			    if ( context == InEntityValue ) {
-				// Bypassed
-				// (this does not conform with the table 4.4 of the XML specification;
-				// on the other hand: in this case it is not really an unparsed entity)
-				stringAddC( '&' );
-				for ( int i=0; i<(int)ref().length(); i++ ) {
-				    stringAddC( ref()[i] );
-				}
-				stringAddC( ';');
-				charDataRead = TRUE;
-			    } else {
-#if 0
-				// Forbidden
-				d->error = XMLERR_UNPARSEDENTITYREFERENCE;
-				goto parseError;
-				charDataRead = FALSE;
-#else
-				// ### skip it???
-				if ( contentHnd ) {
-				    if ( !contentHnd->skippedEntity( ref() ) ) {
-					d->error = contentHnd->errorString();
-					goto parseError;
-				    }
-				}
-#endif
-			    }
-			}
-		    }
-		}
+		if ( !processReference( charDataRead, context ) )
+		    goto parseError;
 		next();
 		break;
 	}
@@ -5914,6 +5783,162 @@ parseError:
     reportParseError();
     return FALSE;
 }
+
+/*!
+  Helper function for parseReference()
+*/
+bool QXmlSimpleReader::processReference( bool &charDataRead, EntityRecognitionContext context )
+{
+    QString reference = ref();
+    if ( reference == "amp" ) {
+	if ( context == InEntityValue ) {
+	    // Bypassed
+	    stringAddC( '&' ); stringAddC( 'a' ); stringAddC( 'm' ); stringAddC( 'p' ); stringAddC( ';' );
+	} else {
+	    // Included or Included in literal
+	    stringAddC( '&' );
+	}
+	charDataRead = TRUE;
+    } else if ( reference == "lt" ) {
+	if ( context == InEntityValue ) {
+	    // Bypassed
+	    stringAddC( '&' ); stringAddC( 'l' ); stringAddC( 't' ); stringAddC( ';' );
+	} else {
+	    // Included or Included in literal
+	    stringAddC( '<' );
+	}
+	charDataRead = TRUE;
+    } else if ( reference == "gt" ) {
+	if ( context == InEntityValue ) {
+	    // Bypassed
+	    stringAddC( '&' ); stringAddC( 'g' ); stringAddC( 't' ); stringAddC( ';' );
+	} else {
+	    // Included or Included in literal
+	    stringAddC( '>' );
+	}
+	charDataRead = TRUE;
+    } else if ( reference == "apos" ) {
+	if ( context == InEntityValue ) {
+	    // Bypassed
+	    stringAddC( '&' ); stringAddC( 'a' ); stringAddC( 'p' ); stringAddC( 'o' ); stringAddC( 's' ); stringAddC( ';' );
+	} else {
+	    // Included or Included in literal
+	    stringAddC( '\'' );
+	}
+	charDataRead = TRUE;
+    } else if ( reference == "quot" ) {
+	if ( context == InEntityValue ) {
+	    // Bypassed
+	    stringAddC( '&' ); stringAddC( 'q' ); stringAddC( 'u' ); stringAddC( 'o' ); stringAddC( 't' ); stringAddC( ';' );
+	} else {
+	    // Included or Included in literal
+	    stringAddC( '"' );
+	}
+	charDataRead = TRUE;
+    } else {
+	QMap<QString,QString>::Iterator it;
+	it = d->entities.find( reference );
+	if ( it != d->entities.end() ) {
+	    // "Internal General"
+	    switch ( context ) {
+		case InContent:
+		    // Included
+		    xmlRef = it.data() + xmlRef;
+		    charDataRead = FALSE;
+		    break;
+		case InAttributeValue:
+		    // Included in literal
+		    xmlRef = it.data().replace( QRegExp("\""), "&quot;" ).replace( QRegExp("'"), "&apos;" )
+			+ xmlRef;
+		    charDataRead = FALSE;
+		    break;
+		case InEntityValue:
+		    {
+			// Bypassed
+			stringAddC( '&' );
+			for ( int i=0; i<(int)reference.length(); i++ ) {
+			    stringAddC( reference[i] );
+			}
+			stringAddC( ';');
+			charDataRead = TRUE;
+		    }
+		    break;
+		case InDTD:
+		    // Forbidden
+		    d->error = XMLERR_INTERNALGENERALENTITYINDTD;
+		    charDataRead = FALSE;
+		    break;
+	    }
+	} else {
+	    QMap<QString,QXmlSimpleReaderPrivate::ExternEntity>::Iterator itExtern;
+	    itExtern = d->externEntities.find( reference );
+	    if ( itExtern == d->externEntities.end() ) {
+		// entity not declared
+		// ### check this case for conformance
+		if ( context == InEntityValue ) {
+		    // Bypassed
+		    stringAddC( '&' );
+		    for ( int i=0; i<(int)reference.length(); i++ ) {
+			stringAddC( reference[i] );
+		    }
+		    stringAddC( ';');
+		    charDataRead = TRUE;
+		} else {
+		    if ( contentHnd ) {
+			if ( !contentHnd->skippedEntity( reference ) ) {
+			    d->error = contentHnd->errorString();
+			    return FALSE; // error
+			}
+		    }
+		}
+	    } else if ( (*itExtern).notation.isNull() ) {
+		// "External Parsed General"
+		switch ( context ) {
+		    case InContent:
+			// Included if validating
+			if ( contentHnd ) {
+			    if ( !contentHnd->skippedEntity( reference ) ) {
+				d->error = contentHnd->errorString();
+				return FALSE; // error
+			    }
+			}
+			charDataRead = FALSE;
+			break;
+		    case InAttributeValue:
+			// Forbidden
+			d->error = XMLERR_EXTERNALGENERALENTITYINAV;
+			charDataRead = FALSE;
+			break;
+		    case InEntityValue:
+			{
+			    // Bypassed
+			    stringAddC( '&' );
+			    for ( int i=0; i<(int)reference.length(); i++ ) {
+				stringAddC( reference[i] );
+			    }
+			    stringAddC( ';');
+			    charDataRead = TRUE;
+			}
+			break;
+		    case InDTD:
+			// Forbidden
+			d->error = XMLERR_EXTERNALGENERALENTITYINDTD;
+			charDataRead = FALSE;
+			break;
+		}
+	    } else {
+		// "Unparsed"
+		// ### notify for "Occurs as Attribute Value" missing (but this is no refence, anyway)
+		// Forbidden
+		d->error = XMLERR_UNPARSEDENTITYREFERENCE;
+		charDataRead = FALSE;
+		return FALSE; // error
+	    }
+	}
+    }
+    return TRUE; // no error
+}
+
 
 /*!
   Parse over a simple string.
@@ -5970,8 +5995,8 @@ parseError:
 }
 
 
-/*
-  Init the data values.
+/*!
+  Inits the data values.
 */
 void QXmlSimpleReader::init( const QXmlInputSource& i )
 {
@@ -5996,6 +6021,20 @@ void QXmlSimpleReader::init( const QXmlInputSource& i )
     pos = 0;
     next();
     d->error = XMLERR_OK;
+}
+
+/*!
+  Returns TRUE if a entity with the name \a e exists,
+  otherwise returns FALSE.
+*/
+bool QXmlSimpleReader::entityExist( const QString& e ) const
+{
+    if (  d->parameterEntities.find(e) == d->parameterEntities.end() &&
+	    d->externParameterEntities.find(e) == d->externParameterEntities.end() ) {
+	return FALSE;
+    } else {
+	return TRUE;
+    }
 }
 
 void QXmlSimpleReader::reportParseError()

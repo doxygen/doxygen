@@ -11,8 +11,12 @@ use Cwd;
 
 # get current working directory
 $pwd=cwd();
-# work-around slashes problems for badly ported perl interpreters
-$pwd=~s{/}{\\}g;
+
+# work-around slashes problems for nmake
+if ($target eq "msvc") 
+{
+  $pwd=~s{/}{\\}g;
+}
 
 # create config file
 open(FILE,">makeconfig") || die "Cannot create file makeconfig!";

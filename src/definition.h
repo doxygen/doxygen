@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,7 +33,10 @@ class Definition
 {
   public:
     /*! Types of derived classes */
-    enum DefType { TypeClass, TypeMember, TypeFile, TypeGroup, TypeNamespace };
+    enum DefType 
+    { 
+      TypeClass, TypeMember, TypeFile, TypeGroup, TypeNamespace, TypePackage 
+    };
     /*! Use this for dynamic inspection of the derived class */
     virtual DefType definitionType() = 0;
     

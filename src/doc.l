@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -804,6 +804,7 @@ TR	  [tT][rR]
 TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
+BLOCKQUOTE [bB][lL][oO][cC][kK][qQ][uU][oO][tT][eE]
 DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 
 %option noyywrap
@@ -821,6 +822,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 %x      DocCodeBlock
 %x      DocInternal
 %x      DocLink
+%x      DocJavaLink
 %x      DocLinkText
 %x      DocSkipWord
 %x      DocInclude
@@ -959,12 +961,25 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  scanString(theTranslator->trReimplementedForInternalReasons()+"\n");
   					}
 <DocScan>{CMD}"link"/{BN}	        { BEGIN( DocLink ); }
+<DocScan>"{"{CMD}"link"{BN}+	        { BEGIN( DocJavaLink ); }
 <DocSkipWord>[a-z_A-Z0-9.:()]+		{ BEGIN( DocScan ); }
-<DocLink>[a-z_A-Z0-9:#.,~&*/<>()\-\+]+  {  // TODO: support operators as well!
+<DocLink>[a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+  {  // TODO: support operators as well!
   					  linkRef  = stripKnownExtensions(yytext);
 					  linkText = "";
   					  BEGIN( DocLinkText ); 
 					}
+<DocJavaLink>([a-z_A-Z0-9]+".")+	{ /* Skip scope prefix (TODO: fix) */ }
+<DocJavaLink>([a-z_A-Z0-9]+"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,~&*()\[\]]*")")? {  // TODO: support operators as well!
+  					  linkRef  = yytext;
+					}
+<DocJavaLink>"}"			{
+  					  //printf("Trying to link `%s'\n",linkRef.data());
+					  if (!generateLink(*outDoc,className,linkRef,inSeeBlock,0))
+					  {
+					    warn(yyFileName,yyLineNr,"Warning: link to unknown entity `%s' in the documentation of this entity!",linkRef.data());
+					  }
+  					  BEGIN( DocScan ); 
+  					}
 <DocLinkText>.				{ linkText += *yytext; }
 <DocLinkText>"\n"			{ linkText += " "; }
 <DocLink,DocLinkText>{CMD}"endlink" 	{ // <- needed for things like \endlink. 
@@ -972,7 +987,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  //        className.data(),linkRef.data(),linkText.data());
 					  if (!generateLink(*outDoc,className,linkRef,inSeeBlock,linkText.stripWhiteSpace()))
 					  {
-					    warn(yyFileName,yyLineNr,"Warning: link to unknown section %s in the documentation of this entity!",linkRef.data());
+					    warn(yyFileName,yyLineNr,"Warning: link to unknown entity `%s' in the documentation of this entity!",linkRef.data());
 					  }
   					  BEGIN( DocScan ); 
 					}
@@ -1718,13 +1733,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  BEGIN(DocScan);
   					}
-<DocScan,DocRefName>({SCOPEMASK}"::")?"operator()("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
+<DocScan,DocRefName>({SCOPEMASK}"::")?"operator()"("("[a-z_A-Z0-9,\<\> \t\*\&]*")")?	{ 
 				          QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					  BEGIN(DocScan);
 					}
-<DocScan,DocRefName>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+"("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
+<DocScan,DocRefName>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+("("[a-z_A-Z0-9,\<\> \t\*\&]*")")?	{ 
     					  QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
@@ -1827,6 +1842,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan>"</"{HEAD}{ATTR}">"			
 <DocScan>"<"{BODY}{ATTR}">"
 <DocScan>"</"{BODY}{ATTR}">"
+<DocScan>"<"{BLOCKQUOTE}{ATTR}">"
+<DocScan>"</"{BLOCKQUOTE}{ATTR}">"
 <DocScan>"<"{CODE}{ATTR}">"		{ outDoc->startTypewriter(); }
 <DocScan>"</"{CODE}{ATTR}">"		{ outDoc->endTypewriter(); }
 <DocScan>"<"{DFN}{ATTR}">"		{ outDoc->startTypewriter(); }

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,6 +37,7 @@ class NamespaceList;
 class NamespaceDict;
 class MemberGroupList;
 class MemberGroupDict;
+class PackageDef;
 
 struct IncludeInfo
 {
@@ -116,6 +117,9 @@ class FileDef : public Definition
     void insertNamespace(NamespaceDef *nd);
     void computeAnchors();
 
+    void setPackageDef(PackageDef *pd) { package=pd; }
+    PackageDef *packageDef() const { return package; }
+    
     void addUsingDirective(NamespaceDef *nd);
     NamespaceList *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(ClassDef *cd);
@@ -169,6 +173,8 @@ class FileDef : public Definition
     /* user defined member groups */
     MemberGroupList *memberGroupList;
     MemberGroupDict *memberGroupDict;
+
+    PackageDef *package;
 };
 
 #if 0 // obsolete 

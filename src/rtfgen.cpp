@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Parker Waechter & Dimitri van Heesch.
  *
  * Style sheet additions by Alexander Bartolich
  *
@@ -778,6 +778,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Introduction
       beginRTFChapter();
       break;
+    case isPackageIndex:
+      //Package Index
+      beginRTFChapter();
+      break;
     case isModuleIndex:
       //Module Index
       beginRTFChapter();
@@ -802,6 +806,21 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isPageIndex:
       //Related Page Index
       beginRTFChapter();
+      break;
+    case isPackageDocumentation:
+      {
+        //Package Documentation
+        PackageSDict::Iterator pdi(packageDict);
+        PackageDef *pd=pdi.toFirst();
+        bool found=FALSE;
+        while (pd && !found)
+        {
+          beginRTFChapter();
+          found=TRUE;
+          ++pdi;
+          pd=pdi.current();
+        }
+      }
       break;
     case isModuleDocumentation:
       {
@@ -932,6 +951,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
       t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"index.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
+    case isPackageIndex:
+      t << "\\par " << Rtf_Style_Reset << endl;
+      t << "{\\tc \\v " << theTranslator->trPackageList() << "}"<< endl;
+      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"packages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
     case isModuleIndex:
       t << "\\par " << Rtf_Style_Reset << endl;
       t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}"<< endl;
@@ -961,6 +985,22 @@ void RTFGenerator::endIndexSection(IndexSections is)
       t << "\\par " << Rtf_Style_Reset << endl;
       t << "{\\tc \\v " << theTranslator->trPageIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
+    case isPackageDocumentation:
+      {
+        PackageSDict::Iterator pdi(packageDict);
+        PackageDef *pd=pdi.toFirst();
+        t << "{\\tc \\v " << theTranslator->trPackageDocumentation() << "}"<< endl;
+        while (pd)
+        {
+          t << "\\par " << Rtf_Style_Reset << endl;
+          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+          t << pd->getOutputFileBase();
+          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          ++pdi;
+          pd=pdi.current();
+        }
+      }
       break;
     case isModuleDocumentation:
       {

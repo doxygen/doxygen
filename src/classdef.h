@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -43,6 +43,7 @@ class UsesClassDict;
 class MemberGroupList;
 class MemberGroupDict;
 class QTextStream;
+class PackageDef;
 struct IncludeInfo;
 
 class ClassDef : public Definition
@@ -62,6 +63,7 @@ class ClassDef : public Definition
     QCString getOutputFileBase() const { return fileName; }
     QCString displayName() const;
     CompoundType compoundType() const { return compType; } 
+    QCString compoundTypeString() const;
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
@@ -126,6 +128,8 @@ class ClassDef : public Definition
 
     void generateXML(QTextStream &t);
     void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
+
+    PackageDef *packageDef() const;
    
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);

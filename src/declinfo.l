@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -114,7 +114,7 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
   				  name += yytext;
   				  BEGIN(Operator);
   				}
-<Start>(~{B}*)?{ID}		{
+<Start>(~{B}*)?{ID}({B}*"["{B}*"]")* { // the []'s are for Java
   				  addTypeName();
 				  name += yytext;
   				}
@@ -227,6 +227,13 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
 
   //printf("type=`%s' class=`%s' name=`%s' args=`%s'\n",
   //        type.data(),scope.data(),name.data(),args.data());
+
+  int nb = name.findRev('[');
+  if (nb!=-1) // correct for [] in name ambigity (due to Java return type allowing [])
+  {
+    args.prepend(name.right(name.length()-nb));
+    name=name.left(nb);
+  }
 
   cl=scope.copy();
   //printf("scope=`%s'\n",scope.data());

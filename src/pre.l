@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -43,6 +43,7 @@
 #include "util.h"
 #include "defargs.h"
 #include "debug.h"
+#include "bufstr.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -51,7 +52,6 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
-#define SHOW_INCLUDES 0 // set this to one to list all parsed include files
 
 struct FileState
 {
@@ -317,7 +317,6 @@ static void processConcatOperators(QCString &expr)
 static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int &len,const Define *def,QCString &result)
 {
   //printf("replaceFunctionMacro(expr=%s,rest=%s,pos=%d,def=%s) level=%d\n",expr.data(),rest ? rest->data() : 0,pos,def->name.data(),g_level);
-  //bool replaced=FALSE;
   uint j=pos;
   len=0;
   result.resize(0);
@@ -333,9 +332,6 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     return FALSE; 
   }
   getNextChar(expr,rest,j); // eat the `(' character
-
-  //while (j<expr.length() && expr.at(j)!='(') j++; 
-  //j++; // skip opening paren
 
   QDict<QCString> argTable;  // list of arguments
   argTable.setAutoDelete(TRUE);
@@ -417,26 +413,34 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       else if (c=='\"') // append literal strings
       {
 	arg+=c; 
-	char pc=c;
 	bool found=FALSE;
 	while (!found && (cc=getNextChar(expr,rest,j))!=EOF)
 	{
-	  found = pc!='\\' && cc=='"';
+	  found = cc=='"';
+	  if (cc=='\\')
+	  {
+	    c=(char)cc;	  
+	    arg+=c;
+	    if ((cc=getNextChar(expr,rest,j))==EOF) break;
+	  }
 	  c=(char)cc;	  
-	  pc=c;
 	  arg+=c;
 	}
       }
       else if (c=='\'') // append literal characters
       {
 	arg+=c;
-	char pc=c;
 	bool found=FALSE;
 	while (!found && (cc=getNextChar(expr,rest,j))!=EOF)
 	{
-	  found = pc!='\\' && cc=='\'';
+	  found = cc=='\'';
+	  if (cc=='\\')
+	  {
+	    c=(char)cc;	  
+	    arg+=c;
+	    if ((cc=getNextChar(expr,rest,j))==EOF) break;
+	  }
 	  c=(char)cc;
-	  pc=c;
 	  arg+=c;
 	}
       }	    
@@ -876,10 +880,11 @@ static void readIncludeFile(const QCString &inc)
     //printf("Searching for `%s'\n",incFileName.data());
     if ((f=findFile(incFileName))) // see if the include file can be found
     {
-#if SHOW_INCLUDES
-      for (i=0;i<g_includeStack.count();i++) msg("  ");
-      msg("#include %s: parsing...\n",incFileName.data());
-#endif
+      if (Debug::isFlagSet(Debug::Preprocessor))
+      {
+        for (i=0;i<g_includeStack.count();i++) msg("  ");
+        msg("#include %s: parsing...\n",incFileName.data());
+      }
       if (oldFileDef) 
       {
 	// add include dependency to the file in which the #include was found
@@ -916,10 +921,11 @@ static void readIncludeFile(const QCString &inc)
   	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
         }
       }
-#if SHOW_INCLUDES
-      msg("#include %s: not found! skipping...\n",incFileName.data());
-      //printf("Error: include file %s not found\n",yytext);
-#endif
+      if (Debug::isFlagSet(Debug::Preprocessor))
+      {
+        msg("#include %s: not found! skipping...\n",incFileName.data());
+        //printf("Error: include file %s not found\n",yytext);
+      }
     }
   }
 }
@@ -957,7 +963,7 @@ BN	[ \t\r\n]
 %x	DefinedExpr2
 %x	SkipDoubleQuote
 %x	SkipSingleQuote
-%x	Ung_defName
+%x	UndefName
 %x	IgnoreLine
 %x	FindDefineArgs
 %x	ReadString
@@ -1094,8 +1100,8 @@ BN	[ \t\r\n]
 					  g_roundCount--;
 					  if (g_roundCount==0)
 					  {
-					    //printf("g_defArgsStr=`%s'\n",g_defArgsStr.data());
 					    QCString result=expandMacro(g_defArgsStr);
+					    //printf("g_defArgsStr=`%s'->`%s'\n",g_defArgsStr.data(),result.data());
 					    if (g_findDefArgContext==CopyLine)
 					    {
 					      outputArray(result,result.length());
@@ -1114,7 +1120,7 @@ BN	[ \t\r\n]
   					  g_defArgsStr+=yytext;
   					}
   */
-<FindDefineArgs>"\""			{
+<FindDefineArgs>\"			{
   					  g_defArgsStr+=*yytext;
   					  BEGIN(ReadString);
   					}
@@ -1128,14 +1134,14 @@ BN	[ \t\r\n]
 <FindDefineArgs>.			{
   					  g_defArgsStr+=*yytext;
   					}
-<ReadString>"\\\""			{
-  					  g_defArgsStr+=yytext;
-  					}
 <ReadString>"\""			{
   					  g_defArgsStr+=*yytext;
 					  BEGIN(FindDefineArgs);
   					}
 <ReadString>"//"|"/*"			{
+  					  g_defArgsStr+=yytext;
+  					}
+<ReadString>\\.				{
   					  g_defArgsStr+=yytext;
   					}
 <ReadString>.				{
@@ -1207,7 +1213,7 @@ BN	[ \t\r\n]
 					  } 
   					}
 <Command>"undef"{B}+			{
-  					  BEGIN(Ung_defName);
+  					  BEGIN(UndefName);
   					}
 <Command>("elif"|"else"{B}*"if")/[ \t(]	{
   					  if (!otherCaseDone())
@@ -1228,9 +1234,13 @@ BN	[ \t\r\n]
 <Command>{ID}				{ // unknown directive
 					  BEGIN(IgnoreLine);
 					}
+<IgnoreLine>\\[\r]?\n			{
+  					  outputChar('\n');
+					  g_yyLineNr++;
+					}
 <IgnoreLine>.
 <Command>.
-<Ung_defName>{ID}				{
+<UndefName>{ID}			{
   					  Define *def;
   					  if ((def=isDefined(yytext)))
 					  {
