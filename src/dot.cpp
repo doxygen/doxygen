@@ -294,22 +294,22 @@ static void deleteNodes(DotNode *node,SDict<DotNode> *skipNodes=0)
   deletedNodes.clear(); // actually remove the nodes.
 }
 
-DotNode::DotNode(int n,const char *lab,const char *url,int distance,bool isRoot)
-  : m_number(n), m_label(lab), m_url(url), m_isRoot(isRoot)
+DotNode::DotNode(int n,const char *lab,const char *url,int distance,
+                 bool isRoot,ClassDef *cd)
+  : m_number(n), m_label(lab), m_url(url), m_isRoot(isRoot), m_classDef(cd)
 {
-  m_children = 0; 
-  m_edgeInfo = 0;
-  m_parents = 0;
-  m_subgraphId=-1;
-  m_deleted=FALSE;
-  m_written=FALSE;
-  m_hasDoc=FALSE;
-  m_distance = distance;
+  m_children   = 0; 
+  m_edgeInfo   = 0;
+  m_parents    = 0;
+  m_subgraphId =-1;
+  m_deleted    = FALSE;
+  m_written    = FALSE;
+  m_hasDoc     = FALSE;
+  m_distance   = distance;
 }
 
 DotNode::~DotNode()
 {
-  //printf("DotNode::~DotNode() %s\n",m_label.data());
   delete m_children;
   delete m_parents;
   delete m_edgeInfo;
@@ -419,6 +419,7 @@ static QCString convertLabel(const QCString &l)
 }
 
 void DotNode::writeBox(QTextStream &t,
+                       GraphType /* gt */,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren)
 {
@@ -444,6 +445,7 @@ void DotNode::writeBox(QTextStream &t,
 }
 
 void DotNode::writeArrow(QTextStream &t,
+                         GraphType /* gt */,
                          GraphOutputFormat format,
                          DotNode *cn,
                          EdgeInfo *ei,
@@ -472,6 +474,7 @@ void DotNode::writeArrow(QTextStream &t,
 }
 
 void DotNode::write(QTextStream &t,
+                    GraphType gt,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
@@ -493,7 +496,7 @@ void DotNode::write(QTextStream &t,
       if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
     }
   }
-  writeBox(t,format,hasNonReachableChildren);
+  writeBox(t,gt,format,hasNonReachableChildren);
   m_written=TRUE;
   if (nl)
   {
@@ -506,9 +509,9 @@ void DotNode::write(QTextStream &t,
       {
         if (cn->m_distance<=distance) 
         {
-          writeArrow(t,format,cn,dnli2.current(),topDown,backArrows);
+          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
         }
-        cn->write(t,format,topDown,toChildren,distance,backArrows);
+        cn->write(t,gt,format,topDown,toChildren,distance,backArrows);
       }
     }
     else // render parents
@@ -520,6 +523,7 @@ void DotNode::write(QTextStream &t,
         if (pn->m_distance<=distance) 
         {
           writeArrow(t,
+                     gt,
                      format,
                      pn,
                      pn->m_edgeInfo->at(pn->m_children->findRef(this)),
@@ -527,7 +531,7 @@ void DotNode::write(QTextStream &t,
                      backArrows
                     );
         }
-        pn->write(t,format,TRUE,FALSE,distance,backArrows);
+        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows);
       }
     }
   }
@@ -809,7 +813,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     for (;(node=dnli2.current());++dnli2)
     {
       if (node->m_subgraphId==n->m_subgraphId) 
-        node->write(t,BITMAP,FALSE,TRUE,1000,TRUE);
+        node->write(t,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
     }
     writeGraphFooter(t);
     f.close();
@@ -1062,7 +1066,9 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     bn = new DotNode(m_curNodeNumber++,
         displayName,
         tmp_url.data(),
-        distance
+        distance,
+        FALSE,        // rootNode
+        cd
        );
     if (distance>m_maxDistance) m_maxDistance=distance;
     if (base)
@@ -1090,7 +1096,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   //    cd->name().data(),distance,base);
   // ---- Add inheritance relations
 
-  if (m_graphType == Inheritance)
+  if (m_graphType == DotNode::Inheritance)
   {
     BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
     BaseClassDef *bcd;
@@ -1104,7 +1110,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   }
   else // m_graphType != Inheritance
   {
-    ASSERT(m_graphType==Implementation);
+    ASSERT(m_graphType==DotNode::Collaboration);
 
     // ---- Add usage relations
     
@@ -1187,7 +1193,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   }
 }
 
-DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
+DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t,int maxRecursionDepth)
 {
   //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
   m_graphType = t;
@@ -1204,7 +1210,8 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
                             className,
                             tmp_url.data(),
                             0,                         // distance
-                            TRUE                       // is a root node
+                            TRUE,                      // is a root node
+                            cd
                            );
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(className,m_startNode);
@@ -1217,14 +1224,14 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
   if (m_recDepth>0) 
   {
     buildGraph(cd,m_startNode,1,TRUE);
-    if (t==Inheritance) buildGraph(cd,m_startNode,1,FALSE);
+    if (t==DotNode::Inheritance) buildGraph(cd,m_startNode,1,FALSE);
   }
   m_diskName = cd->getFileBase().copy();
 }
 
 bool DotClassGraph::isTrivial() const
 {
-  if (m_graphType==Inheritance)
+  if (m_graphType==DotNode::Inheritance)
     return m_startNode->m_children==0 && m_startNode->m_parents==0;
   else
     return m_startNode->m_children==0;
@@ -1237,6 +1244,7 @@ DotClassGraph::~DotClassGraph()
 }
 
 void writeDotGraph(DotNode *root,
+                   DotNode::GraphType gt,
                    GraphOutputFormat format,
                    const QCString &baseName,
                    bool lrRank,
@@ -1258,7 +1266,7 @@ void writeDotGraph(DotNode *root,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,format,TRUE,TRUE,distance,backArrows);
+    root->write(t,gt,format,TRUE,TRUE,distance,backArrows);
     if (renderParents && root->m_parents) 
     {
       //printf("rendering parents!\n");
@@ -1269,6 +1277,7 @@ void writeDotGraph(DotNode *root,
         if (pn->m_distance<=distance) 
         {
           root->writeArrow(t,
+                           gt,
                            format,
                            pn,
                            pn->m_edgeInfo->at(pn->m_children->findRef(root)),
@@ -1276,7 +1285,7 @@ void writeDotGraph(DotNode *root,
                            backArrows
                           );
         }
-        pn->write(t,format,TRUE,FALSE,distance,backArrows);
+        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows);
       }
     }
     writeGraphFooter(t);
@@ -1288,6 +1297,7 @@ static void findMaximalDotGraph(DotNode *root,
                                 int maxDist,
                                 const QCString &baseName,
                                 QDir &thisDir,
+                                DotNode::GraphType gt,
                                 GraphOutputFormat format,
                                 bool lrRank=FALSE,
                                 bool renderParents=FALSE,
@@ -1309,7 +1319,7 @@ static void findMaximalDotGraph(DotNode *root,
   {
     curDistance = (minDistance+maxDistance)/2;
 
-    writeDotGraph(root,format,baseName,lrRank,renderParents,
+    writeDotGraph(root,gt,format,baseName,lrRank,renderParents,
         curDistance,backArrows);
 
     QCString dotArgs(maxCmdLine);
@@ -1347,13 +1357,14 @@ static void findMaximalDotGraph(DotNode *root,
   //printf("lastFit=%d\n",lastFit);
 
   writeDotGraph(root,
-                  format,
-                  baseName,
-                  lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
-                  renderParents,
-                  lastFit,
-                  backArrows
-                 );
+                gt,
+                format,
+                baseName,
+                lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
+                renderParents,
+                lastFit,
+                backArrows
+               );
 }
 
 QCString DotClassGraph::diskName() const
@@ -1361,14 +1372,17 @@ QCString DotClassGraph::diskName() const
   QCString result=m_diskName.copy();
   switch (m_graphType)
   {
-    case Implementation:
+    case DotNode::Collaboration:
       result+="_coll_graph";
       break;
-    case Interface:
-      result+="_intf_graph";
-      break;
-    case Inheritance:
+    //case Interface:
+    //  result+="_intf_graph";
+    //  break;
+    case DotNode::Inheritance:
       result+="_inherit_graph";
+      break;
+    default:
+      ASSERT(0);
       break;
   }
   return result;
@@ -1395,20 +1409,23 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   QCString mapName;
   switch (m_graphType)
   {
-    case Implementation:
+    case DotNode::Collaboration:
       mapName="coll_map";
       break;
-    case Interface:
-      mapName="intf_map";
-      break;
-    case Inheritance:
+    //case Interface:
+    //  mapName="intf_map";
+    //  break;
+    case DotNode::Inheritance:
       mapName="inherit_map";
+      break;
+    default:
+      ASSERT(0);
       break;
   }
   baseName = convertNameToFile(diskName());
 
   findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),baseName,
-                      thisDir,format,!isTBRank,m_graphType==Inheritance);
+                      thisDir,m_graphType,format,!isTBRank,m_graphType==DotNode::Inheritance);
 
   if (format==BITMAP) // run dot to create a bitmap image
   {
@@ -1440,14 +1457,17 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
           << mapLabel << "\" alt=\"";
       switch (m_graphType)
       {
-        case Implementation:
+        case DotNode::Collaboration:
           out << "Collaboration graph";
           break;
-        case Interface:
-          out << "Interface dependency graph";
-          break;
-        case Inheritance:
+        //case Interface:
+        //  out << "Interface dependency graph";
+        //  break;
+        case DotNode::Inheritance:
           out << "Inheritance graph";
+          break;
+        default:
+          ASSERT(0);
           break;
       }
       out << "\"></center>" << endl;
@@ -1647,7 +1667,8 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   QCString mapName=m_startNode->m_label.copy();
   if (m_inverse) mapName+="dep";
 
-  findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),baseName,thisDir,format,
+  findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),
+                      baseName,thisDir,DotNode::Dependency,format,
                       FALSE,FALSE,!m_inverse);
 
   if (format==BITMAP)

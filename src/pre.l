@@ -1659,7 +1659,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipCComment>"/*"			{
   					  outputChar('/');outputChar('*');
-					  g_commentCount++;
+					  //g_commentCount++;
   					}
 <SkipCComment>[^*\n\/]+			{
   					  outputArray(yytext,yyleng);

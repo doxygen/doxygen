@@ -279,7 +279,7 @@ OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {BLANK}+[^(\r\n.,]+
-OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
+OPMASK    ({BLANK}*{OPNORM}{FUNCARG})|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}

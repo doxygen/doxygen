@@ -76,7 +76,7 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 //--------------------------------------------------------------------
 
-void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
+void linkifyText(const TextGeneratorIntf &ol,Definition *scope,const char *name,
                         const char *text,bool autoBreak=FALSE,bool external=TRUE);
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
 QCString fileToString(const char *name,bool filter=FALSE);

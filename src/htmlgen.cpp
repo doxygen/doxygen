@@ -38,14 +38,14 @@
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x) 
 
-
-/*
-    changed default stylesheet, startIndexKey(), startIndexValue()
-    02 jan 2002, jh
-*/
-
 static const char *defaultStyleSheet = 
-"H1 { text-align: center; }\n"
+"H1 {\n"
+"	text-align: center;\n"
+"	font-family: Arial, Helvetica, sans-serif;\n"
+"}\n"
+"H2 {\n"
+"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
+"}\n"
 "CAPTION { font-weight: bold }\n"
 "A.qindex {}\n"
 "A.qindexRef {}\n"
@@ -55,15 +55,25 @@ static const char *defaultStyleSheet =
 "A.codeRef { font-weight: normal; color: #4444ee }\n"
 "A:hover { text-decoration: none; background-color: #f2f2ff }\n"
 "DL.el { margin-left: -1cm }\n"
-"DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
+"DIV.fragment {\n"
+"	width: 98%;\n"
+"	border: 1px solid #CCCCCC;\n"
+"	background-color: #f5f5f5;\n"
+"	padding: 0px;\n"
+"	margin: 4px;\n"
+"}\n"
 "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
 "TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
 "TD.mdname1 { background-color: #f2f2ff; font-weight: bold; color: #602020; }\n"
 "TD.mdname { background-color: #f2f2ff; font-weight: bold; color: #602020; width: 600px; }\n"
 "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
 "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
-"BODY { background: white; color: black }\n"
-"EM.mdesc { font-size: smaller }\n"
+"BODY {\n"
+"	background: white;\n"
+"	color: black;\n"
+"	margin-right: 20px;\n"
+"	margin-left: 20px;\n"
+"}\n"
 "TD.indexkey { \n"
 "   background-color: #eeeeff; \n"
 "   font-weight: bold; \n"
@@ -91,17 +101,86 @@ static const char *defaultStyleSheet =
 "TR.memlist {\n"
 "   background-color: #f0f0f0; \n"
 "}\n"
-"p.formulaDsp { text-align: center; }\n"
-"img.formulaDsp { }\n"
-"img.formulaInl { vertical-align: middle; }\n"
-"span.keyword       { color: #008000 }\n"
-"span.keywordtype   { color: #604020 }\n"
-"span.keywordflow   { color: #e08000 }\n"
-"span.comment       { color: #800000 }\n"
-"span.preprocessor  { color: #806020 }\n"
-"span.stringliteral { color: #002080 }\n"
-"span.charliteral   { color: #008080 }\n";
-
+"P.formulaDsp { text-align: center; }\n"
+"IMG.formulaDsp { }\n"
+"IMG.formulaInl { vertical-align: middle; }\n"
+"SPAN.keyword       { color: #008000 }\n"
+"SPAN.keywordtype   { color: #604020 }\n"
+"SPAN.keywordflow   { color: #e08000 }\n"
+"SPAN.comment       { color: #800000 }\n"
+"SPAN.preprocessor  { color: #806020 }\n"
+"SPAN.stringliteral { color: #002080 }\n"
+"SPAN.charliteral   { color: #008080 }\n"
+".mdTable {\n"
+"	border: 1px solid #868686;\n"
+"	background-color: #f2f2ff;\n"
+"}\n"
+".mdRow {\n"
+"	padding: 8px 20px;\n"
+"}\n"
+".mdescLeft {\n"
+"	font-size: smaller;\n"
+"	font-family: Arial, Helvetica, sans-serif;\n"
+"	background-color: #FAFAFA;\n"
+"	padding-left: 8px;\n"
+"	border-top: 1px none #E0E0E0;\n"
+"	border-right: 1px none #E0E0E0;\n"
+"	border-bottom: 1px none #E0E0E0;\n"
+"	border-left: 1px none #E0E0E0;\n"
+"	margin: 0px;\n"
+"}\n"
+".mdescRight {\n"
+"	font-size: smaller;\n"
+"	font-family: Arial, Helvetica, sans-serif;\n"
+"	font-style: italic;\n"
+"	background-color: #FAFAFA;\n"
+"	padding-left: 4px;\n"
+"	border-top: 1px none #E0E0E0;\n"
+"	border-right: 1px none #E0E0E0;\n"
+"	border-bottom: 1px none #E0E0E0;\n"
+"	border-left: 1px none #E0E0E0;\n"
+"	margin: 0px;\n"
+"	padding-bottom: 0px;\n"
+"	padding-right: 8px;\n"
+"}\n"
+".memItemLeft {\n"
+"	padding: 1px 0px 0px 8px;\n"
+"	margin: 4px;\n"
+"	border-top-width: 1px;\n"
+"	border-right-width: 1px;\n"
+"	border-bottom-width: 1px;\n"
+"	border-left-width: 1px;\n"
+"	border-top-style: solid;\n"
+"	border-top-color: #E0E0E0;\n"
+"	border-right-color: #E0E0E0;\n"
+"	border-bottom-color: #E0E0E0;\n"
+"	border-left-color: #E0E0E0;\n"
+"	border-right-style: none;\n"
+"	border-bottom-style: none;\n"
+"	border-left-style: none;\n"
+"	background-color: #FAFAFA;\n"
+"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
+"	font-size: 12px;\n"
+"}\n"
+".memItemRight {\n"
+"	padding: 1px 0px 0px 8px;\n"
+"	margin: 4px;\n"
+"	border-top-width: 1px;\n"
+"	border-right-width: 1px;\n"
+"	border-bottom-width: 1px;\n"
+"	border-left-width: 1px;\n"
+"	border-top-style: solid;\n"
+"	border-top-color: #E0E0E0;\n"
+"	border-right-color: #E0E0E0;\n"
+"	border-bottom-color: #E0E0E0;\n"
+"	border-left-color: #E0E0E0;\n"
+"	border-right-style: none;\n"
+"	border-bottom-style: none;\n"
+"	border-left-style: none;\n"
+"	background-color: #FAFAFA;\n"
+"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
+"	font-size: 13px;\n"
+"}\n";
 
 static QCString g_header;
 static QCString g_footer;
@@ -116,12 +195,6 @@ HtmlGenerator::~HtmlGenerator()
 {
   //printf("HtmlGenerator::~HtmlGenerator()\n");
 }
-
-//void HtmlGenerator::append(const OutputGenerator *g)
-//{
-//  t << g->getContents();
-//  col+=((HtmlGenerator *)g)->col;
-//}
 
 void HtmlGenerator::init()
 {
@@ -190,15 +263,12 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr><address style=\"align: right;\"><small>\n";
+  t << "<hr size=\"1\"><address style=\"align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << " <a href=\"http://www.doxygen.org/index.html\">\n"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-    << "align=\"middle\" border=0 width=110 height=53>\n"
+    << "align=\"middle\" border=0>\n"
     << "</a> $doxygenversion";
-  //  << " " << theTranslator->trWrittenBy()
-  //  << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
-  //  << " &copy;&nbsp;1997-2003"
   t << "</small></address>\n"
     << "</body>\n"
     << "</html>\n";
@@ -220,6 +290,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   {
     HtmlHelp::getInstance()->addIndexFile(fileName);
   }
+  
   QCString dispTitle = title;
   QCString projName = Config_getString("PROJECT_NAME");
   if (!projName.isEmpty())
@@ -275,7 +346,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
   {
     case 0:
       if (g_footer.isEmpty())
-        t << "<hr><address style=\"align: right;\"><small>";
+        t << "<hr size=\"1\"><address style=\"align: right;\"><small>";
       else
         t << substituteKeywords(g_footer,convertToHtml(lastTitle));
       break;
@@ -294,8 +365,8 @@ void HtmlGenerator::writeFooter(int part,bool external)
           t << "src=\"";
         }
         t << "doxygen.png\" alt=\"doxygen\" " 
-          << "align=\"middle\" border=0 " << endl << 
-             "width=110 height=53></a>" << versionString <<" ";
+          << "align=\"middle\" border=0 > " << endl << 
+             "</a>" << versionString <<" ";
       }
       break;
     default:
@@ -523,13 +594,6 @@ void HtmlGenerator::endHtmlLink()
   t << "</a>";
 }
 
-//void HtmlGenerator::writeMailLink(const char *url)
-//{
-//  t << "<a href=\"mailto:" << url << "\">";
-//  docify(url); 
-//  t << "</a>";
-//}
-
 void HtmlGenerator::startGroupHeader()
 {
   t << "<h2>";
@@ -568,46 +632,6 @@ void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
   }
 }
 
-//void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
-//                                    const char *anchor,const char *title)
-//{
-//  QCString *dest;
-//  //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
-//  QCString refName=name;
-//  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
-//  {
-//    refName+=Doxygen::htmlFileExtension;
-//  }
-//  t << "<a "; 
-//  if (ref) 
-//  {
-//    t << "doxygen=\"" << ref << ":";
-//    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-//    t << "\" ";
-//  }
-//  t << "href=\""; 
-//  if (ref)
-//  {
-//    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-//  }
-//  t << refName << "#" << anchor << "\">";
-//  docify(title);
-//  t << "</a>";
-//}
-//
-//void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
-//                                    const char *title)
-//{
-//  QCString refName=name;
-//  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
-//  {
-//    refName+=Doxygen::htmlFileExtension;
-//  }
-//  t << "<li><a href=\"" << refName << "#" << lab << "\">";
-//  docify(title);
-//  t << "</a>";
-//}
-//
 void HtmlGenerator::docify(const char *str)
 {
   if (str)
@@ -705,32 +729,6 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
   d.writeImage(t,dir,fileName);
 }
 
-//void HtmlGenerator::startColorFont(uchar red,uchar green,uchar blue)
-//{
-//  QCString colorString;
-//  colorString.sprintf("%02x%02x%02x",red,green,blue);
-//  t << "<font color=\"#" << colorString << "\">";
-//}
-//
-//void HtmlGenerator::endColorFont()
-//{
-//  t << "</font>";
-//}
-
-//void HtmlGenerator::writeFormula(const char *n,const char *text)
-//{
-//  if (text && text[0]=='\\') t << "<p><center>" << endl;
-//  t << "<img align=";
-//#if !defined(_WIN32)
-//  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
-//                             // not seem to support align == "middle" :-((
-//#else
-//  t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
-//                             // displays formulas nicely with align == "middle" 
-//#endif
-//  t << " src=\"" << n << ".png\">" << endl;
-//  if (text && text[0]=='\\') t << "</center><p>" << endl;
-//}
 
 void HtmlGenerator::startMemberList()  
 { 
@@ -768,9 +766,9 @@ void HtmlGenerator::startMemberItem(int annoType)
     t << "<tr>";
     switch(annoType)
     {
-      case 0:  t << "<td nowrap align=right valign=top>"; break;
-      case 1:  t << "<td nowrap>"; break;
-      default: t << "<td nowrap valign=top>"; break;
+      case 0:  t << "<td class=\"memItemLeft\" nowrap align=right valign=top>"; break;
+      case 1:  t << "<td class=\"memItemLeft\" nowrap>"; break;
+      default: t << "<td class=\"memItemLeft\" nowrap valign=top>"; break;
     }
   }
   else
@@ -784,7 +782,7 @@ void HtmlGenerator::endMemberItem()
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "</td></tr>"; 
+    t << "</td></tr>\n"; 
   }
   t << endl; 
 }
@@ -795,7 +793,7 @@ void HtmlGenerator::insertMemberAlign()
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "&nbsp;</td><td valign=bottom>"; 
+    t << "&nbsp;</td><td class=\"memItemRight\" valign=bottom>"; 
   }
 }
 
@@ -804,11 +802,11 @@ void HtmlGenerator::startMemberDescription()
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<tr><td>&nbsp;</td><td><em class=\"mdesc\">"; 
+    t << "<tr><td class=\"mdescLeft\">&nbsp;</td><td class=\"mdescRight\">"; 
   }
   else
   {
-    t << "<dl class=\"el\"><dd><em class=\"mdesc\">";
+    t << "<dl class=\"el\"><dd class=\"mdescRight\">";
   }
 }
 
@@ -817,11 +815,11 @@ void HtmlGenerator::endMemberDescription()
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "</em><br><br></td></tr>" << endl; 
+    t << "<br><br></td></tr>" << endl; 
   }
   else
   {
-    t << "<br><br></em></dl>";
+    t << "<br><br></dl>";
   }
 }
 
@@ -915,83 +913,13 @@ void HtmlGenerator::endIndexValue(const char *,bool)
   t << "</td></tr>" << endl;
 }
 
-//void HtmlGenerator::startAlphabeticalIndexList()
-//{
-//  t << "<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" << endl;
-//}
-
-//void HtmlGenerator::endAlphabeticalIndexList()
-//{
-//  t << "</table>" << endl;
-//}
-
-//void HtmlGenerator::writeIndexHeading(const char *s)
-//{
-//  t << "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"ah\">&nbsp;&nbsp;" << s 
-//    << "&nbsp;&nbsp;</td></tr></table>";
-//}
-
-//void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)
-//{
-//  QCString baseName=name;
-//  int i;
-//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-//  {
-//    baseName=baseName.right(baseName.length()-i-1); 
-//  }
-//  t << "<div align=\"center\">" << endl;
-//  t << "<img src=\"" << name << "\" alt=\"" << baseName << "\">" << endl;
-//  if (hasCaption)
-//  {
-//    t << "<p><strong>";
-//  } 
-//}
-
-//void HtmlGenerator::endImage(bool hasCaption)
-//{
-//  if (hasCaption)
-//  {
-//    t << "</strong></p>" << endl;
-//  }
-//  t << "</div>" << endl;
-//}
-
-//void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
-//{
-//  QCString baseName=name;
-//  int i;
-//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-//  {
-//    baseName=baseName.right(baseName.length()-i-1); 
-//  }
-//  QCString outDir = Config_getString("HTML_OUTPUT");
-//  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
-//  t << "<div align=\"center\">" << endl;
-//  t << "<img src=\"" << baseName << "." 
-//    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\"" 
-//    << baseName << "\">" << endl;
-//  if (hasCaption)
-//  {
-//    t << "<p><strong>";
-//  } 
-//}
-//
-//void HtmlGenerator::endDotFile(bool hasCaption)
-//{
-//  if (hasCaption)
-//  {
-//    t << "</strong></p>" << endl;
-//  }
-//  t << "</div>" << endl;
-//}
-//
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "<p>" << endl;
-  t << "<table width=\"100%\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">" << endl;
+  t << "<table class=\"mdTable\" width=\"100%\" cellpadding=\"2\" cellspacing=\"0\">" << endl;
   t << "  <tr>" << endl;
-  t << "    <td class=\"md\">" << endl; 
+  t << "    <td class=\"mdRow\">" << endl; 
   t << "      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;
 }
 
@@ -1249,19 +1177,6 @@ void HtmlGenerator::endParamList()
 {
   t << "</dl>"; 
 }
-
-//void HtmlGenerator::startSectionRefList()
-//{
-//  t << "<multicol cols=3>" << endl;
-//  t << "<ul>" << endl;
-//}
-
-//void HtmlGenerator::endSectionRefList()
-//{
-//  t << "</ul>" << endl;
-//  t << "</multicol>" << endl;
-//}
-
 
 void HtmlGenerator::printDoc(DocNode *n)
 {

@@ -2474,7 +2474,7 @@ void Config::create()
                     "TEMPLATE_RELATIONS",
 		    "If set to YES, the inheritance and collaboration graphs will show the \n"
 		    "relations between templates and their instances. \n",
-                    TRUE
+                    FALSE
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
