@@ -151,6 +151,7 @@ static QCString         formulaText;
 static QCString         sectionRef;
 static bool             insideIDL = FALSE;
 static bool             insideCppQuote = FALSE;
+static bool             insideVerbatim = FALSE;
 static int              depthIf;
 
 // state variable for reading the argument list of a function
@@ -778,7 +779,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   FileDef *fd;
   if ((fd=findFileDef(&imageNameDict,fileName,ambig)))
   {
-    QFile inImage(fd->absFilePath());
+    QFile inImage(fd->absFilePath().data());
     if (inImage.open(IO_ReadOnly))
     {
       result = fileName;
@@ -798,7 +799,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
-      QFile outImage(outputFile);
+      QFile outImage(outputFile.data());
       if (outImage.open(IO_WriteOnly)) // copy the image
       {
 	char *buffer = new char[inImage.size()];
@@ -1125,7 +1126,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>^{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+ { /* found list item marker */
   					  addListItemMarker(yytext);
   					}
-<DocScan>\n{B}*"-"			{
+<DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+			{
   					  addListItemMarker(yytext+1);
   					}
 <DocScan>"<!--"				{ BEGIN(DocSkipHtmlComment); }
@@ -1188,10 +1189,12 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <DocScan>{CMD}"verbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->startCodeFragment();
+					  insideVerbatim=TRUE;
 					  BEGIN(DocVerbatim);
   					}
 <DocVerbatim>{CMD}"endverbatim"/[^a-z_A-Z0-9]	{
   					  outDoc->endCodeFragment();
+					  insideVerbatim=FALSE;
   					  BEGIN(DocScan);
   					}
 <DocVerbatim>[^\n\\\@]*"\n"		{
@@ -1939,14 +1942,30 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"<"{OL}{ATTR}">"		{ outDoc->startEnumList(); 
   					  currentListIndentLevel++;
 					}
-<DocScan>"</"{OL}{ATTR}">"		{ outDoc->endEnumList(); 
-  					  currentListIndentLevel--;
+<DocScan>"</"{OL}{ATTR}">"		{ 
+					  if (currentListIndentLevel<=0)
+					  {
+					    warn("Warning: more </ol> tags than <ol> tags in the documentation of %s\n",yyFileName);
+					  }
+					  else
+					  {
+  				            outDoc->endEnumList(); 
+  					    currentListIndentLevel--;
+					  }
 					}
 <DocScan>"<"{UL}{ATTR}">"		{ outDoc->startItemList(); 
 					  currentListIndentLevel++;
 					}
-<DocScan>"</"{UL}{ATTR}">"		{ outDoc->endItemList(); 
-  					  currentListIndentLevel--;
+<DocScan>"</"{UL}{ATTR}">"		{ 
+					  if (currentListIndentLevel<=0)
+					  {
+					    warn("Warning: more </ul> tags than <ul> tags in the documentation of %s\n",yyFileName);
+					  }
+					  else
+					  {
+                                            outDoc->endItemList(); 
+  					    currentListIndentLevel--;
+					  }
 					}
 <DocScan>"<"{LI}{ATTR}">"		{ outDoc->writeListItem(); }
 <DocScan>"</"{LI}{ATTR}">"		
@@ -1958,8 +1977,16 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"<"{DL}{ATTR}">"		{ outDoc->startDescription(); 
 					  currentListIndentLevel++;
 					}
-<DocScan>"</"{DL}{ATTR}">"		{ outDoc->endDescription(); 
-  					  currentListIndentLevel--;
+<DocScan>"</"{DL}{ATTR}">"		{ 
+					  if (currentListIndentLevel<=0)
+					  {
+					    warn("Warning: more </dl> tags than <dl> tags in the documentation of %s\n",yyFileName);
+					  }
+					  else
+					  {
+                                            outDoc->endDescription(); 
+  					    currentListIndentLevel--;
+					  }
 					}
 <DocScan>"<"{DT}{ATTR}">"		{ outDoc->startDescItem(); }
 <DocScan>"</"{DT}{ATTR}">"	
@@ -2813,7 +2840,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <CopyCurly>"'"\\[0-7]{1,3}"'"           { *pCopyCurlyString+=yytext; }
 <CopyCurly>"'"\\."'"                    { *pCopyCurlyString+=yytext; }
 <CopyCurly>"'"."'"                      { *pCopyCurlyString+=yytext; }
-<CopyCurly>[^"'{}\n]+			{
+<CopyCurly>[^"'{}\/\n]+			{
   					  *pCopyCurlyString+=yytext;
   					}
 <CopyCurly>\n				{
@@ -3316,6 +3343,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
                                           BEGIN( ReadFuncArgType ); 
 					}
 <CopyArgCommentLine>\n			{ fullArgString+=yytext;
+  					  yyLineNr++;
   					  if (lastCopyArgChar!=0)
 					    unput(lastCopyArgChar);
 					  BEGIN( ReadFuncArgType );
@@ -4870,11 +4898,12 @@ void parseDocument(OutputList &ol,const QCString &docString)
   scanYYrestart( scanYYin ); 
   BEGIN( DocScan );
   insideArgumentList = FALSE;
+  insideVerbatim = FALSE;
   scanYYlex();
   if (insideArgumentList) { insideArgumentList=FALSE; outDoc->endItemList(); }
   if (insideItemList) { forceEndItemList(); }
   if (inBlock()) endBlock();
-  if (currentListIndentLevel!=0)
+  if (currentListIndentLevel>0)
   {
     if (!refName.isEmpty())
     {
@@ -4901,6 +4930,10 @@ void parseDocument(OutputList &ol,const QCString &docString)
   if (!tableStack.isEmpty())
   {
     forceEndTable();
+  }
+  if (insideVerbatim)
+  {
+    warn("Warning: file ended inside a \\verbatim block!\n");
   }
   ol+=*outDoc;
   delete outDoc; outDoc=0;
@@ -4931,6 +4964,7 @@ void parseDoc(OutputList &ol,const char *clName,
     refName="<unknown>";
   }
   parseDocument(ol,docString);
+
 }
 
 //----------------------------------------------------------------------------

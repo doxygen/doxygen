@@ -455,7 +455,14 @@ QCString argListToString(ArgumentList *al)
   result+="(";
   while (a)
   {
-    result+= a->type+" "+a->name+a->array;
+    if (!a->name.isEmpty() || !a->array.isEmpty())
+    {
+      result+= a->type+" "+a->name+a->array;
+    }
+    else
+    {
+      result+= a->type;
+    }
     a = al->next();
     if (a) result+=","; 
   }
@@ -877,7 +884,7 @@ static QCString trimScope(const QCString &name,const QCString &s)
   return result;
 }
 
-static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s,int level=0)
+void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
 {
   //printf("trimBaseClassScope level=%d `%s'\n",level,s.data());
   BaseClassListIterator bcli(*bcl);
@@ -885,18 +892,18 @@ static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s,int leve
   for (;(bcd=bcli.current());++bcli)
   {
     ClassDef *cd=bcd->classDef;
+    //printf("Trying class %s\n",cd->name().data());
     int spos=s.find(cd->name()+"::");
     if (spos!=-1)
     {
-      return s.left(spos)+s.right(
-                      s.length()-spos-cd->name().length()-2
+      s = s.left(spos)+s.right(
+                       s.length()-spos-cd->name().length()-2
                      );
     }
     //printf("base class `%s'\n",cd->name().data());
     if (cd->baseClasses()->count()>0)
       trimBaseClassScope(cd->baseClasses(),s,level+1); 
   }
-  return s;
 }
 
 /*! if either t1 or t2 contains a namespace scope, then remove that
@@ -935,6 +942,44 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
     }
     p1 = QMAX(i1-2,0);
     p2 = QMAX(i2-2,0);
+  }
+}
+
+/*! According to the C++ spec and Ivan Vecerina:
+
+    Parameter declarations  that differ only in the presence or absence
+    of const and/or volatile are equivalent.
+
+    So the following example, show what is stripped by this routine
+    for const. The same is done for volatile.
+
+    \code
+       const T param     ->   T param          // not relevant
+       const T& param    ->   const T& param   // const needed               
+       T* const param    ->   T* param         // not relevant                   
+       const T* param    ->   const T* param   // const needed
+    \endcode
+ */
+void stripIrrelevantConstVolatile(QCString &s)
+{
+  int i,j;
+  i = s.find("const ");
+  if (i!=-1) 
+  {
+    // no & or * after the const
+    if ((j=s.find('*',i+6))==-1 && (j=s.find('&',i+6))==-1)
+    {
+      s=s.left(i)+s.right(s.length()-i-6); 
+    }
+  }
+  i = s.find("volatile ");
+  if (i!=-1) 
+  {
+    // no & or * after the volatile
+    if ((j=s.find('*',i+9))==-1 && (j=s.find('&',i+9))==-1)
+    {
+      s=s.left(i)+s.right(s.length()-i-9); 
+    }
   }
 }
 
@@ -1014,6 +1059,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
     if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
     if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+    stripIrrelevantConstVolatile(srcAType);
+    stripIrrelevantConstVolatile(dstAType);
 
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
@@ -1039,8 +1086,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
           cd=getClass(className);
         if (cd && cd->baseClasses()->count()>0)
         {
-          srcAType=trimBaseClassScope(cd->baseClasses(),srcAType); 
-          dstAType=trimBaseClassScope(cd->baseClasses(),dstAType); 
+          trimBaseClassScope(cd->baseClasses(),srcAType); 
+          trimBaseClassScope(cd->baseClasses(),dstAType); 
         }
         //printf("trimBaseClassScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
       }

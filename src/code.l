@@ -284,10 +284,10 @@ static void generateClassLink(OutputList &ol,char *clName,int *clNameLen=0)
   QCString className=clName;
   if (clNameLen) *clNameLen=0;
   if (className.isEmpty()) return;
-  ClassDef *cd=getClass(className);
+  ClassDef *cd=getResolvedClass(className);
   if (cd==0 && (i=className.find('<'))!=-1)
   {
-    cd=getClass(className.left(i));
+    cd=getResolvedClass(className.left(i));
   }
   if (cd && cd->isLinkable())
   {
@@ -374,7 +374,7 @@ static ClassDef *stripClassName(const char *s)
   int p=0,i,l;
   while ((i=re.match(tmp,p,&l))!=-1)
   {
-    ClassDef *cd=getClass(tmp.mid(i,l));
+    ClassDef *cd=getResolvedClass(tmp.mid(i,l));
     if (cd) return cd;
     p=i+l;
   }
@@ -579,8 +579,10 @@ B       [ \t]
 BN      [ \t\n\r]
 ID	[a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
-KEYWORD ("asm"|"auto"|"break"|"case"|"catch"|"class"|"const_cast"|"continue"|"default"|"delete"|"do"|"dynamic_cast"|"else"|"enum"|"explicit"|"extern"|"false"|"for"|"friend"|"goto"|"if"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"return"|"sizeof"|"static"|"static_cast"|"struct"|"switch"|"template"|"this"|"throw"|"true"|"try"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"while")
-TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t")
+SCOPEPREFIX {ID}{B}*"::"({B}*{ID}{B}*"::")*
+KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile")
+FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"try"|"while")
+TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t")
 
 %option noyywrap
 
@@ -603,7 +605,7 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 %%
 
 <*>\x0d
-<Body>^([ \t]*"#"[ \t]"include"[ \t]*)("<"|"\"") {
+<Body>^([ \t]*"#"[ \t]*"include"[ \t]*)("<"|"\"") {
   					  startFontClass("preprocessor");
 					  g_code->codify(yytext);
   					  BEGIN( ReadInclude ); 
@@ -728,18 +730,50 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 					}
   					
 
-<Body>{KEYWORD}/([^a-z_A-Z0-9]) {
+<Body>{SCOPEPREFIX}*{B}*"operator"{B}*"()"{B}*/"(" {
+  					  addType();
+					  generateFunctionLink(*g_code,yytext);
+  					  g_bracketCount=1;
+					  g_args.resize(0);
+  					  g_name+=yytext; 
+  					  BEGIN( FuncCall );
+					}
+<Body>{SCOPEPREFIX}*{B}*"operator"{B}*[^\(\n]+/"(" {
+  					  addType();
+					  generateFunctionLink(*g_code,yytext);
+  					  g_bracketCount=1;
+					  g_args.resize(0);
+  					  g_name+=yytext; 
+  					  BEGIN( FuncCall );
+					}
+<Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<Body>{KEYWORD}/{B}* {
+<Body>{KEYWORD}/{B}* 			{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<Body>{KEYWORD}/{B}*"(" {
+<Body>{KEYWORD}/{B}*"(" 		{
   					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+  				          g_name.resize(0);g_type.resize(0);
+  					}
+<Body>{FLOWKW}/([^a-z_A-Z0-9]) 	{
+  					  startFontClass("keywordflow");
+  					  codifyLines(yytext);
+					  endFontClass();
+  					}
+<Body>{FLOWKW}/{B}* 			{
+  					  startFontClass("keywordflow");
+  					  codifyLines(yytext);
+					  endFontClass();
+  					}
+<Body>{FLOWKW}/{B}*"(" 		{
+  					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
@@ -756,13 +790,13 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 					}
   */
 <Body>{TYPEKW}/{B}* {
-  					  startFontClass("keyword");
+  					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();
 					  addType();
   					  g_name+=yytext; 
   					}
-<Body>{SCOPENAME}{B}*"<"[^\}\{\(\)\/\n\>]*">"/{B}*	{
+<Body>{SCOPENAME}{B}*"<"[^\"\}\{\(\)\/\n\>]*">"/{B}*	{
   					  int i;
 					  generateClassLink(*g_code,yytext,&i);
 					  addType();
@@ -771,23 +805,19 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
   					}
 <Body>{SCOPENAME}/{B}* 			{ 
 					  generateClassLink(*g_code,yytext);
-  					  //codifyLines(yytext);
 					  addType();
   					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}*"("		{
   					  addType();
-					  //if (type.isEmpty())
-					  QCString tmp=yytext;
 					  generateFunctionLink(*g_code,yytext);
-					  //else
-  					  //  g_code->codify(yytext);
   					  g_bracketCount=1;
 					  g_args.resize(0);
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
 <FuncCall,Body,MemberCall>\"		{
+					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
   					  BEGIN( SkipString );
@@ -800,6 +830,7 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
   					}
 <SkipString>\"				{
   					  g_code->codify(yytext);
+					  endFontClass();
   					  BEGIN( g_lastStringContext );
   					}
 <SkipString>\\.				{
@@ -809,8 +840,10 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
   					  g_code->codify(yytext);
   					  g_name.resize(0);g_type.resize(0);
   					}
-<Body,MemberCall,MemberCall2,FuncCall>"'"((\\.)|(.))"'"	{
+<Body,MemberCall,MemberCall2,FuncCall>"'"((\\0[Xx0-9]+)|(\\.)|(.))"'"	{
+  					  startFontClass("charliteral"); 
   					  g_code->codify(yytext);
+					  endFontClass();
   					}
 <Body>"this->"				{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
@@ -843,10 +876,24 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 <Body>[0-9]+				{
 					  g_code->codify(yytext);
 					}
-<MemberCall2,FuncCall>({KEYWORD}|{TYPEKW})/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
 					  addParmType();
 					  g_parmName=yytext; 
   					  startFontClass("keyword");
+  					  g_code->codify(yytext);
+					  endFontClass();
+					}
+<MemberCall2,FuncCall>{TYPEKW}/([^a-z_A-Z0-9]) {
+					  addParmType();
+					  g_parmName=yytext; 
+  					  startFontClass("keywordtype");
+  					  g_code->codify(yytext);
+					  endFontClass();
+					}
+<MemberCall2,FuncCall>{FLOWKW}/([^a-z_A-Z0-9]) {
+					  addParmType();
+					  g_parmName=yytext; 
+  					  startFontClass("keywordflow");
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
@@ -943,7 +990,7 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 					  endFontClass();
   					  BEGIN( g_lastCContext ) ; 
 					}
-<SkipCxxComment>[^\r\n]*		{ 
+<SkipCxxComment>[^\r\n]+		{ 
   					  g_code->codify(yytext);
 					}
 <SkipCxxComment>\r			
@@ -1038,7 +1085,11 @@ TYPEKW  ("bool"|"char"|"const"|"double"|"float"|"int"|"long"|"short"|"signed"|"u
 					  }
 					  else
 					  {
-  					    g_lastCContext = YY_START ;
+					    // check is to prevent getting stuck in skipping C++ comments
+					    if (YY_START != SkipCxxComment)
+					    {
+  					      g_lastCContext = YY_START ;
+					    }
 					    startFontClass("comment");
 					    codifyLines(yytext);
 					    BEGIN(SkipComment);

@@ -742,7 +742,7 @@ Then by default doxygen will feed the following to its parser:
 
 You can disable all preprocessing by setting 
 \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
-NO in the configuation file. In the case above doxygen will then read
+NO in the configuation file. In the case above doxygen will then reads
 both statements!
 
 In case you want to expand the \c CONST_STRING macro, you should set the
@@ -845,6 +845,24 @@ Then the only way to get doxygen interpret this as a class definition
 for class QList is to define:
 \verbatim
 PREDEFINED = QListT:=QList
+\endverbatim
+
+Here is example provided by Valter Minute that helps doxygen to
+wade through the boilerplate code in Microsoft's ATL library:
+
+\verbatim
+PREDEFINED = DECLARE_REGISTRY_RESOURCEID=// \                                   
+   DECLARE_PROTECT_FINAL_CONSTRUCT=// \                                         
+   BEGIN_COM_MAP=/* \                                    
+   END_COM_MAP=*/// \                                            
+   BEGIN_PROP_MAP=/* \                                   
+   END_PROP_MAP=*/// \                                        
+   BEGIN_MSG_MAP=/* \                                                     
+   END_MSG_MAP=*/// \                                                          
+   DECLARE_VIEW_STATUS=// \
+   "STDMETHOD(a)=HRESULT a" \                                                   
+   "ATL_NO_VTABLE= "\                                                      
+   "__declspec(a)= "\                                                  
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
