@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,17 +33,17 @@ class Definition
     /*! destroys the definition */
     virtual ~Definition();
     /*! returns the name of the definition */
-    QCString name() const { return n; }
+    const QCString& name() const { return n; }
     /*! returns the base name of the output file that contains this 
      *  definition. 
      */
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */
-    QCString sourceName() const { return getOutputFileBase()+"-source"; }
+    const QCString sourceName() const { return getOutputFileBase()+"-source"; }
     /*! returns the detailed description of this definition */
-    QCString documentation() const { return doc; }
+    const QCString& documentation() const { return doc; }
     /*! returns the brief description of this definition */
-    QCString briefDescription() const { return brief; }
+    const QCString& briefDescription() const { return brief; }
     /*! sets a new \a name for the definition */
     void setName(const char *name) { n=name; }
     /*! sets the documentation of this definition to \a d. */

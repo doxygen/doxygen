@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -43,11 +43,13 @@ QCString Definition::nameToFile(const char *name)
   {
     switch(c)
     {
-      case ':': result+="_"; break;
+      case ':': result+="_c_"; break;
       case '<': result+="_lt"; break;
       case '>': result+="_gt"; break;
       case '*': result+="_ast"; break;
       case '&': result+="_amp"; break;
+      case '|': result+="_p_"; break;
+      case ',': result+="_x_"; break;
       case ' ': break;
       default: 
         if (Config::caseSensitiveNames)
@@ -161,17 +163,20 @@ static bool readCodeFragment(const char *fileName,
 /*! Write a reference to the source code defining this definition */
 void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
 {
+  ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   if (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef)
   {
+    //ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
+    //ol.enableAll();
 
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
     int lineMarkerPos = refText.find("@0");
     int fileMarkerPos = refText.find("@1");
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
-      QString lineStr,anchorStr;
+      QCString lineStr,anchorStr;
       lineStr.sprintf("%d",startBodyLine);
       anchorStr.sprintf("l%05d",startBodyLine);
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
@@ -243,6 +248,10 @@ void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
     {
       err("Error: translation error: invalid markers in trDefinedInSourceFile()\n");
     }
+
+    ol.disableAllBut(OutputGenerator::RTF);
+    ol.newParagraph();
+    ol.enableAll();
   }
   if (Config::inlineSourceFlag && startBodyLine!=-1 && 
       endBodyLine>=startBodyLine && bodyDef)
@@ -255,6 +264,7 @@ void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
           actualStart,actualEnd,codeFragment)
        )
     {
+      initParseCodeContext();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       ol.startCodeFragment();
       parseCode(ol,scopeName,codeFragment,FALSE,0,
@@ -262,6 +272,7 @@ void Definition::writeSourceRef(OutputList &ol,const char *scopeName)
       ol.endCodeFragment();
     }
   }
+  ol.popGeneratorState();
 }
 
 bool Definition::hasDocumentation() 

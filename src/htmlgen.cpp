@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -26,6 +26,7 @@
 #include "logos.h"
 #include "diagram.h"
 #include "version.h"
+#include "dot.h"
 
 #define GROUP_COLOR "#ff8080"
 
@@ -33,8 +34,8 @@ HtmlHelp *HtmlGenerator::htmlHelp = 0;
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
-  if (Config::headerFile.length()>0) header=fileToString(Config::headerFile);
-  if (Config::footerFile.length()>0) footer=fileToString(Config::footerFile);
+  if (!Config::headerFile.isEmpty()) header=fileToString(Config::headerFile);
+  if (!Config::footerFile.isEmpty()) footer=fileToString(Config::footerFile);
   dir=Config::htmlOutputDir;
   col=0;  
 }
@@ -68,7 +69,7 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
   lastFile = fileName;
-  if (header.length()==0) 
+  if (header.isEmpty()) 
   {
     t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
          "<html><head><meta name=\"robots\" content=\"noindex\">\n"
@@ -102,14 +103,14 @@ void HtmlGenerator::startQuickIndexItem(const char *s,const char *l)
   QCString *dest;
   if (s) 
   {
-    t << "<a class=\"qindexRef\"";
+    t << "<a class=\"qindexRef\" ";
     t << "doxygen=\"" << s << ":";
     if ((dest=tagDestinationDict[s])) t << *dest << "/";
     t << "\" ";
   }
   else
   {
-    t << "<a class=\"qindex\"";
+    t << "<a class=\"qindex\" ";
   }
   t << "href=\""; 
   if (s)
@@ -129,13 +130,13 @@ void HtmlGenerator::writeFooter(int part,bool external)
   switch (part)
   {
     case 0:
-      if (footer.length()==0)
+      if (footer.isEmpty())
         t << "<hr><address><small>";
       else
         t << substituteKeywords(footer,lastTitle);
       break;
     case 1:
-      if (footer.length()==0)
+      if (footer.isEmpty())
       {
         t << endl << "<a href=\"http://www.stack.nl/~dimitri/doxygen/index.html\">";
         t << endl << "<img ";
@@ -153,9 +154,9 @@ void HtmlGenerator::writeFooter(int part,bool external)
       }
       break;
     default:
-      if (footer.length()==0)
+      if (footer.isEmpty())
         t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy; "
-             "1997-1999</small></address>\n</body>\n</html>\n";
+             "1997-2000</small></address>\n</body>\n</html>\n";
       break;
       
   }
@@ -773,4 +774,27 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
 void HtmlGenerator::endMemberDoc()     
 { 
   t << endl << "</b></td></tr></table>" << endl; 
+}
+
+void HtmlGenerator::startCollaborationDiagram()
+{
+}
+
+void HtmlGenerator::endCollaborationDiagram(DotGfxUsageGraph &g)
+{
+  g.writeGraph(t,Config::htmlOutputDir);
+}
+
+void HtmlGenerator::startInclDepGraph()
+{
+}
+
+void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
+{
+  g.writeGraph(t,Config::htmlOutputDir);
+}
+
+void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
+{
+  g.writeGraph(t,Config::htmlOutputDir);
 }

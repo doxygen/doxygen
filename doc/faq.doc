@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -75,6 +75,15 @@ To make doxygen put <br><br>
 in the documentation of the class MyClassName regardless of the name of the actual 
 header file in which the definition of MyClassName is contained.
 
+If you want doxygen to show that the include file should be included using
+brackets you should type:
+\verbatim
+/*! \class MyClassName include.h "path/include.h"
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
 <li><b>How can I use tag files in combination with compressed HTML</b>
 
 If you want to refer from one compressed HTML file 
@@ -102,6 +111,28 @@ or you can use \c installdox to set the links as follows:
 installdox -lb.tag@b.chm::
 \endverbatim
 
+<li><b>I don't like the quick index that is put above each HTML page, what do I do?</b>
+
+You can disable the index by setting DISABLE_INDEX to YES. Then you can
+put in your own header file by writing your own header and feed that to
+HTML_HEADER.
+
+<li><b>The overall HTML output looks different, while I only wanted to 
+       use my own html header file</b>
+
+You probably forgot to include the stylesheet <code>doxygen.css</code> that 
+doxygen generates. You can include this by putting
+\verbatim
+<LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
+\endverbatim
+In the HEAD section of the HTML page.
+
 </ol>
+
+\htmlonly
+Go to the <a href="trouble.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */
 

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -69,7 +69,8 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
 {
   ArgumentList *argList=md->argumentList();
   if (argList==0) return; // member has no function like argument list
-  ol.docify(" ("); // start argument list
+  if (!md->isDefine()) ol.docify(" ");
+  ol.docify("("); // start argument list
   Argument *a=argList->first();
   QCString cName;
   if (md->scopeDefTemplateArguments())
@@ -108,16 +109,16 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if ((vp=a->type.find(re))!=-1) // argument type is a function pointer
     {
       QCString n=a->type.left(vp);
-      if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
+      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(ol,scopeName,md->name(),n);
     }
     else // non-function pointer type
     {
       QCString n=a->type;
-      if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
+      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(ol,scopeName,md->name(),n);
     }
-    if (a->name.length()>0) // argument has a name
+    if (!a->name.isEmpty()) // argument has a name
     { 
       ol.docify(" ");
       ol.disable(OutputGenerator::Man);
@@ -128,15 +129,19 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.endEmphasis();
       ol.enable(OutputGenerator::Man);
     }
+    if (!a->array.isEmpty())
+    {
+      ol.docify(a->array);
+    }
     if (vp!=-1) // write the part of the argument type 
                 // that comes after the name
     {
       linkifyText(ol,scopeName,md->name(),a->type.right(a->type.length()-vp));
     }
-    if (a->defval.length()>0) // write the default value
+    if (!a->defval.isEmpty()) // write the default value
     {
       QCString n=a->defval;
-      if (cName.length()>0) n=addTemplateNames(n,cd->name(),cName);
+      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       ol.docify(" = ");
       linkifyText(ol,scopeName,md->name(),n); 
     }
@@ -173,13 +178,11 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al,bool br=TRUE)
   ol.docify("> ");
   if (br)
   {
-    bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-    bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
-    if (latexEnabled) ol.disable(OutputGenerator::Latex);
-    if (manEnabled)   ol.disable(OutputGenerator::Man);
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Latex);
     ol.lineBreak();
-    if (latexEnabled) ol.enable(OutputGenerator::Latex);
-    if (manEnabled)   ol.enable(OutputGenerator::Man);
+    ol.popGeneratorState();
   }
 }
 
@@ -448,11 +451,20 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
   //printf("%s MemberDef::writeDeclaration(): hasDocs %d\n",name().data(),hasDocs);
   //if (cd) printf("MemberDef: %s in class %s annScope=%d annMemb=%p\n",
   //    name().data(),cd->name().data(),annScope,annMemb);
+
+  // hide members in annonymous scopes 
+  // (they are displayed by there parent placeholder)
   if (annScope) return;
+  // hide undocumented members unless overwritten by the configuration
   if (!hasDocs && Config::hideMemberFlag) return;
+  // hide members with no detailed desciption and brief descriptions explicitly
+  // disabled.
   if (Config::hideMemberFlag && documentation().isEmpty() && 
       !Config::briefMemDescFlag && !Config::repeatBriefFlag 
      ) return;
+  // hide static file & namespace members unless extract private is on
+  if (cd==0 && isStatic() && !Config::extractPrivateFlag) return;
+
   QCString type=typeString();
   // strip `static' keyword from type
   if (type.left(7)=="static ") type=type.right(type.length()-7);
@@ -462,7 +474,7 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
   if ((i=r.match(type,0,&l))==-1 || !enumUsed())
   {
     
-    if (Config::genTagFile.length()>0)
+    if (!Config::genTagFile.isEmpty())
     {
       tagFile << name() << " " << anchor() << " \""
               << argsString() << "\"\n";
@@ -618,7 +630,7 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
       linkifyText(ol,cname,name(),type); 
     }
     bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-    if (htmlOn && Config::htmlAlignMemberFlag && type.length()>0)
+    if (htmlOn && Config::htmlAlignMemberFlag && !type.isEmpty())
     {
       ol.disable(OutputGenerator::Html);
     }
@@ -630,13 +642,16 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
 
     if (annMemb) 
     {
-      bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-      bool manOn   = ol.isEnabled(OutputGenerator::Man);
-      if (latexOn) ol.disable(OutputGenerator::Latex);
-      if (manOn)   ol.disable(OutputGenerator::Man);
+      //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+      //bool manOn   = ol.isEnabled(OutputGenerator::Man);
+      //if (latexOn) ol.disable(OutputGenerator::Latex);
+      //if (manOn)   ol.disable(OutputGenerator::Man);
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.writeNonBreakableSpace();
-      if (latexOn) ol.enable(OutputGenerator::Latex);
-      if (manOn)   ol.enable(OutputGenerator::Man);
+      ol.popGeneratorState();
+      //if (latexOn) ol.enable(OutputGenerator::Latex);
+      //if (manOn)   ol.enable(OutputGenerator::Man);
     }
     else
       ol.insertMemberAlign();
@@ -691,7 +706,7 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
 
     if (argsString()) 
     {
-      ol.writeString(" ");
+      if (!isDefine()) ol.writeString(" ");
       //ol.docify(argsString());
       linkifyText(ol,cname,name(),argsString()); 
     }
@@ -700,6 +715,12 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
     {
       ol.writeString(" ");
       ol.docify(excpString());
+    }
+
+    if (!init.isEmpty() && initLines==0) // add initializer
+    {
+      if (!isDefine()) ol.writeString(" = "); else ol.writeNonBreakableSpace();
+      linkifyText(ol,cname,name(),init);
     }
 
     if (!detailsVisible && !Config::extractAllFlag && !annMemb)
@@ -735,13 +756,14 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
 }
 
 
-void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *scopeName,
-                MemberType m)
+void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
+                                   const char *scopeName)
 {
+  if (memberClass()==0 && isStatic() && !Config::extractPrivateFlag) return;
   bool hasDocs = detailsAreVisible();
   //printf("%s MemberDef::writeDocumentation(): hasDocs %d\n",name().data(),hasDocs);
   if (
-       (memberType()==m &&                          // filter member type
+       (/*memberType()==m &&*/                       // filter member type
         (Config::extractAllFlag || hasDocs) &&
         groupId()==-1                                // not in a group
        ) || /* member is part of an annonymous scope that is the type of
@@ -750,14 +772,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
        (!hasDocs && !briefDescription().isEmpty() && annUsed)
      )
   {
-    //printf("************* Writing docs for member %s\n",name().data());
-    //if (Config::extractAllFlag && !hasDocs) 
-    //{
-    // ol.disable(OutputGenerator::Latex); // Latex cannot insert a pagebreak 
-    //                                      // if there are a lot of empty sections,
-    //                                      // so we disable LaTeX for all empty 
-    //                                      // sections even if Config::extractAllFlag is enabled
-    //}
     NamespaceDef *nd=getNamespace();
     ClassDef     *cd=memberClass();
     FileDef      *fd=getFileDef();
@@ -805,6 +819,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           ol+=*vmd->enumDecl();
           linkifyText(ol,scopeName,name(),def.right(def.length()-i-l));
           //ol.endDoxyAnchor();
+
           found=TRUE;
         }
       }
@@ -878,7 +893,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       }
       linkifyText(ol,scopeName,name(),def);
       writeDefArgumentList(ol,cd,scopeName,this);
-      if (excpString())
+      if (!init.isEmpty() && initLines==0) // add initializer
+      {
+        if (!isDefine()) ol.docify(" = "); else ol.writeNonBreakableSpace();
+        linkifyText(ol,scopeName,name(),init);
+      }
+      if (excpString()) // add exception list
       {
         ol.docify(" ");
         linkifyText(ol,scopeName,name(),excpString());
@@ -895,7 +915,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
 
     if (isStatic() || protection()!=Public || 
         virt!=Normal || isSignal() || isFriend() || 
-        isRelated() || isSlot() || 
+        isRelated() || isSlot() ||
         (isInline() && Config::inlineInfoFlag)
        )
     {
@@ -931,8 +951,24 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
     ol.endMemberDoc();
     ol.endDoxyAnchor();
     ol.startIndent();
+    
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
+    ol.popGeneratorState();
 
+    /* write multi-line initializer (if any) */
+    if (initLines>0 && initLines<maxInitLines)
+    {
+      ol.startBold();
+      parseText(ol,theTranslator->trInitialValue());
+      ol.endBold();
+      ol.startCodeFragment();
+      parseCode(ol,scopeName,init,FALSE,0);
+      ol.endCodeFragment();
+    }
+    
+    /* write brief description */
     if (!briefDescription().isEmpty() && 
         (Config::repeatBriefFlag  
          /* || (!Config::briefMemDescFlag && documentation().isEmpty())*/
@@ -942,17 +978,50 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       parseDoc(ol,scopeName,name(),briefDescription());
       ol.newParagraph();
     }
+
+    /* write detailed description */
     if (!documentation().isEmpty())
     { 
       parseDoc(ol,scopeName,name(),documentation()+"\n");
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::RTF);
+      ol.newParagraph();
+      ol.popGeneratorState();
     }
-    //if (!bodyCode().isEmpty())
-    //{
-    //  ol.startCodeFragment();
-    //  parseCode(ol,scopeName,bodyCode(),FALSE,0);
-    //  ol.endCodeFragment();
-    //}
 
+    //printf("***** argList=%p name=%s docs=%s hasDocs=%d\n",
+    //     argList, 
+    //     argList?argList->hasDocumentation():-1);
+    if (argList && argList->hasDocumentation())
+    {
+      //printf("***** argumentList is documented\n");
+      ol.startDescList();
+      ol.startBold();
+      parseText(ol,theTranslator->trParameters()+": ");
+      ol.endBold();
+      ol.endDescTitle();
+      ol.writeDescItem();
+      ol.startDescTable();
+      ArgumentListIterator ali(*argList);
+      Argument *a;
+      for (ali.toFirst();(a=ali.current());++ali)
+      {
+        if (a->hasDocumentation())
+        {
+          ol.startDescTableTitle();
+          ol.startEmphasis();
+          ol.docify(a->name);
+          ol.endEmphasis();
+          ol.endDescTableTitle();
+          ol.startDescTableData();
+          parseDoc(ol,scopeName,name(),a->docs);
+          ol.endDescTableData();
+        }
+      }
+      ol.endDescTable();
+      ol.endDescList();
+    }
+    
     if (isEnumerate())
     {
       bool first=TRUE;
@@ -1057,7 +1126,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if ( bcd->isLinkableInProject() && !Config::pdfHyperFlag ) 
+            if ( bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ ) 
             {
               writePageRef(ol,bcd->name(),bmd->anchor());
             }
@@ -1066,7 +1135,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 0,bcd->name());
-            if (bcd->isLinkableInProject() && !Config::pdfHyperFlag )
+            if (bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ )
             {
               writePageRef(ol,bcd->name(),0);
             }
@@ -1074,6 +1143,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           parseText(ol,reimplFromLine.right(
                 reimplFromLine.length()-markerPos-2)); // text right from marker
 
+          ol.disableAllBut(OutputGenerator::RTF);
+          ol.newParagraph();
+          ol.enableAll();
         }
         else
         {
@@ -1101,9 +1173,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
         mli.toFirst();
         // write the list of classes that overwrite this member
         ol.newParagraph();
-        //parseText(ol,theTranslator->trReimplementedIn());
-        //ol.writeString("Reimplemented in ");
-        //ol.docify(" ");
 
         QCString reimplInLine = 
           theTranslator->trReimplementedInList(count);
@@ -1130,29 +1199,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
 
           if (ok && bcd && bmd) // write link for marker
           {
-            //if (bmd->hasDocumentation() &&
-            //    (bmd->protection()!=Private || Config::extractPrivateFlag)
-            //   )
-            //{
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if (bcd->isLinkableInProject() && !Config::pdfHyperFlag ) 
+            if (bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ ) 
             {
               writePageRef(ol,bcd->name(),bmd->anchor());
             }
-            //}
-            //else
-            //{
-            //  ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-            //      0,bcd->name());
-            //  if (!bcd->isReference() && bcd->isVisible()) 
-            //    ol.writePageRef(bcd->name(),0);
-            //}
           }
           ++mli;
           index=newIndex+matchLen;
         } 
         parseText(ol,reimplInLine.right(reimplInLine.length()-index));
+        ol.disableAllBut(OutputGenerator::RTF);
+        ol.newParagraph();
+        ol.enableAll();
       }
     }
     // write the list of examples that use this member
@@ -1222,7 +1282,9 @@ bool MemberDef::detailsAreVisible() const
          (!briefDescription().isEmpty() && 
            (!Config::briefMemDescFlag || Config::alwaysDetailsFlag) && 
            Config::repeatBriefFlag // has brief description inside detailed area
-         );
+         ) ||
+         (initLines>0 && initLines<maxInitLines)
+         ;
 }
 
 void MemberDef::setEnumDecl(OutputList &ed) 

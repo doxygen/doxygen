@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (June 1999)

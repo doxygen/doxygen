@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -12,6 +12,31 @@
  *
  * All output generated with Doxygen is not covered by this license.
  *
+ */
+
+/*! \file
+ *  This scanner is used to convert a string into a list of function or 
+ *  template arguments. Each parsed argument results in a Argument struct,
+ *  that is put into an ArgumentList in declaration order.
+ *  Comment blocks for arguments can also be included in the string.
+ *  The argument string does not contain new-lines (except inside any
+ *  comment blocks).
+ *  An Argument consists of the string fields: 
+ *                 type,name,default value, and documentation
+ *  The Argument list as a whole can be pure, constant or volatile.
+ *
+ *  Examples of input strings are:
+ *  \code
+ *    "(int a,int b) const"
+ *    "(const char *s="hello world",int=5) = 0"
+ *    "<class T,class N>"
+ *    "(char c,const char)"
+ *  \endcode
+ *
+ *  Note: It is not always possible to distinguish between the name and 
+ *        type of an argument. In case of doubt the name is added to the
+ *        type, and the matchArgumentList in util.cpp is be used to
+ *        further determine the correct separation.
  */
 
 %{
@@ -30,28 +55,27 @@
 #include "entry.h"
 #include "util.h"
   
-#define YY_NO_UNPUT
 #define YY_NEVER_INTERACTIVE 1
   
 /* -----------------------------------------------------------------
- *
- *	statics
+ *	state variables
  */
-  
-static const char      *inputString;
-static int	        inputPosition;
-static ArgumentList    *argList;
-static QCString         *copyArgValue;
-static QCString         curArgTypeName;
-static QCString         curArgDefValue;
-static QCString		curArgName;
-static QCString		curArgAttrib;
-static int              argRoundCount;
-static int              argSharpCount;
-static int              argCurlyCount;
-static int              readArgContext;
-
-
+static const char      *g_inputString;
+static int	        g_inputPosition;
+static ArgumentList    *g_argList;
+static QCString        *g_copyArgValue;
+static QCString         g_curArgTypeName;
+static QCString         g_curArgDefValue;
+static QCString		g_curArgName;
+static QCString		g_curArgDocs;
+static QCString		g_curArgAttrib;
+static QCString		g_curArgArray;
+static int              g_argRoundCount;
+static int              g_argSharpCount;
+static int              g_argCurlyCount;
+static int              g_readArgContext;
+static int              g_lastDocContext;
+static int              g_lastDocChar;
 
 /* -----------------------------------------------------------------
  */
@@ -61,9 +85,9 @@ static int              readArgContext;
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-    while( c < max_size && inputString[inputPosition] )
+    while( c < max_size && g_inputString[g_inputPosition] )
     {
-	*buf = inputString[inputPosition++] ;
+	*buf = g_inputString[g_inputPosition++] ;
 	c++; buf++;
     }
     return c;
@@ -86,6 +110,8 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 %x	ReadFuncArgDef
 %x	ReadFuncArgPtr
 %x	FuncQual
+%x	ReadDocBlock
+%x	ReadDocLine
 
 
 %%
@@ -93,153 +119,170 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <Start>[<(]				{ BEGIN(ReadFuncArgType); }
 
 <ReadFuncArgType>{B}*			{
-  					  curArgTypeName+=" ";
+  					  g_curArgTypeName+=" ";
   					}
 <ReadFuncArgType>"["[^\]]*"]"		{ 
-					  if (curArgTypeName.stripWhiteSpace().isEmpty())
-					    curArgAttrib=yytext; 
-					  else
-					    curArgTypeName+=yytext;
+					  if (g_curArgTypeName.stripWhiteSpace().isEmpty())
+					  {
+					    g_curArgAttrib=yytext; // for M$-IDL
+					  }
+					  else // array type
+					  {
+					    g_curArgArray+=yytext;
+					  }
 					}
-<ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ curArgDefValue+=yytext; }
-<ReadFuncArgDef>"'"\\."'"		{ curArgDefValue+=yytext; }
-<ReadFuncArgDef>"'"."'"			{ curArgDefValue+=yytext; }
+<ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ g_curArgDefValue+=yytext; }
+<ReadFuncArgDef>"'"\\."'"		{ g_curArgDefValue+=yytext; }
+<ReadFuncArgDef>"'"."'"			{ g_curArgDefValue+=yytext; }
 <ReadFuncArgDef>\"			{
-  					  curArgDefValue+=*yytext;
+  					  g_curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
 <ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*]+{B}*/{ID} { 
   					  // function pointer as argument
-					  curArgTypeName+=yytext;
-					  //curArgTypeName=curArgTypeName.simplifyWhiteSpace();
+					  g_curArgTypeName+=yytext;
+					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
 					  BEGIN( ReadFuncArgPtr );
   					}
 <ReadFuncArgPtr>{ID}			{
-					  curArgName=yytext;
+					  g_curArgName=yytext;
   					}
 <ReadFuncArgPtr>")"{B}*"("		{
-					  curArgTypeName+=yytext;
-					  //curArgTypeName=curArgTypeName.simplifyWhiteSpace();
-					  readArgContext = ReadFuncArgType;
-					  copyArgValue=&curArgTypeName;
-					  argRoundCount=0;
+					  g_curArgTypeName+=yytext;
+					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
+					  g_readArgContext = ReadFuncArgType;
+					  g_copyArgValue=&g_curArgTypeName;
+					  g_argRoundCount=0;
 					  BEGIN( CopyArgRound2 );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
-					  int i=curArgTypeName.findRev('('),l=curArgTypeName.length();
+					  int i=g_curArgTypeName.findRev('('),l=g_curArgTypeName.length();
 					  if (i!=-1)
-					    curArgTypeName=curArgTypeName.left(i)+
-					                   curArgTypeName.right(l-i-1);
-					  curArgTypeName+=curArgName;
+					    g_curArgTypeName=g_curArgTypeName.left(i)+
+					                   g_curArgTypeName.right(l-i-1);
+					  g_curArgTypeName+=g_curArgName;
 					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
 					  if (YY_START==ReadFuncArgType)
 					  {
-					    curArgTypeName+=*yytext;
-					    copyArgValue=&curArgTypeName;
+					    g_curArgTypeName+=*yytext;
+					    g_copyArgValue=&g_curArgTypeName;
 					  }
 					  else // YY_START==ReadFuncArgDef
 					  {
-					    curArgDefValue+=*yytext;
-					    copyArgValue=&curArgDefValue;
+					    g_curArgDefValue+=*yytext;
+					    g_copyArgValue=&g_curArgDefValue;
 					  }
-  					  readArgContext = YY_START; 
+  					  g_readArgContext = YY_START; 
 					  if (*yytext=='(')
 					  {
-  					    argRoundCount=0; 
+  					    g_argRoundCount=0; 
 					    BEGIN( CopyArgRound ); 
 					  }
 					  else if (*yytext=='{')
 					  {
-					    argCurlyCount=0; 
+					    g_argCurlyCount=0; 
 					    BEGIN( CopyArgCurly ); 
 					  }
 					  else // yytext=='<'
 					  {
-					    argSharpCount=0; 
+					    g_argSharpCount=0; 
 					    BEGIN( CopyArgSharp ); 
 					  }
 					}
 <CopyArgRound,CopyArgRound2>"("		{
-  					  argRoundCount++;
-					  *copyArgValue += *yytext;
+  					  g_argRoundCount++;
+					  *g_copyArgValue += *yytext;
   					}
 <CopyArgRound,CopyArgRound2>")"		{
-					  *copyArgValue += *yytext;
-					  if (argRoundCount>0) 
+					  *g_copyArgValue += *yytext;
+					  if (g_argRoundCount>0) 
 					  {
-					    argRoundCount--;
+					    g_argRoundCount--;
 					  }
 					  else 
 					  {
 					    if (YY_START==CopyArgRound2)
 					    {
-					      *copyArgValue+=" "+curArgName;
+					      *g_copyArgValue+=" "+g_curArgName;
 					    }
-					    BEGIN( readArgContext );
+					    BEGIN( g_readArgContext );
 					  }
   					}
 <CopyArgSharp>"<"			{
-  					  argSharpCount++;
-					  *copyArgValue += *yytext;
+  					  g_argSharpCount++;
+					  *g_copyArgValue += *yytext;
   					}
 <CopyArgSharp>">"			{
-					  *copyArgValue += *yytext;
-					  if (argSharpCount>0) argSharpCount--;
-					  else BEGIN( readArgContext );
+					  *g_copyArgValue += *yytext;
+					  if (g_argSharpCount>0) g_argSharpCount--;
+					  else BEGIN( g_readArgContext );
   					}
 <CopyArgCurly>"{"			{
-  					  argCurlyCount++;
-					  *copyArgValue += *yytext;
+  					  g_argCurlyCount++;
+					  *g_copyArgValue += *yytext;
   					}
 <CopyArgSharp>"}"			{
-					  *copyArgValue += *yytext;
-					  if (argCurlyCount>0) argCurlyCount--;
-					  else BEGIN( readArgContext );
+					  *g_copyArgValue += *yytext;
+					  if (g_argCurlyCount>0) g_argCurlyCount--;
+					  else BEGIN( g_readArgContext );
   					}
 <CopyArgString>\\.			{
-					  curArgDefValue+=yytext;
+					  g_curArgDefValue+=yytext;
   					}
 <CopyArgString>\"			{
-					  curArgDefValue+=*yytext;
+					  g_curArgDefValue+=*yytext;
 					  BEGIN( ReadFuncArgDef );
   					}
 <ReadFuncArgType>"="			{
 					  BEGIN( ReadFuncArgDef );
   					}
+<ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*("/*"[*!]|"//"[/!])"<" {
+					  g_lastDocContext=YY_START;
+					  g_lastDocChar=*yytext;  
+					  QCString text=yytext;
+					  if (text.find("//")!=-1)
+					    BEGIN( ReadDocLine );
+					  else
+					    BEGIN( ReadDocBlock );
+  					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
-					  curArgTypeName=removeRedundantWhiteSpace(
-					                   curArgTypeName.simplifyWhiteSpace());
-					  curArgDefValue=curArgDefValue.stripWhiteSpace();
-					  int l=curArgTypeName.length();
+					  g_curArgTypeName=removeRedundantWhiteSpace(
+					                   g_curArgTypeName.simplifyWhiteSpace());
+					  g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
+					  int l=g_curArgTypeName.length();
 					  if (l>0)
 					  {
 					    int i=l-1;
 					    while (i>=0 && 
 						   (
-						    isspace(curArgTypeName.at(i)) || 
-						    isId(curArgTypeName.at(i))
+						    isspace(g_curArgTypeName.at(i)) || 
+						    isId(g_curArgTypeName.at(i))
 						   )
 						  ) i--;
 					    Argument *a = new Argument; 
-					    a->attrib = curArgAttrib.copy();
-					    if (i>=0 && curArgTypeName.at(i)!=':')
+					    a->attrib = g_curArgAttrib.copy();
+					    if (i>=0 && g_curArgTypeName.at(i)!=':')
 					    { // type contains a name
-					      a->type = curArgTypeName.left(i+1).stripWhiteSpace();
-					      a->name = curArgTypeName.right(curArgTypeName.length()-i-1);
+					      a->type = g_curArgTypeName.left(i+1).stripWhiteSpace();
+					      a->name = g_curArgTypeName.right(g_curArgTypeName.length()-i-1);
 					    }
 					    else // assume only the type was specified, try to determine name later 
 					    {
-					      a->type = curArgTypeName.stripWhiteSpace();  
+					      a->type = g_curArgTypeName.stripWhiteSpace();  
 					    }
-					    a->defval = curArgDefValue.copy();
-					    //printf("----> Adding argument `%s' `%s' `%s'\n",a->type.data(),a->name.data(),a->defval.data());
-					    argList->append(a);
+					    a->array  = g_curArgArray.copy();
+					    a->defval = g_curArgDefValue.copy();
+					    a->docs   = g_curArgDocs.stripWhiteSpace();
+					    //printf("Argument %s %s adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
+					    g_argList->append(a);
 					  }
-					  curArgAttrib.resize(0);
-					  curArgTypeName.resize(0);
-  					  curArgDefValue.resize(0);
+					  g_curArgAttrib.resize(0);
+					  g_curArgTypeName.resize(0);
+  					  g_curArgDefValue.resize(0);
+					  g_curArgArray.resize(0);
+					  g_curArgDocs.resize(0);
 					  if (*yytext==')')
 					  {
 					    BEGIN(FuncQual);
@@ -253,30 +296,60 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <ReadFuncArgType,ReadFuncArgPtr>{ID}	{ 
   					  QCString name=yytext; //resolveDefines(yytext);
 					  //printf("resolveName `%s'->`%s'\n",yytext,name.data());
-  					  curArgTypeName+=name;
+  					  g_curArgTypeName+=name;
 					}
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
-  					  curArgTypeName+=*yytext;
+  					  g_curArgTypeName+=*yytext;
 					}
 <ReadFuncArgDef,CopyArgString>.		{
-					  curArgDefValue+=*yytext;
+					  g_curArgDefValue+=*yytext;
   					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
   					  QCString name=yytext; //resolveDefines(yytext);
-					  *copyArgValue+=name;
+					  *g_copyArgValue+=name;
 					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
-					  *copyArgValue += *yytext;
+					  *g_copyArgValue += *yytext;
 					}
 <FuncQual>"const"		       	{ 
-					  argList->constSpecifier=TRUE;
+					  g_argList->constSpecifier=TRUE;
 					}
 <FuncQual>"volatile"		    	{ 
-					  argList->volatileSpecifier=TRUE;
+					  g_argList->volatileSpecifier=TRUE;
 					}
 <FuncQual>"="{B}*"0"		  	{ 
-					  argList->pureSpecifier=TRUE;
+					  g_argList->pureSpecifier=TRUE;
 					}
+<ReadDocBlock>[^\*\n]+			{
+  					  g_curArgDocs+=yytext;
+  					}
+<ReadDocLine>[^\n]+			{
+  					  g_curArgDocs+=yytext;
+  					}
+<ReadDocBlock>"*/"			{ 
+  					  if (g_lastDocChar!=0)
+					    unput(g_lastDocChar);
+  					  BEGIN(g_lastDocContext); 
+					}
+<ReadDocLine>\n				{
+  					  if (g_lastDocChar!=0)
+					    unput(g_lastDocChar);
+					  BEGIN(g_lastDocContext);
+  					}
+<ReadDocBlock>\n			{
+  					  g_curArgDocs+=*yytext;
+  					}
+<ReadDocBlock>.				{
+  					  g_curArgDocs+=*yytext;
+  					}
+<*>("/*"[*!]|"//"[/!])("<"?)		{
+  					  g_lastDocContext=YY_START;
+					  g_lastDocChar=0;  
+					  if (yytext[1]=='/')
+					    BEGIN( ReadDocLine );
+					  else
+  					    BEGIN( ReadDocBlock );
+  					}
 <*>\n
 <*>.
 
@@ -285,27 +358,27 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 /* ----------------------------------------------------------------------------
  */
 
-// converts an argument string into a list of Arguments.
-// an Argument consists of a type, an optional name, and an optional 
-// default initializer.
-
+/*! Converts an argument string into an ArgumentList.
+ *  \param argsString the list of Arguments.
+ *  \param al a reference to resulting argument list pointer.
+ */
+ 
 void stringToArgumentList(const char *argsString,ArgumentList* &al)
 {
-  //if (al==0) al=new ArgumentList; // allocate new list if needed.
   if (al==0) return; 
-  if (!argsString) return;
-  inputString   = argsString;
-  inputPosition = 0;
-  curArgTypeName.resize(0);
-  curArgDefValue.resize(0);
-  curArgName.resize(0);
-  argList = al;
+  if (argsString==0) return;
+  g_inputString   = argsString;
+  //printf("stringToArgumentList(%s)\n",argsString);
+  g_inputPosition = 0;
+  g_curArgTypeName.resize(0);
+  g_curArgDefValue.resize(0);
+  g_curArgName.resize(0);
+  g_argList = al;
   defargsYYrestart( defargsYYin );
   BEGIN( Start );
   defargsYYlex();
 }
 
 extern "C" { // some bogus code to keep the compiler happy
-//  int  defargsYYwrap()  { return 1 ; }
   void defargsYYdummy() { yy_flex_realloc(0,0); } 
 }

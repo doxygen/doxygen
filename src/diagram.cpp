@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -166,7 +166,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
       if ((dest=tagDestinationDict[ref])) t << *dest << "/";
     }
     t << cd->getOutputFileBase() << ".html\" ";
-    t << "ALT=\"" << cd->name(); 
+    t << "alt=\"" << cd->name(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
     t << (x+w) << "," << (y+h) << "\">" << endl;
   }
@@ -230,10 +230,11 @@ void DiagramItem::addChild(DiagramItem *di)
 void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
                              Protection prot,Specifier virt,const char *ts)
 {
-  if (cd->visited) return; // error in the class diagram
+  //if (cd->visited) return; // the visit check does not work in case of
+                             // multiple inheritance of the same class!
   DiagramItem *di=new DiagramItem(parent, diagram->at(level)->count(), 
                                   cd,prot,virt,ts);
-  cd->visited=TRUE;
+  //cd->visited=TRUE;
   if (parent) parent->addChild(di);
   di->move(count()*gridWidth,level*gridHeight);
   append(di);
@@ -244,7 +245,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   while (bcd)
   {
     ClassDef *ccd=bcd->classDef;
-    if (ccd && ccd->isVisibleInHierarchy() && !ccd->visited) count++;
+    if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/) count++;
     bcd=bcl->next();
   }
   if (count>0 && (prot!=Private || !doBases))
@@ -264,7 +265,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
     while (bcd)
     {
       ClassDef *ccd=bcd->classDef;
-      if (ccd && ccd->isVisibleInHierarchy() && !ccd->visited)
+      if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/)
       {
         row->insertClass(di,ccd,doBases,bcd->prot,
             doBases?bcd->virt:Normal,
@@ -969,8 +970,8 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
     realWidth=pageWidth;
   }
 
-  output << "}\n"
-            "\\begin{figure}[H]\n"
+  //output << "}\n";
+  output << ":\\begin{figure}[H]\n"
             "\\begin{center}\n"
             "\\leavevmode\n";
   output << "\\setlength{\\epsfysize}{" << realHeight << "cm}\n";
@@ -1251,6 +1252,6 @@ void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
 
   image.save((QCString)path+"/"+fileName+".gif");
   
-  t << "</MAP></P>" << endl;
+  t << "</map></p>" << endl;
 }
 

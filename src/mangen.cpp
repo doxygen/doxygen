@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -45,7 +45,7 @@ void ManGenerator::append(const OutputGenerator *g)
     t << r.upper();
   else
     t << r;
-  if (r.length()>0)
+  if (!r.isEmpty())
     firstCol = r.at(r.length()-1)=='\n';
   else
     firstCol = ((ManGenerator *)g)->firstCol;

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -157,6 +157,26 @@ OutputList &OutputList::operator+=(const OutputList &outputList)
   return *this;
 }
 
+void OutputList::pushGeneratorState()
+{
+  OutputGenerator *og=outputs->first();
+  while (og)
+  {
+    og->pushGeneratorState();
+    og=outputs->next();
+  }
+}
+
+void OutputList::popGeneratorState()
+{
+  OutputGenerator *og=outputs->first();
+  while (og)
+  {
+    og->popGeneratorState();
+    og=outputs->next();
+  }
+}
+
 //--------------------------------------------------------------------------
 // Create some overloaded definitions of the forall function.
 // Using template functions here would have made it a little less
@@ -226,6 +246,9 @@ void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4),a1,a2,a3,a4) 
 FORALL1(const char *a1,a1)
 FORALL1(char a1,a1)
 FORALL1(int a1,a1)
+FORALL1(DotGfxUsageGraph &a1,a1)
+FORALL1(DotInclDepGraph &a1,a1)
+FORALL1(DotGfxHierarchyTable &a1,a1)
 #if defined(HAS_BOOL_TYPE)
 FORALL1(bool a1,a1)
 FORALL2(bool a1,int a2,a1,a2)

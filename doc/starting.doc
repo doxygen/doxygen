@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -184,6 +184,51 @@ During parsing the following steps take place:
      See section \ref htmlcmds for an overview of all supported HTML tags.
 </ul>
 
+Using a number of column aligned minus signs at the start of a 
+     line in a comment block will generate a bullet list. 
+     Nested lists are also possible.
+     Here is an example:
+\verbatim
+  /*! 
+   *  A list of events:
+   *    - mouse events
+   *         - mouse move event
+   *         - mouse click event
+   *         - mouse double click event\n
+   *           More info about the click event.
+   *    - keyboard events
+   *         - key down event
+   *         - key up event
+   *
+   *  More text here.
+   */
+\endverbatim
+     The result will be:
+
+     A list of events:
+       - mouse events
+            - mouse move event
+            - mouse click event\n
+              More info about the click event.
+            - mouse double click event
+       - keyboard events
+            - key down event
+            - key up event
+     
+     More text here.
+
+If you use tabs within lists, please make sure that \c TAB_SIZE in the 
+configuration file is set to the correct tab size.
+
+\htmlonly
+Go to the <a href="docblocks.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+
+/*! \page docblocks Documenting the code
+
 \subsection specialblock Special documentation blocks
 
 The following types of special documentation blocks are supported by doxygen:
@@ -357,7 +402,13 @@ Here is an example of a the use of these comment blocks:
          enums. Furthermore, the structural commands mentioned in the 
          previous section are ignored inside these comment blocks.
 
-\subsection formulas Including formulas in the documentation
+\htmlonly
+Go to the <a href="formulas.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+/*! \page formulas Including formulas 
 
 Doxygen allows you to put \f$\mbox{\LaTeX}\f$ formulas in the
 output (this works only for the HTML and \f$\mbox{\LaTeX}\f$ formats, 
@@ -420,7 +471,128 @@ from typos in formulas. It may have to be necessary to remove the
 file <code>formula.repository</code> that is written in the html directory to 
 a rid of an incorrect formula
 
-\subsection preprocessing Preprocessing
+\htmlonly
+Go to the <a href="diagrams.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+
+/*! \page diagrams Graphs and diagrams
+
+  Doxygen has build-in support to generate inheritance diagrams for C++
+  classes. 
+
+  Doxygen can use the "dot" tool from graphviz 1.5 to generate
+  more advanced diagrams & graphs. Graphviz is an open-sourced, 
+  cross-platform graph drawing toolkit from AT&T and Lucent Bell Labs and
+  can be found at http://www.research.att.com/sw/tools/graphviz/
+
+  If you have the "dot" tool available in the path, you can set
+  \ref cfg_have_dot "HAVE_DOT" to \c YES in the configuration file to 
+  let doxygen use it.
+
+  Doxygen uses the "dot" tool to generate the following graphs:
+  <ul>
+  <li>if \ref cfg_graphical_hierarchy "GRAPHICAL_HIERARCHY" is set to \c YES, 
+      a graphical representation of the class diagram will be drawn, along 
+      with the textual one. Currently this feature is supported for HTML only.\n
+      <b>Warning:</b> When you have a very large class hierarchy where many 
+      classes derive from a common
+      base class, the resulting image may become too big to handle for some 
+      browsers.
+  <li>if \ref cfg_include_graph "INCLUDE_GRAPH" is set to \c YES, an include 
+      dependency graph is generated for each documented file that includes at 
+      least one other file. This feature is currently supported for HTML and RTF 
+      only.
+  <li>if \ref cfg_collaboration_graph "COLLABORATION_GRAPH" is set to YES, a 
+      graph is drawn for each documented class and struct that shows:
+      <ul>
+      <li> the inheritance relations with base classes.
+      <li> the usage relations with other structs & classes (e.g. 
+           class \c A has a member variable \c m_a of type class \c B, then
+           \c A has an arrow to \c B with \c m_a as label).
+      </ul>
+  </ul>
+
+  The elements in the class diagrams in HTML and RTF 
+  have the following meaning:
+  <ul>
+  <li> A yellow box indicates a class. A box can have a 
+       little marker in the lower right corner to indicate that the class 
+       contains base classes that are hidden. If the box is filled with a 
+       dashed pattern the inheritance relation is virtual.
+  <li> A white box indicates that the documentation of the class
+       is currently shown.
+  <li> A grey box indicates an undocumented class.
+  <li> A solid dark blue arrows indicates public inheritance.
+  <li> A dashed dark green arrows indicates protected inheritance.
+  <li> A dotted dark green arrows indicates private inheritance.
+  </ul>
+
+  The elements in the class diagram in \f$\mbox{\LaTeX}\f$ have the 
+  following meaning:
+  <ul>
+  <li> A white box indicates a class.
+       A marker in the lower right corner of the box indicates that the 
+       class has base classes that are hidden. 
+       If the box has a dashed border this indicates virtual inheritance.
+  <li> A solid arrow indicates public inheritance.
+  <li> A dashed arrow indicates protected inheritance.
+  <li> A dotted arrow indicated private inheritance.
+  </ul>
+
+  The elements in the graphs generated by the dot tool have the following
+  meaning:
+  <ul>
+  <li> A white box indicates a class or struct. If the box has a 
+       red border this indicates that the class contains related classes
+       that are hidden.
+  <li> A black box indicates that the class' documentation is currently shown.
+  <li> A dark blue arrow indicates an include relation (for the 
+       include dependency graph) or public inheritance (for the other graphs).
+  <li> A dark green arrow indicates protected inheritance.
+  <li> A dark red arrow indicates private inheritance.
+  <li> A purple dashed arrow indicated a "usage" relation, the 
+       edge of the arrow is labled with the variable(s) responsible for the
+       relation.
+       Class \c A uses class \c B, if class \c A has a member variable \c m 
+       of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, \c T<B>* ). 
+  </ul>
+
+The reason why classes or structs are sometimes hidden is too prevent images
+to become too large. For the class diagrams the maximum tree width
+is currently 8 elements. For the graphs generated with dot doxygen tries
+to limit the width of the resulting image to 1024 pixels.  
+
+Here are a couple of header files that together show the various diagrams
+that doxygen can generate: 
+
+<code>diagrams_a.h</code>
+\verbinclude diagrams_a.h
+<code>diagrams_b.h</code>
+\verbinclude diagrams_b.h
+<code>diagrams_c.h</code>
+\verbinclude diagrams_c.h
+<code>diagrams_d.h</code>
+\verbinclude diagrams_d.h
+<code>diagrams_e.h</code>
+\verbinclude diagrams_e.h
+
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/diagrams/html/index.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen<br>
+ (<code>EXTRACT_ALL</code> = <code>YES</code> is used here).
+ \endhtmlonly
+
+\htmlonly
+Go to the <a href="preprocessing.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+
+/*! \page preprocessing Preprocessing
 
 Source files that are used as input to doxygen can be parsed by doxygen's
 build-in C-preprocessor.
@@ -481,6 +653,7 @@ of an abstract base class called \c IUnknown:
 #else
 #define REFIID const IID *
 #endif
+
 
 /*! The IUnknown interface */
 DECLARE_INTERFACE(IUnknown)
@@ -555,15 +728,19 @@ As you can see doxygen's preprocessor is quite powerful, but if you want
 even more flexibility you can always write an input filter and specify it 
 after the \c INPUT_FILTER tag.
 
-\subsection moreinfo More information
+If you are unsure what the effect of doxygen's preprocessing will be
+you can run doxygen as follows:
+\verbatim
+  doxygen -d Preprocessor
+\endverbatim
+This will instruct doxygen to dump the input sources to standard output after
+preprocessing has been done (Hint: set <code>QUIET = YES</code> and 
+<code>WARNINGS = NO</code> in the configuration file to disable any other 
+output).
 
-\addindex QdbtTabular
-For a more elaborate example see <a href="http://www.stack.nl/~dimitri/qdbttabular/doc/html/index.html">
-the documentation of QdbtTabular</a> \latexonly 
-({\tt http://www.stack.nl/$\sim$dimitri/qdbttabular/doc/html})\endlatexonly.
 \htmlonly
-I hope that was clear. If not, please let me know, so I can improve this document. If you have problems 
-take a look at the <a href="faq.html">faq</a> and the <a href="trouble.html">troubleshooting</a> sections. 
+Go to the <a href="faq.html">next</a> section or return to the
+ <a href="index.html">index</a>.
 \endhtmlonly
 
 */

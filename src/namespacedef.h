@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -21,11 +21,11 @@
 #include <qstrlist.h>
 #include <qdict.h>
 #include "definition.h"
+#include "memberlist.h"
 
 class ClassDef;
 class OutputList;
 class ClassList;
-class MemberList;
 class MemberDef;
 class NamespaceList;
 
@@ -73,8 +73,16 @@ class NamespaceDef : public Definition
     QCString fileName;
     QStrList files;
     ClassList *classList;
-    MemberList *memList;
     NamespaceList *usingList;
+
+    MemberList allMemberList;
+    MemberList defineMembers;
+    MemberList protoMembers;
+    MemberList typedefMembers;
+    MemberList enumMembers;
+    MemberList enumValMembers;
+    MemberList funcMembers;
+    MemberList varMembers;
 };
 
 class NamespaceList : public QList<NamespaceDef>

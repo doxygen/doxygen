@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -27,6 +27,8 @@
 #include "util.h"
 #include "language.h"
 #include "outputlist.h"
+#include "dot.h"
+#include "message.h"
 
 /*! create a new file definition, where \a p is the file path, 
     \a the file name, and \a ref is an HTML anchor name if the
@@ -40,22 +42,31 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   filename=nameToFile(nm);
   diskname=filename.copy();
   setReference(ref);
-  memList      = new MemberList;
+  //memList      = new MemberList;
   classList     = new ClassList;
-  includeList   = new FileList;
+  includeList   = new QList<IncludeInfo>;
+  includeList->setAutoDelete(TRUE);
+  includeDict   = new QDict<IncludeInfo>(61);
   defineList    = new DefineList;
   namespaceList = new NamespaceList;
   namespaceDict = new NamespaceDict(7);
   srcDefDict = 0;
   srcAnchorDict = 0;
   usingList = 0;
+  isSource = Config::extractAllFlag;
+  docname = nm;
+  if (Config::fullPathNameFlag)
+  {
+    docname.prepend(stripFromPath(path.copy()));
+  }
 }
 
 /*! destroy the file definition */
 FileDef::~FileDef()
 {
-  delete memList;
+  //delete memList;
   delete classList;
+  delete includeDict;
   delete includeList;
   delete defineList;
   delete namespaceList;
@@ -68,7 +79,7 @@ FileDef::~FileDef()
 /*! Compute the HTML anchor names for all members in the class */ 
 void FileDef::computeAnchors()
 {
-  setAnchors('a',memList);
+  setAnchors('a',&allMemberList);
 }
 
 /*! Write the documentation page for this file to the file of output
@@ -78,21 +89,22 @@ void FileDef::writeDocumentation(OutputList &ol)
 {
   //funcList->countDecMembers();
   
-  QCString fn = name();
-  if (Config::fullPathNameFlag)
-  {
-    fn.prepend(stripFromPath(getPath().copy()));
-  }
+  //QCString fn = name();
+  //if (Config::fullPathNameFlag)
+  //{
+  //  fn.prepend(stripFromPath(getPath().copy()));
+  //}
   
   QCString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trFileReference(fn));
-  endTitle(ol,getOutputFileBase(),fn);
+  parseText(ol,theTranslator->trFileReference(docname));
+  endTitle(ol,getOutputFileBase(),getOutputFileBase());
   //ol.newParagraph();
   
-  if (Config::genTagFile.length()>0) tagFile << "&" << name() << ":\n";
+  if (!Config::genTagFile.isEmpty()) tagFile << "&" << name() << ":\n";
   
+  ol.startTextBlock();
   //brief=brief.stripWhiteSpace();
   //int bl=brief.length();
   OutputList briefOutput(&ol); 
@@ -108,12 +120,88 @@ void FileDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
+    ol.disable(OutputGenerator::Man);
+    ol.newParagraph();
+    ol.enable(OutputGenerator::Man);
   }
-  ol.disable(OutputGenerator::Man);
-  ol.newParagraph();
-  ol.enable(OutputGenerator::Man);
   ol.writeSynopsis();
  
+  ol.startTextBlock(TRUE);
+  QListIterator<IncludeInfo> ili(*includeList);
+  IncludeInfo *ii;
+  for (;(ii=ili.current());++ili)
+  {
+    FileDef *fd=ii->fileDef;
+    ol.startTypewriter();
+    ol.docify("#include ");
+    if (ii->local)
+      ol.docify("\"");
+    else
+      ol.docify("<");
+    ol.disable(OutputGenerator::Html);
+    ol.docify(ii->includeName);
+    ol.enableAll();
+    ol.disableAllBut(OutputGenerator::Html);
+    if (fd && fd->isLinkable() && 
+        (fd->generateSource() || Config::sourceBrowseFlag)
+       )
+    {
+      ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
+    }
+    else
+    {
+      ol.docify(ii->includeName);
+    }
+    ol.enableAll();
+    if (ii->local)
+      ol.docify("\"");
+    else
+      ol.docify(">");
+    ol.endTypewriter();
+    ol.disable(OutputGenerator::RTF);
+    ol.lineBreak();
+    ol.enableAll();
+    ol.disableAllBut(OutputGenerator::RTF);
+    ol.newParagraph();
+    ol.enableAll();
+  }
+  ol.endTextBlock();
+  
+  if (Config::haveDotFlag && Config::includeGraphFlag)
+  {
+    //printf("Graph for file %s\n",name().data());
+    DotInclDepGraph incDepGraph(this);
+    if (!incDepGraph.isTrivial())
+    {
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.newParagraph();
+      ol.startInclDepGraph();
+      parseText(ol,theTranslator->trInclDepGraph(name()));
+      ol.endInclDepGraph(incDepGraph);
+      ol.enableAll();
+    }
+    //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
+  }
+
+  if (generateSource() || (!isReference() && Config::sourceBrowseFlag))
+  {
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.newParagraph();
+    ol.startTextLink(includeName(),0);
+    parseText(ol,theTranslator->trGotoSourceCode());
+    ol.endTextLink();
+    ol.enableAll();
+  }
+  
+  //ol.disableAllBut(OutputGenerator::Html);
+  //ol.writeString((QCString)"<p>Interface collaboration diagram for "
+  //               "<a href=\"usage_intf_graph_"+name()+".html\">here</a>");
+  //ol.writeString((QCString)"<p>Include dependency diagram for "+fn+" can be found "+
+  //               "<a href=\""+diskname+"_incldep.html\">here</a>.");
+  //ol.enableAll();
+
+  ol.endTextBlock();
+  
   ol.startMemberSections();
 
   if (namespaceList->count()>0)
@@ -202,7 +290,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
   
-  memList->writeDeclarations(ol,0,0,this,0,0);
+  allMemberList.writeDeclarations(ol,0,0,this,0,0);
   ol.endMemberSections();
 
   //doc=doc.stripWhiteSpace();
@@ -212,10 +300,14 @@ void FileDef::writeDocumentation(OutputList &ol)
       startBodyLine!=-1)
   {
     ol.writeRuler();
-    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.pushGeneratorState();
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
     ol.writeAnchor("_details"); 
-    if (latexOn) ol.enable(OutputGenerator::Latex);
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
@@ -250,69 +342,75 @@ void FileDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  memList->countDocMembers();
-  
-  if ( memList->defineCount()>0 )
+  //memList->countDocMembers();
+  defineMembers.countDocMembers();
+  if ( /*memList->defineCount()>0*/ defineMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDefineDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Define);
+    /*memList->*/defineMembers.writeDocumentation(ol,name()/*,MemberDef::Define*/);
   }
   
-  if ( memList->protoCount()>0 )
+  protoMembers.countDocMembers(); 
+  if ( /*memList->protoCount()>0*/ protoMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Prototype);
+    /*memList->*/protoMembers.writeDocumentation(ol,name()/*,MemberDef::Prototype*/);
   }
 
-  if ( memList->typedefCount()>0 )
+  typedefMembers.countDocMembers();
+  if ( /*memList->typedefCount()>0*/ typedefMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Typedef);
+    /*memList->*/typedefMembers.writeDocumentation(ol,name()/*,MemberDef::Typedef*/);
   }
   
-  if ( memList->enumCount()>0 )
+  enumMembers.countDocMembers();
+  if ( /*memList->enumCount()>0*/ enumMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Enumeration);
+    /*memList->*/enumMembers.writeDocumentation(ol,name()/*,MemberDef::Enumeration*/);
   }
 
-  if ( memList->enumValueCount()>0 )
+  enumValMembers.countDocMembers();
+  if ( /*memList->enumValueCount()>0*/ enumValMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::EnumValue);
+    /*memList->*/enumValMembers.writeDocumentation(ol,name()/*,MemberDef::EnumValue*/);
   }
 
-  if ( memList->funcCount()>0 )
+  funcMembers.countDocMembers();
+  if ( /*memList->funcCount()>0*/ funcMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Function);
+    /*memList->*/funcMembers.writeDocumentation(ol,name()/*,MemberDef::Function*/);
   }
   
-  if ( memList->varCount()>0 )
+  varMembers.countDocMembers();
+  if ( /*memList->varCount()>0*/ varMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Variable);
+    /*memList->*/varMembers.writeDocumentation(ol,name()/*,MemberDef::Variable*/);
   }
   
   // write Author section (Man only)
@@ -328,18 +426,27 @@ void FileDef::writeDocumentation(OutputList &ol)
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
-  QCString fn=name();
-  if (Config::fullPathNameFlag)
-  {
-    fn.prepend(stripFromPath(getPath().copy()));
-  }
+  //QCString fn=name();
+  //if (Config::fullPathNameFlag)
+  //{
+  //  fn.prepend(stripFromPath(getPath().copy()));
+  //}
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,sourceName(),fn+" Source File");
+  startFile(ol,sourceName(),docname+" Source File");
   startTitle(ol,0);
-  parseText(ol,fn);
+  parseText(ol,docname);
   endTitle(ol,0,0);
+
+  if (isLinkable())
+  {
+    ol.startTextLink(getOutputFileBase(),0);
+    parseText(ol,theTranslator->trGotoDocumentation());
+    ol.endTextLink();
+  }
+
   //parseText(ol,theTranslator->trVerbatimText(incFile->name()));
   //ol.writeRuler();
+  initParseCodeContext();
   ol.startCodeFragment();
   parseCode(ol,0,fileToString(absFilePath()),FALSE,0,this);
   ol.endCodeFragment();
@@ -350,7 +457,19 @@ void FileDef::writeSource(OutputList &ol)
 /*! Adds member definition \a md to the list of all members of this file */
 void FileDef::insertMember(MemberDef *md)
 {
-  memList->append(md); 
+  allMemberList.append(md); 
+  switch(md->memberType())
+  {
+    case MemberDef::Variable:     varMembers.inSort(md); break;
+    case MemberDef::Function:     funcMembers.inSort(md); break;
+    case MemberDef::Typedef:      typedefMembers.inSort(md); break;
+    case MemberDef::Enumeration:  enumMembers.inSort(md); break;
+    case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
+    case MemberDef::Prototype:    protoMembers.inSort(md); break;
+    case MemberDef::Define:       defineMembers.inSort(md); break;
+    default:
+       err("FileDef::insertMembers(): unexpected member insert in file!\n");
+  }
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */
@@ -416,6 +535,22 @@ void FileDef::addUsingDirective(NamespaceDef *nd)
   usingList->append(nd);
 }
 
+void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
+{
+  QCString iName = fd ? fd->absFilePath().data() : incName;
+  if (!iName.isEmpty() && includeDict->find(iName)==0)
+  {
+    //printf("Adding include dependency `%s' to `%s'\n",
+    //    fd->name().data(),name().data());
+    IncludeInfo *ii = new IncludeInfo;
+    ii->fileDef     = fd;
+    ii->includeName = incName;
+    ii->local       = local;
+    includeList->append(ii);
+    includeDict->insert(iName,ii);
+  }
+}
+
 //-----------------------------------------------------------------------------
 
 /*! Creates a file list. */
@@ -431,11 +566,12 @@ FileList::~FileList()
 /*! Compares two files by name. */
 int FileList::compareItems(GCI item1, GCI item2)
 {
-  FileDef *c1=(FileDef *)item1;
-  FileDef *c2=(FileDef *)item2;
+  FileDef *f1=(FileDef *)item1;
+  FileDef *f2=(FileDef *)item2;
+  ASSERT(f1!=0 && f2!=0);
   return Config::fullPathNameFlag ? 
-         strcmp(c1->absFilePath(),c2->absFilePath()) : 
-         strcmp(c1->name(),c2->name());
+         strcmp(f1->absFilePath(),f2->absFilePath()) : 
+         strcmp(f1->name(),f2->name());
 }
 
 /*! Create a file list iterator. */

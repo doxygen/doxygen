@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -77,6 +77,7 @@ documentation:
 <li> \refitem cmdinclude \include
 <li> \refitem cmdingroup \ingroup
 <li> \refitem cmdinternal \internal
+<li> \refitem cmdinvariant \invariant
 <li> \refitem cmdlatexonly \latexonly
 <li> \refitem cmdline \line
 <li> \refitem cmdlink \link
@@ -86,6 +87,8 @@ documentation:
 <li> \refitem cmdpage \page
 <li> \refitem cmdpar \par
 <li> \refitem cmdparam \param
+<li> \refitem cmdpost \post
+<li> \refitem cmdpre \pre
 <li> \refitem cmdref \ref
 <li> \refitem cmdrelates \relates
 <li> \refitem cmdreturn \return
@@ -138,7 +141,10 @@ Doxygen. Unrecognized commands are treated as normal text.
   The \<header-name\> argument can be used to overwrite the 
   name of the link that is used in the class documentation to something other 
   than \<header-file\>. This can be useful if the include name is not located 
-  on the default include path (like \<X11/X.h\>).
+  on the default include path (like \<X11/X.h\>). With the \<header-name\>
+  argument you can also specify how the include statement should look like, 
+  by adding either quotes or sharp brackets around the name. 
+  Sharp brackets are used if just the name is given.
   
   \par Example: 
   \verbinclude class.h  
@@ -547,6 +553,38 @@ Doxygen. Unrecognized commands are treated as normal text.
   expected life span, etc.
 
 <hr>
+\subsection cmdexception \exception <exception-object> { exception description }
+
+  \addindex \exception
+  Starts an exception description for an exception object with name 
+  \<exception-object\>. Followed by a description of the exception. 
+  The existence of the exception object is not checked.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \\exception commands will be joined into a single paragraph.
+  Each parameter description will start on a new line.
+  The \\exception description ends when a blank line or some other 
+  sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
+  example.
+
+  \par Note: 
+  the tag \\exceptions is a synonym for this tag.
+
+<hr>
+\subsection cmdinvariant \invariant { description of invariant }
+
+  \addindex \invariant
+  Starts a paragraph where the invariant of an entity can be described.
+  The paragraph will be indented. 
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \\invariant commands will be joined into a single paragraph.
+  Each warning description will start on a new line.
+  Alternatively, one \\invariant command may mention 
+  several invariants. The \\invariant command ends when a blank line or some other 
+  sectioning command is encountered.
+
+<hr>
 \subsection cmdpar \par (paragraph title) { paragraph }
 
   \addindex \par
@@ -581,32 +619,33 @@ Doxygen. Unrecognized commands are treated as normal text.
   example.
 
 <hr>
-\subsection cmdexception \exception <exception-object> { exception description }
+\subsection cmdpost \post { description of the postcondition }
 
-  \addindex \exception
-  Starts an exception description for an exception object with name 
-  \<exception-object\>. Followed by a description of the exception. 
-  The existence of the exception object is not checked.
+  \addindex \post
+  Starts a paragraph where the postcondition of an entity can be described.
+  The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
-  Multiple adjacent \\exception commands will be joined into a single paragraph.
-  Each parameter description will start on a new line.
-  The \\exception description ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
-  example.
-
-  \par Note: 
-  the tag \\exceptions is a synonym for this tag.
+  Multiple adjacent \\post commands will be joined into a single paragraph.
+  Each warning description will start on a new line.
+  Alternatively, one \\post command may mention 
+  several postconditions. The \\post command ends when a blank line or some other 
+  sectioning command is encountered.
 
 <hr>
-\subsection cmdthrow \throw <exception-object> { exception description }
+\subsection cmdpre \pre { description of the precondition }
 
-  \addindex \throw
-  Synonymous to \\exception (see section \ref cmdexception "\\exception").
-
-  \par Note: 
-  the tag \\throws is a synonym for this tag.
-
+  \addindex \pre
+  Starts a paragraph where the precondition of an entity can be described.
+  The paragraph will be indented. 
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \\pre commands will be joined into a single paragraph.
+  Each warning description will start on a new line.
+  Alternatively, one \\pre command may mention 
+  several preconditions. The \\pre command ends when a blank line or some other 
+  sectioning command is encountered.
+  
 <hr>
 \subsection cmdreturn \return { description of the return value }
 
@@ -648,6 +687,15 @@ Doxygen. Unrecognized commands are treated as normal text.
 
   \sa section \ref autolink "\\autolink" for information on how to create links 
       to objects.
+
+<hr>
+\subsection cmdthrow \throw <exception-object> { exception description }
+
+  \addindex \throw
+  Synonymous to \\exception (see section \ref cmdexception "\\exception").
+
+  \par Note: 
+  the tag \\throws is a synonym for this tag.
 
 <hr>
 \subsection cmdversion \version { version number }

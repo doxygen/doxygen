@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -27,6 +27,10 @@ The following output formats are \e directly supported by doxygen:
 <dd>Generated if \c GENERATE_LATEX is set to \c YES in the configuration file.
 <dt><b>Man pages</b>
 <dd>Generated if \c GENERATE_MAN is set to \c YES in the configuration file.
+<dt><b>RTF</b>
+<dd>Generated if \c GENERATE_RTF is set to \c YES in the configuration file.<p>
+    Note that the RTF output probably only looks nice with Microsoft's 
+    Word 97. If you have success with other programs, please let me know.
 </dl>
 
 The following output formats are \e indirectly supported by doxygen:

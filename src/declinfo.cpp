@@ -302,13 +302,13 @@ static void yy_fatal_error YY_PROTO(( yyconst char msg[] ));
 	*yy_cp = '\0'; \
 	yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 21
-#define YY_END_OF_BUFFER 22
+#define YY_NUM_RULES 22
+#define YY_END_OF_BUFFER 23
 static yyconst short int yy_accept[89] =
     {   0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       22,   20,   21,    5,    4,    8,    7,   20,   10,    2,
+       23,   20,   21,    5,    4,    8,    7,   20,   10,    2,
         9,    2,   20,   13,   11,   12,   18,   18,   20,   20,
        21,   16,   20,   19,    5,    8,    7,    0,   10,    9,
         4,    0,    6,    3,    2,    2,    0,    2,    0,    0,
@@ -451,7 +451,7 @@ char *yytext;
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -967,7 +967,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 198 "declinfo.l"
+#line 197 "declinfo.l"
+
+	YY_BREAK
+case 22:
+YY_RULE_SETUP
+#line 199 "declinfo.l"
 ECHO;
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
@@ -1864,7 +1869,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 198 "declinfo.l"
+#line 199 "declinfo.l"
 
 
 /*@ ----------------------------------------------------------------------------
@@ -1876,9 +1881,9 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
   inputString   = decl;
   //printf("Input=`%s'\n",inputString);
   if (inputString==0) return;
-  inputPosition = 0;
+  inputPosition      = 0;
   classTempListFound = FALSE;
-  funcTempListFound = FALSE;
+  funcTempListFound  = FALSE;
   scope.resize(0);
   className.resize(0);
   classTempList.resize(0);
@@ -1915,7 +1920,7 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
   a=removeRedundantWhiteSpace(args);
   exc=removeRedundantWhiteSpace(exceptionString);
   
-  if (t.length()>0 && t.at(t.length()-1)==')')
+  if (!t.isEmpty() && t.at(t.length()-1)==')')
   {
     a.prepend(")");
     t=t.left(t.length()-1);

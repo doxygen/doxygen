@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -76,6 +76,7 @@ int GroupDef::countMembers() const
 
 void GroupDef::writeDocumentation(OutputList &ol)
 {
+  ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,fileName,title);
   startTitle(ol,getOutputFileBase());
@@ -90,11 +91,14 @@ void GroupDef::writeDocumentation(OutputList &ol)
     parseDoc(briefOutput,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
+    ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
     ol.startTextLink(0,"_details");
     parseText(ol,theTranslator->trMore());
     ol.endTextLink();
-    ol.enable(OutputGenerator::Latex);
+    //ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
   }
   if (fileList->count()>0)
   {
@@ -144,10 +148,14 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
-    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.pushGeneratorState();
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
     ol.writeAnchor("_details");
-    if (latexOn) ol.enable(OutputGenerator::Latex);
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
@@ -165,5 +173,6 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
 
   endFile(ol); 
-  ol.enable(OutputGenerator::Man);
+  //ol.enable(OutputGenerator::Man);
+  ol.popGeneratorState();
 }

@@ -18,7 +18,11 @@ all: class/html/index.html \
      autolink/html/index.html \
      tag/html/index.html \
      restypedef/html/index.html \
-     afterdoc/html/index.html
+     afterdoc/html/index.html \
+     template/html/index.html \
+     tag/html/index.html \
+     group/html/index.html \
+     diagram/html/index.html
 
 clean:
 	deltree /y class define enum file 
@@ -87,3 +91,12 @@ restypedef/html/index.html: restypedef.cpp restypedef.cfg
 
 afterdoc/html/index.html: afterdoc.h afterdoc.cfg
 	$(DOXYDIR)\doxygen afterdoc.cfg
+
+template/html/index.html: templ.cpp templ.cfg
+	$(DOXYDIR)\doxygen templ.cfg
+
+group/html/index.html: group.cpp group.cfg
+	$(DOXYDIR)\doxygen group.cfg
+
+diagram/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
+	$(DOXYDIR)\doxygen diagrams.cfg

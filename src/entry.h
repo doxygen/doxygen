@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -26,7 +26,7 @@ enum Specifier { Normal, Virtual, Pure } ;
 struct BaseInfo 
 {
   BaseInfo(const char *n,Protection p,Specifier v) : name(n),prot(p),virt(v) {}
-  QCString    name; // the name of the base class
+  QCString   name; // the name of the base class
   Protection prot; // inheritance type
   Specifier  virt; // virtualness
 };
@@ -40,6 +40,8 @@ struct Argument
     type=a.type.copy(); 
     name=a.name.copy(); 
     defval=a.defval.copy(); 
+    docs=a.docs.copy();
+    array=a.array.copy();
   }
   Argument &operator=(const Argument &a)
   {
@@ -49,14 +51,22 @@ struct Argument
       type=a.type.copy(); 
       name=a.name.copy(); 
       defval=a.defval.copy(); 
+      docs=a.docs.copy();
+      array=a.array.copy();
     }
     return *this;
   }
+  bool hasDocumentation() const 
+  { 
+    return !name.isEmpty() && !docs.isEmpty(); 
+  }
   
-  QCString attrib;  // argument attribute (IDL only)
-  QCString type;    // argument type
-  QCString name;    // argument name (if any)
-  QCString defval;  // argument default value (if any)
+  QCString attrib;   // argument attribute (IDL only)
+  QCString type;     // argument type
+  QCString name;     // argument name (if any)
+  QCString array;    // argument array specifier (if any)
+  QCString defval;   // argument default value (if any)
+  QCString docs;     // arguments documentation (if any)
 };
 
 class ArgumentList : public QList<Argument> 
@@ -67,6 +77,7 @@ class ArgumentList : public QList<Argument>
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
                      pureSpecifier(FALSE) {}
+    bool hasDocumentation() const;
     bool constSpecifier;
     bool volatileSpecifier;
     bool pureSpecifier;
@@ -74,6 +85,9 @@ class ArgumentList : public QList<Argument>
 
 typedef QListIterator<Argument> ArgumentListIterator;
 
+/*! Raw entry. parseMain() in scanner.l will generate a tree of these
+ *  entries.
+ */
 class Entry
 {
   public:
@@ -141,6 +155,7 @@ class Entry
     QCString     scopeSpec;   // template specialization of the scope
     QCString     memberSpec;  // template specialization of the member
     QCString	 program;     // the program text
+    QCString     initializer; // initial value (for variables)
     int          bodyLine;    // line number of the definition in the source
     int          endBodyLine; // line number where the definition ends
     QCString     includeFile; // include file (2 arg of \class, must be unique)

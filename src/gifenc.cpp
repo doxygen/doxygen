@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -196,12 +196,6 @@ void GifEncoder::putWord( Word w, QFile &fp )
 void GifEncoder::putByte( Byte b, QFile &fp )
 {
   fp.putch( b );
-}
-
-int GifEncoder::nextPixel()
-{
-  if ( --numPixels < 0) return EOF;
-  return *dataPtr++;
 }
 
 void GifEncoder::writeCode( int code, QFile &outfile )

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -32,6 +32,9 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
   
 class ClassDiagram;
+class DotGfxUsageGraph;
+class DotInclDepGraph;
+class DotGfxHierarchyTable;
 
 class OutputList
 {
@@ -49,6 +52,8 @@ class OutputList
     void disable(OutputGenerator::OutputType o);
     void enable(OutputGenerator::OutputType o);
     bool isEnabled(OutputGenerator::OutputType o);
+    void pushGeneratorState();
+    void popGeneratorState();
     
     //void writeIndex() 
     //{ forall(&OutputGenerator::writeIndex); }
@@ -334,6 +339,22 @@ class OutputList
     { forall(&OutputGenerator::startDescTableData); }
     void endDescTableData()
     { forall(&OutputGenerator::endDescTableData); }
+    void startCollaborationDiagram()
+    { forall(&OutputGenerator::startCollaborationDiagram); }
+    void endCollaborationDiagram(DotGfxUsageGraph &g)
+    { forall(&OutputGenerator::endCollaborationDiagram,g); }
+    void startInclDepGraph()
+    { forall(&OutputGenerator::startInclDepGraph); }
+    void endInclDepGraph(DotInclDepGraph &g)
+    { forall(&OutputGenerator::endInclDepGraph,g); }
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
+    { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
+    void startTextBlock(bool dense=FALSE)
+    { forall(&OutputGenerator::startTextBlock,dense); }
+    void endTextBlock()
+    { forall(&OutputGenerator::endTextBlock); }
+    void lastIndexPage()
+    { forall(&OutputGenerator::lastIndexPage); }
 
   private:
     void debug();
@@ -344,6 +365,9 @@ class OutputList
     FORALLPROTO1(char);
     FORALLPROTO1(IndexSections);
     FORALLPROTO1(int);
+    FORALLPROTO1(DotGfxUsageGraph &);
+    FORALLPROTO1(DotInclDepGraph &);
+    FORALLPROTO1(DotGfxHierarchyTable &);
 #if defined(HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -24,12 +24,13 @@
 #include "classlist.h"
 #include "memberlist.h"
 #include "doxygen.h"
+#include "message.h"
 
 NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
 {
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
-  memList = new MemberList;
+  //memList = new MemberList;
   usingList = 0;
   setReference(ref);
 }
@@ -37,7 +38,7 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
 NamespaceDef::~NamespaceDef()
 {
   delete classList;
-  delete memList;
+  //delete memList;
   delete usingList;
 }
 
@@ -53,12 +54,25 @@ void NamespaceDef::insertClass(ClassDef *cd)
 
 void NamespaceDef::insertMember(MemberDef *md)
 {
-  memList->append(md);
+  //memList->append(md);
+  allMemberList.append(md); 
+  switch(md->memberType())
+  {
+    case MemberDef::Variable:     varMembers.inSort(md); break;
+    case MemberDef::Function:     funcMembers.inSort(md); break;
+    case MemberDef::Typedef:      typedefMembers.inSort(md); break;
+    case MemberDef::Enumeration:  enumMembers.inSort(md); break;
+    case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
+    case MemberDef::Prototype:    protoMembers.inSort(md); break;
+    case MemberDef::Define:       defineMembers.inSort(md); break;
+    default:
+       err("NamespaceDef::insertMembers(): unexpected member insert in file!\n");
+  }
 }
 
 void NamespaceDef::computeAnchors()
 {
-  setAnchors('a',memList);
+  setAnchors('a',&allMemberList);
 }
 
 void NamespaceDef::writeDocumentation(OutputList &ol)
@@ -70,24 +84,29 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   parseText(ol,theTranslator->trNamespaceReference(name()));
   endTitle(ol,getOutputFileBase(),name());
   
-  if (Config::genTagFile.length()>0) tagFile << "%" << name() << ":\n";
+  if (!Config::genTagFile.isEmpty()) tagFile << "%" << name() << ":\n";
   
+  ol.startTextBlock();
+    
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty()) 
   {
     parseDoc(briefOutput,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
+    ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
     parseText(ol,theTranslator->trMore());
     ol.endTextLink();
-    ol.enableAll();
+    ol.popGeneratorState();
   }
   ol.disable(OutputGenerator::Man);
   ol.newParagraph();
   ol.enable(OutputGenerator::Man);
   ol.writeSynopsis();
+
+  ol.endTextBlock();
   
   ol.startMemberSections();
   if (classList->count()>0)
@@ -143,19 +162,23 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
   
-  memList->writeDeclarations(ol,0,this,0,0,0);
+  /*memList->*/allMemberList.writeDeclarations(ol,0,this,0,0,0);
   ol.endMemberSections();
   
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
     ol.writeRuler();
-    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
     ol.writeAnchor("_details"); 
-    if (latexOn) ol.enable(OutputGenerator::Latex);
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
+    ol.startTextBlock();
     if (!briefDescription().isEmpty())
     {
       ol+=briefOutput;
@@ -166,81 +189,96 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       parseDoc(ol,name(),0,documentation()+"\n");
       ol.newParagraph();
     }
+    ol.endTextBlock();
   }
 
-  memList->countDocMembers();
-
-  if ( memList->protoCount()>0 )
+  //memList->countDocMembers();
+  defineMembers.countDocMembers();
+  if ( defineMembers.totalCount()>0 )
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trDefineDocumentation());
+    ol.endGroupHeader();
+    defineMembers.writeDocumentation(ol,name());
+  }
+  
+  protoMembers.countDocMembers(); 
+  if ( protoMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Prototype);
+    protoMembers.writeDocumentation(ol,name());
   }
 
-  if ( memList->typedefCount()>0 )
+  typedefMembers.countDocMembers();
+  if ( typedefMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Typedef);
+    typedefMembers.writeDocumentation(ol,name());
   }
-
-  if ( memList->enumCount()>0 )
+  
+  enumMembers.countDocMembers();
+  if ( enumMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Enumeration);
+    enumMembers.writeDocumentation(ol,name());
   }
 
-  if ( memList->enumValueCount()>0 )
+  enumValMembers.countDocMembers();
+  if ( enumValMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::EnumValue);
+    enumValMembers.writeDocumentation(ol,name());
   }
 
-  int cnt;
-  if ( (cnt=memList->funcCount()>0) )
+  funcMembers.countDocMembers();
+  if ( funcMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    QCString cntString;
-    //cntString.sprintf(" (%d)",cnt);
-    parseText(ol,theTranslator->trFunctionDocumentation()+cntString);
+    parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Function);
+    funcMembers.writeDocumentation(ol,name());
   }
-
-  if ( memList->varCount()>0 )
+  
+  varMembers.countDocMembers();
+  if ( varMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    memList->writeDocumentation(ol,name(),MemberDef::Variable);
+    varMembers.writeDocumentation(ol,name());
   }
 
   // write Author section (Man only)
+  ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
   parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
-  ol.enableAll();
+  //ol.enableAll();
+  ol.popGeneratorState();
   endFile(ol);
 }
 
 int NamespaceDef::countMembers()
 {
-  memList->countDocMembers();
-  return memList->totalCount()+classList->count();
+  allMemberList.countDocMembers();
+  return allMemberList.totalCount()+classList->count();
 }
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)

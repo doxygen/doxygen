@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -77,7 +77,7 @@ typedef QList<CodeVarDef>   CodeVarList;
  */
   
 static CodeClassList g_codeClassList;
-static CodeClassDict g_codeClassDict(17);
+static CodeClassDict g_codeClassDict(1009);
 static CodeVarList   g_codeVarList;
 static CodeVarList   g_codeParmList;
 static const char *  g_inputString;     //!< the code fragment as text
@@ -203,10 +203,10 @@ static void writeMultiLineCodeLink(OutputList &ol,
 static void addType()
 {
   if (g_name=="const") { g_name.resize(0); return; }
-  if (g_type.length()) g_type += ' ' ;
+  if (!g_type.isEmpty()) g_type += ' ' ;
   g_type += g_name ;
   g_name.resize(0) ;
-  if (g_type.length()) g_type += ' ' ;
+  if (!g_type.isEmpty()) g_type += ' ' ;
   g_type += g_args ;
   g_args.resize(0) ;
 }
@@ -214,7 +214,7 @@ static void addType()
 static void addParmType()
 {
   if (g_parmName=="const") { g_parmName.resize(0); return; }
-  if (g_parmType.length()) g_parmType += ' ' ;
+  if (!g_parmType.isEmpty()) g_parmType += ' ' ;
   g_parmType += g_parmName ;
   g_parmName.resize(0) ;
 }
@@ -236,7 +236,7 @@ static void addVariable()
 {
   g_cvd.name=g_name.copy().simplifyWhiteSpace();
   g_cvd.type=g_type.copy().simplifyWhiteSpace();
-  if (g_type.length()==0) 
+  if (g_type.isEmpty()) 
     return;
   else if ((getClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
   {
@@ -249,7 +249,7 @@ static void addParameter()
 {
   g_cvd.name=g_parmName.copy().simplifyWhiteSpace();
   g_cvd.type=g_parmType.copy().simplifyWhiteSpace();
-  if (g_cvd.type.length()==0) 
+  if (g_cvd.type.isEmpty()) 
     return;
   else if ((getClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
   {
@@ -261,7 +261,7 @@ static void addParameter()
 static void generateClassLink(OutputList &ol,char *clName)
 {
   QCString className=clName;
-  if (className.length()==0) return;
+  if (className.isEmpty()) return;
   ClassDef *cd;
   if ((cd=getClass(className)) && cd->isLinkable())
   {
@@ -273,10 +273,14 @@ static void generateClassLink(OutputList &ol,char *clName)
       //                                   g_exampleFile.data());
       if (cd->addExample(anchor,g_exampleName,g_exampleFile))
       {
-	bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-	if (latexOn) ol.disable(OutputGenerator::Latex);
+	ol.pushGeneratorState();
+	//bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+	//if (latexOn) ol.disable(OutputGenerator::Latex);
+	ol.disable(OutputGenerator::Latex);
+	ol.disable(OutputGenerator::RTF);
 	ol.writeAnchor(anchor);
-	if (latexOn) ol.enable(OutputGenerator::Latex);
+	//if (latexOn) ol.enable(OutputGenerator::Latex);
+	ol.popGeneratorState();
 	g_anchorCount++;
       }
     }
@@ -311,10 +315,13 @@ static bool getLink(const char *className,
       //                                  g_exampleFile.data());
       if (md->addExample(anchor,g_exampleName,g_exampleFile))
       {
-	bool latexEnabled = result.isEnabled(OutputGenerator::Latex);
-	if (latexEnabled) result.disable(OutputGenerator::Latex);
+	//bool latexEnabled = result.isEnabled(OutputGenerator::Latex);
+	result.pushGeneratorState();
+	//if (latexEnabled) result.disable(OutputGenerator::Latex);
+	result.disable(OutputGenerator::Latex);
 	result.writeAnchor(anchor);
-	if (latexEnabled) result.enable(OutputGenerator::Latex);
+	result.popGeneratorState();
+	//if (latexEnabled) result.enable(OutputGenerator::Latex);
 	g_anchorCount++;
       }
     }
@@ -337,7 +344,7 @@ static bool getLink(const char *className,
 static ClassDef *stripClassName(const char *s)
 {
   QCString tmp=s;
-  QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+  static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   int p=0,i,l;
   while ((i=re.match(tmp,p,&l))!=-1)
   {
@@ -475,7 +482,7 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
     locFunc=locFunc.right(locFunc.length()-i-2);
   }
   //printf("generateFunctionLink(%s) classScope=%s\n",locFunc.data(),locScope.data());
-  if (locScope.length()>0 && (ccd=g_codeClassDict[locScope]))
+  if (!locScope.isEmpty() && (ccd=g_codeClassDict[locScope]))
   {
     //printf("using classScope %s\n",g_classScope.data());
     char *s=ccd->bases.first();
@@ -635,7 +642,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  g_code->codify(yytext);
 					  g_curlyCount++;
 					  g_inClass=TRUE;
-					  if (g_ccd.name.length()>0)
+					  if (!g_ccd.name.isEmpty())
 					  {
 					    g_classScope=g_ccd.name.copy();
 					    CodeClassDef *cd=new CodeClassDef(g_ccd);
@@ -703,7 +710,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					}
 <Body>{SCOPENAME}/{B}*"("		{
   					  addType();
-					  //if (type.length()==0)
+					  //if (type.isEmpty())
 					  QCString tmp=yytext;
 					  generateFunctionLink(*g_code,yytext);
 					  //else
@@ -718,7 +725,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  g_lastStringContext=YY_START;
   					  BEGIN( SkipString );
   					}
-<SkipString>[^\"\\]*			{ 
+<SkipString>[^\"\\\n]*			{ 
   					  g_code->codify(yytext);
 					}
 <SkipString>"//"|"/*"			{
@@ -738,12 +745,13 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <Body,MemberCall,MemberCall2,FuncCall>"'"((\\.)|(.))"'"	{
   					  g_code->codify(yytext);
   					}
+<Body>"this->"				{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
   					  g_code->codify(yytext);
   					  BEGIN( MemberCall ); 
 					}
 <MemberCall>{SCOPENAME}/{B}*"(" 	{
-  					  if (g_name.length()>0)
+  					  if (!g_name.isEmpty())
 					    generateMemberLink(*g_code,g_name,yytext);
 					  else
   					    g_code->codify(yytext);
@@ -759,7 +767,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					}
 <Body>[,=;\[]				{
   					  g_code->codify(yytext);
-  					  if (g_type.length()>0) 
+  					  if (!g_type.isEmpty()) 
 					    addVariable();
 					  g_name.resize(0);
 					  if (*yytext!=',') g_type.resize(0);
@@ -792,7 +800,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <MemberCall2,FuncCall>")"[ \t\n]*";"	{
   					  codifyLines(yytext);
   					  g_bracketCount=0;
-					  if (!g_inClass && g_type.length()>0)
+					  if (!g_inClass && !g_type.isEmpty())
 					    addVariable();
 					  g_name.resize(0);g_type.resize(0);
 					  g_parmType.resize(0);g_parmName.resize(0);
@@ -832,7 +840,7 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  BEGIN( MemberCall2 ); 
 					}
 <MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*"(") { 
-  					  if (g_args.length()>0)
+  					  if (!g_args.isEmpty())
 					    generateMemberLink(*g_code,g_args,yytext);
 					  else
   					    g_code->codify(yytext);
