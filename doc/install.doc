@@ -362,7 +362,7 @@ Here is what is required:
     
     Alternatively, you can also choose to 
     download only a <a href="http://www.doxygen.org/dl/cygwin_tools.zip">small subset</a> 
-    \latexonly(see {\tt http://www.doxygen.org/dl/cygwin_tools.zip})\endlatexonly
+    \latexonly(see {\tt http://www.doxygen.org/dl/cygwin\_tools.zip})\endlatexonly
     of the cygwin tools that I put together just to compile doxygen.
     
     Make sure the <code>BISONLIB</code> environment variable points to the
