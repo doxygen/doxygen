@@ -27,11 +27,12 @@ GENERATE_HTML     = YES
 GENERATE_HTMLHELP = YES
 GENERATE_RTF      = NO
 ENABLE_PREPROCESSING = NO
-INPUT             = index.doc install.doc starting.doc faq.doc trouble.doc \
-		   history.doc features.doc \
-		   doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
-                   installdox_usage.doc output.doc autolink.doc \
-		   config.doc commands.doc htmlcmds.doc language.doc
+INPUT             = index.doc install.doc starting.doc docblocks.doc \
+                    grouping.doc formulas.doc diagrams.doc preprocessing.doc \
+                    external.doc faq.doc trouble.doc history.doc features.doc \
+		    doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
+                    installdox_usage.doc output.doc autolink.doc \
+		    config.doc commands.doc htmlcmds.doc language.doc
 FILE_PATTERNS     = *.cpp *.h *.doc
 EXAMPLE_PATH      = ../examples
 RECURSIVE         = NO

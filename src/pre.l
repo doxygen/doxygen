@@ -668,11 +668,25 @@ QCString removeIdsAndMarkers(const char *s)
 	}
 	p+=2;
       }
-      else if (isdigit(c))
+      else if (isdigit(c)) // number
       {
 	result+=c;
 	p++;
         inNum=TRUE;	
+      }
+      else if (c=='d') // identifier starting with a `d'
+      {
+	if (strncmp(p,"defined ",8)==0 || strncmp(p,"defined(",8)==0) 
+	           // defined keyword
+	{
+	  p+=7; // skip defined
+	}
+	else
+	{
+	  result+="0L";
+	  p++;
+	  while ((c=*p) && isId(c)) p++;
+	}
       }
       else if ((isalpha(c) || c=='_') && !inNum) // replace identifier with 0L
       {
@@ -731,8 +745,10 @@ bool computeExpression(const QCString &expr)
 {
   QCString e=expr;
   expandExpression(e,0,0);
+  //printf("after expansion `%s'\n",e.data());
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
+  //printf("parsing `%s'\n",e.data());
   return parseCppExpression(e);
 }
 

@@ -29,6 +29,8 @@ class HtmlGenerator : public OutputGenerator
   public:
     HtmlGenerator();
    ~HtmlGenerator();
+    static void init();
+    static void writeStyleSheetFile(QFile &f);
    
     OutputGenerator *copy() { return new HtmlGenerator; }
     //OutputGenerator *clone() { return new HtmlGenerator(*this); }
@@ -41,7 +43,6 @@ class HtmlGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
     
-    static void init();
     
     //void generateExternalIndex();
     void startFile(const char *name,const char *title,bool external);
@@ -185,8 +186,8 @@ class HtmlGenerator : public OutputGenerator
     void writeSectionRefItem(const char *,const char *,const char *);
     void writeSectionRefAnchor(const char *,const char *,const char *);
     void addToIndex(const char *,const char *) {}
-    void startIndent()        { t << "<div class=\"in\">" << endl; }
-    void endIndent()          { t << "</div>" << endl; }
+    void startIndent();
+    void endIndent();
     void writeSynopsis() {}
     void startClassDiagram();
     void endClassDiagram(ClassDiagram &,const char *,const char *);

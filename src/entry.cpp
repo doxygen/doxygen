@@ -51,6 +51,7 @@ Entry::Entry(const Entry &e)
   sig         = e.sig;
   slot        = e.slot;
   stat        = e.stat;
+  explicitExternal = e.explicitExternal;
   virt        = e.virt;
   parent      = e.parent;
   type        = e.type.copy();
@@ -219,6 +220,7 @@ void Entry::reset()
   slot    = FALSE;
   stat    = FALSE;
   proto   = FALSE;
+  explicitExternal = FALSE;
   memSpec  = 0;
   subGrouping = TRUE;
   protection = Public;

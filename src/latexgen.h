@@ -27,6 +27,8 @@ class LatexGenerator : public OutputGenerator
   public:
     LatexGenerator();
    ~LatexGenerator();
+    static void init();
+    static void writeStyleSheetFile(QFile &f);
 
     OutputGenerator *copy();
     //OutputGenerator *clone() { return new LatexGenerator(*this); }
@@ -39,7 +41,6 @@ class LatexGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Latex && active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
 
-    static void init();
     void startFile(const char *name,const char *title, bool external);
     void writeFooter(int,bool) {}
     void endFile();

@@ -16,10 +16,10 @@
  */
 
 /**
- * translator_es.h modified by Lucas Cruz
+ * translator_es.h modified by Lucas Cruz (7-julio-2000)
  * Some notes:
- * - I only use upper case in the first letter of the title, because
- * the aspect of the document is more pleasing to the eye.
+ * - It's posible that some sentences haven't got meaning because  
+ * some words haven't got translate in spanish.
  */
 
 #ifndef TRANSLATOR_ES_H
@@ -38,7 +38,7 @@ class TranslatorSpanish : public Translator
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return "Funciones Relacionadas"; }
+    { return "Funciones relacionadas"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
@@ -46,23 +46,23 @@ class TranslatorSpanish : public Translator
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "Descripción Detallada"; }
+    { return "Descripción detallada"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "Documentación de los 'Tipos Definidos' Miembros de la Clase"; }
+    { return "Documentación de los 'Tipos Definidos' miembros de la clase"; }
     
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "Documentación de las Enumeraciones Miembro de la Clase"; }
+    { return "Documentación de las enumeraciones miembro de la clase"; }
     
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Documentación de las Funciones Miembro"; }
+    { return "Documentación de las funciones miembro"; }
     
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { return "Documentación de los Datos Miembro"; }
+    { return "Documentación de los datos miembro"; }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
@@ -74,7 +74,7 @@ class TranslatorSpanish : public Translator
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return "Lista de los Miembros"; }
+    { return "Lista de los miembros"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
@@ -122,31 +122,31 @@ class TranslatorSpanish : public Translator
     
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return "Jerarquía de la Clase"; }
+    { return "Jerarquía de la clase"; }
     
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { return "Lista de Componentes"; }
+    { return "Lista de componentes"; }
     
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return "Lista de Archivos"; }
+    { return "Lista de archivos"; }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
-    { return "Archivos Cabecera"; }
+    { return "Archivos cabecera"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { return "Miembros de las Clases"; }
+    { return "Miembros de las clases"; }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { return "Archivos de los Miembros"; }
+    { return "Archivos de los miembros"; }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return "Páginas Relacionadas"; }
+    { return "Páginas relacionadas"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
@@ -236,59 +236,59 @@ class TranslatorSpanish : public Translator
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "Indice de Módulos"; }
+    { return "Indice de módulos"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return "Indice Jerárquico"; }
+    { return "Indice jerárquico"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { return "Indice de Clases"; }
+    { return "Indice de clases"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
     virtual QCString trFileIndex() 
-    { return "Indice de Archivos"; }
+    { return "Indice de archivos"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return "Documentación de Módulos"; }
+    { return "Documentación de módulos"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { return "Documentación de Clasee"; }
+    { return "Documentación de clasee"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return "Documentación de Archivos"; }
+    { return "Documentación de archivos"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return "Documentación de Ejemplos"; }
+    { return "Documentación de ejemplos"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return "Documentación de Páginas"; }
+    { return "Documentación de páginas"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Manual de Referencia"; }
+    { return "Manual de referencia"; }
     
     /*! This is used in the documentation of a file as a header before the 
      *  list of defines
@@ -300,13 +300,13 @@ class TranslatorSpanish : public Translator
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return "Funciones Prototipo"; }
+    { return "Funciones prototipo"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "Tipos Definidos"; }
+    { return "Tipos definidos"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
@@ -340,7 +340,7 @@ class TranslatorSpanish : public Translator
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "Documentación de las Definiciones"; }
+    { return "Documentación de las definiciones"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
@@ -352,31 +352,31 @@ class TranslatorSpanish : public Translator
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "Documentación de los Tipos Definidos"; }
+    { return "Documentación de los tipos definidos"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "Documentación de las Enumeraciones"; }
+    { return "Documentación de las enumeraciones"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Documentación de los Valores de la Enumeración"; }
+    { return "Documentación de los valores de la enumeración"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return "Documentación de las Funciones"; }
+    { return "Documentación de las funciones"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return "Documentación de las Variables"; }
+    { return "Documentación de las variables"; }
 
     /*! This is used in the documentation of a file/namespace/group before 
      *  the list of links to documented compounds
@@ -465,7 +465,7 @@ class TranslatorSpanish : public Translator
     
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "Lista de Namespace"; }
+    { return "Lista de namespace"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
@@ -490,7 +490,7 @@ class TranslatorSpanish : public Translator
      * related classes 
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "Documentación de las Funciones Relacionadas y Clases Amigas"; }
+    { return "Documentación de las funciones relacionadas y clases amigas"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -518,7 +518,7 @@ class TranslatorSpanish : public Translator
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" Archivo Referencia"; 
+      result+=" Archivo referencia"; 
       return result;
     }
 
@@ -526,7 +526,7 @@ class TranslatorSpanish : public Translator
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Namespace Referencia";
+      result+=" Namespace referencia";
       return result;
     }
     
@@ -534,25 +534,25 @@ class TranslatorSpanish : public Translator
      *  these are for the member sections of a class, struct or union 
      */
     virtual QCString trPublicMembers()
-    { return "Métodos Públicos"; }
+    { return "Métodos públicos"; }
     virtual QCString trPublicSlots()
-    { return "Slots Públicos"; }
+    { return "Slots públicos"; }
     virtual QCString trSignals()
     { return "Señales"; }
     virtual QCString trStaticPublicMembers()
-    { return "Métodos Públicos Estáticos"; }
+    { return "Métodos públicos estáticos"; }
     virtual QCString trProtectedMembers()
-    { return "Métodos Protegidos"; }
+    { return "Métodos protegidos"; }
     virtual QCString trProtectedSlots()
-    { return "Slots Protegidos"; }
+    { return "Slots protegidos"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Métodos Protegidos Estáticos"; }
+    { return "Métodos protegidos estáticos"; }
     virtual QCString trPrivateMembers()
-    { return "Métodos Privados"; }
+    { return "Métodos privados"; }
     virtual QCString trPrivateSlots()
-    { return "Slots Privados"; }
+    { return "Slots privados"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Métodos Privados Estáticos"; }
+    { return "Métodos privados estáticos"; }
     /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
@@ -614,7 +614,7 @@ class TranslatorSpanish : public Translator
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "Namespace Miembros"; }
+    { return "Namespace miembros"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
@@ -632,13 +632,13 @@ class TranslatorSpanish : public Translator
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "Indice de Namespace"; }
+    { return "Indice de namespace"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "Documentación de Namespace"; }
+    { return "Documentación de namespace"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -680,7 +680,7 @@ class TranslatorSpanish : public Translator
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return "Lista Alfabética"; }
+    { return "Lista alfabética"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -693,7 +693,7 @@ class TranslatorSpanish : public Translator
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "Página Principal"; }
+    { return "Página principal"; }
 
     /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
@@ -744,7 +744,7 @@ class TranslatorSpanish : public Translator
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Documentación del Constructor y Destructor"; 
+      return "Documentación del constructor y destructor"; 
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -783,7 +783,7 @@ class TranslatorSpanish : public Translator
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "Representación Gráfica de la Clase";
+      return "Representación gráfica de la clase";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
@@ -795,7 +795,7 @@ class TranslatorSpanish : public Translator
     }
     virtual QCString trPageIndex()
     {
-      return "Página Indice";
+      return "Página indice";
     }
     virtual QCString trNote()
     {
@@ -804,40 +804,82 @@ class TranslatorSpanish : public Translator
 
     virtual QCString trPublicTypes()
     {
-      return "Tipos Públicos";
+      return "Tipos públicos";
     }
     virtual QCString trPublicAttribs()
     {
-      return "Atributos Públicos";
+      return "Atributos públicos";
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return "Atributos Públicos Estáticos";
+      return "Atributos públicos estáticos";
     }
     virtual QCString trProtectedTypes()
     {
-      return "Tipos Protegidos";
+      return "Tipos protegidos";
     }
     virtual QCString trProtectedAttribs()
     {
-      return "Atributos Protegidos";
+      return "Atributos protegidos";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Atributos Protegidos Estáticos";
+      return "Atributos protegidos estáticos";
     }
     virtual QCString trPrivateTypes()
     {
-      return "Tipos Privados";
+      return "Tipos privados";
     }
     virtual QCString trPrivateAttribs()
     {
-      return "Atributos Privados";
+      return "Atributos privados";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return "Atributos Privados Estáticos";
+      return "Atributos privados estáticos";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a todo item */
+    virtual QCString trTodo()
+    {
+      return "Todo";
+    }
+    /*! Used as the header of the todo list */
+    virtual QCString trTodoList()
+    {
+      return "Listado de todo";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trReferencedBy()
+    {
+      return "Referenciado por";
+    }
+    virtual QCString trRemarks()
+    {
+      return "Comentarios";
+    }
+    virtual QCString trAttention()
+    {
+      return "Atención";
+    }
+    virtual QCString trInclByDepGraph()
+    {
+      return "Este gráfico muestra que archivos directa o "
+	     "indirectamente incluyen a este archivo.";
+    }
+    virtual QCString trSince()
+    {
+      return "Desde";
     }
 };
+
 
 #endif

@@ -132,6 +132,7 @@ static bool readCodeFragment(const char *fileName,
   if (f.open(IO_ReadOnly))
   {
     int c=0;
+    int col=0;
     int lineNr=1;
     // skip until the startLine has reached
     while (lineNr<startLine && !f.atEnd())
@@ -146,7 +147,21 @@ static bool readCodeFragment(const char *fileName,
       char cn=0;
       while (lineNr<=endLine && !f.atEnd() && !found)
       {
-        while ((c=f.getch())!='{' && c!=':' && c!=-1) if (c=='\n') lineNr++; 
+        while ((c=f.getch())!='{' && c!=':' && c!=-1) 
+        {
+          if (c=='\n') 
+          {
+            lineNr++,col=0; 
+          }
+          else if (c=='\t') 
+          {
+            col+=Config::tabSize - (col%Config::tabSize);
+          }
+          else
+          {
+            col++;
+          }
+        }
         if (c==':')
         {
           cn=f.getch();
@@ -159,6 +174,9 @@ static bool readCodeFragment(const char *fileName,
       }
       if (found) 
       {
+        // full the line with spaces until the right column
+        int i;
+        for (i=0;i<col;i++) result+=' ';
         // copy until end of line
         result+=c;
         if (c==':') result+=cn;
@@ -346,10 +364,19 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
         }
         if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
         {
+          // for HTML write a real link
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputGenerator::Html);
           QCString lineStr,anchorStr;
           anchorStr.sprintf("l%05d",md->getStartBodyLine());
-          ol.writeObjectLink(0,md->getBodyDef()->sourceName(),
-            anchorStr,name);
+          ol.writeObjectLink(0,md->getBodyDef()->sourceName(),anchorStr,name);
+          ol.popGeneratorState();
+
+          // for the other output formats just mention the name
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Html);
+          ol.docify(name);
+          ol.popGeneratorState();
         }
         else
         {

@@ -633,6 +633,7 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
 
 //-----------------------------------------------------------------------------
 
+#if 0
 /*! Creates a file list. */
 FileList::FileList() : QList<FileDef>()
 {
@@ -659,4 +660,4 @@ FileListIterator::FileListIterator(const FileList &cllist) :
   QListIterator<FileDef>(cllist)
 {
 }
-
+#endif

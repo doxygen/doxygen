@@ -94,18 +94,6 @@ Here is a list of the languages and their current maintainers:
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>
-        Romanian
-      </TD>
-      <TD>
-        Ionutz Borcoman
-      </TD>
-      <TD>
-        <a href="mailto:borco@NOSPAM.borco-ei.eng.hokudai.ac.jp">
-	                borco@NOSPAM.borco-ei.eng.hokudai.ac.jp</a>
-      </TD>
-  </TR>
-  <TR BGCOLOR="#ffffff">
-      <TD>
         Italian
       </TD>
       <TD>
@@ -225,8 +213,6 @@ Here is a list of the languages and their current maintainers:
   \hline
   Czech   & Petr Prikryl     & {\tt prikrylp@skil.cz}   \\
           & Vlastimil Havran & {\tt havran@fel.cvut.cz} \\
-  \hline
-  Romanian & Ionutz Borcoman & {\tt borco@borco-ei.eng.hokudai.ac.jp} \\
   \hline
   Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} \\
           & Alessandro Falappa & {\tt a.falappa@flashnet.it} \\

@@ -169,6 +169,7 @@ class FileDef : public Definition
     MemberGroupDict *memberGroupDict;
 };
 
+#if 0 // obsolete 
 /*! \class FileList filedef.h
     \brief This class is list of file definitions. 
     
@@ -194,6 +195,44 @@ class FileListIterator : public QListIterator<FileDef>
 {
   public:
     FileListIterator(const FileList &list);
+};
+#endif
+
+class FileList : public QList<FileDef>
+{
+  public:
+    FileList() : m_pathName("tmp") {}
+    FileList(const char *path) : QList<FileDef>(), m_pathName(path) {}
+   ~FileList() {}
+    QCString path() const { return m_pathName; }
+    int compareItems(GCI item1,GCI item2)
+    {
+      FileDef *md1 = (FileDef *)item1;
+      FileDef *md2 = (FileDef *)item2;
+      return strcasecmp(md1->name(),md2->name());
+    }
+  private:
+    QCString m_pathName;
+};
+
+class OutputNameList : public QList<FileList>
+{
+  public:
+    OutputNameList() : QList<FileList>() {}
+   ~OutputNameList() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      FileList *fl1 = (FileList *)item1;
+      FileList *fl2 = (FileList *)item2;
+      return strcasecmp(fl1->path(),fl2->path());
+    }
+};
+
+class OutputNameDict : public QDict<FileList>
+{
+  public:
+    OutputNameDict(int size) : QDict<FileList>(size) {}
+   ~OutputNameDict() {}
 };
 
 #endif

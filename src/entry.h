@@ -164,6 +164,7 @@ class Entry
     bool sig;                 // a Qt signal ?
     bool slot;                // a Qt slot ?
     bool stat;                // static ?
+    bool explicitExternal;    // explicitly defined as external?
     bool proto;               // prototype ?
     int  memSpec;             // member specifiers
     int  initLines;           // define/variable initializer lines to show 

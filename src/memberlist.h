@@ -78,4 +78,5 @@ class MemberDict : public QDict<MemberDef>
    ~MemberDict() {}
 };
 
+
 #endif

@@ -532,7 +532,8 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	MemberDef *vmd;
 	for (;(vmd=vmni.current());++vmni)
 	{
-	  if (vmd->isVariable() && vmd->memberClass()==vcd)
+	  if ((vmd->isVariable() || vmd->isFunction()) && 
+	       vmd->memberClass()==vcd)
 	  {
 	    //printf("Found variable type=%s\n",vmd->typeString());
 	    ClassDef *mcd=stripClassName(vmd->typeString());
@@ -924,12 +925,26 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  QCString text=yytext;
   					  g_name+=text.left(i); 
   					}
-<Body>{SCOPENAME}/{B}* 			{ 
+<Body>{SCOPENAME}/{B}* 			{ // p->func()
 					  generateClassLink(*g_code,yytext);
 					  addType();
   					  g_name+=yytext; 
 					}
-<Body>{SCOPENAME}/{B}*"("		{
+<Body>"("{B}*"*"{B}*{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func()
+					  QCString text=yytext;
+  					  int s=0;
+					  while (s<yyleng && (text.at(s)=='(' || isspace(text.at(s)))) s++;
+					  int e=yyleng-1;
+					  while (e>=0 && (text.at(e)==')' || isspace(yytext[e]))) e--;
+					  QCString varname = text.mid(s+1,e-s);
+					  QCString tmp=varname.copy();
+					  g_code->docify(text.left(s+1));
+					  generateClassLink(*g_code,tmp.data());
+					  g_code->docify(text.right(yyleng-e-1));
+					  addType();
+  					  g_name+=varname; 
+					}
+<Body>{SCOPENAME}/{B}*"("		{ // func1()->func2()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
   					  g_bracketCount=1;
@@ -1051,15 +1066,23 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_parmType.resize(0);g_parmName.resize(0);
   					  BEGIN( Body ); 
 					}
-<MemberCall2,FuncCall>")"[ \t\n]*";"	{
+<MemberCall2,FuncCall>")"[ \t\n]*[;:]	{
   					  codifyLines(yytext);
   					  g_bracketCount=0;
 					  g_searchingForBody=FALSE; 
 					  if (!g_inClass && !g_type.isEmpty())
 					    addVariable();
-					  g_name.resize(0);g_type.resize(0);
 					  g_parmType.resize(0);g_parmName.resize(0);
-  					  BEGIN( Body );
+  					  if (yytext[yyleng-1]==';' || g_insideBody)
+					  {
+					    g_name.resize(0);g_type.resize(0);
+					    BEGIN( Body );
+					  }
+					  else
+					  {
+					    g_bracketCount=0;
+					    BEGIN( SkipInits );
+					  }
   					}
 <MemberCall2,FuncCall>")"({BN}"const"|"volatile")*{BN}*"{" 	{
 					  addParameter();
@@ -1081,16 +1104,11 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
   					}
-					/*
-<MemberCall2,FuncCall>")"[ \t\n]*":" 	{
-					  addParameter();
-					  g_parmType.resize(0);g_parmName.resize(0);
-					  if (g_name.find("::")!=-1) setClassScope(g_name);
-  					  codifyLines(yytext);
+<SkipInits>";"				{
+  					  g_code->codify(yytext);
   					  g_type.resize(0); g_name.resize(0);
-					  BEGIN( SkipInits );
+  					  BEGIN( Body );
   					}
-					*/
 <SkipInits>"{"				{ 
   					  g_code->codify(yytext);
 					  g_curlyCount++; 
@@ -1100,6 +1118,8 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_insideBody=TRUE;
 					  }
 					  if (g_insideBody) g_bodyCurlyCount++;
+					  if (g_name.find("::")!=-1) setClassScope(g_name);
+  					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body ); 
 					}
 <SkipInits>{ID}				{

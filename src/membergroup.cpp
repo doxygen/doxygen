@@ -54,7 +54,9 @@ MemberGroup::~MemberGroup()
 void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
-  //       " member section list: %p\n",memberList,memberList->count(),
+  //       " member section list: %p\n",
+  //       memberList->first() ? memberList->first()->getSectionList() : 0,
+  //       memberList->count(),
   //       md->getSectionList());
   if (inSameSection && memberList->count()>0 && 
       memberList->first()->getSectionList()!=md->getSectionList())

@@ -41,7 +41,7 @@ extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
 extern void linkifyText(OutputList &ol,const char *clName,const char *name,
-                        const char *text,bool autoBreak=FALSE);
+                        const char *text,bool autoBreak=FALSE,bool external=TRUE);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, 
                     ClassDef *&cd,FileDef *&fd, 
@@ -97,5 +97,6 @@ void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 QCString stripScope(const char *name);
+int iSystem(const char *command);
 
 #endif

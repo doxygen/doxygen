@@ -100,7 +100,7 @@ void FormulaList::generateBitmaps(const char *path)
   {
     //printf("Running latex...\n");
     //system("latex _formulas.tex </dev/null >/dev/null");
-    if (system("latex _formulas.tex")!=0)
+    if (iSystem("latex _formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look for typos in _formulas.tex!\n");
       formulaError=TRUE;
@@ -121,7 +121,7 @@ void FormulaList::generateBitmaps(const char *path)
       // encapsulated postscript.
       sprintf(dviCmd,"dvips -q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
           pageIndex,formBase.data());
-      if (system(dviCmd)!=0)
+      if (iSystem(dviCmd)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
         return;
@@ -183,7 +183,7 @@ void FormulaList::generateBitmaps(const char *path)
              );
 #endif
       //printf("Running ghostscript...\n");
-      if (system(gsCmd)!=0)
+      if (iSystem(gsCmd)!=0)
       {
         err("Problem running ghostscript. Check your installation!\n");
         return;
