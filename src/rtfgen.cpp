@@ -1737,7 +1737,7 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
   newParagraph();
 
   // create a gif file
-  d.writeImageMap(t,dir,fileName,FALSE);
+  d.writeImage(t,dir,fileName,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2160,11 +2160,8 @@ void RTFGenerator::startDotGraph()
 void RTFGenerator::endDotGraph(DotClassGraph &g) 
 {
   newParagraph();
-  DBG_RTF(t <<"{\\comment This would be an image map..." << endl)
 
-  g.writeGraph(t,GIF,Config::rtfOutputDir);
-
-  t << "}" << endl;
+  g.writeGraph(t,GIF,Config::rtfOutputDir,TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2182,11 +2179,8 @@ void RTFGenerator::startInclDepGraph()
 void RTFGenerator::endInclDepGraph(DotInclDepGraph &g) 
 {
   newParagraph();
-  DBG_RTF(t <<"{\\comment This would be an image map..." << endl)
 
-  g.writeGraph(t,GIF,Config::rtfOutputDir);
-
-  t << "}" << endl;
+  g.writeGraph(t,GIF,Config::rtfOutputDir,FALSE);
 
   //QCString diskName = g.diskName();
 

@@ -577,7 +577,7 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
     << " border=\"0\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
 
-  d.writeImageMap(t,dir,fileName);
+  d.writeImage(t,dir,fileName);
 }
 
 void HtmlGenerator::startColorFont(uchar red,uchar green,uchar blue)

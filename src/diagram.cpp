@@ -1246,8 +1246,8 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 }
 
 
-void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
-                                 const char *fileName, bool generateMap)
+void ClassDiagram::writeImage(QTextStream &t,const char *path,
+                              const char *fileName, bool generateMap)
 {
   uint baseRows=base->computeRows();
   uint superRows=super->computeRows();

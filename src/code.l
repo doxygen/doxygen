@@ -447,7 +447,9 @@ static bool getLink(const char *className,
       {
         md->addSourceReference(g_currentMemberDef);
       }
-      //printf("d->getOutputBase()=`%s' name=`%s'\n",d->getOutputFileBase().data(),md->name().data());
+      //printf("d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getOutputFileBase().data(),d->name().data(),md->name().data());
+      //printf("g_classVar=`%s' type=`%s'\n",g_classVar ? g_classVar->name().data() : "none",md->typeString());
+     
       writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
 	                       md->anchor(),text ? text : memberName);
       return TRUE;
@@ -559,8 +561,36 @@ static void generateMemberLink(OutputList &ol,const char *varName,
     ClassDef *vcd = getResolvedClass(g_classScope);
     if (vcd && vcd->isLinkable())
     {
-      //printf("Found class for variable `%s'\n",varName);
+      //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName);
       MemberName *vmn=memberNameDict[varName];
+      if (vmn==0)
+      {
+	int vi;
+	QCString vn=varName;
+	QCString scope;
+	if ((vi=vn.findRev("::"))!=-1) // explicit scope A::b(), probably static member
+	{
+	  ClassDef *jcd = getClass(vn.left(vi));
+	  vn=vn.right(vn.length()-vi-2);
+	  vmn=memberNameDict[vn];
+	  //printf("Trying name `%s' scope=%s\n",vn.data(),scope.data());
+	  MemberNameIterator vmni(*vmn);
+	  MemberDef *vmd;
+	  for (;(vmd=vmni.current());++vmni)
+	  {
+	    if ((vmd->isVariable() || vmd->isFunction()) && 
+		vmd->getClassDef()==jcd)
+	    {
+	      //printf("Found variable type=%s\n",vmd->typeString());
+	      ClassDef *mcd=stripClassName(vmd->typeString());
+	      if (mcd && mcd->isLinkable())
+	      {
+		if (generateClassMemberLink(ol,mcd,memName)) return;
+	      }
+	    }
+	  }
+	}
+      }
       if (vmn)
       {
         //printf("There is a variable with name `%s'\n",varName);

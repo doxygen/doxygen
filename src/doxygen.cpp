@@ -81,9 +81,10 @@ ClassDict      classDict(1009);         // all documented classes
 NamespaceDict  namespaceDict(257);      // all documented namespaces
 MemberNameDict memberNameDict(10007);   // all class member names
 MemberNameDict functionNameDict(10007); // all functions
-//StringDict     substituteDict(1009);    // class name substitutes
+//StringDict     substituteDict(1009);  // class name substitutes
 SectionDict    sectionDict(257);        // all page sections
 StringDict     excludeNameDict(1009);   // sections
+StringDict     aliasDict(257);          // aliases
 FileNameDict   *inputNameDict;          // sections
 FileNameDict   *includeNameDict;        // include names
 FileNameDict   *exampleNameDict;        // examples
@@ -1081,8 +1082,9 @@ static MemberDef *addVariableToClass(
   MemberName *mn=memberNameDict[name];
   if (mn)
   {
-    MemberDef *md=mn->first();
-    while (md)
+    MemberNameIterator mni(*mn);
+    MemberDef *md;
+    for (mni.toFirst();(md=mni.current());++mni)
     {
       if (md->getClassDef()==cd && root->type==md->typeString()) 
         // member already in the scope
@@ -1090,7 +1092,6 @@ static MemberDef *addVariableToClass(
         addMemberDocs(root,md,def,0,FALSE);
         return md;
       }
-      md=mn->next();
     } 
   }
   // new member variable, typedef or enum value
@@ -1212,8 +1213,9 @@ static MemberDef *addVariableToFile(
   MemberName *mn=functionNameDict[name];
   if (mn)
   {
-    MemberDef *md=mn->first();
-    while (md)
+    MemberNameIterator mni(*mn);
+    MemberDef *md;
+    for (mni.toFirst();(md=mni.current());++mni)
     {
       QCString nscope=removeAnnonymousScopes(scope);
       NamespaceDef *nd=0;
@@ -1228,7 +1230,6 @@ static MemberDef *addVariableToFile(
         md->setRefItems(root->todoId,root->testId);
         return md;
       }
-      md=mn->next();
     } 
   }
   // new global variable, enum value or typedef
@@ -1690,8 +1691,9 @@ static void buildMemberList(Entry *root)
         if ((mn=functionNameDict[rname]))
         {
           //printf("--> function %s already found!\n",rname.data());
-          MemberDef *md=mn->first();
-          while (md && !found)
+          MemberNameIterator mni(*mn);
+          MemberDef *md;
+          for (mni.toFirst();((md=mni.current()) && !found);++mni)
           {
             NamespaceDef *nd = md->getNamespaceDef();
             NamespaceDef *rnd = 0;
@@ -1709,7 +1711,7 @@ static void buildMemberList(Entry *root)
                )
             {
               // see if we need to create a new member
-              found=nsName==rnsName && // members are in the same namespace
+              found=nsName==rnsName || // members are in the same namespace
                     ((fd!=0 && // no external reference
                       fd->absFilePath()==root->fileName // prototype in the same file
                      ) || 
@@ -1735,7 +1737,6 @@ static void buildMemberList(Entry *root)
               } 
               md->addSectionsToDefinition(root->anchors);
             }
-            md=mn->next();
           }
         }
         if (!found) /* global function is unique with respect to the file */
@@ -2680,9 +2681,10 @@ static bool findUnrelatedFunction(Entry *root,
   {
     Debug::print(Debug::FindMembers,0,"3. Found function scope\n");
     //int count=0;
-    MemberDef *md=mn->first();
+    MemberNameIterator mni(*mn);
+    MemberDef *md;
     bool found=FALSE;
-    while (md)
+    for (mni.toFirst();(md=mni.current()) && !found;++mni)
     {
       bool ambig;
       NamespaceDef *nd=md->getNamespaceDef();
@@ -2716,7 +2718,6 @@ static bool findUnrelatedFunction(Entry *root,
           found=TRUE;
         }
       }
-      md=mn->next();
     } 
     if (!found) // no match
     {
@@ -2727,11 +2728,9 @@ static bool findUnrelatedFunction(Entry *root,
       if (mn->count()>0)
       {
         warn_cont("Possible candidates:\n");
-        md=mn->first();
-        while (md)
+        for (mni.toFirst();(md=mni.current());++mni)
         {
           warn_cont("  %s\n",md->declaration());
-          md=mn->next();
         }
       }
     }
@@ -3185,7 +3184,6 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
       if (!className.isEmpty()) // class name is valid
       {
         int count=0;
-        //MemberDef *md=mn->first(); // for each member with that name
         MemberNameIterator mni(*mn);
         MemberDef *md;
         for (mni.toFirst();(md=mni.current());++mni)
@@ -3328,37 +3326,22 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           int candidates=0;
           if (mn->count()>0)
           {
-            md=mn->first();
-            while (md)
+            for (mni.toFirst();(md=mni.current());++mni)
             {
               ClassDef *cd=md->getClassDef();
               if (cd!=0 && cd->name()==className) candidates++;
-              md=mn->next();
             }
           }
           if (candidates>0)
           {
             warn_cont("Possible candidates:\n");
-            md=mn->first();
-            while (md)
+            for (mni.toFirst();(md=mni.current());++mni)
             {
               ClassDef *cd=md->getClassDef();
               if (cd!=0 && cd->name()==className)
               {
-                warn_cont("  %s",md->declaration());
-#if 0
-                if (cd->name().at(0)!='@')
-                {
-                  warn_cont(" in class %s",cd->name().data());
-                }
-                if (!md->getDefFileName().isEmpty() && md->getDefLine()!=-1)
-                {
-                  warn_cont(" defined at line %d of file %s",md->getDefLine(),md->getDefFileName().data());
-                }
-#endif
-                warn_cont("\n");
+                warn_cont("  %s\n",md->declaration());
               }
-              md=mn->next();
             }
           }
         }
@@ -3368,18 +3351,18 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
         // for unique overloaded member we allow the class to be
         // omitted, this is to be Qt compatable. Using this should 
         // however be avoided, because it is error prone
-        MemberDef *md=mn->first();
+        MemberNameIterator mni(*mn);
+        MemberDef *md=mni.toFirst();
         ASSERT(md);
         ClassDef *cd=md->getClassDef();
         ASSERT(cd);
         QCString className=cd->name().copy();
-        md=mn->next();
+        ++mni;
         bool unique=TRUE;
-        while (md)
+        for (;(md=mni.current());++mni)
         {
           ClassDef *cd=md->getClassDef();
           if (className!=cd->name()) unique=FALSE; 
-          md=mn->next();
         } 
         if (unique)
         {
@@ -3812,8 +3795,12 @@ static void findEnums(Entry *root)
         if (!e->name.isEmpty() && (fmn=(*mnd)[e->name])) 
            // get list of members with the same name as the field
         {
-          MemberDef *fmd=fmn->first();
-          while (fmd) // search for the scope with the right name
+          MemberNameIterator fmni(*fmn);
+          MemberDef *fmd;
+          for (fmni.toFirst();
+               (fmd=fmni.current()) && fmd->isEnumValue();
+               ++fmni
+              ) // search for the scope with the right name
           {
             if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
             {
@@ -3842,7 +3829,6 @@ static void findEnums(Entry *root)
                 fmd->setEnumScope(md);    // cross ref with enum name
               }
             }
-            fmd=fmn->next();
           } 
         }
       }
@@ -3900,8 +3886,9 @@ static void findEnumDocumentation(Entry *root)
         MemberName *mn=memberNameDict[name];
         if (mn)
         {
-          MemberDef  *md=mn->first();
-          while (md && !found)
+          MemberNameIterator mni(*mn);
+          MemberDef *md;
+          for (mni.toFirst();(md=mni.current()) && !found;++mni)
           {
             ClassDef *cd=md->getClassDef();
             if (cd && cd->name()==className)
@@ -3927,7 +3914,6 @@ static void findEnumDocumentation(Entry *root)
               md->addSectionsToDefinition(root->anchors);
               found=TRUE;
             }
-            md=mn->next();
           }
         }
         else
@@ -3939,7 +3925,7 @@ static void findEnumDocumentation(Entry *root)
       {
         MemberDef  *md;
         MemberName *mn=functionNameDict[name];
-        if (mn && (md=mn->first()))
+        if (mn && (md=mn->getFirst()))
         {
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
@@ -3981,16 +3967,16 @@ static void findDEV(const MemberNameList &mnl)
     {
       if (md->isEnumerate()) // member is an enum
       {
-        QList<MemberDef> *fmdl = md->enumFieldList();
+        MemberList *fmdl = md->enumFieldList();
         int documentedEnumValues=0;
         if (fmdl) // enum has values
         {
-          MemberDef *fmd=fmdl->first();
+          MemberListIterator fmni(*fmdl);
+          MemberDef *fmd;
           // for each enum value
-          while (fmd)
+          for (fmni.toFirst();(fmd=fmni.current());++fmni)
           {
             if (fmd->isLinkableInProject()) documentedEnumValues++;
-            fmd=fmdl->next();
           }
         }
         // at least one enum value is documented
@@ -4016,19 +4002,20 @@ static void findDocumentedEnumValues()
 
 static void computeMemberRelations()
 {
-  MemberName *mn=memberNameList.first();
-  while (mn) // for each member name
+  MemberNameListIterator mnli(memberNameList);
+  MemberName *mn;
+  for ( ; (mn=mnli.current()) ; ++mnli ) // for each member name
   {
     MemberNameIterator mdi(*mn);
-    for ( ; mdi.current() ; ++mdi) // for each member with a specific arg list
+    MemberDef *md;
+    for ( ; (md=mdi.current()) ; ++mdi ) // for each member with a specific arg list
     {
-      MemberDef *md=mdi.current();
       MemberNameIterator bmdi(*mn);
-      for ( ; bmdi.current() ; ++bmdi) // for each other member with that signature
+      MemberDef *bmd;
+      for ( ; (bmd=bmdi.current()) ; ++bmdi ) // for each other member with that signature
       {
-        MemberDef *bmd=bmdi.current();
         ClassDef *bmcd = bmd->getClassDef();
-        ClassDef *mcd = md->getClassDef();
+        ClassDef *mcd  = md->getClassDef();
         //printf("Check relation between `%s'::`%s' and `%s'::`%s'\n",
         //       mcd->name().data(),md->name().data(),
         //       bmcd->name().data(),bmd->name().data()
@@ -4060,7 +4047,6 @@ static void computeMemberRelations()
         }
       }
     }
-    mn=memberNameList.next();
   }  
 }
 
@@ -4108,11 +4094,13 @@ static void generateFileSources()
   
   if (inputNameList.count()>0)
   {
-    FileName *fn=inputNameList.first();
-    while (fn)
+    FileNameListIterator fnli(inputNameList); 
+    FileName *fn;
+    for (;(fn=fnli.current());++fnli)
     {
-      FileDef *fd=fn->first();
-      while (fd)
+      FileNameIterator fni(*fn);
+      FileDef *fd;
+      for (;(fd=fni.current());++fni)
       {
         bool src = !fd->isReference() &&
                    (fd->generateSource() || Config::sourceBrowseFlag);
@@ -4121,9 +4109,7 @@ static void generateFileSources()
           msg("Generating code for file %s...\n",fd->name().data());
           fd->writeSource(*outputList);
         }
-        fd=fn->next();
       }
-      fn=inputNameList.next();
     }
   }
 }
@@ -4136,11 +4122,13 @@ static void generateFileDocs()
   
   if (inputNameList.count()>0)
   {
-    FileName *fn=inputNameList.first();
-    while (fn)
+    FileNameListIterator fnli(inputNameList);
+    FileName *fn;
+    for (fnli.toFirst();(fn=fnli.current());++fnli)
     {
-      FileDef *fd=fn->first();
-      while (fd)
+      FileNameIterator fni(*fn);
+      FileDef *fd;
+      for (fni.toFirst();(fd=fni.current());++fni)
       {
         bool doc = fd->isLinkableInProject();
         if (doc)
@@ -4149,9 +4137,7 @@ static void generateFileDocs()
           fd->writeDocumentation(*outputList);
         }
 
-        fd=fn->next();
       }
-      fn=inputNameList.next();
     }
   }
 }
@@ -5727,6 +5713,38 @@ int main(int argc,char **argv)
       expandAsDefinedDict.insert(s,(void *)666);
     }
     s=Config::expandAsDefinedList.next();
+  }
+
+  // add aliases to a dictionary
+  aliasDict.setAutoDelete(TRUE);
+  s=Config::aliasList.first();
+  while (s)
+  {
+    if (aliasDict[s]==0)
+    {
+      QCString alias=s;
+      int i=alias.find('=');
+      if (i>0)
+      {
+        QCString name=alias.left(i).stripWhiteSpace();
+        QCString value=alias.right(alias.length()-i-1);
+        value=substitute(value,"\\n","\n");
+        //printf("Alias: found name=`%s' value=`%s'\n",name.data(),value.data()); 
+        if (!name.isEmpty())
+        {
+          QCString *dn=aliasDict[name];
+          if (dn==0) // insert new alias
+          {
+            aliasDict.insert(name,new QCString(value));
+          }
+          else // overwrite previous alias
+          {
+            *dn=value;
+          }
+        }
+      }
+    }
+    s=Config::aliasList.next();
   }
   
   BufStr input(inputSize+1); // Add one byte extra for \0 termination

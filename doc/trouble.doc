@@ -62,7 +62,7 @@
     documentation, because of possible ambiguities or lack of
     information about the context in which the code fragment is found.  
 <li>It is not possible to insert a non-member function f in a class A 
-    using the \relates command, if class A already has a member with name f
+    using the \\relates command, if class A already has a member with name f
     and the same argument list.
 <li>There is only very limited support for member specialization at the
     moment. It only works if there is a specialized template class as

@@ -871,8 +871,9 @@ void endFile(OutputList &ol,bool external)
 void setAnchors(char id,MemberList *ml,int groupId)
 {
   int count=0;
-  MemberDef *md=ml->first();
-  while (md)
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
   {
     QCString anchor;
     if (groupId==-1)
@@ -881,7 +882,6 @@ void setAnchors(char id,MemberList *ml,int groupId)
       anchor.sprintf("%c%d_%d",id,groupId,count++);
     //printf("Member %s anchor %s\n",md->name(),anchor.data());
     md->setAnchor(anchor);
-    md=ml->next();
   }
 }
 
@@ -1605,7 +1605,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
          )
       {
         //printf("  Found fcd=%p\n",fcd);
-        MemberDef *mmd=mn->first();
+        MemberListIterator mmli(*mn);
+        MemberDef *mmd;
         int mdist=maxInheritanceDepth; 
         ArgumentList *argList=0;
         if (args)
@@ -1613,7 +1614,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           argList=new ArgumentList;
           stringToArgumentList(args,argList);
         }
-        while (mmd)
+        for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
           if (mmd->isLinkable())
           {
@@ -1631,7 +1632,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               }
             }
           }
-          mmd=mn->next();
         }
         if (argList)
         {
@@ -1641,8 +1641,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
-          mmd=mn->first();
-          while (mmd)
+          for (mmli.toFirst();(mmd=mmli.current());++mmli)
           {
             if (//(mmd->protection()!=Private || Config::extractPrivateFlag) &&
                 //(
@@ -1664,7 +1663,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 md=mmd;
               }
             }
-            mmd=mn->next();
           }
         }
         //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
@@ -1711,15 +1709,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       {
         //printf("Function inside existing namespace `%s'\n",namespaceName.data());
         bool found=FALSE;
-        MemberDef *mmd=mn->first();
-        while (mmd && !found)
+        MemberListIterator mmli(*mn);
+        MemberDef *mmd;
+        for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
         {
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
           //    mmd->getNamespaceDef(),fnd);
-          if (mmd->getNamespaceDef()==fnd && 
-              //(mmd->isReference() || mmd->hasDocumentation())
-              mmd->isLinkable()
-             )
+          if (mmd->getNamespaceDef()==fnd && mmd->isLinkable())
           { // namespace is found
             bool match=TRUE;
             ArgumentList *argList=0;
@@ -1740,25 +1736,19 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               delete argList; argList=0;
             }
           }
-          mmd=mn->next();
         }
         if (!found && !strcmp(args,"()")) 
           // no exact match found, but if args="()" an arbitrary 
           // member will do
         {
-          MemberDef *mmd=mn->first(); 
-          while (mmd && !found)
+          for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
           {
-            if (mmd->getNamespaceDef()==fnd && 
-                //(mmd->isReference() || mmd->hasDocumentation())
-                mmd->isLinkable()
-               )
+            if (mmd->getNamespaceDef()==fnd && mmd->isLinkable())
             {
               nd=fnd;
               md=mmd;
               found=TRUE;
             }
-            mmd=mn->next();
           }
         }
         if (found) return TRUE;
@@ -1766,8 +1756,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       else // no scope => global function
       {
         //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
-        md=mn->first();
-        while (md)
+        MemberListIterator mli(*mn);
+        for (mli.toFirst();(md=mli.current());++mli)
         {
           if (md->isLinkable())
           {
@@ -1798,7 +1788,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               }
             }
           }
-          md=mn->next();
         }
         if (!strcmp(args,"()"))
         {
@@ -2256,21 +2245,21 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   {
     if (fn->count()==1)
     {
-      return fn->first();
+      return fn->getFirst();
     }
     else // file name alone is ambigious
     {
       int count=0;
-      FileDef *fd=fn->first();
+      FileNameIterator fni(*fn);
+      FileDef *fd;
       FileDef *lastMatch=0;
-      while (fd)
+      for (fni.toFirst();(fd=fni.current());++fni)
       {
         if (path.isEmpty() || fd->getPath().right(path.length())==path) 
         { 
           count++; 
           lastMatch=fd; 
         }
-        fd=fn->next();
       }
       ambig=(count>1);
       return lastMatch;
@@ -2295,14 +2284,14 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
   FileName *fn;
   if ((fn=(*fnDict)[name]))
   {
-    FileDef *fd=fn->first();
-    while (fd)
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (fni.toFirst();(fd=fni.current());++fni)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
         result+="   "+fd->absFilePath()+"\n";
       }
-      fd=fn->next();
     }
   }
   return result;

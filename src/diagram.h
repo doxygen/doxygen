@@ -123,7 +123,7 @@ class ClassDiagram
    ~ClassDiagram();
     void writeFigure(QTextStream &t,const char *path,
                      const char *file);
-    void writeImageMap(QTextStream &t,const char *path,
+    void writeImage(QTextStream &t,const char *path,
                      const char *file,bool generateMap=TRUE);
   private:
     TreeDiagram *base;

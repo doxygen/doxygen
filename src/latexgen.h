@@ -108,7 +108,7 @@ class LatexGenerator : public OutputGenerator
 
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
+    void startCodeFragment() { t << "\\footnotesize\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
     void startPreFragment()  { t << "\\small\\begin{alltt}"; }
     void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; }

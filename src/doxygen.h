@@ -99,6 +99,7 @@ extern FormulaList formulaList;
 extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
 extern StringDict tagDestinationDict; 
+extern StringDict aliasDict; 
 extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
 extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
 extern QDict<void> expandAsDefinedDict;

@@ -972,10 +972,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       rmd  = rmd->reimplements();
     }
 
-    if (isStatic() || protection()!=Public || 
-        lvirt!=Normal || isSignal() || isFriend() || 
-        isRelated() || isSlot() ||
-        getMemberSpecifiers()!=0 
+    if (protection()!=Public || lvirt!=Normal ||
+        isFriend() || isRelated() || isExplicit() ||
+        isMutable() || (isInline() && Config::inlineInfoFlag) ||
+        isSignal() || isSlot() ||
+        isStatic()
        )
     {
       // write the member specifier list

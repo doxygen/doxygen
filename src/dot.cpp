@@ -1043,13 +1043,27 @@ static void findMaximalDotGraph(DotNode *root,
 
 QCString DotClassGraph::diskName() const
 {
-  return m_diskName + "_coll_graph"; 
+  QString result=m_diskName.copy();
+  switch (m_graphType)
+  {
+    case Implementation:
+      result+="_coll_graph";
+      break;
+    case Interface:
+      result+="_intf_graph";
+      break;
+    case Inheritance:
+      result+="_inherit_graph";
+      break;
+  }
+  return result;
 }
 
 void DotClassGraph::writeGraph(QTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
-                               bool isTBRank)
+                               bool isTBRank,
+                               bool generateImageMap)
 {
   QDir d(path);
   // store the original directory
@@ -1094,34 +1108,37 @@ void DotClassGraph::writeGraph(QTextStream &out,
        QDir::setCurrent(oldDir);
        return;
     }
-    // run dot again to create an image map
-    dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    if (generateImageMap)
     {
-       err("Error: Problems running dot. Check your installation!\n");
-       QDir::setCurrent(oldDir);
-       return;
-    }
-    out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
+      // run dot again to create an image map
+      dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
+          Config::dotPath.data(),baseName.data(),baseName.data());
+      if (iSystem(dotCmd)!=0)
+      {
+        err("Error: Problems running dot. Check your installation!\n");
+        QDir::setCurrent(oldDir);
+        return;
+      }
+      out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
         << m_startNode->m_label << "_" << mapName << "\" alt=\"";
-    switch (m_graphType)
-    {
-      case Implementation:
-        out << "Collaboration graph";
-        break;
-      case Interface:
-        out << "Interface dependency graph";
-        break;
-      case Inheritance:
-        out << "Inheritance graph";
-        break;
+      switch (m_graphType)
+      {
+        case Implementation:
+          out << "Collaboration graph";
+          break;
+        case Interface:
+          out << "Interface dependency graph";
+          break;
+        case Inheritance:
+          out << "Inheritance graph";
+          break;
+      }
+      out << "\"></center>" << endl;
+      out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
+      convertMapFile(out,baseName+".map");
+      out << "</map>" << endl;
+      thisDir.remove(baseName+".map");
     }
-    out << "\"></center>" << endl;
-    out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
-    convertMapFile(out,baseName+".map");
-    out << "</map><p>" << endl;
-    thisDir.remove(baseName+".map");
   }
   else if (format==EPS) // run dot to create a .eps image
   {
@@ -1251,12 +1268,16 @@ DotInclDepGraph::~DotInclDepGraph()
 
 QCString DotInclDepGraph::diskName() const
 {
-  return m_diskName + "_incldep"; 
+  QCString result=m_diskName.copy();
+  if (m_inverse) result+="_dep";
+  result+="_incl";
+  return result; 
 }
 
 void DotInclDepGraph::writeGraph(QTextStream &out,
                                  GraphOutputFormat format,
-                                 const char *path
+                                 const char *path,
+                                 bool generateImageMap
                                 )
 {
   QDir d(path);
@@ -1292,25 +1313,28 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       return;
     }
 
-    // run dot again to create an image map
-    dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
-                   Config::dotPath.data(),baseName.data(),baseName.data());
-    if (iSystem(dotCmd)!=0)
+    if (generateImageMap)
     {
-      err("Problems running dot. Check your installation!\n");
-      QDir::setCurrent(oldDir);
-      return;
-    }
+      // run dot again to create an image map
+      dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
+          Config::dotPath.data(),baseName.data(),baseName.data());
+      if (iSystem(dotCmd)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+        QDir::setCurrent(oldDir);
+        return;
+      }
 
-    out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
+      out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
-    if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
-    out << "\">";
-    out << "</center>" << endl;
-    out << "<map name=\"" << mapName << "_map\">" << endl;
-    convertMapFile(out,baseName+".map");
-    out << "</map><p>" << endl;
-    thisDir.remove(baseName+".map");
+      if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
+      out << "\">";
+      out << "</center>" << endl;
+      out << "<map name=\"" << mapName << "_map\">" << endl;
+      convertMapFile(out,baseName+".map");
+      out << "</map>" << endl;
+      thisDir.remove(baseName+".map");
+    }
   }
   else if (format==EPS)
   {

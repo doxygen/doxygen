@@ -1200,9 +1200,11 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString(")");
           memberWritten=TRUE;
         }
-        if ((protect!=Public || md->isStatic() || virt!=Normal || 
-             md->isFriend() || md->isRelated() ||
-             md->getMemberSpecifiers()!=0
+        if ((protect!=Public || virt!=Normal || 
+             md->isFriend() || md->isRelated() || md->isExplicit() ||
+             md->isMutable() || (md->isInline() && Config::inlineInfoFlag) ||
+             md->isSignal() || md->isSlot() ||
+             md->isStatic()
             )
             && memberWritten)
         {
