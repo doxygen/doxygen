@@ -65,6 +65,25 @@ version of the translator for the language:
   TranslatorKoreanEn	implements 5 methods
 
 ======================================================================
+WARNING: The following translator methods are declared in the
+Translator class but their identifiers do not appear in source files.
+The situation should be checked. The .cpp files and .h files excluding
+the '*translator*' files in doxygen/src directory were simply searched
+for occurence of the method identifiers:
+
+  QCString trBugsAndLimitations()
+  QCString trEnumerationValueDocumentation()
+  QCString trField(bool, bool)
+  QCString trHeaderFiles()
+  QCString trHeaderFilesDescription()
+  QCString trInterfaces()
+  QCString trNoDescriptionAvailable()
+  QCString trPackageDocumentation()
+  QCString trReimplementedForInternalReasons()
+  QCString trSources()
+
+
+======================================================================
 Details for translators (classes sorted alphabetically):
 
 

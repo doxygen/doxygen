@@ -843,18 +843,18 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
 }
 
-static bool getLink(const char *className,
-                    const char *memberName,
-		    BaseCodeDocInterface &ol,
-		    const char *text=0)
+static bool getLinkInScope(const QCString &c,  // scope
+                           const QCString &m,  // member
+			   const char *memberText, // exact text
+			   BaseCodeDocInterface &ol,
+			   const char *text
+			  )
 {
   MemberDef    *md;
   ClassDef     *cd;
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  QCString m=removeRedundantWhiteSpace(memberName);
-  QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
@@ -894,12 +894,32 @@ static bool getLink(const char *className,
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
-				text ? text : memberName);
-      addToSearchIndex(text ? text : memberName);
+				text ? text : memberText);
+      addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
   }
   return FALSE;
+}
+
+static bool getLink(const char *className,
+                    const char *memberName,
+		    BaseCodeDocInterface &ol,
+		    const char *text=0)
+{
+  QCString m=removeRedundantWhiteSpace(memberName);
+  QCString c=className;
+  if (!getLinkInScope(c,m,memberName,ol,text))
+  {
+    if (!g_curClassName.isEmpty())
+    {
+      if (!c.isEmpty()) c.prepend("::");
+      c.prepend(g_curClassName);
+      return getLinkInScope(c,m,memberName,ol,text);
+    }
+    return FALSE;
+  }
+  return TRUE;
 }
 
 static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const char *memName)
@@ -1761,7 +1781,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   					  BEGIN( Body ); 
 					}
 <ClassName,ClassVar>[*&]+       	{
-  					  g_type=g_curClassName;
+  					  g_type=g_curClassName.copy();
   					  g_name.resize(0);
 					  g_code->codify(yytext);
 					  BEGIN( Body ); // variable of type struct *

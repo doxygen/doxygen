@@ -10,7 +10,7 @@
   translator report only for some languages, pass their codes as arguments
   to the script. In that case, the language.doc will not be generated.
   Example:
-      
+  
     python translator.py en nl cz
   
   Originally, the script was written in Perl and was known as translator.pl.
@@ -44,6 +44,7 @@
                explicitly via script arguments.
   2004/07/26 - Better reporting of not-needed adapters.
   2004/10/04 - Reporting of not called translator methods added.
+  2004/10/05 - Modified to check only doxygen/src sources for the previous report.
   """                               
 
 from __future__ import generators
@@ -1204,7 +1205,7 @@ class TrManager:
         # script, of the translator.h, of the translator_adapter.h (see the 
         # self.__build() for the last two) of all the translator_xx.h files
         # and of the template for generating the documentation. So, this
-        # time can compared with modification time of the generated 
+        # time can be compared with modification time of the generated 
         # documentation to decide, whether the doc should be re-generated.
         self.lastModificationTime = os.path.getmtime(self.script)
         
@@ -1361,26 +1362,24 @@ class TrManager:
     def __getNoTrSourceFilesLst(self):
         """Returns the list of sources to be checked.
         
-        All .cpp files and also .h files that do not declare and define
+        All .cpp files and also .h files that do not declare or define
         the translator methods are included in the list. The file names 
-        are searched in doxygen directory recursively.""" 
-        lst = []
-        for path, dirs, files in os.walk(self.doxy_path):
+        are searched in doxygen/src directory.
+        """ 
+        srcdir = os.path.join(self.doxy_path, 'src')
+        files = []
+        for item in os.listdir(srcdir):
+            # Split the bare name to get the extension.
+            name, ext = os.path.splitext(item)
+            ext = ext.lower()
             
-            # Files in doxygen/src should be processed first.
-            if path == self.doxy_path:
-                dirs.remove('src')
-                dirs.insert(0, 'src')
-            
-            # Search for names with .cpp extension (case independent)
-            # and append them to the output list.
-            for fname in files:
-                name, ext = os.path.splitext(fname)
-                ext = ext.lower()
-                if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
-                    lst.append(os.path.join(path, fname))
-                    
-        return lst
+            # Include only .cpp and .h files (case independent) and exclude
+            # the files where the checked identifiers are defined.
+            if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
+                fname = os.path.join(srcdir, item)
+                assert os.path.isfile(fname) # assumes no directory with the ext
+                files.append(fname)          # full name
+        return files
         
     
     def __removeUsedInFiles(self, fname, dic):
@@ -1562,12 +1561,12 @@ class TrManager:
         if not self.script_argLst:
             dic = self.__checkForNotUsedTrMethods()
             if dic:
-                s = '''WARNING FOR DEVELOPERS: The following translator 
-                    methods are declared in the Translator class but their 
-                    identifiers do not appear in source files. The situation
-                    should be checked. The .cpp files and .h files excluding
-                    the 'translator*.h' files were simply searched for 
-                    occurence of the method identifiers:'''
+                s = '''WARNING: The following translator methods are declared
+                    in the Translator class but their identifiers do not appear 
+                    in source files. The situation should be checked. The .cpp 
+                    files and .h files excluding the '*translator*' files 
+                    in doxygen/src directory were simply searched for occurence 
+                    of the method identifiers:'''
                 f.write('\n' + '=' * 70 + '\n')
                 f.write(fill(s) + '\n\n')
                 

@@ -856,9 +856,15 @@ QCString removeIdsAndMarkers(const char *s)
 	  }
 	  p++;
 	}
+	else // oops, not comment but division
+	{
+	  result+=pc;
+	  goto nextChar;
+	}
       }
       else 
       {
+nextChar:
 	result+=c;
 	char lc=tolower(c);
 	if (!isId(lc) && lc!='.' && lc!='-' && lc!='+') inNum=FALSE;
@@ -1507,6 +1513,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Guard>"defined"/{B}+			{
     					  BEGIN(DefinedExpr1);
     					}
+<Guard>{ID}				{ g_guardExpr+=yytext; }
 <Guard>.				{ g_guardExpr+=*yytext; }
 <Guard>\n				{
   					  outputChar('\n');

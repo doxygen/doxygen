@@ -29,11 +29,19 @@
 #include "searchindex.h"
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
-                           const char *name,const char *lref) : 
+                           const char *name,const char *lref,
+                           const char *fName) : 
    Definition(df,dl,name)
 {
-  fileName="namespace";
-  fileName+=name;
+  if (fName)
+  {
+    fileName = stripExtension(fName);
+  }
+  else
+  {
+    fileName="namespace";
+    fileName+=name;
+  }
   classSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
   m_innerCompounds = new SDict<Definition>(257);
@@ -414,7 +422,14 @@ void NamespaceDef::addUsingDeclaration(Definition *d)
 
 QCString NamespaceDef::getOutputFileBase() const 
 { 
-  return convertNameToFile(fileName); 
+  if (isReference())
+  {
+    return fileName;
+  }
+  else
+  {
+    return convertNameToFile(fileName); 
+  }
 }
 
 Definition *NamespaceDef::findInnerCompound(const char *n)

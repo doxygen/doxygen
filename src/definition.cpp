@@ -164,7 +164,9 @@ void Definition::writeDocAnchorsToTagFile()
       {
         //printf("write an entry!\n");
         if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
-        Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+        Doxygen::tagFile << "    <docanchor file=\"" 
+                         << si->fileName << "\">" << si->label 
+                         << "</docanchor>" << endl;
       }
     }
   }
