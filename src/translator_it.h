@@ -19,28 +19,29 @@
  *
  * Revision history
  *
- * Initial Italian Translation by Ahmed Aldo Faisal
- * Revised and completed by Alessandro Falappa  (since June 1999)
- * Updates:
- *        2001/11: corrected the translation fixing the issues reported by the translator.pl script
- *                 translated new items used since version 1.2.11
- *        2001/08: corrected the translation fixing the issues reported by the translator.pl script
- *                 translated new items used since version 1.2.7
- *        2001/05: adopted new translation mechanism (trough adapters),
- *                 translated new items used since version 1.2.5 and 1.2.6,
- *                 revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
- *                 corrections regarding the plurals of some english terms mantained in the translation,
- *                 changed some terms to better suit the sense
- *        2001/02: translated new items used since version 1.2.4
- *        2000/11: modified slightly the translation in trLegendDocs() function,
- *                 translated new items used since version 1.2.1 and 1.2.2
- *        2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
- *        2000/03: translated new items used since version 1.0 and 1.1.0
- *        1999/19: entirely rewritten the translation to correct small variations due
- *                 to feature additions and to conform to the layout of the latest
- *                 commented translator.h for the english language
- *        1999/09: corrected some small typos in the "new since 0.49-990425" section
- *                 added the "new since 0.49-990728" section
+ *  2002/01: translated new items used since version 1.2.13
+ *           updated e-mail address
+ *  2001/11: corrected the translation fixing the issues reported by the translator.pl script
+ *           translated new items used since version 1.2.11
+ *  2001/08: corrected the translation fixing the issues reported by the translator.pl script
+ *           translated new items used since version 1.2.7
+ *  2001/05: adopted new translation mechanism (trough adapters),
+ *           translated new items used since version 1.2.5 and 1.2.6,
+ *           revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
+ *           corrections regarding the plurals of some english terms mantained in the translation,
+ *           changed some terms to better suit the sense
+ *  2001/02: translated new items used since version 1.2.4
+ *  2000/11: modified slightly the translation in trLegendDocs() function,
+ *           translated new items used since version 1.2.1 and 1.2.2
+ *  2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
+ *  2000/03: translated new items used since version 1.0 and 1.1.0
+ *  1999/19: entirely rewritten the translation to correct small variations due
+ *           to feature additions and to conform to the layout of the latest
+ *           commented translator.h for the english language
+ *  1999/09: corrected some small typos in the "new since 0.49-990425" section
+ *           added the "new since 0.49-990728" section
+ *  1999/06: revised and completed by Alessandro Falappa (actual mantainer)
+ *  1999/??: initial italian translation by Ahmed Aldo Faisal
  */
 
 /******************************************************************************
@@ -55,13 +56,13 @@
  * tecnica (ad es "lista dei file" e non "lista dei files")
  *
  * Se avete suggerimenti sulla traduzione di alcuni termini o volete segnalare
- * eventuali sviste potete scrivermi all'indirizzo: afalappa@interfree.it
+ * eventuali sviste potete scrivermi all'indirizzo: alessandro@falappa.net
  */
 
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_13
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1320,6 +1321,26 @@ class TranslatorItalian : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "Riferimenti";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementa "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementato in "+trWriteList(numEntries)+".";
     }
 };
 

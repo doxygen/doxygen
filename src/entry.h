@@ -254,15 +254,17 @@ class Entry
     QCString     bitfields;   //!< member's bit fields
     ArgumentList *argList;    //!< member arguments as a list
     QList<ArgumentList> *tArgLists; //!< template argument declarations
-    //QCString     scopeSpec;   //!< template specialization of the scope
-    //QCString     memberSpec;  //!< template specialization of the member
     QCString	 program;     //!< the program text
     QCString     initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \class, must be unique)
     QCString     includeName; //!< include name (3 arg of \class)
     QCString     doc;         //!< documentation block (partly parsed)
-    QCString     relates;     //!< related class (doc block)
+    int          docLine;     //!< line number at which the documentation was found
+    QCString     docFile;     //!< file in which the documentation was found
     QCString     brief;       //!< brief description (doc block)
+    int          briefLine;   //!< line number at which the brief desc. was found
+    QCString     briefFile;   //!< file in which the brief desc. was found
+    QCString     relates;     //!< related class (doc block)
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
     int          bodyLine;    //!< line number of the definition in the source

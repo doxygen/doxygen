@@ -82,7 +82,7 @@ class HtmlGenerator : public OutputGenerator
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
-    void writeCodeLink(const char *ref,const char *f,
+    void writeCodeLink(const char *ref,const char *file,
                        const char *anchor,const char *name);
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,11 +33,13 @@
  *              |  QCString trIncludeFile()
  *              |  QCString trVerbatimText(const char *f)
  * -------------+------------------------------------------------------------
+ *  2002-01-23  | Update for new since 1.2.13
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public TranslatorAdapter_1_2_13
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
@@ -1232,5 +1234,25 @@ class TranslatorFrench : public TranslatorAdapter_1_2_13
     {
       return "Références";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implémente "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implémenté dans "+trWriteList(numEntries)+".";
+    }
+
 };
 #endif

@@ -44,11 +44,13 @@
 // - Added strings for 1.2.11
 // - better output for C documentation (trCompoundMembersDescription(), trClassDocumentation()) 
 //
+// 2001/11/13
+// - Added strings for 1.2.13
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_2_13
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1018,6 +1020,25 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "Reference";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementira "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementirano u "+trWriteList(numEntries)+".";
     }
 };
 

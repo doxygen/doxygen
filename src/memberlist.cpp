@@ -343,7 +343,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.startMemberDescription();
             parseDoc(ol,
                 md->getDefFileName(),md->getDefLine(),
-                cd?cd->name().data():0,md->name().data(),
+                cd?cd->name().data():0,md,
                 md->briefDescription()
                     );
             if (md->isDetailedSectionLinkable())

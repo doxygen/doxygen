@@ -131,6 +131,9 @@
 // 2001/11/06
 //  - trReferences() implemented.
 //    
+// 2002/01/23
+//  - trImplementedFromList() and trImplementedInList() implemented
+//    (new since 1.2.13)
 //  
 // Todo
 // ----
@@ -1477,6 +1480,26 @@ class TranslatorCzech : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return decode("Odkazuje se na");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementuje "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementováno v "+trWriteList(numEntries)+".";
     }
 
 };

@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_2_13
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -746,7 +746,12 @@ class TranslatorRussian : public TranslatorAdapter_1_2_13
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return decode("Переопределяет метод предка ")+trWriteList(numEntries)+".";
+      QCString result="Переопределяет метод";
+      if(numEntries>1)
+	result+="ы предков";
+      else
+	result+=" предка";
+      return decode(result+" ")+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1367,6 +1372,26 @@ class TranslatorRussian : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "Перекрестные ссылки";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Замещает "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Замещается в "+trWriteList(numEntries)+".";
     }
 
 };

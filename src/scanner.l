@@ -477,6 +477,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	Function
 %x	FuncRound
 %x	ExcpRound
+%x	ExcpList
 %x	FuncQual
 %x	Operator
 %x	Array
@@ -1246,16 +1247,24 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (yytext[yyleng-3]=='/')
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
 					    BEGIN(AfterDocLine);
 					  }
 					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyLineNr;
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN(AfterDocBrief);
 					  }
 					  else
 					  {
 					    current->doc.resize(0);
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN(AfterDoc);
 					  }
   					}
@@ -1266,16 +1275,24 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (yytext[yyleng-3]=='/')
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyLineNr;
 					    BEGIN(AfterDocLine);
 					  }
 					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyLineNr;
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN(AfterDocBrief);
 					  }
 					  else
 					  {
 					    current->doc.resize(0);
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN(AfterDoc);
 					  }
   					}
@@ -1292,16 +1309,22 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (yytext[yyleng-3]=='/')
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
 					    BEGIN(AfterDocLine);
 					  }
 					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
 					    BEGIN(AfterDocBrief);
 					  }
 					  else
 					  {
 					    current->doc.resize(0);
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN(AfterDoc);
 					  }
   					}
@@ -1319,12 +1342,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (yytext[1]=='/') // C++ style comment
 					  {
   					    current->brief.resize(0);
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
 					    lastDocContext = YY_START;
 					    BEGIN( LineDoc );
 					  }
 					  else // C style comment 
 					  {
 					    current->doc.resize(0);
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    lastDocContext = YY_START;
 					    removeSlashes=FALSE;
 					    BEGIN( Doc );
@@ -2195,7 +2222,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
 					  insideTryBlock=TRUE;
 					}
-<FuncQual>{BN}*"throw"{BN}*"("		{ 
+<FuncQual>{BN}*"throw"{BN}*"("		{ // C++ style throw clause
   					  current->exception = " throw (" ;
 					  roundCount=0;
 					  lineCount() ;
@@ -2207,6 +2234,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  roundCount=0;
 					  BEGIN( ExcpRound ) ;
   					}
+<FuncQual>{BN}*"throws"{BN}+		{ // Java style throw clause
+  					  current->exception = " throws " ;
+					  lineCount() ;
+					  BEGIN( ExcpList );
+  					}
 <ExcpRound>"("				{ current->exception += *yytext ;
 					  ++roundCount ;
 					}
@@ -2217,7 +2249,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN( FuncQual ) ;
 					}
 <ExcpRound>.				{
-  					  current->exception += yytext;
+  					  current->exception += *yytext;
+  					}
+<ExcpList>"{"				{
+  					  unput('{'); BEGIN( FuncQual );
+  					}
+<ExcpList>"\n"				{
+  					  current->exception += ' ';
+  					}
+<ExcpList>.				{
+  					  current->exception += *yytext;
   					}
 <Function>"("				{ current->type += current->name ;
 					  current->name  = current->args ;
@@ -2235,29 +2276,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
-					  //QCString &cn=current->name;
-					  //QCString &rn=current_root->name;
-					  //int i;
-					  //if ((i=cn.findRev("::"))!=-1) // name contains scope
-					  //{
-					  //  if (cn.left(i)==rn.right(i)) // scope name is redundant
-					  //  {
-                                          //    cn=cn.right(cn.length()-i-2); // strip scope
-					  //    //printf("new name=`%s'\n",cn.data());
-					  //  }
-					  //}
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
 					    QCString tempName;
-					    if (tempArg==-1) 
-					      tempName=current->name;
-					    else
-					      tempName=current->name.left(tempArg);
-					    if (current->type.isEmpty() && tempName.find("operator")==-1 && 
-						(tempName.find('*')!=-1 || tempName.find('&')!=-1))
+					    static QRegExp re("operator[^a-z_A-Z0-9]");
+					    if (tempArg==-1) tempName=current->name; else tempName=current->name.left(tempArg);
+					    if ((current->type.isEmpty() && tempName.find(re)==-1) || 
+						 current->type.left(8)=="typedef "
+					       )
 					    {
 					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n",
 					      //   current->type.data(),current->name.data(),current->args.data());
@@ -2268,12 +2297,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n",
 					      //   current->type.data(),current->name.data(),current->args.data());
 					      current->section = Entry::FUNCTION_SEC ;
+					      current->proto = *yytext==';';
 					    }
 					  }
 					  else // a global function prototype or function variable
 					  {
+					    static QRegExp re("([^)]*)");
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
-					    QRegExp re("([^)]*)");
 					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
@@ -2305,11 +2335,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    curlyCount=0;
 					    BEGIN( SkipCurly ) ;
 					  }
-					  //else if( *yytext == ':' )
-					  //{
-					  //  //addToBody(yytext);
-					  //  BEGIN( SkipInits ) ;
-					  //}
 					  else
 					  {
 					    if (previous->section!=Entry::VARIABLE_SEC)
@@ -2359,11 +2384,25 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    lastAfterDocContext = SkipCurlyEndDoc;
 					    afterDocTerminator = '}';
 					    if (yytext[yyleng-3]=='/')
+					    {
+					      current->briefLine = yyLineNr;
+					      current->briefFile = yyFileName;
 					      BEGIN(AfterDocLine);
+					    }
 					    else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
+					    {
+					      current->briefLine = yyLineNr;
+					      current->briefFile = yyFileName;
+					      current->docLine = yyLineNr;
+					      current->docFile = yyFileName;
 					      BEGIN(AfterDocBrief);
+					    }
 					    else
+					    {
+					      current->docLine = yyLineNr;
+					      current->docFile = yyFileName;
 					      BEGIN(AfterDoc);
+					    }
 					  }
 					}
 <SkipCurlyEndDoc>"}"			{
@@ -2667,9 +2706,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
 					  if (YY_START==ReadBody)
+					  {
 					    current->doc+="\n\n";
+					  }
 					  else
+					  {
   					    current->doc.resize(0);
+					  }
+					  current->docLine = yyLineNr;
+					  current->docFile = yyFileName;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -2696,9 +2741,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    tmpDocType=-1;
 					    if (YY_START==ReadBody)
+					    {
 					      current->doc+="\n\n";
+					    }
 					    else
+					    {
   					      current->doc.resize(0);
+					    }
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    BEGIN( Doc );
 					  }
 					  else // Use the javadoc style
@@ -2708,6 +2759,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      tmpDocType=-1;
 					      current->doc+="\n\n";
 					      lastDocContext = ReadBody;
+					      current->docLine = yyLineNr;
+					      current->docFile = yyFileName;
 					      BEGIN( Doc );
 					    }
 					    else
@@ -2715,6 +2768,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      tmpDocType=Doc;
 					      current->doc.resize(0);
 					      current->brief.resize(0);
+					      current->docLine = yyLineNr;
+					      current->docFile = yyFileName;
+					      current->briefLine = yyLineNr;
+					      current->briefFile = yyFileName;
 					      BEGIN( JavaDoc );
 					    }
 					  }

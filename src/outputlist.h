@@ -134,11 +134,11 @@ class OutputList : public OutputDocInterface
     void codify(const char *s)
     { forall(&OutputGenerator::codify,s); }
     void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor, const char *text)
-    { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,text); }
+                         const char *anchor, const char *name)
+    { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,name); }
     void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *text)
-    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,text); }
+                       const char *anchor,const char *name)
+    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name); }
     void startTextLink(const char *file,const char *anchor)
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()

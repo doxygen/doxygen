@@ -1092,17 +1092,13 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 
   					  g_code->codify(yytext);
 
-					  // TODO: remove
   					  g_inClass=FALSE; 
-					  if (--g_curlyCount<=0) 
-					  {
-					    //g_classScope.resize(0);
-					    //g_codeParmList.clear();
-					  }
 
 					  if (--g_bodyCurlyCount<=0)
 					  {
 					    g_insideBody=FALSE;
+					    g_currentMemberDef=0;
+					    g_currentDefinition=0;
 					  }
 					}
 <ClassName,ClassVar>";"			{ 

@@ -227,10 +227,11 @@ static void buildGroupList(Entry *root)
 		"group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
 		root->name.data(), root->type.data(), gd->groupTitle() );
         if ( gd->briefDescription().isEmpty() )
-	  gd->setBriefDescription(root->brief);
+	  gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         if ( !root->doc.stripWhiteSpace().isEmpty() )
 	  gd->setDocumentation( gd->documentation().isEmpty() ? root->doc :
-				gd->documentation() + "\n\n" + root->doc );
+				gd->documentation() + "\n\n" + root->doc,
+                                root->docFile, root->docLine );
         gd->addSectionsToDefinition(root->anchors);
         gd->setRefItems(root->todoId,root->testId,root->bugId);
         addGroupToGroups(root,gd);
@@ -243,8 +244,8 @@ static void buildGroupList(Entry *root)
       {
         gd->setReference(root->tagInfo->tagName);
       }
-      gd->setBriefDescription(root->brief);
-      gd->setDocumentation(root->doc);
+      gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      gd->setDocumentation(root->doc,root->docFile,root->docLine);
       gd->addSectionsToDefinition(root->anchors);
       Doxygen::groupSDict.append(root->name,gd);
       gd->setRefItems(root->todoId,root->testId,root->bugId);
@@ -305,8 +306,8 @@ static void buildFileList(Entry *root)
         // using FALSE in setDocumentation is small hack to make sure a file 
         // is documented even if a \file command is used without further 
         // documentation
-        fd->setDocumentation(root->doc,FALSE);
-        fd->setBriefDescription(root->brief); 
+        fd->setDocumentation(root->doc,root->docFile,root->docLine,FALSE);
+        fd->setBriefDescription(root->brief,root->briefFile,root->briefLine); 
         fd->addSectionsToDefinition(root->anchors);
         fd->setRefItems(root->todoId,root->testId,root->bugId);
         QListIterator<Grouping> gli(*root->groups);
@@ -595,7 +596,7 @@ static void buildClassList(Entry *root)
         }
         else if (!root->doc.isEmpty())
         {
-          cd->setDocumentation(root->doc);
+          cd->setDocumentation(root->doc,root->docFile,root->docLine);
         }
         if (!root->brief.isEmpty() && !cd->briefDescription().isEmpty())
         {
@@ -608,7 +609,7 @@ static void buildClassList(Entry *root)
         }
         else if (!root->brief.isEmpty())
         {
-          cd->setBriefDescription(root->brief);
+          cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         }
         if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
         {
@@ -682,8 +683,8 @@ static void buildClassList(Entry *root)
       }
       ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
           tagName,refFileName);
-      cd->setDocumentation(root->doc); // copy docs to definition
-      cd->setBriefDescription(root->brief);
+      cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+      cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
 
 
@@ -738,7 +739,7 @@ static void buildClassList(Entry *root)
       }
 
       // the empty string test is needed for extract all case
-      cd->setBriefDescription(root->brief);
+      cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       cd->insertUsedFile(root->fileName);
 
       // add class to the list
@@ -794,7 +795,7 @@ static void buildNamespaceList(Entry *root)
         { 
           if (nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
-            nd->setDocumentation(root->doc);
+            nd->setDocumentation(root->doc,root->docFile,root->docLine);
             nd->setName(fullName); // change name to match docs
             nd->addSectionsToDefinition(root->anchors);
           }
@@ -808,7 +809,7 @@ static void buildNamespaceList(Entry *root)
           }
           if (nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
-            nd->setBriefDescription(root->brief);
+            nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
             nd->setName(fullName); // change name to match docs
           }
           else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
@@ -837,8 +838,8 @@ static void buildNamespaceList(Entry *root)
           tagName=root->tagInfo->tagName;
         }
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName);
-        nd->setDocumentation(root->doc); // copy docs to definition
-        nd->setBriefDescription(root->brief);
+        nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
 
         //printf("Adding namespace to group\n");
@@ -852,7 +853,7 @@ static void buildNamespaceList(Entry *root)
         if (fd) fd->insertNamespace(nd);
 
         // the empty string test is needed for extract all case
-        nd->setBriefDescription(root->brief);
+        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(root->fileName);
         nd->setBodySegment(root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
@@ -955,8 +956,8 @@ static void findUsingDirectives(Entry *root)
       {
         NamespaceDef *nd=new NamespaceDef(
             root->fileName,root->startLine,root->name);
-        nd->setDocumentation(root->doc); // copy docs to definition
-        nd->setBriefDescription(root->brief);
+        nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
 
         QListIterator<Grouping> gli(*root->groups);
@@ -979,7 +980,7 @@ static void findUsingDirectives(Entry *root)
         }
 
         // the empty string test is needed for extract all case
-        nd->setBriefDescription(root->brief);
+        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(root->fileName);
         // add class to the list
         Doxygen::namespaceSDict.inSort(root->name,nd);
@@ -1166,8 +1167,8 @@ static MemberDef *addVariableToClass(
   md->setMemberClass(cd);
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
-  md->setDocumentation(root->doc);
-  md->setBriefDescription(root->brief);
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setDefinition(def);
   md->setBitfields(root->bitfields);
   md->addSectionsToDefinition(root->anchors);
@@ -1329,8 +1330,8 @@ static MemberDef *addVariableToFile(
   }
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
-  md->setDocumentation(root->doc);
-  md->setBriefDescription(root->brief);
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
@@ -1626,6 +1627,7 @@ void addNewMemberToClass(Entry *root,ClassDef *cd,
     name=name.left(i); 
   }
 
+  // adding class member
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
       root->type,name,root->args,root->exception,
@@ -1637,8 +1639,9 @@ void addNewMemberToClass(Entry *root,ClassDef *cd,
     md->setReference(root->tagInfo->tagName);
   }
   md->setMemberClass(cd);
-  md->setDocumentation(root->doc);
-  md->setBriefDescription(root->brief);
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setDocsForDefinition(!root->proto);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->memSpec);
   md->setMemberGroupId(root->mGrpId);
@@ -1746,7 +1749,7 @@ static void buildFunctionList(Entry *root)
   {
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  `%s' `%s'::`%s' `%s' relates=`%s' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d memSpec=%d\n",
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d memSpec=%d proto=%d\n",
                  root->type.data(),
                  root->parent->name.data(),
                  root->name.data(),
@@ -1759,7 +1762,8 @@ static void buildFunctionList(Entry *root)
                  //root->tArgList ? (int)root->tArgList->count() : -1,
                  //root->mtArgList ? (int)root->mtArgList->count() : -1,
                  root->mGrpId,
-                 root->memSpec
+                 root->memSpec,
+                 root->proto
                 );
 
     bool isFriend=root->type.find("friend ")!=-1;
@@ -1856,15 +1860,26 @@ static void buildFunctionList(Entry *root)
               //    found,fd->absFilePath().data(),root->fileName.data());
 
               // merge argument lists
-              mergeArguments(root->argList,md->argumentList());
+              //mergeArguments(root->argList,md->argumentList());
               // merge documentation
-              if (!md->documentation() && !root->doc.isEmpty())
+              if (md->documentation().isEmpty() && !root->doc.isEmpty())
               {
-                md->setDocumentation(root->doc);
+                md->setDocumentation(root->doc,root->docFile,root->docLine);
+                md->setDocsForDefinition(!root->proto);
+                ArgumentList *argList = new ArgumentList;
+                stringToArgumentList(root->args,argList);
+                if (root->proto)
+                {
+                  md->setDeclArgumentList(argList);
+                }
+                else
+                {
+                  md->setArgumentList(argList);
+                }
               }
-              if (!md->briefDescription() && !root->brief.isEmpty())
+              if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
               {
-                md->setBriefDescription(root->brief);
+                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }
               // merge body definitions
               if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
@@ -1908,9 +1923,10 @@ static void buildFunctionList(Entry *root)
           }
           //md->setDefFile(root->fileName);
           //md->setDefLine(root->startLine);
-          md->setDocumentation(root->doc);
-          md->setBriefDescription(root->brief);
+          md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setPrototype(root->proto);
+          md->setDocsForDefinition(!root->proto);
           //md->setBody(root->body);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
@@ -2063,13 +2079,21 @@ static void findFriends()
           {
             mergeArguments(mmd->argumentList(),fmd->argumentList());
             if (!fmd->documentation().isEmpty())
-              mmd->setDocumentation(fmd->documentation());
+            {
+              mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());
+            }
             else if (!mmd->documentation().isEmpty())
-              fmd->setDocumentation(mmd->documentation());
+            {
+              fmd->setDocumentation(mmd->documentation(),mmd->docFile(),mmd->docLine());
+            }
             if (mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
-              mmd->setBriefDescription(fmd->briefDescription());
+            {
+              mmd->setBriefDescription(fmd->briefDescription(),fmd->briefFile(),fmd->briefLine());
+            }
             else if (!mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
-              fmd->setBriefDescription(mmd->briefDescription());
+            {
+              fmd->setBriefDescription(mmd->briefDescription(),mmd->briefFile(),mmd->briefLine());
+            }
             if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
             {
               mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
@@ -2128,29 +2152,41 @@ static void transferFunctionDocumentation()
       // check if not in different but documented files
       if (Config_getBool("EXTRACT_ALL") || 
           fdef==fdec || 
-          (fdef!=0 && (!fdef->hasDocumentation() || !mdec->hasDocumentation()))
+          (fdef!=0 && (!fdef->hasDocumentation() || !fdec->hasDocumentation()))
          )
       {
-        //printf("Found member %s: def in %s and dec in %s\n",
-        //    mn->memberName(),mdef->getFileDef()->name().data(),
-        //    mdec->getFileDef()->name().data());
+        //printf("Found member %s: definition in %s (doc=%d) and declation in %s (doc=%d)\n",
+        //    mn->memberName(),
+        //    mdef->getFileDef()->name().data(),!mdef->documentation().isEmpty(),
+        //    mdec->getFileDef()->name().data(),!mdec->documentation().isEmpty()
+        //   );
 
         /* copy documentation between function definition and declaration */
-        if (mdec->briefDescription())
+        if (!mdec->briefDescription().isEmpty())
         {
-          mdef->setBriefDescription(mdec->briefDescription());
+          mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
         }
-        else if (mdef->briefDescription())
+        else if (!mdef->briefDescription().isEmpty())
         {
-          mdec->setBriefDescription(mdef->briefDescription());
+          mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
         }
-        if (mdef->documentation())
+        if (!mdef->documentation().isEmpty())
         {
-          mdec->setDocumentation(mdef->documentation());
+          //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
+          mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
+          mdec->setDocsForDefinition(mdef->isDocsForDefinition());
+          ArgumentList *mdefAl = new ArgumentList;
+          stringToArgumentList(mdef->argsString(),mdefAl);
+          mdec->setArgumentList(mdefAl);
         }
-        else if (mdec->documentation())
+        else if (!mdec->documentation().isEmpty())
         {
-          mdef->setDocumentation(mdec->documentation());
+          //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
+          mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
+          mdef->setDocsForDefinition(mdec->isDocsForDefinition());
+          ArgumentList *mdecAl = new ArgumentList;
+          stringToArgumentList(mdec->argsString(),mdecAl);
+          mdef->setDeclArgumentList(mdecAl);
         }
         if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
         {
@@ -2651,9 +2687,9 @@ static bool findClassRelation(
           found=baseClass!=0 && baseClass!=cd;
         }
         
+        FileDef *fd=cd->getFileDef();
         if (!found)
         {
-          FileDef *fd=cd->getFileDef();
           if (fd)
           {
             // look for the using statement in this file in which the
@@ -2801,6 +2837,7 @@ static bool findClassRelation(
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileName);
+          baseClass->setOuterScope(fd);
           return TRUE;
         }
         else
@@ -3171,7 +3208,8 @@ static void addMemberDocs(Entry *root,
       doc+="<p>";
       doc+=root->doc;
     }
-    md->setDocumentation(doc); 
+    md->setDocumentation(doc,root->docFile,root->docLine); 
+    md->setDocsForDefinition(!root->proto);
   }
   else  
   {
@@ -3188,7 +3226,8 @@ static void addMemberDocs(Entry *root,
        )
     {
       //printf("overwrite!\n");
-      md->setDocumentation(root->doc);
+      md->setDocumentation(root->doc,root->docFile,root->docLine);
+      md->setDocsForDefinition(!root->proto);
     }
 
     //printf("Adding brief md->brief=`%s' root->brief=`%s'!\n",
@@ -3203,7 +3242,7 @@ static void addMemberDocs(Entry *root,
        )
     {
       //printf("overwrite!\n");
-      md->setBriefDescription(root->brief);
+      md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     }
   }
 
@@ -4014,7 +4053,8 @@ static void findMember(Entry *root,
           QCString doc=getOverloadDocs();
           doc+="<p>";
           doc+=root->doc;
-          md->setDocumentation(doc);
+          md->setDocumentation(doc,root->docFile,root->docLine);
+          md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
           md->addSectionsToDefinition(root->anchors);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -4148,9 +4188,10 @@ static void findMember(Entry *root,
           md->setMemberClass(cd);
           md->setMemberSpecifiers(root->memSpec);
           md->setDefinition(funcDecl);
+          md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
-          md->setDocumentation(root->doc);
-          md->setBriefDescription(root->brief);
+          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
           //md->setMemberDefTemplateArguments(root->mtArgList);
@@ -4441,8 +4482,9 @@ static void findEnums(Entry *root)
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
       }
-      md->setDocumentation(root->doc);
-      md->setBriefDescription(root->brief);
+      md->setDocumentation(root->doc,root->docFile,root->docLine);
+      md->setDocsForDefinition(!root->proto);
+      md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
       //printf("Adding member=%s\n",md->name().data());
       MemberName *mn;
@@ -4574,14 +4616,15 @@ static void findEnumDocumentation(Entry *root)
               // documentation outside a compound overrides the documentation inside it
               if (!md->documentation() || root->parent->name.isEmpty()) 
               {
-                md->setDocumentation(root->doc);
+                md->setDocumentation(root->doc,root->docFile,root->docLine);
+                md->setDocsForDefinition(!root->proto);
               }
 
               // brief descriptions inside a compound override the documentation 
               // outside it
               if (!md->briefDescription() || !root->parent->name.isEmpty())
               {
-                md->setBriefDescription(root->brief);
+                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }
 
               if (root->mGrpId!=-1 && md->getMemberGroupId()==-1)
@@ -4605,8 +4648,9 @@ static void findEnumDocumentation(Entry *root)
         MemberName *mn=Doxygen::functionNameSDict[name];
         if (mn && (md=mn->getFirst()))
         {
-          md->setDocumentation(root->doc);
-          md->setBriefDescription(root->brief);
+          md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setDocsForDefinition(!root->proto);
+          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
           found=TRUE;
@@ -4694,11 +4738,11 @@ static void computeMemberRelations()
       {
         ClassDef *bmcd = bmd->getClassDef();
         ClassDef *mcd  = md->getClassDef();
-        //printf("Check relation between `%s'::`%s' and `%s'::`%s'\n",
-        //       mcd->name().data(),md->name().data(),
-        //       bmcd->name().data(),bmd->name().data()
+        //printf("Check relation between `%s'::`%s' (%p) and `%s'::`%s' (%p)\n",
+        //       mcd->name().data(),md->name().data(),md,
+        //       bmcd->name().data(),bmd->name().data(),bmd
         //      );
-        if (md!=bmd &&  bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd))
+        if (md!=bmd && bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd,TRUE))
         {
           //printf(" Base argList=`%s'\n Super argList=`%s'\n",
           //        argListToString(bmd->argumentList()).data(),
@@ -4921,6 +4965,32 @@ static void addSourceReferences()
 //----------------------------------------------------------------------------
 // generate the documentation of all classes
   
+static void generateClassList(ClassSDict &classSDict)
+{
+  ClassSDict::Iterator cli(classSDict);
+  for ( ; cli.current() ; ++cli )
+  {
+    ClassDef *cd=cli.current();
+   
+    if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+        cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+       ) 
+    {
+      // skip external references, anonymous compounds and 
+      // template instances 
+      if ( cd->isLinkableInProject() && cd->templateMaster()==0)
+      {
+        msg("Generating docs for compound %s...\n",cd->name().data());
+
+        cd->writeDocumentation(*outputList);
+        cd->writeMemberList(*outputList);
+      }
+      // even for undocumented classes, the inner classes can be documented.
+      cd->writeDocumentationForInnerClasses(*outputList);
+    }
+  }
+}
+
 static void generateClassDocs()
 {
   // write the installdox script if necessary
@@ -4953,28 +5023,8 @@ static void generateClassDocs()
     msg("Generating example index...\n");
   }
 
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  for ( ; cli.current() ; ++cli )
-  {
-    ClassDef *cd=cli.current();
-   
-    if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
-        cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-       ) 
-    {
-      // skip external references, anonymous compounds and 
-      // template instances 
-      if ( cd->isLinkableInProject() && cd->templateMaster()==0)
-      {
-        msg("Generating docs for compound %s...\n",cd->name().data());
-
-        cd->writeDocumentation(*outputList);
-        cd->writeMemberList(*outputList);
-      }
-      // even for undocumented classes, the inner classes can be documented.
-      cd->writeDocumentationForInnerClasses(*outputList);
-    }
-  }
+  generateClassList(Doxygen::classSDict);
+  generateClassList(Doxygen::hiddenClasses);
 }
 
 //----------------------------------------------------------------------------
@@ -4998,12 +5048,14 @@ static void inheritDocumentation()
                       bmd->briefDescription().isEmpty()
               )
         { // search up the inheritance tree for a documentation member
+          //printf("bmd=%s class=%s\n",bmd->name().data(),bmd->getClassDef()->name().data());
           bmd = bmd->reimplements();
         }
         if (bmd) // copy the documentation from the reimplemented member
         {
-          md->setDocumentation(bmd->documentation());
-          md->setBriefDescription(bmd->briefDescription());
+          md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
+          md->setDocsForDefinition(bmd->isDocsForDefinition());
+          md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
         }
       }
     }
@@ -5144,9 +5196,12 @@ static void findDefineDocumentation(Entry *root)
           if (md->memberType()==MemberDef::Define)
           {
             if (md->documentation().isEmpty())
-              md->setDocumentation(root->doc);
+            {
+              md->setDocumentation(root->doc,root->docFile,root->docLine);
+              md->setDocsForDefinition(!root->proto);
+            }
             if (md->briefDescription().isEmpty())
-              md->setBriefDescription(root->brief);
+              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
             md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
@@ -5178,9 +5233,12 @@ static void findDefineDocumentation(Entry *root)
               // doc and define in the same file assume they belong together.
             {
               if (md->documentation().isEmpty())
-                md->setDocumentation(root->doc);
+              {
+                md->setDocumentation(root->doc,root->docFile,root->docLine);
+                md->setDocsForDefinition(!root->proto);
+              }
               if (md->briefDescription().isEmpty())
-                md->setBriefDescription(root->brief);
+                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               md->setBodySegment(root->bodyLine,root->endBodyLine);
               bool ambig;
               md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
@@ -5299,18 +5357,18 @@ static void buildPackageList(Entry *root)
       }
       pd = new PackageDef(root->fileName,root->startLine,root->name,tagName);
       Doxygen::packageDict.inSort(root->name,pd);
-      pd->setDocumentation(root->doc);
-      pd->setBriefDescription(root->brief);
+      pd->setDocumentation(root->doc,root->docFile,root->docLine);
+      pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     } 
     else
     {
       if (!pd->documentation() && !root->doc.isEmpty())
       {
-        pd->setDocumentation(root->doc);
+        pd->setDocumentation(root->doc,root->docFile,root->docLine);
       }
       if (!pd->briefDescription() && !root->brief.isEmpty())
       {
-        pd->setBriefDescription(root->brief);
+        pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       }
     }
     bool ambig;
@@ -6018,13 +6076,15 @@ static int readDir(QFileInfo *fi,
             StringList *resultList,
             StringDict *resultDict,
             bool errorIfNotExist,
-            bool recursive
+            bool recursive,
+            QDict<void> *killDict
            )
 {
   QDir dir((const char *)fi->absFilePath());
   dir.setFilter( QDir::Files | QDir::Dirs );
   int totalSize=0;
   //printf("readDir `%s'\n",fi->absFilePath().data());
+  //printf("killDict=%p count=%d\n",killDict,killDict->count());
   
   const QFileInfoList *list = dir.entryInfoList();
   QFileInfoListIterator it( *list );
@@ -6034,6 +6094,7 @@ static int readDir(QFileInfo *fi,
   {
     if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
     { // file should not be excluded
+      //printf("killDict->find(%s)\n",cfi->absFilePath().data());
       if ((!cfi->exists() || !cfi->isReadable()) && errorIfNotExist)
       {
          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
@@ -6041,7 +6102,9 @@ static int readDir(QFileInfo *fi,
       else if (cfi->isFile() && 
           (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
           (patList==0 || patternMatch(cfi,patList)) && 
-          !patternMatch(cfi,exclPatList))
+          !patternMatch(cfi,exclPatList) &&
+          (killDict==0 || killDict->find(cfi->absFilePath())==0)
+         )
       {
         totalSize+=cfi->size()+cfi->absFilePath().length()+4;
         QCString name=convertToQCString(cfi->fileName());
@@ -6069,6 +6132,7 @@ static int readDir(QFileInfo *fi,
         }
         if (resultList) resultList->append(rs);
         if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
+        if (killDict) killDict->insert(cfi->absFilePath(),(void *)0x8);
       }
       else if (recursive &&
           (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
@@ -6078,7 +6142,7 @@ static int readDir(QFileInfo *fi,
         cfi->setFile(cfi->absFilePath());
         totalSize+=readDir(cfi,fnList,fnDict,exclDict,
             patList,exclPatList,resultList,resultDict,errorIfNotExist,
-            recursive);
+            recursive,killDict);
       }
     }
     ++it;
@@ -6135,9 +6199,11 @@ static int readFileOrDirectory(const char *s,
                         StringList *resultList,
                         StringDict *resultDict,
                         bool recursive,
-                        bool errorIfNotExist=TRUE
+                        bool errorIfNotExist=TRUE,
+                        QDict<void> *killDict = 0
                        )
 {
+  //printf("killDict=%p count=%d\n",killDict,killDict->count());
   // strip trailing slashes
   QCString fs = s;
   char lc = fs.at(fs.length()-1);
@@ -6157,39 +6223,44 @@ static int readFileOrDirectory(const char *s,
       {
         if (fi.isFile())
         {
-          totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
-          //fiList->inSort(new FileInfo(fi));
-          QCString name=convertToQCString(fi.fileName());
-          //printf("New file %s\n",name.data());
-          if (fnDict)
+          //printf("killDict->find(%s)\n",fi.absFilePath().data());
+          if (killDict==0 || killDict->find(fi.absFilePath())==0)
           {
-            FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
-            FileName *fn=0;
-            if (!name.isEmpty() && (fn=(*fnDict)[name]))
+            totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
+            //fiList->inSort(new FileInfo(fi));
+            QCString name=convertToQCString(fi.fileName());
+            //printf("New file %s\n",name.data());
+            if (fnDict)
             {
-              fn->append(fd);
+              FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
+              FileName *fn=0;
+              if (!name.isEmpty() && (fn=(*fnDict)[name]))
+              {
+                fn->append(fd);
+              }
+              else
+              {
+                fn = new FileName(fi.absFilePath(),name);
+                fn->append(fd);
+                if (fnList) fnList->inSort(fn);
+                fnDict->insert(name,fn);
+              }
             }
-            else
+            QCString *rs=0;
+            if (resultList || resultDict)
             {
-              fn = new FileName(fi.absFilePath(),name);
-              fn->append(fd);
-              if (fnList) fnList->inSort(fn);
-              fnDict->insert(name,fn);
+              rs=new QCString(fi.absFilePath());
             }
+            if (resultList) resultList->append(rs);
+            if (resultDict) resultDict->insert(fi.absFilePath(),rs);
+            if (killDict) killDict->insert(fi.absFilePath(),(void *)0x8);
           }
-          QCString *rs=0;
-          if (resultList || resultDict)
-          {
-            rs=new QCString(fi.absFilePath());
-          }
-          if (resultList) resultList->append(rs);
-          if (resultDict) resultDict->insert(fi.absFilePath(),rs);
         }
         else if (fi.isDir()) // readable dir
         {
           totalSize+=readDir(&fi,fnList,fnDict,exclDict,patList,
               exclPatList,resultList,resultDict,errorIfNotExist,
-              recursive);
+              recursive,killDict);
         }
       }
     }
@@ -6305,7 +6376,10 @@ void readConfiguration(int argc, char **argv)
       case 'g':
         genConfig=TRUE;
         configName=getArg(argc,argv,optind);
-        if (!configName) configName="Doxyfile";
+        if (strcmp(argv[optind+1],"-")==0)
+        { configName="-"; optind++; }
+        if (!configName) 
+        { configName="Doxyfile"; }
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
@@ -6400,7 +6474,7 @@ void readConfiguration(int argc, char **argv)
           {
             HtmlGenerator::writeStyleSheetFile(f);
           }
-          exit(1);
+          exit(0);
         }
         else if (stricmp(formatName,"latex")==0)
         {
@@ -6435,7 +6509,7 @@ void readConfiguration(int argc, char **argv)
           {
             LatexGenerator::writeStyleSheetFile(f);
           }
-          exit(1);
+          exit(0);
         }
         else 
         {
@@ -6451,7 +6525,7 @@ void readConfiguration(int argc, char **argv)
         else if (strcmp(&argv[optind][2],"version")==0)
         {
           msg("%s\n",versionString); 
-          exit(1);
+          exit(0);
         }
         break;
       case 'h':
@@ -6472,7 +6546,7 @@ void readConfiguration(int argc, char **argv)
   if (genConfig)
   {
     generateConfigFile(configName,shortList);
-    exit(1);
+    exit(0);
   }
 
   QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
@@ -6515,7 +6589,7 @@ void readConfiguration(int argc, char **argv)
   if (updateConfig)
   {
     generateConfigFile(configName,shortList,TRUE);
-    exit(1);
+    exit(0);
   }
   
   Config::instance()->substituteEnvironmentVars();
@@ -6544,8 +6618,8 @@ void parseInput()
 
   Doxygen::classSDict.setAutoDelete(TRUE);
   
-  Doxygen::inputNameDict     = new FileNameDict(1009);
-  Doxygen::includeNameDict   = new FileNameDict(1009);
+  Doxygen::inputNameDict     = new FileNameDict(10007);
+  Doxygen::includeNameDict   = new FileNameDict(10007);
   Doxygen::exampleNameDict   = new FileNameDict(1009);
   Doxygen::imageNameDict     = new FileNameDict(257);
   Doxygen::dotFileNameDict   = new FileNameDict(257);
@@ -6652,6 +6726,7 @@ void parseInput()
   }
 
   msg("Reading input files...\n");
+  QDict<void> *killDict = new QDict<void>(10007);
   int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");
   s=inputList.first();
@@ -6667,9 +6742,12 @@ void parseInput()
                                    &Config_getList("FILE_PATTERNS"),
                                    &Config_getList("EXCLUDE_PATTERNS"),
                                    &inputFiles,0,
-                                   alwaysRecursive);
+                                   alwaysRecursive,
+                                   TRUE,
+                                   killDict);
     s=inputList.next();
   }
+  delete killDict;
   
   // add predefined macro name to a dictionary
   QStrList &expandAsDefinedList =Config_getList("EXPAND_AS_DEFINED");

@@ -164,8 +164,8 @@ class MemberDef : public Definition
     // relation to other members
     void setReimplements(MemberDef *md);
     void insertReimplementedBy(MemberDef *md);
-    MemberDef  *reimplements() const      { return redefines; }
-    MemberList *reimplementedBy() const   { return redefinedBy; }
+    MemberDef  *reimplements() const;
+    MemberList *reimplementedBy() const;
     
     // enumeration specific members
     void insertEnumField(MemberDef *md);
@@ -180,6 +180,7 @@ class MemberDef : public Definition
     bool hasDocumentedEnumValues() const     { return docEnumValues; }
     void setAnonymousEnumType(MemberDef *md) { annEnumType = md; }
     MemberDef *getAnonymousEnumType() const  { return annEnumType; }
+    bool isDocsForDefinition() const         { return docsForDefinition; }
     
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
@@ -191,10 +192,17 @@ class MemberDef : public Definition
     bool isPrototype() const { return proto; }
     
     // argument related members
-    ArgumentList *argumentList() const { return argList; }
+    ArgumentList *argumentList() const { return defArgList; }
+    ArgumentList *declArgumentList() const { return declArgList; }
     void setArgumentList(ArgumentList *al) 
-    { if (argList) delete argList;
-      argList = al;
+    { 
+      if (defArgList) delete defArgList;
+      defArgList = al;
+    }
+    void setDeclArgumentList(ArgumentList *al)
+    {
+      if (declArgList) delete declArgList;
+      declArgList = al;
     }
     ArgumentList *templateArguments() const { return tArgList; }
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
@@ -234,6 +242,7 @@ class MemberDef : public Definition
       return bodyMemb ? bodyMemb->anchor() : anchor(); 
     }
     void setBodyMember(MemberDef *md) { bodyMemb = md; }
+    void setDocsForDefinition(bool b) { docsForDefinition = b; }
         
     bool visited;
     
@@ -281,10 +290,9 @@ class MemberDef : public Definition
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
-    ArgumentList *argList;    // argument list of this member
+    ArgumentList *defArgList;    // argument list of this member definition
+    ArgumentList *declArgList;   // argument list of this member declaration
     ArgumentList *tArgList;   // template argument list of function template
-    //ArgumentList *scopeTAL;   // template argument list of class template
-    //ArgumentList *membTAL;    // template argument list of class template
     QList<ArgumentList> *m_defTmpArgLists;
     int grpId;                // group id
     MemberGroup *memberGroup; // group's member definition
@@ -302,6 +310,9 @@ class MemberDef : public Definition
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
     MemberDef *m_templateMaster;
     SIntDict<MemberList> *classSectionSDict;
+    bool docsForDefinition;   // TRUE => documentation block is put before
+                              //         definition.
+                              // FALSE => block is put before declaration.
 
 
     // disable copying of member defs

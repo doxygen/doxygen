@@ -1122,10 +1122,15 @@ BN	[ \t\r\n]
 					}
 <CopyLine>{ID}/{BN}*"("			{
   					  Define *def=0;
-					  //printf("Search for define %s\n",yytext);
+					  //def=g_fileDefineDict->find(yytext);
+					  //printf("Search for define %s found=%d g_includeStack.isEmpty()=%d "
+					  //       "g_curlyCount=%d g_macroExpansion=%d g_expandOnlyPredef=%d "
+					  //	 "isPreDefined=%d\n",yytext,def ? 1 : 0,
+					  //	 g_includeStack.isEmpty(),g_curlyCount,g_macroExpansion,g_expandOnlyPredef,
+					  //	 def ? def->isPredefined : -1
+					  //	);
 					  if ((g_includeStack.isEmpty() || g_curlyCount>0) &&
 					      g_macroExpansion &&
-					      /* (expandDefine=fileDefineCache->findDefine(g_yyFileName,yytext)) */
 					      (def=g_fileDefineDict->find(yytext)) &&
 					      (!g_expandOnlyPredef || def->isPredefined)
 					     )

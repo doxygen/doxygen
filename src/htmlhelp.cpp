@@ -396,8 +396,10 @@ int HtmlHelp::decContentsDepth()
 }
 
 /*! Add an list item to the contents file.
+ *  \param isDir boolean indicating if this is a dir or file entry
  *  \param name the name of the item.
  *  \param ref  the URL of to the item.
+ *  \param anchor the anchor of the item.
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const char *name,const char *ref, 
@@ -433,8 +435,10 @@ void HtmlHelp::addContentsItem(bool isDir,
 }
 
 /*! Add an list item to the index file.
- *  \param name the name of the item.
+ *  \param level1 the main index of the item.
+ *  \param level2 the sub index of the item.
  *  \param ref  the URL of to the item.
+ *  \param anchor  the anchor of the item.
  *  \sa HtmlHelpIndex
  */
 void HtmlHelp::addIndexItem(const char *level1, const char *level2,

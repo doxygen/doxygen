@@ -21,10 +21,11 @@
 #include "qtbc.h"
 
 class OutputDocInterface;
+class MemberDef;
 
 extern void parseDoc(OutputDocInterface &ol,
                      const char *fileName,int startLine,
-                     const char *clName, const char *memName,
+                     const char *clName, MemberDef *md,
                      const QCString &docString);
 extern void parseExample(OutputDocInterface &ol,const QCString &docString, 
                            const char *fileName);

@@ -72,9 +72,10 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString &scopeName,MemberDef *md)
 {
-  ArgumentList *argList=md->argumentList();
-  //printf("writeDefArgumentList `%s' %p\n",md->name().data(),argList);
-  if (argList==0) return; // member has no function like argument list
+  ArgumentList *defArgList=md->isDocsForDefinition() ? 
+                             md->argumentList() : md->declArgumentList();
+  //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
+  if (defArgList==0) return; // member has no function like argument list
   if (!md->isDefine()) ol.docify(" ");
 
   ol.pushGeneratorState();
@@ -88,7 +89,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.popGeneratorState();
   //printf("===> name=%s isDefine=%d\n",md->name().data(),md->isDefine());
 
-  Argument *a=argList->first();
+  Argument *a=defArgList->first();
   QCString cName;
   //if (md->scopeDefTemplateArguments())
   //{
@@ -143,7 +144,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (!md->isDefine())
     {
       ol.endParameterType();
-      ol.startParameterName(argList->count()<2);
+      ol.startParameterName(defArgList->count()<2);
     }
     if (!a->name.isEmpty()) // argument has a name
     { 
@@ -173,7 +174,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.docify(" = ");
       linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n); 
     }
-    a=argList->next();
+    a=defArgList->next();
     if (a) 
     {
       ol.docify(", "); // there are more arguments
@@ -193,8 +194,8 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.disableAllBut(OutputGenerator::Html);
   if (!md->isDefine()) 
   {
-    if (first) ol.startParameterName(argList->count()<2);
-    ol.endParameterName(TRUE,argList->count()<2);
+    if (first) ol.startParameterName(defArgList->count()<2);
+    ol.endParameterName(TRUE,defArgList->count()<2);
   }
   else 
   {
@@ -203,11 +204,11 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     ol.endParameterName(TRUE,TRUE);
   }
   ol.popGeneratorState();
-  if (argList->constSpecifier)
+  if (defArgList->constSpecifier)
   {
     ol.docify(" const");
   }
-  if (argList->volatileSpecifier)
+  if (defArgList->volatileSpecifier)
   {
     ol.docify(" volatile");
   }
@@ -290,6 +291,7 @@ MemberDef::MemberDef(const char *df,int dl,
   args=a;
   args=removeRedundantWhiteSpace(args);
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
+
   //declLine=0;
   memberGroup=0;
   virt=v;
@@ -329,27 +331,38 @@ MemberDef::MemberDef(const char *df,int dl,
   {
     tArgList=0;
   }
-  // copy function arguments (if any)
+  // copy function definition arguments (if any)
   if (al)
   {
-    argList = new ArgumentList;
-    argList->setAutoDelete(TRUE);
+    defArgList = new ArgumentList;
+    defArgList->setAutoDelete(TRUE);
     ArgumentListIterator ali(*al);
     Argument *a;
     for (;(a=ali.current());++ali)
     {
-      argList->append(new Argument(*a));
+      defArgList->append(new Argument(*a));
     }
-    argList->constSpecifier    = al->constSpecifier;
-    argList->volatileSpecifier = al->volatileSpecifier;
-    argList->pureSpecifier     = al->pureSpecifier;
+    defArgList->constSpecifier    = al->constSpecifier;
+    defArgList->volatileSpecifier = al->volatileSpecifier;
+    defArgList->pureSpecifier     = al->pureSpecifier;
   }
   else
   {
-    argList=0;
+    defArgList=0;
+  }
+  // convert function declaration arguments (if any)
+  if (!args.isEmpty())
+  {
+    declArgList = new ArgumentList;
+    stringToArgumentList(args,declArgList);
+  }
+  else
+  {
+    declArgList = 0;
   }
   m_templateMaster=0;
   classSectionSDict=0;
+  docsForDefinition=TRUE;
 }
 
 /*! Destroys the member definition. */
@@ -358,18 +371,19 @@ MemberDef::~MemberDef()
   delete redefinedBy;
   delete exampleSDict;
   delete enumFields;
-  delete argList;
+  delete defArgList;
   delete tArgList;
   delete m_defTmpArgLists;
   delete classSectionSDict;
+  delete declArgList;
 }
 
 void MemberDef::setReimplements(MemberDef *md)   
 { 
-  if (m_templateMaster) 
-  {
-    m_templateMaster->setReimplements(md);
-  }
+  //if (m_templateMaster) 
+  //{
+  // m_templateMaster->setReimplements(md);
+  //}
   redefines=md; 
 }
 
@@ -380,7 +394,17 @@ void MemberDef::insertReimplementedBy(MemberDef *md)
     m_templateMaster->insertReimplementedBy(md);
   }
   if (redefinedBy==0) redefinedBy = new MemberList;
-  redefinedBy->inSort(md);
+  if (redefinedBy->find(md)==-1) redefinedBy->inSort(md);
+}
+
+MemberDef  *MemberDef::reimplements() const      
+{ 
+  return redefines; 
+}
+
+MemberList *MemberDef::reimplementedBy() const   
+{ 
+  return redefinedBy; 
 }
 
 void MemberDef::insertEnumField(MemberDef *md)
@@ -831,7 +855,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       !annMemb)
   {
     ol.startMemberDescription();
-    parseDoc(ol,m_defFileName,m_defLine,cname,name(),briefDescription());
+    parseDoc(ol,m_defFileName,m_defLine,cname,this,briefDescription());
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -878,7 +902,7 @@ bool MemberDef::isDetailedSectionLinkable() const
          //(initLines>0 && initLines<maxInitLines) || 
          hasMultiLineInitializer() ||
          // has one or more documented arguments
-         (argList!=0 && argList->hasDocumentation()); 
+         (defArgList!=0 && defArgList->hasDocumentation()); 
          
   // this is not a global static or global statics should be extracted
   bool staticFilter = getClassDef()!=0 || !isStatic() || Config_getBool("EXTRACT_STATIC"); 
@@ -1136,7 +1160,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.docify("]");
       ol.endTypewriter();
     }
-    if (!isDefine() && argList) ol.endParameterList();
+    if (!isDefine() && defArgList) ol.endParameterList();
     ol.endMemberDoc();
     ol.endDoxyAnchor(cfname,anchor());
     ol.startIndent();
@@ -1171,7 +1195,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     QCString detailed = m_templateMaster ?
                         m_templateMaster->documentation() : documentation();
     ArgumentList *docArgList = m_templateMaster ? 
-                        m_templateMaster->argList : argList;
+                        m_templateMaster->defArgList : defArgList;
     
     /* write brief description */
     if (!brief.isEmpty() && 
@@ -1180,23 +1204,23 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) /* || !annMemb */
        )  
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),brief);
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,this,brief);
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!detailed.isEmpty())
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),detailed+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,this,detailed+"\n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
       ol.popGeneratorState();
     }
 
-    //printf("***** argList=%p name=%s docs=%s hasDocs=%d\n",
-    //     argList, 
-    //     argList?argList->hasDocumentation():-1);
+    //printf("***** defArgList=%p name=%s docs=%s hasDocs=%d\n",
+    //     defArgList, 
+    //     defArgList?defArgList->hasDocumentation():-1);
     if (docArgList && docArgList->hasDocumentation())
     {
       //printf("***** argumentList is documented\n");
@@ -1215,7 +1239,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.docify(a->name);
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),a->docs+"\n");
+          parseDoc(ol,m_defFileName,m_defLine,scopeName,this,a->docs+"\n");
           ol.endDescTableData();
         }
       }
@@ -1270,7 +1294,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd->name(),fmd->briefDescription());
+              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd,fmd->briefDescription());
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1280,7 +1304,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd->name(),fmd->documentation()+"\n");
+              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd,fmd->documentation()+"\n");
             }
             ol.endDescTableData();
           }
@@ -1531,7 +1555,7 @@ bool MemberDef::hasDocumentation() const
 { 
   return Definition::hasDocumentation() || 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
-         (argList!=0 && argList->hasDocumentation()); // has doc arguments
+         (defArgList!=0 && defArgList->hasDocumentation()); // has doc arguments
 }
 
 void MemberDef::setMemberGroup(MemberGroup *grp)
@@ -1605,10 +1629,10 @@ MemberDef *MemberDef::createTemplateInstanceMember(
 {
   //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
   ArgumentList *actualArgList = 0;
-  if (argList)
+  if (defArgList)
   {
     actualArgList = new ArgumentList;
-    ArgumentListIterator ali(*argList);
+    ArgumentListIterator ali(*defArgList);
     Argument *arg;
     for (;(arg=ali.current());++ali)
     {
@@ -1616,9 +1640,9 @@ MemberDef *MemberDef::createTemplateInstanceMember(
       actArg->type = substituteTemplateArgumentsInString(actArg->type,formalArgs,actualArgs);
       actualArgList->append(actArg);
     }
-    actualArgList->constSpecifier    = argList->constSpecifier;
-    actualArgList->volatileSpecifier = argList->volatileSpecifier;
-    actualArgList->pureSpecifier     = argList->pureSpecifier;
+    actualArgList->constSpecifier    = defArgList->constSpecifier;
+    actualArgList->volatileSpecifier = defArgList->volatileSpecifier;
+    actualArgList->pureSpecifier     = defArgList->pureSpecifier;
   }
 
   MemberDef *imd = new MemberDef(
@@ -1629,7 +1653,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
                        exception, prot,
                        virt, stat, related, mtype, 0, 0
                    );
-  imd->argList = actualArgList;
+  imd->defArgList = actualArgList;
   imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getStartBodyLine(),getEndBodyLine());

@@ -65,8 +65,12 @@ Entry::Entry(const Entry &e)
   includeFile = e.includeFile.copy();
   includeName = e.includeFile.copy();
   doc         = e.doc.copy();
+  docLine     = e.docLine;
+  docFile     = e.docFile.copy();
   relates     = e.relates.copy();
   brief       = e.brief.copy();
+  briefLine   = e.briefLine;
+  briefFile   = e.briefFile.copy();
   inside      = e.inside.copy();
   fileName    = e.fileName.copy();
   startLine   = e.startLine;
@@ -90,9 +94,7 @@ Entry::Entry(const Entry &e)
   anchors->setAutoDelete(TRUE);
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
-  //printf("Entry::Entry(copy) tArgList=0\n");
   tArgLists = 0;
-  //mtArgList = 0;
   groupDocType = e.groupDocType;
 
   // deep copy of the child entry list
@@ -206,8 +208,12 @@ void Entry::reset()
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
+  docFile.resize(0);
+  docLine=-1;
   relates.resize(0);
   brief.resize(0);
+  briefFile.resize(0);
+  briefLine=-1;
   inside.resize(0);
   fileName.resize(0);
   //scopeSpec.resize(0);
@@ -251,12 +257,13 @@ int Entry::getSize()
   size+=bitfields.length()+1;
   size+=exception.length()+1;
   size+=program.length()+1;
-  //size+=body.length()+1;
   size+=includeFile.length()+1;
   size+=includeName.length()+1;
   size+=doc.length()+1;
+  size+=docFile.length()+1;
   size+=relates.length()+1;
   size+=brief.length()+1;
+  size+=briefFile.length()+1;
   size+=inside.length()+1;
   size+=fileName.length()+1;
   size+=initializer.length()+1;

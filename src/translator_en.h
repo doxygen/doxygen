@@ -1385,7 +1385,7 @@ class TranslatorEnglish : public Translator
     }
 
     /*! used in member documentation blocks to produce a list of
-     *  all members that implementation this member.
+     *  all members that implement this abstract member.
      */
     virtual QCString trImplementedInList(int numEntries)
     {

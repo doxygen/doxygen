@@ -1113,7 +1113,7 @@ ALIASES  = "english=\if english" \
 
   \sa
    Section \ref cmdpage "\\page" for an example of the 
-           \ref cmdsubsection "\\cmdsubsection" command.
+           \ref cmdsubsection "\\subsection" command.
 
 <hr>
 

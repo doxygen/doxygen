@@ -110,6 +110,14 @@
 #    The older translator adapters are derived from newer ones.
 #    The mistaken comment said the opposite.
 #
+# 2002/01/23
+#  - The nasty bug corrected.  GetAdapterClassesInfo() did not 
+#    strip trailing blanks from the method prototype; consequently,
+#    the required methods implemented by a translator adapter was
+#    not recognized as the required one (i.e. not listed).
+#  - Some defined() operators used on hash elements were replaced
+#    by exists() operators where appropriate.
+#
 ################################################################
 
 use 5.005;
@@ -421,10 +429,15 @@ sub GetAdapterClassesInfo ##{{{
     #
     $cont =~ s{\n\s*\n}{\n}sg;
 
+    # Trim the spaces.
+    #
+    $cont =~ s{^\s+}{}mg;
+    $cont =~ s{\s+$}{}mg;
+    
     # Split the string into the lines again.
     #
     @content = split(/\n/, $cont);
-    
+
     # Now the list contains only two kinds of lines.  The first
     # kind of lines starts with the <class> tag and contains the
     # identifier of the class.  The following lines list the
@@ -474,8 +487,8 @@ sub GetAdapterClassesInfo ##{{{
             # string of methods.
             #
             my $stripped_prototype = StripArgIdentifiers($line);
-            
-            if (defined $$reqref{$stripped_prototype}) 
+
+            if (exists($$reqref{$stripped_prototype})) 
             {
                 ++$cnt;
                 $methods .= "    $line\n";
@@ -498,10 +511,10 @@ sub GetAdapterClassesInfo ##{{{
     
     # Return the result list.
     #
-    # push @result, $cont; # ???
     return @result;
 }
 ##}}}  
+
 
 ################################################################
 # GenerateLanguageDoc takes document templates and code sources
@@ -656,7 +669,7 @@ xxxTABLE_FOOTxxx
         # was not defined in sources, add the question mark to the
         # language identifier.
         # 
-        if (defined $language{$lang}) { 
+        if (exists($language{$lang})) { 
             $language{$lang} = $$rcb{"Translator$lang"} . '<msep/>' 
                                . join("<sep/>", @info);
         }
@@ -1053,8 +1066,8 @@ print STDERR "\n\n";
             # Otherwise, remember it as old method which is
             # implemented, but not required.
             #
-            if (defined $required{$prototype}) { 
-                $required{$prototype} = 0; 
+            if (exists($required{$prototype})) { 
+                $required{$prototype} = 0;       # satisfaction
             }
             else {
                 push(@old_methods, $implemented); 

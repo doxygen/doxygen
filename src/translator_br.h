@@ -13,15 +13,12 @@
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@icmc.sc.usp.br>
  *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.2.11 (2001/11/23)
- *
- * News:
- *   - Everything was revised.
+ *   Version: 1.2.13 (2002/01/24)
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_2_13
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1313,5 +1310,26 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_13
     {
       return "Referências";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementa "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implementation this member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementado em "+trWriteList(numEntries)+".";
+    }
+
 };
 #endif

@@ -95,10 +95,10 @@ class BaseOutputDocInterface
      *  \param file   The file in which the object is located.
      *  \param anchor The anchor uniquely identifying the object within 
      *                the file. 
-     *  \param text   The text to display as a placeholder for the link.
+     *  \param name   The text to display as a placeholder for the link.
      */
     virtual void writeObjectLink(const char *ref,const char *file,
-                                 const char *anchor, const char *text) = 0;
+                                 const char *anchor, const char *name) = 0;
 
     /*! Writes a link to an object in a code fragment.
      *  \param ref    If this is non-zero, the object is to be found in
@@ -106,10 +106,10 @@ class BaseOutputDocInterface
      *  \param file   The file in which the object is located.
      *  \param anchor The anchor uniquely identifying the object within 
      *                the file. 
-     *  \param text   The text to display as a placeholder for the link.
+     *  \param name   The text to display as a placeholder for the link.
      */
     virtual void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *text) = 0;
+                               const char *anchor,const char *name) = 0;
 
     /*! Starts a (link to an) URL found in the documentation.
      *  \param url    The URL to link to.
