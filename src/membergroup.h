@@ -36,7 +36,7 @@ class Definition;
 class MemberGroup 
 {
   public:
-    MemberGroup(int id,const char *header,const char *docs);
+    MemberGroup(Definition *parent,int id,const char *header,const char *docs);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
@@ -54,6 +54,7 @@ class MemberGroup
     void addToDeclarationSection();
     int countDecMembers(/*bool sectionPerType*/);
     void distributeMemberGroupDocumentation();
+    void findSectionsInDocumentation();
     int varCount() const;
     int funcCount() const;
     int enumCount() const;
@@ -67,6 +68,7 @@ class MemberGroup
     void setInGroup(bool b);
     void addListReferences(Definition *d);
     MemberList *members() const { return memberList; }
+    Definition *parent() const { return m_parent; }
 
   private: 
     MemberList *memberList;      // list of all members in the group
@@ -78,6 +80,7 @@ class MemberGroup
     MemberList *inDeclSection;
     bool inSameSection;
     int  m_numDecMembers;
+    Definition *m_parent;
 };
 
 class MemberGroupList : public QList<MemberGroup>

@@ -30,7 +30,13 @@
 #include "membergroup.h"
 #include "groupdef.h"
 #include "defargs.h"
+#include "docparser.h"
 //#include "xml.h"
+
+
+//-----------------------------------------------------------------------------
+
+int MemberDef::s_indentLevel = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -307,7 +313,7 @@ MemberDef::MemberDef(const char *df,int dl,
   annUsed=FALSE;
   annShown=FALSE;
   annEnumType=0;
-  indDepth=0;
+  //indDepth=0;
   section=0;
   bodyMemb=0;
   explExt=FALSE;
@@ -560,9 +566,11 @@ bool MemberDef::isBriefSectionVisible() const
     //    0,"", //grpId,grpId==-1?"<none>":Doxygen::memberDocDict[grpId]->data(),
     //    "", //getFileDef()->name().data(),
     //    argsString());
+
+    QCString *pMemGrp = Doxygen::memberDocDict[grpId];
     bool hasDocs = hasDocumentation() || 
                     // part of a documented member group
-                   (grpId!=-1 && !Doxygen::memberDocDict[grpId]->isEmpty());
+                   (grpId!=-1 && pMemGrp && !pMemGrp->isEmpty());
   
     // only include static members with file/namespace scope if 
     // explicitly enabled in the config file
@@ -636,6 +644,7 @@ bool MemberDef::isBriefSectionVisible() const
     return visible;
 }
 
+
 void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                bool inGroup
@@ -705,6 +714,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   ClassDef *annoClassDef=getClassDefOfAnonymousType();
 
   // start a new member declaration
+  ///printf("startMemberItem for %s\n",name().data());
   ol.startMemberItem((annoClassDef || annMemb || annEnumType) ? 1 : 0);
 
   // If there is no detailed description we need to write the anchor here.
@@ -728,11 +738,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.popGeneratorState();
   }
 
-  //printf("member name=%s indDepth=%d\n",name().data(),indDepth);
   if (annoClassDef || annMemb)
   {
     int j;
-    for (j=0;j<indDepth;j++) 
+    for (j=0;j<s_indentLevel;j++) 
     {
       ol.writeNonBreakableSpace(3);
     }
@@ -752,6 +761,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");
 
+  bool endAnonScopeNeeded=FALSE;
   int l,i=r.match(ltype,0,&l);
   if (i!=-1) // member has an anonymous type
   {
@@ -761,10 +771,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (annoClassDef) // type is an anonymous compound
     {
       int ir=i+l;
+      //printf("<<<<<<<<<<<<<<\n");
+      ol.startAnonTypeScope(s_indentLevel++);
       annoClassDef->writeDeclaration(ol,annMemb,inGroup);
+      //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       ol.startMemberItem(2);
       int j;
-      for (j=0;j<indDepth;j++) 
+      for (j=0;j< s_indentLevel-1;j++) 
       {
         ol.writeNonBreakableSpace(3);
       }
@@ -775,6 +788,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         ol.docify(";"); 
       }
+      endAnonScopeNeeded=TRUE;
     }
     else
     {
@@ -900,9 +914,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.endDoxyAnchor(cfname,anchor());
   }
 
-  ol.endMemberItem((annoClassDef!=0 && indDepth==0) || annEnumType);
+  //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
+  //    name().data(),annoClassDef,annEnumType);
+  ol.endMemberItem();
+  if (endAnonScopeNeeded) ol.endAnonTypeScope(--s_indentLevel);
 
-  //ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef || annMemb);
   // write brief description
   if (!briefDescription().isEmpty() && 
       Config_getBool("BRIEF_MEMBER_DESC") && 
@@ -1944,8 +1960,15 @@ void MemberDef::setArgumentList(ArgumentList *al)
   if (defArgList) delete defArgList;
   defArgList = al;
 }
+
 void MemberDef::setDeclArgumentList(ArgumentList *al)
 {
   if (declArgList) delete declArgList;
   declArgList = al;
 }
+
+void MemberDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),0,this,0);  
+}
+

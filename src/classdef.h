@@ -259,6 +259,7 @@ class ClassDef : public Definition
     bool addExample(const char *anchor,const char *name, const char *file);
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+    void findSectionsInDocumentation();
     void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
     void setTemplateArguments(ArgumentList *al);
     void mergeMembers();

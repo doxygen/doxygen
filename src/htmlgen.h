@@ -94,7 +94,10 @@ class HtmlGenerator : public OutputGenerator
     void endMemberSubtitle();
     void startMemberList();
     void endMemberList();
+    void startAnonTypeScope(int) {}
+    void endAnonTypeScope(int) {}
     void startMemberItem(int);
+    void endMemberItem();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -104,7 +107,6 @@ class HtmlGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void insertMemberAlign();
-    void endMemberItem(bool);
     void startMemberDescription();
     void endMemberDescription();
 

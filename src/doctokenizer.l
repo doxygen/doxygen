@@ -27,16 +27,30 @@
 #include "cmdmapper.h"
 #include "config.h"
 #include "message.h"
+#include "section.h"
+#include "membergroup.h"
+#include "definition.h"
+#include "page.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
 //--------------------------------------------------------------------------
 
+// context for tokenizer phase
 static int g_commentState;
 TokenInfo *g_token = 0;
 static int g_inputPos = 0;
 static const char *g_inputString;
 static QString g_fileName;
+static bool g_insidePre;
+
+// context for section finding phase
+static PageInfo    *g_pageInfo;
+static Definition  *g_definition;
+static MemberGroup *g_memberGroup;
+static QCString     g_secLabel;
+static QCString     g_secTitle;
+static SectionInfo::SectionType g_secType;
 
 struct DocLexerContext
 {
@@ -189,6 +203,41 @@ static void parseHtmlAttribs(const char *att)
 
 //--------------------------------------------------------------------------
 
+static void processSection()
+{
+  //printf("found section/anchor with name `%s'\n",g_secLabel.data());
+  QCString file;
+  if (g_memberGroup)
+  {
+    file = g_memberGroup->parent()->getOutputFileBase();
+  }
+  else if (g_definition)
+  {
+    file = g_definition->getOutputFileBase();
+  }
+  else if (g_pageInfo)
+  {
+    file = g_pageInfo->getOutputFileBase();
+  }
+  else
+  {
+    warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
+  }
+  SectionInfo *si=0;
+  if ((si=Doxygen::sectionDict.find(g_secLabel))==0)
+  {
+    si = new SectionInfo(file,g_secLabel,g_secTitle,g_secType);
+    Doxygen::sectionDict.insert(g_secLabel,si);
+  }
+  else if (!si->generated)
+  {
+    warn(g_fileName,yylineno,"Duplicate section/anchor label %s found!\n",
+	g_secLabel.data());
+  }
+}
+
+//--------------------------------------------------------------------------
+
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
@@ -237,14 +286,15 @@ OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD1     [^ \t\n\r\\@<>{}&$#,.]+|"{"|"}"
-WORD2     "."|","
-WORD1NQ   [^ \t\n\r\\@<>{}&$#,."]+ 
-WORD2NQ   "."|","
+WORD1     [^ \t\n\r\\@<>(){}&$#,.]+|"{"|"}"
+WORD2     "."|","|"("|")"
+WORD1NQ   [^ \t\n\r\\@<>(){}&$#,."]+ 
+WORD2NQ   "."|","|"("|")"
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
+LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 
 %option noyywrap
 %option yylineno
@@ -269,6 +319,12 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 %x St_Ref2
 %x St_IntRef
 %x St_Text
+%x St_SkipTitle
+
+%x St_Sections
+%s St_SecLabel1
+%s St_SecLabel2
+%s St_SecTitle
 
 %%
 <St_Para>\r               /* skip carriage return */
@@ -315,12 +371,14 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
                          g_token->name = yytext+1;
                          return TK_COMMAND;
   		       }
-<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} {
+<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} { // URL
                          g_token->name=yytext;
+			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+"."[a-z_A-Z0-9.-]+ {
+<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+"."[a-z_A-Z0-9.-]+ { // Mail address
                          g_token->name=yytext;
+			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
                        }
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
@@ -408,8 +466,19 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
                          return TK_COMMAND;
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n {
-                         /* start of a new paragraph */
-  		         return TK_NEWPARA;
+                         if (g_insidePre)
+			 {
+			   /* Inside a <pre>..</pre> blank lines are treated
+			    * as whitespace.
+			    */
+                           g_token->chars=yytext;
+			   return TK_WHITESPACE;
+			 }
+			 else
+			 {
+                           /* start of a new paragraph */
+  		           return TK_NEWPARA;
+			 }
                        }
 <St_Code>{CMD}"endcode" {
                          return RetVal_OK;
@@ -621,6 +690,56 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
                        }
 <St_Comment>[^-\n]+       /* inside html comment */
 <St_Comment>.             /* inside html comment */
+
+     /* State for skipping title (all chars until the end of the line) */
+
+<St_SkipTitle>.
+<St_SkipTitle>\n       { return 0; }
+
+     /* State for the pass used to find the anchors and sections */ 
+
+<St_Sections>[^\n@\\]+
+<St_Sections>"@@"|"\\\\"
+<St_Sections>{CMD}"anchor"{BLANK}+  { 
+                                      g_secType = SectionInfo::Anchor; 
+				      BEGIN(St_SecLabel1); 
+                                    }
+<St_Sections>{CMD}"section"{BLANK}+ { 
+                                      g_secType = SectionInfo::Section; 
+                                      BEGIN(St_SecLabel2); 
+                                    }
+<St_Sections>{CMD}"subsection"{BLANK}+ { 
+                                      g_secType = SectionInfo::Subsection; 
+                                      BEGIN(St_SecLabel2); 
+                                    }
+<St_Sections>{CMD}"subsubsection"{BLANK}+ { 
+                                      g_secType = SectionInfo::Subsubsection; 
+                                      BEGIN(St_SecLabel2); 
+                                    }
+<St_Sections>{CMD}"paragraph"{BLANK}+ { 
+                                      g_secType = SectionInfo::Paragraph; 
+                                      BEGIN(St_SecLabel2); 
+                                    }
+<St_Sections>.
+<St_Sections>\n        
+<St_SecLabel1>{LABELID} { 
+                         g_secLabel = yytext;
+                         processSection();
+                         BEGIN(St_Sections);
+                       }
+<St_SecLabel2>{LABELID}{BLANK}+ { 
+                         g_secLabel = yytext;
+			 g_secLabel = g_secLabel.stripWhiteSpace();
+                         BEGIN(St_SecTitle);
+                       }
+<St_SecTitle>[^\n]*\n  {
+                         g_secTitle = yytext;
+			 g_secTitle = g_secTitle.stripWhiteSpace();
+                         processSection();
+                         BEGIN(St_Sections);
+		       }
+   
+     /* Generic rules that work for all states */ 
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
@@ -636,11 +755,27 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 
 //--------------------------------------------------------------------------
 
+void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
+                                MemberGroup *mg)
+{
+  if (input==0) return;
+  g_inputString = input;
+  //printf("parsing --->`%s'<---\n",input);
+  g_inputPos    = 0;
+  g_pageInfo    = pi;
+  g_definition  = d;
+  g_memberGroup = mg;
+  BEGIN(St_Sections);
+  doctokenizerYYlineno = 1;
+  doctokenizerYYlex();
+}
+
 void doctokenizerYYinit(const char *input,const char *fileName)
 {
   g_inputString = input;
-  g_inputPos = 0;
-  g_fileName = fileName;
+  g_inputPos    = 0;
+  g_fileName    = fileName;
+  g_insidePre   = FALSE;
   BEGIN(St_Para);
 }
 
@@ -718,9 +853,19 @@ void doctokenizerYYsetStateText()
   BEGIN(St_Text);
 }
 
+void doctokenizerYYsetStateSkipTitle()
+{
+  BEGIN(St_SkipTitle);
+}
+
 void doctokenizerYYcleanup()
 {
   yy_delete_buffer( YY_CURRENT_BUFFER );
+}
+
+void doctokenizerYYsetInsidePre(bool b)
+{
+  g_insidePre = b;
 }
 
 extern "C" { // some bogus code to keep the compiler happy

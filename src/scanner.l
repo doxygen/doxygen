@@ -111,8 +111,8 @@ static char             afterDocTerminator;
 static int              tmpDocType;
 static QCString         sectionLabel;
 static QCString		sectionTitle;
-static SectionInfo::SectionType      
-                        sectionType;
+//static SectionInfo::SectionType      
+//                        sectionType;
 static QCString         funcPtrType;
 static QCString         templateStr;
 static QCString         aliasName;
@@ -279,6 +279,7 @@ static void newDocState();
 
 //-----------------------------------------------------------------
 
+#if 0
 static void addSection()
 {
   //printf("New section pageName=%s label=%s title=%s\n",
@@ -292,8 +293,7 @@ static void addSection()
   if (sectionLabel.isEmpty()) return;
   if (Doxygen::sectionDict.find(sectionLabel)==0)
   {
-    SectionInfo *si=new SectionInfo(sectionLabel,sectionTitle,sectionType);
-    si->fileName = current->name;
+    SectionInfo *si=new SectionInfo(current->name,sectionLabel,sectionTitle,sectionType);
     //printf("Adding section addr=%p label=`%s' sectionTitle=`%s' fileName=%s\n",si,sectionLabel.data(),sectionTitle.data(),si->fileName.data());
     Doxygen::sectionDict.insert(sectionLabel,si);
     current->anchors->append(new QCString(sectionLabel));
@@ -305,6 +305,61 @@ static void addSection()
   }
   sectionTitle.resize(0);
 }
+#endif
+
+static void addSpecialItem(const char *listName)
+{
+  ListItemInfo *lii=0;
+  RefList *refList = Doxygen::specialLists->find(listName);
+  ASSERT(refList!=0);
+  if (current->sli)
+  {
+    QListIterator<ListItemInfo> slii(*current->sli);
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      if (strcmp(lii->type,listName)==0) break;
+    }
+  }
+  if (lii) // already found item of same type before
+  {
+    RefItem *item = refList->getRefItem(lii->itemId);
+    ASSERT(item!=0);
+    item->text += " <p>";
+    item->text += current->brief;
+    //printf("%s: text +=%s\n",listName,item->text.data());
+  }
+  else // new item
+  {
+    int itemId  = refList->addRefItem();
+    char anchorLabel[1024];
+    sprintf(anchorLabel,"_%s%06d",listName,itemId);
+    RefItem *item = refList->getRefItem(itemId);
+    ASSERT(item!=0);
+    item->text = current->brief.copy();
+    item->listAnchor = anchorLabel;
+    current->addSpecialListItem(listName,itemId);
+    QCString cmdString;
+    cmdString.sprintf("\\%s %d\n",listName,itemId);
+    current->doc += cmdString;
+    //current->doc += (QCString)"\\anchor "+anchorLabel+"\n";
+    
+    SectionInfo *si=new SectionInfo(listName,anchorLabel,
+	                            sectionTitle,SectionInfo::Anchor);
+    Doxygen::sectionDict.insert(anchorLabel,si);
+    current->anchors->append(new QCString(anchorLabel));
+
+    //QCString tmpName = current->name;
+    //current->name = listName;
+    //sectionType=SectionInfo::Anchor;
+    //sectionLabel=anchorLabel;
+    //addSection();
+    //current->name = tmpName;
+    //printf("%s: text %s doc %s\n",listName,item->text.data(),cmdString.data());
+  }
+  current->brief  = slString.copy(); // restore orginial brief desc.
+}
+
+//-----------------------------------------------------------------------------
 
 // Adds a formula text to the list/dictionary of formulas if it was
 // not already added. Returns the label of the formula.
@@ -434,52 +489,6 @@ static void prependScope()
   }
 }
 
-//-----------------------------------------------------------------------------
-
-static void addSpecialItem(const char *listName)
-{
-  ListItemInfo *lii=0;
-  RefList *refList = Doxygen::specialLists->find(listName);
-  ASSERT(refList!=0);
-  if (current->sli)
-  {
-    QListIterator<ListItemInfo> slii(*current->sli);
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      if (strcmp(lii->type,listName)==0) break;
-    }
-  }
-  if (lii) // already found item of same type before
-  {
-    RefItem *item = refList->getRefItem(lii->itemId);
-    ASSERT(item!=0);
-    item->text += " <p>";
-    item->text += current->brief;
-    //printf("%s: text +=%s\n",listName,item->text.data());
-  }
-  else // new item
-  {
-    int itemId  = refList->addRefItem();
-    char anchorLabel[1024];
-    sprintf(anchorLabel,"_%s%06d",listName,itemId);
-    RefItem *item = refList->getRefItem(itemId);
-    ASSERT(item!=0);
-    item->text = current->brief.copy();
-    item->listAnchor = anchorLabel;
-    current->addSpecialListItem(listName,itemId);
-    QCString cmdString;
-    cmdString.sprintf("\\%s %d\n",listName,itemId);
-    current->doc += cmdString;
-    QCString tmpName = current->name;
-    current->name = listName;
-    sectionType=SectionInfo::Anchor;
-    sectionLabel=anchorLabel;
-    addSection();
-    current->name = tmpName;
-    //printf("%s: text %s doc %s\n",listName,item->text.data(),cmdString.data());
-  }
-  current->brief  = slString.copy(); // restore orginial brief desc.
-}
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -953,7 +962,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
 					  lineCount();
-                                          if (insideIDL)
+                                          if (insideIDL || insideJava)
 					  {
   					    isTypedef=FALSE;
 					    current->section = Entry::INTERFACE_SEC;
@@ -1948,6 +1957,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  initEntry();
   					  BEGIN(MemberSpecSkip); 
   					}
+<TypedefName>";"			{ /* typedef of anonymous type */
+					  current->name.sprintf("@%d",anonCount++);
+					  if (current->section == Entry::ENUM_SEC)
+					  {
+					    current->program+=','; // add field terminator
+					  }
+					  // add compound definition to the tree
+  					  current->args = current->args.simplifyWhiteSpace();
+  					  current->type = current->type.simplifyWhiteSpace();
+					  current_root->addSubEntry( current ) ;
+					  current = new Entry(*current);
+					  unput(';');
+					  BEGIN( MemberSpec ) ;
+  					}
 <MemberSpec>([*&]*{BN}*)*{ID}("["[a-z_A-Z0-9]*"]")* { // the [] part could be improved.
   					  lineCount();
   					  int i=0,l=yyleng,j;
@@ -1963,6 +1986,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  msType = yytext; msType=msType.left(i);
 					}
 <MemberSpec>[,;]			{
+                                          //printf("current->name=`%s' msName=`%s'\n",current->name.data(),msName.data());
   					  if (msName.isEmpty() && !current->name.isEmpty())
 					   /* && (current->section & Entry::COMPOUND_MASK)) */
 					  { 
@@ -2044,7 +2068,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    initEntry();
 					    BEGIN( FindMembers );
 					  }
-  					}					
+  					}
 <MemberSpec>"="				{ 
   					  lastInitializerContext=YY_START;
 					  initializerSharpCount=0;
@@ -2606,6 +2630,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      // to the previous item
 					      previous->doc += current->doc;
 					      current->doc.resize(0);
+					    }
+					    if (current->sli) // copy special list items
+					    {
+					      QListIterator<ListItemInfo> li(*current->sli);
+					      ListItemInfo *lii;
+					      for (li.toFirst();(lii=li.current());++li)
+					      {
+						previous->addSpecialListItem(lii->type,lii->itemId);
+					      }
+					      delete current->sli;
+					      current->sli = 0;
 					    }
 					    previous->endBodyLine=yyLineNr;
 					    BEGIN( lastCurlyContext ) ;
@@ -3582,19 +3617,23 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->doc+=yytext;
   					}
 <PageDoc>{CMD}"section"{B}+		{
-  					  sectionType=SectionInfo::Section;
+  					  //sectionType=SectionInfo::Section;
+					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
 <PageDoc>{CMD}"subsection"{B}+		{
-  					  sectionType=SectionInfo::Subsection;
+  					  //sectionType=SectionInfo::Subsection;
+					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
 <PageDoc>{CMD}"subsubsection"{B}+	{
-  					  sectionType=SectionInfo::Subsubsection;
+  					  //sectionType=SectionInfo::Subsubsection;
+					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
 <PageDoc>{CMD}"paragraph"{B}+		{
-  					  sectionType=SectionInfo::Paragraph;
+  					  //sectionType=SectionInfo::Paragraph;
+					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
 <GroupHeader>.				{ memberGroupHeader+=*yytext; }
@@ -3629,7 +3668,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <ExampleDoc,Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
   					  lastAnchorContext = YY_START;
-  					  sectionType=SectionInfo::Anchor;
+  					  //sectionType=SectionInfo::Anchor;
+					  current->doc+=yytext;
 					  BEGIN(AnchorLabel);
   					}
 <Doc,PageDoc,ClassDoc>("\\\\"|"@@")"verbatim"/[^a-z_A-Z0-9] {
@@ -3742,28 +3782,33 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  *pSkipDoc+=*yytext;
   					}
 <AnchorLabel>{LABELID}			{
-  					  sectionLabel=yytext;
-					  addSection();
-					  current->doc += "\\anchor "+sectionLabel+" ";
+  					  //sectionLabel=yytext;
+					  //addSection();
+					  //current->doc += "\\anchor "+sectionLabel+" ";
+                                          current->doc+=yytext;
 					  BEGIN(lastAnchorContext);
   					}
 <SectionLabel>{LABELID}			{
-  					  sectionLabel=yytext;
+  					  //sectionLabel=yytext;
 					  sectionTitle.resize(0);
+                                          current->doc+=yytext;
 					  BEGIN(SectionTitle);
   					}
 <SectionTitle>[^\n*]*/"\n"		{
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  current->doc += "\\section "+sectionLabel+" ";
-					  addSection();
+					  //current->doc += "\\section "+sectionLabel+" ";
+					  //addSection();
+                                          current->doc+=yytext;
 					  BEGIN(PageDoc);
   					}
 <SectionTitle>[^\n*]*			{
   					  sectionTitle+=yytext;
+                                          current->doc+=yytext;
   					}
 <SectionTitle>"*"			{
   					  sectionTitle+=yytext;
+                                          current->doc+=yytext;
   					}
 <ExampleDoc,PageDoc,ClassDoc>"\n"			{ yyLineNr++ ; current->doc+=yytext; }
 <ExampleDoc,PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }

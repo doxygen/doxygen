@@ -34,6 +34,7 @@
 #include "version.h"
 #include "xmldocvisitor.h"
 #include "docparser.h"
+#include "language.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -56,7 +57,8 @@ static void writeXMLHeader(QTextStream &t)
 {
   QCString dtdName = Config_getString("XML_DTD");
   QCString schemaName = Config_getString("XML_SCHEMA");
-  t << "<?xml version='1.0' encoding='ISO-8859-1' standalone='";
+  t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
+    << "' standalone='";
   if (dtdName.isEmpty() && schemaName.isEmpty()) t << "yes"; else t << "no";
   t << "'?>" << endl;
   if (!dtdName.isEmpty())
@@ -789,6 +791,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -975,6 +978,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
   
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -1065,6 +1069,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -1198,6 +1203,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   }
 
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
@@ -1312,6 +1318,7 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
   }
 
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
   t << "\" kind=\"page\">" << endl;
@@ -1393,6 +1400,7 @@ void generateXML()
     return;
   }
   QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
   writeXMLHeader(t);
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;

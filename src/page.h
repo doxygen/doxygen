@@ -17,8 +17,10 @@
 
 #include "sortdict.h"
 #include "config.h"
+#include "docparser.h"
 
 #include "section.h"
+#include "doxygen.h"
 
 class PageInfo
 {
@@ -75,6 +77,10 @@ class PageInfo
           s=anchorList->next();
         }
       }
+    }
+    void findSectionsInDocumentation()
+    {
+      docFindSections(doc,this,0,0);
     }
     
     void writeDocAnchorsToTagFile()

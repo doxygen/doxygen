@@ -766,7 +766,7 @@ void HtmlGenerator::startMemberItem(int annoType)
   }
 }
 
-void HtmlGenerator::endMemberItem(bool) 
+void HtmlGenerator::endMemberItem() 
 { 
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))

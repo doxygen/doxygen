@@ -376,7 +376,8 @@ doxygen. Unrecognized commands are treated as normal text.
   
   \addindex \\internal
   This command writes the message `For internal use only' to the output and
-  all text \e after a \c \\internal command is ignored. 
+  all text \e after a \c \\internal command until the end of the
+  comment block is ignored. 
   You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the config file
   to show or hide the internal documentation.
 

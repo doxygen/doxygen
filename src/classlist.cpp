@@ -112,7 +112,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.docify(cd->localName());
             ol.endBold();
           }
-          ol.endMemberItem(FALSE);
+          ol.endMemberItem();
           if (!cd->briefDescription().isEmpty())
           {
             ol.startMemberDescription();

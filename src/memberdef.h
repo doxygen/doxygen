@@ -21,6 +21,7 @@
 #include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
+#include <qstack.h>
 
 #include "entry.h"
 #include "definition.h"
@@ -221,8 +222,8 @@ class MemberDef : public Definition
     void setFromAnonymousMember(MemberDef *m) { annMemb=m; }    
     bool fromAnonymousScope() const { return annScope; }
     bool anonymousDeclShown() const { return annUsed; }
-    void setIndentDepth( int i) { indDepth=i; }
-    int  indentDepth() { return indDepth; }
+    //void setIndentDepth( int i) { indDepth=i; }
+    //int  indentDepth() { return indDepth; }
 
     bool visibleMemberGroup(bool hideNoHeader);
     MemberDef *templateMaster() const { return m_templateMaster; } 
@@ -251,6 +252,7 @@ class MemberDef : public Definition
     void writeEnumDeclaration(OutputList &typeDecl,
             ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
 
+    void findSectionsInDocumentation();
     
     bool visited;
     
@@ -290,7 +292,7 @@ class MemberDef : public Definition
     bool annScope;            // member is part of an annoymous scope
     bool annUsed;             
     bool annShown;           
-    int  indDepth;            // indentation depth for this member if inside an annonymous scope
+    //int  indDepth;            // indentation depth for this member if inside an annonymous scope
     int  maxInitLines;        // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 
@@ -323,6 +325,7 @@ class MemberDef : public Definition
     // disable copying of member defs
     MemberDef(const MemberDef &);
     MemberDef &operator=(const MemberDef &);
+    static int s_indentLevel;
 };
 
 #endif
