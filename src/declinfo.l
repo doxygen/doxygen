@@ -206,7 +206,7 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 /*@ ----------------------------------------------------------------------------
  */
 
-void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
+void parseFuncDecl(const QCString &decl,QCString &cl,QCString &t,
                    QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
   inputString   = decl;
@@ -256,9 +256,11 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
 	cl+=c;
     }
   }
-#endif
   cl=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(scope),FALSE); 
   ctl.resize(0);
+#endif
+
+  cl=scope;
   n=removeRedundantWhiteSpace(name);
   int il,ir;
   if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)

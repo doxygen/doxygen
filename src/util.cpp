@@ -557,7 +557,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=" >"; // insert extra space for layouting (nested) templates
     }
-    else if (i>0 && i<l-1 && c==',' && isId(s.at(i-1)) && isId(s.at(i+1)))
+    else if (i>0 && i<l-1 && c==',' && !isspace(s.at(i-1)) && isId(s.at(i+1)))
     {
       result+=", ";
     }
@@ -1014,28 +1014,71 @@ int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 //}
 
 // strip any template specifiers that follow className in string s
-static QCString trimTemplateSpecifiers(const QCString &className,const QCString &s)
+static QCString trimTemplateSpecifiers(
+     const QCString &namespaceName,
+     const QCString &className,
+     const QCString &s
+)
 {
-  //printf("trimTemplateSpecifiers(%s,%s)\n",className.data(),s.data());
-  ClassDef *cd=getClass(className);
-  if (cd==0) return s;
+  //printf("trimTemplateSpecifiers(%s,%s,%s)\n",namespaceName.data(),className.data(),s.data());
+  QCString scopeName=mergeScopes(namespaceName,className);
+  ClassDef *cd=getClass(scopeName);
+  if (cd==0) return s; // should not happen, but guard anyway.
 
+  QCString result=s;
+
+  int i=className.length()-1;
+  if (className.at(i)=='>') // template specialization
+  {
+    // replace unspecialized occurrences in s, with their specialized versions.
+    int count=1;
+    int cl=i+1;
+    while (i>=0)
+    {
+      char c=className.at(i);
+      if (c=='>') count++,i--;
+      else if (c=='<') { count--; if (count==0) break; }
+      else i--;
+    }
+    QCString unspecClassName=className.left(i);
+    int l=i;
+    int p=0;
+    while ((i=result.find(unspecClassName,p))!=-1)
+    {
+      if (result.at(i+l)!='<') // unspecialized version
+      {
+        result=result.left(i)+className+result.right(result.length()-i-l);
+        l=cl;
+      }
+      p=i+l;
+    }
+  }
+
+  //printf("result after specialization: %s\n",result.data());
+  
   QCString qualName=cd->qualifiedNameWithTemplateParameters();
   //printf("QualifiedName = %s\n",qualName.data());
   // We strip the template arguments following className (if any)
-  QCString result=s;
   if (!qualName.isEmpty()) // there is a class name
   {
-    int i,p=0;
-    // TODO: also try smaller parts of the qualName, since we 
-    // could be inside a namespace or class.
-    while ((i=result.find(qualName,p))!=-1) // class name is in the argument type
+    int is,ps=0;
+    int p=0,l,i;
+
+    while ((is=getScopeFragment(qualName,ps,&l))!=-1)
     {
-      int ql=qualName.length();
-      result=result.left(i)+cd->name()+result.right(result.length()-i-ql);
-      p=i+cd->name().length();
+      QCString qualNamePart = qualName.right(qualName.length()-is);
+      //printf("qualNamePart=%s\n",qualNamePart.data());
+      while ((i=result.find(qualNamePart,p))!=-1)
+      {
+        int ql=qualNamePart.length();
+        result=result.left(i)+cd->name()+result.right(result.length()-i-ql);
+        p=i+cd->name().length();
+      }
+      ps=is+l;
     }
   }
+  //printf("result=%s\n",result.data());
+    
   return result;
 }
 
@@ -1203,9 +1246,9 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   //       before matching. This should use className and namespaceName
   //       and usingNamespaces and usingClass to determine which typedefs
   //       are in-scope, so it will not be very efficient :-(
-  
-  QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
-  QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
+
+  QCString srcAType=trimTemplateSpecifiers(namespaceName,className,srcA->type);
+  QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
   if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
   
@@ -1234,6 +1277,9 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       
   stripIrrelevantConstVolatile(srcAType);
   stripIrrelevantConstVolatile(dstAType);
+
+  srcAType = removeRedundantWhiteSpace(srcAType);
+  dstAType = removeRedundantWhiteSpace(dstAType);
 
   //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
   //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
@@ -1446,9 +1492,23 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
     dstA->type+=dstA->name;
     dstA->name.resize(0);
   } 
+  if (srcA->name=="const" || srcA->name=="volatile")
+  {
+    srcA->type+=" ";
+    srcA->type+=srcA->name;
+    srcA->type=removeRedundantWhiteSpace(srcA->type);
+    srcA->name.resize(0);
+  }
+  if (dstA->name=="const" || dstA->name=="volatile")
+  {
+    dstA->type+=" ";
+    dstA->type+=dstA->name;
+    dstA->type=removeRedundantWhiteSpace(dstA->type);
+    dstA->name.resize(0);
+  }
   
-  QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
-  QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
+  QCString srcAType=trimTemplateSpecifiers(namespaceName,className,srcA->type);
+  QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
   if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
 
@@ -1617,10 +1677,16 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
     if (i>0 && i<(int)srcAType.length()-1 && srcAType.at(i)!=':') 
       // there is (probably) a name
     {
-      srcA->name=srcAType.right(srcAType.length()-i-1);
-      srcA->type=srcAType.left(i+1).stripWhiteSpace();
-      dstA->name=dstAType.right(dstAType.length()-i-1);
-      dstA->type=dstAType.left(i+1).stripWhiteSpace();
+      QCString srcAName=srcAType.right(srcAType.length()-i-1);
+      QCString dstAName=dstAType.right(dstAType.length()-i-1);
+      if (srcAName!="const" && srcAName!="volatile" &&
+          dstAName!="const" && dstAName!="volatile")
+      {
+        srcA->name=srcAName;
+        srcA->type=srcAType.left(i+1).stripWhiteSpace();
+        dstA->name=dstAName;
+        dstA->type=dstAType.left(i+1).stripWhiteSpace();
+      }
     } 
   }
   else if (!dstA->name.isEmpty())
@@ -1655,11 +1721,11 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   QCString namespaceName=ns;
 
   // strip template specialization from class name if present
-  int til=className.find('<'),tir=className.find('>');
-  if (til!=-1 && tir!=-1 && tir>til) 
-  {
-    className=className.left(til)+className.right(className.length()-tir-1);
-  }
+  //int til=className.find('<'),tir=className.find('>');
+  //if (til!=-1 && tir!=-1 && tir>til) 
+  //{
+  //  className=className.left(til)+className.right(className.length()-tir-1);
+  //}
 
   //printf("matchArguments(%s,%s) className=%s namespaceName=%s checkCV=%d usingNamespaces=%d usingClasses=%d\n",
   //    srcAl ? argListToString(srcAl).data() : "",
@@ -2670,24 +2736,22 @@ QCString substituteKeywords(const QCString &s,const char *title)
  */ 
 int getPrefixIndex(const QCString &name)
 {
-  int ni = name.findRev("::");
-  if (ni==-1) ni=0; else ni+=2;
   //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
   QStrList &sl = Config_getList("IGNORE_PREFIX");
   char *s = sl.first();
   while (s)
   {
     const char *ps=s;
-    const char *pd=name.data()+ni;
+    const char *pd=name.data();
     int i=0;
     while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
     if (*ps==0 && *pd!=0)
     {
-      return ni+i;
+      return i;
     }
     s = sl.next();
   }
-  return ni;
+  return 0;
 }
 
 //----------------------------------------------------------------------------
@@ -2868,17 +2932,52 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   return result;
 }
 
+/*! Strips the scope from a name. Examples: A::B will return A
+ *  and A<T>::B<N::C<D> > will return A<T>.
+ *  \todo deal with cases like A< s<<2 >::B
+ */
 QCString stripScope(const char *name)
 {
   QCString result = name;
-  int ti=result.find('<'); // find start of template
-  if (ti==-1) ti=result.length();
-  int i = ti>2 ? result.findRev("::",ti-2) : -1; // find scope just before template
-  if (i!=-1) // found scope
+  int l=result.length();
+  int p=l-1;
+  bool done;
+  int count;
+
+  while (p>=0)
   {
-    result=result.right(result.length()-i-2);
+    char c=result.at(p);
+    switch (c)
+    {
+      case ':': 
+        //printf("stripScope(%s)=%s\n",name,result.right(l-p-1).data());
+        return result.right(l-p-1);
+      case '>':
+        count=1;
+        done=FALSE;
+        //printf("pos < = %d\n",p);
+        p--;
+        while (p>=0 && !done)
+        {
+          c=result.at(p--);
+          switch (c)
+          {
+            case '>': count++; break;
+            case '<': count--; if (count<=0) done=TRUE; break;
+            default: 
+              //printf("c=%c count=%d\n",c,count);
+              break;
+          }
+        }
+        //printf("pos > = %d\n",p+1);
+        break;
+      default:
+        p--;
+    }
   }
-  return result;
+  //printf("stripScope(%s)=%s\n",name,name);
+  return name;
+  
 }
 
 /*! Converts a string to an XML-encoded string */
@@ -3015,6 +3114,8 @@ bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStr
 QCString substituteTemplateArgumentsInString(
        const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs)
 {
+  //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
+  //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
   if (formalArgs==0) return name;
   QCString result;
   static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
@@ -3036,16 +3137,19 @@ QCString substituteTemplateArgumentsInString(
         ++formAli,actArg=actualArgs->next()
         )
     {
-      if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
+      if (formArg->type=="class" || formArg->type=="typename")
       {
-        // replace formal argument with the actual argument of the instance
-        result += actArg->type; 
-        found=TRUE;
-      }
-      else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty())
-      {
-        result += formArg->defval;
-        found=TRUE;
+        if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
+        {
+          // replace formal argument with the actual argument of the instance
+          result += actArg->type; 
+          found=TRUE;
+        }
+        else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty())
+        {
+          result += formArg->defval;
+          found=TRUE;
+        }
       }
     }
     if (!found) result += n;
@@ -3109,10 +3213,8 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
   int p=0;
   int l=fullName.length();
   int i=fullName.find('<');
-  int si= i==-1 ? -1 : fullName.find("::",i);
-  while (i!=-1 && (!parentOnly || i<si))
+  while (i!=-1)
   {
-    result+=fullName.mid(p,i-p);
     //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
     int e=i+1;
     bool done=FALSE;
@@ -3130,18 +3232,112 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
         done = count==0;
       }
     }
+    int si= fullName.find("::",e);
+
+    if (parentOnly && si==-1) break; 
+       // we only do the parent scope, so we stop here if needed
+
+    result+=fullName.mid(p,i-p);
     //printf("  trying %s\n",(result+fullName.mid(i,e-i)).data());
-    if (getClass(result+fullName.mid(i,e-i))!=0)
+    if (getClass(result+fullName.mid(i,e-i))!=0) 
     {
       result+=fullName.mid(i,e-i);
       //printf("2:result+=%s\n",fullName.mid(i,e-i-1).data());
     }
     p=e;
     i=fullName.find('<',p);
-    si= i==-1 ? -1 : fullName.find("::",i);
   }
   result+=fullName.right(l-p);
   //printf("3:result+=%s\n",fullName.right(l-p).data());
   return result;
+}
+
+/*! Merges two scope parts together. The parts may (partially) overlap.
+ *  Example1: \c A::B and \c B::C will result in \c A::B::C <br>
+ *  Example2: \c A and \c B will be \c A::B <br>
+ *  Example3: \c A::B and B will be \c A::B
+ *  
+ *  @param leftScope the left hand part of the scope.
+ *  @param rightScope the right hand part of the scope.
+ *  @returns the merged scope. 
+ */
+QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
+{
+  // case leftScope=="A" rightScope=="A::B" => result = "A::B"
+  if (leftScopeMatch(rightScope,leftScope)) return rightScope;
+  QCString result;
+  int i=0,p=leftScope.length();
+
+  // case leftScope=="A::B" rightScope=="B::C" => result = "A::B::C"
+  // case leftScope=="A::B" rightScope=="B" => result = "A::B"
+  bool found=FALSE;
+  while ((i=leftScope.findRev("::",p))!=-1)
+  {
+    if (leftScopeMatch(rightScope,leftScope.right(leftScope.length()-i-2)))
+    {
+      result = leftScope.left(i+2)+rightScope;
+      found=TRUE;
+    }
+    p=i-1;
+  }
+  if (found) return result;
+
+  // case leftScope=="A" rightScope=="B" => result = "A::B"
+  result=leftScope.copy();
+  if (!result.isEmpty() && !rightScope.isEmpty()) result+="::";
+  result+=rightScope;
+  return result;
+}
+
+/*! Returns a fragment from scope \a s, starting at position \a p.
+ *
+ *  @param s the scope name as a string.
+ *  @param p the start position (0 is the first).
+ *  @param l the resulting length of the fragment.
+ *  @returns the location of the fragment, or -1 if non is found.
+ */
+int getScopeFragment(const QCString &s,int p,int *l)
+{
+  int sl=s.length();
+  int sp=p;
+  int count=0;
+  bool done;
+  if (sp>=sl) return -1;
+  while (sp<sl)
+  {
+    char c=s.at(sp);
+    if (c==':') sp++,p++; else break;
+  }
+  while (sp<sl)
+  {
+    char c=s.at(sp);
+    switch (c)
+    {
+      case ':': // found next part
+        goto found;
+      case '<': // skip template specifier
+        count=1;sp++;
+        done=FALSE;
+        while (sp<sl && !done)
+        {
+          // TODO: deal with << and >> operators!
+          char c=s.at(sp++);
+          switch(c)
+          {
+            case '<': count++; break;
+            case '>': count--; if (count==0) done=TRUE; break;
+            default: break;
+          }
+        }
+        break;
+      default:
+        sp++;
+        break;
+    }
+  }
+found:
+  *l=sp-p;
+  //printf("getScopeFragment(%s,%d)=%s\n",s.data(),p,s.mid(p,*l).data());
+  return p;
 }
 

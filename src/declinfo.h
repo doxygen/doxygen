@@ -23,7 +23,6 @@
 
 extern void parseFuncDecl(const QCString &decl,
                           QCString &clName,
-                          QCString &classTempList,
                           QCString &type,
                           QCString &name,
                           QCString &args,

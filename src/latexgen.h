@@ -217,9 +217,9 @@ class LatexGenerator : public OutputGenerator
     void endDescTable()
     { t << "\\end{description}" << endl; }
     void startDescTableTitle()
-    { t << "\\item[" << endl; }
+    { t << "\\item[{\\em " << endl; }
     void endDescTableTitle()
-    { t << "]"; }
+    { t << "}]"; }
     void startDescTableData() {}
     void endDescTableData() {}
     void lastIndexPage() {}

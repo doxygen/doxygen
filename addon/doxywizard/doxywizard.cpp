@@ -62,7 +62,7 @@ static bool loadConfig( QString loadFile )
 
   // parse the config file
   // this will initialize the various Config data members
-  if (Config::instance()->parse(loadFile))
+  if (!Config::instance()->parse(loadFile))
   {
     QMessageBox::warning(0,
                          "Warning","Cannot open or read input "+loadFile+"!",
@@ -89,7 +89,7 @@ static bool saveConfig( QString saveFile )
     return FALSE; // failure
   }
 
-  Config::instance()->writeTemplate(&f,TRUE,TRUE); // write brief config file
+  Config::instance()->writeTemplate(&f,TRUE,FALSE); // write brief config file
 
   return TRUE; // success
 }

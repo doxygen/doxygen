@@ -88,15 +88,15 @@ ClassDef::ClassDef(
   m_memberGroupList->setAutoDelete(TRUE);
   m_memberGroupDict = new MemberGroupDict(17);
   m_innerClasses = new ClassSDict(17);
-  int i=name().findRev("::");
-  if (i==-1)
-  {
-    m_scopelessName=name();
-  }
-  else
-  {
-    m_scopelessName=name().right(name().length()-i-2);
-  }
+  //int i=name().findRev("::"); // TODO: broken if A<N::C> is the class name
+  //if (i==-1)
+  //{
+  //  m_scopelessName=name();
+  //}
+  //else
+  //{
+  //  m_scopelessName=name().right(name().length()-i-2);
+  //}
   m_subGrouping=TRUE;
   m_isTemplBaseClass=-1;
   m_templateInstances = 0;
@@ -415,7 +415,7 @@ void ClassDef::insertMember(MemberDef *md)
                   enumValMembers.append(md);
                 break;
               case MemberDef::Function:
-                if (md->name()==m_scopelessName ||         // constructor
+                if (md->name()==localName() ||         // constructor
                     (md->name().find('~')!=-1 &&  // hack to detect destructor
                      md->name().find("operator")==-1
                     )
@@ -2232,6 +2232,7 @@ void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
 QCString ClassDef::qualifiedNameWithTemplateParameters(
     QList<ArgumentList> *actualParams) const
 {
+  //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
   QCString scName;
   Definition *d=getOuterScope();
   if (d)
@@ -2268,7 +2269,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
       }
     }
   }
-  //printf("scope=%s qualifiedName=%s\n",name().data(),scName.data());
+  //printf("qualifiedNameWithTemplateParameters: scope=%s qualifiedName=%s\n",name().data(),scName.data());
   return scName;
 }
 

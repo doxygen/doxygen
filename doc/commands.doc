@@ -62,6 +62,8 @@ documentation:
 <li> \refitem cmddeprecated \deprecated
 <li> \refitem cmddontinclude \dontinclude
 <li> \refitem cmde \e
+<li> \refitem cmdelse \else
+<li> \refitem cmdelseif \elseif
 <li> \refitem cmdem \em
 <li> \refitem cmdendcode \endcode
 <li> \refitem cmdendhtmlonly \endhtmlonly
@@ -81,6 +83,7 @@ documentation:
 <li> \refitem cmdhtmlinclude \htmlinclude
 <li> \refitem cmdhtmlonly \htmlonly
 <li> \refitem cmdif \if
+<li> \refitem cmdifnot \\ifnot
 <li> \refitem cmdimage \image
 <li> \refitem cmdinclude \include
 <li> \refitem cmdingroup \ingroup
@@ -663,15 +666,40 @@ Public/Protected/Private/... section.
   a deprecated entity. Can be used to describe alternatives, 
   expected life span, etc.
 
+<hr>
+\subsection cmdelse \else 
+
+  \addindex \else
+  Starts a conditional section if the previous conditional section 
+  was not enabled. The previous section should have been started with 
+  a \c \\if, \c \\ifnot, or \c \\elseif command.
+
+  \sa \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
+      \ref cmdendif "\\endif."
+
+<hr>
+\subsection cmdelseif \elseif <section-label>
+
+  \addindex \elseif
+  Starts a conditional documentation section if the previous section 
+  was not enabled. A conditional section is
+  disabled by default. To enable it you must put the
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  tag in the configuration
+  file. Conditional blocks can be nested. A nested section is
+  only enabled if all enclosing sections are enabled as well.
+
+  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot", 
+              \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
 \subsection cmdendif \endif 
 
-  \addindex \endif
-  Ends a conditional section that was started with \c \if.
-  For each \c \if one and only one matching \c \endif must follow.
+  \addindex \\endif
+  Ends a conditional section that was started with \c \\if or \c \\ifnot
+  For each \c \\if or \c \\ifnot one and only one matching \c \\endif must follow.
 
-  \sa \ref cmdif "\\if"
+  \sa \ref cmdif "\\if", and \ref cmdifnot "\\ifnot".
 
 <hr>
 \subsection cmdexception \exception <exception-object> { exception description }
@@ -694,9 +722,9 @@ Public/Protected/Private/... section.
 <hr>
 \subsection cmdif \if <section-label>
 
-  \addindex \if
+  \addindex \\if
   Starts a conditional documentation section. The section ends 
-  with a matching \c \endif command. A conditional section is
+  with a matching \c \\endif command. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
   tag in the configuration
@@ -720,7 +748,22 @@ Public/Protected/Private/... section.
    */
 \endverbatim  
 
-  \sa section \ref cmdendif "\\endif".
+  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot", 
+              \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
+
+<hr>
+\subsection cmdifnot \ifnot <section-label>
+
+  \addindex \ifnot
+  Starts a conditional documentation section. The section ends 
+  with a matching \c \\endif command. This conditional section is
+  enabled by default. To disable it you must put the
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  tag in the configuration
+  file. 
+
+  \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if", 
+              \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
 \subsection cmdinvariant \invariant { description of invariant }

@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ *
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #ifndef _DOCHANDLER_H
 #define _DOCHANDLER_H
 
@@ -7,6 +22,13 @@
 
 #include "basehandler.h"
 
+class ParagraphHandler;
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node of a structured documentation tree.
+ *
+ */
 class DocNode
 {
   public:
@@ -28,7 +50,8 @@ class DocNode
       MarkupModifier,
       ItemizedList,
       OrderedList,
-      ListItem
+      ListItem,
+      ParameterList
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -37,6 +60,12 @@ class DocNode
     NodeKind m_kind;
 };
 
+//-----------------------------------------------------------------------------
+
+
+/*! \brief Node representing a piece of text.
+ *
+ */
 class TextNode : public DocNode
 {
   public:
@@ -48,6 +77,11 @@ class TextNode : public DocNode
     int m_markup;
 };
 
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a change in the markup style.
+ *
+ */
 class MarkupModifierNode : public DocNode
 {
   public:
@@ -59,6 +93,12 @@ class MarkupModifierNode : public DocNode
     bool m_enabled;
 };
 
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Handles markup commands in the XML input. 
+ *
+ */
 class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
 {
   public:
@@ -90,6 +130,12 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     int             m_curMarkup;
 };
 
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a list item.
+ *
+ */
 class ListItemHandler : public DocNode, public BaseHandler<ListItemHandler>
 {
   public:
@@ -104,6 +150,12 @@ class ListItemHandler : public DocNode, public BaseHandler<ListItemHandler>
     QList<DocNode>  m_children;
 };
 
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing list of items.
+ *
+ */
 class ListHandler : public DocNode, public BaseHandler<ListHandler>
 {
   public:
@@ -118,6 +170,53 @@ class ListHandler : public DocNode, public BaseHandler<ListHandler>
     QList<DocNode>  m_children;
 };
 
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a parameter.
+ *
+ */
+class ParameterHandler : public DocNode, 
+                         public BaseHandler<ParameterHandler>
+{
+  public:
+    ParameterHandler(IBaseHandler *parent);
+    virtual ~ParameterHandler();
+    virtual void startParameterList(const QXmlAttributes& attrib);
+    virtual void endParameterList();
+
+  private:
+    IBaseHandler     *m_parent;
+    QString           m_name;
+    ParagraphHandler *m_description;
+};
+
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a parameter list.
+ *
+ */
+class ParameterListHandler : public DocNode, 
+                             public BaseHandler<ParameterListHandler>
+{
+  public:
+    ParameterListHandler(IBaseHandler *parent);
+    virtual ~ParameterListHandler();
+    virtual void startParameterList(const QXmlAttributes& attrib);
+    virtual void endParameterList();
+
+  private:
+    IBaseHandler            *m_parent;
+    QList<ParameterHandler>  m_parameters;
+    ParameterHandler        *m_curParam;
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a paragraph of text and commands.
+ *
+ */
 class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
 {
   public:
@@ -125,6 +224,7 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     virtual void endParagraph();
     virtual void startItemizedList(const QXmlAttributes& attrib);
     virtual void startOrderedList(const QXmlAttributes& attrib);
+    virtual void startParameterList(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();
@@ -136,7 +236,11 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     MarkupHandler  *m_markupHandler;
 };
 
+//-----------------------------------------------------------------------------
 
+/*! \brief Node representing a documentation block.
+ *
+ */
 class DocHandler : public BaseHandler<DocHandler>
 {
   public:

@@ -209,9 +209,9 @@ class HtmlGenerator : public OutputGenerator
     void endDescTable()
     { t << "</table>" << endl; }
     void startDescTableTitle()
-    { t << "<tr><td valign=top>"; }
+    { t << "<tr><td valign=top><em>"; }
     void endDescTableTitle()
-    { t << endl << "&nbsp;</td>"; }
+    { t << endl << "</em>&nbsp;</td>"; }
     void startDescTableData()
     { t << "<td>" << endl; }
     void endDescTableData()

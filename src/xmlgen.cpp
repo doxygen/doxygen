@@ -38,8 +38,8 @@ static inline void writeXMLString(QTextStream &t,const char *s)
   t << convertToXML(s);
 }
 
-static void writeXMLLink(QTextStream &t,const char *compoundId,const char *memId,
-                  const char *text)
+static void writeXMLLink(QTextStream &t,const char *compoundId,
+                  const char *memId,const char *text)
 {
   if (memId==0)
   {

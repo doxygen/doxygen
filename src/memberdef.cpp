@@ -553,7 +553,8 @@ bool MemberDef::isBriefSectionVisible() const
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a group
     bool visibleIfPrivate = (protection()!=Private || 
-                             Config_getBool("EXTRACT_PRIVATE")
+                             Config_getBool("EXTRACT_PRIVATE") ||
+                             mtype==Friend
                             );
     
     bool visible = visibleIfStatic && visibleIfDocumented && 
@@ -666,7 +667,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (tArgList)
   {
     writeTemplatePrefix(ol,tArgList);
-    ol.lineBreak();
+    //ol.lineBreak();
   }
 
   QCString ltype(type);
@@ -879,7 +880,8 @@ bool MemberDef::isDetailedSectionLinkable() const
   // only include members that are non-private unless EXTRACT_PRIVATE is
   // set to YES or the member is part of a group
   bool privateFilter = (protection()!=Private || 
-                           Config_getBool("EXTRACT_PRIVATE")
+                           Config_getBool("EXTRACT_PRIVATE") ||
+                           mtype==Friend
                           );
 
   // member is part of an anonymous scope that is the type of
@@ -1198,9 +1200,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if (a->hasDocumentation())
         {
           ol.startDescTableTitle();
-          ol.startEmphasis();
           ol.docify(a->name);
-          ol.endEmphasis();
           ol.endDescTableTitle();
           ol.startDescTableData();
           parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),a->docs+"\n");
@@ -1475,7 +1475,8 @@ bool MemberDef::isLinkableInProject() const
   return !name().isEmpty() && name().at(0)!='@' &&
          ((hasDocumentation() && !isReference())  
          ) && 
-         (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && // not a private class member
+         (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || 
+          mtype==Friend) && // not a hidden member due to protection
          (classDef!=0 || Config_getBool("EXTRACT_STATIC") || 
           !isStatic()); // not a static file/namespace member
 }

@@ -325,7 +325,7 @@ class ClassDef : public Definition
     /*! Bare name of the class without any scoping prefixes 
      *  (like for nested classes and classes inside namespaces)
      */ 
-    QCString m_scopelessName;              
+    //QCString m_scopelessName;              
 
     /*! List of base class (or super-classes) from which this class derives
      *  directly. 
