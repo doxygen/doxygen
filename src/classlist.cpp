@@ -95,7 +95,15 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           }
           ol.startMemberItem(FALSE);
           QCString tmp = cd->compoundTypeString();
-          QCString cname = substitute(cd->className(),"::",".");
+          QCString cname;
+          if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+          {
+            cname = substitute(cd->className(),"::",".");
+          }
+          else
+          {
+            cname = cd->className();
+          }
           ol.writeString(tmp);
           ol.writeString(" ");
           ol.insertMemberAlign();

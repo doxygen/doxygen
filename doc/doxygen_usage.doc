@@ -91,7 +91,4 @@ doxygen -w rtf rtfstyle.cfg
      a file, use \c - for the file name.
 </ul>
 
-If you also want to use the search engine, you should look
-at section \ref doxysearch_usage. 
-
 */

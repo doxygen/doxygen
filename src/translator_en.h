@@ -1493,8 +1493,9 @@ class TranslatorEnglish : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the index 
-     *  of each page before the search field. 
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
      */
     virtual QCString trSearchForIndex()
     {

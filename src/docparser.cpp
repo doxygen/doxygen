@@ -572,12 +572,15 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
 	       g_token->name.data(),cmdName.data());
           break;
         case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
-               g_token->name.data());
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found while handling command %s",
+               g_token->name.data(),cmdName.data());
+          break;
+        case TK_HTMLTAG:
+          return tok;
           break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s",
-	       tokToString(tok));
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s while handling command %s",
+	       tokToString(tok),cmdName.data());
           break;
       }
       break;
@@ -789,7 +792,7 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
           }
           break;
         case CMD_BOLD:
@@ -799,7 +802,7 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
           }
           break;
         case CMD_CODE:
@@ -809,7 +812,7 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
           }
           break;
         case CMD_HTMLONLY:

@@ -497,6 +497,7 @@ class Config
     {
       ConfigObsolete *option = new ConfigObsolete(ConfigOption::O_Obsolete);
       m_dict->insert(name,option);
+      m_obsolete->append(option);
       return option;
     }
     /*! @} */
@@ -539,23 +540,29 @@ class Config
      *  to the configuration object 
      */
     void create();
+
   protected:
+
     Config()
     { 
-      m_options = new QList<ConfigOption>;
-      m_dict = new QDict<ConfigOption>(257);
+      m_options  = new QList<ConfigOption>;
+      m_obsolete = new QList<ConfigOption>;
+      m_dict     = new QDict<ConfigOption>(257);
       m_options->setAutoDelete(TRUE);
+      m_obsolete->setAutoDelete(TRUE);
       m_initialized = FALSE;
       create();
     }
    ~Config()
     {
       delete m_options;
+      delete m_obsolete;
       delete m_dict;
     }
 
   private:
     QList<ConfigOption> *m_options;
+    QList<ConfigOption> *m_obsolete;
     QDict<ConfigOption> *m_dict;
     static Config *m_instance;
     bool m_initialized;

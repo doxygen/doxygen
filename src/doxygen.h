@@ -99,6 +99,7 @@ class Doxygen
     static double                    sysElapsedTime;
     static QTime                     runningTime;
     static SearchIndex              *searchIndex;
+    static SDict<DefinitionList>    *symbolMap;
 };
 
 void initDoxygen();

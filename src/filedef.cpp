@@ -263,6 +263,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       if (fd)
       {
         isIDLorJava = fd->name().right(4)==".idl" || 
+                      fd->name().right(5)==".pidl" ||
                       fd->name().right(5)==".java";
       }
       ol.startTypewriter();
@@ -648,18 +649,24 @@ void FileDef::addUsingDirective(NamespaceDef *nd)
 {
   if (usingDirList==0)
   {
-    usingDirList = new NamespaceList;
+    usingDirList = new NamespaceSDict;
   }
-  usingDirList->append(nd);
+  if (usingDirList->find(nd->qualifiedName())==0)
+  {
+    usingDirList->append(nd->qualifiedName(),nd);
+  }
 }
 
 void FileDef::addUsingDeclaration(ClassDef *cd)
 {
   if (usingDeclList==0)
   {
-    usingDeclList = new ClassList;
+    usingDeclList = new ClassSDict;
   }
-  usingDeclList->append(cd);
+  if (usingDeclList->find(cd->qualifiedName())==0)
+  {
+    usingDeclList->append(cd->qualifiedName(),cd);
+  }
 }
 
 void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
@@ -706,18 +713,18 @@ void FileDef::addIncludedUsingDirectives()
       {
         if (ii->fileDef && ii->fileDef!=this)
         {
-          NamespaceList *unl = ii->fileDef->usingDirList;
+          NamespaceSDict *unl = ii->fileDef->usingDirList;
           if (unl)
           {
-            NamespaceListIterator nli(*unl);
+            NamespaceSDict::Iterator nli(*unl);
             NamespaceDef *nd;
             for (nli.toLast();(nd=nli.current());--nli)
             {
               // append each using directive found in a #include file
-              if (usingDirList==0) usingDirList = new NamespaceList;
+              if (usingDirList==0) usingDirList = new NamespaceSDict;
               //printf("Prepending used namespace %s to the list of file %s\n",
               //    nd->name().data(),name().data());
-              usingDirList->prepend(nd);
+              usingDirList->prepend(nd->qualifiedName(),nd);
             }
           }
         }
@@ -993,4 +1000,45 @@ void generateFileTree(QTextStream &t)
   t << "</div>\n";
   delete root;
 }
+
+void FileDef::combineUsingRelations()
+{
+  if (visited) return; // already done
+  visited=TRUE;
+  if (usingDirList)
+  {
+    NamespaceSDict::Iterator nli(*usingDirList);
+    NamespaceDef *nd;
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      nd->combineUsingRelations();
+    }
+    for (nli.toFirst();(nd=nli.current());++nli)
+    {
+      // add used namespaces of namespace nd to this namespace
+      if (nd->getUsedNamespaces())
+      {
+        NamespaceSDict::Iterator unli(*nd->getUsedNamespaces());
+        NamespaceDef *und;
+        for (unli.toFirst();(und=unli.current());++unli)
+        {
+          //printf("Adding namespace %s to the using list of %s\n",und->qualifiedName().data(),qualifiedName().data());
+          addUsingDirective(und);
+        }
+      }
+      // add used classes of namespace nd to this namespace
+      if (nd->getUsedClasses())
+      {
+        ClassSDict::Iterator cli(*nd->getUsedClasses());
+        ClassDef *ucd;
+        for (cli.toFirst();(ucd=cli.current());++cli)
+        {
+          //printf("Adding class %s to the using list of %s\n",cd->qualifiedName().data(),qualifiedName().data());
+          addUsingDeclaration(ucd);
+        }
+      }
+    }
+  }
+}
+
 

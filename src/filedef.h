@@ -133,9 +133,10 @@ class FileDef : public Definition
     PackageDef *packageDef() const { return package; }
     
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceList *getUsedNamespaces() const { return usingDirList; }
+    NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(ClassDef *cd);
-    ClassList *getUsedClasses() const { return usingDeclList; }
+    ClassSDict *getUsedClasses() const { return usingDeclList; }
+    void combineUsingRelations();
 
     bool generateSourceFile() const;
 
@@ -186,8 +187,8 @@ class FileDef : public Definition
     QList<IncludeInfo> *includeList;
     QDict<IncludeInfo> *includedByDict;
     QList<IncludeInfo> *includedByList;
-    NamespaceList *usingDirList;
-    ClassList *usingDeclList;
+    NamespaceSDict *usingDirList;
+    ClassSDict *usingDeclList;
     //DefineList *defineList;
     QCString path;
     QCString filepath;

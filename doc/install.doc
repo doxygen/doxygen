@@ -368,6 +368,18 @@ graphviz (\>=1.8.8). The effect of this incompatibility is that
 generated graphs in HTML are not properly clickable. For doxygen 1.3
 it is recommended to use at least graphviz 1.8.10 or higher.
 
+<b>Red Hat 9.0 problems</b>
+
+If you get the following error after running make
+\verbatim
+tmake error: qtools.pro:70: Syntax error
+\endverbatim
+then first type
+\verbatim
+export LANG=
+\endverbatim
+before running make.
+
 \section install_src_windows Compiling from source on Windows
 
 Currently, I have only compiled doxygen for Windows using Microsoft's 

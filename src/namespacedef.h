@@ -54,9 +54,10 @@ class NamespaceDef : public Definition
     void computeAnchors();
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceList *getUsedNamespaces() const { return usingDirList; }
+    NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(ClassDef *cd);
-    ClassList *getUsedClasses() const { return usingDeclList; }
+    ClassSDict *getUsedClasses() const { return usingDeclList; }
+    void combineUsingRelations();
     QCString displayName() const;
     
     bool isLinkableInProject() const
@@ -108,14 +109,16 @@ class NamespaceDef : public Definition
     /*! Namespaces inside this namespace */
     NamespaceSDict *namespaceSDict;
 
+    bool visited;
+
   private:
     //QCString reference;
     QCString fileName;
     QStrList files;
 
 
-    NamespaceList *usingDirList;
-    ClassList *usingDeclList;
+    NamespaceSDict *usingDirList;
+    ClassSDict *usingDeclList;
     SDict<Definition> *m_innerCompounds;
 
     MemberList allMemberList;
