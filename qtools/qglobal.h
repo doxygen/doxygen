@@ -594,6 +594,6 @@ Q_EXPORT void qObsolete( const char *message );
 #endif
 
 // DvH: added to avoid warnings on recent gcc versions
-#define Q_DELETE_VOID_UNDEFINED
+#define Q_DELETING_VOID_UNDEFINED
 
 #endif // QGLOBAL_H

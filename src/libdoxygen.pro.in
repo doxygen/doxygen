@@ -65,7 +65,6 @@ HEADERS      =	bufstr.h \
 		namespacedef.h \
 		outputgen.h \
 		outputlist.h \
-		page.h \
 		pagedef.h \
 		perlmodgen.h \
                 pngenc.h \

@@ -1415,7 +1415,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
-          ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
+          ol.writeString("  <tr class=\"memlist\"><td>");
           Definition *bd = md->getGroupDef();
           if (bd==0) bd=cd;
           ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),

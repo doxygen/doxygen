@@ -1884,9 +1884,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody,ReadNSBody>[^\r\n\#{}"'/]*		{ current->program += yytext ; }
-<ReadBody,ReadNSBody>"//".*			{ current->program += yytext ; }
-<ReadBody,ReadNSBody>"#".*				{ if (! insidePHP)
+<ReadBody,ReadNSBody>[^\r\n\#{}"'/]*	{ current->program += yytext ; }
+<ReadBody,ReadNSBody>"//".*		{ current->program += yytext ; }
+<ReadBody,ReadNSBody>"#".*		{ if (! insidePHP)
 					    REJECT;
 					  current->program += yytext ;
 					}
@@ -4454,14 +4454,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <LineDoc>[\n\r]+{B}*"//"[!/]		{ lineCount(); }
 <LineDoc>\n				{ 
 					  yyLineNr++;  
-					  if (!Config_getBool("HIDE_IN_BODY_DOCS") &&
-					      lastDocContext==SkipCurly) // inside body
+					  if (lastDocContext==SkipCurly) // inside body
 					  {
-					    if (!previous->doc.isEmpty())
+					    if (!Config_getBool("HIDE_IN_BODY_DOCS"))
 					    {
-					      previous->doc+="<p>";
+					      if (!previous->doc.isEmpty())
+					      {
+						previous->doc+="<p>";
+					      }
+					      previous->doc += current->brief;
 					    }
-					    previous->doc += current->brief;
 					    current->brief.resize(0);
 					  }
 					  BEGIN( lastDocContext );
@@ -5003,7 +5005,10 @@ void parseMain(Entry *rt)
   parseCompounds(rt);
 }
 
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
   void scannerYYdummy() { yy_flex_realloc(0,0); } 
 }
+#endif
+

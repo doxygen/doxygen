@@ -147,6 +147,9 @@
 // 2002/10/15
 //  - The new trEvents() and trEventDocumentation() implemented.
 //  
+// 2003/04/28
+//  - The five new methods "since 1.3" implemented.
+//
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -165,8 +168,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-
-class TranslatorCzech : public TranslatorAdapter_1_3
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1553,12 +1555,51 @@ class TranslatorCzech : public TranslatorAdapter_1_3
      */
     virtual QCString trEvents()
     {
-      return "Události";
+      return decode("Události");
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Dokumentace událostí";
+      return decode("Dokumentace událostí");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return decode("Typy v balíku");
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return decode("Funkce v balíku");
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return decode("Statické funkce v balíku");
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return decode("Atributy balíku");
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return decode("Statické atributy balíku");
     }
 
 };

@@ -49,6 +49,8 @@ static int yyread(char *buf,int max_size)
 
 %}
 
+%option nounput
+
 %%
 
 "?"				   { return TOK_QUESTIONMARK; }

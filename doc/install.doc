@@ -445,8 +445,10 @@ Here is what is required:
 <li>To generate LaTeX documentation or formulas in HTML you need the tools:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
     To get these working under Windows
-    install the fpTeX distribution. You can download it at:
-    http://www.ese-metz.fr/~popineau/fptex/wwwfptex.html
+    install the fpTeX distribution. You can find more info at:
+    http://www.fptex.org/ and download it from CTAN or one of its mirrors.
+    In the Netherlands for example this would be: 
+    ftp://ftp.easynet.nl/mirror/CTAN/systems/win32/fptex/
 
     Make sure the tools are available from a dos box, by adding the 
     directory they are in to the search path.

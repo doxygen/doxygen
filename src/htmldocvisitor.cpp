@@ -275,8 +275,6 @@ void HtmlDocVisitor::visit(DocFormula *f)
   m_t << " src=\"" << f->name() << ".png\">";
   if (bDisplay)
     m_t << endl << "<p>" << endl;
-  else
-    m_t << " ";
 }
 
 void HtmlDocVisitor::visit(DocIndexEntry *)

@@ -50,26 +50,21 @@ class RefList
     RefItem *getFirstRefItem();
     RefItem *getNextRefItem();
     QCString listName() const;
-    //QCString optionName() const;
     QCString pageTitle() const;
     QCString sectionTitle() const;
-    //BaseOutputDocInterface::SectionTypes sectionType() const;
 
     RefList(const char *listName,
             const char *pageTitle,const char *secTitle
-            /*,BaseOutputDocInterface::SectionTypes type*/
            );
    ~RefList();
 
   private:
     int m_id;
     QCString m_listName;
-    //QCString m_optionName;
     QCString m_pageTitle;
     QCString m_secTitle;
     QIntDict<RefItem> *m_dict;
     QIntDictIterator<RefItem> *m_dictIterator;
-    //BaseOutputDocInterface::SectionTypes m_type;
 };
 
 #endif

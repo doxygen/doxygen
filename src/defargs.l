@@ -409,6 +409,9 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
 }
 
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
   void defargsYYdummy() { yy_flex_realloc(0,0); } 
 }
+#endif
+

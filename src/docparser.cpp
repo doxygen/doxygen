@@ -1923,38 +1923,40 @@ void DocImage::parse()
       {
         case TK_COMMAND: 
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Illegal command %s as part of a \\image",
-	       g_token->name.data());
+              g_token->name.data());
           break;
         case TK_SYMBOL: 
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
-               g_token->name.data());
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
+              g_token->name.data());
           break;
         default:
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s",
-		tokToString(tok));
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s",
+              tokToString(tok));
           break;
       }
     }
   }
-  tok=doctokenizerYYlex();
-  while (tok==TK_WORD) // there are values following the title
+  if (!m_children.isEmpty())
   {
-    if (g_token->name=="width") 
-    {
-      m_width=g_token->chars;
-    }
-    else if (g_token->name=="height") 
-    {
-      m_height=g_token->chars;
-    }
-    else 
-    {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unknown option %s after image title",
-            g_token->name.data());
-    }
     tok=doctokenizerYYlex();
+    while (tok==TK_WORD) // there are values following the title
+    {
+      if (g_token->name=="width") 
+      {
+        m_width=g_token->chars;
+      }
+      else if (g_token->name=="height") 
+      {
+        m_height=g_token->chars;
+      }
+      else 
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unknown option %s after image title",
+            g_token->name.data());
+      }
+      tok=doctokenizerYYlex();
+    }
   }
-  ASSERT(tok==0);
   doctokenizerYYsetStatePara();
 
   handlePendingStyleCommands(this,m_children);

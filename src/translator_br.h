@@ -13,26 +13,21 @@
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@icmc.usp.br>
  *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.2.19 (2002/10/15)
+ *   Version: 1.3 (2003/05/01)
  *
  * History:
+ *   1.3:
+ *      - Updated to Doxygen 1.3.x.
  *   1.2.19:
  *      - Updated to Doxygen 1.2.19
  *      - Translation Review (Thanks to Jorge Ramos and others)
  *      - Small fixes in C output.
  *      - Latex generation support fixed (invalid package name).
- *   1.2.18 (2002/07/30):
- *      - Updated to Doxygen 1.2.18
- *   1.2.17 (2002/07/10):
- *      - Updated to Doxygen 1.2.17.
- *   1.2.13.2 (2002/05/10):
- *      - Latex Babel package language name fixed.
- *      - "Estrura" bug identified and fixed (Thanks to Jorge Ramos).
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_3
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1420,6 +1415,49 @@ class TranslatorBrazilian: public TranslatorAdapter_1_3
     virtual QCString trEventDocumentation()
     {
       return "Eventos";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    {
+      return "Tipos do Pacote";
+    }
+
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
+     */
+    virtual QCString trPackageMembers()
+    {
+      return "Funções do Pacote";
+    }
+
+    /*! Used as a heading for a list of static Java class functions with
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    {
+      return "Funções Estáticas do Pacote";
+    }
+
+    /*! Used as a heading for a list of Java class variables with package
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    {
+      return "Atributos do Pacote";
+    }
+
+    /*! Used as a heading for a list of static Java class variables with
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    {
+      return "Atributos Estáticos do Pacote";
     }
 
 };

@@ -413,6 +413,15 @@ void MemberList::addListReferences(Definition *def)
     if (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup)
     {
       md->addListReference(def);
+      if (md->memberType()==MemberDef::Enumeration && md->enumFieldList())
+      {
+        MemberListIterator vmli(*md->enumFieldList());
+        MemberDef *vmd;
+        for ( ; (vmd=vmli.current()) ; ++vmli)
+        {
+          vmd->addListReference(def);
+        }
+      }
     }
   }
   if (memberGroupList)
