@@ -425,6 +425,7 @@ MemberDef::MemberDef(const char *df,int dl,
   groupMember = 0;
   m_hasDocumentedParams = FALSE;
   m_hasDocumentedReturnType = FALSE;
+  m_docProvider = 0;
 }
 
 /*! Destroys the member definition. */

@@ -1108,7 +1108,7 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "<p>" << endl;
-  t << "<table class=\"mdTable\" width=\"100%\" cellpadding=\"2\" cellspacing=\"0\">" << endl;
+  t << "<table class=\"mdTable\" cellpadding=\"2\" cellspacing=\"0\">" << endl;
   t << "  <tr>" << endl;
   t << "    <td class=\"mdRow\">" << endl; 
   t << "      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;

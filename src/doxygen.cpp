@@ -3431,8 +3431,11 @@ static bool findClassRelation(
                                            cd->getFileDef(), // todo: is this ok?
                                            baseClassName,
                                            &baseClassTypeDef,
-                                           &templSpec);
-      //printf("baseClassName=%s baseClass=%p cd=%p\n",baseClassName.data(),baseClass,cd);
+                                           &templSpec,
+                                           mode==Undocumented
+                                          );
+      //printf("baseClassName=%s baseClass=%p cd=%p explicitGlobalScope=%d\n",
+      //    baseClassName.data(),baseClass,cd,explicitGlobalScope);
       //printf("    root->name=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
       //                    root->name.data(),
       //                    baseClassName.data(),
@@ -3530,7 +3533,7 @@ static bool findClassRelation(
           {
             findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
           }
-          else if (mode==DocumentedOnly)
+          else if (mode==DocumentedOnly || mode==Undocumented)
           {
             QCString usedName;
             if (baseClassTypeDef) 
@@ -4243,7 +4246,8 @@ static bool findGlobalMember(Entry *root,
   }
   else // got docs for an undefined member!
   {
-    if (root->type!="friend class" && root->type!="friend struct" &&
+    if (root->type!="friend class" && 
+        root->type!="friend struct" &&
         root->type!="friend union")
     {
       warn(root->fileName,root->startLine,
@@ -4879,10 +4883,12 @@ static void findMember(Entry *root,
             int candidates=0;
             if (mn->count()>0)
             {
+              //printf("Assume template class\n");
               for (mni.toFirst();(md=mni.current());++mni)
               {
                 ClassDef *cd=md->getClassDef();
-                if (cd!=0 && cd->name()==className) 
+                //printf("cd->name()==%s className=%s\n",cd->name().data(),className.data());
+                if (cd!=0 && rightScopeMatch(cd->name(),className)) 
                 {
                   if (root->tArgLists && md->templateArguments() &&
                       root->tArgLists->getLast()->count()<=md->templateArguments()->count())
@@ -6175,6 +6181,7 @@ static void inheritDocumentation()
         }
         if (bmd) // copy the documentation from the reimplemented member
         {
+          md->setInheritsDocsFrom(bmd);
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
           md->setDocsForDefinition(bmd->isDocsForDefinition());
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());

@@ -181,8 +181,9 @@ class MemberDef : public Definition
     void makeRelated()                      { related=TRUE; } 
     void setHasDocumentedParams(bool b)     { m_hasDocumentedParams = b; }
     void setHasDocumentedReturnType(bool b) { m_hasDocumentedReturnType = b; }
+    void setInheritsDocsFrom(MemberDef *md) { m_docProvider = md; }
 
-    // output generatation
+    // output generation
     void writeLink(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclaration(OutputList &ol,
@@ -275,6 +276,8 @@ class MemberDef : public Definition
                ArgumentList *actualArgs);
     void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
     void addListReference(Definition *d);
+
+    MemberDef *inheritsDocsFrom() const { return m_docProvider; }
 
     //QCString getBodyAnchor() const 
     //{ 
@@ -397,6 +400,9 @@ class MemberDef : public Definition
 
     bool m_hasDocumentedParams;
     bool m_hasDocumentedReturnType;
+
+    // documentation inheritance
+    MemberDef  *m_docProvider;
 };
 
 #endif

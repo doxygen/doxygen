@@ -923,10 +923,21 @@ void HtmlDocVisitor::visitPost(DocParamList *)
 void HtmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
-      << x->relPath() << x->file() << Doxygen::htmlFileExtension << "#" << x->anchor() << "\">";
+  bool anonymousEnum = x->file()=="@";
+  if (!anonymousEnum)
+  {
+    m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
+        << x->relPath() << x->file() << Doxygen::htmlFileExtension 
+        << "#" << x->anchor() << "\">";
+  }
+  else 
+  {
+    m_t << "<dl compact><dt><b>";
+  }
   filter(x->title());
-  m_t << ":</a></b></dt><dd>";
+  m_t << ":";
+  if (!anonymousEnum) m_t << "</a>";
+  m_t << "</b></dt><dd>";
 }
 
 void HtmlDocVisitor::visitPost(DocXRefItem *)

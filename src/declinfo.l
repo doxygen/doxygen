@@ -117,7 +117,9 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
   				  name += yytext;
   				  BEGIN(Operator);
   				}
-<Start>(~{B}*)?{ID}({B}*"["{B}*"]")* { // the []'s are for Java
+<Start>(~{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
+                                        // the / was add to deal with multi-
+                                        // dimensional C++ arrays like A[][15]
   				  addTypeName();
 				  name += yytext;
   				}
@@ -331,3 +333,11 @@ int main()
   dumpDecl("void ( * Name < T > :: bla ) ( int, char * )"); 
 }
 #endif
+
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
+//----------------------------------------------------------------------------
+extern "C" { // some bogus code to keep the compiler happy
+  void declinfoYYdummy() { yy_flex_realloc(0,0); } 
+}
+#endif
+

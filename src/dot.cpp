@@ -543,6 +543,20 @@ static void writeBoxMemberList(QTextStream &t,char prot,MemberList &ml,ClassDef 
       t << "\\l";
     }
   }
+  // write member groups within the memberlist
+  MemberGroupList *mgl = ml.getMemberGroupList();
+  if (mgl)
+  {
+    MemberGroupListIterator mgli(*mgl);
+    MemberGroup *mg;
+    for (mgli.toFirst();(mg=mgli.current());++mgli)
+    {
+      if (mg->members())
+      {
+        writeBoxMemberList(t,prot,*mg->members(),scope);
+      }
+    }
+  }
 }
 
 void DotNode::writeBox(QTextStream &t,
@@ -582,6 +596,18 @@ void DotNode::writeBox(QTextStream &t,
     writeBoxMemberList(t,'-',m_classDef->priMethods,m_classDef);
     writeBoxMemberList(t,'-',m_classDef->priStaticMethods,m_classDef);
     writeBoxMemberList(t,'-',m_classDef->priSlots,m_classDef);
+    if (m_classDef->memberGroupSDict)
+    {
+      MemberGroupSDict::Iterator mgdi(*m_classDef->memberGroupSDict);
+      MemberGroup *mg;
+      for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
+      {
+        if (mg->members())
+        {
+          writeBoxMemberList(t,'*',*mg->members(),m_classDef);
+        }
+      }
+    }
     t << "}";
   }
   else // old look
@@ -2851,7 +2877,7 @@ void DotGroupCollaboration::addCollaborationMember(
 
 
 QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat format,
-    const char *path, const char *,
+    const char *path, const char *relPath,
     bool writeImageMap)
 {
   QDir d(path);
@@ -2922,11 +2948,11 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
     if (writeImageMap)
     {
       QCString mapLabel = convertNameToFile(baseName);
-      t << "<center><table><tr><td><img src=\"" << imgName
+      t << "<center><table><tr><td><img src=\"" << relPath << imgName
         << "\" border=\"0\" alt=\"\" usemap=\"#" 
         << mapLabel << "_map\">" << endl;
       t << "<map name=\"" << mapLabel << "_map\">" << endl;
-      convertMapFile(t,mapName,"");
+      convertMapFile(t,mapName,relPath);
       t << "</map></td></tr></table></center>" << endl;
       thisDir.remove(mapName);
     }

@@ -1173,11 +1173,12 @@ void RTFDocVisitor::visitPost(DocParamList *)
 void RTFDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  bool anonymousEnum = x->file()=="@";
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocXRefItem)}\n");
   m_t << "{"; // start param list
   //m_t << "{\\b "; // start bold
   m_t << "{" << rtf_Style["Heading5"]->reference << endl;
-  if (Config_getBool("RTF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS") && !anonymousEnum)
   {
     QString refName;
     if (!x->file().isEmpty())

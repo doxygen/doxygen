@@ -279,11 +279,24 @@ static void checkArgumentName(const QString &name,bool isParam)
       //printf("member type=%d\n",memberDef->memberType());
       QString scope=g_memberDef->getScopeString();
       if (!scope.isEmpty()) scope+="::"; else scope="";
-      warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),
+      QString inheritedFrom = "";
+      QString docFile = g_memberDef->docFile();
+      int docLine = g_memberDef->docLine();
+      MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
+      if (inheritedMd) // documentation was inherited
+      {
+        inheritedFrom.sprintf(" inherited from member %s at line "
+            "%d in file %s",inheritedMd->name().data(),
+            inheritedMd->docLine(),inheritedMd->docFile().data());
+        docFile = g_memberDef->getDefFileName();
+        docLine = g_memberDef->getDefLine();
+        
+      }
+      warn_doc_error(docFile,docLine,
 	  "Warning: argument `%s' of command @param "
-	  "is not found in the argument list of %s%s%s",
+	  "is not found in the argument list of %s%s%s%s",
 	  aName.data(),scope.data(),g_memberDef->name().data(),
-	  argListToString(al).data());
+	  argListToString(al).data(),inheritedFrom.data());
     }
     p=i+l;
   }
@@ -331,7 +344,14 @@ static void checkUndocumentedParams()
             errMsg+="  parameter "+argName+"\n";
           }
         }
-        warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+        if (g_memberDef->inheritsDocsFrom())
+        {
+           warn_doc_error(g_memberDef->getDefFileName(),g_memberDef->getDefLine(),errMsg);
+        }
+        else
+        {
+           warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+        }
       }
     }
   }
@@ -1597,8 +1617,16 @@ bool DocXRefItem::parse()
     ASSERT(item!=0);
     if (item)
     {
-      m_file   = refList->listName();
-      m_anchor = item->listAnchor;
+      if (g_memberDef && g_memberDef->name().at(0)=='@')
+      {
+        m_file   = "@";  // can't cross reference anonymous enum
+        m_anchor = "@";
+      }
+      else
+      {
+        m_file   = refList->listName();
+        m_anchor = item->listAnchor;
+      }
       m_title  = refList->sectionTitle();
       //printf("DocXRefItem: file=%s anchor=%s title=%s\n",
       //    m_file.data(),m_anchor.data(),m_title.data());

@@ -630,7 +630,7 @@ void FTVHelp::generateTreeView()
 #endif
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
-    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=\""
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset="
       << theTranslator->idLanguageCharset() << "\" />\n";
     t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
     t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
