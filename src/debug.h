@@ -27,7 +27,8 @@ class Debug
                      Functions    = 0x00000002, 
                      Variables    = 0x00000004,
                      Preprocessor = 0x00000008,
-                     Classes      = 0x00000010
+                     Classes      = 0x00000010,
+                     CommentCnv   = 0x00000020
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static void setFlag(const char *label);

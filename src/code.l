@@ -1701,7 +1701,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_memCallContext = YY_START;
   					  BEGIN( MemberCall ); 
   					}
-<SkipComment>"//"			{
+<SkipComment>"/*"("!"?)"*/"		{ 
+  					  g_code->codify(yytext);
+					  endFontClass();
+  					  BEGIN( g_lastCContext ) ; 
+					}
+<SkipComment>"//"|"/*"			{
   					  g_code->codify(yytext);
   					}
 <SkipComment>[^*/\n]+			{

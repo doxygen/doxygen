@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "bufstr.h"
+#include "debug.h"
+#include "message.h"
 
 static BufStr *g_inBuf;
 static BufStr *g_outBuf;
@@ -97,12 +99,17 @@ static int yyread(char *buf,int max_size)
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Scan>("//!"|"///").*\n/[ \t]*"//" { /* start C++ style special comment block */
-                                     copyToOutput("/*!",3); 
-				     copyToOutput(yytext+3,yyleng-3); 
+<Scan>("//!"|"///").*\n/[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+  				     int i=3;
+				     if (yytext[2]=='/')
+				     {
+				       while (i<yyleng && yytext[i]=='/') i++;
+				     }
+                                     copyToOutput("/**",3); 
+				     copyToOutput(yytext+i,yyleng-i); 
 				     BEGIN(SComment); 
                                    }
-<Scan>"//".*\n			   { /* one line C++ comment */ 
+<Scan>"//"[\/!].*\n		   { /* one line C++ comment */ 
   				     copyToOutput(yytext,yyleng); 
 				   }
 <Scan>"/*"			   { /* start of a C comment */
@@ -155,10 +162,22 @@ static int yyread(char *buf,int max_size)
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
-<SComment>^[ \t]*"//".*/\n	   { /* second line of special comment */
+<SComment>^[ \t]*"///"[\/]*\n      {
+                                     replaceCommentMarker(yytext,yyleng); 
+  				   }
+<SComment>^[ \t]*"///"[^\/\n].*/\n   { 
+                                     replaceCommentMarker(yytext,yyleng); 
+  				   }
+<SComment>^[ \t]*"//!".*/\n        { /* second line of special comment */
                                      replaceCommentMarker(yytext,yyleng); 
                                    }
-<SComment>\n[ \t]*"//".*/\n	   { /* other line of special comment */
+<SComment>\n[ \t]*"///"[\/]*\n     {
+                                     replaceCommentMarker(yytext,yyleng); 
+                                   }
+<SComment>\n[ \t]*"///"[^\/\n].*/\n  { 
+                                     replaceCommentMarker(yytext,yyleng); 
+  				   }
+<SComment>\n[ \t]*"//!".*/\n       { /* other line of special comment */
                                      replaceCommentMarker(yytext,yyleng); 
                                    }
 <SComment>\n			   { /* end of special comment */
@@ -176,6 +195,10 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf)
   g_inBufPos = 0;
   BEGIN(Scan);
   yylex();
+  if (Debug::isFlagSet(Debug::CommentCnv))
+  {
+    msg("-------------\n%s\n-------------\n",g_outBuf->data());
+  }
 }
 
 //----------------------------------------------------------------------------

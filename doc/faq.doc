@@ -195,7 +195,10 @@ more than 16K input character in one go. I've seen this happening
 on a very large generated file (>16K lines), where the built-in preprocessor 
 converted it into an empty file (with >16K of newlines). Another case
 where this might happen is if you have lines in your code with more than
-16K characters.
+16K characters. 
+
+If you have ran into such a case and want me to fix it, you
+should send me a code fragment that triggers the message.
 
 <li><b>How did doxygen get it's name?</b>
 

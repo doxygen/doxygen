@@ -28,7 +28,7 @@ So if you have the following code fragment
 #define VERSION 200
 #define CONST_STRING const char *
 
-#if VERSION >= 200
+#if VERSION < 200
   static CONST_STRING version = "2.xx";
 #else
   static CONST_STRING version = "1.xx";
@@ -46,8 +46,13 @@ Then by default doxygen will feed the following to its parser:
 
 You can disable all preprocessing by setting 
 \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
-NO in the configuation file. In the case above doxygen will then reads
-both statements!
+NO in the configuation file. In the case above doxygen will then read
+both statements, i.e:
+
+\verbatim
+  static CONST_STRING version = "2.xx";
+  static CONST_STRING version = "1.xx";
+\endverbatim
 
 In case you want to expand the \c CONST_STRING macro, you should set the
 \ref cfg_macro_expansion "MACRO_EXPANSION" tag in the config file 

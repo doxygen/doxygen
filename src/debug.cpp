@@ -48,6 +48,8 @@ static int labelToEnumValue(const char *l)
     return Debug::Preprocessor;
   else if (label=="Classes")
     return Debug::Classes;
+  else if (label=="CommentCnv")
+    return Debug::CommentCnv;
   else
     return 0;
 }

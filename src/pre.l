@@ -1549,16 +1549,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
-  					    Define *def=0;
-					    if (g_includeStack.isEmpty()) 
-					    {
-					      addDefine();
-					    }
-					    if ((def=g_fileDefineDict->find(g_defName))==0)
+  					    Define *def=g_fileDefineDict->find(g_defName);
+					    //if (g_includeStack.isEmpty()) 
+					    //{
+					    //  addDefine();
+					    //}
+					    if (def==0) // new define name for this file
 					    {
 					      g_fileDefineDict->insert(g_defName,newDefine());
 					    }
-					    else if (def)// name already exists
+					    else // name already exists
 					    {
 					      if (def->undef) // undefined name
 					      {
@@ -1574,9 +1574,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					        //printf("Error: define %s is defined more than once!\n",g_defName.data());
 					      }
 					    }
-					    QCString tmp=(QCString)"#define "+g_defName;
-					    outputArray(tmp.data(),tmp.length());
-  					    //outputChar('\n');
 					    g_lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
