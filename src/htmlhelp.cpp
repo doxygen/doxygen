@@ -174,7 +174,27 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
     { // finish old list at level 2
       if (level2Started) t << "  </UL>" << endl;
       level2Started=FALSE;
-    
+
+      // <Antony>
+      // Added this code so that an item with only one subitem is written
+      // without any subitem.
+      // For example:
+      //   a1, b1 -> will create only a1, not separate subitem for b1
+      //   a2, b2
+      //   a2, b3
+      QCString nextLevel1;
+      IndexField* fnext = ++ifli;
+      if (fnext)
+      {
+        nextLevel1 = fnext->name.left(fnext->name.find('?'));
+        --ifli;
+      }
+      if (level1 != nextLevel1)
+      {
+        level2 = "";
+      }
+      // </Antony>
+
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
@@ -189,7 +209,9 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension << "\">";
+          t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
+          if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
+          t << "\">";
           t << "<param name=\"Name\" value=\"" << level1 << "\">"
                "</OBJECT>\n";
         }
@@ -530,6 +552,6 @@ void HtmlHelp::addIndexItem(const char *level1, const char *level2,
                             const char *ref, const char *anchor)
 {
   index->addItem(level1,level2,ref,anchor,TRUE);
-  index->addItem(level2,level1,ref,anchor,FALSE);
+  index->addItem(level2,level1,ref,anchor,TRUE);
 }
 

@@ -231,6 +231,8 @@ class ManGenerator : public OutputGenerator
     void endInclDepGraph(DotInclDepGraph &) {}
     void startCallGraph() {}
     void endCallGraph(DotCallGraph &) {}
+    void startDirDepGraph() {} 
+    void endDirDepGraph(DotDirDeps &) {}
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}

@@ -1,4 +1,4 @@
-(1.3.9)
+(1.3.9.1)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
 Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
 Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 13 translators are up-to-date, 17 translators are based on
+Of them, 14 translators are up-to-date, 16 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -29,6 +29,7 @@ still may be some details listed even for them:
   TranslatorItalian
   TranslatorPolish
   TranslatorRussian
+  TranslatorSerbian
   TranslatorSwedish
 
 ----------------------------------------------------------------------
@@ -42,7 +43,6 @@ must be implemented to become up-to-date:
   TranslatorDanish                1.3.9 	 6 methods to implement
   TranslatorAfrikaans             1.3.9 	 6 methods to implement
   TranslatorSpanish               1.3.8 	 7 methods to implement
-  TranslatorSerbian               1.3.8 	 7 methods to implement
   TranslatorLithuanian            1.3.8 	 7 methods to implement
   TranslatorKorean                1.3.8 	 7 methods to implement
   TranslatorChinesetraditional    1.3.8 	 7 methods to implement
@@ -450,22 +450,6 @@ TranslatorRomanian   (TranslatorAdapter_1_2_16)  22 methods to implement
     virtual QCString trSearchForIndex()
     virtual QCString trAll()
     virtual QCString trRTFTableOfContents()
-
-
-TranslatorSerbian   (TranslatorAdapter_1_3_8)  7 methods to implement
------------------
-
-  Implements 194 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trSourceFile(QCString & filename)
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
 
 
 TranslatorSlovak   (TranslatorAdapter_1_2_18)  20 methods to implement

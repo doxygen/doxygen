@@ -192,6 +192,8 @@ class HtmlGenerator : public OutputGenerator
     void endInclDepGraph(DotInclDepGraph &g);
     void startCallGraph();
     void endCallGraph(DotCallGraph &g);
+    void startDirDepGraph();
+    void endDirDepGraph(DotDirDeps &g);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
 
     void startTextBlock(bool) {}

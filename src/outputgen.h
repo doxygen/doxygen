@@ -30,6 +30,7 @@ class ClassDiagram;
 class DotClassGraph;
 class DotInclDepGraph;
 class DotCallGraph;
+class DotDirDeps;
 class DotGfxHierarchyTable;
 class DocNode;
 class MemberDef;
@@ -339,6 +340,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInclDepGraph(DotInclDepGraph &g) = 0;
     virtual void startCallGraph() = 0;
     virtual void endCallGraph(DotCallGraph &g) = 0;
+    virtual void startDirDepGraph() = 0;
+    virtual void endDirDepGraph(DotDirDeps &g) = 0;
     virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
     //virtual void startQuickIndexItem(const char *s,const char *l) = 0;
     //virtual void endQuickIndexItem() = 0;

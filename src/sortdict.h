@@ -234,7 +234,7 @@ class SDict
     
     /*! Returns the number of items stored in the dictionary
      */
-    int count()
+    int count() const
     {
       return m_list->count();
     }

@@ -51,6 +51,7 @@ documentation:
 \refitem cmdcategory \\category
 \refitem cmdclass \\class
 \refitem cmdcode \\code
+\refitem cmdcond \\cond
 \refitem cmdcopydoc \\copydoc
 \refitem cmddate \\date
 \refitem cmddef \\def
@@ -65,6 +66,7 @@ documentation:
 \refitem cmdelseif \\elseif
 \refitem cmdem \\em
 \refitem cmdendcode \\endcode
+\refitem cmdendcond \\endcond
 \refitem cmdenddot \\enddot
 \refitem cmdendhtmlonly \\endhtmlonly
 \refitem cmdendif \\endif
@@ -223,6 +225,7 @@ doxygen. Unrecognized commands are treated as normal text.
 
   \sa section \ref cmdclass "\\class".
 
+<hr>
 \section cmdclass \class <name> [<header-file>] [<header-name>]
 
   \addindex \\class
@@ -755,6 +758,72 @@ See section \ref memgroup for an example.
   for an example.
 
 <hr>
+\section cmdcond \cond [<section-label>]
+
+  \addindex \\cond
+  Starts a conditional section that ends with a corresponding 
+  \ref cmdendcond "\\endcond" command, which is typically found in 
+  another comment block. The main purpose of this pair of
+  commands is to (conditionally) exclude part of a file from processing
+  (traditionally this could only be achieved using C processor commands). 
+
+  The section between \\cond and \\endcond commands can be included by
+  adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
+  configuration option. If the section label is omitted, the section will
+  be excluded from processing unconditionally.
+
+  For conditional sections within a comment block one should 
+  use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
+
+  Conditional sections can be nested. In this case a nested section will only
+  be shown if it and its containing section are included.
+
+  Here is an example showing the commands in action:
+
+\verbatim
+/** An interface */
+class Intf
+{
+  public:
+    /** A method */
+    virtual void func() = 0;
+
+    /// @cond TEST
+
+    /** A method used for testing */
+    virtual void test() = 0;
+
+    /// @endcond
+};
+
+/// @cond DEV
+/*
+ *  The implementation of the interface 
+ */
+class Implementation : public Intf
+{
+  public:
+    void func();
+
+    /// @cond TEST
+    void test();
+    /// @endcond
+
+    /// @cond
+    /** This method is obsolete and does
+     *  not show up in the documentation.
+     */
+    void obsolete();
+    /// @endcond
+};
+
+/// @endcond 
+\endverbatim
+
+The output will be different depending on whether \c ENABLED_SECTIONS
+is empty, \c TEST, \c DEV, or \c DEV \c TEST.
+
+<hr>
 \section cmddate \date { date description }
 
   \addindex \\date
@@ -804,10 +873,18 @@ See section \ref memgroup for an example.
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
+\section cmdendcond \endcond
+
+  \addindex \\endcond
+  Ends a conditional section that was started by \ref cmdcond "\\cond".
+
+  \sa \ref cmdcond "\\cond".
+
+<hr>
 \section cmdendif \endif 
 
   \addindex \\endif
-  Ends a conditional section that was started with \c \\if or \c \\ifnot
+  Ends a conditional section that was started by \c \\if or \c \\ifnot
   For each \c \\if or \c \\ifnot one and only one matching \c \\endif must follow.
 
   \sa \ref cmdif "\\if", and \ref cmdifnot "\\ifnot".

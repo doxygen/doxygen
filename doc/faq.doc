@@ -79,7 +79,13 @@ document either the class or namespace.
  
 <li><b>How can I make doxygen ignore some code fragment?</b>
 <p>
-You can use Doxygen's preprocessor for this: 
+
+The new and easiest way is to add one comment block 
+with a \ref cmdcond "\\cond" command at the start and one comment block 
+with a \ref cmdendcond "\\endcond" command at the end of the piece of
+code that should be ignored. This should be within the same file of course.
+
+But you can also use Doxygen's preprocessor for this: 
 If you put
 \verbatim
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -97,7 +103,10 @@ as <code>PREPROCESSING = YES</code>.
 
 <li><b>How can I change what is after the <code>\#include</code> in the class documentation?</b>
 
-You can document your class like
+In most cases you can use STRIP_FROM_INC_PATH to strip a user defined
+part of a path.
+
+You can also document your class as follows
 
 \verbatim
 /*! \class MyClassName include.h path/include.h

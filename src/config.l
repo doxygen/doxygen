@@ -2697,6 +2697,15 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
+  cb = addBool(    
+                    "DIRECTORY_GRAPH",
+		    "If the DIRECTORY_GRAPH, SHOW_DIRECTORIES and HAVE_DOT tags are set to YES \n"
+		    "then doxygen will show the dependencies a directory has on other directories \n"
+		    "in a graphical way. The dependency relations are determined by the #include\n"
+		    "relations between the files in the directories.\n",
+                    TRUE
+               );
+  cb->addDependency("HAVE_DOT");
   ce = addEnum(
                     "DOT_IMAGE_FORMAT",
                     "The DOT_IMAGE_FORMAT tag can be used to set the image format of the images \n"

@@ -31,7 +31,8 @@ class Debug
                      CommentCnv   = 0x00000020,
                      Validate     = 0x00000040,
                      PrintTree    = 0x00000080,
-                     Time         = 0x00000100
+                     Time         = 0x00000100,
+                     ExtCmd       = 0x00000200
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static void setFlag(const char *label);

@@ -385,7 +385,9 @@ Currently, I have only compiled doxygen for Windows using Microsoft's
 Visual C++ (version 6.0). For other compilers you may need to edit the 
 perl script in <code>wintools/make.pl</code> a bit. 
 Let me know what you had to change if you got Doxygen working with another 
-compiler. 
+compiler. If you have Visual Studio you can also use the .dsw file found in
+the <code>wintools</code> directory. Note that this file is not maintained
+by me, so it might be outdated a little.
 
 If you have Visual C++ 6.0, and the source distribution, you can easily
 build doxygen using the project files in the \c wintools directory. If
@@ -462,57 +464,16 @@ Here is what is required:
     commerical version of Qt. 
 
     For doxywizard, a complete Qt library is 
-    still a requirement however. You can download the non-commercial version
-    from Troll-Tech web-site. See doxygen download page for a link.
+    still a requirement however. A commercial license to build
+    doxywizard with the latest Qt library was kindly donated to me
+    by the nice people at <a href="http://www.trolltech.com">TrollTech</a>. 
+    See doxygen download page for a link.
    
-<li>To generate LaTeX documentation or formulas in HTML you need the tools:
-    <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
-    To get these working under Windows
-    install the fpTeX distribution. You can find more info at:
-    http://www.fptex.org/ and download it from CTAN or one of its mirrors.
-    In the Netherlands for example this would be: 
-    ftp://ftp.easynet.nl/mirror/CTAN/systems/win32/fptex/
-
-    Make sure the tools are available from a dos box, by adding the 
-    directory they are in to the search path.
-
-    For your information, the LaTeX is freely available set of so
-    called macros and styles on the top of the famous TeX program
-    (by famous Donald Knuth) and the accompanied utilities (all
-    available for free). It is used for high quality
-    typesetting. The result -- in the form of so called
-    <code>DVI</code> (DeVice Independent) file -- can be printed or
-    displayed on various devices preserving exactly the same look up
-    to the capability of the device. The <code>dvips</code> allows you
-    to convert the <code>dvi</code> to the high quality PostScript
-    (i.e. PostScript that can be processed by utilities like 
-    <code>psnup</code>, <code>psbook</code>, <code>psselect</code>,
-    and others). The derived version of TeX (the pdfTeX) can be used
-    to produce PDF output instead of DVI, or the PDF can be produced
-    from PostScript using the utility <code>ps2pdf</code>.
-
-    If you want to use MikTeX then you need to select at least the 
-    medium size installation. For really old versions of MikTex or minimal 
-    installations, you may need to download the fancyhdr package separately. 
-    You can find it at:
-    ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/
-
-<li>If you want to generate compressed HTML help 
-    (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
-    config file, then you need the Microsoft HTML help workshop. 
-    You can download it at: 
-    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp
-
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
     <code>objects</code> and <code>bin</code> manually in the root of the 
     distribution before compiling.
 
-<li><a href="http://www.research.att.com/sw/tools/graphviz/">
-    the Graph visualization toolkit version 1.8.10</a><br>
-    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
-    Needed for the include dependency graphs, the graphical inheritance graphs,
-    and the collaboration graphs.
 </ul>
 
 
@@ -577,23 +538,66 @@ To install doxygen, just copy the binaries from the <code>bin</code> directory
 to a location somewhere in the path. Alternatively, you can include 
 the <code>bin</code> directory of the distribution to the path.
 
-<!--
-For running doxywizard you need to install the non-commercial version of
-the Qt library first. This library can be downloaded from 
-http://www.trolltech.com/products/download/qt-win-noncomm.html
--->
+There are a couple of tools you may want to install to use all of doxygen's
+features:
+
+<ul>
+<li>To generate LaTeX documentation or formulas in HTML you need the tools:
+    <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
+    To get these working under Windows
+    install the fpTeX distribution. You can find more info at:
+    http://www.fptex.org/ and download it from CTAN or one of its mirrors.
+    In the Netherlands for example this would be: 
+    ftp://ftp.easynet.nl/mirror/CTAN/systems/win32/fptex/
+
+    Make sure the tools are available from a dos box, by adding the 
+    directory they are in to the search path.
+
+    For your information, the LaTeX is freely available set of so
+    called macros and styles on the top of the famous TeX program
+    (by famous Donald Knuth) and the accompanied utilities (all
+    available for free). It is used for high quality
+    typesetting. The result -- in the form of so called
+    <code>DVI</code> (DeVice Independent) file -- can be printed or
+    displayed on various devices preserving exactly the same look up
+    to the capability of the device. The <code>dvips</code> allows you
+    to convert the <code>dvi</code> to the high quality PostScript
+    (i.e. PostScript that can be processed by utilities like 
+    <code>psnup</code>, <code>psbook</code>, <code>psselect</code>,
+    and others). The derived version of TeX (the pdfTeX) can be used
+    to produce PDF output instead of DVI, or the PDF can be produced
+    from PostScript using the utility <code>ps2pdf</code>.
+
+    If you want to use MikTeX then you need to select at least the 
+    medium size installation. For really old versions of MikTex or minimal 
+    installations, you may need to download the fancyhdr package separately. 
+    You can find it at:
+    ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/
+
+<li>If you want to generate compressed HTML help 
+    (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
+    config file, then you need the Microsoft HTML help workshop. 
+    You can download it at: 
+    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp
+
+<li><a href="http://www.research.att.com/sw/tools/graphviz/">
+    the Graph visualization toolkit version 1.8.10</a><br>
+    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
+    Needed for the include dependency graphs, the graphical inheritance graphs,
+    and the collaboration graphs.
+</ul>
 
 \section build_tools Tools used to develop doxygen
 
 Doxygen was developed and tested under Linux using the following 
 open-source tools:
 <ul>
-<li>GCC version 2.95.3
+<li>GCC version 3.3.1
 <li>GNU flex version 2.5.4
-<li>GNU bison version 1.35
-<li>GNU make version 3.79.1
-<li>Perl version 5.005_03 
-<li>VIM version 5.8
+<li>GNU bison version 1.75
+<li>GNU make version 3.80
+<li>Perl version 5.8.1
+<li>VIM version 6.2
 <li>Mozilla 1.0
 <li>Troll Tech's tmake version 1.3 (included in the distribution) 
 <li>teTeX version 1.0

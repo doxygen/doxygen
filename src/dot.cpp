@@ -27,6 +27,7 @@
 #include "scanner.h"
 #include "defargs.h"
 #include "docparser.h"
+#include "debug.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -1927,7 +1928,7 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd,int maxRecursionDepth,bool inverse)
   m_diskName  = fd->getFileBase().copy();
   QCString tmp_url=fd->getReference()+"$"+fd->getFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
-                            fd->name(),
+                            fd->docName(),
                             tmp_url.data(),
                             0,       // distance
                             TRUE     // root node
@@ -1965,7 +1966,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // go to the output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
@@ -1978,27 +1979,27 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
   QCString md5 = computeMd5Signature(m_startNode,         // root
-                                     DotNode::Dependency, // gt
+                                     DotNode::CallGraph,  // gt
                                      format,              // format
-                                     FALSE,               // lrRank
+                                     TRUE,                // lrRank
                                      FALSE,               // renderParents
                                      QMIN(m_recDepth,m_maxDistance), // maxDist
-                                     !m_inverse           // backArrows
+                                     FALSE                // backArrows
                                     );
   if (checkAndUpdateMd5Signature(baseName,md5) ||
       !QFileInfo(baseName+".map").exists()
      )
   {
-    findMaximalDotGraph(m_startNode,                     // root
-                        QMIN(m_recDepth,m_maxDistance),  // maxDist
-                        baseName,                        // baseName
-                        thisDir,                         // thisDir
-                        DotNode::Dependency,             // gt
-                        format,                          // format
-                        FALSE,                           // lrRank
-                        FALSE,                           // renderParents
-                        !m_inverse                       // backArrows
-    );
+    findMaximalDotGraph(m_startNode,                      // root
+                        QMIN(m_recDepth,m_maxDistance),   // maxDist
+                        baseName,                         // baseName
+                        thisDir,                          // thisDir
+                        DotNode::CallGraph,               // gt
+                        format,                           // format
+                        TRUE,                             // lrRank
+                        FALSE,                            // renderParents
+                        FALSE                             // backArrows
+                       );
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
@@ -2045,16 +2046,13 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         }
       }
     }
-
-    if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
   }
 
   if (format==BITMAP && generateImageMap)
   {
     out << "<p><center><img src=\"" << relPath << baseName << "." 
-      << imgExt << "\" border=\"0\" usemap=\"#"
-      << mapName << "_map\" alt=\"";
-    if (m_inverse) out << "Included by dependency graph"; else out << "Include dependency graph";
+        << imgExt << "\" border=\"0\" usemap=\"#"
+        << mapName << "_map\" alt=\"";
     out << "\">";
     out << "</center>" << endl;
     QString tmpstr;
@@ -2066,6 +2064,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       out << tmpstr;
       out << "</map>" << endl;
     }
+    //thisDir.remove(baseName+".map");
   }
   else if (format==EPS)
   {
@@ -2076,17 +2075,18 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       QDir::setCurrent(oldDir);
       return baseName;
     }
-
     int maxWidth = 420; /* approx. page width in points */
-
+   
     out << "\\begin{figure}[H]\n"
-      "\\begin{center}\n"
-      "\\leavevmode\n"
-      "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-      << "pt]{" << baseName << "}\n"
-      "\\end{center}\n"
-      "\\end{figure}\n";
+           "\\begin{center}\n"
+           "\\leavevmode\n"
+           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+                                      << "pt]{" << baseName << "}\n"
+           "\\end{center}\n"
+           "\\end{figure}\n";
   }
+
+  if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
   return baseName;
@@ -2338,12 +2338,148 @@ bool DotCallGraph::isTrivial() const
 
 //-------------------------------------------------------------
 
-DotDirDeps::DotDirDeps(DirDef *)
+DotDirDeps::DotDirDeps(DirDef *dir) : m_dir(dir)
 {
 }
 
 DotDirDeps::~DotDirDeps()
 {
+}
+
+QCString DotDirDeps::writeGraph(QTextStream &out,
+                            GraphOutputFormat format,
+                            const char *path,
+                            const char *relPath,
+                            bool generateImageMap)
+{
+  QDir d(path);
+  // store the original directory
+  if (!d.exists()) 
+  { 
+    err("Error: Output dir %s does not exist!\n",path); exit(1);
+  }
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // go to the html output directory (i.e. path)
+  QDir::setCurrent(d.absPath());
+  QDir thisDir;
+
+  QCString baseName=m_dir->getOutputFileBase()+"_dep";
+  QCString mapName=baseName;
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+
+  // todo: create check, update md5 checksum
+  {
+    QFile f(baseName+".dot");
+    if (!f.open(IO_WriteOnly))
+    {
+      err("Cannot create file %s.dot for writing!\n",baseName.data());
+    }
+    QTextStream t(&f);
+    m_dir->writeDepGraph(t);
+    f.close();
+    
+    if (format==BITMAP)
+    {
+      // run dot to create a bitmap image
+      QCString dotArgs(maxCmdLine);
+      QCString imgName=baseName+"."+imgExt;
+      dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
+          baseName.data(),imgExt.data(),imgName.data());
+      if (generateImageMap)
+      {
+        // run dot also to create an image map
+        dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
+            baseName.data());
+      }
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+        QDir::setCurrent(oldDir);
+        return baseName;
+      }
+      checkDotResult(imgName);
+    }
+    else if (format==EPS)
+    {
+      // run dot to create a .eps image
+      QCString dotArgs(maxCmdLine);
+      dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
+          baseName.data(),baseName.data());
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+        QDir::setCurrent(oldDir);
+        return baseName;
+      }
+      if (Config_getBool("USE_PDFLATEX"))
+      {
+        QCString epstopdfArgs(maxCmdLine);
+        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
+            baseName.data(),baseName.data());
+        if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+        {
+          err("Error: Problems running epstopdf. Check your TeX installation!\n");
+          QDir::setCurrent(oldDir);
+          return baseName;
+        }
+      }
+    }
+  }
+
+  if (format==BITMAP && generateImageMap)
+  {
+    out << "<p><center><img src=\"" << relPath << baseName << "." 
+        << imgExt << "\" border=\"0\" usemap=\"#"
+        << mapName << "_map\" alt=\"";
+    out << m_dir->displayName();
+    out << "\">";
+    out << "</center>" << endl;
+    QString tmpstr;
+    QTextOStream tmpout(&tmpstr);
+    convertMapFile(tmpout,baseName+".map",relPath,TRUE);
+    if (!tmpstr.isEmpty())
+    {
+      out << "<map name=\"" << mapName << "_map\">" << endl;
+      out << tmpstr;
+      out << "</map>" << endl;
+    }
+    else
+    {
+      //printf("Map is empty!\n");
+    }
+    //thisDir.remove(baseName+".map");
+  }
+  else if (format==EPS)
+  {
+    int width,height;
+    if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
+    {
+      err("Error: Could not extract bounding box from .eps!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    int maxWidth = 420; /* approx. page width in points */
+   
+    out << "\\begin{figure}[H]\n"
+           "\\begin{center}\n"
+           "\\leavevmode\n"
+           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+                                      << "pt]{" << baseName << "}\n"
+           "\\end{center}\n"
+           "\\end{figure}\n";
+  }
+
+  if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
+
+  QDir::setCurrent(oldDir);
+  return baseName;
+
+
+}
+
+bool DotDirDeps::isTrivial() const
+{
+  return m_dir->depGraphIsTrivial();
 }
 
 //-------------------------------------------------------------

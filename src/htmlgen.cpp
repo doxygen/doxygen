@@ -319,7 +319,15 @@ static const char *defaultStyleSheet =
 "}\n"
 "a:visited {\n"
 "	color: #3D2185;\n"
+"}\n"
+".dirtab { padding: 4px;\n"
+"          border-collapse: collapse;\n"
+"          border: 1px solid #b0b0b0;\n"
+"}\n"
+"TH.dirtab { background: #eeeeff;\n"
+"            font-weight: bold;\n"
 "}\n";
+
 
 static QCString g_header;
 static QCString g_footer;
@@ -1242,6 +1250,15 @@ void HtmlGenerator::startCallGraph()
 }
 
 void HtmlGenerator::endCallGraph(DotCallGraph &g)
+{
+  g.writeGraph(t,BITMAP,dir,relPath);
+}
+
+void HtmlGenerator::startDirDepGraph()
+{
+}
+
+void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
 {
   g.writeGraph(t,BITMAP,dir,relPath);
 }

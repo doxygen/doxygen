@@ -115,6 +115,7 @@ class Doxygen
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
     static DirSDict                  directories;
+    static SDict<DirRelation>        dirRelations;
 };
 
 void initDoxygen();

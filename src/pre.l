@@ -1079,7 +1079,7 @@ static void readIncludeFile(const QCString &inc)
         if (g_yyFileDef)
         {
 	  //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
-  	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude,g_isImported);
+  	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
       }
       FileState *fs=new FileState;
@@ -1114,7 +1114,7 @@ static void readIncludeFile(const QCString &inc)
         if (fd)
         {
           //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
-  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude,g_isImported);
+  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
