@@ -123,8 +123,11 @@ static QCString         aliasName;
 static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
+static bool             useOverrideCommands = FALSE;
 static bool             insideIDL = FALSE;
 static bool             insideJava = FALSE;
+static bool             insidePHP = FALSE;
+static bool             insidePHPCode = FALSE;
 static bool             insideCppQuote = FALSE;
 
 static int              argRoundCount;
@@ -320,8 +323,11 @@ static QCString addFormula()
 
 static bool nameIsOperator(QCString &name)
 {
-  return name.right(8)=="operator" &&
-         (name.length()==8 || !isId(name.at(name.length()-9)));
+  int i=name.find("operator");
+  if (i==-1) return FALSE;
+  if (i==0 && !isId(name.at(8))) return TRUE; // case operator ::X
+  if (i>0 && !isId(name.at(i-1)) && !isId(name.at(i+8))) return TRUE; // case X::operator
+  return FALSE; // case TEXToperatorTEXT
 }
 
 static void checkFormula()
@@ -379,6 +385,11 @@ static void setContext()
   QCString fileName = yyFileName;
   insideIDL  = fileName.right(4)==".idl";
   insideJava = fileName.right(5)==".java";
+  insidePHP = fileName.right(4)==".php";
+  if ( insidePHP )
+  {
+    useOverrideCommands = TRUE;
+  }
   //printf("setContext(%s) insideIDL=%d\n",yyFileName,insideIDL);
 }
 
@@ -471,6 +482,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	NextSemi
 %x	BitFields
 %x	FindMembers
+%x	FindMembersPHP
 %x	FindMemberName
 %x      FindFields
 %x      FindFieldArg
@@ -614,8 +626,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    current_root->addSubEntry(current);
 					    current          = new Entry;
 					  }
-					  BEGIN( FindMembers );
-					}
+					  if ( insidePHP )
+					  {
+					    BEGIN( FindMembersPHP );
+					  }
+					  else
+					  {
+					    BEGIN( FindMembers );
+					  }
+                                        }
 <NextSemi>"{"				{
   					  curlyCount=0;
 					  needsSemi = TRUE;
@@ -664,6 +683,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  unput(*yytext);
 					  BEGIN( FindMembers );
   					}
+<FindMembersPHP>"<?"("php"?)            { // PHP code start
+                                          insidePHPCode = TRUE;
+                                           BEGIN( FindMembers );
+					}
+<FindMembersPHP>.                       { // Non-PHP code text, ignore
+				        }
+<FindMembers>"?>"                       { // PHP code end
+                                          insidePHPCode = FALSE;
+                                          BEGIN( FindMembersPHP );
+                                        }
+
 <FindMembers>{B}*("properties"|"__property"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
   					  current->mtype = mtype = Property;
 					  current->protection = protection = Public ;
@@ -1131,8 +1161,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->name+=*yytext;
   					  // *currentTemplateSpec+=*yytext; 
 					}
-<FindMembers,FindMemberName>{SCOPENAME}	{ 
+<FindMembers,FindMemberName>{SCOPENAME}	{
 					  lineCount();
+//                                        if ( insidePHP && strcmp(yytext,"define")==0)
+//                                        {
+//                                          BEGIN(DefinePHP);
+//                                        }
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
@@ -1153,6 +1187,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    insideTryBlock=FALSE;
 					    BEGIN(TryFunctionBlock);
 					  }
+//                                        else if ( insidePHP && strcmp(yytext,"function")==0 )
+//                                        {
+//                                           BEGIN(
+//                                        }
 					  else
 					  {
 					    if (YY_START==FindMembers)
@@ -1179,10 +1217,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 						current->name += yytext;
 					    }
 					    QCString tmp=yytext;
-					    if (nameIsOperator(tmp)) 
+					    if (nameIsOperator(tmp))
+                                            {
 					      BEGIN( Operator );
+                                            }
 					    else
-					      BEGIN(FindMembers);
+                                            {
+		 			      BEGIN(FindMembers);
+                                            }
 					  }
 					}
 <FindMembers>"."			{
@@ -1565,6 +1607,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    current->bodyLine = yyLineNr;
 					  }
+                                          if ( insidePHP && current->type.left(3) == "var" )
+                                          {
+                                            current->type = current->type.mid(3);
+                                          }
 					  current->type=current->type.simplifyWhiteSpace();
 					  current->args=current->args.simplifyWhiteSpace();
 					  current->name=current->name.stripWhiteSpace();
@@ -2244,7 +2290,18 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(SkipCPP);
 					}
   */
-<FuncQual>[{:;,]                        { unput(*yytext); BEGIN( Function ); }
+<FuncQual>[{:;,]                        {
+                                          if ( strcmp(yytext,";")==0 && insidePHP && current->type.left(8) != "function" )
+                                          {
+                                            current->reset();
+                                            initEntry();
+                                            BEGIN( FindMembers );
+                                          }
+                                          else
+                                          {
+                                            unput(*yytext); BEGIN( Function );
+                                          }
+                                        }
 <FuncQual>{BN}*"const"{BN}*       	{ 
   					  lineCount() ; 
   					  current->args += " const "; 
@@ -2353,7 +2410,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n",
 					      //   current->type.data(),current->name.data(),current->args.data());
 					      current->section = Entry::FUNCTION_SEC ;
-					      current->proto = *yytext==';';
+			                      current->proto = *yytext==';';
 					    }
 					  }
 					  else // a global function prototype or function variable
@@ -2369,36 +2426,46 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    else
 					    {
 					      //printf("Scanner.l: found prototype\n");
-  					      current->section = Entry::FUNCTION_SEC;
+					      current->section = Entry::FUNCTION_SEC;
 					      current->proto = TRUE;
 					    }
 					  }
 					  //printf("Adding entry `%s'\n",current->name.data());
-					  previous = current;
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
-					  initEntry();
-					  lastCurlyContext = FindMembers;
-					  if ( *yytext == ',' )
+					  if ( insidePHP && current->type.left(8) != "function" )
 					  {
-					    current->type = previous->type.data();
-					  }
-					  if ( *yytext == '{' )
-					  {
-					    if (current_root->section & Entry::COMPOUND_MASK)
-					      previous->memSpec = previous->memSpec | Entry::Inline;
-					    //addToBody(yytext);
-					    curlyCount=0;
-					    BEGIN( SkipCurly ) ;
+					    initEntry();
 					  }
 					  else
 					  {
-					    if (previous->section!=Entry::VARIABLE_SEC)
-					      previous->bodyLine=-1; // a function/member declaration
-					    BEGIN( FindMembers ) ;
+					    if ( insidePHP && current->type.left(8) == "function" )
+					    {
+					      current->type = current->type.mid(8);
+					    }
+					    previous = current;
+					    current_root->addSubEntry(current);
+					    current = new Entry ;
+					    initEntry();
+					    lastCurlyContext = FindMembers;
+					    if ( *yytext == ',' )
+					    {
+					      current->type = previous->type.data();
+					    }
+					    if ( *yytext == '{' )
+					    {
+					      if ( !insidePHP && (current_root->section & Entry::COMPOUND_MASK) )
+						previous->memSpec = previous->memSpec | Entry::Inline;
+					      //addToBody(yytext);
+					      curlyCount=0;
+					      BEGIN( SkipCurly ) ;
+					    }
+					    else
+					    {
+					      if (previous->section!=Entry::VARIABLE_SEC)
+						previous->bodyLine=-1; // a function/member declaration
+					      BEGIN( FindMembers ) ;
+					    }
 					  }
-					}
-
+                                        }
 <SkipInits>"{"				{ 
   				          //addToBody(yytext);
   				          //lastCurlyContext = FindMembers;
@@ -2592,6 +2659,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    baseName.resize(0);
 					    BEGIN( BasesProt ) ;
 					  }
+					  else if (insidePHP && (strcmp(yytext,"extends")==0))
+					  {
+  					    current->type.resize(0);
+					    baseProt=Public;
+                                            baseVirt=Normal;
+					    baseName.resize(0);
+					    BEGIN( BasesProt ) ;
+					  }
 					  else
 					  {
 					    //if (isTypedef)
@@ -2618,9 +2693,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
-					  if (current->section == Entry::INTERFACE_SEC || current->section == Entry::STRUCT_SEC)
+					  if (current->section == Entry::INTERFACE_SEC || current->section == Entry::STRUCT_SEC || insidePHP)
 					    baseProt=Public;
-					  else  
+					  else
 					    baseProt=Private;
                                           baseVirt=Normal;
 					  baseName.resize(0);
@@ -2715,7 +2790,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  if (current->section == Entry::INTERFACE_SEC || insideJava)
+					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP)
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -4126,22 +4201,61 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->doc+=yytext;
   					}
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  QCString *pValue=Doxygen::aliasDict[yytext+1];
-					  if (pValue)
-					  {
-					    int i,l=pValue->length();
-					    for (i=l-1;i>=0;i--)
+                                          bool handled=FALSE;
+                                          if ( useOverrideCommands)
+                                          {
+					      if ( strcmp(yytext+1,"static")==0 )
+					      {
+  					        current->stat = TRUE; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"pure")==0 )
+					      {
+						current->virt = Pure; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"private")==0 )
+					      {
+						current->protection = Private; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"privatesection")==0 )
+					      {
+						current->protection = protection = Private; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"protected")==0 )
+					      {
+						current->protection = Protected; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"protectedsection")==0 )
+					      {
+						current->protection = protection = Protected ; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"public")==0 )
+					      {
+						current->protection = Public; handled = TRUE;
+					      }
+					      else if ( strcmp(yytext+1,"publicsection")==0 )
+					      {
+						current->protection = protection = Public; handled = TRUE;
+					      }
+					  }
+                                          if (!handled)
+                                          {
+  					    QCString *pValue=Doxygen::aliasDict[yytext+1];
+					    if (pValue)
 					    {
-					      unput(pValue->at(i));
+					      int i,l=pValue->length();
+					      for (i=l-1;i>=0;i--)
+					      {
+					        unput(pValue->at(i));
+					      }
 					    }
-					  }
-					  else
-					  {
-					    if (YY_START==CopyArgComment)
-					      fullArgString+=yytext;
 					    else
-  					      current->doc+=yytext;
-					  }
+					    {
+					      if (YY_START==CopyArgComment)
+					        fullArgString+=yytext;
+					     else
+  					        current->doc+=yytext;
+					    }
+                                          }
   					}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->brief+=yytext;
@@ -4307,7 +4421,7 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-	if (ce->fileName.right(5)==".java")
+	if (ce->fileName.right(5)==".java" || ce->fileName.right(4)==".php")
           current->protection = protection = Public ; // Actually this should be package scope!
 	else
           current->protection = protection = Private ;

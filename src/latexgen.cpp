@@ -152,64 +152,72 @@ void LatexGenerator::init()
   QCString mkidx_command = Config_getString("MAKEINDEX_CMD_NAME");
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QTextStream t(&file);
-  t << "all: refman.dvi" << endl
-    << endl
-    << "ps: refman.ps" << endl
-    << endl
-    << "pdf: refman.pdf" << endl
-    << endl
-    << "ps_2on1: refman_2on1.ps" << endl
-    << endl
-    << "pdf_2on1: refman_2on1.pdf" << endl
-    << endl
-    << "refman.ps: refman.dvi" << endl
-    << "\tdvips -o refman.ps refman.dvi" << endl
-    << endl;
-    if (Config_getBool("USE_PDFLATEX")) // use pdflatex instead of latex
-    {
-      t << "refman.pdf: refman.tex" << endl;
-      t << "\tpdflatex refman.tex" << endl;
-      t << "\tmakeindex refman.idx" << endl;
-      t << "\tpdflatex refman.tex" << endl << endl;
-    }
-    else // otherwise use ps2pdf: not as nice :(
-    {
-      t << "refman.pdf: refman.ps" << endl;
-#if defined(_MSC_VER)
-      // ps2pdf.bat does not work properly from a makefile using GNU make!
-      t << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-           "-sOutputFile=refman.pdf -c save pop -f refman.ps" << endl << endl;
-#else
-      t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
-#endif
-    }
-    
-  t << "refman_2on1.ps: refman.ps" << endl
-    << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
-    << endl
-    << "refman_2on1.pdf: refman_2on1.ps" << endl
+  if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
+  {
+    t << "all: refman.dvi" << endl
+      << endl
+      << "ps: refman.ps" << endl
+      << endl
+      << "pdf: refman.pdf" << endl
+      << endl
+      << "ps_2on1: refman_2on1.ps" << endl
+      << endl
+      << "pdf_2on1: refman_2on1.pdf" << endl
+      << endl
+      << "refman.ps: refman.dvi" << endl
+      << "\tdvips -o refman.ps refman.dvi" << endl
+      << endl;
+    t << "refman.pdf: refman.ps" << endl;
 #if defined(_MSC_VER)
     // ps2pdf.bat does not work properly from a makefile using GNU make!
-    << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-           "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl
+    t << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+      "-sOutputFile=refman.pdf -c save pop -f refman.ps" << endl << endl;
 #else
-    << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl
+    t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
 #endif
-    << endl
-    << "refman.dvi: refman.tex doxygen.sty" << endl
-    << "\techo \"Running latex...\"" << endl
-    << "\t" << latex_command << " refman.tex" << endl
-    << "\techo \"Running makeindex...\"" << endl
-    << "\t" << mkidx_command << " refman.idx" << endl
-    << "\techo \"Rerunning latex....\"" << endl
-    << "\t" << latex_command << " refman.tex" << endl
-    << "\tlatex_count=5 ; \\" << endl
-    << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
-    << "\t    do \\" << endl
-    << "\t      echo \"Rerunning latex....\" ;\\" << endl
-    << "\t      " << latex_command << " refman.tex ;\\" << endl
-    << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
-    << "\t    done" << endl << endl
+    t << "refman.dvi: refman.tex doxygen.sty" << endl
+      << "\techo \"Running latex...\"" << endl
+      << "\t" << latex_command << " refman.tex" << endl
+      << "\techo \"Running makeindex...\"" << endl
+      << "\t" << mkidx_command << " refman.idx" << endl
+      << "\techo \"Rerunning latex....\"" << endl
+      << "\t" << latex_command << " refman.tex" << endl
+      << "\tlatex_count=5 ; \\" << endl
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
+      << "\t    do \\" << endl
+      << "\t      echo \"Rerunning latex....\" ;\\" << endl
+      << "\t      " << latex_command << " refman.tex ;\\" << endl
+      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
+      << "\t    done" << endl << endl
+      << "refman_2on1.ps: refman.ps" << endl
+      << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
+      << endl
+      << "refman_2on1.pdf: refman_2on1.ps" << endl
+#if defined(_MSC_VER)
+      // ps2pdf.bat does not work properly from a makefile using GNU make!
+      << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+         "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl
+#else
+      << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl;
+#endif
+  }
+  else // use pdflatex for higher quality output
+  {
+    t << "all: refman.pdf" << endl << endl;
+    t << "refman.pdf: refman.tex" << endl;
+    t << "\tpdflatex refman.tex" << endl;
+    t << "\tmakeindex refman.idx" << endl;
+    t << "\tpdflatex refman.tex" << endl << endl
+      << "\tlatex_count=5 ; \\" << endl
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
+      << "\t    do \\" << endl
+      << "\t      echo \"Rerunning latex....\" ;\\" << endl
+      << "\t      pdflatex refman.tex ;\\" << endl
+      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
+      << "\t    done" << endl << endl;
+  }
+
+  t << endl
     << "clean:" << endl
     << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out" << endl;
 }
@@ -1033,7 +1041,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   {
     t << "\\label{" << fileName << "}\\index{" 
       << name << "@{";
-    docify(name);
+    escapeMakeIndexChars(this,t,name);
     t << "}}" << endl;
   }
   if (Config_getBool("PDF_HYPERLINKS") && fileName)
@@ -1183,7 +1191,7 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
     if (s2)
     {
       t << "!" << escapeLabelName(s2) << "@{";
-      docify(s2);
+      escapeMakeIndexChars(this,t,s2);
       t << "}";
     }
     t << "}";
@@ -1389,7 +1397,6 @@ void LatexGenerator::docify(const char *str)
 {
   static bool isCzech         = theTranslator->idLanguage()=="czech";
   static bool isJapanese      = theTranslator->idLanguage()=="japanese";
-  static bool isJapaneseSjis  = theTranslator->idLanguage()=="japanese-sjis";
   static bool isKorean        = theTranslator->idLanguage()=="korean";
   static bool isRussian       = theTranslator->idLanguage()=="russian";
   static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
@@ -1404,7 +1411,27 @@ void LatexGenerator::docify(const char *str)
     unsigned char pc='\0';
     while (*p)
     {
+      static bool MultiByte = FALSE;
       c=*p++;
+
+      if( isJapanese)
+      {
+        if (MultiByte)
+        {
+          t << (char)c;
+          MultiByte = FALSE;
+          pc = c;
+          continue;
+        }
+        if (c>=0x80)
+        {
+          MultiByte = TRUE;
+          t << (char)c;
+          pc = c;
+          continue;
+        }
+      }
+
       if (insidePre)
       {
         switch(c)
@@ -1462,7 +1489,7 @@ void LatexGenerator::docify(const char *str)
 
           default:   
              // Some languages uses wide characters
-             if (isJapanese || isJapaneseSjis || isKorean || isChinese)
+             if (isJapanese || isKorean || isChinese)
              { 
                if (c>=128) 
                {
@@ -1600,6 +1627,8 @@ void LatexGenerator::docify(const char *str)
 
 void LatexGenerator::codify(const char *str)
 {
+  static bool isJapanese      = theTranslator->idLanguage()=="japanese";
+
   if (str)
   { 
     const char *p=str;
@@ -1608,7 +1637,25 @@ void LatexGenerator::codify(const char *str)
     int &tabSize = Config_getInt("TAB_SIZE");
     while (*p)
     {
+      static bool MultiByte = FALSE;
       c=*p++;
+
+      if( isJapanese )
+      {
+        if ( MultiByte )
+        {
+          t << (char)c;
+          MultiByte = FALSE;
+          continue;
+        }
+        if ( c<0 ) // char in range [0x80..0xff]
+        {
+          t << (char)c;
+          MultiByte = TRUE;
+          continue;
+        }
+      }
+
       switch(c)
       {
         case 0x0c: break; // remove ^L

@@ -1047,6 +1047,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  bool ambig;
 					  bool found=FALSE;
                                           FileDef *fd=0;
+					  //printf("looking for include %s\n",yytext);
 					  if ((fd=findFileDef(Doxygen::inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {

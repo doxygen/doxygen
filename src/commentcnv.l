@@ -162,22 +162,22 @@ static int yyread(char *buf,int max_size)
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
-<SComment>^[ \t]*"///"[\/]*\n      {
+<SComment>^[ \t]*"///"[\/]*/\n     {
                                      replaceCommentMarker(yytext,yyleng); 
   				   }
-<SComment>^[ \t]*"///"[^\/\n].*/\n   { 
+<SComment>\n[ \t]*"///"[\/]*/\n    {
+                                     replaceCommentMarker(yytext,yyleng); 
+                                   }
+<SComment>^[ \t]*"///"[^\/\n].*/\n { 
                                      replaceCommentMarker(yytext,yyleng); 
   				   }
-<SComment>^[ \t]*"//!".*/\n        { /* second line of special comment */
-                                     replaceCommentMarker(yytext,yyleng); 
-                                   }
-<SComment>\n[ \t]*"///"[\/]*\n     {
-                                     replaceCommentMarker(yytext,yyleng); 
-                                   }
 <SComment>\n[ \t]*"///"[^\/\n].*/\n  { 
                                      replaceCommentMarker(yytext,yyleng); 
   				   }
-<SComment>\n[ \t]*"//!".*/\n       { /* other line of special comment */
+<SComment>^[ \t]*"//!".*/\n        { 
+                                     replaceCommentMarker(yytext,yyleng); 
+                                   }
+<SComment>\n[ \t]*"//!".*/\n       { 
                                      replaceCommentMarker(yytext,yyleng); 
                                    }
 <SComment>\n			   { /* end of special comment */

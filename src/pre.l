@@ -105,6 +105,7 @@ static void setFileName(const char *name)
   bool ambig;
   g_yyFileName=name;
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
+  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
 }
 
 static void incrLevel()
@@ -164,6 +165,7 @@ static Define *isDefined(const char *name)
 static FILE *checkAndOpenFile(const QCString &absName)
 {
   FILE *f = 0;
+  //printf("checkAndOpenFile(%s)\n",absName.data());
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
@@ -942,6 +944,7 @@ static void readIncludeFile(const QCString &inc)
     //printf("Searching for `%s'\n",incFileName.data());
     if ((f=findFile(incFileName,localInclude))) // see if the include file can be found
     {
+      //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
         for (i=0;i<g_includeStack.count();i++) msg("  ");
@@ -983,6 +986,7 @@ static void readIncludeFile(const QCString &inc)
       {
 	bool ambig;
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
+	//printf("findFileDef(%s)=%p\n",incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude);
 	// add included by dependency
