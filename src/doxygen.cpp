@@ -2522,7 +2522,7 @@ static void addTodoTestReferences()
   GroupDef *gd=Doxygen::groupList.first();
   while (gd)
   {
-    addRefItem(gd->todoId(),gd->testId(),"group",gd->getOutputFileBase(),gd->name());
+    addRefItem(gd->todoId(),gd->testId(),"group",gd->getOutputFileBase(),gd->groupTitle());
     gd=Doxygen::groupList.next();
   }
   PageSDictIterator pdi(*Doxygen::pageSDict);
@@ -4798,6 +4798,7 @@ static void resolveUserReferences()
     if (si->label.left(5)=="_todo" || si->label.left(5)=="_test") 
     {
       si->fileName=si->label.mid(1,4); // extract "todo" or "test"
+      si->generated=TRUE;
     }
   }
 }
@@ -4839,7 +4840,7 @@ static void generatePageDocs()
       endFile(*outputList);
       outputList->enable(OutputGenerator::Man);
 
-      if (!Config::genTagFile.isEmpty())
+      if (!Config::genTagFile.isEmpty() && pi->name!="todo" && pi->name!="test")
       {
         Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
         Doxygen::tagFile << "    <name>" << pi->name << "</name>" << endl;

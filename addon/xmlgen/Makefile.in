@@ -5,8 +5,8 @@ distclean: clean
 	$(RM) -f Makefile.xmlgen
 
 tmake:
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
+	$(ENV) $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
 
 Makefile.xmlgen: xmlgen.pro
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
+	$(ENV) $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
 

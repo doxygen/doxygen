@@ -32,6 +32,7 @@
 #include "doxygen.h"
 #include "util.h"
 #include "message.h"
+//#include "reflist.h"
 
 /*! Container for member specific info that can be read from a tagfile */
 class TagMemberInfo
@@ -740,17 +741,36 @@ void TagFileParser::addDocAnchors(Entry *e,QStrList &l)
   while (s)
   {
     QCString *anchorName = new QCString(s);
-    if (Doxygen::sectionDict.find(*anchorName)==0)
-    {
-      SectionInfo *si=new SectionInfo(*anchorName,*anchorName,
-                                      SectionInfo::Anchor,m_tagName);
-      Doxygen::sectionDict.insert(*anchorName,si);
-      e->anchors->append(anchorName);
-    }
-    else
-    {
-      err("Duplicate anchor %s found\n",anchorName->data());
-    }
+    //if (anchorName->left(5)=="_todo")
+    //{
+    //  int todoItemId  = todoList.addRefItem();
+    //  char anchorLabel[12];
+    //  sprintf(anchorLabel,"_todo%06d",todoItemId);
+    //  RefItem *item = todoList.getRefItem(todoItemId);
+    //  item->listAnchor = anchorLabel;
+    //}
+    //else if (anchorName->left(5)=="_test")
+    //{
+    //  int testItemId  = testList.addRefItem();
+    //  char anchorLabel[12];
+    //  sprintf(anchorLabel,"_test%06d",testItemId);
+    //  RefItem *item = testList.getRefItem(testItemId);
+    //  item->listAnchor = anchorLabel;
+    //}
+    //else
+    //{
+      if (Doxygen::sectionDict.find(*anchorName)==0)
+      {
+        SectionInfo *si=new SectionInfo(*anchorName,*anchorName,
+            SectionInfo::Anchor,m_tagName);
+        Doxygen::sectionDict.insert(*anchorName,si);
+        e->anchors->append(anchorName);
+      }
+      else
+      {
+        err("Duplicate anchor %s found\n",anchorName->data());
+      }
+    //}
     s=l.next();
   }
 }

@@ -1514,6 +1514,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    outDoc->endSection(sec->label,
 						               sec->type==SectionInfo::Subsection);
 					  }
+					  else
+					  {
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",yytext);
+					  }
   					}
 <DocScan>{CMD}"anchor "{ID}"\n"		{
   					  QCString secName=&yytext[8];
@@ -1580,8 +1584,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocRefName>{SCOPENAME}|{FILE}		{
   					  QCString ref=yytext;
 					  SectionInfo *sec;
+					  //printf(">>> ref `%s'\n",yytext);
 					  if ((sec=Doxygen::sectionDict[ref]))
 					  {
+					    //printf("Is a section!\n");
 					    QCString text;
 					    if (sec->title.isEmpty()) 
 					      text=sec->label;
@@ -1598,7 +1604,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    else
 					    {
 					      //printf("  ref sec=%p sec->fileName=%s text=%s\n",sec,sec->fileName.data(),text.data());
-					      outDoc->writeSectionRef(sec->fileName,sec->label,text,sec->ref);
+					      outDoc->writeSectionRef(sec->ref,sec->fileName,sec->label,text);
 					    }
 					  }
 					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
@@ -1631,7 +1637,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    }
 					    else
 					    {
-					      outDoc->writeSectionRef(sec->fileName,sec->label,text,sec->ref);
+					      outDoc->writeSectionRef(sec->ref,sec->fileName,sec->label,text);
 					    }
 					  }
 					  else if (!generateLink(*outDoc,className,sectionRef,TRUE,text))
@@ -1744,14 +1750,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  BEGIN(DocScan);
   					}
-<DocScan,DocRefName>({SCOPEMASK}"::")?"operator()"("("[a-z_A-Z0-9,\<\> \t\*\&]*")")?	{ 
+<DocScan,DocRefName>({SCOPEMASK}"::")?"operator"{OPMASK} { 
 				          QCString oName=yytext;
-					  generateRef(*outDoc,className,
-					              removeRedundantWhiteSpace(oName),inSeeBlock);
-					  BEGIN(DocScan);
-					}
-<DocScan,DocRefName>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+("("[a-z_A-Z0-9,\<\> \t\*\&]*")")?	{ 
-    					  QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					  BEGIN(DocScan);

@@ -897,7 +897,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // write link to list of all members (HTML only)
-  if (allMemberNameInfoList->count()>0 /*&& compType==Class*/)
+  if (allMemberNameInfoList->count()>0 && !Config::optimizeForCFlag)
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(memListFileName,0);
@@ -1179,7 +1179,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 // write the list of all (inherited) members for this class
 void ClassDef::writeMemberList(OutputList &ol)
 {
-  if (allMemberNameInfoList->count()==0) return;
+  if (allMemberNameInfoList->count()==0 || Config::optimizeForCFlag) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1208,7 +1208,6 @@ void ClassDef::writeMemberList(OutputList &ol)
       if (mi->prot==Protected) // inherited protection
       {
         if (protect==Public) protect=Protected;
-        else if (protect==Protected) protect=Private;
       }
       
       //printf("Member %s of class %s mi->prot=%d prot=%d\n",
@@ -1646,11 +1645,25 @@ void ClassDef::mergeMembers()
         MemberInfo *mi;
         for (;(mi=mnii.current());++mnii)
         {
-          if (mi->memberDef->protection()!=Private)
+          Protection prot = mi->memberDef->protection();
+          if (bcd->prot==Protected)
+          {
+            if (prot==Public) prot=Protected;
+          }
+          else if (bcd->prot==Private)
+          {
+            prot=Private;
+          }
+          //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
+          //    name().data(),mi->memberDef->name().data(),mi->memberDef->protection(),
+          //    bcd->prot,prot);
+          
+          if (prot!=Private)
           {
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            MemberInfo *newMi=new MemberInfo(mi->memberDef,bcd->prot,virt);
+            
+            MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt);
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
             newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();

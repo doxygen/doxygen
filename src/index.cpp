@@ -49,6 +49,7 @@ int documentedNamespaces;
 int documentedNamespaceMembers;
 int documentedIncludeFiles;
 int documentedPages;
+int indexedPages;
 int documentedPackages;
 
 int countClassHierarchy();
@@ -60,7 +61,7 @@ int countNamespaces();
 int countAnnotatedClasses();
 int countNamespaceMembers();
 int countIncludeFiles();
-int countRelatedPages();
+void countRelatedPages(int &docPages,int &indexPages);
 int countPackages();
 
 void countDataStructures()
@@ -70,10 +71,10 @@ void countDataStructures()
   documentedMembers          = countClassMembers();
   documentedFunctions        = countFileMembers();
   countFiles(documentedHtmlFiles,documentedFiles);
+  countRelatedPages(documentedPages,indexedPages);
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();
-  documentedPages            = countRelatedPages();
   documentedPackages         = countPackages();
 }
 
@@ -249,7 +250,7 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
-  if (documentedPages>0)
+  if (indexedPages>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,"pages.html");
@@ -780,36 +781,47 @@ void writeFileIndex(OutputList &ol)
   OutputNameList outputNameList;
   outputNameList.setAutoDelete(TRUE);
   
-  // re-sort input files in (dir,file) output order instead of (file,dir) input order 
-  FileName *fn=Doxygen::inputNameList.first();
-  while (fn)
+  if (Config::fullPathNameFlag)
   {
-    FileDef *fd=fn->first();
-    while (fd)
+    // re-sort input files in (dir,file) output order instead of (file,dir) input order 
+    FileName *fn=Doxygen::inputNameList.first();
+    while (fn)
     {
-      QCString path=fd->getPath();
-      if (path.isEmpty()) path="[external]";
-      FileList *fl = outputNameDict.find(path);
-      if (fl)
+      FileDef *fd=fn->first();
+      while (fd)
       {
-        fl->inSort(fd);
-        //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+        QCString path=fd->getPath();
+        if (path.isEmpty()) path="[external]";
+        FileList *fl = outputNameDict.find(path);
+        if (fl)
+        {
+          fl->inSort(fd);
+          //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+        }
+        else
+        {
+          //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+          fl = new FileList(path);
+          fl->inSort(fd);
+          outputNameList.inSort(fl);
+          outputNameDict.insert(path,fl);
+        }
+        fd=fn->next();
       }
-      else
-      {
-        //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
-        fl = new FileList(path);
-        fl->inSort(fd);
-        outputNameList.inSort(fl);
-        outputNameDict.insert(path,fl);
-      }
-      fd=fn->next();
+      fn=Doxygen::inputNameList.next();
     }
-    fn=Doxygen::inputNameList.next();
   }
   
   ol.startIndexList();
-  FileList *fl=outputNameList.first();
+  FileList *fl=0;
+  if (Config::fullPathNameFlag)
+  {
+    fl = outputNameList.first();
+  }
+  else
+  {
+    fl = Doxygen::inputNameList.first();
+  }
   while (fl)
   {
     FileDef *fd=fl->first();
@@ -910,7 +922,14 @@ void writeFileIndex(OutputList &ol)
       }
       fd=fl->next();
     }
-    fl=outputNameList.next();
+    if (Config::fullPathNameFlag)
+    {
+      fl=outputNameList.next();
+    }
+    else
+    {
+      fl=Doxygen::inputNameList.next();
+    }
   }
   ol.endIndexList();
   if (hasHtmlHelp)
@@ -1944,16 +1963,19 @@ void writeExampleIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countRelatedPages()
+void countRelatedPages(int &docPages,int &indexPages)
 {
-  int count=0;
+  docPages=indexPages=0;
   PageSDictIterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup && !pi->isReference()) count++;
+    if (!pi->inGroup)
+    {
+      indexPages++;
+      if (!pi->isReference()) docPages++;
+    }
   }
-  return count;
 }
 
 //----------------------------------------------------------------------------
@@ -1977,7 +1999,7 @@ int countPackages()
 
 void writePageIndex(OutputList &ol)
 {
-  if (documentedPages==0) return;
+  if (indexedPages==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
@@ -2013,7 +2035,7 @@ void writePageIndex(OutputList &ol)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup && !pi->isReference())
+    if (!pi->inGroup /*&& !pi->isReference()*/)
     {
       QCString pageName,pageTitle;
 
@@ -2027,10 +2049,16 @@ void writePageIndex(OutputList &ol)
       else
         pageTitle=pi->title;
 
-      //ol.writeListItem();
-      ol.writeStartAnnoItem("pages",pageName,0,pageTitle);
-      //ol.writeObjectLink(0,pageName,0,pageTitle);
-      ol.writeEndAnnoItem(pageName);
+      ol.writeIndexItem(pi->getReference(),pi->getOutputFileBase(),pageTitle);
+      if (pi->isReference()) 
+      { 
+        ol.startTypewriter(); 
+        ol.docify(" [external]");
+        ol.endTypewriter();
+      }
+      //ol.writeStartAnnoItem("pages",pageName,0,pageTitle);
+      ////ol.writeObjectLink(0,pageName,0,pageTitle);
+      //ol.writeEndAnnoItem(pageName);
       ol.writeString("\n");
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
       if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
@@ -2535,7 +2563,7 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trFileIndex());
     ol.endIndexSection(isFileIndex);
   }
-  if (documentedPages>0)
+  if (indexedPages>0)
   {
     ol.startIndexSection(isPageIndex);
     parseText(ol,projPrefix+theTranslator->trPageIndex());
@@ -2578,7 +2606,7 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trExampleDocumentation());
     ol.endIndexSection(isExampleDocumentation);
   }
-  if (Doxygen::pageSDict->count()>0)
+  if (documentedPages>0)
   {
     ol.startIndexSection(isPageDocumentation);
     parseText(ol,projPrefix+theTranslator->trPageDocumentation());

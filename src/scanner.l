@@ -273,6 +273,7 @@ static void addSection()
     warn(yyFileName,yyLineNr,
          "Warning: Duplicate label %s found!",sectionLabel.data());
   }
+  sectionTitle.resize(0);
 }
 
 // Adds a formula text to the list/dictionary of formulas if it was
@@ -1385,6 +1386,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->name.resize(0);
 					    current->args.resize(0);
 					    current->initializer.resize(0);
+					    current->bitfields.resize(0);
 					    int i=oldType.length(); 
 					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
 					    current->type = oldType.left(i);
@@ -3085,8 +3087,8 @@ TITLE     [tT][iI][tT][lL][eE]
 <SectionTitle>[^\n*]*/"\n"		{
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  addSection();
 					  current->doc += "\\section "+sectionLabel+"\n";
+					  addSection();
 					  BEGIN(PageDoc);
   					}
 <SectionTitle>"*"			{

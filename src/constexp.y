@@ -32,7 +32,7 @@
 
 int cppExpYYerror(const char *s)
 {
-  printf("ERROR: %s\n",s);
+  printf("Error in constant expression evaluation: %s\n",s);
   return 0;
 }
 

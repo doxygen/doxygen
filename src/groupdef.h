@@ -36,6 +36,7 @@ class OutputList;
 class NamespaceList;
 class MemberGroupList;
 class MemberGroupDict;
+class MemberNameInfoDict;
 class PageSDict;
 class PageInfo;
 
@@ -86,8 +87,8 @@ class GroupDef : public Definition
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
 
-    MemberList *allMemberList;          // list of all members in the group
-    QDict<MemberDef> *allMemberDict;
+    MemberList *allMemberList;
+    MemberNameInfoDict *allMemberNameInfoDict;
     
     // members sorted by type
     MemberList defineMembers;
