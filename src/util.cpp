@@ -308,7 +308,7 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
 QCString generateMarker(int id)
 {
   QCString result;
-  result.sprintf("@%d\n",id);
+  result.sprintf("@%d",id);
   return result;
 }
 
@@ -1228,7 +1228,69 @@ static QCString trimTemplateSpecifiers(
   return result;
 }
 
-// removes the (one and only) occurrence of name:: from s.
+/*!
+ * @param pattern pattern to look for
+ * @param s string to search in
+ * @param p position to start
+ * @param len resulting pattern length
+ * @returns position on which string is found, or -1 if not found
+ */
+static int findScopePattern(const QCString &pattern,const QCString &s,
+                            int p,int *len)
+{
+  int sl=s.length();
+  int pl=pattern.length();
+  int sp=0; 
+  *len=0;
+  while (p<sl)
+  {
+    sp=p; // start of match
+    int pp=0; // pattern position
+    while (p<sl && pp<pl)
+    {
+      if (s.at(p)=='<') // skip template arguments while matching
+      {
+        int bc=1;
+        //printf("skipping pos=%d c=%c\n",p,s.at(p));
+        p++;
+        while (p<sl)
+        {
+          if (s.at(p)=='<') bc++;
+          else if (s.at(p)=='>') 
+          {
+            bc--;
+            if (bc==0) 
+            {
+              p++;
+              break;
+            }
+          }
+          //printf("skipping pos=%d c=%c\n",p,s.at(p));
+          p++;
+        }
+      }
+      else if (s.at(p)==pattern.at(pp))
+      {
+        //printf("match at position p=%d pp=%d c=%c\n",p,pp,s.at(p));
+        p++;
+        pp++;
+      }
+      else // no match
+      {
+        //printf("restarting at %d c=%c pat=%s\n",p,s.at(p),pattern.data());
+        p=sp+1;
+        break;
+      }
+    }
+    if (pp==pl) // whole pattern matches
+    {
+      *len=p-sp;
+      return sp;
+    }
+  }
+  return -1;
+}
+  
 static QCString trimScope(const QCString &name,const QCString &s)
 {
   int scopeOffset=name.length();
@@ -1239,11 +1301,11 @@ static QCString trimScope(const QCString &name,const QCString &s)
     QCString scope=name.left(scopeOffset)+"::";
     //printf("Trying with scope=`%s'\n",scope.data());
     
-    int i,p=0;
-    while ((i=result.find(scope,p))!=-1) // for each occurrence
+    int i,p=0,l;
+    while ((i=findScopePattern(scope,result,p,&l))!=-1) // for each occurrence
     {
       tmp+=result.mid(p,i-p); // add part before pattern
-      p=i+scope.length();
+      p=i+l;
     }
     tmp+=result.right(result.length()-p); // add trailing part
 
@@ -1461,6 +1523,17 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       
   stripIrrelevantConstVolatile(srcAType);
   stripIrrelevantConstVolatile(dstAType);
+
+  // strip typename keyword
+  if (strncmp(srcAType,"typename ",9)==0)
+  {
+    srcAType = srcAType.right(srcAType.length()-9); 
+  }
+  if (strncmp(dstAType,"typename ",9)==0)
+  {
+    dstAType = dstAType.right(dstAType.length()-9); 
+  }
+  
 
   srcAType = removeRedundantWhiteSpace(srcAType);
   dstAType = removeRedundantWhiteSpace(dstAType);
@@ -2146,7 +2219,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             }
           }
         }
-        //printf("found %d candidate members\n",members.count());
         if (members.count()!=1 && !strcmp(args,"()"))
         {
           // no exact match found, but if args="()" an arbitrary 
@@ -2167,6 +2239,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             md=mn->prev();
           }
         }
+        //printf("found %d candidate members\n",members.count());
         if (members.count()==1 || currentFile!=0)
         {
           md=members.first();

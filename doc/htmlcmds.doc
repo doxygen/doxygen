@@ -17,8 +17,9 @@
 /*! \page htmlcmds HTML Commands
 
 Here is a list of all HTML commands that may be used inside the
-documentation. Note that all attributes of a HTML tag are ignored 
-(the HREF and NAME attributes for the A tag are the only exception).
+documentation. Note that all attributes of a HTML tag are passed on to 
+the HTML output only (the HREF and NAME attributes for the A tag are the 
+only exception).
 
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a HTML hyper-link (HTML only). 

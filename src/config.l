@@ -1396,12 +1396,20 @@ void Config::create()
                     "overviews. This option has no effect if EXTRACT_ALL is enabled. \n",
                     FALSE
                  );
-   cb = addBool(
+  cb = addBool(
                     "HIDE_FRIEND_COMPOUNDS",
                     "If the HIDE_FRIEND_COMPOUNDS tag is set to YES, Doxygen will hide all \n"
                     "friend (class|struct|union) declarations. \n"
                     "If set to NO (the default) these declarations will be included in the \n"
                     "documentation. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "HIDE_IN_BODY_DOCS",
+                    "If the HIDE_IN_BODY_DOCS tag is set to YES, Doxygen will hide any \n"
+                    "documentation blocks found inside the body of a function. \n"
+                    "If set to NO (the default) these blocks will be appended to the \n"
+                    "function's detailed documentation block. \n",
                     FALSE
                  );
   cb = addBool(

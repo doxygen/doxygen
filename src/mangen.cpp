@@ -619,6 +619,5 @@ void ManGenerator::printDoc(DocNode *n)
   ManDocVisitor *visitor = new ManDocVisitor(t,*this);
   n->accept(visitor);
   delete visitor; 
-  t << endl;
 }
 

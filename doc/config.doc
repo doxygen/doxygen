@@ -101,6 +101,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_file_patterns FILE_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
 \refitem cfg_full_path_names FULL_PATH_NAMES
+\refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
 \refitem cfg_generate_todolist GENERATE_DEPRECIATELIST
@@ -109,6 +110,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_latex GENERATE_LATEX
 \refitem cfg_generate_legend GENERATE_LEGEND
 \refitem cfg_generate_man GENERATE_MAN
+\refitem cfg_generate_perlmod GENERATE_PERLMOD
 \refitem cfg_generate_rtf GENERATE_RTF
 \refitem cfg_generate_tagfile GENERATE_TAGFILE
 \refitem cfg_generate_testlist GENERATE_TESTLIST
@@ -119,6 +121,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
 \refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
+\refitem cfg_hide_in_body_docs HIDE_IN_BODY_DOCS
 \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
 \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
@@ -160,6 +163,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_paper_type PAPER_TYPE
 \refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
 \refitem cfg_perl_path PERL_PATH
+\refitem cfg_perlmod_latex PERLMOD_LATEX
+\refitem cfg_perlmod_pretty PERLMOD_PRETTY
+\refitem cfg_perlmod_makevar_prefix PERLMOD_MAKEVAR_PREFIX
 \refitem cfg_predefined PREDEFINED
 \refitem cfg_project_name PROJECT_NAME
 \refitem cfg_project_number PROJECT_NUMBER
@@ -290,6 +296,14 @@ followed by the descriptions of the tags grouped by category.
  friend (class|struct|union) declarations.
  If set to \c NO (the default) these declarations will be included in the
  documentation.
+ 
+\anchor cfg_hide_in_body_docs
+<dt>\c HIDE_IN_BODY_DOCS <dd>
+ \addindex HIDE_IN_BODY_DOCS
+If the \c HIDE_IN_BODY_DOCS tag is set to \c YES, Doxygen will hide any 
+documentation blocks found inside the body of a function.
+If set to \c NO (the default) these blocks will be appended to the 
+function's detailed documentation block.
  
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
@@ -1150,23 +1164,75 @@ EXTRA_PACKAGES = times
 
 <dt>\c GENERATE_XML <dd>
  \addindex GENERATE_XML
- If the GENERATE_XML tag is set to YES Doxygen will
+ If the \c GENERATE_XML tag is set to \c YES Doxygen will
  generate an XML file that captures the structure of
  the code including all documentation. 
 
 \anchor cfg_xml_schema
 <dt>\c XML_SCHEMA <dd>
  \addindex XML_SCHEMA
- The XML_SCHEMA tag can be used to specify an XML schema,
+ The \c XML_SCHEMA tag can be used to specify an XML schema,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
 
 \anchor cfg_xml_dtd
 <dt>\c XML_DTD <dd>
  \addindex XML_DTD
- The XML_DTD tag can be used to specify an XML DTD,
+ The \c XML_DTD tag can be used to specify an XML DTD,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
+
+</dl>
+
+\section autogen_output AUTOGEN_DEF related options
+\anchor cfg_generate_autogen_def
+<dl>
+
+<dt>\c GENERATE_AUTOGEN_DEF <dd>
+ \addindex GENERATE_AUTOGEN_DEF
+ If the \c GENERATE_AUTOGEN_DEF tag is set to \c YES Doxygen will
+ generate an AutoGen Definitions (see http://autogen.sf.net) file
+ that captures the structure of the code including all
+ documentation. Note that this feature is still experimental 
+ and incomplete at the moment. 
+
+</dl>
+
+\section perlmod_output PERLMOD related options
+\anchor cfg_generate_perlmod
+<dl>
+
+<dt>\c GENERATE_PERLMOD <dd>
+ \addindex GENERATE_PERLMOD
+ If the \c GENERATE_PERLMOD tag is set to \c YES Doxygen will
+ generate a Perl module file that captures the structure of
+ the code including all documentation. Note that this 
+ feature is still experimental and incomplete at the
+ moment.
+
+\anchor cfg_perlmod_latex
+<dt>\c PERLMOD_LATEX <dd>
+ \addindex PERLMOD_LATEX
+ If the \c PERLMOD_LATEX tag is set to \c YES Doxygen will generate 
+ the necessary Makefile rules, Perl scripts and LaTeX code to be able 
+ to generate PDF and DVI output from the Perl module output. 
+
+\anchor cfg_perlmod_pretty
+<dt>\c PERLMOD_PRETTY <dd>
+ \addindex PERLMOD_PRETTY
+ If the \c PERLMOD_PRETTY tag is set to \c YES the Perl module output will be 
+ nicely formatted so it can be parsed by a human reader.  This is useful 
+ if you want to understand what is going on. On the other hand, if this
+ tag is set to \c NO the size of the Perl module output will be much smaller
+ and Perl will parse it just the same. 
+
+\anchor cfg_perlmod_makevar_prefix
+<dt>\c PERLMOD_MAKEVAR_PREFIX <dd>
+ \addindex PERLMOD_MAKEVAR_PREFIX
+ The names of the make variables in the generated doxyrules.make file 
+ are prefixed with the string contained in \c PERLMOD_MAKEVAR_PREFIX. 
+ This is useful so different doxyrules.make files included by the same
+ Makefile don't overwrite each other's variables.
 
 </dl>
 

@@ -272,7 +272,7 @@ private:
         result+="èlanova klasa";
       }
       result+=" sa linkovima na ";
-      if (!extractAll) 
+      if (extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -331,7 +331,7 @@ private:
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode( "Spisak svih slèinih stranica:" ); }
+    { return decode( "Spisak svih sliènih stranica:" ); }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
@@ -945,11 +945,11 @@ private:
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Èlan" );        
+        return decode( "Èlanovi" );        
       }
       else
       {
-        return decode( "Javni èlan" );
+        return decode( "Javni èlanovi" );
       }
     }
     virtual QCString trStaticPublicAttribs()
@@ -1403,7 +1403,17 @@ private:
       return decode( "Sadr¾aj" );
      }
      
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
 
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return decode( "Spisak zastarelih funkcija èlanica" );
+    } 
 
 };
 
