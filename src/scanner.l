@@ -358,7 +358,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{") 
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim") 
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -757,7 +757,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount();
 					  BEGIN( CompoundName );
   					}
-<FindMembers>{B}*(("typedef"{BN}+)?)"class"{BN}+ { 
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC;
 					  addType( current ) ;
@@ -777,7 +777,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?)"struct"{BN}+ { 
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::STRUCT_SEC ;
 					  addType( current ) ;
@@ -797,7 +797,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?)"union"{BN}+ { 
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::UNION_SEC ;
 					  addType( current ) ;

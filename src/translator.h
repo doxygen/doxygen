@@ -954,7 +954,7 @@ class Translator
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return "Initializer:";
+      return "Initial value:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
@@ -1221,6 +1221,11 @@ class Translator
     virtual QCString trPackageDocumentation()
     {
       return "Package Documentation";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "Value:";
     }
 };
 

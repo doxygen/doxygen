@@ -54,6 +54,7 @@ OutputList::OutputList(const OutputList *olist)
 
 OutputList::~OutputList()
 {
+  //printf("OutputList::~OutputList()\n");
   delete outputs;
 }
 

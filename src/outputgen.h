@@ -378,6 +378,8 @@ class OutputGenerator : public BaseOutputDocInterface
 class OutputDocInterface : public BaseOutputDocInterface
 {
   public:
+    virtual ~OutputDocInterface() {}
+
     /*! Create a new output generator. This can later by appended
      *  to the current one using append().
      */

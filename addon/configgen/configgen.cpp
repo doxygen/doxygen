@@ -1046,6 +1046,19 @@ void init()
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
                  );
+  ConfigInt::add(   "maxInitLines",
+                    "MAX_INITIALIZER_LINES",
+                    "30",
+                    "when do we hide values of variable and defines?",
+                    "The MAX_INITIALIZER_LINES tag determines the maximum number of lines \n"
+                    "the initial value of a variable or define consist of for it to appear in \n"
+                    "the documentation. If the initializer consists of more lines than specified \n"
+                    "here it will be hidden. Use a value of 0 to hide initializers completely. \n"
+                    "The appearance of the initializer of individual variables and defines in the \n"
+                    "documentation can be controlled using \\showinitializer or \\hideinitializer \n"
+                    "command in the documentation regardless of this setting. \n",
+                    0,10000
+                 );
   ConfigBool::add(  "optimizeForCFlag",
                     "OPTIMIZE_OUTPUT_FOR_C",
                     "FALSE",

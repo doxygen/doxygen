@@ -519,6 +519,31 @@ void configStrToVal()
     }
     Config::maxDotGraphHeight=height;
   }
+
+  if (maxInitLinesString.isEmpty())
+  {
+    Config::maxInitLines=30;
+  }
+  else
+  {
+    bool ok;
+    int maxLines =maxInitLinesString.toInt(&ok);
+    if (!ok)
+    {
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [100..30000]!\n"
+	   "Using the default of 1024 pixels!\n");
+      maxLines=30;
+    }
+    else if (maxLines<0) // clip to lower bound
+    {
+      maxLines=0;
+    }
+    else if (maxLines>10000) // clip to upper bound
+    {
+      maxLines=10000;
+    }
+    Config::maxInitLines=maxLines;
+  }
 }
 
 static void substEnvVarsInString(QCString &s)

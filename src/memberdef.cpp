@@ -279,7 +279,8 @@ MemberDef::MemberDef(const char *df,int dl,
   indDepth=0;
   section=0;
   explExt=FALSE;
-  maxInitLines=defMaxInitLines;
+  maxInitLines=Config::maxInitLines;
+  userInitLines=-1;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
   if (tal)
@@ -793,7 +794,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       linkifyText(TextGeneratorOLImpl(ol),cname,name(),bitfields.simplifyWhiteSpace());
     }
-    else if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
+    else if (!init.isEmpty() && initLines==0 && // one line initializer
+             ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
+            ) // add initializer
     {
       if (!isDefine()) 
       {
@@ -1004,7 +1007,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startMemberDocName();
       linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
-      if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
+      if (!init.isEmpty() && initLines==0 && // one line initializer
+             ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
+         ) // add initializer
       {
         if (!isDefine()) 
         {
@@ -1081,10 +1086,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.popGeneratorState();
 
     /* write multi-line initializer (if any) */
-    if (initLines>0 && initLines<maxInitLines)
+    if (initLines>0 && ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
+                        || initLines<userInitLines // explicitly enabled
+                       )
+       )
     {
       ol.startBold();
-      parseText(ol,theTranslator->trInitialValue());
+      if (mtype==Define)
+        parseText(ol,theTranslator->trDefineValue());
+      else
+        parseText(ol,theTranslator->trInitialValue());
       ol.endBold();
       initParseCodeContext();
       ol.startCodeFragment();

@@ -378,12 +378,13 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-ClassDef *getResolvedClass(const char *name)
+ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef)
 {
   if (name==0 || name[0]=='\0') return 0;
   QCString *subst = Doxygen::typedefDict[name];
   if (subst) // there is a typedef with this name
   {
+    if (pIsTypeDef) *pIsTypeDef=TRUE;
     //printf("getResolvedClass `%s'->`%s'\n",name,subst->data());
     if (*subst==name) // avoid resolving typedef struct foo foo; 
     {
@@ -419,6 +420,7 @@ ClassDef *getResolvedClass(const char *name)
   }
   else
   {
+    if (pIsTypeDef) *pIsTypeDef=FALSE;
     return Doxygen::classDict[name];
   }
 }

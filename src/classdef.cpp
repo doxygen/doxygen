@@ -67,7 +67,7 @@ ClassDef::ClassDef(
   {
     //url="href=\""+fileName;
     exampleList = new ExampleList;
-    exampleDict = new ExampleDict(29);
+    exampleDict = new ExampleDict(17);
   }
   memListFileName=compoundName+"_"+nameToFile(nm)+"-members";
   inherits      = new BaseClassList;
@@ -76,7 +76,7 @@ ClassDef::ClassDef(
   inheritedBy->setAutoDelete(TRUE);
   allMemberNameInfoList = new MemberNameInfoList; 
   allMemberNameInfoList->setAutoDelete(TRUE);
-  allMemberNameInfoDict = new MemberNameInfoDict(1009);
+  allMemberNameInfoDict = new MemberNameInfoDict(257);
   visited=FALSE;
   setReference(lref);
   incInfo=0;
@@ -88,7 +88,7 @@ ClassDef::ClassDef(
   usesIntfClassDict=0;
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
-  memberGroupDict = new MemberGroupDict(257);
+  memberGroupDict = new MemberGroupDict(17);
   int i=name().findRev("::");
   if (i==-1)
   {
@@ -130,12 +130,12 @@ QCString ClassDef::displayName() const
 }
 
 // inserts a base class in the inheritance list
-void ClassDef::insertBaseClass(ClassDef *cd,Protection p,
+void ClassDef::insertBaseClass(ClassDef *cd,const char *n,Protection p,
                                Specifier s,const char *t)
 {
   //printf("*** insert base class %s into %s\n",cd->name().data(),name().data());
   //inherits->inSort(new BaseClassDef(cd,p,s,t));
-  inherits->append(new BaseClassDef(cd,p,s,t));
+  inherits->append(new BaseClassDef(cd,n,p,s,t));
 }
 
 // inserts a super class in the inherited list
@@ -143,7 +143,7 @@ void ClassDef::insertSuperClass(ClassDef *cd,Protection p,
                                 Specifier s,const char *t)
 {
   //printf("*** insert super class %s into %s\n",cd->name().data(),name().data());
-  inheritedBy->inSort(new BaseClassDef(cd,p,s,t));
+  inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
 }
 
 void ClassDef::addMemberListToGroup(MemberList *ml)

@@ -15,7 +15,7 @@
  *
  */
 
-/**
+/*
  * translator_es.h modified by Lucas Cruz (7-julio-2000)
  * Some notes:
  * - It's posible that some sentences haven't got meaning because  

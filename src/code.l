@@ -86,7 +86,7 @@ typedef QList<CodeVarDef>   CodeVarList;
  */
   
 static OutputDocInterface * g_code;
-static CodeClassList g_codeClassList;
+//static CodeClassList g_codeClassList;
 static CodeClassDict g_codeClassDict(1009);
 static CodeVarList   g_codeVarList;
 static CodeVarList   g_codeParmList;
@@ -909,7 +909,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    pushScope(g_ccd.name);
 					    //g_classScope=g_ccd.name.copy();
 					    CodeClassDef *cd=new CodeClassDef(g_ccd);
-					    g_codeClassList.append(cd);
+					    //g_codeClassList.append(cd);
 					    g_codeClassDict.insert(cd->name,cd);
 					    //printf("g_codeClassList.count()=%d\n",g_codeClassList.count());
 					  }
@@ -1555,11 +1555,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 
 void initParseCodeContext()
 {
-  g_codeClassList.setAutoDelete(TRUE);
+  g_codeClassDict.setAutoDelete(TRUE);
   g_codeVarList.setAutoDelete(TRUE);
   g_codeParmList.setAutoDelete(TRUE);
   g_codeClassDict.clear();
-  g_codeClassList.clear();
   g_codeVarList.clear();
   g_codeParmList.clear();
   g_ccd.bases.clear();

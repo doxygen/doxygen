@@ -62,12 +62,6 @@ class MemberDef : public Definition
       Property
     };
 
-    enum
-    {
-      defMaxInitLines = 30 // default maximum number of lines shown for member
-                           // initializer
-    };
-    
     MemberDef(const char *defFileName,int defLine,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
@@ -135,11 +129,11 @@ class MemberDef : public Definition
     void setMemberSpecifiers(int s)       { memSpec=s; }
     void mergeMemberSpecifiers(int s)     { memSpec|=s; }
     void setInitializer(const char *i)    { init=i; 
-                                            init=init.stripWhiteSpace();
+                                            //init=init.stripWhiteSpace();
                                             initLines=init.contains('\n');
                                           }
     void setBitfields(const char *s)      { bitfields = s; }
-    void setMaxInitLines(int lines)       { if (lines!=-1) maxInitLines=lines; }
+    void setMaxInitLines(int lines)       { userInitLines=lines; }
     void setMemberClass(ClassDef *cd)     { classDef=cd; }
     void setSectionList(MemberList *sl)   { section=sl; }
     void setGroupDef(GroupDef *gd)        { group=gd; }
@@ -261,6 +255,7 @@ class MemberDef : public Definition
     bool annShown;           
     int  indDepth;            // indentation depth for this member if inside an annonymous scope
     int  maxInitLines;        // when the initializer will be displayed 
+    int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
     ArgumentList *argList;    // argument list of this member

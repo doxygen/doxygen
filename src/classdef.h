@@ -46,6 +46,10 @@ class QTextStream;
 class PackageDef;
 struct IncludeInfo;
 
+/*! \brief This class contains all information about a compound.
+ *
+ *  A compound can be a class, struct, union, interface, or exception 
+ */
 class ClassDef : public Definition
 {
   public:
@@ -64,7 +68,7 @@ class ClassDef : public Definition
     QCString displayName() const;
     CompoundType compoundType() const { return compType; } 
     QCString compoundTypeString() const;
-    void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
+    void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *superClasses() { return inheritedBy; }
@@ -202,6 +206,8 @@ class ClassDef : public Definition
                       // groups?
 };
 
+/*! \brief Class that contains information about a usage relation. 
+ */
 struct UsesClassDef
 {
   UsesClassDef(ClassDef *cd) : classDef(cd) 
@@ -220,12 +226,22 @@ struct UsesClassDef
       accessors->insert(s,(void *)666);
     }
   }
+  /*! Class definition that this relation uses. */
   ClassDef *classDef;
+
+  /*! Dictionary of member variable names that form the edge labels of the
+   *  usage relation.
+   */
   QDict<void> *accessors;
+
+  /*! Template arguments used for the base class */
   QCString templSpecifiers;
+
   bool containment;
 };
 
+/*! \brief Dictionary of usage relations. 
+ */
 class UsesClassDict : public QDict<UsesClassDef>
 {
   public:
@@ -233,6 +249,8 @@ class UsesClassDict : public QDict<UsesClassDef>
    ~UsesClassDict() {}
 };
 
+/*! \brief Iterator class to iterate over a dictionary of usage relations. 
+ */
 class UsesClassDictIterator : public QDictIterator<UsesClassDef>
 {
   public:
@@ -241,16 +259,40 @@ class UsesClassDictIterator : public QDictIterator<UsesClassDef>
    ~UsesClassDictIterator() {}
 };
 
+/*! \brief Class that contains information about an inheritance relation. 
+ */
 struct BaseClassDef
 {
-  BaseClassDef(ClassDef *cd,Protection p,Specifier v,const char *t) : 
-        classDef(cd), prot(p), virt(v), templSpecifiers(t) {}
+  BaseClassDef(ClassDef *cd,const char *n,Protection p,
+               Specifier v,const char *t) : 
+        classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
+
+  /*! Class definition that this relation inherits from. */
   ClassDef *classDef;
-  Protection prot;
+
+  /*! name used in the inheritance list 
+   * (may be a typedef name instead of the class name)
+   */
+  QCString   usedName; 
+  
+  /*! Protection level of the inheritance relation: 
+   *  Public, Protected, or Private 
+   */
+  Protection prot;     
+
+  /*! Virtualness of the inheritance relation:
+   *  Normal, or Virtual
+   */
   Specifier  virt;
+
+  /*! Template arguments used for the base class */
   QCString templSpecifiers;
 };
 
+/*! \brief list of base classes 
+ *  
+ *  The classes are alphabetically sorted on name if inSort() is used.
+ */
 class BaseClassList : public QList<BaseClassDef>
 {
   public:
@@ -266,6 +308,8 @@ class BaseClassList : public QList<BaseClassDef>
     }
 };
 
+/*! \brief Iterator for a list of base classes
+ */
 class BaseClassListIterator : public QListIterator<BaseClassDef>
 {
   public:
