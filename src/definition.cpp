@@ -123,7 +123,9 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
     switch(m_brief.at(bl-1))
     {
       case '.': case '!': case '?': break;
-      default: m_brief+='.'; break;
+      default: 
+        if (isupper(m_brief.at(0))) m_brief+='.'; 
+        break;
     }
   }
   m_briefFile = briefFile;

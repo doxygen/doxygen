@@ -1,37 +1,39 @@
 /******************************************************************************
- *
- * 
- *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
- * for any purpose. It is provided "as is" without express or implied warranty.
- * See the GNU General Public License for more details.
- *
- * Documents produced by Doxygen are derivative works derived from the
- * input used in their production; they are not affected by this license.
- *
- */
+*
+*
+*
+* Copyright (C) 1997-2000 by Dimitri van Heesch.
+*
+* Permission to use, copy, modify, and distribute this software and its
+* documentation under the terms of the GNU General Public License is hereby
+* granted. No representations are made about the suitability of this 
+software
+* for any purpose. It is provided "as is" without express or implied 
+warranty.
+* See the GNU General Public License for more details.
+*
+* Documents produced by Doxygen are derivative works derived from the
+* input used in their production; they are not affected by this license.
+*
+*/
 
 /*
- * translator_jp.h 
- * 
- * 1.2.5)  
- * First Translation 
- *      by Kenji Nagamatsu
- * 1.2.12) 
- * Update and Shift-Jis(_WIN32)
- *      by Ryunosuke Sato (30-Dec-2001)
- */
+* translator_jp.h
+*
+* 1.2.5)
+* First Translation
+*      by Kenji Nagamatsu
+* 1.2.12)
+* Update and Shift-Jis(_WIN32)
+*      by Ryunosuke Sato (30-Dec-2001)
+*/
 
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
 class TranslatorJapanese : public Translator
 {
- private:
+private:
   /*! The decode() can change euc into sjis */
   inline QCString decode(const QCString & sInput)
     {
@@ -46,7 +48,7 @@ class TranslatorJapanese : public Translator
     { return "japanese"; }
     virtual QCString latexLanguageSupportCommand()
       {
-	return "";
+    return "";
       }
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
@@ -58,7 +60,8 @@ class TranslatorJapanese : public Translator
 #endif
     }
 
-    /*! used in the compound documentation before a list of related functions. */
+    /*! used in the compound documentation before a list of related 
+functions. */
     virtual QCString trRelatedFunctions()
     { return decode("関連する関数"); }
 
@@ -66,55 +69,57 @@ class TranslatorJapanese : public Translator
     virtual QCString trRelatedSubscript()
     { return decode("（これらはメンバ関数でないことに注意）"); }
 
-    /*! header that is put before the detailed description of files, classes and namespaces. */
+    /*! header that is put before the detailed description of files, classes 
+and namespaces. */
     virtual QCString trDetailedDescription()
     { return decode("解説"); }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return decode("メンバ型定義の解説"); }
-    
+      { return decode("Typedefメンバの解説"); }
+
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return decode("メンバ列挙型の解説"); }
-    
+    { return decode("Enumメンバの解説"); }
+
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return decode("メンバ関数の解説"); }
-    
+    { return decode("関数メンバの解説"); }
+
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if( Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("構造体の解説");
-	}
+    {
+      return decode("構造体の解説");
+    }
       else
-	{
-	  return decode("メンバの解説"); 
-	}
+    {
+      return decode("メンバの解説");
+    }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return decode("より詳しく..."); }
+    { return decode("[詳細]"); }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return decode("すべてのメンバ一覧"); }
+    { return decode("メンバ一覧"); }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
     { return decode("メンバ一覧"); }
 
-    /*! this is the first part of a sentence that is followed by a class name */
+    /*! this is the first part of a sentence that is followed by a class 
+name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode("これは全メンバの一覧です。"); }
+    { return decode("これはメンバの一覧です。"); }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return decode("継承メンバもすべて含んでいます。"); }
-    
+
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
@@ -127,73 +132,77 @@ class TranslatorJapanese : public Translator
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return decode("列挙型"); }
-    
+    { return decode("Enum"); }
+
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return decode("列挙値"); }
-    
+    { return decode("Enum値"); }
+
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return decode("次で定義されています。"); }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \group command).
      */
     virtual QCString trModules()
     { return decode("モジュール"); }
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
     { return decode("クラス階層"); }
-    
-    /*! This is put above each page as a link to the list of annotated classes */
+
+    /*! This is put above each page as a link to the list of annotated 
+classes */
     virtual QCString trCompoundList()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造");
-	}
-      else
-	{
-	  return decode("構成");
-	}
+    {
+      return decode("データ構造");
     }
-    
-    /*! This is put above each page as a link to the list of documented files */
+      else
+    {
+      return decode("構成");
+    }
+    }
+
+    /*! This is put above each page as a link to the list of documented 
+files */
     virtual QCString trFileList()
     { return decode("ファイル一覧"); }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
+    /*! This is put above each page as a link to the list of all verbatim 
+headers */
     virtual QCString trHeaderFiles()
     { return decode("ヘッダファイル"); }
 
-    /*! This is put above each page as a link to all members of compounds. */
+    /*! This is put above each page as a link to all members of compounds. 
+*/
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データフィールド");
-	}
+    {
+      return decode("データフィールド");
+    }
       else
-	{
-	  return decode("構成メンバ");
-	}
+    {
+      return decode("構成メンバ");
+    }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("グローバル");
-	}
+    {
+      return decode("グローバル");
+    }
       else
-	{
-	  return decode("ファイルメンバ"); 
-	}
+    {
+      return decode("ファイルメンバ");
+    }
     }
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
@@ -225,13 +234,13 @@ class TranslatorJapanese : public Translator
     virtual QCString trCompoundListDescription()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造の解説です。");
-	}
+    {
+      return decode("データ構造の解説です。");
+    }
       else
-	{
-	  return decode("クラス、構造体、共用体、インタフェースの解説です。");
-	}
+    {
+      return decode("クラス、構造体、共用体、インタフェースの解説です。");
+    }
     }
 
     /*! This is an introduction to the page with all class members. */
@@ -239,15 +248,15 @@ class TranslatorJapanese : public Translator
     {
       QCString result=decode("これは");
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  result+=decode("フィールドの一覧でそれぞれ");
-	  if (extractAll) result+=decode("が属している構造体/共用体");
-	}
+    {
+      result+=decode("フィールドの一覧でそれぞれ");
+      if (extractAll) result+=decode("が属している構造体/共用体");
+    }
       else
-	{
-	  result+=decode("クラスメンバの一覧で、それぞれ");
-	  if (extractAll) result+=decode("が属しているクラス");
-	}
+    {
+      result+=decode("クラスメンバの一覧で、それぞれ");
+      if (extractAll) result+=decode("が属しているクラス");
+    }
       result+=decode("の解説へリンクしています。");
       return result;
     }
@@ -257,18 +266,20 @@ class TranslatorJapanese : public Translator
     {
       QCString result=decode("これは");
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  result+=decode("関数、変数、マクロ、列挙型、型定義の");
-	}
+    {
+      result+=decode("関数、変数、マクロ、Typedef定義、Enum定義の");
+    }
       else
-	{
-	  result+=decode("ファイルメンバの");
-	}
-      result+=decode("一覧です。それぞれが属しているファイルの解説へリンクしています。");
+    {
+      result+=decode("ファイルメンバの");
+    }
+      
+result+=decode("一覧です。それぞれが属しているファイルの解説へリンクしています。");
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
+    /*! This is an introduction to the page with the list of all header 
+files. */
     virtual QCString trHeaderFilesDescription()
     { return decode("APIを構成するヘッダファイルです。"); }
 
@@ -276,58 +287,60 @@ class TranslatorJapanese : public Translator
     virtual QCString trExamplesDescription()
     { return decode("すべての例の一覧です。"); }
 
-    /*! This is an introduction to the page with the list of related pages */
+    /*! This is an introduction to the page with the list of related pages 
+*/
     virtual QCString trRelatedPagesDescription()
     { return decode("関連ページの一覧です。"); }
 
-    /*! This is an introduction to the page with the list of class/file groups */
+    /*! This is an introduction to the page with the list of class/file 
+groups */
     virtual QCString trModulesDescription()
     { return decode("すべてのモジュールの一覧です。"); }
 
     /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
+     * description is given.
      */
     virtual QCString trNoDescriptionAvailable()
     { return decode("ドキュメントが記述されていません。"); }
-    
-    // index titles (the project name is prepended for these) 
+
+    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return decode("ドキュメント"); }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return decode("モジュール索引"); }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return decode("階層索引"); }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造索引"); 
-	}
+    {
+      return decode("データ構造索引");
+    }
       else
-	{
-	  return decode("構成索引");
-	}
+    {
+      return decode("構成索引");
+    }
     }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return decode("ファイル索引"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -342,13 +355,13 @@ class TranslatorJapanese : public Translator
     virtual QCString trClassDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造の解説");
-	}
+    {
+      return decode("データ構造の解説");
+    }
       else
-	{
-	  return decode("クラスの解説"); 
-	}
+    {
+      return decode("クラスの解説");
+    }
     }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -361,7 +374,7 @@ class TranslatorJapanese : public Translator
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return decode("例題の解説"); }
+    { return decode("例の解説"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
@@ -372,115 +385,122 @@ class TranslatorJapanese : public Translator
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return decode("リファレンスマニュアル"); }
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return decode("マクロ定義"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
     { return decode("関数プロトタイプ"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return decode("型定義"); }
+    { return decode("Typedef定義"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return decode("列挙型"); }
+    { return decode("Enum定義"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return decode("関数"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return decode("変数"); }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-      { return decode("列挙型値"); }
+      { return decode("Enum値"); }
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
     { return decode("マクロ定義の解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
     { return decode("関数プロトタイプの解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return decode("型定義の解説"); }
+    { return decode("Typedef定義の解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return decode("列挙型の解説"); }
+    { return decode("Enum定義の解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return decode("列挙型値の解説"); }
+    { return decode("Enum値の解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return decode("関数の解説"); }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the 
+list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return decode("変数の解説"); }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造");
-	}
-      else
-	{
-	  return decode("構成");
-	}
+    {
+      return decode("データ構造");
     }
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+      else
+    {
+      return decode("構成");
+    }
+    }
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result;
       if (projName) result+=(QCString)projName+decode("に対して");
       result+=(QCString)date+decode("に生成されました。");
       return result;
     }
-    /*! This is part of the sentence used in the standard footer of each page.
+    /*! This is part of the sentence used in the standard footer of each 
+page.
      */
     virtual QCString trWrittenBy()
     {
@@ -490,16 +510,17 @@ class TranslatorJapanese : public Translator
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)clName+decode("に対する継承グラフ");
+      return (QCString)clName+decode("の継承グラフ");
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return decode("内部使用のみ。"); }
 
     /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
-    { return decode("内部的な理由により再実装されましたが、APIには影響しません。");
+    { return 
+decode("内部的な理由により再実装されましたが、APIには影響しません。");
     }
 
     /*! this text is generated when the \\warning command is used. */
@@ -537,7 +558,7 @@ class TranslatorJapanese : public Translator
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return decode("例外"); }
-    
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return decode(""); }
@@ -545,8 +566,9 @@ class TranslatorJapanese : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
-    /*! used as the title of page containing all the index of all namespaces. */
+
+    /*! used as the title of page containing all the index of all 
+namespaces. */
     virtual QCString trNamespaceList()
     { return decode("名前空間一覧"); }
 
@@ -562,18 +584,18 @@ class TranslatorJapanese : public Translator
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return decode("フレンド"); }
-    
+    { return decode("Friend関数"); }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return decode("フレンドと関連する関数の解説"); }
-    
+    { return decode("関連する関数の解説"); }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -590,7 +612,8 @@ class TranslatorJapanese : public Translator
         case ClassDef::Struct:     result+=decode("構造体 "); break;
         case ClassDef::Union:      result+=decode("共用体 "); break;
         case ClassDef::Interface:  result+=decode("インタフェース"); break;
-        case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
+        case ClassDef::Exception:  result+=decode("例外"); break; 
+//TODO:fixme
       }
       if (isTemplate) result+=decode(" テンプレート");
       result+=(QCString)clName+decode(" の解説");
@@ -600,39 +623,40 @@ class TranslatorJapanese : public Translator
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result=decode("")+(QCString)fileName+decode(" の解説"); 
+      QCString result=decode("")+(QCString)fileName+decode(" の解説");
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result=decode("名前空間 ")+(QCString)namespaceName+decode(" の解説");
+      QCString result=decode("名前空間 ")+(QCString)namespaceName+decode(" 
+の解説");
       return result;
     }
-    
+
     /* these are for the member sections of a class, struct or union */
     virtual QCString trPublicMembers()
-    { return decode("公開メンバ"); }
+    { return decode("Public メソッド"); }
     virtual QCString trPublicSlots()
-    { return decode("公開スロット"); }
+    { return decode("Public スロット"); }
     virtual QCString trSignals()
     { return decode("シグナル"); }
     virtual QCString trStaticPublicMembers()
-    { return decode("静的公開メンバ"); }
+    { return decode("Static Public メソッド"); }
     virtual QCString trProtectedMembers()
-    { return decode("保護メンバ"); }
+    { return decode("Protected メソッド"); }
     virtual QCString trProtectedSlots()
-    { return decode("保護スロット"); }
+    { return decode("Protected スロット"); }
     virtual QCString trStaticProtectedMembers()
-    { return decode("静的保護メンバ"); }
+    { return decode("Static Protected メソッド"); }
     virtual QCString trPrivateMembers()
-    { return decode("非公開メンバ"); }
+    { return decode("Private メソッド"); }
     virtual QCString trPrivateSlots()
-    { return decode("非公開スロット"); }
+    { return decode("Private スロット"); }
     virtual QCString trStaticPrivateMembers()
-    { return decode("静的非公開メンバ"); }
-    
+    { return decode("Static Private メソッド"); }
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -641,23 +665,23 @@ class TranslatorJapanese : public Translator
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=decode(", ");
           else                // the fore last entry
             result+=decode(", と ");
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -674,7 +698,7 @@ class TranslatorJapanese : public Translator
       return trWriteList(numEntries)+decode("に継承されています。");
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
@@ -690,23 +714,24 @@ class TranslatorJapanese : public Translator
       return trWriteList(numEntries)+decode("で再定義されています。");
     }
 
-    /*! This is put above each page as a link to all members of namespaces. */
+    /*! This is put above each page as a link to all members of namespaces. 
+*/
     virtual QCString trNamespaceMembers()
     { return decode("名前空間メンバ"); }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
-	QCString result=decode("これは");
+    {
+    QCString result=decode("これは");
       result+=decode("名前空間の一覧です。それぞれ");
-      if (extractAll) 
-	  result+=decode("の名前空間の解説");
-      else 
-	  result+=decode("が属している名前空間");
+      if (extractAll)
+      result+=decode("の名前空間の解説");
+      else
+      result+=decode("が属している名前空間");
       result+=decode("へリンクしています。");
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -746,7 +771,8 @@ class TranslatorJapanese : public Translator
         case ClassDef::Struct:     result+=decode("構造体"); break;
         case ClassDef::Union:      result+=decode("共用体"); break;
         case ClassDef::Interface:  result+=decode("インタフェース"); break;
-        case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
+        case ClassDef::Exception:  result+=decode("例外"); break; 
+//TODO:fixme
       }
       result+=decode("の解説は次のファイルから生成されました:");
       return result;
@@ -756,7 +782,7 @@ class TranslatorJapanese : public Translator
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return decode("アルファベット順一覧"); }
+    { return decode("一覧  [アルファベット順]"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -771,7 +797,7 @@ class TranslatorJapanese : public Translator
     virtual QCString trMainPage()
     { return decode("メインページ"); }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -815,19 +841,21 @@ class TranslatorJapanese : public Translator
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-	return (QCString)fName+decode("のインクルード依存関係図");
+    return (QCString)fName+decode("のインクルード依存関係図");
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return decode("コンストラクタとデストラクタの解説"); 
+      return decode("コンストラクタとデストラクタの解説");
     }
-    /*! Used in the file documentation to point to the corresponding sources. */
+    /*! Used in the file documentation to point to the corresponding 
+sources. */
     virtual QCString trGotoSourceCode()
     {
       return decode("ソースコードを見る。");
     }
-    /*! Used in the file sources to point to the corresponding documentation. */
+    /*! Used in the file sources to point to the corresponding 
+documentation. */
     virtual QCString trGotoDocumentation()
     {
       return decode("解説を見る。");
@@ -855,7 +883,7 @@ class TranslatorJapanese : public Translator
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return decode("コード");
+      return decode("ソースコード");
     }
     virtual QCString trGraphicalHierarchy()
     {
@@ -877,53 +905,53 @@ class TranslatorJapanese : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return decode("覚え書き");
     }
     virtual QCString trPublicTypes()
     {
-      return decode("公開型");
+      return decode("Public 型");
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データフィールド");
-	}
+    {
+      return decode("データフィールド");
+    }
       else
-	{
-	  return decode("公開属性");
-	}
+    {
+      return decode("Public 属性");
+    }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return decode("静的公開属性");
+      return decode("Static Public 属性");
     }
     virtual QCString trProtectedTypes()
     {
-      return decode("保護型");
+      return decode("Protected 型");
     }
     virtual QCString trProtectedAttribs()
     {
-      return decode("保護属性");
+      return decode("Protected 属性");
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return decode("静的保護属性");
+      return decode("Static Protected 属性");
     }
     virtual QCString trPrivateTypes()
     {
-      return decode("非公開型");
+      return decode("Private 型");
     }
     virtual QCString trPrivateAttribs()
     {
-      return decode("非公開属性");
+      return decode("Private 属性");
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return decode("静的非公開属性");
+      return decode("Static Private 属性");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -933,12 +961,12 @@ class TranslatorJapanese : public Translator
     /*! Used as a marker that is put before a todo item */
     virtual QCString trTodo()
     {
-      return decode("TODO");
+      return decode("Todo");
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return decode("TODO一覧");
+      return decode("Todo一覧");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -959,14 +987,14 @@ class TranslatorJapanese : public Translator
     }
     virtual QCString trInclByDepGraph()
     {
-	return decode("このグラフは、どのファイルから直接、間接的に"
+    return decode("このグラフは、どのファイルから直接/間接的に"
              "インクルードされているかを示しています。");
     }
     virtual QCString trSince()
     {
       return decode("から");
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -979,8 +1007,9 @@ class TranslatorJapanese : public Translator
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return 
-        decode("このページでは、doxygen で生成されたグラフをどのようにみたらよいかを"
+      return
+        decode("このページでは、doxygen 
+で生成されたグラフをどのようにみたらよいかを"
         "説明します。<p>\n"
         "次の例を考えてみます。\n"
         "\\code\n"
@@ -1008,19 +1037,23 @@ class TranslatorJapanese : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "設定ファイル中で、タグ \\c MAX_DOT_GRAPH_HEIGHT が 200 にセットされた"
+        "設定ファイル中で、タグ \\c MAX_DOT_GRAPH_HEIGHT が 200 
+にセットされた"
         "場合、次のようなグラフとなります。"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img 
+src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "上のグラフ内のボックスには次のような意味があります。\n"
         "<ul>\n"
-        "<li>黒く塗りつぶされたボックスは、このグラフに対応する構造体やクラスを"
+        
+"<li>黒く塗りつぶされたボックスは、このグラフに対応する構造体やクラスを"
         "表します。\n"
         "<li>黒枠のボックスはドキュメントがある構造体やクラスを表します。\n"
-        "<li>灰色の枠のボックスはドキュメントがない構造体やクラスを表します。\n"
+        
+"<li>灰色の枠のボックスはドキュメントがない構造体やクラスを表します。\n"
         "<li>赤枠のボックスはドキュメントがある構造体やクラスを表しますが、"
-	  "指定されたサイズに収まらないために継承・包含関係をすべて図示する"
-	  "ことができなかったことを示します。"
+      "指定されたサイズに収まらないために継承・包含関係をすべて図示する"
+      "ことができなかったことを示します。"
         "</ul>\n"
         "矢印には次のような意味があります。\n"
         "<ul>\n"
@@ -1028,8 +1061,8 @@ class TranslatorJapanese : public Translator
         "<li>緑の矢印は protected 継承関係を示します。\n"
         "<li>赤の矢印は private 継承関係を示します。\n"
         "<li>紫の破線矢印は、そのクラスが他のクラスに含まれていたり、"
-	  "利用されていることを示します。また、矢印が指しているクラスや構造体を"
-	  "どの変数でアクセスできるかを矢印のラベルとして示しています。\n"
+      "利用されていることを示します。また、矢印が指しているクラスや構造体を"
+      "どの変数でアクセスできるかを矢印のラベルとして示しています。\n"
         "</ul>\n");
     }
     /*! text for the link to the legend page */
@@ -1037,11 +1070,11 @@ class TranslatorJapanese : public Translator
     {
       return decode("凡例");
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1060,7 +1093,7 @@ class TranslatorJapanese : public Translator
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return decode("DCOPメソッド");
+      return decode("DCOP メソッド");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1086,19 +1119,19 @@ class TranslatorJapanese : public Translator
     /*! Used for Java interfaces in the summary section of Java packages */
     virtual QCString trInterfaces()
     {
-      return decode("インターフェース");
+      return decode("インタフェース");
     }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("データ構造");
-	}
+    {
+      return decode("データ構造");
+    }
       else
-	{
-	  return decode("クラス");
-	}
+    {
+      return decode("クラス");
+    }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
@@ -1135,7 +1168,7 @@ class TranslatorJapanese : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1151,9 +1184,10 @@ class TranslatorJapanese : public Translator
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset 
+Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1174,15 +1208,15 @@ class TranslatorJapanese : public Translator
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "932";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1195,97 +1229,97 @@ class TranslatorJapanese : public Translator
     {
       return decode("索引");
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("クラス"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("ファイル"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("名前空間"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("グループ"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("ページ"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("メンバ"));
-      return result; 
-    }
-   
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      first_capital = first_capital;
-      singular = singular;
-      QCString result(decode("フィールド"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    {
+      first_capital = first_capital;
+      singular = singular;
+      QCString result(decode("フィールド"));
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("グローバル"));
@@ -1299,11 +1333,11 @@ class TranslatorJapanese : public Translator
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       first_capital = first_capital;
       singular = singular;
       QCString result(decode("作者"));
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1321,7 +1355,7 @@ class TranslatorJapanese : public Translator
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1334,8 +1368,9 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return trWriteList(numEntries)+decode("に実装されています")+".";
+      return trWriteList(numEntries)+decode("で実装されています")+".";
     }
 
 };
 #endif
+

@@ -9,6 +9,15 @@ class ICompound;
 class ISection;
 class INode;
 
+class IString
+{
+  public:
+    virtual const char *latin1() const = 0;
+    virtual unsigned short unicodeCharAt(int index) const = 0;
+    virtual bool isEmpty() const = 0;
+    virtual int length() const = 0;
+};
+
 class ILinkedText
 {
   public:
@@ -19,17 +28,17 @@ class ILinkedText
 class ILT_Text : public ILinkedText
 {
   public:
-    virtual QString text() const = 0;
+    virtual const IString *text() const = 0;
 };
 
 class ILT_Ref : public ILinkedText
 {
   public:
     enum TargetKind { Member, Compound };
-    virtual QString id() const = 0;
+    virtual const IString *id() const = 0;
     virtual TargetKind targetKind() const = 0;
-    virtual QString external() const = 0;
-    virtual QString text() const = 0;
+    virtual const IString *external() const = 0;
+    virtual const IString *text() const = 0;
 };
 
 class ILinkedTextIterator 
@@ -47,10 +56,10 @@ class IParam
 {
   public:
     virtual ILinkedTextIterator *type() const = 0;
-    virtual QString declarationName() const = 0;
-    virtual QString definitionName() const = 0;
-    virtual QString attrib() const = 0;
-    virtual QString arraySpecifier() const = 0;
+    virtual const IString * declarationName() const = 0;
+    virtual const IString * definitionName() const = 0;
+    virtual const IString * attrib() const = 0;
+    virtual const IString * arraySpecifier() const = 0;
     virtual ILinkedTextIterator *defaultValue() const = 0;
 };
 
@@ -69,7 +78,7 @@ class IMemberReference
 {
   public:
     virtual IMember *member() const = 0;
-    virtual QString memberName() const = 0;
+    virtual const IString * memberName() const = 0;
 };
 
 class IMemberReferenceIterator 
@@ -86,8 +95,8 @@ class IMemberReferenceIterator
 class IEnumValue
 {
   public:
-    virtual QString name() const = 0;
-    virtual QString initializer() const = 0;
+    virtual const IString * name() const = 0;
+    virtual const IString * initializer() const = 0;
 };
 
 class IEnumValueIterator 
@@ -136,7 +145,7 @@ class IDoc
       Row,                // 27 -> IDocRow
       Entry,              // 28 -> IDocEntry
       Section,            // 29 -> IDocSection
-      Root                // 30 -> IDocRoot
+      Root,               // 30 -> IDocRoot
     };
     virtual Kind kind() const = 0;
 };
@@ -153,7 +162,8 @@ class IDocMarkup : public IDoc
       Subscript      = 0x08,
       Superscript    = 0x10,
       SmallFont      = 0x20,
-      Center         = 0x40
+      Center         = 0x40,
+      Preformatted   = 0x80
     };
 
 };
@@ -167,7 +177,7 @@ class IDocPara : public IDoc
 class IDocText : public IDocMarkup
 {
   public:
-    virtual QString text() const = 0;
+    virtual const IString * text() const = 0;
     virtual int markup() const = 0;
 };
 
@@ -207,7 +217,7 @@ class IDocParameterList : public IDoc
 class IDocParameter : public IDoc
 {
   public:
-    virtual QString name() const = 0;
+    virtual const IString * name() const = 0;
     virtual IDocPara *description() const = 0;
 };
 
@@ -229,7 +239,7 @@ class IDocSimpleSect : public IDoc
                  Examples
     };
     virtual Types type() const = 0;
-    virtual QString typeString() const = 0;
+    virtual const IString * typeString() const = 0;
     virtual IDocTitle *title() const = 0;
     virtual IDocPara *description() const = 0;
 };
@@ -238,10 +248,10 @@ class IDocRef : public IDoc
 {
   public:
     enum TargetKind { Member, Compound };
-    virtual QString refId() const = 0;
+    virtual const IString * refId() const = 0;
     virtual TargetKind targetKind() const = 0;
-    virtual QString external() const = 0;
-    virtual QString text() const = 0;
+    virtual const IString * external() const = 0;
+    virtual const IString * text() const = 0;
 };
 
 class IDocVariableList : public IDoc
@@ -253,7 +263,7 @@ class IDocVariableList : public IDoc
 class IDocVariableListEntry : public IDoc
 {
   public:
-    virtual QString term() const = 0;
+    virtual const IString * term() const = 0;
     virtual IDocPara *description() const = 0;
 };
 
@@ -268,21 +278,21 @@ class IDocLineBreak : public IDoc
 class IDocULink : public IDoc
 {
   public:
-    virtual QString url() const = 0;
-    virtual QString text() const = 0;
+    virtual const IString * url() const = 0;
+    virtual const IString * text() const = 0;
 };
 
 class IDocEMail : public IDoc
 {
   public:
-    virtual QString address() const = 0;
+    virtual const IString * address() const = 0;
 };
 
 class IDocLink : public IDoc
 {
   public:
-    virtual QString refId() const = 0;
-    virtual QString text() const = 0;
+    virtual const IString * refId() const = 0;
+    virtual const IString * text() const = 0;
 };
 
 class IDocProgramListing : public IDoc
@@ -295,7 +305,7 @@ class IDocCodeLine : public IDoc
 {
   public:
     virtual int lineNumber() const = 0;
-    virtual QString refId() const = 0;
+    virtual const IString * refId() const = 0;
     virtual IDocIterator *codeElements() const = 0;
 };
 
@@ -315,29 +325,29 @@ class IDocHighlight : public IDoc
 class IDocFormula : public IDoc
 {
   public:
-    virtual QString id() const = 0;
-    virtual QString text() const = 0;
+    virtual const IString * id() const = 0;
+    virtual const IString * text() const = 0;
 };
 
 class IDocImage : public IDoc
 {
   public:
-    virtual QString name() const = 0;
-    virtual QString caption() const = 0;
+    virtual const IString * name() const = 0;
+    virtual const IString * caption() const = 0;
 };
 
 class IDocDotFile : public IDoc
 {
   public:
-    virtual QString name() const = 0;
-    virtual QString caption() const = 0;
+    virtual const IString * name() const = 0;
+    virtual const IString * caption() const = 0;
 };
 
 class IDocIndexEntry : public IDoc
 {
   public:
-    virtual QString primary() const = 0;
-    virtual QString secondary() const = 0;
+    virtual const IString * primary() const = 0;
+    virtual const IString * secondary() const = 0;
 };
 
 class IDocTable : public IDoc
@@ -345,7 +355,7 @@ class IDocTable : public IDoc
   public:
     virtual IDocIterator *rows() const = 0;
     virtual int numColumns() const = 0;
-    virtual QString caption() const = 0;
+    virtual const IString * caption() const = 0;
 };
 
 class IDocRow : public IDoc
@@ -363,7 +373,7 @@ class IDocEntry : public IDoc
 class IDocSection : public IDoc
 {
   public:
-    virtual QString id() const = 0; 
+    virtual const IString * id() const = 0; 
     virtual int level() const = 0;
     virtual IDocIterator *title() const = 0;
 };
@@ -388,7 +398,7 @@ class IDocIterator
 class IEdgeLabel
 {
   public:
-    virtual QString label() const = 0;
+    virtual const IString * label() const = 0;
 };
 
 class IEdgeLabelIterator 
@@ -410,7 +420,7 @@ class IChildNode
                       };
     virtual INode * node() const = 0;
     virtual NodeRelation relation() const = 0;
-    virtual QString relationString() const = 0;
+    virtual const IString * relationString() const = 0;
     virtual IEdgeLabelIterator *edgeLabels() const = 0;
 };
 
@@ -428,9 +438,9 @@ class IChildNodeIterator
 class INode
 {
   public:
-    virtual QString id() const = 0;
-    virtual QString label() const = 0;
-    virtual QString linkId() const = 0;
+    virtual const IString * id() const = 0;
+    virtual const IString * label() const = 0;
+    virtual const IString * linkId() const = 0;
     virtual IChildNodeIterator *children() const = 0;
 };
 
@@ -461,13 +471,13 @@ class IMember
     virtual ICompound *compound() const = 0;
     virtual ISection *section() const = 0;
     virtual MemberKind kind() const = 0;
-    virtual QString kindString() const = 0;
-    virtual QString id() const = 0;
-    virtual QString protection() const = 0;
-    virtual QString virtualness() const = 0;
+    virtual const IString * kindString() const = 0;
+    virtual const IString * id() const = 0;
+    virtual const IString * protection() const = 0;
+    virtual const IString * virtualness() const = 0;
     virtual ILinkedTextIterator *type() const = 0;
-    virtual QString typeString() const = 0;
-    virtual QString name() const = 0;
+    virtual const IString * typeString() const = 0;
+    virtual const IString * name() const = 0;
     virtual bool isConst() const = 0;
     virtual bool isVolatile() const = 0;
     virtual IParamIterator *params() const = 0;
@@ -477,7 +487,7 @@ class IMember
     virtual IMemberReferenceIterator *referencedBy() const = 0;
     virtual int bodyStart() const = 0;
     virtual int bodyEnd() const = 0;
-    virtual QString definitionFile() const = 0;
+    virtual const IString * definitionFile() const = 0;
     virtual int definitionLine() const = 0;
     virtual IMemberReference *reimplements() const = 0;
     virtual IMemberReferenceIterator *reimplementedBy() const = 0;
@@ -512,7 +522,7 @@ class ISection
                        Friend, Related, Defines, Prototypes, Typedefs,
                        Enums, Functions, Variables
                      };
-    virtual QString kindString() const = 0;
+    virtual const IString * kindString() const = 0;
     virtual SectionKind kind() const = 0;
     virtual IMemberIterator *members() const = 0;
     virtual bool isStatic() const = 0;
@@ -541,12 +551,12 @@ class ICompound
                         Namespace, File, Group, Page
                       };
     /*! Returns the name of this compound */
-    virtual QString name() const = 0;
+    virtual const IString * name() const = 0;
 
     /*! Returns the id of this compound. The id is a
      *  unique string representing a specific compound object.
      */
-    virtual QString id()   const = 0;
+    virtual const IString * id()   const = 0;
 
     /*! Returns the kind of compound. See #CompoundKind for possible
      *  values.
@@ -556,7 +566,7 @@ class ICompound
     /*! Returns a string representation of the compound kind.
      *  @see kind()
      */
-    virtual QString kindString() const = 0;
+    virtual const IString * kindString() const = 0;
 
     /*! Returns an iterator for the different member sections in this
      *  compound.
@@ -576,14 +586,14 @@ class ICompound
     /*! Returns an interface to a member given its id. 
      *  @param id The member id.
      */
-    virtual IMember *memberById(const QString &id) const = 0;
+    virtual IMember *memberById(const char * id) const = 0;
 
     /*! Returns a list of all members within the compound having a certain 
      *  name. Member overloading is the reason why there can be more than 
      *  one member. 
      *  @param name The name of the member.
      */
-    virtual IMemberIterator *memberByName(const QString &name) const = 0;
+    virtual IMemberIterator *memberByName(const char * name) const = 0;
 
     /*! Decreases the reference counter for this compound. If it reaches
      *  zero, the memory for the compound will be released.
@@ -668,11 +678,13 @@ class INamespace : public ICompound
 
 class IFile : public ICompound
 {
+  public:
+    virtual IGraph *includeDependencyGraph() const = 0;
+    virtual IGraph *includedByDependencyGraph() const = 0;
+
     // file:
     //  includes()
     //  includedBy()
-    //  IDotGraph *includeDependencyGraph()
-    //  IDotGraph *includedByDependencyGraph()
     //  IDocProgramListing *source()
     //  ICompound *innerNamespaces()
     //  ICompoundIterator *innerClasses()
@@ -704,26 +716,26 @@ class IDoxygen
      *  compound id this function is much more efficient than iterating
      *  over the compound list. Returns 0 if the id is not valid.
      */
-    virtual ICompound *compoundById(const QString &id) const = 0;
+    virtual ICompound *compoundById(const char * id) const = 0;
 
     /*! Returns a compound given its name (including the scope). 
      *  Returns 0 if the name is not found in the project.
      */
-    virtual ICompound *compoundByName(const QString &name) const = 0;
+    virtual ICompound *compoundByName(const char * name) const = 0;
 
     /*! Returns an interface to a compound containing a member given it the
      *  member's id. Given the ICompound interface one can use the same id
      *  to obtain the IMember interface.
      *  @param id The member id.
      */
-    virtual ICompound *memberById(const QString &id) const = 0;
+    virtual ICompound *memberById(const char * id) const = 0;
 
     /*! Returns a list of all compounds containing at least one members 
      *  with a certain name. Each compound can be asked to return the
      *  list of members with that name.
      *  @param name The name of the member.
      */
-    virtual ICompoundIterator *memberByName(const QString &name) const = 0;
+    virtual ICompoundIterator *memberByName(const char * name) const = 0;
 
     /*! Releases the memory for the object hierarchy obtained by 
      *  createdObjecModelFromXML(). First release all iterators before calling

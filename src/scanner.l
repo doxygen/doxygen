@@ -868,6 +868,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  lineCount();
 					  BEGIN( CompoundName );
   					}
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class{" |
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC;
@@ -886,6 +887,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  //  current->mtArgList = 0;
 					  //}
 					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct{" | 
@@ -907,6 +909,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  //  current->mtArgList = 0;
 					  //}
 					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union{" |
@@ -919,6 +922,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"enum{" | 
@@ -931,6 +935,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
 <Operator>"("{BN}*")"{BN}*/"("		{
@@ -3622,6 +3627,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 							  insideFormula=FALSE;
 							  BEGIN(lastFormulaContext);
   							}
+<ReadFormulaLong>\n					{ formulaText+=*yytext; }
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
 <ExampleDoc,PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
   					  checkDocs();

@@ -20,6 +20,7 @@
 #include <qxml.h>
 #include <doxmlintf.h>
 
+#include "stringimpl.h"
 #include "basehandler.h"
 #include "baseiterator.h"
 
@@ -74,6 +75,7 @@ class CompoundHandler : public IClass,
                         public BaseHandler<CompoundHandler>
 {
     friend class RelatedCompound;
+
   public:
     virtual void startSection(const QXmlAttributes& attrib);
     virtual void startCompound(const QXmlAttributes& attrib);
@@ -87,26 +89,28 @@ class CompoundHandler : public IClass,
     virtual void startProgramListing(const QXmlAttributes& attrib);
     virtual void startInheritanceGraph(const QXmlAttributes& attrib);
     virtual void startCollaborationGraph(const QXmlAttributes& attrib);
+    virtual void startIncludeDependencyGraph(const QXmlAttributes& attrib);
+    virtual void startIncludedByDependencyGraph(const QXmlAttributes& attrib);
     virtual void startInnerClass(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
     virtual ~CompoundHandler();
-    bool parseXML(const QString &compId);
+    bool parseXML(const char *compId);
     void initialize(MainHandler *mh);
     void insertMember(MemberHandler *mh);
     ICompound *toICompound() const;
 
     // ICompound implementation
-    QString name() const { return m_name; }
-    QString id()   const { return m_id;   }
+    const IString *name() const { return &m_name; }
+    const IString *id()   const { return &m_id;   }
     CompoundKind kind() const { return m_kind; }
-    QString kindString() const { return m_kindString; }
+    const IString *kindString() const { return &m_kindString; }
     ISectionIterator *sections() const;
     IDocRoot *briefDescription() const;
     IDocRoot *detailedDescription() const;
-    IMember *memberById(const QString &id) const;
-    IMemberIterator *memberByName(const QString &name) const;
+    IMember *memberById(const char *id) const;
+    IMemberIterator *memberByName(const char *name) const;
     void release();
 
     // IClass implementation
@@ -115,18 +119,22 @@ class CompoundHandler : public IClass,
     IRelatedCompoundIterator *baseClasses() const;
     IRelatedCompoundIterator *derivedClasses() const;
     ICompoundIterator *nestedClasses() const;
+
+    // IFile implementation
+    IGraph *includeDependencyGraph() const; 
+    IGraph *includedByDependencyGraph() const;
     
   private:
-    QList<RelatedCompound> m_superClasses;
-    QList<RelatedCompound> m_subClasses;
-    QList<SectionHandler>  m_sections;
+    QList<RelatedCompound>  m_superClasses;
+    QList<RelatedCompound>  m_subClasses;
+    QList<SectionHandler>   m_sections;
     DocHandler             *m_brief;
     DocHandler             *m_detailed;
     ProgramListingHandler  *m_programListing;
-    QString                 m_id;
-    QString                 m_kindString;
+    StringImpl              m_id;
+    StringImpl              m_kindString;
     CompoundKind            m_kind;
-    QString                 m_name;
+    StringImpl              m_name;
     QString                 m_defFile;
     int                     m_defLine;
     QString                 m_xmlDir;
@@ -136,6 +144,8 @@ class CompoundHandler : public IClass,
     MainHandler            *m_mainHandler;
     GraphHandler           *m_inheritanceGraph;
     GraphHandler           *m_collaborationGraph;
+    GraphHandler           *m_includeDependencyGraph;
+    GraphHandler           *m_includedByDependencyGraph;
     QList<QString>          m_innerClasses;
 
 };

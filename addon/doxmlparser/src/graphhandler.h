@@ -16,6 +16,7 @@
 #ifndef _GRAPHHANDLER_H
 #define _GRAPHHANDLER_H
 
+#include "stringimpl.h"
 #include "doxmlintf.h"
 #include "basehandler.h"
 #include "baseiterator.h"
@@ -63,16 +64,16 @@ class NodeHandler : public INode, public BaseHandler<NodeHandler>
     void startChildNode(const QXmlAttributes &attrib);
 
     // INode
-    virtual QString id() const { return m_id; }
-    virtual QString label() const { return m_label; }
-    virtual QString linkId() const { return m_link; }
+    virtual const IString *id() const { return &m_id; }
+    virtual const IString *label() const { return &m_label; }
+    virtual const IString *linkId() const { return &m_link; }
     virtual IChildNodeIterator *children() const;
 
   private:
     IBaseHandler *m_parent;
-    QString m_id;
-    QString m_label;
-    QString m_link;
+    StringImpl m_id;
+    StringImpl m_label;
+    StringImpl m_link;
     QList<ChildNodeHandler> m_children;
     GraphHandler *m_graph;
 };
@@ -100,14 +101,14 @@ class ChildNodeHandler : public IChildNode, public BaseHandler<ChildNodeHandler>
     // IChildNode
     virtual INode *node() const;
     virtual NodeRelation relation() const { return m_relation; }
-    virtual QString relationString() const { return m_relationString; }
+    virtual const IString * relationString() const { return &m_relationString; }
     virtual IEdgeLabelIterator *edgeLabels() const;
 
   private:
     IBaseHandler           *m_parent;
     QString                 m_id;
     NodeRelation            m_relation;
-    QString                 m_relationString;
+    StringImpl              m_relationString;
     QList<EdgeLabelHandler> m_edgeLabels;
     GraphHandler           *m_graph;
 };
@@ -132,11 +133,11 @@ class EdgeLabelHandler : public IEdgeLabel, public BaseHandler<EdgeLabelHandler>
     void endEdgeLabel();
 
     // IEdgeLabel
-    virtual QString label() const { return m_label; }
+    virtual const IString *label() const { return &m_label; }
 
   private:
     IBaseHandler *m_parent;
-    QString       m_label;
+    StringImpl    m_label;
 };
 
 class EdgeLabelIterator : public BaseIterator<IEdgeLabelIterator,IEdgeLabel,EdgeLabelHandler>

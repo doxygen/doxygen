@@ -4,7 +4,7 @@ HEADERS      =	basehandler.h mainhandler.h \
                 compoundhandler.h sectionhandler.h \
                 memberhandler.h paramhandler.h \
                 dochandler.h linkedtexthandler.h \
-                debug.h graphhandler.h
+                debug.h graphhandler.h stringimpl.h
 SOURCES      =	mainhandler.cpp \
                 compoundhandler.cpp sectionhandler.cpp \
                 memberhandler.cpp paramhandler.cpp \

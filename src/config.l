@@ -1103,7 +1103,8 @@ void Config::check()
       exit(1);
     }
     else if (cgiURL.left(7)!="http://" && 
-	     cgiURL.left(8)!="https://"
+	     cgiURL.left(8)!="https://" &&
+	     cgiURL.left(4)!="cgi:"
 	    )
     {
       config_err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
@@ -2225,6 +2226,13 @@ void Config::create()
                     TRUE
                  );
   cb = addBool(
+                    "HIDE_UNDOC_RELATIONS",
+		    "If set to YES, the inheritance and collaboration graphs will hide \n"
+		    "inheritance and usage relations if the target is undocumented \n"
+		    "or is not a class. \n",
+                    TRUE
+                 );
+  cb = addBool(
                     "HAVE_DOT",
                     "If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is \n"
                     "available from the path. This tool is part of Graphviz, a graph visualization \n"
@@ -2254,14 +2262,6 @@ void Config::create()
                     "TEMPLATE_RELATIONS",
 		    "If set to YES, the inheritance and collaboration graphs will show the \n"
 		    "relations between templates and their instances. \n",
-                    TRUE
-                 );
-  cb->addDependency("HAVE_DOT");
-  cb = addBool(
-                    "HIDE_UNDOC_RELATIONS",
-		    "If set to YES, the inheritance and collaboration graphs will hide \n"
-		    "inheritance and usage relations if the target is undocumented \n"
-		    "or is not a class. \n",
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");

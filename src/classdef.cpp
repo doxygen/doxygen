@@ -923,7 +923,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
-      parseText(ol,theTranslator->trClassDiagram(name()));
+      parseText(ol,theTranslator->trClassDiagram(displayName()));
       ol.endDotGraph(inheritanceGraph);
       if (Config_getBool("GENERATE_LEGEND"))
       {

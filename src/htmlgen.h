@@ -124,6 +124,8 @@ class HtmlGenerator : public OutputGenerator
     void endCodeFragment()   { t << "</pre></div>"; } 
     void startPreFragment() { t << "<pre>"; }
     void endPreFragment()   { t << "</pre>"; }
+    void startVerbatimFragment() { t << "<div class=\"fragment\"><pre>"; }
+    void endVerbatimFragment()   { t << "</pre></div>"; } 
     void writeLineNumber(const char *,const char *,const char *,int);
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }

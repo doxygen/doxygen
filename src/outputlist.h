@@ -210,6 +210,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startPreFragment); }
     void endPreFragment() 
     { forall(&OutputGenerator::endPreFragment); }
+    void startVerbatimFragment() 
+    { forall(&OutputGenerator::startVerbatimFragment); }
+    void endVerbatimFragment() 
+    { forall(&OutputGenerator::endVerbatimFragment); }
     void startCodeLine() 
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 

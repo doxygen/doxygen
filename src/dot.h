@@ -76,7 +76,7 @@ class DotNode
                int maxDistance=1000,bool backArrows=TRUE);
     int  m_subgraphId;
     void clearWriteFlag();
-    void writeXML(QTextStream &t);
+    void writeXML(QTextStream &t,bool isClassGraph);
     void writeDEF(QTextStream &t);
     QCString label() const { return m_label; }
     int  number() const { return m_number; }

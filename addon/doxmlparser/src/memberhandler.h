@@ -35,11 +35,11 @@ struct MemberReference : public IMemberReference
 {
   virtual ~MemberReference() {}
   virtual IMember *member() const;
-  virtual QString memberName() const { return m_name; }
+  virtual const IString *memberName() const { return &m_name; }
   void initialize(MainHandler *m);
 
-  QString  m_memId;
-  QString  m_name;
+  QString      m_memId;
+  StringImpl   m_name;
   MainHandler *m_mainHandler;
 };
 
@@ -61,8 +61,8 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
     virtual void endEnumValue();
 
     // IEnumValue
-    virtual QString name() const { return m_name; }
-    virtual QString initializer() const { return m_initializer; }
+    virtual const IString *name() const { return &m_name; }
+    virtual const IString *initializer() const { return &m_initializer; }
 
     void setName(const QString &name) { m_name=name; }
     void setInitializer(const QString &init) { m_initializer=init; }
@@ -71,8 +71,8 @@ class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
     EnumValueHandler(IBaseHandler *parent);
 
   private:
-    QString m_name;
-    QString m_initializer;
+    StringImpl m_name;
+    StringImpl m_initializer;
     IBaseHandler *m_parent;
 };
 
@@ -115,24 +115,27 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual ISection *section() const;
     virtual MemberKind kind() const
     { return m_kind; }
-    virtual QString kindString() const 
-    { return m_kindString; }
-    virtual QString id() const 
-    { return m_id; }
-    virtual QString protection() const 
-    { return m_protection; }
-    virtual QString virtualness() const 
-    { return m_virtualness; }
-    virtual QString name() const 
-    { return m_name; }
+    virtual const IString *kindString() const 
+    { return &m_kindString; }
+    virtual const IString *id() const 
+    { return &m_id; }
+    virtual const IString *protection() const 
+    { return &m_protection; }
+    virtual const IString *virtualness() const 
+    { return &m_virtualness; }
+    virtual const IString *name() const 
+    { return &m_name; }
     virtual bool isConst() const 
     { return m_isConst; }
     virtual bool isVolatile() const 
     { return m_isVolatile; }
     virtual ILinkedTextIterator *type() const 
     { return new LinkedTextIterator(m_type); }
-    virtual QString typeString() const
-    { return LinkedTextHandler::toString(m_type); }
+    virtual const IString *typeString() const
+    { MemberHandler *that = (MemberHandler *)this;
+      that->m_typeString = LinkedTextHandler::toString(m_type); 
+      return &m_typeString;
+    }
     virtual IParamIterator *params() const 
     { return new ParamIterator(m_params); }
     virtual IMemberReferenceIterator *references() const 
@@ -147,8 +150,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     { return m_bodyStart; }
     virtual int bodyEnd() const 
     { return m_bodyEnd; }
-    virtual QString definitionFile() const 
-    { return m_defFile; }
+    virtual const IString *definitionFile() const 
+    { return &m_defFile; }
     virtual int definitionLine() const 
     { return m_defLine; }
     virtual IMemberReference *reimplements() const
@@ -171,14 +174,15 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     CompoundHandler *m_compound;
     SectionHandler *m_section;
     MemberKind m_kind;
-    QString m_kindString;
-    QString m_id;
-    QString m_protection;
-    QString m_virtualness;
+    StringImpl m_kindString;
+    StringImpl m_id;
+    StringImpl m_protection;
+    StringImpl m_virtualness;
+    StringImpl m_typeString;
     QList<LinkedTextImpl> m_type;
     QList<LinkedTextImpl> m_initializer;
     QList<LinkedTextImpl> m_exception;
-    QString m_name;
+    StringImpl m_name;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
     QList<ParamHandler> m_params;
@@ -186,7 +190,7 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     QList<MemberReference> m_referencedBy;
     MemberReference *m_reimplements;
     QList<MemberReference> m_reimplementedBy;
-    QString m_defFile;
+    StringImpl m_defFile;
     int m_defLine;
     int m_bodyStart;
     int m_bodyEnd;

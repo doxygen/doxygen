@@ -21,6 +21,7 @@
 #include <qxml.h>
 
 #include <doxmlintf.h>
+#include "stringimpl.h"
 #include "basehandler.h"
 #include "baseiterator.h"
 
@@ -80,11 +81,11 @@ class TextNode : public DocTextImpl
 
     // IDocText
     virtual Kind kind() const { return DocImpl::Text; }
-    virtual QString text() const { return m_text; }
+    virtual const IString *text() const { return &m_text; }
     virtual int markup() const { return m_markup; }
   
   private:  
-    QString m_text;
+    StringImpl m_text;
     int m_markup;
 };
 
@@ -137,6 +138,8 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     virtual void endSubscript();
     virtual void startSuperscript(const QXmlAttributes &attrib);
     virtual void endSuperscript();
+    virtual void startPreformatted(const QXmlAttributes &attrib);
+    virtual void endPreformatted();
 
 
   private:
@@ -322,12 +325,12 @@ class ParameterHandler : public DocParameterImpl,
 
     // IDocParameter
     virtual Kind kind() const { return DocImpl::Parameter; }
-    virtual QString name() const { return m_name; }
+    virtual const IString *name() const { return &m_name; }
     virtual IDocPara *description() const { return m_description; }
 
   private:
     IBaseHandler     *m_parent;
-    QString           m_name;
+    StringImpl        m_name;
     ParagraphHandler *m_description;
 };
 
@@ -404,13 +407,13 @@ class LinkHandler : public DocLinkImpl, public BaseHandler<LinkHandler>
 
     // IDocLink
     virtual Kind kind() const { return DocImpl::Link; }
-    virtual QString refId() const { return m_ref; }
-    virtual QString text() const { return m_text; }
+    virtual const IString *refId() const { return &m_ref; }
+    virtual const IString *text() const { return &m_text; }
 
   private:
     IBaseHandler   *m_parent;
-    QString         m_ref;
-    QString         m_text;
+    StringImpl      m_ref;
+    StringImpl      m_text;
 };
 
 
@@ -430,11 +433,11 @@ class EMailHandler : public DocEMailImpl, public BaseHandler<EMailHandler>
 
     // IDocEMail
     virtual Kind kind() const { return DocImpl::EMail; }
-    virtual QString address() const { return m_address; }
+    virtual const IString *address() const { return &m_address; }
 
   private:
     IBaseHandler   *m_parent;
-    QString         m_address;
+    StringImpl      m_address;
 };
 
 
@@ -454,13 +457,13 @@ class ULinkHandler : public DocULinkImpl, public BaseHandler<ULinkHandler>
 
     // IDocULink
     virtual Kind kind() const { return DocImpl::ULink; }
-    virtual QString url() const { return m_url; }
-    virtual QString text() const { return m_text; }
+    virtual const IString * url() const { return &m_url; }
+    virtual const IString * text() const { return &m_text; }
 
   private:
     IBaseHandler   *m_parent;
-    QString         m_url;
-    QString         m_text;
+    StringImpl      m_url;
+    StringImpl      m_text;
 };
 
 //-----------------------------------------------------------------------------
@@ -499,16 +502,16 @@ class RefHandler : public DocRefImpl, public BaseHandler<RefHandler>
 
     // IDocRef
     virtual Kind kind() const { return DocImpl::Ref; }
-    virtual QString refId() const { return m_refId; }
+    virtual const IString *refId() const { return &m_refId; }
     virtual TargetKind targetKind() const { return m_targetKind; }
-    virtual QString external() const { return m_extId; }
-    virtual QString text() const { return m_linkText; }
+    virtual const IString *external() const { return &m_extId; }
+    virtual const IString *text() const { return &m_linkText; }
 
   private:
     IBaseHandler   *m_parent;
-    QString         m_refId;
-    QString         m_extId;
-    QString         m_linkText;
+    StringImpl      m_refId;
+    StringImpl      m_extId;
+    StringImpl      m_linkText;
     TargetKind      m_targetKind;
 };
 
@@ -569,7 +572,7 @@ class SimpleSectHandler : public DocSimpleSectImpl,
     // IDocSimpleSect
     virtual Kind kind() const { return DocImpl::SimpleSect; }
     virtual Types type() const { return m_type; }
-    virtual QString typeString() const { return m_typeString; }
+    virtual const IString *typeString() const { return &m_typeString; }
     virtual IDocTitle *title() const { return m_title; }
     virtual IDocPara *description() const { return m_paragraph; }
 
@@ -577,7 +580,7 @@ class SimpleSectHandler : public DocSimpleSectImpl,
     IBaseHandler            *m_parent;
     ParagraphHandler        *m_paragraph;
     Types                    m_type;
-    QString                  m_typeString;
+    StringImpl               m_typeString;
     TitleHandler            *m_title;
 };
 
@@ -603,12 +606,12 @@ class VariableListEntryHandler : public DocVariableListEntryImpl,
 
     // IDocVariableListEntry
     virtual Kind kind() const { return DocImpl::VariableListEntry; }
-    virtual QString term() const { return m_term; }
+    virtual const IString *term() const { return &m_term; }
     virtual IDocPara *description() const { return m_description; }
 
   private:
     IBaseHandler     *m_parent;
-    QString           m_term;
+    StringImpl        m_term;
     ParagraphHandler *m_description;
 };
 
@@ -710,7 +713,7 @@ class CodeLineHandler : public DocCodeLineImpl, public BaseHandler<CodeLineHandl
     // IDocCodeLine
     virtual Kind kind() const { return DocImpl::CodeLine; }
     virtual int lineNumber() const { return m_lineNumber; }
-    virtual QString refId() const { return m_refId; }
+    virtual const IString *refId() const { return &m_refId; }
     virtual IDocIterator *codeElements() const;
 
   private:
@@ -718,7 +721,7 @@ class CodeLineHandler : public DocCodeLineImpl, public BaseHandler<CodeLineHandl
 
     IBaseHandler   *m_parent;
     int            m_lineNumber;
-    QString        m_refId;
+    StringImpl     m_refId;
     QList<DocImpl> m_children;
 };
 
@@ -782,13 +785,13 @@ class FormulaHandler : public DocFormulaImpl, public BaseHandler<FormulaHandler>
 
     // IDocFormula
     virtual Kind kind() const { return DocImpl::Formula; }
-    virtual QString id() const { return m_id; }
-    virtual QString text() const { return m_text; }
+    virtual const IString *id() const { return &m_id; }
+    virtual const IString *text() const { return &m_text; }
 
   private:
     IBaseHandler  *m_parent;
-    QString        m_id;
-    QString        m_text;
+    StringImpl     m_id;
+    StringImpl     m_text;
 };
 
 //-----------------------------------------------------------------------------
@@ -807,13 +810,13 @@ class ImageHandler : public DocImageImpl, public BaseHandler<ImageHandler>
 
     // IDocImage
     virtual Kind kind() const { return DocImpl::Image; }
-    virtual QString name() const { return m_name; }
-    virtual QString caption() const { return m_caption; }
+    virtual const IString *name() const { return &m_name; }
+    virtual const IString *caption() const { return &m_caption; }
 
   private:
     IBaseHandler  *m_parent;
-    QString        m_name;
-    QString        m_caption;
+    StringImpl     m_name;
+    StringImpl     m_caption;
 };
 
 //-----------------------------------------------------------------------------
@@ -832,13 +835,13 @@ class DotFileHandler : public DocDotFileImpl, public BaseHandler<DotFileHandler>
 
     // IDocDotFile
     virtual Kind kind() const { return DocImpl::DotFile; }
-    virtual QString name() const { return m_name; }
-    virtual QString caption() const { return m_caption; }
+    virtual const IString *name() const { return &m_name; }
+    virtual const IString *caption() const { return &m_caption; }
 
   private:
     IBaseHandler  *m_parent;
-    QString        m_name;
-    QString        m_caption;
+    StringImpl     m_name;
+    StringImpl     m_caption;
 };
 
 //-----------------------------------------------------------------------------
@@ -861,13 +864,13 @@ class IndexEntryHandler : public DocIndexEntryImpl, public BaseHandler<IndexEntr
 
     // IDocIndexEntry
     virtual Kind kind() const { return DocImpl::IndexEntry; }
-    virtual QString primary() const { return m_primary; }
-    virtual QString secondary() const { return m_secondary; }
+    virtual const IString *primary() const { return &m_primary; }
+    virtual const IString *secondary() const { return &m_secondary; }
 
   private:
     IBaseHandler  *m_parent;
-    QString        m_primary;
-    QString        m_secondary;
+    StringImpl     m_primary;
+    StringImpl     m_secondary;
 };
 
 //-----------------------------------------------------------------------------
@@ -956,13 +959,13 @@ class TableHandler : public DocTableImpl, public BaseHandler<TableHandler>
     virtual Kind kind() const { return DocImpl::Table; }
     virtual IDocIterator *rows() const;
     virtual int numColumns() const { return m_numColumns; }
-    virtual QString caption() const { return m_caption; }
+    virtual const IString *caption() const { return &m_caption; }
 
   private:
     IBaseHandler      *m_parent;
     QList<RowHandler>  m_children;
     int                m_numColumns;
-    QString            m_caption;
+    StringImpl         m_caption;
 };
 
 class TableIterator : public BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImpl>
@@ -995,7 +998,7 @@ class DocSectionHandler : public DocSectionImpl, public BaseHandler<DocSectionHa
 
     // IDocSection
     virtual Kind kind() const { return DocImpl::Section; }
-    virtual QString id() const { return m_id; }
+    virtual const IString *id() const { return &m_id; }
     virtual int level() const { return m_level; }
     virtual IDocIterator *title() const;
 
@@ -1003,7 +1006,7 @@ class DocSectionHandler : public DocSectionImpl, public BaseHandler<DocSectionHa
     IBaseHandler   *m_parent;
     QList<DocImpl>  m_children;
     MarkupHandler  *m_markupHandler;
-    QString         m_id;
+    StringImpl      m_id;
     int             m_level;
 };
 

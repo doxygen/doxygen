@@ -15,6 +15,7 @@
 #include "linkedtexthandler.h"
 #include "debug.h"
 #include <doxmlintf.h>
+#include "stringimpl.h"
 
 class LT_Text : public LinkedTextImpl, public ILT_Text
 {
@@ -23,10 +24,10 @@ class LT_Text : public LinkedTextImpl, public ILT_Text
     virtual ~LT_Text() {}
 
     // ILT_Text
-    virtual QString text() const { return m_text; }
-    virtual Kind kind() const { return LinkedTextImpl::Kind_Text; }
+    virtual const IString *text() const { return &m_text; }
+    virtual Kind kind() const     { return LinkedTextImpl::Kind_Text; }
   private:
-    QString m_text;
+    StringImpl m_text;
 };
 
 class LT_Ref : public LinkedTextImpl, public ILT_Ref
@@ -40,16 +41,16 @@ class LT_Ref : public LinkedTextImpl, public ILT_Ref
     void setTargetKind(TargetKind k) { m_targetKind=k; }
 
     // ILT_Ref
-    virtual QString text() const { return m_text; }
-    virtual QString id() const { return m_refId; }
+    virtual const IString *text() const { return &m_text; }
+    virtual const IString * id() const { return &m_refId; }
     virtual TargetKind targetKind() const { return m_targetKind; }
-    virtual QString external() const { return m_extId; }
+    virtual const IString *external() const { return &m_extId; }
     virtual Kind kind() const { return LinkedTextImpl::Kind_Ref; }
     
   private:
-    QString    m_refId;
-    QString    m_extId;
-    QString    m_text;
+    StringImpl    m_refId;
+    StringImpl    m_extId;
+    StringImpl    m_text;
     TargetKind m_targetKind;
 };
 
@@ -106,7 +107,7 @@ void LinkedTextHandler::endRef()
 {
   m_ref->setText(m_curString);
   m_children.append(m_ref);
-  debug(2,"LinkedTextHandler: add ref `%s'\n",m_ref->text().data());
+  debug(2,"LinkedTextHandler: add ref `%s'\n",m_ref->text()->latin1());
   m_ref=0;
 }
 
@@ -120,10 +121,10 @@ QString LinkedTextHandler::toString(const QList<LinkedTextImpl> &list)
     switch(lt->kind())
     {
       case ILinkedText::Kind_Text:
-        result+=dynamic_cast<ILT_Text*>(lt)->text();
+        result+=dynamic_cast<ILT_Text*>(lt)->text()->latin1();
         break;
       case ILinkedText::Kind_Ref:
-        result+=dynamic_cast<ILT_Ref *>(lt)->text();
+        result+=dynamic_cast<ILT_Ref *>(lt)->text()->latin1();
         break;
     }
   }

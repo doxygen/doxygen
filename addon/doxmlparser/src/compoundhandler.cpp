@@ -144,7 +144,8 @@ void compoundhandler_exit()
 CompoundHandler::CompoundHandler(const QString &xmlDir) 
   : m_brief(0), m_detailed(0), m_programListing(0),
     m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
-    m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0)
+    m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0),
+    m_includeDependencyGraph(0), m_includedByDependencyGraph(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
@@ -182,8 +183,13 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
 
   addStartHandler("collaborationgraph",this,&CompoundHandler::startCollaborationGraph);
 
+  addStartHandler("incdepgraph",this,&CompoundHandler::startIncludeDependencyGraph);
+
+  addStartHandler("invincdepgraph",this,&CompoundHandler::startIncludedByDependencyGraph);
+
   addStartHandler("innerclass",this,&CompoundHandler::startInnerClass);
   addEndHandler("innerclass");
+
 
 }
 
@@ -195,6 +201,8 @@ CompoundHandler::~CompoundHandler()
   delete m_programListing;
   delete m_inheritanceGraph;
   delete m_collaborationGraph;
+  delete m_includeDependencyGraph;
+  delete m_includedByDependencyGraph;
 }
 
 void CompoundHandler::startSection(const QXmlAttributes& attrib)
@@ -303,7 +311,7 @@ void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
   m_subClasses.append(sc);
 }
 
-bool CompoundHandler::parseXML(const QString &compId)
+bool CompoundHandler::parseXML(const char *compId)
 {
   QFile xmlFile(m_xmlDir+"/"+compId+".xml");
   if (!xmlFile.exists()) return FALSE;
@@ -329,12 +337,12 @@ void CompoundHandler::initialize(MainHandler *mh)
 
 void CompoundHandler::insertMember(MemberHandler *mh)
 {
-  m_memberDict.insert(mh->id(),mh);
-  QList<MemberHandler> *mhl = m_memberNameDict.find(mh->id());
+  m_memberDict.insert(mh->id()->latin1(),mh);
+  QList<MemberHandler> *mhl = m_memberNameDict.find(mh->id()->latin1());
   if (mhl==0)
   {
     mhl = new QList<MemberHandler>;
-    m_memberNameDict.insert(mh->name(),mhl);
+    m_memberNameDict.insert(mh->name()->latin1(),mhl);
   }
   mhl->append(mh);
 }
@@ -372,7 +380,7 @@ ISectionIterator *CompoundHandler::sections() const
   return new SectionIterator(m_sections); 
 }
     
-IMemberIterator *CompoundHandler::memberByName(const QString &name) const
+IMemberIterator *CompoundHandler::memberByName(const char *name) const
 { 
   QList<MemberHandler> *ml = m_memberNameDict[name]; 
   if (ml==0) return 0;
@@ -391,6 +399,18 @@ void CompoundHandler::startCollaborationGraph(const QXmlAttributes &attrib)
   m_collaborationGraph->startGraph(attrib);
 }
 
+void CompoundHandler::startIncludeDependencyGraph(const QXmlAttributes &attrib)
+{
+  m_includeDependencyGraph = new GraphHandler(this,"incdepgraph");
+  m_includeDependencyGraph->startGraph(attrib);
+}
+
+void CompoundHandler::startIncludedByDependencyGraph(const QXmlAttributes &attrib)
+{
+  m_includedByDependencyGraph = new GraphHandler(this,"invincdepgraph");
+  m_includedByDependencyGraph->startGraph(attrib);
+}
+
 IDocRoot *CompoundHandler::briefDescription() const 
 { 
   return m_brief; 
@@ -401,7 +421,7 @@ IDocRoot *CompoundHandler::detailedDescription() const
   return m_detailed; 
 }
 
-IMember *CompoundHandler::memberById(const QString &id) const 
+IMember *CompoundHandler::memberById(const char *id) const 
 { 
   return m_memberDict[id]; 
 }
@@ -414,6 +434,16 @@ IGraph *CompoundHandler::inheritanceGraph() const
 IGraph *CompoundHandler::collaborationGraph() const 
 { 
   return m_collaborationGraph; 
+}
+
+IGraph *CompoundHandler::includeDependencyGraph() const
+{
+  return m_includeDependencyGraph;
+}
+
+IGraph *CompoundHandler::includedByDependencyGraph() const
+{
+  return m_includedByDependencyGraph;
 }
 
 IRelatedCompoundIterator *CompoundHandler::baseClasses() const

@@ -343,12 +343,23 @@ class XMLGenerator : public OutputDocInterface
     { 
       XML_DB(("(startPreFragment)\n"));
       startParMode();
-      m_t << "<programlisting>";
+      m_t << "<preformatted>";
     }
     void endPreFragment()      
     { 
       XML_DB(("(endPreFragment)\n"));
-      m_t << "</programlisting>"; 
+      m_t << "</preformatted>"; 
+    }
+    void startVerbatimFragment()    
+    { 
+      XML_DB(("(startVerbatimFragment)\n"));
+      startParMode();
+      m_t << "<preformatted>";
+    }
+    void endVerbatimFragment()      
+    { 
+      XML_DB(("(endVerbatimFragment)\n"));
+      m_t << "</preformatted>"; 
     }
     void writeRuler()          
     { 
@@ -616,20 +627,21 @@ class XMLGenerator : public OutputDocInterface
       startParMode();
       m_t << "<table cols=\"" << cols << "\">\n";
     }
-    void endTable(bool) 
+    void endTable(bool hasCaption) 
     {
       XML_DB(("endTable\n"));
-      m_t << "</row>\n</table>";
+      if (!hasCaption) m_t << "</row>\n";
+      m_t << "</table>";
     }
     void startCaption()
     {
       XML_DB(("startCaption"));
-      m_t << "<caption>";
+      m_t << "</row><caption>";
     }
     void endCaption()
     {
       XML_DB(("encCaption"));
-      m_t << "</caption";
+      m_t << "</caption>";
     }
     void nextTableRow() 
     {
@@ -639,7 +651,7 @@ class XMLGenerator : public OutputDocInterface
       // we need manually add a para here because cells are
       // parsed before the table is generated, and thus
       // are already parsed as if they are inside a paragraph.
-      m_t << "<para>";
+      //m_t << "<para>";
     }
     void endTableRow() 
     {
