@@ -125,25 +125,25 @@ void XmlDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "<bold>";      else m_t << "</bold> ";
+      if (s->enable()) m_t << "<bold>";      else m_t << "</bold>";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "<emphasis>";     else m_t << "</emphasis> ";
+      if (s->enable()) m_t << "<emphasis>";     else m_t << "</emphasis>";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "<computeroutput>";   else m_t << "</computeroutput> ";
+      if (s->enable()) m_t << "<computeroutput>";   else m_t << "</computeroutput>";
       break;
     case DocStyleChange::Subscript:
-      if (s->enable()) m_t << "<subscript>";    else m_t << "</subscript> ";
+      if (s->enable()) m_t << "<subscript>";    else m_t << "</subscript>";
       break;
     case DocStyleChange::Superscript:
-      if (s->enable()) m_t << "<superscript>";    else m_t << "</superscript> ";
+      if (s->enable()) m_t << "<superscript>";    else m_t << "</superscript>";
       break;
     case DocStyleChange::Center:
-      if (s->enable()) m_t << "<center>"; else m_t << "</center> ";
+      if (s->enable()) m_t << "<center>"; else m_t << "</center>";
       break;
     case DocStyleChange::Small:
-      if (s->enable()) m_t << "<small>";  else m_t << "</small> ";
+      if (s->enable()) m_t << "<small>";  else m_t << "</small>";
       break;
     case DocStyleChange::Preformatted:
       if (s->enable()) 
@@ -153,7 +153,7 @@ void XmlDocVisitor::visit(DocStyleChange *s)
       }
       else 
       {
-        m_t << "</preformatted> ";
+        m_t << "</preformatted>";
         m_insidePre=FALSE;
       }
       break;

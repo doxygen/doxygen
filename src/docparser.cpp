@@ -372,11 +372,12 @@ static void detectNoDocumentedParams()
     if (!g_memberDef->hasDocumentedParams() &&
         g_hasParamCommand)
     {
+      //printf("%s->setHasDocumentedParams(TRUE);\n",g_memberDef->name().data());
       g_memberDef->setHasDocumentedParams(TRUE);
     }
     else if (!g_memberDef->hasDocumentedParams())
     {
-      bool allDoc=TRUE;
+      bool allDoc=TRUE; // no paramater => all parameters are documented
       if ( // member has parameters
              al &&          // but the member has a parameter list
              al->count()>0  // with at least one parameter (that is not void)
@@ -388,8 +389,12 @@ static void detectNoDocumentedParams()
         // see if all parameters have documentation
         for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
         {
-          allDoc = !a->docs.isEmpty();
-          //printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
+          if (!a->name.isEmpty() && a->type!="void")
+          {
+            allDoc = !a->docs.isEmpty();
+          }
+          //printf("a->type=%s a->name=%s doc=%s\n",
+          //        a->type.data(),a->name.data(),a->docs.data());
         }
         if (!allDoc && declAl) // try declaration arguments as well
         {
@@ -398,16 +403,19 @@ static void detectNoDocumentedParams()
           Argument *a;
           for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
           {
-            allDoc = !a->docs.isEmpty();
+            if (!a->name.isEmpty() && a->type!="void")
+            {
+              allDoc = !a->docs.isEmpty();
+            }
             //printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
           }
         }
       }
       if (allDoc) 
       {
+        //printf("%s->setHasDocumentedParams(TRUE);\n",g_memberDef->name().data());
         g_memberDef->setHasDocumentedParams(TRUE);
       }
-
     }
     //printf("Member %s hasReturnCommand=%d\n",g_memberDef->name().data(),g_hasReturnCommand);
     if (!g_memberDef->hasDocumentedReturnType() && // docs not yet found

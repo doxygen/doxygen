@@ -2178,12 +2178,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_type.resize(0);
   					  BEGIN(g_memCallContext);
   					}
-<MemberCall>[^a-z_A-Z0-9(\n]		{ 
-  					  g_code->codify(yytext);
-    					  g_type.resize(0);
-					  g_name.resize(0);
-					  BEGIN(g_memCallContext); 
-					}
 <Body>[,=;\[]				{
 					  if (g_insideObjC && *yytext=='[')
 					  {
@@ -2394,7 +2388,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  g_parmType.resize(0);g_parmName.resize(0);
   					}
-<MemberCall2,FuncCall>")"		{ 
+<MemberCall,MemberCall2,FuncCall>")"	{ 
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_theCallContext.popScope();
 					  g_theCallContext.setClass(0);
@@ -2638,6 +2632,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <RemoveSpecialCComment>"//"|"/*"
 <RemoveSpecialCComment>\n  { g_yyLineNr++; }
 <RemoveSpecialCComment>.
+<MemberCall>[^a-z_A-Z0-9(\n]		{ 
+  					  g_code->codify(yytext);
+    					  g_type.resize(0);
+					  g_name.resize(0);
+					  BEGIN(g_memCallContext); 
+					}
 <*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
