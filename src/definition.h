@@ -101,7 +101,11 @@ class Definition
     void writeSourceRefs(OutputList &ol,const char *scopeName);
     void addSourceReference(MemberDef *d);
 
-    void setRefItems(int todoId,int testId) { m_todoId=todoId; m_testId=testId; }
+    void setRefItems(int todoId,int testId) 
+    { 
+      if (todoId!=0) m_todoId=todoId; 
+      if (testId!=0) m_testId=testId; 
+    }
     int todoId() const { return m_todoId; }
     int testId() const { return m_testId; }
 

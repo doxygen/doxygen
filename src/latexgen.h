@@ -110,6 +110,8 @@ class LatexGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
+    void startPreFragment()  { t << "\\small\\begin{alltt}"; }
+    void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; }
     void startCodeLine() { col=0; }
     void endCodeLine() { t << endl; }
     void writeBoldString(const char *text) 

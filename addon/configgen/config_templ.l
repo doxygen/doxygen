@@ -239,7 +239,7 @@ static void readIncludeFile(const char *incName)
 					  else
 					  {
 					    ConfigFileState *fs=includeStack.pop();
-					    pclose(fs->filePtr);
+					    fclose(fs->filePtr);
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->oldState );
 					    yy_delete_buffer( oldBuf );

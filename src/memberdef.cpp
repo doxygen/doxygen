@@ -234,7 +234,7 @@ MemberDef::MemberDef(const char *df,int dl,
                      const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,bool r,MemberType mt,
                      const ArgumentList *tal,const ArgumentList *al
-                    ) : Definition(df,dl,substituteClassNames(na))
+                    ) : Definition(df,dl,na)
 {
   //printf("++++++ MemberDef(%s file=%s,line=%d) ++++++ \n",na,df,dl);
   classDef=0;
@@ -255,8 +255,8 @@ MemberDef::MemberDef(const char *df,int dl,
   scopeTAL=0;
   membTAL=0;
   initLines=0;
-  type=substituteClassNames(t);
-  args=substituteClassNames(a);
+  type=t;
+  args=a;
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
   declLine=0;
   memberGroup=0;
@@ -1025,6 +1025,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startBold();
       parseText(ol,theTranslator->trInitialValue());
       ol.endBold();
+      initParseCodeContext();
       ol.startCodeFragment();
       parseCode(ol,scopeName,init,FALSE,0);
       ol.endCodeFragment();
@@ -1400,7 +1401,7 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
     scopeName=getNamespaceDef()->name();
     
   t << "            <";
-  enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType;
+  enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
   switch (mtype)
   {
     case Define:      t << "definedef";   xmlType=define_t;   break;

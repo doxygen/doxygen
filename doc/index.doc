@@ -89,6 +89,7 @@ The first part forms a user manual:
                      documentation quickly. 
 <li>Section \ref docblocks demonstrates the various ways that code can
                  be documented.
+<li>Section \ref lists show various ways to create lists. 
 <li>Section \ref grouping shows how to group things together. 
 <li>Section \ref formulas shows how to insert formulas in the documentation.
 <li>Section \ref diagrams describes the diagrams and graphs that doxygen can generate.

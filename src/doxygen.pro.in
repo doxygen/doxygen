@@ -26,7 +26,7 @@ HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
 		translator_nl.h translator_se.h translator_cz.h translator_fr.h \
 		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
                 translator_ru.h translator_pl.h dot.h rtfgen.h xml.h xml_dtd.h \
-                reflist.h
+                reflist.h page.h sortdict.h
 SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
                 memberdef.cpp membername.cpp index.cpp memberlist.cpp \
 		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \

@@ -28,6 +28,7 @@
 #include "language.h"
 #include "version.h"
 #include "dot.h"
+#include "page.h"
 
 static QCString filterTitle(const char *s)
 {
@@ -204,6 +205,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{fancyhdr}\n"
     "\\usepackage{graphicx}\n"
     "\\usepackage{float}\n"
+    "\\usepackage{alltt}\n"
     "\\usepackage{doxygen}\n";
   if (Config::pdfHyperFlag) 
   {
@@ -703,24 +705,24 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         t << "}\n";
-        PageInfo *pi=exampleList.first();
+        PageSDictIterator pdi(*exampleSDict);
+        PageInfo *pi=pdi.toFirst();
         if (pi)
         {
           t << "\\input{" << convertFileName(pi->name) << "-example}\n";
-          pi=exampleList.next();
         }
-        while (pi)
+        for (++pdi;(pi=pdi.current());++pdi)
         {
           if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
           t << "{" << convertFileName(pi->name) << "-example}\n";
-          pi=exampleList.next();
         }
       }
       break;
     case isPageDocumentation:
       {
         t << "}\n";
-        PageInfo *pi=pageList.first();
+        PageSDictIterator pdi(*pageSDict);
+        PageInfo *pi=pdi.toFirst();
         if (pi)
         {
           QCString pageName;
@@ -729,9 +731,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
           else
             pageName=pi->name.lower();
           t << "\\input{" << pageName << "}\n";
-          pi=pageList.next();
         }
-        while (pi)
+        for (++pdi;(pi=pdi.current());++pdi)
         {
           if (Config::compactLatexFlag) t << "\\input" ; else t << "\\include";
           QCString pageName;
@@ -740,7 +741,6 @@ void LatexGenerator::endIndexSection(IndexSections is)
           else
             pageName=pi->name.lower();
           t << "{" << pageName << "}\n";
-          pi=pageList.next();
         }
       }
       break;
@@ -1071,14 +1071,14 @@ void LatexGenerator::addToIndex(const char *s1,const char *s2)
 
 void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
 {
-  t << "\\";
-  if (sub) t << "subsection{"; else t << "section{";
-  docify(title);
-  t << "}\\label{" << lab << "}" << endl;
   if (Config::pdfHyperFlag)
   {
     t << "\\hypertarget{" << lab << "}{}";
   }
+  t << "\\";
+  if (sub) t << "subsection{"; else t << "section{";
+  docify(title);
+  t << "}\\label{" << lab << "}" << endl;
 }
 
 void LatexGenerator::writeSectionRef(const char *,const char *lab,

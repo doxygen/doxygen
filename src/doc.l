@@ -881,7 +881,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->writeString(c);
   					}
 <DocScan>"\\postheader"/{BN}
-<DocScan>"\\functionindex"/{BN}		{ writeMemberList(*outDoc); }
+<DocScan>"\\functionindex"/{BN}		{ writeMemberList(*outDoc,FALSE); }
 <DocScan>"\\classhierarchy"/{BN}	{ writeClassHierarchy(*outDoc); }
 <DocScan>"\\annotatedclasslist"/{BN}	{ writeAnnotatedClassList(*outDoc); }
 <DocScan>"\\headerfilelist"/{BN}	{ /*TODO: fix this writeHeaderFileList(*outDoc); */ }
@@ -1636,7 +1636,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  BEGIN( DocCodeBlock ); 
 					}
 <DocScan>{CMD}"endcode"/[^a-z_A-Z0-9] 	{ 
-  					  warn(yyFileName,yyLineNr,"Warning: \\endcode without <PRE> or \\code "
+  					  warn(yyFileName,yyLineNr,"Warning: \\endcode without \\code "
     					       "in the documentation."); 
 					}
 					
@@ -1670,12 +1670,6 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  generateFileRef(*outDoc,yytext);
 					}
 <DocCodeBlock>{BN}*{CMD}"endcode"/[^a-z_A-Z0-9]  { // needed to match things like \endcode. (note the dot)
-				          parseCode(*outDoc,className,codeBlock,exampleDoc,exampleName);
-					  //printf("Code block\n-------------\n%s\n--------------\n",codeBlock.data());
-					  outDoc->endCodeFragment();
-					  BEGIN( DocScan ); 
-					}
-<DocCodeBlock>"</"{PRE}{ATTR}">"	{ 
 				          parseCode(*outDoc,className,codeBlock,exampleDoc,exampleName);
 					  //printf("Code block\n-------------\n%s\n--------------\n",codeBlock.data());
 					  outDoc->endCodeFragment();
@@ -1781,17 +1775,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
                                           /*restoreOutputListState();*/
 					  outDoc->popGeneratorState();
 					}
-<DocScan>"<"{PRE}{ATTR}">"			{ 
-  					  outDoc->startCodeFragment();
-  					  codeBlock.resize(0);
-					  BEGIN( DocCodeBlock ); 
-					}
-<DocScan>"</"{PRE}{ATTR}">"		 	{ 
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: </PRE> without <PRE> or \\code"
-    					       "in the documentation."
-                                              ); 
-					}
+<DocScan>"<"{PRE}{ATTR}">"		{ outDoc->startPreFragment(); }
+<DocScan>"</"{PRE}{ATTR}">"	        { outDoc->endPreFragment(); }
 <DocScan>"<"{SUB}{ATTR}">"		{ outDoc->startSubscript(); }
 <DocScan>"</"{SUB}{ATTR}">"		{ outDoc->endSubscript(); }
 <DocScan>"<"{SUP}{ATTR}">"		{ outDoc->startSuperscript(); }
@@ -2112,6 +2097,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
   includeFileOffset=0;
   includeFileLength=0;
   currentListIndent.clear();
+  listIndentStack.clear();
   if (!docString) return;
   linkRef  = "";
   linkText = "";

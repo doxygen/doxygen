@@ -1635,6 +1635,7 @@ void ClassDef::determineImplUsageRelation()
             }
             QCString templSpec;
             if (te>ts) templSpec = type.mid(ts,te-ts);
+            // TODO: also check using Nx::Cx cases here!
             ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
             if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
             //printf("Search for class %s result=%p\n",type.mid(i,l).data(),cd);

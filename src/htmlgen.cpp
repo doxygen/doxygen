@@ -575,7 +575,7 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
   t << ":\n<p><center><img src=\""
     << fileName << ".gif\" usemap=\"#" << name << "_map\""
     << " border=\"0\"></center>" << endl
-    << "<map name=\"" << name << "_map\"><p>" << endl;
+    << "<map name=\"" << name << "_map\">" << endl;
 
   d.writeImageMap(t,dir,fileName);
 }

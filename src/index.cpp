@@ -34,8 +34,13 @@
 #include "language.h"
 #include "htmlhelp.h"
 #include "dot.h"
+#include "page.h"
 
 //----------------------------------------------------------------------------
+
+static bool g_memberIndexLetterUsed[256];
+static bool g_fileIndexLetterUsed[256];
+static bool g_namespaceIndexLetterUsed[256];
 
 //----------------------------------------------------------------------------
 
@@ -931,9 +936,10 @@ void writeAnnotatedIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writeMemberList(OutputList &ol)
+void writeMemberList(OutputList &ol,bool useSections)
 {
-  ol.startItemList();
+  bool first = TRUE;
+  char lastChar = 0;
   MemberName *mn=memberNameList.first();
   while (mn)
   {
@@ -943,9 +949,7 @@ void writeMemberList(OutputList &ol)
     while (md && !found)
     {
       ClassDef *cd;
-      if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-          //!md->isReference() && md->hasDocumentation() &&
-          // md->name()[0]!='@' && 
+      if (
            md->isLinkableInProject() &&
            (cd=md->getClassDef()) &&
            cd->isLinkableInProject()
@@ -958,8 +962,28 @@ void writeMemberList(OutputList &ol)
     }
     if (found)
     {
+      if (useSections)
+      {
+        QCString name = mn->memberName();
+        if (tolower(name.at(0))!=lastChar)
+        {
+          if (!first) ol.endItemList();
+          char cs[2];
+          lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
+          QCString anchor=(QCString)"index_"+cs;
+          QCString title=(QCString)"- "+cs+" -";
+          ol.writeSection(anchor,title,TRUE);
+          ol.startItemList();
+          first=FALSE;
+        }
+      }
+      else if (first)
+      {
+        first=FALSE;
+        ol.startItemList();
+      }
       ol.writeListItem();
-      ol.docify(substituteClassNames(mn->memberName()));
+      ol.docify(mn->memberName());
       if (isFunc) ol.docify("()");
       ol.writeString("\n");
 
@@ -969,8 +993,7 @@ void writeMemberList(OutputList &ol)
       while (md)
       {
         ClassDef *cd=md->getClassDef();
-        if (//cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-            //!md->isReference() && md->hasDocumentation() && 
+        if (
             md->isLinkableInProject() &&
             prevName!=cd->displayName() && 
             cd->isLinkableInProject()
@@ -997,44 +1020,32 @@ void writeMemberList(OutputList &ol)
 
 int countClassMembers()
 {
+  int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[i]=FALSE;
   int count=0;
   MemberName *mn=memberNameList.first();
   while (mn)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
-    MemberDef *otherMd=0;
     ClassDef *cd;
     while (md && !found)
     {
-      if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-          //!md->isReference() && !md->isRelated() && md->hasDocumentation() &&
-          //md->name()[0]!='@' && (cd=md->getClassDef()) && cd->isLinkable()) 
+      if (
           md->isLinkableInProject() && 
-          !md->isRelated() &&
           (cd=md->getClassDef()) && 
           cd->isLinkableInProject()
          )
       {
-        if (!md->isRelated())
-          otherMd=md;
-        if (md->isRelated())
-          found=TRUE;
+        found=TRUE;
       }
-         
-      //  otherMd=md;
-      //if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
-      //    //!md->isReference() && md->isRelated() && md->hasDocumentation() &&
-      //    //md->name()[0]!='@' && (cd=md->getClassDef()) && cd->isLinkable()
-      //    md->isLinkableInProject() &&
-      //    md->isRelated() &&
-      //    (cd=md->getClassDef()) &&
-      //    cd->isLinkableInProject()
-      //   )
-      //  found=TRUE;
       md=mn->next();
     }
-    if (found || otherMd) count++;
+    if (found)
+    {
+      QCString n = mn->memberName();
+      if (!n.isEmpty()) g_memberIndexLetterUsed[tolower(n.at(0))]=TRUE;
+      count++;
+    }
     mn=memberNameList.next();
   }
   return count;
@@ -1042,30 +1053,59 @@ int countClassMembers()
 
 //----------------------------------------------------------------------------
 
+void writeQuickMemberIndex(OutputList &ol,bool *charUsed)
+{
+  bool first=TRUE;
+  int i;
+  ol.startCenter();
+  for (i=33;i<127;i++)
+  {
+    QCString anchor="index_";
+    char is[2];is[0]=(char)i;is[1]='\0';
+    if (charUsed[i])
+    {
+      if (!first) 
+      {
+        ol.writeString("&nbsp;|&nbsp;");
+      }
+      ol.startTextLink(0,anchor+is);
+      ol.writeString(is);
+      ol.endTextLink();
+      first=FALSE;
+    }
+  }
+  ol.endCenter();
+  ol.newParagraph();
+}
+
+//----------------------------------------------------------------------------
+
 void writeMemberIndex(OutputList &ol)
 {
-  if (memberNameList.count()==0) return;
+  if (documentedMembers==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  //ol.disable(OutputGenerator::Man);
-  //ol.disable(OutputGenerator::Latex);
   startFile(ol,"functions","Compound Member Index");
   startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trCompoundMembers());
   endTitle(ol,0,0);
+  bool quickIndex = documentedMembers>50;
+  if (quickIndex)
+  {
+    writeQuickMemberIndex(ol,g_memberIndexLetterUsed);
+  }
   parseText(ol,theTranslator->trCompoundMembersDescription(Config::extractAllFlag));
-  writeMemberList(ol);
+  writeMemberList(ol,quickIndex);
   endFile(ol);
-  //ol.enable(OutputGenerator::Latex);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
 //----------------------------------------------------------------------------
 
-void writeFileMemberList(OutputList &ol)
+void writeFileMemberList(OutputList &ol,bool useSections)
 {
-  ol.startItemList();
+  char lastChar=0;
+  bool first=TRUE;
   MemberName *mn=functionNameList.first();
   while (mn)
   {
@@ -1079,15 +1119,32 @@ void writeFileMemberList(OutputList &ol)
       
       if (fd && hasDocs && 
           md->isLinkableInProject()
-          //!md->isReference() && 
-          //md->hasDocumentation() && 
-          //md->name()[0]!='@'
          ) found=TRUE;
       else
         md=mn->next();
     }
     if (found) // function is documented
     {
+      if (useSections)
+      {
+        QCString name = mn->memberName();
+        if (tolower(name.at(0))!=lastChar)
+        {
+          if (!first) ol.endItemList();
+          char cs[2];
+          lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
+          QCString anchor=(QCString)"index_"+cs;
+          QCString title=(QCString)"- "+cs+" -";
+          ol.writeSection(anchor,title,TRUE);
+          ol.startItemList();
+          first=FALSE;
+        }
+      }
+      else if (first)
+      {
+        first=FALSE;
+        ol.startItemList();
+      }
       ol.writeListItem();
       ol.docify(md->name());
       if (md->isFunction()) ol.docify("()");
@@ -1103,9 +1160,6 @@ void writeFileMemberList(OutputList &ol)
                        md->getFileDef()->isLinkableInProject();
         if (fd && hasDocs && 
             md->isLinkableInProject() &&
-            //!md->isReference() && 
-            //md->hasDocumentation() && 
-            //md->name()[0]!='@' && 
             prevName!=fd->name())
         {
           if (count==0) 
@@ -1113,9 +1167,6 @@ void writeFileMemberList(OutputList &ol)
           else 
             ol.docify(", ");
           QCString baseName=fd->name().copy();
-          //int s;
-          //if ((s=baseName.findRev("/"))!=-1) 
-          //  baseName=baseName.right(baseName.length()-s-1);
           ol.writeObjectLink(fd->getReference(),
               fd->getOutputFileBase(),md->anchor(), baseName);
           count++;
@@ -1131,8 +1182,10 @@ void writeFileMemberList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-void writeNamespaceMemberList(OutputList &ol)
+void writeNamespaceMemberList(OutputList &ol,bool useSections)
 {
+  char lastChar=0;
+  bool first=TRUE;
   ol.startItemList();
   MemberName *mn=functionNameList.first();
   while (mn)
@@ -1149,6 +1202,26 @@ void writeNamespaceMemberList(OutputList &ol)
     }
     if (found) // member is documented and in a documented namespace
     {
+      if (useSections)
+      {
+        QCString name = mn->memberName();
+        if (tolower(name.at(0))!=lastChar)
+        {
+          if (!first) ol.endItemList();
+          char cs[2];
+          lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
+          QCString anchor=(QCString)"index_"+cs;
+          QCString title=(QCString)"- "+cs+" -";
+          ol.writeSection(anchor,title,TRUE);
+          ol.startItemList();
+          first=FALSE;
+        }
+      }
+      else if (first)
+      {
+        first=FALSE;
+        ol.startItemList();
+      }
       ol.writeListItem();
       ol.docify(md->name());
       if (md->isFunction()) ol.docify("()");
@@ -1185,6 +1258,7 @@ void writeNamespaceMemberList(OutputList &ol)
 
 int countNamespaceMembers()
 {
+  int i=0;for (i=0;i<256;i++) g_namespaceIndexLetterUsed[i]=FALSE;
   int count=0;
   MemberName *mn=functionNameList.first();
   while (mn)
@@ -1195,7 +1269,11 @@ int countNamespaceMembers()
     {
       NamespaceDef *nd=md->getNamespaceDef();
       if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
+      {
+        QCString n = mn->memberName();
+        if (!n.isEmpty()) g_namespaceIndexLetterUsed[tolower(n.at(0))]=TRUE;
         found=TRUE;
+      }
       else
         md=mn->next();
     }
@@ -1209,6 +1287,7 @@ int countNamespaceMembers()
 
 int countFileMembers()
 {
+  int i=0;for (i=0;i<256;i++) g_fileIndexLetterUsed[i]=FALSE;
   int count=0;
   MemberName *mn=functionNameList.first();
   while (mn)
@@ -1222,7 +1301,11 @@ int countFileMembers()
           (fd=md->getFileDef()) && 
           fd->isLinkableInProject()
          ) 
+      {
+        QCString n = mn->memberName();
+        if (!n.isEmpty()) g_fileIndexLetterUsed[tolower(n.at(0))]=TRUE;
         found=TRUE;
+      }
       else
         md=mn->next();
     }
@@ -1243,8 +1326,13 @@ void writeFileMemberIndex(OutputList &ol)
   startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trFileMembers());
   endTitle(ol,0,0);
+  bool quickIndex = documentedMembers>50;
+  if (quickIndex)
+  {
+    writeQuickMemberIndex(ol,g_fileIndexLetterUsed);
+  }
   parseText(ol,theTranslator->trFileMembersDescription(Config::extractAllFlag));
-  writeFileMemberList(ol);
+  writeFileMemberList(ol,quickIndex);
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -1256,17 +1344,18 @@ void writeNamespaceMemberIndex(OutputList &ol)
   if (documentedNamespaceMembers==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  //ol.disable(OutputGenerator::Man);
-  //ol.disable(OutputGenerator::Latex);
   startFile(ol,"namespacemembers","Namespace Member Index");
   startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trNamespaceMembers());
   endTitle(ol,0,0);
+  bool quickIndex = documentedMembers>50;
+  if (quickIndex)
+  {
+    writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed);
+  }
   parseText(ol,theTranslator->trNamespaceMemberDescription(Config::extractAllFlag));
-  writeNamespaceMemberList(ol);
+  writeNamespaceMemberList(ol,quickIndex);
   endFile(ol);
-  //ol.enable(OutputGenerator::Latex);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -1360,7 +1449,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
 
 void writeExampleIndex(OutputList &ol)
 {
-  if (exampleList.count()==0) return;
+  if (exampleSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
@@ -1382,8 +1471,9 @@ void writeExampleIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startIndexList();
-  PageInfo *pi=exampleList.first();
-  while (pi)
+  PageSDictIterator pdi(*exampleSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     ol.writeListItem();
     QCString n=convertFileName(pi->name)+"-example";
@@ -1398,7 +1488,6 @@ void writeExampleIndex(OutputList &ol)
       if (hasHtmlHelp) htmlHelp->addContentsItem(pi->name,n);
     }
     ol.writeString("\n");
-    pi=exampleList.next();
   }
   ol.endIndexList();
   if (hasHtmlHelp)
@@ -1414,7 +1503,7 @@ void writeExampleIndex(OutputList &ol)
 
 void writePageIndex(OutputList &ol)
 {
-  if (pageList.count()==0) return;
+  if (pageSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
@@ -1436,8 +1525,9 @@ void writePageIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startIndexList();
-  PageInfo *pi=pageList.first();
-  while (pi)
+  PageSDictIterator pdi(*pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     QCString pageName,pageTitle;
     
@@ -1457,7 +1547,6 @@ void writePageIndex(OutputList &ol)
     ol.writeEndAnnoItem(pageName);
     ol.writeString("\n");
     if (hasHtmlHelp) htmlHelp->addContentsItem(pageTitle,pageName);
-    pi=pageList.next();
   }
   ol.endIndexList();
   if (hasHtmlHelp)
@@ -1699,7 +1788,7 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trFileIndex());
     ol.endIndexSection(isFileIndex);
   }
-  if (pageList.count()>0)
+  if (pageSDict->count()>0)
   {
     ol.startIndexSection(isPageIndex);
     parseText(ol,projPrefix+theTranslator->trPageIndex());
@@ -1730,13 +1819,13 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trFileDocumentation());
     ol.endIndexSection(isFileDocumentation);
   }
-  if (exampleList.count()>0)
+  if (exampleSDict->count()>0)
   {
     ol.startIndexSection(isExampleDocumentation);
     parseText(ol,projPrefix+theTranslator->trExampleDocumentation());
     ol.endIndexSection(isExampleDocumentation);
   }
-  if (pageList.count()>0)
+  if (pageSDict->count()>0)
   {
     ol.startIndexSection(isPageDocumentation);
     parseText(ol,projPrefix+theTranslator->trPageDocumentation());

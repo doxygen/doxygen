@@ -791,14 +791,6 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Polish");
   ConfigString::addFixedValue("outputLanguage","Portuguese");
-  ConfigBool::add(  "noIndexFlag",
-                    "DISABLE_INDEX",
-                    "FALSE",
-                    "generate condensed index flag",
-                    "The DISABLE_INDEX tag can be used to turn on/off the condensed index at \n"
-                    "top of each HTML page. The value NO (the default) enables the index and \n"
-                    "the value YES disables it. \n"
-                 );
   ConfigBool::add(  "extractAllFlag",
                     "EXTRACT_ALL",
                     "FALSE",
@@ -1244,6 +1236,15 @@ void init()
                     "of the generated HTML documentation. \n"
                  );
   addDependency("htmlHelpFlag","generateHtml");
+  ConfigBool::add(  "noIndexFlag",
+                    "DISABLE_INDEX",
+                    "FALSE",
+                    "generate condensed index flag",
+                    "The DISABLE_INDEX tag can be used to turn on/off the condensed index at \n"
+                    "top of each HTML page. The value NO (the default) enables the index and \n"
+                    "the value YES disables it. \n"
+                 );
+  addDependency("noIndexFlag","generateHtml");
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "LaTeX","configuration options related to the LaTeX output");
   //-----------------------------------------------------------------------------------------------

@@ -502,7 +502,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	    }
 	    else
 	    {
-	      resExpr+=substArg;
+	      resExpr+=" "+substArg+" ";
 	    }
 	  }
 	}
@@ -592,7 +592,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	{
 	  // substitute the definition of the macro
 	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
-	  expMacro=def->definition.stripWhiteSpace();
+	  expMacro=" "+def->definition.stripWhiteSpace()+" ";
 	  replaced=TRUE;
 	  len=l;
 	  //printf("simple macro expansion=`%s'->`%s'\n",macroName.data(),expMacro.data());

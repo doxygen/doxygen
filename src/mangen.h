@@ -106,6 +106,8 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
+    void startPreFragment() { startCodeFragment(); }
+    void endPreFragment() { endCodeFragment(); }
     void startCodeLine() {}
     void endCodeLine() { t << endl; col=0; }
     void writeBoldString(const char *text) 

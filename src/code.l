@@ -298,6 +298,7 @@ static void addVariable()
         g_codeVarList.append(new CodeVarDef(g_cvd));
       }
     }
+    //printf("g_codeVarList.count()=%d\n",g_codeVarList.count());
   }
 }
 
@@ -328,6 +329,7 @@ static void addParameter()
         g_codeParmList.append(new CodeVarDef(g_cvd));
       }
     }
+    //printf("g_codeParmList.count()=%d\n",g_codeParmList.count());
   }
 }
 
@@ -747,7 +749,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <SkipCPP>.				{ 
   					  g_code->codify(yytext);
 					}
-<SkipCPP>\\\n				{ 
+<SkipCPP>\\[\r]?\n			{ 
   					  codifyLines(yytext);
 					}
 <SkipCPP>\n/.*\n			{ 
@@ -817,6 +819,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    CodeClassDef *cd=new CodeClassDef(g_ccd);
 					    g_codeClassList.append(cd);
 					    g_codeClassDict.insert(cd->name,cd);
+					    //printf("g_codeClassList.count()=%d\n",g_codeClassList.count());
 					  }
 					  BEGIN( Body );
  					}
@@ -960,7 +963,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_lastStringContext=YY_START;
   					  BEGIN( SkipString );
   					}
-<SkipString>[^\"\\\n]*			{ 
+<SkipString>[^\"\\\r\n]*		{ 
   					  g_code->codify(yytext);
 					}
 <SkipString>"//"|"/*"			{
@@ -1448,8 +1451,8 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment)
 {
-  g_code = new OutputList(&ol);
   if (s.isEmpty()) return;
+  g_code = new OutputList(&ol);
   g_inputString   = s;
   g_inputPosition = 0;
   g_currentFontClass = 0;

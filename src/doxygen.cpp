@@ -55,6 +55,7 @@
 #include "rtfgen.h"
 #include "xml.h"
 #include "reflist.h"
+#include "page.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -64,8 +65,8 @@
 // lists
 ClassList      classList;          // all documented classes
 NamespaceList  namespaceList;      // all namespaces
-PageList       exampleList;        // all example files
-PageList       pageList;           // all related documentation pages
+//PageList       *exampleList = new PageList; // all example files
+//PageList       *pageList = new PageList; // all related documentation pages
 MemberNameList memberNameList;     // class member + related functions
 MemberNameList functionNameList;   // all unrelated functions
 FileNameList   inputNameList;      // all input files
@@ -74,13 +75,13 @@ GroupList      groupList;          // all groups
 FormulaList    formulaList;        // all formulas
 
 // dictionaries
-PageDict       pageDict(1009);          // all doc pages
-PageDict       exampleDict(1009);       // all examples
+PageSDict      *pageSDict = new PageSDict(1009);          // all doc pages
+PageSDict      *exampleSDict = new PageSDict(1009);       // all examples
 ClassDict      classDict(1009);         // all documented classes
 NamespaceDict  namespaceDict(257);      // all documented namespaces
 MemberNameDict memberNameDict(10007);   // all class member names
 MemberNameDict functionNameDict(10007); // all functions
-StringDict     substituteDict(1009);    // class name substitutes
+//StringDict     substituteDict(1009);    // class name substitutes
 SectionDict    sectionDict(257);        // all page sections
 StringDict     excludeNameDict(1009);   // sections
 FileNameDict   *inputNameDict;          // sections
@@ -106,21 +107,19 @@ void clearAll()
 {
   classList.clear();       
   namespaceList.clear();   
-  exampleList.clear();     
-  pageList.clear();        
+  pageSDict->clear();         
+  exampleSDict->clear();      
   memberNameList.clear();  
   functionNameList.clear();
   inputNameList.clear();   
   inputFiles.clear();      
   groupList.clear();       
   formulaList.clear();     
-  pageDict.clear();         
-  exampleDict.clear();      
   classDict.clear();        
   namespaceDict.clear();     
   memberNameDict.clear();  
   functionNameDict.clear();
-  substituteDict.clear();   
+  //substituteDict.clear();   
   sectionDict.clear();       
   inputNameDict->clear();    
   excludeNameDict.clear();  
@@ -180,7 +179,7 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
                           )
 {
   PageInfo *pi=0;
-  if ((pi=pageDict[name]))
+  if ((pi=pageSDict->find(name)))
   {
     //warn("Warning: Page %s was already documented. Ignoring documentation "
     //     "at line %d of %s\n",root->name.data(),root->startLine,
@@ -208,8 +207,8 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
       pageName=pi->name.lower();
     setFileNameForSections(anchors,pageName);
 
-    pageList.append(pi);
-    pageDict.insert(baseName,pi);
+    pageSDict->append(baseName,pi);
+    
     if (!pi->title.isEmpty())
     {
       //outputList->writeTitle(pi->name,pi->title);
@@ -2065,7 +2064,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         // look in the outer scope for a match
       {
         Debug::print(
-            Debug::Classes,0,"    baseClass %s of %s found (%s and %s)\n",
+            Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",
             baseClassName.data(),
             root->name.data(),
             (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
@@ -2126,9 +2125,27 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
                   root->name!=fName;
               }
             }
+            if (fd && !found) // and in the global namespace
+            {
+              ClassList *cl = fd->getUsedClasses();
+              if (cl)
+              {
+                ClassListIterator cli(*cl);
+                ClassDef *ucd;
+                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
+                {
+                  if (rightScopeMatch(ucd->name(),bi->name))
+                  {
+                    baseClass = ucd;
+                    found = TRUE;
+                  }
+                }
+              }
+            }
           }
           if (!found && nd) // class is inside a namespace
           {
+            //printf("    class %s inside namespace %s\n",cd->name().data(),nd->name().data());
             NamespaceList *nl = nd->getUsedNamespaces();
             QCString fName = nd->name()+"::"+baseClassName;
             found = (baseClass=getResolvedClass(fName))!=0 && root->name!=fName;
@@ -2141,6 +2158,41 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
                 fName = nd->name()+"::"+baseClassName;
                 found = (baseClass=getResolvedClass(fName))!=0 && baseClass!=cd &&
                   root->name!=fName;
+              }
+            }
+            if (!found) // also check imported classes within this namespace
+            {
+              ClassList *cl = nd->getUsedClasses();
+              if (cl)
+              {
+                ClassListIterator cli(*cl);
+                ClassDef *ucd;
+                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
+                {
+                  if (rightScopeMatch(ucd->name(),bi->name))
+                  {
+                    baseClass = ucd;
+                    found = TRUE;
+                  }
+                }
+              }
+            }
+            // TODO: check any inbetween namespaces as well!
+            if (fd && !found) // and in the global namespace
+            {
+              ClassList *cl = fd->getUsedClasses();
+              if (cl)
+              {
+                ClassListIterator cli(*cl);
+                ClassDef *ucd;
+                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
+                {
+                  if (rightScopeMatch(ucd->name(),bi->name))
+                  {
+                    baseClass = ucd;
+                    found = TRUE;
+                  }
+                }
               }
             }
           }
@@ -2334,11 +2386,11 @@ static void addTodoTestReferences()
     addRefItem(gd->todoId(),gd->testId(),"group",gd->getOutputFileBase(),gd->name());
     gd=groupList.next();
   }
-  PageInfo *pi=pageList.first();
-  while (pi)
+  PageSDictIterator pdi(*pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     addRefItem(pi->todoId,pi->testId,"page",pi->name,pi->title);
-    pi=pageList.next();
   }
   MemberNameListIterator mnli(memberNameList);
   MemberName *mn=0;
@@ -4190,7 +4242,7 @@ static void generateClassDocs()
   msg("Generating member index...\n");
   writeMemberIndex(*outputList);
 
-  if (exampleList.count()>0)
+  if (exampleSDict->count()>0)
   {
     msg("Generating example index...\n");
   }
@@ -4544,8 +4596,9 @@ static void resolveUserReferences()
 
 static void generatePageDocs()
 {
-  PageInfo *pi=pageList.first();
-  while (pi)
+  PageSDictIterator pdi(*pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     msg("Generating docs for page %s...\n",pi->name.data());
     outputList->disable(OutputGenerator::Man);
@@ -4567,7 +4620,6 @@ static void generatePageDocs()
     outputList->endTextBlock();
     endFile(*outputList);
     outputList->enable(OutputGenerator::Man);
-    pi=pageList.next();
   }
 }
 
@@ -4580,7 +4632,7 @@ static void buildExampleList(Entry *root)
   {
     if (!root->name.isEmpty()) 
     {
-      if (exampleDict[root->name])
+      if (exampleSDict->find(root->name))
       {
         warn(root->fileName,root->startLine,
              "Warning: Example %s was already documented. Ignoring "
@@ -4595,8 +4647,7 @@ static void buildExampleList(Entry *root)
         setFileNameForSections(root->anchors,
                                convertFileName(pi->name)+"-example"
                               );
-        exampleList.inSort(pi);
-        exampleDict.insert(root->name,pi);
+        exampleSDict->inSort(root->name,pi);
       }
     }
   }
@@ -4621,8 +4672,9 @@ static void buildExampleList(Entry *root)
 static void generateExampleDocs()
 {
   outputList->disable(OutputGenerator::Man);
-  PageInfo *pi=exampleList.first();
-  while (pi)
+  PageSDictIterator pdi(*exampleSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pi->name.data());
     QCString n=convertFileName(pi->name)+"-example";
@@ -4632,7 +4684,6 @@ static void generateExampleDocs()
     endTitle(*outputList,n,0);
     parseExample(*outputList,pi->doc+"\n\\include "+pi->name,pi->name);
     endFile(*outputList);
-    pi=exampleList.next();
   }
   outputList->enable(OutputGenerator::Man);
 }

@@ -32,6 +32,7 @@
 #include "language.h"
 #include "dot.h"
 #include "version.h"
+#include "page.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -935,31 +936,31 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         //t << "}\n";
-        PageInfo *pi=exampleList.first();
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
+        PageSDictIterator pdi(*exampleSDict);
+        PageInfo *pi=pdi.toFirst();
         if (pi)
         {
           t << "\\par " << Rtf_Style["Reset"] << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << convertFileName(pi->name);
           t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-          pi=exampleList.next();
         }
-        while (pi)
+        for (++pdi;(pi=pdi.current());++pdi)
         {
           t << "\\par " << Rtf_Style["Reset"] << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << convertFileName(pi->name);
           t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-          pi=exampleList.next();
         }
       }
       break;
     case isPageDocumentation:
       {
         t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
-        PageInfo *pi=pageList.first();
+        PageSDictIterator pdi(*pageSDict);
+        PageInfo *pi=pdi.toFirst();
         if (pi)
         {
           QCString pageName;
@@ -971,9 +972,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << pageName;
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-          pi=pageList.next();
         }
-        while (pi)
+        for (++pdi;(pi=pdi.current());++pdi)
         {
           QCString pageName;
           if (Config::caseSensitiveNames)
@@ -985,7 +985,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << pageName;
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-          pi=pageList.next();
         }
       }
       break;
