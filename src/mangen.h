@@ -95,7 +95,7 @@ class ManGenerator : public OutputGenerator
     void startMemberItem(int);
     void endMemberItem(bool);
 
-    void startMemberGroupHeader();
+    void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
     void startMemberGroupDocs();
     void endMemberGroupDocs();

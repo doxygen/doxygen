@@ -103,7 +103,7 @@ class OutputGenerator
     virtual void endMemberList()    = 0;
     virtual void startMemberItem(int) = 0;
     virtual void endMemberItem(bool) = 0;
-    virtual void startMemberGroupHeader() = 0;
+    virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
     virtual void endMemberGroupDocs() = 0;

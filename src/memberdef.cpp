@@ -212,15 +212,17 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al,bool br=TRUE)
  *  Members can be function/variables/enums/etc. inside a class or inside a 
  *  file.
  *
- * \param t A string representing the type of the member.
- * \param n A string representing the name of the member.
- * \param a A string representing the arguments of the member.
- * \param p The type of protection of the member, possible values are:
- *          \c Public, \c Protected, \c Private.
- * \param v The `virtualness' of the member, possible values are:
- *          \c Normal, \c Virtual, \c Pure.
- * \param s A boolean that is true if the member is static.
- * \param r A boolean that is true if the member is only related.
+ * \param df File containing the definition of this member.
+ * \param dl Line at which the member definition was found.
+ * \param t  A string representing the type of the member.
+ * \param n  A string representing the name of the member.
+ * \param a  A string representing the arguments of the member.
+ * \param p  The type of protection of the member, possible values are:
+ *           \c Public, \c Protected, \c Private.
+ * \param v  The `virtualness' of the member, possible values are:
+ *           \c Normal, \c Virtual, \c Pure.
+ * \param s  A boolean that is true if the member is static.
+ * \param r  A boolean that is true if the member is only related.
  * \param mt The kind of member. See #MemberDef::MemberType for a list of 
  *           all types.
  */
@@ -241,6 +243,7 @@ MemberDef::MemberDef(const char *df,int dl,
   memDef=0;
   memDec=0;
   group=0;
+  grpId=-1;
   exampleList=0;
   exampleDict=0;
   enumFields=0;
@@ -262,13 +265,14 @@ MemberDef::MemberDef(const char *df,int dl,
   eUsed=FALSE;
   proto=FALSE;
   annScope=FALSE;
-  inLine=FALSE;
+  memSpec=FALSE;
   annMemb=0;
   annUsed=FALSE;
   annShown=FALSE;
   annEnumType=0;
   indDepth=0;
   section=0;
+  maxInitLines=defMaxInitLines;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
   if (tal)
@@ -442,19 +446,6 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
 {
   Definition *d;
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
-  //if (mg)
-  //  ol.writeObjectLink(0,mg->getOutputFileBase(),
-  //                     anchor(),name());
-  //else if (cd)
-  //  ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-  //                     anchor(),name());
-  //else if (nd)
-  //  ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
-  //                     anchor(),name());
-  //else if (fd) 
-  //  ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
-  //                     anchor(),name());
-  //else    
   ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
 }
 
@@ -749,7 +740,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.docify(excpString());
     }
 
-    if (!init.isEmpty() && initLines==0) // add initializer
+    if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
     {
       if (!isDefine()) 
       {
@@ -955,7 +946,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startMemberDocName();
       linkifyText(ol,scopeName,name(),def);
       writeDefArgumentList(ol,cd,scopeName,this);
-      if (!init.isEmpty() && initLines==0) // add initializer
+      if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
       {
         if (!isDefine()) 
         {
@@ -986,7 +977,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (isStatic() || protection()!=Public || 
         virt!=Normal || isSignal() || isFriend() || 
         isRelated() || isSlot() ||
-        (isInline() && Config::inlineInfoFlag)
+        getMemberSpecifiers()!=0 
        )
     {
       // write the member specifier list
@@ -1000,6 +991,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         if      (Config::inlineInfoFlag && isInline())              
                                           sl.append("inline");
+        if      (isExplicit())            sl.append("explicit");
+        if      (isMutable())             sl.append("mutable");
         if      (isStatic())              sl.append("static");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
@@ -1340,7 +1333,6 @@ bool MemberDef::isLinkableInProject()
 {
   return !name().isEmpty() && name().at(0)!='@' &&
          ((hasDocumentation() && !isReference())  
-          /* || (memberGroup && memberGroup->isLinkableInProject())*/
          ) && 
          (prot!=Private || Config::extractPrivateFlag || isFriend()) && // not a private class member
          (classDef!=0 || Config::extractPrivateFlag || !isStatic()); // not a private file/namespace member
@@ -1380,4 +1372,10 @@ bool MemberDef::hasDocumentation()
 void MemberDef::setMemberGroup(MemberGroup *grp)
 {
   memberGroup = grp;
+}
+
+bool MemberDef::visibleMemberGroup(bool hideNoHeader) 
+{ 
+  return memberGroup!=0 && 
+          (!hideNoHeader || memberGroup->header()!="[NOHEADER]"); 
 }

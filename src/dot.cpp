@@ -22,6 +22,7 @@
 #include "doxygen.h"
 #include "message.h"
 #include "util.h"
+#include "config.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -32,7 +33,6 @@
 const int maxImageWidth=1024;
 const int maxImageHeight=1024;
   
-
 /*! mapping from protection levels to color names */
 static char *edgeColorMap[] =
 {
@@ -575,8 +575,9 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     t << "}" << endl;
     f.close();
 
-    QCString dotCmd;
-    dotCmd.sprintf("dot -Tgif \"%s\" -o \"%s\"",dotName.data(),gifName.data());
+    QCString dotCmd(4096);
+    dotCmd.sprintf("%sdot -Tgif \"%s\" -o \"%s\"",
+                   Config::dotPath.data(),dotName.data(),gifName.data());
     //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
     if (system(dotCmd)!=0)
     {
@@ -584,7 +585,8 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       out << "</table>" << endl;
       return;
     }
-    dotCmd.sprintf("dot -Timap \"%s\" -o \"%s\"",dotName.data(),mapName.data());
+    dotCmd.sprintf("%sdot -Timap \"%s\" -o \"%s\"",
+                   Config::dotPath.data(),dotName.data(),mapName.data());
     //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
     if (system(dotCmd)!=0)
     {
@@ -975,9 +977,10 @@ static void findMaximalDotGraph(DotNode *root,
   {
     writeDotGraph(root,format,baseName,lrRank,renderParents,curDistance);
 
-    QCString dotCmd;
+    QCString dotCmd(4096);
     // create annotated dot file
-    dotCmd.sprintf("dot -Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Tdot \"%s.dot\" -o \"%s_tmp.dot\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -1066,15 +1069,17 @@ void DotClassGraph::writeGraph(QTextStream &out,
 
   if (format==GIF) // run dot to create a .gif image
   {
-    QCString dotCmd;
-    dotCmd.sprintf("dot -Tgif \"%s.dot\" -o \"%s.gif\"",baseName.data(),baseName.data());
+    QCString dotCmd(4096);
+    dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        return;
     }
     // run dot again to create an image map
-    dotCmd.sprintf("dot -Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
@@ -1090,7 +1095,8 @@ void DotClassGraph::writeGraph(QTextStream &out,
   else if (format==EPS) // run dot to create a .eps image
   {
     QCString dotCmd;
-    dotCmd.sprintf("dot -Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
@@ -1221,16 +1227,17 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   {
     // run dot to create a .gif image
     QCString dotCmd;
-    dotCmd.sprintf("dot -Tgif \"%s.dot\" -o \"%s.gif\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       return;
     }
-    //printf("dot -Tgif %s.dot -o %s.gif",baseName.data(),baseName.data());
 
     // run dot again to create an image map
-    dotCmd.sprintf("dot -Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
@@ -1249,7 +1256,8 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     // run dot to create a .eps image
     QCString dotCmd;
 
-    dotCmd.sprintf("dot -Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
+    dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
+                   Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");

@@ -91,28 +91,49 @@ void GroupDef::addNamespace(const NamespaceDef *def)
   namespaceList->append(def);
 }
 
-void GroupDef::addMemberToGroup(MemberDef *md,int groupId)
+void GroupDef::addMemberListToGroup(MemberList *ml,
+                                bool (MemberDef::*func)() const)
 {
-  if (groupId!=-1)
+  if (ml==0) return;
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
   {
-    QCString *pGrpHeader = memberHeaderDict[groupId];
-    QCString *pDocs      = memberDocDict[groupId];
-    if (pGrpHeader)
+    int groupId=md->getMemberGroupId();
+    if ((md->*func)() && groupId!=-1)
     {
-      MemberGroup *mg = memberGroupDict->find(groupId);
-      if (mg==0)
+      QCString *pGrpHeader = memberHeaderDict[groupId];
+      QCString *pDocs      = memberDocDict[groupId];
+      if (pGrpHeader)
       {
-        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-        memberGroupDict->insert(groupId,mg);
-        memberGroupList->append(mg);
+        MemberGroup *mg = memberGroupDict->find(groupId);
+        if (mg==0)
+        {
+          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          memberGroupDict->insert(groupId,mg);
+          memberGroupList->append(mg);
+        }
+        mg->insertMember(md);
+        md->setMemberGroup(mg);
       }
-      mg->insertMember(md);
-      md->setMemberGroup(mg);
     }
   }
 }
 
-void GroupDef::insertMember(MemberDef *md,int groupId)
+void GroupDef::addMembersToMemberGroup()
+{
+  addMemberListToGroup(allMemberList,&MemberDef::isDefine);
+  addMemberListToGroup(allMemberList,&MemberDef::isTypedef);
+  addMemberListToGroup(allMemberList,&MemberDef::isEnumerate);
+  addMemberListToGroup(allMemberList,&MemberDef::isEnumValue);
+  addMemberListToGroup(allMemberList,&MemberDef::isFunction);
+  addMemberListToGroup(allMemberList,&MemberDef::isSlot);
+  addMemberListToGroup(allMemberList,&MemberDef::isSignal);
+  addMemberListToGroup(allMemberList,&MemberDef::isVariable);
+}
+
+
+void GroupDef::insertMember(MemberDef *md)
 {
   QCString funcDecl=md->name()+md->argsString();
   if (allMemberDict->find(funcDecl)==0)
@@ -131,7 +152,7 @@ void GroupDef::insertMember(MemberDef *md,int groupId)
       default:
          err("FileDef::insertMembers(): unexpected member insert in file!\n");
     }
-    addMemberToGroup(md,groupId);
+    //addMemberToGroup(md,groupId);
   }
 }
 
@@ -432,7 +453,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       GroupDef *mgd = md->groupDef();
       if (mgd==0)
       {
-        gd->insertMember(md,root->mGrpId);
+        gd->insertMember(md);
         md->setGroupDef(gd);
       }
       else if (mgd!=gd)

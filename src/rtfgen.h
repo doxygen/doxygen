@@ -197,7 +197,7 @@ class RTFGenerator : public OutputGenerator
     void endInclDepGraph(DotInclDepGraph &);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
-    void startMemberGroupHeader();
+    void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
     void startMemberGroupDocs();
     void endMemberGroupDocs();

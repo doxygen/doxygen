@@ -760,8 +760,7 @@ Define *newDefine()
 
 void addDefine()
 {
-  //bool ambig;
-  //FileDef   *fd=findFileDef(&inputNameDict,g_yyFileName,ambig);
+  //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
   MemberDef *md=new MemberDef(
       g_yyFileName,g_yyLineNr,
       "#define",g_defName,g_defArgsStr,0,
@@ -789,7 +788,7 @@ void addDefine()
     functionNameDict.insert(g_defName,mn);
   }
   mn->append(md);
-  if (g_yyFileDef) g_yyFileDef->insertMember(md,-1);
+  if (g_yyFileDef) g_yyFileDef->insertMember(md);
   
   //Define *d;
   //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 

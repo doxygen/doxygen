@@ -39,33 +39,18 @@ class NamespaceDef : public Definition
     NamespaceDef(const char *defFileName,int defLine,
                  const char *name,const char *ref=0);
    ~NamespaceDef();
-    //QCString namespaceFile() const { return fileName; }
     QCString getOutputFileBase() const { return fileName; }
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);
     void insertClass(ClassDef *cd);
-    void insertMember(MemberDef *md,int groupId);
-    void addMemberToGroup(MemberDef *md,int groupId);
+    void insertMember(MemberDef *md);
     void computeAnchors();
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
     NamespaceList *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(ClassDef *cd);
     ClassList *getUsedClasses() const { return usingDeclList; }
-
     
-    //const char *getReference() { return reference; }
-    //bool isVisible() 
-    //{
-    //  return !getReference() && hasDocumentation() &&
-    //         !name().isEmpty() && name().at(0)!='@';
-    //}
-    //bool isVisibleExt()
-    //{
-    //  return (getReference() || hasDocumentation()) &&
-    //         !name().isEmpty() && name().at(0)!='@';
-    //}
-
     bool isLinkableInProject()
     {
       int i = name().findRev("::");
@@ -77,8 +62,12 @@ class NamespaceDef : public Definition
     {
       return isLinkableInProject() || isReference();
     }
+    void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     
+  protected:
+    void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
+
   private:
     //QCString reference;
     QCString fileName;

@@ -47,8 +47,7 @@ class GroupDef : public Definition
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
-    void insertMember(MemberDef *def,int groupId);
-    void addMemberToGroup(MemberDef *def,int groupId);
+    void insertMember(MemberDef *def);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject()
@@ -60,7 +59,12 @@ class GroupDef : public Definition
       return isLinkableInProject() || isReference();
     }
     void computeAnchors();
+
+    void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+
+  protected:
+    void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private: 
     QCString title;                     // title of the group

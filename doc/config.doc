@@ -137,6 +137,8 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_tagfiles TAGFILES
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
 <li> \refitem cfg_warnings WARNINGS
+<li> \refitem cfg_warn_format WARN_FORMAT
+<li> \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
 \htmlonly
 </ul>
 </multicol>
@@ -181,23 +183,6 @@ followed by the descriptions of the tags grouped by category.
  information to generate all constant output in the proper language.
  The default language is English, other supported languages are:
  Dutch, French, Italian, Czech, Swedish, German and Japanese.
-
-\anchor cfg_quiet
-<dt>\c QUIET <dd>
- \addindex QUIET
- The \c QUIET tag can be used to turn on/off the messages that are generated
- to standard output by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the messages are off.
- If left blank \c NO is used.
-
-\anchor cfg_warnings
-<dt>\c WARNINGS <dd>
- \addindex WARNINGS
- The \c WARNINGS tag can be used to turn on/off the warning messages that are
- generated to standard error by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the warnings are on. If left blank \c NO is used.
-
- \b Tip: Turn warnings on while writing the documentation.
 
 \anchor cfg_disable_index
 <dt>\c DISABLE_INDEX <dd>
@@ -248,14 +233,6 @@ followed by the descriptions of the tags grouped by category.
  the file and class documentation (similar to JavaDoc).
  Set to NO to disable this.
 
-\anchor cfg_internal_docs
-<dt>\c INTERNAL_DOCS <dd>
- \addindex INTERNAL_DOCS
- The \c INTERNAL_DOCS tag determines if documentation
- that is typed after a \\internal command is included. If the tag is set
- to \c NO (the default) then the documentation will be excluded.
- Set it to \c YES to include the internal documentation.
-
 \anchor cfg_repeat_brief
 <dt>\c REPEAT_BRIEF <dd>
  \addindex REPEAT_BRIEF
@@ -287,6 +264,14 @@ followed by the descriptions of the tags grouped by category.
  can be used to strip a user defined part of the path. Stripping is
  only done if one of the specified strings matches the left-hand part of the 
  path.
+
+\anchor cfg_internal_docs
+<dt>\c INTERNAL_DOCS <dd>
+ \addindex INTERNAL_DOCS
+ The \c INTERNAL_DOCS tag determines if documentation
+ that is typed after a \\internal command is included. If the tag is set
+ to \c NO (the default) then the documentation will be excluded.
+ Set it to \c YES to include the internal documentation.
 
 \anchor cfg_class_diagrams
 <dt>\c CLASS_DIAGRAMS <dd>
@@ -382,6 +367,43 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
+\subsection messages_input Options related to warning and progress messages 
+\anchor cfg_quiet
+<dl>
+
+<dt>\c QUIET <dd>
+ \addindex QUIET
+ The \c QUIET tag can be used to turn on/off the messages that are generated
+ to standard output by doxygen. Possible values are \c YES and \c NO, 
+ where \c YES implies that the messages are off.
+ If left blank \c NO is used.
+
+\anchor cfg_warnings
+<dt>\c WARNINGS <dd>
+ \addindex WARNINGS
+ The \c WARNINGS tag can be used to turn on/off the warning messages that are
+ generated to standard error by doxygen. Possible values are \c YES and \c NO, 
+ where \c YES implies that the warnings are on. If left blank \c NO is used.
+
+ \b Tip: Turn warnings on while writing the documentation.
+
+\anchor cfg_warn_if_undocumented
+<dt>\c WARN_IF_UNDOCUMENTED <dd>
+ \addindex WARN_IF_UNDOCUMENTED
+ If WARN_IF_UNDOCUMENTED is set to YES, then doxygen will generate warnings
+ for undocumented members. If EXTRACT_ALL is set to YES then this flag will
+ automatically be disabled.
+
+\anchor cfg_warn_format
+<dt>\c WARN_FORMAT <dd>
+ \addindex WARN_FORMAT
+ The WARN_FORMAT tag determines the format of the warning messages that
+ doxygen can produce. The string should contain the $file, $line, and $text 
+ tags, which will be replaced by the file and line number from which the
+ warning originated and the warning text.
+
+</dl>
+
 \subsection config_input Input related options
 \anchor cfg_input
 <dl>
@@ -464,6 +486,33 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
+\subsection alphabetical_index Alphabetical index options
+\anchor cfg_alphabetical_index
+<dl>
+
+<dt>\c ALPHABETICAL_INDEX <dd>
+ \addindex ALPHABETICAL_INDEX
+ If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
+ of all compounds will be generated. Enable this if the project contains 
+ a lot of classes, structs, unions or interfaces.
+
+\anchor cfg_cols_in_alpha_index
+<dt>\c COLS_IN_ALPHA_INDEX <dd>
+ \addindex COLS_IN_ALPHA_INDEX
+ If the alphabetical index is enabled 
+ (see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
+ used to specify the number of columns in which this list will be split (can be a number in the range [1..20])
+
+\anchor cfg_ignore_prefix
+<dt>\c IGNORE_PREFIX <dd>
+ \addindex IGNORE_PREFIX
+ In case all classes in a project start with a common prefix, all classes will 
+ be put under the same header in the alphabetical index.
+ The \c IGNORE_PREFIX tag can be used to specify a prefix 
+ (or a list of prefixes) that should be ignored while generating the index 
+ headers.
+
+</dl>
 \subsection html_output HTML related options
 \anchor cfg_generate_html
 <dl>
@@ -594,33 +643,6 @@ FONT.charliteral   { color: #008080 }
  and you can search for words in the documentation 
  (which basically renders \c doxysearch obsolete on Windows). 
  The HTML workshop also contains a viewer for compressed HTML files.
-
-</dl>
-\subsection alphabetical_index Alphabetical index options
-\anchor cfg_alphabetical_index
-<dl>
-
-<dt>\c ALPHABETICAL_INDEX <dd>
- \addindex ALPHABETICAL_INDEX
- If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
- of all compounds will be generated. Enable this if the project contains 
- a lot of classes, structs, unions or interfaces.
-
-\anchor cfg_cols_in_alpha_index
-<dt>\c COLS_IN_ALPHA_INDEX <dd>
- \addindex COLS_IN_ALPHA_INDEX
- If the alphabetical index is enabled 
- (see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
- used to specify the number of columns in which this list will be split (can be a number in the range [1..20])
-
-\anchor cfg_ignore_prefix
-<dt>\c IGNORE_PREFIX <dd>
- \addindex IGNORE_PREFIX
- In case all classes in a project start with a common prefix, all classes will 
- be put under the same header in the alphabetical index.
- The \c IGNORE_PREFIX tag can be used to specify a prefix 
- (or a list of prefixes) that should be ignored while generating the index 
- headers.
 
 </dl>
 \subsection latex_output LaTeX related options
@@ -939,6 +961,12 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex GRAPHICAL_HIERATCHY
  If the \c GRAPHICAL_HIERARCHY and \c HAVE_DOT tags are set to \c YES then 
  doxygen will graphical hierarchy of all classes instead of a textual one.
+
+\anchor cfg_dot_path
+<dt>\c DOT_PATH <dd>
+ \addindex DOT_PATH
+ This tag can be used to specify the path where the dot tool can be found. 
+ If left blank, it is assumed the dot tool can be found on the path. 
 
 </dl>
 \subsection config_search Search engine options

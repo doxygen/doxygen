@@ -855,28 +855,30 @@ void LatexGenerator::startMemberDoc(const char *clname,
                                     const char *,
                                     const char *title)
 { 
-  t << "\\index{";
-  if (clname)
+  if (memname && memname[0]!='@')
   {
-    t << clname << "@{";
-    docify(clname);
-    t << "}!";
+    t << "\\index{";
+    if (clname)
+    {
+      t << clname << "@{";
+      docify(clname);
+      t << "}!";
+    }
+    t << escapeLabelName(memname) << "@{";
+    docify(memname);
+    t << "}}" << endl;
+
+    t << "\\index{" << escapeLabelName(memname) << "@{";
+    docify(memname);
+    t << "}";
+    if (clname)
+    {
+      t << "!" << clname << "@{";
+      docify(clname);
+      t << "}"; 
+    }
+    t << "}" << endl;
   }
-  t << escapeLabelName(memname) << "@{";
-  docify(memname);
-  t << "}}" << endl;
-  
-  t << "\\index{" << escapeLabelName(memname) << "@{";
-  docify(memname);
-  t << "}";
-  if (clname)
-  {
-    t << "!" << clname << "@{";
-    docify(clname);
-    t << "}"; 
-  }
-  t << "}" << endl;
-  //
   if (Config::compactLatexFlag) t << "\\paragraph"; else t << "\\subsubsection";
   if (Config::pdfHyperFlag && title) t << "[" << filterTitle(title) << "]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
@@ -956,10 +958,28 @@ void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
   }
 }
 
-void LatexGenerator::writeSectionRef(const char *,const char *lab,
-                                     const char *)
+void LatexGenerator::writeSectionRef(const char *fileName,const char *lab,
+                                     const char *text)
 {
-  t << "\\ref{" << lab << "}";
+  if (text && Config::pdfHyperFlag)
+  {
+    t << "\\hyperlink{";
+    if (lab) t << lab; 
+    t << "}{";
+    docify(text);
+    t << "}";
+  }
+  else
+  {
+    if (strcmp(lab,text)!=0) // lab!=text
+    {
+      t << "{\\bf " << text << " (\\ref " << lab << ")}}";
+    }
+    else
+    {
+      t << "\\ref{" << lab << "}";
+    }
+  }
 }
 
 void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
@@ -1265,9 +1285,10 @@ void LatexGenerator::writeImage(const char *name,const char *w,const char *h)
   t << "}}" << endl;
 }
 
-void LatexGenerator::startMemberGroupHeader()
+void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
-  t << "\\begin{Indent}{\\bf ";
+  if (hasHeader) t << "\\begin{Indent}";
+  t << "{\\bf ";
 }
 
 void LatexGenerator::endMemberGroupHeader()
@@ -1289,9 +1310,10 @@ void LatexGenerator::startMemberGroup()
 {
 }
 
-void LatexGenerator::endMemberGroup(bool)
+void LatexGenerator::endMemberGroup(bool hasHeader)
 {
-  t << "\\end{Indent}" << endl;
+  if (hasHeader)t << "\\end{Indent}"; 
+  t << endl;
 }
 
 void LatexGenerator::startDotGraph() 

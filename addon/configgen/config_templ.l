@@ -622,6 +622,39 @@ void checkConfig()
 #endif
     s=Config::includePath.next();
   }
+  
+  // check dot path
+  if (!Config::dotPath.isEmpty())
+  {
+    if (Config::dotPath.find('\\')!=-1)
+    {
+      if (Config::dotPath.at(Config::dotPath.length()-1)!='\\')
+      {
+	Config::dotPath+='\\';
+      } 
+    } 
+    else if (Config::dotPath.find('/')!=-1)
+    {
+      if (Config::dotPath.at(Config::dotPath.length()-1)!='/')
+      {
+	Config::dotPath+='/';
+      } 
+    } 
+#if defined(_WIN32)
+    QFileInfo dp(Config::dotPath+"dot.exe");
+#else
+    QFileInfo dp(Config::dotPath+"dot");
+#endif
+    if (!dp.exists() || !dp.isFile())
+    {
+      err("Warning: the dot tool could not be found at %s\n",Config::dotPath.data());
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    Config::dotPath="";
+  }
+  
   // check input
   if (Config::inputSources.count()==0)
   {
@@ -646,13 +679,13 @@ void checkConfig()
   // add default pattern if needed
   if (Config::filePatternList.isEmpty())
   {
-    Config::filePatternList="*";
+    Config::filePatternList.append("*");
   }
 
   // add default pattern if needed
   if (Config::examplePatternList.isEmpty())
   {
-    Config::examplePatternList="*";
+    Config::examplePatternList.append("*");
   }
 
   // add default pattern if needed
@@ -676,18 +709,23 @@ void checkConfig()
       err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
       exit(1);
     }
-    else if (Config::cgiURL.left(7)!="http://")
+    else if (Config::cgiURL.left(7)!="http://" && 
+	     Config::cgiURL.left(8)!="https://"
+	    )
     {
       err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
-	  "start with http://).\n");
+	  "start with http:// or https://).\n");
       exit(1);
     }
     // check documentation URL
     if (Config::docURL.isEmpty())
     {
-      Config::docURL = Config::outputDir.copy().prepend("file://")+"html";
+      Config::docURL = Config::outputDir.copy().prepend("file://").append("html");
     }
-    else if (Config::docURL.left(7)!="http://" && Config::docURL.left(7)!="file://")
+    else if (Config::docURL.left(7)!="http://" && 
+	     Config::docURL.left(8)!="https://" &&
+	     Config::docURL.left(7)!="file://"
+	    )
     {
       err("Error: tag DOC_URL: URL to documentation is invalid or "
 	  "not absolute.\n"); 

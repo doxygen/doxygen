@@ -853,37 +853,18 @@ void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
   g.writeGraph(t,Config::htmlOutputDir);
 }
 
-void HtmlGenerator::startMemberGroupHeader()
+void HtmlGenerator::startMemberGroupHeader(bool)
 {
-  //t << "<tr><td colspan=2><img src=\"null.gif\" height=8></td></tr>" << endl;
-  //t << "<tr><td colspan=2>" << endl;
-  //t << "  <div class=\"in\">" << endl;
-  //t << "    <table border=0 cellspacing=0 cellpadding=0>" << endl;
-  //t << "      <tr><td colspan=3 class=\"groupLine\"><img src=\"null.gif\" height=1></td></tr>" << endl;
-  //t << "      <tr>" << endl;
-  //t << "        <td class=\"groupLine\"><img src=\"null.gif\" width=1></td>" << endl;
-  //t << "        <td><div class=\"groupHeader\">&nbsp;&nbsp;";
-
   t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
 {
-  //t << "&nbsp;&nbsp;</div></td>" << endl;
-  //t << "        <td class=\"groupLine\"><img src=\"null.gif\" width=1></td>" << endl;
-  //t << "      </tr>" << endl;
-  //t << "      <tr><td colspan=3 class=\"groupLine\"><img src=\"null.gif\" height=1></td></tr>" << endl;
-  //t << "    </table>" << endl;
-  //t << "  </div>" << endl;
-  //t << "</tr>" << endl;
-  //t << "<tr><td colspan=2><img src=\"null.gif\" height=4></td></tr>" << endl;
-
   t << "</div></td></tr>" << endl;
 }
 
 void HtmlGenerator::startMemberGroupDocs()
 {
-  //t << "<tr><td colspan=2><img src=\"null.gif\" height=4></td></tr>" << endl;
   t << "<tr><td colspan=\"2\"><div class=\"groupText\">";
 }
 

@@ -44,7 +44,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
   return strcmp(c1->name(),c2->name());
 }
 
-void MemberList::countDecMembers(bool inGroup,bool countSubGroups)
+void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPerType)
 {
   //printf("----- countDecMembers ----\n");
   varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
@@ -64,7 +64,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups)
           md->hasDocumentedEnumValues()
          )
         ) && 
-        inGroup==(md->getMemberGroup()!=0) &&
+        inGroup==md->visibleMemberGroup(sectionPerType) &&
         !(inGroup && md->protection()==Private && !Config::extractPrivateFlag)
        )
     {
@@ -82,6 +82,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups)
         case MemberDef::Prototype:   protoCnt++,m_count++; break;
         case MemberDef::Define:      if (Config::extractAllFlag || 
                                          md->argsString() || 
+                                         !md->initializer().isEmpty() ||
                                          md->hasDocumentation() 
                                         ) defCnt++,m_count++;     
                                      break;
@@ -98,7 +99,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups)
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      int mgCount = mg->countDecMembers();
+      int mgCount = mg->countDecMembers(sectionPerType);
       //printf("memberGroupList adding %d inGroup=%d\n",mgCount,inGroup);
       m_count+=mgCount;
     }
@@ -155,21 +156,20 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                        bool inGroup,bool countSubGroups
                       )
 {
+  bool sectionPerType = !inGroup && (fd || nd || gd);
   //printf("----- writePlainDeclaration() ----\n");
-  countDecMembers(inGroup,countSubGroups);
+  countDecMembers(inGroup,countSubGroups,sectionPerType);
   if (totalCount()==0) return; // no members in this list
   //printf("----> writePlainDeclaration() inGroup=%d totalCount()=%d\n",inGroup,totalCount());
   
   ol.pushGeneratorState();
 
   //int prevGroupId = -1;
-  bool sectionPerType = !inGroup && (fd || nd || gd);
   if (!sectionPerType) ol.startMemberList();
   MemberDef *md;
 
   if (defineCount()>0)
   {
-    //printf("There are %d defines\n",defineCount());
     if (sectionPerType)
     {
       ol.startMemberHeader();
@@ -183,8 +183,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       //printf("md->isDefined()=%d inGroup=%d md->getMemberGroup()=%p\n",
       //   md->isDefine(),inGroup,md->getMemberGroup());
       if (md->isDefine() && 
-          (md->argsString() || md->hasDocumentation() || Config::extractAllFlag) &&
-          inGroup==(md->getMemberGroup()!=0)          
+          (md->argsString() || md->hasDocumentation() || 
+           !md->initializer().isEmpty() ||
+           Config::extractAllFlag) &&
+          inGroup==md->visibleMemberGroup(sectionPerType)         
          ) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
@@ -209,7 +211,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()); ++mli )
     {
-      if (md->isPrototype() && inGroup==(md->getMemberGroup()!=0)) 
+      if (md->isPrototype() && inGroup==md->visibleMemberGroup(sectionPerType)) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
@@ -234,7 +236,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isTypedef() && inGroup==(md->getMemberGroup()!=0)) 
+      if (md->isTypedef() && inGroup==md->visibleMemberGroup(sectionPerType)) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
@@ -263,7 +265,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       type=type.stripWhiteSpace();  // TODO: is this really needed?
 
       // filter out enums that are in a group iff inGroup holds
-      if (md->isEnumerate() && inGroup==(md->getMemberGroup()!=0) /*&& (hasDocs || !Config::hideMemberFlag)*/) 
+      if (md->isEnumerate() && inGroup==md->visibleMemberGroup(sectionPerType) /*&& (hasDocs || !Config::hideMemberFlag)*/) 
       {
         // filter out invisible enums
         if ( !Config::hideMemberFlag ||        // do not hide undocumented members or
@@ -409,7 +411,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       if (
           ( md->isFunction() || md->isSignal() || md->isSlot()) &&
           ( !md->isRelated() || md->memberClass() ) &&
-          inGroup==(md->getMemberGroup()!=0)
+          inGroup==md->visibleMemberGroup(sectionPerType)
          ) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
@@ -424,7 +426,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isFriend() && inGroup==(md->getMemberGroup()!=0)) 
+      if (md->isFriend() && inGroup==md->visibleMemberGroup(sectionPerType)) 
       {
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
@@ -479,7 +481,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isVariable() && inGroup==(md->getMemberGroup()!=0)) 
+      if (md->isVariable() && inGroup==md->visibleMemberGroup(sectionPerType)) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
@@ -495,7 +497,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     for  ( ; (md=mli.current()) ; ++mli )
     {
       if (md->fromAnnonymousScope() && !md->annonymousDeclShown()
-          && inGroup==(md->getMemberGroup()!=0))
+          && inGroup==md->visibleMemberGroup(sectionPerType))
       {
         //printf("annonymous compound members\n");
         md->setFromAnnonymousScope(FALSE);
@@ -518,13 +520,14 @@ void MemberList::writeDeclarations(OutputList &ol,
 {
   //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",title,subtitle);
   //printf("----- writeDeclaration() ----\n");
-  countDecMembers(FALSE,countSubGroups);            // count member not in group
+  bool sectionPerType = !inGroup && (fd || nd || gd);
+  countDecMembers(FALSE,countSubGroups,sectionPerType); // count member not in group
   int normalMembers = totalCount();
   int ingroupMembers = 0;
   //printf("Normal members %d\n",normalMembers);
   if (inGroup)
   {
-    countDecMembers(TRUE,countSubGroups);             // count member inside group
+    countDecMembers(TRUE,countSubGroups,sectionPerType); // count member inside group
     ingroupMembers = totalCount();
   }
   int totalMembers = normalMembers + ingroupMembers;
@@ -551,13 +554,13 @@ void MemberList::writeDeclarations(OutputList &ol,
   
   if (memberGroupList)
   {
-    //printf("MemberList::writeDeclarations()\n");
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     while ((mg=mgli.current()))
     {
-      ol.startMemberGroupHeader();
-      if (mg->header()!="[NOHEADER]")
+      bool hasHeader=mg->header()!="[NOHEADER]";
+      ol.startMemberGroupHeader(hasHeader);
+      if (hasHeader)
       {
         parseText(ol,mg->header());
       }
@@ -566,14 +569,13 @@ void MemberList::writeDeclarations(OutputList &ol,
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        parseDoc(ol,"<generated>",1,
-            0,0,mg->documentation());
+        parseDoc(ol,"<generated>",1,0,0,mg->documentation());
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();
       mg->writePlainDeclarations(ol,cd,nd,fd,gd);
       ++mgli;
-      ol.endMemberGroup(mgli.current()==0);
+      ol.endMemberGroup(hasHeader);
     }
   }
   //printf("----- end writeDeclaration() ----\n");
@@ -593,10 +595,11 @@ void MemberList::writeDocumentation(OutputList &ol,
 
 void MemberList::addMemberGroup(MemberGroup *mg)
 {
-  //printf("MemberList::addMemberGroup(%p)\n",mg);
   if (memberGroupList==0)
   {
     memberGroupList=new MemberGroupList;
   }
   memberGroupList->append(mg);
 }
+
+

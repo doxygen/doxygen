@@ -78,28 +78,44 @@ void NamespaceDef::insertClass(ClassDef *cd)
   }
 }
 
-void NamespaceDef::addMemberToGroup(MemberDef *md,int groupId)
+void NamespaceDef::addMemberListToGroup(MemberList *ml,
+                                        bool (MemberDef::*func)() const)
 {
-  if (groupId!=-1)
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
   {
-    QCString *pGrpHeader = memberHeaderDict[groupId];
-    QCString *pDocs      = memberDocDict[groupId];
-    if (pGrpHeader)
+    int groupId=md->getMemberGroupId();
+    if ((md->*func)() && groupId!=-1)
     {
-      MemberGroup *mg = memberGroupDict->find(groupId);
-      if (mg==0)
+      QCString *pGrpHeader = memberHeaderDict[groupId];
+      QCString *pDocs      = memberDocDict[groupId];
+      if (pGrpHeader)
       {
-        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-        memberGroupDict->insert(groupId,mg);
-        memberGroupList->append(mg);
+        MemberGroup *mg = memberGroupDict->find(groupId);
+        if (mg==0)
+        {
+          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          memberGroupDict->insert(groupId,mg);
+          memberGroupList->append(mg);
+        }
+        mg->insertMember(md);
+        md->setMemberGroup(mg);
       }
-      mg->insertMember(md);
-      md->setMemberGroup(mg);
     }
   }
 }
 
-void NamespaceDef::insertMember(MemberDef *md,int groupId)
+void NamespaceDef::addMembersToMemberGroup()
+{
+  addMemberListToGroup(&allMemberList,&MemberDef::isTypedef);
+  addMemberListToGroup(&allMemberList,&MemberDef::isEnumerate);
+  addMemberListToGroup(&allMemberList,&MemberDef::isEnumValue);
+  addMemberListToGroup(&allMemberList,&MemberDef::isFunction);
+  addMemberListToGroup(&allMemberList,&MemberDef::isVariable);
+}
+
+void NamespaceDef::insertMember(MemberDef *md)
 {
   //memList->append(md);
   allMemberList.append(md); 
@@ -115,7 +131,7 @@ void NamespaceDef::insertMember(MemberDef *md,int groupId)
     default:
        err("NamespaceDef::insertMembers(): unexpected member inserted in namespace!\n");
   }
-  addMemberToGroup(md,groupId);
+  //addMemberToGroup(md,groupId);
 }
 
 void NamespaceDef::computeAnchors()

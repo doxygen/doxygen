@@ -110,8 +110,7 @@ class FileDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeSource(OutputList &ol);
     friend void generatedFileNames();
-    void insertMember(MemberDef *md,int groupId);
-    void addMemberToGroup(MemberDef *md,int groupId);
+    void insertMember(MemberDef *md);
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);
     void computeAnchors();
@@ -127,7 +126,11 @@ class FileDef : public Definition
     QList<IncludeInfo> *includeFileList() const { return includeList; }
     QDict<IncludeInfo> *includeFileDict() const { return includeDict; }
 
+    void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+
+  protected:
+    void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private: 
     MemberList allMemberList;

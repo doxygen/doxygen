@@ -1,4 +1,4 @@
-/******************************************************************************
+/*****************************************************************************
  *
  * 
  *
@@ -840,7 +840,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   else
   {
     result=fileName;
-    if (result.left(5)!="http:")
+    if (result.left(5)!="http:" && result.left(6)!="https:")
     {
       warn(yyFileName,yyLineNr,
            "Warning: image file %s is not found in IMAGE_PATH: "  
@@ -1523,7 +1523,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->docify(", ");
 					  }
 					}
-<DocScan>{CMD}"param"/{BN}		{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"/{BN}	{
   				          endArgumentList();
   					  if (!inParamBlock)
 					  {
@@ -1543,7 +1543,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>{CMD}"retval"/{BN}		{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"retval"/{BN}		{
   				          endArgumentList();
   					  if (!inRetValBlock)
 					  {
@@ -1563,7 +1563,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>{CMD}("exception"|"throw")s?/{BN}	{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}("exception"|"throw")s?/{BN}	{
   					  endArgumentList();
 					  if (!inExceptionBlock)
 					  {
@@ -1602,7 +1602,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
-<DocScan>{CMD}"section "{ID}"\n"		{
+<DocScan>{CMD}"section "{ID}"\n"	{
   					  QCString secName=&yytext[9];               // skip "\section "
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
@@ -1624,7 +1624,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->writeAnchor(sec->fileName,sec->label);
 					  }
   					}
-<DocScan>{CMD}"ref"		{
+<DocScan>{CMD}"ref"			{
   					  BEGIN(DocRefName);
   					}
 <DocScan>{CMD}"refitem"			{
@@ -1809,12 +1809,16 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  warn(yyFileName,yyLineNr,"Warning: \\endcode without <PRE> or \\code "
     					       "in the documentation."); 
 					}
-<DocScan>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")"	{
+					
+<DocScan>{ID}"<"[^>\ \t\n]*">"("::"{ID})+"("?[a-z_A-Z0-9,:\<\> \t\*\&]*")"?	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
   					}
-<DocScan>{SCOPEMASK}(("()")?)          	{ 
-					  generateRef(*outDoc,className,yytext,inSeeBlock);
-					} 
+<DocScan>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")" {
+  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					}
+<DocScan>{SCOPEMASK}("()")?		{
+  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					}
 <DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
 				          QCString oName=yytext;
 					  generateRef(*outDoc,className,
@@ -1825,7 +1829,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
-<DocScan>("http:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
+<DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILEMASK}			{
 					  generateFileRef(*outDoc,yytext);
@@ -2292,7 +2296,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  current->virt = Virtual;
 					  lineCount();
 					}
-<FindMembers>{B}*"inline"{BN}+		{ current->inLine = TRUE;
+<FindMembers>{B}*"inline"{BN}+		{ current->memSpec|=Entry::Inline;
+                                          lineCount(); 
+                                        }
+<FindMembers>{B}*"mutable"{BN}+		{ current->memSpec|=Entry::Mutable;
+                                          lineCount(); 
+                                        }
+<FindMembers>{B}*"explicit"{BN}+	{ current->memSpec|=Entry::Explicit;
                                           lineCount(); 
                                         }
 <FindMembers>{B}*"import"{BN}+		{ // IDL import keyword
@@ -3620,7 +3630,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if( *yytext == '{' )
 					  {
 					    if (current_root->section & Entry::COMPOUND_MASK)
-					      previous->inLine = TRUE;
+					      previous->memSpec = previous->memSpec | Entry::Inline;
 					    //addToBody(yytext);
 					    curlyCount=0;
 					    BEGIN( SkipCurly ) ;
@@ -4618,6 +4628,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
                                           current->subGrouping = FALSE; 
                                         }
+<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
+					  current->initLines = 100000; // ON
+  					}
+<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
+					  current->initLines = 0; // OFF
+  					}
 <GroupName>{ID}				{
   					  current->groups->append(
 					    new QCString(yytext)

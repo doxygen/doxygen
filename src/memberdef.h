@@ -55,8 +55,8 @@ class MemberDef : public Definition
 
     enum
     {
-      maxInitLines = 30 // maximum number of lines shown for member
-                        // initialization 
+      defMaxInitLines = 30 // default maximum number of lines shown for member
+                           // initializer
     };
     
     MemberDef(const char *defFileName,int defLine,
@@ -93,21 +93,24 @@ class MemberDef : public Definition
     FileDef *getFileDec()                { return fileDec; }
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
-    bool isInline() const                { return inLine; }
+    bool isInline() const                { return (memSpec&Entry::Inline)!=0; }
+    bool isExplicit() const              { return (memSpec&Entry::Explicit)!=0; }
+    bool isMutable() const               { return (memSpec&Entry::Mutable)!=0; }
     MemberList *getSectionList() const   { return section; }
     void setMemberType(MemberType t)     { mtype=t; }
     void setDefinition(const char *d)    { def=d; }
-    //void setDefFile(const char *f)       { defFile=f; }
-    //void setDefLine(int l)               { defLine=l; }
     void setFileDef(FileDef *fd)         { fileDef=fd; }
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
-    void setInline(bool in)              { inLine=in; }
+    void setMemberSpecifiers(int s)      { memSpec=s; }
+    int  getMemberSpecifiers()           { return memSpec; }
+    void mergeMemberSpecifiers(int s)    { memSpec|=s; }
     void setInitializer(const char *i)   { init=i; 
                                            init=init.stripWhiteSpace();
                                            initLines=init.contains('\n');
                                          }
+    void setMaxInitLines(int lines)      { if (lines!=-1) maxInitLines=lines; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
     void setSectionList(MemberList *sl)  { section=sl; }
     void makeRelated()                   { related=TRUE; } 
@@ -143,10 +146,6 @@ class MemberDef : public Definition
     bool hasExamples();
     ExampleList *getExampleList() const { return exampleList; }
 
-    // prototype related members
-    //void setDecFile(const char *f)  { declFile=f; }
-    //void setDecLine(int l)          { defLine=l; }
-    
     // convenience members
     bool isSignal() const    { return mtype==Signal;      }
     bool isSlot() const      { return mtype==Slot;        }
@@ -162,10 +161,6 @@ class MemberDef : public Definition
     void setPrototype(bool p) { proto=p; }
     bool isPrototype() const { return proto; }
     
-    // tag file related members
-    //void setReference(const char *r) { external=r; } 
-    //bool isReference() { return !external.isEmpty(); }
-
     // argument related members
     ArgumentList *argumentList() const { return argList; }
     void setArgumentList(ArgumentList *al) 
@@ -186,6 +181,8 @@ class MemberDef : public Definition
     // member group related members
     void setMemberGroup(MemberGroup *grp);
     MemberGroup *getMemberGroup() const { return memberGroup; }
+    void setMemberGroupId(int id) { grpId=id; }
+    int getMemberGroupId() const { return grpId; }
     
     void setFromAnnonymousScope(bool b) { annScope=b; }    
     void setFromAnnonymousMember(MemberDef *m) { annMemb=m; }    
@@ -193,6 +190,8 @@ class MemberDef : public Definition
     bool annonymousDeclShown() { return annUsed; }
     void setIndentDepth( int i) { indDepth=i; }
     int  indentDepth() { return indDepth; }
+
+    bool visibleMemberGroup(bool hideNoHeader);
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -225,7 +224,7 @@ class MemberDef : public Definition
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class
     bool    stat;             // is it a static function?
-    bool    inLine;           // is it an inline function?
+    int     memSpec;          // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
     bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
@@ -234,13 +233,14 @@ class MemberDef : public Definition
     bool annUsed;
     bool annShown;
     int  indDepth;
+    int  maxInitLines;        // when the initializer will be displayed 
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
     ArgumentList *argList;    // argument list of this member
     ArgumentList *tArgList;   // template argument list of function template
     ArgumentList *scopeTAL;   // template argument list of class template
     ArgumentList *membTAL;    // template argument list of class template
-    //int grpId;                // group id
+    int grpId;                // group id
     //QCString grpHeader;       // group header
     MemberGroup *memberGroup; // group's member definition
 

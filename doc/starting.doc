@@ -485,10 +485,10 @@ block if you prefer C style
 comments. Note that the members of the group should be 
 physcially inside the member group's body.
 
-Before the opening marker of a block a separate comment block should be 
+Before the opening marker of a block a separate comment block may be 
 placed. This block should contain the \ref cmdname "@name" 
 (or \ref cmdname "\name") command and is used to specify the header 
-of the group. Optionally, the comment block may contain more
+of the group. Optionally, the comment block may also contain more
 detailed information about the group.
 
 Nesting of member groups is not allowed. 
@@ -866,6 +866,8 @@ PREDEFINED = DECLARE_REGISTRY_RESOURCEID=// \
    "STDMETHOD(a)=HRESULT a" \                                                   
    "ATL_NO_VTABLE= "\                                                      
    "__declspec(a)= "\                                                  
+   BEGIN_CONNECTION_POINT_MAP=/* \
+   END_CONNECTION_POINT_MAP=*/// 
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want

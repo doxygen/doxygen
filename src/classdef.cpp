@@ -131,29 +131,60 @@ void ClassDef::insertSuperClass(ClassDef *cd,Protection p,
   inheritedBy->inSort(new BaseClassDef(cd,p,s,t));
 }
 
-void ClassDef::addMemberToGroup(MemberDef *md,int groupId)
+void ClassDef::addMemberListToGroup(MemberList *ml)
 {
-  if (groupId!=-1)
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
   {
-    QCString *pGrpHeader = memberHeaderDict[groupId];
-    QCString *pDocs      = memberDocDict[groupId];
-    if (pGrpHeader)
+    int groupId=md->getMemberGroupId();
+    if (groupId!=-1)
     {
-      MemberGroup *mg = memberGroupDict->find(groupId);
-      if (mg==0)
+      QCString *pGrpHeader = memberHeaderDict[groupId];
+      QCString *pDocs      = memberDocDict[groupId];
+      if (pGrpHeader)
       {
-        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-        memberGroupDict->insert(groupId,mg);
-        memberGroupList->append(mg);
+        MemberGroup *mg = memberGroupDict->find(groupId);
+        if (mg==0)
+        {
+          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          memberGroupDict->insert(groupId,mg);
+          memberGroupList->append(mg);
+        }
+        mg->insertMember(md);
+        md->setMemberGroup(mg);
       }
-      mg->insertMember(md);
-      md->setMemberGroup(mg);
     }
   }
 }
 
+void ClassDef::addMembersToMemberGroup()
+{
+  addMemberListToGroup(&pubTypes);
+  addMemberListToGroup(&pubMembers);
+  addMemberListToGroup(&pubAttribs);
+  addMemberListToGroup(&pubSlots);
+  addMemberListToGroup(&signals);
+  addMemberListToGroup(&pubStaticMembers);
+  addMemberListToGroup(&pubStaticAttribs);
+  addMemberListToGroup(&proTypes);
+  addMemberListToGroup(&proMembers);
+  addMemberListToGroup(&proAttribs);
+  addMemberListToGroup(&proSlots);
+  addMemberListToGroup(&proStaticMembers);
+  addMemberListToGroup(&proStaticAttribs);
+  addMemberListToGroup(&priTypes);
+  addMemberListToGroup(&priMembers);
+  addMemberListToGroup(&priAttribs);
+  addMemberListToGroup(&priSlots);
+  addMemberListToGroup(&priStaticMembers);
+  addMemberListToGroup(&priStaticAttribs);
+  addMemberListToGroup(&friends);
+  addMemberListToGroup(&related);
+}
+
 // adds new member definition to the class
-void ClassDef::insertMember(MemberDef *md,int groupId)
+void ClassDef::insertMember(MemberDef *md)
 {
   //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
@@ -402,7 +433,7 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
     /*************************************************/
     // Note: this must be done AFTER inserting the member in the 
     // regular groups
-    addMemberToGroup(md,groupId);
+    //addMemberToGroup(md,groupId);
     
   }
 
@@ -422,26 +453,26 @@ void ClassDef::insertMember(MemberDef *md,int groupId)
 }
 
 
-void ClassDef::computeMemberGroups()
-{
-  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
-  MemberNameInfo *mni;
-  for (;(mni=mnili.current());++mnili)
-  {
-    MemberNameInfoIterator mnii(*mni);
-    MemberInfo *mi;
-    for (mnii.toFirst();(mi=mnii.current());++mnii)
-    {
-      MemberDef *md=mi->memberDef;
-      MemberGroup *mg = md->getMemberGroup();
-      if (mg && memberGroupDict->find(mg->groupId())==0)
-      {
-        memberGroupDict->insert(mg->groupId(),mg);
-        memberGroupList->append(mg);
-      }
-    }
-  }
-}
+//void ClassDef::computeMemberGroups()
+//{
+//  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+//  MemberNameInfo *mni;
+//  for (;(mni=mnili.current());++mnili)
+//  {
+//   MemberNameInfoIterator mnii(*mni);
+//    MemberInfo *mi;
+//    for (mnii.toFirst();(mi=mnii.current());++mnii)
+//    {
+//      MemberDef *md=mi->memberDef;
+//      MemberGroup *mg = md->getMemberGroup();
+//      if (mg && memberGroupDict->find(mg->groupId())==0)
+//      {
+//        memberGroupDict->insert(mg->groupId(),mg);
+//        memberGroupList->append(mg);
+//      }
+//    }
+//  }
+//}
 
 // compute the anchors for all members
 void ClassDef::computeAnchors()
@@ -539,8 +570,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pageTitle+=pageType+" Reference";
   startFile(ol,fileName,pageTitle);
   startTitle(ol,getOutputFileBase());
-  //ol.docify(name()+" "+pageType.right(pageType.length()-1)+" ");
-  //parseText(ol,theTranslator->trReference());
   parseText(ol,theTranslator->trCompoundReference(name(),compType));
   endTitle(ol,getOutputFileBase(),name());
 
@@ -1131,8 +1160,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           memberWritten=TRUE;
         }
         if ((protect!=Public || md->isStatic() || virt!=Normal || 
-             md->isFriend() || md->isRelated() || 
-             (md->isInline() && Config::inlineInfoFlag)
+             md->isFriend() || md->isRelated() ||
+             md->getMemberSpecifiers()!=0
             )
             && memberWritten)
         {
@@ -1145,6 +1174,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           {
             if (Config::inlineInfoFlag && md->isInline())        
                                        sl.append("inline");
+            if (md->isExplicit())      sl.append("explicit");
+            if (md->isMutable())       sl.append("mutable");
             if (protect==Protected)    sl.append("protected");
             else if (protect==Private) sl.append("private");
             if (virt==Virtual)         sl.append("virtual");
