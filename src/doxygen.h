@@ -37,7 +37,7 @@
 
 class PageSList;
 class PageSDict;
-class PageInfo;
+class PageDef;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -64,7 +64,7 @@ class Doxygen
     static ClassSDict                hiddenClasses;
     static PageSDict                *exampleSDict;
     static PageSDict                *pageSDict;
-    static PageInfo                 *mainPage;
+    static PageDef                  *mainPage;
     static bool                      insideMainPage;
     static FileNameDict             *includeNameDict;
     static FileNameDict             *exampleNameDict;

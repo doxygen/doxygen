@@ -29,7 +29,7 @@
 #include "outputgen.h"
 #include "dot.h"
 #include "code.h"
-#include "page.h"
+#include "pagedef.h"
 #include "filename.h"
 #include "version.h"
 #include "xmldocvisitor.h"
@@ -840,8 +840,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
      << "\" kind=\"" << cd->compoundTypeString()
      << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+cd->getOutputFileBase()+".xml";
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+cd->getOutputFileBase()+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1031,8 +1031,8 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
      << "\" kind=\"namespace\"" << "><name>" 
      << convertToXML(nd->name()) << "</name>" << endl;
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+nd->getOutputFileBase()+".xml";
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1122,8 +1122,8 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
      << "\" kind=\"file\"><name>" << convertToXML(fd->name()) 
      << "</name>" << endl;
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+fd->getOutputFileBase()+".xml";
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1255,8 +1255,8 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   ti << "  <compound refid=\"" << gd->getOutputFileBase() 
      << "\" kind=\"group\"><name>" << convertToXML(gd->name()) << "</name>" << endl;
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+gd->getOutputFileBase()+".xml";
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1309,11 +1309,11 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   if (pl)
   {
     PageSDict::Iterator pli(*pl);
-    PageInfo *pi;
-    for (pli.toFirst();(pi=pli.current());++pli)
+    PageDef *pd;
+    for (pli.toFirst();(pd=pli.current());++pli)
     {
-      t << "    <innerpage refid=\"" << pi->getOutputFileBase()
-        << "\">" << convertToXML(pi->title) << "</innerpage>" << endl;
+      t << "    <innerpage refid=\"" << pd->getOutputFileBase()
+        << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
     }
   }
 
@@ -1356,22 +1356,23 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   ti << "  </compound>" << endl;
 }
 
-static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
+static void generateXMLForPage(PageDef *pd,QTextStream &ti)
 {
   // + name
   // + title
   // + documentation
 
-  if (pi->isReference()) return;
+  if (pd->isReference()) return;
   
-  QCString pageName = pi->getOutputFileBase();
+  QCString pageName = pd->getOutputFileBase();
   if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
   
   ti << "  <compound refid=\"" << pageName
-     << "\" kind=\"page\"><name>" << convertToXML(pi->name) << "</name>" << endl;
+     << "\" kind=\"page\"><name>" << convertToXML(pd->name()) 
+     << "</name>" << endl;
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  QCString fileName=outputDirectory+"/xml/"+pageName+".xml";
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/"+pageName+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1384,14 +1385,15 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
   t << "\" kind=\"page\">" << endl;
-  t << "    <compoundname>" << convertToXML(pi->name) << "</compoundname>" << endl;
-  SectionInfo *si = Doxygen::sectionDict.find(pi->name);
+  t << "    <compoundname>" << convertToXML(pd->name()) 
+    << "</compoundname>" << endl;
+  SectionInfo *si = Doxygen::sectionDict.find(pd->name());
   if (si)
   {
-    t << "    <title>" << si->title << "</title>" << endl;
+    t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
   }
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,pi->defFileName,pi->defLine,0,0,pi->doc);
+  writeXMLDocBlock(t,pd->docFile(),pd->docLine(),0,0,pd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
@@ -1410,7 +1412,7 @@ void generateXML()
   // + related pages
   // - examples
   
-  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
   if (outputDirectory.isEmpty())
   {
     outputDirectory=QDir::currentDirPath();
@@ -1423,7 +1425,7 @@ void generateXML()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+        err("Error: tag XML_OUTPUT: Output directory `%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
         exit(1);
       }
@@ -1447,14 +1449,8 @@ void generateXML()
       return;
     }
   }
-  QDir xmlDir(outputDirectory+"/xml");
-  if (!xmlDir.exists() && !xmlDir.mkdir(outputDirectory+"/xml"))
-  {
-    err("Could not create xml directory in %s\n",outputDirectory.data());
-    return;
-  }
-  
-  QCString fileName=outputDirectory+"/xml/index.xml";
+  QDir xmlDir(outputDirectory);
+  QCString fileName=outputDirectory+"/index.xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1494,10 +1490,10 @@ void generateXML()
     generateXMLForGroup(gd,t);
   }
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    generateXMLForPage(pi,t);
+    generateXMLForPage(pd,t);
   }
   if (Doxygen::mainPage)
   {

@@ -105,7 +105,7 @@ void FileDef::distributeMemberGroupDocumentation()
 
 void FileDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0,docFile());
+  docFindSections(documentation(),this,0,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

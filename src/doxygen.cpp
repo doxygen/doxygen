@@ -58,8 +58,7 @@
 #include "defgen.h"
 #include "perlmodgen.h"
 #include "reflist.h"
-#include "page.h"
-//#include "packagedef.h"
+#include "pagedef.h"
 #include "bufstr.h"
 #include "commentcnv.h"
 #include "cmdmapper.h"
@@ -83,14 +82,11 @@ MemberNameSDict Doxygen::functionNameSDict(10000);
 FileNameList   Doxygen::inputNameList;           // all input files
 FileNameDict  *Doxygen::inputNameDict;          
 
-//GroupList      Doxygen::groupList;               // all groups
 GroupSDict      Doxygen::groupSDict(17);          
 
 FormulaList    Doxygen::formulaList;             // all formulas
 FormulaDict    Doxygen::formulaDict(1009);       // all formulas
 FormulaDict    Doxygen::formulaNameDict(1009);   // the label name of all formulas
-
-//PackageSDict   Doxygen::packageDict(257);         // java packages
 
 PageSDict      *Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
 PageSDict      *Doxygen::exampleSDict = new PageSDict(1009);       // all examples
@@ -107,7 +103,7 @@ QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be e
 
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 
-PageInfo      *Doxygen::mainPage = 0;           
+PageDef       *Doxygen::mainPage = 0;           
 bool           Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 QTextStream    Doxygen::tagFile;
 NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
@@ -200,12 +196,12 @@ static void addRelatedPage(Entry *root)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
   //printf("addRelatedPage() %s gd=%p\n",root->name.data(),gd);
-  PageInfo *pi = addRelatedPage(root->name,root->args,root->doc,root->anchors,
+  PageDef *pd = addRelatedPage(root->name,root->args,root->doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
       gd,root->tagInfo
      );
-  if (pi)
+  if (pd)
   {
     // see if the function is inside a namespace
     Definition *ctx = 0;
@@ -230,7 +226,9 @@ static void addRelatedPage(Entry *root)
       bool ambig;
       ctx=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
     }
-    pi->context = ctx;
+    pd->setOuterScope(ctx);
+    pd->addSectionsToDefinition(root->anchors);
+    //pi->context = ctx;
   }
 }
 
@@ -277,10 +275,14 @@ static void buildGroupListFiltered(Entry *root,bool additional)
       }
       else
       {
-        gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
         if (root->tagInfo)
         {
+          gd = new GroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo->fileName);
           gd->setReference(root->tagInfo->tagName);
+        }
+        else
+        {
+          gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         gd->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -798,21 +800,6 @@ static void addClassToContext(Entry *root)
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
     Doxygen::classSDict.append(fullName,cd);
 
-    // also add class to the correct structural context 
-    //Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
-    //if (d==0)
-    //{
-    //  warn(root->fileName,root->startLine,
-    //       "Warning: Internal inconsistency: scope for class %s not "
-    //       "found!\n",fullName.data()
-    //      );
-    //}
-    //else
-    //{
-    //  //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
-    //  d->addInnerCompound(cd);
-    //  cd->setOuterScope(d);
-    //}
   }
 }
             
@@ -853,6 +840,9 @@ static void buildClassDocList(Entry *root)
 
 static void resolveClassNestingRelations()
 {
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+
   int nestingLevel=0;
   bool done=FALSE;
   while (!done)
@@ -864,10 +854,11 @@ static void resolveClassNestingRelations()
     ClassDef *cd=0;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
+      //printf("nested relation for class %s\n",cd->name().data());
       if (cd->name().contains("::")==nestingLevel)
       {
+        cd->visited=TRUE;
         //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
-        done=FALSE;
         // also add class to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,cd->name());
         if (d==0)
@@ -884,8 +875,10 @@ static void resolveClassNestingRelations()
           cd->setOuterScope(d);
         }
       }
+      if (!cd->visited) done=FALSE;
     }
     nestingLevel++;
+    //printf("nestingLevel=%d\n",nestingLevel);
   }
 }
 
@@ -2774,21 +2767,6 @@ static void transferRelatedFunctionDocumentation()
 }
 
 //----------------------------------------------------------------------
-static void replaceNamespaceAliases(QCString &scope,int i)
-{
-  //printf("replaceNamespaceAliases(%s,%d)\n",scope.data(),i);
-  while (i>0)
-  {
-    QCString *s = Doxygen::namespaceAliasDict[scope.left(i)];
-    if (s)
-    {
-      scope=*s+scope.right(scope.length()-i);
-      i=s->length();
-    }
-    i=scope.findRev("::",i-1);
-  }
-  //printf("replaceNamespaceAliases() result=%s\n",scope.data());
-}
 
 /*! make a dictionary of all template arguments of class cd
  * that are part of the base class name. 
@@ -3034,6 +3012,7 @@ static void findUsedClassesForClass(Entry *root,
                   if (isArtificial) usedCd->setClassIsArtificial();
                   Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
                   instanceCd->addUsedClass(usedCd,md->name());
+                  usedCd->addUsedByClass(instanceCd,md->name());
                 }
               }
             }
@@ -3049,6 +3028,7 @@ static void findUsedClassesForClass(Entry *root,
               found=TRUE;
               Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
               instanceCd->addUsedClass(usedCd,md->name()); // class exists 
+              usedCd->addUsedByClass(instanceCd,md->name());
             }
           }
           if (delTempNames)
@@ -3077,6 +3057,7 @@ static void findUsedClassesForClass(Entry *root,
             if (isArtificial) usedCd->setClassIsArtificial();
              Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
             instanceCd->addUsedClass(usedCd,md->name()); 
+            usedCd->addUsedByClass(instanceCd,md->name());
           }
         }
       }
@@ -3740,17 +3721,17 @@ static void addListReferences()
     gd->addListReferences();
   }
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    QCString name = pi->name;
-    if (pi->getGroupDef())
+    QCString name = pd->name();
+    if (pd->getGroupDef())
     {
-      name = pi->getGroupDef()->getOutputFileBase().copy();
+      name = pd->getGroupDef()->getOutputFileBase().copy();
     }
-    addRefItem(pi->xrefListItems,
+    addRefItem(pd->xrefListItems(),
                theTranslator->trPage(TRUE,TRUE),
-               name,pi->title);
+               name,pd->title());
   }
 }
 
@@ -4026,7 +4007,9 @@ static bool findGlobalMember(Entry *root,
         // the same file. This is needed because static members with the same
         // name can be in different files. Thus it would be wrong to just
         // put the comment block at the first syntactically matching member.
-        if (matching && md->isStatic() && md->getDefFileName()!=root->fileName)
+        if (matching && md->isStatic() && 
+            md->getDefFileName()!=root->fileName && 
+            mn->count()>1)
         {
           matching = FALSE;
         }
@@ -5869,10 +5852,10 @@ static void findSectionsInDocumentation()
   }
   // for each page
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    pi->findSectionsInDocumentation();
+    pd->findSectionsInDocumentation();
   }
   if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
 }
@@ -6048,17 +6031,18 @@ static void findMainPage(Entry *root)
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
       QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
-      Doxygen::mainPage = new PageInfo(root->fileName,root->startLine,
+      Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
                               indexName, root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
-      Doxygen::mainPage->fileName = indexName;
+      Doxygen::mainPage->setFileName(indexName);
+      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
       //Doxygen::mainPage->addSections(root->anchors);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
           indexName,
-          Doxygen::mainPage->name,
-          Doxygen::mainPage->title,
+          Doxygen::mainPage->name(),
+          Doxygen::mainPage->title(),
           SectionInfo::Section);
       Doxygen::sectionDict.insert(indexName,si);
     }
@@ -6089,7 +6073,7 @@ static void resolveUserReferences()
     //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
     //        si->label.data(),si->definition?si->definition->name().data():"<none>",
     //        si->fileName.data());
-    PageInfo *pi=0;
+    PageDef *pd=0;
 
     // hack: the items of a todo/test/bug/deprecated list are all fragments from 
     // different files, so the resulting section's all have the wrong file 
@@ -6115,10 +6099,10 @@ static void resolveUserReferences()
       // if this section is in a page and the page is in a group, then we
       // have to adjust the link file name to point to the group.
       if (!si->fileName.isEmpty() && 
-          (pi=Doxygen::pageSDict->find(si->fileName)) &&
-          pi->getGroupDef())
+          (pd=Doxygen::pageSDict->find(si->fileName)) &&
+          pd->getGroupDef())
       {
-        si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
+        si->fileName=pd->getGroupDef()->getOutputFileBase().copy();
       }
 
       if (si->definition)
@@ -6156,20 +6140,20 @@ static void generatePageDocs()
   //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageSDict->count());
   if (documentedPages==0) return;
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pi->getGroupDef() && !pi->isReference())
+    if (!pd->getGroupDef() && !pd->isReference())
     {
-      msg("Generating docs for page %s...\n",pi->name.data());
+      msg("Generating docs for page %s...\n",pd->name().data());
       //outputList->disable(OutputGenerator::Man);
       QCString pageName;
       if (Config_getBool("CASE_SENSE_NAMES"))
-        pageName=pi->name.copy();
+        pageName=pd->name();
       else
-        pageName=pi->name.lower();
+        pageName=pd->name().lower();
 
-      startFile(*outputList,pageName,pageName,pi->title);
+      startFile(*outputList,pageName,pageName,pd->title());
  
       // save old generator state and write title only to Man generator
       outputList->pushGeneratorState();
@@ -6179,8 +6163,8 @@ static void generatePageDocs()
       outputList->popGeneratorState();
       
       SectionInfo *si=0;
-      if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-          (si=Doxygen::sectionDict.find(pi->name))!=0)
+      if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
+          (si=Doxygen::sectionDict.find(pd->name()))!=0)
       {
         outputList->startSection(si->label,si->title,si->type);
         outputList->docify(si->title);
@@ -6188,27 +6172,46 @@ static void generatePageDocs()
       }
       outputList->startTextBlock();
       QCString scName;
-      if (pi->context && 
-          (pi->context->definitionType()==Definition::TypeClass ||
-           pi->context->definitionType()==Definition::TypeNamespace
+      if (pd->getOuterScope() && 
+          (pd->getOuterScope()->definitionType()==Definition::TypeClass ||
+           pd->getOuterScope()->definitionType()==Definition::TypeNamespace
           )
          )
       {
-        scName=pi->context->name();
+        scName=pd->getOuterScope()->name();
       }
-      outputList->parseDoc(pi->defFileName,pi->defLine,scName,0,pi->doc,FALSE,pi->sectionDict);
+      outputList->parseDoc(pd->docFile(),
+                           pd->docLine(),
+                           scName,0,
+                           pd->documentation(),
+                           FALSE
+                           /*,pd->sectionDict*/);
       outputList->endTextBlock();
       endFile(*outputList);
       //outputList->enable(OutputGenerator::Man);
 
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && pi->name!="todo" && pi->name!="test")
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty())
       {
-        Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
-        Doxygen::tagFile << "    <name>" << pi->name << "</name>" << endl;
-        Doxygen::tagFile << "    <title>" << pi->title << "</title>" << endl;
-        Doxygen::tagFile << "    <filename>" << pi->name << "</filename>" << endl;
-        pi->writeDocAnchorsToTagFile();
-        Doxygen::tagFile << "  </compound>" << endl;
+        bool found=FALSE;
+        QDictIterator<RefList> rli(*Doxygen::xrefLists);
+        RefList *rl;
+        for (rli.toFirst();(rl=rli.current());++rli)
+        {
+          if (rl->listName()==pd->name())
+          {
+            found=TRUE;
+            break;
+          }
+        }
+        if (!found) // not one of the generated related pages
+        {
+          Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
+          Doxygen::tagFile << "    <name>" << pd->name() << "</name>" << endl;
+          Doxygen::tagFile << "    <title>" << convertToXML(pd->title()) << "</title>" << endl;
+          Doxygen::tagFile << "    <filename>" << pd->getOutputFileBase() << "</filename>" << endl;
+          pd->writeDocAnchorsToTagFile();
+          Doxygen::tagFile << "  </compound>" << endl;
+        }
       }
     }
   }
@@ -6233,13 +6236,14 @@ static void buildExampleList(Entry *root)
       }
       else
       {
-        PageInfo *pi=new PageInfo(root->fileName,root->startLine,
+        PageDef *pd=new PageDef(root->fileName,root->startLine,
                                   root->name,root->doc,root->args);
-        pi->fileName = convertNameToFile(pi->name+"-example");
+        pd->setFileName(convertNameToFile(pd->name()+"-example"));
+        pd->addSectionsToDefinition(root->anchors);
         //pi->addSections(root->anchors);
         
-        Doxygen::exampleSDict->inSort(root->name,pi);
-        addExampleToGroups(root,pi);
+        Doxygen::exampleSDict->inSort(root->name,pd);
+        addExampleToGroups(root,pd);
       }
     }
   }
@@ -6258,20 +6262,20 @@ static void generateExampleDocs()
 {
   outputList->disable(OutputGenerator::Man);
   PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    msg("Generating docs for example %s...\n",pi->name.data());
-    QCString n=pi->fileName;
+    msg("Generating docs for example %s...\n",pd->name().data());
+    QCString n=pd->getOutputFileBase();
     startFile(*outputList,n,n,"Example Documentation");
     startTitle(*outputList,n);
-    outputList->docify(pi->name);
+    outputList->docify(pd->name());
     endTitle(*outputList,n,0);
-    outputList->parseDoc(pi->name,                                 // file
-                         pi->defLine,                              // startLine
-                         pi->context?pi->context->name().data():0, // context
+    outputList->parseDoc(pd->docFile(),                            // file
+                         pd->docLine(),                            // startLine
+                         pd->getOuterScope()?pd->getOuterScope()->name().data():0, // context
                          0,                                        // memberDef
-                         pi->doc+"\n\\include "+pi->name,          // docs
+                         pd->documentation()+"\n\\include "+pd->name(),          // docs
                          TRUE                                      // is example
                         );
     endFile(*outputList);
@@ -7520,14 +7524,6 @@ void parseInput()
     s=imagePathList.next(); 
   }
 
-  //QDictIterator<FileName> fndi(*Doxygen::imageNameDict);
-  //FileName *fn;
-  //for (;(fn=fndi.current());++fndi)
-  //{
-  //  printf("File Name %s\n",fn->fileName());
-  //}
-  
-
   msg("Searching for dot files...\n");
   QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
   s=dotFileList.first();
@@ -7735,6 +7731,25 @@ void parseInput()
     exit(1);
   }
   
+  QCString &xmlOutput = Config_getString("XML_OUTPUT");
+  bool &generateXml = Config_getBool("GENERATE_XML");
+  if (xmlOutput.isEmpty() && generateXml)
+  {
+    xmlOutput=outputDirectory+"/xml";
+  }
+  else if (xmlOutput && xmlOutput[0]!='/' && xmlOutput[1]!=':')
+  {
+    xmlOutput.prepend(outputDirectory+'/');
+  }
+  QDir xmlDir(xmlOutput);
+  if (generateXml && !xmlDir.exists() && !xmlDir.mkdir(xmlOutput))
+  {
+    err("Could not create output directory %s\n",xmlOutput.data());
+    delete root;
+    cleanUpDoxygen();
+    exit(1);
+  }
+  
   QCString &latexOutput = Config_getString("LATEX_OUTPUT");
   bool &generateLatex = Config_getBool("GENERATE_LATEX");
   if (latexOutput.isEmpty() && generateLatex)
@@ -7854,12 +7869,6 @@ void parseInput()
   msg("Creating members for template instances...\n");
   createTemplateInstanceMembers();
 
-  //if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
-  //{
-  //  msg("Computing class implementation usage relations...\n");
-  //  computeClassImplUsageRelations();
-  //}
-
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
   computeClassRelations();        
@@ -7880,9 +7889,6 @@ void parseInput()
   msg("Building page list...\n");
   buildPageList(root);
 
-  //msg("Building package list...\n");
-  //buildPackageList(root);
-
   msg("Search for main page...\n");
   findMainPage(root);
 
@@ -7898,14 +7904,8 @@ void parseInput()
   msg("Determining which enums are documented\n");
   findDocumentedEnumValues();
 
-  //msg("Computing member references...\n");
-  //computeMemberReferences(); 
-
   msg("Computing member relations...\n");
   computeMemberRelations();
-
-  //msg("Adding classes to their packages...\n");
-  //addClassesToPackages();
 
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
@@ -8044,10 +8044,6 @@ void generateOutput()
   msg("Generating group index...\n");
   writeGroupIndex(*outputList);
  
-
-  //msg("Generating package index...\n");
-  //generatePackageDocs();
-
   msg("Generating example index...\n");
   writeExampleIndex(*outputList);
   

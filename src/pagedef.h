@@ -29,9 +29,21 @@ class PageDef : public Definition
     PageDef(const char *f,int l,const char *n,const char *d,const char *t);
    ~PageDef();
     DefType definitionType() { return TypePage; }
+    bool isLinkableInProject() const 
+    { 
+      return hasDocumentation() && !isReference();
+    }
+    bool isLinkable() const 
+    {
+      return isLinkableInProject() || isReference();
+    } 
 
     // functions to get a uniform interface with Definitions
     QCString getOutputFileBase() const { return m_fileName; }
+    void findSectionsInDocumentation();
+    QCString title() const { return m_title; }
+    GroupDef *getGroupDef() const;
+    void setFileName(const char *name) { m_fileName = name; }
 #if 0
    
     bool isReference() const { return !reference.isEmpty(); }
@@ -126,6 +138,7 @@ class PageDef : public Definition
   private:
     QCString m_fileName;
     QCString m_title;
+    GroupDef *m_inGroup;
 };
 
 class PageSDict : public SDict<PageDef>

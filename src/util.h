@@ -47,7 +47,7 @@ class Definition;
 struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
-class PageInfo;
+class PageDef;
 
 //--------------------------------------------------------------------
 
@@ -96,19 +96,18 @@ bool getDefs(const QCString &scopeName,
 
 
 bool resolveRef(/* in */  const char *scName,
-                       /* in */  const char *name,
-                       /* in */  bool inSeeBlock,
-                       /* out */ Definition **resContext,
-                       /* out */ MemberDef  **resMember
-                      );
+                /* in */  const char *name,
+                /* in */  bool inSeeBlock,
+                /* out */ Definition **resContext,
+                /* out */ MemberDef  **resMember
+               );
 
-bool resolveLink(/* in */ const char *scName,
-                        /* in */ const char *lr,
-                        /* in */ bool inSeeBlock,
-                        /* out */ Definition **resContext,
-                        /* out */ PageInfo **resPageInfo,
-                        /* out */ QCString &resAnchor
-                       );
+bool resolveLink(/* in */  const char *scName,
+                 /* in */  const char *lr,
+                 /* in */  bool inSeeBlock,
+                 /* out */ Definition **resContext,
+                 /* out */ QCString &resAnchor
+                );
 
 bool generateRef(OutputDocInterface &od,const char *,
                         const char *,bool inSeeBlock,const char * =0);
@@ -184,7 +183,7 @@ int getScopeFragment(const QCString &s,int p,int *l);
 int filterCRLF(char *buf,int len);
 void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
                         const char *name,const char *title,const char *args=0);
-PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
+PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
@@ -198,6 +197,8 @@ void filterLatexString(QTextStream &t,const char *str,
                        bool insideItem=FALSE);
 QCString rtfFormatBmkStr(const char *name);
 QCString linkToText(const char *link);
+QCString stripExtension(const char *fName);
+void replaceNamespaceAliases(QCString &scope,int i);
 
 #endif
 

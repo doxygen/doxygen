@@ -40,7 +40,7 @@
 #include "version.h"
 #include "groupdef.h"
 #include "reflist.h"
-#include "page.h"
+#include "pagedef.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -809,10 +809,10 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
     //        word.data(),scopeName.data(),searchName.data()
     //      );
     // check if `word' is a documented class name
-    if (!word.isEmpty() && 
-        !(isdigit(word.at(0)) || word.at(0)=='-') && 
-                                // do not try to link digits 
-                                // (saves a lot of time for large arrays)
+    if (//!word.isEmpty() && 
+        //!(isdigit(word.at(0)) || word.at(0)=='-') && 
+        //                        // do not try to link digits 
+        //                        // (saves a lot of time for large arrays)
         !rightScopeMatch(word,searchName) && 
         !rightScopeMatch(scopeName,word)
        )
@@ -822,10 +822,14 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
       bool found=FALSE;
       do // for each scope (starting with full scope and going to empty scope)
       {
-        QCString fullName = word.copy();
+        QCString fullName = word;
+        replaceNamespaceAliases(fullName,fullName.length());
         if (scopeOffset>0)
         {
-          fullName.prepend(scopeName.left(scopeOffset)+"::");
+
+          QCString prefix = scopeName.left(scopeOffset);
+          replaceNamespaceAliases(prefix,scopeOffset);
+          fullName.prepend(prefix+"::");
         }
         //printf("Trying class %s\n",fullName.data());
 
@@ -1406,6 +1410,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
     if (i1!=-1 && i2==-1) // only t1 has a scope
     {
       QCString scope=t1.left(i1);
+      replaceNamespaceAliases(scope,i1);
       
       int so=nsName.length();
       do
@@ -1432,6 +1437,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
     else if (i1==-1 && i2!=-1) // only t2 has a scope
     {
       QCString scope=t2.left(i2);
+      replaceNamespaceAliases(scope,i2);
 
       int so=nsName.length();
       do
@@ -2644,17 +2650,17 @@ bool resolveLink(/* in */ const char *scName,
                  /* in */ const char *lr,
                  /* in */ bool inSeeBlock,
                  /* out */ Definition **resContext,
-                 /* out */ PageInfo **resPageInfo,
+                 /* out PageInfo **resPageInfo,*/
                  /* out */ QCString &resAnchor
                 )
 {
   *resContext=0;
-  *resPageInfo=0;
+  //*resPageInfo=0;
   
   QCString linkRef=lr;
   FileDef  *fd;
   GroupDef *gd;
-  PageInfo *pi;
+  PageDef  *pd;
   ClassDef *cd;
   NamespaceDef *nd;
   bool ambig;
@@ -2662,25 +2668,25 @@ bool resolveLink(/* in */ const char *scName,
   {
     return FALSE;
   }
-  else if ((pi=Doxygen::pageSDict->find(linkRef))) // link to a page
+  else if ((pd=Doxygen::pageSDict->find(linkRef))) // link to a page
   {
-    GroupDef *gd = pi->getGroupDef();
+    GroupDef *gd = pd->getGroupDef();
     if (gd)
     {
       SectionInfo *si=0;
-      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
+      if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
       *resContext=gd;
       if (si) resAnchor = si->label;
     }
     else
     {
-      *resPageInfo=pi;
+      *resContext=pd;
     }
     return TRUE;
   }
-  else if ((pi=Doxygen::exampleSDict->find(linkRef))) // link to an example
+  else if ((pd=Doxygen::exampleSDict->find(linkRef))) // link to an example
   {
-    *resPageInfo=pi;
+    *resContext=pd;
     return TRUE;
   }
   else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
@@ -2726,21 +2732,22 @@ bool generateLink(OutputDocInterface &od,const char *clName,
 {
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   Definition *compound;
-  PageInfo *pageInfo;
+  //PageDef *pageDef=0;
   QCString anchor,linkText=linkToText(lt);
   //printf("generateLink linkText=%s\n",linkText.data());
-  if (resolveLink(clName,lr,inSeeBlock,&compound,&pageInfo,anchor))
+  if (resolveLink(clName,lr,inSeeBlock,&compound,/*&pageInfo,*/anchor))
   {
-    if (pageInfo) // link to page
-    {
-      od.writeObjectLink(pageInfo->getReference(),
-                         pageInfo->getOutputFileBase(),anchor,linkText);
-      if (!pageInfo->isReference())
-      {
-        writePageRef(od,pageInfo->getOutputFileBase(),anchor);
-      }
-    }
-    else if (compound) // link to compound
+    //if (pageInfo) // link to page
+    //{
+    //  od.writeObjectLink(pageInfo->getReference(),
+    //                     pageInfo->getOutputFileBase(),anchor,linkText);
+    //  if (!pageInfo->isReference())
+    //  {
+    //    writePageRef(od,pageInfo->getOutputFileBase(),anchor);
+    //  }
+    //}
+    //else 
+    if (compound) // link to compound
     {
       if (lt==0 && anchor.isEmpty() &&                      /* compound link */
           compound->definitionType()==Definition::TypeGroup /* is group */ 
@@ -3594,7 +3601,7 @@ found:
 
 //----------------------------------------------------------------------------
 
-PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
+PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,
                            QList<QCString> * /*anchors*/,
                            const char *fileName,int startLine,
@@ -3603,12 +3610,12 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
                            TagInfo *tagInfo
                           )
 {
-  PageInfo *pi=0;
+  PageDef *pd=0;
   //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
-  if ((pi=Doxygen::pageSDict->find(name)) && !tagInfo)
+  if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
     // append documentation block to the page.
-    pi->doc+="\n\n"+doc;
+    pd->setDocumentation(pd->documentation()+"\n\n"+doc,fileName,startLine);
     //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pi,name);
   }
   else // new page
@@ -3620,43 +3627,30 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
     
     QCString title=ptitle.stripWhiteSpace();
-    pi=new PageInfo(fileName,startLine,baseName,doc,title);
+    pd=new PageDef(fileName,startLine,baseName,doc,title);
 
-    if (sli)
-    {
-      if (pi->xrefListItems==0)
-      {
-        pi->xrefListItems=new QList<ListItemInfo>;
-        pi->xrefListItems->setAutoDelete(TRUE);
-      }
-      QListIterator<ListItemInfo> slii(*sli);
-      ListItemInfo *lii;
-      for (slii.toFirst();(lii=slii.current());++slii)
-      {
-        pi->xrefListItems->append(new ListItemInfo(*lii));
-      } 
-    }
+    pd->setRefItems(sli);
 
     if (tagInfo)
     {
-      pi->reference = tagInfo->tagName;
+      pd->setReference(tagInfo->tagName);
     }
 
     QCString pageName;
     if (Config_getBool("CASE_SENSE_NAMES"))
-      pageName=pi->name.copy();
+      pageName=pd->name();
     else
-      pageName=pi->name.lower();
+      pageName=pd->name().lower();
     //setFileNameForSections(anchors,pageName,pi);
-    pi->fileName = pageName;
+    pd->setFileName(pageName);
     //pi->addSections(anchors);
 
     //printf("Appending page `%s'\n",baseName.data());
-    Doxygen::pageSDict->append(baseName,pi);
+    Doxygen::pageSDict->append(baseName,pd);
 
-    if (gd) gd->addPage(pi);
+    if (gd) gd->addPage(pd);
     
-    if (!pi->title.isEmpty())
+    if (!pd->title().isEmpty())
     {
       //outputList->writeTitle(pi->name,pi->title);
 
@@ -3666,16 +3660,16 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
       {
         file=gd->getOutputFileBase();
       }
-      else if (pi->getGroupDef())
+      else if (pd->getGroupDef())
       {
-        file=pi->getGroupDef()->getOutputFileBase().copy();
+        file=pd->getGroupDef()->getOutputFileBase().copy();
       }
       else
       {
         file=pageName;
       }
       SectionInfo *si=new SectionInfo(
-          file,pi->name,pi->title,SectionInfo::Page,pi->reference);
+          file,pd->name(),pd->title(),SectionInfo::Page,pd->getReference());
       //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
       //      si->label.data(),si->definition?si->definition->name().data():"<none>",
       //      si->fileName.data());
@@ -3684,7 +3678,7 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
       Doxygen::sectionDict.insert(pageName,si);
     }
   }
-  return pi;
+  return pd;
 }
 
 //----------------------------------------------------------------------------
@@ -4161,5 +4155,30 @@ QCString rtfFormatBmkStr(const char *name)
   return *tag;
 }
 
+QCString stripExtension(const char *fName)
+{
+  QCString result=fName;
+  if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+  {
+    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+  }
+  return result;
+}
 
+
+void replaceNamespaceAliases(QCString &scope,int i)
+{
+  //printf("replaceNamespaceAliases(%s,%d)\n",scope.data(),i);
+  while (i>0)
+  {
+    QCString *s = Doxygen::namespaceAliasDict[scope.left(i)];
+    if (s)
+    {
+      scope=*s+scope.right(scope.length()-i);
+      i=s->length();
+    }
+    i=scope.findRev("::",i-1);
+  }
+  //printf("replaceNamespaceAliases() result=%s\n",scope.data());
+}
 

@@ -203,6 +203,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_warn_logfile WARN_LOGFILE
 \refitem cfg_warnings WARNINGS
 \refitem cfg_xml_dtd XML_DTD
+\refitem cfg_xml_output XML_OUTPUT
 \refitem cfg_xml_schema XML_SCHEMA
 \endsecreflist
 
@@ -1199,6 +1200,13 @@ EXTRA_PACKAGES = times
  If the \c GENERATE_XML tag is set to \c YES Doxygen will
  generate an XML file that captures the structure of
  the code including all documentation. 
+
+\anchor cfg_xml_output
+<dt>\c XML_OUTPUT <dd>
+ \addindex XML_OUTPUT
+ The \c XML_OUTPUT tag is used to specify where the XML pages will be put. 
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be 
+ put in front of it. If left blank \c xml will be used as the default path.
 
 \anchor cfg_xml_schema
 <dt>\c XML_SCHEMA <dd>

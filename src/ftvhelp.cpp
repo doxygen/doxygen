@@ -5,8 +5,6 @@
  * Modified by Dimitri van Heesch (c) 2003
  *
  * Folder Tree View for offline help on browsers that do not support HTML Help.
- * Uses the FTV structure from: 
- * http://www.geocities.com/Paris/LeftBank/2178/ftexample.html
  */
 
 #include <stdio.h>
@@ -506,30 +504,37 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
   QCString *dest;
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    n->ref.data(),n->file.data(),n->anchor.data());
-  if (!n->ref.isEmpty()) // link to entity imported via tag file
+  if (n->file.isEmpty()) // no link
   {
-    t << "<a class=\"elRef\" ";
-    t << "doxygen=\"" << n->ref << ":";
-    if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
-    t << "\" ";
+    t << "<b>" << n->name << "</b>";
   }
-  else // local link
+  else // link into other frame
   {
-    t << "<a class=\"el\" ";
-  }
-  t << "href=\"";
-  if (!n->ref.isEmpty())
-  {
-    if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
-  }
-  if (!n->file.isEmpty()) t << n->file << Doxygen::htmlFileExtension;
-  if (!n->anchor.isEmpty()) t << "#" << n->anchor;
-  t << "\" target=\"basefrm\">";
-  t << n->name;
-  t << "</a>";
-  if (!n->ref.isEmpty())
-  {
-    t << "&nbsp;[external]";
+    if (!n->ref.isEmpty()) // link to entity imported via tag file
+    {
+      t << "<a class=\"elRef\" ";
+      t << "doxygen=\"" << n->ref << ":";
+      if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
+      t << "\" ";
+    }
+    else // local link
+    {
+      t << "<a class=\"el\" ";
+    }
+    t << "href=\"";
+    if (!n->ref.isEmpty())
+    {
+      if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
+    }
+    t << n->file << Doxygen::htmlFileExtension;
+    if (!n->anchor.isEmpty()) t << "#" << n->anchor;
+    t << "\" target=\"basefrm\">";
+    t << n->name;
+    t << "</a>";
+    if (!n->ref.isEmpty())
+    {
+      t << "&nbsp;[external]";
+    }
   }
 }
 
@@ -634,7 +639,7 @@ void FTVHelp::generateTreeView()
       t << cssfi.fileName();
     }
     t << "\">" << endl;
-    t << "    <title>Test</title>\n";
+    t << "    <title>TreeView</title>\n";
     t << "    <style type=\"text/css\">\n";
     t << "    <!--\n";
     t << "    .directory { font-size: 10pt; font-weight: bold; }\n";

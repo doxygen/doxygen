@@ -36,15 +36,6 @@
 #include "debug.h"
 #include "docparser.h"
 
-static QCString stripExtension(const char *fName)
-{
-  QCString result=fName;
-  if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
-  {
-    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
-  }
-  return result;
-}
 
 // constructs a new class definition
 ClassDef::ClassDef(
@@ -86,6 +77,7 @@ ClassDef::ClassDef(
   m_nspace=0;
   m_fileDef=0;
   m_usesImplClassDict=0;
+  m_usedByImplClassDict=0;
   m_usesIntfClassDict=0;
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
@@ -120,6 +112,7 @@ ClassDef::~ClassDef()
   delete m_allMemberNameInfoSDict;
   delete m_exampleSDict;
   delete m_usesImplClassDict;
+  delete m_usedByImplClassDict;
   delete m_usesIntfClassDict;
   delete m_incInfo;
   delete memberGroupSDict;
@@ -586,7 +579,7 @@ void ClassDef::distributeMemberGroupDocumentation()
 
 void ClassDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0,docFile());
+  docFindSections(documentation(),this,0,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -2043,16 +2036,34 @@ void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
     m_usesImplClassDict->setAutoDelete(TRUE);
   }
   UsesClassDef *ucd=m_usesImplClassDict->find(cd->name());
-  if (ucd==0 /*|| ucd->templSpecifiers!=templSpec*/)
+  if (ucd==0)
   {
      ucd = new UsesClassDef(cd);
      m_usesImplClassDict->insert(cd->name(),ucd);
-     //ucd->templSpecifiers = templSpec;
      //printf("Adding used class %s to class %s\n",
      //    cd->name().data(),name().data());
   }
   ucd->addAccessor(accessName);
 }
+
+void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName)
+{
+  if (m_usedByImplClassDict==0) 
+  {
+    m_usedByImplClassDict = new UsesClassDict(17); 
+    m_usedByImplClassDict->setAutoDelete(TRUE);
+  }
+  UsesClassDef *ucd=m_usedByImplClassDict->find(cd->name());
+  if (ucd==0)
+  {
+     ucd = new UsesClassDef(cd);
+     m_usedByImplClassDict->insert(cd->name(),ucd);
+     //printf("Adding used by class %s to class %s\n",
+     //    cd->name().data(),name().data());
+  }
+  ucd->addAccessor(accessName);
+}
+
 
 #if 0
 /*! Builds up a dictionary of all classes that are used by the state of this 

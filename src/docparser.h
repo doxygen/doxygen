@@ -63,7 +63,10 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 DocNode *validatingParseText(const char *input);
 
 /*! Searches for section and anchor commands in the input */
-void docFindSections(const char *input,PageInfo *pi,Definition *d,MemberGroup *m,const char *fileName);
+void docFindSections(const char *input,
+                     Definition *d,
+                     MemberGroup *m,
+                     const char *fileName);
 
 //---------------------------------------------------------------------------
 

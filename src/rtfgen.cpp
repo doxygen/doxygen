@@ -32,7 +32,7 @@
 #include "language.h"
 #include "dot.h"
 #include "version.h"
-#include "page.h"
+#include "pagedef.h"
 #include "rtfstyle.h"
 #include "rtfdocvisitor.h"
 #include "docparser.h"
@@ -585,13 +585,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isMainPage:
       t << "\\par " << rtf_Style_Reset << endl;
-      if (!Doxygen::mainPage || Doxygen::mainPage->title.isEmpty())
+      if (!Doxygen::mainPage || Doxygen::mainPage->title().isEmpty())
       {
         t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
       }
       else
       {
-        t << "{\\tc \\v " << substitute(Doxygen::mainPage->title,"%","") << "}"<< endl;
+        t << "{\\tc \\v " << substitute(Doxygen::mainPage->title(),"%","") << "}"<< endl;
       }
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
       if (Config_getBool("GENERATE_TREEVIEW")) t << "main"; else t << "index";
@@ -767,20 +767,20 @@ void RTFGenerator::endIndexSection(IndexSections is)
         //t << "}\n";
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
         PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageInfo *pi=pdi.toFirst();
-        if (pi)
+        PageDef *pd=pdi.toFirst();
+        if (pd)
         {
           t << "\\par " << rtf_Style_Reset << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << pi->getOutputFileBase();
+          t << pd->getOutputFileBase();
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
-        for (++pdi;(pi=pdi.current());++pdi)
+        for (++pdi;(pd=pdi.current());++pdi)
         {
           t << "\\par " << rtf_Style_Reset << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << pi->getOutputFileBase();
+          t << pd->getOutputFileBase();
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
       }
@@ -789,15 +789,15 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
         PageSDict::Iterator pdi(*Doxygen::pageSDict);
-        PageInfo *pi=pdi.toFirst();
+        PageDef *pd=pdi.toFirst();
         bool first=TRUE;
-        for (pdi.toFirst();(pi=pdi.current());++pdi)
+        for (pdi.toFirst();(pd=pdi.current());++pdi)
         {
-          if (!pi->getGroupDef() && !pi->isReference())
+          if (!pd->getGroupDef() && !pd->isReference())
           {
             if (first) t << "\\par " << rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << pi->getOutputFileBase();
+            t << pd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             first=FALSE;
           }
