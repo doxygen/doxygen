@@ -1222,19 +1222,25 @@ static void findUsingDeclarations(Entry *root)
       // with the most inner scope and going to the most outer scope (i.e. 
       // file scope).
 
+      QCString name = substitute(root->name,".","::");
       MemberDef *mtd=0;
-      usingCd = getResolvedClass(nd,fd,root->name,&mtd);
+      usingCd = getResolvedClass(nd,fd,name,&mtd);
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
       if (usingCd==0) // definition not in the input => add an artificial class
       {
         Debug::print(Debug::Classes,0,"  New using class `%s' (sec=0x%08x)! #tArgLists=%d\n",
-             root->name.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
+             name.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
         usingCd = new ClassDef(
                      "<using>",1,
                      root->name,ClassDef::Class);
         Doxygen::hiddenClasses.append(root->name,usingCd);
         usingCd->setClassIsArtificial();
+      }
+      else
+      {
+        Debug::print(Debug::Classes,0,"  Found used class %s in scope=%s\n",
+            usingCd->name().data(),nd?nd->name().data():fd->name().data());
       }
 
       if (mtd) // add the typedef to the correct scope
@@ -8344,6 +8350,10 @@ void parseInput()
   buildClassDocList(root);
   resolveClassNestingRelations();
 
+  msg("Searching for members imported via using declarations...\n");
+  findUsingDeclImports(root);
+  findUsingDeclarations(root);
+
   msg("Building example list...\n");
   buildExampleList(root);
   
@@ -8379,10 +8389,6 @@ void parseInput()
   findEnums(root);
   findEnumDocumentation(root);
   
-  msg("Searching for members imported via using declarations...\n");
-  findUsingDeclImports(root);
-  findUsingDeclarations(root);
-
   msg("Searching for member function documentation...\n");
   findObjCMethodDefinitions(root);
   findMemberDocumentation(root); // may introduce new members !
@@ -8442,6 +8448,8 @@ void parseInput()
   msg("Adding todo/test/bug list items...\n");
   addListReferences();
 
+  msg("Computing dependencies between directories...\n");
+  computeDirDependencies();
 }
 
 void generateOutput()
@@ -8640,8 +8648,7 @@ void generateOutput()
     writeGraphInfo(*outputList);
   }
 
-  //msg("Generating search index...\n");
-  //generateSearchIndex();
+  //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
   
   if (Config_getBool("GENERATE_RTF"))
   {
@@ -8663,15 +8670,6 @@ void generateOutput()
     msg("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList.generateBitmaps(Config_getString("HTML_OUTPUT"));
   }
-  
-  // This is confusing people, so I removed it
-  //if (Config_getBool("SEARCHENGINE") || Config_getList("TAGFILES").count()>0)
-  //{
-  //  msg("\nNow copy the file\n\n     %s\n\nto the directory where the CGI binaries are "
-  //      "located and don't forget to run\n\n",(Config_getString("HTML_OUTPUT")+"/"+Config_getString("CGI_NAME")).data());
-  //  msg("     %s/installdox\n\nto replace any dummy links.\n\n",
-  //      Config_getString("HTML_OUTPUT").data());
-  //}
   
   if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))  
   {

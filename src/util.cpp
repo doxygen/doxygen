@@ -833,6 +833,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       NamespaceDef *nscope = (NamespaceDef*)scope;
+      //printf("  %s is namespace with %d used classes\n",nscope->name().data(),nscope->getUsedClasses());
       SDict<Definition> *cl = nscope->getUsedClasses();
       if (accessibleViaUsingClass(cl,fileScope,item)) 
       {
@@ -1074,7 +1075,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
 
   ClassDef *bestMatch=0;
 
-  //printf(" found %d symbol with name %s\n",dl->count(),name.data());
+  //printf(" found %d symbol(s) with name %s\n",dl->count(),name.data());
   // now we look int the list of Definitions and determine which one is the "best"
   DefinitionListIterator dli(*dl);
   Definition *d;
@@ -1084,7 +1085,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   int count=0;
   for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
   {
-    //fprintf(stderr,"  found type %x name=%s (%d/%d)\n",
+    //printf("  found type %x name=%s (%d/%d)\n",
     //       d->definitionType(),d->name().data(),count,dl->count());
 
     // only look at classes and members
@@ -1377,9 +1378,8 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
                  bool keepSpaces)
 {
   //printf("`%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
+  static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9.:]*");
   QCString txtStr=text;
-  QCString scopeName;
   int strLen = txtStr.length();
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
   //    scope?scope->name().data():"<none>",
@@ -1429,6 +1429,9 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
+    QCString matchWord = substitute(word,".","::");
+    //printf("linkifyText word=%s matchWord=%s scope=%s\n",
+    //    word.data(),matchWord.data(),scope?scope->name().data():"<none>");
     bool found=FALSE;
     if (!insideString)
     {
@@ -1439,7 +1442,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       GroupDef     *gd=0;
 
       MemberDef *typeDef=0;
-      if ((cd=getResolvedClass(scope,fileScope,word,&typeDef))) 
+      if ((cd=getResolvedClass(scope,fileScope,matchWord,&typeDef))) 
       {
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
@@ -1459,7 +1462,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
           found=TRUE;
         }
       }
-      else if ((cd=getClass(word+"-p"))) // search for Obj-C protocols as well
+      else if ((cd=getClass(matchWord+"-p"))) // search for Obj-C protocols as well
       {
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
@@ -1469,7 +1472,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         }
       }
           
-
+      QCString scopeName;
       if (scope && 
           (scope->definitionType()==Definition::TypeClass || 
            scope->definitionType()==Definition::TypeNamespace
@@ -1478,9 +1481,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       {
         scopeName=scope->name();
       }
-      //if (!found) printf("Trying to link %s in %s\n",word.data(),scName); 
+      //printf("ScopeName=%s\n",scopeName.data());
+      //if (!found) printf("Trying to link %s in %s\n",word.data(),scopeName.data()); 
       if (!found && 
-          getDefs(scopeName,word,0,md,cd,fd,nd,gd) && 
+          getDefs(scopeName,matchWord,0,md,cd,fd,nd,gd) && 
           (md->isTypedef() || md->isEnumerate() || 
            md->isReference() || md->isVariable()
           ) && 
@@ -1501,7 +1505,6 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
 
     if (!found) // add word to the result
     {
-      //ol.docify(word);
       out.writeString(word,keepSpaces);
     }
     // set next start point in the string
@@ -1722,6 +1725,10 @@ QCString getFileFilter(const char* name)
       {
         // found a match!
         QCString filterName = fs.mid(i_equals+1);
+        if (filterName.find(' ')!=-1)
+        { // add quotes if the name has spaces
+          filterName="\""+filterName+"\"";
+        }
         return filterName;
       }
     }

@@ -212,7 +212,6 @@ class LatexGenerator : public OutputGenerator
     int col;
     bool insideTabbing;
     bool firstDescItem;
-    bool insidePre;
     QCString relPath;
     int m_indent;
 };

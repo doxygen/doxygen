@@ -102,38 +102,12 @@ LatexGenerator::LatexGenerator() : OutputGenerator()
   //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
   insideTabbing=FALSE;
   firstDescItem=TRUE;
-  insidePre=FALSE;
   m_indent=0;
 }
 
 LatexGenerator::~LatexGenerator()
 {
 }
-
-//LatexGenerator::LatexGenerator(const LatexGenerator &g)
-//  : OutputGenerator(g)
-//{
-//  col=g.col;
-//}
-
-//void LatexGenerator::append(const OutputGenerator *g)
-//{
-//  t << g->getContents();
-//  col+=((LatexGenerator *)g)->col;
-//  insideTabbing=insideTabbing || ((LatexGenerator *)g)->insideTabbing;
-//  firstDescItem = ((LatexGenerator *)g)->firstDescItem;
-//  insidePre = insidePre || ((LatexGenerator *)g)->insidePre;
-//  //printf("LatexGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
-//  //    insideTabbing ? "TRUE" : "FALSE" );
-//}
-
-//OutputGenerator *LatexGenerator::copy()
-//{
-//  LatexGenerator *result = new LatexGenerator;
-//  result->insideTabbing=insideTabbing;
-//  result->insidePre=insidePre;
-//  return result;
-//}
 
 void LatexGenerator::init()
 {
@@ -1260,7 +1234,7 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
-  filterLatexString(t,str,insideTabbing,insidePre);
+  filterLatexString(t,str,insideTabbing,FALSE);
 }
 
 void LatexGenerator::codify(const char *str)
@@ -1548,7 +1522,7 @@ void LatexGenerator::endParamList()
 
 void LatexGenerator::printDoc(DocNode *n)
 {
-  LatexDocVisitor *visitor = new LatexDocVisitor(t,*this);
+  LatexDocVisitor *visitor = new LatexDocVisitor(t,*this,insideTabbing);
   n->accept(visitor);
   delete visitor; 
 }

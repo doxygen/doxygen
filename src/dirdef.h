@@ -29,6 +29,8 @@ class ClassSDict;
 class QStrList;
 class FileDef;
 class OutputList;
+class UsedDir;
+class QTextStream;
 
 class DirDef;
 
@@ -43,6 +45,8 @@ class DirDef : public Definition
   public:
     DirDef(const char *path);
     virtual ~DirDef();
+
+    // accessors
     virtual DefType definitionType() { return TypeDir; }
     virtual QCString getOutputFileBase() const;
     virtual bool isLinkableInProject() const { return !isReference() && hasDocumentation(); }
@@ -53,19 +57,30 @@ class DirDef : public Definition
     FileList *   getFiles() const        { return m_fileList; }
     ClassSDict * getClasses() const      { return m_classSDict; }
     void addFile(FileDef *fd);
+    const QList<DirDef> &subDirs() const { return m_subdirs; }
+    bool isCluster() const { return m_subdirs.count()>0; }
+    int level() const { return m_level; }
+    DirDef *parent() const { return m_parent; }
+    const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
+    bool isParentOf(DirDef *dir) const;
+
+    // generate output
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeNavigationPath(OutputList &ol);
-    const QList<DirDef> &subDirs() const { return m_subdirs; }
-    
+    void writeDepGraph(QTextStream &t);
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;
 
   private:
+    friend void computeDirDependencies();
     void writePathFragment(OutputList &ol);
+    void setLevel();
     static DirDef *createNewDir(const char *path);
     static bool matchPath(const QCString &path,QStrList &l);
+    void addUsesDependency(DirDef *usedDir,FileDef *fd,bool inherited);
+    void computeDependencies();
 
     DirList m_subdirs;
     QCString m_dispName;
@@ -73,6 +88,26 @@ class DirDef : public Definition
     FileList *m_fileList;                 // list of files in the group
     ClassSDict *m_classSDict;             // list of classes in the group
     int m_dirCount;
+    int m_level;
+    DirDef *m_parent;
+    QDict<UsedDir> *m_usedDirs;
+};
+
+class UsedDir
+{
+  public:
+    UsedDir(DirDef *dir,bool inherited);
+    virtual ~UsedDir();
+    void addFile(FileDef *fd);
+    FileDef *findFile(const char *name);
+    const QDict<FileDef> &files() const { return m_files; }
+    const DirDef *dir() const { return m_dir; }
+    bool inherited() const { return m_inherited; }
+
+  private:
+    DirDef *m_dir;
+    QDict<FileDef> m_files;
+    bool m_inherited;
 };
 
 inline int DirList::compareItems(GCI item1,GCI item2)
@@ -93,5 +128,7 @@ class DirSDict : public SDict<DirDef>
 
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
+void computeDirDependencies();
+void writeDirDependencyGraph(const char *file);
 
 #endif

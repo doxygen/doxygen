@@ -669,6 +669,7 @@ ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
@@ -2694,10 +2695,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
-<ReadBody,ReadNSBody,ReadBodyIntf>"'#"	{ current->program += yytext ; }
 
-<FindMembers>"("/({BN}*{ID}{BN}*"::")*{ID}{BN}*")"{BN}*"(" | /* typedef void (A::func_t)(args...) */
-<FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
+<FindMembers>"("/({BN}*{TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
+<FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -3620,7 +3620,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    BEGIN( FindMembers );
 					  }
   					}
-<ClassVar>","				// Multiple class forward declaration
+<ClassVar>","				{
+ 					  if (isTypedef)
+					  {
+					    // multiple types in one typedef
+					    unput(',');
+					    current->type.prepend("typedef ");
+					    BEGIN(FindMembers);
+					  }
+					  else
+					  { 
+  					    // Multiple class forward declaration
+					  }
+  					}
 <ClassVar>{ID}				{
   					  if (insideIDL && strcmp(yytext,"switch")==0)
 					  {

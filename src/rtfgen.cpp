@@ -549,8 +549,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
         if (rtf_logoFilename)
         {
-          t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE " << rtf_logoFilename;
-          t << " \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
+          t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"" << rtf_logoFilename;
+          t << "\" \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
         }
         if (rtf_company)
         {
@@ -1717,8 +1717,8 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << fileName << ".png";
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
+  t << fileName << ".png\"";
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
@@ -2206,9 +2206,9 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
   t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
-  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   newParagraph();
   DBG_RTF(t << "{\\comment (endDotGraph)}"    << endl)
@@ -2229,9 +2229,9 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
   t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
-  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   DBG_RTF(t << "{\\comment (endInclDepGraph)}"    << endl)
 }
@@ -2251,9 +2251,9 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
   t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
-  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   DBG_RTF(t << "{\\comment (endCallGraph)}"    << endl)
 }

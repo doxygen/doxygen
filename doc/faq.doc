@@ -210,7 +210,7 @@ If you don't mind spending some time on it, there are several options:
 <li><b>Help! I get the cryptic message 
  "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
 
-This error happens when doxygen lexical scanner has a rule that matches
+This error happens when doxygen's lexical scanner has a rule that matches
 more than 256K of input characters in one go. I've seen this happening 
 on a very large generated file (\>256K lines), where the built-in preprocessor 
 converted it into an empty file (with \>256K of newlines). Another case

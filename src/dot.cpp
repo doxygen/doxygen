@@ -2338,30 +2338,8 @@ bool DotCallGraph::isTrivial() const
 
 //-------------------------------------------------------------
 
-DotDirDeps::DotDirDeps(DirDef *dd)
+DotDirDeps::DotDirDeps(DirDef *)
 {
-  FileList *fl = dd->getFiles();
-  if (fl) 
-  {
-    QListIterator<FileDef> fli(*fl);
-    FileDef *fd;
-    for (fli.toFirst();(fd=fli.current());++fli) // foreach file in dir dd
-    {
-      QList<IncludeInfo> *ifl = fd->includeFileList();
-      if (ifl)
-      {
-        QListIterator<IncludeInfo> ifli(*ifl); 
-        IncludeInfo *ii;
-        for (ifli.toFirst();(ii=ifli.current());++ifli) // foreach include file
-        {
-          if (ii->fileDef)
-          {
-            // add dependency
-          } 
-        }
-      }
-    }
-  }
 }
 
 DotDirDeps::~DotDirDeps()
