@@ -33,6 +33,7 @@ HEADERS      =	bufstr.h \
                 define.h \
                 definition.h \
                 diagram.h \
+                dirdef.h \
                 docparser.h \
                 doctokenizer.h \
                 docvisitor.h \
@@ -136,6 +137,7 @@ SOURCES      =	ce_lex.cpp \
 		define.cpp \
 		definition.cpp \
 		diagram.cpp \
+                dirdef.cpp \
                 docparser.cpp \
                 doctokenizer.cpp \
 		dot.cpp \

@@ -747,6 +747,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   MemberDef  *member=0;
   QString name = linkToText(g_token->name,TRUE);
   int len = g_token->name.length();
+  ClassDef *cd=0;
   if (!g_insideHtmlLink && 
       resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
@@ -783,6 +784,16 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     g_token->name=g_token->name.left(len-1);
     handleLinkedWord(parent,children);
     children.append(new DocWord(parent,":"));
+  }
+  else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-p")))
+  {
+    // special case 2, where the token name is not a class, but could
+    // be a Obj-C protocol
+    children.append(new 
+        DocLinkedWord(parent,name,
+          cd->getReference(),
+          cd->getOutputFileBase(),
+          ""));
   }
   else // normal non-linkable word
   {
@@ -4383,15 +4394,25 @@ reparsetoken:
 	      goto endparagraph;
 	    }
 	  }
+
+          // determine list depth
+          int depth = 0;
+          n=parent();
+          while(n) {
+            if(n->kind() == DocNode::Kind_AutoList) ++depth;
+            n=n->parent();
+          }
+
 	  // first item or sub list => create new list
 	  DocAutoList *al=0;
 	  do
 	  {
-	    al = new DocAutoList(this,g_token->indent,g_token->isEnumList);
+	    al = new DocAutoList(this,g_token->indent,g_token->isEnumList,
+                                 depth);
 	    m_children.append(al);
 	    retval = al->parse();
 	  } while (retval==TK_LISTITEM &&         // new list
-	           al->indent()==g_token->indent  // at some indent level
+	           al->indent()==g_token->indent  // at same indent level
 		  );
 	      
 	  // check the return value

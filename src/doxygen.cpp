@@ -43,6 +43,7 @@
 #include "tagreader.h"
 #include "dot.h"
 #include "docparser.h"
+#include "dirdef.h"
 
 #include "outputlist.h"
 #include "declinfo.h"
@@ -120,6 +121,7 @@ SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
+SDict<DirDef>  Doxygen::directories(17);
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -2731,7 +2733,8 @@ static void transferFunctionDocumentation()
                                   mdef->getGroupPri(),
                                   mdef->docFile(),
                                   mdef->docLine(),
-                                  mdef->hasDocumentation()
+                                  mdef->hasDocumentation(),
+                                  mdef
                                  );
               }
               else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
@@ -2740,7 +2743,8 @@ static void transferFunctionDocumentation()
                                   mdec->getGroupPri(),
                                   mdec->docFile(),
                                   mdec->docLine(),
-                                  mdec->hasDocumentation()
+                                  mdec->hasDocumentation(),
+                                  mdec
                                  );
               }
 
@@ -6683,13 +6687,14 @@ static void buildExampleList(Entry *root)
       else
       {
         PageDef *pd=new PageDef(root->fileName,root->startLine,
-                                  root->name,root->doc,root->args);
+                                root->name,root->doc,root->args);
         pd->setFileName(convertNameToFile(pd->name()+"-example"));
         pd->addSectionsToDefinition(root->anchors);
         //pi->addSections(root->anchors);
         
         Doxygen::exampleSDict->inSort(root->name,pd);
-        addExampleToGroups(root,pd);
+        //we don't add example to groups 
+        //addExampleToGroups(root,pd);
       }
     }
   }
@@ -8251,6 +8256,9 @@ void parseInput()
 
   msg("Freeing input...\n");
   input.resize(0);
+  
+  //msg("Building directory list...\n");
+  //buildDirectories();
   
   msg("Building group list...\n");
   buildGroupList(root);

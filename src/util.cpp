@@ -1203,6 +1203,7 @@ static bool findOperator(const QCString &s,int i)
 }
 
 static const char constScope[] = { 'c', 'o', 'n', 's', 't', ':' };
+static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
@@ -1211,11 +1212,13 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   uint i;
   uint l=s.length();
   uint csp=0;
+  uint vsp=0;
   for (i=0;i<l;i++)
   {
 nextChar:
     char c=s.at(i);
     if (csp<6 && c==constScope[csp]) csp++; else csp=0;
+    if (vsp<8 && c==virtualScope[vsp]) vsp++; else vsp=0;
     if (c=='"') // quoted string
     {
       i++;
@@ -1262,15 +1265,33 @@ nextChar:
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5 && !(isId(s.at(i+1)) || s.at(i+1)==' ' || s.at(i+1)==')' || s.at(i+1)==',' || s.at(i+1)=='\0')) // prevent const ::A from being converted to const::A
+    else if (c=='t' && csp==5 && 
+            !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
+              s.at(i+1)==','  || s.at(i+1)=='\0')) 
+             // prevent const ::A from being converted to const::A
     {
       result+="t ";
+      if (s.at(i+1)==' ') i++;
       csp=0;
     }
     else if (c==':' && csp==6) // replace const::A by const ::A
     {
       result+=" :";
       csp=0;
+    }
+    else if (c=='l' && vsp==7 && 
+            !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
+              s.at(i+1)==','  || s.at(i+1)=='\0')) 
+             // prevent virtual ::A from being converted to virtual::A
+    {
+      result+="l ";
+      if (s.at(i+1)==' ') i++;
+      vsp=0;
+    }
+    else if (c==':' && vsp==8) // replace virtual::A by virtual ::A
+    {
+      result+=" :";
+      vsp=0;
     }
     else if (!isspace((uchar)c) ||
 	      ( i>0 && i<l-1 && 
@@ -1399,6 +1420,16 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
           found=TRUE;
         }
       }
+      else if ((cd=getClass(word+"-p"))) // search for Obj-C protocols as well
+      {
+        // add link to the result
+        if (external ? cd->isLinkable() : cd->isLinkableInProject())
+        {
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          found=TRUE;
+        }
+      }
+          
 
       if (scope && 
           (scope->definitionType()==Definition::TypeClass || 
@@ -3335,7 +3366,12 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=fd;
     return TRUE;
   }
-  else if ((cd=getClass(linkRef)))
+  else if ((cd=getClass(linkRef))) // class link
+  {
+    *resContext=cd;
+    return TRUE;
+  }
+  else if ((cd=getClass(linkRef+"-p"))) // Obj-C protocol link
   {
     *resContext=cd;
     return TRUE;

@@ -29,6 +29,10 @@
 #include "htmlgen.h"
 
 
+static const int NUM_HTML_LIST_TYPES = 4;
+static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
+
+
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
   QString result;
@@ -327,12 +331,21 @@ void HtmlDocVisitor::visit(DocIndexEntry *)
 // visitor functions for compound nodes
 //--------------------------------------
 
+
 void HtmlDocVisitor::visitPre(DocAutoList *l)
 {
   if (m_hide) return;
   if (l->isEnumList())
   {
-    m_t << "<ol>";
+    //
+    // Do list type based on depth:
+    // 1.
+    //   a.
+    //     i.
+    //       A. 
+    //         1. (repeat)...
+    //
+    m_t << "<ol type=" << types[l->depth() % NUM_HTML_LIST_TYPES] << ">";
   }
   else
   {

@@ -904,6 +904,7 @@ static void mergeFileDef(Directory *root,FileDef *fd)
   dirNode->addChild(e);
 }
 
+#if 0
 static void generateIndent(QTextStream &t,DirEntry *de,int level)
 {
   if (de->parent())
@@ -949,7 +950,6 @@ static void generateIndent(QTextStream &t,DirEntry *de,int level)
   }
 }
 
-#if 0
 static void writeDirTreeNode(QTextStream &t,Directory *root,int level)
 {
   QCString indent;
@@ -989,16 +989,17 @@ static void addDirsAsGroups(Directory *root,GroupDef *parent,int level)
   {
     gd = new GroupDef("<generated>",
                       1,
-                      root->name(), // name
+                      root->path(), // name
                       root->name()  // title
                      );
     if (parent) 
     {
       parent->addGroup(gd);
+      gd->makePartOfGroup(parent);
     }
     else
     {
-      Doxygen::groupSDict.append(root->name(),gd);
+      Doxygen::groupSDict.append(root->path(),gd);
     }
   }
   QListIterator<DirEntry> dli(root->children());

@@ -1370,6 +1370,15 @@ int main(int argc,char **argv)
 {
   QApplication a(argc,argv);
   MainWidget main;
+  if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+  {
+    main.loadConfigFromFile(argv[1]);
+  }
+  else if (argc>1)
+  {
+    printf("Usage: %s [config file]\n",argv[0]);
+    exit(1);
+  }
   a.setMainWidget(&main);
   main.show();
   return a.exec();

@@ -119,8 +119,7 @@ class GroupDef : public Definition
     FileList *fileList;                 // list of files in the group
     ClassSDict *classSDict;             // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
-    GroupList *groupList;              // list of sub groups.
-    //GroupList *parentGroupList;        // list of parent groups.
+    GroupList *groupList;               // list of sub groups.
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
 

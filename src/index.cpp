@@ -544,31 +544,32 @@ void writeClassTree(BaseClassList *cl,int level)
 
 void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &started,int level)
 {
-    if (cd->isVisibleInHierarchy() && !cd->visited)
+  //printf("writeClassTreeNode(%s) visited=%d\n",cd->name().data(),cd->visited);
+  if (cd->isVisibleInHierarchy() && !cd->visited)
+  {
+    if (!started)
     {
-      if (!started)
-      {
-        started=TRUE;
-      }
-      bool hasChildren = classHasVisibleChildren(cd);
-      //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
-      if (cd->isLinkable())
-      {
-        if (hasHtmlHelp)
-        {
-          HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
-        }
-        if (hasFtvHelp)
-        {
-          FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-        }
-      }
-      if (hasChildren)
-      {
-        writeClassTree(cd->subClasses(),level+1);
-      }
-      cd->visited=TRUE;
+      started=TRUE;
     }
+    bool hasChildren = classHasVisibleChildren(cd);
+    //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
+    if (cd->isLinkable())
+    {
+      if (hasHtmlHelp)
+      {
+        HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
+      }
+      if (hasFtvHelp)
+      {
+        FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+      }
+    }
+    if (hasChildren)
+    {
+      writeClassTree(cd->subClasses(),level+1);
+    }
+    cd->visited=TRUE;
+  }
 }
 
 void writeClassTree(ClassList *cl,int level)
@@ -578,7 +579,11 @@ void writeClassTree(ClassList *cl,int level)
   bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ClassListIterator cli(*cl);
   bool started=FALSE;
-  for ( ; cli.current() ; ++cli)
+  for ( cli.toFirst() ; cli.current() ; ++cli)
+  {
+    cli.current()->visited=FALSE;
+  }
+  for ( cli.toFirst() ; cli.current() ; ++cli)
   {
     writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
   }
@@ -591,7 +596,11 @@ void writeClassTree(ClassSDict *d,int level)
   bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ClassSDict::Iterator cli(*d);
   bool started=FALSE;
-  for ( ; cli.current() ; ++cli)
+  for ( cli.toFirst() ; cli.current() ; ++cli)
+  {
+    cli.current()->visited=FALSE;
+  }
+  for ( cli.toFirst() ; cli.current() ; ++cli)
   {
     writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
   }
@@ -1356,7 +1365,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   alphaLinks += "</div><p>\n";
   ol.writeString(alphaLinks);
 
-  ol.writeString("<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
+  ol.writeString("<table align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 
   // the number of columns in the table
   const int columns = Config_getInt("COLS_IN_ALPHA_INDEX");
@@ -2835,7 +2844,21 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           ftvHelp->incContentsDepth();
         }
 
-        writeClassTree(gd->classSDict,1);
+        ClassDef *cd;
+        ClassSDict::Iterator cdi(*gd->classSDict);
+        for (cdi.toFirst();(cd=cdi.current());++cdi)
+        {
+          if (cd->isLinkable())
+          {
+            //printf("node: Has children %s\n",cd->name().data());
+            if (htmlHelp)
+              htmlHelp->addContentsItem(FALSE,cd->displayName(),cd->getOutputFileBase());
+            if (ftvHelp)
+              ftvHelp->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+          }
+        }
+
+        //writeClassTree(gd->classSDict,1);
         if(htmlHelp) htmlHelp->decContentsDepth();
         if(ftvHelp)  ftvHelp->decContentsDepth();
       }

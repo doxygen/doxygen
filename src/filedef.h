@@ -38,6 +38,7 @@ class NamespaceDef;
 class NamespaceSDict;
 class MemberGroupSDict;
 class PackageDef;
+class DirDef;
 
 struct IncludeInfo
 {
@@ -133,6 +134,9 @@ class FileDef : public Definition
     void setPackageDef(PackageDef *pd) { package=pd; }
     PackageDef *packageDef() const { return package; }
     
+    void setDirDef(DirDef *dd) { dir=dd; }
+    DirDef *getDirDef() const { return dir; }
+
     void addUsingDirective(NamespaceDef *nd);
     NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(Definition *def);
@@ -201,8 +205,8 @@ class FileDef : public Definition
     QIntDict<MemberDef> *srcMemberDict;
     bool isSource;
 
-
     PackageDef *package;
+    DirDef     *dir;
 };
 
 
@@ -250,18 +254,23 @@ class DirEntry
   public:
     enum EntryKind { Dir, File };
     DirEntry(DirEntry *parent,FileDef *fd)  
-       : m_parent(parent), m_kind(File), m_fd(fd), m_isLast(FALSE) { }
-    DirEntry(DirEntry *parent)              
-       : m_parent(parent), m_kind(Dir), m_fd(0), m_isLast(FALSE) { }
+       : m_parent(parent), m_name(fd->name()), m_kind(File), m_fd(fd), 
+         m_isLast(FALSE) { }
+    DirEntry(DirEntry *parent,QCString name)              
+       : m_parent(parent), m_name(name), m_kind(Dir), 
+         m_fd(0), m_isLast(FALSE) { }
     virtual ~DirEntry() { }
     EntryKind kind() const { return m_kind; }
     FileDef *file()  const { return m_fd; }
     bool isLast() const    { return m_isLast; }
     void setLast(bool b)   { m_isLast=b; }
     DirEntry *parent() const { return m_parent; }
+    QCString name() const  { return m_name; }
+    QCString path() const  { return parent() ? parent()->path()+"/"+name() : name(); }
 
   protected:
     DirEntry *m_parent;
+    QCString m_name;
   private:
     EntryKind m_kind;
     FileDef   *m_fd;
@@ -273,17 +282,15 @@ class Directory : public DirEntry
 {
   public:
     Directory(Directory *parent,const QCString &name) 
-       : DirEntry(parent), m_name(name)
+       : DirEntry(parent,name)
     { m_children.setAutoDelete(TRUE); }
     virtual ~Directory()              {}
     void addChild(DirEntry *d)        { m_children.append(d); d->setLast(TRUE); }
     QList<DirEntry> &children()       { return m_children; }
     void rename(const QCString &name) { m_name=name; }
     void reParent(Directory *parent)  { m_parent=parent; }
-    QCString name() const             { return m_name; }
 
   private:
-    QCString m_name;
     QList<DirEntry> m_children;
 };
 

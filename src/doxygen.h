@@ -40,6 +40,7 @@ class PageSList;
 class PageSDict;
 class PageDef;
 class SearchIndex;
+class DirDef;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -112,6 +113,7 @@ class Doxygen
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
+    static SDict<DirDef>             directories;
 };
 
 void initDoxygen();

@@ -172,11 +172,11 @@ class HtmlGenerator : public OutputGenerator
     void writeNonBreakableSpace(int);
     
     void startDescTable()
-    { t << "<table border=0 cellspacing=2 cellpadding=0>" << endl; }
+    { t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl; }
     void endDescTable()
     { t << "</table>" << endl; }
     void startDescTableTitle()
-    { t << "<tr><td valign=top><em>"; }
+    { t << "<tr><td valign=\"top\"><em>"; }
     void endDescTableTitle()
     { t << "</em>&nbsp;</td>"; }
     void startDescTableData()
