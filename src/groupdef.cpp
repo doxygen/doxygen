@@ -29,10 +29,11 @@
 #include "message.h"
 #include "membergroup.h"
 #include "doxygen.h"
-#include "page.h"
+#include "pagedef.h"
+#include "docparser.h"
 
-GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) : 
-   Definition(df,dl,na)
+GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
+                   const char *refFileName) : Definition(df,dl,na)
 {
   fileList = new FileList;
   classSDict = new ClassSDict(257);
@@ -42,7 +43,14 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   exampleDict = new PageSDict(257);
   allMemberList = new MemberList;
   allMemberNameInfoSDict = new MemberNameInfoSDict(17);
-  fileName = (QCString)"group_"+na;
+  if (refFileName)
+  {
+    fileName=stripExtension(refFileName);
+  }
+  else
+  {
+    fileName = (QCString)"group_"+na;
+  }
   setGroupTitle( t );
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
@@ -106,7 +114,7 @@ void GroupDef::distributeMemberGroupDocumentation()
 
 void GroupDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0,docFile());
+  docFindSections(documentation(),this,0,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -145,16 +153,16 @@ void GroupDef::addNamespace(const NamespaceDef *def)
     namespaceList->append(def);
 }
 
-void GroupDef::addPage(PageInfo *def)
+void GroupDef::addPage(PageDef *def)
 {
   //printf("Making page %s part of a group\n",def->name.data());
-  pageDict->append(def->name,def);
+  pageDict->append(def->name(),def);
   def->makePartOfGroup(this);
 }
 
-void GroupDef::addExample(const PageInfo *def)
+void GroupDef::addExample(const PageDef *def)
 {
-  exampleDict->append(def->name,def);
+  exampleDict->append(def->name(),def);
 }
 
 
@@ -555,13 +563,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
     writeDetailedDocumentation(ol);
   }
 
-  PageInfo *pi=0;
+  PageDef *pd=0;
   PageSDict::Iterator pdi(*pageDict);
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pi->isReference())
+    if (!pd->isReference())
     {
-      QCString pageName = pi->getOutputFileBase();
+      QCString pageName = pd->getOutputFileBase();
 
       if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
@@ -569,15 +577,15 @@ void GroupDef::writeDocumentation(OutputList &ol)
       }
 
       SectionInfo *si=0;
-      if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-          (si=Doxygen::sectionDict[pi->name])!=0)
+      if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
+          (si=Doxygen::sectionDict[pd->name()])!=0)
       {
         ol.startSection(si->label,si->title,SectionInfo::Subsection);
         ol.docify(si->title);
         ol.endSection(si->label,SectionInfo::Subsection);
       }
       ol.startTextBlock();
-      ol.parseDoc(pi->defFileName,pi->defLine,0,0,pi->doc,FALSE);
+      ol.parseDoc(pd->docFile(),pd->docLine(),0,0,pd->documentation(),FALSE);
       ol.endTextBlock();
     }
   }
@@ -760,7 +768,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 }
 
 
-void addExampleToGroups(Entry *root,PageInfo *eg)
+void addExampleToGroups(Entry *root,PageDef *eg)
 {
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;
@@ -778,7 +786,14 @@ void addExampleToGroups(Entry *root,PageInfo *eg)
 
 QCString GroupDef::getOutputFileBase() const 
 { 
-  return convertNameToFile(fileName); 
+  if (isReference())
+  {
+    return fileName;
+  }
+  else
+  {
+    return convertNameToFile(fileName); 
+  }
 }
 
 void GroupDef::addListReferences()

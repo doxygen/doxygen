@@ -484,7 +484,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -1895,11 +1895,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           lastStringContext=YY_START;
                                           BEGIN( CopyString );
 					}
-<ReadBody,ReadNSBody>"/*"{B}*			{ current->program += yytext ;
+<ReadBody,ReadNSBody>"/*"{B}*		{ current->program += yytext ;
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody,ReadNSBody>"/*"{BL}				{ current->program += yytext ;
+<ReadBody,ReadNSBody>"/*"{BL}		{ current->program += yytext ;
 					  ++yyLineNr ;
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;

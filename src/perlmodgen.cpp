@@ -23,7 +23,7 @@
 #include "docparser.h"
 #include "message.h"
 #include "doxygen.h"
-#include "page.h"
+#include "pagedef.h"
 
 #include <qdir.h>
 #include <qstack.h>
@@ -1344,7 +1344,7 @@ public:
   void generatePerlModForNamespace(NamespaceDef *nd);
   void generatePerlModForFile(FileDef *fd);
   void generatePerlModForGroup(GroupDef *gd);
-  void generatePerlModForPage(PageInfo *pi);
+  void generatePerlModForPage(PageDef *pi);
   
   bool createOutputFile(QFile &f, const char *s);
   bool createOutputDir(QDir &perlModDir);
@@ -1908,10 +1908,10 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
   {
     m_output.openList("pages");
     PageSDict::Iterator pli(*pl);
-    PageInfo *pi;
-    for (pli.toFirst();(pi=pli.current());++pli)
+    PageDef *pd;
+    for (pli.toFirst();(pd=pli.current());++pli)
       m_output.openHash()
-	.addFieldQuotedString("title", pi->title)
+	.addFieldQuotedString("title", pd->title())
 	.closeHash();
     m_output.closeList();
   }
@@ -1947,22 +1947,22 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
   m_output.closeHash();
 }
 
-void PerlModGenerator::generatePerlModForPage(PageInfo *pi)
+void PerlModGenerator::generatePerlModForPage(PageDef *pd)
 {
   // + name
   // + title
   // + documentation
 
-  if (pi->isReference()) return;
+  if (pd->isReference()) return;
 
   m_output.openHash()
-    .addFieldQuotedString("name", pi->name);
+    .addFieldQuotedString("name", pd->name());
     
-  SectionInfo *si = Doxygen::sectionDict.find(pi->name);
+  SectionInfo *si = Doxygen::sectionDict.find(pd->name());
   if (si)
     m_output.addFieldQuotedString("title", si->title);
 
-  addPerlModDocBlock(m_output,"detailed",pi->defFileName,pi->defLine,0,0,pi->doc);
+  addPerlModDocBlock(m_output,"detailed",pd->docFile(),pd->docLine(),0,0,pd->documentation());
   m_output.closeHash();
 }
 
@@ -2007,16 +2007,22 @@ bool PerlModGenerator::generatePerlModOutput()
   GroupSDict::Iterator gli(Doxygen::groupSDict);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
+  {
     generatePerlModForGroup(gd);
+  }
   m_output.closeList();
 
   m_output.openList("pages");
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
-    generatePerlModForPage(pi);
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    generatePerlModForPage(pd);
+  }
   if (Doxygen::mainPage)
+  {
     generatePerlModForPage(Doxygen::mainPage);
+  }
   m_output.closeList();
 
   m_output.closeHash().add(";\n1;\n");

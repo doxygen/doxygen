@@ -30,7 +30,7 @@
 #include "doxygen.h"
 #include "debug.h"
 #include "util.h"
-#include "page.h"
+#include "pagedef.h"
 
 #include "docparser.h"
 #include "doctokenizer.h"
@@ -447,7 +447,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   FileDef      *fd=0;
   NamespaceDef *nd=0;
   GroupDef     *gd=0;
-  PageInfo     *pi=0;
+  PageDef      *pd=0;
   bool found = getDefs(
       g_context.find('.')==-1?g_context.latin1():"", // `find('.') is a hack to detect files
       name.latin1(),
@@ -494,11 +494,11 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       *pDef=gd;
       return TRUE;
     }
-    pi = Doxygen::pageSDict->find(cmdArg);
-    if (pi) // page
+    pd = Doxygen::pageSDict->find(cmdArg);
+    if (pd) // page
     {
-      *pDoc=pi->doc;
-      *pDef=(Definition *)pi;
+      *pDoc=pd->documentation();
+      *pDef=pd;
       return TRUE;
     }
     bool ambig;
@@ -1624,7 +1624,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
    m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
 {
   Definition  *compound = 0;
-  PageInfo    *pageInfo = 0;
+  //PageInfo    *pageInfo = 0;
   QCString     anchor;
   ASSERT(!target.isEmpty());
   SectionInfo *sec = Doxygen::sectionDict[target];
@@ -1639,16 +1639,17 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
     m_refToAnchor  = sec->type==SectionInfo::Anchor;
     m_refToSection = sec->type!=SectionInfo::Anchor;
   }
-  else if (resolveLink(g_context,target,TRUE,&compound,&pageInfo,anchor))
+  else if (resolveLink(g_context,target,TRUE,&compound,/*&pageInfo,*/anchor))
   {
     m_text = linkToText(target);
     m_anchor = anchor;
-    if (pageInfo) // ref to page 
-    {
-      m_file   = pageInfo->getOutputFileBase();
-      m_ref    = pageInfo->getReference();
-    }
-    else if (compound) // ref to compound
+    //if (pageInfo) // ref to page 
+    //{
+    //  m_file   = pageInfo->getOutputFileBase();
+    //  m_ref    = pageInfo->getReference();
+    //}
+    //else 
+    if (compound) // ref to compound
     {
       if (anchor.isEmpty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
@@ -1713,7 +1714,7 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
       m_parent(parent)
 {
   Definition *compound;
-  PageInfo *page;
+  //PageInfo *page;
   QCString anchor;
   m_refText = target;
   if (!m_refText.isEmpty() && m_refText.at(0)=='#')
@@ -1721,7 +1722,7 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
     m_refText = m_refText.right(m_refText.length()-1);
   }
   if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
-                  &compound,&page,anchor))
+                  &compound,/*&page,*/anchor))
   {
     m_anchor = anchor;
     if (compound)
@@ -1729,11 +1730,11 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
-    else if (page)
-    {
-      m_file = page->getOutputFileBase();
-      m_ref  = page->getReference();
-    }
+    //else if (page)
+    //{
+    //  m_file = page->getOutputFileBase();
+    //  m_ref  = page->getReference();
+    //}
   }
   else // oops, bogus target
   {
@@ -4742,8 +4743,11 @@ DocNode *validatingParseText(const char *input)
   return txt;
 }
 
-void docFindSections(const char *input,PageInfo *pi,Definition *d,MemberGroup *mg,const char *fileName)
+void docFindSections(const char *input,
+                     Definition *d,
+                     MemberGroup *mg,
+                     const char *fileName)
 {
-  doctokenizerYYFindSections(input,pi,d,mg,fileName);
+  doctokenizerYYFindSections(input,d,mg,fileName);
 }
 

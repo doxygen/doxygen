@@ -1985,6 +1985,6 @@ void MemberDef::setDeclArgumentList(ArgumentList *al)
 
 void MemberDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0,docFile());  
+  docFindSections(documentation(),this,0,docFile());  
 }
 

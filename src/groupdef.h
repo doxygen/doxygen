@@ -36,12 +36,12 @@ class NamespaceList;
 class MemberGroupSDict;
 class MemberNameInfoSDict;
 class PageSDict;
-class PageInfo;
+class PageDef;
 
 class GroupDef : public Definition
 {
   public:
-    GroupDef(const char *fileName,int line,const char *name,const char *title);
+    GroupDef(const char *fileName,int line,const char *name,const char *title,const char *refFileName=0);
    ~GroupDef();
     DefType definitionType() { return TypeGroup; }
     QCString getOutputFileBase() const;
@@ -53,8 +53,8 @@ class GroupDef : public Definition
     void addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
     void addParentGroup(const GroupDef *def);
-    void addPage(PageInfo *def);                // pages in this group
-    void addExample(const PageInfo *def);       // examples in this group
+    void addPage(PageDef *def);                // pages in this group
+    void addExample(const PageDef *def);       // examples in this group
     bool insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
@@ -152,8 +152,8 @@ void addClassToGroups(Entry *root,ClassDef *cd);
 void addNamespaceToGroups(Entry *root,NamespaceDef *nd);
 void addGroupToGroups(Entry *root,GroupDef *subGroup);
 void addMemberToGroups(Entry *root,MemberDef *md);
-void addPageToGroups(Entry *root,PageInfo *pi);
-void addExampleToGroups(Entry *root,PageInfo *eg);
+void addPageToGroups(Entry *root,PageDef *pd);
+void addExampleToGroups(Entry *root,PageDef *eg);
 
 #endif
 

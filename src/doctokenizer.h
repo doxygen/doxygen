@@ -24,7 +24,6 @@
 #include "htmlattrib.h"
 
 class Definition;
-class PageInfo;
 class MemberGroup;
 
 enum Tokens
@@ -110,7 +109,7 @@ extern FILE *doctokenizerYYin;
 const char *tokToString(int token);
 
 // operations on the scanner
-void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
+void doctokenizerYYFindSections(const char *input,Definition *d,
                                 MemberGroup *mg,const char *fileName);
 void doctokenizerYYinit(const char *input,const char *fileName);
 void doctokenizerYYcleanup();

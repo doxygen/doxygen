@@ -1,4 +1,6 @@
 #include "pagedef.h"
+#include "groupdef.h"
+#include "docparser.h"
 
 
 PageDef::PageDef(const char *f,int l,const char *n,
@@ -12,3 +14,14 @@ PageDef::PageDef(const char *f,int l,const char *n,
 PageDef::~PageDef()
 {
 }
+
+void PageDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),this,0,docFile());
+}
+
+GroupDef *PageDef::getGroupDef() const 
+{ 
+  return partOfGroups() ? partOfGroups()->getFirst() : 0; 
+}
+

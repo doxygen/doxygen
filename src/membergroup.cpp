@@ -217,7 +217,7 @@ void MemberGroup::addListReferences(Definition *def)
 
 void MemberGroup::findSectionsInDocumentation()
 {
-  docFindSections(doc,0,0,this,m_docFile);
+  docFindSections(doc,0,this,m_docFile);
   memberList->findSectionsInDocumentation();
 }
 

@@ -2226,6 +2226,15 @@ void Config::create()
 		    FALSE
                  );
   cs = addString(
+                    "XML_OUTPUT",
+                    "The XML_OUTPUT tag is used to specify where the XML pages will be put. \n"
+                    "If a relative path is entered the value of OUTPUT_DIRECTORY will be \n"
+                    "put in front of it. If left blank `xml' will be used as the default path. \n"
+                   );
+  cs->setDefaultValue("xml");
+  cs->setWidgetType(ConfigString::Dir);
+  cs->addDependency("GENERATE_XML");
+  cs = addString(
                     "XML_SCHEMA",
 		    "The XML_SCHEMA tag can be used to specify an XML schema, \n"
 		    "which can be used by a validating XML parser to check the \n"

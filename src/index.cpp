@@ -34,7 +34,7 @@
 #include "htmlhelp.h"
 #include "ftvhelp.h"
 #include "dot.h"
-#include "page.h"
+#include "pagedef.h"
 //#include "packagedef.h"
 
 int annotatedClasses;
@@ -2080,22 +2080,22 @@ void writeExampleIndex(OutputList &ol)
   ol.endTextBlock();
   ol.startItemList();
   PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     ol.writeListItem();
-    QCString n=pi->getOutputFileBase();
-    if (!pi->title.isEmpty())
+    QCString n=pd->getOutputFileBase();
+    if (!pd->title().isEmpty())
     {
-      ol.writeObjectLink(0,n,0,pi->title);
-      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->title,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),n,0,pi->title);
+      ol.writeObjectLink(0,n,0,pd->title());
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pd->title(),n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pd->getReference(),n,0,pd->title());
     }
     else
     {
-      ol.writeObjectLink(0,n,0,pi->name);
-      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->name,n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),n,0,pi->name);
+      ol.writeObjectLink(0,n,0,pd->name());
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pd->name(),n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pd->getReference(),n,0,pd->name());
     }
     ol.writeString("\n");
   }
@@ -2118,13 +2118,13 @@ void countRelatedPages(int &docPages,int &indexPages)
 {
   docPages=indexPages=0;
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pi->getGroupDef() && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pd->getGroupDef() && (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       indexPages++;
-      if (!pi->isReference()) docPages++;
+      if (!pd->isReference()) docPages++;
     }
   }
 }
@@ -2183,33 +2183,28 @@ void writePageIndex(OutputList &ol)
   ol.endTextBlock();
   startIndexHierarchy(ol,0);
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pi->getGroupDef() && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pd->getGroupDef() && (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
     {
-      QCString pageName,pageTitle;
+      QCString pageTitle;
 
-      if (Config_getBool("CASE_SENSE_NAMES"))
-        pageName=pi->name.copy();
+      if (pd->title().isEmpty())
+        pageTitle=pd->name();
       else
-        pageName=pi->name.lower();
+        pageTitle=pd->title();
 
-      if (pi->title.isEmpty())
-        pageTitle=pi->name;
-      else
-        pageTitle=pi->title;
-
-      ol.writeIndexItem(pi->getReference(),pi->getOutputFileBase(),pageTitle);
-      if (pi->isReference()) 
+      ol.writeIndexItem(pd->getReference(),pd->getOutputFileBase(),pageTitle);
+      if (pd->isReference()) 
       { 
         ol.startTypewriter(); 
         ol.docify(" [external]");
         ol.endTypewriter();
       }
       ol.writeString("\n");
-      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase(),0,pageTitle);
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pd->getOutputFileBase());
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pageTitle);
     }
   }
   endIndexHierarchy(ol,0);
@@ -2344,13 +2339,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 
     // write pages
     PageSDict::Iterator pli(*gd->pageDict);
-    PageInfo *pi = 0;
-    for (pli.toFirst();(pi=pli.current());++pli)
+    PageDef *pd = 0;
+    for (pli.toFirst();(pd=pli.current());++pli)
     {
       SectionInfo *si=0;
-      if (!pi->name.isEmpty()) si=Doxygen::sectionDict[pi->name];
+      if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
       if(htmlHelp) htmlHelp->addContentsItem(FALSE,
-                                   convertToHtml(pi->title),
+                                   convertToHtml(pd->title()),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0
                                   ); 
@@ -2358,7 +2353,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
                                    gd->getReference(),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0,
-                                   convertToHtml(pi->title)
+                                   convertToHtml(pd->title())
                                   ); 
     }
 
@@ -2549,18 +2544,18 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         }
 
         PageSDict::Iterator eli(*(gd->exampleDict));
-        PageInfo *pi=eli.toFirst();
-        while (pi)
+        PageDef *pd=eli.toFirst();
+        while (pd)
         {
           if(htmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase()); 
+            htmlHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase()); 
           }
           if(ftvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase(),0,pi->name); 
+            ftvHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name()); 
           }
-          pi=++eli;
+          pd=++eli;
         }
 
         if (htmlHelp) htmlHelp->decContentsDepth();
@@ -2710,18 +2705,18 @@ void writeIndex(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString defFileName = 
-    Doxygen::mainPage ? Doxygen::mainPage->defFileName.data() : "<generated>";
+    Doxygen::mainPage ? Doxygen::mainPage->getDefFileName().data() : "<generated>";
   int defLine =
-    Doxygen::mainPage ? Doxygen::mainPage->defLine : 1;
+    Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : 1;
 
   QCString title;
-  if (!Doxygen::mainPage || Doxygen::mainPage->title.isEmpty())
+  if (!Doxygen::mainPage || Doxygen::mainPage->title().isEmpty())
   {
     title = theTranslator->trMainPage();
   }
   else 
   {
-    title = substitute(Doxygen::mainPage->title,"%","");
+    title = substitute(Doxygen::mainPage->title(),"%","");
   }
 
   QCString indexName="index";
@@ -2742,9 +2737,9 @@ void writeIndex(OutputList &ol)
 
   if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE);
   ol.startTitleHead(0);
-  if (Doxygen::mainPage && !Doxygen::mainPage->title.isEmpty())
+  if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
   {
-    ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title,FALSE);
+    ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title(),FALSE);
   }
   else
   {
@@ -2764,21 +2759,22 @@ void writeIndex(OutputList &ol)
   {
     Doxygen::insideMainPage=TRUE;
     ol.parseDoc(defFileName,defLine,0,0,
-                Doxygen::mainPage->doc,FALSE,Doxygen::mainPage->sectionDict);
+                Doxygen::mainPage->documentation(),FALSE
+                /*,Doxygen::mainPage->sectionDict*/);
 
     if (!Config_getString("GENERATE_TAGFILE").isEmpty())
     {
        Doxygen::tagFile << "  <compound kind=\"page\">" << endl
                         << "    <filename>"
-                        << convertToXML(Doxygen::mainPage->fileName)
+                        << convertToXML(Doxygen::mainPage->getOutputFileBase())
                         << "</filename>"
                         << endl
                         << "    <title>"
-                        << convertToXML(Doxygen::mainPage->title)
+                        << convertToXML(Doxygen::mainPage->title())
                         << "</title>"
                         << endl
                         << "    <name>"
-                        << convertToXML(Doxygen::mainPage->name)
+                        << convertToXML(Doxygen::mainPage->name())
                         << "</name>"
                         << endl;
 
@@ -2820,9 +2816,9 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(isMainPage);
-    if (!Doxygen::mainPage->title.isEmpty())
+    if (!Doxygen::mainPage->title().isEmpty())
     {
-      ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title,FALSE);
+      ol.parseDoc(defFileName,defLine,0,0,Doxygen::mainPage->title(),FALSE);
     }
     else
     {
@@ -2927,7 +2923,7 @@ void writeIndex(OutputList &ol)
   {
     Doxygen::insideMainPage=TRUE;
     ol.disable(OutputGenerator::Man);
-    startFile(ol,Doxygen::mainPage->name,0,Doxygen::mainPage->title);
+    startFile(ol,Doxygen::mainPage->name(),0,Doxygen::mainPage->title());
     //SectionInfo *si=0;
     //if (!Doxygen::mainPage->title.isEmpty() && !Doxygen::mainPage->name.isEmpty() &&
     //    (si=Doxygen::sectionDict[Doxygen::mainPage->name])!=0)
@@ -2938,7 +2934,8 @@ void writeIndex(OutputList &ol)
     //}
     ol.startTextBlock();
     ol.parseDoc(defFileName,defLine,0,0,
-                Doxygen::mainPage->doc,FALSE,Doxygen::mainPage->sectionDict);
+                Doxygen::mainPage->documentation(),FALSE
+                /*,Doxygen::mainPage->sectionDict*/);
     ol.endTextBlock();
     endFile(ol);
     ol.enable(OutputGenerator::Man);

@@ -15,6 +15,7 @@
  *
  */
 
+#if 0
 #include "sortdict.h"
 #include "config.h"
 #include "docparser.h"
@@ -127,4 +128,4 @@ class PageSDict : public SDict<PageInfo>
       return stricmp(((PageInfo *)i1)->name,((PageInfo *)i2)->name);
     }
 };
-
+#endif

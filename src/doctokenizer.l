@@ -30,7 +30,7 @@
 #include "section.h"
 #include "membergroup.h"
 #include "definition.h"
-#include "page.h"
+#include "doxygen.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -45,7 +45,6 @@ static QString g_fileName;
 static bool g_insidePre;
 
 // context for section finding phase
-static PageInfo    *g_pageInfo;
 static Definition  *g_definition;
 static MemberGroup *g_memberGroup;
 static QCString     g_secLabel;
@@ -216,10 +215,6 @@ static void processSection()
   else if (g_definition)
   {
     file = g_definition->getOutputFileBase();
-  }
-  else if (g_pageInfo)
-  {
-    file = g_pageInfo->getOutputFileBase();
   }
   else
   {
@@ -809,14 +804,13 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
+void doctokenizerYYFindSections(const char *input,Definition *d,
                                 MemberGroup *mg,const char *fileName)
 {
   if (input==0) return;
   g_inputString = input;
   //printf("parsing --->`%s'<---\n",input);
   g_inputPos    = 0;
-  g_pageInfo    = pi;
   g_definition  = d;
   g_memberGroup = mg;
   g_fileName    = fileName;

@@ -560,7 +560,11 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	    }
 	    else
 	    {
-	      if (g_nospaces)
+	      if (hash && substArg.isEmpty())
+	      {
+		resExpr+="@E"; // empty argument will be remove later on
+	      }
+	      else if (g_nospaces)
 	      {
 	        resExpr+=substArg;
 	      }
@@ -715,10 +719,9 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
   }
 }
 
-/*! replaces all occurrences of @@ in \a s by @
+/*! replaces all occurrences of @@@@ in \a s by @@
+ *  and removes all occurrences of @@E.
  *  All identifiers found are replaced by 0L
- *  \par assumption: 
- *   \a s only contains pairs of @@'s.
  */
 QCString removeIdsAndMarkers(const char *s)
 {
@@ -731,11 +734,15 @@ QCString removeIdsAndMarkers(const char *s)
   {
     while ((c=*p))
     {
-      if (c=='@') // replace @@ with @
+      if (c=='@') // replace @@ with @ and remove @E
       {
 	if (*(p+1)=='@')
 	{
 	  result+=c; 
+	}
+	else if (*(p+1)=='E')
+	{
+	  // skip
 	}
 	p+=2;
       }

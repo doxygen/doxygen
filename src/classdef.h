@@ -164,6 +164,11 @@ class ClassDef : public Definition
       return m_usesImplClassDict; 
     }
 
+    UsesClassDict *usedByImplementationClasses() const 
+    { 
+      return m_usedByImplClassDict; 
+    }
+
     UsesClassDict *usedInterfaceClasses() const
     {
       return m_usesIntfClassDict;
@@ -270,6 +275,7 @@ class ClassDef : public Definition
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
     void addUsedClass(ClassDef *cd,const char *accessName);
+    void addUsedByClass(ClassDef *cd,const char *accessName);
     //void initTemplateMapping();
     //void setTemplateArgumentMapping(const char *formal,const char *actual);
     //QCString getTemplateArgumentMapping(const char *formal) const;
@@ -389,6 +395,7 @@ class ClassDef : public Definition
 
     /* classes for the collaboration diagram */
     UsesClassDict *m_usesImplClassDict;
+    UsesClassDict *m_usedByImplClassDict;
     UsesClassDict *m_usesIntfClassDict;
 
     /*! Template instances that exists of this class, the key in the

@@ -28,7 +28,7 @@
 #include "language.h"
 #include "version.h"
 #include "dot.h"
-#include "page.h"
+#include "pagedef.h"
 #include "docparser.h"
 #include "latexdocvisitor.h"
 
@@ -747,15 +747,15 @@ void LatexGenerator::endIndexSection(IndexSections is)
       {
         t << "}\n";
         PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageInfo *pi=pdi.toFirst();
-        if (pi)
+        PageDef *pd=pdi.toFirst();
+        if (pd)
         {
-          t << "\\input{" << pi->getOutputFileBase() << "}\n";
+          t << "\\input{" << pd->getOutputFileBase() << "}\n";
         }
-        for (++pdi;(pi=pdi.current());++pdi)
+        for (++pdi;(pd=pdi.current());++pdi)
         {
           if (compactLatex) t << "\\input" ; else t << "\\include";
-          t << "{" << pi->getOutputFileBase() << "}\n";
+          t << "{" << pd->getOutputFileBase() << "}\n";
         }
       }
       break;
@@ -763,14 +763,14 @@ void LatexGenerator::endIndexSection(IndexSections is)
       {
         t << "}\n";
         PageSDict::Iterator pdi(*Doxygen::pageSDict);
-        PageInfo *pi=pdi.toFirst();
+        PageDef *pd=pdi.toFirst();
         bool first=TRUE;
-        for (pdi.toFirst();(pi=pdi.current());++pdi)
+        for (pdi.toFirst();(pd=pdi.current());++pdi)
         {
-          if (!pi->getGroupDef() && !pi->isReference())
+          if (!pd->getGroupDef() && !pd->isReference())
           {
             if (compactLatex || first) t << "\\input" ; else t << "\\include";
-            t << "{" << pi->getOutputFileBase() << "}\n";
+            t << "{" << pd->getOutputFileBase() << "}\n";
             first=FALSE;
           }
         }

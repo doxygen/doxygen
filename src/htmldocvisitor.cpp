@@ -263,23 +263,18 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
 void HtmlDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
-  if (f->text().at(0)=='\\') m_t << "<p><center>" << endl;
-  m_t << "<img align=";
-#if !defined(_WIN32)
-  m_t << "\"top\"";     // assume Unix users use Netscape 4.x which does
-  // not seem to support align == "middle" :-((
-#else
-  m_t << "\"middle\"";  // assume Windows users use IE or HtmlHelp which on
-  // displays formulas nicely with align == "middle" 
-#endif
+  bool bDisplay = f->text().at(0)=='\\';
+  if (bDisplay) m_t << "<p class=formulaDsp>" << endl;
+  m_t << "<img class=formula"
+      << (bDisplay ? "Dsp" : "Inl");
   m_t << " alt=\"";
   filterQuotedCdataAttr(f->text());
   m_t << "\"";
   /// @todo cache image dimensions on formula generation and give height/width
   /// for faster preloading and better rendering of the page
   m_t << " src=\"" << f->name() << ".png\">";
-  if (f->text().at(0)=='\\') 
-    m_t << endl << "</center><p>" << endl;
+  if (bDisplay)
+    m_t << endl << "<p>" << endl;
   else
     m_t << " ";
 }

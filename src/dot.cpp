@@ -1086,31 +1086,47 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
 
 void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
 {
+  //printf("DocClassGraph::buildGraph(%s,distance=%d,base=%d)\n",
+  //    cd->name().data(),distance,base);
   // ---- Add inheritance relations
 
-  BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
-  BaseClassDef *bcd;
-  for ( ; (bcd=bcli.current()) ; ++bcli )
+  if (m_graphType == Inheritance)
   {
-    //printf("-------- inheritance relation %s->%s templ=`%s'\n",
-    //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
-               bcd->templSpecifiers,base); 
+    BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
+    BaseClassDef *bcd;
+    for ( ; (bcd=bcli.current()) ; ++bcli )
+    {
+      //printf("-------- inheritance relation %s->%s templ=`%s'\n",
+      //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
+      addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+          bcd->templSpecifiers,base); 
+    }
   }
-  if (m_graphType != Inheritance)
+  else // m_graphType != Inheritance
   {
+    ASSERT(m_graphType==Implementation);
 
     // ---- Add usage relations
     
     UsesClassDict *dict = 
-      m_graphType==Implementation ? cd->usedImplementationClasses() :
-                                    cd->usedInterfaceClasses();
+      base ? cd->usedImplementationClasses() : 
+             cd->usedByImplementationClasses()
+      ;
     if (dict)
     {
       UsesClassDictIterator ucdi(*dict);
       UsesClassDef *ucd;
       for (;(ucd=ucdi.current());++ucdi)
       {
+        //if (base)
+        //{
+        //  printf("%s uses %s\n",cd->name().data(),ucd->classDef->name().data());
+        //}
+        //else
+        //{
+        //  printf("%s is used by %s\n",cd->name().data(),ucd->classDef->name().data());
+        //}
+        //printf("drawing\n");
         QCString label;
         QDictIterator<void> dvi(*ucd->accessors);
         const char *s;
@@ -1128,7 +1144,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
           }
         }
         addClass(ucd->classDef,n,EdgeInfo::Purple,label,distance,0,
-                 ucd->templSpecifiers,base);
+            ucd->templSpecifiers,base);
       }
     }
   }
