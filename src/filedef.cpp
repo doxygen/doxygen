@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -17,7 +17,6 @@
 #include "qtbc.h"
 #include "memberlist.h"
 #include "classlist.h"
-#include "define.h"
 #include "filedef.h"
 #include "scanner.h"
 #include "doxygen.h"
@@ -42,38 +41,39 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   filename=nameToFile(nm);
   diskname=filename.copy();
   setReference(ref);
-  //memList      = new MemberList;
   classList     = new ClassList;
   includeList   = new QList<IncludeInfo>;
   includeList->setAutoDelete(TRUE);
   includeDict   = new QDict<IncludeInfo>(61);
-  defineList    = new DefineList;
   namespaceList = new NamespaceList;
   namespaceDict = new NamespaceDict(7);
   srcDefDict = 0;
   srcAnchorDict = 0;
   usingList = 0;
-  isSource = FALSE; /*Config::extractAllFlag*/;
+  isSource = FALSE; 
   docname = nm;
   if (Config::fullPathNameFlag)
   {
     docname.prepend(stripFromPath(path.copy()));
   }
+  memberGroupList = new MemberGroupList;
+  memberGroupList->setAutoDelete(TRUE);
+  memberGroupDict = new MemberGroupDict(1009);
 }
 
 /*! destroy the file definition */
 FileDef::~FileDef()
 {
-  //delete memList;
   delete classList;
   delete includeDict;
   delete includeList;
-  delete defineList;
   delete namespaceList;
   delete namespaceDict;
   delete srcDefDict;
   delete srcAnchorDict;
   delete usingList;
+  delete memberGroupList;
+  delete memberGroupDict;
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -223,7 +223,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.startMemberList();
           found=TRUE;
         }
-        ol.startMemberItem(FALSE,0);
+        ol.startMemberItem(0);
         ol.writeString("namespace ");
         ol.insertMemberAlign();
         if (nd->isLinkable()) 
@@ -240,7 +240,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.docify(nd->name());
           ol.endBold();
         }
-        ol.endMemberItem(FALSE,0,0,FALSE);
+        ol.endMemberItem(FALSE);
       }
       nd=namespaceList->next();
     }
@@ -262,7 +262,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.startMemberList();
           found=TRUE;
         }
-        ol.startMemberItem(FALSE,FALSE);
+        ol.startMemberItem(FALSE);
         switch (cd->compoundType())
         {
           case ClassDef::Class:  ol.writeString("class");  break;
@@ -287,13 +287,21 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.docify(cd->name());
           ol.endBold();
         }
-        ol.endMemberItem(FALSE,0,0,FALSE);
+        ol.endMemberItem(FALSE);
       }
       cd=classList->next();
     }
     if (found) ol.endMemberList();
   }
   
+  /* write user defined member groups */
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->writeDeclarations(ol,0,0,this,0);
+  }
+
   allMemberList.writeDeclarations(ol,0,0,this,0,0,0);
   ol.endMemberSections();
 
@@ -457,8 +465,31 @@ void FileDef::writeSource(OutputList &ol)
   ol.enableAll();
 }
 
+/*! Adds a member \a md to the member group with id \a groupId.
+ */ 
+void FileDef::addMemberToGroup(MemberDef *md,int groupId)
+{
+  if (groupId!=-1)
+  {
+    QCString *pGrpHeader = memberHeaderDict[groupId];
+    QCString *pDocs      = memberDocDict[groupId];
+    if (pGrpHeader)
+    {
+      MemberGroup *mg = memberGroupDict->find(groupId);
+      if (mg==0)
+      {
+        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+        memberGroupDict->insert(groupId,mg);
+        memberGroupList->append(mg);
+      }
+      mg->insertMember(md);
+      md->setMemberGroup(mg);
+    }
+  }
+}
+
 /*! Adds member definition \a md to the list of all members of this file */
-void FileDef::insertMember(MemberDef *md)
+void FileDef::insertMember(MemberDef *md,int groupId)
 {
   allMemberList.append(md); 
   switch(md->memberType())
@@ -473,6 +504,7 @@ void FileDef::insertMember(MemberDef *md)
     default:
        err("FileDef::insertMembers(): unexpected member insert in file!\n");
   }
+  addMemberToGroup(md,groupId);
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */

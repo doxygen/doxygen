@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -139,7 +139,8 @@ class Entry
       DEFINE_SEC       = 0x00f00000,
       GROUPDOC_SEC     = 0x01000000,
       USINGDIR_SEC     = 0x01100000,
-      MAINPAGEDOC_SEC  = 0x01200000
+      MAINPAGEDOC_SEC  = 0x01200000,
+      MEMBERGRP_SEC    = 0x01300000
     };
 
     Entry();

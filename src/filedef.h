@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -31,10 +31,11 @@ class ClassList;
 class ClassDef;
 class MemberDef;
 class OutputList;
-class DefineList;
 class NamespaceDef;
 class NamespaceList;
 class NamespaceDict;
+class MemberGroupList;
+class MemberGroupDict;
 
 struct IncludeInfo
 {
@@ -108,7 +109,8 @@ class FileDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeSource(OutputList &ol);
     friend void generatedFileNames();
-    void insertMember(MemberDef *fd);
+    void insertMember(MemberDef *md,int groupId);
+    void addMemberToGroup(MemberDef *md,int groupId);
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);
     void computeAnchors();
@@ -138,7 +140,7 @@ class FileDef : public Definition
     NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
     NamespaceList *usingList;
-    DefineList *defineList;
+    //DefineList *defineList;
     QCString path;
     QCString filepath;
     QCString diskname;
@@ -148,6 +150,10 @@ class FileDef : public Definition
     QIntDict<Definition> *srcDefDict;
     QIntDict<QCString> *srcAnchorDict;
     bool isSource;
+
+    /* user defined member groups */
+    MemberGroupList *memberGroupList;
+    MemberGroupDict *memberGroupDict;
 };
 
 /*! \class FileList filedef.h

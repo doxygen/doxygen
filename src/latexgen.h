@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -91,10 +91,10 @@ class LatexGenerator : public OutputGenerator
     void endMemberSubtitle() {}
     void startMemberList();
     void endMemberList();
-    void startMemberItem(bool,int);
-    void endMemberItem(bool,const char *,const char *,bool);
-    void memberGroupSpacing(bool) {}
-    void memberGroupSeparator() {}
+    void startMemberItem(int);
+    void endMemberItem(bool);
+    //void memberGroupSpacing(bool) {}
+    //void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -454,7 +454,7 @@ class TranslatorDutch : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.0.0
+// new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
     QCString trDeprecated()
@@ -463,7 +463,7 @@ class TranslatorDutch : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.1.0
+// new since 1.0.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
@@ -532,6 +532,56 @@ class TranslatorDutch : public Translator
     {
       return "Pagina Index";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+    
+    QCString trNote()
+    {
+      return "Noot";
+    }
+    QCString trPublicTypes()
+    {
+      return "Public Typen";
+    }
+    QCString trPublicAttribs()
+    {
+      return "Public Attributen";
+    }
+    QCString trStaticPublicAttribs()
+    {
+      return "Static Public Attributen";
+    }
+    QCString trProtectedTypes()
+    {
+      return "Protected Typen";
+    }
+    QCString trProtectedAttribs()
+    {
+      return "Protected Attributen";
+    }
+    QCString trStaticProtectedAttribs()
+    {
+      return "Static Protected Attributen";
+    }
+    QCString trPrivateTypes()
+    {
+      return "Private Typen";
+    }
+    QCString trPrivateAttribs()
+    {
+      return "Private Attributen";
+    }
+    QCString trStaticPrivateAttribs()
+    {
+      return "Static Private Attributen";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.1
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -317,7 +317,8 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
       //if (!found) printf("Trying to link %s in %s\n",word.data(),scName);
       if (!found && 
           getDefs(scName,word,0,md,cd,fd,nd,gd) && 
-          (md->isTypedef() || md->isEnumerate() || md->isReference()) && 
+          (md->isTypedef() || md->isEnumerate() || 
+           md->isReference() || md->isVariable()) && 
           md->isLinkable() 
          )
       {
@@ -641,14 +642,17 @@ void endFile(OutputList &ol,bool external)
 }
 
 // compute the HTML anchors for a list of members
-void setAnchors(char id,MemberList *ml)
+void setAnchors(char id,MemberList *ml,int groupId)
 {
   int count=0;
   MemberDef *md=ml->first();
   while (md)
   {
     QCString anchor;
-    anchor.sprintf("%c%d",id,count++);
+    if (groupId==-1)
+      anchor.sprintf("%c%d",id,count++);
+    else
+      anchor.sprintf("%c%d_%d",id,groupId,count++);
     //printf("Member %s anchor %s\n",md->name(),anchor.data());
     md->setAnchor(anchor);
     md=ml->next();
@@ -892,7 +896,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
 // stored in the list should be equal.
 
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
-                    const char *cl,const char *ns)
+                    const char *cl,const char *ns,bool checkCV)
 {
   QCString className=cl;
   QCString namespaceName=ns;
@@ -904,10 +908,10 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     className=className.left(til)+className.right(className.length()-tir-1);
   }
 
-  //printf("matchArguments(%s,%s) className=%s namespaceName=%s\n",
+  //printf("matchArguments(%s,%s) className=%s namespaceName=%s checkCV=%d\n",
   //    srcAl ? argListToString(srcAl).data() : "",
   //    dstAl ? argListToString(dstAl).data() : "",
-  //    cl,ns);
+  //    cl,ns,checkCV);
 
   if (srcAl==0 || dstAl==0)
   {
@@ -936,13 +940,17 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   {
     return FALSE; // different number of arguments -> no match
   }
-  if (srcAl->constSpecifier != dstAl->constSpecifier) 
+
+  if (checkCV)
   {
-    return FALSE; // one member is const, the other not -> no match
-  }
-  if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
-  {
-    return FALSE; // one member is volatile, the other not -> no match
+    if (srcAl->constSpecifier != dstAl->constSpecifier) 
+    {
+      return FALSE; // one member is const, the other not -> no match
+    }
+    if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
+    {
+      return FALSE; // one member is volatile, the other not -> no match
+    }
   }
 
   // so far the argument list could match, so we need to compare the types of
@@ -1307,7 +1315,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           if (mmd->isLinkable())
           {
-            bool match=args==0 || matchArguments(mmd->argumentList(),argList); 
+            bool match=args==0 || matchArguments(mmd->argumentList(),argList,className,0,FALSE); 
+            //printf("match=%d\n",match);
             if (match)
             {
               ClassDef *mcd=mmd->memberClass();
@@ -1416,7 +1425,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               {
                 argList=new ArgumentList;
                 stringToArgumentList(args,argList);
-                match=matchArguments(mmd->argumentList(),argList); 
+                match=matchArguments(mmd->argumentList(),argList,0,namespaceName,FALSE); 
               }
               if (match)
               {
@@ -1881,6 +1890,7 @@ QCString convertSlashes(const QCString &s,bool dots)
   QCString result;
   int i,l=s.length();
   for (i=0;i<l;i++)
+  {
     if (s.at(i)!='/' && (!dots || s.at(i)!='.'))
     {
       if (Config::caseSensitiveNames)
@@ -1893,7 +1903,10 @@ QCString convertSlashes(const QCString &s,bool dots)
       }
     }
     else 
+    {
       result+="_";
+    }
+  }
   return result;
 }
 
@@ -2082,3 +2095,31 @@ bool hasVisibleRoot(BaseClassList *bcl)
   return FALSE;
 }
 
+QCString convertNameToFile(const char *name)
+{
+  QCString result;
+  char c;
+  const char *p=name;
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case ':': result+="_"; break;
+      case '<': result+="_lt"; break;
+      case '>': result+="_gt"; break;
+      case '*': result+="_ast"; break;
+      case '&': result+="_amp"; break;
+      case '|': result+="_p_"; break;
+      case '!': result+="_e_"; break;
+      case ',': result+="_x_"; break;
+      case ' ': break;
+      default: 
+        if (Config::caseSensitiveNames)
+          result+=c;
+        else
+          result+=tolower(c); 
+        break;
+    }
+  }
+  return result;
+}

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
@@ -95,6 +95,8 @@ QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
 OutputList     *outputList = 0;         // list of output generating objects
 
 PageInfo       *mainPage = 0;
+QIntDict<QCString> memberHeaderDict(1009); // dictionary of the member groups heading
+QIntDict<QCString> memberDocDict(1009);    // dictionary of the member groups heading
   
 
 void clearAll()
@@ -460,7 +462,7 @@ static void addMemberToGroups(Entry *root,MemberDef *md)
       GroupDef *mgd = md->groupDef();
       if (mgd==0)
       {
-        gd->addMember(md);
+        gd->insertMember(md,root->mGrpId);
         md->setGroupDef(gd);
       }
       else if (mgd!=gd)
@@ -893,6 +895,11 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
+  //if (root->mGrpId!=-1) 
+  //{
+  //  printf("memberdef %s in memberGroup %d\n",name.data(),root->mGrpId);
+  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+  //
   bool ambig;
   md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
 
@@ -910,7 +917,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
     memberNameList.inSort(mn);
     // add the member to the class
   }
-  cd->insertMember(md);
+  cd->insertMember(md,root->mGrpId);
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileName);
@@ -950,6 +957,10 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   bool ambig;
   FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
+  //if (root->mGrpId!=-1) 
+  //{
+  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+  //}
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
@@ -963,7 +974,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   }
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
-    nd->insertMember(md); 
+    nd->insertMember(md,root->mGrpId); 
     md->setNamespace(nd);
   }
   else
@@ -971,7 +982,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
     // find file definition
     if (fd)
     {
-      fd->insertMember(md);
+      fd->insertMember(md,root->mGrpId);
       md->setFileDef(fd); 
     }
   }
@@ -1047,11 +1058,12 @@ void buildVarList(Entry *root)
   {
     Debug::print(Debug::Variables,0,
                   "VARIABLE_SEC: \n"
-                  "  type=`%s' name=`%s' args=`%s' bodyLine=`%d'\n",
+                  "  type=`%s' name=`%s' args=`%s' bodyLine=`%d' mGrpId=%d\n",
                    root->type.data(),
                    root->name.data(),
                    root->args.data(),
-                   root->bodyLine
+                   root->bodyLine,
+                   root->mGrpId
                 );
     //printf("root->parent->name=%s\n",root->parent->name.data());
 
@@ -1286,7 +1298,10 @@ void buildMemberList(Entry *root)
         md->setBriefDescription(root->brief);
         //md->setBody(root->body);
         md->setBodySegment(root->bodyLine,root->endBodyLine);
-        md->setGroupId(root->mGrpId);
+        //if (root->mGrpId!=-1) 
+        //{
+        //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+        //}
         md->setInline(root->inLine);
         bool ambig;
         md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
@@ -1374,7 +1389,7 @@ void buildMemberList(Entry *root)
         }
 
         // add member to the class cd
-        cd->insertMember(md);
+        cd->insertMember(md,root->mGrpId);
         // add file to list of used files
         cd->insertUsedFile(root->fileName);
 
@@ -1422,7 +1437,12 @@ void buildMemberList(Entry *root)
                 md->setBodySegment(root->bodyLine,root->endBodyLine);
                 bool ambig;
                 md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
-              }
+              } 
+              //if (root->mGrpId!=-1 && md->getMemberGroup()==0)
+              //{
+              //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+              //}
+
               md->addSectionsToDefinition(root->anchors);
             }
             md=mn->next();
@@ -1449,7 +1469,6 @@ void buildMemberList(Entry *root)
           FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
-          md->setGroupId(root->mGrpId);
           md->setInline(root->inLine);
           QCString def;
           if (!root->type.isEmpty())
@@ -1486,6 +1505,10 @@ void buildMemberList(Entry *root)
                      def.data()
                     );
           md->setDefinition(def);
+          //if (root->mGrpId!=-1) 
+          //{
+          //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+          //}
 
           // see if the function is inside a namespace
           NamespaceDef *nd = 0;
@@ -1500,7 +1523,7 @@ void buildMemberList(Entry *root)
 
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
           {
-            nd->insertMember(md); 
+            nd->insertMember(md,root->mGrpId); 
             md->setNamespace(nd);
           }
           else
@@ -1514,7 +1537,7 @@ void buildMemberList(Entry *root)
             if (fd)
             {
               // add member to the file
-              fd->insertMember(md);
+              fd->insertMember(md,root->mGrpId);
               md->setFileDef(fd); 
             }
           }
@@ -2037,18 +2060,31 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
   if (cd) cd->insertUsedFile(root->fileName);
   if (root->mGrpId!=-1)
   {
-    if (md->groupId()!=-1)
+    if (md->getMemberGroup())
     {
-      if (md->groupId()!=root->mGrpId)
+      if (md->getMemberGroup()->groupId()!=root->mGrpId)
       {
         warn("Warning: member %s belongs to two different group. The second "
-             "one is found at line %d of %s and will be ignored\n",
-             md->name().data(),root->startLine,root->fileName.data());
+            "one is found at line %d of %s and will be ignored\n",
+            md->name().data(),root->startLine,root->fileName.data());
       }
     }
-    else // copy group id
+    else // set group id
     {
-      md->setGroupId(root->mGrpId);
+      //md->setMemberGroup(memberGroupDict[root->mGrpId]);
+      if (cd)
+        cd->addMemberToGroup(md,root->mGrpId);
+      else if (nd)
+        nd->addMemberToGroup(md,root->mGrpId);
+      else
+      {
+        bool ambig;
+        FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+        if (fd)
+        {
+          fd->addMemberToGroup(md,root->mGrpId);
+        }
+      }
     }
   }
 }
@@ -2350,7 +2386,8 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   parseFuncDecl(funcDecl,scopeName,classTempList,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
-  //printf("scopeName=`%s'\n",scopeName.data());
+  //printf("scopeName=`%s' funcType=`%s' funcName=`%s'\n",
+  //    scopeName.data(),funcType.data(),funcName.data());
   
   //bool isSpecialization = !root->scopeSpec.isEmpty() && 
   //                  root->scopeSpec != tempArgListToString(root->tArgList);
@@ -2832,6 +2869,10 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
           md->addSectionsToDefinition(root->anchors);
+          //if (root->mGrpId!=-1) 
+          //{
+          //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+          //}
           //md->setBody(root->body);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
@@ -2839,7 +2880,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setBodyDef(fd);
           md->setInline(root->inLine);
           mn->inSort(md);
-          cd->insertMember(md);
+          cd->insertMember(md,root->mGrpId);
           cd->insertUsedFile(root->fileName);
         }
       }
@@ -2937,6 +2978,10 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
             md->setBodyDef(fd);
           }
 
+          //if (root->mGrpId!=-1) 
+          //{
+          //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+          //}
           md->setMemberClass(cd);
           md->setInline(root->inLine);
           md->setDefinition(funcDecl);
@@ -2947,7 +2992,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setBriefDescription(root->brief);
           md->addSectionsToDefinition(root->anchors);
           mn->inSort(md);
-          cd->insertMember(md);
+          cd->insertMember(md,root->mGrpId);
           cd->insertUsedFile(root->fileName);
           if (newMemberName)
           {
@@ -3026,16 +3071,15 @@ void findMemberDocumentation(Entry *root)
     findMember(root,root->name,root->relates,TRUE,isFunc);
   }
   else if 
-    ((root->section==Entry::FUNCTION_SEC ||   // function
+    ((root->section==Entry::FUNCTION_SEC // function
+      ||   
       (root->section==Entry::VARIABLE_SEC && 
       !root->type.isEmpty() && root->type.left(8)!="typedef " &&
        compoundKeywordDict.find(root->type)==0
-       /*root->type!="class"  && root->type!="interface" && 
-       root->type!="struct" && root->type!="union"*/
       )
      ) && 
      (!root->doc.isEmpty() || !root->brief.isEmpty() || 
-      root->bodyLine!=-1 || root->mGrpId!=-1 /*|| Config::extractAllFlag*/
+      root->bodyLine!=-1 /* || root->mGrpId!=-1 || Config::extractAllFlag*/
       || root->inLine
      )
     )
@@ -3154,23 +3198,28 @@ void findEnums(Entry *root)
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
       md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
-      //printf("Enum definition at line %d of %s\n",root->bodyLine,root->fileName.data());
+      //printf("Enum %s definition at line %d of %s: protection=%d\n",
+      //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
       md->addSectionsToDefinition(root->anchors);
+      //if (root->mGrpId!=-1) 
+      //{
+      //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+      //}
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
         md->setDefinition(nd->name()+"::"+name);  
-        nd->insertMember(md);
+        nd->insertMember(md,root->mGrpId);
         md->setNamespace(nd);
       }
       else if (isGlobal)
       {
         md->setDefinition(name);
-        fd->insertMember(md);
+        fd->insertMember(md,root->mGrpId);
       }
       else if (cd)
       {
         md->setDefinition(cd->name()+"::"+name);
-        cd->insertMember(md);
+        cd->insertMember(md,root->mGrpId);
         cd->insertUsedFile(root->fileName);
       }
       md->setDocumentation(root->doc);
@@ -3306,6 +3355,12 @@ void findEnumDocumentation(Entry *root)
               {
                 md->setBriefDescription(root->brief);
               }
+
+              if (root->mGrpId!=-1 && md->getMemberGroup()==0)
+              {
+                cd->addMemberToGroup(md,root->mGrpId);
+              }
+              
               md->addSectionsToDefinition(root->anchors);
               found=TRUE;
             }
@@ -3455,6 +3510,18 @@ void computeClassImplUsageRelations()
     cd->determineImplUsageRelation();
   }
 }
+
+//----------------------------------------------------------------------------
+void computeMemberGroups()
+{
+  ClassDef *cd;
+  ClassListIterator cli(classList);
+  for (;(cd=cli.current());++cli)
+  {
+    cd->computeMemberGroups();
+  }
+}
+
 
 //----------------------------------------------------------------------------
 #if 0
@@ -3739,10 +3806,19 @@ void findDefineDocumentation(Entry *root)
             if (md->briefDescription().isEmpty())
               md->setBriefDescription(root->brief);
             md->setBodySegment(root->bodyLine,root->endBodyLine);
+            //if (root->mGrpId!=-1 && md->getMemberGroup()==0) 
+            //{
+            //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+            //}
             bool ambig;
             md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
             addMemberToGroups(root,md);
+            FileDef *fd=md->getFileDef();
+            if (fd && root->mGrpId!=-1)
+            {
+              fd->addMemberToGroup(md,root->mGrpId);
+            }
           }
           md=mn->next();
         }
@@ -3773,7 +3849,15 @@ void findDefineDocumentation(Entry *root)
               bool ambig;
               md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
+              //if (root->mGrpId!=-1 && md->getMemberGroup()==0) 
+              //{
+              //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+              //}
               addMemberToGroups(root,md);
+              if (root->mGrpId!=-1)
+              {
+                fd->addMemberToGroup(md,root->mGrpId);
+              }
             }
           }
           md=mn->next();
@@ -4037,28 +4121,28 @@ void generateGroupDocs()
 // create member group documentation based on the documentation of the
 // group's members.
 
-void computeMemberGroupDocumentation()
-{
-  MemberGroupDictIterator mgdi(memberGroupDict);
-  MemberGroup *mg;
-  for (;(mg=mgdi.current());++mgdi)
-  {
-    mg->addDocumentation(); 
-  }
-}
+//void computeMemberGroupDocumentation()
+//{
+//  MemberGroupDictIterator mgdi(memberGroupDict);
+//  MemberGroup *mg;
+//  for (;(mg=mgdi.current());++mgdi)
+//  {
+//    mg->addDocumentation(); 
+//  }
+//}
 
 //----------------------------------------------------------------------------
 // generate member group pages
 
-void generateMemberGroupDocs()
-{
-  MemberGroupDictIterator mgdi(memberGroupDict);
-  MemberGroup *mg;
-  for (;(mg=mgdi.current());++mgdi)
-  {
-    mg->writeDocumentation(*outputList); 
-  }
-}
+//void generateMemberGroupDocs()
+//{
+//  MemberGroupDictIterator mgdi(memberGroupDict);
+//  MemberGroup *mg;
+//  for (;(mg=mgdi.current());++mgdi)
+//  {
+//    mg->writeDocumentation(*outputList); 
+//  }
+//}
 
 
 //----------------------------------------------------------------------------
@@ -5017,6 +5101,9 @@ int main(int argc,char **argv)
   msg("Determining which enums are documented\n");
   findDocumentedEnumValues();
 
+  msg("Computing member groups...\n");
+  computeMemberGroups();
+
   msg("Computing member references...\n");
   computeMemberReferences(); 
 
@@ -5028,6 +5115,7 @@ int main(int argc,char **argv)
     msg("Computing class implementation usage relations...\n");
     computeClassImplUsageRelations();
   }
+
   
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
@@ -5035,8 +5123,8 @@ int main(int argc,char **argv)
   //msg("Computing class interface usage relations...\n");
   //computeClassIntfUsageRelations();
 
-  msg("Determining member group documentation...\n");
-  computeMemberGroupDocumentation();
+  //msg("Determining member group documentation...\n");
+  //computeMemberGroupDocumentation();
 
   msg("Adding source references...\n");
   addSourceReferences();
@@ -5093,8 +5181,8 @@ int main(int argc,char **argv)
   msg("Generating group documentation...\n");
   generateGroupDocs();
 
-  msg("Generating member group documentation...\n");
-  generateMemberGroupDocs();
+  //msg("Generating member group documentation...\n");
+  //generateMemberGroupDocs();
 
   msg("Generating namespace index...\n");
   generateNamespaceDocs();

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -39,6 +39,8 @@ class ExampleList;
 class MemberNameInfoList;
 class MemberNameInfoDict;
 class UsesClassDict;
+class MemberGroupList;
+class MemberGroupDict;
 struct IncludeInfo;
 
 class ClassDef : public Definition
@@ -63,16 +65,18 @@ class ClassDef : public Definition
     //void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
-    void insertMember(const MemberDef *);
+    void insertMember(MemberDef *,int grpId);
+    void addMemberToGroup(MemberDef *,int grpId);
     void insertUsedFile(const char *);
     void computeAnchors();
+    void computeMemberGroups();
     void setAnchor(MemberDef *);
     void dumpMembers();
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
     //void writeIncludeFile(OutputList &ol);
     //void writeMembersToContents();
-    void writeDeclaration(OutputList &ol,MemberDef *md);
+    void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
     bool addExample(const char *anchor,const char *name, const char *file);
     bool hasExamples();
     //void writeExample(OutputList &ol);
@@ -157,17 +161,21 @@ class ClassDef : public Definition
     MemberList relatedMembers;
     MemberList variableMembers;
 
+    /* user defined member groups */
+    MemberGroupList    *memberGroupList;
+    MemberGroupDict    *memberGroupDict;
+
     MemberNameInfoList *allMemberNameInfoList;
     MemberNameInfoDict *allMemberNameInfoDict;
-    ArgumentList     *tempArgs;
-    QStrList          files;
-    ExampleList      *exampleList;
-    ExampleDict      *exampleDict;
-    CompoundType      compType;
-    Protection        prot;
-    FileDef          *fileDef;
-    UsesClassDict    *usesImplClassDict;
-    UsesClassDict    *usesIntfClassDict;
+    ArgumentList       *tempArgs;
+    QStrList            files;
+    ExampleList        *exampleList;
+    ExampleDict        *exampleDict;
+    CompoundType        compType;
+    Protection          prot;
+    FileDef            *fileDef;
+    UsesClassDict      *usesImplClassDict;
+    UsesClassDict      *usesIntfClassDict;
 };
 
 struct UsesClassDef

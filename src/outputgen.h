@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -100,10 +100,10 @@ class OutputGenerator
     virtual void endMemberSubtitle() = 0;
     virtual void startMemberList()  = 0;
     virtual void endMemberList()    = 0;
-    virtual void startMemberItem(bool,int) = 0;
-    virtual void endMemberItem(bool,const char *,const char *,bool) = 0;
-    virtual void memberGroupSpacing(bool) = 0;
-    virtual void memberGroupSeparator() = 0;
+    virtual void startMemberItem(int) = 0;
+    virtual void endMemberItem(bool) = 0;
+    //virtual void memberGroupSpacing(bool) = 0;
+    //virtual void memberGroupSeparator() = 0;
     virtual void insertMemberAlign() = 0;
 
     virtual void writeRuler() = 0;

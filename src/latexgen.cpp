@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -1171,7 +1171,7 @@ void LatexGenerator::writeFormula(const char *,const char *text)
   t << text;
 }
 
-void LatexGenerator::startMemberItem(bool,int annType) 
+void LatexGenerator::startMemberItem(int annType) 
 { 
   if (!insideTabbing)
   {
@@ -1190,7 +1190,7 @@ void LatexGenerator::startMemberItem(bool,int annType)
   }
 }
 
-void LatexGenerator::endMemberItem(bool,const char *,const char *,bool endItem) 
+void LatexGenerator::endMemberItem(bool endItem) 
 {
   if (insideTabbing && endItem)
   {

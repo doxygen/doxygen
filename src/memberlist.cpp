@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -41,7 +41,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
   return strcmp(c1->name(),c2->name());
 }
 
-void MemberList::countDecMembers()
+void MemberList::countDecMembers(bool inGroup)
 {
   varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
   m_count=0;
@@ -57,7 +57,8 @@ void MemberList::countDecMembers()
          (md->isEnumerate() &&
           md->hasDocumentedEnumValues()
          )
-        )
+        ) && inGroup==(md->getMemberGroup()!=0) &&
+        !(inGroup && md->protection()==Private && !Config::extractPrivateFlag)
        )
     {
       switch(md->memberType())
@@ -84,9 +85,10 @@ void MemberList::countDecMembers()
     }
     md=next();
   }
+  //printf("MemberList::countDecMembers(%d)=%d\n",inGroup,m_count);
 }
 
-void MemberList::countDocMembers(bool inGroup)
+void MemberList::countDocMembers()
 {
   /*varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;*/
   m_count=0;
@@ -99,8 +101,7 @@ void MemberList::countDocMembers(bool inGroup)
       !(md->memberClass()==0 && md->isStatic() && !Config::extractPrivateFlag);
 
     if (visibleIfStatic && 
-        (Config::extractAllFlag || md->detailsAreVisible()) &&
-        (md->groupId()==-1 || inGroup)
+        (Config::extractAllFlag || md->detailsAreVisible()) 
        )
     {
       static QRegExp r("@[0-9]+");
@@ -191,54 +192,69 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 
 void MemberList::writePlainDeclarations(OutputList &ol,
                        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                       bool inGroup)
+                       bool inGroup
+                      )
 {
-  countDecMembers();
+  countDecMembers(inGroup);
+  //printf("writePlainDeclaration() totalCount()=%d defineCount()=%d\n",totalCount(),defineCount());
   if (totalCount()==0) return; // no members in this list
   
   ol.pushGeneratorState();
 
-  int prevGroupId = -1;
-  bool sectionPerType = fd || nd || gd;
+  //int prevGroupId = -1;
+  bool sectionPerType = !inGroup && (fd || nd || gd);
   if (!sectionPerType) ol.startMemberList();
   MemberDef *md;
 
-  if (sectionPerType && defineCount()>0)
+  if (defineCount()>0)
   {
-    ol.startMemberHeader();
-    parseText(ol,theTranslator->trDefines());
-    ol.endMemberHeader();
-    ol.startMemberList();
+    if (sectionPerType)
+    {
+      ol.startMemberHeader();
+      parseText(ol,theTranslator->trDefines());
+      ol.endMemberHeader();
+      ol.startMemberList();
+    }
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()); ++mli )
     {
+      //printf("md->isDefined()=%d inGroup=%d md->getMemberGroup()=%p\n",
+      //   md->isDefine(),inGroup,md->getMemberGroup());
       if (md->isDefine() && 
-          (md->argsString() || md->hasDocumentation() || Config::extractAllFlag)
+          (md->argsString() || md->hasDocumentation() || Config::extractAllFlag) &&
+          inGroup==(md->getMemberGroup()!=0)          
          ) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-        prevGroupId = md->groupId();
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
     }
-    ol.endMemberList();
+    if (sectionPerType)
+    {
+      ol.endMemberList();
+    }
   }
   
-  if (sectionPerType && protoCount()>0)
+  if (protoCount()>0)
   {
-    ol.startMemberHeader();
-    parseText(ol,theTranslator->trFuncProtos());
-    ol.endMemberHeader();
-    ol.startMemberList();
+    if (sectionPerType)
+    {
+      ol.startMemberHeader();
+      parseText(ol,theTranslator->trFuncProtos());
+      ol.endMemberHeader();
+      ol.startMemberList();
+    }
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()); ++mli )
     {
-      if (md->isPrototype()) 
+      if (md->isPrototype() && inGroup==(md->getMemberGroup()!=0)) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-        prevGroupId = md->groupId();
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
     }
-    ol.endMemberList();
+    if (sectionPerType)
+    {
+      ol.endMemberList();
+    }
   }
   
   if (typedefCount()>0)
@@ -254,10 +270,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isTypedef()) 
+      if (md->isTypedef() && inGroup==(md->getMemberGroup()!=0)) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-        prevGroupId = md->groupId();
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
     }
     if (sectionPerType) ol.endMemberList();
@@ -276,10 +291,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
+      if (md->protection()==Private && !Config::extractPrivateFlag) continue;
       /*bool hasDocs=md->hasDocumentation();*/
       QCString type=md->typeString();
       type=type.stripWhiteSpace();
-      if (md->isEnumerate() /*&& (hasDocs || !Config::hideMemberFlag)*/) 
+      if (md->isEnumerate() && inGroup==(md->getMemberGroup()!=0) /*&& (hasDocs || !Config::hideMemberFlag)*/) 
       {
         if (!Config::hideMemberFlag ||                // do not hide undocumented members or
             !md->documentation().isEmpty() || // member has detailed descr. or
@@ -308,7 +324,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               if (!Config::genTagFile.isEmpty())
                 tagFile << md->name() << " " << md->anchor() 
                   << " \"\"" << endl;
-              md->writeLink(typeDecl,cd,nd,fd,gd,0);
+              md->writeLink(typeDecl,cd,nd,fd,gd);
             }
             else
             {
@@ -329,7 +345,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 if (!Config::genTagFile.isEmpty())
                   tagFile << fmd->name() << " " << fmd->anchor() 
                     << " \"" << fmd->argsString() << "\"";
-                fmd->writeLink(typeDecl,cd,nd,fd,gd,0);
+                fmd->writeLink(typeDecl,cd,nd,fd,gd);
               }
               else // no docs for this enum value
               {
@@ -363,18 +379,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
           if (enumVars==0) // no variable of this enum type
           {
-            int gId = md->groupId();
-            const char *gHeader = (gId!=prevGroupId && gId!=-1) ? 
-                            memberGroupDict[gId]->header().data() : 0;
-            ol.startMemberItem(gId!=-1,0);
+            ol.startMemberItem(0);
             ol.writeString("enum ");
             ol.insertMemberAlign();
             ol+=typeDecl;
-            ol.endMemberItem(gId!=-1,md->anchor(),gHeader,FALSE);
+            ol.endMemberItem(FALSE);
             //QCString brief=md->briefDescription();
             //brief=brief.stripWhiteSpace();
-            if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag
-                && gId==-1 && !inGroup)
+            if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag)
             {
               ol.startMemberDescription();
               parseDoc(ol,cd?cd->name().data():0,
@@ -391,13 +403,12 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.enableAll();
               }
               ol.endMemberDescription();
-              ol.disable(OutputGenerator::Man);
-              ol.newParagraph();
-              ol.enable(OutputGenerator::Man);
+              //ol.disable(OutputGenerator::Man);
+              //ol.newParagraph();
+              //ol.enable(OutputGenerator::Man);
             }
           }
           md->warnIfUndocumented();
-          prevGroupId = md->groupId();
         }
       } // md->isEnumerate()
     } // enum loop
@@ -419,11 +430,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     {
       if (
           ( md->isFunction() || md->isSignal() || md->isSlot()) &&
-          ( !md->isRelated() || md->memberClass() )
+          ( !md->isRelated() || md->memberClass() ) &&
+          inGroup==(md->getMemberGroup()!=0)
          ) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-        prevGroupId = md->groupId();
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
     }
     if (sectionPerType) ol.endMemberList();
@@ -434,48 +445,41 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isFriend()) 
+      if (md->isFriend() && inGroup==(md->getMemberGroup()!=0)) 
       {
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
         if (md->hasDocumentation() && type!="friend class")
         {
-          md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-          prevGroupId = md->groupId();
+          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
         }
         else // friend is undocumented as a member but it is a class, 
              // so generate a link to the class if that is documented.
         {
-          int gId = md->groupId();
-          const char *gHeader = (gId!=prevGroupId && gId!=-1) ? 
-                          memberGroupDict[gId]->header().data() : 0;
           ClassDef *cd=getClass(md->name());
           if (md->hasDocumentation()) // friend is documented
           {
-            ol.startMemberItem(gId!=-1,0);
+            ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
             ol.writeObjectLink(0,0,md->anchor(),md->name());
-            ol.endMemberItem(gId!=-1,md->anchor(),gHeader,FALSE);
-            prevGroupId = md->groupId();
+            ol.endMemberItem(FALSE);
           }
           else if (cd && cd->isLinkable()) // class is documented
           {
-            ol.startMemberItem(gId!=-1,0);
+            ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
-            ol.endMemberItem(gId!=-1,md->anchor(),gHeader,FALSE);
-            prevGroupId = md->groupId();
+            ol.endMemberItem(FALSE);
           }
           else if (!Config::hideMemberFlag) // no documentation
           {
-            ol.startMemberItem(gId!=-1,0);
+            ol.startMemberItem(0);
             ol.docify("class ");
             ol.insertMemberAlign();
             ol.writeBoldString(md->name());
-            ol.endMemberItem(gId!=-1,md->anchor(),gHeader,FALSE);
-            prevGroupId = md->groupId();
+            ol.endMemberItem(FALSE);
           }
         }
       }
@@ -495,10 +499,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isVariable()) 
+      if (md->isVariable() && inGroup==(md->getMemberGroup()!=0)) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
-        prevGroupId = md->groupId();
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
     }
     if (sectionPerType) ol.endMemberList();
@@ -511,23 +514,18 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for  ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->fromAnnonymousScope() && !md->annonymousDeclShown())
+      if (md->fromAnnonymousScope() && !md->annonymousDeclShown()
+          && inGroup==(md->getMemberGroup()!=0))
       {
         md->setFromAnnonymousScope(FALSE);
-        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
         md->setFromAnnonymousScope(TRUE);
-        prevGroupId = md->groupId();
       }
     }
   }
  
   if (!sectionPerType) { ol.endMemberList(); /*ol.writeChar('\n');*/ }
 
-  if (prevGroupId!=-1 && !inGroup)
-  {
-    ol.memberGroupSpacing(TRUE);
-    ol.memberGroupSeparator();
-  }
   ol.popGeneratorState();
 }
 
@@ -535,7 +533,7 @@ void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
              const char *title,const char *subtitle,bool inGroup)
 {
-  countDecMembers();
+  countDecMembers(inGroup);
   if (totalCount()==0) return;
   if (title) 
   {
@@ -543,10 +541,14 @@ void MemberList::writeDeclarations(OutputList &ol,
     parseText(ol,title);
     ol.endMemberHeader();
   }
-  if (subtitle) 
+  if (subtitle && subtitle[0]!=0) 
   {
+    //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    parseText(ol,subtitle);
+    if (inGroup)
+      parseDoc(ol,0,0,subtitle);
+    else
+      parseText(ol,subtitle);
     ol.endMemberSubtitle();
   }
 

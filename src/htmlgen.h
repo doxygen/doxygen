@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -95,11 +95,11 @@ class HtmlGenerator : public OutputGenerator
     void endMemberSubtitle();
     void startMemberList();
     void endMemberList();
-    void startMemberItem(bool,int);
-    void memberGroupSpacing(bool inGroup);
-    void memberGroupSeparator();
+    void startMemberItem(int);
+    //void memberGroupSpacing(bool inGroup);
+    //void memberGroupSeparator();
     void insertMemberAlign();
-    void endMemberItem(bool,const char *,const char *,bool);
+    void endMemberItem(bool);
     void startMemberDescription();
     void endMemberDescription();
 

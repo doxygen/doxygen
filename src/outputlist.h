@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -159,14 +159,14 @@ class OutputList
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 
     { forall(&OutputGenerator::endMemberList); }
-    void startMemberItem(bool b1,int i1) 
-    { forall(&OutputGenerator::startMemberItem,b1,i1); }
-    void endMemberItem(bool b1,const char *n1,const char *n2,bool b2) 
-    { forall(&OutputGenerator::endMemberItem,b1,n1,n2,b2); }
-    void memberGroupSpacing(bool b) 
-    { forall(&OutputGenerator::memberGroupSpacing,b); }
-    void memberGroupSeparator() 
-    { forall(&OutputGenerator::memberGroupSeparator); }
+    void startMemberItem(int i1) 
+    { forall(&OutputGenerator::startMemberItem,i1); }
+    void endMemberItem(bool b2) 
+    { forall(&OutputGenerator::endMemberItem,b2); }
+    //void memberGroupSpacing(bool b) 
+    //{ forall(&OutputGenerator::memberGroupSpacing,b); }
+    //void memberGroupSeparator() 
+    //{ forall(&OutputGenerator::memberGroupSeparator); }
     void insertMemberAlign() 
     { forall(&OutputGenerator::insertMemberAlign); }
     void writeRuler() 
@@ -381,7 +381,6 @@ class OutputList
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
-    FORALLPROTO4(bool,const char *,const char *,bool);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

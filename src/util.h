@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -35,7 +35,7 @@ class ClassList;
 class BaseClassList;
 class GroupDef;
 
-extern void setAnchors(char id,MemberList *ml);
+extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
 extern void linkifyText(OutputList &ol,const char *clName,const char *name,
@@ -52,7 +52,7 @@ extern bool generateLink(OutputList &ol,const char *,
 extern void generateFileRef(OutputList &ol,const char *,
                              const char *linkTxt=0);
 extern bool matchArguments(ArgumentList *,ArgumentList *,
-                           const char *cl=0,const char *ns=0);
+                           const char *cl=0,const char *ns=0,bool checkCV=TRUE);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
 extern QCString substituteClassNames(const QCString &s);
 extern QCString convertSlashes(const QCString &s,bool dots=FALSE);
@@ -88,5 +88,6 @@ QCString removeAnnonymousScopes(const QCString &s);
 void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
+QCString convertNameToFile(const char *name);
 
 #endif

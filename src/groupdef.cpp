@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -27,6 +27,8 @@
 #include "util.h"
 #include "memberlist.h"
 #include "message.h"
+#include "membergroup.h"
+#include "doxygen.h"
 
 GroupDef::GroupDef(const char *na,const char *t) : 
    Definition(na)
@@ -45,13 +47,17 @@ GroupDef::GroupDef(const char *na,const char *t) :
     title.at(0)=toupper(title.at(0));
   }
   fileName = "group_"+nameToFile(na);
+  memberGroupList = new MemberGroupList;
+  memberGroupList->setAutoDelete(TRUE);
+  memberGroupDict = new MemberGroupDict(1009);
 }
 
 GroupDef::~GroupDef()
 {
   delete fileList;
   delete classList;
-//  delete groupList;
+  delete memberGroupList;
+  delete memberGroupDict;
 }
 
 void GroupDef::addFile(const FileDef *def)
@@ -69,7 +75,28 @@ void GroupDef::addNamespace(const NamespaceDef *def)
   namespaceList->append(def);
 }
 
-void GroupDef::addMember(const MemberDef *md)
+void GroupDef::addMemberToGroup(MemberDef *md,int groupId)
+{
+  if (groupId!=-1)
+  {
+    QCString *pGrpHeader = memberHeaderDict[groupId];
+    QCString *pDocs      = memberDocDict[groupId];
+    if (pGrpHeader)
+    {
+      MemberGroup *mg = memberGroupDict->find(groupId);
+      if (mg==0)
+      {
+        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+        memberGroupDict->insert(groupId,mg);
+        memberGroupList->append(mg);
+      }
+      mg->insertMember(md);
+      md->setMemberGroup(mg);
+    }
+  }
+}
+
+void GroupDef::insertMember(MemberDef *md,int groupId)
 {
   QCString funcDecl=md->name()+md->argsString();
   if (allMemberDict->find(funcDecl)==0)
@@ -88,6 +115,7 @@ void GroupDef::addMember(const MemberDef *md)
       default:
          err("FileDef::insertMembers(): unexpected member insert in file!\n");
     }
+    addMemberToGroup(md,groupId);
   }
 }
 
@@ -143,11 +171,11 @@ void GroupDef::writeDocumentation(OutputList &ol)
     FileDef *fd=fileList->first();
     while (fd)
     {
-      ol.startMemberItem(FALSE,0);
+      ol.startMemberItem(0);
       ol.docify("file");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
-      ol.endMemberItem(FALSE,0,0,FALSE);
+      ol.endMemberItem(FALSE);
       if (!fd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
         ol.startMemberDescription();
@@ -182,11 +210,11 @@ void GroupDef::writeDocumentation(OutputList &ol)
         case ClassDef::Interface:  type="interface";  break;
         case ClassDef::Exception:  type="exception";  break;
       }
-      ol.startMemberItem(FALSE,0);
+      ol.startMemberItem(0);
       ol.docify(type);
       ol.insertMemberAlign();
       ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
-      ol.endMemberItem(FALSE,0,0,FALSE);
+      ol.endMemberItem(FALSE);
       if (!cd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
         ol.startMemberDescription();
@@ -200,6 +228,14 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   if (allMemberList->count()>0)
   {
+    /* write user defined member groups */
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->writeDeclarations(ol,0,0,0,this);
+    }
+
     allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
   }
   ol.endMemberSections();

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
@@ -19,6 +19,7 @@
 #define DOXYGEN_H
 
 #include "qtbc.h"
+#include <qtextstream.h>
 #include "groupdef.h"
 #include "filedef.h"
 #include "classdef.h"
@@ -26,10 +27,11 @@
 #include "classlist.h"
 #include "membername.h"
 #include "filename.h"
-#include "define.h"
+//#include "define.h"
 #include "namespacedef.h"
 #include "formula.h"
 #include "section.h"
+#include "membergroup.h"
 
 struct PageInfo
 {
@@ -117,6 +119,8 @@ extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
 extern PageInfo *mainPage;
 extern StringDict tagDestinationDict; 
+extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
+extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
 
 extern int annotatedClasses;
 extern int hierarchyClasses;

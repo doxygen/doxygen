@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -777,7 +777,7 @@ void addDefine()
     functionNameDict.insert(g_defName,mn);
   }
   mn->append(md);
-  if (g_yyFileDef) g_yyFileDef->insertMember(md);
+  if (g_yyFileDef) g_yyFileDef->insertMember(md,-1);
   
   //Define *d;
   //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -93,7 +93,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 B       [ \t]
-ID	[a-z_A-Z][a-z_A-Z0-9]*
+ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 
 %option noyywrap
 

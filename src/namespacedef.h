@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -28,6 +28,8 @@ class OutputList;
 class ClassList;
 class MemberDef;
 class NamespaceList;
+class MemberGroupDict;
+class MemberGroupList;
 
 class NamespaceDef : public Definition
 {
@@ -39,7 +41,8 @@ class NamespaceDef : public Definition
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);
     void insertClass(ClassDef *cd);
-    void insertMember(MemberDef *md);
+    void insertMember(MemberDef *md,int groupId);
+    void addMemberToGroup(MemberDef *md,int groupId);
     void computeAnchors();
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
@@ -83,6 +86,10 @@ class NamespaceDef : public Definition
     MemberList enumValMembers;
     MemberList funcMembers;
     MemberList varMembers;
+
+    /* user defined member groups */
+    MemberGroupList    *memberGroupList;
+    MemberGroupDict    *memberGroupDict;
 };
 
 class NamespaceList : public QList<NamespaceDef>

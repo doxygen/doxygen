@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Parker Waechter & Dimitri van Heesch.
  *
@@ -92,10 +92,10 @@ class RTFGenerator : public OutputGenerator
     void endMemberSubtitle(); 
     void startMemberList();
     void endMemberList();
-    void startMemberItem(bool,int);
-    void endMemberItem(bool,const char *,const char *,bool);
-    void memberGroupSpacing(bool) {}
-    void memberGroupSeparator() {}
+    void startMemberItem(int);
+    void endMemberItem(bool);
+    //void memberGroupSpacing(bool) {}
+    //void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
     void writeRuler(){RtfwriteRuler_thin();};

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -32,6 +32,8 @@ class NamespaceDef;
 class GroupList;
 class OutputList;
 class NamespaceList;
+class MemberGroupList;
+class MemberGroupDict;
 
 class GroupDef : public Definition
 {
@@ -44,7 +46,8 @@ class GroupDef : public Definition
     void addFile(const FileDef *def); 
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
-    void addMember(const MemberDef *def);
+    void insertMember(MemberDef *def,int groupId);
+    void addMemberToGroup(MemberDef *def,int groupId);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject()
@@ -74,6 +77,11 @@ class GroupDef : public Definition
     MemberList enumValMembers;
     MemberList funcMembers;
     MemberList varMembers;
+
+    /* user defined member groups */
+    MemberGroupList *memberGroupList;
+    MemberGroupDict *memberGroupDict;
+
 };
 
 class GroupList : public QList<GroupDef>

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -46,7 +46,7 @@ class TranslatorFrench : public Translator
     
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation()
-    { return "Documentation des énumérations imbriqués"; }
+    { return "Documentation des énumérations imbriquées"; }
     
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation()
@@ -54,7 +54,7 @@ class TranslatorFrench : public Translator
     
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
-    { return "Documentation des données imbriqués"; }
+    { return "Documentation des données imbriquées"; }
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore()
@@ -128,7 +128,7 @@ class TranslatorFrench : public Translator
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     QCString trHeaderFiles()
-    { return "Fichiers d'entête"; }
+    { return "Fichiers d'en-tête"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
@@ -195,7 +195,7 @@ class TranslatorFrench : public Translator
 
     /*! This is an introduction to the page with the list of all header files. */
     QCString trHeaderFilesDescription()
-    { return "Liste de tous les fichiers d'entête constituant "
+    { return "Liste de tous les fichiers d'en-tête constituant "
 	"l'interface de programmation :"; }
 
     /*! This is an introduction to the page with the list of all examples */
@@ -303,7 +303,7 @@ class TranslatorFrench : public Translator
      *  list of enumerations
      */
     QCString trEnumerations()
-    { return "Enumérations"; }
+    { return "Énumérations"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) functions
@@ -321,7 +321,7 @@ class TranslatorFrench : public Translator
      *  list of (global) variables
      */
     QCString trEnumerationValues()
-    { return "Eléments énumérés"; }
+    { return "Éléments énumérés"; }
     
     /*! This is used in man pages as the author section. */
     QCString trAuthor()
@@ -406,7 +406,7 @@ class TranslatorFrench : public Translator
     
     /*! this text is generated when the \internal command is used. */
     QCString trForInternalUseOnly()
-    { return "A usage interne uniquement."; }
+    { return "À usage interne uniquement."; }
 
     /*! this text is generated when the \reimp command is used. */
     QCString trReimplementedForInternalReasons()
@@ -457,7 +457,7 @@ class TranslatorFrench : public Translator
     // new since 0.49-990307
     
     virtual QCString trNamespaceList()
-    { return "Liste des Namespaces"; }
+    { return "Liste des namespaces"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
@@ -472,7 +472,7 @@ class TranslatorFrench : public Translator
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "Friends"; }
+    { return "Amis (friends)"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -526,13 +526,13 @@ class TranslatorFrench : public Translator
      *  these are for the member sections of a class, struct or union 
      */
     virtual QCString trPublicMembers()
-    { return "Membres publiques"; }
+    { return "Membres publics"; }
     virtual QCString trPublicSlots()
-    { return "Connecteurs publiques"; }
+    { return "Connecteurs publics"; }
     virtual QCString trSignals()
     { return "Signaux"; }
     virtual QCString trStaticPublicMembers()
-    { return "Membres publiques statiques"; }
+    { return "Membres publics statiques"; }
     virtual QCString trProtectedMembers()
     { return "Membres protégés"; }
     virtual QCString trProtectedSlots()
@@ -558,15 +558,15 @@ class TranslatorFrench : public Translator
       for (i=0;i<numEntries;i++) 
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
         
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=", and ";
+            result+=", et ";
         }
       }
       return result; 
@@ -606,12 +606,12 @@ class TranslatorFrench : public Translator
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "Menbres des namespaces"; }
+    { return "Membres des namespaces"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     { 
-      QCString result="Voici une list de tous les membres de namespace";
+      QCString result="Voici une liste de tous les membres de namespace";
       if (!extractAll) result+="documentés ";
       result+=" avec liens vers ";
       if (extractAll) 
@@ -624,13 +624,13 @@ class TranslatorFrench : public Translator
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "Index des Namespaces"; }
+    { return "Index des namespaces"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "Documentation des Namespaces"; }
+    { return "Documentation des namespaces"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -640,7 +640,7 @@ class TranslatorFrench : public Translator
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return "Namespaces"; }
+    { return "Espaces de nommage (namespaces)"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -688,13 +688,13 @@ class TranslatorFrench : public Translator
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "Page Principale"; }
+    { return "Page principale"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { return "p "; }
+    { return "p. "; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
