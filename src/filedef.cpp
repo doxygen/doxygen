@@ -668,10 +668,11 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
 
 bool FileDef::generateSourceFile() const 
 { 
+  QCString extension = name().right(4);
   return !isReference() && 
          (Config::sourceBrowseFlag || 
            (Config::verbatimHeaderFlag && guessSection(name())==Entry::HEADER_SEC) 
          ) &&
-         name().right(4)!=".doc" && name().right(4)!=".txt"; 
+         extension!=".doc" && extension!=".txt" && extension!=".dox"; 
 }
 

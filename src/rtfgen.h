@@ -29,6 +29,7 @@ class RTFGenerator : public OutputGenerator
    ~RTFGenerator();
     static void init();
     static void writeStyleSheetFile(QFile &f);
+    static void writeExtensionsFile(QFile &file);
 
     OutputGenerator *copy();
     //OutputGenerator *clone() { return new RTFGenerator(*this); }

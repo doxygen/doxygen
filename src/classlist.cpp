@@ -84,7 +84,8 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
                     << "\">" << convertToXML(cd->name()) << "</class>" << endl;
           }
           ol.startMemberItem(FALSE);
-          ol.writeString(cd->compoundTypeString());
+          QCString tmp = cd->compoundTypeString();
+          ol.writeString(tmp);
           ol.writeString(" ");
           ol.insertMemberAlign();
           if (isLink) 

@@ -625,7 +625,8 @@ static void forceEndItemList()
 enum ImageTypes
 {
   IT_Html,
-  IT_Latex
+  IT_Latex,
+  IT_RTF
 };
 
 // search for an image in the imageNameDict and if found
@@ -656,6 +657,9 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
 	  break;
 	case IT_Latex: 
 	  outputDir = Config::latexOutputDir;
+	  break;
+	case IT_RTF:
+	  outputDir = Config::rtfOutputDir;
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
@@ -731,6 +735,16 @@ void writeImage(ImageTypes it,const char *size)
 	outDoc->endImage(hasCaption);
       }
       break;
+    case IT_RTF:
+      {
+	outDoc->disableAllBut(OutputGenerator::RTF);
+	outDoc->startImage(curImageName,0,hasCaption);
+	if (hasCaption)
+	{
+	  scanString(curImageCaption);
+	}
+	outDoc->endImage(hasCaption);
+      }
   }
   outDoc->popGeneratorState();
 }
@@ -864,6 +878,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocHtmlImageOpt
 %x	DocLatexImageName
 %x	DocLatexImageOpt
+%x	DocRtfImageName
+%x	DocRtfImageOpt
 
 %%
 
@@ -1708,6 +1724,9 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocImage>[lL][aA][tT][eE][xX]		{
   					  BEGIN(DocLatexImageName);
   					}
+<DocImage>[rR][tT][fF]			{
+  					  BEGIN(DocRtfImageName);
+  					}
 <DocHtmlImageName>{FILE}|{URLMASK}      {
   					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_Html);
 					  curImageCaption.resize(0);
@@ -1725,6 +1744,24 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  BEGIN(DocScan);
   					}
 <DocHtmlImageOpt>\"[^\n"]*\"		{
+					  curImageCaption=stripQuotes(yytext);
+					}
+<DocRtfImageName>{FILE}			{
+					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_RTF);
+					  curImageCaption.resize(0);
+					  if (curImageName.isEmpty())
+					  {
+					    BEGIN(DocScan);
+					  }
+					  else
+					  {
+					    BEGIN(DocRtfImageOpt);
+					  }
+					}
+<DocRtfImageOpt>\n			{
+  					  writeImage(IT_RTF,0);
+  					}
+<DocRtfImageOpt>\"[^\n"]*\"		{
 					  curImageCaption=stripQuotes(yytext);
 					}
 <DocLatexImageName>{FILE}		{

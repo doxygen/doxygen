@@ -407,7 +407,6 @@ static void buildGroupList(Entry *root)
       gd->addSectionsToDefinition(root->anchors);
       Doxygen::groupList.append(gd);
       Doxygen::groupDict.insert(root->name,gd);
-      addGroupToGroups(root,gd);
       gd->setRefItems(root->todoId,root->testId,root->bugId);
     }
   }
@@ -416,6 +415,25 @@ static void buildGroupList(Entry *root)
   for (;(e=eli.current());++eli)
   {
     buildGroupList(e);
+  }
+}
+
+static void organizeSubGroups(Entry *root)
+{
+  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
+  {
+    GroupDef *gd;
+
+    if ((gd=Doxygen::groupDict[root->name]))
+    {
+      addGroupToGroups(root,gd);
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    organizeSubGroups(e);
   }
 }
 
@@ -3813,12 +3831,13 @@ static void findMemberDocumentation(Entry *root)
       compoundKeywordDict.find(root->type)==0 // that is not a keyword 
                                               // (to skip forward declaration of class etc.)
       )
-     ) && !root->stat &&               // not static
-     (!root->doc.isEmpty() ||          // has detailed docs
-      !root->brief.isEmpty() ||        // has brief docs
-      (root->memSpec&Entry::Inline) || // is inline
-      root->mGrpId!=-1                 // is part of a group
-     )
+     ) && !root->stat                // not static
+     /* && (
+       !root->doc.isEmpty() ||          // has detailed docs
+        !root->brief.isEmpty() ||        // has brief docs
+        (root->memSpec&Entry::Inline) || // is inline
+        root->mGrpId!=-1 ||              // is part of a group
+     ) */
     )
   {
     //printf("Documentation for member `%s' found args=`%s' excp=`%s'\n",
@@ -4423,9 +4442,9 @@ static void addSourceReferences()
       NamespaceDef *nd=md->getNamespaceDef();
       FileDef *fd=md->getBodyDef();
       GroupDef *gd=md->getGroupDef();
-      if (md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
+      if (fd && md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
           ((nd && nd->isLinkableInProject()) ||
-           (fd && fd->isLinkableInProject()) ||
+           (fd->isLinkableInProject()) ||
            (gd && gd->isLinkableInProject())
           )
          )
@@ -5661,6 +5680,8 @@ static void usage(const char *name)
   msg("    RTF:   %s -w rtf styleSheetFile\n",name);
   msg("    HTML:  %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
   msg("    LaTeX: %s -w latex headerFile styleSheetFile [configFile]\n\n",name);
+  msg("5) Use doxygen to generate an rtf extensions file\n");
+  msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   exit(1);
@@ -5726,6 +5747,30 @@ void readConfiguration(int argc, char **argv)
       case 'u':
         updateConfig=TRUE;
         break;
+      case 'e':
+        formatName=getArg(argc,argv,optind);
+        if (!formatName)
+        {
+          err("Error:option -e is missing format specifier rtf.\n");
+          exit(1);
+        }
+        if (stricmp(formatName,"rtf")==0)
+        {
+          if (optind+1>=argc)
+          {
+            err("Error: option \"-e rtf\" is missing an extensions file name\n");
+            exit(1);
+          }
+          QFile f;
+          if (openOutputFile(argv[optind+1],f))
+          {
+            RTFGenerator::writeExtensionsFile(f);
+          }
+          exit(1);
+        }
+        err("Error: option \"-e\" has invalid format specifier.\n");
+        exit(1);
+        break; 
       case 'w':
         formatName=getArg(argc,argv,optind);
         if (!formatName)
@@ -5982,7 +6027,12 @@ void parseInput()
   s=Config::inputSources.first();
   while (s)
   {
-    inputSize+=readFileOrDirectory(s,&Doxygen::inputNameList,
+    QCString path=s;
+    uint l = path.length();
+    // strip trailing slashes
+    if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
+
+    inputSize+=readFileOrDirectory(path,&Doxygen::inputNameList,
         Doxygen::inputNameDict,&excludeNameDict,
                                    &Config::filePatternList,
                                    &Config::excludePatternList,
@@ -6108,6 +6158,7 @@ void parseInput()
   
   msg("Building group list...\n");
   buildGroupList(root);
+  organizeSubGroups(root);
 
   msg("Building namespace list...\n");
   buildNamespaceList(root);

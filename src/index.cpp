@@ -2122,7 +2122,7 @@ void writeGraphInfo(OutputList &ol)
  * \author KPW
  */
 
-void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
+void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp = 0;
@@ -2139,7 +2139,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
 
   GroupDef *subgd = 0;
   GroupListIterator gli(*gd->groupList);
-  if (!gd->visited)
+  if (!gd->visited && (!gd->isASubGroup() || subLevel))
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
@@ -2200,7 +2200,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
       ol.startIndexList();
       for (gli.toLast();(subgd=gli.current());--gli)
       {
-        writeGroupTreeNode(ol,subgd);
+        writeGroupTreeNode(ol,subgd,TRUE);
       }
       ol.endIndexList(); 
     }
@@ -2403,7 +2403,7 @@ void writeGroupHierarchy(OutputList &ol)
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
-    writeGroupTreeNode(ol,gd);
+    writeGroupTreeNode(ol,gd,FALSE);
   }
   ol.endIndexList(); 
 }
