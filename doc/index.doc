@@ -146,6 +146,10 @@ Thanks go to:
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
 <li>Parker Waerchter for adding the RTF output generator.
+<li>Joerg Baumann, for adding conditional documentation blocks, and
+    PDF links.
+<li>Matthias Andree for providing a .spec script for building rpms from the
+    sources.
 <li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 
     Vlastimil Havran, Ahmed Also Faisal, Alessandro Falappa, Kenji Nagamatsu,
     Francisco Oltra Thennet, Olli Korhonen for providing translations into
@@ -218,7 +222,7 @@ David Wong,
 Peter Garner,
 Fred Labrosse,
 Frank Schimmel,
-Reinhard Nissl
+Reinhard Nissl,
 and many others for suggestions, patches and bug reports.
 </ul>
 */

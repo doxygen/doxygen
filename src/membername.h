@@ -92,9 +92,9 @@ class MemberNameInfoList : public QList<MemberNameInfo>
    ~MemberNameInfoList() {}
     int compareItems(GCI item1,GCI item2) 
     { return stricmp(
-                     ((MemberNameInfo *)item1)->memberName(),
-                     ((MemberNameInfo *)item2)->memberName()
-                    );
+                    ((MemberNameInfo *)item1)->memberName(),
+                    ((MemberNameInfo *)item2)->memberName()
+                   );
     }
 };
 

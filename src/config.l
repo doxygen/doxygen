@@ -28,6 +28,7 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qtextstream.h>
+#include <qregexp.h>
   
 #include "config.h"
 #include "version.h"
@@ -57,6 +58,7 @@ void warn(const char *fmt, ...)
 #endif
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_UNPUT
   
 /* -----------------------------------------------------------------
  *
@@ -100,6 +102,7 @@ QStrList Config::extDocPathList;
 QStrList Config::predefined;
 QStrList Config::extraPackageList;
 QStrList Config::stripFromPath;
+QStrList Config::sectionFilterList;
 bool     Config::quietFlag           = FALSE; 
 bool     Config::recursiveFlag       = FALSE; 
 bool     Config::allExtFlag          = FALSE; 
@@ -162,7 +165,7 @@ static QCString *   s=0;
 static bool    *    b=0;
 static QStrList *   l=0;
 static int          lastState;
-static int          lastEnvState;
+//static int          lastEnvState;
 static QCString     elemStr;
 static QCString     tabSizeString;
 static QCString     colsInAlphaIndexString;
@@ -238,6 +241,7 @@ static int yyread(char *buf,int max_size)
 <Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined;         l->clear(); elemStr=""; }
 <Start>"EXTRA_PACKAGES"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::extraPackageList;   l->clear(); elemStr=""; }
 <Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::stripFromPath;      l->clear(); elemStr=""; }
+<Start>"ENABLED_SECTIONS"[ \t]*"="      { BEGIN(GetStrList); l=&Config::sectionFilterList;  l->clear(); elemStr=""; }      
 <Start>"QUIET"[ \t]*"="			{ BEGIN(GetBool);    b=&Config::quietFlag; }
 <Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool);    b=&Config::warningFlag; }
 <Start>"RECURSIVE"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::recursiveFlag; }
@@ -283,6 +287,7 @@ static int yyread(char *buf,int max_size)
 <Start>"SHOW_INCLUDE_FILES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::showIncFileFlag; }
 <Start>"STRIP_CODE_COMMENTS"[ \t]*"="   { BEGIN(GetBool);    b=&Config::stripCommentsFlag; }
 <Start>"SORT_MEMBER_DOCS"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::sortMembersFlag; }
+<Start>"LATEX_BATCHMODE"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::latexBatchModeFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
@@ -302,11 +307,12 @@ static int yyread(char *buf,int max_size)
 					  }
 					  elemStr.resize(0);
   					}
-<GetString>[^ \"\$\t\r\n]+		{ (*s)+=yytext; }
+<GetString>[^ \"\t\r\n]+		{ (*s)+=yytext; }
 <GetString,GetStrList>"\""		{ lastState=YY_START;
   					  BEGIN(GetQuotedString); 
                                           tmpString.resize(0); 
 					}
+  /*
 <GetString,GetStrList,GetQuotedString>"\$\("	{
   				          //printf(">> Enter env\n"); 
   					  lastEnvState=YY_START;
@@ -321,6 +327,7 @@ static int yyread(char *buf,int max_size)
 					  for (i=l-1;i>=0;i--) unput(env[i]);
 					  BEGIN(lastEnvState);
   					}
+  */
 <GetQuotedString>"\""|"\n" 		{ 
   					  //printf("Quoted String = `%s'\n",tmpString.data());
   					  if (lastState==GetString)
@@ -353,7 +360,7 @@ static int yyread(char *buf,int max_size)
 						 bs.data(),yyLineNr);
 					  }
 					}
-<GetStrList>[^ \#\"\$\t\r\n]+		{
+<GetStrList>[^ \#\"\t\r\n]+		{
   					  elemStr+=yytext;
   					}
 <SkipComment>\n				{ yyLineNr++; BEGIN(Start); }
@@ -455,6 +462,7 @@ void Config::init()
   Config::predefined.clear();
   Config::extraPackageList.clear();
   Config::stripFromPath.clear();
+  Config::sectionFilterList.clear();
   Config::tabSize=8;
   Config::colsInAlphaIndex=5;
   Config::quietFlag           = FALSE; 
@@ -892,6 +900,16 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# The ENABLE_SECTIONS tag can be used to enable conditional\n";
+    t << "# documentation sections, marked by \\if sectionname ... \\endif.\n";
+    t << "\n";
+  }
+  t << "ENABLED_SECTIONS     = ";
+  writeStringList(t,Config::sectionFilterList);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the input files\n";
@@ -1224,10 +1242,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# running if errors occur, instead of asking the user for help.\n";
     t << "# This option is also used when generating formulas in HTML.\n";
   }
-  if (!sl)
-  {
-    t << "LATEX_BATCHMODE    = ";
-  }
+  t << "LATEX_BATCHMODE      = ";
   writeBoolValue(t,Config::latexBatchModeFlag);
   t << "\n";
   t << "#---------------------------------------------------------------------------\n";
@@ -1574,13 +1589,8 @@ void writeTemplateConfig(QFile *f,bool sl)
   t << "\n";
 }
 
-void checkConfig()
+void configStrToVal()
 {
-  //if (!projectName.isEmpty())
-  //{
-  //  projectName[0]=toupper(projectName[0]);
-  //}
-
   if (tabSizeString.isEmpty())
   {
     Config::tabSize=8;
@@ -1613,7 +1623,94 @@ void checkConfig()
     }
     Config::colsInAlphaIndex=cols;
   }
-  
+}
+
+static void substEnvVarsInString(QCString &s)
+{
+  QRegExp re("\\$([a-z_A-Z0-9]+)");
+  int p=0;
+  int i,l;
+  //printf("substEnvVarInString(%s) start\n",s.data());
+  while ((i=re.match(s,p,&l))!=-1)
+  {
+    //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
+    const char *env=getenv(s.mid(i+2,l-3));
+    s = s.left(i)+QCString(env)+s.right(s.length()-i-l);
+    p=i+l;
+  }
+  //printf("substEnvVarInString(%s) end\n",s.data());
+}
+
+static void substEnvVarsInStrList(QStrList &sl)
+{
+  char *s = sl.first();
+  while (s)
+  {
+    QCString result(s);
+    substEnvVarsInString(result);
+
+    // replace the string in the list and go to the next item.
+    sl.insert(sl.at(),result); // insert new item before current item.
+    sl.next();                 // current item is now the old item
+    int i=sl.at();
+    sl.remove(); // current item index changes if the last element is removed.
+    if (sl.at()==i)     // not last item
+      s = sl.current();
+    else                // just removed last item
+      s = 0;
+  }
+}
+
+
+void substituteEnvironmentVars()
+{
+  substEnvVarsInString( Config::projectName );          
+  substEnvVarsInString( Config::projectNumber );          
+  substEnvVarsInString( Config::outputDir );          
+  substEnvVarsInString( Config::htmlOutputDir );          
+  substEnvVarsInString( Config::latexOutputDir );          
+  substEnvVarsInString( Config::manOutputDir );          
+  substEnvVarsInString( Config::rtfOutputDir );
+  substEnvVarsInString( Config::outputLanguage );
+  substEnvVarsInString( Config::headerFile );          
+  substEnvVarsInString( Config::latexHeaderFile );          
+  substEnvVarsInString( Config::footerFile );          
+  substEnvVarsInString( Config::cgiName );          
+  substEnvVarsInString( Config::cgiURL );          
+  substEnvVarsInString( Config::docURL );          
+  substEnvVarsInString( Config::binAbsPath );          
+  substEnvVarsInString( Config::docAbsPath );          
+  substEnvVarsInString( Config::perlPath );          
+  substEnvVarsInString( Config::genTagFile );
+  substEnvVarsInString( Config::inputFilter );
+  substEnvVarsInString( Config::paperType );
+  substEnvVarsInString( Config::manExtension );
+  substEnvVarsInString( Config::htmlStyleSheet );
+  substEnvVarsInStrList( Config::ignorePrefixList );
+  substEnvVarsInStrList( Config::includePath );                
+  substEnvVarsInStrList( Config::examplePath );
+  substEnvVarsInStrList( Config::imagePath );
+  substEnvVarsInStrList( Config::inputSources );               
+  substEnvVarsInStrList( Config::excludeSources );
+  substEnvVarsInStrList( Config::filePatternList );            
+  substEnvVarsInStrList( Config::excludePatternList );
+  substEnvVarsInStrList( Config::examplePatternList );
+  substEnvVarsInStrList( Config::imagePatternList );
+  substEnvVarsInStrList( Config::tagFileList );                
+  substEnvVarsInStrList( Config::extDocPathList );             
+  substEnvVarsInStrList( Config::predefined );
+  substEnvVarsInStrList( Config::extraPackageList );
+  substEnvVarsInStrList( Config::stripFromPath );
+  substEnvVarsInStrList( Config::sectionFilterList );
+}
+
+void checkConfig()
+{
+  //if (!projectName.isEmpty())
+  //{
+  //  projectName[0]=toupper(projectName[0]);
+  //}
+
   // set default man page extension if non is given by the user
   if (Config::manExtension.isEmpty())
   {

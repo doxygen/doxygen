@@ -151,6 +151,7 @@ static QCString         formulaText;
 static QCString         sectionRef;
 static bool             insideIDL = FALSE;
 static bool             insideCppQuote = FALSE;
+static int              depthIf;
 
 // state variable for reading the argument list of a function
 static int              argRoundCount;
@@ -1001,6 +1002,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 %x      DocEmphasis
 %x      DocBold
 %x      DocCode
+%x	DocIf
 %x      DocCodeBlock
 %x      DocInternal
 %x      DocLink
@@ -1583,6 +1585,29 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <DocScan>{CMD}"refitem"			{
   					  BEGIN(DocRefItem);
+  					}
+<DocScan>{CMD}"if"/{BN}			{
+  					  outDoc->pushGeneratorState();
+					  depthIf++;
+					  BEGIN(DocIf);
+  					}
+<DocScan>{CMD}"endif"/[^a-z_A-Z0-9]	{
+					  if (--depthIf<0)
+					  {
+					    warn("Warning: documentation block contains \\endif without "
+						 "matching \\if found in documentation of %s!",refName.data());
+					  }
+					  else
+					  {
+  					    outDoc->popGeneratorState();
+					  }
+  					}
+<DocIf>[^\n\t ]+			{
+  					  if (Config::sectionFilterList.find(yytext)==-1)
+					  {
+					    outDoc->disableAll();
+					  }
+					  BEGIN(DocScan);
   					}
 <DocRefName>{SCOPENAME}			{
   					  QCString ref=yytext;
@@ -4153,7 +4178,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 								);
   					  BEGIN(lastMemberGroupContext);
   					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
+<ExampleDoc,Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
   					  lastAnchorContext = YY_START;
   					  sectionType=SectionInfo::Anchor;
 					  BEGIN(AnchorLabel);
@@ -4261,7 +4286,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <ExampleDoc,PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
-<Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>"//"  	{ current->doc += yytext; }
+<Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
+<LineDoc,JavaDoc>"//"					{ current->brief += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}
@@ -4695,6 +4721,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
 {
   //inParamBlock=inSeeBlock=inReturnBlock=FALSE;
   curTable = 0;
+  depthIf = 0;
   outDoc = new OutputList(&ol);
   currentIncludeFile.resize(0);
   includeFileOffset=0;
@@ -4731,6 +4758,10 @@ void parseDocument(OutputList &ol,const QCString &docString)
       warn("Warning: Documentation block ended in the middle " 
 	   "of a list (indent level %d)!\n",currentListIndentLevel);
     }
+  }
+  if (depthIf!=0)
+  {
+    warn("Warning: Documentation block contains \\if without matching \\endif: %d\n",depthIf);
   }
   ol+=*outDoc;
   delete outDoc; outDoc=0;

@@ -139,6 +139,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.startMemberHeader();
     parseText(ol,theTranslator->trFiles());
     ol.endMemberHeader();
+    ol.startMemberList();
     FileDef *fd=fileList->first();
     while (fd)
     {
@@ -156,6 +157,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       }
       fd=fileList->next();
     }
+    ol.endMemberList();
   }
   if (classList->count()>0)
   {
@@ -168,6 +170,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
         ol.startMemberHeader();
         parseText(ol,theTranslator->trCompounds());
         ol.endMemberHeader();
+        ol.startMemberList();
         found=TRUE;
       }
       QCString type;
@@ -193,6 +196,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       }
       cd=classList->next();
     }
+    if (found) ol.endMemberList();
   }
   if (allMemberList->count()>0)
   {

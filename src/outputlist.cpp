@@ -110,6 +110,16 @@ void OutputList::enableAll()
   }
 }
 
+void OutputList::disableAll()
+{
+  OutputGenerator *og=outputs->first();
+  while (og)
+  {
+    og->disable();
+    og=outputs->next();
+  }
+}
+
 void OutputList::disable(OutputGenerator::OutputType o)
 {
   OutputGenerator *og=outputs->first();

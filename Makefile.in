@@ -54,7 +54,7 @@ pdf: docs
 archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz tmake doc wintools examples bin objects \
 	       src configure configure.bin Makefile.in Makefile.win.in INSTALL \
-	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION
+	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION packages
 
 src/version.cpp: Makefile
 	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp

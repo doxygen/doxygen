@@ -177,10 +177,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
           t << "}\n";
           if (Config::paperType=="a4wide") t << "\\usepackage{a4wide}\n";
           t << "\\usepackage{makeidx}\n"
-            "\\usepackage{fancyheadings}\n"
-            "\\usepackage{epsfig}\n"
-            "\\usepackage{float}\n"
-            "\\usepackage{doxygen}\n";
+               "\\usepackage{fancyheadings}\n"
+               "\\usepackage{epsfig}\n"
+               "\\usepackage{float}\n"
+               "\\usepackage{doxygen}\n";
           if (Config::pdfHyperFlag) 
           {
             t << "\\usepackage{times}" << endl
@@ -192,8 +192,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
           }
           if (!theTranslator->latexBabelPackage().isEmpty())
           {
+            if (theTranslator->latexBabelPackage()=="russian")
+            {
+              t << "\\usepackage{inputenc}\n";
+            }
             t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
           }
+
           const char *s=Config::extraPackageList.first();
           while (s)
           {
@@ -619,24 +624,24 @@ void LatexGenerator::writeStyleInfo(int part)
         t << "\\setlength{\\parindent}{0cm}\n";
         t << "\\setlength{\\parskip}{0.2cm}\n";
         t << "\\addtocounter{secnumdepth}{1}\n";
-        if (!Config::compactLatexFlag)
-        {
-          t << "\\renewcommand{\\subsection}{\\@startsection{subsection}{2}{\\z@}\n";
-          t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
-          t << "                             {1.5ex \\@plus.2ex}\n";
-          t << "                             {\\normalfont\\large\\bfseries\\medskip\n";
-          t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
-          t << "                            }\n";
-        }
-        else
-        {
-          t << "\\renewcommand{\\subsubsection}{\\@startsection{subsubsection}{3}{\\z@}\n";
-          t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
-          t << "                             {1.5ex \\@plus.2ex}\n";
-          t << "                             {\\normalfont\\normalsize\\bfseries\\medskip\n";
-          t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
-          t << "                            }\n";
-        }
+        //if (!Config::compactLatexFlag)
+        //{
+        //  t << "\\renewcommand{\\subsection}{\\@startsection{subsection}{2}{\\z@}\n";
+        //  t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
+        //  t << "                             {1.5ex \\@plus.2ex}\n";
+        //  t << "                             {\\normalfont\\large\\bfseries\\medskip\n";
+        //  t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
+        //  t << "                            }\n";
+        //}
+        //else
+        //{
+        //  t << "\\renewcommand{\\subsubsection}{\\@startsection{subsubsection}{3}{\\z@}\n";
+        //  t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
+        //  t << "                             {1.5ex \\@plus.2ex}\n";
+        //  t << "                             {\\normalfont\\normalsize\\bfseries\\medskip\n";
+        //  t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
+        //  t << "                            }\n";
+        //}
         t << "\\sloppy\n";
         endPlainFile();
       }
@@ -678,19 +683,25 @@ void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
 
 void LatexGenerator::writeHtmlLink(const char *url,const char *text)
 {
+  if (Config::pdfHyperFlag)
+  {
+    t << "\\href{";
+    t << url;
+    t << "}";
+  }
   t << "{\\tt ";
   docify(text);
   t << "}";
-  if (url)
-  {
-  //  t << " {\\tt (";
-  //  docify(url);
-  //  t << ")}";
-  }
 }
 
 void LatexGenerator::writeMailLink(const char *url)
 {
+  if (Config::pdfHyperFlag)
+  {
+    t << "\\href{mailto:";
+    t << url;
+    t << "}";
+  }
   t << "{\\tt "; 
   docify(url);
   t << "}";
@@ -813,6 +824,16 @@ void LatexGenerator::startGroupHeader()
 }
 
 void LatexGenerator::endGroupHeader()
+{
+  t << "}" << endl;
+}
+
+void LatexGenerator::startMemberHeader()
+{
+  if (Config::compactLatexFlag) t << "\\subsubsection*{"; else t << "\\subsection*{";
+}
+
+void LatexGenerator::endMemberHeader()
 {
   t << "}" << endl;
 }
@@ -942,6 +963,7 @@ void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
 void LatexGenerator::docify(const char *str)
 {
   static bool isJapanese = theTranslator->latexBabelPackage()=="a4j";
+  static bool isRussian  = theTranslator->latexBabelPackage()=="russian";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1009,7 +1031,19 @@ void LatexGenerator::docify(const char *str)
               t << (char)c;    
             } 
           }
-          else // language is other than japanese
+          else if (isRussian)
+          {
+            if (c>=128)
+            {
+              t << (char)c;
+            }
+            else
+            {
+              if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+              t << (char)c;
+            }
+          }
+          else // language is other than russian or japanese
           {
             switch(c)
             {

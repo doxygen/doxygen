@@ -273,8 +273,11 @@ void DotNode::deleteNode()
 
 void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
 {
-  const char *labCol = (hasNonReachableChildren) ? "red" : 
-                          (m_url.isEmpty() ? "grey" : "black");
+  const char *labCol = 
+          m_url.isEmpty() ? "grey" :  // non link
+           (
+            (hasNonReachableChildren) ? "red" : "black"
+           );
   t << "  Node" << m_number << " [shape=\"box\",label=\"" << m_label    
     << "\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\"";
   t << ",color=\"" << labCol << "\"";
@@ -528,10 +531,23 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
     if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
       DotNode *bn;
-      //printf("Found visible class=`%s'\n",bClass->name().data());
+      //printf("Node `%s' Found visible class=`%s'\n",n->m_label.data(),
+      //                                              bClass->name().data());
       if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
       {
-        if (n->m_children==0 || n->m_children->findRef(bn)==0) // no arrow yet
+        //printf("Base node `%s'\n",bn->m_label.data());
+        //if (n->m_children)
+        //{
+        //  QListIterator<DotNode> dnli(*n->m_children);
+        //  DotNode *cn;
+        //  for (dnli.toFirst();(cn=dnli.current());++dnli)
+        //  {
+        //    printf("Child node `%s'\n",cn->m_label.data());
+        //  }
+        //  printf("ref node = %p\n",n->m_children->findRef(bn));
+        //}
+
+        if (n->m_children==0 || n->m_children->findRef(bn)==-1) // no arrow yet
         {
           n->addChild(bn,bcd->prot);
           bn->addParent(n);
@@ -542,6 +558,10 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
           //       bn->m_parents  ? bn->m_parents->count()  : 0
           //     );
         }
+        //else
+        //{
+        //  printf("Class already has an arrow!\n");
+        //}
       }
       else 
       {
@@ -598,6 +618,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
                   (cd->getReference()+"$"+cd->getOutputFileBase()).data() :
                   0
                );
+        
         //m_usedNodes->clear();
         m_usedNodes->insert(cd->name(),n);
         m_rootNodes->insert(0,n);   

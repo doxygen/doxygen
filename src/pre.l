@@ -779,8 +779,8 @@ void addDefine()
   mn->append(md);
   if (g_yyFileDef) g_yyFileDef->insertMember(md);
   
-  Define *d;
-  if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
+  //Define *d;
+  //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
 }
 
 static void outputChar(char c)
@@ -1659,7 +1659,7 @@ void initPreprocessor()
   addSearchDir(".");
   //defineNameList.setAutoDelete(TRUE);
   //defineNameList.clear();
-  defineDict.clear();
+  //defineDict.clear();
   //fileDefineCache = new DefineCache(1009);
   g_expandedDict = new DefineDict(17);
   g_fileDefineDict = new DefineDict(1009);

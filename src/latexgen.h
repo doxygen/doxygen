@@ -85,8 +85,8 @@ class LatexGenerator : public OutputGenerator
 
     void startMemberSections() {}
     void endMemberSections() {} 
-    void startMemberHeader() { startGroupHeader(); }
-    void endMemberHeader() { endGroupHeader(); }
+    void startMemberHeader();
+    void endMemberHeader();
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     void startMemberList();
