@@ -840,6 +840,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   QString name = linkToText(g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
+  //printf("handleLinkedWord(%s)\n",name.data());
   if (!g_insideHtmlLink && 
       resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {

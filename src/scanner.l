@@ -4637,18 +4637,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
                                         }
-<GroupDocArg2>[^\n\*]+			{
+<GroupDocArg2>[^\n\\\*]+		{
 					  current->type += yytext;
 					  current->type = current->type.stripWhiteSpace();
   					}
-<GroupDocArg2>"\n"			{
+<GroupDocArg2>"\\_linebr"|"\n"		{
                                           if( current->groupDocType == Entry::GROUPDOC_NORMAL &&
                                               current->type.length() == 0 )
   					    warn(yyFileName,yyLineNr,
                                                  "Warning: missing title after "
 					         "\\defgroup %s", current->name.data()
                                                 );
-  					  yyLineNr++; 
+  					  if (*yytext=='\n') yyLineNr++; 
  					  newDocState();
   					}
 <ClassDocArg2>{FILE}			{
@@ -4658,6 +4658,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <ClassDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
                                         }
+<ClassDocArg2>"\\_linebr"		{ 
+					  newDocState();
+					}
 <ClassDocArg2>"\n"			{ yyLineNr++; 
 					  newDocState();
 					}
@@ -4672,7 +4675,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <ClassDocArg3>"\\"{B}*"\n"		{ yyLineNr++;
                                         }
-<ClassDocArg3>"\n"			{ yyLineNr++; 
+<ClassDocArg3>"\n"|"\\linebr"		{ yyLineNr++; 
   					  newDocState();
 					}
 <ClassDocArg3>{B}*"*/"			{
@@ -4685,9 +4688,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   				        }
 <FileDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
                                         }
-<FileDocArg1>"\n"			{
+<FileDocArg1>"\n"|"\\_linebr"		{
   					  current->name = yyFileName;
-  					  yyLineNr++;
+  					  if (*yytext=='\n') yyLineNr++;
 					  newDocState();
 					  if (lastFileDocContext==LineDoc)
 					  {
@@ -4705,13 +4708,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; 
 					  current->doc+="\n";
                                         }
-<PageDocArg1>"\n"			{
+<PageDocArg1>"\n"|"\\_linebr"		{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
 					       "\\page."
                                               );
 					  current->doc+="\n";
-  					  yyLineNr++;
+  					  if (*yytext=='\n') yyLineNr++;
 					  BEGIN( Doc );
   					}
 <PageDocArg2>.*"\n"			{
@@ -4728,12 +4731,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
 					  current->doc+="\n";
                                         }
-<EnumDocArg1>"\n"			{
+<EnumDocArg1>"\n"|"\\_linebr"		{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after \\enum."
                                               );
 					  current->doc+="\n";
-  					  yyLineNr++;
+  					  if (*yytext=='\n') yyLineNr++;
 					  BEGIN( Doc );
   					}
 <PageDoc>{CMD}"refitem".*"\n"		{
@@ -4766,8 +4769,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  startGroupInDoc();
 					  newDocState();
   					}
-<GroupHeader>\n				{
-  					  yyLineNr++;
+<GroupHeader>\n|"\\_linebr"		{
+  					  if (*yytext=='\n') yyLineNr++;
 					  current->doc+="\n";
 					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
 					  startGroupInDoc();
@@ -5328,7 +5331,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );
   					}
-<GroupName>\n				{
+<GroupName>"\\_linebr"			{
+					  BEGIN( lastGroupContext );
+  					}
+<GroupName>"\n"				{
   					  yyLineNr++; 
 					  BEGIN( lastGroupContext );
   					}
@@ -5699,7 +5705,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
-<Doc,JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine,ClassDoc,PageDoc,AfterDoc,CopyArgComment>"\\_linebr " { 
+<Doc,JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine,ClassDoc,PageDoc,AfterDoc,CopyArgComment,DocInternal,DocInternalLine>"\\_linebr " { 
                                           // used to compensate for misalignments due to \n's inside ALIASES
   					  current->doc += '\n';
   					}

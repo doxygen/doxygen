@@ -15,6 +15,16 @@
  *
  */
 
+//
+//	Update:
+//
+// 2004.12.22 (SooYoung Jung: jung5000@gmail.com)
+//	- LaTex and RTF were not generated correctly.
+// 	  Corrected trRTFansicp and trRTFCharSet.
+// 	  It was wrong.
+//
+//
+
 #ifndef TRANSLATOR_KE_H
 #define TRANSLATOR_KE_H
 
@@ -32,10 +42,9 @@ class TranslatorKoreanEn : public TranslatorEnglish
     {
 		return "euc-kr";
     }
-
     virtual QCString trRTFansicp()
     {
-      return "1252";
+      return "949";
     }
 
     /*! Used as ansicpg for RTF fcharset
@@ -43,7 +52,7 @@ class TranslatorKoreanEn : public TranslatorEnglish
      */
     virtual QCString trRTFCharSet()
     {
-      return "0";
+      return "129";
     }
 };
 

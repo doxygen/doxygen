@@ -113,7 +113,7 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 
 %%
 
-<Start>"operator"		{ // operator rule must be before {ID} rule
+<Start>"operator"/({B}*"["{B}*"]")* 	{ // operator rule must be before {ID} rule
   				  name += yytext;
   				  BEGIN(Operator);
   				}
