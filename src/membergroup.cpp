@@ -58,7 +58,7 @@ MemberGroup::~MemberGroup()
   delete memberList;
 }
 
-void MemberGroup::insertMember(Definition *d,MemberDef *md)
+void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p\n",
@@ -67,13 +67,13 @@ void MemberGroup::insertMember(Definition *d,MemberDef *md)
   //       md->getSectionList());
   MemberDef *firstMd = memberList->first();
   if (inSameSection && memberList->count()>0 && 
-      firstMd->getSectionList(d)!=md->getSectionList(d))
+      firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))
   {
     inSameSection=FALSE;
   }
   else if (inDeclSection==0)
   {
-    inDeclSection = md->getSectionList(d);
+    inDeclSection = md->getSectionList(m_parent);
   }
   memberList->append(md);
 

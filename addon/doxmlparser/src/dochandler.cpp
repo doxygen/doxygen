@@ -1057,6 +1057,7 @@ HighlightHandler::HighlightHandler(IBaseHandler *parent)
   m_children.setAutoDelete(TRUE);
   addEndHandler("highlight",this,&HighlightHandler::endHighlight);
   addStartHandler("ref",this,&HighlightHandler::startRef);
+  addStartHandler("sp",this,&HighlightHandler::startSpace);
   m_hl = IDocHighlight::Invalid;
 }
 
@@ -1070,12 +1071,13 @@ void HighlightHandler::startHighlight(const QXmlAttributes& attrib)
   m_hl = s_highlightMapper->stringToKind(m_hlString);
   m_curString="";
   m_parent->setDelegate(this);
+  debug(2,"start highlight\n");
 }
 
 void HighlightHandler::endHighlight()
 {
   addTextNode();
-  debug(2,"highlight class=`%s'\n",m_hlString.data());
+  debug(2,"end highlight class=`%s'\n",m_hlString.data());
   m_parent->setDelegate(0);
 }
 
@@ -1087,8 +1089,15 @@ void HighlightHandler::startRef(const QXmlAttributes& attrib)
   rh->startRef(attrib);
 }
 
+void HighlightHandler::startSpace(const QXmlAttributes&)
+{
+  m_curString=" ";
+  addTextNode();
+}
+
 void HighlightHandler::addTextNode()
 {
+  printf("m_curString=`%s'\n",m_curString.data());
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,IDocMarkup::Normal,0));

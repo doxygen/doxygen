@@ -485,12 +485,12 @@ void FileDef::writeSource(OutputList &ol)
 
 void FileDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict,this);
 }
 
 /*! Adds member definition \a md to the list of all members of this file */

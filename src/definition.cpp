@@ -122,7 +122,28 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
   if (d==0) return;
   //printf("Definition::setDocumentation(%s,%s,%d)\n",d,docFile,docLine);
   if (stripWhiteSpace)
-    m_doc=((QCString)d).stripWhiteSpace();
+  {
+    // strip leading empty lines in front of the text, but not the 
+    // leading spaces in front of the first line, so list items are 
+    // parsed with the correct indent
+    const char *p=d;
+    char c;
+    int s=0,so=0;
+    while ((c=*p) && (c==' ' || c=='\r' || c=='\n'))
+    {
+      if (c=='\n') so=s; 
+      p++;
+      s++;
+    }
+    m_doc=d+so;
+    // zero any trailing whitespace
+    int e=m_doc.length()-1;
+    while (e>=0 && (c=m_doc.at(e)) && (c==' ' || c=='\r' || c=='\n'))
+    {
+      m_doc.at(e)='\0';
+      e--;
+    }
+  }
   else
     m_doc=d;
   m_docFile = docFile;

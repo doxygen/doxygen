@@ -86,52 +86,57 @@ class DocNode
                 Kind_XRefItem       = 15,
                 Kind_HtmlList       = 16,
                 Kind_HtmlListItem   = 17,
-                //Kind_HtmlPre        = 18,
-                Kind_HtmlDescList   = 19,
-                Kind_HtmlDescData   = 20,
-                Kind_HtmlDescTitle  = 21,
-                Kind_HtmlTable      = 22,
-                Kind_HtmlRow        = 23,
-                Kind_HtmlCell       = 24,
-                Kind_HtmlCaption    = 25,
-                Kind_LineBreak      = 26,
-                Kind_HorRuler       = 27,
-                Kind_Anchor         = 28,
-                Kind_IndexEntry     = 29,
-                Kind_Internal       = 30,
-                Kind_HRef           = 31,
-                Kind_Include        = 32,
-                Kind_IncOperator    = 33,
-                Kind_HtmlHeader     = 34,
-                Kind_Image          = 35,
-                Kind_DotFile        = 36,
-                Kind_Link           = 37,
-                Kind_Ref            = 38,
-                Kind_Formula        = 39,
-                Kind_SecRefItem     = 40,
-                Kind_SecRefList     = 41,
-                Kind_Language       = 42,
-                Kind_LinkedWord     = 43,
-                Kind_ParamSect      = 44,
-                Kind_ParamList      = 45,
-                Kind_InternalRef    = 46,
-                Kind_Copy           = 47,
-                Kind_Text           = 48
+                Kind_HtmlDescList   = 18,
+                Kind_HtmlDescData   = 19,
+                Kind_HtmlDescTitle  = 20,
+                Kind_HtmlTable      = 21,
+                Kind_HtmlRow        = 22,
+                Kind_HtmlCell       = 23,
+                Kind_HtmlCaption    = 24,
+                Kind_LineBreak      = 25,
+                Kind_HorRuler       = 26,
+                Kind_Anchor         = 27,
+                Kind_IndexEntry     = 28,
+                Kind_Internal       = 29,
+                Kind_HRef           = 30,
+                Kind_Include        = 31,
+                Kind_IncOperator    = 32,
+                Kind_HtmlHeader     = 33,
+                Kind_Image          = 34,
+                Kind_DotFile        = 35,
+                Kind_Link           = 36,
+                Kind_Ref            = 37,
+                Kind_Formula        = 38,
+                Kind_SecRefItem     = 39,
+                Kind_SecRefList     = 40,
+                Kind_Language       = 41,
+                Kind_LinkedWord     = 42,
+                Kind_ParamSect      = 43,
+                Kind_ParamList      = 44,
+                Kind_InternalRef    = 45,
+                Kind_Copy           = 46,
+                Kind_Text           = 47
               };
     /*! Creates a new node */
     DocNode() : m_insidePre(FALSE) {}
+
     /*! Destroys a node. */
     virtual ~DocNode() {}
+
     /*! Returns the kind of node. Provides runtime type information */
     virtual Kind kind() const = 0;
+
     /*! Returns the parent of this node or 0 for the root node. */
     virtual DocNode *parent() const = 0;
+
     /*! Acceptor function for node visitors. Part of the visitor pattern. 
      *  @param v Abstract visitor.
      */
     virtual void accept(DocVisitor *v) = 0;
+
     /*! Returns TRUE iff this node is inside a preformatted section */
     bool isPreformatted() const { return m_insidePre; }
+
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
   private:
@@ -156,7 +161,6 @@ template<class T> class CompAccept
   
   protected:
     QList<DocNode> m_children;
-    QList<DocNode> &getChildren() const { return m_children; }
 };
 
 
@@ -1047,25 +1051,6 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
     DocNode *     m_parent;
     HtmlAttribList m_attribs;
 };
-
-#if 0
-/*! @brief Node representing a preformatted HTML section */
-class DocHtmlPre : public CompAccept<DocHtmlPre>, public DocNode
-{
-  public:
-    DocHtmlPre(DocNode *parent,const HtmlAttribList &attribs) 
-      : m_parent(parent), m_attribs(attribs) {}
-    int parse();
-    Kind kind() const { return Kind_HtmlPre; }
-    const HtmlAttribList &attribs() const { return m_attribs; }
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v) { CompAccept<DocHtmlPre>::accept(this,v); }
-
-  private:
-    DocNode *     m_parent;
-    HtmlAttribList m_attribs;
-};
-#endif
 
 /*! @brief Node representing a HTML table cell */
 class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode

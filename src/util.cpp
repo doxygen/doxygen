@@ -2475,6 +2475,16 @@ bool resolveRef(/* in */  const char *scName,
     *resContext=gd;
     return TRUE;
   }
+  else if (tsName.find('.')!=-1) // maybe a link to a file
+  {
+    bool ambig;
+    fd=findFileDef(Doxygen::inputNameDict,tsName,ambig);
+    if (fd && !ambig)
+    {
+      *resContext=fd;
+      return TRUE;
+    }
+  }
 
   return FALSE;
 }
@@ -3135,6 +3145,7 @@ void addMembersToMemberGroup(MemberList *ml,
                              MemberGroupSDict *memberGroupSDict,
                              Definition *context)
 {
+  ASSERT(context!=0);
   //printf("addMemberToMemberGroup()\n");
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -3169,7 +3180,7 @@ void addMembersToMemberGroup(MemberList *ml,
                       );
                 memberGroupSDict->append(groupId,mg);
               }
-              mg->insertMember(context,fmd); // insert in member group
+              mg->insertMember(fmd); // insert in member group
               fmd->setMemberGroup(mg);
             }
           }
@@ -3198,7 +3209,7 @@ void addMembersToMemberGroup(MemberList *ml,
           memberGroupSDict->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list
-        mg->insertMember(context,md); // insert in member group
+        mg->insertMember(md); // insert in member group
         md->setMemberGroup(mg);
         continue;
       }

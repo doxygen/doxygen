@@ -62,7 +62,7 @@ static const char *defaultStyleSheet =
 "TD.mdname { background-color: #f2f2ff; font-weight: bold; color: #602020; width: 600px; }\n"
 "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
 "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
-"BODY { background: white }\n"
+"BODY { background: white; color: black }\n"
 "TD.indexkey { \n"
 "   background-color: #eeeeff; \n"
 "   font-weight: bold; \n"

@@ -378,7 +378,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+"."[a-z_A-Z0-9.-]+ { // Mail address
+<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-])+[a-z_A-Z0-9\-]+ { // Mail address
                          g_token->name=yytext;
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
