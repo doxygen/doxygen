@@ -300,9 +300,10 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countFiles()
+void countFiles(int &htmlFiles,int &files)
 {
-  int count=0;
+  htmlFiles=0;
+  files=0;
   FileNameListIterator fnli(inputNameList);
   FileName *fn;
   for (;(fn=fnli.current());++fnli)
@@ -311,22 +312,28 @@ int countFiles()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      if (fd->isLinkableInProject() || 
-          fd->generateSource() || 
-          (!fd->isReference() && Config::sourceBrowseFlag)
-         ) count++;
+      bool doc = fd->isLinkableInProject();
+      bool src = fd->generateSource() || Config::sourceBrowseFlag;
+      if (doc || src)
+      {
+        htmlFiles++;
+      }
+      if (doc)
+      {
+        files++;
+      }
     }
   }
-  return count;
 }
 
 //----------------------------------------------------------------------------
 
 void writeFileIndex(OutputList &ol)
 {
-  if (documentedFiles==0) return;
+  if (documentedHtmlFiles==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
+  if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,"files","File Index");
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
@@ -366,32 +373,28 @@ void writeFileIndex(OutputList &ol)
           path=stripFromPath(fd->getPath().copy());
         }
 
-        // --------------- LaTeX only -----------------------------
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Html);
-        ol.writeStartAnnoItem("file",
-                              fd->getOutputFileBase(),
-                              path,
-                              fd->name()
-                             );
-        if (!fd->briefDescription().isEmpty())
+        // --------------- LaTeX/RTF only -------------------------
+        if (doc)
         {
-          ol.docify(" (");
-          OutputList briefOutput(&ol);
-          parseDoc(briefOutput,0,0,
-              abbreviate(fd->briefDescription(),fd->name()));
-          ol+=briefOutput;
-          ol.docify(")");
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Html);
+          ol.writeStartAnnoItem("file",
+              fd->getOutputFileBase(),
+              path,
+              fd->name()
+                               );
+          if (!fd->briefDescription().isEmpty())
+          {
+            ol.docify(" (");
+            OutputList briefOutput(&ol);
+            parseDoc(briefOutput,0,0,
+                abbreviate(fd->briefDescription(),fd->name()));
+            ol+=briefOutput;
+            ol.docify(")");
+          }
+          ol.writeEndAnnoItem(fd->getOutputFileBase());
+          ol.popGeneratorState();
         }
-        //else
-        //{
-        //  ol.startEmphasis();
-        //  parseText(ol,theTranslator->trNoDescriptionAvailable());
-        //  ol.endEmphasis();
-        //}
-        ol.writeEndAnnoItem(fd->getOutputFileBase());
-        //ol.enable(OutputGenerator::Html);
-        ol.popGeneratorState();
         // --------------------------------------------------------
 
         // ----------------- HTML only ----------------------------

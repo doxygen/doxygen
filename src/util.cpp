@@ -34,6 +34,7 @@
 #include "htmlhelp.h"
 #include "example.h"
 #include "version.h"
+#include "groupdef.h"
 
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
@@ -268,6 +269,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
     FileDef      *fd=0;
     MemberDef    *md=0;
     NamespaceDef *nd=0;
+    GroupDef     *gd=0;
 
     QCString scopeName=scName;
     QCString searchName=name;
@@ -314,14 +316,14 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
 
       //if (!found) printf("Trying to link %s in %s\n",word.data(),scName);
       if (!found && 
-          getDefs(scName,word,0,md,cd,fd,nd) && 
+          getDefs(scName,word,0,md,cd,fd,nd,gd) && 
           (md->isTypedef() || md->isEnumerate() || md->isReference()) && 
           md->isLinkable() 
          )
       {
         //printf("Found ref\n");
         Definition *d=0;
-        if (cd) d=cd; else if (nd) d=nd; else d=fd;
+        if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
         if (d && d->isLinkable())
         {
           result.writeObjectLink(d->getReference(),d->getOutputFileBase(),
@@ -527,7 +529,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trCompoundList());
     ol.endQuickIndexItem();
   } 
-  if (documentedFiles>0)
+  if (documentedHtmlFiles>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,absPath+"files.html");
@@ -723,7 +725,7 @@ QCString dateToString(bool includeTime)
 // recursive function that returns the number of branches in the 
 // inheritance tree that the base class `bcd' is below the class `cd'
 
-static int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0)
+int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 {
   if (cd==bcd) return level; 
   BaseClassListIterator bcli(*cd->baseClasses());
@@ -1190,9 +1192,10 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
  */
 bool getDefs(const QCString &scName,const QCString &memberName, 
              const char *args,
-             MemberDef *&md, ClassDef *&cd, FileDef *&fd,NamespaceDef *&nd)
+             MemberDef *&md, 
+             ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd)
 {
-  fd=0, md=0, cd=0, nd=0;
+  fd=0, md=0, cd=0, nd=0, gd=0;
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName.copy();
@@ -1327,7 +1330,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
     
     // unknown or undocumented scope 
   }
-  else // maybe an namespace or file member ?
+  else // maybe an namespace, file or group member ?
   {
     //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
     //              scopeName.data(),mScope.data(),mName.data());
@@ -1415,11 +1418,17 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           {
             if (md->isLinkable())
             {
-              //printf("md->name()=`%s' md->args=`%s'\n",md->name().data(),args);
               fd=md->getFileDef();
-              if (fd && fd->isLinkable())
+              gd=md->groupDef();
+              //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
+              //    md->name().data(),args,fd,gd);
+              bool inGroup=FALSE;
+              if ((fd && fd->isLinkable()) || 
+                  (inGroup=(gd && gd->isLinkable()))
+                 )
               {
-                //printf("fd->name()=`%s'\n",fd->name().data());
+                if (inGroup) fd=0;
+                //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
                 bool match=TRUE;
                 ArgumentList *argList=0;
                 if (args && !md->isDefine())
@@ -1429,7 +1438,11 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                   match=matchArguments(md->argumentList(),argList); 
                   delete argList; argList=0;
                 }
-                if (match) return TRUE;
+                if (match) 
+                {
+                  //printf("Found match!\n");
+                  return TRUE;
+                }
               }
             }
             md=mn->next();
@@ -1445,8 +1458,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               {
                 //printf("md->name()=`%s'\n",md->name().data());
                 fd=md->getFileDef();
-                if (fd && fd->isLinkable())
+                gd=md->groupDef();
+                bool inGroup=FALSE;
+                if ((fd && fd->isLinkable()) |+
+                    (inGroup=(gd && gd->isLinkable()))
+                   )
                 {
+                  if (inGroup) fd=0;
                   return TRUE;
                 }
               }
@@ -1625,7 +1643,7 @@ bool generateRef(OutputList &ol,const char *scName,
   //        scopeStr.data(),nameStr.data(),argsStr.data());
 
   // check if nameStr is a member or global.
-  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd))
+  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd))
   {
     //printf("after getDefs nd=%p\n",nd);
     QCString anchor = md->isLinkable() ? md->anchor() : 0;
@@ -1654,6 +1672,15 @@ bool generateRef(OutputList &ol,const char *scName,
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
           anchor,linkText.stripWhiteSpace());
       cName=fd->name();
+      aName=md->anchor();
+    }
+    else if (gd)
+    {
+      //printf("addGroupLink(%s,%s,%s)\n",fd->getOutputFileBase().data(),anchor.data(),
+      //        gd->name().data());
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),
+          anchor,linkText.stripWhiteSpace());
+      cName=gd->name();
       aName=md->anchor();
     }
     else // should not be reached

@@ -27,6 +27,7 @@
 #include "example.h"
 #include "membergroup.h"
 #include "scanner.h"
+#include "groupdef.h"
 
 //-----------------------------------------------------------------------------
 
@@ -219,6 +220,7 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   nspace=0;
   memDef=0;
   memDec=0;
+  group=0;
   exampleList=0;
   exampleDict=0;
   enumFields=0;
@@ -426,24 +428,29 @@ void MemberDef::setGroupId(int groupId)
 }
 
 void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
-                      FileDef *fd,MemberGroup *mg)
+                      FileDef *fd,GroupDef *gd,MemberGroup *mg)
 {
-  if (mg)
-    ol.writeObjectLink(0,mg->getOutputFileBase(),
-                       anchor(),name());
-  else if (nd)
-    ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
-                       anchor(),name());
-  else if (fd) 
-    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
-                       anchor(),name());
-  else    
-    ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-                       anchor(),name());
+  Definition *d;
+  if (mg) d=mg; else if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
+  //if (mg)
+  //  ol.writeObjectLink(0,mg->getOutputFileBase(),
+  //                     anchor(),name());
+  //else if (cd)
+  //  ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+  //                     anchor(),name());
+  //else if (nd)
+  //  ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+  //                     anchor(),name());
+  //else if (fd) 
+  //  ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),
+  //                     anchor(),name());
+  //else    
+  ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
 }
 
 
-void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+void MemberDef::writeDeclaration(OutputList &ol,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                int prevGroupId,bool inGroup)
 {
   int i,l;
@@ -481,7 +488,8 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
     }
       
     Definition *d=0;
-    if (cd) d=cd; else if (nd) d=nd; else d=fd;
+    ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
+    if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
     QCString cname  = d->name();
     QCString cfname = d->getOutputFileBase();
 
@@ -664,11 +672,11 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
         if (annMemb)
         {
           //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-          annMemb->writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
+          annMemb->writeLink(ol,cd,nd,fd,gd,inGroup ? memberGroup : 0);
           annMemb->annUsed=annUsed=TRUE;
         }
         else
-          writeLink(ol,0,0,0,memberGroup);
+          writeLink(ol,0,0,0,0,memberGroup);
         //ol.writeBoldString(name()); 
       }
       else if (isLinkable())
@@ -680,13 +688,14 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
               annMemb->memberClass(),
               annMemb->getNamespace(),
               annMemb->getFileDef(),
+              annMemb->groupDef(),
               inGroup ? memberGroup : 0
                             );
           annMemb->annUsed=annUsed=TRUE;
         }
         else
           //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
-          writeLink(ol,cd,nd,fd,inGroup ? memberGroup : 0);
+          writeLink(ol,cd,nd,fd,gd,inGroup ? memberGroup : 0);
       }
       else // there is a brief member description and brief member 
         // descriptions are enabled or there is no detailed description.
@@ -794,6 +803,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (isEnumerate() && r.match(def,0,&l)!=-1) return;
     if (isEnumValue() && (smd = getEnumScope()) 
         && r.match(smd->name(),0,&dummy)==-1) return;
+
+    ol.pushGeneratorState();
 
     bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
     HtmlHelp *htmlHelp = 0;
@@ -1236,6 +1247,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.endIndent();
     // enable LaTeX again
     //if (Config::extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
+    ol.popGeneratorState();
 
   }
 }

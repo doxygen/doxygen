@@ -104,6 +104,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_input_filter INPUT_FILTER
 <li> \refitem cfg_internal_docs INTERNAL_DOCS
 <li> \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
+<li> \refitem cfg_latex_batchmode LATEX_BATCHMODE
 <li> \refitem cfg_latex_header LATEX_HEADER
 <li> \refitem cfg_latex_output LATEX_OUTPUT
 <li> \refitem cfg_macro_expansion MACRO_EXPANSION
@@ -694,6 +695,16 @@ EXTRA_PACKAGES = times
  the version number of doxygen, the project name (see PROJECT_NAME), or the
  project number (see PROJECT_NUMBER).
    
+\anchor cfg_latex_batchmode
+<dt>\c LATEX_BATCHMODE <dd>
+ \addindex LATEX_BATCHMODE
+
+If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \\batchmode.
+command to the generated \f$\mbox{\LaTeX}\f$ files. This will 
+instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of 
+asking the user for help. This option is also used when generating formulas 
+in HTML.
+
 </dl>
 
 \subsection rtf_output RTF related options

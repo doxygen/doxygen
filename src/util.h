@@ -33,6 +33,7 @@ class MemberDef;
 class ExampleList;
 class ClassList;
 class BaseClassList;
+class GroupDef;
 
 extern void setAnchors(char id,MemberList *ml);
 extern QCString fileToString(const char *name);
@@ -40,8 +41,10 @@ extern QCString dateToString(bool);
 extern void linkifyText(OutputList &ol,const char *clName,const char *name,
                         const char *text);
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
-                    const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd,
-                    NamespaceDef *&nd);
+                    const char *, MemberDef *&md, 
+                    ClassDef *&cd,FileDef *&fd, 
+                    NamespaceDef *&nd,GroupDef *&gd
+                   );
 extern bool generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);
 extern bool generateLink(OutputList &ol,const char *,
@@ -84,5 +87,6 @@ int getPrefixIndex(const QCString &name);
 QCString removeAnnonymousScopes(const QCString &s);
 void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
+int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 
 #endif

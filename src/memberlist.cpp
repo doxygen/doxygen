@@ -14,15 +14,17 @@
  *
  */
 
+#include <qregexp.h>
+
 #include "memberlist.h"
 #include "classdef.h"
 #include "message.h"
-#include <qregexp.h>
 #include "util.h"
 #include "language.h"
 #include "doxygen.h"
 #include "outputlist.h"
 #include "scanner.h"
+#include "groupdef.h"
 
 MemberList::MemberList() : QList<MemberDef>()
 {
@@ -36,7 +38,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 {
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
-  return strcasecmp(c1->name(),c2->name());
+  return stricmp(c1->name(),c2->name());
 }
 
 void MemberList::countDecMembers()
@@ -187,17 +189,21 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 {
 }
 
-void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
-                       NamespaceDef *nd,FileDef *fd,bool inGroup)
+void MemberList::writePlainDeclarations(OutputList &ol,
+                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                       bool inGroup)
 {
   countDecMembers();
   if (totalCount()==0) return; // no members in this list
   
+  ol.pushGeneratorState();
+
   int prevGroupId = -1;
-  if (!fd && !nd) ol.startMemberList();
+  bool sectionPerType = fd || nd || gd;
+  if (!sectionPerType) ol.startMemberList();
   MemberDef *md;
 
-  if (fd && defineCount()>0)
+  if (sectionPerType && defineCount()>0)
   {
     ol.startMemberHeader();
     parseText(ol,theTranslator->trDefines());
@@ -210,14 +216,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
           (md->argsString() || md->hasDocumentation() || Config::extractAllFlag)
          ) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
       }
     }
     ol.endMemberList();
   }
   
-  if ((fd || nd) && protoCount()>0)
+  if (sectionPerType && protoCount()>0)
   {
     ol.startMemberHeader();
     parseText(ol,theTranslator->trFuncProtos());
@@ -228,7 +234,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
     {
       if (md->isPrototype()) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
       }
     }
@@ -237,7 +243,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
   
   if (typedefCount()>0)
   {
-    if (fd || nd) 
+    if (sectionPerType) 
     {
       ol.startMemberHeader();
       parseText(ol,theTranslator->trTypedefs());
@@ -250,17 +256,17 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
     {
       if (md->isTypedef()) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
       }
     }
-    if (fd || nd) ol.endMemberList();
+    if (sectionPerType) ol.endMemberList();
   }
  
   // write enums 
   if (enumCount()>0)
   {
-    if (fd || nd) 
+    if (sectionPerType) 
     {
       ol.startMemberHeader();
       parseText(ol,theTranslator->trEnumerations());
@@ -302,7 +308,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
               if (!Config::genTagFile.isEmpty())
                 tagFile << md->name() << " " << md->anchor() 
                   << " \"\"" << endl;
-              md->writeLink(typeDecl,cd,nd,fd,0);
+              md->writeLink(typeDecl,cd,nd,fd,gd,0);
             }
             else
             {
@@ -323,7 +329,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
                 if (!Config::genTagFile.isEmpty())
                   tagFile << fmd->name() << " " << fmd->anchor() 
                     << " \"" << fmd->argsString() << "\"";
-                fmd->writeLink(typeDecl,cd,nd,fd,0);
+                fmd->writeLink(typeDecl,cd,nd,fd,gd,0);
               }
               else // no docs for this enum value
               {
@@ -395,13 +401,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
         }
       } // md->isEnumerate()
     } // enum loop
-    if (fd || nd) ol.endMemberList();
+    if (sectionPerType) ol.endMemberList();
   } // write enums
  
   // write functions
   if (funcCount()>0)
   {
-    if (fd || nd) 
+    if (sectionPerType) 
     {
       ol.startMemberHeader();
       parseText(ol,theTranslator->trFunctions());
@@ -416,11 +422,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
           ( !md->isRelated() || md->memberClass() )
          ) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
       }
     }
-    if (fd || nd) ol.endMemberList();
+    if (sectionPerType) ol.endMemberList();
   }
   
   if (friendCount()>0)
@@ -434,7 +440,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
         if (md->hasDocumentation() && type!="friend class")
         {
-          md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+          md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
           prevGroupId = md->groupId();
         }
         else // friend is undocumented as a member but it is a class, 
@@ -479,7 +485,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
   // write variables
   if (varCount()>0)
   {
-    if (fd || nd) 
+    if (sectionPerType) 
     {
       ol.startMemberHeader();
       parseText(ol,theTranslator->trVariables());
@@ -491,11 +497,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
     {
       if (md->isVariable()) 
       {
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         prevGroupId = md->groupId();
       }
     }
-    if (fd || nd) ol.endMemberList();
+    if (sectionPerType) ol.endMemberList();
   }
 
   // handle members that are inside annonymous compounds and for which
@@ -508,24 +514,26 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
       if (md->fromAnnonymousScope() && !md->annonymousDeclShown())
       {
         md->setFromAnnonymousScope(FALSE);
-        md->writeDeclaration(ol,cd,nd,fd,prevGroupId,inGroup);
+        md->writeDeclaration(ol,cd,nd,fd,gd,prevGroupId,inGroup);
         md->setFromAnnonymousScope(TRUE);
         prevGroupId = md->groupId();
       }
     }
   }
  
-  if (!fd && !nd) { ol.endMemberList(); /*ol.writeChar('\n');*/ }
+  if (!sectionPerType) { ol.endMemberList(); /*ol.writeChar('\n');*/ }
 
   if (prevGroupId!=-1 && !inGroup)
   {
     ol.memberGroupSpacing(TRUE);
     ol.memberGroupSeparator();
   }
+  ol.popGeneratorState();
 }
 
-void MemberList::writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
-             FileDef *fd,const char *title,const char *subtitle,bool inGroup)
+void MemberList::writeDeclarations(OutputList &ol,
+             ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+             const char *title,const char *subtitle,bool inGroup)
 {
   countDecMembers();
   if (totalCount()==0) return;
@@ -542,7 +550,7 @@ void MemberList::writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
     ol.endMemberSubtitle();
   }
 
-  writePlainDeclarations(ol,cd,nd,fd,inGroup);
+  writePlainDeclarations(ol,cd,nd,fd,gd,inGroup);
 }
 
 void MemberList::writeDocumentation(OutputList &ol,

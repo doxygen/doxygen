@@ -91,7 +91,7 @@ class NamespaceList : public QList<NamespaceDef>
    ~NamespaceList() {}
     int compareItems(GCI item1,GCI item2)
     {
-      return strcasecmp(((NamespaceDef *)item1)->name(),
+      return stricmp(((NamespaceDef *)item1)->name(),
                     ((NamespaceDef *)item2)->name()
                    );
     }

@@ -62,11 +62,13 @@ void FormulaList::generateBitmaps(const char *path)
   FormulaListIterator fli(*this);
   Formula *formula;
   QFile f(texName);
+  bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
+    if (Config::latexBatchModeFlag) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
-    t << "\\usepackage{epsf}" << endl; // for those who want to include images
+    t << "\\usepackage{epsfig}" << endl; // for those who want to include images
     const char *s=Config::extraPackageList.first();
     while (s)
     {
@@ -99,8 +101,9 @@ void FormulaList::generateBitmaps(const char *path)
     //system("latex _formulas.tex </dev/null >/dev/null");
     if (system("latex _formulas.tex")!=0)
     {
-      err("Problems running latex. Check your installation or look at _formulas.tex!\n");
-      return;
+      err("Problems running latex. Check your installation or look for typos in _formulas.tex!\n");
+      formulaError=TRUE;
+      //return;
     }
     //printf("Running dvips...\n");
     QListIterator<int> pli(pagesToGenerate);
@@ -281,7 +284,7 @@ void FormulaList::generateBitmaps(const char *path)
     thisDir.remove("_formulas.aux");
   }
   // remove the latex file itself
-  thisDir.remove("_formulas.tex");
+  if (!formulaError) thisDir.remove("_formulas.tex");
   // write/update the formula repository so we know what text the 
   // generated gifs represent (we use this next time to avoid regeneration
   // of the gifs, and to avoid forcing the user to delete all gifs in order

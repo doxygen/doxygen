@@ -66,24 +66,24 @@ void warn(const char *fmt, ...)
 QCString Config::projectName;          
 QCString Config::projectNumber;          
 QCString Config::outputDir;          
-QCString Config::htmlOutputDir;          
-QCString Config::latexOutputDir;          
-QCString Config::manOutputDir;          
-QCString Config::rtfOutputDir;
-QCString Config::outputLanguage;
+QCString Config::htmlOutputDir = "html";          
+QCString Config::latexOutputDir = "latex";          
+QCString Config::manOutputDir = "man";          
+QCString Config::rtfOutputDir = "rtf";
+QCString Config::outputLanguage = "English";
 QCString Config::headerFile;          
 QCString Config::latexHeaderFile;          
 QCString Config::footerFile;          
-QCString Config::cgiName;          
+QCString Config::cgiName = "search.cgi";          
 QCString Config::cgiURL;          
 QCString Config::docURL;          
-QCString Config::binAbsPath;          
+QCString Config::binAbsPath = "/usr/local/bin/";          
 QCString Config::docAbsPath;          
-QCString Config::perlPath;          
+QCString Config::perlPath = "/usr/bin/perl";          
 QCString Config::genTagFile;
 QCString Config::inputFilter;
-QCString Config::paperType;
-QCString Config::manExtension;
+QCString Config::paperType = "a4wide";
+QCString Config::manExtension = ".3";
 QCString Config::htmlStyleSheet;
 QStrList Config::ignorePrefixList;
 QStrList Config::includePath;                
@@ -124,6 +124,7 @@ bool     Config::inlineSourceFlag    = FALSE;
 bool     Config::rtfHyperFlag        = FALSE;
 bool     Config::compactRTFFlag      = FALSE;
 bool     Config::haveDotFlag         = FALSE;
+bool     Config::latexBatchModeFlag  = FALSE;
 bool     Config::autoBriefFlag       = TRUE;
 bool     Config::warningFlag         = TRUE; 
 bool     Config::generateHtml        = TRUE;
@@ -480,6 +481,7 @@ void Config::init()
   Config::haveDotFlag         = FALSE;
   Config::compactRTFFlag      = FALSE;
   Config::rtfHyperFlag        = FALSE;
+  Config::latexBatchModeFlag  = FALSE;
   Config::warningFlag         = TRUE; 
   Config::generateHtml        = TRUE;
   Config::generateLatex       = TRUE;
@@ -501,6 +503,49 @@ void Config::init()
   Config::showIncFileFlag     = TRUE;
   Config::stripCommentsFlag   = TRUE;
   Config::sortMembersFlag     = TRUE;
+}
+
+static void writeBoolValue(QTextStream &t,bool v)
+{
+  if (v) t << "YES"; else t << "NO";
+}
+
+static void writeIntValue(QTextStream &t,int i)
+{
+  t << i;
+}
+
+static void writeStringValue(QTextStream &t,QCString &s)
+{
+  const char *p=s.data();
+  char c;
+  bool hasBlanks=FALSE;
+  if (p)
+  {
+    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
+    if (hasBlanks) 
+      t << "\"" << s << "\"";
+    else
+      t << s;
+  }
+}
+
+static void writeStringList(QTextStream &t,QStrList &l)
+{
+  const char *p = l.first();
+  bool first=TRUE;
+  while (p)
+  {
+    char c;
+    const char *s=p;
+    bool hasBlanks=FALSE;
+    while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
+    if (!first) t << "                       ";
+    first=FALSE;
+    if (hasBlanks) t << "\"" << s << "\""; else t << s;
+    p = l.next();
+    if (p) t << " \\" << endl;
+  }
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
@@ -531,7 +576,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# by quotes) that should identify the project. \n";
     t << "\n";
   }
-  t << "PROJECT_NAME         =\n";
+  t << "PROJECT_NAME         = ";
+  writeStringValue(t,Config::projectName);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -540,7 +587,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# if some version control system is used.\n";
     t << "\n";
   }
-  t << "PROJECT_NUMBER       =\n";
+  t << "PROJECT_NUMBER       = ";
+  writeStringValue(t,Config::projectNumber);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -550,7 +599,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# where doxygen was started. If left blank the current directory will be used.\n";
     t << "\n";
   }
-  t << "OUTPUT_DIRECTORY     =\n";
+  t << "OUTPUT_DIRECTORY     = ";
+  writeStringValue(t,Config::outputDir);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -561,7 +612,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Dutch, French, Italian, Czech, Swedish, German and Japanese\n";
     t << "\n";
   }
-  t << "OUTPUT_LANGUAGE      = English\n";
+  t << "OUTPUT_LANGUAGE      = ";
+  writeStringValue(t,Config::outputLanguage);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -569,7 +622,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# by doxygen. Possible values are YES and NO. If left blank NO is used.\n";
     t << "\n";
   }
-  t << "QUIET                = NO\n";
+  t << "QUIET                = ";
+  writeBoolValue(t,Config::quietFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -578,7 +633,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# NO is used.\n";
     t << "\n";
   }
-  t << "WARNINGS             = YES\n";
+  t << "WARNINGS             = ";
+  writeBoolValue(t,Config::warningFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -587,7 +644,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the value YES disables it.\n";
     t << "\n";
   }
-  t << "DISABLE_INDEX        = NO\n";
+  t << "DISABLE_INDEX        = ";
+  writeBoolValue(t,Config::noIndexFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -595,7 +654,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# included in the documentation, even if no documentation was available.\n";
     t << "\n";
   }
-  t << "EXTRACT_ALL          = NO\n";
+  t << "EXTRACT_ALL          = ";
+  writeBoolValue(t,Config::extractAllFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -603,7 +664,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be included in the documentation.\n";
     t << "\n";
   }
-  t << "EXTRACT_PRIVATE      = NO\n";
+  t << "EXTRACT_PRIVATE      = ";
+  writeBoolValue(t,Config::extractPrivateFlag); 
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -611,7 +674,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# undocumented members inside documented classes or files.\n";
     t << "\n";
   }
-  t << "HIDE_UNDOC_MEMBERS   = NO\n";
+  t << "HIDE_UNDOC_MEMBERS   = ";
+  writeBoolValue(t,Config::hideMemberFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -619,7 +684,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# undocumented classes.\n";
     t << "\n";
   }
-  t << "HIDE_UNDOC_CLASSES   = NO\n";
+  t << "HIDE_UNDOC_CLASSES   = ";
+  writeBoolValue(t,Config::hideClassFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -629,7 +696,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Set to NO to disable this.\n";
     t << "\n";
   }
-  t << "BRIEF_MEMBER_DESC    = YES\n";
+  t << "BRIEF_MEMBER_DESC    = ";
+  writeBoolValue(t,Config::briefMemDescFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -639,7 +708,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# brief descriptions will be completely suppressed.\n";
     t << "\n";
   }
-  t << "REPEAT_BRIEF         = YES\n";
+  t << "REPEAT_BRIEF         = ";
+  writeBoolValue(t,Config::repeatBriefFlag);
+  t << "\n";
   if (!sl)
   {
     t <<"\n";
@@ -648,7 +719,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# description.\n"; 
     t <<"\n";
   }
-  t << "ALWAYS_DETAILED_SEC  = NO\n";
+  t << "ALWAYS_DETAILED_SEC  = ";
+  writeBoolValue(t,Config::alwaysDetailsFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -657,7 +730,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# to NO the shortest path that makes the file name unique will be used.\n";
     t << "\n";
   }
-  t << "FULL_PATH_NAMES      = NO\n";
+  t << "FULL_PATH_NAMES      = ";
+  writeBoolValue(t,Config::fullPathNameFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -667,7 +742,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the path.\n";
     t << "\n";
   }
-  t << "STRIP_FROM_PATH      =\n";
+  t << "STRIP_FROM_PATH      = ";
+  writeStringList(t,Config::stripFromPath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -677,7 +754,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Set it to YES to include the internal documentation.\n";
     t << "\n";
   }
-  t << "INTERNAL_DOCS        = NO\n";
+  t << "INTERNAL_DOCS        = ";
+  writeBoolValue(t,Config::internalDocsFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -686,7 +765,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# super classes. Setting the tag to NO turns the diagrams off.\n";
     t << "\n";
   }
-  t << "CLASS_DIAGRAMS       = YES\n";
+  t << "CLASS_DIAGRAMS       = ";
+  writeBoolValue(t,Config::classDiagramFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -694,7 +775,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# be generated. Documented entities will be cross-referenced with these sources.\n";
     t << "\n";
   }
-  t << "SOURCE_BROWSER       = NO\n";
+  t << "SOURCE_BROWSER       = ";
+  writeBoolValue(t,Config::sourceBrowseFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -702,7 +785,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of functions and classes directly in the documentation.\n";
     t << "\n";
   }
-  t << "INLINE_SOURCES       = NO\n";
+  t << "INLINE_SOURCES       = ";
+  writeBoolValue(t,Config::inlineSourceFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -711,7 +796,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# fragments. Normal C and C++ comments will always remain visible.\n"; 
     t << "\n";
   }
-  t << "STRIP_CODE_COMMENTS  = YES\n";
+  t << "STRIP_CODE_COMMENTS  = ";
+  writeBoolValue(t,Config::stripCommentsFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -722,7 +809,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# supports case sensitive file names.\n";
     t << "\n";
   }
-  t << "CASE_SENSE_NAMES     = NO\n";
+  t << "CASE_SENSE_NAMES     = ";
+  writeBoolValue(t,Config::caseSensitiveNames);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -731,7 +820,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# which an include is specified. Set to NO to disable this.\n";
     t << "\n";
   }
-  t << "VERBATIM_HEADERS     = YES\n";
+  t << "VERBATIM_HEADERS     = ";
+  writeBoolValue(t,Config::verbatimHeaderFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -740,7 +831,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of that file.\n";
     t << "\n";
   }
-  t << "SHOW_INCLUDE_FILES   = YES\n";
+  t << "SHOW_INCLUDE_FILES   = ";
+  writeBoolValue(t,Config::showIncFileFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -750,7 +843,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# behave just like the Qt-style comments.\n";
     t << "\n";
   }
-  t << "JAVADOC_AUTOBRIEF    = YES\n";
+  t << "JAVADOC_AUTOBRIEF    = ";
+  writeBoolValue(t,Config::autoBriefFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -759,7 +854,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# reimplements.\n";
     t << "\n";
   }
-  t << "INHERIT_DOCS         = YES\n";
+  t << "INHERIT_DOCS         = ";
+  writeBoolValue(t,Config::inheritDocsFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -767,7 +864,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# is inserted in the documentation for inline members.\n";
     t << "\n";
   }
-  t << "INLINE_INFO          = YES\n";
+  t << "INLINE_INFO          = ";
+  writeBoolValue(t,Config::inlineInfoFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -777,7 +876,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# declaration order.\n";
     t << "\n";
   }
-  t << "SORT_MEMBER_DOCS     = YES\n";
+  t << "SORT_MEMBER_DOCS     = ";
+  writeBoolValue(t,Config::sortMembersFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -785,7 +886,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Doxygen uses this value to replace tabs by spaces in code fragments.\n";
     t << "\n";
   }
-  t << "TAB_SIZE             = 8\n";
+  t << "TAB_SIZE             = ";
+  writeIntValue(t,Config::tabSize);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -802,7 +905,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# with spaces.\n";
     t << "\n";
   }
-  t << "INPUT                =\n";
+  t << "INPUT                = ";
+  writeStringList(t,Config::inputSources);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -812,7 +917,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# blank all files are included.\n";
     t << "\n";
   }
-  t << "FILE_PATTERNS        =\n";
+  t << "FILE_PATTERNS        = ";
+  writeStringList(t,Config::filePatternList);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -821,7 +928,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# If left blank NO is used.\n";
     t << "\n";
   }
-  t << "RECURSIVE            = NO\n";
+  t << "RECURSIVE            = ";
+  writeBoolValue(t,Config::recursiveFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -830,7 +939,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# subdirectory from a directory tree whose root is specified with the INPUT tag.\n";
     t << "\n";
   }
-  t << "EXCLUDE              =\n";
+  t << "EXCLUDE              = ";
+  writeStringList(t,Config::excludeSources);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -839,7 +950,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# certain files from those directories.\n";
     t << "\n";
   }
-  t << "EXCLUDE_PATTERNS     =\n";
+  t << "EXCLUDE_PATTERNS     = ";
+  writeStringList(t,Config::excludePatternList);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -848,7 +961,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the \\include command).\n";
     t << "\n";
   }
-  t << "EXAMPLE_PATH         =\n";
+  t << "EXAMPLE_PATH         = ";
+  writeStringList(t,Config::examplePath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -858,7 +973,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# blank all files are included.\n";
     t << "\n";
   }
-  t << "EXAMPLE_PATTERNS     =\n";
+  t << "EXAMPLE_PATTERNS     = ";
+  writeStringList(t,Config::examplePatternList);
+  t << "\n";
 
   if (!sl)
   {
@@ -868,7 +985,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the \\image command).\n";
     t << "\n";
   }
-  t << "IMAGE_PATH           =\n";
+  t << "IMAGE_PATH           = ";
+  writeStringList(t,Config::imagePath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -880,7 +999,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# to standard output.\n";
     t << "\n";
   }
-  t << "INPUT_FILTER         =\n";
+  t << "INPUT_FILTER         = ";
+  writeStringValue(t,Config::inputFilter);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -895,7 +1016,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate HTML output\n";
     t << "\n";
   }
-  t << "GENERATE_HTML        = YES\n";
+  t << "GENERATE_HTML        = ";
+  writeBoolValue(t,Config::generateHtml);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -904,7 +1027,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `html' will be used as the default path.\n";
     t << "\n";
   }
-  t << "HTML_OUTPUT          =\n";
+  t << "HTML_OUTPUT          = ";
+  writeStringValue(t,Config::htmlOutputDir);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -913,7 +1038,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard header.\n";
     t << "\n";
   }
-  t << "HTML_HEADER          =\n";
+  t << "HTML_HEADER          = ";
+  writeStringValue(t,Config::headerFile);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -922,7 +1049,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard footer.\n";
     t << "\n";
   }
-  t << "HTML_FOOTER          =\n";
+  t << "HTML_FOOTER          = ";
+  writeStringValue(t,Config::footerFile);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -932,7 +1061,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will generate a default style sheet\n";
     t << "\n";
   }
-  t << "HTML_STYLESHEET      =\n";
+  t << "HTML_STYLESHEET      = ";
+  writeStringValue(t,Config::htmlStyleSheet);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -941,7 +1072,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# NO a bullet list will be used.\n";
     t << "\n";
   }
-  t << "HTML_ALIGN_MEMBERS   = YES\n";
+  t << "HTML_ALIGN_MEMBERS   = ";
+  writeBoolValue(t,Config::htmlAlignMemberFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -951,7 +1084,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of the generated HTML documentation.\n";
     t << "\n";
   }
-  t << "GENERATE_HTMLHELP    = NO\n";
+  t << "GENERATE_HTMLHELP    = ";
+  writeBoolValue(t,Config::htmlHelpFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -967,7 +1102,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# contains a lot of classes, structs, unions or interfaces.\n";
     t << "\n";
   }
-  t << "ALPHABETICAL_INDEX   = NO\n";
+  t << "ALPHABETICAL_INDEX   = ";
+  writeBoolValue(t,Config::alphaIndexFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -976,7 +1113,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# in which this list will be split (can be a number in the range [1..20])\n";
     t << "\n";
   }
-  t << "COLS_IN_ALPHA_INDEX  = 5\n";
+  t << "COLS_IN_ALPHA_INDEX  = ";
+  writeIntValue(t,Config::colsInAlphaIndex);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -986,7 +1125,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# should be ignored while generating the index headers.\n";
     t << "\n";
   }
-  t << "IGNORE_PREFIX        = \n";
+  t << "IGNORE_PREFIX        = ";
+  writeStringList(t,Config::ignorePrefixList);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1001,7 +1142,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate Latex output.\n";
     t << "\n";
   }
-  t << "GENERATE_LATEX       = YES\n";
+  t << "GENERATE_LATEX       = ";
+  writeBoolValue(t,Config::generateLatex);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1010,7 +1153,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `latex' will be used as the default path.\n";
     t << "\n";
   }
-  t << "LATEX_OUTPUT         =\n";
+  t << "LATEX_OUTPUT         = ";
+  writeStringValue(t,Config::latexOutputDir);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1019,7 +1164,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# save some trees in general.\n"; 
     t << "\n";
   }
-  t << "COMPACT_LATEX        = NO\n";
+  t << "COMPACT_LATEX        = ";
+  writeBoolValue(t,Config::compactLatexFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1028,7 +1175,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# executive. If left blank a4wide will be used.\n";
     t << "\n";
   }
-  t << "PAPER_TYPE           = a4wide\n";
+  t << "PAPER_TYPE           = ";
+  writeStringValue(t,Config::paperType);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1036,7 +1185,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# packages that should be included in the LaTeX output.\n";
     t << "\n";
   }
-  t << "EXTRA_PACKAGES       =\n";
+  t << "EXTRA_PACKAGES       = ";
+  writeStringList(t,Config::extraPackageList);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1046,7 +1197,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard header. Notice: only use this tag if you know what you are doing!\n";
     t << "\n";
   }
-  t << "LATEX_HEADER         =\n";
+  t << "LATEX_HEADER         = ";
+  writeStringValue(t,Config::latexHeaderFile);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1056,11 +1209,27 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# This makes the output suitable for online browsing using a pdf viewer.\n";
     t << "\n";
   }
-  t << "PDF_HYPERLINKS       = NO\n";
+  t << "PDF_HYPERLINKS       = ";
+  writeBoolValue(t,Config::pdfHyperFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
   }
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the LATEX_BATCHMODE tag is set to YES, doxygen will add the \\batchmode.\n";
+    t << "# command to the generated LaTeX files. This will instruct LaTeX to keep\n";
+    t << "# running if errors occur, instead of asking the user for help.\n";
+    t << "# This option is also used when generating formulas in HTML.\n";
+  }
+  if (!sl)
+  {
+    t << "LATEX_BATCHMODE    = ";
+  }
+  writeBoolValue(t,Config::latexBatchModeFlag);
+  t << "\n";
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the RTF output\n";
   t << "#---------------------------------------------------------------------------\n";
@@ -1073,7 +1242,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# or editors.\n";
     t << "\n";
   }
-  t << "GENERATE_RTF         = NO\n";
+  t << "GENERATE_RTF         = ";
+  writeBoolValue(t,Config::generateRTF);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1082,7 +1253,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `rtf' will be used as the default path.\n";
     t << "\n";
   }
-  t << "RTF_OUTPUT           =\n";
+  t << "RTF_OUTPUT           = ";
+  writeStringValue(t,Config::rtfOutputDir);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1091,7 +1264,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# save some trees in general.\n"; 
     t << "\n";
   }
-  t << "COMPACT_RTF          = NO\n";
+  t << "COMPACT_RTF          = ";
+  writeBoolValue(t,Config::compactRTFFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1103,7 +1278,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Note: wordpad (write) and others do not support links.\n";
     t << "\n";
   }
-  t << "RTF_HYPERLINKS       = NO\n";
+  t << "RTF_HYPERLINKS       = ";
+  writeBoolValue(t,Config::rtfHyperFlag);
+  t << "\n";
 
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the man page output\n";
@@ -1115,7 +1292,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate man pages\n";
     t << "\n";
   }
-  t << "GENERATE_MAN         = YES\n";
+  t << "GENERATE_MAN         = ";
+  writeBoolValue(t,Config::generateMan);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1124,7 +1303,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `man' will be used as the default path.\n";
     t << "\n";
   }
-  t << "MAN_OUTPUT           =\n";
+  t << "MAN_OUTPUT           = ";
+  writeStringValue(t,Config::manOutputDir);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1132,8 +1313,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the generated man pages (default is the subroutine's section .3)\n";
     t << "\n";
   }
-  t << "MAN_EXTENSION        = .3\n";
- 
+  t << "MAN_EXTENSION        = ";
+  writeStringValue(t,Config::manExtension);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1149,7 +1331,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# files.\n";
     t << "\n";
   }
-  t << "ENABLE_PREPROCESSING = YES\n";
+  t << "ENABLE_PREPROCESSING = ";
+  writeBoolValue(t,Config::preprocessingFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1158,7 +1342,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# compilation will be performed.\n";
     t << "\n";
   }
-  t << "MACRO_EXPANSION      = NO\n";
+  t << "MACRO_EXPANSION      = ";
+  writeBoolValue(t,Config::macroExpansionFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1166,7 +1352,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# in the INCLUDE_PATH (see below) will be search if a #include is found.\n";
     t << "\n";
   }
-  t << "SEARCH_INCLUDES      = YES\n";
+  t << "SEARCH_INCLUDES      = ";
+  writeBoolValue(t,Config::searchIncludeFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1175,7 +1363,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the preprocessor.\n" ;
     t << "\n";
   }
-  t << "INCLUDE_PATH         =\n";
+  t << "INCLUDE_PATH         = ";
+  writeStringList(t,Config::includePath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1186,7 +1376,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# omitted =1 is assumed.\n";
     t << "\n";
   }
-  t << "PREDEFINED           =\n";
+  t << "PREDEFINED           = ";
+  writeStringList(t,Config::predefined);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1195,7 +1387,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# PREDEFINED tag.\n";
     t << "\n";
   }
-  t << "EXPAND_ONLY_PREDEF   = NO\n";
+  t << "EXPAND_ONLY_PREDEF   = ";
+  writeBoolValue(t,Config::onlyPredefinedFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1209,7 +1403,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# The TAGFILES tag can be used to specify one or more tagfiles. \n";
     t << "\n";
   }
-  t << "TAGFILES             =\n";
+  t << "TAGFILES             = ";
+  writeStringList(t,Config::tagFileList);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1217,7 +1413,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# a tag file that is based on the input files it reads.\n";
     t << "\n";
   }
-  t << "GENERATE_TAGFILE     =\n";
+  t << "GENERATE_TAGFILE     = ";
+  writeStringValue(t,Config::genTagFile);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1226,7 +1424,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be listed.\n";
     t << "\n";
   }
-  t << "ALLEXTERNALS         = NO\n";
+  t << "ALLEXTERNALS         = ";
+  writeBoolValue(t,Config::allExtFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1234,7 +1434,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# interpreter (i.e. the result of `which perl').\n";
     t << "\n";
   }
-  t << "PERL_PATH            = /usr/bin/perl\n";
+  t << "PERL_PATH            = ";
+  writeStringValue(t,Config::perlPath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1251,7 +1453,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# have no effect if this option is set to NO (the default)\n";
     t << "\n";
   }
-  t << "HAVE_DOT             = NO\n";
+  t << "HAVE_DOT             = ";
+  writeBoolValue(t,Config::haveDotFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1261,7 +1465,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# class references variables) of the class with other documented classes.\n";
     t << "\n";
   }
-  t << "COLLABORATION_GRAPH  = YES\n";
+  t << "COLLABORATION_GRAPH  = ";
+  writeBoolValue(t,Config::collGraphFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1271,7 +1477,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# documented files.\n";
     t << "\n";
   }
-  t << "INCLUDE_GRAPH        = YES\n";
+  t << "INCLUDE_GRAPH        = ";
+  writeBoolValue(t,Config::includeGraphFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1279,7 +1487,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will graphical hierarchy of all classes instead of a textual one.\n";
     t << "\n";
   }
-  t << "GRAPHICAL_HIERARCHY  = YES\n";
+  t << "GRAPHICAL_HIERARCHY  = ";
+  writeBoolValue(t,Config::gfxHierarchyFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1294,7 +1504,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# used. If set to NO the values of all tags below this one will be ignored.\n";
     t << "\n";
   }
-  t << "SEARCHENGINE         = NO\n";
+  t << "SEARCHENGINE         = ";
+  writeBoolValue(t,Config::searchEngineFlag);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1303,7 +1515,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# A script with this name will be generated by doxygen.\n";
     t << "\n";
   }
-  t << "CGI_NAME             = search.cgi\n";
+  t << "CGI_NAME             = ";
+  writeStringValue(t,Config::cgiName);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1312,7 +1526,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# details.\n";
     t << "\n";
   }
-  t << "CGI_URL              =\n";
+  t << "CGI_URL              = ";
+  writeStringValue(t,Config::cgiURL);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1321,7 +1537,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# documentation, with file:// prepended to it, will be used.\n";
     t << "\n";
   }
-  t << "DOC_URL              =\n";
+  t << "DOC_URL              = ";
+  writeStringValue(t,Config::docURL);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1330,7 +1548,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be used.\n";
     t << "\n";
   }
-  t << "DOC_ABSPATH          =\n";
+  t << "DOC_ABSPATH          = ";
+  writeStringValue(t,Config::docAbsPath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1338,7 +1558,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# is installed.\n";
     t << "\n";
   }
-  t << "BIN_ABSPATH          = /usr/local/bin/\n";
+  t << "BIN_ABSPATH          = ";
+  writeStringValue(t,Config::binAbsPath);
+  t << "\n";
   if (!sl)
   {
     t << "\n";
@@ -1347,7 +1569,9 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the documentation for these projects as well.\n";
     t << "\n";
   }
-  t << "EXT_DOC_PATHS        =\n";
+  t << "EXT_DOC_PATHS        = ";
+  writeStringList(t,Config::extDocPathList);
+  t << "\n";
 }
 
 void checkConfig()

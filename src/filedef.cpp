@@ -294,7 +294,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
   
-  allMemberList.writeDeclarations(ol,0,0,this,0,0);
+  allMemberList.writeDeclarations(ol,0,0,this,0,0,0);
   ol.endMemberSections();
 
   //doc=doc.stripWhiteSpace();
@@ -346,75 +346,74 @@ void FileDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  //memList->countDocMembers();
   defineMembers.countDocMembers();
-  if ( /*memList->defineCount()>0*/ defineMembers.totalCount()>0 )
+  if (defineMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDefineDocumentation());
     ol.endGroupHeader();
-    /*memList->*/defineMembers.writeDocumentation(ol,name()/*,MemberDef::Define*/);
+    defineMembers.writeDocumentation(ol,name());
   }
   
   protoMembers.countDocMembers(); 
-  if ( /*memList->protoCount()>0*/ protoMembers.totalCount()>0 )
+  if (protoMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
     ol.endGroupHeader();
-    /*memList->*/protoMembers.writeDocumentation(ol,name()/*,MemberDef::Prototype*/);
+    protoMembers.writeDocumentation(ol,name());
   }
 
   typedefMembers.countDocMembers();
-  if ( /*memList->typedefCount()>0*/ typedefMembers.totalCount()>0 )
+  if (typedefMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trTypedefDocumentation());
     ol.endGroupHeader();
-    /*memList->*/typedefMembers.writeDocumentation(ol,name()/*,MemberDef::Typedef*/);
+    typedefMembers.writeDocumentation(ol,name());
   }
   
   enumMembers.countDocMembers();
-  if ( /*memList->enumCount()>0*/ enumMembers.totalCount()>0 )
+  if (enumMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationTypeDocumentation());
     ol.endGroupHeader();
-    /*memList->*/enumMembers.writeDocumentation(ol,name()/*,MemberDef::Enumeration*/);
+    enumMembers.writeDocumentation(ol,name());
   }
 
   enumValMembers.countDocMembers();
-  if ( /*memList->enumValueCount()>0*/ enumValMembers.totalCount()>0 )
+  if (enumValMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trEnumerationValueDocumentation());
     ol.endGroupHeader();
-    /*memList->*/enumValMembers.writeDocumentation(ol,name()/*,MemberDef::EnumValue*/);
+    enumValMembers.writeDocumentation(ol,name());
   }
 
   funcMembers.countDocMembers();
-  if ( /*memList->funcCount()>0*/ funcMembers.totalCount()>0 )
+  if (funcMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trFunctionDocumentation());
     ol.endGroupHeader();
-    /*memList->*/funcMembers.writeDocumentation(ol,name()/*,MemberDef::Function*/);
+    funcMembers.writeDocumentation(ol,name());
   }
   
   varMembers.countDocMembers();
-  if ( /*memList->varCount()>0*/ varMembers.totalCount()>0 )
+  if (varMembers.totalCount()>0 )
   {
     ol.writeRuler();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trVariableDocumentation());
     ol.endGroupHeader();
-    /*memList->*/varMembers.writeDocumentation(ol,name()/*,MemberDef::Variable*/);
+    varMembers.writeDocumentation(ol,name());
   }
   
   // write Author section (Man only)
@@ -573,8 +572,8 @@ int FileList::compareItems(GCI item1, GCI item2)
   FileDef *f2=(FileDef *)item2;
   ASSERT(f1!=0 && f2!=0);
   return Config::fullPathNameFlag ? 
-         strcasecmp(f1->absFilePath(),f2->absFilePath()) : 
-         strcasecmp(f1->name(),f2->name());
+         stricmp(f1->absFilePath(),f2->absFilePath()) : 
+         stricmp(f1->name(),f2->name());
 }
 
 /*! Create a file list iterator. */

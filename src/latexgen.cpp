@@ -168,6 +168,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       {
         if (Config::latexHeaderFile.isEmpty())
         {
+          if (Config::latexBatchModeFlag) t << "\\batchmode" << endl;
           if (Config::paperType=="a4wide") paperName="a4"; else paperName=Config::paperType;
           t << "\\documentclass[" << paperName << "paper";
           if (Config::pdfHyperFlag) t << ",ps2pdf";
@@ -207,13 +208,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
             "\\vspace*{7cm}\n"
             "\\begin{center}\n"
             "{\\Large ";
-          //docify(projectName);
-          //t << " Reference Manual";
-          //if (!projectNumber.isEmpty()) 
-          //{
-          //  t << "\\\\[1ex]\\large "; 
-          //  docify(projectNumber);
-          //}
         }
         else
         {

@@ -23,6 +23,7 @@ Entry::Entry()
   num++;
   //printf("New Entry %d\n",num);
   parent=0;
+  section = EMPTY_SEC;
   sublist = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends = new QList<BaseInfo>;

@@ -125,7 +125,7 @@ class ClassDef : public Definition
     BaseClassList *inheritedBy;
     NamespaceDef  *nspace;              // the namespace this class is in
 
-    /* member list by protection */
+    /* member lists by protection */
     MemberList pubMembers;
     MemberList proMembers;
     MemberList priMembers;
@@ -135,6 +135,15 @@ class ClassDef : public Definition
     MemberList pubSlots;
     MemberList proSlots;
     MemberList priSlots;
+    MemberList pubAttribs;
+    MemberList proAttribs;
+    MemberList priAttribs;
+    MemberList pubStaticAttribs;
+    MemberList proStaticAttribs;
+    MemberList priStaticAttribs;
+    MemberList pubTypes;
+    MemberList proTypes;
+    MemberList priTypes;
     MemberList related;
     MemberList signals;
     MemberList friends;
@@ -218,7 +227,7 @@ class BaseClassList : public QList<BaseClassDef>
       if (c1==0 || c2==0) 
         return FALSE;
       else
-        return strcasecmp(c1->name(),c2->name());
+        return stricmp(c1->name(),c2->name());
     }
 };
 

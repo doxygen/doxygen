@@ -174,26 +174,65 @@ void ClassDef::insertMember(const MemberDef *md)
         default: // any of the other members
           if (md->isStatic())
           {
-            switch (md->protection())
+            if (md->isVariable())
             {
-              case Protected: 
-                proStaticMembers.append(md); 
-                break;
-              case Public:    
-                pubStaticMembers.append(md); 
-                break;
-              case Private:   
-                priStaticMembers.append(md); 
-                break;
+              switch (md->protection())
+              {
+                case Protected: 
+                  proStaticAttribs.append(md); 
+                  break;
+                case Public:    
+                  pubStaticAttribs.append(md); 
+                  break;
+                case Private:   
+                  priStaticAttribs.append(md); 
+                  break;
+              }
+            }
+            else // function
+            {
+              switch (md->protection())
+              {
+                case Protected: 
+                  proStaticMembers.append(md); 
+                  break;
+                case Public:    
+                  pubStaticMembers.append(md); 
+                  break;
+                case Private:   
+                  priStaticMembers.append(md); 
+                  break;
+              }
             }
           }
-          else
+          else // not static
           {
-            switch (md->protection())
+            if (md->isVariable())
             {
-              case Protected: proMembers.append(md); break;
-              case Public:    pubMembers.append(md); break;
-              case Private:   priMembers.append(md); break;
+              switch (md->protection())
+              {
+                case Protected: proAttribs.append(md); break;
+                case Public:    pubAttribs.append(md); break;
+                case Private:   priAttribs.append(md); break;
+              }
+            }
+            else if (md->isTypedef() || md->isEnumerate())
+            {
+              switch (md->protection())
+              {
+                case Protected: proTypes.append(md); break;
+                case Public:    pubTypes.append(md); break;
+                case Private:   priTypes.append(md); break;
+              }
+            }
+            else // member function
+            {
+              switch (md->protection())
+              {
+                case Protected: proMembers.append(md); break;
+                case Public:    pubMembers.append(md); break;
+                case Private:   priMembers.append(md); break;
+              }
             }
           }
           if (md->protection()!=Private || Config::extractPrivateFlag)
@@ -282,6 +321,15 @@ void ClassDef::computeAnchors()
   setAnchors('j',&signals);
   setAnchors('k',&related);
   setAnchors('l',&friends);
+  setAnchors('m',&pubAttribs);
+  setAnchors('n',&proAttribs);
+  setAnchors('o',&priAttribs);
+  setAnchors('p',&pubStaticAttribs);
+  setAnchors('q',&proStaticAttribs);
+  setAnchors('r',&priStaticAttribs);
+  setAnchors('s',&pubTypes);
+  setAnchors('t',&proTypes);
+  setAnchors('u',&priTypes);
 }
 
 // add a file name to the used files set
@@ -549,21 +597,39 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   // write member groups
   ol.startMemberSections();
-  pubMembers.writeDeclarations(ol,this,0,0,theTranslator->trPublicMembers(),0); 
-  pubSlots.writeDeclarations(ol,this,0,0,theTranslator->trPublicSlots(),0); 
-  signals.writeDeclarations(ol,this,0,0,theTranslator->trSignals(),0); 
-  pubStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticPublicMembers(),0); 
-  proMembers.writeDeclarations(ol,this,0,0,theTranslator->trProtectedMembers(),0); 
-  proSlots.writeDeclarations(ol,this,0,0,theTranslator->trProtectedSlots(),0); 
-  proStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticProtectedMembers(),0); 
+
+  // non static public members
+  pubTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicTypes(),0); 
+  pubMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
+  pubAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
+  pubSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
+  signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
+  // static public members
+  pubStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
+  pubStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicAttribs(),0); 
+  
+  // protected non-static members
+  proTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedTypes(),0); 
+  proMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
+  proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
+  proSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedSlots(),0); 
+  // protected static members
+  proStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
+  proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
+
   if (Config::extractPrivateFlag)
   {
-    priMembers.writeDeclarations(ol,this,0,0,theTranslator->trPrivateMembers(),0); 
-    priSlots.writeDeclarations(ol,this,0,0,theTranslator->trPrivateSlots(),0); 
-    priStaticMembers.writeDeclarations(ol,this,0,0,theTranslator->trStaticPrivateMembers(),0); 
+    // private non-static members
+    priTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
+    priMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
+    priAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
+    priSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateSlots(),0); 
+    // private static members
+    priStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
+    priStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateAttribs(),0); 
   }
-  friends.writeDeclarations(ol,this,0,0,theTranslator->trFriends(),0);
-  related.writeDeclarations(ol,this,0,0,
+  friends.writeDeclarations(ol,this,0,0,0,theTranslator->trFriends(),0);
+  related.writeDeclarations(ol,this,0,0,0,
                   theTranslator->trRelatedFunctions(),
                   theTranslator->trRelatedSubscript()
                  ); 
@@ -1130,21 +1196,21 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md)
   ol.endMemberItem(FALSE,0,0,FALSE); // TODO: pass correct group parameters
 
   // insert members of this class
-  pubMembers.writePlainDeclarations(ol,this,0,0); 
-  pubSlots.writePlainDeclarations(ol,this,0,0); 
-  signals.writePlainDeclarations(ol,this,0,0); 
-  pubStaticMembers.writePlainDeclarations(ol,this,0,0); 
-  proMembers.writePlainDeclarations(ol,this,0,0); 
-  proSlots.writePlainDeclarations(ol,this,0,0); 
-  proStaticMembers.writePlainDeclarations(ol,this,0,0); 
+  pubMembers.writePlainDeclarations(ol,this,0,0,0); 
+  pubSlots.writePlainDeclarations(ol,this,0,0,0); 
+  signals.writePlainDeclarations(ol,this,0,0,0); 
+  pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proSlots.writePlainDeclarations(ol,this,0,0,0); 
+  proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
   if (Config::extractPrivateFlag)
   {
-    priMembers.writePlainDeclarations(ol,this,0,0); 
-    priSlots.writePlainDeclarations(ol,this,0,0); 
-    priStaticMembers.writePlainDeclarations(ol,this,0,0); 
+    priMembers.writePlainDeclarations(ol,this,0,0,0); 
+    priSlots.writePlainDeclarations(ol,this,0,0,0); 
+    priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
   }
-  friends.writePlainDeclarations(ol,this,0,0);
-  related.writePlainDeclarations(ol,this,0,0); 
+  friends.writePlainDeclarations(ol,this,0,0,0);
+  related.writePlainDeclarations(ol,this,0,0,0); 
 }
 
 /*! a link to this class is possible within this project */
