@@ -1192,7 +1192,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
  
   endFile(ol);
 
+}
 
+void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
+{
   // write inner classes after the parent, so the tag files contain
   // the definition in proper order!
   if (m_innerClasses)

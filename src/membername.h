@@ -40,6 +40,7 @@ class MemberNameIterator : public QListIterator<MemberDef>
     MemberNameIterator( const MemberName &list);
 };
 
+#if 0
 class MemberNameList : public QList<MemberName>
 { 
   public:
@@ -56,6 +57,16 @@ class MemberNameListIterator : public QListIterator<MemberName>
 };
 
 typedef QDict<MemberName>  MemberNameDict;
+#endif
+
+class MemberNameSDict : public SDict<MemberName>
+{
+  public:
+    MemberNameSDict(int size) : SDict<MemberName>(size) {}
+   ~MemberNameSDict() {}
+
+   int compareItems(GCI item1,GCI item2);
+};
 
 struct MemberInfo
 {
@@ -89,6 +100,7 @@ class MemberNameInfoIterator : public QListIterator<MemberInfo>
       : QListIterator<MemberInfo>(mnii) {}
 };
 
+#if 0
 class MemberNameInfoList : public QList<MemberNameInfo>
 {
   public:
@@ -108,6 +120,15 @@ class MemberNameInfoDict : public QDict<MemberNameInfo>
    ~MemberNameInfoDict() {}
 };
 
+class MemberNameInfoListIterator : public QListIterator<MemberNameInfo>
+{
+  public:
+    MemberNameInfoListIterator(const MemberNameInfoList &mil) : 
+      QListIterator<MemberNameInfo>(mil) {}
+};
+#endif
+
+
 class MemberNameInfoSDict : public SDict<MemberNameInfo>
 {
   public:
@@ -119,13 +140,6 @@ class MemberNameInfoSDict : public SDict<MemberNameInfo>
                     ((MemberNameInfo *)item2)->memberName()
                    );
     }
-};
-
-class MemberNameInfoListIterator : public QListIterator<MemberNameInfo>
-{
-  public:
-    MemberNameInfoListIterator(const MemberNameInfoList &mil) : 
-      QListIterator<MemberNameInfo>(mil) {}
 };
 
 #endif

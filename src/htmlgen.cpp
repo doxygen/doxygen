@@ -943,7 +943,7 @@ void HtmlGenerator::endMemberDocName()
 void HtmlGenerator::startParameterList()
 {
   DBG_HTML(t << "<!-- startParameterList -->" << endl;)
-  t << "          <td class=\"md\">(&nbsp;</td>" << endl;
+  t << "          <td class=\"md\" valign=\"top\">(&nbsp;</td>" << endl;
 }
 
 void HtmlGenerator::startParameterType(bool first)
@@ -951,7 +951,7 @@ void HtmlGenerator::startParameterType(bool first)
   if (first)
   {
     DBG_HTML(t << "<!-- startFirstParameterType -->" << endl;)
-    t << "          <td class=\"md\" nowrap>";
+    t << "          <td class=\"md\" nowrap valign=\"top\">";
   }
   else
   {
@@ -973,8 +973,11 @@ void HtmlGenerator::startParameterName(bool oneArgOnly)
 {
   DBG_HTML(t << "<!-- startParameterName -->" << endl;)
   t << "          <td class=\"mdname";
-  if (oneArgOnly) t << "1";
-  t << "\">&nbsp;";
+  if (oneArgOnly) 
+  {
+    t << "1\" valign=\"top";
+  }
+  t << "\" nowrap>&nbsp;";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList)
@@ -985,8 +988,8 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
     if (emptyList)
     {
       t << "          </td>" << endl;
-      t << "          <td class=\"md\">)&nbsp;</td>" << endl;
-      t << "          <td class=\"md\">";
+      t << "          <td class=\"md\" valign=\"top\">)&nbsp;</td>" << endl;
+      t << "          <td class=\"md\" nowrap>";
     }
     else
     {

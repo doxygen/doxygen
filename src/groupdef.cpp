@@ -43,7 +43,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   pageDict = new PageSDict(257);
   exampleDict = new PageSDict(257);
   allMemberList = new MemberList;
-  allMemberNameInfoDict = new MemberNameInfoDict(1009);
+  allMemberNameInfoSDict = new MemberNameInfoSDict(17);
   fileName = (QCString)"group_"+na;
   setGroupTitle( t );
   memberGroupList = new MemberGroupList;
@@ -79,7 +79,7 @@ GroupDef::~GroupDef()
   delete pageDict;
   delete exampleDict;
   delete allMemberList;
-  delete allMemberNameInfoDict;
+  delete allMemberNameInfoSDict;
   delete memberGroupList;
   delete memberGroupDict;
 }
@@ -170,7 +170,7 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
   //fprintf(stderr, "GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
-  if ((mni=(*allMemberNameInfoDict)[md->name()]))
+  if ((mni=(*allMemberNameInfoSDict)[md->name()]))
   { // member with this name already found
     MemberNameInfoIterator srcMnii(*mni); 
     MemberInfo *srcMi;
@@ -189,7 +189,7 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
   {
     mni = new MemberNameInfo(md->name());
     mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
-    allMemberNameInfoDict->insert(mni->memberName(),mni);
+    allMemberNameInfoSDict->append(mni->memberName(),mni);
   }
   allMemberList->append(md); 
   switch(md->memberType())
@@ -251,7 +251,7 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
 void GroupDef::removeMember(MemberDef *md)
 {
   // fprintf(stderr, "GroupDef(%s)::removeMember( %s )\n", title.data(), md->name().data());
-  MemberNameInfo *mni = allMemberNameInfoDict->find(md->name());
+  MemberNameInfo *mni = allMemberNameInfoSDict->find(md->name());
   if (mni)
   {
     MemberNameInfoIterator mnii(*mni);
@@ -266,7 +266,7 @@ void GroupDef::removeMember(MemberDef *md)
     }
     if( mni->isEmpty() )
     {
-      allMemberNameInfoDict->remove(md->name());
+      allMemberNameInfoSDict->remove(md->name());
       delete mni;
     }
 

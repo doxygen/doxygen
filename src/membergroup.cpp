@@ -26,6 +26,7 @@
 #include "language.h"
 #include "scanner.h"
 #include "groupdef.h"
+#include "doxygen.h"
 
 //static QCString idToName(int id)
 //{

@@ -70,10 +70,12 @@ class Doxygen
     static FileNameDict *imageNameDict;
     static FileNameDict *dotFileNameDict;
     static QStrList tagfileList;
-    static MemberNameList memberNameList;
-    static MemberNameList functionNameList;
-    static MemberNameDict memberNameDict;
-    static MemberNameDict functionNameDict;
+    //static MemberNameList memberNameList;
+    //static MemberNameList functionNameList;
+    //static MemberNameDict memberNameDict;
+    //static MemberNameDict functionNameDict;
+    static MemberNameSDict memberNameSDict;
+    static MemberNameSDict functionNameSDict;
     static FileList fileList;
     static FileDict fileDict;
     static ClassDef unrelatedClass; 
