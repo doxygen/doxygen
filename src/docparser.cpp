@@ -1175,6 +1175,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
 
 void DocInclude::parse()
 {
+  DBG(("DocInclude::parse(file=%s,text=%s)\n",m_file.data(),m_text.data()));
   switch(m_type)
   {
     case Include:
@@ -1184,6 +1185,7 @@ void DocInclude::parse()
       g_includeFileText   = m_text;
       g_includeFileOffset = 0;
       g_includeFileLength = m_text.length();
+      //printf("g_includeFile=<<%s>>\n",g_includeFileText.data());
       break;
     case VerbInclude: 
       // fall through
@@ -1200,7 +1202,7 @@ void DocIncOperator::parse()
   const char *p = g_includeFileText;
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;
-  //printf("DocIncOperator::parse() text=%s off=%d len=%d\n",p,o,l);
+  DBG(("DocIncOperator::parse() text=%s off=%d len=%d\n",p,o,l));
   uint so = o,bo;
   bool nonEmpty = FALSE;
   switch(type())
@@ -1223,6 +1225,7 @@ void DocIncOperator::parse()
       if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
       {
         m_text = g_includeFileText.mid(so,o-so);
+        DBG(("DocIncOperator::parse() Line: %s\n",m_text.data()));
       }
       g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
       break;
@@ -1247,6 +1250,7 @@ void DocIncOperator::parse()
         if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
           m_text = g_includeFileText.mid(so,o-so);
+          DBG(("DocIncOperator::parse() SkipLine: %s\n",m_text.data()));
           break;
         }
         o++; // skip new line
@@ -1301,6 +1305,7 @@ void DocIncOperator::parse()
         if (g_includeFileText.mid(so,o-so).find(m_pattern)!=-1)
         {
           m_text = g_includeFileText.mid(bo,o-bo);
+          DBG(("DocIncOperator::parse() Until: %s\n",m_text.data()));
           break;
         }
         o++; // skip new line
@@ -3129,6 +3134,7 @@ int DocPara::handleXRefItem(DocXRefItem::Type t)
 
 void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t)
 {
+  DBG(("handleIncludeOperator(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -3349,6 +3355,7 @@ endlang:
 
 void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
 {
+  DBG(("handleInclude(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {

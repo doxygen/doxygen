@@ -18,11 +18,14 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+/*! \file util.h 
+ *  \brief A bunch of utility functions.
+ */
+
 #include "qtbc.h"
 #include <qlist.h>
 #include <qtextstream.h>
 #include <ctype.h>
-
 
 class ClassDef;
 class FileDef;
@@ -73,13 +76,12 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 //--------------------------------------------------------------------
 
-extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
+void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
                         const char *text,bool autoBreak=FALSE,bool external=TRUE);
-
-extern void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
-extern QCString fileToString(const char *name,bool filter=FALSE);
-extern QCString dateToString(bool);
-extern bool getDefs(const QCString &scopeName,
+void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
+QCString fileToString(const char *name,bool filter=FALSE);
+QCString dateToString(bool);
+bool getDefs(const QCString &scopeName,
                     const QCString &memberName, 
                     const char *, 
                     MemberDef *&md, 
@@ -93,14 +95,14 @@ extern bool getDefs(const QCString &scopeName,
                    );
 
 
-extern bool resolveRef(/* in */  const char *scName,
+bool resolveRef(/* in */  const char *scName,
                        /* in */  const char *name,
                        /* in */  bool inSeeBlock,
                        /* out */ Definition **resContext,
                        /* out */ MemberDef  **resMember
                       );
 
-extern bool resolveLink(/* in */ const char *scName,
+bool resolveLink(/* in */ const char *scName,
                         /* in */ const char *lr,
                         /* in */ bool inSeeBlock,
                         /* out */ Definition **resContext,
@@ -108,47 +110,39 @@ extern bool resolveLink(/* in */ const char *scName,
                         /* out */ QCString &resAnchor
                        );
 
-extern bool generateRef(OutputDocInterface &od,const char *,
+bool generateRef(OutputDocInterface &od,const char *,
                         const char *,bool inSeeBlock,const char * =0);
-extern bool generateLink(OutputDocInterface &od,const char *,
+bool generateLink(OutputDocInterface &od,const char *,
                          const char *,bool inSeeBlock,const char *);
 
-extern void generateFileRef(OutputDocInterface &od,const char *,
+void generateFileRef(OutputDocInterface &od,const char *,
                              const char *linkTxt=0);
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
-extern bool matchArguments(ArgumentList *,ArgumentList *,
+bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceList *usingNamespaces=0,
                            ClassList *usingClasses=0);
-extern void mergeArguments(ArgumentList *,ArgumentList *);
-extern QCString substituteClassNames(const QCString &s);
-extern QCString substitute(const char *s,const char *src,const char *dst);
-extern QCString resolveDefines(const char *n);
-extern ClassDef *getClass(const char *key);
-extern ClassDef *getResolvedClass(Definition *scope,
+void mergeArguments(ArgumentList *,ArgumentList *);
+QCString substituteClassNames(const QCString &s);
+QCString substitute(const char *s,const char *src,const char *dst);
+QCString resolveDefines(const char *n);
+ClassDef *getClass(const char *key);
+ClassDef *getResolvedClass(Definition *scope,
                                   const char *key,
                                   bool *pIsTypeDef=0,
                                   QCString *pTemplSpec=0);
-extern NamespaceDef *getResolvedNamespace(const char *key);
-extern FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
+NamespaceDef *getResolvedNamespace(const char *key);
+FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
-extern QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
-extern int guessSection(const char *name);
-extern bool isId(char c);
-extern QCString removeRedundantWhiteSpace(const QCString &s);
-//extern void startTitle(OutputList &ol,const char *fileName);
-//extern void endTitle(OutputList &ol,const char *fileName,const char *name);
-//void startFile(OutputList &ol,const char *name,
-//               const char *title,bool external=FALSE);
-//void endFile(OutputList &ol,bool external=FALSE);
-//void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
+QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
+int guessSection(const char *name);
+bool isId(char c);
+QCString removeRedundantWhiteSpace(const QCString &s);
 QCString argListToString(ArgumentList *al);
 QCString tempArgListToString(ArgumentList *al);
 QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleSDict *el);
-//void setFileNameForSections(QList<QCString> *anchorList,const char *fileName,
-//                            PageInfo *pi=0);
 QCString stripAnonymousNamespaceScope(const QCString &s);
 QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);

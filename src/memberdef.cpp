@@ -737,6 +737,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Latex);
     ol.docify("\n");
     ol.popGeneratorState();
   }

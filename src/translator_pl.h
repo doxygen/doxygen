@@ -1176,27 +1176,27 @@ class TranslatorPolish : public Translator
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return "Lista Pakietów";
+      return decode("Lista Pakietów");
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "Oto lista pakietów wraz z krótkim opisem (o ile jest dostêpny):";
+      return decode("Oto lista pakietów wraz z krótkim opisem (o ile jest dostêpny):");
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return "Pakiety";
+      return decode("Pakiety");
     }
     /*! Used as a chapter title for Latex & RTF output */
     virtual QCString trPackageDocumentation()
     {
-      return "Dokumentacja Pakietu";
+      return decode("Dokumentacja Pakietu");
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "Warto¶æ:";
+      return decode("Warto¶æ:");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1206,12 +1206,12 @@ class TranslatorPolish : public Translator
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return "B³±d";
+      return decode("B³±d");
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return "Lista b³êdów";
+      return decode("Lista b³êdów");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1233,7 +1233,7 @@ class TranslatorPolish : public Translator
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return "Indeks";
+      return decode("Indeks");
     }
                                                                           
     /*! This is used for translation of the word that will possibly
@@ -1267,7 +1267,7 @@ class TranslatorPolish : public Translator
       QCString result((first_capital ? "Przestrze" : "przestrze"));
       result+=(singular ? "ñ" : "nie");
       result+=" nazw";
-      return result; 
+      return decode(result); 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1287,7 +1287,7 @@ class TranslatorPolish : public Translator
      */
     virtual QCString trPage(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Ston" : "stron"));
+      QCString result((first_capital ? "Stron" : "stron"));
       result+=(singular ? "a" : "y");
       return result; 
     }
@@ -1300,7 +1300,7 @@ class TranslatorPolish : public Translator
     { 
       QCString result((first_capital ? "Sk³adow" : "sk³adow"));
       result+=(singular ? "a" : "e");
-      return result; 
+      return decode(result); 
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1346,7 +1346,7 @@ class TranslatorPolish : public Translator
      */
     virtual QCString trReferences()
     {
-      return "Odwo³uje siê do";
+      return decode("Odwo³uje siê do");
     }
 
     
@@ -1374,7 +1374,7 @@ class TranslatorPolish : public Translator
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "Spis tre¶ci";
+      return decode("Spis tre¶ci");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1386,7 +1386,7 @@ class TranslatorPolish : public Translator
      */
     virtual QCString trDeprecatedList()
     {
-      return "Lista elementów do wycofania";
+      return decode("Lista elementów do wycofania");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1403,7 +1403,7 @@ class TranslatorPolish : public Translator
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Dokumentacja zdarzeñ";
+      return decode("Dokumentacja zdarzeñ");
     }
 
 

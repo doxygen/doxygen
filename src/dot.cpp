@@ -964,25 +964,6 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 {
   //printf("DotGfxHierarchyTable::~DotGfxHierarchyTable\n");
 
-#if 0 // TODO: delete this
-  SDict<DotNode> skipNodes(1009);
-  skipNodes.setAutoDelete(TRUE);
-  DotNode *n = m_rootNodes->first();
-  while (n)
-  {
-    //printf("adding %s %p\n",n->label().data(),n);
-    skipNodes.append((char*)n,n);
-    n=m_rootNodes->next();
-  }
-  n = m_rootNodes->first();
-  while (n)
-  {
-    //printf("Deleting root node %s\n",n->label().data());
-    deleteNodes(n,&skipNodes); 
-    n=m_rootNodes->next();
-  }
-#endif
-
   //QDictIterator<DotNode> di(*m_usedNodes);
   //DotNode *n;
   //for (;(n=di.current());++di)

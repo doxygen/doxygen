@@ -102,6 +102,7 @@ written in Java. Files ending with <code>.cs</code> are treated as C# files.
 Finally, files with the extensions <code>.php</code>, <code>.php4</code>,
 <code>.inc</code> or <code>.phtml</code> are treated as PHP sources.
 
+\anchor extract_all
 If you start using doxygen for an existing project (thus without any 
 documentation that doxygen is aware of), you can still get an idea of
 what the documented result would be. To do so, you must set 

@@ -1932,7 +1932,14 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
       }
       else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
       {
-        srcA->name = dstA->name.copy();
+        if (srcA->docs.isEmpty() && !dstA->docs.isEmpty())
+        {
+          srcA->name = dstA->name.copy();
+        }
+        else if (!srcA->docs.isEmpty() && dstA->docs.isEmpty())
+        {
+          dstA->name = srcA->name.copy();
+        }
       }
     }
     else

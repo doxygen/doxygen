@@ -799,20 +799,20 @@ static void addClassToContext(Entry *root)
     Doxygen::classSDict.append(fullName,cd);
 
     // also add class to the correct structural context 
-    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
-    if (d==0)
-    {
-      //warn(root->fileName,root->startLine,
-      //     "Warning: Internal inconsistency: scope for class %s not "
-      //     "found!\n",fullName.data()
-      //    );
-    }
-    else
-    {
-      //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
-      d->addInnerCompound(cd);
-      cd->setOuterScope(d);
-    }
+    //Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+    //if (d==0)
+    //{
+    //  warn(root->fileName,root->startLine,
+    //       "Warning: Internal inconsistency: scope for class %s not "
+    //       "found!\n",fullName.data()
+    //      );
+    //}
+    //else
+    //{
+    //  //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+    //  d->addInnerCompound(cd);
+    //  cd->setOuterScope(d);
+    //}
   }
 }
             
@@ -850,6 +850,46 @@ static void buildClassDocList(Entry *root)
     buildClassDocList(e);
   }
 }
+
+static void resolveClassNestingRelations()
+{
+  int nestingLevel=0;
+  bool done=FALSE;
+  while (!done)
+  {
+    // iterate over all classes searching for a class with right nesting
+    // level (starting with 0 and going up until no more classes are found)
+    done=TRUE;
+    ClassSDict::Iterator cli(Doxygen::classSDict);
+    ClassDef *cd=0;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      if (cd->name().contains("::")==nestingLevel)
+      {
+        //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
+        done=FALSE;
+        // also add class to the correct structural context 
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,cd->name());
+        if (d==0)
+        {
+          warn(cd->getDefFileName(),cd->getDefLine(),
+              "Warning: Internal inconsistency: scope for class %s not "
+              "found!\n",cd->name().data()
+              );
+        }
+        else
+        {
+          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+          d->addInnerCompound(cd);
+          cd->setOuterScope(d);
+        }
+      }
+    }
+    nestingLevel++;
+  }
+}
+
+
 //----------------------------------------------------------------------
 // build a list of all namespaces mentioned in the documentation
 // and all namespaces that have a documentation block before their definition.
@@ -1710,7 +1750,7 @@ done:
 // Searches the Entry tree for Variable documentation sections.
 // If found they are stored in their class or in the global list.
 
-void buildVarList(Entry *root)
+static void buildVarList(Entry *root)
 {
   if (!root->name.isEmpty() &&
       (root->type.isEmpty() || compoundKeywordDict.find(root->type)==0) &&
@@ -1914,7 +1954,7 @@ nextMember:
 // Searches the Entry tree for Function sections.
 // If found they are stored in their class or in the global list.
 
-void addMethodToClass(Entry *root,ClassDef *cd,
+static void addMethodToClass(Entry *root,ClassDef *cd,
                   const QCString &rname,/*const QCString &scope,*/bool isFriend)
 {
   int l,i;
@@ -2790,7 +2830,7 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
  *  This function differs from getResolvedClass in that it also takes 
  *  using declarations and definition into account.
  */
-ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
+static ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
 {
   ClassDef *result=0;
 
@@ -7861,6 +7901,7 @@ void parseInput()
   msg("Building class list...\n");
   buildClassList(root);
   buildClassDocList(root);
+  resolveClassNestingRelations();
   findUsingDeclarations(root);
 
   msg("Building example list...\n");
