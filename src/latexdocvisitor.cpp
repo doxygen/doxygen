@@ -203,6 +203,18 @@ void LatexDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "\\footnotesize ";  else m_t << "\\normalsize ";
       break;
+    case DocStyleChange::Preformatted:
+      if (s->enable()) 
+      {
+        m_t << "\\small\\begin{alltt}";
+        m_insidePre=TRUE;
+      }
+      else
+      {
+        m_insidePre=FALSE;
+        m_t << "\\end{alltt}\\normalsize " << endl;
+      }
+      break;
   }
 }
 
@@ -499,17 +511,17 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 {
 }
 
-void LatexDocVisitor::visitPre(DocHtmlPre *)
-{
-  m_t << "\\small\\begin{alltt}";
-  m_insidePre=TRUE;
-}
+//void LatexDocVisitor::visitPre(DocHtmlPre *)
+//{
+//  m_t << "\\small\\begin{alltt}";
+//  m_insidePre=TRUE;
+//}
 
-void LatexDocVisitor::visitPost(DocHtmlPre *) 
-{
-  m_insidePre=FALSE;
-  m_t << "\\end{alltt}\\normalsize " << endl;
-}
+//void LatexDocVisitor::visitPost(DocHtmlPre *) 
+//{
+//  m_insidePre=FALSE;
+//  m_t << "\\end{alltt}\\normalsize " << endl;
+//}
 
 void LatexDocVisitor::visitPre(DocHtmlDescList *)
 {

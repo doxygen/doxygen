@@ -18,6 +18,8 @@
 #include "compoundhandler.h"
 #include "sectionhandler.h"
 #include "graphhandler.h"
+#include "dochandler.h"
+#include "memberhandler.h"
 #include "debug.h"
 
 

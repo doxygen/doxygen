@@ -219,7 +219,7 @@ URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))([({]{URLCHAR}*[)}])?
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 FILEMASK  {FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*
-LINKMASK  [^ \t\n\r\\@<&$]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"))? 
+LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"))? 
 SPCMD1    {CMD}[a-z_A-Z0-9]+ 
 SPCMD2    {CMD}[\\@<>&$#%~]
 SPCMD3    {CMD}form#[0-9]+
@@ -234,12 +234,12 @@ OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {BLANK}+[^(\r\n.,]+
 OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
-LNKWORD1  {SCOPEMASK}
+LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD1     [^ \t\n\r\\@<>&$#,.]+ 
+WORD1     [^ \t\n\r\\@<>{}&$#,.]+|"{"|"}"
 WORD2     "."|","
-WORD1NQ   [^ \t\n\r\\@<>&$#,."]+ 
+WORD1NQ   [^ \t\n\r\\@<>{}&$#,."]+ 
 WORD2NQ   "."|","
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
@@ -618,7 +618,7 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
-<*>[\\@<>&$#%~]	       { /* unescaped special character */
+<*>[\\@<>&$#%~]        { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;

@@ -2206,10 +2206,28 @@ void Config::create()
                     "PERLMOD_LATEX",
                     "If the PERLMOD_LATEX tag is set to YES Doxygen will generate \n"
                     "the necessary Makefile rules, Perl scripts and LaTeX code to be able \n"
-		    "to generate PDF and DVI output from the Perl module output.\n",
+		    "to generate PDF and DVI output from the Perl module output. \n",
 		    FALSE
                  );
   cb->addDependency("GENERATE_PERLMOD");
+  cb = addBool(  
+                    "PERLMOD_PRETTY",
+                    "If the PERLMOD_PRETTY tag is set to YES the Perl module output will be \n"
+		    "nicely formatted so it can be parsed by a human reader.  This is useful \n"
+		    "if you want to understand what is going on.  On the other hand, if this \n"
+		    "tag is set to NO the size of the Perl module output will be much smaller \n"
+		    "and Perl will parse it just the same. \n",
+		    TRUE
+                 );
+  cb->addDependency("GENERATE_PERLMOD");
+  cs = addString(  
+                    "PERLMOD_MAKEVAR_PREFIX",
+                    "The names of the make variables in the generated doxyrules.make file \n"
+                    "are prefixed with the string contained in PERLMOD_MAKEVAR_PREFIX. \n"
+		    "This is useful so different doxyrules.make files included by the same \n"
+		    "Makefile don't overwrite each other's variables."
+                 );
+  cs->addDependency("GENERATE_PERLMOD");
 
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Preprocessor","Configuration options related to the preprocessor   ");

@@ -73,14 +73,16 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocText *txt = dynamic_cast<IDocText*>(doc);
         ASSERT(txt!=0);
-        InPrint(("<text value=`%s' markup=%d/>\n",txt->text()->latin1(),txt->markup()));
+        InPrint(("<text value=`%s' markup=%d headingLevel=%d/>\n",
+              txt->text()->latin1(),txt->markup(),txt->headingLevel()));
       }
       break;
     case IDoc::MarkupModifier:
       {
         IDocMarkupModifier *md = dynamic_cast<IDocMarkupModifier*>(doc);
         ASSERT(md!=0);
-        InPrint(("<markup modifier enabled=%d markup=%d/>\n",md->enabled(),md->markup()));
+        InPrint(("<markup modifier enabled=%d markup=%d headingLevel=%d/>\n",
+              md->enabled(),md->markup(),md->headingLevel()));
       }
       break;
     case IDoc::ItemizedList:
@@ -203,7 +205,10 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocVariableListEntry *vle = dynamic_cast<IDocVariableListEntry*>(doc);
         ASSERT(vle!=0);
-        InPrint(("<variablelistentry term=%s>\n",vle->term()->latin1()));
+        ILinkedTextIterator *lti = vle->term();
+        QString term = linkedTextToString(lti);
+        lti->release();
+        InPrint(("<variablelistentry term=%s>\n",term.latin1()));
         DumpDoc(vle->description(),level+1);
         InPrint(("<variablelistentry/>\n"));
       }
@@ -255,7 +260,7 @@ void DumpDoc(IDoc *doc,int level)
           DumpDoc(cl,level+1);
         }
         cli->release();
-        InPrint(("<programlisting/>\n"));
+        InPrint(("</programlisting>\n"));
       }
       break;
     case IDoc::CodeLine:
@@ -270,7 +275,7 @@ void DumpDoc(IDoc *doc,int level)
           DumpDoc(ce,level+1);
         }
         cei->release();
-        InPrint(("<codeline/>\n"));
+        InPrint(("</codeline>\n"));
       }
       break;
     case IDoc::Highlight:
@@ -373,31 +378,70 @@ void DumpDoc(IDoc *doc,int level)
         {
           DumpDoc(pdoc,level+1);
         }
-        InPrint(("<section/>\n"));
+        InPrint(("</section>\n"));
       }
       break;
-    case IDoc::Preformatted:
+    case IDoc::Copy:
       {
-        InPrint(("<preformatted>\n"));
-        IDocPreformatted *pf = dynamic_cast<IDocPreformatted*>(doc);
-        ASSERT(pf!=0);
-        IDocIterator *di = pf->contents();
+        IDocCopy *cpy = dynamic_cast<IDocCopy*>(doc);
+        ASSERT(cpy!=0);
+        InPrint(("<copydoc>\n"));
+        IDocIterator *di = cpy->contents();
         IDoc *pdoc;
         for (di->toFirst();(pdoc=di->current());di->toNext())
         {
           DumpDoc(pdoc,level+1);
         }
         di->release();
-        InPrint(("<preformatted/>\n"));
+        InPrint(("<copydoc/>\n"));
+      }
+      break;
+    case IDoc::TocItem:
+      {
+        IDocTocItem *ti = dynamic_cast<IDocTocItem*>(doc);
+        ASSERT(ti!=0);
+        InPrint(("<tocitem id=\"%s\" title=\"%s\"/>\n",
+                 ti->id()->latin1(),ti->title()->latin1()));
+      }
+      break;
+    case IDoc::TocList:
+      {
+        IDocTocList *tl = dynamic_cast<IDocTocList*>(doc);
+        ASSERT(tl!=0);
+        InPrint(("<toclist>\n"));
+        IDocIterator *di = tl->elements();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        di->release();
+        InPrint(("<toclist/>\n"));
       }
       break;
     case IDoc::Verbatim:
       {
-        InPrint(("<verbatim>\n"));
         IDocVerbatim *vt = dynamic_cast<IDocVerbatim*>(doc);
         ASSERT(vt!=0);
+        const char *s=0;
+        switch (vt->type())
+        {
+          case IDocVerbatim::Verbatim:  s="verbatim"; break;
+          case IDocVerbatim::HtmlOnly:  s="htmlonly"; break;
+          case IDocVerbatim::LatexOnly: s="latexonly"; break;
+          default:
+            printf("Invalid verbatim type!\n");
+        }
+        InPrint(("<verbatim %s>\n",s));
         InPrint(("%s",vt->text()->latin1()));
-        InPrint(("<verbatim/>\n"));
+        InPrint(("</verbatim>\n"));
+      }
+      break;
+    case IDoc::Anchor:
+      {
+        IDocAnchor *anc = dynamic_cast<IDocAnchor*>(doc);
+        ASSERT(anc!=0);
+        InPrint(("<anchor id='%s'/>\n",anc->id()->latin1()));
       }
       break;
     case IDoc::Symbol:
@@ -420,7 +464,7 @@ void DumpDoc(IDoc *doc,int level)
           DumpDoc(pdoc,level+1);
         }
         di->release();
-        InPrint(("<root/>\n"));
+        InPrint(("</root>\n"));
       }
       break;
 

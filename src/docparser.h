@@ -80,7 +80,7 @@ class DocNode
                 Kind_XRefItem       = 15,
                 Kind_HtmlList       = 16,
                 Kind_HtmlListItem   = 17,
-                Kind_HtmlPre        = 18,
+                //Kind_HtmlPre        = 18,
                 Kind_HtmlDescList   = 19,
                 Kind_HtmlDescData   = 20,
                 Kind_HtmlDescTitle  = 21,
@@ -112,7 +112,9 @@ class DocNode
                 Kind_Copy           = 47,
                 Kind_Text           = 48
               };
-    /*! Destructor. */
+    /*! Creates a new node */
+    DocNode() : m_insidePre(FALSE) {}
+    /*! Destroys a node. */
     virtual ~DocNode() {}
     /*! Returns the kind of node. Provides runtime type information */
     virtual Kind kind() const = 0;
@@ -122,6 +124,12 @@ class DocNode
      *  @param v Abstract visitor.
      */
     virtual void accept(DocVisitor *v) = 0;
+    /*! Returns TRUE iff this node is inside a preformatted section */
+    bool isPreformatted() const { return m_insidePre; }
+    /*! Sets whether or not this item is inside a preformatted section */
+    void setInsidePreformatted(bool p) { m_insidePre = p; }
+  private:
+    bool m_insidePre;
 };
 
 /*! @brief Default accept implementation for compound nodes in the abstract
@@ -254,22 +262,26 @@ class DocStyleChange : public DocNode
 {
   public:
     enum Style { Bold, Italic, Code, Center, Small, 
-                 Subscript, Superscript 
+                 Subscript, Superscript, Preformatted
                };
-    DocStyleChange(DocNode *parent,uint position,Style s,bool enable) : 
-      m_parent(parent), m_position(position), m_style(s), m_enable(enable) {}
+    DocStyleChange(DocNode *parent,uint position,Style s,bool enable,
+                   const HtmlAttribList *attribs=0) : 
+      m_parent(parent), m_position(position), m_style(s), m_enable(enable)
+      { if (attribs) m_attribs=*attribs; }
     Kind kind() const { return Kind_StyleChange; }
     Style style() const { return m_style; }
     bool enable() const { return m_enable; }
     uint position() const { return m_position; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
+    const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
     DocNode *m_parent;
     uint     m_position;
     Style    m_style;
     bool     m_enable;
+    HtmlAttribList m_attribs;
 };
 
 /*! @brief Node representing a special symbol */
@@ -1024,7 +1036,7 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-
+#if 0
 /*! @brief Node representing a preformatted HTML section */
 class DocHtmlPre : public CompAccept<DocHtmlPre>, public DocNode
 {
@@ -1041,6 +1053,7 @@ class DocHtmlPre : public CompAccept<DocHtmlPre>, public DocNode
     DocNode *     m_parent;
     HtmlAttribList m_attribs;
 };
+#endif
 
 /*! @brief Node representing a HTML table cell */
 class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode

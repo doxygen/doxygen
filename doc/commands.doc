@@ -319,7 +319,7 @@ doxygen. Unrecognized commands are treated as normal text.
   
   If your comment block \e is in front of the function 
   declaration or definition this command can (and to avoid redundancy
-  should) be ommitted. 
+  should) be omitted. 
 
   A full function declaration including arguments should be specified after the
   \\fn command on a \e single line, since the argument ends at the end 
@@ -745,7 +745,7 @@ See section \ref memgroup for an example.
 
   \par Example:
 \verbatim
-  /*! Uncoditionally shown documentation.
+  /*! Unconditionally shown documentation.
    *  \if Cond1
    *    Only included if Cond1 is set.
    *  \endif

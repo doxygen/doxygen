@@ -159,10 +159,13 @@ class IDoc
       Row,                // 27 -> IDocRow
       Entry,              // 28 -> IDocEntry
       Section,            // 29 -> IDocSection
-      Preformatted,       // 30 -> IDocPreformatted
-      Verbatim,           // 31 -> IDocVerbatim
-      Symbol,             // 32 -> IDocSymbol
-      Root                // 33 -> IDocRoot
+      Verbatim,           // 30 -> IDocVerbatim
+      Copy,               // 31 -> IDocCopy
+      TocList,            // 32 -> IDocTocList
+      TocItem,            // 33 -> IDocTocItem
+      Anchor,             // 34 -> IDocAnchor
+      Symbol,             // 35 -> IDocSymbol
+      Root                // 36 -> IDocRoot
     };
     virtual Kind kind() const = 0;
 };
@@ -172,14 +175,16 @@ class IDocMarkup : public IDoc
   public:
     enum Markup 
     { 
-      Normal         = 0x00,
-      Bold           = 0x01,
-      Emphasis       = 0x02,
-      ComputerOutput = 0x04,
-      Subscript      = 0x08,
-      Superscript    = 0x10,
-      SmallFont      = 0x20,
-      Center         = 0x40
+      Normal         = 0x000,
+      Bold           = 0x001,
+      Emphasis       = 0x002,
+      ComputerOutput = 0x004,
+      Subscript      = 0x008,
+      Superscript    = 0x010,
+      SmallFont      = 0x020,
+      Center         = 0x040,
+      Preformatted   = 0x080,
+      Heading        = 0x100
     };
 };
 
@@ -194,6 +199,7 @@ class IDocText : public IDocMarkup
   public:
     virtual const IString * text() const = 0;
     virtual int markup() const = 0;
+    virtual int headingLevel() const = 0;
 };
 
 class IDocMarkupModifier : public IDoc
@@ -201,6 +207,7 @@ class IDocMarkupModifier : public IDoc
   public:
     virtual bool enabled() const = 0;
     virtual int markup() const = 0;
+    virtual int headingLevel() const = 0;
 };
 
 class IDocItemizedList : public IDoc
@@ -278,7 +285,7 @@ class IDocVariableList : public IDoc
 class IDocVariableListEntry : public IDoc
 {
   public:
-    virtual const IString * term() const = 0;
+    virtual ILinkedTextIterator * term() const = 0;
     virtual IDocPara *description() const = 0;
 };
 
@@ -393,7 +400,20 @@ class IDocSection : public IDoc
     virtual IDocIterator *title() const = 0;
 };
 
-class IDocPreformatted : public IDoc
+class IDocTocList : public IDoc
+{
+  public:
+    virtual IDocIterator *elements() const = 0;
+};
+
+class IDocTocItem : public IDoc
+{
+  public:
+    virtual const IString *id() const = 0; 
+    virtual const IString *title() const = 0;
+};
+
+class IDocCopy : public IDoc
 {
   public:
     virtual IDocIterator *contents() const = 0; 
@@ -402,7 +422,15 @@ class IDocPreformatted : public IDoc
 class IDocVerbatim : public IDoc
 {
   public:
+    enum Types { Invalid = 0, HtmlOnly, LatexOnly, Verbatim };
     virtual const IString *text() const = 0; 
+    virtual Types type() const = 0;
+};
+
+class IDocAnchor : public IDoc
+{
+  public:
+    virtual const IString *id() const = 0; 
 };
 
 class IDocSymbol : public IDoc

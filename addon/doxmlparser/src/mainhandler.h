@@ -17,11 +17,11 @@
 #define _MAINHANDLER_H
 
 #include <qlist.h>
-#include "basehandler.h"
-#include "compoundhandler.h"
-#include <doxmlintf.h>
-#include "memberhandler.h"
 
+#include <doxmlintf.h>
+#include "basehandler.h"
+
+class CompoundHandler;
 struct CompoundEntry;
 
 struct IndexEntry

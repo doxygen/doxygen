@@ -259,9 +259,9 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   if (Config_getBool("SOURCE_BROWSER") && m_startBodyLine!=-1 && m_bodyDef)
   {
-    //ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
-    //ol.enableAll();
+    ol.enableAll();
 
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
     int lineMarkerPos = refText.find("@0");

@@ -26,6 +26,8 @@
 #include "baseiterator.h"
 
 class ParagraphHandler;
+class LinkedTextImpl;
+class LinkedTextHandler;
 
 //-----------------------------------------------------------------------------
 
@@ -64,8 +66,11 @@ DEFINE_CLS_IMPL(DocTable);
 DEFINE_CLS_IMPL(DocRow);
 DEFINE_CLS_IMPL(DocEntry);
 DEFINE_CLS_IMPL(DocSection);
-DEFINE_CLS_IMPL(DocPreformatted);
 DEFINE_CLS_IMPL(DocVerbatim);
+DEFINE_CLS_IMPL(DocCopy);
+DEFINE_CLS_IMPL(DocTocList);
+DEFINE_CLS_IMPL(DocTocItem);
+DEFINE_CLS_IMPL(DocAnchor);
 DEFINE_CLS_IMPL(DocSymbol);
 DEFINE_CLS_IMPL(DocRoot);
 
@@ -78,18 +83,20 @@ DEFINE_CLS_IMPL(DocRoot);
 class TextNode : public DocTextImpl
 {
   public:
-    TextNode(const QString &t,int markup) 
-      : m_text(t), m_markup(markup) {}
+    TextNode(const QString &t,int markup,int level) 
+      : m_text(t), m_markup(markup), m_headingLevel(level) {}
     virtual ~TextNode() {}
 
     // IDocText
     virtual Kind kind() const { return DocImpl::Text; }
     virtual const IString *text() const { return &m_text; }
     virtual int markup() const { return m_markup; }
+    virtual int headingLevel() const { return m_headingLevel; }
   
   private:  
     StringImpl m_text;
     int m_markup;
+    int m_headingLevel;
 };
 
 //-----------------------------------------------------------------------------
@@ -100,18 +107,20 @@ class TextNode : public DocTextImpl
 class MarkupModifierNode : public DocMarkupModifierImpl
 {
   public:
-    MarkupModifierNode(int markup,bool enabled) 
-      : m_markup(markup), m_enabled(enabled) {}
+    MarkupModifierNode(int markup,bool enabled,int level=0) 
+      : m_markup(markup), m_enabled(enabled), m_headingLevel(level) {}
     virtual ~MarkupModifierNode() {}
   
     // IDocMarkupModifier
     virtual Kind kind() const { return DocImpl::MarkupModifier; }
     virtual bool enabled() const { return m_enabled; }
     virtual int markup() const { return m_markup; }
+    virtual int headingLevel() const { return m_headingLevel; }
 
   private:
     int m_markup;
     bool m_enabled;
+    int m_headingLevel;
 };
 
 
@@ -126,6 +135,7 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     MarkupHandler(QList<DocImpl> &children,QString &curString);
     virtual ~MarkupHandler();
     int markup() const { return m_curMarkup; }
+    int headingLevel() const { return m_headingLevel; }
 
     virtual void startBold(const QXmlAttributes &attrib);
     virtual void endBold();
@@ -141,6 +151,20 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     virtual void endSubscript();
     virtual void startSuperscript(const QXmlAttributes &attrib);
     virtual void endSuperscript();
+    virtual void startPreformatted(const QXmlAttributes &attrib);
+    virtual void endPreformatted();
+    virtual void startHeading1(const QXmlAttributes &attrib);
+    virtual void endHeading1();
+    virtual void startHeading2(const QXmlAttributes &attrib);
+    virtual void endHeading2();
+    virtual void startHeading3(const QXmlAttributes &attrib);
+    virtual void endHeading3();
+    virtual void startHeading4(const QXmlAttributes &attrib);
+    virtual void endHeading4();
+    virtual void startHeading5(const QXmlAttributes &attrib);
+    virtual void endHeading5();
+    virtual void startHeading6(const QXmlAttributes &attrib);
+    virtual void endHeading6();
 
 
   private:
@@ -149,6 +173,7 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     QList<DocImpl>  &m_children;
     QString         &m_curString;
     int             m_curMarkup;
+    int             m_headingLevel;
 };
 
 //-----------------------------------------------------------------------------
@@ -190,8 +215,9 @@ class ParagraphHandler : public DocParaImpl,
     virtual void startDotFile(const QXmlAttributes& attrib);
     virtual void startIndexEntry(const QXmlAttributes& attrib);
     virtual void startTable(const QXmlAttributes& attrib);
-    virtual void startPreformatted(const QXmlAttributes& attrib);
     virtual void startVerbatim(const QXmlAttributes& attrib);
+    virtual void startHtmlOnly(const QXmlAttributes& attrib);
+    virtual void startLatexOnly(const QXmlAttributes& attrib);
     virtual void startUmlaut(const QXmlAttributes& attrib);
     virtual void startAcute(const QXmlAttributes& attrib);
     virtual void startGrave(const QXmlAttributes& attrib);
@@ -202,6 +228,9 @@ class ParagraphHandler : public DocParaImpl,
     virtual void startRing(const QXmlAttributes& attrib);
     virtual void startNbsp(const QXmlAttributes& attrib);
     virtual void startCopy(const QXmlAttributes& attrib);
+    virtual void startAnchor(const QXmlAttributes& attrib);
+    virtual void startCopyDoc(const QXmlAttributes& attrib);
+    virtual void startTocList(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();
@@ -287,6 +316,61 @@ class OrderedListIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,Doc
       BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing table of contents list.
+ *
+ */
+class TocListHandler : public DocTocListImpl, public BaseHandler<TocListHandler>
+{
+    friend class TocListIterator;
+  public:
+    TocListHandler(IBaseHandler *parent);
+    virtual ~TocListHandler();
+    virtual void startTocList(const QXmlAttributes& attrib);
+    virtual void endTocList();
+    virtual void startTocItem(const QXmlAttributes& attrib);
+
+    // IDocTocList
+    virtual Kind kind() const { return DocImpl::TocList; }
+    virtual IDocIterator *elements() const;
+
+  private:
+    IBaseHandler   *m_parent;
+    QList<DocImpl>  m_children;
+};
+
+class TocListIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+{
+  public:
+    TocListIterator(const TocListHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a table of contents item.
+ *
+ */
+class TocItemHandler : public DocTocItemImpl, public BaseHandler<TocItemHandler>
+{
+    friend class TocItemIterator;
+  public:
+    TocItemHandler(IBaseHandler *parent);
+    virtual ~TocItemHandler();
+    virtual void startTocItem(const QXmlAttributes& attrib);
+    virtual void endTocItem();
+
+    // IDocItem
+    virtual Kind kind() const { return DocImpl::TocItem; }
+    virtual const IString *id() const { return &m_id; }
+    virtual const IString *title() const { return &m_title; }
+
+  private:
+    IBaseHandler   *m_parent;
+    StringImpl      m_id;
+    StringImpl      m_title;
+};
 
 //-----------------------------------------------------------------------------
 
@@ -619,13 +703,14 @@ class VariableListEntryHandler : public DocVariableListEntryImpl,
 
     // IDocVariableListEntry
     virtual Kind kind() const { return DocImpl::VariableListEntry; }
-    virtual const IString *term() const { return &m_term; }
+    virtual ILinkedTextIterator *term() const;
     virtual IDocPara *description() const { return m_description; }
 
   private:
-    IBaseHandler     *m_parent;
-    StringImpl        m_term;
-    ParagraphHandler *m_description;
+    IBaseHandler*         m_parent;
+    QList<LinkedTextImpl> m_term;
+    ParagraphHandler*     m_description;
+    LinkedTextHandler*    m_linkedTextHandler;
 };
 
 //-----------------------------------------------------------------------------
@@ -832,6 +917,29 @@ class ImageHandler : public DocImageImpl, public BaseHandler<ImageHandler>
     StringImpl     m_caption;
 };
 
+
+//-----------------------------------------------------------------------------
+/*! \brief Node representing an anchor.
+ *
+ */
+// children: -
+class AnchorHandler : public DocAnchorImpl, public BaseHandler<AnchorHandler>
+{
+  public:
+    AnchorHandler(IBaseHandler *parent);
+    virtual ~AnchorHandler();
+    void startAnchor(const QXmlAttributes& attrib);
+    void endAnchor();
+
+    // IDocAnchor
+    virtual Kind kind() const { return DocImpl::Anchor; }
+    virtual const IString *id() const { return &m_id; }
+
+  private:
+    IBaseHandler  *m_parent;
+    StringImpl     m_id;
+};
+
 //-----------------------------------------------------------------------------
 
 /*! \brief Node representing a dot file.
@@ -990,32 +1098,32 @@ class TableIterator : public BaseIteratorVia<IDocIterator,IDoc,RowHandler,DocImp
 
 //-----------------------------------------------------------------------------
 
-/*! \brief Node representing an preformatted section
+/*! \brief Node representing a copied piece of documentation.
+ *
  */
-class PreformattedHandler : public DocPreformattedImpl, 
-                            public BaseHandler<PreformattedHandler>
+class CopyHandler : public DocCopyImpl, public BaseHandler<CopyHandler>
 {
-    friend class PreformattedIterator;
+    friend class CopyIterator;
   public:
-    PreformattedHandler(IBaseHandler *parent);
-    virtual ~PreformattedHandler();
-    void startPreformatted(const QXmlAttributes& attrib);
-    void endPreformatted();
+    CopyHandler(IBaseHandler *parent);
+    virtual ~CopyHandler();
+    virtual void startCopy(const QXmlAttributes& attrib);
+    virtual void endCopy();
+    virtual void startParagraph(const QXmlAttributes& attrib);
 
-    // IDocPreformatted
+    // IDocCopy
+    virtual Kind kind() const { return DocImpl::Copy; }
     virtual IDocIterator *contents() const;
-    virtual Kind kind() const { return DocImpl::Preformatted; }
 
   private:
     IBaseHandler   *m_parent;
     QList<DocImpl>  m_children;
 };
 
-class PreformattedIterator : 
-   public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+class CopyIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
-    PreformattedIterator(const PreformattedHandler &handler) : 
+    CopyIterator(const CopyHandler &handler) : 
       BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
 
@@ -1026,20 +1134,21 @@ class PreformattedIterator :
 class VerbatimHandler : public DocVerbatimImpl, 
                         public BaseHandler<VerbatimHandler>
 {
-    friend class VerbatimIterator;
   public:
     VerbatimHandler(IBaseHandler *parent);
     virtual ~VerbatimHandler();
-    void startVerbatim(const QXmlAttributes& attrib);
+    void startVerbatim(const QXmlAttributes& attrib,Types type);
     void endVerbatim();
 
     // IDocVerbatim
     virtual Kind kind() const { return DocImpl::Verbatim; }
     virtual const IString *text() const { return &m_text; }
+    virtual Types type() const { return m_type; }
 
   private:
-    IBaseHandler   *m_parent;
-    StringImpl      m_text;
+    IBaseHandler *m_parent;
+    StringImpl    m_text;
+    Types         m_type;
 };
 
 

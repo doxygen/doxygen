@@ -76,8 +76,8 @@ class LatexDocVisitor : public DocVisitor
     void visitPost(DocHtmlList *s);
     void visitPre(DocHtmlListItem *);
     void visitPost(DocHtmlListItem *);
-    void visitPre(DocHtmlPre *);
-    void visitPost(DocHtmlPre *);
+    //void visitPre(DocHtmlPre *);
+    //void visitPost(DocHtmlPre *);
     void visitPre(DocHtmlDescList *);
     void visitPost(DocHtmlDescList *);
     void visitPre(DocHtmlDescTitle *);

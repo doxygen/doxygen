@@ -151,6 +151,22 @@ void ManDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       /* not supported */
       break;
+    case DocStyleChange::Preformatted:
+      if (s->enable())
+      {
+        if (!m_firstCol) m_t << endl;
+        m_t << ".PP" << endl;
+        m_t << ".nf" << endl;
+        m_insidePre=TRUE;
+      }
+      else
+      {
+        m_insidePre=FALSE;
+        if (!m_firstCol) m_t << endl;
+        m_t << ".PP" << endl;
+        m_firstCol=TRUE;
+      }
+    break;
   }
 }
 
@@ -468,21 +484,21 @@ void ManDocVisitor::visitPost(DocHtmlListItem *)
   m_firstCol=TRUE;
 }
 
-void ManDocVisitor::visitPre(DocHtmlPre *)
-{
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
-  m_t << ".nf" << endl;
-  m_insidePre=TRUE;
-}
-
-void ManDocVisitor::visitPost(DocHtmlPre *) 
-{
-  m_insidePre=FALSE;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
-  m_firstCol=TRUE;
-}
+//void ManDocVisitor::visitPre(DocHtmlPre *)
+//{
+//  if (!m_firstCol) m_t << endl;
+//  m_t << ".PP" << endl;
+//  m_t << ".nf" << endl;
+//  m_insidePre=TRUE;
+//}
+//
+//void ManDocVisitor::visitPost(DocHtmlPre *) 
+//{
+//  m_insidePre=FALSE;
+//  if (!m_firstCol) m_t << endl;
+//  m_t << ".PP" << endl;
+//  m_firstCol=TRUE;
+//}
 
 void ManDocVisitor::visitPre(DocHtmlDescList *)
 {

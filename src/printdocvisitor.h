@@ -121,6 +121,9 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Small:
          if (s->enable()) printf("<small>"); else printf("</small>");
          break;
+        case DocStyleChange::Preformatted:
+         if (s->enable()) printf("<pre>"); else printf("</pre>");
+         break;
       }
     }
     void visit(DocVerbatim *s)
@@ -330,18 +333,18 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</li>\n");
     }
-    void visitPre(DocHtmlPre *)
-    {
-      indent_pre();
-      printf("<pre>\n");
-      m_insidePre=TRUE;
-    }
-    void visitPost(DocHtmlPre *) 
-    {
-      m_insidePre=FALSE;
-      indent_post();
-      printf("</pre>\n");
-    }
+    //void visitPre(DocHtmlPre *)
+    //{
+    //  indent_pre();
+    //  printf("<pre>\n");
+    //  m_insidePre=TRUE;
+    //}
+    //void visitPost(DocHtmlPre *) 
+    //{
+    //  m_insidePre=FALSE;
+    //  indent_post();
+    //  printf("</pre>\n");
+    //}
     void visitPre(DocHtmlDescList *)
     {
       indent_pre();

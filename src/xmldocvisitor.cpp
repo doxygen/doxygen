@@ -138,6 +138,18 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small>";  else m_t << "</small> ";
       break;
+    case DocStyleChange::Preformatted:
+      if (s->enable()) 
+      {
+        m_t << "<preformatted>";  
+        m_insidePre=TRUE;
+      }
+      else 
+      {
+        m_t << "</preformatted> ";
+        m_insidePre=FALSE;
+      }
+      break;
   }
 }
 
@@ -412,18 +424,6 @@ void XmlDocVisitor::visitPost(DocHtmlListItem *)
   m_t << "</listitem>\n";
 }
 
-void XmlDocVisitor::visitPre(DocHtmlPre *)
-{
-  m_t << "<preformatted>\n";
-  m_insidePre=TRUE;
-}
-
-void XmlDocVisitor::visitPost(DocHtmlPre *) 
-{
-  m_insidePre=FALSE;
-  m_t << "</preformatted>\n";
-}
-
 void XmlDocVisitor::visitPre(DocHtmlDescList *)
 {
   m_t << "<variablelist>\n";
@@ -517,12 +517,12 @@ void XmlDocVisitor::visitPost(DocHRef *)
 
 void XmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
-  m_t << "<sect" << header->level() << ">";
+  m_t << "<heading" << header->level() << ">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlHeader *header) 
 {
-  m_t << "</sect" << header->level() << ">\n";
+  m_t << "</heading" << header->level() << ">\n";
 }
 
 void XmlDocVisitor::visitPre(DocImage *img)

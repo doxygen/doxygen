@@ -133,26 +133,37 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "<b>";      else m_t << "</b>";
+      if (s->enable()) m_t << "<b" << htmlAttribsToString(s->attribs()) << ">";      else m_t << "</b>";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "<em>";     else m_t << "</em>";
+      if (s->enable()) m_t << "<em" << htmlAttribsToString(s->attribs()) << ">";     else m_t << "</em>";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "<code>";   else m_t << "</code>";
+      if (s->enable()) m_t << "<code" << htmlAttribsToString(s->attribs()) << ">";   else m_t << "</code>";
       break;
     case DocStyleChange::Subscript:
-      if (s->enable()) m_t << "<sub>";    else m_t << "</sub>";
+      if (s->enable()) m_t << "<sub" << htmlAttribsToString(s->attribs()) << ">";    else m_t << "</sub>";
       break;
     case DocStyleChange::Superscript:
-      if (s->enable()) m_t << "<sup>";    else m_t << "</sup>";
+      if (s->enable()) m_t << "<sup" << htmlAttribsToString(s->attribs()) << ">";    else m_t << "</sup>";
       break;
     case DocStyleChange::Center:
-      if (s->enable()) m_t << "<center>"; else m_t << "</center>";
+      if (s->enable()) m_t << "<center" << htmlAttribsToString(s->attribs()) << ">"; else m_t << "</center>";
       break;
     case DocStyleChange::Small:
-      if (s->enable()) m_t << "<small>";  else m_t << "</small>";
+      if (s->enable()) m_t << "<small" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</small>";
       break;
+    case DocStyleChange::Preformatted:
+      if (s->enable())
+      {
+        m_t << "<pre" << htmlAttribsToString(s->attribs()) << ">\n";
+        m_insidePre=TRUE;
+      }
+      else
+      {
+        m_insidePre=FALSE;
+        m_t << "</pre>\n";
+      }
   }
 }
 
@@ -434,17 +445,17 @@ void HtmlDocVisitor::visitPost(DocHtmlListItem *)
   m_t << "</li>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlPre *p)
-{
-  m_t << "<pre" << htmlAttribsToString(p->attribs()) << ">\n";
-  m_insidePre=TRUE;
-}
+//void HtmlDocVisitor::visitPre(DocHtmlPre *p)
+//{
+//  m_t << "<pre" << htmlAttribsToString(p->attribs()) << ">\n";
+//  m_insidePre=TRUE;
+//}
 
-void HtmlDocVisitor::visitPost(DocHtmlPre *) 
-{
-  m_insidePre=FALSE;
-  m_t << "</pre>\n";
-}
+//void HtmlDocVisitor::visitPost(DocHtmlPre *) 
+//{
+//  m_insidePre=FALSE;
+//  m_t << "</pre>\n";
+//}
 
 void HtmlDocVisitor::visitPre(DocHtmlDescList *dl)
 {

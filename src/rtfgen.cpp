@@ -1439,14 +1439,14 @@ void RTFGenerator::startDescription()
 {
   DBG_RTF(t << "{\\comment (startDescription)}"    << endl)
   t << "{" << endl;
-  t << rtf_Style_Reset << rtf_CList_DepthStyle();
+  t << rtf_Style_Reset << rtf_DList_DepthStyle();
 }
 
 void RTFGenerator::endDescription()
 {
   DBG_RTF(t << "{\\comment (endDescription)}"    << endl)
-  t << "}";
   newParagraph();
+  t << "}";
 }
 
 void RTFGenerator::startDescItem()
@@ -1758,6 +1758,7 @@ void RTFGenerator::writeRTFReference(const char *label)
 
 void RTFGenerator::startCodeFragment()
 {
+  DBG_RTF(t << "{\\comment (startCodeFragment) }"    << endl)
   t << "{" << endl;
   newParagraph();
   t << rtf_Style_Reset << rtf_Code_DepthStyle();
@@ -1974,8 +1975,11 @@ void RTFGenerator::endTextBlock()
 
 void RTFGenerator::newParagraph()
 {
+  if (!m_omitParagraph)
+  {
   DBG_RTF(t << "{\\comment (newParagraph)}"    << endl)
-  if (!m_omitParagraph) t << "\\par" << endl;
+    t << "\\par" << endl;
+  }
   m_omitParagraph = FALSE;
 }
 
@@ -2177,6 +2181,7 @@ static bool PreProcessFile(QDir &d,QCString &infName, QTextStream &t, bool bIncl
 
 void RTFGenerator::startDotGraph()
 {
+  DBG_RTF(t << "{\\comment (startDotGraph)}"    << endl)
 }
 
 void RTFGenerator::endDotGraph(DotClassGraph &g)
@@ -2193,10 +2198,13 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
+  newParagraph();
+  DBG_RTF(t << "{\\comment (endDotGraph)}"    << endl)
 }
 
 void RTFGenerator::startInclDepGraph()
 {
+  DBG_RTF(t << "{\\comment (startInclDepGraph)}"    << endl)
 }
 
 void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
@@ -2212,6 +2220,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
+  DBG_RTF(t << "{\\comment (endInclDepGraph)}"    << endl)
 }
 
 /** Tests the integrity of the result by counting brackets.
