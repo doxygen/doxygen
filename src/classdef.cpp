@@ -35,6 +35,7 @@
 #include "defargs.h"
 #include "debug.h"
 #include "docparser.h"
+#include "searchindex.h"
 
 
 // constructs a new class definition
@@ -849,6 +850,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.parseText(theTranslator->trCompoundReference(displayName(),m_compType,m_tempArgs!=0));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
+
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName().lower());
+  }
 
   ol.startTextBlock();
   

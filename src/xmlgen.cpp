@@ -220,7 +220,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
       writeXMLCodeString(m_t,text);
     }
     void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *text) 
+                               const char *anchor,const char *name) 
     {
       XML_DB(("(writeCodeLink)\n"));
       if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -228,7 +228,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
         m_t << "<highlight class=\"normal\">";
         m_normalHLNeedStartTag=FALSE;
       }
-      writeXMLLink(m_t,ref,file,anchor,text);
+      writeXMLLink(m_t,ref,file,anchor,name);
     }
     void startCodeLine() 
     {

@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.3.3), 29 languages 
+Currently (version unknown), 29 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Catalan, Chinese, Chinese Traditional, Croatian, 
 Czech, Danish, Dutch, English, Finnish, 
@@ -121,7 +121,7 @@ when the translator was updated.
       <TD>German</TD>  
       <TD>Jens Seidel</TD>
       <TD>jensseidel@NOSPAM.users.sf.net</TD>
-      <TD>1.3.1</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Greek</TD>  
@@ -139,7 +139,7 @@ when the translator was updated.
       <TD>Italian</TD>  
       <TD>Alessandro Falappa<br>Ahmed Aldo Faisal</TD>
       <TD>alessandro@NOSPAM.falappa.net<br>aaf23@NOSPAM.cam.ac.uk</TD>
-      <TD>1.3.3</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
@@ -260,13 +260,13 @@ when the translator was updated.
   \hline
   French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
   \hline
-  German & Jens Seidel & {\tt jensseidel@users.sf.net} & 1.3.1 \\
+  German & Jens Seidel & {\tt jensseidel@users.sf.net} & up-to-date \\
   \hline
   Greek & Harry Kalogirou & {\tt harkal@rainbow.cs.unipi.gr} & 1.2.11 \\
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & 1.3.3 \\
+  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & up-to-date \\
    & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} &  \\
   \hline
   Japanese & Ryunosuke Satoh & {\tt sun594@hotmail.com} & 1.3.3 \\

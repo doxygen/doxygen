@@ -252,7 +252,7 @@ static bool readCodeFragment(const char *fileName,
     // skip until the startLine has reached
     while (lineNr<startLine && !feof(f))
     {
-      while ((c=fgetc(f))!='\n' && c==EOF) /* skip */;
+      while ((c=fgetc(f))!='\n' && c!=EOF) /* skip */;
       lineNr++; 
     }
     if (!feof(f))
@@ -263,6 +263,7 @@ static bool readCodeFragment(const char *fileName,
       {
         while ((c=fgetc(f))!='{' && c!=':' && c!=EOF) 
         {
+          //printf("parsing char `%c'\n",c);
           if (c=='\n') 
           {
             lineNr++,col=0; 
@@ -286,6 +287,7 @@ static bool readCodeFragment(const char *fileName,
           found=TRUE;
         }
       }
+      //printf(" -> readCodeFragment(%s,%d,%d) lineNr=%d\n",fileName,startLine,endLine,lineNr);
       if (found) 
       {
         // For code with more than one line,
@@ -305,11 +307,21 @@ static bool readCodeFragment(const char *fileName,
         char lineStr[maxLineLength];
         do 
         {
+          //printf("reading line %d in range %d-%d\n",lineNr,startLine,endLine);
           int size_read;
-          do {
+          do 
+          {
             // read up to maxLineLength-1 bytes, the last byte being zero
             char *p = fgets(lineStr, maxLineLength,f);
-            if (p) size_read=qstrlen(p); else size_read=-1;
+            //printf("  read %s",p);
+            if (p) 
+            {
+              size_read=qstrlen(p); 
+            }
+            else 
+            {
+              size_read=-1;
+            }
             result+=lineStr;
           } while (size_read == (maxLineLength-1));
 
@@ -432,7 +444,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
-  //        startBodyLine,endBodyLine,bodyDef);
+  //        m_startBodyLine,m_endBodyLine,m_bodyDef);
   if (Config_getBool("INLINE_SOURCES") && m_startBodyLine!=-1 && 
       m_endBodyLine>=m_startBodyLine && m_bodyDef)
   {
