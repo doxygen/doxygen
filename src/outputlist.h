@@ -64,7 +64,9 @@ class OutputList : public OutputDocInterface
     //////////////////////////////////////////////////
 
     void parseDoc(const char *fileName,int startLine,
-                  const char *clName,MemberDef *md,const QCString &docStr);
+                  const char *clName,MemberDef *md,const QCString &docStr,
+                  bool isExample);
+    void parseText(const QCString &textStr);
     
     OutputDocInterface *clone()
     {

@@ -19,7 +19,6 @@
 #include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
-#include "doc.h"
 #include "language.h"
 #include "classdef.h"
 #include "classlist.h"
@@ -198,12 +197,12 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
+    ol.parseText(theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
+      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -212,7 +211,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
+      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
       ol.newParagraph();
     }
     ol.endTextBlock();
@@ -227,11 +226,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   //ol.docify(pageTitle);
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
-    parseText(ol,theTranslator->trPackage(displayName()));
+    ol.parseText(theTranslator->trPackage(displayName()));
   }
   else
   {
-    parseText(ol,theTranslator->trNamespaceReference(displayName()));
+    ol.parseText(theTranslator->trNamespaceReference(displayName()));
   }
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
@@ -252,12 +251,12 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
   else if (!briefDescription().isEmpty()) 
   {
-    parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
+    ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
-    parseText(ol,theTranslator->trMore());
+    ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     ol.popGeneratorState();
   }
@@ -315,9 +314,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

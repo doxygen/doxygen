@@ -264,6 +264,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
+%x St_Text
 
 %%
 <St_Para>\r               /* skip carriage return */
@@ -349,17 +350,17 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
 			 g_token->endTag = startNamePos==2;
                          return TK_HTMLTAG;
                        }
-<St_Para>"&"{ID}";"       { /* special symbol */ 
+<St_Para,St_Text>"&"{ID}";" { /* special symbol */ 
                          g_token->name = yytext;
                          return TK_SYMBOL;
                        }
-<St_Para>{LNKWORD1}    |
+<St_Para>{LNKWORD1}/[^a-z_A-Z0-9]    |
 <St_Para>{LNKWORD2}    {
                          g_token->name = yytext;
                          return TK_LNKWORD;
   		       }
-<St_Para>{WORD1}       |
-<St_Para>{WORD2}       { /* function call */ 
+<St_Para,St_Text>{WORD1} |
+<St_Para,St_Text>{WORD2} { /* function call */ 
                          g_token->name = yytext;
                          return TK_WORD;
 
@@ -369,11 +370,15 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
 			  */ 
 			 goto find_rule;
                        }
-<St_Para>{BLANK}+      |
-<St_Para>{BLANK}*\n{BLANK}* { /* white space */ 
+<St_Para,St_Text>{BLANK}+      |
+<St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */ 
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
+<St_Text>[\\@<>&$#%~]  {
+                         g_token->name = yytext;
+                         return TK_COMMAND;
+  		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n {
                          /* start of a new paragraph */
   		         return TK_NEWPARA;
@@ -588,6 +593,11 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
+<*>[\\@<>&$#%~]	       { /* unescaped special character */
+                         warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
+			 g_token->name = yytext;
+			 return TK_COMMAND;
+                       }
 <*>.                   { 
                          warn(g_fileName,yylineno,"Error: Unexpected character `%s'",yytext); 
 		       }
@@ -670,6 +680,11 @@ void doctokenizerYYsetStateRef()
 void doctokenizerYYsetStateInternalRef()
 {
   BEGIN(St_IntRef);
+}
+
+void doctokenizerYYsetStateText()
+{
+  BEGIN(St_Text);
 }
 
 void doctokenizerYYcleanup()

@@ -23,7 +23,6 @@
 #include "outputlist.h"
 #include "util.h"
 #include "config.h"
-#include "doc.h"
 #include "language.h"
 #include "doxygen.h"
 
@@ -58,17 +57,15 @@ void PackageDef::writeDocumentation(OutputList &ol)
   ol.docify(title);
   endTitle(ol,getOutputFileBase(),title);
 
-  OutputList briefOutput(&ol);
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,briefFile(),briefLine(),name(),0,briefDescription());
-    ol+=briefOutput;
+    ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
     ol.startTextLink(0,"_details");
-    parseText(ol,theTranslator->trMore());
+    ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     ol.popGeneratorState();
   }
@@ -101,20 +98,20 @@ void PackageDef::writeDocumentation(OutputList &ol)
     ol.writeAnchor(0,"_details");
     ol.popGeneratorState();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
+    ol.parseText(theTranslator->trDetailedDescription());
     ol.endGroupHeader();
 
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol+=briefOutput;
+      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
       ol.newParagraph();
     }
 
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
+      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
     }
   }
 

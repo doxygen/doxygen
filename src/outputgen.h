@@ -86,8 +86,8 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
                       };
 
     virtual void parseDoc(const char *,int, const char *,MemberDef *,
-                          const QCString &)
-    {}
+                          const QCString &,bool)  {} 
+    virtual void parseText(const QCString &)  {}
     
     /*! Start of a bullet list: e.g. \c <ul> in html. writeListItem() is
      *  Used for the bullet items.
@@ -297,7 +297,7 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
 class OutputGenerator : public BaseOutputDocInterface
 {
   public:
-    enum OutputType { Html, Latex, Man, RTF, XML, DEF };
+    enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl };
 
     OutputGenerator();
     virtual ~OutputGenerator();

@@ -31,7 +31,6 @@
 #include "classdef.h"
 #include "filedef.h"
 #include "doxygen.h"
-#include "doc.h"
 #include "outputlist.h"
 #include "defargs.h"
 #include "language.h"
@@ -853,7 +852,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
   while ((newIndex=marker.match(exampleLine,index,&matchLen))!=-1)
   {
     bool ok;
-    parseText(ol,exampleLine.mid(index,newIndex-index));
+    ol.parseText(exampleLine.mid(index,newIndex-index));
     uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
     Example *e=ed->at(entryIndex);
     if (ok && e) 
@@ -879,7 +878,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
     }
     index=newIndex+matchLen;
   } 
-  parseText(ol,exampleLine.right(exampleLine.length()-index));
+  ol.parseText(exampleLine.right(exampleLine.length()-index));
   ol.writeString(".");
 }
 
@@ -2292,6 +2291,8 @@ bool resolveRef(/* in */  const char *scName,
   QCString tsName = name;
   bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
+  fullName = substitute(fullName,".","::");
+  
   int scopePos=fullName.findRev("::");
   int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
 
@@ -2309,10 +2310,10 @@ bool resolveRef(/* in */  const char *scName,
       return FALSE;
     }
 
-    //printf("scName=%s tmpName=%s\n",scName,tmpName.data());
+    //printf("scName=%s name=%s\n",scName,fullName.data());
     
     // check if this is a class or namespace reference
-    if (scName!=fullName && getScopeDefs(scName,name,cd,nd))
+    if (scName!=fullName && getScopeDefs(scName,fullName,cd,nd))
     {
       if (cd) // scope matches that of a class
       {
@@ -2425,6 +2426,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   if (linkText.isEmpty())
   {
     linkText=substitute(name,"#","::");
+    linkText=substitute(linkText,".","::");
     // strip :: prefix if present
     if (linkText.at(0)==':' && linkText.at(1)==':')
     {
@@ -2550,6 +2552,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   if (linkText.isEmpty())
   {
     linkText=substitute(lr,"#","::");
+    linkText=substitute(linkText,".","::");
     // strip :: prefix if present
     if (linkText.at(0)==':' && linkText.at(1)==':')
     {

@@ -30,7 +30,6 @@
 #include "version.h"
 #include "doxygen.h"
 #include "scanner.h"
-#include "doc.h"
 #include "entry.h"
 #include "index.h"
 #include "logos.h"
@@ -56,6 +55,7 @@
 #include "rtfgen.h"
 #include "xmlgen.h"
 #include "defgen.h"
+#include "perlmodgen.h"
 #include "reflist.h"
 #include "page.h"
 //#include "packagedef.h"
@@ -1112,6 +1112,7 @@ static void findUsingDeclarations(Entry *root)
                      "<generated>",1,
                      root->name,ClassDef::Class);
         Doxygen::hiddenClasses.append(root->name,usingCd);
+        usingCd->setClassIsArtificial();
       }
 
       // add the namespace the correct scope
@@ -6020,7 +6021,7 @@ static void generatePageDocs()
       {
         scName=pi->context->name();
       }
-      parseDoc(*outputList,pi->defFileName,pi->defLine,scName,0,pi->doc);
+      outputList->parseDoc(pi->defFileName,pi->defLine,scName,0,pi->doc,FALSE);
       outputList->endTextBlock();
       endFile(*outputList);
       //outputList->enable(OutputGenerator::Man);
@@ -6091,7 +6092,13 @@ static void generateExampleDocs()
     startTitle(*outputList,n);
     outputList->docify(pi->name);
     endTitle(*outputList,n,0);
-    parseExample(*outputList,pi->doc+"\n\\include "+pi->name,pi->name);
+    outputList->parseDoc(pi->name,                                 // file
+                         pi->defLine,                              // startLine
+                         pi->context?pi->context->name().data():0, // context
+                         0,                                        // memberDef
+                         pi->doc+"\n\\include "+pi->name,          // docs
+                         TRUE                                      // is example
+                        );
     endFile(*outputList);
   }
   outputList->enable(OutputGenerator::Man);
@@ -7809,13 +7816,13 @@ void generateOutput()
   msg("Generating style sheet...\n");
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
-  parseText(*outputList,
+  outputList->parseText(
             theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(1); // write second part
   //parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(2); // write third part
-  parseText(*outputList,
+  outputList->parseText(
             theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(3); // write fourth part
@@ -7878,6 +7885,11 @@ void generateOutput()
   {
     msg("Generating AutoGen DEF output...\n");
     generateDEF();
+  }
+  if (Config_getBool("GENERATE_PERLMOD"))
+  {
+    msg("Generating PerlMod output...\n");
+    generatePerlMod();
   }
   if (Config_getBool("GENERATE_HTMLHELP") && !Config_getString("HHC_LOCATION").isEmpty())
   {

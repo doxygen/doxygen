@@ -22,7 +22,6 @@
 #include "filedef.h"
 #include "classlist.h"
 #include "outputlist.h"
-#include "doc.h"
 #include "namespacedef.h"
 #include "language.h"
 #include "util.h"
@@ -359,13 +358,13 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
       ol.writeAnchor(0,"_details");
       ol.popGeneratorState();
       ol.startGroupHeader();
-      parseText(ol,theTranslator->trDetailedDescription());
+      ol.parseText(theTranslator->trDetailedDescription());
       ol.endGroupHeader();
 
       // repeat brief description
       if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
       {
-        parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
+        ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
         ol.newParagraph();
       }
     }
@@ -373,7 +372,7 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
+      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
     }
   }
 }
@@ -396,13 +395,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   else if (!briefDescription().isEmpty())
   {
-    parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
+    ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
     ol.startTextLink(0,"_details");
-    parseText(ol,theTranslator->trMore());
+    ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     //ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
@@ -422,7 +421,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (fileList->count()>0)
   {
     ol.startMemberHeader();
-    parseText(ol,theTranslator->trFile(TRUE,FALSE));
+    ol.parseText(theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
     FileDef *fd=fileList->first();
@@ -440,7 +439,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,briefFile(),briefLine(),0,0,fd->briefDescription());
+        ol.parseDoc(briefFile(),briefLine(),0,0,fd->briefDescription(),FALSE);
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -453,7 +452,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (namespaceList->count()>0)
   {
     ol.startMemberHeader();
-    parseText(ol,theTranslator->trNamespaces());
+    ol.parseText(theTranslator->trNamespaces());
     ol.endMemberHeader();
     ol.startMemberList();
     NamespaceDef *nd=namespaceList->first();
@@ -471,7 +470,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,briefFile(),briefLine(),0,0,nd->briefDescription());
+        ol.parseDoc(briefFile(),briefLine(),0,0,nd->briefDescription(),FALSE);
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -484,7 +483,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (groupList->count()>0)
   {
     ol.startMemberHeader();
-    parseText(ol,theTranslator->trModules());
+    ol.parseText(theTranslator->trModules());
     ol.endMemberHeader();
     ol.startMemberList();
     GroupDef *gd=groupList->first();
@@ -501,7 +500,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,briefFile(),briefLine(),0,0,gd->briefDescription());
+        ol.parseDoc(briefFile(),briefLine(),0,0,gd->briefDescription(),FALSE);
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -561,7 +560,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
         ol.endSection(si->label,SectionInfo::Subsection);
       }
       ol.startTextBlock();
-      parseDoc(ol,pi->defFileName,pi->defLine,0,0,pi->doc);
+      ol.parseDoc(pi->defFileName,pi->defLine,0,0,pi->doc,FALSE);
       ol.endTextBlock();
     }
   }

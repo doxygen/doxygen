@@ -32,7 +32,6 @@ HEADERS      =	bufstr.h \
                 define.h \
                 definition.h \
                 diagram.h \
-		doc.h \
                 docparser.h \
                 doctokenizer.h \
                 docvisitor.h \
@@ -66,8 +65,8 @@ HEADERS      =	bufstr.h \
 		namespacedef.h \
 		outputgen.h \
 		outputlist.h \
-		packagedef.h \
 		page.h \
+		perlmodgen.h \
                 pngenc.h \
 		pre.h \
                 printdocvisitor.h \
@@ -133,7 +132,6 @@ SOURCES      =	ce_lex.cpp \
 		define.cpp \
 		definition.cpp \
 		diagram.cpp \
-		doc.cpp \
                 docparser.cpp \
                 doctokenizer.cpp \
 		dot.cpp \
@@ -164,7 +162,7 @@ SOURCES      =	ce_lex.cpp \
 		namespacedef.cpp \
 		outputgen.cpp \
 		outputlist.cpp \
-		packagedef.cpp \
+		perlmodgen.cpp \
                 pngenc.cpp \
 		pre.cpp \
 		reflist.cpp \

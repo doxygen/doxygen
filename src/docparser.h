@@ -34,17 +34,26 @@ class MemberDef;
 //---------------------------------------------------------------------------
 
 /*! Main entry point for the documentation parser.
- *  @param fileName  File in which the documentation block is found.
+ *  @param fileName  File in which the documentation block is found (or the
+ *                   name of the example file in case isExample is TRUE).
  *  @param startLine Line at which the documentation block is found.
  *  @param context   Class or namespace in which of the item to which this
  *                   block belongs.
+ *  @param md        Member definition to which the documentation belongs.
+ *                   Can be 0.
  *  @param input     String representation of the documentation block.
+ *  @param isExample TRUE if the documentation belongs to an example.
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context, MemberDef *md,
-                            const char *input);
+                            const char *input,bool isExample);
+
+/*! Main entry point for parsing simple text fragments. These 
+ *  fragments are limited to words, whitespace and symbols.
+ */
+DocNode *validatingParseText(const char *input);
 
 //---------------------------------------------------------------------------
 
@@ -100,7 +109,8 @@ class DocNode
                 Kind_ParamSect      = 44,
                 Kind_ParamList      = 45,
                 Kind_InternalRef    = 46,
-                Kind_Copy           = 47
+                Kind_Copy           = 47,
+                Kind_Text           = 48
               };
     /*! Destructor. */
     virtual ~DocNode() {}
@@ -306,20 +316,26 @@ class DocVerbatim : public DocNode
   public:
     enum Type { Code, HtmlOnly, LatexOnly, Verbatim };
     DocVerbatim(DocNode *parent,const QString &context,
-                const QString &text, Type t) : 
-      m_parent(parent), m_context(context), m_text(text), m_type(t) {}
+                const QString &text, Type t,bool isExample,
+                const QString &exampleFile) : 
+      m_parent(parent), m_context(context), m_text(text), m_type(t),
+      m_isExample(isExample), m_exampleFile(exampleFile) {}
     Kind kind() const { return Kind_Verbatim; }
     Type type() const { return m_type; }
     QString text() const { return m_text; }
     QString context() const { return m_context; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
+    bool isExample() const { return m_isExample; }
+    QString exampleFile() const { return m_exampleFile; }
 
   private:
     DocNode *m_parent;
     QString  m_context;
     QString  m_text;
     Type     m_type;
+    bool     m_isExample;
+    QString  m_exampleFile;
 };
 
 /*! @brief Node representing an included text block from file */
@@ -328,15 +344,19 @@ class DocInclude : public DocNode
   public:
     enum Type { Include, DontInclude, VerbInclude, HtmlInclude };
     DocInclude(DocNode *parent,const QString &file,
-               const QString context, Type t) : 
-      m_parent(parent), m_file(file), m_context(context), m_type(t) {}
-    Kind kind() const          { return Kind_Include; }
-    QString file() const      { return m_file; }
-    Type type() const          { return m_type; }
-    QString text() const      { return m_text; }
-    QString context() const   { return m_context; }
-    DocNode *parent() const    { return m_parent; }
-    void accept(DocVisitor *v) { v->visit(this); }
+               const QString context, Type t,
+               bool isExample,const QString exampleFile) : 
+      m_parent(parent), m_file(file), m_context(context), m_type(t),
+      m_isExample(isExample), m_exampleFile(exampleFile) {}
+    Kind kind() const           { return Kind_Include; }
+    QString file() const        { return m_file; }
+    Type type() const           { return m_type; }
+    QString text() const        { return m_text; }
+    QString context() const     { return m_context; }
+    DocNode *parent() const     { return m_parent; }
+    bool isExample() const      { return m_isExample; }
+    QString exampleFile() const { return m_exampleFile; }
+    void accept(DocVisitor *v)  { v->visit(this); }
     void parse();
 
   private:
@@ -345,6 +365,8 @@ class DocInclude : public DocNode
     QString  m_context;
     QString  m_text;
     Type     m_type;
+    bool     m_isExample;
+    QString  m_exampleFile;
 };
 
 /*! @brief Node representing a include/dontinclude operator block */
@@ -353,21 +375,24 @@ class DocIncOperator : public DocNode
   public:
     enum Type { Line, SkipLine, Skip, Until };
     DocIncOperator(DocNode *parent,Type t,const QString &pat,
-                   const QString &context) : 
+                   const QString &context,bool isExample,const QString &exampleFile) : 
       m_parent(parent), m_type(t), m_pattern(pat), m_context(context), 
-      m_isFirst(FALSE), m_isLast(FALSE) {}
-    Kind kind() const { return Kind_IncOperator; }
-    Type type() const { return m_type; }
-    QString text() const { return m_text; }
-    QString pattern() const { return m_pattern; }
-    QString context() const { return m_context; }
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v) { v->visit(this); }
-    void parse();
-    bool isFirst() const       { return m_isFirst; }
-    bool isLast() const        { return m_isLast; }
+      m_isFirst(FALSE), m_isLast(FALSE),
+      m_isExample(isExample), m_exampleFile(exampleFile) {}
+    Kind kind() const           { return Kind_IncOperator; }
+    Type type() const           { return m_type; }
+    QString text() const        { return m_text; }
+    QString pattern() const     { return m_pattern; }
+    QString context() const     { return m_context; }
+    DocNode *parent() const     { return m_parent; }
+    void accept(DocVisitor *v)  { v->visit(this); }
+    bool isFirst() const        { return m_isFirst; }
+    bool isLast() const         { return m_isLast; }
     void markFirst(bool v=TRUE) { m_isFirst = v; }
     void markLast(bool v=TRUE)  { m_isLast = v; }
+    bool isExample() const      { return m_isExample; }
+    QString exampleFile() const { return m_exampleFile; }
+    void parse();
 
   private:
     DocNode *m_parent;
@@ -377,6 +402,8 @@ class DocIncOperator : public DocNode
     QString  m_context;
     bool     m_isFirst;
     bool     m_isLast;
+    bool     m_isExample;
+    QString  m_exampleFile;
 };
 
 /*! @brief Node representing an item of a cross-referenced list */
@@ -886,7 +913,7 @@ class DocParamList : public DocNode
 {
   public:
     DocParamList(DocNode *parent,DocParamSect::Type t) 
-      : m_parent(parent) , m_type(t)
+      : m_parent(parent) , m_type(t), m_isFirst(TRUE), m_isLast(TRUE)
     { m_paragraph=new DocPara(this); }
     virtual ~DocParamList()
     { delete m_paragraph; }
@@ -895,6 +922,10 @@ class DocParamList : public DocNode
     DocNode *parent() const { return m_parent; }
     const QStrList &parameters() { return m_params; }
     DocParamSect::Type type() const { return m_type; }
+    void markFirst(bool b=TRUE) { m_isFirst=b; }
+    void markLast(bool b=TRUE) { m_isLast=b; }
+    bool isFirst() const { return m_isFirst; }
+    bool isLast() const { return m_isLast; }
     void accept(DocVisitor *v)
     { 
       v->visitPre(this); 
@@ -907,18 +938,21 @@ class DocParamList : public DocNode
     DocPara *          m_paragraph;
     QStrList           m_params;
     DocParamSect::Type m_type;
+    bool               m_isFirst;
+    bool               m_isLast;
 };
 
 /*! @brief Node representing an item of a auto list */
 class DocAutoListItem : public DocNode
 {
   public:
-    DocAutoListItem(DocNode *parent) : m_parent(parent) 
+    DocAutoListItem(DocNode *parent,int num) : m_parent(parent), m_itemNum(num)
     { m_paragraph=new DocPara(this); }
     virtual ~DocAutoListItem() { delete m_paragraph; }
     int parse();
     Kind kind() const { return Kind_AutoListItem; }
     DocNode *parent() const { return m_parent; }
+    int itemNumber() const { return m_itemNum; }
     void accept(DocVisitor *v) 
     { 
       v->visitPre(this); 
@@ -928,6 +962,7 @@ class DocAutoListItem : public DocNode
   private:
     DocNode *m_parent;
     DocPara *m_paragraph;
+    int m_itemNum;
 };
 
 /*! @brief Node representing a simple list item */
@@ -956,17 +991,19 @@ class DocSimpleListItem : public DocNode
 class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
 {
   public:
-    DocHtmlListItem(DocNode *parent,const HtmlAttribList &attribs) : 
-      m_parent(parent), m_attribs(attribs) {}
+    DocHtmlListItem(DocNode *parent,const HtmlAttribList &attribs,int num) : 
+      m_parent(parent), m_attribs(attribs), m_itemNum(num) {}
     int parse();
     Kind kind() const { return Kind_HtmlListItem; }
+    int itemNumber() const { return m_itemNum; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocHtmlListItem>::accept(this,v); }
 
   private:
-    DocNode *     m_parent;
+    DocNode *      m_parent;
     HtmlAttribList m_attribs;
+    int            m_itemNum;
 };
 
 /*! @brief Node representing a Html description data */
@@ -1107,6 +1144,16 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     HtmlAttribList         m_attribs;
 };
 
+/*! @brief Root node of a text fragment */
+class DocText : public CompAccept<DocText>, public DocNode
+{
+  public:
+    DocText() {}
+    void parse();
+    Kind kind() const { return Kind_Text; }
+    DocNode *parent() const { return 0; }
+    void accept(DocVisitor *v) { CompAccept<DocText>::accept(this,v); }
+};
 
 /*! @brief Root node of documentation tree */
 class DocRoot : public CompAccept<DocRoot>, public DocNode

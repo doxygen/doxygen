@@ -211,7 +211,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "\\end{verbatim}\\normalsize" << endl; 
       break;
     case DocVerbatim::Verbatim: 
@@ -246,7 +246,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "\\end{verbatim}\\normalsize" << endl; 
       break;
     case DocInclude::DontInclude: 
@@ -272,7 +272,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
@@ -875,6 +875,14 @@ void LatexDocVisitor::visitPre(DocCopy *)
 }
 
 void LatexDocVisitor::visitPost(DocCopy *)
+{
+}
+
+void LatexDocVisitor::visitPre(DocText *)
+{
+}
+
+void LatexDocVisitor::visitPost(DocText *)
 {
 }
 

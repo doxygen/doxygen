@@ -122,6 +122,8 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocInternalRef *);
     void visitPre(DocCopy *);
     void visitPost(DocCopy *);
+    void visitPre(DocText *);
+    void visitPost(DocText *);
 
   private:
 

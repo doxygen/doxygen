@@ -148,7 +148,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "</programlisting>"; 
       break;
     case DocVerbatim::Verbatim: 
@@ -182,7 +182,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << "<programlisting>";
-      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "</programlisting>"; 
       break;
     case DocInclude::DontInclude: 
@@ -211,7 +211,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
@@ -302,7 +302,7 @@ void XmlDocVisitor::visitPost(DocRoot *)
 
 void XmlDocVisitor::visitPre(DocSimpleSect *s)
 {
-  m_t << "<simplesect kind=\">";
+  m_t << "<simplesect kind=\"";
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -698,6 +698,14 @@ void XmlDocVisitor::visitPre(DocCopy *)
 }
 
 void XmlDocVisitor::visitPost(DocCopy *)
+{
+}
+
+void XmlDocVisitor::visitPre(DocText *)
+{
+}
+
+void XmlDocVisitor::visitPost(DocText *)
 {
 }
 

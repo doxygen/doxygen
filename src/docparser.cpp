@@ -41,11 +41,16 @@
 #define DBG(x) do {} while(0)
 //#define DBG(x) printf x
 
+#define INTERNAL_ASSERT(x) do {} while(0)
+//#define INTERNAL_ASSERT(x) if (!(x)) DBG(("INTERNAL_ASSERT(%s) failed retval=0x%x: file=%s line=%d\n",#x,retval,__FILE__,__LINE__)); 
+
 //---------------------------------------------------------------------------
 
+// global variables during a call to validatingParseDoc
 static bool        g_hasParamCommand;
 static MemberDef * g_memberDef;
 static QDict<void> g_paramsFound;
+static bool        g_isExample;
 
 // include file state
 static QString g_includeFileText;
@@ -426,7 +431,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-	       tokenName.data());
+	       tokToString(tok));
           break;
       }
     }
@@ -601,7 +606,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           {
             doctokenizerYYsetStateHtmlOnly();
             int retval = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_fileName));
             if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: htmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -610,7 +615,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           {
             doctokenizerYYsetStateLatexOnly();
             int retval = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_fileName));
             if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: latexonly section ended without end marker",doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
           }
@@ -896,7 +901,7 @@ static void readTextFileByName(const QString &file,QString &text)
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
   {
-    text = fileToString(fd->absFilePath());
+    text = fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"));
   }
   else if (ambig)
   {
@@ -1209,7 +1214,7 @@ void DocSecRefItem::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-	       g_token->name.data());
+	       tokToString(tok));
           break;
       }
     }
@@ -1251,7 +1256,7 @@ void DocSecRefList::parse()
 
   int tok=doctokenizerYYlex();
   // skip white space
-  while (tok==TK_WHITESPACE) tok=doctokenizerYYlex();
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
   // handle items
   while (tok)
   {
@@ -1346,7 +1351,7 @@ void DocInternalRef::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -1431,7 +1436,7 @@ void DocRef::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -1531,7 +1536,7 @@ QString DocLink::parse(bool isJavaLink)
           break;
         default:
           warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-            g_token->name.data());
+             tokToString(tok));
         break;
       }
     }
@@ -1576,7 +1581,7 @@ void DocDotFile::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -1653,7 +1658,7 @@ void DocImage::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -1748,7 +1753,7 @@ int DocHtmlHeader::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -1805,7 +1810,7 @@ int DocHRef::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data(),doctokenizerYYlineno);
+		tokToString(tok),doctokenizerYYlineno);
           break;
       }
     }
@@ -1947,7 +1952,7 @@ int DocIndexEntry::parse()
       break;
       default:
         warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-            g_token->name.data());
+            tokToString(tok));
         break;
     }
   }
@@ -1998,7 +2003,7 @@ int DocHtmlCaption::parse()
           break;
         default:
           warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-              g_token->name.data());
+              tokToString(tok));
           break;
       }
     }
@@ -2058,7 +2063,7 @@ int DocHtmlRow::parse()
   // get next token
   int tok=doctokenizerYYlex();
   // skip whitespace
-  while (tok==TK_WHITESPACE) tok=doctokenizerYYlex();
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
@@ -2122,7 +2127,7 @@ getrow:
   // get next token
   int tok=doctokenizerYYlex();
   // skip whitespace
-  while (tok==TK_WHITESPACE) tok=doctokenizerYYlex();
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
@@ -2224,7 +2229,7 @@ int DocHtmlDescTitle::parse()
           break;
         default:
           warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-              g_token->name.data());
+              tokToString(tok));
           break;
       }
     }
@@ -2397,12 +2402,13 @@ int DocHtmlList::parse()
 {
   DBG(("DocHtmlList::parse() start\n"));
   int retval=RetVal_OK;
+  int num=1;
   g_nodeStack.push(this);
 
   // get next token
   int tok=doctokenizerYYlex();
-  // skip whitespace
-  while (tok==TK_WHITESPACE) tok=doctokenizerYYlex();
+  // skip whitespace and paragraph breaks
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
@@ -2433,7 +2439,7 @@ int DocHtmlList::parse()
 
   do
   {
-    DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs);
+    DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs,num++);
     m_children.append(li);
     retval=li->parse();
   } while (retval==RetVal_ListItem);
@@ -2500,11 +2506,12 @@ int DocAutoListItem::parse()
 int DocAutoList::parse()
 {
   int retval = RetVal_OK;
+  int num=1;
   g_nodeStack.push(this);
 	  // first item or sub list => create new list
   do
   {
-    DocAutoListItem *li = new DocAutoListItem(this);
+    DocAutoListItem *li = new DocAutoListItem(this,num++);
     m_children.append(li);
     retval=li->parse();
   } 
@@ -2542,7 +2549,7 @@ void DocTitle::parse()
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+		tokToString(tok));
           break;
       }
     }
@@ -2671,6 +2678,17 @@ int DocParamSect::parse(const QString &cmdName)
   g_nodeStack.push(this);
 
   DocParamList *pl = new DocParamList(this,m_type);
+  if (m_children.isEmpty())
+  {
+    pl->markFirst();
+    pl->markLast();
+  }
+  else
+  {
+    ASSERT(m_children.last()->kind()==DocNode::Kind_ParamList);
+    ((DocParamList *)m_children.last())->markLast(FALSE);
+    pl->markLast();
+  }
   m_children.append(pl);
   retval = pl->parse(cmdName);
   
@@ -2705,7 +2723,6 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t)
 int DocPara::handleParamSection(const QString &cmdName,DocParamSect::Type t)
 {
   DocParamSect *ps=0;
-  
   if (!m_children.isEmpty() &&                        // previous element
       m_children.last()->kind()==Kind_ParamSect &&    // was a param sect
       ((DocParamSect *)m_children.last())->type()==t) // of same type
@@ -2762,7 +2779,7 @@ void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type 
         tokToString(tok),cmdName.data());
     return;
   }
-  DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context);
+  DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_fileName);
   DocNode *n1 = m_children.last();
   DocNode *n2 = n1!=0 ? m_children.prev() : 0;
   bool isFirst = n1==0 || // no last node
@@ -2981,7 +2998,7 @@ void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
         tokToString(tok),cmdName.data());
     return;
   }
-  DocInclude *inc = new DocInclude(this,g_token->name,g_context,t);
+  DocInclude *inc = new DocInclude(this,g_token->name,g_context,t,g_isExample,g_fileName);
   m_children.append(inc);
   inc->parse();
 }
@@ -3119,7 +3136,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateCode();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Code));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Code,g_isExample,g_fileName));
         if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: code section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3128,7 +3145,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateHtmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_fileName));
         if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: htmlonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3137,7 +3154,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateLatexOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_fileName));
         if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: latexonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3146,7 +3163,7 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateVerbatim();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim,g_isExample,g_fileName));
         if (retval==0) warn(g_fileName,doctokenizerYYlineno,"Error: verbatim section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -3317,7 +3334,7 @@ int DocPara::handleCommand(const QString &cmdName)
       ASSERT(0);
       break;
   }
-  ASSERT(retval==0 || retval==RetVal_OK || retval==RetVal_SimpleSec || 
+  INTERNAL_ASSERT(retval==0 || retval==RetVal_OK || retval==RetVal_SimpleSec || 
          retval==TK_LISTITEM || retval==TK_ENDLIST || retval==TK_NEWPARA ||
          retval==RetVal_Section || retval==RetVal_EndList || 
          retval==RetVal_Internal || retval==RetVal_SwitchLang
@@ -3670,20 +3687,30 @@ reparsetoken:
         m_children.append(new DocURL(this,g_token->name));
         break;
       case TK_WHITESPACE:  
-	// prevent leading whitespace and collapse multiple whitespace areas
-	if (insidePRE(this) || // all whitespace is relavant
-            (                  // keep only whitespace after words, URL or symbols
-               !m_children.isEmpty() /* && 
-               (
-	         m_children.last()->kind()==DocNode::Kind_Word   ||
-	         m_children.last()->kind()==DocNode::Kind_URL    ||
-	         m_children.last()->kind()==DocNode::Kind_Symbol
-               )*/
-	     )
-           )
-	{
-	  m_children.append(new DocWhiteSpace(this,g_token->chars));
-	}
+        {
+          // prevent leading whitespace and collapse multiple whitespace areas
+          DocNode::Kind k; 
+          if (insidePRE(this) || // all whitespace is relavant
+              (                
+               // remove leading whitespace 
+               !m_children.isEmpty()  && 
+               // and whitespace after certain constructs
+               (k=m_children.last()->kind())!=DocNode::Kind_HtmlDescList &&
+               k!=DocNode::Kind_HtmlTable &&
+               k!=DocNode::Kind_HtmlList &&
+               k!=DocNode::Kind_SimpleSect &&
+               k!=DocNode::Kind_AutoList &&
+               k!=DocNode::Kind_SimpleList &&
+               k!=DocNode::Kind_Verbatim &&
+               k!=DocNode::Kind_HtmlHeader &&
+               k!=DocNode::Kind_ParamSect &&
+               k!=DocNode::Kind_XRefItem
+              )
+             )
+          {
+            m_children.append(new DocWhiteSpace(this,g_token->chars));
+          }
+        }
 	break;
       case TK_LISTITEM:    
 	{
@@ -3875,13 +3902,10 @@ endparagraph:
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
   DBG(("DocPara::parse() end retval=%x\n",retval));
-  ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM || 
+  INTERNAL_ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM || 
          retval==TK_ENDLIST || retval>RetVal_OK 
 	);
 
-  if (!(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM || 
-         retval==TK_ENDLIST || retval>RetVal_OK 
-	)) warn(g_fileName,doctokenizerYYlineno,"DocPara::parse: Error retval=%x unexpected",retval);
   return retval; 
 }
 
@@ -3962,13 +3986,91 @@ int DocSection::parse()
       retval = s->parse();
     }
   }
-  ASSERT(retval==0 || retval==RetVal_Section || retval==RetVal_Internal);
+  INTERNAL_ASSERT(retval==0 || retval==RetVal_Section || retval==RetVal_Internal);
 
   DBG(("DocSection::parse() end\n"));
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
 }
+
+//--------------------------------------------------------------------------
+
+void DocText::parse()
+{
+  g_nodeStack.push(this);
+  doctokenizerYYsetStateText();
+  
+  int tok;
+  while ((tok=doctokenizerYYlex())) // get the next token
+  {
+    switch(tok)
+    {
+      case TK_WORD:        
+	m_children.append(new DocWord(this,g_token->name));
+	break;
+      case TK_WHITESPACE:  
+        m_children.append(new DocWhiteSpace(this,g_token->chars));
+	break;
+      case TK_SYMBOL:     
+        {
+          char letter='\0';
+          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name,&letter);
+          if (s!=DocSymbol::Unknown)
+          {
+            m_children.append(new DocSymbol(this,s,letter));
+          }
+          else
+          {
+            warn(g_fileName,doctokenizerYYlineno,"Error: Unsupported symbol %s found",
+                g_token->name.data());
+          }
+        }
+        break;
+      case TK_COMMAND: 
+        switch (CmdMapper::map(g_token->name))
+        {
+          case CMD_BSLASH:
+            m_children.append(new DocSymbol(this,DocSymbol::BSlash));
+            break;
+          case CMD_AT:
+            m_children.append(new DocSymbol(this,DocSymbol::At));
+            break;
+          case CMD_LESS:
+            m_children.append(new DocSymbol(this,DocSymbol::Less));
+            break;
+          case CMD_GREATER:
+            m_children.append(new DocSymbol(this,DocSymbol::Greater));
+            break;
+          case CMD_AMP:
+            m_children.append(new DocSymbol(this,DocSymbol::Amp));
+            break;
+          case CMD_DOLLAR:
+            m_children.append(new DocSymbol(this,DocSymbol::Dollar));
+            break;
+          case CMD_HASH:
+            m_children.append(new DocSymbol(this,DocSymbol::Hash));
+            break;
+          case CMD_PERCENT:
+            m_children.append(new DocSymbol(this,DocSymbol::Percent));
+            break;
+          default:
+            warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected command `%s' found",
+                      g_token->name.data());
+            break;
+        }
+        break;
+      default:
+        warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
+            tokToString(tok));
+        break;
+    }
+  }
+
+  DocNode *n = g_nodeStack.pop();
+  ASSERT(n==this);
+}
+
 
 //--------------------------------------------------------------------------
 
@@ -4037,11 +4139,11 @@ void DocRoot::parse()
 
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,MemberDef *md,
-                            const char *input)
+                            const char *input,bool isExample)
 {
   
-  printf("========== validating %s at line %d\n",fileName,startLine);
-  printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
+  //printf("========== validating %s at line %d\n",fileName,startLine);
+  //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   g_token = new TokenInfo;
 
   g_context = context;
@@ -4054,6 +4156,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_includeFileText = "";
   g_includeFileOffset = 0;
   g_includeFileLength = 0;
+  g_isExample = isExample;
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
@@ -4082,5 +4185,38 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //HtmlTagMapper::freeInstance();
 
   return root;
+}
+
+DocNode *validatingParseText(const char *input)
+{
+  //printf("------------ input ---------\n%s\n"
+  //       "------------ end input -----\n",input);
+
+  g_token = new TokenInfo;
+  g_context = "";
+  g_fileName = "<parseText>";
+  g_memberDef = 0;
+  g_nodeStack.clear();
+  g_styleStack.clear();
+  g_inSeeBlock = FALSE;
+  g_insideHtmlLink = FALSE;
+  g_includeFileText = "";
+  g_includeFileOffset = 0;
+  g_includeFileLength = 0;
+  g_isExample = FALSE;
+  g_hasParamCommand = FALSE;
+  g_paramsFound.setAutoDelete(FALSE);
+  g_paramsFound.clear();
+
+  doctokenizerYYlineno=1;
+  doctokenizerYYinit(input,g_fileName);
+
+  // build abstract syntax tree
+  DocText *txt = new DocText;
+  txt->parse();
+
+  delete g_token;
+
+  return txt;
 }
 

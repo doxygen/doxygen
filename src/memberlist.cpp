@@ -24,7 +24,6 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputlist.h"
-#include "doc.h"
 #include "groupdef.h"
 
 MemberList::MemberList() : QList<MemberDef>()
@@ -285,7 +284,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 if (fmd->hasOneLineInitializer()) // enum value has initializer
                 {
                   typeDecl.writeString(" = ");
-                  parseText(typeDecl,fmd->initializer());
+                  typeDecl.parseText(fmd->initializer());
                 }
               }
 
@@ -341,10 +340,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
           {
             ol.startMemberDescription();
-            parseDoc(ol,
+            ol.parseDoc(
                 md->briefFile(),md->briefLine(),
                 cd?cd->name().data():0,md,
-                md->briefDescription()
+                md->briefDescription(),
+                FALSE
                     );
             if (md->isDetailedSectionLinkable())
             {
@@ -360,7 +360,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               {
                 ol.startTextLink(0,md->anchor());
               }
-              parseText(ol,theTranslator->trMore());
+              ol.parseText(theTranslator->trMore());
               ol.endTextLink();
               ol.startEmphasis();
               ol.enableAll();
@@ -418,14 +418,14 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (title) 
   {
     ol.startMemberHeader();
-    parseText(ol,title);
+    ol.parseText(title);
     ol.endMemberHeader();
   }
   if (subtitle && subtitle[0]!=0) 
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    parseDoc(ol,"<generated>",1,0,0,subtitle);
+    ol.parseDoc("<generated>",1,0,0,subtitle,FALSE);
     ol.endMemberSubtitle();
   }
 
@@ -442,14 +442,14 @@ void MemberList::writeDeclarations(OutputList &ol,
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
       {
-        parseText(ol,mg->header());
+        ol.parseText(mg->header());
       }
       ol.endMemberGroupHeader();
       if (!mg->documentation().isEmpty())
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        parseDoc(ol,"<generated>",1,0,0,mg->documentation()+"\n");
+        ol.parseDoc("<generated>",1,0,0,mg->documentation()+"\n",FALSE);
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();
@@ -476,7 +476,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   {
     ol.writeRuler();
     ol.startGroupHeader();
-    parseText(ol,title);
+    ol.parseText(title);
     ol.endGroupHeader();
   }
   

@@ -85,7 +85,10 @@ class PageInfo
         SectionInfo *si;
         for (;(si=sdi.current());++sdi)
         {
-          Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+          if (!si->generated)
+          {
+            Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+          }
         }
       }
     }

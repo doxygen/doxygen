@@ -2191,6 +2191,18 @@ void Config::create()
 
                FALSE );
   //-----------------------------------------------------------------------------------------------
+  addInfo(  "Perl","configuration options related to the Perl output");
+  //-----------------------------------------------------------------------------------------------
+  cb = addBool(  
+                    "GENERATE_PERLMOD",
+                    "If the GENERATE_PERLMOD tag is set to YES Doxygen will \n"
+                    "generate a Perl module file that captures the structure of \n"
+                    "the code including all documentation. Note that this \n"
+		    "feature is still experimental and incomplete at the \n"
+		    "moment. \n",
+		    FALSE
+                 );
+  //-----------------------------------------------------------------------------------------------
   addInfo(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------
   cb = addBool(

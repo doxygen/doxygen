@@ -19,7 +19,6 @@
 #include "memberlist.h"
 #include "classlist.h"
 #include "filedef.h"
-#include "doc.h"
 #include "doxygen.h"
 #include "memberdef.h"
 #include "classdef.h"
@@ -114,11 +113,11 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
+    ol.parseText(theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      parseDoc(ol,briefFile(),briefLine(),0,0,briefDescription());
+      ol.parseDoc(briefFile(),briefLine(),0,0,briefDescription(),FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
         !documentation().isEmpty())
@@ -129,7 +128,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     {
       //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
       //  doc+='.';
-      parseDoc(ol,docFile(),docLine(),0,0,documentation()+"\n");
+      ol.parseDoc(docFile(),docLine(),0,0,documentation()+"\n",FALSE);
     }
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
@@ -139,10 +138,10 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
       int fileMarkerPos = refText.find("@0");
       if (fileMarkerPos!=-1) // should always pass this.
       {
-        parseText(ol,refText.left(fileMarkerPos)); //text left from marker 1
+        ol.parseText(refText.left(fileMarkerPos)); //text left from marker 1
         ol.writeObjectLink(0,getSourceFileBase(),
             0,name());
-        parseText(ol,refText.right(
+        ol.parseText(refText.right(
               refText.length()-fileMarkerPos-2)); // text right from marker 2
       }
     }
@@ -167,7 +166,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   QCString pageTitle=name()+" File Reference";
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trFileReference(docname));
+  ol.parseText(theTranslator->trFileReference(docname));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
@@ -190,11 +189,11 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   else if (briefDescription()) 
   {
-    parseDoc(ol,briefFile(),briefLine(),0,0,briefDescription());
+    ol.parseDoc(briefFile(),briefLine(),0,0,briefDescription(),FALSE);
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
-    parseText(ol,theTranslator->trMore());
+    ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
     ol.disable(OutputGenerator::Man);
@@ -288,7 +287,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
-      parseText(ol,theTranslator->trInclDepGraph(name()));
+      ol.parseText(theTranslator->trInclDepGraph(name()));
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
     }
@@ -304,7 +303,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
-      parseText(ol,theTranslator->trInclByDepGraph());
+      ol.parseText(theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
     }
@@ -317,7 +316,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Html);
     ol.newParagraph();
     ol.startTextLink(includeName(),0);
-    parseText(ol,theTranslator->trGotoSourceCode());
+    ol.parseText(theTranslator->trGotoSourceCode());
     ol.endTextLink();
     ol.enableAll();
   }
@@ -338,7 +337,7 @@ void FileDef::writeDocumentation(OutputList &ol)
         if (!found)
         {
           ol.startMemberHeader();
-          parseText(ol,theTranslator->trNamespaces());
+          ol.parseText(theTranslator->trNamespaces());
           ol.endMemberHeader();
           ol.startMemberList();
           found=TRUE;
@@ -418,9 +417,9 @@ void FileDef::writeDocumentation(OutputList &ol)
   // write Author section (Man only)
   ol.disableAllBut(OutputGenerator::Man);
   ol.startGroupHeader();
-  parseText(ol,theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
   ol.enableAll();
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
@@ -438,13 +437,13 @@ void FileDef::writeSource(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,getSourceFileBase(),0,docname+" Source File");
   startTitle(ol,0);
-  parseText(ol,docname);
+  ol.parseText(docname);
   endTitle(ol,0,0);
 
   if (isLinkable())
   {
     ol.startTextLink(getOutputFileBase(),0);
-    parseText(ol,theTranslator->trGotoDocumentation());
+    ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
   }
 
