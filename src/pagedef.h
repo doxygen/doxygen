@@ -15,16 +15,27 @@
  *
  */
 
+#include "definition.h"
 #include "sortdict.h"
-#include "config.h"
-#include "docparser.h"
+//#include "config.h"
+//#include "docparser.h"
 
-#include "section.h"
-#include "doxygen.h"
+//#include "section.h"
+//#include "doxygen.h"
 
-class PageInfo
+class PageDef : public Definition
 {
   public:
+    PageDef(const char *f,int l,const char *n,const char *d,const char *t);
+   ~PageDef();
+    DefType definitionType() { return TypePage; }
+
+    // functions to get a uniform interface with Definitions
+    QCString getOutputFileBase() const { return m_fileName; }
+#if 0
+   
+    bool isReference() const { return !reference.isEmpty(); }
+    QCString getReference() const { return reference; }
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
       doc(d), title(t), context(0), xrefListItems(0),m_inGroup(0)
@@ -52,10 +63,6 @@ class PageInfo
     // class, file or namespace in which the page was found
     Definition *context;
 
-    // functions to get a uniform interface with Definitions
-    QCString getOutputFileBase() const { return fileName; }
-    bool isReference() const { return !reference.isEmpty(); }
-    QCString getReference() const { return reference; }
     
     //void addSections(QList<QCString> *anchorList)
     //{
@@ -115,16 +122,20 @@ class PageInfo
 
   private:
     GroupDef *m_inGroup;
+#endif
+  private:
+    QCString m_fileName;
+    QCString m_title;
 };
 
-class PageSDict : public SDict<PageInfo>
+class PageSDict : public SDict<PageDef>
 {
   public:
-    PageSDict(int size) : SDict<PageInfo>(size) {}
+    PageSDict(int size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
     int compareItems(GCI i1,GCI i2)
     {
-      return stricmp(((PageInfo *)i1)->name,((PageInfo *)i2)->name);
+      return stricmp(((PageDef *)i1)->name(),((PageDef *)i2)->name());
     }
 };
 

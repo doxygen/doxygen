@@ -46,11 +46,35 @@ static const char *edgeColorMap[] =
   "orange"         // template relation
 };
 
+//static const char *arrowStyle[] =
+//{
+//  "empty",         // Public
+//  "empty",         // Protected
+//  "empty",         // Private
+//  "open",          // "use" relation
+//  0,               // Undocumented
+//  0                // template relation
+//};
+
 static const char *edgeStyleMap[] =
 {
   "solid",         // inheritance
   "dashed"         // usage
 };
+
+static void writeGraphHeader(QTextStream &t)
+{
+  t << "digraph G" << endl;
+  t << "{" << endl;
+  t << "  edge [fontname=\"Helvetica\",fontsize=10,"
+       "labelfontname=\"Helvetica\",labelfontsize=10];\n";
+  t << "  node [fontname=\"Helvetica\",fontsize=10,shape=record];\n";
+}
+
+static void writeGraphFooter(QTextStream &t)
+{
+  t << "}" << endl;
+}
 
 /*! converts the rectangles in a server site image map into a client 
  *  site image map.
@@ -382,14 +406,20 @@ static QCString convertLabel(const QCString &l)
   char c;
   while ((c=*p++))
   {
-    if (c=='\\') result+="\\\\";
-    else result+=c;
+    switch(c)
+    {
+      case '\\': result+="\\\\"; break;
+      case '<': result+="\\<"; break;
+      case '>': result+="\\>"; break;
+      case '|': result+="\\|"; break;
+      default: result+=c; break;
+    }
   }
   return result;
 }
 
 void DotNode::writeBox(QTextStream &t,
-                       GraphOutputFormat format,
+                       GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren)
 {
   const char *labCol = 
@@ -397,10 +427,10 @@ void DotNode::writeBox(QTextStream &t,
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << m_number << " [shape=\"box\",label=\""
+  t << "  Node" << m_number << " [label=\""
     << convertLabel(m_label)    
-    << "\",fontsize=10,height=0.2,width=0.4";
-  if (format==BITMAP) t << ",fontname=\"Helvetica\"";
+    << "\",height=0.2,width=0.4";
+  //if (format==BITMAP) t << ",fontname=\"Helvetica\"";
   t << ",color=\"" << labCol << "\"";
   if (m_isRoot)
   {
@@ -433,6 +463,10 @@ void DotNode::writeArrow(QTextStream &t,
   {
     t << ",label=\"" << ei->m_label << "\"";
   }
+  //if (arrowStyle[ei->m_color])
+  //{
+  //  if (pointBack) t << ",arrowtail=\"empty\""; else t << ",arrowhead=\"empty\"";
+  //}
   if (format==BITMAP) t << ",fontname=\"Helvetica\"";
   t << "];" << endl; 
 }
@@ -768,8 +802,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     QFile f(dotName);
     if (!f.open(IO_WriteOnly)) return;
     QTextStream t(&f);
-    t << "digraph inheritance" << endl;
-    t << "{" << endl;
+    writeGraphHeader(t);
     t << "  rankdir=LR;" << endl;
     QListIterator<DotNode> dnli2(*m_rootNodes);
     DotNode *node;
@@ -778,7 +811,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       if (node->m_subgraphId==n->m_subgraphId) 
         node->write(t,BITMAP,FALSE,TRUE,1000,TRUE);
     }
-    t << "}" << endl;
+    writeGraphFooter(t);
     f.close();
 
     QCString dotArgs(maxCmdLine);
@@ -1203,8 +1236,7 @@ void writeDotGraph(DotNode *root,
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
-    t << "digraph inheritance" << endl;
-    t << "{" << endl;
+    writeGraphHeader(t);
     if (lrRank)
     {
       t << "  rankdir=LR;" << endl;
@@ -1231,7 +1263,7 @@ void writeDotGraph(DotNode *root,
         pn->write(t,format,TRUE,FALSE,distance,backArrows);
       }
     }
-    t << "}" << endl;
+    writeGraphFooter(t);
     f.close();
   }
 }
@@ -1725,8 +1757,7 @@ void generateGraphLegend(const char *path)
     return;
   }
   QTextStream dotText(&dotFile); 
-  dotText << "digraph inheritance\n";
-  dotText << "{\n";
+  writeGraphHeader(dotText);
   dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
   dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
   dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
@@ -1744,7 +1775,7 @@ void generateGraphLegend(const char *path)
   dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"Helvetica\"];\n";
   dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "}\n";
+  writeGraphFooter(dotText);
   dotFile.close();
 
   QDir d(path);

@@ -287,7 +287,7 @@ if test "$f_insttool" = NO; then
   for i in $install_names; do
     for j in $install_dirs; do
       if test -x "$j/$i"; then
-        if test -n "`$j/$i --version 2>/dev/null | grep fileutils`"; then
+        if test -n "`$j/$i --version 2>/dev/null | grep utils`"; then
           install_found=YES
           install_prog="$j/$i"
           break 2
@@ -305,7 +305,7 @@ if test "$f_insttool" = NO; then
     echo "not found!";
     echo
   fi
-  echo "GNU version of install is required: this is part of the fileutils package: "
+  echo "GNU version of install is required: this is part of the fileutils/coreutils package: "
   echo "see http://www.gnu.org/software/fileutils/fileutils.html"
   echo
   exit 2

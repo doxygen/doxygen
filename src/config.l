@@ -1078,6 +1078,7 @@ void Config::check()
     filePatternList.append("*.h++");
     filePatternList.append("*.idl");
     filePatternList.append("*.odl");
+    filePatternList.append("*.cs");
   }
 
   // add default pattern if needed
@@ -1527,13 +1528,6 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
-                    "VERBATIM_HEADERS",
-                    "If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen \n"
-                    "will generate a verbatim copy of the header file for each class for \n"
-                    "which an include is specified. Set to NO to disable this. \n",
-                    TRUE
-                 );
-  cb = addBool(
                     "SHOW_INCLUDE_FILES",
                     "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
                     "will put list of the files that are included by a file in the documentation \n"
@@ -1741,7 +1735,7 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
-		    "*.h++ *.idl *.odl\n"
+		    "*.h++ *.idl *.odl *.cs\n"
                  );
   cb = addBool(
                     "RECURSIVE",
@@ -1851,6 +1845,13 @@ void Config::create()
                     TRUE
               );
   cb->addDependency("SOURCE_BROWSER");
+  cb = addBool(
+                    "VERBATIM_HEADERS",
+                    "If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen \n"
+                    "will generate a verbatim copy of the header file for each class for \n"
+                    "which an include is specified. Set to NO to disable this. \n",
+                    TRUE
+                 );
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Index","configuration options related to the alphabetical class index");
   //-----------------------------------------------------------------------------------------------

@@ -199,21 +199,26 @@ class ClassDef : public Definition
     /* member lists by protection */
     MemberList pubMethods;
     MemberList proMethods;
+    MemberList pacMethods;
     MemberList priMethods;
     MemberList pubStaticMethods;
     MemberList proStaticMethods;
+    MemberList pacStaticMethods;
     MemberList priStaticMethods;
     MemberList pubSlots;
     MemberList proSlots;
     MemberList priSlots;
     MemberList pubAttribs;
     MemberList proAttribs;
+    MemberList pacAttribs;
     MemberList priAttribs;
     MemberList pubStaticAttribs;
     MemberList proStaticAttribs;
+    MemberList pacStaticAttribs;
     MemberList priStaticAttribs;
     MemberList pubTypes;
     MemberList proTypes;
+    MemberList pacTypes;
     MemberList priTypes;
     MemberList related;
     MemberList signals;

@@ -734,7 +734,7 @@ bool FileDef::generateSourceFile() const
 
 void FileDef::addListReferences()
 {
-  addRefItem(specialListItems(),
+  addRefItem(xrefListItems(),
              theTranslator->trFile(TRUE,TRUE),
              getOutputFileBase(),name()
             );

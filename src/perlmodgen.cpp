@@ -1290,6 +1290,7 @@ static const char *getProtectionName(Protection prot)
   case Public:    return "public";
   case Protected: return "protected";
   case Private:   return "private";
+  case Package:   return "package";
   }
   return 0;
 }

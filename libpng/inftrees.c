@@ -446,7 +446,7 @@ int inflate_trees_fixed(uIntf *bl, uIntf *bd, inflate_huft **tl, inflate_huft **
     fixed_built = 1;
   }
 #else
-  z=z; // DvH: added to avoid compiler warning
+  z=z; /* DvH: added to avoid compiler warning */
 #endif
   *bl = fixed_bl;
   *bd = fixed_bd;

@@ -214,11 +214,17 @@ void HtmlGenerator::startFile(const char *name,const char *,
   {
     HtmlHelp::getInstance()->addIndexFile(fileName);
   }
+  QCString dispTitle = title;
+  QCString projName = Config_getString("PROJECT_NAME");
+  if (!projName.isEmpty())
+  {
+    dispTitle.prepend(projName+": ");
+  }
  
   lastFile = fileName;
   if (g_header.isEmpty()) 
   {
-    writeDefaultHeaderFile(t,title,external);
+    writeDefaultHeaderFile(t,dispTitle,external);
   }
   else
   {

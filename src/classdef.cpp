@@ -170,6 +170,11 @@ void ClassDef::addMembersToMemberGroup()
   ::addMembersToMemberGroup(&dcopMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&pubStaticMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pacTypes,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pacMethods,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pacAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pacStaticMethods,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pacStaticAttribs,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proTypes,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proMethods,memberGroupSDict,this);
   ::addMembersToMemberGroup(&proAttribs,memberGroupSDict,this);
@@ -247,8 +252,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
           switch (prot)
           {
             case Protected: 
+            case Package: // slots in packages are not possible!
               proSlots.append(md); 
               md->setSectionList(this,&proSlots);
+              break;
               break;
             case Public:    
               pubSlots.append(md); 
@@ -271,6 +278,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   proStaticAttribs.append(md); 
                   md->setSectionList(this,&proStaticAttribs);
                   break;
+                case Package: 
+                  pacStaticAttribs.append(md); 
+                  md->setSectionList(this,&pacStaticAttribs);
+                  break;
                 case Public:    
                   pubStaticAttribs.append(md); 
                   md->setSectionList(this,&pubStaticAttribs);
@@ -288,6 +299,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
                 case Protected: 
                   proStaticMethods.append(md); 
                   md->setSectionList(this,&proStaticMethods);
+                  break;
+                case Package: 
+                  pacStaticMethods.append(md); 
+                  md->setSectionList(this,&pacStaticMethods);
                   break;
                 case Public:    
                   pubStaticMethods.append(md); 
@@ -310,6 +325,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   proAttribs.append(md); 
                   md->setSectionList(this,&proAttribs);
                   break;
+                case Package:
+                  pacAttribs.append(md);
+                  md->setSectionList(this,&pacAttribs);
+                  break;
                 case Public:    
                   pubAttribs.append(md); 
                   md->setSectionList(this,&pubAttribs);
@@ -328,6 +347,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   proTypes.append(md); 
                   md->setSectionList(this,&proTypes); 
                   break;
+                case Package: 
+                  pacTypes.append(md); 
+                  md->setSectionList(this,&pacTypes); 
+                  break;
                 case Public:    
                   pubTypes.append(md); 
                   md->setSectionList(this,&pubTypes); 
@@ -345,6 +368,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
                 case Protected: 
                   proMethods.append(md); 
                   md->setSectionList(this,&proMethods); 
+                  break;
+                case Package: 
+                  pacMethods.append(md); 
+                  md->setSectionList(this,&pacMethods); 
                   break;
                 case Public:    
                   pubMethods.append(md); 
@@ -401,11 +428,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
           switch (prot)
           {
             case Protected: 
-              if (Config_getBool("SORT_MEMBER_DOCS"))
-                functionMembers.inSort(md); 
-              else
-                functionMembers.append(md);
-              break;
+            case Package: 
             case Public:    
               if (Config_getBool("SORT_MEMBER_DOCS"))
                 functionMembers.inSort(md); 
@@ -517,28 +540,32 @@ void ClassDef::computeAnchors()
   ClassDef *context = Config_getBool("INLINE_INHERITED_MEMB") ? this : 0;
   setAnchors(context,'a',&pubMethods);
   setAnchors(context,'b',&proMethods);
-  setAnchors(context,'c',&priMethods);
-  setAnchors(context,'d',&pubStaticMethods);
-  setAnchors(context,'e',&proStaticMethods);
-  setAnchors(context,'f',&priStaticMethods);
-  setAnchors(context,'g',&pubSlots);
-  setAnchors(context,'h',&proSlots);
-  setAnchors(context,'i',&priSlots);
-  setAnchors(context,'j',&signals);
-  setAnchors(context,'k',&related);
-  setAnchors(context,'l',&friends);
-  setAnchors(context,'m',&pubAttribs);
-  setAnchors(context,'n',&proAttribs);
-  setAnchors(context,'o',&priAttribs);
-  setAnchors(context,'p',&pubStaticAttribs);
-  setAnchors(context,'q',&proStaticAttribs);
-  setAnchors(context,'r',&priStaticAttribs);
-  setAnchors(context,'s',&pubTypes);
-  setAnchors(context,'t',&proTypes);
-  setAnchors(context,'u',&priTypes);
-  setAnchors(context,'v',&dcopMethods);
-  setAnchors(context,'w',&properties);
-  setAnchors(context,'x',&events);
+  setAnchors(context,'c',&pacMethods);
+  setAnchors(context,'d',&priMethods);
+  setAnchors(context,'e',&pubStaticMethods);
+  setAnchors(context,'f',&proStaticMethods);
+  setAnchors(context,'g',&pacStaticMethods);
+  setAnchors(context,'h',&priStaticMethods);
+  setAnchors(context,'i',&pubSlots);
+  setAnchors(context,'j',&proSlots);
+  setAnchors(context,'k',&priSlots);
+  setAnchors(context,'l',&signals);
+  setAnchors(context,'m',&related);
+  setAnchors(context,'n',&friends);
+  setAnchors(context,'o',&pubAttribs);
+  setAnchors(context,'p',&proAttribs);
+  setAnchors(context,'q',&pacAttribs);
+  setAnchors(context,'r',&priAttribs);
+  setAnchors(context,'s',&pubStaticAttribs);
+  setAnchors(context,'t',&proStaticAttribs);
+  setAnchors(context,'u',&pacStaticAttribs);
+  setAnchors(context,'v',&priStaticAttribs);
+  setAnchors(context,'w',&pubTypes);
+  setAnchors(context,'x',&proTypes);
+  setAnchors(context,'y',&priTypes);
+  setAnchors(context,'z',&dcopMethods);
+  setAnchors(context,'0',&properties);
+  setAnchors(context,'1',&events);
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -574,6 +601,11 @@ void ClassDef::findSectionsInDocumentation()
   dcopMethods.findSectionsInDocumentation();
   pubStaticMethods.findSectionsInDocumentation();
   pubStaticAttribs.findSectionsInDocumentation();
+  pacTypes.findSectionsInDocumentation();
+  pacMethods.findSectionsInDocumentation();
+  pacAttribs.findSectionsInDocumentation();
+  pacStaticMethods.findSectionsInDocumentation();
+  pacStaticAttribs.findSectionsInDocumentation();
   proTypes.findSectionsInDocumentation();
   proMethods.findSectionsInDocumentation();
   proAttribs.findSectionsInDocumentation();
@@ -1155,7 +1187,18 @@ void ClassDef::writeDocumentation(OutputList &ol)
   proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
   proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
 
-  // properties
+  // package types
+  pacTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPackageTypes(),0); 
+
+  // package methods
+  pacMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trPackageMembers(),0); 
+  pacStaticMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageMembers(),0); 
+
+  // package attribs
+  pacAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPackageAttribs(),0); 
+  pacStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageAttribs(),0); 
+
+  // package
   properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
 
   // events
@@ -1463,6 +1506,7 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (md->isMutable())       sl.append("mutable");
             if (prot==Protected)       sl.append("protected");
             else if (prot==Private)    sl.append("private");
+            else if (prot==Package)    sl.append("package");
             if (virt==Virtual)         sl.append("virtual");
             else if (virt==Pure)       sl.append("pure virtual");
             if (md->isStatic())        sl.append("static");
@@ -1639,6 +1683,16 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   proStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
   proStaticAttribs.setInGroup(inGroup);
   proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  pacTypes.setInGroup(inGroup);
+  pacTypes.writePlainDeclarations(ol,this,0,0,0); 
+  pacMethods.setInGroup(inGroup);
+  pacMethods.writePlainDeclarations(ol,this,0,0,0); 
+  pacAttribs.setInGroup(inGroup);
+  pacAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  pacStaticMethods.setInGroup(inGroup);
+  pacStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
+  pacStaticAttribs.setInGroup(inGroup);
+  pacStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
     priTypes.setInGroup(inGroup);
@@ -2534,7 +2588,7 @@ QCString ClassDef::className() const
 
 void ClassDef::addListReferences()
 {
-  addRefItem(specialListItems(),
+  addRefItem(xrefListItems(),
              theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),displayName()
             );

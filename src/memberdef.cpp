@@ -683,8 +683,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (prot!=Public)
     {
       Doxygen::tagFile << "\" protection=\"";
-      if (prot==Protected) Doxygen::tagFile << "public";
-      else /* Private */   Doxygen::tagFile << "protected"; 
+      if (prot==Protected)    Doxygen::tagFile << "public";
+      else if (prot==Package) Doxygen::tagFile << "package";
+      else /* Private */      Doxygen::tagFile << "protected"; 
     }
     if (virt!=Normal)
     {
@@ -1226,6 +1227,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isSettable())            sl.append("set");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
+        else if (protection()==Package)   sl.append("package");
         if      (lvirt==Virtual)          sl.append("virtual");
         else if (lvirt==Pure)             sl.append("pure virtual");
         if      (isSignal())              sl.append("signal");
@@ -1811,7 +1813,7 @@ void MemberDef::addListReference(Definition *d)
     }
   }
   //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
-  addRefItem(specialListItems(),memLabel,
+  addRefItem(xrefListItems(),memLabel,
       d->getOutputFileBase()+"#"+anchor(),memName,argsString());
 }
 

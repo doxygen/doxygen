@@ -314,6 +314,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 %x St_Verbatim
 %x St_Param
 %x St_XRefItem
+%x St_XRefItem2
 %x St_File
 %x St_Pattern
 %x St_Link
@@ -651,7 +652,13 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_Ref2>"\""|\n       { /* " or \n => end of title */
   			 return 0;
                        }
-<St_XRefItem>[0-9]+\n  {
+<St_XRefItem>{ID}      {
+                         g_token->name=yytext;
+                       }
+<St_XRefItem>" "       {
+                         BEGIN(St_XRefItem2);
+                       }
+<St_XRefItem2>[0-9]+\n {
   			 QString numStr=yytext;
 			 numStr=numStr.left(yyleng-1);
 			 g_token->id=numStr.toInt();

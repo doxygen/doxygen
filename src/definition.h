@@ -39,7 +39,8 @@ class Definition
     /*! Types of derived classes */
     enum DefType 
     { 
-      TypeClass, TypeMember, TypeFile, TypeGroup, TypeNamespace, TypePackage 
+      TypeClass, TypeMember, TypeFile, TypeGroup, 
+      TypeNamespace, TypePackage, TypePage
     };
     /*! Use this for dynamic inspection of the derived class */
     virtual DefType definitionType() = 0;
@@ -114,8 +115,7 @@ class Definition
     //int bugId() const { return m_bugId; }
     void setRefItems(const QList<ListItemInfo> *sli);
     void mergeRefItems(Definition *d);
-    int getSpecialListId(const char *listName) const;
-    const QList<ListItemInfo> *specialListItems() const;
+    const QList<ListItemInfo> *xrefListItems() const;
 
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return m_defFileName; }
@@ -154,6 +154,7 @@ class Definition
 
 
   private: 
+    int getXRefListId(const char *listName) const;
     void writeSourceRefList(OutputList &ol,const char *scopeName,
                        const QCString &text,MemberSDict *members,bool);
     //QCString m_qualifiedName;  // name of the definition
@@ -171,7 +172,7 @@ class Definition
     QCString m_docFile;
     int m_briefLine;
     QCString m_briefFile;
-    QList<ListItemInfo> *m_specialListItems;
+    QList<ListItemInfo> *m_xrefListItems;
 };
 
 class DefinitionList : public QList<Definition>

@@ -21,7 +21,7 @@
 #include "qtbc.h"
 #include <qlist.h>
 
-enum Protection { Public, Protected, Private } ;
+enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
 enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
 

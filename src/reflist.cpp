@@ -20,22 +20,22 @@
 
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
- *  @param optionName String representation of the option enabling the list.
  *  @param pageTitle String representing the title of the list page.
  *  @param secTitle String representing the title of the section.
- *  @param type Type of the section.
  */
-RefList::RefList(const char *listName,const char *optionName,const char *pageTitle,
-                 const char *secTitle,BaseOutputDocInterface::SectionTypes type)
+RefList::RefList(const char *listName,
+                 const char *pageTitle,
+                 const char *secTitle
+                )
 { 
   m_dict = 0;
   m_dictIterator = 0;
   m_id = 0;
   m_listName = listName;
-  m_optionName = optionName;
+  //m_optionName = optionName;
   m_pageTitle = pageTitle;
   m_secTitle = secTitle;
-  m_type = type;
+  /*m_type = type;*/
 }
 
 /*! Destroy the todo list. Currently not called! */
@@ -95,10 +95,10 @@ QCString RefList::listName() const
   return m_listName;
 }
 
-QCString RefList::optionName() const
-{
-  return m_optionName;
-}
+//QCString RefList::optionName() const
+//{
+//  return m_optionName;
+//}
 
 QCString RefList::pageTitle() const
 {
@@ -110,8 +110,10 @@ QCString RefList::sectionTitle() const
   return m_secTitle;
 }
 
-BaseOutputDocInterface::SectionTypes RefList::sectionType() const
-{
-  return m_type;
-}
+
+//BaseOutputDocInterface::SectionTypes RefList::sectionType() const
+//{
+//  return m_type;
+//}
+
 

@@ -389,6 +389,17 @@ class Translator
 
     virtual QCString trEvents() = 0;
     virtual QCString trEventDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageTypes() = 0;
+    virtual QCString trPackageMembers() = 0;
+    virtual QCString trStaticPackageMembers() = 0;
+    virtual QCString trPackageAttribs() = 0;
+    virtual QCString trStaticPackageAttribs() = 0;
+    
 };
 
 #endif

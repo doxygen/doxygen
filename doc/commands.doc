@@ -129,6 +129,7 @@ documentation:
 \refitem cmdversion \\version
 \refitem cmdwarning \\warning
 \refitem cmdweakgroup \\weakgroup
+\refitem cmdxrefitem \\xrefitem
 \refitem cmddollar \\\$
 \refitem cmdat \\\@
 \refitem cmdbackslash \\\\
@@ -1026,6 +1027,38 @@ ALIASES  = "english=\if english" \
   several warnings. The \\warning command ends when a blank line or some other 
   sectioning command is encountered. See section \ref cmdauthor "\\author" 
   for an example.
+
+\section cmdxrefitem \xrefitem <key> "(heading)" "(list title)" {text}
+
+ \addindex \\xrefitem
+ This command is a generalization of commands such as \ref cmdtodo "\\todo" 
+ and \ref cmdbug "\\bug".
+ It can be used to create user-defined text sections which are automatically 
+ cross-referenced between the place of occurrence and a related page, 
+ which will be generated. On the related page all sections of 
+ the same type will be collected. 
+ 
+ The first argument \<key\> is a
+ identifier uniquely representing the type of the section. The second argument 
+ is a quoted string representing the heading of the section under which 
+ text passed as the forth argument is put. The third argument (list title)
+ is used as the title for the related page containing all items with the 
+ same key. The keys "todo", "test", "bug", and "deprecated" are predefined.
+ 
+ To get an idea on how to use the \\xrefitem command and what its effect 
+ is, consider the todo list, which (for English output) can be seen an 
+ alias for the command
+ \verbatim \xrefitem todo "Todo" "Todo List" \endverbatim
+
+ Since it is very tedious and error-prone to repeat the first three 
+ parameters of the command for each section, the command is meant to 
+ be used in combination with the \ref cfg_aliases "ALIASES" option in the 
+ configuration file.
+ To define a new command \\reminder, for instance, one should add the following
+ line to the configuration file:
+ \verbatim ALIASES += "reminder=\xrefitem reminders \"Reminder\" \"Reminders\"" \endverbatim
+ Note the use of escaped quotes for the second and third argument of the
+ \\xrefitem command.
 
 <hr>
 <h2>\htmlonly <center> --- \endhtmlonly 

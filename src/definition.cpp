@@ -58,7 +58,7 @@ Definition::Definition(const char *df,int dl,
   m_deprecatedId=0;
   m_outerScope=Doxygen::globalScope;
   m_partOfGroups=0;
-  m_specialListItems=0;
+  m_xrefListItems=0;
   m_briefLine=1;
   m_briefFile=(QCString)"<"+name+">";
   m_docLine=1;
@@ -71,7 +71,7 @@ Definition::~Definition()
   delete m_sourceRefByDict;
   delete m_sourceRefsDict;
   delete m_partOfGroups;
-  delete m_specialListItems;
+  delete m_xrefListItems;
 }
 
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
@@ -612,47 +612,47 @@ void Definition::setRefItems(const QList<ListItemInfo> *sli)
   if (sli)
   {
     // deep copy the list
-    if (m_specialListItems==0) 
+    if (m_xrefListItems==0) 
     {
-      m_specialListItems=new QList<ListItemInfo>;
-      m_specialListItems->setAutoDelete(TRUE);
+      m_xrefListItems=new QList<ListItemInfo>;
+      m_xrefListItems->setAutoDelete(TRUE);
     }
     QListIterator<ListItemInfo> slii(*sli);
     ListItemInfo *lii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      m_specialListItems->append(new ListItemInfo(*lii));
+      m_xrefListItems->append(new ListItemInfo(*lii));
     } 
   }
 }
 
 void Definition::mergeRefItems(Definition *d)
 {
-  if (d->specialListItems())
+  if (d->xrefListItems())
   {
     // deep copy the list
-    if (m_specialListItems==0) 
+    if (m_xrefListItems==0) 
     {
-      m_specialListItems=new QList<ListItemInfo>;
-      m_specialListItems->setAutoDelete(TRUE);
+      m_xrefListItems=new QList<ListItemInfo>;
+      m_xrefListItems->setAutoDelete(TRUE);
     }
-    QListIterator<ListItemInfo> slii(*d->specialListItems());
+    QListIterator<ListItemInfo> slii(*d->xrefListItems());
     ListItemInfo *lii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (getSpecialListId(lii->type)==-1)
+      if (getXRefListId(lii->type)==-1)
       {
-        m_specialListItems->append(new ListItemInfo(*lii));
+        m_xrefListItems->append(new ListItemInfo(*lii));
       }
     } 
   }
 }
 
-int Definition::getSpecialListId(const char *listName) const
+int Definition::getXRefListId(const char *listName) const
 {
-  if (m_specialListItems)
+  if (m_xrefListItems)
   {
-    QListIterator<ListItemInfo> slii(*m_specialListItems);
+    QListIterator<ListItemInfo> slii(*m_xrefListItems);
     ListItemInfo *lii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
@@ -665,9 +665,9 @@ int Definition::getSpecialListId(const char *listName) const
   return -1;
 }
 
-const QList<ListItemInfo> *Definition::specialListItems() const
+const QList<ListItemInfo> *Definition::xrefListItems() const
 {
-  return m_specialListItems;
+  return m_xrefListItems;
 }
 
 

@@ -66,6 +66,7 @@ HEADERS      =	bufstr.h \
 		outputgen.h \
 		outputlist.h \
 		page.h \
+		pagedef.h \
 		perlmodgen.h \
                 pngenc.h \
 		pre.h \
@@ -161,6 +162,7 @@ SOURCES      =	ce_lex.cpp \
 		namespacedef.cpp \
 		outputgen.cpp \
 		outputlist.cpp \
+		pagedef.cpp \
 		perlmodgen.cpp \
                 pngenc.cpp \
 		pre.cpp \

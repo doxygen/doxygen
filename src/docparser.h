@@ -532,11 +532,11 @@ class DocTitle : public CompAccept<DocTitle>, public DocNode
 class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
 {
   public:
-    enum Type { Bug, Test, Todo, Deprecated };
-    DocXRefItem(DocNode *parent,int id,Type t) : 
-      m_parent(parent), m_id(id), m_type(t) {}
+    //enum Type { Bug, Test, Todo, Deprecated };
+    DocXRefItem(DocNode *parent,int id,const char *key) : 
+      m_parent(parent), m_id(id), m_key(key) /*, m_type(t)*/ {}
     Kind kind() const          { return Kind_XRefItem; }
-    Type type() const          { return m_type; }
+    //Type type() const          { return m_type; }
     QString file() const       { return m_file; }
     QString anchor() const     { return m_anchor; }
     QString title() const      { return m_title; }
@@ -547,7 +547,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
   private:
     DocNode *m_parent;
     int      m_id;
-    Type     m_type;
+    QString  m_key;
     QString  m_file;
     QString  m_anchor;
     QString  m_title;
@@ -927,7 +927,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     int handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs);
     int handleHtmlEndTag(const QString &tagName);
     int handleSimpleSection(DocSimpleSect::Type t);
-    int handleXRefItem(DocXRefItem::Type t);
+    int handleXRefItem();
     int handleParamSection(const QString &cmdName,DocParamSect::Type t);
     void handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t);
     void handleImage(const QString &cmdName);

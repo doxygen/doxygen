@@ -112,7 +112,7 @@ bool           Doxygen::insideMainPage = FALSE; // are we generating docs for th
 QTextStream    Doxygen::tagFile;
 NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
-QDict<RefList> *Doxygen::specialLists = new QDict<RefList>; // dictionary of cross-referenced item lists
+QDict<RefList> *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 
 
 static StringList     inputFiles;         
@@ -2985,6 +2985,12 @@ static void findUsedClassesForClass(Entry *root,
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
           //printf("Found resolved class %s\n",typeName.data());
           
+          int si=usedClassName.findRev("::");
+          if (si!=-1)
+          {
+            // replace any namespace aliases
+            replaceNamespaceAliases(usedClassName,si);
+          }
           // add any template arguments to the class
           QCString usedName = usedClassName+templSpec;
 
@@ -3341,96 +3347,6 @@ static bool findClassRelation(
           //    cd->name().data(),baseClassName.data(),baseClass);
           found = baseClass!=0 && baseClass!=cd;
 
-#if 0
-          if (fd)
-          {
-            // look for the using statement in this file in which the
-            // class was found
-            NamespaceList *nl = fd->getUsedNamespaces();
-            if (nl) // try to prepend any of the using namespace scopes.
-            {
-              NamespaceListIterator nli(*nl);
-              NamespaceDef *nd;
-              for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
-              {
-                QCString fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(cd,fName))!=0 && 
-                  baseClass!=cd &&
-                  root->name!=fName;
-              }
-            }
-            if (fd && !found) // and in the global namespace
-            {
-              ClassList *cl = fd->getUsedClasses();
-              if (cl)
-              {
-                ClassListIterator cli(*cl);
-                ClassDef *ucd;
-                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
-                {
-                  if (rightScopeMatch(ucd->name(),biName))
-                  {
-                    baseClass = ucd;
-                    found = TRUE;
-                  }
-                }
-              }
-            }
-          }
-          if (!found && nd) // class is inside a namespace
-          {
-            NamespaceList *nl = nd->getUsedNamespaces();
-            QCString fName = nd->name()+"::"+baseClassName;
-            found = (baseClass=getResolvedClass(cd,fName))!=0 && root->name!=fName;
-            if (nl) // try to prepend any of the using namespace scopes.
-            {
-              NamespaceListIterator nli(*nl);
-              NamespaceDef *nd;
-              for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
-              {
-                fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(cd,fName))!=0 && 
-                  baseClass!=cd &&
-                  root->name!=fName;
-              }
-            }
-            if (!found) // also check imported classes within this namespace
-            {
-              ClassList *cl = nd->getUsedClasses();
-              if (cl)
-              {
-                ClassListIterator cli(*cl);
-                ClassDef *ucd;
-                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
-                {
-                  if (rightScopeMatch(ucd->name(),biName))
-                  {
-                    baseClass = ucd;
-                    found = TRUE;
-                  }
-                }
-              }
-            }
-            // TODO: check any inbetween namespaces as well!
-            if (fd && !found) // and in the global namespace
-            {
-              ClassList *cl = fd->getUsedClasses();
-              if (cl)
-              {
-                ClassListIterator cli(*cl);
-                ClassDef *ucd;
-                for (cli.toFirst(); (ucd=cli.current()) && !found; ++cli)
-                {
-                  if (rightScopeMatch(ucd->name(),biName))
-                  {
-                    baseClass = ucd;
-                    found = TRUE;
-                  }
-                }
-              }
-            }
-          }
-#endif
         }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
         if (found)
@@ -3832,7 +3748,7 @@ static void addListReferences()
     {
       name = pi->getGroupDef()->getOutputFileBase().copy();
     }
-    addRefItem(pi->specialListItems,
+    addRefItem(pi->xrefListItems,
                theTranslator->trPage(TRUE,TRUE),
                name,pi->title);
   }
@@ -5020,9 +4936,11 @@ static void findMemberDocumentation(Entry *root)
       (i=findFunctionPtr(root->type,&l))!=-1 
      )
   {
+    //printf("Fixing function pointer!\n");
     // fix type and argument
-    root->args+=root->type.right(root->type.length()-i-l);
+    root->args.prepend(root->type.right(root->type.length()-i-l));
     root->type=root->type.left(i+l);
+    //printf("Results type=%s,name=%s,args=%s\n",root->type.data(),root->name.data(),root->args.data());
     isFunc=FALSE;
   }
   else if ((root->type.left(8)=="typedef " && root->args.find('(')!=-1)) 
@@ -5037,7 +4955,14 @@ static void findMemberDocumentation(Entry *root)
     //printf("Documentation for inline member `%s' found args=`%s'\n",
     //    root->name.data(),root->args.data());
     //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
-    findMember(root,root->name+root->args+root->exception,FALSE,isFunc);
+    if (root->type.isEmpty())
+    {
+      findMember(root,root->name+root->args+root->exception,FALSE,isFunc);
+    }
+    else
+    {
+      findMember(root,root->type+" "+root->name+root->args+root->exception,FALSE,isFunc);
+    }
   }
   else if (root->section==Entry::OVERLOADDOC_SEC) 
   {
@@ -6171,7 +6096,7 @@ static void resolveUserReferences()
     // name (not from the todo/test/bug/deprecated list, but from the file in 
     // which they are defined). We correct this here by looking at the 
     // generated section labels!
-    QDictIterator<RefList> rli(*Doxygen::specialLists);
+    QDictIterator<RefList> rli(*Doxygen::xrefLists);
     RefList *rl;
     for (rli.toFirst();(rl=rli.current());++rli)
     {
@@ -7168,7 +7093,7 @@ void cleanUpDoxygen()
   delete Doxygen::pageSDict;  
   delete Doxygen::exampleSDict;
   delete Doxygen::globalScope;
-  delete Doxygen::specialLists;
+  delete Doxygen::xrefLists;
   cleanUpPreprocessor();
   Config::deleteInstance();
   QTextCodec::deleteAllCodecs();
@@ -7475,40 +7400,42 @@ void readConfiguration(int argc, char **argv)
   QFileInfo configFileInfo(configName);
   setPerlModDoxyfile(configFileInfo.absFilePath());
 
+  Doxygen::xrefLists->setAutoDelete(TRUE);
+#if 0
   /* init the special lists */
-  Doxygen::specialLists->setAutoDelete(TRUE);
   Doxygen::specialLists->insert("todo",
       new RefList("todo",
                   "GENERATE_TODOLIST",
                   theTranslator->trTodoList(),
-                  theTranslator->trTodo(),
-                  BaseOutputDocInterface::Todo
+                  theTranslator->trTodo()
+                  //,BaseOutputDocInterface::Todo
                  )
   );
   Doxygen::specialLists->insert("test",
       new RefList("test",
                   "GENERATE_TESTLIST",
                   theTranslator->trTestList(),
-                  theTranslator->trTest(),
-                  BaseOutputDocInterface::Test
+                  theTranslator->trTest()
+                  //,BaseOutputDocInterface::Test
                  )
   );
   Doxygen::specialLists->insert("bug", 
       new RefList("bug", 
                   "GENERATE_BUGLIST", 
                   theTranslator->trBugList(),
-                  theTranslator->trBug(),
-                  BaseOutputDocInterface::Bug
+                  theTranslator->trBug()
+                  //,BaseOutputDocInterface::Bug
                  )
   );
   Doxygen::specialLists->insert("deprecated", 
       new RefList("deprecated", 
                   "GENERATE_DEPRECATEDLIST", 
                   theTranslator->trDeprecatedList(),
-                  theTranslator->trDeprecated(),
-                  BaseOutputDocInterface::Deprecated
+                  theTranslator->trDeprecated()
+                  //,BaseOutputDocInterface::Deprecated
                  )
   );
+#endif
 
 }
 
