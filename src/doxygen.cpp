@@ -2101,11 +2101,13 @@ static void findFriends()
             {
               mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
               mmd->setBodyDef(fmd->getBodyDef());
+              mmd->setBodyMember(fmd);
             }
             else if (mmd->getStartBodyLine()!=-1 && fmd->getStartBodyLine()==-1)
             {
               fmd->setBodySegment(mmd->getStartBodyLine(),mmd->getEndBodyLine());
               fmd->setBodyDef(mmd->getBodyDef());
+              fmd->setBodyMember(mmd);
             }
           }
         }
@@ -2180,12 +2182,14 @@ static void transferFunctionDocumentation()
         if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
         {
           mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
-          mdef->setBodyDef(mdec->getFileDef());
+          mdef->setBodyDef(mdec->getBodyDef());
+          mdef->setBodyMember(mdec);
         }
         else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
         {
           mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
-          mdec->setBodyDef(mdef->getFileDef());
+          mdec->setBodyDef(mdef->getBodyDef());
+          mdec->setBodyMember(mdef);
         }
         mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
         mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
@@ -6194,7 +6198,12 @@ static int readFileOrDirectory(const char *s,
                         bool errorIfNotExist=TRUE
                        )
 {
-  QFileInfo fi(s);
+  // strip trailing slashes
+  QCString fs = s;
+  char lc = fs.at(fs.length()-1);
+  if (lc=='/' || lc=='\\') fs = fs.left(fs.length()-1);
+
+  QFileInfo fi(fs);
   //printf("readFileOrDirectory(%s)\n",s);
   int totalSize=0;
   {
@@ -6666,12 +6675,12 @@ void parseInput()
     s=imagePathList.next(); 
   }
 
-  QDictIterator<FileName> fndi(*Doxygen::imageNameDict);
-  FileName *fn;
-  for (;(fn=fndi.current());++fndi)
-  {
-    printf("File Name %s\n",fn->fileName());
-  }
+  //QDictIterator<FileName> fndi(*Doxygen::imageNameDict);
+  //FileName *fn;
+  //for (;(fn=fndi.current());++fndi)
+  //{
+  //  printf("File Name %s\n",fn->fileName());
+  //}
   
 
   msg("Searching for dot files...\n");

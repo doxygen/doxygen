@@ -425,48 +425,18 @@ void FileDef::writeSource(OutputList &ol)
 
   initParseCodeContext();
   ol.startCodeFragment();
+  //if (name().left(9)=="memory.c")
+  //{
   parseCode(ol,0,
             fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,0,this
            );
+  //}
   ol.endCodeFragment();
   endFile(ol);
   ol.enableAll();
 }
 
-#if 0
-/*! Adds a member \a md to the member group with id \a groupId.
- */ 
-void FileDef::addMemberListToGroup(MemberList *ml,
-                               bool (MemberDef::*func)() const)
-{
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
-  {
-    int groupId=md->getMemberGroupId();
-    if ((md->*func)() && groupId!=-1)
-    {
-      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      //printf("Member `%s' pGrpHeader=%p\n",md->name().data(),pGrpHeader);
-      if (pGrpHeader)
-      {
-        MemberGroup *mg = memberGroupDict->find(groupId);
-        if (mg==0)
-        {
-          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-          memberGroupDict->insert(groupId,mg);
-          memberGroupList->append(mg);
-        }
-        //printf("insert member %s in group %s\n",md->name().data(),pGrpHeader->data());
-        mg->insertMember(md);
-        md->setMemberGroup(mg);
-      }
-    }
-  }
-}
-#endif
 
 void FileDef::addMembersToMemberGroup()
 {

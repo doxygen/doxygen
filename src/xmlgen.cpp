@@ -579,21 +579,21 @@ class XMLGenerator : public OutputDocInterface
       docify(text);
       m_t << "</formula>";
     }
-    void startImage(const char *name,const char *size,bool caption) 
+    void startImage(const char *name,const char *size,bool /*caption*/) 
     {
       startParMode();
-      m_t << "<image name=\"" << name << "\" size=\"" << size 
-          << "\" caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
+      m_t << "<image name=\"" << name << "\"";
+      if (size) m_t << " size=\"" << size << "\"";
+      m_t << ">"; // non docbook 
     }
     void endImage(bool) 
     {
       m_t << "</image>";
     }
-    void startDotFile(const char *name,bool caption) 
+    void startDotFile(const char *name,bool /*caption*/) 
     {
       startParMode();
-      m_t << "<dotfile name=\"" << name << "\" " 
-          << "caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
+      m_t << "<dotfile name=\"" << name << "\">"; // non docbook 
     }
     void endDotFile(bool) 
     {
@@ -1176,9 +1176,9 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->documentation());
   t << "    </detaileddescription>" << endl;
-  t << "    <sourcecode>" << endl;
+  t << "    <programlisting>" << endl;
   writeXMLCodeBlock(t,fd);
-  t << "    </sourcecode>" << endl;
+  t << "    </programlisting>" << endl;
   t << "    <location file=\"" 
     << fd->getDefFileName() << "\" line=\"" 
     << fd->getDefLine() << "\"/>" << endl;

@@ -163,6 +163,14 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
 {
   QCString ltype = type.simplifyWhiteSpace();
   QCString lname = name.simplifyWhiteSpace();
+  if (ltype.left(7)=="struct ") 
+  {
+    ltype = ltype.right(ltype.length()-7);
+  }
+  else if (ltype.left(6)=="union ")
+  {
+    ltype = ltype.right(ltype.length()-6);
+  }
   if (ltype.isEmpty() || lname.isEmpty()) return;
   DBG_CTX((stderr,"** AddVariable trying: type=%s name=%s\n",ltype.data(),lname.data()));
   Scope *scope = m_scopes.count()==0 ? &m_globalScope : m_scopes.getLast();
@@ -338,7 +346,7 @@ static void startCodeLine()
       g_realScope = d->name().copy();
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
-      if (g_currentMemberDef) anchor=g_currentMemberDef->anchor();
+      if (g_currentMemberDef) anchor=g_currentMemberDef->getBodyAnchor();
       g_code->startCodeAnchor(lineAnchor);
       g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
 	               anchor,lineNumber);
@@ -562,15 +570,25 @@ static MemberDef *setCallContextForVar(const QCString &name)
 static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
+  if (*clName=='~') // correct for matching negated values i.s.o. destructors.
+  {
+    g_code->codify("~");
+    clName++;
+  }
   QCString className=clName;
   if (clNameLen) *clNameLen=0;
   if (className.isEmpty()) return;
-  ClassDef *cd=getResolvedClass(g_currentDefinition,className);
-  if (cd==0 && (i=className.find('<'))!=-1)
+  ClassDef *cd=0;
+
+  if (!g_theVarContext.findVariable(className)) // not a local variable
   {
-    cd=getResolvedClass(g_currentDefinition,className.left(i));
+    cd = getResolvedClass(g_currentDefinition,className);
+    if (cd==0 && (i=className.find('<'))!=-1)
+    {
+      cd=getResolvedClass(g_currentDefinition,className.left(i));
+    }
   }
-  if (cd && cd->isLinkable())
+  if (cd && cd->isLinkable()) // is it a linkable class
   {
     if (g_exampleBlock)
     {
@@ -598,17 +616,18 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
       MemberDef *md = setCallContextForVar(clName);
       if (md)
       {
-	Definition *d=md->getOuterScope();
-	if (d && md->isLinkable())
+        Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	                md->getBodyDef() : md->getOuterScope();
+	if (d && d->isLinkable() && md->isLinkable())
 	{
-	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->anchor(),clName);
+	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->getBodyAnchor(),clName);
 	  if (g_currentMemberDef)
 	  {
-	    if (Config_getBool("REFERENCED_BY_RELATION"))
+	    if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
 	    {
               md->addSourceReferencedBy(g_currentMemberDef);
 	    }
-	    if (Config_getBool("REFERENCES_RELATION"))
+	    if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
 	    {
               g_currentMemberDef->addSourceReferences(md);
 	    }
@@ -666,11 +685,11 @@ static bool getLink(const char *className,
       if (g_currentDefinition && g_currentMemberDef &&
 	  md!=g_currentMemberDef && g_insideBody)
       {
-        if (Config_getBool("REFERENCED_BY_RELATION"))
+        if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
 	{
           md->addSourceReferencedBy(g_currentMemberDef);
 	}
-	if (Config_getBool("REFERENCES_RELATION"))
+	if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
 	{
           g_currentMemberDef->addSourceReferences(md);
 	}
@@ -678,7 +697,7 @@ static bool getLink(const char *className,
       //printf("d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
       writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
-	                       md->anchor(),text ? text : memberName);
+	                       md->getBodyAnchor(),text ? text : memberName);
       return TRUE;
     } 
   }
@@ -702,7 +721,8 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 
       g_theCallContext.setClass(stripClassName(xmd->typeString()));
 
-      Definition *xd = xmd->getOuterScope();
+      Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
+	               xmd->getBodyDef() : xmd->getOuterScope();
       if (xd)
       {
 
@@ -710,11 +730,11 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 	if (g_currentDefinition && g_currentMemberDef &&
 	    xmd!=g_currentMemberDef && g_insideBody)
 	{
-	  if (Config_getBool("REFERENCED_BY_RELATION"))
+	  if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
 	  {
 	    xmd->addSourceReferencedBy(g_currentMemberDef);
 	  }
-	  if (Config_getBool("REFERENCES_RELATION"))
+	  if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
 	  {
 	    g_currentMemberDef->addSourceReferences(xmd);
 	  }
@@ -722,7 +742,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 
 	// write the actual link
 	writeMultiLineCodeLink(ol,xd->getReference(),
-	    xd->getOutputFileBase(),xmd->anchor(),memName);
+	    xd->getOutputFileBase(),xmd->getBodyAnchor(),memName);
 	return TRUE;
       }
     }
@@ -1068,11 +1088,16 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
 					}
+<ClassVar>"="				{
+					  g_code->codify(yytext);
+					  unput(*yytext);
+					  BEGIN( Body );
+  					}
 <ClassVar>{ID}				{
   					  g_type = g_curClassName.copy();
 					  g_name = yytext;
 					  g_theVarContext.addVariable(g_type,g_name);
-					  g_code->codify(yytext);
+					  generateClassOrGlobalLink(*g_code,yytext);
   					}
 <ClassName,ClassVar>[ \t\n]*":"[ \t\n]*		{
   					  codifyLines(yytext);
@@ -1501,10 +1526,18 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					    g_scopeStack.push(INNERBLOCK);
 					  }
 					  g_code->codify(")");
-					  startFontClass("keyword");
 					  yytext[yyleng-1]='\0';
-  					  codifyLines(yytext+1);
-					  endFontClass();
+					  QCString cv(yytext+1);
+					  if (!cv.stripWhiteSpace().isEmpty())
+					  {
+					    startFontClass("keyword");
+  					    codifyLines(yytext+1);
+					    endFontClass();
+					  }
+					  else // just whitespace
+					  {
+  					    codifyLines(yytext+1);
+					  }
 					  g_code->codify("{");
   					  if (g_searchingForBody)
 					  {

@@ -305,6 +305,7 @@ MemberDef::MemberDef(const char *df,int dl,
   annEnumType=0;
   indDepth=0;
   section=0;
+  bodyMemb=0;
   explExt=FALSE;
   cachedAnonymousType=0;
   maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
