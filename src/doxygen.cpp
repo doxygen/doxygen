@@ -1689,13 +1689,26 @@ void buildVarList(Entry *root)
     QCString type=root->type.stripWhiteSpace();
     ClassDef *cd=0;
 
-    if (root->name.findRev("::")!=-1) goto nextMember;
+    if (root->name.findRev("::")!=-1) 
+    {
+      if (root->type=="friend class" || root->type=="friend struct" || 
+          root->type=="friend union")
+      {
+         cd=getClass(scope);
+         if (cd)
+         {
+           addVariableToClass(root,cd,MemberDef::Friend,scope,
+                               root->name,FALSE,0,0,Public);
+         }
+      }
+      goto nextMember;
                /* skip this member, because it is a 
                 * static variable definition (always?), which will be
                 * found in a class scope as well, but then we know the
                 * correct protection level, so only then it will be
                 * inserted in the correct list!
                 */
+    }
 
     if (type=="@") 
       mtype=MemberDef::EnumValue;
@@ -1707,6 +1720,7 @@ void buildVarList(Entry *root)
       mtype=MemberDef::Property;
     else
       mtype=MemberDef::Variable;
+
 
     QCString classScope=stripAnonymousNamespaceScope(scope);
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
@@ -1780,7 +1794,7 @@ nextMember:
 // Searches the Entry tree for Function sections.
 // If found they are stored in their class or in the global list.
 
-static void buildMemberList(Entry *root)
+static void buildFunctionList(Entry *root)
 {
   if (root->section==Entry::FUNCTION_SEC)
   {
@@ -2205,7 +2219,7 @@ static void buildMemberList(Entry *root)
   Entry *e;
   for (;(e=eli.current());++eli)
   {
-    buildMemberList(e);
+    buildFunctionList(e);
   }
 }
 
@@ -2467,7 +2481,6 @@ static void findUsedClassesForClass(Entry *root,
                            QDict<int> *templateNames=0
                            )
 {
-  //if (masterCd->visited) return;
   masterCd->visited=TRUE;
   ArgumentList *formalArgs = masterCd->templateArguments();
   MemberNameInfoSDict::Iterator mnili(*masterCd->memberNameInfoSDict());
@@ -2490,7 +2503,7 @@ static void findUsedClassesForClass(Entry *root,
         {
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
-        //printf("extractClassNameFromType(%s)\n",type.data());
+        //printf("findUsedClassesForClass(%s)=%s\n",masterCd->name().data(),type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
         {
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
@@ -2576,6 +2589,20 @@ static void findUsedClassesForClass(Entry *root,
             delete templateNames;
             templateNames=0;
           }
+        }
+        if (!found && !type.isEmpty()) // used class is not documented in any scope
+        {
+          ClassDef *usedCd = Doxygen::hiddenClasses.find(type);
+          if (usedCd==0)
+          {
+             Debug::print(Debug::Classes,0,"  New undocumented used class `%s'\n", type.data());
+             usedCd = new ClassDef(
+               masterCd->getDefFileName(),masterCd->getDefLine(),
+               type,ClassDef::Class);
+             Doxygen::hiddenClasses.inSort(type,usedCd);
+          }
+          if (isArtificial) usedCd->setClassIsArtificial();
+          instanceCd->addUsedClass(usedCd,md->name()); 
         }
       }
     }
@@ -2897,9 +2924,9 @@ static bool findClassRelation(
           }
         }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(bi->name)!=0;
-        if (!isATemplateArgument && found)
+        if (/*!isATemplateArgument &&*/ found)
         {
-          Debug::print(Debug::Classes,0,"    Documented base class `%s' templSpec=%s\n",bi->name.data(),templSpec.data());
+          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",bi->name.data(),templSpec.data());
           // add base class to this class
 
           // if templSpec is not empty then we should "instantiate"
@@ -2956,19 +2983,6 @@ static bool findClassRelation(
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileName);
-          // is this an inherited template argument?
-          //printf("%s->setIsTemplateBaseClass(%d)\n",baseClass->name().data(),isTemplBaseClass);
-          //if (isATemplateArgument)
-          //{
-          //  baseClass->setIsTemplateBaseClass(*templateNames->find(bi->name));
-          //}
-          // add class to the list
-          //if (!isATemplateArgument)
-          //{
-          //}
-          //else
-          //{
-          //}
           return TRUE;
         }
         else
@@ -3369,8 +3383,6 @@ static void addTodoTestBugReferences()
   addClassMemberTodoTestBugReferences(0);
   addFileMemberTodoTestBugReferences(0);
 }
-
-
 
 //----------------------------------------------------------------------
 // Copy the documentation in entry `root' to member definition `md' and
@@ -3828,18 +3840,6 @@ static void findMember(Entry *root,
     }
   } while (!done);
 
-  if (isFriend)
-  {
-    if (funcDecl.left(6)=="class ")
-    {
-      funcDecl=funcDecl.right(funcDecl.length()-6);
-    }
-    else if (funcDecl.left(7)=="struct ")
-    {
-      funcDecl=funcDecl.right(funcDecl.length()-7);
-    }
-  }
-
   // delete any ; from the function declaration
   int sep;
   while ((sep=funcDecl.find(';'))!=-1)
@@ -3857,12 +3857,27 @@ static void findMember(Entry *root,
                 ":: ","::"
               ),
               " ::","::"
-            );
+            ).stripWhiteSpace();
   
-  // extract information from the declarations
-  parseFuncDecl(funcDecl,scopeName,funcType,funcName,
+  //printf("funcDecl=`%s'\n",funcDecl.data());
+  if (isFriend && funcDecl.left(6)=="class ")
+  {
+    //printf("friend class\n");
+    funcDecl=funcDecl.right(funcDecl.length()-6);
+    funcName = funcDecl.copy();
+  }
+  else if (isFriend && funcDecl.left(7)=="struct ")
+  {
+    funcDecl=funcDecl.right(funcDecl.length()-7);
+    funcName = funcDecl.copy();
+  }
+  else
+  {
+    // extract information from the declarations
+    parseFuncDecl(funcDecl,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
+  }
   //printf("scopeName=`%s' funcType=`%s' funcName=`%s'\n",
   //    scopeName.data(),funcType.data(),funcName.data());
 
@@ -4473,8 +4488,17 @@ static void findMemberDocumentation(Entry *root)
     //    root->name.data(),root->args.data(),root->exception.data());
     //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
     //printf("Inside=%s\n Relates=%s\n",root->inside.data(),root->relates.data());
-
-    if (!root->type.isEmpty())
+    if (root->type=="friend class" || root->type=="friend struct" || 
+        root->type=="friend union")
+    {
+      findMember(root,
+                 root->type+" "+
+                 root->name,
+                 root->relates,
+                 FALSE,FALSE);
+                  
+    }
+    else if (!root->type.isEmpty())
     {
       findMember(root,
           root->type+" "+
@@ -6098,15 +6122,20 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
     pclose(f);
   }
   // filter unwanted bytes from the resulting data
-  uchar *p=(uchar *)dest.data()+oldPos;
   uchar conv[256];
   int i;
   for (i=0;i<256;i++) conv[i]=i;
   conv[0x06]=0x20; // replace the offending characters with spaces
   conv[0x00]=0x20;
   // remove any special markers from the input
+  uchar *p=(uchar *)dest.data()+oldPos;
   for (i=0;i<size;i++,p++) *p=conv[*p];
-  // adjust pointer
+  // and translate CR's
+  int newSize=filterCRLF(dest.data()+oldPos,size);
+  if (newSize!=size) // we removed chars
+  {
+    dest.resize(newSize); // resize the array
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -7054,7 +7083,7 @@ void parseInput()
   buildVarList(root);
 
   msg("Building member list...\n"); // using class info only !
-  buildMemberList(root);
+  buildFunctionList(root);
   transferFunctionDocumentation();
 
   msg("Searching for friends...\n");

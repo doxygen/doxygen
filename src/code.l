@@ -127,6 +127,7 @@ static int           g_bodyCurlyCount;
 static ClassDef *    g_classVar;
 static QCString      g_saveName;
 static QCString      g_saveType;
+static int           g_memCallContext;
 
 /*! add class/namespace name s to the scope */
 static void pushScope(const char *s)
@@ -196,6 +197,7 @@ static void startCodeLine()
     lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
+    g_code->startLineNumber();
     if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
       g_currentDefinition = d;
@@ -211,13 +213,12 @@ static void startCodeLine()
       g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
 	               anchor,lineNumber);
       g_code->endCodeAnchor();
-      g_code->codify(" ");
     }
     else
     {
       g_code->codify(lineNumber);
-      g_code->codify(" ");
     }
+    g_code->endLineNumber();
   }
   g_code->startCodeLine(); 
   if (g_currentFontClass)
@@ -352,12 +353,14 @@ static void addParameter()
 {
   g_cvd.name=g_parmName.copy().simplifyWhiteSpace();
   g_cvd.type=g_parmType.copy().simplifyWhiteSpace();
+  //printf("searching for parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
   if (g_cvd.type.isEmpty()) 
   {
     return;
   }
   else 
   {
+    if (g_cvd.type.left(7)=="struct ") g_cvd.type=g_cvd.type.right(g_cvd.type.length()-7);
     int i;
     if ((getResolvedClass(g_currentDefinition,g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
     {
@@ -374,6 +377,10 @@ static void addParameter()
         g_cvd.classScope=g_classScope;
         g_codeParmList.append(new CodeVarDef(g_cvd));
       }
+    }
+    else
+    {
+      //printf("parameter `%s' `%s' not found!\n",g_cvd.type.data(),g_cvd.name.data());
     }
     //printf("g_codeParmList.count()=%d\n",g_codeParmList.count());
   }
@@ -440,6 +447,21 @@ static void generateClassLink(OutputDocInterface &ol,char *clName,int *clNameLen
   }
   else
   {
+    MemberName *mn;
+    if (cd==0 && (mn=Doxygen::functionNameDict[clName]))
+    {
+      if (mn->count()==1)
+      {
+	MemberDef *md=mn->getFirst();
+	Definition *d=md->getNamespaceDef();
+	if (d==0) d=md->getFileDef();
+	if (d && md->isLinkable())
+	{
+          writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->anchor(),clName);
+	  return;
+	}
+      }
+    }
     codifyLines(clName);
     if (clNameLen) *clNameLen=className.length()-1;
   }
@@ -466,10 +488,12 @@ static ClassDef *stripClassName(const char *s)
     }
     if (cd) 
     {
+      //printf("stripClassName(%s)=%s\n",s,cd->name().data());
       return cd;
     }
     p=i+l;
   }
+  //printf("stripClassName(%s)=<null>\n",s);
   return 0;
 }
 
@@ -578,7 +602,10 @@ static void generateMemberLink(OutputDocInterface &ol,const char *varName,
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
   //                          varName,memName,g_classScope.data());
   CodeVarDef *cvd=g_codeParmList.last();
-  while (cvd && cvd->name!=varName) cvd=g_codeParmList.prev();
+  while (cvd && cvd->name!=varName) 
+  {
+    cvd=g_codeParmList.prev();
+  }
   if (!cvd)
   {
     cvd=g_codeVarList.last();
@@ -813,6 +840,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %x      MemberCall2
 %x      SkipInits
 %x      ClassName
+%x      ClassVar
 %x      Bases
 %x      SkipSharp
 %x      ReadInclude
@@ -899,12 +927,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_insideBody=FALSE;
 					  }
 					}
-<ClassName>";"				{ 
+<ClassName,ClassVar>";"			{ 
   					  g_code->codify(yytext);
 					  g_searchingForBody=FALSE; 
   					  BEGIN( Body ); 
 					}
-<ClassName>[*&]+          		{
+<ClassName,ClassVar>[*&]+       	{
 					  addType();
 					  g_code->codify(yytext);
 					}
@@ -912,12 +940,19 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_ccd.name=yytext;
 					  addType();
 					  generateClassLink(*g_code,yytext);
+					  BEGIN( ClassVar );
 					}
-<ClassName>[ \t\n]*":"[ \t\n]*		{
+<ClassVar>{ID}				{
+  					  g_type = g_ccd.name.copy();
+					  g_name = yytext;
+  					  addVariable();
+					  g_code->codify(yytext);
+  					}
+<ClassName,ClassVar>[ \t\n]*":"[ \t\n]*		{
   					  codifyLines(yytext);
   					  BEGIN( Bases ); 
 					}
-<Bases,ClassName>[ \t]*"{"[ \t]*	{
+<Bases,ClassName,ClassVar>[ \t]*"{"[ \t]*	{
   					  g_code->codify(yytext);
 					  g_curlyCount++;
 					  g_inClass=TRUE;
@@ -1038,7 +1073,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
   					}
-<Body>{SCOPENAME}{B}*"<"[^\n\/\{\"\>]*">"/{B}* { // A<T> *pt;
+<Body>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{B}* { // A<T> *pt;
 					  generateClassLink(*g_code,yytext);
 					  addType();
   					  g_name+=yytext; 
@@ -1048,19 +1083,18 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
 					}
-<Body>"("{B}*"*"{B}*{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func()
-					  QCString text=yytext;
-  					  int s=0;
-					  while (s<yyleng && (text.at(s)=='(' || isspace(text.at(s)))) s++;
-					  int e=yyleng-1;
-					  while (e>=0 && (text.at(e)==')' || isspace(yytext[e]))) e--;
-					  QCString varname = text.mid(s+1,e-s);
-					  QCString tmp=varname.copy();
-					  g_code->codify(text.left(s+1));
-					  generateClassLink(*g_code,tmp.data());
-					  g_code->codify(text.right(yyleng-e-1));
+<Body>"("{B}*("*"{B}*)*{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func()
+					  g_code->codify(yytext);
+					  int s=0;while (!isId(yytext[s])) s++;
+                                          int e=yyleng-1;while (!isId(yytext[e])) e--;
+					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
+					  //QCString text=yytext;
+					  //QCString tmp=varname.copy();
+					  //g_code->codify(text.left(s+1));
+					  //generateClassLink(*g_code,tmp.data());
+					  //g_code->codify(text.right(yyleng-e-1));
 					  addType();
-  					  g_name+=varname; 
+  					  g_name=varname; 
 					}
 <Body>{SCOPETNAME}/{B}*"("		{ // a() or c::a() or t<A,B>::a()
   					  addType();
@@ -1119,12 +1153,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <Body>"this->"				{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
   					  g_code->codify(yytext);
+					  g_memCallContext = YY_START;
   					  BEGIN( MemberCall ); 
 					}
 <MemberCall>{SCOPETNAME}/{B}*"(" 	{
   					  if (!g_name.isEmpty())
 					  {
 					    generateMemberLink(*g_code,g_name,yytext);
+					    g_name=yytext;
 					  }
 					  else if (g_classVar)
 					  {
@@ -1133,20 +1169,52 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					      g_code->codify(yytext);
 					    }
 					    g_classVar=0;
+  					    g_name.resize(0);
 					  }
 					  else
 					  {
   					    g_code->codify(yytext);
+  					    g_name.resize(0);
 					  }
-  					  g_name.resize(0);g_type.resize(0);
+					  g_type.resize(0);
 					  g_bracketCount=0;
-					  BEGIN(FuncCall);
+					  if (g_memCallContext==Body)
+					  {
+					    BEGIN(FuncCall);
+					  }
+					  else
+					  {
+					    BEGIN(g_memCallContext);
+					  }
+  					}
+<MemberCall>{SCOPENAME}/{B}*		{
+  					  if (!g_name.isEmpty())
+					  {
+					    generateMemberLink(*g_code,g_name,yytext);
+					    g_name=yytext;
+					  }
+					  else if (g_classVar)
+					  {
+					    if (!generateClassMemberLink(*g_code,g_classVar,yytext))
+					    {
+					      g_code->codify(yytext);
+					    }
+					    g_classVar=0;
+  					    g_name.resize(0);
+					  }
+					  else
+					  {
+  					    g_code->codify(yytext);
+  					    g_name.resize(0);
+					  }
+					  g_type.resize(0);
+  					  BEGIN(g_memCallContext);
   					}
 <MemberCall>[^a-z_A-Z0-9(\n]		{ 
   					  g_code->codify(yytext);
     					  g_type.resize(0);
 					  g_name.resize(0);
-					  BEGIN(Body); 
+					  BEGIN(g_memCallContext); 
 					}
 <Body>[,=;\[]				{
   					  g_code->codify(yytext);
@@ -1211,9 +1279,11 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>")"		{ 
   					  g_code->codify(yytext);
   					  if (--g_bracketCount<=0) 
-					  g_name.resize(0);g_args.resize(0);
-					  g_parmType.resize(0);g_parmName.resize(0);
-  					  BEGIN( Body ); 
+					  {
+					    g_name.resize(0);g_args.resize(0);
+					    g_parmType.resize(0);g_parmName.resize(0);
+					    BEGIN( Body ); 
+					  }
 					}
 <MemberCall2,FuncCall>")"[ \t\n]*[;:]	{
   					  codifyLines(yytext);
@@ -1295,7 +1365,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <FuncCall>([a-z_A-Z][a-z_A-Z0-9]*)/("."|"->") { 
   					  g_code->codify(yytext);
-					  g_args=yytext; 
+					  g_name=yytext; 
+					  BEGIN( MemberCall2 ); 
+					}
+<FuncCall,MemberCall2>("("{B}*("*"{B}*)*[a-z_A-Z][a-z_A-Z0-9]*{B}*")"{B}*)/("."|"->") { 
+  					  g_code->codify(yytext);
+					  int s=0;while (!isId(yytext[s])) s++;
+                                          int e=yyleng-1;while (!isId(yytext[e])) e--;
+					  g_name=((QCString)yytext).mid(s,e-s+1); 
 					  BEGIN( MemberCall2 ); 
 					}
 <MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*"(") { 
@@ -1308,8 +1385,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*("."|"->")) {
   					  g_code->codify(yytext);
-    					  g_args=yytext;
+					  g_name=yytext; 
+					  BEGIN( MemberCall2 ); 
     					}
+<MemberCall2>"->"|"."			{
+  					  g_code->codify(yytext);
+					  g_memCallContext = YY_START;
+  					  BEGIN( MemberCall ); 
+  					}
 <SkipComment>"//"			{
   					  g_code->codify(yytext);
   					}

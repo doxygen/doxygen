@@ -206,8 +206,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 
     { forall(&OutputGenerator::endCodeLine); }
-    //void writeBoldString(const char *text)
-    //{ forall(&OutputGenerator::writeBoldString,text); }
+    void startLineNumber() 
+    { forall(&OutputGenerator::startLineNumber); }
+    void endLineNumber() 
+    { forall(&OutputGenerator::endLineNumber); }
     void startEmphasis() 
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis() 

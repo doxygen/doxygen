@@ -164,6 +164,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
 QCString resolveTypeDef(Definition *d,const QCString &name);
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 int getScopeFragment(const QCString &s,int p,int *l);
+int filterCRLF(char *buf,int len);
 
 #endif
 

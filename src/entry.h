@@ -216,7 +216,7 @@ class Entry
       MEMBERGRP_SEC    = 0x01300000,
       USINGDECL_SEC    = 0x01400000,
       PACKAGE_SEC      = 0x01500000,
-      PACKAGEDOC_SEC   = 0x01600000,
+      PACKAGEDOC_SEC   = 0x01600000
     };
     enum MemberSpecifier
     {

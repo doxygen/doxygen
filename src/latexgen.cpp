@@ -1529,9 +1529,14 @@ void LatexGenerator::endMemberList()
 void LatexGenerator::startImage(const char *name,const char *size,bool hasCaption)
 {
   if (hasCaption)
-    t << "\\begin{figure}[H]" << endl;
+  {
+    t << "\\begin{figure}[h]" << endl;
+    t << "\\begin{center}" << endl;
+  }
   else
+  {
     t << "\\mbox{";
+  }
   QCString gfxName = name;
   if (gfxName.right(4)==".eps") gfxName.left(gfxName.length()-4);
   //     "\\epsfig{file=" << name;
@@ -1539,9 +1544,13 @@ void LatexGenerator::startImage(const char *name,const char *size,bool hasCaptio
   if (size) t << "[" << size << "]";
   t << "{" << gfxName << "}";
   if (hasCaption) 
+  {
     t << "\\caption{";
+  }
   else
+  {
     t << "}" << endl;
+  }
 }
 
 void LatexGenerator::endImage(bool hasCaption)
@@ -1549,6 +1558,7 @@ void LatexGenerator::endImage(bool hasCaption)
   if (hasCaption)
   {
     t << "}" << endl;
+    t << "\\end{center}" << endl;
     t << "\\end{figure}" << endl;
   }
 }

@@ -1979,6 +1979,15 @@ void Config::create()
                     "Use the PREDEFINED tag if you want to use a different macro definition. \n" 
                  );
   cl->addDependency("ENABLE_PREPROCESSING");
+  cb = addBool(
+                    "SKIP_FUNCTION_MACROS",
+                    "If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then \n"
+		    "doxygen's preprocessor will remove all function-like macros that are alone \n"
+		    "on a line and do not end with a semicolon. Such function macros are typically \n"
+		    "used for boiler-plate code, and will confuse the parser if not removed. \n",
+                    TRUE
+                 );
+  cb->addDependency("ENABLE_PREPROCESSING");
   //-----------------------------------------------------------------------------------------------
   addInfo(  "External","Configuration::addtions related to external references   ");
   //-----------------------------------------------------------------------------------------------

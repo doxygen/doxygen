@@ -76,6 +76,7 @@ class DotNode
                int maxDistance=1000,bool backArrows=TRUE);
     int  m_subgraphId;
     void clearWriteFlag();
+    void writeXML(QTextStream &t);
 
   private:
     void colorConnectedNodes(int curColor);
@@ -86,7 +87,7 @@ class DotNode
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
     QCString         m_label;     //!< label text
-    QCString         m_url;       //!< url of the node (format: remove$local)
+    QCString         m_url;       //!< url of the node (format: remote$local)
     QList<DotNode>  *m_parents;   //!< list of parent nodes (incoming arrows)
     QList<DotNode>  *m_children;  //!< list of child nodes (outgoing arrows)
     QList<EdgeInfo> *m_edgeInfo;  //!< edge info for each child
@@ -123,6 +124,8 @@ class DotClassGraph
     bool isTrivial() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
                     bool TBRank=TRUE,bool imageMap=TRUE);
+
+    void writeXML(QTextStream &t);
     QCString diskName() const;
 
   private:

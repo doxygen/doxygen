@@ -977,6 +977,22 @@ static void readIncludeFile(const QCString &inc)
 
 /* ----------------------------------------------------------------- */
 
+#undef YY_INPUT
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+
+static int yyread(char *buf,int max_size)
+{
+  int len = fread( buf, 1, max_size, yyin );
+  if (len==0 && ferror( yyin ))
+  {
+    yy_fatal_error( "input in flex scanner failed" );
+    return len;
+  }
+  return filterCRLF(buf,len);
+}
+
+/* ----------------------------------------------------------------- */
+
 %}
 
 ID	[a-z_A-Z][a-z_A-Z0-9]*
@@ -1018,30 +1034,39 @@ BN	[ \t\r\n]
 <*>\x06					
 <*>\x00
 <*>\r
-  /*
-<Start>^{B}*([^ \t#\n\/][^\n]*)?"\n"	{ 
-  					  //printf("%s line %d: %s",g_yyFileName.data(),g_yyLineNr,yytext); 
-					  if (g_includeStack.isEmpty())
-					  {
-					    //preprocessedFile+=yytext;
-					    //char *s=yytext,c;
-					    //if (s) while ((c=*s++)) *dataPtr++=c;
-					    g_outputBuf->addArray(yytext,yyleng);
-					  }
-  					  g_yyLineNr++;
-					}
-  */
 <Start>^{B}*"#"				{ BEGIN(Command); }
 <Start>^{B}*/[^#]			{
  					  outputArray(yytext,yyleng); 
   					  BEGIN(CopyLine); 
 					}
-  /*
-<CopyLine>[^\n/]+			{
-  					  outputArray(yytext,yyleng);
-  					}
-  */
+<Start>^{B}*[_A-Z][_A-Z0-9]*"("[^\)\n]*")"{B}*\n { // function like macro
+  					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
+					  QCString name(yytext);
+					  name=name.left(name.find('(')).stripWhiteSpace();
 
+					  Define *def=0;
+					  if (skipFuncMacros && 
+					      !(
+					         (g_includeStack.isEmpty() || g_curlyCount>0) &&
+					         g_macroExpansion &&
+					         (def=g_fileDefineDict->find(name)) &&
+					         (!g_expandOnlyPredef || def->isPredefined)
+					       )
+					     )
+					  {
+					    outputChar('\n');
+					    g_yyLineNr++;
+					  }
+					  else // don't skip
+					  {
+					    int i;
+					    for (i=yyleng-1;i>=0;i--)
+					    {
+					      unput(yytext[i]);
+					    }
+					    BEGIN(CopyLine);
+					  }
+  					}
 <CopyLine>"{"				{ // count brackets inside the main file
   					  if (g_includeStack.isEmpty()) 
 					    g_curlyCount++;
@@ -1843,9 +1868,7 @@ void cleanupPreprocessor()
 
 void preprocessFile(const char *fileName,BufStr &output)
 {
-//#if DUMP_OUTPUT  
   uint orgOffset=output.curPos();
-//#endif
 
   g_macroExpansion = Config_getBool("MACRO_EXPANSION");
   g_expandOnlyPredef = Config_getBool("EXPAND_ONLY_PREDEF");

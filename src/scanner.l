@@ -598,7 +598,6 @@ TITLE     [tT][iI][tT][lL][eE]
 					  }
 					  BEGIN( FindMembers );
 					}
-<*>\x0d
 <NextSemi>"{"				{
   					  curlyCount=0;
 					  needsSemi = TRUE;
@@ -733,7 +732,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->argList->clear();
 					  lineCount() ;
 					}
-<FindMembers>{BN}+			{
+<FindMembers>{BN}{1,80}			{
   					  lineCount();
   					}
 <FindMembers>{B}*"package"{BN}+ 	{ // Java package
@@ -1751,9 +1750,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					    //if (!current->name.isEmpty() && current->name[0]!='@' && 
 					    //    current->parent->section & Entry::COMPOUND_MASK)
 					    //  varEntry->type+=current->parent->name+"::";
-					    //if (isTypedef)
-					    //{
-					    //  varEntry->type.prepend("typedef ");
+					    if (isTypedef)
+					    {
+					      varEntry->type.prepend("typedef ");
 					    //  //printf("current->name = %s %s\n",current->name.data(),msName.data());
 					    //  if (!current->name.isEmpty() && current->name.at(0)!='@')
 					    //  {
@@ -1762,7 +1761,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
                                             //    Doxygen::typedefDict.insert(msName,new TypedefInfo(current->name,scope));
 					    //  }
-					    //}
+					    }
 					    varEntry->type+=current->name+msType;
 					    varEntry->fileName = yyFileName;
 					    varEntry->startLine = yyLineNr;

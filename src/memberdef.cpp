@@ -558,7 +558,8 @@ bool MemberDef::isBriefSectionVisible() const
     // only include members is the are documented or 
     // HIDE_UNDOC_MEMBERS is NO in the config file
     bool visibleIfDocumented = (!Config_getBool("HIDE_UNDOC_MEMBERS") || 
-                                hasDocumentation()
+                                hasDocumentation() || 
+                                isDocumentedFriendClass()
                                );
 
     // hide members with no detailed description and brief descriptions 
@@ -767,7 +768,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!name().isEmpty() && name().at(0)!='@')
   {
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
-    if (/*d->isLinkable() &&*/ isLinkable())
+    if (isLinkable())
     {
       if (annMemb)
       {
@@ -786,7 +787,14 @@ void MemberDef::writeDeclaration(OutputList &ol,
         writeLink(ol,cd,nd,fd,gd);
       }
     }
-    else // there is a brief member description and brief member 
+    else if (isDocumentedFriendClass())
+      // if the member is an undocumented friend declaration for some class, 
+      // then maybe we can link to the class
+    {
+      writeLink(ol,getClass(name()),0,0,0);
+    }
+    else
+      // there is a brief member description and brief member 
       // descriptions are enabled or there is no detailed description.
     {
       if (annMemb) annMemb->annUsed=annUsed=TRUE;
@@ -1479,7 +1487,8 @@ void MemberDef::warnIfUndocumented()
   else
     t="file", d=fd;
 
-  if (d && d->isLinkable() && !isLinkable() && name().find('@')==-1)
+  if (d && d->isLinkable() && !isLinkable() && !isDocumentedFriendClass()
+      && name().find('@')==-1)
    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s of %s %s is not documented.",
         name().data(),t,d->name().data());
 }
@@ -1520,11 +1529,20 @@ void MemberDef::setEnumDecl(OutputList &ed)
   *enumDeclList+=ed;
 }
 
+bool MemberDef::isDocumentedFriendClass() const
+{
+  ClassDef *fcd=0;
+  return (isFriend() && 
+         (type=="friend class" || type=="friend struct" || 
+          type=="friend union") &&
+         (fcd=getClass(name())) && fcd->isLinkable()); 
+}
+
 bool MemberDef::hasDocumentation() const
 { 
   return Definition::hasDocumentation() || 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
-         (argList!=0 && argList->hasDocumentation()); 
+         (argList!=0 && argList->hasDocumentation()); // has doc arguments
 }
 
 void MemberDef::setMemberGroup(MemberGroup *grp)

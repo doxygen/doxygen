@@ -428,6 +428,68 @@ void DotNode::write(QTextStream &t,
   }
 }
 
+void DotNode::writeXML(QTextStream &t)
+{
+  t << "      <node id=\"" << m_number << "\">" << endl;
+  t << "        <label>" << m_label << "</label>" << endl;
+  if (!m_url.isEmpty())
+  {
+    QCString url(m_url);
+    char *refPtr = url.data();
+    char *urlPtr = strchr(url.data(),'$');
+    if (urlPtr)
+    {
+      *urlPtr++='\0';
+      t << "        <link id=\"" << urlPtr << "\"";
+      if (*refPtr!='\0')
+      {
+        t << " external=\"" << refPtr << "\"";
+      }
+      t << "/>" << endl;
+    }
+  }
+  if (m_children)
+  {
+    QListIterator<DotNode> nli(*m_children);
+    QListIterator<EdgeInfo> eli(*m_edgeInfo);
+    DotNode *childNode;
+    EdgeInfo *edgeInfo;
+    for (;(childNode=nli.current());++nli,++eli)
+    {
+      edgeInfo=eli.current();
+      t << "        <childnode id=\"" << childNode->m_number << "\" relation=\"";
+      switch(edgeInfo->m_color)
+      {
+        case EdgeInfo::Blue:    t << "public-inheritance"; break;
+        case EdgeInfo::Green:   t << "protected-inheritance"; break;
+        case EdgeInfo::Red:     t << "private-inheritance"; break;
+        case EdgeInfo::Purple:  t << "usage"; break;
+        case EdgeInfo::Orange:  t << "template-instance"; break;
+        case EdgeInfo::Grey:    ASSERT(0); break;
+      }
+      t << "\">" << endl;
+      if (!edgeInfo->m_label.isEmpty()) 
+      {
+        int p=0;
+        int ni;
+        while ((ni=edgeInfo->m_label.find("\\n",p))!=-1)
+        {
+          t << "          <edgelabel>" 
+            << edgeInfo->m_label.mid(p,ni-p)
+            << "</edgelabel>" << endl;
+          p=ni+2;
+        }
+        t << "          <edgelabel>" 
+          << edgeInfo->m_label.right(edgeInfo->m_label.length()-p) 
+          << "</edgelabel>" << endl;
+      }
+      t << "        </childnode>" << endl;
+    } 
+  }
+  t << "      </node>" << endl;
+}
+
+
 void DotNode::clearWriteFlag()
 {
   m_written=FALSE;
@@ -555,18 +617,6 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   {
     QCString baseName;
     baseName.sprintf("inherit_graph_%d",count++);
-    //="inherit_graph_";
-    //QCString diskName=n->m_url.copy();
-    //int i=diskName.find('$'); 
-    //if (i!=-1)
-    //{
-    //  diskName=diskName.right(diskName.length()-i-1);
-    //}
-    //else /* take the label name as the file name (and strip any template stuff) */
-    //{
-    //  diskName=n->m_label;
-    //}
-    //baseName = convertNameToFile(baseName+diskName);
     baseName = convertNameToFile(baseName);
     QCString dotName=baseName+".dot";
     QCString gifName=baseName+".gif";
@@ -604,9 +654,10 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       out << "</table>" << endl;
       return;
     }
+    QCString mapLabel = convertNameToFile(n->m_label);
     out << "<tr><td><img src=\"" << gifName << "\" border=\"0\" usemap=\"#" 
-      << n->m_label << "_map\"></td></tr>" << endl;
-    out << "<map name=\"" << n->m_label << "_map\">" << endl;
+      << mapLabel << "_map\"></td></tr>" << endl;
+    out << "<map name=\"" << mapLabel << "_map\">" << endl;
     convertMapFile(out,mapName);
     out << "</map>" << endl;
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
@@ -1181,8 +1232,9 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         QDir::setCurrent(oldDir);
         return baseName;
       }
+      QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
       out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-        << m_startNode->m_label << "_" << mapName << "\" alt=\"";
+          << mapLabel << "\" alt=\"";
       switch (m_graphType)
       {
         case Implementation:
@@ -1196,7 +1248,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
           break;
       }
       out << "\"></center>" << endl;
-      out << "<map name=\"" << m_startNode->m_label << "_" << mapName << "\">" << endl;
+      out << "<map name=\"" << mapLabel << "\">" << endl;
       convertMapFile(out,baseName+".map");
       out << "</map>" << endl;
       thisDir.remove(baseName+".map");
@@ -1245,6 +1297,18 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
   QDir::setCurrent(oldDir);
   return baseName;
+}
+
+//--------------------------------------------------------------------
+
+void DotClassGraph::writeXML(QTextStream &t)
+{
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *node;
+  for (;(node=dni.current());++dni)
+  {
+    node->writeXML(t);
+  }
 }
 
 //--------------------------------------------------------------------

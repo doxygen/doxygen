@@ -118,6 +118,8 @@ class LatexGenerator : public OutputGenerator
     void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; 
                                insidePre=FALSE; 
                              }
+    void startLineNumber() {}
+    void endLineNumber() { t << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }
     //void writeBoldString(const char *text) 

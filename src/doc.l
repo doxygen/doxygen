@@ -838,7 +838,7 @@ static void writeDotFile(const char *fileName, const char *captionText)
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-    while( c < max_size && inputString[inputPosition] )
+    while ( c < max_size && inputString[inputPosition] )
     {
 	*buf = inputString[inputPosition++] ;
 	//printf("%d (%c)\n",*buf,*buf);
