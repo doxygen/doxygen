@@ -27,6 +27,8 @@
 #include "config.h"
 #include "message.h"
 
+#include "docparser.h"
+
 OutputList::OutputList(bool)
 {
   //printf("OutputList::OutputList()\n");
@@ -188,6 +190,23 @@ void OutputList::popGeneratorState()
     og=outputs->next();
   }
 }
+
+void OutputList::parseDoc(const char *fileName,int startLine,
+                  const char * clName,MemberDef * /*md*/,
+                  const QCString &docStr)
+{
+  DocNode *root = validatingParseDoc(fileName,startLine,clName,docStr);
+
+  OutputGenerator *og=outputs->first();
+  while (og)
+  {
+    if (og->isEnabled()) og->printDoc(root);
+    og=outputs->next();
+  }
+
+  delete root;
+}
+
 
 //--------------------------------------------------------------------------
 // Create some overloaded definitions of the forall function.

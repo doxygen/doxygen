@@ -181,8 +181,9 @@ Compilation is now done by performing the following steps:
     directory manually to some <code>bin</code> directory in your search path.
     This is sufficient to use doxygen.
 
-    \note You need the GNU install tool for this to work. Other
-    install tools may put the binaries in the wrong directory!
+    \note You need the GNU install tool for this to work (it is part of
+    the fileutils package). Other install tools may put the binaries in 
+    the wrong directory!
 
     If you have a RPM or DEP package, then please follow the 
     standard installation procedure that is required for these packages. 

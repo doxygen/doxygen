@@ -30,6 +30,41 @@ class ClassDiagram;
 class DotClassGraph;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
+class DocNode;
+class MemberDef;
+
+/*! \brief Output interface for code parser. 
+ */
+class BaseCodeDocInterface
+{
+  public:
+    /*! Writes an ASCII string to the output. This function should keep 
+     *  spaces visible, should break lines at a newline and should convert 
+     *  tabs to the right number of spaces.
+     */
+    virtual void codify(const char *s) = 0;
+
+    /*! Writes a link to an object in a code fragment.
+     *  \param ref    If this is non-zero, the object is to be found in
+     *                an external documentation file.
+     *  \param file   The file in which the object is located.
+     *  \param anchor The anchor uniquely identifying the object within 
+     *                the file. 
+     *  \param name   The text to display as a placeholder for the link.
+     */
+    virtual void writeCodeLink(const char *ref,const char *file,
+                               const char *anchor,const char *name) = 0;
+
+    virtual void writeLineNumber(const char *ref,const char *file,
+                                 const char *anchor,int lineNumber) = 0;
+    virtual void startCodeLine() = 0;
+    virtual void endCodeLine() = 0;
+    virtual void startCodeAnchor(const char *label) = 0;
+    virtual void endCodeAnchor() = 0;
+    virtual void startFontClass(const char *) = 0;
+    virtual void endFontClass() = 0;
+    virtual void writeCodeAnchor(const char *name) = 0;
+};
 
 /*! \brief Base Interface used for generating documentation.
  *
@@ -38,7 +73,7 @@ class DotGfxHierarchyTable;
  *  or a list of formats (see OutputList). This interface
  *  contains functions that generate output.
  */
-class BaseOutputDocInterface
+class BaseOutputDocInterface : public BaseCodeDocInterface
 {
   public:
     enum ParamListTypes { Param, RetVal, Exception };
@@ -50,6 +85,10 @@ class BaseOutputDocInterface
                         Examples 
                       };
 
+    virtual void parseDoc(const char *,int, const char *,MemberDef *,
+                          const QCString &)
+    {}
+    
     /*! Start of a bullet list: e.g. \c <ul> in html. writeListItem() is
      *  Used for the bullet items.
      */
@@ -101,16 +140,6 @@ class BaseOutputDocInterface
     virtual void writeObjectLink(const char *ref,const char *file,
                                  const char *anchor, const char *name) = 0;
 
-    /*! Writes a link to an object in a code fragment.
-     *  \param ref    If this is non-zero, the object is to be found in
-     *                an external documentation file.
-     *  \param file   The file in which the object is located.
-     *  \param anchor The anchor uniquely identifying the object within 
-     *                the file. 
-     *  \param name   The text to display as a placeholder for the link.
-     */
-    virtual void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *name) = 0;
 
     /*! Starts a (link to an) URL found in the documentation.
      *  \param url    The URL to link to.
@@ -260,14 +289,6 @@ class BaseOutputDocInterface
     virtual void endPageRef(const char *,const char *) = 0;
 
 
-    virtual void writeLineNumber(const char *ref,const char *file,
-                                 const char *anchor,int lineNumber) = 0;
-    virtual void startCodeLine() = 0;
-    virtual void endCodeLine() = 0;
-    virtual void startCodeAnchor(const char *label) = 0;
-    virtual void endCodeAnchor() = 0;
-    virtual void startFontClass(const char *) = 0;
-    virtual void endFontClass() = 0;
 
     virtual void startHtmlOnly() = 0;
     virtual void endHtmlOnly() = 0;
@@ -277,11 +298,6 @@ class BaseOutputDocInterface
     virtual void startSectionRefList() = 0;
     virtual void endSectionRefList() = 0;
 
-    /*! Writes an ASCII string to the output. This function should keep 
-     *  spaces visible, should break lines at a newline and should convert 
-     *  tabs to the right number of spaces.
-     */
-    virtual void codify(const char *s) = 0;
     
 };
 
@@ -317,6 +333,8 @@ class OutputGenerator : public BaseOutputDocInterface
     bool isEnabled() const { return active; }
     void pushGeneratorState();
     void popGeneratorState();
+
+    virtual void printDoc(DocNode *) {}
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

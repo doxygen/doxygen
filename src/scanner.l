@@ -385,7 +385,7 @@ static void setContext()
   QCString fileName = yyFileName;
   insideIDL  = fileName.right(4)==".idl";
   insideJava = fileName.right(5)==".java";
-  insidePHP = fileName.right(4)==".php";
+  insidePHP = fileName.right(4)==".php" || fileName.right(4)==".inc";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -444,15 +444,17 @@ static void addSpecialItem(const char *listName)
   if (lii) // already found item of same type before
   {
     RefItem *item = refList->getRefItem(lii->itemId);
+    ASSERT(item!=0);
     item->text += " <p>";
     item->text += current->brief;
   }
   else // new item
   {
     int itemId  = refList->addRefItem();
-    char anchorLabel[12];
+    char anchorLabel[1024];
     sprintf(anchorLabel,"_%s%06d",listName,itemId);
     RefItem *item = refList->getRefItem(itemId);
+    ASSERT(item!=0);
     item->text = current->brief.copy();
     item->listAnchor = anchorLabel;
     current->addSpecialListItem(listName,itemId);
@@ -3781,15 +3783,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
 
   /* conditional commands */
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"{B}+ {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"{B}+ {
                                           lastIfContext = YY_START;
 					  BEGIN(IfGuard);
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"ifnot"{B}+ {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"ifnot"{B}+ {
                                           lastIfContext = YY_START;
 					  BEGIN(IfNotGuard);
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"(\r?)\n |
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"(\r?)\n |
 <IfGuard>\n				{
   					  warn(yyFileName,yyLineNr,"Missing guard for if statement!");
 					  yyLineNr++;
@@ -3850,33 +3852,33 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  yyLineNr++;
   					}
 <SkipSection>"//"|"*/"			  					
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
                                           // previous section enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
                                           // section was enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
                                           // section enabled => absorb endif
   					}
 
 
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
   					  BEGIN( GroupName ); 
 					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
                                           current->subGrouping = FALSE; 
                                         }
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 100000; // ON
   					}
-<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 0; // OFF
   					}
 <GroupName>{ID}				{
@@ -4478,7 +4480,9 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-	if (ce->fileName.right(5)==".java" || ce->fileName.right(4)==".php")
+	if (ce->fileName.right(5)==".java" || 
+	    ce->fileName.right(4)==".php" ||
+	    ce->fileName.right(4)==".inc")
           current->protection = protection = Public ; // Actually this should be package scope!
 	else
           current->protection = protection = Private ;

@@ -186,8 +186,7 @@ static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
 
 const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
-QCString htmlFileExtension;
-int htmlFileExtensionLength;
+QCString Doxygen::htmlFileExtension;
 
 //----------------------------------------------------------------------------
 
@@ -6059,7 +6058,7 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pi->name.data());
-    QCString n=convertNameToFile(pi->name+"-example");
+    QCString n=pi->fileName;
     startFile(*outputList,n,n,"Example Documentation");
     startTitle(*outputList,n);
     outputList->docify(pi->name);
@@ -6268,9 +6267,9 @@ static void generateSearchIndex()
     //outputList->generateExternalIndex();
     outputList->pushGeneratorState();
     outputList->disableAllBut(OutputGenerator::Html);
-    startFile(*outputList,"header"+htmlFileExtension,0,"Search Engine",TRUE);
+    startFile(*outputList,"header"+Doxygen::htmlFileExtension,0,"Search Engine",TRUE);
     outputList->endPlainFile();
-    outputList->startPlainFile("footer"+htmlFileExtension);
+    outputList->startPlainFile("footer"+Doxygen::htmlFileExtension);
     endFile(*outputList,TRUE);
     outputList->popGeneratorState();
   }
@@ -7135,8 +7134,7 @@ void readConfiguration(int argc, char **argv)
   }
 
   /* Set the global html file extension. */ 
-  htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
-  htmlFileExtensionLength = htmlFileExtension.length();
+  Doxygen::htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
 
   /* init the special lists */
   Doxygen::specialLists->setAutoDelete(TRUE);

@@ -27,6 +27,8 @@
 
 #include "doxygen.h"
 #include "debug.h"
+#include "util.h"
+#include "page.h"
 
 #include "docparser.h"
 #include "doctokenizer.h"
@@ -38,8 +40,66 @@
 
 //---------------------------------------------------------------------------
 
+static QCString g_context;
+static bool g_inSeeBlock;
+static bool g_insideHtmlLink;
 static QStack<DocNode> g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
+
+struct DocParserContext
+{
+  QCString context;
+  bool inSeeBlock;
+  bool insideHtmlLink;
+  QStack<DocNode> nodeStack;
+  QStack<DocStyleChange> styleStack;
+};
+
+static QStack<DocParserContext> g_parserStack;
+
+//---------------------------------------------------------------------------
+
+static void docParserPushContext()
+{
+  doctokenizerYYpushContext();
+  DocParserContext *ctx = new DocParserContext;
+  ctx->context = g_context;
+  ctx->inSeeBlock = g_inSeeBlock;
+  ctx->insideHtmlLink = g_insideHtmlLink;
+  ctx->nodeStack = g_nodeStack;
+  ctx->styleStack = g_styleStack;
+  g_parserStack.push(ctx);
+}
+
+static void docParserPopContext()
+{
+  DocParserContext *ctx = g_parserStack.pop();
+  g_context = ctx->context;
+  g_inSeeBlock = ctx->inSeeBlock;
+  g_insideHtmlLink = ctx->insideHtmlLink;
+  g_nodeStack = ctx->nodeStack;
+  g_styleStack = ctx->styleStack;
+  delete ctx;
+  doctokenizerYYpopContext();
+}
+
+//---------------------------------------------------------------------------
+
+static QCString stripKnownExtensions(const char *text)
+{
+  QCString result=text;
+  if (result.right(4)==".tex")
+  {
+    result=result.left(result.length()-4);
+  }
+  else if (result.right(Doxygen::htmlFileExtension.length())==
+         Doxygen::htmlFileExtension) 
+  {
+    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+  }
+  return result;
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -185,7 +245,7 @@ static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
     DocStyleChange *sc = g_styleStack.top();
     while (sc && sc->position()>=g_nodeStack.count()) 
     { // there are unclosed style modifiers in the paragraph
-      const char *cmd;
+      const char *cmd="";
       switch (sc->style())
       {
         case DocStyleChange::Bold:        cmd = "b"; break;
@@ -205,6 +265,39 @@ static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
   }
 }
 
+static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
+{
+  Definition *compound=0;
+  MemberDef  *member=0;
+  if (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
+  {
+    if (member) // member link
+    {
+      children.append(new 
+          DocLinkedWord(parent,g_token->name,
+            compound->getReference(),
+            compound->getOutputFileBase(),
+            member->anchor()
+                       )
+                     );
+    }
+    else // compound link
+    {
+      children.append(new 
+          DocLinkedWord(parent,g_token->name,
+            compound->getReference(),
+            compound->getOutputFileBase(),
+            ""
+                       )
+                     );
+    }
+  }
+  else // normal word
+  {
+    children.append(new DocWord(parent,g_token->name));
+  }
+}
+
 /* Helper function that deals with the most common tokens allowed in
  * title like sections. 
  * @param parent     Parent node, owner of the children list passed as 
@@ -220,7 +313,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
     handleWord)
 {
   DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
-  if (tok==TK_WORD || tok==TK_SYMBOL || tok==TK_URL || 
+  if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
       tok==TK_COMMAND || tok==TK_HTMLTAG
      )
   {
@@ -285,7 +378,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           {
             doctokenizerYYsetStateHtmlOnly();
             int retval = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_token->verb,DocVerbatim::HtmlOnly));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly));
             if (retval==0) printf("Error: htmlonly section ended without end marker at line %d\n",
                 doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
@@ -295,7 +388,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           {
             doctokenizerYYsetStateLatexOnly();
             int retval = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_token->verb,DocVerbatim::LatexOnly));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly));
             if (retval==0) printf("Error: latexonly section ended without end marker at line %d\n",
                 doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
@@ -305,6 +398,57 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
           {
             DocFormula *form=new DocFormula(parent,g_token->id);
             children.append(form);
+          }
+          break;
+        case CMD_ANCHOR:
+          {
+            int tok=doctokenizerYYlex();
+            if (tok!=TK_WHITESPACE)
+            {
+              printf("Error: expected whitespace after %s command at line %d\n",
+                  tokenName.data(),doctokenizerYYlineno);
+              break;
+            }
+            tok=doctokenizerYYlex();
+            if (tok==0)
+            {
+              printf("Error: unexpected end of comment block at line %d while parsing the "
+                  "argument of command %s\n",doctokenizerYYlineno, tokenName.data());
+              break;
+            }
+            else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+            {
+              printf("Error: unexpected token %s as the argument of %s at line %d.\n",
+                  tokToString(tok),tokenName.data(),doctokenizerYYlineno);
+              break;
+            }
+            DocAnchor *anchor = new DocAnchor(parent,g_token->name);
+            children.append(anchor);
+          }
+          break;
+        case CMD_INTERNALREF:
+          {
+            int tok=doctokenizerYYlex();
+            if (tok!=TK_WHITESPACE)
+            {
+              printf("Error: expected whitespace after %s command at line %d\n",
+                  tokenName.data(),doctokenizerYYlineno);
+              break;
+            }
+            doctokenizerYYsetStateInternalRef();
+            tok=doctokenizerYYlex(); // get the reference id
+            DocInternalRef *ref=0;
+            if (tok!=TK_WORD && tok!=TK_LNKWORD)
+            {
+              printf("Error: unexpected token %s as the argument of %s at line %d.\n",
+                  tokToString(tok),tokenName.data(),doctokenizerYYlineno);
+              doctokenizerYYsetStatePara();
+              break;
+            }
+            ref = new DocInternalRef(parent,g_token->name);
+            children.append(ref);
+            ref->parse();
+            doctokenizerYYsetStatePara();
           }
           break;
         default:
@@ -413,9 +557,19 @@ handlepara:
         children.append(new DocWhiteSpace(parent,g_token->chars));
       }
       break;
+    case TK_LNKWORD: 
+      if (handleWord)
+      {
+        handleLinkedWord(parent,children);
+      }
+      else
+        return FALSE;
+      break;
     case TK_WORD: 
       if (handleWord)
+      {
         children.append(new DocWord(parent,g_token->name));
+      }
       else
         return FALSE;
       break;
@@ -483,6 +637,77 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
 
 //---------------------------------------------------------------------------
 
+static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
+                                    const QCString &doc)
+{
+  int retval = RetVal_OK;
+
+  doctokenizerYYinit(doc);
+
+  // first parse any number of paragraphs
+  bool isFirst=FALSE;
+  DocPara *lastPar=0;
+  do
+  {
+    DocPara *par = new DocPara(parent);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    retval=par->parse();
+    if (!par->isEmpty()) 
+    {
+      children.append(par);
+      lastPar=par;
+    }
+  } while (retval==TK_NEWPARA);
+  if (lastPar) lastPar->markLast();
+
+  return retval;
+}
+
+//---------------------------------------------------------------------------
+
+void DocXRefItem::parse()
+{
+  QCString listName;
+  switch(m_type)
+  {
+    case Bug:        listName="bug"; break; 
+    case Test:       listName="test"; break; 
+    case Todo:       listName="todo"; break; 
+    case Deprecated: listName="deprecated"; break; 
+  }
+  RefList *refList = Doxygen::specialLists->find(listName); 
+  if (Config_getBool(refList->optionName())) // list is enabled
+  {
+    RefItem *item = refList->getRefItem(m_id);
+    ASSERT(item!=0);
+
+    m_file   = refList->listName();
+    m_anchor = item->listAnchor;
+    m_title  = refList->sectionTitle();
+
+    docParserPushContext();
+    internalValidatingParseDoc(this,m_children,item->text);
+    docParserPopContext();
+  }
+}
+
+//---------------------------------------------------------------------------
+
+DocFormula::DocFormula(DocNode *parent,int id) :
+      m_parent(parent) 
+{
+  QCString formCmd;
+  formCmd.sprintf("\\form#%d",id);
+  Formula *formula=Doxygen::formulaNameDict[formCmd];
+  if (formula)
+  {
+    m_name.sprintf("form_%d",formula->getId());
+    m_text = formula->getFormulaText();
+  }
+}
+
+//---------------------------------------------------------------------------
+
 int DocLanguage::parse()
 {
   int retval;
@@ -490,13 +715,17 @@ int DocLanguage::parse()
   g_nodeStack.push(this);
 
   // parse one or more paragraphs
+  bool isFirst=TRUE;
+  DocPara *par=0;
   do
   {
-    DocPara *par = new DocPara(this);
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
+  if (par) par->markLast();
 
   DBG(("DocLanguage::parse() end\n"));
   DocNode *n = g_nodeStack.pop();
@@ -568,7 +797,7 @@ void DocSecRefList::parse()
               break;
             }
             tok=doctokenizerYYlex();
-            if (tok!=TK_WORD)
+            if (tok!=TK_WORD && tok!=TK_LNKWORD)
             {
               printf("Error: unexpected token %s as the argument of \\refitem at line %d.\n",
                   tokToString(tok),doctokenizerYYlineno);
@@ -603,9 +832,97 @@ endsecreflist:
   ASSERT(n==this);
 }
 
+//---------------------------------------------------------------------------
 
+DocInternalRef::DocInternalRef(DocNode *parent,const QCString &ref) 
+  : m_parent(parent)
+{
+  int i=ref.find('#');
+  if (i!=-1)
+  {
+    m_anchor = ref.right(ref.length()-i-1);
+    m_file   = ref.left(i);
+  }
+  else
+  {
+    m_file = ref;
+  }
+}
+
+void DocInternalRef::parse()
+{
+  g_nodeStack.push(this);
+  DBG(("DocInternalRef::parse() start\n"));
+
+  int tok;
+  while ((tok=doctokenizerYYlex()))
+  {
+    if (!defaultHandleToken(this,tok,m_children))
+    {
+      switch (tok)
+      {
+        case TK_COMMAND: 
+          printf("Error: Illegal command %s as part of a \\ref at line %d\n",
+	       g_token->name.data(),doctokenizerYYlineno);
+          break;
+        case TK_SYMBOL: 
+	  printf("Error: Unsupported symbol %s found at line %d\n",
+               g_token->name.data(),doctokenizerYYlineno);
+          break;
+        default:
+	  printf("Error: Unexpected token %s at line %d\n",
+		g_token->name.data(),doctokenizerYYlineno);
+          break;
+      }
+    }
+  }
+
+  handlePendingStyleCommands(this,m_children);
+  DBG(("DocInternalRef::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+}
 
 //---------------------------------------------------------------------------
+
+DocRef::DocRef(DocNode *parent,const QCString &target) : 
+   m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
+{
+  Definition  *compound = 0;
+  MemberDef   *member   = 0;
+  ASSERT(!target.isEmpty());
+  SectionInfo *sec = Doxygen::sectionDict[target];
+  if (sec) // ref to section or anchor
+  {
+    m_text         = sec->title;
+    if (m_text.isEmpty()) m_text = sec->label;
+
+    m_ref          = sec->ref;
+    m_file         = stripKnownExtensions(sec->fileName);
+    m_anchor       = sec->label;
+    m_refToAnchor  = sec->type==SectionInfo::Anchor;
+    m_refToSection = sec->type!=SectionInfo::Anchor;
+  }
+  else if (resolveRef(g_context,target,TRUE,&compound,&member))
+  {
+    if (member) // ref to member 
+    {
+      m_file   = compound->getOutputFileBase();
+      m_ref    = compound->getReference();
+      m_anchor = member->anchor();
+    }
+    else // ref to compound
+    {
+      m_file = compound->getOutputFileBase();
+      m_ref  = compound->getReference();
+    }
+  }
+  else // oops, bogus target
+  {
+    printf("Error: unable to resolve reference to `%s' for \\ref command at line %d\n",
+           target.data(),doctokenizerYYlineno); 
+  }
+}
 
 void DocRef::parse()
 {
@@ -642,6 +959,33 @@ void DocRef::parse()
 }
 
 //---------------------------------------------------------------------------
+
+DocLink::DocLink(DocNode *parent,const QCString &target) : 
+      m_parent(parent)
+{
+  Definition *compound;
+  PageInfo *page;
+  if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
+                  &compound,&page,m_anchor))
+  {
+    if (compound)
+    {
+      m_file = compound->getOutputFileBase();
+      m_ref  = compound->getReference();
+    }
+    else if (page)
+    {
+      m_file = page->getOutputFileBase();
+      m_ref  = page->getReference();
+    }
+  }
+  else // oops, bogus target
+  {
+    printf("Error: unable to resolve link to `%s' for \\link command at line %d\n",
+           target.data(),doctokenizerYYlineno); 
+  }
+}
+
 
 QCString DocLink::parse(bool isJavaLink)
 {
@@ -944,16 +1288,24 @@ int DocInternal::parse()
   DBG(("DocInternal::parse() start\n"));
 
   // first parse any number of paragraphs
+  bool isFirst=FALSE;
+  DocPara *lastPar=0;
   do
   {
     DocPara *par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty()) m_children.append(par);
+    if (!par->isEmpty()) 
+    {
+      m_children.append(par);
+      lastPar=par;
+    }
     if (retval==TK_LISTITEM)
     {
       printf("Error: Invalid list item found at line %d!\n",doctokenizerYYlineno);
     }
   } while (retval!=0 && retval!=RetVal_Section);
+  if (lastPar) lastPar->markLast();
 
   // then parse any number of level1 sections
   while (retval==RetVal_Section)
@@ -1094,13 +1446,17 @@ int DocHtmlCell::parse()
   DBG(("DocHtmlCell::parse() start\n"));
 
   // parse one or more paragraphs
+  bool isFirst=FALSE;
+  DocPara *par=0;
   do
   {
-    DocPara *par = new DocPara(this);
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
+  if (par) par->markLast();
 
   DBG(("DocHtmlCell::parse() end\n"));
   DocNode *n=g_nodeStack.pop();
@@ -1311,13 +1667,17 @@ int DocHtmlDescData::parse()
   g_nodeStack.push(this);
   DBG(("DocHtmlDescData::parse() start\n"));
 
+  bool isFirst=FALSE;
+  DocPara *par=0;
   do
   {
-    DocPara *par = new DocPara(this);
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
+  if (par) par->markLast();
   
   DBG(("DocHtmlDescData::parse() end\n"));
   DocNode *n=g_nodeStack.pop();
@@ -1404,13 +1764,17 @@ int DocHtmlPre::parse()
   int rv;
   g_nodeStack.push(this);
 
+  bool isFirst=FALSE;
+  DocPara *par=0;
   do
   {
-    DocPara *par = new DocPara(this);
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     rv=par->parse();
   }
   while (rv==TK_NEWPARA);
+  if (par) par->markLast();
 
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
@@ -1426,13 +1790,17 @@ int DocHtmlListItem::parse()
   g_nodeStack.push(this);
 
   // parse one or more paragraphs
+  bool isFirst=FALSE;
+  DocPara *par=0;
   do
   {
-    DocPara *par = new DocPara(this);
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
+  if (par) par->markLast();
 
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
@@ -1506,6 +1874,8 @@ int DocSimpleListItem::parse()
 {
   g_nodeStack.push(this);
   int rv=m_paragraph->parse();
+  m_paragraph->markFirst();
+  m_paragraph->markLast();
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return rv;
@@ -1535,6 +1905,8 @@ int DocAutoListItem::parse()
   int retval = RetVal_OK;
   g_nodeStack.push(this);
   retval=m_paragraph->parse();
+  m_paragraph->markFirst();
+  m_paragraph->markLast();
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
@@ -1602,24 +1974,23 @@ void DocTitle::parse()
 //--------------------------------------------------------------------------
 
 DocSimpleSect::DocSimpleSect(DocNode *parent,Type t) : 
-          m_parent(parent), m_type(t) 
+     m_parent(parent), m_type(t)
 { 
-  m_paragraph = new DocPara(this); 
-  //m_params.setAutoDelete(TRUE);
-  m_title = 0;
+  m_title=0; 
 }
 
-DocSimpleSect::~DocSimpleSect() 
+DocSimpleSect::~DocSimpleSect()
 { 
-  delete m_paragraph; 
-  delete m_title;
+  delete m_title; 
 }
 
 void DocSimpleSect::accept(DocVisitor *v)
 {
   v->visitPre(this);
   if (m_title) m_title->accept(v);
-  m_paragraph->accept(v);
+  QListIterator<DocNode> cli(m_children);
+  DocNode *n;
+  for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
   v->visitPost(this);
 }
 
@@ -1635,34 +2006,38 @@ int DocSimpleSect::parse(bool userTitle)
     m_title->parse();
   }
   
-  int retval = m_paragraph->parse();
+  // add new paragraph as child
+  DocPara *par = new DocPara(this);
+  if (m_children.isEmpty()) 
+  {
+    par->markFirst();
+  }
+  else
+  {
+    ASSERT(m_children.last()->kind()==DocNode::Kind_Para);
+    ((DocPara *)m_children.last())->markLast(FALSE);
+  }
+  par->markLast();
+  m_children.append(par);
+  
+  // parse the contents of the paragraph
+  int retval = par->parse();
 
   DBG(("DocSimpleSect::parse() end retval=%d\n",retval));
-  DocNode *n = g_nodeStack.pop();
+  DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval; // 0==EOF, TK_NEWPARA, TK_LISTITEM, TK_ENDLIST, RetVal_SimpleSec
 }
 
-void DocSimpleSect::addParam(const QCString &name) 
-{ 
-  m_params.append(name); 
-}
-
 //--------------------------------------------------------------------------
 
-int DocPara::handleSimpleSection(DocSimpleSect::Type t)
+int DocParamList::parse(const QCString &cmdName)
 {
-  DocSimpleSect *ss=new DocSimpleSect(this,t);
-  m_children.append(ss);
-  int rv = ss->parse(t==DocSimpleSect::User);
-  return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
-}
+  int retval=RetVal_OK;
+  DBG(("DocParamList::parse() start\n"));
+  g_nodeStack.push(this);
 
-int DocPara::handleParamSection(const QCString &cmdName,DocSimpleSect::Type t)
-{
   int tok=doctokenizerYYlex();
-  DocSimpleSect *ss=new DocSimpleSect(this,t);
-  m_children.append(ss);
   if (tok!=TK_WHITESPACE)
   {
     printf("Error: expected whitespace after %s command at line %d\n",
@@ -1670,12 +2045,12 @@ int DocPara::handleParamSection(const QCString &cmdName,DocSimpleSect::Type t)
   }
   doctokenizerYYsetStateParam();
   tok=doctokenizerYYlex();
-  doctokenizerYYsetStatePara();
   while (tok==TK_WORD) /* there is a parameter name */
   {
-    ss->addParam(g_token->name);
+    m_params.append(g_token->name);
     tok=doctokenizerYYlex();
   }
+  doctokenizerYYsetStatePara();
   if (tok==0) /* premature end of comment block */
   {
     printf("Error: unexpected end of comment block at line %d while parsing the "
@@ -1683,71 +2058,75 @@ int DocPara::handleParamSection(const QCString &cmdName,DocSimpleSect::Type t)
     return 0;
   }
   ASSERT(tok==TK_WHITESPACE);
-  int rv = ss->parse(FALSE);
+
+  retval = m_paragraph->parse();
+  m_paragraph->markFirst();
+  m_paragraph->markLast();
+
+  DBG(("DocParamList::parse() end retval=%d\n",retval));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval;
+}
+
+//--------------------------------------------------------------------------
+
+int DocParamSect::parse(const QCString &cmdName)
+{
+  int retval=RetVal_OK;
+  DBG(("DocParamSect::parse() start\n"));
+  g_nodeStack.push(this);
+
+  DocParamList *pl = new DocParamList(this);
+  m_children.append(pl);
+  retval = pl->parse(cmdName);
+  
+  DBG(("DocParamSect::parse() end retval=%d\n",retval));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval;
+}
+
+//--------------------------------------------------------------------------
+
+int DocPara::handleSimpleSection(DocSimpleSect::Type t)
+{
+  DocSimpleSect *ss=0;
+  if (!m_children.isEmpty() &&                         // previous element
+      m_children.last()->kind()==Kind_SimpleSect &&    // was a simple sect
+      ((DocSimpleSect *)m_children.last())->type()==t) // of same type
+  {
+    // append to previous section
+    ss=(DocSimpleSect *)m_children.last();
+  }
+  else // start new section
+  {
+    ss=new DocSimpleSect(this,t);
+    m_children.append(ss);
+  }
+  int rv = ss->parse(t==DocSimpleSect::User);
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-#if 0
-int DocPara::handleStyleArgument(const QCString &cmdName)
+int DocPara::handleParamSection(const QCString &cmdName,DocParamSect::Type t)
 {
-  int tok=doctokenizerYYlex();
-  if (tok!=TK_WHITESPACE)
+  DocParamSect *ps=0;
+  
+  if (!m_children.isEmpty() &&                        // previous element
+      m_children.last()->kind()==Kind_ParamSect &&    // was a param sect
+      ((DocParamSect *)m_children.last())->type()==t) // of same type
   {
-    printf("Error: expected whitespace after %s command at line %d\n",
-	cmdName.data(),doctokenizerYYlineno);
-    return;
+    // append to previous section
+    ps=(DocParamSect *)m_children.last();
   }
-  while ((tok=doctokenizerYYlex()) && tok!=TK_WHITESPACE && tok!=TK_NEWPARA)
+  else // start new section
   {
-    if (!defaultHandleToken(this,tok,m_children))
-    {
-      switch (tok)
-      {
-        case TK_COMMAND: 
-	  printf("Error: Illegal command \\%s as the argument of a \\%s command at line %d\n",
-	       g_token->name.data(),cmdName.data(),doctokenizerYYlineno);
-          break;
-        case TK_SYMBOL: 
-	  printf("Error: Unsupported symbol %s found at line %d\n",
-               g_token->name.data(),doctokenizerYYlineno);
-          break;
-        default:
-	  printf("Error: Unexpected token %s at line %d\n",
-		g_token->name.data(),doctokenizerYYlineno);
-          break;
-      }
-    }
+    ps=new DocParamSect(this,t);
+    m_children.append(ps);
   }
-  return tok==TK_NEWPARA ? TK_NEWPARA : RetVal_OK;
+  int rv=ps->parse(cmdName);
+  return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
-
-void DocPara::handleStyleEnter(DocStyleChange::Style s)
-{
-  DBG(("HandleStyleEnter\n"));
-  DocStyleChange *sc= new DocStyleChange(this,g_nodeStack.count(),s,TRUE);
-  m_children.append(sc);
-  g_styleStack.push(sc);
-}
-
-void DocPara::handleStyleLeave(DocStyleChange::Style s,const char *tagName)
-{
-  DBG(("HandleStyleLeave\n"));
-  if (g_styleStack.isEmpty() ||                           // no style change
-      g_styleStack.top()->style()!=s ||                   // wrong style change
-      g_styleStack.top()->position()!=g_nodeStack.count() // wrong position
-     )
-  {
-    printf("Error: found </%s> tag at line %d without matching <%s> in the same paragraph\n",
-        tagName,doctokenizerYYlineno,tagName);
-  }
-  else // end the section
-  {
-    DocStyleChange *sc= new DocStyleChange(this,g_nodeStack.count(),s,FALSE);
-    m_children.append(sc);
-    g_styleStack.pop();
-  }
-}
-#endif
 
 int DocPara::handleXRefItem(DocXRefItem::Type t)
 {
@@ -1757,7 +2136,9 @@ int DocPara::handleXRefItem(DocXRefItem::Type t)
   retval=doctokenizerYYlex();
   if (retval!=0)
   {
-    m_children.append(new DocXRefItem(this,g_token->id,t));
+    DocXRefItem *ref = new DocXRefItem(this,g_token->id,t);
+    m_children.append(ref);
+    ref->parse();
   }
   doctokenizerYYsetStatePara();
   return retval;
@@ -1801,7 +2182,7 @@ void DocPara::handleImage(const QCString &cmdName)
     return;
   }
   tok=doctokenizerYYlex();
-  if (tok!=TK_WORD)
+  if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
     printf("Error: unexpected token %s as the argument of %s at line %d.\n",
         tokToString(tok),cmdName.data(),doctokenizerYYlineno);
@@ -1937,7 +2318,7 @@ int DocPara::handleLanguageSwitch()
         retval = tok;
         goto endlang;
       }
-      else if (tok==TK_WORD)
+      else if (tok==TK_WORD || tok==TK_LNKWORD)
       {
         DocLanguage *dl = new DocLanguage(this,g_token->name);
         m_children.append(dl);
@@ -2037,13 +2418,18 @@ int DocPara::handleCommand(const QCString &cmdName)
       m_children.append(new DocSymbol(this,DocSymbol::Percent));
       break;
     case CMD_SA:
+      g_inSeeBlock=TRUE;
       retval = handleSimpleSection(DocSimpleSect::See);
+      g_inSeeBlock=FALSE;
       break;
     case CMD_RETURN:
       retval = handleSimpleSection(DocSimpleSect::Return);
       break;
     case CMD_AUTHOR:
       retval = handleSimpleSection(DocSimpleSect::Author);
+      break;
+    case CMD_AUTHORS:
+      retval = handleSimpleSection(DocSimpleSect::Authors);
       break;
     case CMD_VERSION:
       retval = handleSimpleSection(DocSimpleSect::Version);
@@ -2102,7 +2488,7 @@ int DocPara::handleCommand(const QCString &cmdName)
 	      "argument of command %s\n",doctokenizerYYlineno, cmdName.data());
 	  break;
 	}
-	else if (tok!=TK_WORD)
+	else if (tok!=TK_WORD && tok!=TK_LNKWORD)
 	{
 	  printf("Error: unexpected token %s as the argument of %s at line %d.\n",
 	      tokToString(tok),cmdName.data(),doctokenizerYYlineno);
@@ -2116,7 +2502,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         doctokenizerYYsetStateCode();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_token->verb,DocVerbatim::Code));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Code));
         if (retval==0) printf("Error: code section ended without end marker at line %d\n",
             doctokenizerYYlineno);
         doctokenizerYYsetStatePara();
@@ -2126,7 +2512,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         doctokenizerYYsetStateHtmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_token->verb,DocVerbatim::HtmlOnly));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly));
         if (retval==0) printf("Error: htmlonly section ended without end marker at line %d\n",
             doctokenizerYYlineno);
         doctokenizerYYsetStatePara();
@@ -2136,7 +2522,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         doctokenizerYYsetStateLatexOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_token->verb,DocVerbatim::LatexOnly));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly));
         if (retval==0) printf("Error: latexonly section ended without end marker at line %d\n",
             doctokenizerYYlineno);
         doctokenizerYYsetStatePara();
@@ -2146,7 +2532,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         doctokenizerYYsetStateVerbatim();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_token->verb,DocVerbatim::Verbatim));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim));
         if (retval==0) printf("Error: verbatim section ended without end marker at line %d\n",
             doctokenizerYYlineno);
         doctokenizerYYsetStatePara();
@@ -2160,13 +2546,13 @@ int DocPara::handleCommand(const QCString &cmdName)
       printf("Error: unexpected command %s at line %d\n",g_token->name.data(),doctokenizerYYlineno);
       break; 
     case CMD_PARAM:
-      retval = handleParamSection(cmdName,DocSimpleSect::Param);
+      retval = handleParamSection(cmdName,DocParamSect::Param);
       break;
     case CMD_RETVAL:
-      retval = handleParamSection(cmdName,DocSimpleSect::RetVal);
+      retval = handleParamSection(cmdName,DocParamSect::RetVal);
       break;
     case CMD_EXCEPTION:
-      retval = handleParamSection(cmdName,DocSimpleSect::Exception);
+      retval = handleParamSection(cmdName,DocParamSect::Exception);
       break;
     case CMD_BUG:
       retval = handleXRefItem(DocXRefItem::Bug);
@@ -2202,7 +2588,7 @@ int DocPara::handleCommand(const QCString &cmdName)
 	      "argument of command %s\n",doctokenizerYYlineno, cmdName.data());
 	  break;
 	}
-	else if (tok!=TK_WORD)
+	else if (tok!=TK_WORD && tok!=TK_LNKWORD)
 	{
 	  printf("Error: unexpected token %s as the argument of %s at line %d.\n",
 	      tokToString(tok),cmdName.data(),doctokenizerYYlineno);
@@ -2238,7 +2624,7 @@ int DocPara::handleCommand(const QCString &cmdName)
 	      "argument of command %s\n",doctokenizerYYlineno, cmdName.data());
 	  break;
 	}
-	else if (tok!=TK_WORD)
+	else if (tok!=TK_WORD && tok!=TK_LNKWORD)
 	{
 	  printf("Error: unexpected token %s as the argument of %s at line %d.\n",
 	      tokToString(tok),cmdName.data(),doctokenizerYYlineno);
@@ -2309,6 +2695,9 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_LANGSWITCH:
       retval = handleLanguageSwitch();
       break;
+    case CMD_INTERNALREF:
+      printf("Error: unexpected command %s at line %d\n",g_token->name.data(),doctokenizerYYlineno);
+      break;
     default:
       // we should not get here!
       ASSERT(0);
@@ -2322,34 +2711,6 @@ int DocPara::handleCommand(const QCString &cmdName)
   return retval;
 }
 
-#if 0
-void DocPara::handlePendingStyleCommands()
-{
-  if (!g_styleStack.isEmpty())
-  {
-    DocStyleChange *sc = g_styleStack.top();
-    while (sc && sc->position()>=g_nodeStack.count()) 
-    { // there are unclosed style modifiers in the paragraph
-      const char *cmd;
-      switch (sc->style())
-      {
-        case DocStyleChange::Bold:        cmd = "b"; break;
-        case DocStyleChange::Italic:      cmd = "em"; break;
-        case DocStyleChange::Code:        cmd = "code"; break;
-        case DocStyleChange::Center:      cmd = "center"; break;
-        case DocStyleChange::Small:       cmd = "small"; break;
-        case DocStyleChange::Subscript:   cmd = "subscript"; break;
-        case DocStyleChange::Superscript: cmd = "superscript"; break;
-      }
-      printf("Error: end of paragraph at line %d without end of style "
-             "command </%s>\n",doctokenizerYYlineno,cmd);
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),sc->style(),FALSE));
-      g_styleStack.pop();
-      sc = g_styleStack.top();
-    }
-  }
-}
-#endif
 
 int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tagOptions)
 {
@@ -2483,7 +2844,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
           {
             DocHRef *href = new DocHRef(this,opt->value);
             m_children.append(href);
+            g_insideHtmlLink=TRUE;
             retval = href->parse();
+            g_insideHtmlLink=FALSE;
             break;
           }
           else // unsupport option for tag a
@@ -2689,7 +3052,7 @@ int DocPara::parse()
   {
 reparsetoken:
     DBG(("token %s at %d",tokToString(tok),doctokenizerYYlineno));
-    if (tok==TK_WORD || tok==TK_SYMBOL || tok==TK_URL || 
+    if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL || 
         tok==TK_COMMAND || tok==TK_HTMLTAG
        )
     {
@@ -2701,6 +3064,9 @@ reparsetoken:
       case TK_WORD:        
 	m_children.append(new DocWord(this,g_token->name));
 	break;
+      case TK_LNKWORD:        
+        handleLinkedWord(this,m_children);
+	break;
       case TK_URL:
         m_children.append(new DocURL(this,g_token->name));
         break;
@@ -2708,12 +3074,12 @@ reparsetoken:
 	// prevent leading whitespace and collapse multiple whitespace areas
 	if (insidePRE(this) || // all whitespace is relavant
             (                  // keep only whitespace after words, URL or symbols
-              !m_children.isEmpty() && 
-              (
+               !m_children.isEmpty() /* && 
+               (
 	         m_children.last()->kind()==DocNode::Kind_Word   ||
 	         m_children.last()->kind()==DocNode::Kind_URL    ||
 	         m_children.last()->kind()==DocNode::Kind_Symbol
-               )
+               )*/
 	     )
            )
 	{
@@ -2803,7 +3169,13 @@ reparsetoken:
 	  // see if we have to start a simple section
 	  int cmd = CmdMapper::map(g_token->name);
 	  DocNode *n=parent();
-	  while (n && n->kind()!=DocNode::Kind_SimpleSect) n=n->parent();
+	  while (n && 
+                 n->kind()!=DocNode::Kind_SimpleSect && 
+                 n->kind()!=DocNode::Kind_ParamSect
+                ) 
+          {
+            n=n->parent();
+          }
 	  if (cmd&SIMPLESECT_BIT)
 	  {
 	    if (n  // already in a simple section
@@ -2880,7 +3252,20 @@ reparsetoken:
         }
 	break;
       case TK_SYMBOL:     
-	break;
+        {
+          char letter='\0';
+          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name,&letter);
+          if (s!=DocSymbol::Unknown)
+          {
+            m_children.append(new DocSymbol(this,s,letter));
+          }
+          else
+          {
+            printf("Error: Unsupported symbol %s found at line %d\n",
+                g_token->name.data(),doctokenizerYYlineno);
+          }
+          break;
+        }
       case TK_NEWPARA:     
 	retval=TK_NEWPARA;
 	goto endparagraph;
@@ -2910,16 +3295,24 @@ int DocSection::parse()
   g_nodeStack.push(this);
 
   // first parse any number of paragraphs
+  bool isFirst=FALSE;
+  DocPara *lastPar=0;
   do
   {
     DocPara *par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty()) m_children.append(par);
+    if (!par->isEmpty()) 
+    {
+      m_children.append(par);
+      lastPar = par;
+    }
     if (retval==TK_LISTITEM)
     {
       printf("Error: Invalid list item found at line %d!\n",doctokenizerYYlineno);
     }
   } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
+  if (lastPar) lastPar->markLast();
 
   // then parse any number of nested sections
   while (retval==RetVal_Section) // more sections follow
@@ -2958,20 +3351,27 @@ void DocRoot::parse()
 {
   g_nodeStack.push(this);
   doctokenizerYYsetStatePara();
-  DocPara *par=0;
   int retval=0;
 
   // first parse any number of paragraphs
+  bool isFirst=FALSE;
+  DocPara *lastPar=0;
   do
   {
-    par = new DocPara(this);
+    DocPara *par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty()) m_children.append(par);
+    if (!par->isEmpty()) 
+    {
+      m_children.append(par);
+      lastPar = par;
+    }
     if (retval==TK_LISTITEM)
     {
       printf("Error: Invalid list item found at line %d!\n",doctokenizerYYlineno);
     }
   } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
+  if (lastPar) lastPar->markLast();
 
   // then parse any number of level1 sections
   while (retval==RetVal_Section)
@@ -3004,12 +3404,19 @@ void DocRoot::parse()
 
 //--------------------------------------------------------------------------
 
-void validatingParseDoc(const char *fileName,int startLine,const char *input)
+DocNode *validatingParseDoc(const char *fileName,int startLine,
+                            const char *context,const char *input)
 {
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
-  //
+  
   printf("========== validating %s at line %d\n",fileName,startLine);
   g_token = new TokenInfo;
+
+  g_context = context;
+  g_nodeStack.clear();
+  g_styleStack.clear();
+  g_inSeeBlock = FALSE;
+  g_insideHtmlLink = FALSE;
   
   doctokenizerYYlineno=startLine;
   doctokenizerYYinit(input);
@@ -3025,13 +3432,13 @@ void validatingParseDoc(const char *fileName,int startLine,const char *input)
     root->accept(v);
   }
 
-  delete root;
-
   delete g_token;
 
   // TODO: These should be called at the end of the program.
   //doctokenizerYYcleanup();
   //CmdMapper::freeInstance();
   //HtmlTagMapper::freeInstance();
+
+  return root;
 }
 

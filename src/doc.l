@@ -1,4 +1,4 @@
-/*****************************************************************************
+/****************************************************************************
  *
  * 
  *
@@ -31,7 +31,6 @@
 #include <qregexp.h>
   
 // new experimental parser
-#include "docparser.h"
 #include "debug.h"
   
 #include "doc.h"
@@ -446,7 +445,10 @@ static QCString stripKnownExtensions(const char *text)
 {
   QCString result=text;
   if (result.right(4)==".tex")       result=result.left(result.length()-4);
-  else if (result.right(htmlFileExtensionLength)==htmlFileExtension) result=result.left(result.length()-htmlFileExtensionLength);
+  else if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
+  {
+    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+  }
   //printf("%s stripKnowExtensions(%s)\n",result.data(),text); 
   return result;
 }
@@ -1928,9 +1930,9 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					  internalRefAnchor.resize(0);
   					  BEGIN(DocInternalRef);
   					}
-<DocInternalRef>[A-Z_a-z0-9.:\-\+]+	{
+<DocInternalRef>[A-Z_a-z0-9.:#\-\+]+	{
   					  internalRefFile=yytext;
-					  int i = internalRefFile.find(':');
+					  int i = internalRefFile.find('#');
 					  if (i!=-1)
 					  {
 					    internalRefAnchor=internalRefFile.right(internalRefFile.length()-i-1);
@@ -2947,7 +2949,7 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
 
   if (Debug::isFlagSet(Debug::Validate))
   {
-    validatingParseDoc(fileName,startLine,docStr);
+    od.parseDoc(fileName,startLine,clName,md,docStr);
   }
   
   strcpy(yyFileName,fileName);

@@ -30,6 +30,7 @@
 #include "dot.h"
 #include "language.h"
 #include "htmlhelp.h"
+#include "htmldocvisitor.h"
 
 // #define GROUP_COLOR "#ff8080"
 
@@ -202,7 +203,10 @@ void HtmlGenerator::startFile(const char *name,const char *,
   //printf("HtmlGenerator::startFile(%s)\n",name);
   QCString fileName=name;
   lastTitle=title;
-  if (fileName.right(htmlFileExtensionLength)!=htmlFileExtension) fileName+=htmlFileExtension;
+  if (fileName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
+  {
+    fileName+=Doxygen::htmlFileExtension;
+  }
   startPlainFile(fileName);
   if (Config_getBool("GENERATE_HTMLHELP"))
   {
@@ -383,7 +387,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
     {
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
-    if (f) t << f << htmlFileExtension << "\">";
+    if (f) t << f << Doxygen::htmlFileExtension << "\">";
   }
   else
   {
@@ -409,7 +413,7 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 {
   t << "<li>";
   if (path) docify(path);
-  t << "<a class=\"el\" href=\"" << f << htmlFileExtension << "\">";
+  t << "<a class=\"el\" href=\"" << f << Doxygen::htmlFileExtension << "\">";
   docify(name);
   t << "</a> ";
   //if (Config_getBool("GENERATE_HTMLHELP") && f)
@@ -438,7 +442,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   {
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
-  if (f) t << f << htmlFileExtension;
+  if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -465,7 +469,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   {
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
-  if (f) t << f << htmlFileExtension;
+  if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -476,7 +480,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
-  if (f)   t << f << htmlFileExtension;
+  if (f)   t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">"; 
 }
@@ -547,7 +551,10 @@ void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
   QCString *dest;
   //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
   QCString refName=name;
-  if (refName.right(htmlFileExtensionLength)!=htmlFileExtension) refName+=htmlFileExtension;
+  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
+  {
+    refName+=Doxygen::htmlFileExtension;
+  }
   t << "<a "; 
   if (ref) 
   {
@@ -569,7 +576,10 @@ void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
                                     const char *title)
 {
   QCString refName=name;
-  if (refName.right(htmlFileExtensionLength)!=htmlFileExtension) refName+=htmlFileExtension;
+  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
+  {
+    refName+=Doxygen::htmlFileExtension;
+  }
   t << "<li><a href=\"" << refName << "#" << lab << "\">";
   docify(title);
   t << "</a>";
@@ -1227,5 +1237,16 @@ void HtmlGenerator::endSectionRefList()
 {
   t << "</ul>" << endl;
   t << "</multicol>" << endl;
+}
+
+void HtmlGenerator::printDoc(DocNode *n)
+{
+#ifdef ENABLE_NEW_PARSER
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this);
+  n->accept(visitor);
+  delete visitor; 
+#else
+  n=n;
+#endif
 }
 

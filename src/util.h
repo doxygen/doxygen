@@ -44,6 +44,7 @@ class Definition;
 struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
+class PageInfo;
 
 //--------------------------------------------------------------------
 
@@ -91,10 +92,27 @@ extern bool getDefs(const QCString &scopeName,
                     bool checkCV=FALSE
                    );
 
+
+extern bool resolveRef(/* in */  const char *scName,
+                       /* in */  const char *name,
+                       /* in */  bool inSeeBlock,
+                       /* out */ Definition **resContext,
+                       /* out */ MemberDef  **resMember
+                      );
+
+extern bool resolveLink(/* in */ const char *scName,
+                        /* in */ const char *lr,
+                        /* in */ bool inSeeBlock,
+                        /* out */ Definition **resContext,
+                        /* out */ PageInfo **resPageInfo,
+                        /* out */ QCString &resAnchor
+                       );
+
 extern bool generateRef(OutputDocInterface &od,const char *,
                         const char *,bool inSeeBlock,const char * =0);
 extern bool generateLink(OutputDocInterface &od,const char *,
                          const char *,bool inSeeBlock,const char *);
+
 extern void generateFileRef(OutputDocInterface &od,const char *,
                              const char *linkTxt=0);
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);

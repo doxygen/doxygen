@@ -251,6 +251,8 @@ class ManGenerator : public OutputGenerator
     void startSectionRefList() {}
     void endSectionRefList() {}
 
+    void writeCodeAnchor(const char *) {}
+
   private:
     bool firstCol;
     bool paragraph;

@@ -21,11 +21,11 @@
 #include "qtbc.h"
 #include <stdio.h>
 
-class OutputDocInterface;
+class BaseCodeDocInterface;
 class FileDef;
 class MemberDef;
 
-extern void parseCode(OutputDocInterface &,const char *,const QCString &, 
+extern void parseCode(BaseCodeDocInterface &,const char *,const QCString &, 
             bool ,const char *,FileDef *fd=0,
             int startLine=-1,int endLine=-1,bool inlineFragment=FALSE);
 extern void initParseCodeContext();

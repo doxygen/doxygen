@@ -86,7 +86,8 @@ CommandMap cmdMap[] =
   { "verbinclude",   CMD_VERBINCLUDE },
   { "version",       CMD_VERSION },
   { "warning",       CMD_WARNING },
-  { "authors",       CMD_AUTHOR },
+  { "author",        CMD_AUTHOR },
+  { "authors",       CMD_AUTHORS },
   { "throws",        CMD_EXCEPTION },
   { "\\",            CMD_BSLASH },
   { "@",             CMD_AT },
@@ -97,6 +98,7 @@ CommandMap cmdMap[] =
   { "#",             CMD_HASH },
   { "%",             CMD_PERCENT },
   { "~",             CMD_LANGSWITCH },
+  { "_internalref",  CMD_INTERNALREF },
   { 0,               0 }
 };
 

@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.14-20020317), 27 languages 
+Currently (version 1.2.17-20020804), 27 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Chinese Traditional, Croatian, Czech, 
 Danish, Dutch, English, Finnish, French, 
@@ -133,7 +133,7 @@ when the translator was updated.
       <TD>Italian</TD>  
       <TD>Alessandro Falappa<br>Ahmed Aldo Faisal</TD>
       <TD>alessandro@NOSPAM.falappa.net<br>aaf23@NOSPAM.cam.ac.uk</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
@@ -175,7 +175,7 @@ when the translator was updated.
       <TD>Russian</TD>  
       <TD>Alexandr Chelpanov</TD>
       <TD>cav@NOSPAM.cryptopro.ru</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Serbian</TD>  
@@ -252,7 +252,7 @@ when the translator was updated.
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & 1.2.17 \\
+  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & up-to-date \\
    & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} &  \\
   \hline
   Japanese & Ryunosuke Sato & {\tt puyo@mint.freemail.ne.jp} & 1.2.17 \\
@@ -269,7 +269,7 @@ when the translator was updated.
   \hline
   Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.16 \\
   \hline
-  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & 1.2.17 \\
+  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
   \hline
   Serbian & Dejan Milosavljevic & {\tt dmilos@email.com} & 1.2.16 \\
   \hline
@@ -315,8 +315,8 @@ Just follow these steps:
     defines which language translators will be compiled into doxygen
     executable.  It is a kind of configuration file.  If you are sure that
     you do not need some of the languages, you can remove (comment out)
-    definitions of symbols for the languages, or you can say \c #undef
-    instead of \c #define for them.
+    definitions of symbols for the languages, or you can say \c \#undef
+    instead of \c \#define for them.
 <li>Edit language.cpp:
     Add a 
 \verbatim
@@ -346,7 +346,7 @@ Just follow these steps:
 <li>Edit <code>translator_xx.h</code>:
    <ul>
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> 
-       twice (i.e. in the \c #ifndef and \c #define preprocessor commands at 
+       twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at 
        the beginning of the file).
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 

@@ -63,6 +63,10 @@ class DocFormula;
 class DocSecRefItem;
 class DocSecRefList;
 class DocLanguage;
+class DocLinkedWord;
+class DocParamSect;
+class DocParamList;
+class DocInternalRef;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -76,7 +80,6 @@ class DocVisitor
     virtual void visit(DocURL *) = 0;
     virtual void visit(DocStyleChange *) = 0;
     virtual void visit(DocVerbatim *) = 0;
-    virtual void visit(DocXRefItem *) = 0;
     virtual void visit(DocLineBreak *) = 0;
     virtual void visit(DocHorRuler *) = 0;
     virtual void visit(DocAnchor *) = 0;
@@ -84,6 +87,7 @@ class DocVisitor
     virtual void visit(DocInclude *) = 0;
     virtual void visit(DocIncOperator *) = 0;
     virtual void visit(DocFormula *) = 0;
+    virtual void visit(DocLinkedWord *) = 0;
 
     /*! @name Visitor functions for internal nodes */
     virtual void visitPre(DocAutoList *) = 0;
@@ -146,6 +150,14 @@ class DocVisitor
     virtual void visitPost(DocSecRefList *) = 0;
     virtual void visitPre(DocLanguage *) = 0;
     virtual void visitPost(DocLanguage *) = 0;
+    virtual void visitPre(DocParamSect *) = 0;
+    virtual void visitPost(DocParamSect *) = 0;
+    virtual void visitPre(DocParamList *) = 0;
+    virtual void visitPost(DocParamList *) = 0;
+    virtual void visitPre(DocXRefItem *) = 0;
+    virtual void visitPost(DocXRefItem *) = 0;
+    virtual void visitPre(DocInternalRef *) = 0;
+    virtual void visitPost(DocInternalRef *) = 0;
 };
 
 #endif

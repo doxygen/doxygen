@@ -239,7 +239,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
   
   ol.startTextBlock();

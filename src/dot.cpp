@@ -394,7 +394,7 @@ void DotNode::writeBox(QTextStream &t,
   }
   else if (!m_url.isEmpty())
   {
-    t << ",URL=\"" << m_url << htmlFileExtension << "\"";
+    t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
   }
   t << "];" << endl; 
 }
@@ -1718,21 +1718,21 @@ void generateGraphLegend(const char *path)
   dotText << "{\n";
   dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
   dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPublicBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"red\",URL=\"$classTruncated" << htmlFileExtension << "\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classProtectedBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPrivateBase" << htmlFileExtension << "\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
   dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"grey75\"];\n";
   dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
+  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << htmlFileExtension << "\"];\n";
+  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classUsed" << htmlFileExtension << "\"];\n";
+  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
   dotText << "}\n";
   dotFile.close();
 

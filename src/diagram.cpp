@@ -166,7 +166,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
     {
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
-    t << cd->getOutputFileBase() << htmlFileExtension << "\" ";
+    t << cd->getOutputFileBase() << Doxygen::htmlFileExtension << "\" ";
     t << "alt=\"" << cd->displayName(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
     t << (x+w) << "," << (y+h) << "\">" << endl;

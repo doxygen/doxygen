@@ -178,7 +178,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension;
+        t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
         if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
         t << "\">";
         t << "<param name=\"Name\" value=\"" << level1 << "\">"
@@ -189,7 +189,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension << "\">";
+          t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension << "\">";
           t << "<param name=\"Name\" value=\"" << level1 << "\">"
                "</OBJECT>\n";
         }
@@ -215,7 +215,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
     if (level2Started)
     {
       t << "    <LI><OBJECT type=\"text/sitemap\">";
-      t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension;
+      t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
       if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
       t << "\">";
       t << "<param name=\"Name\" value=\"" << level2 << "\">"
@@ -385,8 +385,8 @@ void HtmlHelp::createProjectFile()
 
    
     
-    QCString indexName="index"+htmlFileExtension;
-    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+htmlFileExtension;
+    QCString indexName="index"+Doxygen::htmlFileExtension;
+    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
     if (!Config_getString("CHM_FILE").isEmpty())
     {
@@ -500,7 +500,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   cts << "<param name=\"Name\" value=\"" << name << "\">";
   if (ref)      // made ref optional param - KPW
   {
-    cts << "<param name=\"Local\" value=\"" << ref << htmlFileExtension;
+    cts << "<param name=\"Local\" value=\"" << ref << Doxygen::htmlFileExtension;
     if (anchor) cts << "#" << anchor;  
     cts << "\">";
   }

@@ -895,6 +895,10 @@ class XMLGenerator : public OutputDocInterface
     {
       XML_DB(("(endSectionRefList)\n"));
     }
+    void writeCodeAnchor(const char *anchor)
+    {
+      XML_DB(("(writeCodeAnchor(%s))\n",anchor));
+    }
     
     // Generator specific functions
     
@@ -1311,6 +1315,12 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
           writeXMLString(t,emd->initializer());
           t << "</initializer>" << endl;
         }
+        t << "          <briefdescription>" << endl;
+        writeXMLDocBlock(t,emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->briefDescription());
+        t << "          </briefdescription>" << endl;
+        t << "          <detaileddescription>" << endl;
+        writeXMLDocBlock(t,emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->documentation());
+        t << "          </detaileddescription>" << endl;
         t << "        </enumvalue>" << endl;
       }
     }

@@ -43,6 +43,9 @@ class HtmlGenerator : public OutputGenerator
     void disableIfNot(OutputType o) { if (o!=Html) active=FALSE; }
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
+
+    void printDoc(DocNode *);
+
     
     //void generateExternalIndex();
     void startFile(const char *name,const char *manName,
@@ -266,6 +269,9 @@ class HtmlGenerator : public OutputGenerator
 
     void startSectionRefList();
     void endSectionRefList();
+
+    void writeCodeAnchor(const char *anchor) 
+    { t << "<a name=\"" << anchor << "\"></a>"; }
 
   private:
     QCString lastTitle;
