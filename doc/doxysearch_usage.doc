@@ -131,7 +131,7 @@ This can be done by carefully following these steps:
     \par Note: 
        Doxytag requires quite a large amount of memory to
        generate the search index (about 30 MB on my Linux box)!
-       The resulting index file requires about 3 MB space on your disk.
+       The resulting index file requires about 3 MB of space on your disk.
 
 <li>Edit the shell script <code>search.cgi</code> with a text editor.
 

@@ -971,11 +971,11 @@ static void readIncludeFile(const QCString &inc)
       g_includeStack.push(fs);
       // set the scanner to the include file
 
-      // TODO: Enable this to deal with file changes due to 
+      // Deal with file changes due to 
       // #include's within { .. } blocks
-      //QCString lineStr;
-      //lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
-      //outputArray(lineStr.data(),lineStr.length());
+      QCString lineStr;
+      lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
+      outputArray(lineStr.data(),lineStr.length());
       
       //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
       preYYin=f;
@@ -1624,9 +1624,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(SkipCPPComment);
   					}
 <SkipCComment>"*/"			{
+  					  outputChar('*');outputChar('/');
 					  if (--g_commentCount<=0)
 					  {
-  					    outputChar('*');outputChar('/');
   					    BEGIN(g_lastCContext);  
 					  }
   					}
@@ -1803,11 +1803,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    setFileName(fs->fileName.copy());
 					    //fprintf(stderr,"######## FileName %s\n",g_yyFileName.data());
 					    
-                                            // TODO: Enable this to deal with file changes due to 
+                                            // Deal with file changes due to 
                                             // #include's within { .. } blocks
-                                            //QCString lineStr;
-                                            //lineStr.sprintf("# %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
-                                            //outputArray(lineStr.data(),lineStr.length());
+                                            QCString lineStr;
+                                            lineStr.sprintf("# %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
+                                            outputArray(lineStr.data(),lineStr.length());
 					    
 					    delete fs; fs=0;
 					  }

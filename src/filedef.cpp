@@ -122,7 +122,13 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
         !documentation().isEmpty())
     {
-      ol.newParagraph();
+      ol.pushGeneratorState();
+        ol.disable(OutputGenerator::Man);
+        ol.newParagraph();
+        ol.enableAll();
+        ol.disableAllBut(OutputGenerator::Man);
+        ol.writeString("\n\n");
+      ol.popGeneratorState();
     }
     if (!documentation().isEmpty())
     {

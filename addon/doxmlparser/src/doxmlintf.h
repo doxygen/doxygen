@@ -20,7 +20,7 @@
  *  \brief The interface to the object model provided by the XML parser 
  *         library.
  *
- *  To start using this library one calls createObjectModel and then
+ *  To start using this library one calls createObjectModel() and then
  *  uses the returned IDoxygen interface to read doxygen generated
  *  XML output and navigate through the information contained in it.
  *

@@ -657,6 +657,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	GetCallType
 %x	JavaImport
 %x	CSAccessorDecl
+%x	PreLineCtrl
 
 %%
 
@@ -1355,6 +1356,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindMembers>{B}*"#"{B}*"define"	{
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
+  					}
+<FindMembers>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
+                                          yyLineNr = atoi(&yytext[1]);
+  					  BEGIN( PreLineCtrl );
+  					}
+<PreLineCtrl>"\""[^\n\"]*"\""		{
+				          strncpy(yyFileName,stripQuotes(yytext),4096);	
+  					}
+<PreLineCtrl>.				{}
+<PreLineCtrl>\n				{
+  					  BEGIN(FindMembers);
   					}
 <SkipCPP>.
 <SkipCPP>\\[\r]*"\n"[\r]*		{ yyLineNr++ ; }
@@ -2587,6 +2599,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
+					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
+						!current->doc.isEmpty())
+					    {
+					      // copy documentation found inside the body
+					      // to the previous item
+					      previous->doc += current->doc;
+					      current->doc.resize(0);
+					    }
 					    previous->endBodyLine=yyLineNr;
 					    BEGIN( lastCurlyContext ) ;
 					  }
@@ -2943,16 +2963,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
-					  if (YY_START==ReadBody)
+  					  if (YY_START!=SkipCurly)
 					  {
-					    current->doc+="\n\n";
+					    current->doc.resize(0);
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					  }
-					  else
-					  {
-  					    current->doc.resize(0);
-					  }
-					  current->docLine = yyLineNr;
-					  current->docFile = yyFileName;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -2978,27 +2994,27 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
 					    tmpDocType=-1;
-					    if (YY_START==ReadBody)
+					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
+						YY_START==SkipCurly) // inside body
 					    {
 					      current->doc+="\n\n";
 					    }
 					    else
 					    {
   					      current->doc.resize(0);
+					      current->docLine = yyLineNr;
+					      current->docFile = yyFileName;
 					    }
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
 					    BEGIN( Doc );
 					  }
 					  else // Use the javadoc style
 					  {
-					    if (YY_START==ReadBody)
+					    if (!Config_getBool("HIDE_IN_BODY_DOCS") &&
+						YY_START==SkipCurly) // inside body
 					    {
 					      tmpDocType=-1;
 					      current->doc+="\n\n";
-					      lastDocContext = ReadBody;
-					      current->docLine = yyLineNr;
-					      current->docFile = yyFileName;
+					      lastDocContext = SkipCurly;
 					      BEGIN( Doc );
 					    }
 					    else
@@ -3014,10 +3030,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    }
 					  }
   					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"//!" { 
-  					  current->brief.resize(0);
-					  current->briefFile=yyFileName;
-					  current->briefLine=yyLineNr;
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases>"//!" { 
+                                          if (YY_START!=SkipCurly)
+					  {
+  					    current->brief.resize(0);
+					    current->briefFile=yyFileName;
+					    current->briefLine=yyLineNr;
+					  }
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -3030,10 +3049,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
 					  BEGIN( LineDoc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
-  					  current->brief.resize(0);
-					  current->briefFile=yyFileName;
-					  current->briefLine=yyLineNr;
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
+                                          if (YY_START!=SkipCurly)
+					  {
+  					    current->brief.resize(0);
+					    current->briefFile=yyFileName;
+					    current->briefLine=yyLineNr;
+					  }
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -4089,6 +4111,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else
 					  {
 					    current->brief += " "; 
+					    if (!current->doc.isEmpty())
+					    {
+					      current->doc += "<p>";
+					    }
   					    yyLineNr++ ; 
 					  }
 					}
@@ -4194,6 +4220,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <LineDoc>[\n\r]+{B}*"//"[!/]		{ lineCount(); }
 <LineDoc>\n				{ 
 					  yyLineNr++;  
+					  if (!Config_getBool("HIDE_IN_BODY_DOCS") &&
+					      lastDocContext==SkipCurly) // inside body
+					  {
+					    if (!previous->doc.isEmpty())
+					    {
+					      previous->doc+="<p>";
+					    }
+					    previous->doc += current->brief;
+					    current->brief.resize(0);
+					  }
 					  BEGIN( lastDocContext );
 					}
 <DefLineDoc>\n				{
@@ -4318,6 +4354,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   				          checkDocs();
   					  current->doc += "\n\n";
 					  //printf("End of docs at line %d\n",yyLineNr);
+					  if (lastDocContext==SkipCurly && Config_getBool("HIDE_IN_BODY_DOCS"))
+					  {
+					    current->doc.resize(0);
+					  }
   					  BEGIN( lastDocContext ); 
 					}
 <JavaDoc>"*/"				{ 

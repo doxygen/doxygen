@@ -319,7 +319,7 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
                          g_token->name=yytext;
 			 return TK_URL;
                        }
-<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9.-]+ {
+<St_Para>[a-z_A-Z0-9.-]+"@"[a-z_A-Z0-9-]+"."[a-z_A-Z0-9.-]+ {
                          g_token->name=yytext;
 			 return TK_URL;
                        }
@@ -383,7 +383,10 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 
 <St_Para,St_Text>{WORD1} |
 <St_Para,St_Text>{WORD2} { /* function call */ 
-                         g_token->name = yytext;
+                         if (yytext[0]=='%') // strip % if present
+			   g_token->name = &yytext[1];
+			 else
+                           g_token->name = yytext;
                          return TK_WORD;
 
 			 /* the following is dummy code to please the 
@@ -465,7 +468,10 @@ HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
                        }
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
-                         g_token->name = yytext;
+                         if (yytext[0]=='%') // strip % if present
+			   g_token->name = &yytext[1];
+			 else
+                           g_token->name = yytext;
 			 return TK_WORD;
                        }
 <St_TitleN>[ \t]+      {

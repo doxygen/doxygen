@@ -4556,7 +4556,7 @@ static void findMember(Entry *root,
                   warn_cont("%s ",md->typeString());
                 }
                 warn_cont("%s::%s%s\n",
-                    cd->name().data(),
+                    cd->qualifiedNameWithTemplateParameters().data(),
                     md->name().data(),md->argsString());
               }
             }
@@ -7806,6 +7806,7 @@ void generateOutput()
   msg("Generating group index...\n");
   writeGroupIndex(*outputList);
  
+
   //msg("Generating package index...\n");
   //generatePackageDocs();
 
@@ -7831,6 +7832,7 @@ void generateOutput()
   generateSearchIndex();
   
   msg("Generating style sheet...\n");
+  //printf("writing style info\n");
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
   outputList->parseText(

@@ -727,7 +727,13 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
     {
-      ol.newParagraph();
+      ol.pushGeneratorState();
+        ol.disable(OutputGenerator::Man);
+        ol.newParagraph();
+        ol.enableAll();
+        ol.disableAllBut(OutputGenerator::Man);
+        ol.writeString("\n\n");
+      ol.popGeneratorState();
     }
     // write documentation
     if (!documentation().isEmpty())
@@ -1032,14 +1038,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.endDotGraph(usageImplGraph);
       if (Config_getBool("GENERATE_LEGEND"))
       {
-        ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
         ol.startHtmlLink("graph_legend"+Doxygen::htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");
-        ol.popGeneratorState();
       }
       ol.popGeneratorState();
     }
@@ -1051,11 +1055,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
       /* && !Config_getBool("INLINE_INHERITED_MEMB") */
      )
   {
+    ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(m_memListFileName,0);
     ol.parseText(theTranslator->trListOfAllMembers());
     ol.endTextLink();
     ol.enableAll();
+    ol.popGeneratorState();
   }
 
   ol.endTextBlock();

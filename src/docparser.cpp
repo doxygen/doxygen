@@ -423,7 +423,11 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   NamespaceDef *nd=0;
   GroupDef     *gd=0;
   PageInfo     *pi=0;
-  bool found = getDefs(g_context.latin1(),name.latin1(),args,md,cd,fd,nd,gd,FALSE,0,TRUE);
+  bool found = getDefs(
+      g_context.find('.')==-1?g_context.latin1():"", // `find('.') is a hack to detect files
+      name.latin1(),
+      args.isEmpty()?0:args.latin1(),
+      md,cd,fd,nd,gd,FALSE,0,TRUE);
   if (found && md)
   {
     *pDoc=md->documentation();
@@ -4371,6 +4375,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     // pretty print the result
     PrintDocVisitor *v = new PrintDocVisitor;
     root->accept(v);
+    delete v;
   }
 
   checkUndocumentedParams();
@@ -4412,6 +4417,14 @@ DocNode *validatingParseText(const char *input)
   // build abstract syntax tree
   DocText *txt = new DocText;
   txt->parse();
+
+  if (Debug::isFlagSet(Debug::PrintTree))
+  {
+    // pretty print the result
+    PrintDocVisitor *v = new PrintDocVisitor;
+    txt->accept(v);
+    delete v;
+  }
 
   delete g_token;
 
