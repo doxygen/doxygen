@@ -66,6 +66,10 @@ class HtmlGenerator : public OutputGenerator
     void writeString(const char *text);
     void startIndexList();
     void endIndexList();
+    void startIndexKey();
+    void endIndexKey();
+    void startIndexValue();
+    void endIndexValue(const char *);
     void startItemList()  { t << "<ul>"  << endl; }
     void endItemList()    { t << "</ul>" << endl; }
     void startEnumList()  { t << "<ol>"  << endl; }
@@ -215,7 +219,7 @@ class HtmlGenerator : public OutputGenerator
     void startDescTableTitle()
     { t << "<tr><td valign=top><em>"; }
     void endDescTableTitle()
-    { t << endl << "</em>&nbsp;</td>"; }
+    { t << "</em>&nbsp;</td>"; }
     void startDescTableData()
     { t << "<td>" << endl; }
     void endDescTableData()

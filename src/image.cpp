@@ -250,7 +250,7 @@ void Image::writeString(int x,int y,const char *s,uchar fg)
   }
 }
 
-uint stringLength(const char *s) 
+uint Image::stringLength(const char *s) 
 {
   int w=0;
   if (s)

@@ -21,10 +21,11 @@
 
 #include "basehandler.h"
 #include "sectionhandler.h"
+#include "doxmlintf.h"
 
 class DocHandler;
 
-class CompoundHandler : public BaseHandler<CompoundHandler>
+class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 {
   public:
     virtual void startSection(const QXmlAttributes& attrib);
@@ -38,6 +39,13 @@ class CompoundHandler : public BaseHandler<CompoundHandler>
 
     CompoundHandler(IBaseHandler *parent);
     virtual ~CompoundHandler();
+
+    // ICompound
+    QString name() const { return m_name; }
+    QString id()   const { return m_id;   }
+    QString kind() const { return m_kind; }
+    QListIterator<ISection> getSectionIterator() const { return m_sections; }
+
   private:
     struct SuperClass
     {
@@ -57,9 +65,9 @@ class CompoundHandler : public BaseHandler<CompoundHandler>
       QString m_protection;
       QString m_virtualness;
     };
-    QList<SuperClass> m_superClasses;
-    QList<SubClass> m_subClasses;
-    QList<SectionHandler> m_sections;
+    QList<SuperClass>     m_superClasses;
+    QList<SubClass>       m_subClasses;
+    QList<ISection>       m_sections;
     IBaseHandler *m_parent;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;

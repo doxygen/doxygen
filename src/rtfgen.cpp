@@ -877,6 +877,7 @@ void RTFGenerator::startFile(const char *name,const char *,
 
 void RTFGenerator::endFile()
 {
+  DBG_RTF(t << "{\\comment endFile}\n")
   t << "}";
 
   endPlainFile();
@@ -1410,7 +1411,6 @@ void RTFGenerator::startItemList()
   t << "{";
   incrementIndentLevel();
   listItemInfo[m_listLevel].isEnum = FALSE;
-  //t << Rtf_Style_Reset << Rtf_BList_DepthStyle();
 }
 
 /*! end bullet list */
@@ -1421,9 +1421,6 @@ void RTFGenerator::endItemList()
   t << "}";
   decrementIndentLevel();
   m_omitParagraph=TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
-  //printf("RTFGenerator::endItemList() `%s'\n",styleStack.top());
-  //newParagraph();
 }
 
 /*! start enumeration list */
@@ -1558,6 +1555,39 @@ void RTFGenerator::writeStartAnnoItem(const char *,const char *f,
 void RTFGenerator::writeEndAnnoItem(const char *name)
 {
   DBG_RTF(t << "{\\comment (writeEndAnnoItem)}" << endl)
+  if (name)
+  {
+    t << "\\tab ";
+    WriteRTFReference(name);
+    t << endl;
+  }
+  else
+  {
+    t << endl;	
+  }
+  newParagraph();
+}
+
+void RTFGenerator::startIndexKey() 
+{ 
+  DBG_RTF(t << "{\\comment (startIndexKey)}" << endl)
+  t << "{\\b ";
+}
+
+void RTFGenerator::endIndexKey()
+{
+}
+
+void RTFGenerator::startIndexValue() 
+{ 
+  t << " (";
+}
+
+void RTFGenerator::endIndexValue(const char *name)
+{
+  DBG_RTF(t << "{\\comment (endIndexKey)}" << endl)
+  t << ")";
+  t << "} ";
   if (name)
   {
     t << "\\tab ";
@@ -1937,7 +1967,7 @@ void RTFGenerator::startDescList(SectionTypes)
 void RTFGenerator::endDescTitle()      
 { 
   DBG_RTF(t << "{\\comment (endDescTitle) }"    << endl)
-  endBold();
+  //endBold();
   newParagraph();
   //t << Rtf_Style_Reset << styleStack.top();
   incrementIndentLevel();
@@ -1948,6 +1978,7 @@ void RTFGenerator::startParamList(ParamListTypes)
 { 
   DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
   t << "{";
+  incrementIndentLevel();
   newParagraph();
 }
 
@@ -2182,6 +2213,7 @@ void RTFGenerator::endCodeFragment()
   //styleStack.pop();
   //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
   //t << Rtf_Style_Reset << styleStack.top() << endl;
+  DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
   t << "}" << endl;
   m_omitParagraph = TRUE;
 }
@@ -2382,8 +2414,8 @@ void RTFGenerator::startTextBlock(bool dense)
 void RTFGenerator::endTextBlock()
 {
   newParagraph();
-  t << "}" << endl;
   DBG_RTF(t << "{\\comment End TextBlock}" << endl)
+  t << "}" << endl;
   m_omitParagraph = TRUE;
 }
 
@@ -2395,12 +2427,14 @@ void RTFGenerator::newParagraph()
 
 void RTFGenerator::startMemberSubtitle()
 {
+  DBG_RTF(t << "{\\comment startMemberSubtitle}" << endl)
   t << "{" << endl;
   t << Rtf_Style_Reset << Rtf_CList_DepthStyle() << endl;
 }
 
 void RTFGenerator::endMemberSubtitle()
 {
+  DBG_RTF(t << "{\\comment endMemberSubtitle}" << endl)
   newParagraph();
   t << "}" << endl;
 }

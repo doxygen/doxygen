@@ -373,14 +373,147 @@ void ParameterListHandler::startParameterDescription(const QXmlAttributes& attri
 }
 
 //----------------------------------------------------------------------
+// LineBreakHandler
+//----------------------------------------------------------------------
+
+LineBreakHandler::LineBreakHandler(IBaseHandler *parent)
+  : DocNode(LineBreak), m_parent(parent)
+{
+}
+
+LineBreakHandler::~LineBreakHandler()
+{
+}
+
+void LineBreakHandler::startLineBreak(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  addEndHandler("linebreak",this,&LineBreakHandler::endLineBreak);
+  printf("Start linebreak\n");
+}
+
+void LineBreakHandler::endLineBreak()
+{
+  m_parent->setDelegate(0);
+  printf("End linebreak\n");
+}
+
+//----------------------------------------------------------------------
+// HRulerHandler
+//----------------------------------------------------------------------
+
+HRulerHandler::HRulerHandler(IBaseHandler *parent)
+  : DocNode(HRuler), m_parent(parent)
+{
+}
+
+HRulerHandler::~HRulerHandler()
+{
+}
+
+void HRulerHandler::startHRuler(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  addEndHandler("hruler",this,&HRulerHandler::endHRuler);
+  printf("Start hruler\n");
+}
+
+void HRulerHandler::endHRuler()
+{
+  m_parent->setDelegate(0);
+  printf("End hruler\n");
+}
+
+//----------------------------------------------------------------------
+// RefHandler
+//----------------------------------------------------------------------
+
+RefHandler::RefHandler(IBaseHandler *parent)
+  : DocNode(Ref), m_parent(parent)
+{
+}
+
+RefHandler::~RefHandler()
+{
+}
+
+void RefHandler::startRef(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  addEndHandler("ref",this,&RefHandler::endRef);
+  m_refId = attrib.value("idref");
+  m_anchor = attrib.value("anchor");
+  printf("Start ref refId=%s anchor=%s\n",m_refId.data(),m_anchor.data());
+  m_curString="";
+}
+
+void RefHandler::endRef()
+{
+  m_linkText = m_curString;
+  m_parent->setDelegate(0);
+  printf("End ref\n");
+}
+
+
+//----------------------------------------------------------------------
+// TitleHandler
+//----------------------------------------------------------------------
+
+TitleHandler::TitleHandler(IBaseHandler *parent)
+  : DocNode(Title), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  m_markupHandler = new MarkupHandler(m_children,m_curString);
+  setFallBackHandler(m_markupHandler);
+  addStartHandler("ref",this,&TitleHandler::startRef);
+}
+
+TitleHandler::~TitleHandler()
+{
+  delete m_markupHandler;
+}
+
+void TitleHandler::startTitle(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  addEndHandler("title",this,&TitleHandler::endTitle);
+  printf("Start title\n");
+  m_curString="";
+}
+
+void TitleHandler::endTitle()
+{
+  addTextNode();
+  m_parent->setDelegate(0);
+  printf("End title\n");
+}
+
+void TitleHandler::addTextNode()
+{
+  if (!m_curString.isEmpty())
+  {
+    m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
+    printf("addTextNode() text=\"%s\" markup=%x\n",
+        m_curString.data(),m_markupHandler->markup());
+    m_curString="";
+  }
+}
+
+void TitleHandler::startRef(const QXmlAttributes& attrib)
+{
+  RefHandler *ref = new RefHandler(this);
+  ref->startRef(attrib);
+  m_children.append(ref);
+}
+
+//----------------------------------------------------------------------
 // SimpleSectHandler
 //----------------------------------------------------------------------
 
 SimpleSectHandler::SimpleSectHandler(IBaseHandler *parent)
-  : DocNode(Para), m_parent(parent), m_paragraph(0)
+  : DocNode(Para), m_parent(parent), m_paragraph(0), m_title(0)
 {
   addStartHandler("title",this,&SimpleSectHandler::startTitle);
-  addEndHandler("title",this,&SimpleSectHandler::endTitle);
   addStartHandler("para",this,&SimpleSectHandler::startParagraph);
 }
 
@@ -402,24 +535,124 @@ void SimpleSectHandler::endSimpleSect()
   m_parent->setDelegate(0);
 }
 
-void SimpleSectHandler::startTitle(const QXmlAttributes& /*attrib*/)
+void SimpleSectHandler::startTitle(const QXmlAttributes& attrib)
 {
-  m_curString="";
+  ASSERT(m_title==0);
+  m_title = new TitleHandler(this);
+  m_title->startTitle(attrib);
 }
-
-void SimpleSectHandler::endTitle()
-{
-  printf("simpleSect title=\"%s\"\n",m_curString.data());
-  m_title = m_curString;
-  m_curString="";
-}
-
 
 void SimpleSectHandler::startParagraph(const QXmlAttributes& attrib)
 {
   ASSERT(m_paragraph==0);
   m_paragraph = new ParagraphHandler(this);
   m_paragraph->startParagraph(attrib);
+}
+
+//----------------------------------------------------------------------
+// VariableListEntryHandler
+//----------------------------------------------------------------------
+
+VariableListEntryHandler::VariableListEntryHandler(IBaseHandler *parent)
+   : DocNode(VariableListEntry), m_parent(parent), m_description(0)
+{
+  addStartHandler("term",this,&VariableListEntryHandler::startTerm);
+  addEndHandler("term",this,&VariableListEntryHandler::endTerm);
+  addStartHandler("para",this,&VariableListEntryHandler::startParagraph);
+}
+
+VariableListEntryHandler::~VariableListEntryHandler()
+{
+  delete m_description;
+}
+
+void VariableListEntryHandler::startVarListEntry(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start varlistentry\n");
+  addEndHandler("varlistentry",this,&VariableListEntryHandler::endVarListEntry);
+}
+
+void VariableListEntryHandler::endVarListEntry()
+{
+  m_parent->setDelegate(0);
+  printf("end varlistentry\n");
+}
+
+void VariableListEntryHandler::startListItem(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start listitem\n");
+  addEndHandler("listitem",this,&VariableListEntryHandler::endListItem);
+}
+
+void VariableListEntryHandler::endListItem()
+{
+  m_parent->setDelegate(0);
+  printf("end listitem\n");
+}
+
+void VariableListEntryHandler::startTerm(const QXmlAttributes& /*attrib*/)
+{
+  m_curString="";
+}
+
+void VariableListEntryHandler::endTerm()
+{
+  m_term = m_curString;
+  printf("term=%s\n",m_term.data());
+}
+
+void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
+{
+  ASSERT(m_description==0);
+  m_description = new ParagraphHandler(this);
+  m_description->startParagraph(attrib);
+}
+
+
+
+//----------------------------------------------------------------------
+// VariableListHandler
+//----------------------------------------------------------------------
+
+VariableListHandler::VariableListHandler(IBaseHandler *parent) 
+  : DocNode(VariableList), m_parent(parent)
+{
+  m_entries.setAutoDelete(TRUE);
+  addStartHandler("varlistentry",this,&VariableListHandler::startVarListEntry);
+  addStartHandler("listitem",this,&VariableListHandler::startListItem);
+}
+
+VariableListHandler::~VariableListHandler()
+{
+}
+
+void VariableListHandler::startVariableList(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start variablelist\n");
+  addEndHandler("variablelist",this,&VariableListHandler::endVariableList);
+}
+
+void VariableListHandler::endVariableList()
+{
+  printf("end variablelist\n");
+  m_parent->setDelegate(0);
+}
+
+void VariableListHandler::startVarListEntry(const QXmlAttributes& attrib)
+{
+  VariableListEntryHandler *vle = new VariableListEntryHandler(this);
+  vle->startVarListEntry(attrib);
+  m_curEntry = vle;
+  m_entries.append(vle);
+}
+
+void VariableListHandler::startListItem(const QXmlAttributes& attrib)
+{
+  ASSERT(m_curEntry!=0);
+  m_curEntry->startListItem(attrib);
 }
 
 //----------------------------------------------------------------------
@@ -440,6 +673,10 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("orderedlist",this,&ParagraphHandler::startOrderedList);
   addStartHandler("parameterlist",this,&ParagraphHandler::startParameterList);
   addStartHandler("simplesect",this,&ParagraphHandler::startSimpleSect);
+  addStartHandler("ref",this,&ParagraphHandler::startRef);
+  addStartHandler("variablelist",this,&ParagraphHandler::startVariableList);
+  addStartHandler("hruler",this,&ParagraphHandler::startHRuler);
+  addStartHandler("linebreak",this,&ParagraphHandler::startLineBreak);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -492,12 +729,40 @@ void ParagraphHandler::startSimpleSect(const QXmlAttributes& attrib)
   m_children.append(sectHandler);
 }
 
+void ParagraphHandler::startRef(const QXmlAttributes& attrib)
+{
+  RefHandler *ref = new RefHandler(this);
+  ref->startRef(attrib);
+  m_children.append(ref);
+}
+
+void ParagraphHandler::startVariableList(const QXmlAttributes& attrib)
+{
+  VariableListHandler *vl = new VariableListHandler(this);
+  vl->startVariableList(attrib);
+  m_children.append(vl);
+}
+
+void ParagraphHandler::startHRuler(const QXmlAttributes& attrib)
+{
+  HRulerHandler *hr = new HRulerHandler(this);
+  hr->startHRuler(attrib);
+  m_children.append(hr);
+}
+
+void ParagraphHandler::startLineBreak(const QXmlAttributes& attrib)
+{
+  LineBreakHandler *lb = new LineBreakHandler(this);
+  lb->startLineBreak(attrib);
+  m_children.append(lb);
+}
+
 void ParagraphHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
-    printf("addTextNode() text=%s markup=%x\n",
+    printf("addTextNode() text=\"%s\" markup=%x\n",
         m_curString.data(),m_markupHandler->markup());
     m_curString="";
   }

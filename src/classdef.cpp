@@ -700,6 +700,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   //printf("Class %s brief=`%s' doc=`%s'\n",name().data(),briefDescription().data(),documentation().data());
   
+  bool exampleFlag=hasExamples();
   // write brief description
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty())
@@ -710,7 +711,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
-    parseText(ol,theTranslator->trMore());
+    
+    if (Config_getBool("REPEAT_BRIEF") || 
+        !documentation().isEmpty() || 
+        exampleFlag
+       )
+    {
+      parseText(ol,theTranslator->trMore());
+    }
     ol.endTextLink();
     ol.popGeneratorState();
     ol.disable(OutputGenerator::Man);
@@ -1032,7 +1040,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.endMemberSections();
     
   // write detailed description
-  bool exampleFlag=hasExamples();
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
       /*(Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/

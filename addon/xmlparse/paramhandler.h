@@ -21,8 +21,9 @@
 #include <qxml.h>
 
 #include "basehandler.h"
+#include "doxmlintf.h"
 
-class ParamHandler : public BaseHandler<ParamHandler>
+class ParamHandler : public IParam, public BaseHandler<ParamHandler>
 {
   public:
     virtual void startParam(const QXmlAttributes& attrib);
@@ -36,6 +37,15 @@ class ParamHandler : public BaseHandler<ParamHandler>
 
     ParamHandler(IBaseHandler *parent);
     virtual ~ParamHandler();
+
+    // IParam
+    virtual QString type() const { return m_type; }
+    virtual QString declarationName() const { return m_declName; }
+    virtual QString definitionName() const { return m_defName; }
+    virtual QString attrib() const { return m_attrib; } 
+    virtual QString arraySpecifier() const { return m_array; }
+    virtual QString defaultValue() const { return m_defVal; }
+
   private:
     IBaseHandler *m_parent;
     QString m_type;

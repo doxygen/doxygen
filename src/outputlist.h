@@ -105,6 +105,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startIndexList); }
     void endIndexList() 
     { forall(&OutputGenerator::endIndexList); }
+    void startIndexKey()
+    { forall(&OutputGenerator::startIndexKey); }
+    void endIndexKey()
+    { forall(&OutputGenerator::endIndexKey); }
+    void startIndexValue()
+    { forall(&OutputGenerator::startIndexValue); }
+    void endIndexValue(const char *name)
+    { forall(&OutputGenerator::endIndexValue,name); }
     void startItemList() 
     { forall(&OutputGenerator::startItemList); }
     void endItemList() 

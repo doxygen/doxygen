@@ -63,6 +63,10 @@ class LatexGenerator : public OutputGenerator
     void writeString(const char *text);
     void startIndexList() { t << "\\begin{CompactList}"    << endl; }
     void endIndexList()   { t << "\\end{CompactList}"      << endl; }
+    void startIndexKey();
+    void endIndexKey();
+    void startIndexValue();
+    void endIndexValue(const char *);
     void startItemList()  { t << "\\begin{CompactItemize}" << endl; }
     void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
     void startEnumList()  { t << "\\begin{enumerate}"      << endl; }

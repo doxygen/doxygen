@@ -228,9 +228,10 @@ static void startCodeLine()
 }
 
 
+static void endFontClass();
 static void endCodeLine()
 {
-  if (g_currentFontClass) { g_code->endFontClass(); }
+  endFontClass();
   g_code->endCodeLine();
 }
 
@@ -1720,6 +1721,10 @@ void parseCode(OutputDocInterface &od,const char *className,const QCString &s,
   BEGIN( Body );
   codeYYlex();
   endFontClass();
+  if (g_inputLines==1)
+  {
+    g_code->endCodeLine();
+  }
   od.append(g_code);
   delete g_code;
   return;

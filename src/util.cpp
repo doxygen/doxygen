@@ -473,7 +473,7 @@ ClassDef *getResolvedClass(
   {
     // strip * and & from n
     int ip=subst.length()-1;
-    while (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
+    while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
     subst=subst.left(ip+1);
 
     if (pIsTypeDef) *pIsTypeDef=TRUE;

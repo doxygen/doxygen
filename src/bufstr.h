@@ -53,6 +53,14 @@ class BufStr : public QCString
       }
       offset+=s;
     }
+    void resize( uint newlen )
+    {
+      QCString::resize(newlen);
+      if (offset>newlen)
+      {
+        offset=newlen;
+      }
+    }
   private:
     uint offset;
     const int spareRoom; // 10Kb extra room to avoid frequent resizing

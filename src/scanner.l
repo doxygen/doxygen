@@ -235,12 +235,18 @@ static void lineCount()
 
 static void addType( Entry* current )
 {
-    if( current->type.length() )
-	current->type += ' ' ;
+    uint tl=current->type.length();
+    if( tl>0 && !current->name.isEmpty() && current->type.at(tl-1)!='.') 
+    {
+      current->type += ' ' ;
+    }
     current->type += current->name ;
     current->name.resize(0) ;
-    if( current->type.length() )
-	current->type += ' ' ;
+    tl=current->type.length();
+    if( tl>0 && !current->args.isEmpty() && current->type.at(tl-1)!='.') 
+    {
+      current->type += ' ' ;
+    }
     current->type += current->args ;
     current->args.resize(0) ;
     current->argList->clear();
@@ -443,6 +449,7 @@ UL        [uU][lL]
 OL	  [oO][lL]
 DL	  [dD][lL]
 TITLE     [tT][iI][tT][lL][eE]
+CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 %option noyywrap
 
@@ -531,7 +538,6 @@ TITLE     [tT][iI][tT][lL][eE]
 %x      FileDocArg2
 %x      ExampleDoc
 %x	ExampleDocArg1
-%x      EnumDoc
 %x	EnumDocArg1
 %x	FuncPtr
 %x	EndFuncPtr
@@ -633,9 +639,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN( FindMembers );
 					  }
 					}
-<NextSemi>"'"\\[0-7]{1,3}"'"            
-<NextSemi>"'"\\."'"                     
-<NextSemi>"'".{1,4}"'"                       
+<NextSemi>{CHARLIT}			
 <NextSemi>\"				{
   					  lastStringContext=NextSemi;
 					  BEGIN(SkipString);
@@ -1148,6 +1152,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					      BEGIN(FindMembers);
 					  }
 					}
+<FindMembers>"."			{
+  					  if (insideJava)
+					  {
+					    current->name+=".";
+					  }
+  					}
 <FindMembers>"::"			{
 					  current->name+=yytext;
   					}
@@ -1388,9 +1398,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  initializerSharpCount--;
   					  current->initializer+=*yytext; 
   					}
-<ReadInitializer>"'"\\[0-7]{1,3}"'"     |
-<ReadInitializer>"'"\\."'"              |
-<ReadInitializer>"'".{1,4}"'"           { current->initializer+=yytext; } 
+<ReadInitializer>{CHARLIT}              { current->initializer+=yytext; } 
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
 					  yyLineNr++;
@@ -1438,9 +1446,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  yyLineNr++;
   					  *pCopyRoundString+=*yytext;
   					}
-<CopyRound>"'"\\[0-7]{1,3}"'"           { *pCopyRoundString+=yytext; }
-<CopyRound>"'"\\."'"                    { *pCopyRoundString+=yytext; }
-<CopyRound>"'".{1,4}"'"                 { *pCopyRoundString+=yytext; }
+<CopyRound>{CHARLIT}		        { *pCopyRoundString+=yytext; }
 <CopyRound>[^"'()\n]+			{
   					  *pCopyRoundString+=yytext;
   					}
@@ -1461,9 +1467,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  if (--curlyCount<0)
 					    BEGIN(lastCurlyContext); 
   					}
-<CopyCurly>"'"\\[0-7]{1,3}"'"           { *pCopyCurlyString+=yytext; }
-<CopyCurly>"'"\\."'"                    { *pCopyCurlyString+=yytext; }
-<CopyCurly>"'".{1,4}"'"                 { *pCopyCurlyString+=yytext; }
+<CopyCurly>{CHARLIT}                    { *pCopyCurlyString+=yytext; }
 <CopyCurly>[^"'{}\/\n]+			{
   					  *pCopyCurlyString+=yytext;
   					}
@@ -1623,9 +1627,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody>"'"\\[0-7]{1,3}"'"            { current->program += yytext; }
-<ReadBody>"'"\\."'"                     { current->program += yytext; }
-<ReadBody>"'".{1,4}"'"                  { current->program += yytext; }
+<ReadBody>{CHARLIT}                     { current->program += yytext; }
 <ReadBody>"{"				{ current->program += yytext ;
 					  ++curlyCount ;
 					}
@@ -2052,15 +2054,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  fullArgString+=*yytext;
 					  BEGIN( lastCopyArgStringContext );
   					}
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\[0-7]{1,3}"'" { 
-                                          *copyArgString+=yytext; 
-                                          fullArgString+=yytext; 
-					}
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\."'"   { 
-  					  *copyArgString+=yytext; 
-  					  fullArgString+=yytext; 
-					}
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'".{1,4}"'"     { 
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>{CHARLIT}     { 
   					  *copyArgString+=yytext; 
   					  fullArgString+=yytext; 
 					}
@@ -2294,13 +2288,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current = tempEntry;
   					  BEGIN( lastCurlyContext );
   					}
-<SkipCurly>"'"\\[0-7]{1,3}"'"           {
-  				          //addToBody(yytext);
-  					}
-<SkipCurly>"'"\\."'"                    {
-  				          //addToBody(yytext);
-  					}
-<SkipCurly>"'".{1,4}"'"                      {
+<SkipCurly>{CHARLIT}                    {
   				          //addToBody(yytext);
   					}
 <SkipCurly>\"			        { 
@@ -3320,6 +3308,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->doc += "\\section "+sectionLabel+"\n";
 					  addSection();
 					  BEGIN(PageDoc);
+  					}
+<SectionTitle>[^\n*]*			{
+  					  sectionTitle+=yytext;
   					}
 <SectionTitle>"*"			{
   					  sectionTitle+=yytext;

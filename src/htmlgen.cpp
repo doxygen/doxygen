@@ -49,8 +49,8 @@ static const char *defaultStyleSheet =
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
       "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
       "TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
-      "TD.mdname1 { background-color: #f2f2ff; font-weight: bold; font-style: italic; }\n"
-      "TD.mdname { background-color: #f2f2ff; font-weight: bold; font-style: italic; width: 600px; }\n"
+      "TD.mdname1 { background-color: #f2f2ff; font-weight: bold; color: #602020; }\n"
+      "TD.mdname { background-color: #f2f2ff; font-weight: bold; color: #602020; width: 600px; }\n"
       "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
       "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
       "FONT.keyword       { color: #008000 }\n"
@@ -801,21 +801,32 @@ void HtmlGenerator::endMemberSubtitle()
 
 void HtmlGenerator::startIndexList() 
 { 
-  t << "<ul>"  << endl; 
-  //if (Config_getBool("GENERATE_HTMLHELP"))
-  //{
-  //  if (htmlHelp->depth()==0) htmlHelp->addItem(lastTitle,lastFile);
-  //  htmlHelp->incDepth();
-  //}
+  t << "<table>"  << endl; 
 }
 
 void HtmlGenerator::endIndexList()
 {
-  t << "</ul>" << endl;
-  //if (Config_getBool("GENERATE_HTMLHELP"))
-  //{
-  //  htmlHelp->decDepth();
-  //}
+  t << "</table>" << endl;
+}
+
+void HtmlGenerator::startIndexKey() 
+{ 
+  t << "  <tr bgcolor=\"#f0f0f0\"><td>"; 
+}
+
+void HtmlGenerator::endIndexKey()
+{
+  t << "</td>";
+}
+
+void HtmlGenerator::startIndexValue() 
+{ 
+  t << "<td>"; 
+}
+
+void HtmlGenerator::endIndexValue(const char *)
+{
+  t << "</td></tr>" << endl;
 }
 
 void HtmlGenerator::startAlphabeticalIndexList()

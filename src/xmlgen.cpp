@@ -296,7 +296,6 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCodeFragment()   
     { 
-      startParMode();
       m_t << "<programlisting>";
     }
     void endCodeFragment()     
@@ -305,7 +304,6 @@ class XMLGenerator : public OutputDocInterface
     }
     void startPreFragment()    
     { 
-      startParMode();
       m_t << "<programlisting>";
     }
     void endPreFragment()      
@@ -416,11 +414,10 @@ class XMLGenerator : public OutputDocInterface
       int i;for (i=0;i<num;i++) m_t << "&nbsp;"; 
     }
     
-    //// TODO: translate these as well....
-
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor, const char *text) 
     {
+      startParMode();
       writeXMLLink(m_t,ref,file,anchor,text);
     }
     void writeCodeLink(const char *ref,const char *file,
@@ -748,13 +745,15 @@ void writeXMLDocBlock(QTextStream &t,
                       const QCString &name,
                       const QCString &text)
 {
+  if (text.stripWhiteSpace().isEmpty()) return;
   XMLGenerator *xmlGen = new XMLGenerator;
+  xmlGen->startParMode();
   parseDoc(*xmlGen,
            fileName, // input definition file
            lineNr,   // input definition line
            scope,    // scope (which should not be linked to)
            name,     // member (which should not be linked to)
-           text      // actual text
+           text+"\n" // actual text
           );
   xmlGen->endParMode();
   t << xmlGen->getContents();
@@ -979,6 +978,7 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
   // + standard member sections
   // + detailed member documentation
   
+  if (cd->isReference()) return; // skip external references.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0) return; // skip generated template instances.
   t << "  <compounddef id=\"" 
@@ -989,7 +989,6 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
   t << "</compoundname>" << endl;
   if (cd->baseClasses()->count()>0)
   {
-    //t << "      <basecompoundlist>" << endl;
     BaseClassListIterator bcli(*cd->baseClasses());
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
@@ -1012,11 +1011,9 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
       }
       t << "\"/>" << endl;
     }
-    //t << "      </basecompoundlist>" << endl;
   }
   if (cd->subClasses()->count()>0)
   {
-    //t << "      <derivedcompoundlist>" << endl;
     BaseClassListIterator bcli(*cd->subClasses());
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
@@ -1039,7 +1036,6 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
       }
       t << "\"/>" << endl;
     }
-    //t << "      </derivedcompoundlist>" << endl;
   }
   int numMembers = 
     cd->pubTypes.count()+cd->pubMembers.count()+cd->pubAttribs.count()+
@@ -1120,6 +1116,7 @@ void generateXMLFileSection(FileDef *fd,QTextStream &t,MemberList *ml,const char
 
 void generateXMLForFile(FileDef *fd,QTextStream &t)
 {
+  if (fd->isReference()) return; // skip external references
   t << "  <compounddef id=\"" 
     << fd->getOutputFileBase() << "\" kind=\"file\">" << endl;
   t << "    <compoundname>";

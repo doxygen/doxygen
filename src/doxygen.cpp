@@ -1281,13 +1281,14 @@ static MemberDef *addVariableToClass(
 {
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
-      "    %s' %s'::`%s' `%s' prot=`%d ann=%d\n",
+      "    %s' %s'::`%s' `%s' prot=`%d ann=%d init=%s\n",
       root->type.data(),
       scope.data(), 
       name.data(),
       root->args.data(),
       root->protection,
-      fromAnnScope
+      fromAnnScope,
+      root->initializer.data()
               );
 
   // class friends may be templatized
@@ -6132,6 +6133,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   for (i=0;i<size;i++,p++) *p=conv[*p];
   // and translate CR's
   int newSize=filterCRLF(dest.data()+oldPos,size);
+  //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {
     dest.resize(newSize); // resize the array

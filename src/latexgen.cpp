@@ -906,6 +906,26 @@ void LatexGenerator::writeEndAnnoItem(const char *name)
   t << "}{\\pageref{" << name << "}}{}" << endl;
 }
 
+void LatexGenerator::startIndexKey()
+{
+  t << "\\item\\contentsline{section}{";
+}
+
+void LatexGenerator::endIndexKey()
+{
+}
+
+void LatexGenerator::startIndexValue()
+{
+  t << " (";
+}
+
+void LatexGenerator::endIndexValue(const char *name)
+{
+  t << ")";
+  t << "}{\\pageref{" << name << "}}{}" << endl;
+}
+
 //void LatexGenerator::writeClassLink(const char *,const char *,
 //                                    const char *,const char *name)
 //{
@@ -1530,7 +1550,7 @@ void LatexGenerator::startImage(const char *name,const char *size,bool hasCaptio
 {
   if (hasCaption)
   {
-    t << "\\begin{figure}[h]" << endl;
+    t << "\\begin{figure}[H]" << endl;
     t << "\\begin{center}" << endl;
   }
   else
