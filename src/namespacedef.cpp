@@ -44,7 +44,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   }
   classSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
-  m_innerCompounds = new SDict<Definition>(257);
+  m_innerCompounds = new SDict<Definition>(17);
   usingDirList = 0;
   usingDeclList = 0;
   setReference(lref);
@@ -283,6 +283,10 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     pageTitle = theTranslator->trNamespaceReference(displayName());
   }
   startFile(ol,getOutputFileBase(),name(),pageTitle);
+  if (getOuterScope()!=Doxygen::globalScope)
+  {
+    writeNavigationPath(ol);
+  }
   startTitle(ol,getOutputFileBase());
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
@@ -330,7 +334,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.endTextBlock();
   
   ol.startMemberSections();
-  classSDict->writeDeclaration(ol);
+  classSDict->writeDeclaration(ol,0,0,TRUE);
+
+  namespaceSDict->writeDeclaration(ol,TRUE);
 
   /* write user defined member groups */
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
@@ -506,5 +512,61 @@ void NamespaceDef::combineUsingRelations()
       }
     }
   }
+}
+
+void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
+{
+  if (count()==0) return;
+  // write list of namespaces
+  ol.startMemberHeader();
+  bool javaOpt = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  if (javaOpt)
+  {
+    ol.parseText(theTranslator->trPackages());
+  }
+  else
+  {
+    ol.parseText(theTranslator->trNamespaces());
+  }
+  ol.endMemberHeader();
+  ol.startMemberList();
+  SDict<NamespaceDef>::Iterator ni(*this);
+  NamespaceDef *nd;
+  for (ni.toFirst();(nd=ni.current());++ni)
+  {
+    ol.startMemberItem(0);
+    if (javaOpt)
+    {
+      ol.docify("package ");
+    }
+    else
+    {
+      ol.docify("namespace ");
+    }
+    ol.insertMemberAlign();
+    QCString name;
+    if (localName)
+    {
+      name = nd->localName();
+    }
+    else
+    {
+      name = nd->displayName();
+    }
+    ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,name);
+    if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+    {
+      Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+    }
+    ol.endMemberItem();
+    if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+    {
+      ol.startMemberDescription();
+      ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE);
+      ol.endMemberDescription();
+      ol.newParagraph();
+    }
+  }
+  ol.endMemberList();
 }
 

@@ -2602,6 +2602,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
 {
   QCString type = arg->type;
   QCString name = arg->name;
+  printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
   if ((type=="const" || type=="volatile") && !name.isEmpty()) 
   { // name is part of type => correct
     type+=" ";
@@ -2623,27 +2624,37 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   else if (type.left(5)=="enum ")     type=type.right(type.length()-5);
   else if (type.left(9)=="typename ") type=type.right(type.length()-9);
 
-  static QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
+  static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
 
   
   QCString canType;
   int i,p=0,l;
-  while ((i=id.match(type,p,&l))) // foreach identifier in the type
+  while ((i=id.match(type,p,&l))!=-1) // foreach identifier in the type
   {
     canType += type.mid(p,i-p);
     QCString word = type.mid(i,l);
     ClassDef *cd = getResolvedClass(d,fs,word);
+    printf("word %s => %s\n",word.data(),cd?cd->qualifiedName().data():"<none>");
     if (cd)
     {
       canType+=cd->qualifiedName();
     }
     else
     {
-      canType+=word;
+      QCString resolvedType = resolveTypeDef(d,word);
+      if (resolvedType.isEmpty())
+      {
+        canType+=word;
+      }
+      else
+      {
+        canType+=resolvedType;
+      }
     }
     p=i+l;
   }
   canType += type.right(type.length()-p);
+  printf("result = %s\n",canType.data());
  
   return removeRedundantWhiteSpace(canType);
 }

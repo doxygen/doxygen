@@ -2539,7 +2539,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       numSubItems += gd->docFuncMembers.count();
       numSubItems += gd->docVarMembers.count();
       numSubItems += gd->docProtoMembers.count();
-      numSubItems += gd->namespaceList->count();
+      numSubItems += gd->namespaceSDict->count();
       numSubItems += gd->classSDict->count();
       numSubItems += gd->fileList->count();
       numSubItems += gd->exampleDict->count();
@@ -2676,8 +2676,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       }
 
       // write namespaces
-      NamespaceList *namespaceList=gd->namespaceList;
-      if (namespaceList->count()>0)
+      NamespaceSDict *namespaceSDict=gd->namespaceSDict;
+      if (namespaceSDict->count()>0)
       {
         if (htmlHelp)
         {
@@ -2692,8 +2692,9 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           ftvHelp->incContentsDepth();
         }
 
-        NamespaceDef *nsd=namespaceList->first();
-        while (nsd)
+        NamespaceSDict::Iterator ni(*namespaceSDict);
+        NamespaceDef *nsd;
+        for (ni.toFirst();(nsd=ni.current());++ni)
         {
           if (htmlHelp)
           {
@@ -2703,7 +2704,6 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           {
             ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name()));
           }
-          nsd=namespaceList->next();
         }
         if (htmlHelp) htmlHelp->decContentsDepth();
         if (ftvHelp)  ftvHelp->decContentsDepth();

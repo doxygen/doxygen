@@ -24,6 +24,7 @@
 
 #include <qstack.h>
 #include <qregexp.h>
+#include <qtextstream.h>
 
 #include "bufstr.h"
 #include "debug.h"
@@ -31,6 +32,10 @@
 #include "config.h"
 #include "doxygen.h"
 
+
+#define ADDCHAR(c)    g_outBuf->addChar(c)
+#define ADDARRAY(a,s) g_outBuf->addArray(a,s)
+  
 struct CondCtx
 {
   CondCtx(int line,QCString id,bool b) 
@@ -60,18 +65,18 @@ static void replaceCommentMarker(const char *s,int len)
   // copy blanks
   while ((c=*p) && (c==' ' || c=='\t' || c=='\n')) 
   {
-    g_outBuf->addChar(c);
+    ADDCHAR(c);
     g_lineNr += c=='\n';
     p++;
   }
   // replace start of comment marker by spaces
   while ((c=*p) && (c=='/' || c=='!' || c=='#')) 
   {
-    g_outBuf->addChar(' ');
+    ADDCHAR(' ');
     p++;
     if (*p=='<') // comment-after-item marker 
     { 
-      g_outBuf->addChar(' '); 
+      ADDCHAR(' '); 
       p++; 
     }
     if (c=='!') // end after first !
@@ -80,7 +85,7 @@ static void replaceCommentMarker(const char *s,int len)
     }
   }
   // copy comment line to output
-  g_outBuf->addArray(p,len-(p-s));
+  ADDARRAY(p,len-(p-s));
 }
 
 static inline int computeIndent(const char *s)
@@ -107,14 +112,14 @@ static inline void copyToOutput(const char *s,int len)
     {
       if (s[i]=='\n') 
       {
-	g_outBuf->addChar('\n');
+	ADDCHAR('\n');
 	g_lineNr++;
       }
     }
   }
   else
   {
-    g_outBuf->addArray(s,len);
+    ADDARRAY(s,len);
     static int tabSize=Config_getInt("TAB_SIZE");
     for (i=0;i<len;i++) 
     {
@@ -392,8 +397,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     if (YY_START==CComment && oldSkip && !g_skip) 
     			             {
 				       //printf("** Adding start of comment!\n");
- 				       g_outBuf->addChar('/');
-     				       g_outBuf->addChar('*');
+ 				       ADDCHAR('/');
+     				       ADDCHAR('*');
     				     }
 				    }
 <CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]* {
@@ -402,8 +407,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     if (g_condCtx==CComment && !oldSkip && g_skip) 
     			             {
 				       //printf("** Adding terminator for comment!\n");
- 				       g_outBuf->addChar('*');
-     				       g_outBuf->addChar('/');
+ 				       ADDCHAR('*');
+     				       ADDCHAR('/');
     				     }
   				     BEGIN(g_condCtx);
   				   }
@@ -483,6 +488,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   }
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
+    g_outBuf->at(g_outBuf->curPos())='\0';
     msg("-------------\n%s\n-------------\n",g_outBuf->data());
   }
 }

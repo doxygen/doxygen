@@ -123,4 +123,7 @@ void readConfiguration(int argc, char **argv);
 void parseInput();
 void generateOutput();
 
+#undef USE_TMP_FILE
+//#define USE_TMP_FILE 
+
 #endif

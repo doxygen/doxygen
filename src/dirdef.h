@@ -51,8 +51,8 @@ class DirDef : public Definition
     // accessors
     virtual DefType definitionType() { return TypeDir; }
     virtual QCString getOutputFileBase() const;
-    virtual bool isLinkableInProject() const { return !isReference() && hasDocumentation(); }
-    virtual bool isLinkable() const { return isReference() || isLinkableInProject(); }
+    virtual bool isLinkableInProject() const;
+    virtual bool isLinkable() const;
     QCString displayName() const { return m_dispName; }
     QCString shortName() const { return m_shortName; }
     void addSubDir(DirDef *subdir);
@@ -70,9 +70,9 @@ class DirDef : public Definition
     // generate output
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
-    void writeNavigationPath(OutputList &ol);
     void writeDepGraph(QTextStream &t);
-    void writePathFragment(OutputList &ol) const;
+    //void writePathFragment(OutputList &ol) const;
+    //void writeNavigationPath(OutputList &ol);
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;

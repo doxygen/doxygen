@@ -522,7 +522,7 @@ class TranslatorGerman : public Translator
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "Dokumentation der benutzerdefinerten Typen"; }
+    { return "Dokumentation der benutzerdefinierten Typen"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
@@ -1662,7 +1662,7 @@ class TranslatorGerman : public Translator
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { QCString result=dirName; result+=" Verzeichnisreferenz"; return result; }
+    { QCString result=dirName; result+="-Verzeichnisreferenz"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).

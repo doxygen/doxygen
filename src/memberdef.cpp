@@ -1582,7 +1582,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.docify(a->name);
         ol.endDescTableTitle();
         ol.startDescTableData();
-        ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,a->docs+"\n",TRUE,FALSE);
+        ol.parseDoc(docFile(),docLine(),
+                    getOuterScope()?getOuterScope():container,
+                    this,
+                    a->docs+"\n", // docStr
+                    TRUE,         // indexWords
+                    FALSE,        // isExample
+                    0,            // exampleName
+                    FALSE,        // singleLine
+                    TRUE          // isParam
+                   );
         ol.endDescTableData();
       }
     }

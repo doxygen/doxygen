@@ -30,6 +30,7 @@
 #include <qstack.h>
 #include <qregexp.h>
 #include <unistd.h>
+#include <qfile.h>
   
 #include "scanner.h"
 #include "entry.h"
@@ -54,6 +55,7 @@
  */
 static const char *     inputString;
 static int		inputPosition;
+static QFile            inputFile;
 static int		lastContext;
 static int		lastCContext;
 static int              lastDocContext;
@@ -169,6 +171,7 @@ static QCString         g_skipBlockName;
 static QCString         oldStyleArgType;
 static QCString         docBackup;
 static QCString         briefBackup;
+static bool             g_inputFromFile;
 
 
 //-----------------------------------------------------------------------------
@@ -644,11 +647,21 @@ static void addKnRArgInfo(const QCString &type,const QCString &name,
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-    while( c < max_size && inputString[inputPosition] )
+#ifdef USE_TMP_FILE
+    if (g_inputFromFile)
     {
+       c = inputFile.readBlock(buf,max_size);
+       if (c==-1) yy_fatal_error("input in flex scanner failed");
+    }
+    else
+#endif
+    {
+      while( c < max_size && inputString[inputPosition] )
+      {
 	*buf = inputString[inputPosition++] ;
 	//printf("%d (%c)\n",*buf,*buf);
 	c++; buf++;
+      }
     }
     return c;
 }
@@ -5925,6 +5938,7 @@ static void newDocState()
 static void parseCompounds(Entry *rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
+  g_inputFromFile = FALSE;
   EntryListIterator eli(*rt->sublist);
   Entry *ce;
   for (;(ce=eli.current());++eli)
@@ -6019,10 +6033,55 @@ static void parseCompounds(Entry *rt)
 }
 
 //----------------------------------------------------------------------------
+#ifdef USE_TMP_FILE
+
+void parseMain(Entry *rt,const char *fileName)
+{
+  initParser();
+  g_inputFromFile = TRUE;
+  anonCount     = 0;
+  depthIf       = 0;
+  protection    = Public;
+  mtype         = Method;
+  gstat         = FALSE;
+  virt          = Normal;
+  current_root  = rt;
+  global_root   = rt;
+  inputFile.setName(fileName);
+  if (inputFile.open(IO_ReadOnly))
+  {
+    current       = new Entry;
+    inputPosition = 0;
+    scanYYrestart( scanYYin );
+    BEGIN( FindMembers );
+    scanYYlex();
+    if (YY_START==Comment)
+    {
+      warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+    }
+
+    forceEndGroup();
+
+    if (depthIf>0)
+    {
+      warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+    }
+
+    rt->program.resize(0);
+    delete current; current=0;
+
+    parseCompounds(rt);
+
+    inputFile.close();
+  }
+}
+
+#else
 
 void parseMain(Entry *rt)
 {
   initParser();
+  g_inputFromFile = FALSE;
   anonCount     = 0;
   depthIf       = 0;
   protection    = Public;
@@ -6053,6 +6112,10 @@ void parseMain(Entry *rt)
   delete current; current=0;
   parseCompounds(rt);
 }
+
+#endif
+
+//----------------------------------------------------------------------------
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
