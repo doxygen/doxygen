@@ -170,7 +170,8 @@ class ManGenerator : public OutputGenerator
     void endDescTitle();
     void writeDescItem();
     void endDescList()        {}
-    void writeSection(const char *,const char *,bool) {}
+    void startSection(const char *,const char *,bool) {}
+    void endSection(const char *,bool) {}
     void writeSectionRef(const char *,const char *,const char *) {}
     void writeSectionRefItem(const char *,const char *,const char *) {}
     void writeSectionRefAnchor(const char *,const char *,const char *) {}

@@ -309,7 +309,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup") 
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly") 
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -1901,7 +1901,10 @@ TITLE     [tT][iI][tT][lL][eE]
 <Function>"#"				{ lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}	
-<Function>[:;{]				{ 
+<Function>":"				{
+  					  BEGIN(SkipInits);
+  					}
+<Function>[;{]				{ 
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
@@ -1983,11 +1986,11 @@ TITLE     [tT][iI][tT][lL][eE]
 					    curlyCount=0;
 					    BEGIN( SkipCurly ) ;
 					  }
-					  else if( *yytext == ':' )
-					  {
-					    //addToBody(yytext);
-					    BEGIN( SkipInits ) ;
-					  }
+					  //else if( *yytext == ':' )
+					  //{
+					  //  //addToBody(yytext);
+					  //  BEGIN( SkipInits ) ;
+					  //}
 					  else
 					  {
 					    if (previous->section!=Entry::VARIABLE_SEC)
@@ -1998,9 +2001,11 @@ TITLE     [tT][iI][tT][lL][eE]
 
 <SkipInits>"{"				{ 
   				          //addToBody(yytext);
-  				          lastCurlyContext = FindMembers;
-					  curlyCount=0;
-  					  BEGIN( SkipCurly ) ; 
+  				          //lastCurlyContext = FindMembers;
+					  //curlyCount=0;
+  					  //BEGIN( SkipCurly ) ; 
+  					  unput('{');
+					  BEGIN( Function );
 					}
 <SkipCurly>"{"				{ 
   				          //addToBody(yytext);
@@ -2186,7 +2191,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
-					  if (current->section == Entry::INTERFACE_SEC)
+					  if (current->section == Entry::INTERFACE_SEC || current->section == Entry::STRUCT_SEC)
 					    baseProt=Public;
 					  else  
 					    baseProt=Private;
@@ -2311,7 +2316,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
@@ -2324,7 +2329,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->inside = current_root->name+"::";
 					  BEGIN( Doc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)

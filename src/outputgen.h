@@ -170,7 +170,8 @@ class OutputGenerator
     virtual void endDescTitle() = 0;
     virtual void writeDescItem() = 0;
     virtual void endDescList() = 0;
-    virtual void writeSection(const char *,const char *,bool) = 0;
+    virtual void startSection(const char *,const char *,bool) = 0;
+    virtual void endSection(const char *,bool) = 0;
     virtual void writeSectionRef(const char *,const char *,const char *) = 0;
     virtual void writeSectionRefItem(const char *,const char *,const char *) = 0;
     virtual void writeSectionRefAnchor(const char *,const char *,const char *) = 0;

@@ -180,7 +180,8 @@ class LatexGenerator : public OutputGenerator
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
-    void writeSection(const char *,const char *,bool);
+    void startSection(const char *,const char *,bool);
+    void endSection(const char *,bool);
     void writeSectionRef(const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
     void writeSectionRefAnchor(const char *,const char *,const char *);

@@ -449,11 +449,14 @@ void HtmlGenerator::endGroupHeader()
   t << "</h2>" << endl;
 }
 
-void HtmlGenerator::writeSection(const char *lab,const char *title,bool sub)
+void HtmlGenerator::startSection(const char *lab,const char *,bool sub)
 {
   t << "<a name=\"" << lab << "\">";
   if (sub) t << "<h3>"; else t << "<h2>";
-  docify(title);
+}
+
+void HtmlGenerator::endSection(const char *,bool sub)
+{
   if (sub) t << "</h3>"; else t << "</h2>";
   t << "</a>" << endl;
 }

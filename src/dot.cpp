@@ -844,7 +844,11 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
-    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->templSpecifiers,base); 
+    //printf("addClass: base=%s this=%s templ=%s\n",bcd->classDef->name().data(),
+    //                                     cd->name().data(),bcd->templSpecifiers.data());
+    QCString templSpec;
+    if (base) templSpec = bcd->templSpecifiers;
+    addClass(bcd->classDef,n,bcd->prot,0,distance,templSpec,base); 
   }
   if (m_graphType != Inheritance)
   {
