@@ -50,7 +50,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 /*! Count the number of members in this list that are visible in
  *  the declaration part of a compound's documentation page.
  */
-void MemberList::countDecMembers(/*bool inGroup,bool countSubGroups,bool sectionPerType*/)
+void MemberList::countDecMembers()
 {
   if (m_numDecMembers!=-1) return; 
   
@@ -85,7 +85,8 @@ void MemberList::countDecMembers(/*bool inGroup,bool countSubGroups,bool section
                                          md->hasDocumentation() 
                                         ) m_defCnt++,m_numDecMembers++;     
                                      break;
-        case MemberDef::Friend:      m_friendCnt++,m_numDecMembers++;  break;
+        case MemberDef::Friend:      m_friendCnt++,m_numDecMembers++;  
+                                     break;
         default:
           err("Error: Unknown member type found for member `%s'\n!",md->name().data());
       }
@@ -347,14 +348,17 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       }
       case MemberDef::Friend:
       {
+#if 0
         //printf("Writing friend `%s'\n",md->name().data());
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
         bool isFriendClass = type=="friend class";
         if (!isFriendClass)
         {
+#endif
           if (first) ol.startMemberList(),first=FALSE;
           md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+#if 0
         }
         else // isFriendClass
              // friend is undocumented as a member but it is a class, 
@@ -391,6 +395,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.endMemberItem(FALSE);
           }
         }
+#endif
         break;
       }
       case MemberDef::EnumValue: 
@@ -441,10 +446,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    if (m_inGroup)
-      parseDoc(ol,"<generated>",1,0,0,subtitle);
-    else
-      parseText(ol,subtitle);
+    parseDoc(ol,"<generated>",1,0,0,subtitle);
     ol.endMemberSubtitle();
   }
 

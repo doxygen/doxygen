@@ -101,8 +101,8 @@ when the translator was updated.
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>French</TD>  
-      <TD>Christophe Bordeux</TD>
-      <TD>bordeux@NOSPAM.lig.di.epfl.ch</TD>
+      <TD>Xavier Outhier</TD>
+      <TD>xavier.outhier@NOSPAM.anfdata.cz</TD>
       <TD>1.2.0</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -217,7 +217,7 @@ when the translator was updated.
   \hline
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & 1.0.0 \\
   \hline
-  French & Christophe Bordeux & {\tt bordeux@lig.di.epfl.ch} & 1.2.0 \\
+  French & Xavier Outhier & {\tt xavier.outhier@anfdata.cz} & 1.2.0 \\
   \hline
   German & Jens Seidel & {\tt jensseidel@users.sourceforge.net} & up-to-date \\
    & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} &  \\

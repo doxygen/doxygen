@@ -121,50 +121,42 @@ struct TagInfo
   QCString anchor;
 };
 
-struct Grouping {
-    typedef enum {
-	GROUPING_LOWEST,
-	GROUPING_AUTO_WEAK =
-	   GROUPING_LOWEST,   //!< membership in group was defined via @weakgroup @{ @}
-	GROUPING_AUTO_ADD,    //!< membership in group was defined via @add[to]group @{ @}
-	GROUPING_AUTO_DEF,    //!< membership in group was defined via @defgroup @{ @}
-        GROUPING_AUTO_HIGHEST =
-           GROUPING_AUTO_DEF,
-	GROUPING_INGROUP,      //!< membership in group was defined by @ingroup
-        GROUPING_HIGHEST =
-	   GROUPING_INGROUP
-    } GroupPri_t;
+struct Grouping 
+{
+  enum GroupPri_t 
+  {
+    GROUPING_LOWEST,
+    GROUPING_AUTO_WEAK =
+      GROUPING_LOWEST,   //!< membership in group was defined via @weakgroup @{ @}
+    GROUPING_AUTO_ADD,    //!< membership in group was defined via @add[to]group @{ @}
+    GROUPING_AUTO_DEF,    //!< membership in group was defined via @defgroup @{ @}
+    GROUPING_AUTO_HIGHEST =
+      GROUPING_AUTO_DEF,
+    GROUPING_INGROUP,      //!< membership in group was defined by @ingroup
+    GROUPING_HIGHEST =
+      GROUPING_INGROUP
+  };
 
-    static const char *getGroupPriName( GroupPri_t priority )
+  static const char *getGroupPriName( GroupPri_t priority )
+  {
+    switch( priority )
     {
-	switch( priority )
-        {
-	case GROUPING_AUTO_WEAK:
-	    return "@weakgroup";
-	    break;
-	case GROUPING_AUTO_ADD:
-	    return "@addtogroup";
-	    break;
-	case GROUPING_AUTO_DEF:
-	    return "@defgroup";
-	    break;
-	case GROUPING_INGROUP:
-	    return "@ingroup";
-	    break;
-	default:
-	    return "???";
-	    break;
-        }	    
-    }
+      case GROUPING_AUTO_WEAK:
+        return "@weakgroup";
+      case GROUPING_AUTO_ADD:
+        return "@addtogroup";
+      case GROUPING_AUTO_DEF:
+        return "@defgroup";
+      case GROUPING_INGROUP:
+        return "@ingroup";
+    }	    
+    return "???";
+  }
 
-    Grouping( const char *gn, GroupPri_t p ) :
-	groupname(gn),
-            pri(p) {}
-    Grouping( const Grouping &g ) :
-	groupname(g.groupname),
-            pri(g.pri) {}
-    QCString groupname;   //!< name of the group
-    GroupPri_t pri;       //!< priority of this definition
+  Grouping( const char *gn, GroupPri_t p ) : groupname(gn), pri(p) {}
+  Grouping( const Grouping &g ) : groupname(g.groupname), pri(g.pri) {}
+  QCString groupname;   //!< name of the group
+  GroupPri_t pri;       //!< priority of this definition
 
 };
 

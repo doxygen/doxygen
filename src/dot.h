@@ -119,7 +119,7 @@ class DotClassGraph
     DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth=1000);
    ~DotClassGraph();
     bool isTrivial() const;
-    void writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
+    QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
                     bool TBRank=TRUE,bool imageMap=TRUE);
     QCString diskName() const;
 
@@ -142,7 +142,7 @@ class DotInclDepGraph
   public:
     DotInclDepGraph(FileDef *fd,bool inverse=FALSE);
    ~DotInclDepGraph();
-    void writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
+    QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
                     bool writeImageMap=TRUE);
     bool isTrivial() const;
     QCString diskName() const;

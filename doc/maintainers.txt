@@ -27,7 +27,7 @@ Finnish
 Olli Korhonen: Olli.Korhonen@ccc.fi
 
 French
-Christophe Bordeux: bordeux@lig.di.epfl.ch
+Xavier Outhier: xavier.outhier@anfdata.cz
 
 German  
 Jens Seidel: jensseidel@users.sourceforge.net

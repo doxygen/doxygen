@@ -183,7 +183,8 @@ void ClassDef::insertMember(MemberDef *md)
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
-    if (md->isRelated() && (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
+    if (md->isRelated() && 
+        (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
     {
       related.append(md);
       md->setSectionList(&related);

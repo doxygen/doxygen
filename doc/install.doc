@@ -129,7 +129,7 @@ Compilation is now done by performing the following steps:
 
     To let doxygen generate the HTML documentation.
     
-    \note you will need the stream editor <code>sed</code> for this, 
+    \note You will need the stream editor <code>sed</code> for this, 
     but this should be available on any Unix platform.
 
     The HTML directory of the distribution will now contain the html 
@@ -137,7 +137,7 @@ Compilation is now done by performing the following steps:
     <code>index.html</code> in the 
     html directory).
     
-<li>Optional: Generate a postscript and pdf version of the manual. 
+<li>Optional: Generate a PostScript and PDF version of the manual
     (you will need <code>latex</code> and <code>dvips</code> and
      the ghostscript package for this).
 
@@ -153,21 +153,23 @@ Compilation is now done by performing the following steps:
 
 \subsection install_bin_unix    Installating the binaries on Unix
 
-    If you downloaded the binary distribution for Unix, you can install 
-    doxygen by typing:
+    After the compilation of the source code do a <code>make install</code>
+    to install doxygen. If you downloaded the binary distribution for Unix,
+    type:
 
 \verbatim
     ./configure
     make install
 \endverbatim   
 
-    Binaries are installed in the directory <code>\<prefix\>/bin</code>,
-    documentation and examples in the directory 
-    <code>\<prefix\>/share/doc/packages/doxygen</code> (use
-    <code>make install DOCDIR=\<path\></code> to change this).
+    Binaries are installed into the directory <code>\<prefix\>/bin</code>.
+    Use <code>make install_docs DOCDIR=\<path\></code> to install the
+    documentation and examples into the <code>\<path\></code> directory. 
 
     <code>\<prefix\></code> defaults to /usr but can be changed with 
     the <code>--prefix</code> option of the configure script. 
+    The default <code>DOCDIR</code> directory is 
+    <code>\<prefix\>/share/doc/packages/doxygen</code>
 
     Alternatively, you can also copy the binaries from the <code>bin</code> 
     directory manually to some <code>bin</code> directory in your search path.
@@ -402,7 +404,7 @@ Here is what is required:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
     To get these working under Windows
     install the fpTeX distribution. You can download it at:
-    ftp://ctan.tug.org/tex-archive/systems/win32/web2c/fptex-0.3/
+    http://www.ese-metz.fr/~popineau/fptex/wwwfptex.html
 
     Make sure the tools are available from a dos box, by adding the 
     directory they are in to the search path.

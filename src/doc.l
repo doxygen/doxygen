@@ -898,6 +898,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x      DocLink
 %x      DocJavaLink
 %x      DocLinkText
+%x      DocJavaLinkText
 %x      DocSkipWord
 %x      DocInclude
 %x      DocDontInclude
@@ -1056,19 +1057,21 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  BEGIN( DocLinkText ); 
 					}
 <DocJavaLink>([a-z_A-Z0-9]+".")+	{ /* Skip scope prefix (TODO: fix) */ }
-<DocJavaLink>([a-z_A-Z0-9]+"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,~&*()\[\]]*")")? {  // TODO: support operators as well!
+<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\[\]]*")")? {  // TODO: support operators as well!
   					  linkRef  = yytext;
+					  linkText = "";
+					  BEGIN( DocJavaLinkText );
 					}
-<DocJavaLink>"}"			{
+<DocJavaLinkText>"}"			{
   					  //printf("Trying to link `%s'\n",linkRef.data());
-					  if (!generateLink(*outDoc,className,linkRef,inSeeBlock,0))
+					  if (!generateLink(*outDoc,className,linkRef,inSeeBlock,linkText.stripWhiteSpace()))
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: link to unknown entity `%s' in the documentation of this entity!",linkRef.data());
 					  }
   					  BEGIN( DocScan ); 
   					}
-<DocLinkText>.				{ linkText += *yytext; }
-<DocLinkText>"\n"			{ linkText += " "; }
+<DocJavaLinkText,DocLinkText>.		{ linkText += *yytext; }
+<DocJavaLinkText,DocLinkText>"\n"	{ linkText += " "; }
 <DocLink,DocLinkText>{CMD}"endlink" 	{ // <- needed for things like \endlink. 
   					  //printf("GenerateLink className=`%s' linkRef=`%s' linkText=`%s'\n",
 					  //        className.data(),linkRef.data(),linkText.data());

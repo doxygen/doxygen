@@ -518,8 +518,10 @@ bool MemberDef::isBriefSectionVisible() const
                              Config_getBool("EXTRACT_PRIVATE")
                             );
     
-    return visibleIfStatic && visibleIfDocumented && 
-           visibleIfEnabled && visibleIfPrivate && !annScope;
+    bool visible = visibleIfStatic && visibleIfDocumented && 
+                   visibleIfEnabled && visibleIfPrivate && !annScope;
+    //printf("MemberDef::isBriefSectionVisible() %d\n",visible);
+    return visible;
 }
 
 void MemberDef::writeDeclaration(OutputList &ol,
@@ -837,19 +839,27 @@ bool MemberDef::isDetailedSectionLinkable() const
   // this is not a global static or global statics should be extracted
   bool staticFilter = getClassDef()!=0 || !isStatic() || Config_getBool("EXTRACT_STATIC"); 
          
+  // only include members that are non-private unless EXTRACT_PRIVATE is
+  // set to YES or the member is part of a group
+  bool privateFilter = (protection()!=Private || 
+                           Config_getBool("EXTRACT_PRIVATE")
+                          );
+
   // member is part of an anonymous scope that is the type of
   // another member in the list.
   //
   bool inAnonymousScope = !briefDescription().isEmpty() && annUsed;
 
-  return ((docFilter && staticFilter) || inAnonymousScope);
+  return ((docFilter && staticFilter && privateFilter) || inAnonymousScope);
 }
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup) const          
 { 
   bool groupFilter = getGroupDef()==0 || inGroup; 
 
-  return isDetailedSectionLinkable() && groupFilter;
+  bool visible = isDetailedSectionLinkable() && groupFilter;
+  //printf("MemberDef::isDetailedSectionVisible() %d\n",visible);
+  return visible;
 }
 
 /*! Writes the "detailed documentation" section of this member to
@@ -969,9 +979,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ArgumentList *membAl=memberDefTemplateArguments();
       if (membAl==0) membAl=templateArguments();
 
-      //if (cd && (!isRelated() || templateArguments()!=0) && 
-      //    ((al=scopeDefTemplateArguments()) || (al=cd->templateArguments()))
-      //   ) 
       if (!Config_getBool("HIDE_SCOPE_NAMES"))
       {
         if (scopeAl && !related) // class template prefix
@@ -1413,7 +1420,7 @@ bool MemberDef::isLinkableInProject()
   return !name().isEmpty() && name().at(0)!='@' &&
          ((hasDocumentation() && !isReference())  
          ) && 
-         (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || isFriend()) && // not a private class member
+         (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && // not a private class member
          (classDef!=0 || Config_getBool("EXTRACT_STATIC") || !isStatic()); // not a static file/namespace member
 }
 
@@ -1494,5 +1501,17 @@ void MemberDef::setEnumScope(MemberDef *md)
     groupStartLine=md->groupStartLine;
     groupHasDocs=md->groupHasDocs;
   }
+}
+
+void MemberDef::setMemberClass(ClassDef *cd)     
+{ 
+  classDef=cd; 
+  setOuterScope(cd); 
+}
+
+void MemberDef::setNamespace(NamespaceDef *nd) 
+{ 
+  nspace=nd; 
+  setOuterScope(nd); 
 }
 
