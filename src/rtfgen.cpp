@@ -34,12 +34,11 @@
 #include "version.h"
 #include "page.h"
 #include "rtfstyle.h"
+#include "rtfdocvisitor.h"
+#include "docparser.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
-
-// used for table column width calculation
-#define PAGEWIDTH 8748
 
 static QCString dateToRTFDateString()
 {
@@ -870,7 +869,7 @@ void RTFGenerator::startItemList()
   DBG_RTF(t << "{\\comment (startItemList level=" << m_listLevel << ") }" << endl)
   t << "{";
   incrementIndentLevel();
-  listItemInfo[m_listLevel].isEnum = FALSE;
+  rtf_listItemInfo[m_listLevel].isEnum = FALSE;
 }
 
 /*! end bullet list */
@@ -889,8 +888,8 @@ void RTFGenerator::startEnumList()  // starts an enumeration list
   DBG_RTF(t << "{\\comment (startEnumList)}" << endl)
   t << "{" << endl;
   incrementIndentLevel();
-  listItemInfo[m_listLevel].isEnum = TRUE;
-  listItemInfo[m_listLevel].number = 1;
+  rtf_listItemInfo[m_listLevel].isEnum = TRUE;
+  rtf_listItemInfo[m_listLevel].number = 1;
 }
 
 /*! end enumeration list */
@@ -909,11 +908,11 @@ void RTFGenerator::writeListItem()
   DBG_RTF(t << "{\\comment (writeListItem)}" << endl)
   newParagraph();
   t << rtf_Style_Reset;
-  if (listItemInfo[m_listLevel].isEnum)
+  if (rtf_listItemInfo[m_listLevel].isEnum)
   {
     t << rtf_EList_DepthStyle() << endl;
-    t << listItemInfo[m_listLevel].number << ".\\tab ";
-    listItemInfo[m_listLevel].number++;
+    t << rtf_listItemInfo[m_listLevel].number << ".\\tab ";
+    rtf_listItemInfo[m_listLevel].number++;
   }
   else
   {
@@ -1099,12 +1098,14 @@ void RTFGenerator::endSubsubsection()
 
 void RTFGenerator::startTable(bool,int colNumbers) 
 {
+  DBG_RTF(t << "{\\comment startTable}\n";)
   m_numCols=colNumbers;
   t << "\\par\n";
 }
 
 void RTFGenerator::endTable(bool hasCaption) 
 { 
+  DBG_RTF(t << "{\\comment endTable}\n";)
   if (!hasCaption) 
     t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n"; 
   t << "\\pard\n" << endl; 
@@ -1112,22 +1113,25 @@ void RTFGenerator::endTable(bool hasCaption)
 
 void  RTFGenerator::startCaption() 
 {
+  DBG_RTF(t << "{\\comment startCaption}\n";)
   endTableRow();
   t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10" << endl;
-  t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<PAGEWIDTH<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright " << endl;
+  t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<rtf_pageWidth<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright " << endl;
   nextTableColumn();
 }
 
 void  RTFGenerator::endCaption() 
 {
+  DBG_RTF(t << "{\\comment endCaption}\n";)
   endTableColumn();
   endTableRow();
 }
 
 void RTFGenerator::nextTableRow() 
 {  
+  DBG_RTF(t << "{\\comment nextTableRow}\n";)
   ASSERT(m_numCols>0 && m_numCols<25);
-  uint columnWidth=PAGEWIDTH/m_numCols;
+  uint columnWidth=rtf_pageWidth/m_numCols;
   t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 "
        "\\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 "
        "\\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 "
@@ -1143,16 +1147,19 @@ void RTFGenerator::nextTableRow()
  
 void RTFGenerator::endTableRow() 
 { 
+  DBG_RTF(t << "{\\comment endTableRow}\n";)
   t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
 }
  
 void RTFGenerator::nextTableColumn() 
 {
+  DBG_RTF(t << "{\\comment nextTableColumn}\n";)
   t << "{ ";
 }
 
 void RTFGenerator::endTableColumn() 
 { 
+  DBG_RTF(t << "{\\comment endTableColumn}\n";)
   t << " \\cell }";
 }
 
@@ -1516,9 +1523,11 @@ void RTFGenerator::startSection(const char *,const char *title,SectionInfo::Sect
   int num=4;
   switch(type)
   {
-    case SectionInfo::Page:       num=2; break;
-    case SectionInfo::Section:    num=3; break;
-    case SectionInfo::Subsection: num=4; break;
+    case SectionInfo::Page:          num=2; break;
+    case SectionInfo::Section:       num=3; break;
+    case SectionInfo::Subsection:    num=4; break;
+    case SectionInfo::Subsubsection: num=4; break;
+    case SectionInfo::Paragraph:     num=4; break;
     default: ASSERT(0); break;
   }
   QCString heading;
@@ -1883,10 +1892,10 @@ void RTFGenerator::endDescTableData()
 void RTFGenerator::incrementIndentLevel()
 {
   m_listLevel++;
-  if (m_listLevel>indentLevels-1)
+  if (m_listLevel>rtf_maxIndentLevels-1)
   {
-    warn_cont("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",indentLevels);
-    m_listLevel=indentLevels-1;
+    warn_cont("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
+    m_listLevel=rtf_maxIndentLevels-1;
   }
 }
 
@@ -2396,5 +2405,12 @@ void RTFGenerator::endParamList()
   decrementIndentLevel();
   m_omitParagraph = TRUE;
   t << "}";
+}
+
+void RTFGenerator::printDoc(DocNode *n)
+{
+  RTFDocVisitor *visitor = new RTFDocVisitor(t,*this);
+  n->accept(visitor);
+  delete visitor; 
 }
 

@@ -2763,7 +2763,7 @@ LINKMASK  [^ \t\n\r\\@<&$]+("("[^\n)]*")")?({B}*("const"|"volatile"))?
 					    {
 					      outDoc->newParagraph(); 
 					    }
-					    if (ib && currentListIndent.top()=="P") 
+					    if (ib && *currentListIndent.top()=='P') 
 					    { // inside paragraph block
 					      endBlock();
 					    }

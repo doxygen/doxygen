@@ -98,6 +98,7 @@ static bool               g_nospaces; // add extra spaces during macro expansion
 
 static bool               g_macroExpansion; // from the configuration
 static bool               g_expandOnlyPredef; // from the configuration
+static int                g_commentCount;
 
 
 static void setFileName(const char *name)
@@ -1613,6 +1614,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defText+=' ';
 					  g_defLitText+=' ';
 					  g_lastCContext=YY_START;
+					  g_commentCount=1;
   					  BEGIN(SkipCComment);
   					}
 <DefineText>"//"			{
@@ -1622,16 +1624,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(SkipCPPComment);
   					}
 <SkipCComment>"*/"			{
-  					  outputChar('*');outputChar('/');
-  					  BEGIN(g_lastCContext);  
+					  if (--g_commentCount<=0)
+					  {
+  					    outputChar('*');outputChar('/');
+  					    BEGIN(g_lastCContext);  
+					  }
   					}
 <SkipCComment>"//"			{
   					  outputChar('/');outputChar('/');
   					}
 <SkipCComment>"/*"			{
   					  outputChar('/');outputChar('*');
+					  g_commentCount++;
   					}
-<SkipCComment>[^*\n]+			{
+<SkipCComment>[^*\n\/]+			{
   					  outputArray(yytext,yyleng);
   					}
 <SkipCComment>\n			{ 
@@ -1809,6 +1815,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>"/*"					{
 					  outputChar('/');outputChar('*');
   					  g_lastCContext=YY_START;
+					  g_commentCount=1;
 					  BEGIN(SkipCComment);
   					}
 <*>"//"					{

@@ -27,6 +27,7 @@
 #include "doctokenizer.h"
 
 class DocNode;
+class MemberDef;
 
 //---------------------------------------------------------------------------
 
@@ -40,7 +41,8 @@ class DocNode;
  *                   pointer is handed over to the caller.
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
-                            const char *context, const char *input);
+                            const char *context, MemberDef *md,
+                            const char *input);
 
 //---------------------------------------------------------------------------
 
@@ -380,9 +382,10 @@ class DocFormula : public DocNode
 {
   public:
     DocFormula(DocNode *parent,int id);
-    Kind kind() const { return Kind_Formula; }
-    QCString name() const { return m_name; }
-    QCString text() const { return m_text; }
+    Kind kind() const       { return Kind_Formula; }
+    QCString name() const   { return m_name; }
+    QCString text() const   { return m_text; }
+    int id() const          { return m_id; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
 
@@ -390,6 +393,23 @@ class DocFormula : public DocNode
     DocNode *m_parent;
     QCString m_name;
     QCString m_text;
+    int m_id;
+};
+
+/*! @brief Node representing an entry in the index. */
+class DocIndexEntry : public DocNode
+{
+  public:
+    DocIndexEntry(DocNode *parent) : m_parent(parent) { }
+    Kind kind() const { return Kind_IndexEntry; }
+    int parse();
+    DocNode *parent() const { return m_parent; }
+    void accept(DocVisitor *v) { v->visit(this); }
+    QCString entry() { return m_entry; }
+
+  private:
+    DocNode *m_parent;
+    QCString m_entry;
 };
 
 //-----------------------------------------------------------------------
@@ -409,20 +429,6 @@ class DocCopy : public CompAccept<DocCopy>, public DocNode
   private:
     DocNode *m_parent;
     QCString m_link;
-};
-
-/*! @brief Node representing a entry in the index. */
-class DocIndexEntry : public CompAccept<DocIndexEntry>, public DocNode
-{
-  public:
-    DocIndexEntry(DocNode *parent) : m_parent(parent) { }
-    Kind kind() const { return Kind_IndexEntry; }
-    int parse();
-    DocNode *parent() const { return m_parent; }
-    void accept(DocVisitor *v) { CompAccept<DocIndexEntry>::accept(this,v); }
-
-  private:
-    DocNode *m_parent;
 };
 
 /*! @brief Node representing an auto List */
@@ -866,7 +872,8 @@ class DocPara : public CompAccept<DocPara>, public DocNode
 class DocParamList : public DocNode
 {
   public:
-    DocParamList(DocNode *parent) : m_parent(parent) 
+    DocParamList(DocNode *parent,DocParamSect::Type t) 
+      : m_parent(parent) , m_type(t)
     { m_paragraph=new DocPara(this); }
     virtual ~DocParamList()
     { delete m_paragraph; }
@@ -874,6 +881,7 @@ class DocParamList : public DocNode
     Kind kind() const { return Kind_ParamList; }
     DocNode *parent() const { return m_parent; }
     const QStrList &parameters() { return m_params; }
+    DocParamSect::Type type() const { return m_type; }
     void accept(DocVisitor *v)
     { 
       v->visitPre(this); 
@@ -882,9 +890,10 @@ class DocParamList : public DocNode
     }
 
   private:
-    DocNode   *m_parent;
-    DocPara   *m_paragraph;
-    QStrList   m_params;
+    DocNode     *m_parent;
+    DocPara     *m_paragraph;
+    QStrList     m_params;
+    DocParamSect::Type m_type;
 };
 
 /*! @brief Node representing an item of a auto list */
@@ -1049,7 +1058,15 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
       }
       return cols;
     }
-    void accept(DocVisitor *v) { CompAccept<DocHtmlTable>::accept(this,v); }
+    void accept(DocVisitor *v) 
+    { 
+      v->visitPre(this); 
+      QListIterator<DocNode> cli(m_children);
+      DocNode *n;
+      for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
+      if (m_caption) m_caption->accept(v);
+      v->visitPost(this); 
+    }
 
   private:
     DocNode *          m_parent;

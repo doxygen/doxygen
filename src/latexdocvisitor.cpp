@@ -24,6 +24,48 @@
 #include "code.h"
 #include "dot.h"
 #include "util.h"
+#include "message.h"
+
+static QCString escapeLabelName(const char *s)
+{
+  QCString result;
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '%': result+="\\%"; break;
+      case '|': result+="\\texttt{\"|}"; break;
+      case '!': result+="\"!"; break;
+      default: result+=c;
+    }
+  }
+  return result;
+}
+
+QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
+{
+  QCString result;
+  const char *p=s;
+  char str[2]; str[1]=0;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '!': m_t << "\"!"; break;
+      case '"': m_t << "\"\""; break;
+      case '@': m_t << "\"@"; break;
+      case '|': m_t << "\\texttt{\"|}"; break;
+      case '[': m_t << "["; break;
+      case ']': m_t << "]"; break;
+      default:  str[0]=c; filter(str); break;
+    }
+  }
+  return result;
+}
+
 
 LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -107,7 +149,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Ring:    m_t << "\\" << s->letter() << s->letter(); break;
     case DocSymbol::Nbsp:    m_t << "\\ "; break;
     default:
-                             printf("Error: unknown symbol found\n");
+                             err("Error: unknown symbol found\n");
   }
 }
 
@@ -247,6 +289,13 @@ void LatexDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
   m_t << f->text();
+}
+
+void LatexDocVisitor::visit(DocIndexEntry *i)
+{
+  m_t << "\\index{" << escapeLabelName(i->entry()) << "@{";
+  escapeMakeIndexChars(i->entry());
+  m_t << "}}";
 }
 
 //--------------------------------------
@@ -390,26 +439,24 @@ void LatexDocVisitor::visitPre(DocSection *s)
   {
     m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
   }
-  if (s->level()==1)
+  if (Config_getBool("COMPACT_LATEX"))
   {
-    if (Config_getBool("COMPACT_LATEX"))
+    switch(s->level())
     {
-      m_t << "\\subsubsection{";
-    }
-    else
-    {
-      m_t << "\\subsection{";
+      case 1: m_t << "\\subsubsection{"; break;
+      case 2: m_t << "\\paragraph{";     break;
+      case 3: m_t << "\\subparagraph{";  break;
+      case 4: m_t << "\\subparagraph{";  break;
     }
   }
-  else if (s->level()==2)
+  else
   {
-    if (Config_getBool("COMPACT_LATEX"))
+    switch(s->level())
     {
-      m_t << "\\paragraph{";
-    }
-    else
-    {
-      m_t << "\\subsubsection{";
+      case 1: m_t << "\\subsection{";    break;
+      case 2: m_t << "\\subsubsection{"; break;
+      case 3: m_t << "\\paragraph{";     break;
+      case 4: m_t << "\\subparagraph{";  break;
     }
   }
   filter(s->title());
@@ -534,16 +581,6 @@ void LatexDocVisitor::visitPost(DocHtmlCell *c)
   if (!c->isLast()) m_t << "&";
 }
 
-void LatexDocVisitor::visitPre(DocIndexEntry *)
-{
-  m_hide = TRUE;
-}
-
-void LatexDocVisitor::visitPost(DocIndexEntry *) 
-{
-  m_hide = FALSE;
-}
-
 void LatexDocVisitor::visitPre(DocInternal *)
 {
   m_t << "\\begin{Desc}" << endl 
@@ -577,18 +614,18 @@ void LatexDocVisitor::visitPre(DocHtmlHeader *header)
   {
     switch(header->level())
     {
-      case 1: m_t << "\\subsection{"; break;
-      case 2: m_t << "\\subsubsection{"; break;
-      case 3: m_t << "\\paragraph{"; break;
+      case 1: m_t << "\\subsection*{"; break;
+      case 2: m_t << "\\subsubsection*{"; break;
+      case 3: m_t << "\\paragraph*{"; break;
     }
   }
   else
   {
     switch(header->level())
     {
-      case 1: m_t << "\\section{"; break;
-      case 2: m_t << "\\subsection{"; break;
-      case 3: m_t << "\\subsubsection{"; break;
+      case 1: m_t << "\\section*{"; break;
+      case 2: m_t << "\\subsection*{"; break;
+      case 3: m_t << "\\subsubsection*{"; break;
     }
   }
 }

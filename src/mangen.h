@@ -39,6 +39,8 @@ class ManGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Man && active); } 
     OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
 
+    void printDoc(DocNode *);
+
     static void init();
     void startFile(const char *name,const char *manName,
                    const char *title,bool external);

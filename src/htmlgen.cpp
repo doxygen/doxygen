@@ -526,9 +526,11 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::Secti
 {
   switch(type)
   {
-    case SectionInfo::Page:       t << "<h1>"; break;
-    case SectionInfo::Section:    t << "<h2>"; break;
-    case SectionInfo::Subsection: t << "<h3>"; break;
+    case SectionInfo::Page:          t << "<h1>"; break;
+    case SectionInfo::Section:       t << "<h2>"; break;
+    case SectionInfo::Subsection:    t << "<h3>"; break;
+    case SectionInfo::Subsubsection: t << "<h4>"; break;
+    case SectionInfo::Paragraph:     t << "<h5>"; break;
     default: ASSERT(0); break;
   }
   t << "<a name=\"" << lab << "\">";
@@ -539,9 +541,11 @@ void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
   t << "</a>" << endl;
   switch(type)
   {
-    case SectionInfo::Page:       t << "</h1>"; break;
-    case SectionInfo::Section:    t << "</h2>"; break;
-    case SectionInfo::Subsection: t << "</h3>"; break;
+    case SectionInfo::Page:          t << "</h1>"; break;
+    case SectionInfo::Section:       t << "</h2>"; break;
+    case SectionInfo::Subsection:    t << "</h3>"; break;
+    case SectionInfo::Subsubsection: t << "</h4>"; break;
+    case SectionInfo::Paragraph:     t << "</h5>"; break;
     default: ASSERT(0); break;
   }
 }

@@ -178,6 +178,11 @@ class PrintDocVisitor : public DocVisitor
       indent_leaf();
       printf("<formula name=%s test=%s/>",f->name().data(),f->text().data());
     }
+    void visit(DocIndexEntry *i)
+    {
+      indent_leaf();
+      printf("<indexentry>%s</indexentry\n",i->entry().data());
+    }
 
     //--------------------------------------
     
@@ -407,16 +412,6 @@ class PrintDocVisitor : public DocVisitor
     {
       indent_post();
       printf("</caption>\n");
-    }
-    void visitPre(DocIndexEntry *)
-    {
-      indent_pre();
-      printf("<indexentry>\n");
-    }
-    void visitPost(DocIndexEntry *) 
-    {
-      indent_post();
-      printf("</indexentry>\n");
     }
     void visitPre(DocInternal *)
     {

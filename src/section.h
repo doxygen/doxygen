@@ -29,7 +29,7 @@ class PageInfo;
 
 struct SectionInfo
 {
-  enum SectionType { Page, Section, Subsection, Anchor };
+  enum SectionType { Page, Section, Subsection, Subsubsection, Paragraph, Anchor };
   SectionInfo(const char *l,const char *t,SectionType st,const char *r=0)
     { label=l; title=t; type=st; ref=r; definition=0; pageRef=0; generated=FALSE; }
  ~SectionInfo() {}

@@ -28,6 +28,7 @@
 #include "util.h"
 #include "doxygen.h"
 #include <string.h>
+#include "docparser.h"
 
 static QCString getExtension()
 {
@@ -542,9 +543,11 @@ void ManGenerator::startSection(const char *,const char *,SectionInfo::SectionTy
   {
     switch(type)
     {
-      case SectionInfo::Page:       startGroupHeader(); break;
-      case SectionInfo::Section:    startGroupHeader(); break;
-      case SectionInfo::Subsection: startMemberHeader(); break;
+      case SectionInfo::Page:          startGroupHeader(); break;
+      case SectionInfo::Section:       startGroupHeader(); break;
+      case SectionInfo::Subsection:    startMemberHeader(); break;
+      case SectionInfo::Subsubsection: startMemberHeader(); break;
+      case SectionInfo::Paragraph:     startMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }
@@ -556,9 +559,11 @@ void ManGenerator::endSection(const char *,SectionInfo::SectionType type)
   {
     switch(type)
     {
-      case SectionInfo::Page:       endGroupHeader(); break;
-      case SectionInfo::Section:    endGroupHeader(); break;
-      case SectionInfo::Subsection: endMemberHeader(); break;
+      case SectionInfo::Page:          endGroupHeader(); break;
+      case SectionInfo::Section:       endGroupHeader(); break;
+      case SectionInfo::Subsection:    endMemberHeader(); break;
+      case SectionInfo::Subsubsection: endMemberHeader(); break;
+      case SectionInfo::Paragraph:     endMemberHeader(); break;
       default: ASSERT(0); break;
     }
   }
@@ -605,6 +610,10 @@ void ManGenerator::startParamList(ParamListTypes,const char *title)
 }
 
 void ManGenerator::endParamList()
+{
+}
+
+void ManGenerator::printDoc(DocNode *)
 {
 }
 
