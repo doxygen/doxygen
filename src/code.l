@@ -53,7 +53,7 @@
 static BaseCodeDocInterface * g_code;
 
 static ClassSDict    g_codeClassSDict(17);
-static ClassDef     *g_curClassDef;
+//static ClassDef     *g_curClassDef;
 static QCString      g_curClassName;
 static QStrList      g_curClassBases;
 
@@ -99,6 +99,7 @@ static int	     g_sharpCount   = 0;
 
 static int	     g_lastSpecialCContext;
 static int           g_lastStringContext;
+static int           g_lastVerbStringContext;
 static int           g_memCallContext;
 static int	     g_lastCContext;
 
@@ -733,7 +734,8 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       if (md==0) // not found as a typedef
       {
 	md = setCallContextForVar(clName);
-        if (md && g_currentDefinition!=0 && !isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
+        if (md && g_currentDefinition!=0 && 
+	    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
 	{
 	  md=0; // variable not accessible
 	}
@@ -1084,6 +1086,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %option noyywrap
 
 %x      SkipString
+%x      SkipVerbString
 %x	SkipCPP
 %x	SkipComment
 %x	SkipCxxComment
@@ -1300,9 +1303,9 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    //printf("***** g_curClassName=%s\n",g_curClassName.data());
 					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
-					      g_curClassDef=new ClassDef("<code>",1,
+					      ClassDef *ncd=new ClassDef("<code>",1,
 				 		  g_curClassName,ClassDef::Class);
-					      g_codeClassSDict.append(g_curClassName,g_curClassDef);
+					      g_codeClassSDict.append(g_curClassName,ncd);
 					      // insert base classes.
 					      char *s=g_curClassBases.first();
 					      while (s)
@@ -1312,7 +1315,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 						if (bcd==0) bcd=getResolvedClass(g_currentDefinition,g_sourceFileDef,s);
 						if (bcd)
 						{
-						  g_curClassDef->insertBaseClass(bcd,s,Public,Normal);
+						  ncd->insertBaseClass(bcd,s,Public,Normal);
 						}
 						s=g_curClassBases.next();
 					      }
@@ -1497,6 +1500,23 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <SkipString>\\.				{
   					  g_code->codify(yytext);
 					}
+<SkipVerbString>[^"\n]+			{
+  					  g_code->codify(yytext);
+					}
+<SkipVerbString>\"\"			{ // escaped quote
+  					  g_code->codify(yytext);
+					}
+<SkipVerbString>\"			{ // end of string
+  					  g_code->codify(yytext);
+					  endFontClass();
+					  BEGIN( g_lastVerbStringContext );
+					}
+<SkipVerbString>.			{
+  					  g_code->codify(yytext);
+  					}
+<SkipVerbString>\n			{
+  					  g_code->codify(yytext);
+  					}
 <Body>":"				{
   					  g_code->codify(yytext);
   					  g_name.resize(0);g_type.resize(0);
@@ -2068,6 +2088,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					    g_lastCContext = YY_START ;
 					  }
 					  BEGIN( SkipComment ) ;
+					}
+<*>@\"					{ // C# verbatim string
+					  startFontClass("stringliteral");
+  					  g_code->codify(yytext);
+					  g_lastVerbStringContext=YY_START;
+					  BEGIN(SkipVerbString);
 					}
 <*>"//"					{ 
   					  startFontClass("comment");

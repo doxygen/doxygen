@@ -2289,88 +2289,91 @@ static void buildFunctionList(Entry *root)
               //printf("combining function with prototype found=%d in namespace %s\n",
               //    found,nsName.data());
 
-              // merge argument lists
-              //mergeArguments(root->argList,md->argumentList());
-              // merge documentation
-              if (md->documentation().isEmpty() && !root->doc.isEmpty())
+              if (found)
               {
-                md->setDocumentation(root->doc,root->docFile,root->docLine);
-                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-                md->setDocsForDefinition(!root->proto);
-                ArgumentList *argList = new ArgumentList;
-                stringToArgumentList(root->args,argList);
-                //printf("root->argList=%p\n",root->argList);
-                //if (root->argList)
-                //{
-                //  ArgumentListIterator ali1(*root->argList);
-                //  ArgumentListIterator ali2(*argList);
-                //  Argument *sa,*da;
-                //  for (;(sa=ali1.current()) && (da=ali2.current());++ali1,++ali2)
-                //  {
-                //    printf("sa->name=%s (doc=%s) da->name=%s (doc=%s)\n",
-                //        sa->name.data(),sa->docs.data(),
-                //        da->name.data(),da->docs.data()
-                //        );
-                //    if (!sa->docs.isEmpty() && da->docs.isEmpty())
-                //    {
-                //      da->docs=sa->docs.copy();
-                //    }
-                //  }
-                //}
-                if (root->proto)
+                // merge argument lists
+                //mergeArguments(root->argList,md->argumentList());
+                // merge documentation
+                if (md->documentation().isEmpty() && !root->doc.isEmpty())
                 {
-                  //printf("setDeclArgumentList to %p\n",argList);
-                  md->setDeclArgumentList(argList);
+                  md->setDocumentation(root->doc,root->docFile,root->docLine);
+                  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                  md->setDocsForDefinition(!root->proto);
+                  ArgumentList *argList = new ArgumentList;
+                  stringToArgumentList(root->args,argList);
+                  //printf("root->argList=%p\n",root->argList);
+                  //if (root->argList)
+                  //{
+                  //  ArgumentListIterator ali1(*root->argList);
+                  //  ArgumentListIterator ali2(*argList);
+                  //  Argument *sa,*da;
+                  //  for (;(sa=ali1.current()) && (da=ali2.current());++ali1,++ali2)
+                  //  {
+                  //    printf("sa->name=%s (doc=%s) da->name=%s (doc=%s)\n",
+                  //        sa->name.data(),sa->docs.data(),
+                  //        da->name.data(),da->docs.data()
+                  //        );
+                  //    if (!sa->docs.isEmpty() && da->docs.isEmpty())
+                  //    {
+                  //      da->docs=sa->docs.copy();
+                  //    }
+                  //  }
+                  //}
+                  if (root->proto)
+                  {
+                    //printf("setDeclArgumentList to %p\n",argList);
+                    md->setDeclArgumentList(argList);
+                  }
+                  else
+                  {
+                    md->setArgumentList(argList);
+                  }
                 }
-                else
+                else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && nd==rnd)
                 {
-                  md->setArgumentList(argList);
+                  warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
                 }
-              }
-              else if (!md->documentation().isEmpty() && !root->doc.isEmpty())
-              {
-                warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
-              }
 
-              if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
-              {
-                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              }
-              else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty())
-              {
-                warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
-              }
-              
-              md->addSectionsToDefinition(root->anchors);
+                if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
+                {
+                  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                }
+                else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && nd==rnd)
+                {
+                  warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
+                }
 
-              md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+                md->addSectionsToDefinition(root->anchors);
 
-              // merge ingroup specifiers
-              if (md->getGroupDef()==0 && root->groups->first()!=0)
-              {
-                //printf("new member is grouped, existing member not\n");
-                // if we do addMemberToGroups here an undocumented declaration may prevent 
-                // the documented implementation below it from being added 
-                //addMemberToGroups(root,md);
-                //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-                //if (gd)
-                //{
-                //  bool success = gd->insertMember(md);
-                //  if (success)
-                //  {
-                //    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
-                //  }
-                //}
-                addMemberToGroups(root,md);
-              }
-              else if (md->getGroupDef()!=0 && root->groups->count()==0)
-              {
-                //printf("existing member is grouped, new member not\n");
-                root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
-              }
-              else if (md->getGroupDef()!=0 && root->groups->first()!=0)
-              {
-                //printf("both members are grouped\n");
+                md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+
+                // merge ingroup specifiers
+                if (md->getGroupDef()==0 && root->groups->first()!=0)
+                {
+                  //printf("new member is grouped, existing member not\n");
+                  // if we do addMemberToGroups here an undocumented declaration may prevent 
+                  // the documented implementation below it from being added 
+                  //addMemberToGroups(root,md);
+                  //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
+                  //if (gd)
+                  //{
+                  //  bool success = gd->insertMember(md);
+                  //  if (success)
+                  //  {
+                  //    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+                  //  }
+                  //}
+                  addMemberToGroups(root,md);
+                }
+                else if (md->getGroupDef()!=0 && root->groups->count()==0)
+                {
+                  //printf("existing member is grouped, new member not\n");
+                  root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
+                }
+                else if (md->getGroupDef()!=0 && root->groups->first()!=0)
+                {
+                  //printf("both members are grouped\n");
+                }
               }
             }
           }

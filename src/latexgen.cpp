@@ -248,7 +248,8 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{float}\n"
     "\\usepackage{textcomp}\n"
     "\\usepackage{alltt}\n"
-    "\\usepackage{ae,aecompl,aeguill}\n";
+    //"\\usepackage{ae,aecompl,aeguill}\n"
+    ;
   if (Config_getBool("PDF_HYPERLINKS")) 
   {
     t << "\\usepackage{times}" << endl;
