@@ -26,12 +26,15 @@
 #include "debug.h"
 #include "message.h"
 #include "config.h"
+#include "doxygen.h"
 
 static BufStr *g_inBuf;
 static BufStr *g_outBuf;
 static int     g_inBufPos;
 static int     g_col;
 static int     g_blockHeadCol;
+static bool    g_mlBrief;
+static int     g_readLineCtx;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -105,18 +108,7 @@ static int yyread(char *buf,int max_size)
   return bytesToCopy;
 }
 
-#define replaceComment(offset)                                \
-  int i=computeIndent(&yytext[offset]);                       \
-  if (i==g_blockHeadCol)                                      \
-  {                                                           \
-    replaceCommentMarker(yytext,yyleng);                      \
-  }                                                           \
-  else                                                        \
-  {                                                           \
-    copyToOutput(" */",3);                                    \
-    int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);         \
-    BEGIN(Scan);                                              \
-  }                                                           \
+void replaceComment(int offset);
 
 %}
 
@@ -127,6 +119,7 @@ static int yyread(char *buf,int max_size)
 %x SComment
 %x CComment
 %x Verbatim
+%x ReadLine
 
 %%
 
@@ -141,6 +134,7 @@ static int yyread(char *buf,int max_size)
                                      copyToOutput(yytext,yyleng); 
                                    }
 <Scan>("//!"|"///").*/\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+  				     if (g_mlBrief) REJECT; // bail out if we do not need to convert
   				     int i=3;
 				     if (yytext[2]=='/')
 				     {
@@ -152,14 +146,17 @@ static int yyread(char *buf,int max_size)
 				     BEGIN(SComment); 
                                    }
 <Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
+                                     if (g_mlBrief) REJECT;
                                      int i=17; //=strlen("//##Documentation");
 				     g_blockHeadCol=g_col;
 				     copyToOutput("/**",3);
 				     copyToOutput(yytext+i,yyleng-i);
 				     BEGIN(SComment);
   				   }
-<Scan>"//".*\n		           { /* one line C++ comment */ 
+<Scan>"//"/.*\n		           { /* one line C++ comment */ 
   				     copyToOutput(yytext,yyleng); 
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
 				   }
 <Scan>"/*"			   { /* start of a C comment */
                                      copyToOutput(yytext,yyleng); 
@@ -198,7 +195,7 @@ static int yyread(char *buf,int max_size)
 <SkipString>\n                     { /* new line inside string (illegal for some compilers) */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<CComment>[^*\n]*	           { /* anything that is not a '*' */ 
+<CComment>[^\\@*\n]*	           { /* anything that is not a '*' */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"*"+[^*/\n]*             { /* stars without slashes */
@@ -211,44 +208,116 @@ static int yyread(char *buf,int max_size)
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
+<CComment>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
+  				      QCString *pValue=Doxygen::aliasDict[yytext+1];
+				      if (pValue)
+				      {    
+					copyToOutput(pValue->data(),pValue->length());
+				      }
+				      else
+				      {
+					copyToOutput(yytext,yyleng);
+				      }
+  				   }
+<CComment>.			   {
+                                     copyToOutput(yytext,yyleng); 
+  				   }
 <SComment>^[ \t]*"///"[\/]*/\n     {
   				     replaceComment(0);
   				   }
 <SComment>\n[ \t]*"///"[\/]*/\n    {
                                      replaceComment(1); 
                                    }
-<SComment>^[ \t]*"///"[^\/\n].*/\n { 
+<SComment>^[ \t]*"///"[^\/\n]/.*\n { 
   				     replaceComment(0);
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
   				   }
-<SComment>\n[ \t]*"///"[^\/\n].*/\n  { 
+<SComment>\n[ \t]*"///"[^\/\n]/.*\n  { 
                                      replaceComment(1); 
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
   				   }
-<SComment>^[ \t]*"//!".*/\n        { 
+<SComment>^[ \t]*"//!"/.*\n        { 
   				     replaceComment(0);
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
                                    }
-<SComment>\n[ \t]*"//!".*/\n       { 
+<SComment>\n[ \t]*"//!"/.*\n       { 
                                      replaceComment(1); 
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
                                    }
-<SComment>^[ \t]*"//##".*/\n       {
+<SComment>^[ \t]*"//##"/.*\n       {
   				     replaceComment(0);
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
                                    }
-<SComment>\n[ \t]*"//##".*/\n      {
+<SComment>\n[ \t]*"//##"/.*\n      {
                                      replaceComment(1); 
+				     g_readLineCtx=YY_START;
+				     BEGIN(ReadLine);
                                    }
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 
 				     copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
+<ReadLine>[^\\@\n]*/\n		   {
+  				     copyToOutput(yytext,yyleng);
+                                     BEGIN(g_readLineCtx);
+  				   }
+<ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
+  				      QCString *pValue=Doxygen::aliasDict[yytext+1];
+				      if (pValue)
+				      {    
+					copyToOutput(pValue->data(),pValue->length());
+				      }
+				      else
+				      {
+					copyToOutput(yytext,yyleng);
+				      }
+  				   }
+<ReadLine>.			   {
+  				     copyToOutput(yytext,yyleng);
+  				   }
 
 %%
 
+void replaceComment(int offset)                                
+{
+  if (g_mlBrief)                                              
+  {                                                           
+    copyToOutput(yytext,yyleng); 
+  }                                                           
+  else                                                        
+  {                                                           
+    int i=computeIndent(&yytext[offset]);                     
+    if (i==g_blockHeadCol)                                    
+    {                                                         
+      replaceCommentMarker(yytext,yyleng);                    
+    }                                                         
+    else                                                      
+    {                                                         
+      copyToOutput(" */",3);                                  
+      int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);       
+      BEGIN(Scan);                                            
+    }                                                         
+  }
+}
+
+/*! This function does two things:
+ *  -# It converts multi-line C++ style comment blocks (that are aligned)
+ *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
+ *  -# It replaces aliases with their definition (see ALIASES)
+ */
 void convertCppComments(BufStr *inBuf,BufStr *outBuf)
 {
   g_inBuf    = inBuf;
   g_outBuf   = outBuf;
   g_inBufPos = 0;
   g_col      = 0;
+  g_mlBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
   BEGIN(Scan);
   yylex();
   if (Debug::isFlagSet(Debug::CommentCnv))

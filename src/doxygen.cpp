@@ -235,7 +235,6 @@ static void addRelatedPage(Entry *root)
   }
 }
 
-
 static void buildGroupListFiltered(Entry *root,bool additional)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
@@ -6783,10 +6782,11 @@ static void readFiles(BufStr &output)
 
     int fileNameSize=fileName.length();
 
-    bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+    //bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
 
-    BufStr tempBuf(10000);
-    BufStr *bufPtr = multiLineIsBrief ? &output : &tempBuf;
+    BufStr tempBuf(20000);
+    //BufStr *bufPtr = multiLineIsBrief ? &output : &tempBuf;
+    BufStr *bufPtr = &tempBuf;
 
     // add begin filename marker
     bufPtr->addChar(0x06);
@@ -6809,10 +6809,10 @@ static void readFiles(BufStr &output)
 
     bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
 
-    if (!multiLineIsBrief)
-    {
+    //if (!multiLineIsBrief)
+    //{
       convertCppComments(&tempBuf,&output);
-    }
+    //}
 
     s=inputFiles.next();
     //printf("-------> adding new line\n");

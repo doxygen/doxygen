@@ -48,7 +48,7 @@ struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
 class PageDef;
-class SectionInfo;
+struct SectionInfo;
 
 //--------------------------------------------------------------------
 

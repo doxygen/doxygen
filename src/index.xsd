@@ -1,5 +1,6 @@
+<?xml version='1.0' encoding='utf-8' ?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:element name="doxygen" type="DoxygenType"/>
+  <xsd:element name="doxygenindex" type="DoxygenType"/>
 
   <xsd:complexType name="DoxygenType">
     <xsd:sequence>
@@ -47,6 +48,7 @@
       <xsd:enumeration value="variable"/>
       <xsd:enumeration value="typedef"/>
       <xsd:enumeration value="enum"/>
+      <xsd:enumeration value="enumvalue"/>
       <xsd:enumeration value="function"/>
       <xsd:enumeration value="signal"/>
       <xsd:enumeration value="prototype"/>

@@ -4675,6 +4675,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
+  /*
 <SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]*  {
   					    QCString *pValue=Doxygen::aliasDict[yytext+1];
 					    if (pValue)
@@ -4686,6 +4687,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					      }
 					    }
                                           }
+  */
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
 					    if (YY_START==CopyArgComment)
 					      fullArgString+=yytext;
@@ -4731,25 +4733,25 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
                                           if (!handled)
                                           {
-  					    QCString *pValue=Doxygen::aliasDict[yytext+1];
-					    if (pValue)
-					    {
-					      int i,l=pValue->length();
-					      char c;
-					      for (i=l-1;i>=0;i--)
-					      {
-						c=pValue->at(i);
-					        unput(c);
-						if (c=='\n') yyLineNr--;
-					      }
-					    }
-					    else
-					    {
-					      if (YY_START==CopyArgComment)
-					        fullArgString+=yytext;
-					     else
-  					        current->doc+=yytext;
-					    }
+  					    //QCString *pValue=Doxygen::aliasDict[yytext+1];
+					    //if (pValue)
+					    //{
+					    //  int i,l=pValue->length();
+					    //  char c;
+					    //  for (i=l-1;i>=0;i--)
+					    //  {
+					    //  	c=pValue->at(i);
+					    //    unput(c);
+					    //	if (c=='\n') yyLineNr--;
+					    //  }
+					    //}
+					    //else
+					    //{
+					    if (YY_START==CopyArgComment)
+					      fullArgString+=yytext;
+					   else
+  					      current->doc+=yytext;
+					    //}
                                           }
   					}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
@@ -4763,22 +4765,22 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    current->brief+=yytext;
                                         }
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  QCString *pValue=Doxygen::aliasDict[yytext+1];
-					  if (pValue)
-					  {
-					    int i,l=pValue->length();
-					    for (i=l-1;i>=0;i--)
-					    {
-					      unput(pValue->at(i));
-					    }
-					  }
-					  else
-					  {
+  					  //QCString *pValue=Doxygen::aliasDict[yytext+1];
+					  //if (pValue)
+					  //{
+					  //  int i,l=pValue->length();
+					  //  for (i=l-1;i>=0;i--)
+					  //  {
+					  //    unput(pValue->at(i));
+					  //  }
+					  //}
+					  //else
+					  //{
 					    if (YY_START==CopyArgCommentLine)
 					      fullArgString+=yytext;
 					    else
   					      current->brief+=yytext;
-					  }
+					  //}
   					}
 <DefLineDoc,LineDoc,ClassDoc,PageDoc,ExampleDoc,Doc>"/*"|"//"   { current->doc += yytext; }
 <SkipCxxComment>.*/\n			{ 

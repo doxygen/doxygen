@@ -64,7 +64,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     }
 };
 
-class TranslatorJapanese : public TranslatorAdapter_1_3
+class TranslatorJapanese : public TranslatorEnglish
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -1394,7 +1394,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_3
      */
     virtual QCString trDeprecatedList()
     {
-      return "非推奨一覧";
+      return decode("非推奨一覧");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1406,13 +1406,68 @@ class TranslatorJapanese : public TranslatorAdapter_1_3
      */
     virtual QCString trEvents()
     {
-      return "イベント";
+      return decode("イベント");
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "イベントの解説";
+      return decode("イベントの解説");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return decode("パッケージ内の型定義");
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return decode("関数");
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return decode("スタティック関数");
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return decode("変数");
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return decode("スタティック変数");
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return decode("全て");
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return decode("関数の呼び出しグラフ:");
+    }
 };
 #endif

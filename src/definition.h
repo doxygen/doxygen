@@ -31,7 +31,7 @@ class MemberDef;
 class GroupDef;
 class GroupList;
 struct ListItemInfo;
-class SectionInfo;
+struct SectionInfo;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition

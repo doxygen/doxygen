@@ -229,6 +229,29 @@ static void processSection()
   }
 }
 
+static void handleHtmlTag()
+{
+  g_token->name = yytext;
+  g_token->attribs.clear();
+  int startNamePos=1;
+  if (g_token->name.at(1)=='/') startNamePos++;
+  int attSep=0;
+  while (attSep<yyleng && !isspace(yytext[attSep]))
+  {
+    attSep++;
+  }
+  if (attSep!=yyleng) // tag has one or more options
+  {
+    parseHtmlAttribs(g_token->name.mid(attSep+1,g_token->name.length()-attSep-2));
+    g_token->name=g_token->name.mid(startNamePos,attSep-1).lower();
+  }
+  else // tag without options, strip brackets
+  {
+    g_token->name=g_token->name.mid(startNamePos,g_token->name.length()-startNamePos-1).lower();
+  }
+  g_token->endTag = startNamePos==2;
+}
+
 //--------------------------------------------------------------------------
 
 #undef  YY_INPUT
@@ -255,7 +278,7 @@ ID    [a-z_A-Z][a-z_A-Z0-9]*
 OPTSTARS ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
 ENDLIST  {BLANK}*{OPTSTARS}"."{BLANK}*\n
-ATTRIB   {ID}("="(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
+ATTRIB   {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))([({]{URLCHAR}*[)}])?
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
@@ -283,7 +306,7 @@ WORD1     [^ \t\n\r\\@<>()\[\]:;\?{}&$#,.]+|"{"|"}"|("\""[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 WORD1NQ   [^ \t\n\r\\@<>()\[\]:;\?{}&$#,."]+ 
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
-HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
+HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
@@ -391,25 +414,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 
-                         g_token->name = yytext;
-			 g_token->attribs.clear();
-                         int startNamePos=1;
-                         if (g_token->name.at(1)=='/') startNamePos++;
-			 int attSep=0;
-			 while (attSep<yyleng && !isspace(yytext[attSep]))
-			 {
-			   attSep++;
-			 }
-                         if (attSep!=yyleng) // tag has one or more options
-                         {
-                           parseHtmlAttribs(g_token->name.mid(attSep+1,g_token->name.length()-attSep-2));
-                           g_token->name=g_token->name.mid(startNamePos,attSep-1).lower();
-                         }
-                         else // tag without options, strip brackets
-                         {
-                           g_token->name=g_token->name.mid(startNamePos,g_token->name.length()-startNamePos-1).lower();
-                         }
-			 g_token->endTag = startNamePos==2;
+                         handleHtmlTag();
                          return TK_HTMLTAG;
                        }
 <St_Para,St_Text>"&"{ID}";" { /* special symbol */ 
@@ -538,6 +543,8 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                          g_token->name = yytext;
   		         return TK_SYMBOL;
                        }
+<St_TitleN>{HTMLTAG}   {
+  		       }
 <St_TitleN>{SPCMD1}    |   
 <St_TitleN>{SPCMD2}    { /* special command */ 
                          g_token->name = yytext+1;

@@ -21,7 +21,7 @@
 #include "qtbc.h"
 #include <qlist.h>
 
-class SectionInfo;
+struct SectionInfo;
 
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
