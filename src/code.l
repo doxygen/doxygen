@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <qregexp.h>
+#include <qdir.h>
 
 #include "qtbc.h"
 #include "scanner.h"
@@ -1044,10 +1045,36 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <ReadInclude>[^\n\"\>]+/(">"|"\"")  	{
 					  //FileInfo *f;
 					  bool ambig;
-                                          FileDef *fd;
+					  bool found=FALSE;
+                                          FileDef *fd=0;
 					  if ((fd=findFileDef(Doxygen::inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {
+					    if (ambig) // multiple input files match the name
+					    {
+					      //printf("===== yes %s is ambigious\n",yytext);
+					      QCString name = convertToQCString(QDir::cleanDirPath(yytext));
+					      if (!name.isEmpty() && g_sourceFileDef)
+					      {
+					        FileName *fn = Doxygen::inputNameDict->find(name);
+						FileNameIterator fni(*fn);
+						// for each include name
+						for (fni.toFirst();!found && (fd=fni.current());++fni)
+						{
+						  // see if this source file actually includes the file
+						  found = g_sourceFileDef->isIncluded(fd->absFilePath());
+						  //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
+						}
+					      }
+					    }
+					    else // not ambiguous
+					    {
+					      found = TRUE;
+					    }
+					  }
+					  if (found)
+					  {
+					    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
 					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
 					  }
 					  else

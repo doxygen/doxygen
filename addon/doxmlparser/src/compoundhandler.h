@@ -123,6 +123,7 @@ class CompoundHandler : public IClass,
     // IFile implementation
     IGraph *includeDependencyGraph() const; 
     IGraph *includedByDependencyGraph() const;
+    IDocProgramListing *source() const;
     
   private:
     QList<RelatedCompound>  m_superClasses;
@@ -147,6 +148,7 @@ class CompoundHandler : public IClass,
     GraphHandler           *m_includeDependencyGraph;
     GraphHandler           *m_includedByDependencyGraph;
     QList<QString>          m_innerClasses;
+    ProgramListingHandler  *m_source;
 
 };
 

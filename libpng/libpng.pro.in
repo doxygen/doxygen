@@ -46,6 +46,7 @@ SOURCES		= adler32.c \
 		  uncompr.c \
 		  zutil.c
 win32:INCLUDEPATH          += .
+win32-g++:TMAKE_CFLAGS     += -D__CYGWIN__ -DALL_STATIC
 DESTDIR                    =  ../lib
 TARGET                     =  png
 OBJECTS_DIR                =  ../objects

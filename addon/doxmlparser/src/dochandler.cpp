@@ -627,7 +627,7 @@ void RefHandler::startRef(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_refId = attrib.value("refid");
-  m_refId = attrib.value("external");
+  m_extId = attrib.value("external");
   ASSERT(attrib.value("kindref")=="compound" || 
          attrib.value("kindref")=="member");
   m_targetKind = attrib.value("kindref")=="compound" ?  Compound : Member;

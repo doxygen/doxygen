@@ -126,7 +126,9 @@ void FileDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" 
+                     << convertToXML(getOutputFileBase()) 
+                     << "</filename>" << endl;
   }
   
   ol.startTextBlock();
@@ -186,9 +188,21 @@ void FileDef::writeDocumentation(OutputList &ol)
       // Here we use the include file name as it appears in the file.
       // we could also we the name as it is used within doxygen,
       // then we should have used fd->docName() instead of ii->includeName
-      if (fd && fd->isLinkable() && fd->generateSourceFile())
+      if (fd && fd->isLinkable())
       {
-        ol.writeObjectLink(fd->getReference(),fd->includeName(),0,ii->includeName);
+        ol.writeObjectLink(fd->getReference(),
+            fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
+            0,ii->includeName);
+        if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
+        {
+          const char *locStr = (ii->local || isIDLorJava) ? "yes" : "no";
+          Doxygen::tagFile << "    <includes id=\"" 
+                           << convertToXML(fd->getOutputFileBase()) 
+                           << "\" local=\"" << locStr << "\">" 
+                           << convertToXML(ii->includeName)
+                           << "</includes>" 
+                           << endl;
+        }
       }
       else
       {
@@ -621,6 +635,12 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,bool local
     includedByList->append(ii);
     includedByDict->insert(iName,ii);
   }
+}
+
+bool FileDef::isIncluded(const QCString &name) const
+{
+  if (name.isEmpty()) return FALSE;
+  return includeDict->find(name)!=0;
 }
 
 bool FileDef::generateSourceFile() const 

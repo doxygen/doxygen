@@ -20,6 +20,7 @@ HEADERS      =	bufstr.h \
                 classdef.h \
                 classlist.h \
                 code.h \
+		commentcnv.h \
 		constexp.h \
 		cppvalue.h \
 		debug.h \
@@ -100,6 +101,7 @@ SOURCES      =	ce_lex.cpp \
 		classdef.cpp \
 		classlist.cpp \
 		code.cpp \
+		commentcnv.cpp \
 		cppvalue.cpp \
 		debug.cpp \
                 defgen.cpp \
@@ -150,6 +152,7 @@ SOURCES      =	ce_lex.cpp \
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
+win32-g++:TMAKE_CXXFLAGS   += -D_WIN32 -D__CYGWIN__ -DALL_STATIC
 INCLUDEPATH                += ../qtools
 INCLUDEPATH                += ../libpng
 win32:INCLUDEPATH          += .

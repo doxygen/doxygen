@@ -33,7 +33,7 @@ class BufStr : public QCString
       {
         QCString::resize(size()+spareRoom);
       }
-      data()[offset++]=c;
+      QCString::data()[offset++]=c;
     }
     void addArray(const char *a,int len)
     {
@@ -41,7 +41,7 @@ class BufStr : public QCString
       {
         QCString::resize(size()+len+spareRoom);
       }
-      memcpy(data()+offset,a,len);
+      memcpy(QCString::data()+offset,a,len);
       offset+=len;
     }
     uint curPos() { return offset; }

@@ -25,13 +25,14 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.14-20020317), 25 languages 
+Currently (version 1.2.15-20020421), 26 languages 
 are supported (sorted alphabetically): 
-Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
-Dutch, English, Finnish, French, German, 
-Greek, Hungarian, Italian, Japanese, Korean, 
-Norwegian, Polish, Portuguese, Romanian, Russian, 
-Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+Brazilian Portuguese, Chinese, Chinesetraditional, Croatian, Czech, 
+Danish, Dutch, English, Finnish, French, 
+German, Greek, Hungarian, Italian, Japanese, 
+Korean, Norwegian, Polish, Portuguese, Romanian, 
+Russian, Slovak, Slovene, Spanish, Swedish, 
+and Ukrainian.
 
 The table of information related to the supported languages follows.
 It is sorted by language alphabetically.  The <b>Status</b> column
@@ -61,6 +62,12 @@ when the translator was updated.
       <TD>Wei Liu<br>Wang Weihan</TD>
       <TD>liuwei@NOSPAM.asiainfo.com<br>wangweihan@NOSPAM.capinfo.com.cn</TD>
       <TD>1.2.13</TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>Chinesetraditional</TD>  
+      <TD>Gary Lee</TD>
+      <TD>garylee@NOSPAM.ecosine.com.tw</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Croatian</TD>  
@@ -180,7 +187,7 @@ when the translator was updated.
       <TD>Slovene</TD>  
       <TD>Matjaz Ostroversnik</TD>
       <TD>matjaz.ostroversnik@NOSPAM.zrs-tk.si</TD>
-      <TD>1.2.13</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Spanish</TD>  
@@ -215,6 +222,8 @@ when the translator was updated.
   \hline
   Chinese & Wei Liu & {\tt liuwei@asiainfo.com} & 1.2.13 \\
    & Wang Weihan & {\tt wangweihan@capinfo.com.cn} &  \\
+  \hline
+  Chinesetraditional & Gary Lee & {\tt garylee@ecosine.com.tw} & up-to-date \\
   \hline
   Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & up-to-date \\
   \hline
@@ -257,7 +266,7 @@ when the translator was updated.
   \hline
   Slovak & Stanislav Kudl\'{a}\v{c} & {\tt skudlac@pobox.sk} & 1.2.13 \\
   \hline
-  Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & 1.2.13 \\
+  Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & up-to-date \\
   \hline
   Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} & 1.2.7 \\
   \hline

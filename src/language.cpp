@@ -76,6 +76,9 @@
 #ifdef LANG_CN
 #include "translator_cn.h"
 #endif
+#ifdef LANG_TW
+#include "translator_tw.h"
+#endif
 #ifdef LANG_NO
 #include "translator_no.h"
 #endif
@@ -216,6 +219,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("chinese"))
   {
     theTranslator=new TranslatorChinese;
+  }
+#endif
+#ifdef LANG_TW
+  else if (L_EQUAL("chinese-traditional"))
+  {
+    theTranslator=new TranslatorChinesetraditional;
   }
 #endif
 #ifdef LANG_NO

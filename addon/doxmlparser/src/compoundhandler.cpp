@@ -190,7 +190,6 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("innerclass",this,&CompoundHandler::startInnerClass);
   addEndHandler("innerclass");
 
-
 }
 
 CompoundHandler::~CompoundHandler()
@@ -459,5 +458,10 @@ IRelatedCompoundIterator *CompoundHandler::derivedClasses() const
 ICompoundIterator *CompoundHandler::nestedClasses() const
 {
   return new CompoundIdIterator(m_mainHandler,m_innerClasses);
+}
+
+IDocProgramListing *CompoundHandler::source() const
+{
+  return m_programListing;
 }
 

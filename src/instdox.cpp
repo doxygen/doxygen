@@ -117,7 +117,7 @@ void writeInstallScript()
     t << "if ( ! @files ) {\n";
     t << "  if (opendir(D,\".\")) {\n";
     t << "    foreach $file ( readdir(D) ) {\n";
-    t << "      $match = \".html\";\n";
+    t << "      $match = \"" << Config_getString("HTML_FILE_EXTENSION") << "\";\n";
     t << "      next if ( $file =~ /^\\.\\.?$/ );\n";
     t << "      ($file =~ /$match/) && (push @files, $file);\n";
     t << "      ($file =~ \"tree.js\") && (push @files, $file);\n";

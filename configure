@@ -27,7 +27,7 @@ f_prefix=/usr
 f_insttool=NO
 f_english=NO
 f_wizard=NO
-f_langs=nl,se,cz,fr,it,de,jp,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua,gr
+f_langs=nl,se,cz,fr,it,de,jp,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua,gr,tw
 
 while test -n "$1";  do
   case $1 in
@@ -412,11 +412,11 @@ EOF
   fi
 fi
 
-if test "$f_platform" = "win32-g++"; then
-  cat >> .tmakeconfig <<EOF
-    TMAKE_LFLAGS += -D_WIN32
-EOF
-fi
+#if test "$f_platform" = "win32-g++"; then
+#  cat >> .tmakeconfig <<EOF
+#    TMAKE_LFLAGS += -D_WIN32
+#EOF
+#fi
 
 if test "$f_english" = YES; then
   cat >> .tmakeconfig <<EOF
@@ -483,7 +483,7 @@ echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
 	@allowed=(NL,SE,CZ,FR,IT,DE,JP,ES,FI,RU,HR,PL,PT,HU,KR,RO,SI,CN,NO,BR,
-		  DK,SK,UA,GR);
+		  DK,SK,UA,GR,TW);
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

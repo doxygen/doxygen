@@ -60,6 +60,7 @@
 #include "page.h"
 #include "packagedef.h"
 #include "bufstr.h"
+#include "commentcnv.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -1073,6 +1074,13 @@ static void findUsingDeclarations(Entry *root)
       } while (scopeOffset>=0 && usingCd==0);
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
+      if (usingCd==0) // definition not in the input => add an artificial class
+      {
+        usingCd = new ClassDef(
+                     "<generated>",1,
+                     root->name,ClassDef::Class);
+        Doxygen::hiddenClasses.append(root->name,usingCd);
+      }
 
       // add the namespace the correct scope
       if (usingCd)
@@ -1758,8 +1766,6 @@ void addMethodToClass(Entry *root,ClassDef *cd,
   {
     mn = new MemberName(name);
     mn->append(md);
-    //Doxygen::memberNameDict.insert(name,mn);
-    //Doxygen::memberNameList.append(mn);
     Doxygen::memberNameSDict.append(name,mn);
   }
 
@@ -1873,9 +1879,11 @@ static void buildFunctionList(Entry *root)
             QCString nsName,rnsName;
             if (nd)  nsName  = nd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
+            NamespaceList *unl = fd ? fd->getUsedNamespaces() : 0;
+            ClassList     *ucl = fd ? fd->getUsedClasses() : 0;
             //printf("matching arguments for %s\n",md->name().data());
             if ( 
-                matchArguments(md->argumentList(),root->argList,0,nsName)
+                matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,unl,ucl)
                )
             {
               //printf("match!\n");
@@ -2043,8 +2051,6 @@ static void buildFunctionList(Entry *root)
           {
             mn = new MemberName(name);
             mn->append(md);
-            //Doxygen::functionNameDict.insert(name,mn);
-            //Doxygen::functionNameList.append(mn);
             Doxygen::functionNameSDict.append(name,mn);
           }
           addMemberToGroups(root,md);
@@ -3139,7 +3145,9 @@ static void computeClassRelations()
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && 
         bName.right(2)!="::")
     {
-      if (!root->name.isEmpty() && root->name[0]!='@')
+      if (!root->name.isEmpty() && root->name[0]!='@' &&
+          (guessSection(root->fileName)==Entry::HEADER_SEC || Config_getBool("EXTRACT_LOCAL_CLASSES"))
+         )
         warn_undoc(
                    root->fileName,root->startLine,
                    "Warning: Compound %s is not documented.",
@@ -3572,6 +3580,7 @@ static bool findGlobalMember(Entry *root,
       FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
+      ClassList *cl     = fd ? fd->getUsedClasses()    : 0;
       //printf("NamespaceList %p\n",nl);
 
       // search in the list of namespaces that are imported via a 
@@ -3589,7 +3598,7 @@ static bool findGlobalMember(Entry *root,
         bool matching=
           (md->argumentList()==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments(md->argumentList(),root->argList,0,nsName);
+          matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,nl,cl);
 
         // for static members we also check if the comment block was found in 
         // the same file. This is needed because static members with the same
@@ -6280,26 +6289,31 @@ static void readFiles(BufStr &output)
 
     int fileNameSize=fileName.length();
 
+    BufStr tempBuf(10000);
+
     // add begin filename marker
-    output.addChar(0x06);
+    tempBuf.addChar(0x06);
     // copy filename
-    output.addArray(fileName.data(),fileNameSize);
+    tempBuf.addArray(fileName.data(),fileNameSize);
     
     // add end filename marker
-    output.addChar(0x06);
-    output.addChar('\n');
+    tempBuf.addChar(0x06);
+    tempBuf.addChar('\n');
     if (Config_getBool("ENABLE_PREPROCESSING"))
     {
       msg("Preprocessing %s...\n",s->data());
-      preprocessFile(fileName,output);
+      preprocessFile(fileName,tempBuf);
     }
     else
     {
       msg("Reading %s...\n",s->data());
-      copyAndFilterFile(fileName,output);
+      copyAndFilterFile(fileName,tempBuf);
     }
 
-    output.addChar('\n'); /* to prevent problems under Windows ? */
+    tempBuf.addChar('\n'); /* to prevent problems under Windows ? */
+
+    convertCppComments(&tempBuf,&output);
+    //output.addArray(tempBuf.data(),tempBuf.curPos());
 
     s=inputFiles.next();
     //printf("-------> adding new line\n");
@@ -6989,6 +7003,10 @@ void parseInput()
     s=excludeList.next();
   }
 
+  /**************************************************************************
+   *             Determine Input Files                                      *
+   **************************************************************************/
+
   msg("Reading input files...\n");
   QDict<void> *killDict = new QDict<void>(10007);
   int inputSize=0;
@@ -7079,6 +7097,25 @@ void parseInput()
     }
     s=aliasList.next();
   }
+
+  /**************************************************************************
+   *             Handle Tag Files                                           *
+   **************************************************************************/
+
+  Entry *root=new Entry;
+  msg("Reading tag files\n");
+  
+  QStrList &tagFileList = Config_getList("TAGFILES");
+  s=tagFileList.first();
+  while (s)
+  {
+    readTagFile(root,s);
+    s=tagFileList.next();
+  }
+  
+  /**************************************************************************
+   *             Read Input Files                                           *
+   **************************************************************************/
   
   BufStr input(inputSize+1); // Add one byte extra for \0 termination
 
@@ -7201,25 +7238,8 @@ void parseInput()
     readFormulaRepository();
   }
   
-  Entry *root=new Entry;
   root->program=input;
 
-
-  /**************************************************************************
-   *             Handle Tag Files                                           *
-   **************************************************************************/
-
-  msg("Reading tag files\n");
-  
-  QStrList &tagFileList = Config_getList("TAGFILES");
-  s=tagFileList.first();
-  while (s)
-  {
-    readTagFile(root,s);
-    s=tagFileList.next();
-  }
-  
-  
   /**************************************************************************
    *             Gather information                                         * 
    **************************************************************************/

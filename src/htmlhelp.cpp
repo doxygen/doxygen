@@ -26,6 +26,7 @@
 #include "htmlhelp.h"
 #include "config.h"
 #include "message.h"
+#include "doxygen.h"
 
 //----------------------------------------------------------------------------
 
@@ -176,7 +177,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << f->url << ".html";
+        t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension;
         if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
         t << "\">";
         t << "<param name=\"Name\" value=\"" << level1 << "\">"
@@ -187,7 +188,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << f->url << ".html\">";
+          t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension << "\">";
           t << "<param name=\"Name\" value=\"" << level1 << "\">"
                "</OBJECT>\n";
         }
@@ -213,7 +214,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
     if (level2Started)
     {
       t << "    <LI><OBJECT type=\"text/sitemap\">";
-      t << "<param name=\"Local\" value=\"" << f->url << ".html";
+      t << "<param name=\"Local\" value=\"" << f->url << htmlFileExtension;
       if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
       t << "\">";
       t << "<param name=\"Name\" value=\"" << level2 << "\">"
@@ -307,8 +308,8 @@ void HtmlHelp::createProjectFile()
     t.setEncoding(QTextStream::Latin1);
 #endif
 
-    QCString indexName="index.html";
-    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main.html";
+    QCString indexName="index"+htmlFileExtension;
+    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+htmlFileExtension;
     t << "[OPTIONS]\n"
          "Compatibility=1.1\n"
          "Full-text search=Yes\n"
@@ -417,7 +418,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   cts << "<param name=\"Name\" value=\"" << name << "\">";
   if (ref)      // made ref optional param - KPW
   {
-    cts << "<param name=\"Local\" value=\"" << ref << ".html";
+    cts << "<param name=\"Local\" value=\"" << ref << htmlFileExtension;
     if (anchor) cts << "#" << anchor;  
     cts << "\">";
   }

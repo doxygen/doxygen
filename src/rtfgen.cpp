@@ -37,6 +37,9 @@
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
+// used for table column width calculation
+#define PAGEWIDTH 8748
+
 const int indentLevels = 10;
 
 struct ListItemInfo
@@ -121,6 +124,7 @@ void RTFGenerator::append(const OutputGenerator *g)
   //insideTabbing=insideTabbing || ((RTFGenerator *)g)->insideTabbing;
   m_listLevel=((RTFGenerator *)g)->m_listLevel;
   m_omitParagraph=((RTFGenerator *)g)->m_omitParagraph;
+  m_columnNumbers=((RTFGenerator *)g)->m_columnNumbers;
   //printf("RTFGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
   //    insideTabbing ? "TRUE" : "FALSE" );
 }
@@ -1640,6 +1644,59 @@ void RTFGenerator::endSubsubsection()
 //  docify(name);
 //  t << "}";
 //}
+
+void RTFGenerator::startTable(bool,int colNumbers) 
+{
+  m_columnNumbers=colNumbers;
+  t<<"\\par\n";
+}
+
+void RTFGenerator::endTable(bool hasCaption) 
+{ 
+  if (!hasCaption) 
+    t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n"; 
+  t << "\\pard\n" << endl; 
+}
+
+void  RTFGenerator::startCaption() 
+{
+  endTableRow();
+  t<<"\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10"<<endl;
+  t<<"\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<PAGEWIDTH<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright "<<endl;
+  nextTableColumn();
+}
+
+void  RTFGenerator::endCaption() 
+{
+  endTableColumn();
+  endTableRow();
+}
+
+void RTFGenerator::nextTableRow() 
+{  
+  unsigned long columnWidth=PAGEWIDTH/m_columnNumbers;
+  t<<"\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10 "<<endl;
+  for (int i=1;i<=m_columnNumbers;i++) 
+  {
+    t<<"\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<i*columnWidth<<endl;
+  }
+  t<<"\\pard \\widctlpar\\intbl\\adjustright\n{";
+}
+ 
+void RTFGenerator::endTableRow() 
+{ 
+  t<<"\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
+}
+ 
+void RTFGenerator::nextTableColumn() 
+{
+  t<<"{ ";
+}
+
+void RTFGenerator::endTableColumn() 
+{ 
+  t<<" \\cell }";
+}
 
 void RTFGenerator::startTextLink(const char *f,const char *anchor)
 {

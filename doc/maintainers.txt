@@ -8,6 +8,9 @@ Chinese
 Wei Liu: liuwei@asiainfo.com
 Wang Weihan: wangweihan@capinfo.com.cn
 
+ChineseTraditional
+Gary Lee: garylee@ecosine.com.tw
+
 Croatian
 Boris Bralo: boris.bralo@zg.tel.hr
 

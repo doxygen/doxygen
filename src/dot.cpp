@@ -1470,7 +1470,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
     if (bfd)
     {
       in  = bfd->absFilePath();  
-      doc = bfd->isLinkableInProject();
+      doc = bfd->isLinkable();
       src = bfd->generateSourceFile();
     }
     if (doc || src)

@@ -27,6 +27,7 @@ win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\lib
 win32-borland:LIBS         += qtools.lib shell32.lib
 win32-borland:TMAKE_LFLAGS += -L..\lib -L$(BCB)\lib\psdk
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+win32-g++:TMAKE_CXXFLAGS   += -D_WIN32
 INCLUDEPATH                += ../qtools
 OBJECTS_DIR                =  ../objects
 TARGET                     =  ../bin/doxytag

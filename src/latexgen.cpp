@@ -1393,7 +1393,8 @@ void LatexGenerator::docify(const char *str)
   static bool isKorean        = theTranslator->idLanguage()=="korean";
   static bool isRussian       = theTranslator->idLanguage()=="russian";
   static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
-  static bool isChinese       = theTranslator->idLanguage()=="chinese";
+  static bool isChinese       = theTranslator->idLanguage()=="chinese" || 
+                                theTranslator->idLanguage()=="chinese-traditional";
   static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
   static bool isGreek         = theTranslator->idLanguage()=="greek";
   if (str)

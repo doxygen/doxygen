@@ -22,3 +22,4 @@
 #define LANG_SK
 #define LANG_UA
 #define LANG_GR
+#define LANG_TW

@@ -154,14 +154,14 @@ class RTFGenerator : public OutputGenerator
     void endSubscript()     { t << "}"; }
     void startSuperscript() { t << "{\\super " << endl;}
     void endSuperscript()   { t << "}"; }
-    void startTable(bool,int)   { /* not implemented */ }
-    void endTable(bool)         { /* not implemented */ }
-    void startCaption()     { /* not implemented */ }
-    void endCaption()       { /* not implemented */ }
-    void nextTableRow()     { /* not implemented */ }
-    void endTableRow()      { /* not implemented */ }
-    void nextTableColumn()  { /* not implemented */ }
-    void endTableColumn()   { /* not implemented */ }
+    void startTable(bool,int);
+    void endTable(bool);
+    void startCaption();
+    void endCaption();
+    void nextTableRow();
+    void endTableRow();
+    void nextTableColumn();
+    void endTableColumn();
     void writeCopyright()    { t << "\251"; }
     void writeQuote()        { t << "\""; }
     void writeUmlaut(char c);
@@ -268,6 +268,7 @@ class RTFGenerator : public OutputGenerator
     bool m_bstartedBody;  // has startbody been called yet?
     int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.
     bool m_omitParagraph; // should a the next paragraph command be ignored?
+    int  m_columnNumbers; // number of columns in a table
 
     void beginRTFDocument();
     void beginRTFChapter();

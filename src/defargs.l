@@ -261,16 +261,37 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
 					    Argument *a = new Argument; 
 					    a->attrib = g_curArgAttrib.copy();
-					    if (i>=0 && g_curArgTypeName.at(i)!=':')
+					    //printf("a->type=%s a->name=%s i=%d l=%d\n",
+					    //	a->type.data(),a->name.data(),i,l);
+					    a->array.resize(0);
+					    if (i==l-1 && g_curArgTypeName.at(i)==')') // function argument
+					    {
+					      int bi=g_curArgTypeName.find('(');
+					      int fi=bi-1;
+					      //printf("func arg fi=%d\n",fi);
+					      while (fi>=0 && isId(g_curArgTypeName.at(fi))) fi--;
+					      if (fi>=0)
+					      {
+					        a->type  = g_curArgTypeName.left(fi+1);
+					        a->name  = g_curArgTypeName.mid(fi+1,bi-fi-1);
+						a->array = g_curArgTypeName.right(l-bi);
+					      }
+					      else
+					      {
+						a->type = g_curArgTypeName;
+					      }
+					    }
+					    else if (i>=0 && g_curArgTypeName.at(i)!=':')
 					    { // type contains a name
 					      a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
-					      a->name = g_curArgTypeName.right(g_curArgTypeName.length()-i-1);
+					      a->name = g_curArgTypeName.right(l-i-1);
 					    }
 					    else // assume only the type was specified, try to determine name later 
 					    {
 					      a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
 					    }
-					    a->array  = removeRedundantWhiteSpace(g_curArgArray);
+					    //printf("a->type=%s a->name=%s a->array=%s\n",a->type.data(),a->name.data());
+					    a->array  += removeRedundantWhiteSpace(g_curArgArray);
 					    a->defval = g_curArgDefValue.copy();
 					    a->docs   = g_curArgDocs.stripWhiteSpace();
 					    //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
