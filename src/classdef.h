@@ -290,6 +290,7 @@ class ClassDef : public Definition
     //QCString getTemplateArgumentMapping(const char *formal) const;
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
                                 const QCString &templSpec,bool &freshInstance);
+    ClassDef *getVariableInstance(const char *templSpec);
     void setTemplateBaseClassNames(QDict<int> *templateNames);
     QDict<int> *getTemplateBaseClassNames() const;
     void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
@@ -415,6 +416,12 @@ class ClassDef : public Definition
      *  dictionary is the template argument list.
      */ 
     QDict<ClassDef> *m_templateInstances;
+
+    /*! Template instances that exists of this class, as defined by variables.
+     *  We do NOT want to document these individually. The key in the
+     *  dictionary is the template argument list.
+     */ 
+    QDict<ClassDef> *m_variableInstances;
 
     QDict<int> *m_templBaseClassNames;
 

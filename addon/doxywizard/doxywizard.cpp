@@ -89,7 +89,8 @@ static bool saveConfig( QString saveFile )
     return FALSE; // failure
   }
 
-  Config::instance()->writeTemplate(&f,TRUE,FALSE); // write brief config file
+  QTextStream t(&f);
+  Config::instance()->writeTemplate(t,TRUE,FALSE); // write brief config file
 
   return TRUE; // success
 }

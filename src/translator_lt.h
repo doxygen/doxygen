@@ -30,7 +30,7 @@
 #define TRANSLATOR_LT_H
 
 
-class TranslatorLithuanian : public Translator
+class TranslatorLithuanian : public TranslatorAdapter_1_3_8
 {
   public:
 

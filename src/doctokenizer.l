@@ -295,7 +295,9 @@ FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
 SCOPESEP  "::"|"#"|"."
 SCOPEPRE  {ID}("<"{TEMPCHAR}*">")?{SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
-SCOPEMASK {SCOPEPRE}*(~)?{ID}{SCOPEKEYS}?("<"{TEMPCHAR}*">")?
+SCOPECPP  {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
+SCOPEOBJC {ID}{SCOPEKEYS}?
+SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
 FUNCARG   "("{FUNCCHAR}*")"
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
@@ -462,6 +464,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                          g_token->name = yytext;
                          return TK_LNKWORD;
   			}
+<St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
 <St_Para>{LNKWORD2}    {
@@ -794,7 +797,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                                       g_secType = SectionInfo::Paragraph; 
                                       BEGIN(St_SecLabel2); 
                                     }
-<St_Sections>{CMD}"verbatim"{BLANK}+  {
+<St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
                                       g_endMarker="endverbatim";
 				      BEGIN(St_SecSkip);
   				    }

@@ -660,9 +660,8 @@ static void writeStringList(QTextStream &t,QStrList &l)
 }
 #endif
 
-void Config::writeTemplate(QFile *f,bool sl,bool upd)
+void Config::writeTemplate(QTextStream &t,bool sl,bool upd)
 {
-  QTextStream t(f);
   t << "# Doxyfile " << versionString << endl << endl;
   if (!sl)
   {
@@ -1708,8 +1707,12 @@ void Config::create()
                     "file names in lower-case letters. If set to YES upper-case letters are also \n"
                     "allowed. This is useful if you have classes or files whose names only differ \n"
                     "in case and if your file system supports case sensitive file names. Windows \n"
-                    "users are advised to set this option to NO.\n",
-                    TRUE
+                    "and Mac users are advised to set this option to NO.\n",
+#if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__)
+		    FALSE // case insensitive file system expected
+#else
+                    TRUE // case sensitive file system expected
+#endif
                  );
   cb = addBool(
                     "HIDE_SCOPE_NAMES",
@@ -2824,15 +2827,13 @@ static QCString configFileToString(const char *name)
   return "";
 }
 
-
-bool Config::parse(const char *fn)
+bool Config::parseString(const char *fn,const char *str)
 {
-  QCString contents = configFileToString(fn); 
   config = Config::instance();
-  inputString   = contents.data();
+  inputString   = str;
   inputPosition = 0;
+  yyFileName    = fn;
   yyLineNr      = 1;
-  yyFileName=fn;
   includeStack.setAutoDelete(TRUE);
   includeStack.clear();
   includeDepth  = 0;
@@ -2841,6 +2842,11 @@ bool Config::parse(const char *fn)
   configYYlex();
   inputString = 0;
   return TRUE;
+}
+
+bool Config::parse(const char *fn)
+{
+  return parseString(fn,configFileToString(fn)); 
 }
 
 extern "C" { // some bogus code to keep the compiler happy

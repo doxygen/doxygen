@@ -61,7 +61,7 @@
   <xsd:complexType name="compoundRefType" mixed="true">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
-        <xsd:attribute name="refid" type="xsd:string" />
+        <xsd:attribute name="refid" type="xsd:string" use="optional" />
         <xsd:attribute name="prot" type="DoxProtectionKind" />
         <xsd:attribute name="virt" type="DoxVirtualKind" />
       </xsd:extension>
@@ -106,6 +106,7 @@
   <xsd:complexType name="sectiondefType">
     <xsd:sequence>
       <xsd:element name="header" type="xsd:string" minOccurs="0" />
+      <xsd:element name="description" type="descriptionType" minOccurs="0" />
       <xsd:element name="memberdef" type="memberdefType" maxOccurs="unbounded" />
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSectionKind" />
@@ -156,9 +157,9 @@
   <xsd:complexType name="enumvalueType" mixed="true">
     <xsd:sequence>
       <xsd:element name="name" />
+      <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
       <xsd:element name="briefdescription" type="descriptionType" minOccurs="0" />
       <xsd:element name="detaileddescription" type="descriptionType" minOccurs="0" />
-      <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />

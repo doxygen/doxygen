@@ -21,9 +21,9 @@ if ($target eq "msvc")
 # create config file
 open(FILE,">makeconfig") || die "Cannot create file makeconfig!";
 
-print FILE "DOXYGEN   = $pwd\n";
-print FILE "TMAKEPATH = $pwd\\tmake\\lib\\win32-$target\n";
-print FILE "TMAKE     = $pwd\\tmake\\bin\\tmake\n";
+print FILE "DOXYGEN   = \"$pwd\"\n";
+print FILE "TMAKEPATH = \"$pwd\\tmake\\lib\\win32-$target\"\n";
+print FILE "TMAKE     = \"$pwd\\tmake\\bin\\tmake\"\n";
 print FILE "MAKE      = $make\n";
 print FILE "PERL      = perl\n";
 print FILE "RM        = del /s /q\n";

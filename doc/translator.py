@@ -40,17 +40,90 @@
      content should be more useful for developers.
   2004/02/11 - Some tuning-up to provide more useful information.
   2004/04/16 - Added new tokens to the tokenizer (to remove some warnings).
+  2004/05/25 - Added from __future__ import generators not to force Python 2.3.
+  2004/06/03 - Removed dependency on textwrap module.
   """                               
 
-import os, re, sys, textwrap
+from __future__ import generators
+import os, re, sys
 
 
 def fill(s):
     """Returns string formated to the wrapped paragraph multiline string.
     
     Replaces whitespaces by one space and then uses he textwrap.fill()."""
+    
+    # Replace all whitespace by spaces, remove whitespaces that are not
+    # necessary, strip the left and right whitespaces, and break the string 
+    # to list of words.
     rexWS = re.compile(r'\s+')
-    return textwrap.fill(rexWS.sub(' ', s))
+    lst = rexWS.sub(' ', s).strip().split()
+    
+    # If the list is not empty, put the words together and form the lines 
+    # of maximum 70 characters. Build the list of lines.
+    lines = []
+    if lst:
+        line = lst.pop(0)   # no separation space in front of the first word
+        for word in lst:
+            if len(line) + len(word) < 70:
+                line += ' ' + word
+            else:
+                lines.append(line)  # another full line formed
+                line = word         # next line started
+        
+    return '\n'.join(lines)
+
+    
+# The following function dedent() is the verbatim copy from the textwrap.py
+# module. The textwrap.py was introduced in Python 2.3. To make this script
+# working also in older Python versions, I have decided to copy it. 
+# Notice that the textwrap.py is copyrighted:
+#
+# Copyright (C) 1999-2001 Gregory P. Ward.
+# Copyright (C) 2002, 2003 Python Software Foundation.
+# Written by Greg Ward <gward@python.net>
+#
+# The explicit permission to use the code here was sent by Guido van Rossum 
+# (4th June, 2004).
+#
+def dedent(text):
+    """dedent(text : string) -> string
+
+    Remove any whitespace than can be uniformly removed from the left
+    of every line in `text`.
+
+    This can be used e.g. to make triple-quoted strings line up with
+    the left edge of screen/whatever, while still presenting it in the
+    source code in indented form.
+
+    For example:
+
+        def test():
+            # end first line with \ to avoid the empty line!
+            s = '''\
+            hello
+              world
+            '''
+            print repr(s)          # prints '    hello\n      world\n    '
+            print repr(dedent(s))  # prints 'hello\n  world\n'
+    """
+    lines = text.expandtabs().split('\n')
+    margin = None
+    for line in lines:
+        content = line.lstrip()
+        if not content:
+            continue
+        indent = len(line) - len(content)
+        if margin is None:
+            margin = indent
+        else:
+            margin = min(margin, indent)
+
+    if margin is not None and margin > 0:
+        for i in range(len(lines)):
+            lines[i] = lines[i][margin:]
+
+    return '\n'.join(lines)
     
 
 class Transl:
@@ -1521,7 +1594,7 @@ class TrManager:
             </table>
             \\endhtmlonly
             '''
-        htmlTableTpl = textwrap.dedent(htmlTableTpl)    
+        htmlTableTpl = dedent(htmlTableTpl)    
         htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
         htmlTdTpl = '\n    <td>%s</td>'
 
@@ -1585,7 +1658,7 @@ class TrManager:
             \end{tabular}
             \endlatexonly
             '''
-        latexTableTpl = textwrap.dedent(latexTableTpl)    
+        latexTableTpl = dedent(latexTableTpl)    
         latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
 
         # Loop through transl objects in the order of sorted readable names

@@ -1485,21 +1485,31 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           BEGIN(Using); 
                                         }
 <Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
-<Using>{ID}{BN}*"::"{BN}*{ID}({BN}*"::"{BN}*{ID})*	{
+<Using>{ID}{BN}*({BN}*("::"|"."){BN}*{ID})*	{
                                           lineCount();
   					  current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
-					  //printf("Found using declaration %s\n",yytext);
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
+					  if (insideCS) /* Hack: in C# a using declaration and 
+							   directive have the same syntax, so we
+							   also add it as a using directive here
+							 */
+					  {
+					    current->name=yytext;
+					    current->fileName = yyFileName; 
+					    current->startLine = yyLineNr;
+					    current->section=Entry::USINGDIR_SEC;
+					    current_root->addSubEntry(current);
+					    current             = new Entry ;
+					  }
 					  initEntry();
 					  BEGIN(Using);
   					}
 <UsingDirective>{SCOPENAME}		{ current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
-					  //printf("Found using directive %s\n",yytext);
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  initEntry();
@@ -3616,6 +3626,39 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  BEGIN( FindMembers );
     					}
+<Bases,ClassVar>"///"/[^/]              {
+  					  if (!insideObjC)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+					    lineCount();
+					    current->program+=yytext;
+                                            current->fileName = yyFileName ;
+					    current->startLine = yyLineNr ;
+					    curlyCount=0;
+					    BEGIN( ReadBodyIntf );
+					  }
+  					}
+<Bases,ClassVar>("//"{B}*)?"/**"/[^/*]  |
+<Bases,ClassVar>("//"{B}*)?"/*!"        |
+<Bases,ClassVar>"//!"                   |
+<Bases,ClassVar>[\-+]{BN}+		{
+  					  if (!insideObjC)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+					    lineCount();
+					    current->program+=yytext;
+                                            current->fileName = yyFileName ;
+					    current->startLine = yyLineNr ;
+					    curlyCount=0;
+					    BEGIN( ReadBodyIntf );
+					  }
+  					}
 <CompoundName,ClassVar>{B}*"{"{B}*	{ 
                                           current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
@@ -3666,7 +3709,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					  {
 					    yyLineNr++;
-					    unput('{');
+					    //unput('{');
 					  }
 					}
 <ClassVar,Bases>"@end"			{ // empty ObjC interface

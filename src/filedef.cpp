@@ -211,10 +211,10 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   //printf("WriteDocumentation diskname=%s\n",diskname.data());
   
-  QCString pageTitle=name()+" File Reference";
+  QCString pageTitle=theTranslator->trFileReference(docname);
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  ol.parseText(theTranslator->trFileReference(docname));
+  ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
@@ -490,7 +490,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 void FileDef::writeSource(OutputList &ol)
 {
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,getSourceFileBase(),0,docname+" Source File");
+  startFile(ol,getSourceFileBase(),0,theTranslator->trSourceFile(docname));
   startTitle(ol,0);
   ol.parseText(docname);
   endTitle(ol,0,0);
