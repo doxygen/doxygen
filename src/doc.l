@@ -982,7 +982,7 @@ static void checkArgName(const QCString &name,bool isParam)
  *  @retval TRUE if name was found.
  *  @retval FALSE if name was not found.
  */
-bool findDocsForMemberOrCompound(const char *commandName,
+static bool findDocsForMemberOrCompound(const char *commandName,
                                  QCString *pDoc,
                                  Definition **pDef)
 {
@@ -1919,10 +1919,15 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					  QCString secName=&yytext[8];
 					  secName=secName.left(secName.length()-1);
 					  SectionInfo *sec;
+					  //printf("secName=%s\n",secName.data());
 					  if ((sec=Doxygen::sectionDict[secName]))
 					  {
 					    //printf("writeAnchor %s_%s\n",sec->fileName.data(),sec->label.data());
 					    outDoc->writeAnchor(sec->fileName,sec->label);
+					  }
+					  else
+					  {
+					    //printf("Section %s not found!\n",secName.data());
 					  }
   					}
 <DocScan>"\\_internalref"{B}+		{ // for internal use only!
@@ -2128,6 +2133,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					}
 <DocRtfImageOpt>\n			{
   					  writeImage(IT_RTF,0);
+					  BEGIN(DocScan);
   					}
 <DocRtfImageOpt>\"[^\n"]*\"		{
 					  curImageCaption=stripQuotes(yytext);
@@ -2947,64 +2953,68 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
               const char *clName,MemberDef *md,const QCString &docStr)
 {
 
+  //printf("parseDoc doc=`%s'\n",docStr.data());
+  
   if (Debug::isFlagSet(Debug::Validate))
   {
     od.parseDoc(fileName,startLine,clName,md,docStr);
   }
-  
-  strcpy(yyFileName,fileName);
-  yyLineNr = startLine;
-
-  QCString docString=docStr;
-  resolveCopyDocCommands(clName,docString);
-  
-  yyLineNr = startLine;
-  //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
-  initParser();
-  initParseCodeContext();
-  exampleDoc=FALSE;           // do not cross reference with member docs
-  className=clName;
-  memberDef = md;
-  hasParamCommand = FALSE;
-  paramsFound.setAutoDelete(FALSE);
-  paramsFound.clear();
-  parseDocument(od,docString);
-
-  if (md && hasParamCommand && Config_getBool("WARN_IF_UNDOCUMENTED"))
+  else
   {
-    ArgumentList *al=memberDef->isDocsForDefinition() ? 
-		     memberDef->argumentList() :
-                     memberDef->declArgumentList();
-    if (al)
+    strcpy(yyFileName,fileName);
+    yyLineNr = startLine;
+
+    QCString docString=docStr;
+    resolveCopyDocCommands(clName,docString);
+
+    yyLineNr = startLine;
+    //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
+    initParser();
+    initParseCodeContext();
+    exampleDoc=FALSE;           // do not cross reference with member docs
+    className=clName;
+    memberDef = md;
+    hasParamCommand = FALSE;
+    paramsFound.setAutoDelete(FALSE);
+    paramsFound.clear();
+    parseDocument(od,docString);
+
+    if (md && hasParamCommand && Config_getBool("WARN_IF_UNDOCUMENTED"))
     {
-      ArgumentListIterator ali(*al);
-      Argument *a;
-      bool found=FALSE;
-      for (ali.toFirst();(a=ali.current());++ali)
+      ArgumentList *al=memberDef->isDocsForDefinition() ? 
+	memberDef->argumentList() :
+	memberDef->declArgumentList();
+      if (al)
       {
-        QCString argName = memberDef->isDefine() ? a->type : a->name;
-        if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-	if (!argName.isEmpty() && paramsFound.find(argName)==0) 
-	{
-	   found = TRUE;
-	   break;
-	}
-      }
-      if (found)
-      {
-	QCString scope=memberDef->getScopeString();
-	if (!scope.isEmpty()) scope+="::"; else scope="";
-        warn(memberDef->docFile(),memberDef->docLine(),
-      	     "Warning: The following parameters of "
-	     "%s%s%s are not documented:",
-		scope.data(),memberDef->name().data(),
-		argListToString(al).data());
+	ArgumentListIterator ali(*al);
+	Argument *a;
+	bool found=FALSE;
 	for (ali.toFirst();(a=ali.current());++ali)
 	{
-          QCString argName = memberDef->isDefine() ? a->type : a->name;
+	  QCString argName = memberDef->isDefine() ? a->type : a->name;
+	  if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
 	  if (!argName.isEmpty() && paramsFound.find(argName)==0) 
 	  {
-	    warn_cont( "  parameter %s\n",argName.data());
+	    found = TRUE;
+	    break;
+	  }
+	}
+	if (found)
+	{
+	  QCString scope=memberDef->getScopeString();
+	  if (!scope.isEmpty()) scope+="::"; else scope="";
+	  warn(memberDef->docFile(),memberDef->docLine(),
+	      "Warning: The following parameters of "
+	      "%s%s%s are not documented:",
+	      scope.data(),memberDef->name().data(),
+	      argListToString(al).data());
+	  for (ali.toFirst();(a=ali.current());++ali)
+	  {
+	    QCString argName = memberDef->isDefine() ? a->type : a->name;
+	    if (!argName.isEmpty() && paramsFound.find(argName)==0) 
+	    {
+	      warn_cont( "  parameter %s\n",argName.data());
+	    }
 	  }
 	}
       }

@@ -100,6 +100,9 @@
 #ifdef LANG_SR
 #include "translator_sr.h"
 #endif
+#ifdef LANG_CA
+#include "translator_ca.h"
+#endif
 //#ifdef LANG_JS
 //#include "translator_js.h"
 //#endif

@@ -895,9 +895,9 @@ class XMLGenerator : public OutputDocInterface
     {
       XML_DB(("(endSectionRefList)\n"));
     }
-    void writeCodeAnchor(const char *anchor)
+    void writeCodeAnchor(const char *)
     {
-      XML_DB(("(writeCodeAnchor(%s))\n",anchor));
+      XML_DB(("(writeCodeAnchor)\n"));
     }
     
     // Generator specific functions

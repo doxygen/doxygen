@@ -199,6 +199,8 @@ void addRelatedPage(const char *name,const QCString &ptitle,
                           );
 QCString escapeCharsInString(const char *name,bool allowDots);
 void addGroupListToTitle(OutputList &ol,Definition *d);
+void filterLatexString(QTextStream &t,const char *str,
+                       bool insideTabbing=FALSE,bool insidePre=FALSE);
 
 #endif
 

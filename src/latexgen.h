@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef LATEXGEN_H
+#define LATEXGEN_H
 
 #include "outputgen.h"
 
@@ -41,6 +41,8 @@ class LatexGenerator : public OutputGenerator
     void disableIfNot(OutputType o) { if (o!=Latex) active=FALSE; }
     bool isEnabled(OutputType o) { return (o==Latex && active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
+
+    void printDoc(DocNode *);
 
     void startFile(const char *name,const char *manName,
                    const char *title, bool external);
@@ -287,7 +289,6 @@ class LatexGenerator : public OutputGenerator
     void writeCodeAnchor(const char *) {}
 
   private:
-    void latin2ToLatex(unsigned char);
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
     int col;

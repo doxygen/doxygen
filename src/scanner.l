@@ -383,7 +383,7 @@ static QCString extractName(const QCString &s)
 static void setContext()
 {
   QCString fileName = yyFileName;
-  insideIDL  = fileName.right(4)==".idl";
+  insideIDL  = fileName.right(4)==".idl" || fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
   insidePHP = fileName.right(4)==".php" || fileName.right(4)==".inc";
   if ( insidePHP )
@@ -461,9 +461,12 @@ static void addSpecialItem(const char *listName)
     QCString cmdString;
     cmdString.sprintf("\\%s %d\n",listName,itemId);
     current->doc += cmdString;
+    QCString tmpName = current->name;
+    current->name = listName;
     sectionType=SectionInfo::Anchor;
     sectionLabel=anchorLabel;
     addSection();
+    current->name = tmpName;
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -900,35 +903,59 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN( CompoundName ); 
 					}
 <FindMembers>{B}*"module"{BN}+		{ 
-  					  isTypedef=FALSE;
-					  current->section = Entry::NAMESPACE_SEC;
-					  current->type = "module" ;
-					  current->fileName  = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->bodyLine  = yyLineNr;
 					  lineCount();
-  					  BEGIN( CompoundName ); 
+                                          if (insideIDL)
+					  {
+  					    isTypedef=FALSE;
+					    current->section = Entry::NAMESPACE_SEC;
+					    current->type = "module" ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+  					    BEGIN( CompoundName ); 
+					  }
+					  else
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
 					}
 <FindMembers>{B}*"library"{BN}+		{ 
-  					  isTypedef=FALSE;
-					  current->section = Entry::NAMESPACE_SEC;
-					  current->type = "library" ;
-					  current->fileName  = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->bodyLine  = yyLineNr;
 					  lineCount();
-  					  BEGIN( CompoundName ); 
+                                          if (insideIDL)
+					  {
+  					    isTypedef=FALSE;
+					    current->section = Entry::NAMESPACE_SEC;
+					    current->type = "library" ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+  					    BEGIN( CompoundName ); 
+					  }
+					  else
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
 					}
 <FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
-  					  isTypedef=FALSE;
-					  current->section = Entry::INTERFACE_SEC;
-					  addType( current ) ;
-					  current->type += " interface" ;
-					  current->fileName  = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->bodyLine  = yyLineNr;
 					  lineCount();
-					  BEGIN( CompoundName );
+                                          if (insideIDL)
+					  {
+  					    isTypedef=FALSE;
+					    current->section = Entry::INTERFACE_SEC;
+					    addType( current ) ;
+					    current->type += " interface" ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+					    BEGIN( CompoundName );
+					  }
+					  else
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
   					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
@@ -950,19 +977,31 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
-					  //if (current->mtArgList) // transfer template arguments
-					  //{
-					  //  if (current->tArgList)
-					  //  {
-					  //    delete current->tArgList;
-					  //  }
-					  //  current->tArgList = current->mtArgList;
-					  //  current->mtArgList = 0;
-					  //}
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*"coclass"{BN}+		{
+  					  if (insideIDL)
+					  {
+					    isTypedef=FALSE;
+					    current->section = Entry::CLASS_SEC;
+					    addType( current ) ;
+					    current->type += " coclass" ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+					    lineCount() ;
+					    BEGIN( CompoundName ) ;
+					  }
+					  else
+					  {
+  					    addType(current);
+					    current->name = yytext;
+					    current->name = current->name.stripWhiteSpace();
+					    lineCount();
+					  }
+  					}
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct{" | 
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct"/{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -4482,7 +4521,8 @@ static void parseCompounds(Entry *rt)
       {
 	if (ce->fileName.right(5)==".java" || 
 	    ce->fileName.right(4)==".php" ||
-	    ce->fileName.right(4)==".inc")
+	    ce->fileName.right(4)==".inc"
+	   )
           current->protection = protection = Public ; // Actually this should be package scope!
 	else
           current->protection = protection = Private ;

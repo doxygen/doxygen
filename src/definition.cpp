@@ -55,7 +55,6 @@ Definition::Definition(const char *df,int dl,
   m_partOfGroups=0;
   m_specialListItems=0;
   m_briefLine=1;
-  m_docFile=1;
 }
 
 Definition::~Definition()

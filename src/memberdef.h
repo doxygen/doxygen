@@ -120,6 +120,8 @@ class MemberDef : public Definition
     bool isExplicit() const               { return (memSpec&Entry::Explicit)!=0; }
     bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
     bool isExternal() const               { return explExt; }
+    bool isConstructor() const;
+    bool isDestructor() const;
     bool hasOneLineInitializer() const;
     bool hasMultiLineInitializer() const;
 

@@ -131,6 +131,7 @@ void GroupDef::addNamespace(const NamespaceDef *def)
 
 void GroupDef::addPage(PageInfo *def)
 {
+  //printf("Making page %s part of a group\n",def->name.data());
   pageDict->append(def->name,def);
   def->makePartOfGroup(this);
 }

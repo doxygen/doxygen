@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _HTMLDOCVISITOR_H
-#define _HTMLDOCVISITOR_H
+#ifndef _LATEXDOCVISITOR_H
+#define _LATEXDOCVISITOR_H
 
 #include "docvisitor.h"
 #include "docparser.h"
@@ -27,11 +27,11 @@
 #include "code.h"
 #include "dot.h"
 
-/*! @brief Concrete visitor implementation for HTML output. */
-class HtmlDocVisitor : public DocVisitor
+/*! @brief Concrete visitor implementation for LaTeX output. */
+class LatexDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
+    LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
       : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) {}
     
     //--------------------------------------
@@ -67,26 +67,46 @@ class HtmlDocVisitor : public DocVisitor
       if (m_hide) return;
       switch(s->symbol())
       {
-	case DocSymbol::BSlash:  m_t << "\\"; break;
+	case DocSymbol::BSlash:  m_t << "$\\backslash$"; break;
 	case DocSymbol::At:      m_t << "@"; break;
-	case DocSymbol::Less:    m_t << "&lt;"; break;
-	case DocSymbol::Greater: m_t << "&gt;"; break;
-	case DocSymbol::Amp:     m_t << "&amp;"; break;
-	case DocSymbol::Dollar:  m_t << "$"; break;
-	case DocSymbol::Hash:    m_t << "#"; break;
-	case DocSymbol::Percent: m_t << "%"; break;
-	case DocSymbol::Copy:    m_t << "&copy;"; break;
+	case DocSymbol::Less:    m_t << "$<$"; break;
+	case DocSymbol::Greater: m_t << "$>$"; break;
+	case DocSymbol::Amp:     m_t << "\\&"; break;
+	case DocSymbol::Dollar:  m_t << "\\$"; break;
+	case DocSymbol::Hash:    m_t << "\\#"; break;
+	case DocSymbol::Percent: m_t << "\\%"; break;
+	case DocSymbol::Copy:    m_t << "\\copyright"; break;
 	case DocSymbol::Apos:    m_t << "'"; break;
-	case DocSymbol::Quot:    m_t << "\""; break;
-	case DocSymbol::Uml:     m_t << "&" << s->letter() << "uml;"; break;
-	case DocSymbol::Acute:   m_t << "&" << s->letter() << "acute;"; break;
-	case DocSymbol::Grave:   m_t << "&" << s->letter() << "grave;"; break;
-	case DocSymbol::Circ:    m_t << "&" << s->letter() << "circ;"; break;
-	case DocSymbol::Tilde:   m_t << "&" << s->letter() << "tilde;"; break;
-	case DocSymbol::Szlig:   m_t << "&szlig;"; break;
-	case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedul;"; break;
-	case DocSymbol::Ring:    m_t << "&" << s->letter() << "ring;"; break;
-	case DocSymbol::Nbsp:    m_t << "&nbsp;"; break;
+	case DocSymbol::Quot:    m_t << "''"; break;
+	case DocSymbol::Uml:     
+                                 if (s->letter()=='i') 
+                                   m_t << "\\\"{\\i}"; 
+                                 else                  
+                                   m_t << "\\\"{" << s->letter() << "}"; 
+                                 break;
+	case DocSymbol::Acute:   
+                                 if (s->letter()=='i') 
+                                   m_t << "\\'{\\i}"; 
+                                 else                  
+                                   m_t << "\\'{" << s->letter() << "}"; 
+                                 break;
+	case DocSymbol::Grave:   
+                                 if (s->letter()=='i') 
+                                   m_t << "\\`{\\i}"; 
+                                 else                  
+                                   m_t << "\\`{" << s->letter() << "}"; 
+                                 break;
+	case DocSymbol::Circ:    
+                                 if (s->letter()=='i') 
+                                   m_t << "\\^{\\i}"; 
+                                 else                  
+                                   m_t << "\\^{" << s->letter() << "}"; 
+                                 break;
+	case DocSymbol::Tilde:   m_t << "\\~{"  << s->letter() << "}";
+	case DocSymbol::Szlig:   m_t << "\"s"; break;
+	case DocSymbol::Cedil:   m_t << "\\c{" << s->letter() << "}"; break;
+	case DocSymbol::Ring:    m_t << "\\" << s->letter() << s->letter(); break;
+	case DocSymbol::Nbsp:    m_t << "\\ "; break;
 	default:
 	  printf("Error: unknown symbol found\n");
       }
@@ -94,17 +114,21 @@ class HtmlDocVisitor : public DocVisitor
     void visit(DocURL *u)
     {
       if (m_hide) return;
-      m_t << "<a href=\"" << u->url() << "\">" << u->url() << "</a>";
+      if (Config_getBool("PDF_HYPERLINKS"))
+      {
+        m_t << "\\href{" << u->url() << "}";
+      }
+      m_t << "{\\tt " << u->url() << "}";
     }
     void visit(DocLineBreak *)
     {
       if (m_hide) return;
-      m_t << "<br>\n";
+      m_t << "\\par\n";
     }
     void visit(DocHorRuler *)
     {
       if (m_hide) return;
-      m_t << "<hr>\n";
+      m_t << "\n\n";
     }
     void visit(DocStyleChange *s)
     {
@@ -112,25 +136,25 @@ class HtmlDocVisitor : public DocVisitor
       switch (s->style())
       {
         case DocStyleChange::Bold:
-         if (s->enable()) m_t << "<b>";      else m_t << "</b> ";
+         if (s->enable()) m_t << "{\\bf ";      else m_t << "} ";
          break;
         case DocStyleChange::Italic:
-         if (s->enable()) m_t << "<em>";     else m_t << "</em> ";
+         if (s->enable()) m_t << "{\\em ";     else m_t << "} ";
          break;
         case DocStyleChange::Code:
-         if (s->enable()) m_t << "<code>";   else m_t << "</code> ";
+         if (s->enable()) m_t << "{\\tt ";   else m_t << "} ";
          break;
         case DocStyleChange::Subscript:
-         if (s->enable()) m_t << "<sub>";    else m_t << "</sub> ";
+         if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
          break;
         case DocStyleChange::Superscript:
-         if (s->enable()) m_t << "<sup>";    else m_t << "</sup> ";
+         if (s->enable()) m_t << "$^{\\mbox{";    else m_t << "}}$ ";
          break;
         case DocStyleChange::Center:
-         if (s->enable()) m_t << "<center>"; else m_t << "</center> ";
+         if (s->enable()) m_t << "\\begin{center}"; else m_t << "\\end{center} ";
          break;
         case DocStyleChange::Small:
-         if (s->enable()) m_t << "<small>";  else m_t << "</small> ";
+         if (s->enable()) m_t << "\\footnotesize ";  else m_t << "\\normalsize ";
          break;
       }
     }
@@ -140,27 +164,32 @@ class HtmlDocVisitor : public DocVisitor
       switch(s->type())
       {
         case DocVerbatim::Code: // fall though
-           m_t << "<div class=\"fragment\"><pre>"; 
+           m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
            parseCode(m_ci,s->context(),s->text(),FALSE,0);
-           m_t << "</pre></div>"; 
+           m_t << "\\end{verbatim}\\normalsize" << endl; 
            break;
         case DocVerbatim::Verbatim: 
-           m_t << "<div class=\"fragment\"><pre>";
-           filter(s->text());
-           m_t << "</pre></div>"; 
+           m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+           m_t << s->text();
+           m_t << "\\end{verbatim}\\normalsize" << endl; 
            break;
         case DocVerbatim::HtmlOnly: 
-           m_t << s->text(); 
+           /* nothing */ 
            break;
         case DocVerbatim::LatexOnly: 
-           /* nothing */ 
+           m_t << s->text(); 
            break;
       }
     }
-    void visit(DocAnchor *)
+    void visit(DocAnchor *anc)
     {
       if (m_hide) return;
-      m_t << "<a name=\"%s\"/></a>";
+      m_t << "\\label{" << anc->anchor() << "}" << endl;
+      if (!anc->file().isEmpty() && Config_getBool("PDF_HYPERLINKS")) 
+      {
+        m_t << "\\hypertarget{" << anc->file() << "_" << anc->anchor() 
+            << "}{}" << endl;
+      }    
     }
     void visit(DocInclude *inc)
     {
@@ -168,19 +197,18 @@ class HtmlDocVisitor : public DocVisitor
       switch(inc->type())
       {
         case DocInclude::Include: 
-          m_t << "<div class=\"fragment\"><pre>";
+          m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
           parseCode(m_ci,inc->context(),inc->text(),FALSE,0);
-          m_t << "</pre></div>"; 
+          m_t << "\\end{verbatim}\\normalsize" << endl; 
           break;
         case DocInclude::DontInclude: 
           break;
         case DocInclude::HtmlInclude: 
-          m_t << inc->text(); 
           break;
         case DocInclude::VerbInclude: 
-          m_t << "<div class=\"fragment\"><pre>";
-          filter(inc->text());
-          m_t << "</pre></div>"; 
+          m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+          m_t << inc->text();
+          m_t << "\\end{verbatim}\\normalsize" << endl; 
           break;
       }
     }
@@ -190,7 +218,7 @@ class HtmlDocVisitor : public DocVisitor
       //    op->type(),op->isFirst(),op->isLast(),op->text().data());
       if (op->isFirst()) 
       {
-        m_t << "<div class=\"fragment\"><pre>";
+        m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
         m_hide = TRUE;
       }
       if (op->type()!=DocIncOperator::Skip) 
@@ -200,7 +228,7 @@ class HtmlDocVisitor : public DocVisitor
       if (op->isLast())  
       {
         m_hide = FALSE;
-        m_t << "</pre></div>"; 
+        m_t << "\\end{verbatim}\\normalsize" << endl; 
       }
       else
       {
@@ -210,20 +238,7 @@ class HtmlDocVisitor : public DocVisitor
     void visit(DocFormula *f)
     {
       if (m_hide) return;
-      if (f->text().at(0)=='\\') m_t << "<p><center>" << endl;
-      m_t << "<img align=";
-#if !defined(_WIN32)
-      m_t << "\"top\"";     // assume Unix users use Netscape 4.x which does
-                            // not seem to support align == "middle" :-((
-#else
-      m_t << "\"middle\"";  // assume Windows users use IE or HtmlHelp which on
-                            // displays formulas nicely with align == "middle" 
-#endif
-      m_t << " src=\"" << f->name() << ".png\">";
-      if (f->text().at(0)=='\\') 
-        m_t << endl << "</center><p>" << endl;
-      else
-        m_t << " ";
+      m_t << f->text();
     }
 
     //--------------------------------------
@@ -234,31 +249,30 @@ class HtmlDocVisitor : public DocVisitor
     {
       if (l->isEnumList())
       {
-        m_t << "<ol>\n";
+        m_t << "\\begin{enumerate}" << endl;
       }
       else
       {
-        m_t << "<ul>\n";
+        m_t << "\\begin{itemize}" << endl;
       }
     }
     void visitPost(DocAutoList *l)
     {
       if (l->isEnumList())
       {
-        m_t << "</ol>\n";
+        m_t << "\\end{enumerate}" << endl;
       }
       else
       {
-        m_t << "</ul>\n";
+        m_t << "\\end{itemize}" << endl;
       }
     }
     void visitPre(DocAutoListItem *)
     {
-      m_t << "<li>";
+      m_t << "\\item ";
     }
     void visitPost(DocAutoListItem *) 
     {
-      m_t << "</li>";
     }
     void visitPre(DocPara *) 
     {
@@ -269,19 +283,17 @@ class HtmlDocVisitor : public DocVisitor
           !(p->parent() &&           // and for parameter sections
             p->parent()->kind()==DocNode::Kind_ParamSect
            )
-         ) m_t << "\n<p>\n";
+         ) m_t << endl << endl;
     }
     void visitPre(DocRoot *)
     {
-      //m_t << "<hr><h4><font color=\"red\">New parser:</font></h4>\n";
     }
     void visitPost(DocRoot *)
     {
-      //m_t << "<hr><h4><font color=\"red\">Old parser:</font></h4>\n";
     }
     void visitPre(DocSimpleSect *s)
     {
-      m_t << "<dl compact><dt><b>";
+      m_t << "\\begin{Desc}\n\\item[";
       switch(s->type())
       {
 	case DocSimpleSect::See: 
@@ -319,43 +331,65 @@ class HtmlDocVisitor : public DocVisitor
       // special case 1: user defined title
       if (s->type()!=DocSimpleSect::User)
       {
-        m_t << ":</b></dt><dd>";
+        m_t << ":]";
       }
     }
     void visitPost(DocSimpleSect *)
     {
-      m_t << "</dd></dl>\n";
+      m_t << "\\end{Desc}" << endl;
     }
     void visitPre(DocTitle *)
     {
     }
     void visitPost(DocTitle *)
     {
-      m_t << "</b></dt><dd>";
+      m_t << "]";
     }
     void visitPre(DocSimpleList *)
     {
-      m_t << "<ul>\n";
+      m_t << "\\begin{itemize}" << endl;
     }
     void visitPost(DocSimpleList *)
     {
-      m_t << "</ul>\n";
+      m_t << "\\end{itemize}" << endl;
     }
     void visitPre(DocSimpleListItem *)
     {
-      m_t << "<li>";
+      m_t << "\\item ";
     }
     void visitPost(DocSimpleListItem *) 
     {
-      m_t << "</li>\n";
     }
     void visitPre(DocSection *s)
     {
-      m_t << "<h" << s->level()+1 << ">";
-      m_t << "<a name=\"" << s->anchor();
+      if (Config_getBool("PDF_HYPERLINKS"))
+      {
+        m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
+      }
+      if (s->level()==1)
+      {
+        if (Config_getBool("COMPACT_LATEX"))
+        {
+          m_t << "\\subsubsection{";
+        }
+        else
+        {
+          m_t << "\\subsection{";
+        }
+      }
+      else if (s->level()==2)
+      {
+        if (Config_getBool("COMPACT_LATEX"))
+        {
+          m_t << "\\paragraph{";
+        }
+        else
+        {
+          m_t << "\\subsubsection{";
+        }
+      }
       filter(s->title());
-      m_t << "\"</a>" << endl;
-      m_t << "</h" << s->level()+1 << ">\n";
+      m_t << "}\\label{" << s->anchor() << "}" << endl;
     }
     void visitPost(DocSection *) 
     {
@@ -363,90 +397,96 @@ class HtmlDocVisitor : public DocVisitor
     void visitPre(DocHtmlList *s)
     {
       if (s->type()==DocHtmlList::Ordered) 
-        m_t << "<ol>\n"; 
+        m_t << "\\begin{enumerate}" << endl; 
       else 
-        m_t << "<ul>\n";
+        m_t << "\\begin{itemize}" << endl;
     }
     void visitPost(DocHtmlList *s) 
     {
       if (s->type()==DocHtmlList::Ordered) 
-        m_t << "</ol>\n"; 
+        m_t << "\\end{enumerate}" << endl; 
       else 
-        m_t << "</ul>\n";
+        m_t << "\\end{itemize}" << endl;
     }
     void visitPre(DocHtmlListItem *)
     {
-      m_t << "<li>\n";
+      m_t << "\\item ";
     }
     void visitPost(DocHtmlListItem *) 
     {
-      m_t << "</li>\n";
     }
     void visitPre(DocHtmlPre *)
     {
-      m_t << "<pre>\n";
+      m_t << "\\small\\begin{alltt}";
       m_insidePre=TRUE;
     }
     void visitPost(DocHtmlPre *) 
     {
       m_insidePre=FALSE;
-      m_t << "</pre>\n";
+      m_t << "\\end{alltt}\\normalsize " << endl;
     }
     void visitPre(DocHtmlDescList *)
     {
-      m_t << "<dl>\n";
+      m_t << "\\begin{description}" << endl;
     }
     void visitPost(DocHtmlDescList *) 
     {
-      m_t << "</dl>\n";
+      m_t << "\\end{description}" << endl;
     }
     void visitPre(DocHtmlDescTitle *)
     {
-      m_t << "<dt>";
+      m_t << "\\item[";
     }
     void visitPost(DocHtmlDescTitle *) 
     {
-      m_t << "</dt>\n";
+      m_t << "]";
     }
     void visitPre(DocHtmlDescData *)
     {
-      m_t << "<dd>";
     }
     void visitPost(DocHtmlDescData *) 
     {
-      m_t << "</dd>\n";
     }
-    void visitPre(DocHtmlTable *)
+    void visitPre(DocHtmlTable *t)
     {
-      m_t << "<table border=\"1\" cellspacing=\"3\" cellpadding=\"3\">\n";
+      if (t->hasCaption()) 
+      {
+        m_t << "\\begin{table}[h]";
+      }
+      m_t << "\\begin{TabularC}{" << t->numCols() << "}\n\\hline\n";
     }
-    void visitPost(DocHtmlTable *) 
+    void visitPost(DocHtmlTable *t) 
     {
-      m_t << "</table>\n";
-    }
-    void visitPre(DocHtmlRow *)
-    {
-      m_t << "<tr>\n";
-    }
-    void visitPost(DocHtmlRow *) 
-    {
-      m_t << "</tr>\n";
-    }
-    void visitPre(DocHtmlCell *c)
-    {
-      if (c->isHeading()) m_t << "<th>"; else m_t << "<td>";
-    }
-    void visitPost(DocHtmlCell *c) 
-    {
-      if (c->isHeading()) m_t << "</th>"; else m_t << "</td>";
+      if (t->hasCaption())
+      {
+        m_t << "\\end{table}\n";
+      }
+      else
+      {
+        m_t << "\\\\\\hline\n\\end{TabularC}\n";
+      }
     }
     void visitPre(DocHtmlCaption *)
     {
-      m_t << "<caption align=\"bottom\">";
+      m_t << "\\\\\\hline\n\\end{TabularC}\n\\centering\n\\caption{";
     }
     void visitPost(DocHtmlCaption *) 
     {
-      m_t << "</caption>\n";
+      m_t << "}\n";
+    }
+    void visitPre(DocHtmlRow *)
+    {
+    }
+    void visitPost(DocHtmlRow *) 
+    {
+      m_t << "\\\\\\hline\n";
+    }
+    void visitPre(DocHtmlCell *)
+    {
+    }
+    void visitPost(DocHtmlCell *c) 
+    {
+      if (!c->isLast()) m_t << "&";
     }
     void visitPre(DocIndexEntry *)
     {
@@ -458,45 +498,83 @@ class HtmlDocVisitor : public DocVisitor
     }
     void visitPre(DocInternal *)
     {
-      m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
-      m_t << "<p>" << endl;
+      m_t << "\\begin{Desc}" << endl 
+          << "\\item[" << theTranslator->trForInternalUseOnly() << "]" << endl;
     }
     void visitPost(DocInternal *) 
     {
-      m_t << "</p>" << endl;
+      m_t << "\\end{Desc}" << endl;
     }
     void visitPre(DocHRef *href)
     {
-      m_t << "<a href=\"" << href->url() << "\">";
+      if (Config_getBool("PDF_HYPERLINKS"))
+      {
+        m_t << "\\href{";
+        m_t << href->url();
+        m_t << "}";
+      }
+      m_t << "{\\tt ";
     }
     void visitPost(DocHRef *) 
     {
-      m_t << "</a>";
+      m_t << "}";
     }
     void visitPre(DocHtmlHeader *header)
     {
-      m_t << "<h" << header->level() << ">";
+      if (Config_getBool("COMPACT_LATEX"))
+      {
+        switch(header->level())
+        {
+          case 1: m_t << "\\subsection{"; break;
+          case 2: m_t << "\\subsubsection{"; break;
+          case 3: m_t << "\\paragraph{"; break;
+        }
+      }
+      else
+      {
+        switch(header->level())
+        {
+          case 1: m_t << "\\section{"; break;
+          case 2: m_t << "\\subsection{"; break;
+          case 3: m_t << "\\subsubsection{"; break;
+        }
+      }
     }
-    void visitPost(DocHtmlHeader *header) 
+    void visitPost(DocHtmlHeader *) 
     {
-      m_t << "</h" << header->level() << ">\n";
+      m_t << "}";
     }
     void visitPre(DocImage *img)
     {
-      if (img->type()==DocImage::Html)
+      if (img->type()==DocImage::Latex)
       {
-        QCString baseName=img->name();
-        int i;
-        if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-        {
-          baseName=baseName.right(baseName.length()-i-1);
-        }
-        m_t << "<div align=\"center\">" << endl;
-        m_t << "<img src=\"" << img->name() << "\" alt=\"" 
-            << baseName << "\">" << endl;
         if (img->hasCaption())
         {
-          m_t << "<p><strong>";
+          m_t << "\\begin{figure}[H]" << endl;
+          m_t << "\\begin{center}" << endl;
+        }
+        else
+        {
+          m_t << "\\mbox{";
+        }
+        QCString gfxName = img->name();
+        if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
+        {
+          gfxName=gfxName.left(gfxName.length()-4);
+        }
+        m_t << "\\includegraphics";
+        if (!img->width().isEmpty())
+        {
+          m_t << "[width=" << img->width() << "]";
+        }
+        else if (!img->height().isEmpty())
+        {
+          m_t << "[height=" << img->height() << "]";
+        }
+        m_t << "{" << gfxName << "}";
+        if (img->hasCaption())
+        {
+          m_t << "\\caption{";
         }
       }
       else // other format -> skip
@@ -506,13 +584,14 @@ class HtmlDocVisitor : public DocVisitor
     }
     void visitPost(DocImage *img) 
     {
-      if (img->type()==DocImage::Html)
+      if (img->type()==DocImage::Latex)
       {
+        m_t << "}" << endl; // end mbox or caption
         if (img->hasCaption())
         {
-          m_t << "</strong></p>";
+          m_t << "\\end{center}" << endl;
+          m_t << "\\end{figure}" << endl;
         }
-        m_t << "</div>" << endl;
       }
       else // other format
       {
@@ -527,24 +606,45 @@ class HtmlDocVisitor : public DocVisitor
       {
         baseName=baseName.right(baseName.length()-i-1);
       } 
-      QCString outDir = Config_getString("HTML_OUTPUT");
-      writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
-      m_t << "<div align=\"center\">" << endl;
-      m_t << "<img src=\"" << baseName << "." 
-        << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-        << baseName << "\">" << endl;
+      if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
+      {
+        baseName=baseName.left(baseName.length()-4);
+      }
+      QCString outDir = Config_getString("LATEX_OUTPUT");
+      writeDotGraphFromFile(df->file(),outDir,baseName,EPS);
       if (df->hasCaption())
-      { 
-        m_t << "<p><strong>";
+      {
+        m_t << "\\begin{figure}[H]" << endl;
+        m_t << "\\begin{center}" << endl;
+      }
+      else
+      {
+        m_t << "\\mbox{";
+      }
+      m_t << "\\includegraphics";
+      if (!df->width().isEmpty())
+      {
+        m_t << "[width=" << df->width() << "]";
+      }
+      else if (!df->height().isEmpty())
+      {
+        m_t << "[height=" << df->height() << "]";
+      }
+      m_t << "{" << baseName << "}";
+
+      if (df->hasCaption())
+      {
+        m_t << "\\caption{";
       }
     }
     void visitPost(DocDotFile *df) 
     {
+      m_t << "}" << endl; // end mbox or caption
       if (df->hasCaption())
       {
-        m_t << "</strong></p>" << endl;
+        m_t << "\\end{center}" << endl;
+        m_t << "\\end{figure}" << endl;
       }
-      m_t << "</div>" << endl;
     }
     void visitPre(DocLink *lnk)
     {
@@ -564,29 +664,25 @@ class HtmlDocVisitor : public DocVisitor
       endLink();
       m_t << " ";
     }
-    void visitPre(DocSecRefItem *ref)
+    void visitPre(DocSecRefItem *)
     {
-      QCString refName=ref->file();
-      if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension)
-      {
-        refName+=Doxygen::htmlFileExtension;
-      }
-      m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
-
+      m_t << "\\item \\contentsline{section}{";
     }
-    void visitPost(DocSecRefItem *) 
+    void visitPost(DocSecRefItem *ref) 
     {
-      m_t << "</a> ";
+      m_t << "}{\\ref{" << ref->anchor() << "}}{}" << endl;
     }
     void visitPre(DocSecRefList *)
     {
-      m_t << "<multicol cols=3>" << endl;
-      m_t << "<ul>" << endl;
+      m_t << "\\footnotesize" << endl;
+      m_t << "\\begin{multicols}{2}" << endl;
+      m_t << "\\begin{CompactList}" << endl;
     }
     void visitPost(DocSecRefList *) 
     {
-      m_t << "</ul>" << endl;
-      m_t << "</multicol>" << endl;
+      m_t << "\\end{CompactList}" << endl;
+      m_t << "\\end{multicols}" << endl;
+      m_t << "\\normalsize" << endl;
     }
     void visitPre(DocLanguage *)
     {
@@ -596,7 +692,8 @@ class HtmlDocVisitor : public DocVisitor
     }
     void visitPre(DocParamSect *s)
     {
-      m_t << "<dl compact><dt><b>";
+      m_t << "\\begin{Desc}" << endl;
+      m_t << "\\item[";
       switch(s->type())
       {
 	case DocParamSect::Param: 
@@ -608,18 +705,17 @@ class HtmlDocVisitor : public DocVisitor
         default:
           ASSERT(0);
       }
-      m_t << ":";
-      m_t << "</b></dt><dd>" << endl;
-      m_t << "  <table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl;
+      m_t << ":]" << endl;
+      m_t << "\\begin{description}" << endl;
     }
     void visitPost(DocParamSect *)
     {
-      m_t << "  </table>" << endl;
-      m_t << "</dl>" << endl;
+      m_t << "\\end{description}" << endl;
+      m_t << "\\end{Desc}" << endl;
     }
     void visitPre(DocParamList *pl)
     {
-      m_t << "    <tr><td valign=top><em>";
+      m_t << "\\item[{\\em ";
       QStrListIterator li(pl->parameters());
       const char *s;
       bool first=TRUE;
@@ -628,22 +724,29 @@ class HtmlDocVisitor : public DocVisitor
         if (!first) m_t << ","; else first=FALSE;
         m_t << s;
       }
-      m_t << "</em>&nbsp;</td><td>";
+      m_t << "}]";
     }
     void visitPost(DocParamList *)
     {
-      m_t << "</td></tr>" << endl;
     }
     void visitPre(DocXRefItem *x)
     {
-      m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
-          << x->file() << Doxygen::htmlFileExtension << "#" << x->anchor() << "\">";
+      m_t << "\\begin{Desc}" << endl;
+      m_t << "\\item[";
+      if (Config_getBool("PDF_HYPERLINKS"))
+      {
+        m_t << "\\hyperlink{" << x->file() << "_" << x->anchor() << "}{";
+      }
+      else
+      {
+        m_t << "{\\bf ";
+      }
       filter(x->title());
-      m_t << ":</a></b></dt><dd>";
+      m_t << "}]";
     }
     void visitPost(DocXRefItem *)
     {
-      m_t << "</dd></dl>" << endl;
+      m_t << "\\end{Desc}" << endl;
     }
     void visitPre(DocInternalRef *ref)
     {

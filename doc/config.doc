@@ -116,6 +116,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
+\refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
 \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
 \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
@@ -278,6 +279,14 @@ followed by the descriptions of the tags grouped by category.
  various overviews.
  This option has no effect if \c EXTRACT_ALL is enabled.
 
+\anchor cfg_hide_friend_compounds
+<dt>\c HIDE_FRIEND_COMPOUNDS <dd>
+ \addindex HIDE_FRIEND_COMPOUNDS
+ If the \c HIDE_FRIEND_COMPOUNDS tag is set to \c YES, Doxygen will hide all
+ friend (class|struct|union) declarations.
+ If set to \c NO (the default) these declarations will be included in the
+ documentation.
+ 
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
  \addindex BRIEF_MEMBER_DESC

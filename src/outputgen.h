@@ -120,15 +120,6 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
     /*! Starts a new paragraph */
     virtual void newParagraph()   = 0;
 
-    /*! Starts a enumeration list: e.g. \c <ol> in html. 
-     *  writeListItem() is used for the items. 
-     */
-    virtual void startEnumList()  = 0;
-
-    /*! Ends an enumeration list: e.g. \c </ol> in html. 
-     */
-    virtual void endEnumList()    = 0;
-
     /*! Writes a link to an object in the documentation.
      *  \param ref    If this is non-zero, the object is to be found in
      *                an external documentation file.
@@ -150,10 +141,6 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
      */
     virtual void endHtmlLink() = 0;
 
-    /*! Writes a (link to an) email address found in the documentation.
-     *  \param url    The email address, this is also used for the link text.
-     */
-    virtual void writeMailLink(const char *url) = 0;
     
     /*! Changes the text font to bold face. The bold section ends with
      *  endBold()
@@ -190,21 +177,8 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
      */
     virtual void endCodeFragment() = 0;
 
-    /*! Starts a fragment of preformatted text. This means that
-     *  spacing, tabs and newlines should be kept in the output
-     */
-    virtual void startPreFragment() = 0;
     
-    /*! Ends a preformatted text fragment. */
-    virtual void endPreFragment() = 0;
-    
-    /*! Starts a fragment of verbatim test. This is preformatted text,
-     *  without any special internal structure.
-     */
-    virtual void startVerbatimFragment() = 0;
 
-    /*! Ends a verbatim text fragment. */
-    virtual void endVerbatimFragment() = 0;
     
     /*! Writes a horizontal ruler to the output */
     virtual void writeRuler() = 0;
@@ -224,14 +198,53 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
      *  description itself: e.g. \c <dd> in HTML. 
      */
     virtual void endDescItem() = 0;
-    virtual void startSubsection() = 0;
-    virtual void endSubsection() = 0;
-    virtual void startSubsubsection() = 0;
-    virtual void endSubsubsection() = 0;
+
     virtual void startCenter() = 0;
     virtual void endCenter() = 0;
     virtual void startSmall() = 0;
     virtual void endSmall() = 0;
+
+    virtual void startSimpleSect(SectionTypes t,const char *file,
+                                 const char *anchor,const char *title) = 0;
+    virtual void endSimpleSect() = 0;
+    virtual void startParamList(ParamListTypes t,const char *title) = 0;
+    virtual void endParamList() = 0;
+
+    virtual void writeDescItem() = 0;
+    virtual void startTitle() = 0;
+    virtual void endTitle()   = 0;
+
+    virtual void writeAnchor(const char *fileName,const char *name) = 0;
+    virtual void startSection(const char *,const char *,SectionInfo::SectionType) = 0;
+    virtual void endSection(const char *,SectionInfo::SectionType) = 0;
+
+    virtual void lineBreak() = 0;
+    virtual void addIndexItem(const char *s1,const char *s2) = 0;
+
+    virtual void writeNonBreakableSpace(int) = 0;
+    virtual void startDescTable() = 0;
+    virtual void endDescTable() = 0;
+    virtual void startDescTableTitle() = 0;
+    virtual void endDescTableTitle() = 0;
+    virtual void startDescTableData() = 0;
+    virtual void endDescTableData() = 0;
+    virtual void startTextLink(const char *file,const char *anchor) = 0;
+    virtual void endTextLink() = 0;
+    virtual void startPageRef() = 0;
+    virtual void endPageRef(const char *,const char *) = 0;
+
+
+    /********************* Functions to remove *******************************/
+
+    virtual void writeMailLink(const char *url) = 0;
+    virtual void startPreFragment() = 0;
+    virtual void endPreFragment() = 0;
+    virtual void startVerbatimFragment() = 0;
+    virtual void endVerbatimFragment() = 0;
+    virtual void startSubsection() = 0;
+    virtual void endSubsection() = 0;
+    virtual void startSubsubsection() = 0;
+    virtual void endSubsubsection() = 0;
     virtual void startSubscript() = 0;
     virtual void endSubscript() = 0;
     virtual void startSuperscript() = 0;
@@ -254,50 +267,26 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
     virtual void writeRing(char) = 0;
     virtual void writeSharpS() = 0;
     virtual void writeCCedil(char) = 0;
-    virtual void startSimpleSect(SectionTypes t,const char *file,
-                                 const char *anchor,const char *title) = 0;
-    virtual void endSimpleSect() = 0;
-    virtual void startParamList(ParamListTypes t,const char *title) = 0;
-    virtual void endParamList() = 0;
     virtual void endDescTitle() = 0;
-    virtual void writeDescItem() = 0;
-    virtual void startTitle() = 0;
-    virtual void endTitle()   = 0;
-    virtual void writeAnchor(const char *fileName,const char *name) = 0;
-    virtual void startSection(const char *,const char *,SectionInfo::SectionType) = 0;
-    virtual void endSection(const char *,SectionInfo::SectionType) = 0;
     virtual void writeSectionRef(const char *,const char *,
                                  const char *,const char *) = 0;
     virtual void writeSectionRefItem(const char *,const char *,const char *) = 0;
-    virtual void lineBreak() = 0;
-    virtual void addIndexItem(const char *s1,const char *s2) = 0;
-    virtual void writeFormula(const char *,const char *) = 0;
-    virtual void writeNonBreakableSpace(int) = 0;
+    virtual void startEnumList()  = 0;
+
+    virtual void endEnumList()    = 0;
     virtual void startImage(const char *,const char *,bool) = 0;
     virtual void endImage(bool) = 0;
     virtual void startDotFile(const char *,bool) = 0;
     virtual void endDotFile(bool) = 0;
-    virtual void startDescTable() = 0;
-    virtual void endDescTable() = 0;
-    virtual void startDescTableTitle() = 0;
-    virtual void endDescTableTitle() = 0;
-    virtual void startDescTableData() = 0;
-    virtual void endDescTableData() = 0;
-    virtual void startTextLink(const char *file,const char *anchor) = 0;
-    virtual void endTextLink() = 0;
-    virtual void startPageRef() = 0;
-    virtual void endPageRef(const char *,const char *) = 0;
-
-
-
+    virtual void writeFormula(const char *,const char *) = 0;
     virtual void startHtmlOnly() = 0;
     virtual void endHtmlOnly() = 0;
     virtual void startLatexOnly() = 0;
     virtual void endLatexOnly() = 0;
-
     virtual void startSectionRefList() = 0;
     virtual void endSectionRefList() = 0;
 
+    /************************************************************************/
     
 };
 

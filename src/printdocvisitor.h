@@ -147,11 +147,6 @@ class PrintDocVisitor : public DocVisitor
       indent_leaf();
       printf("<anchor name=\"%s\"/>",a->anchor().data());
     }
-    void visit(DocCopy *c)
-    {
-      indent_leaf();
-      printf("<copy link=\"%s\"/>",c->link().data());
-    }
     void visit(DocInclude *inc)
     {
       indent_leaf();
@@ -456,7 +451,14 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocImage *img)
     {
       indent_pre();
-      printf("<image src=\"%s\">\n",img->name().data());
+      printf("<image src=\"%s\" type=\"",img->name().data());
+      switch(img->type())
+      {
+        case DocImage::Html: printf("html"); break;
+        case DocImage::Latex: printf("latex"); break;
+        case DocImage::Rtf: printf("rtf"); break;
+      }
+      printf("\" width=%s height=%s>\n",img->width().data(),img->height().data());
     }
     void visitPost(DocImage *) 
     {
@@ -539,11 +541,12 @@ class PrintDocVisitor : public DocVisitor
       {
         printf("<param>%s</param>",s);
       }
+      printf("\n");
     }
     void visitPost(DocParamList *)
     {
       indent_post();
-      printf("</parameters>");
+      printf("</parameters>\n");
     }
     void visitPre(DocParamSect *ps)
     {
@@ -556,23 +559,23 @@ class PrintDocVisitor : public DocVisitor
 	case DocParamSect::Exception: printf("exception"); break;
 	case DocParamSect::Unknown: printf("unknown"); break;
       }
-      printf(">");
+      printf(">\n");
     }
     void visitPost(DocParamSect *)
     {
       indent_post();
-      printf("</paramsect>");
+      printf("</paramsect>\n");
     }
     void visitPre(DocXRefItem *x)
     {
       indent_pre();
-      printf("<xrefitem file=\"%s\" anchor=\"%s\" title=\"%s\"/>",
+      printf("<xrefitem file=\"%s\" anchor=\"%s\" title=\"%s\"/>\n",
           x->file().data(),x->anchor().data(),x->title().data());
     }
     void visitPost(DocXRefItem *)
     {
       indent_post();
-      printf("<xrefitem/>");
+      printf("<xrefitem/>\n");
     }
     void visitPre(DocInternalRef *r)
     {
@@ -583,6 +586,16 @@ class PrintDocVisitor : public DocVisitor
     {
       indent_post();
       printf("</internalref>\n");
+    }
+    void visitPre(DocCopy *c)
+    {
+      indent_pre();
+      printf("<copy link=\"%s\">\n",c->link().data());
+    }
+    void visitPost(DocCopy *)
+    {
+      indent_post();
+      printf("</copy>\n");
     }
 
   private:
