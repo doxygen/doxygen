@@ -41,10 +41,6 @@ See the
 GNU General Public License</a>
 for more details.
 <p>
-It is hereby explicitly allowed that this program may be linked against 
-<a href="http://www.trolltech.com/products/qt.html">Troll Tech's Qt library</a>, 
-and distributed, without the GPL applying to Qt.
-<p>
 Documents produced by Doxygen are derivative works derived from the
 input used in their production; they are not affected by this license.
 

@@ -1198,7 +1198,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                 bmd->anchor(),bcd->name());
             if ( bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ ) 
             {
-              writePageRef(ol,bcd->name(),bmd->anchor());
+              writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
             }
           }
           else
@@ -1207,7 +1207,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                 0,bcd->name());
             if (bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ )
             {
-              writePageRef(ol,bcd->name(),0);
+              writePageRef(ol,bcd->getOutputFileBase(),0);
             }
           }
           parseText(ol,reimplFromLine.right(
@@ -1273,7 +1273,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                 bmd->anchor(),bcd->name());
             if (bcd->isLinkableInProject()/* && !Config::pdfHyperFlag*/ ) 
             {
-              writePageRef(ol,bcd->name(),bmd->anchor());
+              writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
             }
           }
           ++mli;

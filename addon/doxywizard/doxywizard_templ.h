@@ -43,6 +43,7 @@ class Wizard : public QMainWindow
     void quit();
     void changed();
     void about();
+    void runDoxygen(); // Micha
 
   signals:
 

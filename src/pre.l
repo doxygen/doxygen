@@ -92,6 +92,7 @@ static int                g_findDefArgContext;
 static QCString           g_lastGuardName;
 static QCString           g_incName;
 static QCString           g_guardExpr;
+static int                g_curlyCount;
 
 static void setFileName(const char *name)
 {
@@ -818,12 +819,12 @@ void addDefine()
 
 static void outputChar(char c)
 {
-  if (g_includeStack.isEmpty()) g_outputBuf->addChar(c);
+  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
 } 
 
 static void outputArray(const char *a,int len)
 {
-  if (g_includeStack.isEmpty()) g_outputBuf->addArray(a,len);
+  if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addArray(a,len);
 }
 
 static void readIncludeFile(const QCString &inc)
@@ -917,6 +918,7 @@ BN	[ \t\r\n]
 %x	SkipCommand
 %x	SkipLine
 %x	CopyLine
+%x	CopyString
 %x      Include
 %x      IncludeID
 %x	DefName
@@ -967,6 +969,41 @@ BN	[ \t\r\n]
   					  outputArray(yytext,yyleng);
   					}
   */
+
+<CopyLine>"{"				{ // count brackets inside the main file
+  					  if (g_includeStack.isEmpty()) 
+					    g_curlyCount++;
+					  outputChar(*yytext);
+  					}
+<CopyLine>"}"				{ // count brackets inside the main file
+  					  if (g_includeStack.isEmpty()) 
+					    g_curlyCount--;
+					  outputChar(*yytext);
+					  ASSERT(g_curlyCount>=0);
+  					}
+<CopyLine>"'"\\[0-7]{1,3}"'"		{ 
+  					  outputArray(yytext,yyleng);
+					}
+<CopyLine>"'"\\."'"			{ 
+  					  outputArray(yytext,yyleng);
+					}
+<CopyLine>"'"."'"			{ 
+  					  outputArray(yytext,yyleng);
+					}
+<CopyLine>\"				{
+					  outputChar(*yytext);
+					  BEGIN( CopyString );
+					}
+<CopyString>[^\"\\]+			{
+  					  outputArray(yytext,yyleng);
+					}
+<CopyString>\\.				{
+					  outputArray(yytext,yyleng);
+					}
+<CopyString>\"				{
+					  outputChar(*yytext);
+					  BEGIN( CopyLine );
+					}
 <CopyLine>{ID}/{BN}*"("			{
   					  Define *def=0;
 					  //printf("Search for define %s\n",yytext);
@@ -1726,6 +1763,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   uint orgOffset=output.curPos();
 //#endif
 
+  g_curlyCount=0;
   g_outputBuf=&output;
   g_includeStack.setAutoDelete(TRUE);
   g_includeStack.clear();

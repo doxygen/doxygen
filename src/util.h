@@ -83,7 +83,7 @@ extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const cha
                         const char *text,bool autoBreak=FALSE,bool external=TRUE);
 
 extern void setAnchors(char id,MemberList *ml,int groupId=-1);
-extern QCString fileToString(const char *name);
+extern QCString fileToString(const char *name,bool filter=FALSE);
 extern QCString dateToString(bool);
 extern bool getDefs(const QCString &scopeName,
                     const QCString &memberName, 

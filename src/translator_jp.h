@@ -25,6 +25,9 @@ class TranslatorJapanese : public Translator
   public:
     QCString idLanguage()
     { return "japanese"; }
+    QCString idLanguageCharset()
+    { return "euc-jp"; }
+    
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
     { return "a4j"; }

@@ -36,6 +36,7 @@
 #include "translator_ro.h"
 #include "translator_si.h"
 #include "translator_cn.h"
+#include "translator_no.h"
 #endif
 
 #define L_EQUAL(a) !stricmp(langName,a)

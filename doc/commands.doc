@@ -952,7 +952,8 @@ Public/Protected/Private/... section.
            \e not in other documentation blocks!
 
   \sa 
-    Section \ref cmdpage "\\page" for an example of the \\cmdsection command.
+    Section \ref cmdpage "\\page" for an example of the 
+            \ref cmdsection "\\section" command.
 
 <hr>
 \subsection cmdsubsection \subsection <subsection-name> (subsection title)
@@ -966,7 +967,8 @@ Public/Protected/Private/... section.
            \e not in other documentation blocks!
 
   \sa
-   Section \ref cmdpage "\\page" for an example of the \\cmdsubsection command.
+   Section \ref cmdpage "\\page" for an example of the 
+           \ref cmdsubsection "\\cmdsubsection" command.
 
 <hr>
 

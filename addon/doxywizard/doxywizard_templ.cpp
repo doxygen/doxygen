@@ -126,6 +126,10 @@ Wizard::Wizard(int argc,char **argv) :
        new QToolButton( QPixmap( filesave_xpm ), "Save File", QString::null,
                         this, SLOT(saveFile()), fileTools, "save file" );
 
+ //Micha: QToolButton *  =
+       new QToolButton( QPixmap( rundoxygen_xpm ), "Save and Run doxygen", QString::null,
+                        this, SLOT(runDoxygen()), fileTools, "save and run doxygen" );
+
 
   QWhatsThis::whatsThisButton( fileTools );     
   
@@ -142,10 +146,10 @@ Wizard::Wizard(int argc,char **argv) :
   file->insertItem( "&Quit", this, SLOT(quit()),     CTRL+Key_Q );
 
   // Doxygen popupmenu
-  //QPopupMenu* doxygen = new QPopupMenu;
-  //int itemIndex = doxygen->insertItem( "&Run" );
-  //doxygen->setWhatsThis ( itemIndex, "Run doxygen with the current configuration file..." );
-  //doxygen->setItemEnabled( itemIndex, FALSE );
+  QPopupMenu* doxygen = new QPopupMenu;
+  int itemIndex = doxygen->insertItem( QIconSet(QPixmap(rundoxygen_xpm)), 
+                                       "&Run", this, SLOT(runDoxygen()), CTRL+Key_R );
+  doxygen->setWhatsThis ( itemIndex, "Run doxygen with the current configuration file..." );
 
   // Help popupmenu
   QPopupMenu* help = new QPopupMenu;
@@ -154,7 +158,7 @@ Wizard::Wizard(int argc,char **argv) :
 
   // menubar definition
   menuBar()->insertItem( "&File", file );
-  //menuBar()->insertItem( "&Doxygen", doxygen );
+  menuBar()->insertItem( "&Doxygen", doxygen );
   menuBar()->insertSeparator();
   menuBar()->insertItem( "&Help", help ); 
 
@@ -262,10 +266,20 @@ void Wizard::saveAsFile()
   }
 
   saveConfig(configFileName);
-  statusBar()->message("Saved as "+ configFileName, messageTimeout );
+  statusBar()->message("Saved as  "+ configFileName, messageTimeout );
+}
+
+//Micha
+void Wizard::runDoxygen()
+{
+  saveFile();
+  QString s = "doxygen " + configFileName;
+  system((const char*)s);  
+  statusBar()->message("doxygen completed: "+ configFileName, messageTimeout );
   hasChanged = FALSE;
   refreshCaption();
-}
+} 
+
 
 void Wizard::quit()
 {

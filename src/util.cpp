@@ -48,6 +48,11 @@
 extern char **environ;
 #endif
 
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#define popen _popen
+#define pclose _pclose
+#endif
+
 //------------------------------------------------------------------------
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
@@ -954,7 +959,7 @@ void setAnchors(char id,MemberList *ml,int groupId)
 //----------------------------------------------------------------------------
 // read a file with `name' to a string.
 
-QCString fileToString(const char *name)
+QCString fileToString(const char *name,bool filter)
 {
   if (name==0 || name[0]==0) return 0;
   QFile f;
@@ -989,19 +994,47 @@ QCString fileToString(const char *name)
       err("Error: file `%s' not found\n",name);
       return "";
     }
-    f.setName(name);
-    fileOpened=f.open(IO_ReadOnly);
-    if (fileOpened)
+    if (Config::inputFilter.isEmpty() || !filter)
     {
-      int fsize=f.size();
-      QCString contents(fsize+2);
-      f.readBlock(contents.data(),fsize);
-      if (fsize==0 || contents[fsize-1]=='\n') 
-        contents[fsize]='\0';
-      else
-        contents[fsize]='\n'; // to help the scanner
-      contents[fsize+1]='\0';
-      f.close();
+      f.setName(name);
+      fileOpened=f.open(IO_ReadOnly);
+      if (fileOpened)
+      {
+        int fsize=f.size();
+        QCString contents(fsize+2);
+        f.readBlock(contents.data(),fsize);
+        if (fsize==0 || contents[fsize-1]=='\n') 
+          contents[fsize]='\0';
+        else
+          contents[fsize]='\n'; // to help the scanner
+        contents[fsize+1]='\0';
+        f.close();
+        return contents;
+      }
+    }
+    else // filter the input
+    {
+      QCString cmd=Config::inputFilter+" "+name;
+      FILE *f=popen(cmd,"r");
+      if (!f)
+      {
+        err("Error: could not execute filter %s\n",Config::inputFilter.data());
+        return "";
+      }
+      const int bSize=4096;
+      QCString contents(bSize);
+      int totalSize=0;
+      int size;
+      while ((size=fread(contents.data()+totalSize,1,bSize,f))==bSize)
+      {
+        totalSize+=bSize;
+        contents.resize(totalSize+bSize); 
+      }
+      totalSize+=size+2;
+      contents.resize(totalSize);
+      contents.at(totalSize-2)='\n'; // to help the scanner
+      contents.at(totalSize-1)='\0';
+      pclose(f);
       return contents;
     }
   }
@@ -2340,7 +2373,8 @@ bool generateRef(OutputList &ol,const char *scName,
     if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
     {
       if (argsStr.isEmpty() && (!md->isDefine() || md->argsString()!=0))
-        ol.writeString("()");
+      //  ol.writeString("()")
+        ;
       else
         ol.docify(argsStr);
     }
@@ -2732,7 +2766,7 @@ void extractNamespaceName(const QCString &scopeName,
 {
   QCString clName=scopeName.copy();
   //QCString nsName;
-  NamespaceDef *nd;
+  NamespaceDef *nd = 0;
   if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=nd->name().copy();

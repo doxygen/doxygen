@@ -1199,7 +1199,7 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
 {
   char lastChar=0;
   bool first=TRUE;
-  ol.startItemList();
+  //ol.startItemList();
   MemberName *mn=functionNameList.first();
   while (mn)
   {

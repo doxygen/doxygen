@@ -201,4 +201,38 @@ static const char *filesave_xpm_data[] =
   "b............."
 };
 const char **filesave_xpm = (const char **)filesave_xpm_data;
+/* XPM */
+static const char *rundoxygen_xpm_data[] = 
+{
+ "16 16 11 1",
+" 	c None",
+".	c #000000",
+"+	c #DCDCDC",
+"@	c #A0A0A0",
+"#	c #C3C3C3",
+"$	c #808080",
+"%	c #FFA858",
+"&	c #FFDCA8",
+"*	c #FFFFC0",
+"=	c #FFFFFF",
+"-	c #585858",
+"       ..       ",
+"   .. .++. ..   ",
+"  .+@.@##@.@+.  ",
+"  .@+$@%%@$+@.  ",
+"   .$%%&%&%$.   ",
+" ..+@%&$$%&@+.. ",
+".+#@%&%@@&*%@#+.",
+".$@+$&*&&=*$+@$.",
+" .--+$&*=&$+--. ",
+"  .$#++$$++#$.  ",
+" .@=$-$++$-$=@. ",
+" .+@-..@@..-@+. ",
+"  ... .+=. ...  ",
+"      .-$.      ",
+"       ..       ",
+"                "
+};
+
+const char **rundoxygen_xpm = (const char **)rundoxygen_xpm_data;
 

@@ -24,7 +24,7 @@ distclean: clean
 	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch qtools/Makefile.qtools
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
+	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro
 	-rm -f src/version.cpp
 	-rm -r addon/configgen/Makefile addon/doxywizard/Makefile
 	-rm -f addon/configgen/Makefile.configgen 

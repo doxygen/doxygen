@@ -22,18 +22,21 @@ First go to the
 \latexonly({\tt http://www.stack.nl/$\sim$dimitri/doxygen/download.html})\endlatexonly
 to get the latest distribution, if you did not have it already.
 
+This section is divided into the following subsections:
+<ul>
+<li>\ref install_src_unix  "Compiling from source on Unix"
+<li>\ref install_bin_unix  "Installating the binaries on Unix"
+<li>\ref unix_problems "Known compilation problems for Unix"
+<li>\ref install_src_windows "Compiling from source on Windows"
+<li>\ref install_bin_windows "Installating the binaries on Windows"
+<li>\ref build_tools "Tools used to develop doxygen"
+</ul>
+
 \subsection install_src_unix    Compiling from source on Unix
 
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
 <ul>
-<li>Troll Tech's GUI toolkit 
-    <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
-    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
-    \addindex Qt
-    You can download either version 1.44 or version 2.1.x.
-    If want to build the GUI front-end you will need Qt 2.1.x. If you do
-    not need it, using Qt 1.44 will result in a somewhat smaller executable. 
 <li>The <a href="ftp://prep.ai.mit.edu/pub/gnu">GNU</a> tools 
     flex, bison and make
     \addindex flex
@@ -49,14 +52,18 @@ To take full advantage of doxygen's features the following additional
 tools should be installed.
 
 <ul>
+<li>Troll Tech's GUI toolkit version 2.x.y
+    <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
+    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
+    \addindex Qt
+    This is needed to build the GUI front-end. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org">teTeX 1.0</a>.<br>
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.research.att.com/sw/tools/graphviz/">
     the Graph visualization toolkit version 1.5</a><br>
     Needed for the include dependency graphs, 
-    the graphical inheritance graphs,
-    and the collaboration graphs.
+    the graphical inheritance graphs, and the collaboration graphs.
 <li>The ghostscript interpreter.
 </ul>
 
@@ -76,8 +83,8 @@ Compilation is now done by performing the following steps:
     sh ./configure
 \endverbatim
 
-    The script tries to determine the platform you use, the location
-    of the Qt library, the make tool (which \e must be GNU make) and the perl 
+    The script tries to determine the platform you use, the make tool 
+    (which \e must be GNU make) and the perl 
     interpreter. It will report what it finds. 
 
     To override the auto detected platform and compiler you can run
@@ -331,17 +338,36 @@ doxygen for Windows.
 Here is what is required:
 <ul>
 <li>WinZip to unpack the tar source distribution. This can be found at
-    http://www.winzip.com
+    http://www.winzip.com/ . 
+
+    The good, tested, and free alternative is the <code>tar</code> utility
+    supplied with <a href="http://sourceware.cygnus.com/cygwin/">cygwin
+    tools</a>. Anyway, the cygwin's flex, bison, and sed are also
+    recommended below.
+
+    Notice (not related to tar): The good alternative to the WinZip,
+    concerning the zipping/unzipping are the Zip/UnZip utilities by
+    Info-ZIP which are available for free from
+    ftp://ftp.freesoftware.com/pub/infozip/index.html . 
+    There also are archives with binaries for Windows. The tip is to 
+    download the unz540xN.exe and zip23xN.zip (they were used without 
+    problems here) which
+    contain UnZip, Zip, and other auxiliary (but not necessary)
+    utilities related to the UnZip and Zip. 
+    It may be the case that
+    
 <li>Microsoft Visual C++ (I only tested with version 6.0).
     Use the <code>vcvars32.bat</code> batch file to set the environment 
     variables (if you did not select to do this automatically during 
     installation).
+
 <li>Perl 5.0 or higher for Windows. This can be download from:
     http://www.ActiveState.com/Products/ActivePerl/
-<li>The GNU tools flex, bison and sed.
+
+<li>The GNU tools flex, bison, and sed.
     To get these working on Windows you should install the 
-    <a href="http://sourceware.cygnus.com/cygwin/">cygwin tools</a>
-    \latexonly(see {\tt http://sourceware.cygnus.com/cygwin/})\endlatexonly.
+    <a href="http://sources.redhat.com/cygwin/">cygwin tools</a>
+    \latexonly(see {\tt http://sources.redhat.com/cygwin/})\endlatexonly.
     
     Make sure the <code>BISONLIB</code> environment variable points to the
     location where the files <code>bison.simple</code> and 
@@ -349,55 +375,67 @@ Here is what is required:
 
     Also make sure the tools are available from a dos box, by adding 
     the directory they are in to the search path.
-
-<li>A professional license of 
-    <A HREF="http://www.trolltech.com/products/qt.html">Qt for Windows</A>
-    \latexonly\par (see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
-   
-    If you do not have that and you can live without the GUI front-end 
-    you can also download Qt-1.44 for X11. Doxygen only the depends on 
-    the tools section of the Qt library, which happens also to compile 
-    on Windows. (Qt version 2.1.x does not work anymore, at least not 
-    without adding some window's specific code). 
     
-    Now create the following directories:
+    For those of you who are very new to cygwin (if you are going to
+    install it from scratch), you should notice that there is an
+    archive file <code>bootstrap.zip</code> which also contains the
+    <code>tar</code> utility (<code>tar.exe</code>), <code>gzip</code>
+    utilities, and the <code>cygwin1.dll</code> core. This also means
+    that you have the <code>tar</code> in hands from the start. It
+    can be used to unpack the tar source distribution instead of
+    using WinZip -- as mentioned at the beginning of this list of
+    steps.
 
-\verbatim
-    qtools/src
-    qtools/include
-    qtools/lib
-\endverbatim
+<li>Since Doxygen-1.2.2-20001015, the distribution includes the part
+    of Qt-2.2.0 that is needed for compilation of doxygen, doxytag,
+    and doxysearch. The missing files for Windows were also created.
+    This allows compilation of doxygen on systems without X11 or the
+    full Qt. For doxywizard Qt-2.2 is still required however.
 
-    Copy the contents of the <code>src/tools</code> directory of the 
-    Qt-1.44 for X11 archive to <code>qtools/src</code>. Also copy the include 
-    files in <code>src/tools</code> to <code>qtools/include</code>. Create a 
-    static library project resulting in <code>qtools/lib/qt.lib</code> and 
-    add the files in <code>qtools/src</code> to that project. Then 
-    build the library and set the environment variable <code>QTDIR</code> 
-    to the absolute path of the qtools directory.
-
-<li>To generate LaTeX documentation or formulas in HTML you need the tools: 
-    latex, dvips and gswin32 
-    To get these working under Windows install the fpTeX distribution
-    You can download it at: 
+    You may be interested in the professional license of 
+    <A HREF="http://www.trolltech.com/products/qt.html">Qt for Windows</A>
+    \latexonly\par (see 
+    {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
+   
+<li>To generate LaTeX documentation or formulas in HTML you need the tools:
+    <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
+    To get these working under Windows
+    install the fpTeX distribution You can download it at:
     ftp://ctan.tug.org/tex-archive/systems/win32/web2c/fptex-0.3/
 
     Make sure the tools are available from a dos box, by adding the 
     directory they are in to the search path.
+
+    For your information, the LaTeX is freely available set of so
+    called macros and styles on the top of the famous TeX program
+    (by famous Donald Knuth) and the accompanied utilities (all
+    available for free). It is used to for high quality
+    typesetting. The result -- in the form of so called
+    <code>DVI</code> (DeVice Independent) file -- can be printed or
+    displayed on various devices preserving exactly the same look up
+    to the capability of the device. The <code>dvips</code> allows you
+    to convert the <code>dvi</code> to the high quality PostScript
+    (i.e. PostScript that can be processed by utilities like 
+    <code>psnup</code>, <code>psbook</code>, <code>psselect</code>,
+    and others). The derived version of TeX (the pdfTeX) can be used
+    to produce PDF output instead of DVI, or the PDF can be produced
+    from PostScript using the utility <code>ps2pdf</code>.
 
 <li>If you want to generate compressed HTML help 
     (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
     config file, then you need the Microsoft HTML help workshop. 
     You can download it at: 
     http://msdn.microsoft.com/workshop/author/htmlhelp
+
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
     <code>objects</code> and <code>bin</code> manually in the root of the 
     distribution before compiling.
+
 <li><a href="http://www.research.att.com/sw/tools/graphviz/">
     the Graph visualization toolkit version 1.5</a><br>
     Needed for the include dependency graphs, the graphical inheritance graphs,
-    and the collaboration graphs.<br>
+    and the collaboration graphs.
 </ul>
 
 Compilation is now done by performing the following steps:
@@ -406,10 +444,15 @@ Compilation is now done by performing the following steps:
 <li>Open a dos box.
     Make sure all tools (i.e. <code>nmake</code>, <code>latex</code>, 
     <code>gswin32</code>, <code>dvips</code>, <code>sed</code>, 
-    <code>flex</code>, <code>bison</code>, 
-    <code>cl</code>, <code>rm</code> and <code>perl</code>), are accessible from the command-line 
-    (add them to the PATH environment variable if needed).
+    <code>flex</code>, <code>bison</code>, <code>cl</code>,
+    <code>rm</code>, and <code>perl</code>), are accessible from
+    the command-line (add them to the PATH environment variable if
+    needed).
 
+    Notice: The use of LaTeX is optional and only needed for compilation
+    of the documentation into PostScript or PDF. 
+    It is \e not needed for compiling the doxygen's binaries. 
+    
 <li>goto the doxygen root dir and type:
 
 \verbatim
@@ -421,29 +464,28 @@ Compilation is now done by performing the following steps:
     <code>doxysearch.exe</code> (The compiler should not produce any 
     serious warnings or errors).
 
-<li>To build the examples type:
+<li>To build the examples, go to the <code>examples</code> subdirectory
+    and type:
 
 \verbatim
-    nmake examples
+    nmake
 \endverbatim
 
-<li>To generate the HTML documentation type:
+<li>To generate the doxygen documentation, do ensure, that the
+    <code>html</code> and <code>latex</code> subdirectories exist.
+    Then go to the <code>doc</code> subdirectory and type:
 
 \verbatim
-    nmake docs
+    doxygen
+    nmake
 \endverbatim
 
-    The generated docs are located in the html directory.
+    The generated docs int HTML are located in the <code>html</code>
+    subdirectory.
 
-<li>
-    To generate the postscript and PDF manual type:
-
-\verbatim
-    nmake pdf
-\endverbatim
-
-    The manual should now be in <code>latex/doxygen_manual.pdf</code>
-
+    The sources for LaTeX documentation are located in <code>latex</code>
+    subdirectory. From those sources, the DVI, PostScript, and PDF
+    documentation can be generated. 
 </ol>
 
 \subsection install_bin_windows Installating the binaries on Windows
