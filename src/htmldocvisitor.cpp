@@ -198,6 +198,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       m_t << s->text(); 
       break;
     case DocVerbatim::LatexOnly: 
+    case DocVerbatim::XmlOnly: 
       /* nothing */ 
       break;
   }

@@ -3130,6 +3130,12 @@ void extractNamespaceName(const QCString &scopeName,
   namespaceName.resize(0);
 
 done:
+  if (className.isEmpty() && !namespaceName.isEmpty())
+  {
+    // class and namespace with the same name, correct to return the class.
+    className=namespaceName.copy();
+    namespaceName.resize(0);
+  }
   //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
   //       className.data(),namespaceName.data());
   return;
@@ -4009,6 +4015,7 @@ void filterLatexString(QTextStream &t,const char *str,
           case '\\': t << "\\(\\backslash\\)"; break;
           case '{':  t << "\\{"; break;
           case '}':  t << "\\}"; break;
+          case '_':  t << "\\_"; break;
           default: 
             {
               // Some languages use wide characters

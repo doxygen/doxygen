@@ -122,6 +122,7 @@ class FileDef : public Definition
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeSource(OutputList &ol);
+    void parseSource();
     friend void generatedFileNames();
     void insertMember(MemberDef *md);
     void insertClass(ClassDef *cd);

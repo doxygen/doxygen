@@ -1321,12 +1321,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_guardExpr="! ";
   					  BEGIN(DefinedExpr1);
   					}
-<Command>"if"/[ \t(]			{
+<Command>"if"/[ \t(!]			{
   					  incrLevel();
 					  g_guardExpr.resize(0);
 					  BEGIN(Guard);
 					}
-<Command>("elif"|"else"{B}*"if")/[ \t(]	{
+<Command>("elif"|"else"{B}*"if")/[ \t(!]	{
   					  if (!otherCaseDone())
 					  {
 					    g_guardExpr.resize(0);
@@ -1354,7 +1354,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Command>"undef"{B}+			{
   					  BEGIN(UndefName);
   					}
-<Command>("elif"|"else"{B}*"if")/[ \t(]	{
+<Command>("elif"|"else"{B}*"if")/[ \t(!]	{
   					  if (!otherCaseDone())
 					  {
 					    g_guardExpr.resize(0);
@@ -1445,7 +1445,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCPPBlock>^{B}*"#"			{ BEGIN(SkipCommand); }
 <SkipCPPBlock>^{B}*/[^#]		{ BEGIN(SkipLine); }
 <SkipCPPBlock>.
-<SkipCommand>"if"(("n")?("def"))?/[ \t(]	{ 
+<SkipCommand>"if"(("n")?("def"))?/[ \t(!]	{ 
   					  incrLevel();
                                           g_ifcount++; 
   					  //printf("#if... depth=%d\n",g_ifcount);
@@ -1459,7 +1459,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(Start);
 					  }
   					}
-<SkipCommand>("elif"|"else"{B}*"if")/[ \t(]		{
+<SkipCommand>("elif"|"else"{B}*"if")/[ \t(!]		{
   					  if (g_ifcount==0) 
 					  {
   					    if (!otherCaseDone())

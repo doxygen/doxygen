@@ -619,6 +619,7 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
   case DocVerbatim::Verbatim:	type = "preformatted"; break;
   case DocVerbatim::HtmlOnly:	type = "htmlonly"; break;
   case DocVerbatim::LatexOnly:	type = "latexonly"; break;
+  case DocVerbatim::XmlOnly:	type = "xmlonly"; break;
   }
   openItem(type);
   m_output.addFieldQuotedString("content", s->text());

@@ -93,6 +93,7 @@ class Doxygen
     static NamespaceDef             *globalScope;
     static QDict<RefList>           *xrefLists; // array of xref lists: todo, test, bug, deprecated ...
     static QCString                  htmlFileExtension;
+    static bool                      parseSourcesNeeded;
 };
 
 void initDoxygen();

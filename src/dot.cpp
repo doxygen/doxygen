@@ -46,15 +46,15 @@ static const char *edgeColorMap[] =
   "orange"         // template relation
 };
 
-//static const char *arrowStyle[] =
-//{
-//  "empty",         // Public
-//  "empty",         // Protected
-//  "empty",         // Private
-//  "open",          // "use" relation
-//  0,               // Undocumented
-//  0                // template relation
-//};
+static const char *arrowStyle[] =
+{
+  "empty",         // Public
+  "empty",         // Protected
+  "empty",         // Private
+  "open",          // "use" relation
+  0,               // Undocumented
+  0                // template relation
+};
 
 static const char *edgeStyleMap[] =
 {
@@ -418,8 +418,21 @@ static QCString convertLabel(const QCString &l)
   return result;
 }
 
+static void writeBoxMemberList(QTextStream &t,char prot,MemberList &ml,ClassDef *scope)
+{
+  MemberListIterator mlia(ml);
+  MemberDef *mma;
+  for (mlia.toFirst();(mma = mlia.current());++mlia)
+  {
+    if (mma->getClassDef() == scope)
+    {
+      t << prot << " " << convertLabel(mma->name()) << "\\l";
+    }
+  }
+}
+
 void DotNode::writeBox(QTextStream &t,
-                       GraphType /* gt */,
+                       GraphType gt,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren)
 {
@@ -428,24 +441,65 @@ void DotNode::writeBox(QTextStream &t,
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << m_number << " [label=\""
-    << convertLabel(m_label)    
-    << "\",height=0.2,width=0.4";
-  //if (format==BITMAP) t << ",fontname=\"Helvetica\"";
-  t << ",color=\"" << labCol << "\"";
+  t << "  Node" << m_number << " [label=\"";
+
+  if (Config_getBool("UML_LOOK") && (gt==Inheritance || gt==Collaboration))
+  {
+    t << "{" << convertLabel(m_label);
+    t << "\\n|";
+    writeBoxMemberList(t,'+',m_classDef->pubAttribs,m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->pubStaticAttribs,m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->pacAttribs,m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->pacStaticAttribs,m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->proAttribs,m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->proStaticAttribs,m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->priAttribs,m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->priStaticAttribs,m_classDef);
+    t << "|";
+    writeBoxMemberList(t,'+',m_classDef->pubMethods,m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->pubStaticMethods,m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->pubSlots,m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->pacMethods,m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->pacStaticMethods,m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->proMethods,m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->proStaticMethods,m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->proSlots,m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->priMethods,m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->priStaticMethods,m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->priSlots,m_classDef);
+    t << "}";
+  }
+  else // old look
+  {
+    t << convertLabel(m_label);
+  }
+  t << "\",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",style=\"filled\" fontcolor=\"white\"";
+    t << ",color=\"white\", fillcolor=\"black\", style=\"filled\" fontcolor=\"white\"";
   }
-  else if (!m_url.isEmpty())
+  else 
   {
-    t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+    t << ",color=\"" << labCol << "\"";
+    if (!m_url.isEmpty())
+    {
+      int anchorPos = m_url.findRev('#');
+      if (anchorPos==-1)
+      {
+        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+      }
+      else
+      {
+        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+          << m_url.right(m_url.length()-anchorPos) << "\"";
+      }
+    }
   }
   t << "];" << endl; 
 }
 
 void DotNode::writeArrow(QTextStream &t,
-                         GraphType /* gt */,
+                         GraphType gt,
                          GraphOutputFormat format,
                          DotNode *cn,
                          EdgeInfo *ei,
@@ -465,10 +519,17 @@ void DotNode::writeArrow(QTextStream &t,
   {
     t << ",label=\"" << ei->m_label << "\"";
   }
-  //if (arrowStyle[ei->m_color])
-  //{
-  //  if (pointBack) t << ",arrowtail=\"empty\""; else t << ",arrowhead=\"empty\"";
-  //}
+  if (Config_getBool("UML_LOOK") &&
+      arrowStyle[ei->m_color] && 
+      (gt==Inheritance || gt==Collaboration)
+     )
+  {
+    if (pointBack) 
+      t << ",arrowtail=\"" <<arrowStyle[ei->m_color] << "\""; 
+    else 
+      t << ",arrowhead=\"" << arrowStyle[ei->m_color] << "\"";
+  }
+
   if (format==BITMAP) t << ",fontname=\"Helvetica\"";
   t << "];" << endl; 
 }
@@ -1015,7 +1076,7 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 
 //--------------------------------------------------------------------
 
-int DotClassGraph::m_curNodeNumber;
+int DotClassGraph::m_curNodeNumber = 0;
 
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     const char *label,int distance,const char *usedName,const char *templSpec,bool base)
@@ -1096,7 +1157,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   //    cd->name().data(),distance,base);
   // ---- Add inheritance relations
 
-  if (m_graphType == DotNode::Inheritance)
+  if (m_graphType == DotNode::Inheritance || m_graphType==DotNode::Collaboration)
   {
     BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
     BaseClassDef *bcd;
@@ -1108,10 +1169,8 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
           bcd->templSpecifiers,base); 
     }
   }
-  else // m_graphType != Inheritance
+  if (m_graphType == DotNode::Collaboration)
   {
-    ASSERT(m_graphType==DotNode::Collaboration);
-
     // ---- Add usage relations
     
     UsesClassDict *dict = 
@@ -1266,7 +1325,7 @@ void writeDotGraph(DotNode *root,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,gt,format,TRUE,TRUE,distance,backArrows);
+    root->write(t,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows);
     if (renderParents && root->m_parents) 
     {
       //printf("rendering parents!\n");
@@ -1356,11 +1415,14 @@ static void findMaximalDotGraph(DotNode *root,
   }
   //printf("lastFit=%d\n",lastFit);
 
+  bool hasLRRank = (lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH"))) &&
+                   !Config_getBool("UML_LOOK");
+  
   writeDotGraph(root,
                 gt,
                 format,
                 baseName,
-                lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
+                hasLRRank,
                 renderParents,
                 lastFit,
                 backArrows
@@ -1552,7 +1614,7 @@ void DotClassGraph::writeDEF(QTextStream &t)
 
 //--------------------------------------------------------------------
 
-int DotInclDepGraph::m_curNodeNumber;
+int DotInclDepGraph::m_curNodeNumber = 0;
 
 void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
 {
@@ -1780,6 +1842,221 @@ void DotInclDepGraph::writeXML(QTextStream &t)
   {
     node->writeXML(t,FALSE);
   }
+}
+
+//-------------------------------------------------------------
+
+int DotCallGraph::m_curNodeNumber = 0;
+
+DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth)
+{
+  m_maxDistance = 0;
+  m_recDepth = maxRecursionDepth;
+  if (md->getGroupDef())
+  {
+    m_diskName = md->getGroupDef()->getOutputFileBase()+"_"+md->getBodyAnchor();
+  }
+  else
+  {
+    m_diskName = md->getOutputFileBase()+"_"+md->anchor();
+  }
+  QCString uniqueId;
+  if (md->getGroupDef()) // member is in a group
+  {
+    uniqueId = md->getReference()+"$"+
+               md->getGroupDef()->getOutputFileBase()+"#"+md->getBodyAnchor();
+  }
+  else // ungrouped member
+  {
+    uniqueId = md->getReference()+"$"+
+               md->getOutputFileBase()+"#"+md->anchor();
+  }
+  m_startNode = new DotNode(m_curNodeNumber++,
+                            md->qualifiedName(),
+                            uniqueId.data(),
+                            0,       // distance
+                            TRUE     // root node
+                           );
+  m_usedNodes = new QDict<DotNode>(1009);
+  m_usedNodes->insert(uniqueId,m_startNode);
+  buildGraph(m_startNode,md,1);
+}
+
+DotCallGraph::~DotCallGraph()
+{
+  deleteNodes(m_startNode);
+  delete m_usedNodes;
+}
+
+QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
+                        const char *path,bool generateImageMap)
+{
+  QDir d(path);
+  // store the original directory
+  if (!d.exists()) 
+  { 
+    err("Error: Output dir %s does not exist!\n",path); exit(1);
+  }
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // go to the html output directory (i.e. path)
+  QDir::setCurrent(d.absPath());
+  QDir thisDir;
+
+  QCString baseName=m_diskName+"_cgraph";
+  //baseName=convertNameToFile(baseName);
+  QCString mapName=baseName;
+
+  findMaximalDotGraph(m_startNode,QMIN(m_recDepth,m_maxDistance),
+                      baseName,thisDir,DotNode::CallGraph,format,
+                      TRUE,FALSE,FALSE);
+
+  if (format==BITMAP)
+  {
+    // run dot to create a bitmap image
+    QCString dotArgs(maxCmdLine);
+    QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+    QCString imgName=baseName+"."+imgExt;
+    dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
+                   imgExt.data(),baseName.data(),imgName.data());
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    checkDotResult(imgName);
+
+    if (generateImageMap)
+    {
+      // run dot again to create an image map
+      dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",
+                      baseName.data(),baseName.data());
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      {
+        err("Problems running dot. Check your installation!\n");
+        QDir::setCurrent(oldDir);
+        return baseName;
+      }
+
+      out << "<p><center><img src=\"" << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
+          << mapName << "_map\" alt=\"";
+      out << "\">";
+      out << "</center>" << endl;
+      QString tmpstr;
+      QTextOStream tmpout(&tmpstr);
+      convertMapFile(tmpout,baseName+".map");
+      if (!tmpstr.isEmpty())
+      {
+        out << "<map name=\"" << mapName << "_map\">" << endl;
+        out << tmpstr;
+        out << "</map>" << endl;
+      }
+      thisDir.remove(baseName+".map");
+    }
+  }
+  else if (format==EPS)
+  {
+    // run dot to create a .eps image
+    QCString dotArgs(maxCmdLine);
+    dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
+                   baseName.data(),baseName.data());
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    {
+      err("Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    int width,height;
+    if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
+    {
+      err("Error: Could not extract bounding box from .eps!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    if (Config_getBool("USE_PDFLATEX"))
+    {
+      QCString epstopdfArgs(maxCmdLine);
+      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
+                     baseName.data(),baseName.data());
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      {
+         err("Error: Problems running epstopdf. Check your TeX installation!\n");
+         QDir::setCurrent(oldDir);
+         return baseName;
+      }
+    }
+    int maxWidth = 420; /* approx. page width in points */
+   
+    out << "\\begin{figure}[H]\n"
+           "\\begin{center}\n"
+           "\\leavevmode\n"
+           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+                                      << "pt]{" << baseName << "}\n"
+           "\\end{center}\n"
+           "\\end{figure}\n";
+  }
+
+  if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
+
+  QDir::setCurrent(oldDir);
+  return baseName;
+}
+
+void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
+{
+  MemberSDict *refs = md->getReferencesMembers();
+  if (refs)
+  {
+    MemberSDict::Iterator mri(*refs);
+    MemberDef *rmd;
+    for (;(rmd=mri.current());++mri)
+    {
+      if (rmd->isFunction())
+      {
+        QCString uniqueId;
+        if (rmd->getGroupDef()) // member is in a group
+        {
+          uniqueId = rmd->getReference()+"$"+
+            rmd->getGroupDef()->getOutputFileBase()+"#"+rmd->getBodyAnchor();
+        }
+        else // ungrouped member
+        {
+          uniqueId=rmd->getReference()+"$"+
+            rmd->getOutputFileBase()+"#"+rmd->anchor();
+        }
+        DotNode *bn  = m_usedNodes->find(uniqueId);
+        if (bn) // file is already a node in the graph
+        {
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+          bn->setDistance(distance);
+        }
+        else
+        {
+          bn = new DotNode(
+              m_curNodeNumber++,
+              rmd->qualifiedName(),
+              uniqueId,
+              distance
+              );
+          if (distance>m_maxDistance) m_maxDistance=distance;
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+          m_usedNodes->insert(uniqueId,bn);
+
+          // we use <=, i.s.o < to cause one more level than intended which is used to 
+          // detect truncated nodes
+          if (distance<=m_recDepth) buildGraph(bn,rmd,distance+1);
+        }
+      }
+    }
+  }
+}
+
+bool DotCallGraph::isTrivial() const
+{
+  return m_startNode->m_children==0;
 }
 
 //-------------------------------------------------------------

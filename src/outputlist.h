@@ -312,6 +312,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startInclDepGraph); }
     void endInclDepGraph(DotInclDepGraph &g)
     { forall(&OutputGenerator::endInclDepGraph,g); }
+    void startCallGraph()
+    { forall(&OutputGenerator::startCallGraph); }
+    void endCallGraph(DotCallGraph &g)
+    { forall(&OutputGenerator::endCallGraph,g); }
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
     { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
     void startTextBlock(bool dense=FALSE)
@@ -376,6 +380,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(int);
     FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
+    FORALLPROTO1(DotCallGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
     FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)

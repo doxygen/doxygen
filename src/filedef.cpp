@@ -32,6 +32,25 @@
 #include "docparser.h"
 //#include "xml.h"
 
+class DevNullCodeDocInterface : public BaseCodeDocInterface
+{
+  public:
+    virtual void codify(const char *) {}
+    virtual void writeCodeLink(const char *,const char *,
+                               const char *,const char *) {}
+    virtual void writeLineNumber(const char *,const char *,
+                                 const char *,int) {}
+    virtual void startCodeLine() {}
+    virtual void endCodeLine() {}
+    virtual void startCodeAnchor(const char *) {}
+    virtual void endCodeAnchor() {}
+    virtual void startFontClass(const char *) {}
+    virtual void endFontClass() {}
+    virtual void writeCodeAnchor(const char *) {}
+};
+
+
+
 /*! create a new file definition, where \a p is the file path, 
     \a the file name, and \a ref is an HTML anchor name if the
     file was read from a tag file or 0 otherwise
@@ -487,6 +506,14 @@ void FileDef::writeSource(OutputList &ol)
   ol.enableAll();
 }
 
+void FileDef::parseSource()
+{
+  DevNullCodeDocInterface devNullIntf;
+  parseCode(devNullIntf,0,
+            fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+            FALSE,0,this
+           );
+}
 
 void FileDef::addMembersToMemberGroup()
 {

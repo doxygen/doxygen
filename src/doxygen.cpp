@@ -110,6 +110,7 @@ NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globa
   
 QDict<RefList> *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 
+bool           Doxygen::parseSourcesNeeded = FALSE;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -1262,6 +1263,7 @@ static void findUsingDeclImports(Entry *root)
                   newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
                 }
                 newMd->setDefinition(md->definition());
+                newMd->enableCallGraph(root->callGraph);
                 newMd->setBitfields(md->bitfieldString());
                 newMd->addSectionsToDefinition(root->anchors);
                 newMd->setBodySegment(md->getStartBodyLine(),md->getEndBodyLine());
@@ -1420,6 +1422,7 @@ static MemberDef *addVariableToClass(
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setMemberSpecifiers(root->memSpec);
+  md->enableCallGraph(root->callGraph);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
@@ -1588,6 +1591,7 @@ static MemberDef *addVariableToFile(
   md->setMemberGroupId(root->mGrpId);
   md->setBodyDef(fd);
   md->setDefinition(def);
+  md->enableCallGraph(root->callGraph);
   md->setExplicitExternal(root->explicitExternal);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
@@ -2061,6 +2065,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   }
   if (def.left(7)=="friend ") def=def.right(def.length()-7);
   md->setDefinition(def);
+  md->enableCallGraph(root->callGraph);
 
   Debug::print(Debug::Functions,0,
       "  Func Member:\n"
@@ -2267,6 +2272,8 @@ static void buildFunctionList(Entry *root)
               
               md->addSectionsToDefinition(root->anchors);
 
+              md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+
               // merge ingroup specifiers
               if (md->getGroupDef()==0 && root->groups->first())
               {
@@ -2350,6 +2357,7 @@ static void buildFunctionList(Entry *root)
                      def.data()
                     );
           md->setDefinition(def);
+          md->enableCallGraph(root->callGraph);
           //if (root->mGrpId!=-1) 
           //{
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -2486,6 +2494,9 @@ static void findFriends()
               fmd->setBodyMember(mmd);
             }
             mmd->setDocsForDefinition(fmd->isDocsForDefinition());
+
+            mmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
+            fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
           }
         }
       }
@@ -2643,6 +2654,9 @@ static void transferFunctionDocumentation()
 
               mdef->setMemberDeclaration(mdec);
               mdec->setMemberDefinition(mdef);
+
+              mdef->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
+              mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
             }
           }
         }
@@ -3760,6 +3774,7 @@ static void addMemberDocs(Entry *root,
   // strip extern specifier
   if (fDecl.left(7)=="extern ") fDecl=fDecl.right(fDecl.length()-7);
   md->setDefinition(fDecl);
+  md->enableCallGraph(root->callGraph);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
@@ -3856,6 +3871,8 @@ static void addMemberDocs(Entry *root,
 
     md->setRefItems(root->sli);
   }
+
+  md->enableCallGraph(md->hasCallGraph() || root->callGraph);
 
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
@@ -4701,6 +4718,7 @@ static void findMember(Entry *root,
           }
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
+          md->enableCallGraph(root->callGraph);
           QCString doc=getOverloadDocs();
           doc+="<p>";
           doc+=root->doc;
@@ -4855,6 +4873,7 @@ static void findMember(Entry *root,
           md->setMemberClass(cd);
           md->setMemberSpecifiers(root->memSpec);
           md->setDefinition(funcDecl);
+          md->enableCallGraph(root->callGraph);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
@@ -5112,6 +5131,7 @@ static void findEnums(Entry *root)
       //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
       md->addSectionsToDefinition(root->anchors);
       md->setMemberGroupId(root->mGrpId);
+      md->enableCallGraph(root->callGraph);
       //if (root->mGrpId!=-1) 
       //{
       //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -5533,6 +5553,12 @@ static void generateFileSources()
         {
           msg("Generating code for file %s...\n",fd->docName().data());
           fd->writeSource(*outputList);
+        }
+        else if (!fd->isReference() && 
+             (Doxygen::parseSourcesNeeded || Config_getBool("CALL_GRAPH")))
+        {
+          msg("Parsing code for file %s...\n",fd->docName().data());
+          fd->parseSource();
         }
       }
     }
@@ -6405,7 +6431,7 @@ static void generateSearchIndex()
       QTextStream t(&f);
       t << "#!/bin/sh"   << endl
         << "DOXYSEARCH=" << Config_getString("BIN_ABSPATH") << "/doxysearch" << endl
-        << "DOXYPATH="   << Config_getString("DOC_ABSPATH") << " ";
+        << "DOXYPATH=\"" << Config_getString("DOC_ABSPATH") << " ";
 
       QStrList &extDocPaths=Config_getList("EXT_DOC_PATHS");
       char *s= extDocPaths.first();
@@ -6415,7 +6441,7 @@ static void generateSearchIndex()
         s=extDocPaths.next();
       }
 
-      t << endl 
+      t << "\"" << endl 
         << "if [ -f $DOXYSEARCH ]" << endl
         << "then" << endl
         << "  $DOXYSEARCH $DOXYPATH" << endl 

@@ -197,6 +197,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
                   const char *exampleName,SectionDict *sections)
 {
   int count=0;
+  
   OutputGenerator *og=outputs->first();
   while (og)
   {
@@ -205,9 +206,19 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   }
   if (count==0) return; // no output formats enabled.
 
-  DocNode *root = validatingParseDoc(fileName,startLine,
-                                     clName,md,docStr,isExample,exampleName,
-                                     sections);
+  DocNode *root=0;
+  if (docStr.length()==0 || docStr.at(docStr.length()-1)=='\n')
+  {
+    root = validatingParseDoc(fileName,startLine,
+                              clName,md,docStr,isExample,exampleName,
+                              sections);
+  }
+  else
+  {
+    root = validatingParseDoc(fileName,startLine,
+                              clName,md,docStr+"\n",isExample,exampleName,
+                              sections);
+  }
 
   og=outputs->first();
   while (og)
@@ -314,6 +325,7 @@ FORALL1(char a1,a1)
 FORALL1(int a1,a1)
 FORALL1(DotClassGraph &a1,a1)
 FORALL1(DotInclDepGraph &a1,a1)
+FORALL1(DotCallGraph &a1,a1)
 FORALL1(DotGfxHierarchyTable &a1,a1)
 FORALL1(SectionTypes a1,a1)
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)

@@ -92,6 +92,7 @@ ClassDef::ClassDef(
   m_membersMerged = FALSE;
   QCString ns;
   extractNamespaceName(m_name,m_className,ns);
+  //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
 
   if (((QCString)defFileName).right(5)!=".java" && 
       guessSection(defFileName)==Entry::SOURCE_SEC)

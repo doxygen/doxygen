@@ -81,6 +81,7 @@ Entry::Entry(const Entry &e)
   memSpec     = e.memSpec;
   initializer = e.initializer;
   initLines   = e.initLines;
+  callGraph   = e.callGraph;
   //todoId      = e.todoId;
   //testId      = e.testId;
   //bugId       = e.bugId;
@@ -240,6 +241,7 @@ void Entry::reset()
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
+  callGraph = FALSE;
   //todoId = 0;
   //testId = 0;
   //bugId = 0;

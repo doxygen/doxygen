@@ -27,7 +27,7 @@ enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
 
 struct ListItemInfo
 {
-  const char *type;
+  QCString type;
   int itemId;
 };
 
@@ -253,6 +253,7 @@ class Entry
     int  memSpec;             //!< member specifiers
     int  initLines;           //!< define/variable initializer lines to show 
     bool subGrouping;         //!< automatically group class members?
+    bool callGraph;           //!< do we need to draw the call graph?
     Specifier    virt;        //!< virtualness of the entry 
     Entry       *parent;      //!< parent node in the tree
     QCString	 type;        //!< member type 

@@ -185,6 +185,9 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</latexonly>";
       break;
+    case DocVerbatim::XmlOnly: 
+      m_t << s->text();
+      break;
   }
 }
 
