@@ -1199,7 +1199,7 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 }
 
 
-void LatexGenerator::startSection(const char *lab,const char *,bool sub)
+void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
   if (Config_getBool("PDF_HYPERLINKS"))
   {
@@ -1208,15 +1208,29 @@ void LatexGenerator::startSection(const char *lab,const char *,bool sub)
   t << "\\";
   if (Config_getBool("COMPACT_LATEX"))
   {
-    if (sub) t << "subsubsection{"; else t << "subsection{";
+    switch(type)
+    {
+      case SectionInfo::Page:       t << "subsection"; break;
+      case SectionInfo::Section:    t << "subsubsection"; break;
+      case SectionInfo::Subsection: t << "paragraph"; break;
+      default: ASSERT(0); break;
+    }
+    t << "{";
   }
   else
   {
-    if (sub) t << "subsection{"; else t << "section{";
+    switch(type)
+    {
+      case SectionInfo::Page:       t << "section"; break;
+      case SectionInfo::Section:    t << "subsection"; break;
+      case SectionInfo::Subsection: t << "subsubsection"; break;
+      default: ASSERT(0); break;
+    }
+    t << "{";
   }
 }
 
-void LatexGenerator::endSection(const char *lab,bool)
+void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
   t << "}\\label{" << lab << "}" << endl;
 }
@@ -1259,7 +1273,7 @@ void LatexGenerator::writeSectionRef(const char *ref,const char *,
 void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
                                      const char *title)
 {
-  t << "\\contentsline{section}{";
+  t << "\\item \\contentsline{section}{";
   docify(title);
   t << "}{\\ref{" << lab << "}}{}" << endl;
 }
@@ -1940,5 +1954,19 @@ void LatexGenerator::startParamList(ParamListTypes,const char *title)
 void LatexGenerator::endParamList()
 {
   t << "\\end{Desc}" << endl;
+}
+
+void LatexGenerator::startSectionRefList()
+{
+  t << "\\footnotesize" << endl;
+  t << "\\begin{multicols}{2}" << endl;
+  t << "\\begin{CompactList}" << endl;
+}
+
+void LatexGenerator::endSectionRefList()
+{
+  t << "\\end{CompactList}" << endl;
+  t << "\\end{multicols}" << endl;
+  t << "\\normalsize" << endl;
 }
 

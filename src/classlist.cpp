@@ -117,7 +117,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           if (!cd->briefDescription().isEmpty())
           {
             ol.startMemberDescription();
-            parseDoc(ol,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
+            parseDoc(ol,cd->briefFile(),cd->briefLine(),cd->name(),0,cd->briefDescription());
             if ((!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
                 !cd->documentation().isEmpty())
             {

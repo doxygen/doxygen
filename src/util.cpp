@@ -3453,7 +3453,7 @@ void addRelatedPage(const char *name,const QCString &ptitle,
 
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
-          pi->name,pi->title,SectionInfo::Section,pi->reference);
+          pi->name,pi->title,SectionInfo::Page,pi->reference);
       if (gd)
       {
         si->fileName=gd->getOutputFileBase();
@@ -3501,7 +3501,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         QCString doc(1000);
         doc += "<dl><dt>\\anchor ";
         doc += item->listAnchor;
-        doc += "\n";
+        doc += " ";
         doc += prefix;
         doc += " \\_internalref ";
         doc += name;

@@ -344,10 +344,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 
     { forall(&OutputGenerator::endIndent); }
-    void startSection(const char *lab,const char *title,bool sub)
-    { forall(&OutputGenerator::startSection,lab,title,sub); }
-    void endSection(const char *lab,bool sub)
-    { forall(&OutputGenerator::endSection,lab,sub); }
+    void startSection(const char *lab,const char *title,SectionInfo::SectionType t)
+    { forall(&OutputGenerator::startSection,lab,title,t); }
+    void endSection(const char *lab,SectionInfo::SectionType t)
+    { forall(&OutputGenerator::endSection,lab,t); }
     void writeSectionRef(const char *ref,const char *file,
                          const char *anchor, const char *title)
     { forall(&OutputGenerator::writeSectionRef,ref,file,anchor,title); }
@@ -452,6 +452,11 @@ class OutputList : public OutputDocInterface
     void endLatexOnly()
     { forall(&OutputGenerator::endLatexOnly); }
 
+    void startSectionRefList()
+    { forall(&OutputGenerator::startSectionRefList); }
+    void endSectionRefList()
+    { forall(&OutputGenerator::endSectionRefList); }
+
 #if 0
     void startPlainFile(const char *name)
     { forall(&OutputGenerator::startPlainFile,name); }
@@ -501,7 +506,9 @@ class OutputList : public OutputDocInterface
     FORALLPROTO2(ParamListTypes,const char *);
     FORALLPROTO2(const char *,const char *);
     FORALLPROTO2(const char *,bool);
+    FORALLPROTO2(const char *,SectionInfo::SectionType);
     FORALLPROTO3(const char *,const char *,bool);
+    FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(ClassDiagram &,const char *,const char *);

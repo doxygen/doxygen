@@ -14,9 +14,9 @@
  * input used in their production; they are not affected by this license.
  *
  */
-/*! \page commands
+/*! \page commands Special Commands
 
-\section commands Special Commands
+\section cmd_intro Introduction
 
 All commands in the documentation start with a backslash (<b>\\</b>) or an
 at-sign (<b>\@</b>). If you prefer you can replace all commands starting with a 
@@ -25,7 +25,7 @@ backslash below, by their counterparts that start with an at-sign.
 Some commands have one or more arguments. 
 Each argument has a certain range:
 <ul>
-<li>If <sharp> braces are used the argument is a single word.
+<li>If \<sharp\> braces are used the argument is a single word.
 <li>If (round) braces are used the argument extends until the end of the line
     on which the command was found.
 <li>If {curly} braces are used the argument extends until the next paragraph.
@@ -35,121 +35,107 @@ If [square] brackets are used the argument is optional.
 
 Here is an alphabetically sorted list of all commands with references to their 
 documentation:
-\htmlonly
-<multicol cols=4>
-<ul>
-\endhtmlonly
-\latexonly
-\begin{multicols}{3}
-\begin{CompactList}
-\endlatexonly
-<li> \refitem cmda \a
-<li> \refitem cmdaddindex \addindex
-<li> \refitem cmdaddtogroup \addtogroup
-<li> \refitem cmdanchor \anchor
-<li> \refitem cmdarg \arg
-<li> \refitem cmdattention \attention
-<li> \refitem cmdauthor \author
-<li> \refitem cmdb \b
-<li> \refitem cmdbrief \brief
-<li> \refitem cmdbug \bug
-<li> \refitem cmdc \c
-<li> \refitem cmdclass \class
-<li> \refitem cmdcode \code
-<li> \refitem cmdcopydoc \copydoc
-<li> \refitem cmddate \date
-<li> \refitem cmddef \def
-<li> \refitem cmddefgroup \defgroup
-<li> \refitem cmddeprecated \deprecated
-<li> \refitem cmddontinclude \dontinclude
-<li> \refitem cmddotfile \dotfile
-<li> \refitem cmde \e
-<li> \refitem cmdelse \else
-<li> \refitem cmdelseif \elseif
-<li> \refitem cmdem \em
-<li> \refitem cmdendcode \endcode
-<li> \refitem cmdendhtmlonly \endhtmlonly
-<li> \refitem cmdendif \endif
-<li> \refitem cmdendlatexonly \endlatexonly
-<li> \refitem cmdendlink \endlink
-<li> \refitem cmdendverbatim \endverbatim
-<li> \refitem cmdenum \enum
-<li> \refitem cmdexample \example
-<li> \refitem cmdexception \exception
-<li> \refitem cmdfdollar \f$
-<li> \refitem cmdfbropen \f[
-<li> \refitem cmdfbrclose \f]
-<li> \refitem cmdfile \file
-<li> \refitem cmdfn \fn
-<li> \refitem cmdhideinitializer \hideinitializer
-<li> \refitem cmdhtmlinclude \htmlinclude
-<li> \refitem cmdhtmlonly \htmlonly
-<li> \refitem cmdif \if
-<li> \refitem cmdifnot \\ifnot
-<li> \refitem cmdimage \image
-<li> \refitem cmdinclude \include
-<li> \refitem cmdingroup \ingroup
-<li> \refitem cmdinternal \internal
-<li> \refitem cmdinvariant \invariant
-<li> \refitem cmdinterface \interface
-<li> \refitem cmdlatexonly \latexonly
-<li> \refitem cmdli \li
-<li> \refitem cmdline \line
-<li> \refitem cmdlink \link
-<li> \refitem cmdmainpage \mainpage
-<li> \refitem cmdname \name
-<li> \refitem cmdnamespace \namespace
-<li> \refitem cmdnosubgrouping \nosubgrouping
-<li> \refitem cmdnote \note
-<li> \refitem cmdoverload \overload
-<li> \refitem cmdp \p
-<li> \refitem cmdpackage \package
-<li> \refitem cmdpage \page
-<li> \refitem cmdpar \par
-<li> \refitem cmdparam \param
-<li> \refitem cmdpost \post
-<li> \refitem cmdpre \pre
-<li> \refitem cmdref \ref
-<li> \refitem cmdrelates \relates
-<li> \refitem cmdremarks \remarks
-<li> \refitem cmdreturn \return
-<li> \refitem cmdretval \retval
-<li> \refitem cmdsa \sa
-<li> \refitem cmdsection \section
-<li> \refitem cmdshowinitializer \showinitializer
-<li> \refitem cmdsince \since
-<li> \refitem cmdskip \skip
-<li> \refitem cmdskipline \skipline
-<li> \refitem cmdstruct \struct
-<li> \refitem cmdsubsection \subsection
-<li> \refitem cmdtest \test
-<li> \refitem cmdthrow \throw
-<li> \refitem cmdtodo \todo
-<li> \refitem cmdtypedef \typedef
-<li> \refitem cmdunion \union
-<li> \refitem cmduntil \until
-<li> \refitem cmdvar \var
-<li> \refitem cmdverbatim \verbatim
-<li> \refitem cmdverbinclude \verbinclude
-<li> \refitem cmdversion \version
-<li> \refitem cmdwarning \warning
-<li> \refitem cmdweakgroup \weakgroup
-<li> \refitem cmddollar \$
-<li> \refitem cmdat \@
-<li> \refitem cmdbackslash \\
-<li> \refitem cmdamp \&
-<li> \refitem cmdtilde \~
-<li> \refitem cmdlt \\<
-<li> \refitem cmdgt \\>
-<li> \refitem cmdhash \#
-\htmlonly
-</ul>
-</multicol>
-\endhtmlonly
-\latexonly
-\end{CompactList}
-\end{multicols}
-\endlatexonly
+\secreflist
+\refitem cmda \\a
+\refitem cmdaddindex \\addindex
+\refitem cmdaddtogroup \\addtogroup
+\refitem cmdanchor \\anchor
+\refitem cmdarg \\arg
+\refitem cmdattention \\attention
+\refitem cmdauthor \\author
+\refitem cmdb \\b
+\refitem cmdbrief \\brief
+\refitem cmdbug \\bug
+\refitem cmdc \\c
+\refitem cmdclass \\class
+\refitem cmdcode \\code
+\refitem cmdcopydoc \\copydoc
+\refitem cmddate \\date
+\refitem cmddef \\def
+\refitem cmddefgroup \\defgroup
+\refitem cmddeprecated \\deprecated
+\refitem cmddontinclude \\dontinclude
+\refitem cmddotfile \\dotfile
+\refitem cmde \\e
+\refitem cmdelse \\else
+\refitem cmdelseif \\elseif
+\refitem cmdem \\em
+\refitem cmdendcode \\endcode
+\refitem cmdendhtmlonly \\endhtmlonly
+\refitem cmdendif \\endif
+\refitem cmdendlatexonly \\endlatexonly
+\refitem cmdendlink \\endlink
+\refitem cmdendverbatim \\endverbatim
+\refitem cmdenum \\enum
+\refitem cmdexample \\example
+\refitem cmdexception \\exception
+\refitem cmdfdollar \\f\$
+\refitem cmdfbropen \\f[
+\refitem cmdfbrclose \\f]
+\refitem cmdfile \\file
+\refitem cmdfn \\fn
+\refitem cmdhideinitializer \\hideinitializer
+\refitem cmdhtmlinclude \\htmlinclude
+\refitem cmdhtmlonly \\htmlonly
+\refitem cmdif \\if
+\refitem cmdifnot \\ifnot
+\refitem cmdimage \\image
+\refitem cmdinclude \\include
+\refitem cmdingroup \\ingroup
+\refitem cmdinternal \\internal
+\refitem cmdinvariant \\invariant
+\refitem cmdinterface \\interface
+\refitem cmdlatexonly \\latexonly
+\refitem cmdli \\li
+\refitem cmdline \\line
+\refitem cmdlink \\link
+\refitem cmdmainpage \\mainpage
+\refitem cmdname \\name
+\refitem cmdnamespace \\namespace
+\refitem cmdnosubgrouping \\nosubgrouping
+\refitem cmdnote \\note
+\refitem cmdoverload \\overload
+\refitem cmdp \\p
+\refitem cmdpackage \\package
+\refitem cmdpage \\page
+\refitem cmdpar \\par
+\refitem cmdparam \\param
+\refitem cmdpost \\post
+\refitem cmdpre \\pre
+\refitem cmdref \\ref
+\refitem cmdrelates \\relates
+\refitem cmdremarks \\remarks
+\refitem cmdreturn \\return
+\refitem cmdretval \\retval
+\refitem cmdsa \\sa
+\refitem cmdsection \\section
+\refitem cmdshowinitializer \\showinitializer
+\refitem cmdsince \\since
+\refitem cmdskip \\skip
+\refitem cmdskipline \\skipline
+\refitem cmdstruct \\struct
+\refitem cmdsubsection \\subsection
+\refitem cmdtest \\test
+\refitem cmdthrow \\throw
+\refitem cmdtodo \\todo
+\refitem cmdtypedef \\typedef
+\refitem cmdunion \\union
+\refitem cmduntil \\until
+\refitem cmdvar \\var
+\refitem cmdverbatim \\verbatim
+\refitem cmdverbinclude \\verbinclude
+\refitem cmdversion \\version
+\refitem cmdwarning \\warning
+\refitem cmdweakgroup \\weakgroup
+\refitem cmddollar \\\$
+\refitem cmdat \\\@
+\refitem cmdbackslash \\\\
+\refitem cmdamp \\\&
+\refitem cmdtilde \\~
+\refitem cmdlt \\\<
+\refitem cmdgt \\\>
+\refitem cmdhash \\\#
+\endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
 doxygen. Unrecognized commands are treated as normal text.
@@ -158,8 +144,8 @@ doxygen. Unrecognized commands are treated as normal text.
     Structural indicators
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\subsection cmdaddtogroup \addtogroup <name> [(title)]
-  \addindex \addtogroup
+\section cmdaddtogroup \addtogroup <name> [(title)]
+  \addindex \\addtogroup
   Defines a group just like \ref cmddefgroup "\\defgroup", but in contrast to
   that command using the same \<name\> more than once will not result in a warning,
   but rather one group with a merged documentation and the first title found in
@@ -192,9 +178,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup" and
   \ref cmdweakgroup "\\weakgroup".
 
-\subsection cmdclass \class <name> [<header-file>] [<header-name>]
+\section cmdclass \class <name> [<header-file>] [<header-name>]
 
-  \addindex \class
+  \addindex \\class
   Indicates that a comment block contains documentation for a
   class with name \<name\>. Optionally a header file and a header name 
   can be specified. If the header-file is specified, a link to a verbatim copy 
@@ -215,9 +201,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\subsection cmddef \def <name>
+\section cmddef \def <name>
 
-  \addindex \def
+  \addindex \\def
   Indicates that a comment block contains documentation for a 
   \c #define macro. 
 
@@ -229,9 +215,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\subsection cmddefgroup \defgroup <name> (group title)
+\section cmddefgroup \defgroup <name> (group title)
 
-  \addindex \defgroup
+  \addindex \\defgroup
   Indicates that a comment block contains documentation for a
   \ref modules "group" of classes, files or namespaces. This can be used to
   categorize classes, files or namespaces, and document those
@@ -245,9 +231,9 @@ doxygen. Unrecognized commands are treated as normal text.
 
 <hr>
 
-\subsection cmdenum \enum <name>
+\section cmdenum \enum <name>
 
-  \addindex \enum
+  \addindex \\enum
   Indicates that a comment block contains documentation for an 
   enumeration, with name \<name\>. If the enum is a member of a class and
   the documentation block is located outside the class definition,
@@ -267,9 +253,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\subsection cmdexample \example <file-name>
+\section cmdexample \example <file-name>
   
-  \addindex \example
+  \addindex \\example
   Indicates that a comment block contains documentation for a source code 
   example. The name of the source file is \<file-name\>. The text of
   this file will be included in the documentation, just after the 
@@ -300,9 +286,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdinclude "\\include".
 
 <hr>
-\subsection cmdfile \file [<name>]
+\section cmdfile \file [<name>]
   
-  \addindex \file
+  \addindex \\file
   Indicates that a comment block contains documentation for a source or 
   header file with name \<name\>. The file name may include (part of) the
   path if the file-name alone is not unique. If the file name is omitted
@@ -321,9 +307,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \endhtmlonly
 
 <hr>
-\subsection cmdfn \fn (function declaration)
+\section cmdfn \fn (function declaration)
  
-  \addindex \fn
+  \addindex \\fn
   Indicates that a comment block contains documentation for a function
   (either global or as a member of a class). This command is \em only 
   needed if a comment block is \e not placed in front (or behind) 
@@ -352,9 +338,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdvar "\\var" and \ref cmdtypedef "\\typedef".
 
 <hr>
-\subsection cmdhideinitializer \hideinitializer
+\section cmdhideinitializer \hideinitializer
 
-  \addindex \hideinitializer
+  \addindex \\hideinitializer
   By default the value of a define and the initializer of a variable
   are displayed unless they are longer than 30 lines. By putting
   this command in a comment block of a define or variable, the 
@@ -363,9 +349,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdshowinitializer "\\showinitializer".
 
 <hr>
-\subsection cmdingroup \ingroup (<groupname> [<groupname> <groupname>])
+\section cmdingroup \ingroup (<groupname> [<groupname> <groupname>])
 
-  \addindex \ingroup
+  \addindex \\ingroup
   If the \\ingroup command is placed in a comment block of a
   class, file or namespace, then it will be added to the group or
   groups identified by \<groupname\>.
@@ -374,9 +360,9 @@ doxygen. Unrecognized commands are treated as normal text.
   \ref cmdaddtogroup "\\addtogroup" and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
-\subsection cmdinterface \interface 
+\section cmdinterface \interface 
 
-  \addindex \interface
+  \addindex \\interface
   Indicates that a comment block contains documentation for an
   interface with name \<name\>. The arguments are equal to the \\class
   command.
@@ -384,18 +370,18 @@ doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\subsection cmdinternal \internal
+\section cmdinternal \internal
   
-  \addindex \internal
+  \addindex \\internal
   This command writes the message `For internal use only' to the output and
   all text \e after a \c \\internal command is ignored. 
   You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the config file
   to show or hide the internal documentation.
 
 <hr>
-\subsection cmdmainpage \mainpage [(title)]
+\section cmdmainpage \mainpage [(title)]
 
-  \addindex \mainpage
+  \addindex \\mainpage
 
   If the \\mainpage command is placed in a comment block the 
   block is used to customize the index page (in HTML) or
@@ -427,35 +413,36 @@ doxygen. Unrecognized commands are treated as normal text.
      section \ref cmdpage "\\page".
 
 <hr>
-\subsection cmdname \name (header)  
+\section cmdname \name (header)  
 
 This command turns a comment block into a header
 definition of a member group. The
 comment block should be followed by a 
-<code>//@{ ... //@}</code> block containing the
+<code>//\@{ ... //\@}</code> block containing the
 members of the group.
 
 See section \ref memgroup for an example.
 
 <hr>
-\subsection cmdnamespace \namespace <name> 
+\section cmdnamespace \namespace <name> 
 
-  \addindex \namespace
+  \addindex \\namespace
   Indicates that a comment block contains documentation for a
   namespace with name \<name\>. 
   
 <hr>
-\subsection cmdnosubgrouping \nosubgrouping
+\section cmdnosubgrouping \nosubgrouping
 
-This command can be put in the documentation
-of a class. It can be used in combination with member grouping
-to avoid that doxygen puts a member group as a subgroup of a
-Public/Protected/Private/... section.
+  \addindex \\nosubgrouping
+  This command can be put in the documentation
+  of a class. It can be used in combination with member grouping
+  to avoid that doxygen puts a member group as a subgroup of a
+  Public/Protected/Private/... section.
 
 <hr>
-\subsection cmdoverload \overload [(function declaration)]
+\section cmdoverload \overload [(function declaration)]
 
-  \addindex \overload
+  \addindex \\overload
   This command can be used to generate the following 
   standard text for an overloaded member function:
 
@@ -484,16 +471,16 @@ Public/Protected/Private/... section.
   \endhtmlonly
 
 <hr>
-\subsection cmdpackage \package <name>
+\section cmdpackage \package <name>
   
-  \addindex \package
+  \addindex \\package
   Indicates that a comment block contains documentation for a
   Java package with name \<name\>. 
 
 <hr>
-\subsection cmdpage \page <name> (title)
+\section cmdpage \page <name> (title)
 
-  \addindex \page
+  \addindex \\page
   Indicates that a comment block contains a piece of documentation that is
   not directly related to one specific class, file or member. 
   The HTML generator creates a page containing the documentation. The
@@ -521,9 +508,9 @@ Public/Protected/Private/... section.
               \ref cmdref "\\ref".
 
 <hr>
-\subsection cmdrelates \relates <name>
+\section cmdrelates \relates <name>
 
-  \addindex \relates
+  \addindex \\relates
   This command can be used in the documentation of a non-member function
   \<name\>. It puts the function inside the `related function' section 
   of the class documentation. This command is useful for documenting 
@@ -539,9 +526,9 @@ Public/Protected/Private/... section.
   \endhtmlonly
 
 <hr>
-\subsection cmdshowinitializer \showinitializer
+\section cmdshowinitializer \showinitializer
 
-  \addindex \showinitializer
+  \addindex \\showinitializer
   By default the value of a define and the initializer of a variable
   are only displayed if they are less than 30 lines long. By putting
   this command in a comment block of a define or variable, the 
@@ -550,9 +537,9 @@ Public/Protected/Private/... section.
   \sa section \ref cmdhideinitializer "\\hideinitializer".
 
 <hr>
-\subsection cmdstruct \struct <name> [<header-file>] [<header-name>]
+\section cmdstruct \struct <name> [<header-file>] [<header-name>]
 
-  \addindex \struct
+  \addindex \\struct
   Indicates that a comment block contains documentation for a
   struct with name \<name\>. The arguments are equal to the \\class
   command.
@@ -560,9 +547,9 @@ Public/Protected/Private/... section.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\subsection cmdtypedef \typedef (typedef declaration)
+\section cmdtypedef \typedef (typedef declaration)
 
-  \addindex \typedef
+  \addindex \\typedef
   Indicates that a comment block contains documentation for a
   typedef (either global or as a member of a class). 
   This command is equivalent to \\var and \\fn.
@@ -570,9 +557,9 @@ Public/Protected/Private/... section.
   \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
 
 <hr>
-\subsection cmdunion \union <name> [<header-file>] [<header-name>]
+\section cmdunion \union <name> [<header-file>] [<header-name>]
 
-  \addindex \union
+  \addindex \\union
   Indicates that a comment block contains documentation for a
   union with name \<name\>. The arguments are equal to the \\class
   command.
@@ -580,9 +567,9 @@ Public/Protected/Private/... section.
   \sa section \ref cmdclass "\\class".
 
 <hr>
-\subsection cmdvar \var (variable declaration)
+\section cmdvar \var (variable declaration)
 
-  \addindex \var
+  \addindex \\var
   Indicates that a comment block contains documentation for a variable or
   enum value (either global or as a member of a class). 
   This command is equivalent to \\typedef and \\fn.
@@ -590,8 +577,8 @@ Public/Protected/Private/... section.
   \sa section \ref cmdfn "\\fn" and \ref cmdtypedef "\\typedef".
 
 <hr>
-\subsection cmdweakgroup \weakgroup <name> [(title)]
-  \addindex \addtogroup
+\section cmdweakgroup \weakgroup <name> [(title)]
+  \addindex \\addtogroup
   Can be used exactly like \ref cmdaddtogroup "\\addtogroup", but has
   a lower priority when it comes to resolving conflicting grouping
   definitions.
@@ -605,9 +592,9 @@ Public/Protected/Private/... section.
     \htmlonly --- </center>\endhtmlonly</h2>
 
 <hr>
-\subsection cmdattention \attention { attention text }
+\section cmdattention \attention { attention text }
 
-  \addindex \attention
+  \addindex \\attention
   Starts a paragraph where a message that needs attention may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -616,9 +603,9 @@ Public/Protected/Private/... section.
   The \\attention command ends when a blank line or some other 
   sectioning command is encountered. 
 
-\subsection cmdauthor \author { list of authors }
+\section cmdauthor \author { list of authors }
 
-  \addindex \author
+  \addindex \\author
   Starts a paragraph where one or more author names may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -636,9 +623,9 @@ Public/Protected/Private/... section.
   \endhtmlonly
 
 <hr>
-\subsection cmdbrief \brief {brief description}
+\section cmdbrief \brief {brief description}
 
-  \addindex \brief
+  \addindex \\brief
   Starts a paragraph that serves as a brief description. For classes and files
   the brief description will be used in lists and at the start of the
   documentation page. For class and file members, the brief description
@@ -652,9 +639,9 @@ Public/Protected/Private/... section.
   Synonymous to \\short.
  
 <hr>
-\subsection cmdbug \bug { bug description }
+\section cmdbug \bug { bug description }
 
-  \addindex \bug
+  \addindex \\bug
   Starts a paragraph where one or more bugs may be reported. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -667,9 +654,9 @@ Public/Protected/Private/... section.
   for an example.
 
 <hr>
-\subsection cmddate \date { date description }
+\section cmddate \date { date description }
 
-  \addindex \date
+  \addindex \\date
   Starts a paragraph where one or more dates may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -682,17 +669,17 @@ Public/Protected/Private/... section.
   for an example.
 
 <hr>
-\subsection cmddeprecated \deprecated { description }
+\section cmddeprecated \deprecated { description }
 
-  \addindex \deprecated
+  \addindex \\deprecated
   Starts a paragraph indicating that this documentation block belongs to
   a deprecated entity. Can be used to describe alternatives, 
   expected life span, etc.
 
 <hr>
-\subsection cmdelse \else 
+\section cmdelse \else 
 
-  \addindex \else
+  \addindex \\else
   Starts a conditional section if the previous conditional section 
   was not enabled. The previous section should have been started with 
   a \c \\if, \c \\ifnot, or \c \\elseif command.
@@ -701,9 +688,9 @@ Public/Protected/Private/... section.
       \ref cmdendif "\\endif."
 
 <hr>
-\subsection cmdelseif \elseif <section-label>
+\section cmdelseif \elseif <section-label>
 
-  \addindex \elseif
+  \addindex \\elseif
   Starts a conditional documentation section if the previous section 
   was not enabled. A conditional section is
   disabled by default. To enable it you must put the
@@ -716,7 +703,7 @@ Public/Protected/Private/... section.
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\subsection cmdendif \endif 
+\section cmdendif \endif 
 
   \addindex \\endif
   Ends a conditional section that was started with \c \\if or \c \\ifnot
@@ -725,9 +712,9 @@ Public/Protected/Private/... section.
   \sa \ref cmdif "\\if", and \ref cmdifnot "\\ifnot".
 
 <hr>
-\subsection cmdexception \exception <exception-object> { exception description }
+\section cmdexception \exception <exception-object> { exception description }
 
-  \addindex \exception
+  \addindex \\exception
   Starts an exception description for an exception object with name 
   \<exception-object\>. Followed by a description of the exception. 
   The existence of the exception object is not checked.
@@ -743,7 +730,7 @@ Public/Protected/Private/... section.
   the tag \\exceptions is a synonym for this tag.
 
 <hr>
-\subsection cmdif \if <section-label>
+\section cmdif \if <section-label>
 
   \addindex \\if
   Starts a conditional documentation section. The section ends 
@@ -801,9 +788,9 @@ ALIASES  = "english=\if english" \
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\subsection cmdifnot \ifnot <section-label>
+\section cmdifnot \ifnot <section-label>
 
-  \addindex \ifnot
+  \addindex \\ifnot
   Starts a conditional documentation section. The section ends 
   with a matching \c \\endif command. This conditional section is
   enabled by default. To disable it you must put the
@@ -815,9 +802,9 @@ ALIASES  = "english=\if english" \
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\subsection cmdinvariant \invariant { description of invariant }
+\section cmdinvariant \invariant { description of invariant }
 
-  \addindex \invariant
+  \addindex \\invariant
   Starts a paragraph where the invariant of an entity can be described.
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -829,9 +816,9 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered.
 
 <hr>
-\subsection cmdnote \note { text }
+\section cmdnote \note { text }
 
-  \addindex \note
+  \addindex \\note
   Starts a paragraph where a note can be entered. The paragraph will be 
   indented. The text of the paragraph has no special internal structure. 
   All visual enhancement commands may be used inside the paragraph.
@@ -843,9 +830,9 @@ ALIASES  = "english=\if english" \
   for an example.
 
 <hr>
-\subsection cmdpar \par [(paragraph title)] { paragraph }
+\section cmdpar \par [(paragraph title)] { paragraph }
 
-  \addindex \par
+  \addindex \\par
   If a paragraph title is given this command starts a paragraph with a 
   user defined heading. The heading extends until the end of the
   line. The paragraph following the command will be indented.
@@ -867,9 +854,9 @@ ALIASES  = "english=\if english" \
   \endhtmlonly
 
 <hr>
-\subsection cmdparam \param <parameter-name> { parameter description }
+\section cmdparam \param <parameter-name> { parameter description }
 
-  \addindex \param
+  \addindex \\param
   Starts a parameter description for a function parameter with name 
   \<parameter-name\>. Followed by a description of the parameter. 
   The existence of the parameter is not checked.
@@ -882,9 +869,9 @@ ALIASES  = "english=\if english" \
   example.
 
 <hr>
-\subsection cmdpost \post { description of the postcondition }
+\section cmdpost \post { description of the postcondition }
 
-  \addindex \post
+  \addindex \\post
   Starts a paragraph where the postcondition of an entity can be described.
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -896,9 +883,9 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered.
 
 <hr>
-\subsection cmdpre \pre { description of the precondition }
+\section cmdpre \pre { description of the precondition }
 
-  \addindex \pre
+  \addindex \\pre
   Starts a paragraph where the precondition of an entity can be described.
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -910,9 +897,9 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered.
   
 <hr>
-\subsection cmdremarks \remarks { remark text }
+\section cmdremarks \remarks { remark text }
 
-  \addindex \remarks
+  \addindex \\remarks
   Starts a paragraph where one or more remarks may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -924,9 +911,9 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered. 
 
 <hr>
-\subsection cmdreturn \return { description of the return value }
+\section cmdreturn \return { description of the return value }
 
-  \addindex \return
+  \addindex \\return
   Starts a return value description for a function. 
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
@@ -936,9 +923,9 @@ ALIASES  = "english=\if english" \
   example.
   
 <hr>
-\subsection cmdretval \retval <return value> { description }
+\section cmdretval \retval <return value> { description }
 
-  \addindex \retval
+  \addindex \\retval
   Starts a return value description for a function with name 
   \<return value\>. Followed by a description of the return value. 
   The text of the paragraph that forms the description has no special
@@ -950,9 +937,9 @@ ALIASES  = "english=\if english" \
   sectioning command is encountered. 
 
 <hr>
-\subsection cmdsa \sa { references }
+\section cmdsa \sa { references }
 
-  \addindex \sa
+  \addindex \\sa
   Starts a paragraph where one or more cross-references to classes, 
   functions, methods, variables, files or URL may be specified.
   Two names joined by either <code>::</code> or <code>\#</code> 
@@ -967,9 +954,9 @@ ALIASES  = "english=\if english" \
       to objects.
 
 <hr>
-\subsection cmdsince \since { text }
+\section cmdsince \since { text }
 
-  \addindex \since
+  \addindex \\since
   This tag can be used to specify since when (version or time) an
   entity is available. The paragraph that follows \\since does not have any
   special internal structure. All visual enhancement commands may be 
@@ -977,9 +964,9 @@ ALIASES  = "english=\if english" \
   line or some other sectioning command is encountered. 
 
 <hr>
-\subsection cmdtest \test { paragraph describing a test case }
+\section cmdtest \test { paragraph describing a test case }
 
-  \addindex \test
+  \addindex \\test
   Starts a paragraph where a test case can be described. 
   The description will also add the test case to a separate test list. 
   The two instances of the description will be cross-referenced.
@@ -987,18 +974,18 @@ ALIASES  = "english=\if english" \
   indicates the origin of the test case.
 
 <hr>
-\subsection cmdthrow \throw <exception-object> { exception description }
+\section cmdthrow \throw <exception-object> { exception description }
 
-  \addindex \throw
+  \addindex \\throw
   Synonymous to \\exception (see section \ref cmdexception "\\exception").
 
   \par Note: 
   the tag \\throws is a synonym for this tag.
 
 <hr>
-\subsection cmdtodo \todo { paragraph describing what is to be done }
+\section cmdtodo \todo { paragraph describing what is to be done }
 
-  \addindex \todo
+  \addindex \\todo
   Starts a paragraph where a TODO item is described. 
   The description will also add an item to a separate TODO list. 
   The two instances of the description will be cross-referenced.
@@ -1006,9 +993,9 @@ ALIASES  = "english=\if english" \
   indicates the origin of the item.
 
 <hr>
-\subsection cmdversion \version { version number }
+\section cmdversion \version { version number }
 
-  \addindex \version
+  \addindex \\version
   Starts a paragraph where one or more version strings may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -1022,9 +1009,9 @@ ALIASES  = "english=\if english" \
   for an example.
  
 <hr>
-\subsection cmdwarning \warning { warning message }
+\section cmdwarning \warning { warning message }
 
-  \addindex \warning
+  \addindex \\warning
   Starts a paragraph where one or more warning messages may be entered. 
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
@@ -1041,32 +1028,32 @@ ALIASES  = "english=\if english" \
     Commands to create links
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\subsection cmdaddindex \addindex (text)
+\section cmdaddindex \addindex (text)
 
-  \addindex \addindex
+  \addindex \\addindex
   This command adds (text) to the \f$\mbox{\LaTeX}\f$ index.
 
 <hr>
-\subsection cmdanchor \anchor <word>
+\section cmdanchor \anchor <word>
 
-  \addindex \anchor
+  \addindex \\anchor
   This command places an invisible, named anchor into the documentation
   to which you can refer with the \\ref command.
 
   \sa section \ref cmdref "\\ref".
 
 <hr>
-\subsection cmdendlink \endlink
+\section cmdendlink \endlink
 
-  \addindex \endlink 
+  \addindex \\endlink 
   This command ends a link that is started with the \\link command.
   
   \sa section \ref cmdlink "\\link".
 
 <hr>
-\subsection cmdlink \link <link-object> 
+\section cmdlink \link <link-object> 
 
-  \addindex \link
+  \addindex \\link
   The links that are automatically generated by doxygen always have the
   name of the object they point to as link-text. 
 
@@ -1080,9 +1067,9 @@ ALIASES  = "english=\if english" \
   generated links and valid link-objects.
 
 <hr>
-\subsection cmdref \ref <name> ["(text)"]
+\section cmdref \ref <name> ["(text)"]
 
-  \addindex \ref
+  \addindex \\ref
   Creates a reference to a named section, subsection, page or anchor.
   For HTML documentation the reference command will generate a link to 
   the section. For a sections or subsections the title of the section will be 
@@ -1096,9 +1083,9 @@ ALIASES  = "english=\if english" \
     Section \ref cmdpage "\\page" for an example of the \\ref command.
 
 <hr>
-\subsection cmdsection \section <section-name> (section title)
+\section cmdsection \section <section-name> (section title)
   
-  \addindex \section
+  \addindex \\section
   Creates a section with name \<section-name\>. The title of the
   section should be specified as the second argument of the \\section 
   command.
@@ -1107,9 +1094,9 @@ ALIASES  = "english=\if english" \
            \e not in other documentation blocks!
 
 <hr>
-\subsection cmdsubsection \subsection <subsection-name> (subsection title)
+\section cmdsubsection \subsection <subsection-name> (subsection title)
 
-  \addindex \subsection
+  \addindex \\subsection
   Creates a subsection with name \<subsection-name\>. The title of the
   subsection should be specified as the second argument of the \\subsection
   command.
@@ -1127,9 +1114,9 @@ ALIASES  = "english=\if english" \
     Commands for displaying examples
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\subsection cmddontinclude \dontinclude <file-name>
+\section cmddontinclude \dontinclude <file-name>
 
-  \addindex \dontinclude
+  \addindex \\dontinclude
   This command can be used to parse a source file without actually 
   verbatim including it in the documentation (as the \\include command does). 
   This is useful if you want to divide the source file into smaller pieces and
@@ -1160,9 +1147,9 @@ ALIASES  = "english=\if english" \
                \ref cmdskipline "\\skipline", and \ref cmduntil "\\until".
 
 <hr>
-\subsection cmdinclude \include <file-name>
+\section cmdinclude \include <file-name>
 
-  \addindex \include
+  \addindex \\include
   This command can be used to include a source file as a block of code.
   The command takes the name of an include file as an argument. 
   Source files or directories can be specified using the 
@@ -1191,9 +1178,9 @@ ALIASES  = "english=\if english" \
   \sa section \ref cmdexample "\\example" and \ref cmddontinclude "\\dontinclude".
 
 <hr>
-\subsection cmdline \line ( pattern )
+\section cmdline \line ( pattern )
 
-  \addindex \line
+  \addindex \\line
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a non-blank
   line. If that line contains the specified pattern, it is written 
@@ -1207,9 +1194,9 @@ ALIASES  = "english=\if english" \
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\subsection cmdskip \skip ( pattern )
+\section cmdskip \skip ( pattern )
 
-  \addindex \skip
+  \addindex \\skip
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a line that contains
   the specified pattern. 
@@ -1221,9 +1208,9 @@ ALIASES  = "english=\if english" \
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\subsection cmdskipline \skipline ( pattern ) 
+\section cmdskipline \skipline ( pattern ) 
 
-  \addindex \skipline
+  \addindex \\skipline
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a line that contains
   the specified pattern. It then writes the line to the output.
@@ -1243,9 +1230,9 @@ ALIASES  = "english=\if english" \
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\subsection cmduntil \until ( pattern )
+\section cmduntil \until ( pattern )
 
-  \addindex \until
+  \addindex \\until
   This command writes all lines of the example that was last
   included using \\include or \\dontinclude to the output, until it finds 
   a line containing the specified pattern. The line containing the pattern
@@ -1258,9 +1245,9 @@ ALIASES  = "english=\if english" \
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\subsection cmdverbinclude \verbinclude <file-name>
+\section cmdverbinclude \verbinclude <file-name>
 
-  \addindex \verbinclude
+  \addindex \\verbinclude
   This command includes the file \<file-name\> verbatim in the documentation.
   The command is equivalent to pasting the file in the documentation and
   placing \\verbatim and \\endverbatim commands around it. 
@@ -1269,9 +1256,9 @@ ALIASES  = "english=\if english" \
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
-\subsection cmdhtmlinclude \htmlinclude <file-name>
+\section cmdhtmlinclude \htmlinclude <file-name>
 
-  \addindex \htmlinclude
+  \addindex \\htmlinclude
   This command includes the file \<file-name\> as is in the HTML documentation.
   The command is equivalent to pasting the file in the documentation and
   placing \\htmlonly and \\endhtmlonly commands around it.
@@ -1284,9 +1271,9 @@ ALIASES  = "english=\if english" \
     Commands for visual enhancements
     \htmlonly --- </center>\endhtmlonly</h2>
 
-\subsection cmda \a <word>
+\section cmda \a <word>
  
-  \addindex \a
+  \addindex \\a
   Displays the argument \<word\> using a special font.
   Use this command to refer to member arguments in the running text.
 
@@ -1298,9 +1285,9 @@ ALIASES  = "english=\if english" \
   ... the \a x and \a y coordinates are used to ...
 
 <hr>
-\subsection cmdarg \arg { item-description }
+\section cmdarg \arg { item-description }
   
-  \addindex \arg
+  \addindex \\arg
   This command has one argument that continues until the first
   blank line or until another \\arg is encountered.
   The command can be used to generate a simple, not nested list of
@@ -1331,17 +1318,17 @@ ALIASES  = "english=\if english" \
 
 
 <hr>
-\subsection cmdb \b <word>
+\section cmdb \b <word>
 
-  \addindex \b
+  \addindex \\b
   Displays the argument \<word\> using a bold font.
   Equivalent to \<b\>word\</b\>.
   To put multiple words in bold use \<b\>multiple words\</b\>.
   
 <hr>
-\subsection cmdc \c <word>
+\section cmdc \c <word>
 
-  \addindex \c
+  \addindex \\c
   Displays the argument \<word\> using a typewriter font.
   Use this to refer to a word of code.
   Equivalent to \<tt\>word\</tt\>.
@@ -1358,9 +1345,9 @@ ALIASES  = "english=\if english" \
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
 
 <hr>
-\subsection cmdcode \code
+\section cmdcode \code
 
-  \addindex \code
+  \addindex \\code
   Starts a block of code. A code block is treated differently
   from ordinary text. It is interpreted as C/C++ code. The names of the
   classes and members that are documented are automatically replaced by 
@@ -1369,9 +1356,9 @@ ALIASES  = "english=\if english" \
   \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim"  
 
 <hr>
-\subsection cmdcopydoc \copydoc <link-object>
+\section cmdcopydoc \copydoc <link-object>
 
-  \addindex \copydoc
+  \addindex \\copydoc
   Copies a documentation block from the object specified by \<link-object\>
   and pastes it at the location of the command. This command can be useful 
   to avoid cases where a documentation block would otherwise have to be 
@@ -1403,9 +1390,9 @@ ALIASES  = "english=\if english" \
   relation will be broken and flagged as an error.
 
 <hr>
-\subsection cmddotfile \dotfile <file> ["caption"] 
+\section cmddotfile \dotfile <file> ["caption"] 
 
-  \addindex \dotfile
+  \addindex \\dotfile
   Inserts an image generated by dot from \<file\> into the documentation. 
 
   The first argument specifies the file name of the image. 
@@ -1421,9 +1408,9 @@ ALIASES  = "english=\if english" \
   stripped before the caption is displayed.
 
 <hr>
-\subsection cmde \e <word>
+\section cmde \e <word>
 
-  \addindex \e 
+  \addindex \\e 
   Displays the argument \<word\> in italics.
   Use this command to emphasize words.
 
@@ -1439,9 +1426,9 @@ ALIASES  = "english=\if english" \
   To emphasis multiple words use \<em\>multiple words\</em\>.
 
 <hr>
-\subsection cmdem \em <word>
+\section cmdem \em <word>
 
-  \addindex \e 
+  \addindex \\em 
   Displays the argument \<word\> in italics.
   Use this command to emphasize words.
 
@@ -1456,66 +1443,66 @@ ALIASES  = "english=\if english" \
   Equivalent to \ref cmde "\\e"
 
 <hr>
-\subsection cmdendcode \endcode
+\section cmdendcode \endcode
 
-  \addindex \endcode
+  \addindex \\endcode
   Ends a block of code.
   \sa section \ref cmdcode "\\code"
  
 <hr>
-\subsection cmdendhtmlonly \endhtmlonly
+\section cmdendhtmlonly \endhtmlonly
 
-  \addindex \endhtmlonly
+  \addindex \\endhtmlonly
   Ends a block of text that was started with a \\htmlonly command.
 
   \sa section \ref cmdhtmlonly "\\htmlonly".
 
 <hr>
-\subsection cmdendlatexonly \endlatexonly
+\section cmdendlatexonly \endlatexonly
 
-  \addindex \endlatexonly
+  \addindex \\endlatexonly
   Ends a block of text that was started with a \\latexonly command.
 
   \sa section \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\subsection cmdendverbatim \endverbatim
+\section cmdendverbatim \endverbatim
 
-  \addindex \endverbatim
+  \addindex \\endverbatim
   Ends a block of text that was started with a \\verbatim command.
   
   \sa section \ref cmdverbatim "\\verbatim".
 
 <hr>
-\subsection cmdfdollar \f$
+\section cmdfdollar \f$
 
-  \addindex \f$
+  \addindex \\f\$
 
   Marks the start and end of an in-text formula. 
   \sa section \ref formulas "formulas" for an example.
   
 <hr>
-\subsection cmdfbropen \f[
+\section cmdfbropen \f[
 
-  \addindex \f[
+  \addindex \\f[
 
   Marks the start of a long formula that is displayed 
   centered on a separate line.
   \sa section \ref cmdfbrclose "\\f]" and section \ref formulas "formulas".
 
 <hr>
-\subsection cmdfbrclose \f]
+\section cmdfbrclose \f]
 
-  \addindex \f]
+  \addindex \\f]
   
   Marks the end of a long formula that is displayed
   centered on a separate line.
-  \sa section \ref cmdfbropen ""\\f[" and section \ref formulas "formulas".
+  \sa section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
 
 <hr>
-\subsection cmdhtmlonly \htmlonly
+\section cmdhtmlonly \htmlonly
 
-  \addindex \htmlonly
+  \addindex \\htmlonly
   Starts a block of text that will be verbatim included in the
   generated HTML documentation only. The block ends with a
   endhtmlonly command.
@@ -1533,9 +1520,9 @@ ALIASES  = "english=\if english" \
               \ref cmdlatexonly "\\latexonly".
 
 <hr>
-\subsection cmdimage \image <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \image <format> <file> ["caption"] [<sizeindication>=<size>]
 
-  \addindex \image
+  \addindex \\image
   Inserts an image into the documentation. This command is format
   specific, so if you want to insert an image for more than one
   format you'll have to repeat this command for each format.
@@ -1588,9 +1575,9 @@ ALIASES  = "english=\if english" \
            So \e you have to make sure this is the case!
 
 <hr>
-\subsection cmdlatexonly \latexonly
+\section cmdlatexonly \latexonly
 
-  \addindex \latexonly
+  \addindex \\latexonly
   Starts a block of text that will be verbatim included in the
   generated \f$\mbox{\LaTeX}\f$ documentation only. The block ends with a
   endlatexonly command.
@@ -1608,9 +1595,9 @@ ALIASES  = "english=\if english" \
   and section \ref cmdhtmlonly "\\htmlonly".
 
 <hr>
-\subsection cmdli \li { item-description }
+\section cmdli \li { item-description }
   
-  \addindex \li
+  \addindex \\li
   This command has one argument that continues until the first
   blank line or until another \\li is encountered.
   The command can be used to generate a simple, not nested list of
@@ -1640,9 +1627,9 @@ ALIASES  = "english=\if english" \
   Equivalent to \ref cmdarg "\\arg"
 
 <hr>
-\subsection cmdp \p <word>
+\section cmdp \p <word>
  
-  \addindex \p
+  \addindex \\p
   Displays the parameter \<word\> using a typewriter font.
   You can use this command to refer to member function parameters in 
   the running text.
@@ -1657,9 +1644,9 @@ ALIASES  = "english=\if english" \
   Equivalent to \ref cmdc "\\c"
  
 <hr>
-\subsection cmdverbatim \verbatim
+\section cmdverbatim \verbatim
 
-  \addindex \verbatim
+  \addindex \\verbatim
   Starts a block of text that will be verbatim included in both the
   HTML and the 
   \f$\mbox{\LaTeX}\f$ documentation. The block should end with a 
@@ -1669,24 +1656,24 @@ ALIASES  = "english=\if english" \
   \\verbatim command or the parser will get confused!
 
 <hr>
-\subsection cmdbackslash \\
+\section cmdbackslash \\
 
-  \addindex \\
+  \addindex \\\\
   This command writes a backslash character (\\) to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. The backslash has to be escaped in some 
   cases because doxygen uses it to detect commands.
 
 <hr>
-\subsection cmdat \@
+\section cmdat \@
 
-  \addindex \@
-  This command writes an at-sign (@) to the HTML and 
+  \addindex \\\@
+  This command writes an at-sign (\@) to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. The at-sign has to be escaped in some cases 
   because doxygen uses it to detect JavaDoc commands.
 
 <hr>
-\subsection cmdtilde \~[LanguageId]
-  \addindex \~
+\section cmdtilde \~[LanguageId]
+  \addindex \\~
   This command enables/disables a language specific filter. This can be
   used to put documentation for different language into one comment block
   and use the \c OUTPUT_LANGUAGE tag to filter out only a specific language.
@@ -1702,43 +1689,43 @@ ALIASES  = "english=\if english" \
    
 
 <hr>
-\subsection cmdamp \&
+\section cmdamp \&
 
-  \addindex \&
+  \addindex \\\&
   This command writes the \& character to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. This character has to be escaped because 
   it has a special meaning in HTML.
 
 <hr>
-\subsection cmddollar \$
+\section cmddollar \$
 
-  \addindex \$
+  \addindex \\\$
   This command writes the \$ character to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. This 
   character has to be escaped in some cases, because it is used to expand 
   environment variables.
 
 <hr>
-\subsection cmdhash \#
+\section cmdhash \#
 
-  \addindex \#
+  \addindex \\\#
   This command writes the \# character to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. This 
   character has to be escaped in some cases, because it is used to refer
   to documented entities. 
 
 <hr>
-\subsection cmdlt \\<
+\section cmdlt \\<
 
-  \addindex \\<
+  \addindex \\\<
   This command writes the \< character to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. This 
   character has to be escaped because it has a special meaning in HTML.
 
 <hr>
-\subsection cmdgt \\>
+\section cmdgt \\>
 
-  \addindex \\>
+  \addindex \\\>
   This command writes the \> character to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. This 
   character has to be escaped because it has a special meaning in HTML.

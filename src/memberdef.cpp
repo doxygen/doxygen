@@ -858,7 +858,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       !annMemb)
   {
     ol.startMemberDescription();
-    parseDoc(ol,m_defFileName,m_defLine,cname,this,briefDescription());
+    parseDoc(ol,briefFile(),briefLine(),cname,this,briefDescription());
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -1201,14 +1201,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) /* || !annMemb */
        )  
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,this,brief);
+      parseDoc(ol,briefFile(),briefLine(),scopeName,this,brief);
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!detailed.isEmpty())
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,this,detailed+"\n");
+      parseDoc(ol,docFile(),docLine(),scopeName,this,detailed+"\n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1234,7 +1234,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.docify(a->name);
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,m_defFileName,m_defLine,scopeName,this,a->docs+"\n");
+          parseDoc(ol,docFile(),docLine(),scopeName,this,a->docs+"\n");
           ol.endDescTableData();
         }
       }
@@ -1285,7 +1285,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd,fmd->briefDescription());
+              parseDoc(ol,fmd->briefFile(),fmd->briefLine(),scopeName,fmd,fmd->briefDescription());
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1295,7 +1295,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd,fmd->documentation()+"\n");
+              parseDoc(ol,fmd->docFile(),fmd->docLine(),scopeName,fmd,fmd->documentation()+"\n");
             }
             ol.endDescTableData();
           }
@@ -1709,13 +1709,13 @@ void MemberDef::addListReference(Definition *d)
 
 MemberList *MemberDef::getSectionList(Definition *d) const 
 { 
-  return (d!=0 && classSectionSDict) ? classSectionSDict->find((int)d) : 0;
+  return (d!=0 && classSectionSDict) ? classSectionSDict->find((char *)d) : 0;
 }
 
 void MemberDef::setSectionList(Definition *d, MemberList *sl)   
 { 
-  if (classSectionSDict==0) classSectionSDict = new SIntDict<MemberList>(7);
-  classSectionSDict->append((int)d,sl);
+  if (classSectionSDict==0) classSectionSDict = new SDict<MemberList>(7);
+  classSectionSDict->append((char *)d,sl);
 }
 
 Specifier MemberDef::virtualness() const

@@ -55,7 +55,7 @@ when the translator was updated.
       <TD>Brazilian Portuguese</TD>  
       <TD>Fabio "FJTC" Jun Takada Chino</TD>
       <TD>chino@NOSPAM.icmc.sc.usp.br</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Chinese</TD>  
@@ -73,13 +73,13 @@ when the translator was updated.
       <TD>Croatian</TD>  
       <TD>Boris Bralo</TD>
       <TD>boris.bralo@NOSPAM.zg.tel.hr</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Czech</TD>  
       <TD>Petr P&#x0159;ikryl</TD>
       <TD>prikrylp@NOSPAM.skil.cz</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Danish</TD>  
@@ -163,7 +163,7 @@ when the translator was updated.
       <TD>Portuguese</TD>  
       <TD>Rui Godinho Lopes</TD>
       <TD>ruiglopes@NOSPAM.yahoo.com</TD>
-      <TD>1.2.17</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Romanian</TD>  
@@ -187,7 +187,7 @@ when the translator was updated.
       <TD>Slovak</TD>  
       <TD>Stanislav Kudl&aacute;&#x010d;</TD>
       <TD>skudlac@NOSPAM.pobox.sk</TD>
-      <TD>1.2.13</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Slovene</TD>  
@@ -224,16 +224,16 @@ when the translator was updated.
   {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
   \hline
   \hline
-  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & 1.2.17 \\
+  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & up-to-date \\
   \hline
   Chinese & Wei Liu & {\tt liuwei@asiainfo.com} & 1.2.13 \\
    & Wang Weihan & {\tt wangweihan@capinfo.com.cn} &  \\
   \hline
   Chinese Traditional & Gary Lee & {\tt garylee@ecosine.com.tw} & 1.2.16 \\
   \hline
-  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & 1.2.17 \\
+  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & up-to-date \\
   \hline
-  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & 1.2.17 \\
+  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
   \hline
   Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
   \hline
@@ -265,7 +265,7 @@ when the translator was updated.
   Polish & Piotr Kaminski & {\tt Piotr.Kaminski@ctm.gdynia.pl} & 1.2.16 \\
    & Grzegorz Kowal & {\tt g\_kowal@poczta.onet.pl} &  \\
   \hline
-  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & 1.2.17 \\
+  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & up-to-date \\
   \hline
   Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.16 \\
   \hline
@@ -273,7 +273,7 @@ when the translator was updated.
   \hline
   Serbian & Dejan Milosavljevic & {\tt dmilos@email.com} & 1.2.16 \\
   \hline
-  Slovak & Stanislav Kudl\'{a}\v{c} & {\tt skudlac@pobox.sk} & 1.2.13 \\
+  Slovak & Stanislav Kudl\'{a}\v{c} & {\tt skudlac@pobox.sk} & up-to-date \\
   \hline
   Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & 1.2.16 \\
   \hline
@@ -305,26 +305,49 @@ Just follow these steps:
     is already working on support for that language, you will be 
     assigned as the maintainer for the language. 
 <li>Create a copy of translator_en.h and name it 
-    translator_<your_2_letter_country_code>.h
+    translator_\<your_2_letter_country_code\>.h
     I'll use xx in the rest of this document.
+<li>Add definition of the symbol for your language into lang_cfg.h:
+\verbatim
+#define LANG_xx
+\endverbatim
+    Use capital letters for your \c xx (to be consistent).  The \c lang_cfg.h
+    defines which language translators will be compiled into doxygen
+    executable.  It is a kind of configuration file.  If you are sure that
+    you do not need some of the languages, you can remove (comment out)
+    definitions of symbols for the languages, or you can say \c #undef
+    instead of \c #define for them.
 <li>Edit language.cpp:
     Add a 
 \verbatim
+#ifdef LANG_xx
 #include<translator_xx.h>
+#endif
 \endverbatim
-    in <code>setTranslator()</code> add
+    Remember to use the same symbol LANG_xx that you added to \c lang_cfg.h.
+    I.e., the \c xx should be capital letters that identify your language.
+    On the other hand, the \c xx inside your \c translator_xx.h should be
+    lower case.
+    <p>Now, in <code>setTranslator()</code> add
 \verbatim
+#ifdef LANG_xx
     else if (L_EQUAL("your_language_name"))
     {
       theTranslator = new TranslatorYourLanguage;
     }
+#endif    
 \endverbatim
-    after the <code>if { ... }</code>
+    after the <code>if { ... }</code>. I.e., it must be placed after the code
+    for creating the English translator at the beginning, and before the 
+    <code>else { ... }</code> part that creates the translator for the 
+    default language (English again).
 <li>Edit libdoxygen.pro.in and add \c translator_xx.h to 
     the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
-   <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> twice.
+   <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> 
+       twice (i.e. in the \c #ifndef and \c #define preprocessor commands at 
+       the beginning of the file).
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 
      name of your language (use lower case characters only). Depending

@@ -155,8 +155,8 @@ of possible and/or requested enhancements.
 \addindex acknowledgements
 Thanks go to:
 <ul>
-\addindex Doc++
-<li>Malte Z&ouml;ckler and Roland Wunderling, authors of DOC++.
+<li>\addindex Doc++
+    Malte Z&ouml;ckler and Roland Wunderling, authors of DOC++.
     The first version of doxygen borrowed some code of an old version of DOC++. 
     Although I have rewritten practically all code since then, DOC++ has still 
     given me a good start in writing doxygen.
@@ -182,7 +182,7 @@ Thanks go to:
     Roddy, Paul Schwartz, Charles Duffy, Vadym Voznyuk, Philip Walton and
     Dwight Browne for donating money.
 <li>The Comms group of <a href="http://www.symbian.com">Symbian</a> for donating
-    an ultra cool <a href="http://www.psion.com/revoplus>Revo plus</a> 
+    an ultra cool <a href="http://www.psion.com/revoplus">Revo plus</a> 
     organizer!
 <li>The band <a href="http://www.porcupinetree.com">Porcupine Tree</a> for 
     providing hours of great music to listen to while coding.

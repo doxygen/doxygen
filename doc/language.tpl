@@ -52,26 +52,49 @@ Just follow these steps:
     is already working on support for that language, you will be 
     assigned as the maintainer for the language. 
 <li>Create a copy of translator_en.h and name it 
-    translator_<your_2_letter_country_code>.h
+    translator_\<your_2_letter_country_code\>.h
     I'll use xx in the rest of this document.
+<li>Add definition of the symbol for your language into lang_cfg.h:
+\verbatim
+#define LANG_xx
+\endverbatim
+    Use capital letters for your \c xx (to be consistent).  The \c lang_cfg.h
+    defines which language translators will be compiled into doxygen
+    executable.  It is a kind of configuration file.  If you are sure that
+    you do not need some of the languages, you can remove (comment out)
+    definitions of symbols for the languages, or you can say \c #undef
+    instead of \c #define for them.
 <li>Edit language.cpp:
     Add a 
 \verbatim
+#ifdef LANG_xx
 #include<translator_xx.h>
+#endif
 \endverbatim
-    in <code>setTranslator()</code> add
+    Remember to use the same symbol LANG_xx that you added to \c lang_cfg.h.
+    I.e., the \c xx should be capital letters that identify your language.
+    On the other hand, the \c xx inside your \c translator_xx.h should be
+    lower case.
+    <p>Now, in <code>setTranslator()</code> add
 \verbatim
+#ifdef LANG_xx
     else if (L_EQUAL("your_language_name"))
     {
       theTranslator = new TranslatorYourLanguage;
     }
+#endif    
 \endverbatim
-    after the <code>if { ... }</code>
+    after the <code>if { ... }</code>. I.e., it must be placed after the code
+    for creating the English translator at the beginning, and before the 
+    <code>else { ... }</code> part that creates the translator for the 
+    default language (English again).
 <li>Edit libdoxygen.pro.in and add \c translator_xx.h to 
     the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
-   <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> twice.
+   <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> 
+       twice (i.e. in the \c #ifndef and \c #define preprocessor commands at 
+       the beginning of the file).
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 
      name of your language (use lower case characters only). Depending

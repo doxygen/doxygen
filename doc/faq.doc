@@ -104,7 +104,7 @@ You can document your class like
 
 To make doxygen put <br><br>
 <code>
-#include <path/include.h>
+#include \<path/include.h\>
 </code>
 
 in the documentation of the class MyClassName regardless of the name of the actual 

@@ -157,8 +157,8 @@ for class QList is to define:
 PREDEFINED = QListT:=QList
 \endverbatim
 
-Here is an example provided by Valter Minute & Reyes Ponce that helps 
-doxygen to wade through the boilerplate code in Microsoft's ATL & MFC 
+Here is an example provided by Valter Minute and Reyes Ponce that helps 
+doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC 
 libraries:
 
 \verbatim

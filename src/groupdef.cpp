@@ -356,7 +356,7 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
       // repeat brief description
       if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
       {
-        parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+        parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
         ol.newParagraph();
       }
     }
@@ -364,7 +364,7 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
     }
   }
 }
@@ -386,7 +386,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   else if (!briefDescription().isEmpty())
   {
-    parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+    parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
@@ -430,7 +430,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,m_defFileName,m_defLine,0,0,fd->briefDescription());
+        parseDoc(ol,briefFile(),briefLine(),0,0,fd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -461,7 +461,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,m_defFileName,m_defLine,0,0,nd->briefDescription());
+        parseDoc(ol,briefFile(),briefLine(),0,0,nd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -491,7 +491,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,m_defFileName,m_defLine,0,0,gd->briefDescription());
+        parseDoc(ol,briefFile(),briefLine(),0,0,gd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -546,9 +546,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
           (si=Doxygen::sectionDict[pi->name])!=0)
       {
-        ol.startSection(si->label,si->title,TRUE);
+        ol.startSection(si->label,si->title,SectionInfo::Subsection);
         ol.docify(si->title);
-        ol.endSection(si->label,TRUE);
+        ol.endSection(si->label,SectionInfo::Subsection);
       }
       ol.startTextBlock();
       parseDoc(ol,pi->defFileName,pi->defLine,0,0,pi->doc);

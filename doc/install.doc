@@ -22,7 +22,7 @@ First go to the
 \latexonly({\tt http://www.doxygen.org/download.html})\endlatexonly
 to get the latest distribution, if you did not have it already.
 
-This section is divided into the following subsections:
+This section is divided into the following sections:
 <ul>
 <li>\ref install_src_unix  "Compiling from source on Unix"
 <li>\ref install_bin_unix  "Installating the binaries on Unix"
@@ -32,7 +32,7 @@ This section is divided into the following subsections:
 <li>\ref build_tools "Tools used to develop doxygen"
 </ul>
 
-\subsection install_src_unix    Compiling from source on Unix
+\section install_src_unix    Compiling from source on Unix
 
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
@@ -43,7 +43,7 @@ following to build the executable:
     \addindex bison
     \addindex make
 <li>In order to generate a Makefile for your platform, you need 
-    <a href="http://www.perl.com/>perl</a>
+    <a href="http://www.perl.com/">perl</a>
     \latexonly(see {\tt http://www.perl.com/})\endlatexonly.
     \addindex perl
 </ul>
@@ -156,7 +156,7 @@ Compilation is now done by performing the following steps:
 
 </ol>
 
-\subsection install_bin_unix    Installating the binaries on Unix
+\section install_bin_unix    Installating the binaries on Unix
 
     After the compilation of the source code do a <code>make install</code>
     to install doxygen. If you downloaded the binary distribution for Unix,
@@ -187,7 +187,7 @@ Compilation is now done by performing the following steps:
     If you have a RPM or DEP package, then please follow the 
     standard installation procedure that is required for these packages. 
 
-\subsection unix_problems Known compilation problems for Unix
+\section unix_problems Known compilation problems for Unix
 
 <b>Qt problems</b>
 
@@ -205,7 +205,7 @@ The solution: go to the root of the doxygen distribution and do:
    export QTDIR=$PWD
 \endverbatim 
 
-If you have a csh-like shell you should use <code>setenv QTDIR $PWD</code>
+If you have a csh-like shell you should use <code>setenv QTDIR \$PWD</code>
 instead of the <code>export</code> command above.
   
 Now install doxygen as described above.  
@@ -228,7 +228,7 @@ your distribution does not have it please select another paper type
 in the config file (see the \ref cfg_paper_type "PAPER_TYPE" tag in the 
 config file).
 
-<b>HP-UX & Digital Unix problems</b>
+<b>HP-UX \& Digital Unix problems</b>
 
 If you are compiling for HP-UX with aCC and you get this error:
 \verbatim
@@ -357,11 +357,11 @@ or omit the -O2 for the particular files in the Makefile.
 <b>Dot problems</b>
 
 Due to a change in the way image maps are generated, older versions
-of doxygen (<=1.2.17) will not work correctly with newer versions of
-graphviz (>=1.8.8). The effect of this incompatibility is that
+of doxygen (\<=1.2.17) will not work correctly with newer versions of
+graphviz (\>=1.8.8). The effect of this incompatibility is that
 generated graphs in HTML are not properly clickable.
 
-\subsection install_src_windows Compiling from source on Windows
+\section install_src_windows Compiling from source on Windows
 
 Currently, I have only compiled doxygen for Windows using Microsoft's 
 Visual C++ (version 6.0). For other compilers you may need to edit the 
@@ -459,8 +459,10 @@ Here is what is required:
     to produce PDF output instead of DVI, or the PDF can be produced
     from PostScript using the utility <code>ps2pdf</code>.
 
-    If you want to use MikTeX then you need to download the
-    fancyhdr package separately. You can find it at:
+    If you want to use MikTeX then you need to select at least the 
+    medium size installation. For really old versions of MikTex or minimal 
+    installations, you may need to download the fancyhdr package separately. 
+    You can find it at:
     ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/
 
 <li>If you want to generate compressed HTML help 
@@ -526,15 +528,15 @@ Compilation is now done by performing the following steps:
     nmake
 \endverbatim
 
-    The generated HTML docs are located in the <code>..\html</code>
+    The generated HTML docs are located in the <code>..\\html</code>
     subdirectory.
 
-    The sources for LaTeX documentation are located in the <code>..\latex</code>
+    The sources for LaTeX documentation are located in the <code>..\\latex</code>
     subdirectory. From those sources, the DVI, PostScript, and PDF
     documentation can be generated. 
 </ol>
 
-\subsection install_bin_windows Installating the binaries on Windows
+\section install_bin_windows Installating the binaries on Windows
 
 There is no fancy installation procedure at the moment (if anyone can
 add it in a location independent way please let me know).
@@ -549,7 +551,7 @@ the Qt library first. This library can be downloaded from
 http://www.trolltech.com/products/download/qt-win-noncomm.html
 -->
 
-\subsection build_tools Tools used to develop doxygen
+\section build_tools Tools used to develop doxygen
 
 Doxygen was developed and tested under Linux using the following 
 open-source tools:

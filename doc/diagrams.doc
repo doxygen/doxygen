@@ -20,8 +20,8 @@
   classes. 
 
   Doxygen can use the "dot" tool from graphviz 1.5 to generate
-  more advanced diagrams & graphs. Graphviz is an open-sourced, 
-  cross-platform graph drawing toolkit from AT&T and Lucent Bell Labs and
+  more advanced diagrams and graphs. Graphviz is an "open-sourced", 
+  cross-platform graph drawing toolkit from AT\&T and Lucent Bell Labs and
   can be found at http://www.research.att.com/sw/tools/graphviz/
 
   If you have the "dot" tool available in the path, you can set
@@ -48,7 +48,7 @@
       graph is drawn for each documented class and struct that shows:
       <ul>
       <li> the inheritance relations with base classes.
-      <li> the usage relations with other structs & classes (e.g. 
+      <li> the usage relations with other structs and classes (e.g. 
            class \c A has a member variable \c m_a of type class \c B, then
            \c A has an arrow to \c B with \c m_a as label).
       </ul>

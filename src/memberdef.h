@@ -309,7 +309,7 @@ class MemberDef : public Definition
     int groupStartLine;       // line  "      "      "     "     "
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
     MemberDef *m_templateMaster;
-    SIntDict<MemberList> *classSectionSDict;
+    SDict<MemberList> *classSectionSDict;
     bool docsForDefinition;   // TRUE => documentation block is put before
                               //         definition.
                               // FALSE => block is put before declaration.

@@ -725,7 +725,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
         ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
       ol.popGeneratorState();
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
     }
     // write examples
     if (exampleFlag)
@@ -773,7 +773,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,briefFile(),briefLine(),name(),0,briefDescription());
     if (!Config_getBool("DETAILS_AT_TOP")) 
     {
       ol+=briefOutput;
@@ -2466,7 +2466,7 @@ void ClassDef::addListReferences()
 {
   addRefItem(specialListItems(),
              theTranslator->trClass(TRUE,TRUE),
-             getOutputFileBase(),name()
+             getOutputFileBase(),displayName()
             );
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;

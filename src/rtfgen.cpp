@@ -2070,32 +2070,30 @@ void RTFGenerator::endDescList()
 }
 
 
-void RTFGenerator::startSection(const char *,const char *title,bool sub)
+void RTFGenerator::startSection(const char *,const char *title,SectionInfo::SectionType type)
 {
   DBG_RTF(t << "{\\comment (startSection)}"    << endl)
   t << "{";
   t<< Rtf_Style_Reset;
-  if (sub)
+  int num=4;
+  switch(type)
   {
-    // set style
-    t << Rtf_Style["Heading3"]->reference;
-    // make table of contents entry
-    t << "{\\tc\\tcl3 \\v ";
-    docify(title);
-    t << "}" << endl;
+    case SectionInfo::Page:       num=2; break;
+    case SectionInfo::Section:    num=3; break;
+    case SectionInfo::Subsection: num=4; break;
+    default: ASSERT(0); break;
   }
-  else
-  {
-    // set style
-    t << Rtf_Style["Heading2"]->reference;
-    // make table of contents entry
-    t << "{\\tc\\tcl2 \\v ";
-    docify(title);
-    t << "}" << endl;
-  }
+  QCString heading;
+  heading.sprintf("Heading%d",num);
+  // set style
+  t << Rtf_Style[heading]->reference;
+  // make table of contents entry
+  t << "{\\tc\\tcl" << num << " \\v ";
+  docify(title);
+  t << "}" << endl;
 }
 
-void RTFGenerator::endSection(const char *lab,bool)
+void RTFGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
   DBG_RTF(t << "{\\comment (endSection)}"    << endl)
   newParagraph();

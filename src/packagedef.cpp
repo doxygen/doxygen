@@ -61,7 +61,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol);
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,briefFile(),briefLine(),name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -114,7 +114,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
     }
   }
 

@@ -118,7 +118,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     ol.endGroupHeader();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      parseDoc(ol,filepath,1,0,0,briefDescription());
+      parseDoc(ol,briefFile(),briefLine(),0,0,briefDescription());
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
         !documentation().isEmpty())
@@ -129,7 +129,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     {
       //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
       //  doc+='.';
-      parseDoc(ol,filepath,1,0,0,documentation()+"\n");
+      parseDoc(ol,docFile(),docLine(),0,0,documentation()+"\n");
     }
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
@@ -189,7 +189,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   else if (briefDescription()) 
   {
-    parseDoc(ol,filepath,1,0,0,briefDescription());
+    parseDoc(ol,briefFile(),briefLine(),0,0,briefDescription());
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");

@@ -342,7 +342,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           {
             ol.startMemberDescription();
             parseDoc(ol,
-                md->getDefFileName(),md->getDefLine(),
+                md->briefFile(),md->briefLine(),
                 cd?cd->name().data():0,md,
                 md->briefDescription()
                     );

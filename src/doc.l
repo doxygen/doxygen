@@ -30,6 +30,10 @@
 #include <qstack.h>
 #include <qregexp.h>
   
+// new experimental parser
+#include "docparser.h"
+#include "debug.h"
+  
 #include "doc.h"
 #include "code.h"
 #include "message.h"
@@ -103,6 +107,8 @@ static QCString         curDotFileCaption;
 static QCString         internalRefFile;
 static QCString         internalRefAnchor;
 static QCString         caption;
+static QCString         refItemText;
+static QCString         addIndexWord;
 static QStack<char>	  currentListIndent; // indent stack of all list items 
 static bool insideItemList = FALSE;
 
@@ -1438,6 +1444,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
                                               ); 
 					}
 <DocScan>{CMD}"addindex"{B}+		{
+                                          addIndexWord.resize(0);
   					  BEGIN(DocIndexWord);
   					}
 <DocScan>"\\form#"[0-9]+		{
@@ -1449,9 +1456,17 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    outDoc->writeFormula(formName,formula->getFormulaText());
 					  }
   					}
-<DocIndexWord>[^\n]+			{
+<DocIndexWord>"\\&"			{ addIndexWord+='&'; }
+<DocIndexWord>"\\>"			{ addIndexWord+='>'; }
+<DocIndexWord>"\\<"			{ addIndexWord+='<'; }
+<DocIndexWord>"\\@"			{ addIndexWord+='@'; }
+<DocIndexWord>"\\$"			{ addIndexWord+='$'; }
+<DocIndexWord>"\\#"			{ addIndexWord+='#'; }
+<DocIndexWord>"\\\\"			{ addIndexWord+='\\'; }
+<DocIndexWord>.			        { addIndexWord+=*yytext; }
+<DocIndexWord>\n		        {
   					  //printf("Adding %s to index\n",yytext);
-					  outDoc->addIndexItem(yytext,0);
+					  outDoc->addIndexItem(addIndexWord,0);
   					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}("arg"|"li")/{BN}	        { 
@@ -1768,7 +1783,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startSimpleSect(BaseOutputDocInterface::Return,0,0,theTranslator->trReturns()+" :");
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Return,0,0,theTranslator->trReturns()+":");
 					    outDoc->writeDescItem();
 					  }
   					}
@@ -1881,7 +1896,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
-<DocScan>{CMD}"section "{ID}"\n"	{
+<DocScan>{CMD}"section "{ID}" "	{
   					  QCString secName=&yytext[9];               // skip "\section "
 					  secName=secName.left(secName.length()-1); // remove \n
 					  //printf("SectionName %s found\n",secName.data());
@@ -1889,18 +1904,16 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					  if ((sec=Doxygen::sectionDict[secName]))
 					  {
 					    //printf("Title %s\n",sec->title.data());
-					    outDoc->startSection(sec->label,sec->title,
-						                 sec->type==SectionInfo::Subsection);
+					    outDoc->startSection(sec->label,sec->title,sec->type);
 					    scanString(sec->title);
-					    outDoc->endSection(sec->label,
-						               sec->type==SectionInfo::Subsection);
+					    outDoc->endSection(sec->label,sec->type);
 					  }
 					  else
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",yytext);
 					  }
   					}
-<DocScan>{CMD}"anchor "{ID}"\n"		{
+<DocScan>{CMD}"anchor "{ID}" "	        {
   					  QCString secName=&yytext[8];
 					  secName=secName.left(secName.length()-1);
 					  SectionInfo *sec;
@@ -1933,6 +1946,12 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					}
 <DocScan>{CMD}"ref"/{BN}		{
   					  BEGIN(DocRefName);
+  					}
+<DocScan>{CMD}"secreflist"/{BN}		{ 
+  				          outDoc->startSectionRefList();
+					}
+<DocScan>{CMD}"endsecreflist"/{BN}	{
+  					  outDoc->endSectionRefList();
   					}
 <DocScan>{CMD}"refitem"/{BN}		{
   					  BEGIN(DocRefItem);
@@ -2036,14 +2055,22 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					}
 <DocRefItem>{ID}			{
   					  sectionRef=yytext;
+					  refItemText.resize(0);
 					  BEGIN(DocRefItemName);
   					}
-<DocRefItemName>.*/"\n"			{
+<DocRefItemName>"\\&"			{ refItemText+='&'; }
+<DocRefItemName>"\\>"			{ refItemText+='>'; }
+<DocRefItemName>"\\<"			{ refItemText+='<'; }
+<DocRefItemName>"\\@"			{ refItemText+='@'; }
+<DocRefItemName>"\\$"			{ refItemText+='$'; }
+<DocRefItemName>"\\#"			{ refItemText+='#'; }
+<DocRefItemName>"\\\\"			{ refItemText+='\\'; }
+<DocRefItemName>.			{ refItemText+=*yytext; }
+<DocRefItemName>\n			{
 					  SectionInfo *sec;
-					  QCString text=yytext;
 					  if ((sec=Doxygen::sectionDict[sectionRef]))
 					  {
-					    outDoc->writeSectionRefItem(sec->fileName,sec->label,text.stripWhiteSpace());
+					    outDoc->writeSectionRefItem(sec->fileName,sec->label,refItemText.stripWhiteSpace());
 					  }
 					  else
 					  {
@@ -2917,6 +2944,12 @@ void resolveCopyDocCommands(const char *scope,QCString &docString)
 void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
               const char *clName,MemberDef *md,const QCString &docStr)
 {
+
+  if (Debug::isFlagSet(Debug::Validate))
+  {
+    validatingParseDoc(fileName,startLine,docStr);
+  }
+  
   strcpy(yyFileName,fileName);
   yyLineNr = startLine;
 

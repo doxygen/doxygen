@@ -62,6 +62,9 @@ sub GenerateDep {
 #$ GenerateDep("doc.cpp","doc.l");
 	$(LEX) -PdocYY -t doc.l >doc.cpp
 
+#$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
+	$(LEX) -PdoctokenizerYY -t doctokenizer.l >doctokenizer.cpp
+
 #$ GenerateDep("commentcnv.cpp","commentcnv.l");
 	$(LEX) -PcommentcnvYY -t commentcnv.l >commentcnv.cpp
 
