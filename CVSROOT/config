@@ -1,9 +1,0 @@
-# Set this to "no" if pserver shouldn't check system users/passwords
-#SystemAuth=no
-
-# Set `PreservePermissions' to `yes' to save file status information
-# in the repository.
-#PreservePermissions=no
-
-TopLevelAdmin=yes
-#LockDir=/u/kp3softd/cvslocks/
