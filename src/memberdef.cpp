@@ -89,10 +89,10 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   ol.endMemberDocName();
-  ol.startParameterList(); 
+  ol.startParameterList(!md->isObjCMethod()); 
   ol.enableAll();
   ol.disable(OutputGenerator::Html);
-  ol.docify("("); // start argument list
+  if (!md->isObjCMethod()) ol.docify("("); // start argument list
   ol.endMemberDocName();
   ol.popGeneratorState();
   //printf("===> name=%s isDefine=%d\n",md->name().data(),md->isDefine());
@@ -125,10 +125,10 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   bool first=TRUE;
   while (a)
   {
-    if (md->isDefine() || first) ol.startParameterType(first);
+    if (md->isDefine() || first) ol.startParameterType(first,md->isObjCMethod()?"dummy":0);
     QRegExp re(")(");
     int vp;
-    if (!a->attrib.isEmpty()) // argument has an IDL attribute
+    if (!a->attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
       ol.docify(a->attrib+" ");
     }
@@ -136,12 +136,14 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     {
       //printf("a->type=`%s' a->name=`%s'\n",a->type.data(),a->name.data());
       QCString n=a->type.left(vp);
+      if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
     }
     else // non-function pointer type
     {
       QCString n=a->type;
+      if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
     }
@@ -181,11 +183,18 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     a=defArgList->next();
     if (a) 
     {
-      ol.docify(", "); // there are more arguments
+      if (!md->isObjCMethod()) ol.docify(", "); // there are more arguments
       if (!md->isDefine()) 
       {
+        QCString key;
+        if (md->isObjCMethod() && a->attrib.length()>2)
+        {
+          //printf("Found parameter keyword %s\n",a->attrib.data());
+          // strip [ and ]
+          key=a->attrib.mid(1,a->attrib.length()-2)+":";
+        }
         ol.endParameterName(FALSE,FALSE);
-        ol.startParameterType(FALSE);
+        ol.startParameterType(FALSE,key);
       }
     }
     first=FALSE;
@@ -193,13 +202,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
   //if (!first) ol.writeString("&nbsp;");
-  ol.docify(")"); // end argument list
+  if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
   ol.disableAllBut(OutputGenerator::Html);
   if (!md->isDefine()) 
   {
     if (first) ol.startParameterName(defArgList->count()<2);
-    ol.endParameterName(TRUE,defArgList->count()<2);
+    ol.endParameterName(!md->isObjCMethod(),defArgList->count()<2);
   }
   else 
   {
@@ -929,6 +938,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
   else
   {
+    if (isObjCMethod())
+    {
+      ltype.prepend("(");
+      ltype.append(")");
+    }
     linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
@@ -996,7 +1010,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     }
   }
 
-  if (argsString()) 
+  if (argsString() && !isObjCMethod()) 
   {
     if (!isDefine()) ol.writeString(" ");
     //ol.docify(argsString());
@@ -1237,7 +1251,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if (si==-1) si=0;
         while ((pi=r.match(ldef,i+l,&l))!=-1) ei=i=pi+l;
         // first si characters of ldef contain compound type name
-        ol.startMemberDocName();
+        ol.startMemberDocName(isObjCMethod());
         ol.docify(ldef.left(si));
         ol.docify(" { ... } ");
         // last ei characters of ldef contain pointer/reference specifiers
@@ -1304,7 +1318,28 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           }
         }
       }
-      ol.startMemberDocName();
+      ol.startMemberDocName(isObjCMethod());
+      if (isObjCMethod())
+      {
+        int dp = ldef.find(':');
+        if (dp!=-1)
+        {
+          ldef=ldef.left(dp+1);
+        }
+        int l=ldef.length();
+        //printf("start >%s<\n",ldef.data());
+        int i=l-1;
+        while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
+        while (i>=0 && isspace(ldef.at(i))) i--;
+        if (i>0)
+        {
+          // insert braches around the type
+          QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
+          ldef=tmp;
+        }
+        //printf("end   >%s< i=%d\n",ldef.data(),i);
+        if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
+      }
       linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
       if (hasOneLineInitializer()) // add initializer
@@ -1329,12 +1364,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     Specifier lvirt=virtualness();
 
-    if (protection()!=Public || lvirt!=Normal ||
-        isFriend() || isRelated() || isExplicit() ||
-        isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
-        isSignal() || isSlot() ||
-        isStatic() || (classDef && classDef!=container) ||
-        isSettable() || isGettable()
+    if (!isObjCMethod() &&
+        (protection()!=Public || lvirt!=Normal ||
+         isFriend() || isRelated() || isExplicit() ||
+         isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
+         isSignal() || isSlot() ||
+         isStatic() || (classDef && classDef!=container) ||
+         isSettable() || isGettable()
+        )
        )
     {
       // write the member specifier list
@@ -2136,4 +2173,11 @@ void MemberDef::setInbodyDocumentation(const char *docs,
   m_inbodyLine = docLine;
   m_inbodyFile = docFile;
 }
+
+bool MemberDef::isObjCMethod() const
+{
+  if (classDef && classDef->isObjectiveC() && isFunction()) return TRUE;
+  return FALSE; 
+}
+
 

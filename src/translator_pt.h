@@ -630,6 +630,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
         case ClassDef::Struct:     result+="à estrutura "; break;
         case ClassDef::Union:      result+="à união "; break;
         case ClassDef::Interface:  result+="ao interface "; break;
+        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
+        case ClassDef::Category:   result+="category "; break; // translate me!
         case ClassDef::Exception:  result+="à excepção "; break;
       }
       if (isTemplate) result+="Template ";
@@ -790,6 +792,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
         case ClassDef::Struct:     result+="esta estrutura"; break;
         case ClassDef::Union:      result+="esta união"; break;
         case ClassDef::Interface:  result+="este interface"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="esta excepção"; break;
       }
       result+=" foi gerada a partir ";

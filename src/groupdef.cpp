@@ -479,10 +479,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputGenerator::Man);
     ol.startTextLink(0,"_details");
     ol.parseText(theTranslator->trMore());
     ol.endTextLink();
-    //ol.enable(OutputGenerator::Latex);
+    ol.enableAll();
+    ol.disableAllBut(OutputGenerator::Man);
+    ol.newParagraph();
     ol.popGeneratorState();
   }
 

@@ -370,6 +370,8 @@ class TranslatorCroatian : public Translator
         case ClassDef::Struct: result+=" strukture "; break;
         case ClassDef::Union:  result+=" unije "; break;
         case ClassDef::Interface:  result+=" suèelja (interface) "; break;
+        case ClassDef::Protocol:   result+=" protocol "; break; // translate me!
+        case ClassDef::Category:   result+=" category "; break; // translate me!
         case ClassDef::Exception:  result+=" iznimke (exception) "; break;
       }
           result += clName;
@@ -518,6 +520,8 @@ class TranslatorCroatian : public Translator
         case ClassDef::Struct:     result+="strukture"; break;
         case ClassDef::Union:      result+="unije"; break;
         case ClassDef::Interface:  result+="suèelja (interface)"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
       }
       result+=" je generirana iz " + trFile(FALSE, single) + ": ";

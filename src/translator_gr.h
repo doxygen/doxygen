@@ -619,6 +619,8 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         case ClassDef::Struct:     result+=" Δομής"; break;
         case ClassDef::Union:      result+=" Ένωσης"; break;
         case ClassDef::Interface:  result+=" Διαπροσωπίας"; break;
+        case ClassDef::Protocol:   result+=" Protocol"; break; // translate me!
+        case ClassDef::Category:   result+=" Category"; break; // translate me!
         case ClassDef::Exception:  result+=" Εξαίρεσης"; break;
       }
       if (isTemplate) result+=" Template";
@@ -776,6 +778,8 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         case ClassDef::Struct:     result+="αυτή η δομή"; break;
         case ClassDef::Union:      result+="αυτή η ένωση"; break;
         case ClassDef::Interface:  result+="αυτή η διαπροσωπία"; break;
+        case ClassDef::Protocol:   result+="Protocol"; break; // translate me!
+        case ClassDef::Category:   result+="Category"; break; // translate me!
         case ClassDef::Exception:  result+="αυτή η εξαίρεση"; break;
       }
       result+=" δημιουργήθηκε απο τ";

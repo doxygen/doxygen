@@ -536,6 +536,8 @@ class TranslatorFrench : public Translator
         case ClassDef::Struct:     result+="la structure "; break;
         case ClassDef::Union:      result+="l'union "; break;
         case ClassDef::Interface:  result+="l'interface "; break;
+        case ClassDef::Protocol:   result+="le protocol "; break; 
+        case ClassDef::Category:   result+="la catégorie "; break; 
         case ClassDef::Exception:  result+="l'exception "; break;
       }
 
@@ -694,6 +696,8 @@ class TranslatorFrench : public Translator
         case ClassDef::Struct:     result+="structure"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; 
+        case ClassDef::Category:   result+="category"; break; 
         case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" a été générée à partir ";

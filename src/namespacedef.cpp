@@ -308,6 +308,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.startTextLink(0,"_details");
     ol.parseText(theTranslator->trMore());
     ol.endTextLink();
+    ol.enableAll();
+    ol.disableAllBut(OutputGenerator::Man);
+    ol.newParagraph();
     ol.popGeneratorState();
   }
   ol.disable(OutputGenerator::Man);

@@ -644,6 +644,8 @@ class TranslatorCatalan : public TranslatorAdapter_1_2_17
         case ClassDef::Struct:     result+=" Estructura "; break;
         case ClassDef::Union:      result+=" Unió "; break;
         case ClassDef::Interface:  result+=" Interfície "; break;
+        case ClassDef::Protocol:   result+=" Protocol "; break; // translate me!
+        case ClassDef::Category:   result+=" Category "; break; // translate me!
         case ClassDef::Exception:  result+=" Excepció "; break;
       }
       if (isTemplate) result+="Template ";
@@ -801,6 +803,8 @@ class TranslatorCatalan : public TranslatorAdapter_1_2_17
         case ClassDef::Struct:     result+="estructura"; break;
         case ClassDef::Union:      result+="unió"; break;
         case ClassDef::Interface:  result+="interfície"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="excepció"; break;
       }
       result+=" es va generar a partir del";

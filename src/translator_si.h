@@ -274,6 +274,8 @@ class TranslatorSlovene : public TranslatorAdapter_1_2_16
         case ClassDef::Struct: result+=" Struktura "; break;
         case ClassDef::Union:  result+=" Mno¾ica "; break;
         case ClassDef::Interface:  result+=" IDL vmesnik "; break;
+        case ClassDef::Protocol:   result+=" protocol "; break; // translate me!
+        case ClassDef::Category:   result+=" category "; break; // translate me!
         case ClassDef::Exception:  result+=" IDL prekinitev "; break;
       }
 	  result += (QCString)clName;
@@ -420,6 +422,8 @@ class TranslatorSlovene : public TranslatorAdapter_1_2_16
         case ClassDef::Struct:     result+="strukture"; break;
         case ClassDef::Union:      result+="unije"; break;
         case ClassDef::Interface:  result+="vmesnika (interface)"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="prekinitve (exception)"; break;
       }
       result+=" je zgrajen na podlagi naslednj";

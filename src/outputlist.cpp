@@ -273,6 +273,7 @@ FORALL4(const char *a1,const char *a2,const char *a3,bool a4,a1,a2,a3,a4)
 #endif
 FORALL2(int a1,bool a2,a1,a2)
 FORALL2(bool a1,HighlightedItem a2,a1,a2)
+FORALL2(bool a1,const char *a2,a1,a2)
 FORALL2(ParamListTypes a1,const char *a2,a1,a2)
 FORALL1(IndexSections a1,a1)
 FORALL2(const char *a1,const char *a2,a1,a2)

@@ -659,6 +659,8 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_16
         case ClassDef::Struct:     result+="structura"; break;
         case ClassDef::Union:      result+="uniunea"; break;
         case ClassDef::Interface:  result+="interfaþa"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="excepþia"; break;
       }
 	  if (isTemplate) result+=" (Template) ";
@@ -819,6 +821,8 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_16
         case ClassDef::Struct:     result+="structurã"; break;
         case ClassDef::Union:      result+="uniune"; break;
         case ClassDef::Interface:  result+="interfaþã"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="excepþie"; break;
       }
       result+=" a fost generatã din fiºier";

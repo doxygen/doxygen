@@ -150,12 +150,9 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
   {
     ol.writeRuler();
     ol.pushGeneratorState();
-    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    //if (latexOn) ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
     ol.writeAnchor(0,"_details"); 
-    //if (latexOn) ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
     ol.startGroupHeader();
     ol.parseText(theTranslator->trDetailedDescription());

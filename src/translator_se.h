@@ -524,6 +524,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_3_3
         case ClassDef::Struct: result+=" strukt"; break;
         case ClassDef::Union:  result+=" union"; break;
         case ClassDef::Interface:  result+=" gränssnitt"; break;
+        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
+        case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" undantag"; break;
       }
       if (isTemplate) result+="template";
@@ -663,6 +665,8 @@ class TranslatorSwedish : public TranslatorAdapter_1_3_3
         case ClassDef::Struct:     result+="denna strukt "; break;
         case ClassDef::Union:      result+="denna union "; break;
         case ClassDef::Interface:  result+="detta gränssnitt "; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="detta undantag "; break;
       }
       result+="var genererad från följande fil";

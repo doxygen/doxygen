@@ -195,13 +195,13 @@ class HtmlGenerator : public OutputGenerator
 
     void startMemberDocPrefixItem();
     void endMemberDocPrefixItem();
-    void startMemberDocName();
+    void startMemberDocName(bool);
     void endMemberDocName();
-    void startParameterType(bool first);
+    void startParameterType(bool first,const char *key);
     void endParameterType();
     void startParameterName(bool);
     void endParameterName(bool last,bool emptyList);
-    void startParameterList();
+    void startParameterList(bool);
     void endParameterList();
 
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }

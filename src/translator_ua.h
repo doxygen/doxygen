@@ -42,19 +42,23 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
 
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
+    {
 #ifdef _WIN32
-    { return "\\usepackage[cp1251]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; }
+      return "\\usepackage[cp1251]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
 #else
-    { return "\\usepackage[koi8-u]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; }
+      return "\\usepackage[koi8-u]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
 #endif
+    }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
+    {
 #ifdef _WIN32
-    { return "Windows-1251"; }
+      return "Windows-1251"; 
 #else
-    { return "koi8-u"; }
+      return "koi8-u";
 #endif
+    }
 
     // --- Language translation methods -------------------
 
@@ -618,6 +622,8 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
           case ClassDef::Struct: result+="структури"; break;
           case ClassDef::Union:  result+="об'╓днання"; break;
           case ClassDef::Interface:  result+="╕нтерфейсу"; break;
+          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+          case ClassDef::Category:   result+="category"; break; // translate me!
           case ClassDef::Exception:  result+="Виняток"; break;
         }
       }
@@ -629,6 +635,8 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
           case ClassDef::Struct: result+="Структура"; break;
           case ClassDef::Union:  result+="Об'╓днання"; break;
           case ClassDef::Interface:  result+="╤нтерфейс"; break;
+          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+          case ClassDef::Category:   result+="category"; break; // translate me!
           case ClassDef::Exception:  result+="Виняток"; break;
         }
       }
@@ -791,6 +799,12 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
         case ClassDef::Interface:
           if (single) result+="цього ╕нтерфейсу"; else result+="цих ╕нтерфейс╕в";
           break;
+        case ClassDef::Protocol:  
+          if (single) result+="protocol"; else result+="protocols"; // translate me!
+          break; 
+        case ClassDef::Category:
+          if (single) result+="category"; else result+="categories"; // translate me!
+          break; 
         case ClassDef::Exception:
           if (single) result+="цього винятку"; else result+="цих винятк╕в";
           break;

@@ -436,11 +436,11 @@ Here is what is required:
     As a third alternative one could use the GNUWin32 tools that can be
     found at http://gnuwin32.sourceforge.net/ 
     
-    Make sure the <code>BISONLIB</code> environment variable points to the
+    Make sure the <code>BISON_SIMPLE</code> environment variable points to the
     location where the files <code>bison.simple</code> and 
-    <code>bison.hairy</code> are located. For instance if these files are in
-    <code>c:\\tools\\cygwin\\share</code> then BISONLIB should 
-    be set to <code>//c/tools/cygwin/share/</code>
+    is located. For instance if these file is in
+    <code>c:\\tools\\cygwin\\usr\\share</code> then BISON_SIMPLE should 
+    be set to <code>c:/tools/cygwin/usr/share/bison.simple</code>
 
     Also make sure the tools are available from a dos box, by adding 
     the directory they are in to the search path.

@@ -237,13 +237,13 @@ class ManGenerator : public OutputGenerator
 
     void startMemberDocPrefixItem() {}
     void endMemberDocPrefixItem() {}
-    void startMemberDocName() {}
+    void startMemberDocName(bool) {}
     void endMemberDocName() {}
-    void startParameterType(bool) {}
+    void startParameterType(bool,const char *) {}
     void endParameterType() {}
     void startParameterName(bool) {}
     void endParameterName(bool,bool) {}
-    void startParameterList() {}
+    void startParameterList(bool) {}
     void endParameterList() {}
 
     void startFontClass(const char *) {}

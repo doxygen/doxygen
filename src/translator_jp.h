@@ -601,6 +601,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_3
         case ClassDef::Struct:     result+=decode("構造体 "); break;
         case ClassDef::Union:      result+=decode("共用体 "); break;
         case ClassDef::Interface:  result+=decode("インタフェース"); break;
+        case ClassDef::Protocol:   result+=decode("Protocol"); break; // translate me!
+        case ClassDef::Category:   result+=decode("Category"); break; // translate me!
         case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
       if (isTemplate) result+=decode(" テンプレート");
@@ -757,6 +759,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_3
         case ClassDef::Struct:     result+=decode("構造体"); break;
         case ClassDef::Union:      result+=decode("共用体"); break;
         case ClassDef::Interface:  result+=decode("インタフェース"); break;
+        case ClassDef::Protocol:   result+=decode("Protocol"); break; // translate me!
+        case ClassDef::Category:   result+=decode("Category"); break; // translate me!
         case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
       result+=decode("の説明は次のファイルから生成されました:");

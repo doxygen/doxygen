@@ -42,7 +42,7 @@ typedef struct {
 void MD5Init(MD5_CTX *ctx);
 void MD5Update (MD5_CTX *ctx, const unsigned char *buf, unsigned int len);
 void MD5Final (MD5_CTX *ctx, unsigned char sig[16]);
-void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16]);
+void MD5Buffer (const unsigned char *buf,unsigned int len,unsigned char sig[16]);
 void MD5SigToString(unsigned char sig[16],char *str,int len);
 
 #ifdef __cplusplus

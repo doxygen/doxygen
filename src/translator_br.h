@@ -634,6 +634,8 @@ class TranslatorBrazilian: public Translator
         case ClassDef::Struct:     result+=" Estrutura "; break;
         case ClassDef::Union:      result+=" União "; break;
         case ClassDef::Interface:  result+=" Interface "; break;
+        case ClassDef::Protocol:   result+=" Protocol "; break; // translate me!
+        case ClassDef::Category:   result+=" Category "; break; // translate me!
         case ClassDef::Exception:  result+=" Exceção "; break;
       }
       result+=(QCString)clName;
@@ -790,6 +792,8 @@ class TranslatorBrazilian: public Translator
         case ClassDef::Struct:     result+="estrutura "; break;
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;
+        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
+        case ClassDef::Category:   result+="category "; break; // translate me!
         case ClassDef::Exception:  result+="exceção "; break;
       }
       result+=" foi gerada a partir ";

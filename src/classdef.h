@@ -63,6 +63,8 @@ class ClassDef : public Definition
                         Struct=Entry::STRUCT_SEC, 
                         Union=Entry::UNION_SEC,
                         Interface=Entry::INTERFACE_SEC,
+                        Protocol=Entry::PROTOCOL_SEC,
+                        Category=Entry::CATEGORY_SEC,
                         Exception=Entry::EXCEPTION_SEC
                       };
     DefType definitionType() { return TypeClass; }
@@ -197,6 +199,9 @@ class ClassDef : public Definition
      */
     bool isAbstract() const { return m_isAbstract; }
 
+    /*! Returns TRUE if this class is implemented in Objective-C */
+    bool isObjectiveC() const { return m_isObjC; }
+
     /*! returns the name of the class including outer classes, but not
      *  including namespaces.
      */
@@ -288,6 +293,7 @@ class ClassDef : public Definition
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
     void setClassIsArtificial() { m_artificial = TRUE; }
     void setIsStatic(bool b) { m_isStatic=b; }
+    void setIsObjectiveC(bool b) { m_isObjC=b; }
     void addListReferences();
 
     /*! Creates a new compound definition.
@@ -424,6 +430,9 @@ class ClassDef : public Definition
 
     /*! Is the class part of an unnamed namespace? */
     bool m_isStatic;
+
+    /*! Is the class part implemented in Objective C? */
+    bool m_isObjC;
 
     /*! TRUE if classes members are merged with those of the base classes. */
     bool m_membersMerged;

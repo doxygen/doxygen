@@ -606,6 +606,8 @@
       <xsd:enumeration value="struct" />
       <xsd:enumeration value="union" />
       <xsd:enumeration value="interface" />
+      <xsd:enumeration value="protocol" />
+      <xsd:enumeration value="category" />
       <xsd:enumeration value="exception" />
       <xsd:enumeration value="file" />
       <xsd:enumeration value="namespace" />

@@ -457,7 +457,7 @@ sub Project {
     $r = "";
     foreach ( @settings ) {
 	$v = $_;
-	if ( $v =~ s/^\s*((?:[^:\s]*?:)?)(\w+)\s*(\+=|\*=|\-=|\/=|=)// ) {
+        if ( $v =~ s/^\s*([^:\r\n]+:)?(\w+)\s*(\+=|\*=|\-=|\/=|=)// ) {
 	    $if_var = $1;
 	    if ( $if_var ne "" ) {		
 		chop $if_var;
@@ -550,7 +550,7 @@ sub ScanProject {
 	s/\#.*//;				# strip comment
 	s/^\s+//;				# strip white space
 	s/\s+$//;
-	if ( /^\s*((?:(?:[^:\s]*?:)?)\w+\s*(\+|\-|\*|\/)?=)/ ) {
+        if ( /^(([^:\r\n]+:)?\w+\s*(\+|\-|\*|\/)?=)/ ) {
 	    $var = $1;				# var also contains the ".="
 	    s/^.*?=\s*//;
 	    if ( /^\<\<(.*)$/ ) {

@@ -658,6 +658,8 @@ class TranslatorPolish : public TranslatorAdapter_1_3
         case ClassDef::Struct:     result+=" struktury "; break;
         case ClassDef::Union:      result+=" unii "; break;
         case ClassDef::Interface:  result+=" interfejsu "; break;
+        case ClassDef::Protocol:   result+=decode(" protocol "); break; // translate me!
+        case ClassDef::Category:   result+=decode(" category "); break; // translate me!
         case ClassDef::Exception:  result+=decode(" wyj±tku "); break;
       }
       result+=(QCString)clName;
@@ -815,6 +817,8 @@ class TranslatorPolish : public TranslatorAdapter_1_3
         case ClassDef::Struct:     result+="j struktury"; break;
         case ClassDef::Union:      result+="j unii"; break;
         case ClassDef::Interface:  result+="go interfejsu"; break;
+        case ClassDef::Protocol:   result+=decode("protocol"); break; // translate me!
+        case ClassDef::Category:   result+=decode("category"); break; // translate me!
         case ClassDef::Exception:  result+="go wyj±tku"; break;
       }
       result+=" zosta³a wygenerowana z plik";

@@ -3316,7 +3316,8 @@ void DocPara::handleImage(const QString &cmdName)
     return;
   }
   doctokenizerYYsetStatePara();
-  DocImage *img = new DocImage(this,findAndCopyImage(g_token->name,t),t);
+  HtmlAttribList attrList;
+  DocImage *img = new DocImage(this,attrList,findAndCopyImage(g_token->name,t),t);
   m_children.append(img);
   img->parse();
 }
@@ -3982,7 +3983,8 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       {
         HtmlAttribListIterator li(tagHtmlAttribs);
         HtmlAttrib *opt;
-        for (li.toFirst();(opt=li.current());++li)
+        int index=0;
+        for (li.toFirst();(opt=li.current());++li,++index)
         {
           if (opt->name=="name") // <a name=label> tag
           {
@@ -4002,7 +4004,8 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
             // copy attributes
             HtmlAttribList attrList = tagHtmlAttribs;
             // and remove the href attribute
-            attrList.remove(opt);
+            bool result = attrList.remove(index);
+            ASSERT(result);
             DocHRef *href = new DocHRef(this,attrList,opt->value);
             m_children.append(href);
             g_insideHtmlLink=TRUE;
@@ -4039,12 +4042,18 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         HtmlAttribListIterator li(tagHtmlAttribs);
         HtmlAttrib *opt;
         bool found=FALSE;
-        for (li.toFirst();(opt=li.current());++li)
+        int index=0;
+        for (li.toFirst();(opt=li.current());++li,++index)
         {
           //printf("option name=%s value=%s\n",opt->name.data(),opt->value.data());
           if (opt->name=="src" && !opt->value.isEmpty())
           {
-            DocImage *img = new DocImage(this,opt->value,DocImage::Html);
+            // copy attributes
+            HtmlAttribList attrList = tagHtmlAttribs;
+            // and remove the href attribute
+            bool result = attrList.remove(index);
+            ASSERT(result);
+            DocImage *img = new DocImage(this,attrList,opt->value,DocImage::Html);
             m_children.append(img);
             found = TRUE;
           }

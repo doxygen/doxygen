@@ -763,6 +763,8 @@ class TranslatorCzech : public Translator
         case ClassDef::Struct:     result+="struktury "; break;
         case ClassDef::Union:      result+="unie "; break;
         case ClassDef::Interface:  result+="rozhraní "; break;
+        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
+        case ClassDef::Category:   result+="category "; break; // translate me!
         case ClassDef::Exception:  result+="výjimky "; break;
       }
       result+=clName;
@@ -933,6 +935,8 @@ class TranslatorCzech : public Translator
         case ClassDef::Struct:     result+="tuto strukturu (struct)"; break;
         case ClassDef::Union:      result+="tuto unii (union)"; break;
         case ClassDef::Interface:  result+="toto rozhraní"; break;
+        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
+        case ClassDef::Category:   result+="category "; break; // translate me!
         case ClassDef::Exception:  result+="tuto výjimku"; break;
       }
       result+=" byla generována z ";
