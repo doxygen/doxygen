@@ -1361,7 +1361,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <RemoveSpecialCComment>\n  { g_yyLineNr++; }
 <RemoveSpecialCComment>.
 <*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
-  					  if (Config::stripCommentsFlag)
+  					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
 					    endCodeLine();
@@ -1378,7 +1378,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config::stripCommentsFlag)
+  					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=2;
 					    endCodeLine();
@@ -1395,7 +1395,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>\n{B}*"/*@"[{}]			{ // remove one-line group marker
-					  if (Config::stripCommentsFlag)
+					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -1414,7 +1414,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  }
   					}
 <*>^{B}*"//@"[{}].*\n			{ // remove one-line group marker
-  					  if (Config::stripCommentsFlag)
+  					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr++;
 					    endCodeLine();
@@ -1431,7 +1431,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>^{B}*"/*@"[{}]			{ // remove multi-line group marker
-					  if (Config::stripCommentsFlag)
+					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -1449,7 +1449,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
  					  }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
-  					  if (Config::stripCommentsFlag)
+  					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr++;
 					    endCodeLine();
@@ -1466,7 +1466,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
-  					  if (Config::stripCommentsFlag)
+  					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;
 					    codifyLines(c);
@@ -1479,7 +1479,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
-					  if (Config::stripCommentsFlag)
+					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
   					  {
 					    g_lastSpecialCContext = YY_START;
 					    g_yyLineNr++;
@@ -1498,7 +1498,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  }
 					}
 <*>^{B}*"/*"[!*]/[^/*]			{ // special C comment block at a new line
-					  if (Config::stripCommentsFlag)
+					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -1516,7 +1516,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
  					  }
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
-					  if (Config::stripCommentsFlag)
+					  if (Config::instance()->getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_lastSpecialCContext = YY_START;
 					    BEGIN(RemoveSpecialCComment);
@@ -1533,7 +1533,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    BEGIN(SkipComment);
 					  }
 					}
-<*>"/*"("!"?)"*/"			{ if (!Config::stripCommentsFlag)
+<*>"/*"("!"?)"*/"			{ if (!Config::instance()->getBool("STRIP_CODE_COMMENTS"))
   					  {
 					    startFontClass("comment");
 					    g_code->codify(yytext);

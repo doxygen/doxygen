@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -36,7 +36,11 @@ void InputBool::init()
 
 void InputBool::setState( bool s )
 {
-  if (state!=s) emit changed();
+  if (state!=s) 
+  {
+    emit changed();
+    emit toggle(text(),s);
+  }
   state=s;
 }
 

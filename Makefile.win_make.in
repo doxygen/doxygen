@@ -13,9 +13,10 @@ distclean: clean
 	-del src\Makefile.libdoxygen \
 	     src\Makefile.doxygen \
 	     src\Makefile.doxytag \
-	     src\Makefile.doxysearch
+	     src\Makefile.doxysearch \
+	     src\Makefile.libdoxycfg
 	-del Makefile src\Makefile examples\Makefile doc\Makefile
-	-del src\libdoxygen.pro src\doxygen.pro src\doxytag.pro src\doxysearch.pro
+	-del src\libdoxygen.pro src\doxygen.pro src\doxytag.pro src\doxysearch.pro src\libdoxycfg.pro
 	-del src\version.cpp
 
 docs:

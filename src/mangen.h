@@ -194,7 +194,7 @@ class ManGenerator : public OutputGenerator
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *) {}
-    void writeNonBreakableSpace() { t << "  "; }
+    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
     void startImage(const char *,const char *,bool) {}
     void endImage(bool) {}
     

@@ -26,7 +26,6 @@ f_plf_auto=NO
 f_prefix=/usr
 f_insttool=install
 f_english=NO
-f_configgen=NO
 f_wizard=NO
 f_xmlgen=NO
 
@@ -65,9 +64,6 @@ while test -n "$1";  do
     --install)
        shift; f_insttool=$1
        ;;
-    --with-configgen)
-       f_configgen=YES
-       ;;
     --with-doxywizard)
        f_wizard=YES
        ;;
@@ -91,7 +87,7 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--make name] [--dot name] [--platform target] 
           [--prefix dir] [--install name] [--english-only] 
-          [--with-configgen] [--with-doxywizard] [--with-xmlgen]
+          [--with-doxywizard] [--with-xmlgen]
 
 Options: 
 
@@ -123,10 +119,6 @@ Options:
                         [default: install]
 
   --english-only        Include support for English only.
-
-  --with-configgen      Build the configuration generator. This is only
-                        useful for doxygen developers that want to add
-                        new configuration options.
 
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt 2.x.x
@@ -380,7 +372,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in addon/xmlgen/Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
+f_inmakefiles="Makefile.in addon/xmlgen/Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -398,9 +390,6 @@ EOF
        echo "all: src/version.cpp " >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
-       if test $f_configgen = YES; then
-         echo "	\$(MAKE) -C addon/configgen" >> $DST
-       fi
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard" >> $DST
        fi
@@ -417,7 +406,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in addon/xmlgen/xmlgen.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in addon/xmlgen/xmlgen.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

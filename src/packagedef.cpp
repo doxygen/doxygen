@@ -42,7 +42,7 @@ PackageDef::~PackageDef()
 
 void PackageDef::addClass(const ClassDef *def)
 {
-  if (Config::sortMembersFlag)
+  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
     classList->inSort(def);
   else
     classList->append(def);
@@ -73,7 +73,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
-  if (!Config::genTagFile.isEmpty())
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "  <compound kind=\"package\">" << endl;
   }
@@ -86,7 +86,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
   classList->writeDeclaration(ol,&ct,theTranslator->trClasses());
   ol.endMemberSections();
 
-  if (!Config::genTagFile.isEmpty())
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -105,7 +105,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     ol.endGroupHeader();
 
     // repeat brief description
-    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
+    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
       ol.newParagraph();

@@ -35,9 +35,9 @@ int ClassList::compareItems(GCI item1, GCI item2)
 {
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
-  //int prefixLength = Config::ignorePrefix.length();
-  //int i1 = c1->name().left(prefixLength)==Config::ignorePrefix ? prefixLength : 0;
-  //int i2 = c2->name().left(prefixLength)==Config::ignorePrefix ? prefixLength : 0;
+  //int prefixLength = Config::instance()->get("").length();
+  //int i1 = c1->name().left(prefixLength)==Config::instance()->get("") ? prefixLength : 0;
+  //int i2 = c2->name().left(prefixLength)==Config::instance()->get("") ? prefixLength : 0;
   return stricmp(c1->name().data()+getPrefixIndex(c1->name()),
                  c2->name().data()+getPrefixIndex(c2->name())
                 );
@@ -61,7 +61,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
          )
       {
         bool isLink = cd->isLinkable();
-        if (isLink || !Config::hideClassFlag)
+        if (isLink || !Config::instance()->getBool("HIDE_UNDOC_CLASSES"))
         {
           if (!found)
           {
@@ -78,7 +78,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
             ol.startMemberList();
             found=TRUE;
           }
-          if (!Config::genTagFile.isEmpty()) 
+          if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
           {
             Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
                     << "\">" << convertToXML(cd->name()) << "</class>" << endl;
@@ -107,7 +107,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
           {
             ol.startMemberDescription();
             parseDoc(ol,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
-            if ((!cd->briefDescription().isEmpty() && Config::repeatBriefFlag) ||
+            if ((!cd->briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) ||
                 !cd->documentation().isEmpty())
             {
               ol.pushGeneratorState();

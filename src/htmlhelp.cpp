@@ -255,7 +255,7 @@ HtmlHelp *HtmlHelp::getInstance()
 void HtmlHelp::initialize()
 {
   /* open the contents file */
-  QCString fName = Config::htmlOutputDir + "/index.hhc";
+  QCString fName = Config::instance()->getString("HTML_OUTPUT") + "/index.hhc";
   cf = new QFile(fName);
   if (!cf->open(IO_WriteOnly))
   {
@@ -272,7 +272,7 @@ void HtmlHelp::initialize()
          "<UL>\n";
   
   /* open the contents file */
-  fName = Config::htmlOutputDir + "/index.hhk";
+  fName = Config::instance()->getString("HTML_OUTPUT") + "/index.hhk";
   kf = new QFile(fName);
   if (!kf->open(IO_WriteOnly))
   {
@@ -292,13 +292,13 @@ void HtmlHelp::initialize()
 void HtmlHelp::createProjectFile()
 {
   /* Write the project file */
-  QCString fName = Config::htmlOutputDir + "/index.hhp";
+  QCString fName = Config::instance()->getString("HTML_OUTPUT") + "/index.hhp";
   QFile f(fName);
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
     QCString indexName="index.html";
-    if (Config::ftvHelpFlag) indexName="main.html";
+    if (Config::instance()->getBool("GENERATE_TREEVIEW")) indexName="main.html";
     t << "[OPTIONS]\n"
          "Compatibility=1.1\n"
          "Full-text search=Yes\n"
@@ -306,12 +306,12 @@ void HtmlHelp::createProjectFile()
          "Default Window=main\n"
          "Default topic=" << indexName << "\n"
          "Index file=index.hhk\n";
-    if (Config::htmlHelpTocFlag) t << "Binary TOC=YES\n";
-    if (Config::htmlHelpChiFlag) t << "Create CHI file=YES\n";
-    t << "Title=" << Config::projectName << endl << endl;
+    if (Config::instance()->getBool("BINARY_TOC")) t << "Binary TOC=YES\n";
+    if (Config::instance()->getBool("GENERATE_CHI")) t << "Create CHI file=YES\n";
+    t << "Title=" << Config::instance()->getString("PROJECT_NAME") << endl << endl;
     
     t << "[WINDOWS]" << endl;
-    t << "main=\"" << Config::projectName << "\",\"index.hhc\","
+    t << "main=\"" << Config::instance()->getString("PROJECT_NAME") << "\",\"index.hhc\","
          "\"index.hhk\",\"" << indexName << "\",\"" << 
          indexName << "\",,,,,0x23520,,0x3006,,,,,,,,0" << endl << endl;
     
@@ -389,7 +389,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const char *anchor)
 {
   // If we're using a binary toc then folders cannot have links. 
-  if(Config::htmlHelpTocFlag && isDir) 
+  if(Config::instance()->getBool("BINARY_TOC") && isDir) 
   {
     ref = 0;
     anchor = 0;

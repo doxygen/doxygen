@@ -34,6 +34,7 @@
 #include <qdict.h>
 #include <qregexp.h>
 #include <qfileinfo.h>
+#include <qdir.h>
   
 #include "pre.h"
 #include "constexp.h"
@@ -94,6 +95,10 @@ static QCString           g_incName;
 static QCString           g_guardExpr;
 static int                g_curlyCount;
 static bool               g_nospaces; // add extra spaces during macro expansion
+
+static bool               g_macroExpansion; // from the configuration
+static bool               g_expandOnlyPredef; // from the configuration
+
 
 static void setFileName(const char *name)
 {
@@ -156,8 +161,40 @@ static Define *isDefined(const char *name)
   return 0;
 }
 
-static FILE *findFile(const char *fileName)
+static FILE *checkAndOpenFile(const QCString &absName)
 {
+  FILE *f = 0;
+  QFileInfo fi(absName);
+  if (fi.exists() && fi.isFile())
+  {
+    if (!Config::instance()->getString("INPUT_FILTER").isEmpty())
+    {
+      QCString cmd = Config::instance()->getString("INPUT_FILTER")+" "+absName;
+      f=popen(cmd,"r");
+      if (!f) err("Error: could not execute filter %s\n",cmd.data());
+    }
+    else
+    {
+      f=fopen(absName,"r");
+      if (!f) err("Error: could not open file %s for reading\n",absName.data());
+    }
+  }
+  return f;
+}
+
+static FILE *findFile(const char *fileName,bool localInclude)
+{
+  if (localInclude && g_yyFileDef)
+  {
+    QCString absName = g_yyFileDef->getPath()+"/"+fileName;
+    FILE *f = checkAndOpenFile(absName);
+    if (f)
+    {
+      setFileName(absName);
+      g_yyLineNr=1;
+      return f;
+    }
+  }
   if (g_pathList==0) 
   {
     return 0;
@@ -165,29 +202,15 @@ static FILE *findFile(const char *fileName)
   char *s=g_pathList->first();
   while (s)
   {
-    QCString absName=(QCString)s+"/"+fileName;
-    QFileInfo fi(absName);
-    if (fi.exists() && fi.isFile())
+    QCString absName = (QCString)s+"/"+fileName;
+    FILE *f = checkAndOpenFile(absName);
+    if (f)
     {
-      FILE *f;
-      if (!Config::inputFilter.isEmpty())
-      {
-	QCString cmd = Config::inputFilter+" "+absName;
-	f=popen(cmd,"r");
-	if (!f) err("Error: could not execute filter %s\n",cmd.data());
-      }
-      else
-      {
-	f=fopen(absName,"r");
-	if (!f) err("Error: could not open file %s for reading\n",absName.data());
-      }
-      if (f)
-      {
-	setFileName(absName);
-	g_yyLineNr=1;
-	return f;
-      }
+      setFileName(absName);
+      g_yyLineNr=1;
+      return f;
     }
+
     s=g_pathList->next();
   } 
   return 0;
@@ -869,7 +892,7 @@ static inline void outputArray(const char *a,int len)
 
 static void readIncludeFile(const QCString &inc)
 {
-  if (!Config::searchIncludeFlag) return; // do not read include files
+  if (!Config::instance()->getBool("SEARCH_INCLUDES")) return; // do not read include files
   uint i=0;
   
   // find the start of the include file name
@@ -892,8 +915,9 @@ static void readIncludeFile(const QCString &inc)
     FILE *f;
     QCString oldFileName = g_yyFileName.copy();
     FileDef *oldFileDef  = g_yyFileDef;
+    int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
-    if ((f=findFile(incFileName))) // see if the include file can be found
+    if ((f=findFile(incFileName,localInclude))) // see if the include file can be found
     {
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
@@ -910,15 +934,21 @@ static void readIncludeFile(const QCString &inc)
   	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->name(),localInclude);
         }
       }
-      // store the state of the old file 
       FileState *fs=new FileState;
       fs->bufState=YY_CURRENT_BUFFER;
-      fs->lineNr=g_yyLineNr;
+      fs->lineNr=oldLineNr;
       fs->fileName=oldFileName;
       fs->filePtr=f;
       // push the state on the stack
       g_includeStack.push(fs);
       // set the scanner to the include file
+
+      // TODO: Enable this to deal with file changes due to 
+      // #include's within { .. } blocks
+      //QCString lineStr;
+      //lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
+      //outputArray(lineStr.data(),lineStr.length());
+      
       preYYin=f;
       yy_switch_to_buffer(yy_create_buffer(preYYin, YY_BUF_SIZE));
     } 
@@ -1037,7 +1067,7 @@ BN	[ \t\r\n]
 					  outputChar(*yytext);
 					  BEGIN( CopyString );
 					}
-<CopyString>[^\"\\]+			{
+<CopyString>[^\"\\\r\n]+		{
   					  outputArray(yytext,yyleng);
 					}
 <CopyString>\\.				{
@@ -1051,10 +1081,10 @@ BN	[ \t\r\n]
   					  Define *def=0;
 					  //printf("Search for define %s\n",yytext);
 					  if ((g_includeStack.isEmpty() || g_curlyCount>0) &&
-					      Config::macroExpansionFlag &&
+					      g_macroExpansion &&
 					      /* (expandDefine=fileDefineCache->findDefine(g_yyFileName,yytext)) */
 					      (def=g_fileDefineDict->find(yytext)) &&
-					      (!Config::onlyPredefinedFlag || def->isPredefined)
+					      (!g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
 					    //printf("Found it!\n");
@@ -1081,10 +1111,10 @@ BN	[ \t\r\n]
                                           Define *def=0;
 					  //printf("Search for define %s\n",yytext);
   					  if ((g_includeStack.isEmpty() || g_curlyCount>0) && 
-					      Config::macroExpansionFlag &&
+					      g_macroExpansion &&
 					      (def=g_fileDefineDict->find(yytext)) &&
 					      def->nargs==-1 &&
-					      (!Config::onlyPredefinedFlag || def->isPredefined)
+					      (!g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
 					    //printf("Found it!\n");
@@ -1162,8 +1192,8 @@ BN	[ \t\r\n]
 <ReadString>.				{
   					  g_defArgsStr+=*yytext;
   					}
-<Command>"include"{B}*/{ID}		{
-  					  if (Config::macroExpansionFlag) 
+<Command>"include"{B}+/{ID}		{
+  					  if (g_macroExpansion) 
 					    BEGIN(IncludeID);
   					}
 <Command>"include"{B}*[<"]		{ 
@@ -1396,14 +1426,6 @@ BN	[ \t\r\n]
   					}
 <Include>[^\">\n]+[\">]			{ 
 					  g_incName+=yytext;
-					  //int l=incName.length();
-					  //QCString incFileName=incName.left(l-1);
-					  //if (fileDefineCache->fileCached(incFileName))
-					  //{
-					  //  printf("file already cached!\n");
-					  //  fileDefineCache->merge(incFileName,g_yyFileName);
-					  //}
-					  //else if ((f=findFile(incFileName)))
 					  readIncludeFile(g_incName);
 					  
 					  BEGIN(Start);
@@ -1457,7 +1479,7 @@ BN	[ \t\r\n]
 					    //{
 					    //  addDefine();
 					    //}
-					    if (/*!Config::onlyPredefinedFlag &&*/ (def=g_fileDefineDict->find(g_defName))==0)
+					    if ((def=g_fileDefineDict->find(g_defName))==0)
 					    {
 					      g_fileDefineDict->insert(g_defName,newDefine());
 					    }
@@ -1491,12 +1513,14 @@ BN	[ \t\r\n]
 					  g_quoteArg=FALSE;
   					  BEGIN(DefineText);
   					}
-<DefineArg>{ID}("..."?)			{
+<DefineArg>{ID}{B}*("..."?)		{
   					  //printf("Define addArg(%s)\n",yytext);
   					  QCString argName=yytext;
   					  g_defVarArgs = yytext[yyleng-1]=='.';
 					  if (g_defVarArgs) // strip ellipsis
-					    argName=argName.left(argName.length()-3);
+					  {
+					    argName=argName.left(argName.length()-3).stripWhiteSpace();
+					  }
                                           g_defArgsStr+=yytext;
 					  g_argDict->insert(argName,new int(g_defArgs)); 
 					  g_defArgs++;
@@ -1679,7 +1703,7 @@ BN	[ \t\r\n]
 					  {
 					    FileState *fs=g_includeStack.pop();
 					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
-					    if (Config::inputFilter.isEmpty())
+					    if (Config::instance()->getString("INPUT_FILTER").isEmpty())
 					      fclose(fs->filePtr);
 					    else
 					      pclose(fs->filePtr);
@@ -1689,7 +1713,16 @@ BN	[ \t\r\n]
 					    g_yyLineNr=fs->lineNr;
 					    setFileName(fs->fileName.copy());
 					    //printf("######## FileName %s\n",g_yyFileName.data());
+					    
+                                            // TODO: Enable this to deal with file changes due to 
+                                            // #include's within { .. } blocks
+                                            //QCString lineStr;
+                                            //lineStr.sprintf("# %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
+                                            //outputArray(lineStr.data(),lineStr.length());
+					    
 					    delete fs; fs=0;
+
+					    
 					  }
   					}
 <*>"/*"					{
@@ -1813,6 +1846,8 @@ void preprocessFile(const char *fileName,BufStr &output)
   uint orgOffset=output.curPos();
 //#endif
 
+  g_macroExpansion = Config::instance()->getBool("MACRO_EXPANSION");
+  g_expandOnlyPredef = Config::instance()->getBool("EXPAND_ONLY_PREDEF");
   g_curlyCount=0;
   g_nospaces=FALSE;
   g_outputBuf=&output;
@@ -1824,7 +1859,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_expandedDict->clear();
   
   // add predefined macros
-  char *defStr = Config::predefined.first();
+  char *defStr = Config::instance()->getList("PREDEFINED").first();
   while (defStr)
   {
     //printf("Predefined: `%s'\n",defStr);
@@ -1913,10 +1948,11 @@ void preprocessFile(const char *fileName,BufStr &output)
       //  def->name.data(),def->definition.data(),def->nargs);
     }
     
-    defStr=Config::predefined.next();
+    defStr=Config::instance()->getList("PREDEFINED").next();
   }
  
-  if (Config::inputFilter.isEmpty())
+  QCString &inputFilter = Config::instance()->getString("INPUT_FILTER");
+  if (inputFilter.isEmpty())
   {
     preYYin = fopen(fileName,"r");
     if (!preYYin)
@@ -1927,7 +1963,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   }
   else
   {
-    QCString cmd = Config::inputFilter+" "+fileName;
+    QCString cmd = inputFilter+" "+fileName;
     preYYin = popen(cmd,"r");
     if (!preYYin)
     {
@@ -1945,7 +1981,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_guardExpr.resize(0);
   
   preYYlex();
-  if (Config::inputFilter.isEmpty())
+  if (inputFilter.isEmpty())
     fclose(preYYin);
   else
     pclose(preYYin);

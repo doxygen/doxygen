@@ -54,18 +54,18 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
   {
     //printf("md=%p md->name()=`%s' inGroup=%d getMemberGroup()=%p\n",
     //    md,md->name().data(),inGroup,md->getMemberGroup());
-    if (!(md->getClassDef()==0 && md->isStatic() && !Config::extractStaticFlag) &&
-        (!Config::hideMemberFlag || md->hasDocumentation()) &&
+    if (!(md->getClassDef()==0 && md->isStatic() && !Config::instance()->getBool("EXTRACT_STATIC")) &&
+        (!Config::instance()->getBool("HIDE_UNDOC_MEMBERS") || md->hasDocumentation()) &&
         (
-         (!Config::hideMemberFlag || !md->documentation().isEmpty() || 
-          Config::briefMemDescFlag || Config::repeatBriefFlag
-         ) || Config::extractAllFlag || 
+         (!Config::instance()->getBool("HIDE_UNDOC_MEMBERS") || !md->documentation().isEmpty() || 
+          Config::instance()->getBool("BRIEF_MEMBER_DESC") || Config::instance()->getBool("REPEAT_BRIEF")
+         ) || Config::instance()->getBool("EXTRACT_ALL") || 
          (md->isEnumerate() &&
           md->hasDocumentedEnumValues()
          )
         ) && 
         inGroup==md->visibleMemberGroup(sectionPerType) &&
-        !(inGroup && md->protection()==Private && !Config::extractPrivateFlag)
+        !(inGroup && md->protection()==Private && !Config::instance()->getBool("EXTRACT_PRIVATE"))
        )
     {
       switch(md->memberType())
@@ -83,7 +83,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
         case MemberDef::EnumValue:   enumValCnt++,m_count++; break;
         case MemberDef::Typedef:     typeCnt++,m_count++; break;
         case MemberDef::Prototype:   protoCnt++,m_count++; break;
-        case MemberDef::Define:      if (Config::extractAllFlag || 
+        case MemberDef::Define:      if (Config::instance()->getBool("EXTRACT_ALL") || 
                                          md->argsString() || 
                                          !md->initializer().isEmpty() ||
                                          md->hasDocumentation() 
@@ -122,12 +122,12 @@ void MemberList::countDocMembers(bool listOfGroup)
     //printf("%s MemberList::countDocMembers() details=%d\n",
     //    md->name().data(),md->detailsAreVisible());
     bool visibleIfStatic = 
-      !(md->getClassDef()==0 && md->isStatic() && !Config::extractStaticFlag);
+      !(md->getClassDef()==0 && md->isStatic() && !Config::instance()->getBool("EXTRACT_STATIC"));
 
     bool inOwnGroup = (md->getGroupDef()!=0 && !listOfGroup);
     
     if (visibleIfStatic && !inOwnGroup &&
-        (Config::extractAllFlag || md->detailsAreVisible()) 
+        (Config::instance()->getBool("EXTRACT_ALL") || md->detailsAreVisible()) 
        )
     {
       if (md->memberType()!=MemberDef::EnumValue) m_count++;
@@ -190,7 +190,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       if (md->isDefine() && 
           (md->argsString() || md->hasDocumentation() || 
            !md->initializer().isEmpty() ||
-           Config::extractAllFlag) &&
+           Config::instance()->getBool("EXTRACT_ALL")) &&
           inGroup==md->visibleMemberGroup(sectionPerType)         
          ) 
       {
@@ -264,21 +264,21 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     for ( ; (md=mli.current()) ; ++mli ) // iterate through the members
     {
       // see if member is hidden by protection
-      if (md->protection()==Private && !Config::extractPrivateFlag) continue;
+      if (md->protection()==Private && !Config::instance()->getBool("EXTRACT_PRIVATE")) continue;
       
       QCString type=md->typeString();
       type=type.stripWhiteSpace();  // TODO: is this really needed?
 
       // filter out enums that are in a group iff inGroup holds
-      if (md->isEnumerate() && inGroup==md->visibleMemberGroup(sectionPerType) /*&& (hasDocs || !Config::hideMemberFlag)*/) 
+      if (md->isEnumerate() && inGroup==md->visibleMemberGroup(sectionPerType) /*&& (hasDocs || !Config::instance()->getBool("HIDE_UNDOC_MEMBERS"))*/) 
       {
         // filter out invisible enums
-        if ( !Config::hideMemberFlag ||        // do not hide undocumented members or
+        if ( !Config::instance()->getBool("HIDE_UNDOC_MEMBERS") ||        // do not hide undocumented members or
              !md->documentation().isEmpty() || // member has detailed descr. or
              md->hasDocumentedEnumValues() ||  // member has documented enum vales.
              ( 
                !md->briefDescription().isEmpty() &&
-               Config::briefMemDescFlag              // brief descr. is shown or
+               Config::instance()->getBool("BRIEF_MEMBER_DESC")              // brief descr. is shown or
              )                                        
            )
         {
@@ -290,7 +290,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           {
             if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
             {
-              if (!Config::genTagFile.isEmpty())
+              if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
               {
                 Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
                 Doxygen::tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
@@ -319,8 +319,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             while (fmd)
             {
               /* in html we start a new line after a number of items */
-              if (fmdl->count()>(uint)Config::enumValuesPerLine
-                  && (enumMemCount%(uint)Config::enumValuesPerLine)==0
+              if (fmdl->count()>(uint)Config::instance()->getInt("ENUM_VALUES_PER_LINE")
+                  && (enumMemCount%(uint)Config::instance()->getInt("ENUM_VALUES_PER_LINE"))==0
                  )
               {
                 typeDecl.pushGeneratorState();
@@ -332,7 +332,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
               if (fmd->hasDocumentation()) // enum value has docs
               {
-              if (!Config::genTagFile.isEmpty())
+              if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
               {
                 Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
                 Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
@@ -361,7 +361,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               typeDecl.enable(OutputGenerator::Man);
               enumMemCount++;
             }
-            if (fmdl->count()>(uint)Config::enumValuesPerLine)
+            if (fmdl->count()>(uint)Config::instance()->getInt("ENUM_VALUES_PER_LINE"))
             {
               typeDecl.pushGeneratorState();
               typeDecl.disableAllBut(OutputGenerator::Html);
@@ -395,7 +395,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.insertMemberAlign();
             ol+=typeDecl; // append the enum values.
             ol.endMemberItem(FALSE);
-            if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag)
+            if (!md->briefDescription().isEmpty() && Config::instance()->getBool("BRIEF_MEMBER_DESC"))
             {
               ol.startMemberDescription();
               parseDoc(ol,
@@ -460,11 +460,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       {
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
-        if (md->hasDocumentation() && type!="friend class")
+        bool isFriendClass = type=="friend class";
+        if (!isFriendClass)
         {
           md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
         }
-        else // friend is undocumented as a member but it is a class, 
+        else // isFriendClass
+             // friend is undocumented as a member but it is a class, 
              // so generate a link to the class if that is documented.
         {
           ClassDef *cd=getClass(md->name());
@@ -484,7 +486,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
             ol.endMemberItem(FALSE);
           }
-          else if (!Config::hideMemberFlag) // no documentation
+          else if (!Config::instance()->getBool("HIDE_UNDOC_MEMBERS")) // no documentation
           {
             ol.startMemberItem(0);
             ol.docify("class ");

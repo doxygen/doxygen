@@ -72,7 +72,7 @@ class FileDef : public Definition
     /*! Returns the unique file name (this may include part of the path). */
     QCString name() const 
     { 
-      if (Config::fullPathNameFlag) 
+      if (Config::instance()->getBool("FULL_PATH_NAMES")) 
         return filename; 
       else 
         return Definition::name(); 

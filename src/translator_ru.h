@@ -62,7 +62,7 @@ class TranslatorRussian : public Translator
     }
     QCString trMemberDataDocumentation()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Описание полей";
       }
@@ -123,7 +123,7 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundList()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Структуры данных";
       }
@@ -143,7 +143,7 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundMembers()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Поля структур";
       }
@@ -154,7 +154,7 @@ class TranslatorRussian : public Translator
     }
     QCString trFileMembers()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Глобальные имена";
       }
@@ -192,7 +192,7 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundListDescription()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Структуры данных и их краткое описание: ";
       }
@@ -219,7 +219,7 @@ class TranslatorRussian : public Translator
       QCString result="Список всех ";
       if (!extractAll) result+="документированных ";
 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="функций, переменных, макроопределений, "
                 "перечислений и определений типов";
@@ -269,7 +269,7 @@ class TranslatorRussian : public Translator
     }
     QCString trCompoundIndex()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Список структур данных";
       }
@@ -370,7 +370,7 @@ class TranslatorRussian : public Translator
     }
     QCString trCompounds()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Структуры данных";
       }
@@ -730,7 +730,7 @@ class TranslatorRussian : public Translator
     }
     QCString trPublicAttribs()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Поля данных";
       }

@@ -24,6 +24,7 @@
 #include "qtbc.h"
 #include <qregexp.h>
 #include <qfileinfo.h>
+#include <qdir.h>
 
 #include "util.h"
 #include "message.h"
@@ -279,8 +280,8 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
   
   od.disable(OutputGenerator::Html);
   od.disable(OutputGenerator::Man);
-  if (Config::pdfHyperFlag) od.disable(OutputGenerator::Latex);
-  if (Config::rtfHyperFlag) od.disable(OutputGenerator::RTF);
+  if (Config::instance()->getBool("PDF_HYPERLINKS")) od.disable(OutputGenerator::Latex);
+  if (Config::instance()->getBool("RTF_HYPERLINKS")) od.disable(OutputGenerator::RTF);
   od.startPageRef();
   od.docify(theTranslator->trPageAbbreviation());
   od.endPageRef(cn,mn);
@@ -300,11 +301,11 @@ QCString generateMarker(int id)
 }
 
 /*! strip part of \a path if it matches
- *  one of the paths in the Config::stripFromPath list
+ *  one of the paths in the Config::instance()->getList("STRIP_FROM_PATH") list
  */
 QCString stripFromPath(const QCString &path)
 {
-  const char *s=Config::stripFromPath.first();
+  const char *s=Config::instance()->getList("STRIP_FROM_PATH").first();
   while (s)
   {
     QCString prefix = s;
@@ -312,7 +313,7 @@ QCString stripFromPath(const QCString &path)
     {
       return path.right(path.length()-prefix.length());
     }
-    s = Config::stripFromPath.next();
+    s = Config::instance()->getList("STRIP_FROM_PATH").next();
   }
   return path;
 }
@@ -380,7 +381,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef)
+ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef,QCString *pTemplSpec)
 {
   if (name==0 || name[0]=='\0') return 0;
   QCString *subst = Doxygen::typedefDict[name];
@@ -412,6 +413,7 @@ ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef)
       ClassDef *cd = Doxygen::classDict[subst->data()];
       if (cd==0 && (i=subst->find('<'))>0) // try unspecialized version as well
       {
+        if (pTemplSpec) *pTemplSpec = subst->right(subst->length()-i);
         return Doxygen::classDict[subst->left(i)];
       }
       else
@@ -810,7 +812,7 @@ QCString fileToString(const char *name,bool filter)
       err("Error: file `%s' not found\n",name);
       return "";
     }
-    if (Config::inputFilter.isEmpty() || !filter)
+    if (Config::instance()->getString("INPUT_FILTER").isEmpty() || !filter)
     {
       f.setName(name);
       fileOpened=f.open(IO_ReadOnly);
@@ -830,11 +832,11 @@ QCString fileToString(const char *name,bool filter)
     }
     else // filter the input
     {
-      QCString cmd=Config::inputFilter+" "+name;
+      QCString cmd=Config::instance()->getString("INPUT_FILTER")+" "+name;
       FILE *f=popen(cmd,"r");
       if (!f)
       {
-        err("Error: could not execute filter %s\n",Config::inputFilter.data());
+        err("Error: could not execute filter %s\n",Config::instance()->getString("INPUT_FILTER").data());
         return "";
       }
       const int bSize=4096;
@@ -1759,7 +1761,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //printf("  >Searching for arbitrary member\n");
           for (mmli.toFirst();(mmd=mmli.current());++mmli)
           {
-            if (//(mmd->protection()!=Private || Config::extractPrivateFlag) &&
+            if (//(mmd->protection()!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
                 //(
                 //mmd->hasDocumentation() 
                 /*mmd->detailsAreVisible()*/
@@ -2071,7 +2073,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       {
         od.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),0,linkText);
-        if (!cd->isReference() /*&& !Config::pdfHyperFlag*/) 
+        if (!cd->isReference() /*&& !Config::instance()->getBool("PDF_HYPERLINKS")*/) 
         {
           writePageRef(od,cd->getOutputFileBase(),0);
         }
@@ -2080,7 +2082,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       {
         od.writeObjectLink(nd->getReference(),
             nd->getOutputFileBase(),0,linkText);
-        if (!nd->getReference() /*&& !Config::pdfHyperFlag*/) 
+        if (!nd->getReference() /*&& !Config::instance()->getBool("PDF_HYPERLINKS")*/) 
         {
           writePageRef(od,nd->getOutputFileBase(),0);
         }
@@ -2367,7 +2369,7 @@ QCString convertFileName(const QCString &s)
   {
     if (s.at(i)!='/' && s.at(i)!='.')
     {
-      if (Config::caseSensitiveNames)
+      if (Config::instance()->getBool("CASE_SENSE_NAMES"))
       {
         result+=s[i]; 
       }
@@ -2408,7 +2410,7 @@ QCString substitute(const char *s,const char *src,const char *dst)
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 {
   ambig=FALSE;
-  QCString name=n;
+  QCString name=convertToQCString(QDir::cleanDirPath(n));
   QCString path;
   if (name.isEmpty()) return 0;
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
@@ -2485,15 +2487,15 @@ QCString substituteKeywords(const QCString &s,const char *title)
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$doxygenversion",versionString);
-  result = substitute(result,"$projectname",Config::projectName);
-  result = substitute(result,"$projectnumber",Config::projectNumber);
+  result = substitute(result,"$projectname",Config::instance()->getString("PROJECT_NAME"));
+  result = substitute(result,"$projectnumber",Config::instance()->getString("PROJECT_NUMBER"));
   return result;
 }
     
 //----------------------------------------------------------------------
 
 /*! Returns the character index within \a name of the first prefix
- *  in Config::ignorePrefixList that matches \a name at the left hand side,
+ *  in Config::instance()->getList("IGNORE_PREFIX") that matches \a name at the left hand side,
  *  or zero if no match was found
  */ 
 int getPrefixIndex(const QCString &name)
@@ -2501,7 +2503,7 @@ int getPrefixIndex(const QCString &name)
   int ni = name.findRev("::");
   if (ni==-1) ni=0; else ni+=2;
   //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
-  char *s = Config::ignorePrefixList.first();
+  char *s = Config::instance()->getList("IGNORE_PREFIX").first();
   while (s)
   {
     const char *ps=s;
@@ -2512,7 +2514,7 @@ int getPrefixIndex(const QCString &name)
     {
       return ni+i;
     }
-    s = Config::ignorePrefixList.next();
+    s = Config::instance()->getList("IGNORE_PREFIX").next();
   }
   return ni;
 }
@@ -2580,7 +2582,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
       case '.': if (allowDots) result+="."; else result+="_"; break;
       case ' ': break;
       default: 
-        if (Config::caseSensitiveNames)
+        if (Config::instance()->getBool("CASE_SENSE_NAMES"))
           result+=c;
         else
           result+=tolower(c); 

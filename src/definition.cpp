@@ -73,7 +73,7 @@ QCString Definition::nameToFile(const char *name,bool allowDots)
       case ',': result+="_x_"; break;
       case ' ': break;
       default: 
-        if (Config::caseSensitiveNames)
+        if (Config::instance()->getBool("CASE_SENSE_NAMES"))
           result+=c;
         else
           result+=tolower(c); 
@@ -111,7 +111,7 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 
 void Definition::writeDocAnchorsToTagFile()
 {
-  if (!Config::genTagFile.isEmpty() && sectionDict)
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
   {
     QDictIterator<SectionInfo> sdi(*sectionDict);
     SectionInfo *si;
@@ -183,7 +183,7 @@ static bool readCodeFragment(const char *fileName,
           }
           else if (c=='\t') 
           {
-            col+=Config::tabSize - (col%Config::tabSize);
+            col+=Config::instance()->getInt("TAB_SIZE") - (col%Config::instance()->getInt("TAB_SIZE"));
           }
           else
           {
@@ -249,7 +249,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef)
+  if (Config::instance()->getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef)
   {
     //ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
@@ -346,7 +346,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        startBodyLine,endBodyLine,bodyDef);
-  if (Config::inlineSourceFlag && startBodyLine!=-1 && 
+  if (Config::instance()->getBool("INLINE_SOURCES") && startBodyLine!=-1 && 
       endBodyLine>=startBodyLine && bodyDef)
   {
     QCString codeFragment;
@@ -373,7 +373,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
-  if (Config::sourceBrowseFlag && sourceRefList)
+  if (Config::instance()->getBool("SOURCE_BROWSER") && sourceRefList)
   {
     ol.newParagraph();
     parseText(ol,theTranslator->trReferencedBy());
@@ -434,7 +434,7 @@ bool Definition::hasDocumentation()
 { 
   return !doc.isEmpty() ||             // has detailed docs
          !brief.isEmpty() ||           // has brief description
-         Config::extractAllFlag;       // extract everything
+         Config::instance()->getBool("EXTRACT_ALL");       // extract everything
 }
 
 void Definition::addSourceReference(MemberDef *md)

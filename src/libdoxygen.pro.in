@@ -32,7 +32,7 @@ HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
 SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
                 memberdef.cpp membername.cpp index.cpp memberlist.cpp \
 		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
-                config.cpp filedef.cpp util.cpp groupdef.cpp \
+                filedef.cpp util.cpp groupdef.cpp \
                 outputgen.cpp outputlist.cpp htmlgen.cpp latexgen.cpp mangen.cpp \
 	        cppvalue.cpp ce_lex.cpp ce_parse.cpp pre.cpp \
 		filename.cpp declinfo.cpp defargs.cpp define.cpp \

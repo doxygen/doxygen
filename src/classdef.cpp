@@ -119,7 +119,7 @@ ClassDef::~ClassDef()
 
 QCString ClassDef::displayName() const
 {
-  if (Config::hideScopeNames)
+  if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
   {
     return stripScope(name());
   }
@@ -209,7 +209,7 @@ void ClassDef::insertMember(MemberDef *md)
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
-    if (md->isRelated() && (Config::extractPrivateFlag || md->protection()!=Private))
+    if (md->isRelated() && (Config::instance()->getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
     {
       related.append(md);
       md->setSectionList(&related);
@@ -357,11 +357,11 @@ void ClassDef::insertMember(MemberDef *md)
     /* insert member in the detailed documentation section */
     /*******************************************************/
     if ((md->isRelated() && 
-          (Config::extractPrivateFlag || md->protection()!=Private)
+          (Config::instance()->getBool("EXTRACT_PRIVATE") || md->protection()!=Private)
         ) || md->isFriend()
        )
     {
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         relatedMembers.inSort(md);
       else
         relatedMembers.append(md);
@@ -371,14 +371,14 @@ void ClassDef::insertMember(MemberDef *md)
       switch (md->memberType())
       {
         case MemberDef::Property:
-          if (Config::sortMembersFlag)
+          if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
             propertyMembers.inSort(md);
           else
             propertyMembers.append(md);
           break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
-          if (Config::sortMembersFlag)
+          if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
             functionMembers.inSort(md);
           else
             functionMembers.append(md);
@@ -387,21 +387,21 @@ void ClassDef::insertMember(MemberDef *md)
           switch (md->protection())
           {
             case Protected: 
-              if (Config::sortMembersFlag)
+              if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                 functionMembers.inSort(md); 
               else
                 functionMembers.append(md);
               break;
             case Public:    
-              if (Config::sortMembersFlag)
+              if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                 functionMembers.inSort(md); 
               else
                 functionMembers.append(md);
               break;
             case Private:   
-              if (Config::extractPrivateFlag)
+              if (Config::instance()->getBool("EXTRACT_PRIVATE"))
               {
-                if (Config::sortMembersFlag)
+                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                   functionMembers.inSort(md); 
                 else
                   functionMembers.append(md);
@@ -410,24 +410,24 @@ void ClassDef::insertMember(MemberDef *md)
           }
           break;
         default: // any of the other members
-          if (md->protection()!=Private || Config::extractPrivateFlag)
+          if (md->protection()!=Private || Config::instance()->getBool("EXTRACT_PRIVATE"))
           {
             switch (md->memberType())
             {
               case MemberDef::Typedef:
-                if (Config::sortMembersFlag)
+                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                   typedefMembers.inSort(md);
                 else
                   typedefMembers.append(md);
                 break;
               case MemberDef::Enumeration:
-                if (Config::sortMembersFlag)
+                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                   enumMembers.inSort(md);
                 else
                   enumMembers.append(md);
                 break;
               case MemberDef::EnumValue:
-                if (Config::sortMembersFlag)
+                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                   enumValMembers.inSort(md);
                 else
                   enumValMembers.append(md);
@@ -443,14 +443,14 @@ void ClassDef::insertMember(MemberDef *md)
                 }
                 else
                 {
-                  if (Config::sortMembersFlag)
+                  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                     functionMembers.inSort(md);
                   else
                     functionMembers.append(md);
                 }
                 break;
               case MemberDef::Variable:
-                if (Config::sortMembersFlag)
+                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
                   variableMembers.inSort(md);
                 else
                   variableMembers.append(md);
@@ -720,7 +720,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
 
-  if (!Config::genTagFile.isEmpty()) 
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
     Doxygen::tagFile << "\">" << endl;
@@ -729,7 +729,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   
-  if (Config::classDiagramFlag) ol.disableAllBut(OutputGenerator::Man);
+  if (Config::instance()->getBool("CLASS_DIAGRAMS")) ol.disableAllBut(OutputGenerator::Man);
 
   
   // write subclasses
@@ -753,7 +753,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          if (!Config::genTagFile.isEmpty()) 
+          if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
           {
             Doxygen::tagFile << "    <base";
             if (bcd->prot==Protected)
@@ -819,7 +819,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.newParagraph();
   }
 
-  if (Config::classDiagramFlag) ol.enableAll();
+  if (Config::instance()->getBool("CLASS_DIAGRAMS")) ol.enableAll();
   
 
   count=0;
@@ -840,7 +840,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   
-  if (Config::haveDotFlag && Config::classGraphFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("CLASS_GRAPH"))
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,DotClassGraph::Inheritance);
@@ -851,7 +851,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trClassDiagram(name()));
       ol.endDotGraph(inheritanceGraph);
-      if (Config::generateLegend)
+      if (Config::instance()->getBool("GENERATE_LEGEND"))
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -865,7 +865,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.popGeneratorState();
     }
   }
-  else if (Config::classDiagramFlag && count>0) 
+  else if (Config::instance()->getBool("CLASS_DIAGRAMS") && count>0) 
     // write class diagram using build-in generator
   {
     ClassDiagram diagram(this); // create a diagram of this class.
@@ -876,7 +876,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.endClassDiagram(diagram,fileName,name());
   } 
 
-  if (Config::haveDotFlag && Config::collGraphFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("COLLABORATION_GRAPH"))
   {
     DotClassGraph usageImplGraph(this,DotClassGraph::Implementation);
     if (!usageImplGraph.isTrivial())
@@ -886,7 +886,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
       ol.endDotGraph(usageImplGraph);
-      if (Config::generateLegend)
+      if (Config::instance()->getBool("GENERATE_LEGEND"))
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -902,7 +902,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // write link to list of all members (HTML only)
-  if (allMemberNameInfoList->count()>0 && !Config::optimizeForCFlag)
+  if (allMemberNameInfoList->count()>0 && !Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(memListFileName,0);
@@ -953,7 +953,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   proStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
   proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
 
-  if (Config::extractPrivateFlag)
+  if (Config::instance()->getBool("EXTRACT_PRIVATE"))
   {
     // private non-static members
     priTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
@@ -973,9 +973,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     
   // write detailed description
   bool exampleFlag=hasExamples();
-  if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 
+  if ((!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
-      /*(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||*/
+      /*(Config::instance()->getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
       exampleFlag)
   {
     ol.writeRuler();
@@ -992,11 +992,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeTemplateSpec(ol,outerTempArgList,pageType,name());
     
     // repeat brief description
-    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
+    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
     }
-    if (!briefDescription().isEmpty() && Config::repeatBriefFlag &&
+    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
     {
       ol.newParagraph();
@@ -1118,7 +1118,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write the list of used files (not for man pages)
   ol.pushGeneratorState();
 
-  if (Config::showUsedFilesFlag)
+  if (Config::instance()->getBool("SHOW_USED_FILES"))
   {
     ol.disable(OutputGenerator::Man);
     ol.writeRuler();
@@ -1140,7 +1140,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
         ol.writeListItem();
         QCString path=fd->getPath().copy();
-        if (Config::fullPathNameFlag)
+        if (Config::instance()->getBool("FULL_PATH_NAMES"))
         {
           ol.docify(stripFromPath(path));
         }
@@ -1171,12 +1171,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config::instance()->getString("PROJECT_NAME")));
   ol.popGeneratorState();
 
   ol.endTextBlock();
 
-  if (!Config::genTagFile.isEmpty()) 
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -1188,7 +1188,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 // write the list of all (inherited) members for this class
 void ClassDef::writeMemberList(OutputList &ol)
 {
-  if (allMemberNameInfoList->count()==0 || Config::optimizeForCFlag) return;
+  if (allMemberNameInfoList->count()==0 || Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1238,7 +1238,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           (
            md->isFriend() || 
            (/*mi->prot!=Private &&*/ 
-            (prot!=Private || Config::extractPrivateFlag)
+            (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE"))
            )
           )
          )
@@ -1265,7 +1265,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("\n");
           memberWritten=TRUE;
         }
-        else if (!Config::hideMemberFlag) // no documentation, 
+        else if (!Config::instance()->getBool("HIDE_UNDOC_MEMBERS")) // no documentation, 
                                   // generate link to the class instead.
         {
           ol.writeListItem();
@@ -1297,7 +1297,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         }
         if ((prot!=Public || virt!=Normal || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
-             md->isMutable() || (md->isInline() && Config::inlineInfoFlag) ||
+             md->isMutable() || (md->isInline() && Config::instance()->getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
              md->isStatic()
             )
@@ -1310,7 +1310,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           else if (md->isRelated()) sl.append("related");
           else
           {
-            if (Config::inlineInfoFlag && md->isInline())        
+            if (Config::instance()->getBool("INLINE_INFO") && md->isInline())        
                                        sl.append("inline");
             if (md->isExplicit())      sl.append("explicit");
             if (md->isMutable())       sl.append("mutable");
@@ -1445,7 +1445,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     proSlots.writePlainDeclarations(ol,this,0,0,0); 
     proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
     proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    if (Config::extractPrivateFlag)
+    if (Config::instance()->getBool("EXTRACT_PRIVATE"))
     {
       priTypes.writePlainDeclarations(ol,this,0,0,0); 
       priMembers.writePlainDeclarations(ol,this,0,0,0); 
@@ -1463,20 +1463,20 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 bool ClassDef::isLinkableInProject() 
 { 
   return !name().isEmpty() && name().find('@')==-1 && 
-    (prot!=Private || Config::extractPrivateFlag) &&
+    (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
     hasDocumentation() && !isReference();
 }
 
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
 { return // show all classes or a subclass is visible
-  (Config::allExtFlag || hasNonReferenceSuperClass()) &&
+  (Config::instance()->getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
     // and not an annonymous compound
     name().find('@')==-1 &&
     // and not privately inherited
-    (prot!=Private || Config::extractPrivateFlag) &&
+    (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
     // documented or show anyway or documentation is external 
-    (hasDocumentation() || !Config::hideClassFlag || isReference());
+    (hasDocumentation() || !Config::instance()->getBool("HIDE_UNDOC_CLASSES") || isReference());
 }
 
 //----------------------------------------------------------------------
@@ -1750,10 +1750,10 @@ void ClassDef::determineImplUsageRelation()
             ClassDef *cd=0;
             if (getNamespaceDef()!=0)
             {
-              cd=getResolvedClass(getNamespaceDef()->name()+"::"+usedClassName);
+              cd=getResolvedClass(getNamespaceDef()->name()+"::"+usedClassName,0,&templSpec);
             }
-            if (cd==0) cd=getResolvedClass(name()+"::"+usedClassName);
-            if (cd==0) cd=getResolvedClass(usedClassName); // TODO: also try inbetween scopes!
+            if (cd==0) cd=getResolvedClass(name()+"::"+usedClassName,0,&templSpec);
+            if (cd==0) cd=getResolvedClass(usedClassName,0,&templSpec); // TODO: also try inbetween scopes!
             //printf("Search for class %s result=%p\n",usedClassName.data(),cd);
             if (cd) // class exists 
             {

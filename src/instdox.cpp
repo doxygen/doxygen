@@ -30,14 +30,14 @@
 
 void writeInstallScript()
 {
-  QCString fileName=Config::htmlOutputDir+"/installdox";
+  QCString fileName=Config::instance()->getString("HTML_OUTPUT")+"/installdox";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
-    t << "#!" << Config::perlPath << endl << endl << "%subst = ( ";
+    t << "#!" << Config::instance()->getString("PERL_PATH") << endl << endl << "%subst = ( ";
     
-    char *s=Config::tagFileList.first();
+    char *s=Config::instance()->getList("TAGFILES").first();
     while (s)
     {
       QCString tagLine=s;
@@ -53,7 +53,7 @@ void writeInstallScript()
       }
       QFileInfo fi(fileName);
       t << "\"" << fi.fileName() << "\", \"\"";
-      s=Config::tagFileList.next();
+      s=Config::instance()->getList("TAGFILES").next();
       if (s) t << ", ";
     }
     

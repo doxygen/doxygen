@@ -42,5 +42,5 @@ Define::~Define()
 
 bool Define::hasDocumentation()
 {
-  return definition && (doc || Config::extractAllFlag);
+  return definition && (doc || Config::instance()->getBool("EXTRACT_ALL"));
 }

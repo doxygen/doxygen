@@ -205,7 +205,7 @@ QCString DiagramItem::label() const
   {
     result=classDef->name();
   }
-  if (Config::hideScopeNames) result=stripScope(result);
+  if (Config::instance()->getBool("HIDE_SCOPE_NAMES")) result=stripScope(result);
   return result;
 }
 
@@ -1233,7 +1233,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   super->drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
 
   f1.close();
-  if (Config::usePDFLatexFlag)
+  if (Config::instance()->getBool("USE_PDFLATEX"))
   {
     QCString epstopdfArgs(4096);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",

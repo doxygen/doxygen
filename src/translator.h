@@ -169,7 +169,7 @@ class Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     { 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Field Documentation"; 
       }
@@ -242,7 +242,7 @@ class Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     { 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures";
       }
@@ -263,7 +263,7 @@ class Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Fields"; 
       }
@@ -276,7 +276,7 @@ class Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     { 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Globals"; 
       }
@@ -317,7 +317,7 @@ class Translator
     virtual QCString trCompoundListDescription()
     { 
       
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Here are the data structures with brief descriptions:"; 
       }
@@ -332,12 +332,41 @@ class Translator
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Here is a list of all ";
-      if (!extractAll) result+="documented ";
-      result+="class members with links to ";
+      if (!extractAll)
+      {
+        result+="documented ";
+      }
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        result+="struct and union fields";
+      }
+      else
+      {
+        result+="class members";
+      }
+      result+=" with links to ";
       if (extractAll) 
-        result+="the class documentation for each member:";
+      {
+        if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        {
+          result+="the struct/union documentation for each field:";
+        }
+        else
+        {
+          result+="the class documentation for each member:";
+        }
+      }
       else 
-        result+="the classes they belong to:";
+      {
+        if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        {
+          result+="the structures/unions they belong to:";
+        }
+        else
+        {
+          result+="the classes they belong to:";
+        }
+      }
       return result;
     }
 
@@ -347,7 +376,7 @@ class Translator
       QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="functions, variables, defines, enums, and typedefs";
       }
@@ -409,7 +438,7 @@ class Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
         return "Data Structure Index";
       }
@@ -552,7 +581,7 @@ class Translator
      */
     virtual QCString trCompounds()
     { 
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures"; 
       }
@@ -992,7 +1021,7 @@ class Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Fields";
       }
@@ -1195,7 +1224,7 @@ class Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config::optimizeForCFlag)
+      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures";
       }

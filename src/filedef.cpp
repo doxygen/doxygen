@@ -60,7 +60,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
   package = 0;
   isSource = FALSE; 
   docname = nm;
-  if (Config::fullPathNameFlag)
+  if (Config::instance()->getBool("FULL_PATH_NAMES"))
   {
     docname.prepend(stripFromPath(path.copy()));
   }
@@ -109,7 +109,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   //funcList->countDecMembers();
   
   //QCString fn = name();
-  //if (Config::fullPathNameFlag)
+  //if (Config::instance()->getBool("FULL_PATH_NAMES"))
   //{
   //  fn.prepend(stripFromPath(getPath().copy()));
   //}
@@ -123,7 +123,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
   
-  if (!Config::genTagFile.isEmpty()) 
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
@@ -153,7 +153,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   ol.writeSynopsis();
  
-  if (Config::showIncFileFlag)
+  if (Config::instance()->getBool("SHOW_INCLUDE_FILES"))
   {
     ol.startTextBlock(TRUE);
     QListIterator<IncludeInfo> ili(*includeList);
@@ -200,7 +200,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.endTextBlock();
   }
   
-  if (Config::haveDotFlag && Config::includeGraphFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("INCLUDE_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,FALSE);
@@ -213,10 +213,10 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
     }
-    //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
+    //incDepGraph.writeGraph(Config::instance()->getString("HTML_OUTPUT"),fd->getOutputFileBase());
   }
 
-  if (Config::haveDotFlag && Config::includedByGraphFlag)
+  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("INCLUDED_BY_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,TRUE);
@@ -229,7 +229,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
     }
-    //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
+    //incDepGraph.writeGraph(Config::instance()->getString("HTML_OUTPUT"),fd->getOutputFileBase());
   }
 
   //printf("%s: generateSourceFile()=%d\n",name().data(),generateSourceFile());
@@ -280,7 +280,7 @@ void FileDef::writeDocumentation(OutputList &ol)
               0,
               nd->name()
           );
-          if (!Config::genTagFile.isEmpty()) 
+          if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
           {
             Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
           }
@@ -317,7 +317,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   //doc=doc.stripWhiteSpace();
   //int bl=brief.length();
   //int dl=doc.length();
-  if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 
+  if ((!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() 
       /* || startBodyLine!=-1 */
      )
@@ -334,11 +334,11 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
-    if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
+    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
     }
-    if (!briefDescription().isEmpty() && Config::repeatBriefFlag && 
+    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF") && 
         !documentation().isEmpty())
     {
       ol.newParagraph();
@@ -350,7 +350,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       parseDoc(ol,filepath,1,0,0,documentation()+"\n");
     }
     //printf("Writing source ref for file %s\n",name().data());
-    if (Config::sourceBrowseFlag) 
+    if (Config::instance()->getBool("SOURCE_BROWSER")) 
     {
       ol.newParagraph();
       QCString refText = theTranslator->trDefinedInSourceFile();
@@ -431,10 +431,10 @@ void FileDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config::instance()->getString("PROJECT_NAME")));
   ol.enableAll();
 
-  if (!Config::genTagFile.isEmpty()) 
+  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -462,7 +462,7 @@ void FileDef::writeSource(OutputList &ol)
   initParseCodeContext();
   ol.startCodeFragment();
   parseCode(ol,0,
-            fileToString(absFilePath(),Config::filterForSourceFlag),
+            fileToString(absFilePath(),Config::instance()->getBool("FILTER_SOURCE_FILES")),
             FALSE,0,this
            );
   ol.endCodeFragment();
@@ -520,25 +520,25 @@ void FileDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         varMembers.inSort(md); 
       else
         varMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (Config::sortMembersFlag)    
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))    
         funcMembers.inSort(md); 
       else
         funcMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         typedefMembers.inSort(md); 
       else
         typedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         enumMembers.inSort(md); 
       else
         enumMembers.append(md);
@@ -546,13 +546,13 @@ void FileDef::insertMember(MemberDef *md)
     case MemberDef::EnumValue:    // enum values are shown inside their enums
       break;
     case MemberDef::Prototype:    
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         protoMembers.inSort(md); 
       else
         protoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (Config::sortMembersFlag)
+      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
         defineMembers.inSort(md); 
       else
         defineMembers.append(md);
@@ -566,7 +566,7 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
-  if (Config::sortMembersFlag)
+  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
     classList->inSort(cd);
   else
     classList->append(cd);
@@ -577,7 +577,7 @@ void FileDef::insertNamespace(NamespaceDef *nd)
 {
   if (!nd->name().isEmpty() && namespaceDict->find(nd->name())==0)
   {
-    if (Config::sortMembersFlag)
+    if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
       namespaceList->inSort(nd);
     else
       namespaceList->append(nd);
@@ -670,8 +670,8 @@ bool FileDef::generateSourceFile() const
 { 
   QCString extension = name().right(4);
   return !isReference() && 
-         (Config::sourceBrowseFlag || 
-           (Config::verbatimHeaderFlag && guessSection(name())==Entry::HEADER_SEC) 
+         (Config::instance()->getBool("SOURCE_BROWSER") || 
+           (Config::instance()->getBool("VERBATIM_HEADERS") && guessSection(name())==Entry::HEADER_SEC) 
          ) &&
          extension!=".doc" && extension!=".txt" && extension!=".dox"; 
 }
