@@ -216,27 +216,29 @@ if test "$f_plf_auto" = NO; then
 fi
 
 #- check for qt --------------------------------------------------------------
-# 
-# echo -n "  Checking for Qt..."
-# if test -z "$QTDIR"; then
-#   echo "QTDIR not set!"
-#   echo
-#   echo "tmake requires the QTDIR environment variable to be set."
-#   echo "check your Qt installation!"
-#   exit 2
-# else
-#   if test ! -d "$QTDIR/lib"; then
-#     echo "QTDIR is set, but library directory does not exist!"
-#     exit 2
-#   fi
-#   if test ! -d "$QTDIR/include"; then
-#     echo "QTDIR is set, but include directory does not exist!"
-#     exit 2
-#   fi
-#   echo " headers $QTDIR/include,"
-#   echo "                     libraries $QTDIR/lib"  
-# fi
-#   
+ 
+if test "$f_wizard" = YES; then
+  echo -n "  Checking for Qt..."
+  if test -z "$QTDIR"; then
+    echo "QTDIR not set!"
+    echo
+    echo "tmake requires the QTDIR environment variable to be set."
+    echo "check your Qt installation!"
+    exit 2
+  else
+    if test ! -d "$QTDIR/lib"; then
+      echo "QTDIR is set, but library directory does not exist!"
+      exit 2
+    fi
+    if test ! -d "$QTDIR/include"; then
+      echo "QTDIR is set, but include directory does not exist!"
+      exit 2
+    fi
+    echo " headers $QTDIR/include,"
+    echo "                     libraries $QTDIR/lib"  
+  fi
+fi
+   
 # - check for make ------------------------------------------------------------
 
 echo -n "  Checking for GNU make tool... "
@@ -275,9 +277,11 @@ if test "$f_insttool" = NO; then
   for i in $install_names; do
     for j in $install_dirs; do
       if test -x "$j/$i"; then
-        install_found=YES
-        install_prog="$j/$i"
-        break 2
+        if test -n "`$j/$i --version 2>/dev/null | grep fileutils`"; then
+          install_found=YES
+          install_prog="$j/$i"
+          break 2
+        fi
       fi
     done
   done

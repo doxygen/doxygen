@@ -41,7 +41,7 @@ Entry::Entry()
   //mtArgList = 0;
   mGrpId = -1;
   tagInfo = 0;
-  groupdoctype = GROUPDOC_NORMAL;
+  groupDocType = GROUPDOC_NORMAL;
   reset();
 }
 
@@ -93,7 +93,7 @@ Entry::Entry(const Entry &e)
   //printf("Entry::Entry(copy) tArgList=0\n");
   tArgLists = 0;
   //mtArgList = 0;
-  groupdoctype = e.groupdoctype;
+  groupDocType = e.groupDocType;
 
   // deep copy of the child entry list
   QListIterator<Entry> eli(*e.sublist);
@@ -210,8 +210,8 @@ void Entry::reset()
   brief.resize(0);
   inside.resize(0);
   fileName.resize(0);
-  scopeSpec.resize(0);
-  memberSpec.resize(0);
+  //scopeSpec.resize(0);
+  //memberSpec.resize(0);
   initializer.resize(0);
   initLines = -1;
   startLine = 1;
@@ -230,7 +230,7 @@ void Entry::reset()
   memSpec  = 0;
   subGrouping = TRUE;
   protection = Public;
-  groupdoctype = GROUPDOC_NORMAL;
+  groupDocType = GROUPDOC_NORMAL;
   sublist->clear();
   extends->clear();
   groups->clear();

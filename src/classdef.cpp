@@ -1219,6 +1219,7 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
         innerCd->writeDocumentation(ol);
         innerCd->writeMemberList(ol);
       }
+      innerCd->writeDocumentationForInnerClasses(ol);
     }
   }
 }

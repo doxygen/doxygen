@@ -318,7 +318,7 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c INTERNAL_DOCS <dd>
  \addindex INTERNAL_DOCS
  The \c INTERNAL_DOCS tag determines if documentation
- that is typed after a \\internal command is included. If the tag is set
+ that is typed after a \ref cmdinternal "\\internal" command is included. If the tag is set
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
 
@@ -540,7 +540,7 @@ followed by the descriptions of the tags grouped by category.
  Separate the files or directories with spaces.<br>
 
  \b Note: 
- This tag (and only this tag) is \e required.
+ If this tag is empty the current directory is searched.
 
 \anchor cfg_file_patterns
 <dt>\c FILE_PATTERNS <dd>
@@ -1090,7 +1090,7 @@ EXTRA_PACKAGES = times
 \anchor cfg_expand_as_defined
 <dt>\c EXPAND_AS_DEFINED <dd>
  \addindex EXPAND_AS_DEFINED
- If the \c MACRO_EXPANSION and \c EXPAND_PREDEF_ONLY tags are set to \c YES then
+ If the \c MACRO_EXPANSION and \c EXPAND_ONLY_PREDEF tags are set to \c YES then
  this tag can be used to specify a list of macro names that should be expanded.
  The macro definition that is found in the sources will be used.
  Use the \c PREDEFINED tag if you want to use a different macro definition.

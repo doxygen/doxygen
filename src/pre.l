@@ -832,6 +832,8 @@ Define *newDefine()
 void addDefine()
 {
   //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
+  //ArgumentList *al = new ArgumentList;
+  //stringToArgumentList(g_defArgsStr,al);
   MemberDef *md=new MemberDef(
       g_yyFileName,g_yyLineNr,
       "#define",g_defName,g_defArgsStr,0,

@@ -76,6 +76,7 @@ static int              lastInitializerContext;
 static int              lastClassTemplSpecContext;
 static int              lastSkipHtmlCommentContext;
 static int              lastIfContext;
+static int              lastInternalDocContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -135,7 +136,7 @@ static QCString         *copyArgString;
 static QCString         fullArgString;
 
 static ArgumentList     *currentArgumentList;
-static QCString         *currentTemplateSpec;
+//static QCString         *currentTemplateSpec;
 static char             lastCopyArgChar;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
@@ -525,6 +526,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x      ClassDocBrief
 %x      ClassDocOverload
 %x	ClassDefineArgs
+%x	DocInternal
+%x	DocInternalLine
 %x	DocBaseClass
 %x	CppQuote
 %x	EndCppQuote
@@ -1034,15 +1037,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  sharpCount=0;
 					  lineCount();
 					  addType( current );
-					  //if (current->mtArgList && current->tArgList==0)
-					  //{
-					  //  current->tArgList=current->mtArgList;
-					  //  current->mtArgList=0;
-					  //}
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
-					  current->scopeSpec.resize(0);
-					  currentTemplateSpec = &current->scopeSpec;
+					  //current->scopeSpec.resize(0);
+					  // currentTemplateSpec = &current->scopeSpec;
 					  if (nameIsOperator(current->name))
 					    BEGIN( Operator );
 					  else
@@ -1052,8 +1050,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  sharpCount=0;
 					  lineCount();
   					  current->name+=((QCString)yytext).stripWhiteSpace();
-					  current->memberSpec.resize(0);
-					  currentTemplateSpec = &current->memberSpec;
+					  //current->memberSpec.resize(0);
+					  // currentTemplateSpec = &current->memberSpec;
 					  if (nameIsOperator(current->name))
 					    BEGIN( Operator );
 					  else
@@ -1061,20 +1059,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <EndTemplate>"<<"			{
   					  current->name+=yytext;
-  					  *currentTemplateSpec+=yytext; 
+  					  // *currentTemplateSpec+=yytext; 
   					}
 <EndTemplate>"<"			{ 
   					  current->name+='<';
-  					  *currentTemplateSpec+='<'; 
+  					  // *currentTemplateSpec+='<'; 
 					  sharpCount++; 
 					}
 <EndTemplate>">>"			{
   					  current->name+=yytext;
-  					  *currentTemplateSpec+=yytext; 
+  					  // *currentTemplateSpec+=yytext; 
   					}
 <EndTemplate>">"			{
   					  current->name+='>';
-					  *currentTemplateSpec+='>';
+					  // *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {  
 					    //printf("Found %s\n",current->name.data());
@@ -1084,7 +1082,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <EndTemplate>">"{BN}*"("		{ 
   					  lineCount();
   					  current->name+='>';
-					  *currentTemplateSpec+='>';
+					  // *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {
 					    current->args = "(";
@@ -1098,7 +1096,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <EndTemplate>">"{BN}*/"::"		{
   					  lineCount();
   					  current->name+='>';
-  					  *currentTemplateSpec+='>';
+  					  // *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {
 					    BEGIN(FindMemberName);
@@ -1106,7 +1104,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <EndTemplate>.				{ 
   					  current->name+=*yytext;
-  					  *currentTemplateSpec+=*yytext; 
+  					  // *currentTemplateSpec+=*yytext; 
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
 					  lineCount();
@@ -1203,11 +1201,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCPP>[\r]*\n[\r]*			{ yyLineNr++ ;
 					  BEGIN( lastCPPContext) ;
 					}
-<Define>{ID}/"("			{
-  					  current->bodyLine = yyLineNr;
+<Define>{ID}{B}*"("			{
   					  current->name = yytext;
-					  BEGIN( DefineArg );
+					  current->name = current->name.left(current->name.length()-1).stripWhiteSpace();
+					  current->args = "(";
+  					  current->bodyLine = yyLineNr;
+					  currentArgumentContext = DefineEnd;
+					  fullArgString=current->args.copy();
+					  copyArgString=&current->args;
+					  BEGIN( ReadFuncArgType ) ;
   					}
+ /*
 <DefineArg>")"				{
   					  //printf("Define with args\n");
   					  current->args += ')';
@@ -1216,6 +1220,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineArg>.				{
   					  current->args += *yytext;
   					}
+  */
 <Define>{ID}				{
   					  //printf("Define `%s' without args\n",yytext);
   					  current->bodyLine = yyLineNr;
@@ -2849,21 +2854,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-					  current->groupdoctype = Entry::GROUPDOC_NORMAL;
+					  current->groupDocType = Entry::GROUPDOC_NORMAL;
 					  BEGIN( GroupDocArg1 );
   					}
 <Doc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-					  current->groupdoctype = Entry::GROUPDOC_ADD;
+					  current->groupDocType = Entry::GROUPDOC_ADD;
 					  BEGIN( GroupDocArg1 );
   					}
 <Doc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-					  current->groupdoctype = Entry::GROUPDOC_WEAK;
+					  current->groupDocType = Entry::GROUPDOC_WEAK;
 					  BEGIN( GroupDocArg1 );
   					}
 <Doc,JavaDoc>{B}*{CMD}"namespace"{B}+	{
@@ -3139,7 +3144,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <GroupDocArg1>{ID}(".html"?)		{ 
   					  current->name = yytext;
 					  lastDefGroup.groupname = yytext;
-					  lastDefGroup.pri = current->groupingpri();
+					  lastDefGroup.pri = current->groupingPri();
   					  // the .html stuff is for Qt compatibility
 					  if (current->name.right(5)==".html") 
 					    current->name=current->name.left(current->name.length()-5);
@@ -3149,7 +3154,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <GroupDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing group name after %s",
-					       current->groupdoccmd()
+					       current->groupDocCmd()
                                               );
 					  yyLineNr++;
 					  BEGIN( Doc );
@@ -3165,7 +3170,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->type = current->type.stripWhiteSpace();
   					}
 <GroupDocArg2>"\n"			{
-                                          if( current->groupdoctype == Entry::GROUPDOC_NORMAL &&
+                                          if( current->groupDocType == Entry::GROUPDOC_NORMAL &&
                                               current->type.length() == 0 )
   					    warn(yyFileName,yyLineNr,
                                                  "Warning: missing title after "
@@ -3417,7 +3422,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   							  if (current->section==Entry::GROUPDOC_SEC )
 							  {
 							    autoGroupStack.push(new Grouping(current->name,
-											     current->groupingpri()
+											     current->groupingPri()
 											     ));
 							  }
 							  else if (current->section == Entry::MEMBERGRP_SEC)
@@ -3899,12 +3904,42 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(lastAfterDocContext);
   					}
 <AfterDocBrief>"."/{BN}			{ BEGIN(AfterDoc); }
-<LineDoc,AfterDocBrief,AfterDocLine>{CMD}"internal"	{ 
-                                          current->brief+="\\internal"; 
+<LineDoc,AfterDocLine>{CMD}"internal"	{ 
+                                          if (!Config_getBool("INTERNAL_DOCS"))
+                                          {
+					    lastInternalDocContext = YY_START;
+                                            BEGIN( DocInternalLine );
+                                          }
+                                          else
+                                          {
+                                            current->doc+="\\internal"; 
+					  }
 					}
-<Doc,AfterDoc>{CMD}"internal"		{ 
-                                          current->doc+="\\internal"; 
+<Doc,JavaDoc,ExampleDoc,PageDoc,ClassDoc,AfterDoc>{CMD}"internal"		{ 
+                                          if (!Config_getBool("INTERNAL_DOCS"))
+                                          {
+					    lastInternalDocContext = YY_START;
+                                            BEGIN( DocInternal );
+                                          }
+                                          else
+                                          { 
+					    current->doc+="\\internal"; 
+					  }
 					}
+<DocInternal>.				
+<DocInternal>\n				{ yyLineNr++; }
+<DocInternal>"/*"|"//"			
+<DocInternal>"*/"			{
+					  unput('/');
+					  unput('*');
+  					  BEGIN( lastInternalDocContext );
+  					}
+<DocInternalLine>.				
+<DocInternalLine>\n			{
+  					  yyLineNr++;
+					  unput('\n');
+  					  BEGIN( lastInternalDocContext );
+  					}
 <AfterDoc>{CMD}"brief"			{ BEGIN(AfterDocBrief); }
 <AfterDoc>"/*"|"//"			{ current->doc+=yytext; }
 <AfterDoc>^{B}*"*"+/[^/]			

@@ -254,10 +254,8 @@ class Entry
     QCString     bitfields;   //!< member's bit fields
     ArgumentList *argList;    //!< member arguments as a list
     QList<ArgumentList> *tArgLists; //!< template argument declarations
-    //ArgumentList *tArgList;   //!< template argument lists (for each scope)
-    //ArgumentList *mtArgList;  //!< member template argument list
-    QCString     scopeSpec;   //!< template specialization of the scope
-    QCString     memberSpec;  //!< template specialization of the member
+    //QCString     scopeSpec;   //!< template specialization of the scope
+    //QCString     memberSpec;  //!< template specialization of the member
     QCString	 program;     //!< the program text
     QCString     initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \class, must be unique)
@@ -281,32 +279,36 @@ class Entry
     int         bugId;        //!< id of the bug list item of this entry
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
-    enum {
-	GROUPDOC_NORMAL,      //<! @defgroup
-	GROUPDOC_ADD,         //<! @addgroup
-	GROUPDOC_WEAK         //<! @weakgroup
-    } groupdoctype;           //!< kind of group
+    enum 
+    {
+      GROUPDOC_NORMAL,        //<! defgroup
+      GROUPDOC_ADD,           //<! addgroup
+      GROUPDOC_WEAK           //<! weakgroup
+    } groupDocType;           //!< kind of group
     /// return the command name used to define GROUPDOC_SEC
-    const char *groupdoccmd() const
+    const char *groupDocCmd() const
     {
-	switch( this->groupdoctype ) {
-	case GROUPDOC_NORMAL: return "\\defgroup"; break;
-	case GROUPDOC_ADD: return "\\addgroup"; break;
-	case GROUPDOC_WEAK: return "\\weakgroup"; break;
-	default: return "unknown group command";
-	}
+      switch( groupDocType ) 
+      {
+        case GROUPDOC_NORMAL: return "\\defgroup"; break;
+        case GROUPDOC_ADD: return "\\addgroup"; break;
+        case GROUPDOC_WEAK: return "\\weakgroup"; break;
+        default: return "unknown group command";
+      }
     }
-    Grouping::GroupPri_t groupingpri() const
+    Grouping::GroupPri_t groupingPri() const
     {
-	if( this->section != GROUPDOC_SEC ) {
-	    return Grouping::GROUPING_LOWEST;
-	}
-        switch( this->groupdoctype ) {
-	case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF; break;
-	case GROUPDOC_ADD: return Grouping::GROUPING_AUTO_ADD; break;
-	case GROUPDOC_WEAK: return Grouping::GROUPING_AUTO_WEAK; break;
-	default: return Grouping::GROUPING_LOWEST;
-	}
+      if( section != GROUPDOC_SEC ) 
+      {
+        return Grouping::GROUPING_LOWEST;
+      }
+      switch( groupDocType ) 
+      {
+        case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF;  break;
+        case GROUPDOC_ADD:    return Grouping::GROUPING_AUTO_ADD;  break;
+        case GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK; break;
+        default: return Grouping::GROUPING_LOWEST;
+      }
     }
   private:
     Entry &operator=(const Entry &); 

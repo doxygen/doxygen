@@ -18,6 +18,8 @@
  *
  * VERSION HISTORY
  * ---------------
+ * 003 23 november 2001
+ *   - Removed some obsolete methods (latexBabelPackage, trAuthor, trAuthors and trFiles)
  * 002 19 november 2001
  *   ! Updated for doxygen v1.2.12
  * 001 20 july 2001
@@ -60,10 +62,6 @@ class TranslatorPortuguese : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     { return "Portuguese"; }
-
-    /*! returns the name of the package that is included by LaTeX */
-    QCString latexBabelPackage()
-    { return "portuguese"; }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -449,10 +447,6 @@ class TranslatorPortuguese : public Translator
     QCString trEnumerationValues()
     { return "Valores da enumeração"; }
 
-    /*! This is used in man pages as the author section. */
-    QCString trAuthor()
-    { return "Autor"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -510,12 +504,6 @@ class TranslatorPortuguese : public Translator
       }
     }
 
-    /*! This is used in the documentation of a group before the list of
-     *  links to documented files
-     */
-    QCString trFiles()
-    { return "Ficheiros"; }
-
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
@@ -563,10 +551,6 @@ class TranslatorPortuguese : public Translator
     /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Data"; }
-
-    /*! this text is generated when the \\author command is used. */
-    QCString trAuthors()
-    { return "Autor(es)"; }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns()

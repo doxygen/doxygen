@@ -77,6 +77,7 @@ class DotNode
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t);
+    void writeDEF(QTextStream &t);
 
   private:
     void colorConnectedNodes(int curColor);
@@ -126,6 +127,7 @@ class DotClassGraph
                     bool TBRank=TRUE,bool imageMap=TRUE);
 
     void writeXML(QTextStream &t);
+    void writeDEF(QTextStream &t);
     QCString diskName() const;
 
   private:

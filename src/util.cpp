@@ -842,7 +842,7 @@ QCString argListToString(ArgumentList *al)
 QCString tempArgListToString(ArgumentList *al)
 {
   QCString result;
-  if (!al || al->count()==0) return result;
+  if (al==0) return result;
   result="<";
   Argument *a=al->first();
   while (a)

@@ -298,6 +298,8 @@ class ClassDef : public Definition
              const char *ref=0,const char *fName=0);
     /*! Destroys a compound definition. */
    ~ClassDef();
+
+    ClassSDict *getInnerClasses() { return m_innerClasses; }
     
     bool visited;
 
