@@ -40,25 +40,6 @@ class MemberNameIterator : public QListIterator<MemberDef>
     MemberNameIterator( const MemberName &list);
 };
 
-#if 0
-class MemberNameList : public QList<MemberName>
-{ 
-  public:
-    MemberNameList();
-   ~MemberNameList();
-   
-   int compareItems(GCI item1,GCI item2);
-};
-
-class MemberNameListIterator : public QListIterator<MemberName>
-{
-  public:
-    MemberNameListIterator( const MemberNameList &list );
-};
-
-typedef QDict<MemberName>  MemberNameDict;
-#endif
-
 class MemberNameSDict : public SDict<MemberName>
 {
   public:
@@ -99,34 +80,6 @@ class MemberNameInfoIterator : public QListIterator<MemberInfo>
     MemberNameInfoIterator(const MemberNameInfo &mnii) 
       : QListIterator<MemberInfo>(mnii) {}
 };
-
-#if 0
-class MemberNameInfoList : public QList<MemberNameInfo>
-{
-  public:
-   ~MemberNameInfoList() {}
-    int compareItems(GCI item1,GCI item2) 
-    { return stricmp(
-                    ((MemberNameInfo *)item1)->memberName(),
-                    ((MemberNameInfo *)item2)->memberName()
-                   );
-    }
-};
-
-class MemberNameInfoDict : public QDict<MemberNameInfo>
-{
-  public:
-    MemberNameInfoDict(int size) : QDict<MemberNameInfo>(size) {}
-   ~MemberNameInfoDict() {}
-};
-
-class MemberNameInfoListIterator : public QListIterator<MemberNameInfo>
-{
-  public:
-    MemberNameInfoListIterator(const MemberNameInfoList &mil) : 
-      QListIterator<MemberNameInfo>(mil) {}
-};
-#endif
 
 
 class MemberNameInfoSDict : public SDict<MemberNameInfo>

@@ -1530,6 +1530,7 @@ void generateGraphLegend(const char *path)
     return;
   }
   QTextStream dotText(&dotFile); 
+#if 0
   dotText << "digraph inheritance\n";
   dotText << "{\n";
   dotText << "  Node7 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
@@ -1545,6 +1546,27 @@ void generateGraphLegend(const char *path)
   dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey75\"];\n";
   dotText << "  Node14 -> Node7 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
   dotText << "  Node14 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_used.html\"];\n";
+  dotText << "}\n";
+#endif
+  dotText << "digraph inheritance\n";
+  dotText << "{\n";
+  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
+  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classPublicBase.html\"];\n";
+  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"red\",URL=\"$classTruncated.html\"];\n";
+  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classProtectedBase.html\"];\n";
+  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classPrivateBase.html\"];\n";
+  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey75\"];\n";
+  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
+  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classTempl.html\"];\n";
+  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"doxfont\"];\n";
+  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classTempl.html\"];\n";
+  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
+  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$classUsed.html\"];\n";
   dotText << "}\n";
   dotFile.close();
 

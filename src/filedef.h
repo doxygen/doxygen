@@ -146,6 +146,8 @@ class FileDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
 
+    void addListReferences();
+
     //void generateXML(QTextStream &t);
     //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
 

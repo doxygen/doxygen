@@ -73,6 +73,7 @@ class NamespaceDef : public Definition
 
     virtual Definition *findInnerCompound(const char *name);
     void addInnerCompound(Definition *d);
+    void addListReferences();
     
   //protected:
   //  void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);

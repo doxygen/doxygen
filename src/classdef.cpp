@@ -2354,3 +2354,26 @@ QCString ClassDef::className() const
   }
   return className;
 };
+
+void ClassDef::addListReferences()
+{
+  addRefItem(todoId(),testId(),bugId(),
+             theTranslator->trClass(TRUE,TRUE),
+             getOutputFileBase(),name()
+            );
+  MemberGroupListIterator mgli(*m_memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->addListReferences(this);
+  }
+  constructors.addListReferences(this);
+  typedefMembers.addListReferences(this);
+  enumMembers.addListReferences(this);
+  enumValMembers.addListReferences(this);
+  functionMembers.addListReferences(this);
+  relatedMembers.addListReferences(this);
+  variableMembers.addListReferences(this);
+  propertyMembers.addListReferences(this);
+}
+

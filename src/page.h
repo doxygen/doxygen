@@ -108,13 +108,3 @@ class PageSDict : public SDict<PageInfo>
     }
 };
 
-// typedef is to get around Solaris compile problem
-typedef SDict<PageInfo>::Iterator _SDictPageInfoIterator;
-
-class PageSDictIterator : public _SDictPageInfoIterator
-{
-  public:
-    PageSDictIterator(const PageSDict &d) : _SDictPageInfoIterator(d) {}
-   ~PageSDictIterator() {} 
-};
-

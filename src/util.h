@@ -42,6 +42,7 @@ class ClassList;
 class MemberGroupList;
 class MemberGroupDict;
 class Definition;
+class TagInfo;
 
 //--------------------------------------------------------------------
 
@@ -165,6 +166,14 @@ QCString resolveTypeDef(Definition *d,const QCString &name);
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 int getScopeFragment(const QCString &s,int p,int *l);
 int filterCRLF(char *buf,int len);
+void addRefItem(int todoId,int testId,int bugId,const char *prefix,
+                        const char *name,const char *title,const char *args=0);
+void addRelatedPage(const char *name,const QCString &ptitle,
+                           const QCString &doc,QList<QCString> *anchors,
+                           const char *fileName,int startLine,
+                           int todoId,int testId,int bugId,GroupDef *gd=0,
+                           TagInfo *tagInfo=0
+                          );
 
 #endif
 

@@ -204,3 +204,8 @@ void MemberGroup::setInGroup(bool b)
 {
   memberList->setInGroup(b);
 }
+
+void MemberGroup::addListReferences(Definition *def)
+{
+  memberList->addListReferences(def);
+}

@@ -504,9 +504,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=Doxygen::groupList.first();
+        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupDef *gd;
         bool found=FALSE;
-        while (gd && !found)
+        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
         {
           if (!gd->isReference())
           {
@@ -514,7 +515,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; //Module Documentation}\n";
             found=TRUE;
           }
-          gd=Doxygen::groupList.next();
         }
       }
       break;
@@ -659,25 +659,24 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=Doxygen::groupList.first();
+        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupDef *gd;
         bool found=FALSE;
-        while (gd && !found)
+        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
         {
           if (!gd->isReference())
           {
             t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          gd=Doxygen::groupList.next();
         }
-        while (gd)
+        for (;(gd=gli.current());++gli)
         {
           if (!gd->isReference())
           {
             if (compactLatex) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
           }
-          gd=Doxygen::groupList.next();
         }
       }
       break;
@@ -759,7 +758,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         t << "}\n";
-        PageSDictIterator pdi(*Doxygen::exampleSDict);
+        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
         PageInfo *pi=pdi.toFirst();
         if (pi)
         {
@@ -775,7 +774,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation:
       {
         t << "}\n";
-        PageSDictIterator pdi(*Doxygen::pageSDict);
+        PageSDict::Iterator pdi(*Doxygen::pageSDict);
         PageInfo *pi=pdi.toFirst();
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
