@@ -134,8 +134,8 @@ class FileDef : public Definition
     
     void addUsingDirective(NamespaceDef *nd);
     NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
-    void addUsingDeclaration(ClassDef *cd);
-    ClassSDict *getUsedClasses() const { return usingDeclList; }
+    void addUsingDeclaration(Definition *def);
+    SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();
 
     bool generateSourceFile() const;
@@ -188,7 +188,7 @@ class FileDef : public Definition
     QDict<IncludeInfo> *includedByDict;
     QList<IncludeInfo> *includedByList;
     NamespaceSDict *usingDirList;
-    ClassSDict *usingDeclList;
+    SDict<Definition> *usingDeclList;
     //DefineList *defineList;
     QCString path;
     QCString filepath;

@@ -752,7 +752,25 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
   const char *s;
   for (li.toFirst();(s=li.current());++li)
   {
-    m_t << "<parametername>";
+    m_t << "<parametername";
+    if (pl->direction()!=DocParamSect::Unspecified)
+    {
+      m_t << " direction=\"";
+      if (pl->direction()==DocParamSect::In)
+      {
+        m_t << "in";
+      }
+      else if (pl->direction()==DocParamSect::Out)
+      {
+        m_t << "out";
+      }
+      else if (pl->direction()==DocParamSect::InOut)
+      {
+        m_t << "inout";
+      }
+      m_t << "\"";
+    }
+    m_t << ">";
     filter(s);
     m_t << "</parametername>" << endl;
   }

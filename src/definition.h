@@ -20,6 +20,7 @@
 
 #include "qtbc.h"
 #include <qlist.h>
+#include <qdict.h>
 
 class FileDef;
 class OutputList;
@@ -32,6 +33,14 @@ class GroupDef;
 class GroupList;
 struct ListItemInfo;
 struct SectionInfo;
+class Definition;
+
+struct ReachableDefinition
+{
+  ReachableDefinition(Definition *d,int dist) : def(d), distance(dist) {}
+  Definition *def;
+  int distance;
+};
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
@@ -58,7 +67,7 @@ class Definition
     /*! Returns the base name of the output file that contains this 
      *  definition. 
      */
-    virtual QCString qualifiedName() const;
+    virtual QCString qualifiedName();
     QCString localName() const;
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */
@@ -132,6 +141,7 @@ class Definition
     virtual Definition *getOuterScope() const { return m_outerScope; }
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d) { m_outerScope = d; }
+    virtual void computeReachability();
 
     MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
     MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }
@@ -139,6 +149,7 @@ class Definition
     void makePartOfGroup(GroupDef *gd);
     GroupList *partOfGroups() const { return m_partOfGroups; }
     QCString convertNameToFile(const char *name,bool allowDots=FALSE) const;
+    void addReachableDef(Definition *d,int distance);
 
   protected:
     int      m_startBodyLine;   // line number of the start of the definition
@@ -158,6 +169,9 @@ class Definition
     /*! List of groups this definition is part of */
     GroupList *m_partOfGroups;
 
+    // reachability of other definitions from this one
+    QDict<ReachableDefinition> m_reachableDefs;
+    bool m_reachabilityComputed;
 
   private: 
     int getXRefListId(const char *listName) const;
@@ -181,6 +195,9 @@ class Definition
     QList<ListItemInfo> *m_xrefListItems;
     QCString m_symbolName;
     bool m_isSymbol;
+
+    
+    QCString m_qualifiedName;
 };
 
 class DefinitionList : public QList<Definition>

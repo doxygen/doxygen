@@ -38,8 +38,8 @@
      but is much less tricky and much more flexible. It also solves some
      problems that were not solved by the Perl version. The translator report
      content should be more useful for developers.
-  2004/02/11
-   - Some tuning-up to provide more useful information.
+  2004/02/11 - Some tuning-up to provide more useful information.
+  2004/04/16 - Added new tokens to the tokenizer (to remove some warnings).
   """                               
 
 import os, re, sys, textwrap
@@ -127,6 +127,8 @@ class Transl:
                      '"':         'dquot',
                      '.':         'dot',
                      '%':         'perc',
+                     '~':         'tilde',
+                     '^':         'caret',
                    }
         
         # Regular expression for recognizing identifiers.
@@ -180,7 +182,7 @@ class Transl:
                         else:
                             msg = '\aWarning: unknown token "' + tokenStr + '"'
                             msg += '\tfound on line %d' % tokenLineNo 
-                            msg += 'in "' + self.fname + '".\n'
+                            msg += ' in "' + self.fname + '".\n'
                             sys.stderr.write(msg)
                     
                     yield (tokenId, tokenStr, tokenLineNo)

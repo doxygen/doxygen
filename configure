@@ -397,6 +397,10 @@ echo "using $f_perl";
 test -f .makeconfig && rm .makeconfig
 test -f .tmakeconfig && rm .tmakeconfig
 
+if test -z $PWD; then
+  PWD=`pwd`
+fi
+
 cat > .makeconfig <<EOF
 DOXYGEN   = $PWD
 TMAKEPATH = $PWD/tmake/lib/$f_platform

@@ -98,6 +98,10 @@ struct TokenInfo
 
   // url
   bool isEMailAddr;
+
+  // param attributes
+  enum ParamDir { In=1, Out=2, InOut=3, Unspecified=0 };
+  ParamDir paramDir;
 };
 
 // globals

@@ -2226,7 +2226,7 @@ bool MemberDef::isObjCMethod() const
   return FALSE; 
 }
 
-QCString MemberDef::qualifiedName() const
+QCString MemberDef::qualifiedName()
 {
   if (isObjCMethod())
   {

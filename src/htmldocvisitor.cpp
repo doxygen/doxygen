@@ -189,12 +189,12 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<pre class=\"fragment\"><div>"; 
+      m_t << "<pre><div class=\"fragment\">"; 
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "</div></pre>"; 
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "<pre class=\"fragment\"><div>";
+      m_t << "<pre><div class=\"fragment\">";
       filter(s->text());
       m_t << "</div></pre>"; 
       break;
@@ -246,16 +246,16 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::Include: 
-      m_t << "<pre class=\"fragment\"><div>";
+      m_t << "<pre><div class=\"fragment\">";
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "</div></pre>"; 
     case DocInclude::IncWithLines:
       { 
-         m_t << "<div class=\"fragment\"><pre>";
+         m_t << "<pre><div class=\"fragment\">";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
-         m_t << "</pre></div>"; 
+         m_t << "</div></pre>"; 
       }
       break;
       break;
@@ -265,7 +265,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       m_t << inc->text(); 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "<pre class=\"fragment\"><div>";
+      m_t << "<pre><div class=\"fragment\">";
       filter(inc->text());
       m_t << "</div></pre>"; 
       break;
@@ -278,7 +278,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    if (!m_hide) m_t << "<pre class=\"fragment\"><div>";
+    if (!m_hide) m_t << "<pre><div class=\"fragment\">";
     pushEnabled();
     m_hide=TRUE;
   }
@@ -868,7 +868,25 @@ void HtmlDocVisitor::visitPost(DocParamSect *)
 void HtmlDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "    <tr><td valign=top><em>";
+  m_t << "    <tr><td>";
+  if (pl->direction()!=DocParamSect::Unspecified)
+  {
+    m_t << "<tt>[";
+    if (pl->direction()==DocParamSect::In)
+    {
+      m_t << "in";
+    }
+    else if (pl->direction()==DocParamSect::Out)
+    {
+      m_t << "out";
+    }
+    else if (pl->direction()==DocParamSect::InOut)
+    {
+      m_t << "in,out";
+    }
+    m_t << "]</tt>&nbsp;";
+  }
+  m_t << "</td><td valign=top><em>";
   QStrListIterator li(pl->parameters());
   const char *s;
   bool first=TRUE;

@@ -232,7 +232,7 @@ void PerlModOutput::iaddQuoted(const char *s)
   }
 }
   
-inline void PerlModOutput::iaddField(const char *s)
+void PerlModOutput::iaddField(const char *s)
 {
   continueBlock();
   m_stream->add(s);

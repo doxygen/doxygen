@@ -55,8 +55,8 @@ class NamespaceDef : public Definition
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
     NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
-    void addUsingDeclaration(ClassDef *cd);
-    ClassSDict *getUsedClasses() const { return usingDeclList; }
+    void addUsingDeclaration(Definition *def);
+    SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();
     QCString displayName() const;
     
@@ -118,7 +118,7 @@ class NamespaceDef : public Definition
 
 
     NamespaceSDict *usingDirList;
-    ClassSDict *usingDeclList;
+    SDict<Definition> *usingDeclList;
     SDict<Definition> *m_innerCompounds;
 
     MemberList allMemberList;

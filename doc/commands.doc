@@ -922,9 +922,28 @@ ALIASES  = "english=\if english" \
   \addindex \\param
   Starts a parameter description for a function parameter with name 
   \<parameter-name\>. Followed by a description of the parameter. 
-  The existence of the parameter is not checked.
-  The text of the paragraph has no special internal structure. All visual
-  enhancement commands may be used inside the paragraph.
+  The existence of the parameter is checked and a warning is given if
+  the documentation of this (or any other) parameter is missing or not
+  present in the function declaration or definition.
+
+  The \\param command has an optional attribute specifying the direction
+  of the attribute. Possible values are "in" and "out". Here is an example
+  for the function memcpy:
+  \code
+/*!
+ * Copies bytes from a source memory area to a destination memory area,
+ * where both areas may not overlap.
+ * @param[out] dest The memory area to copy to.
+ * @param[in]  src  The memory area to copy from.
+ * @param[in]  n    The number of bytes to copy
+ */
+void memcpy(void *dest, const void *src, size_t n);
+  \endcode
+  If a parameter is both input and output, use [in,out] as an attribute.
+
+  The parameter description is a paragraph with no special internal structure. 
+  All visual enhancement commands may be used inside the paragraph.
+
   Multiple adjacent \\param commands will be joined into a single paragraph.
   Each parameter description will start on a new line.
   The \\param description ends when a blank line or some other 

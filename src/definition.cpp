@@ -76,6 +76,7 @@ static void removeFromMap(Definition *d)
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,
                        const char *d,bool isSymbol)
+   : m_reachableDefs(17)
 {
   //QCString ns;
   m_defFileName = df;
@@ -111,6 +112,8 @@ Definition::Definition(const char *df,int dl,
   m_docFile=(QCString)"<"+name+">";
   m_isSymbol = isSymbol;
   if (m_isSymbol) addToMap(name,this);
+  m_reachableDefs.setAutoDelete(TRUE);
+  m_reachabilityComputed=FALSE;
 }
 
 Definition::~Definition()
@@ -578,9 +581,10 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 
 bool Definition::hasDocumentation() const
 { 
+  static bool extractAll = Config_getBool("EXTRACT_ALL"); 
   return !m_doc.isEmpty() ||             // has detailed docs
          !m_brief.isEmpty() ||           // has brief description
-         Config_getBool("EXTRACT_ALL");       // extract everything
+         extractAll;                     // extract everything
 }
 
 void Definition::addSourceReferencedBy(MemberDef *md)
@@ -640,8 +644,10 @@ void Definition::addInnerCompound(Definition *)
   err("Error: Definition::addInnerCompound() called\n");
 }
 
-QCString Definition::qualifiedName() const
+QCString Definition::qualifiedName() 
 {
+  if (!m_qualifiedName.isEmpty()) return m_qualifiedName;
+  
   //printf("start Definition::qualifiedName() localName=%s\n",m_localName.data());
   if (m_outerScope==0) 
   {
@@ -649,17 +655,16 @@ QCString Definition::qualifiedName() const
     else return m_localName; 
   }
 
-  QCString qualifiedName;
   if (m_outerScope->name()=="<globalScope>")
   {
-    qualifiedName = m_localName.copy();
+    m_qualifiedName = m_localName.copy();
   }
   else
   {
-    qualifiedName = m_outerScope->qualifiedName()+"::"+m_localName;
+    m_qualifiedName = m_outerScope->qualifiedName()+"::"+m_localName;
   }
   //printf("end Definition::qualifiedName()=%s\n",qualifiedName.data());
-  return qualifiedName;
+  return m_qualifiedName;
 };
 
 QCString Definition::localName() const
@@ -754,5 +759,34 @@ QCString Definition::convertNameToFile(const char *name,bool allowDots) const
   {
     return ::convertNameToFile(name,allowDots);
   }
+}
+
+void Definition::addReachableDef(Definition *def,int distance)
+{
+  if (m_reachableDefs.find(def->qualifiedName()))
+  {
+    m_reachableDefs.insert(def->qualifiedName(),new ReachableDefinition(def,distance));
+  }
+}
+
+void Definition::computeReachability()
+{
+  if (m_reachabilityComputed) return;
+  addReachableDef(this,0);
+  Definition *parent = getOuterScope();
+  int i=1;
+  while (parent)
+  {
+    parent->computeReachability();
+    QDictIterator<ReachableDefinition> dli(m_reachableDefs);
+    ReachableDefinition *rd;
+    for (dli.toFirst();(rd=dli.current());++dli)
+    {
+      addReachableDef(rd->def,i);
+    }
+    parent=parent->getOuterScope();
+    i++;
+  }
+  m_reachabilityComputed=TRUE;
 }
 

@@ -888,7 +888,25 @@ void LatexDocVisitor::visitPost(DocParamSect *)
 void LatexDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "\\item[{\\em ";
+  m_t << "\\item[";
+  if (pl->direction()!=DocParamSect::Unspecified)
+  {
+    m_t << "\\mbox{";
+    if (pl->direction()==DocParamSect::In)
+    {
+      m_t << "$\\leftarrow$";
+    }
+    else if (pl->direction()==DocParamSect::Out)
+    {
+      m_t << "$\\rightarrow$";
+    }
+    else if (pl->direction()==DocParamSect::InOut)
+    {
+      m_t << "$\\leftrightarrow$";
+    }
+    m_t << "} ";
+  }
+  m_t << "{\\em ";
   QStrListIterator li(pl->parameters());
   const char *s;
   bool first=TRUE;

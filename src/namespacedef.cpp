@@ -36,7 +36,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   fileName+=name;
   classSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
-  m_innerCompounds = new SDict<Definition>(17);
+  m_innerCompounds = new SDict<Definition>(257);
   usingDirList = 0;
   usingDeclList = 0;
   setReference(lref);
@@ -399,15 +399,15 @@ void NamespaceDef::addUsingDirective(NamespaceDef *nd)
   }
 }
 
-void NamespaceDef::addUsingDeclaration(ClassDef *cd)
+void NamespaceDef::addUsingDeclaration(Definition *d)
 {
   if (usingDeclList==0)
   {
-    usingDeclList = new ClassSDict;
+    usingDeclList = new SDict<Definition>(17);
   }
-  if (usingDeclList->find(cd->qualifiedName())==0)
+  if (usingDeclList->find(d->qualifiedName())==0)
   {
-    usingDeclList->append(cd->qualifiedName(),cd);
+    usingDeclList->append(d->qualifiedName(),d);
   }
 }
 
@@ -480,8 +480,8 @@ void NamespaceDef::combineUsingRelations()
       // add used classes of namespace nd to this namespace
       if (nd->getUsedClasses())
       {
-        ClassSDict::Iterator cli(*nd->getUsedClasses());
-        ClassDef *ucd;
+        SDict<Definition>::Iterator cli(*nd->getUsedClasses());
+        Definition *ucd;
         for (cli.toFirst();(ucd=cli.current());++cli)
         {
           //printf("Adding class %s to the using list of %s\n",cd->qualifiedName().data(),qualifiedName().data());

@@ -129,8 +129,10 @@ ClassDef::~ClassDef()
 
 QCString ClassDef::displayName() const
 {
+  static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
+  static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   QCString n;
-  if (Config_getBool("HIDE_SCOPE_NAMES"))
+  if (hideScopeNames)
   {
     n=m_className;
   }
@@ -138,7 +140,7 @@ QCString ClassDef::displayName() const
   {
     n=qualifiedNameWithTemplateParameters();
   }
-  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  if (optimizeOutputForJava)
   {
     n=substitute(n,"::",".");
   }
@@ -1932,10 +1934,15 @@ bool ClassDef::hasDocumentation() const
 // returns TRUE iff class definition `bcd' represents an (in)direct base 
 // class of class definition `cd'.
 
-bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances)
+bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
 {
   bool found=FALSE;
   //printf("isBaseClass(cd=%s) looking for %s\n",cd->name().data(),bcd->name().data());
+  if (level>256)
+  {
+    err("Possible recursive class relation while inside %s and looking for %s\n",name().data(),bcd->name().data());
+    return FALSE;
+  }
   BaseClassListIterator bcli(*baseClasses());
   for ( ; bcli.current() && !found ; ++bcli)
   {
@@ -1945,7 +1952,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances)
     if (ccd==bcd) 
       found=TRUE;
     else 
-      found=ccd->isBaseClass(bcd,followInstances);
+      found=ccd->isBaseClass(bcd,followInstances,level+1);
   }
   return found;
 }
@@ -2842,5 +2849,4 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
   //printf("getMemberByName(%s)=%p\n",name.data(),xmd);
   return xmd;
 }
-
 

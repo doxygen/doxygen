@@ -26,6 +26,7 @@
 #include <qlist.h>
 #include <qtextstream.h>
 #include <ctype.h>
+#include "sortdict.h"
 
 class ClassDef;
 class FileDef;
@@ -43,13 +44,13 @@ class GroupDef;
 class NamespaceSDict;
 class ClassList;
 class MemberGroupSDict;
-class Definition;
 struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
 class PageDef;
 struct SectionInfo;
 class QDir;
+class Definition;
 
 //--------------------------------------------------------------------
 
@@ -129,7 +130,7 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceSDict *usingNamespaces=0,
-                           ClassSDict *usingClasses=0);
+                           SDict<Definition> *usingClasses=0);
 void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE);
 QCString substituteClassNames(const QCString &s);
 QCString substitute(const char *s,const char *src,const char *dst);
@@ -212,7 +213,7 @@ QCString linkToText(const char *link,bool isFileName);
 QCString stripExtension(const char *fName);
 void replaceNamespaceAliases(QCString &scope,int i);
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
-int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
+int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
 int computeQualifiedIndex(const QString &name);
 void addDirPrefix(QCString &fileName);
