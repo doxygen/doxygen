@@ -66,7 +66,7 @@ tools should be installed.
     \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
-    \note If you compile graphviz yourself, make sure you do include
+    If you compile graphviz yourself, make sure you do include
     freetype support (which requires the freetype library and header files), 
     otherwise dot will produce a warning that it cannot find doxfont!
 <li>The ghostscript interpreter.
@@ -209,6 +209,18 @@ If you have a csh-like shell you should use <code>setenv QTDIR $PWD</code>
 instead of the <code>export</code> command above.
   
 Now install doxygen as described above.  
+
+<b>Bison problems</b>
+
+Versions 1.31 and 1.32 of bison contain a "bug" that results in a 
+compiler error like this:
+
+ce_parse.cpp:348: member `class CPPValue yyalloc::yyvs' with 
+constructor not allowed in union
+
+There is no real solution to this problem, but it is discussed on the
+bison mailing list. I recomment to use version 1.29 until the problems 
+with bison are resolved.
 
 <b>Latex problems</b>
 

@@ -134,14 +134,16 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   t << defaultStyleSheet;
 }
 
-static void writeDefaultHeaderFile(QTextStream &t,const char *title,
+static void writeDefaultHeaderFile(QTextStream &t, const char *title,
                                    bool external)
 {
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
     "<html><head>" /*"<meta name=\"robots\" content=\"noindex\">\n"*/
     "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
          << theTranslator->idLanguageCharset() << "\">\n"
-    "<title>" << title << "</title>\n";
+    "<title>"; 
+  t << convertToHtml(title);
+  t << "</title>\n";
   t << "<link ";
   if (external) 
     t << "doxygen=\"_doc:" << Config_getString("DOC_URL") 
@@ -212,7 +214,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   }
   else
   {
-    t << substituteKeywords(g_header,lastTitle);
+    t << substituteKeywords(g_header,convertToHtml(lastTitle));
   }
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
@@ -255,7 +257,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
       if (g_footer.isEmpty())
         t << "<hr><address><small>";
       else
-        t << substituteKeywords(g_footer,lastTitle);
+        t << substituteKeywords(g_footer,convertToHtml(lastTitle));
       break;
     case 1:
       if (g_footer.isEmpty())

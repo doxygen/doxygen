@@ -930,7 +930,7 @@ static void writeXMLDocBlock(QTextStream &t,
                       const QCString &fileName,
                       int lineNr,
                       const QCString &scope,
-                      const QCString &name,
+                      MemberDef *md,
                       const QCString &text)
 {
   QCString stext = text.stripWhiteSpace();
@@ -938,10 +938,10 @@ static void writeXMLDocBlock(QTextStream &t,
   XMLGenerator *xmlGen = new XMLGenerator;
   //xmlGen->startParMode();
   parseDoc(*xmlGen,
-           fileName, // input definition file
-           lineNr,   // input definition line
-           scope,    // scope (which should not be linked to)
-           name,     // member (which should not be linked to)
+           fileName,  // input definition file
+           lineNr,    // input definition line
+           scope,     // scope (which should not be linked to)
+           md,        // member (which should not be linked to)
            stext+"\n" // actual text
           );
   xmlGen->endParMode();
@@ -1112,10 +1112,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   
   if (isFunc) //function
   {
-    ArgumentList *declAl = new ArgumentList;
+    ArgumentList *declAl = md->declArgumentList();
     ArgumentList *defAl = md->argumentList();
-    stringToArgumentList(md->argsString(),declAl);
-    if (declAl->count()>0)
+    if (declAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -1164,7 +1163,6 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         if (defArg) ++defAli;
       }
     }
-    delete declAl;
   }
   else if (md->memberType()==MemberDef::Define && 
            md->argsString()!=0) // define
@@ -1213,10 +1211,10 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     }
   }
   t << "        <briefdescription>" << endl;
-  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->briefDescription());
+  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md,md->briefDescription());
   t << "        </briefdescription>" << endl;
   t << "        <detaileddescription>" << endl;
-  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->documentation());
+  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md,md->documentation());
   t << "        </detaileddescription>" << endl;
   if (md->getDefLine()!=-1)
   {

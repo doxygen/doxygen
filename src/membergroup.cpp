@@ -142,8 +142,8 @@ void MemberGroup::distributeMemberGroupDocumentation()
       if (omd->documentation().isEmpty() && omd->briefDescription().isEmpty())
       {
         //printf("Copying documentation to member %s\n",omd->name().data());
-        omd->setBriefDescription(md->briefDescription());
-        omd->setDocumentation(md->documentation());
+        omd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+        omd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
       }
       omd=memberList->next();
     }

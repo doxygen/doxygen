@@ -151,7 +151,7 @@ class ClassDef : public Definition
      *  class. This function will recusively traverse all branches of the
      *  inheritance tree.
      */
-    bool isBaseClass(ClassDef *bcd);
+    bool isBaseClass(ClassDef *bcd,bool followInstances);
 
     /*! Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
@@ -279,8 +279,6 @@ class ClassDef : public Definition
     void addListReferences();
 
     /*! Creates a new compound definition.
-     *  \param outerScope class, file or namespace in which this class is
-     *                   defined.
      *  \param fileName  full path and file name in which this compound was
      *                   found.
      *  \param startLine line number where the definition of this compound

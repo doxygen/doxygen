@@ -570,7 +570,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+="< "; // insert extra space for layouting (nested) templates
     }
     else if (i>0 && c=='>' && // current char is a >
-             (isId(s.at(i-1)) || isspace(s.at(i-1))) && // prev char is an id char or space
+             (isId(s.at(i-1)) || isspace(s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
              (i<8 || !findOperator(s,i)) // string in front is not "operator"
             )
     {
@@ -1546,6 +1546,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   return TRUE;
 }
 
+#if 0
 static void mergeArgument(Argument *srcA,Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
@@ -1779,6 +1780,7 @@ done:
   //    dstA->type.data(),dstA->name.data());
   return;
 }
+#endif
 
 
 /*!
@@ -1885,8 +1887,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
        ++srcAli,++dstAli
       )
   { 
-    mergeArgument(srcA,dstA,className,namespaceName,
-                  usingNamespaces,usingClasses);
+    //mergeArgument(srcA,dstA,className,namespaceName,
+    //              usingNamespaces,usingClasses);
   }
   MATCH
   return TRUE; // all arguments match 
@@ -2213,7 +2215,12 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             }
           }
         }
-        if (found) return TRUE;
+        if (found) 
+        {
+          gd=md->getGroupDef();
+          if (gd && gd->isLinkable()) nd=0; else gd=0;
+          return TRUE;
+        }
       }
       else // no scope => global function
       {

@@ -64,17 +64,15 @@ class Definition
     /*! Sets a new \a name for the definition */
     void setName(const char *name) { m_name=name; }
     /*! Sets the documentation of this definition to \a d. */
-    void setDocumentation(const char *d,bool stripWhiteSpace=TRUE) 
-      { 
-        if (stripWhiteSpace)
-          m_doc=((QCString)d).stripWhiteSpace();
-        else
-          m_doc=d;
-      }
+    void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
+    int docLine() const { return m_docLine; }
+    QCString docFile() const { return m_docFile; }
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    void setBriefDescription(const char *b);
+    void setBriefDescription(const char *b,const char *briefFile,int briefLine);
+    int briefLine() const { return m_briefLine; }
+    QCString briefFile() const { return m_briefFile; }
     /*! Returns TRUE iff the definition is documented */
     virtual bool hasDocumentation() const;
     virtual bool isLinkableInProject() const = 0;
@@ -155,6 +153,10 @@ class Definition
     int m_testId;     // id for test list item
     int m_todoId;     // id for todo list item
     int m_bugId;      // id for bug list item
+    int m_docLine;
+    QCString m_docFile;
+    int m_briefLine;
+    QCString m_briefFile;
 
 };
 

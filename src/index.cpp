@@ -586,7 +586,8 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
         bool hasChildren = !cd->visited && cd->subClasses()->count()>0; 
         if (cd->isLinkable())
         {
-          //printf("Writing class %s\n",cd->displayName().data());
+          //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->templateMaster()=%p\n",
+          //    cd->displayName().data(),cd->isLinkable(),cd->isLinkableInProject(),cd->templateMaster());
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
           if (cd->isReference()) 
           {

@@ -443,8 +443,10 @@ int FTVHelp::decContentsDepth()
 
 /*! Add a list item to the contents file.
  *  \param isDir TRUE if the item is a directory, FALSE if it is a text
- *  \param name the name of the item.
  *  \param ref  the URL of to the item.
+ *  \param file the file containing the definition of the item
+ *  \param anchor the anchor within the file.
+ *  \param name the name of the item.
  */
 void FTVHelp::addContentsItem(bool isDir,
                               const char *ref,

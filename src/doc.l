@@ -22,7 +22,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -51,10 +50,13 @@
  *
  * scanner's state variables
  */
+static MemberDef          * memberDef;
+static bool                 hasParamCommand;
+static QDict<void>          paramsFound;
+
 static OutputDocInterface * outDoc;
 static bool             insideArgumentList;
 static QCString         className;
-static QCString         memberName;
 static QCString         linkRef;
 static QCString         linkText;
 static QCString         codeBlock;
@@ -109,7 +111,6 @@ static void initParser()
 {
   insideArgumentList=FALSE;
   className.resize(0);
-  memberName.resize(0);
   linkRef.resize(0);
   linkText.resize(0);
   codeBlock.resize(0);
@@ -875,6 +876,44 @@ static void writeDotFile(const char *fileName, const char *captionText)
   }
 }
 
+/* ----------------------------------------------------------------- */
+
+static void checkArgName(const QCString &name)
+{
+  hasParamCommand=TRUE;
+  if (memberDef==0) return; // not a member
+  ArgumentList *al=memberDef->isDocsForDefinition() ? 
+		   memberDef->argumentList() :
+                   memberDef->declArgumentList();
+  if (al==0) return; // no argument list
+  if (!Config_getBool("WARN_IF_UNDOCUMENTED")) return;
+
+  static QRegExp re("[a-zA-Z0-9_]+");
+  int p=0,i=0,l;
+  while ((i=re.match(name,p,&l))!=-1)
+  {
+    QCString aName=name.mid(i,l);
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      if (name==a->name) 
+      {
+	paramsFound.insert(name,(void *)(0x8));
+	return;
+      }
+    }
+    QCString scope=memberDef->getScopeString();
+    if (!scope.isEmpty()) scope+="::"; else scope="";
+    warn(memberDef->docFile(),memberDef->docLine(),
+	"Warning: argument `%s' of command @param "
+	"is not found in the argument list of %s%s%s",
+	name.data(),scope.data(),memberDef->name().data(),
+	argListToString(al).data()
+       );
+    p=i+l;
+  }
+}
 
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
@@ -911,7 +950,7 @@ SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLCHAR   [a-z_A-Z0-9\~\:\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+)
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9\x80-\xff]
-WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
+WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]*"\"")
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BOLD	  [bB]
@@ -1631,8 +1670,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					}
 <DocScan>"\\capt".*
 <DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BSEP}* {
+  					  QCString argName = substitute(yytext,"\"","").stripWhiteSpace();
+					  if (inParamBlock) checkArgName(argName);
 					  outDoc->startDescTableTitle();
-					  scanDoc(substitute(yytext,"\"","").stripWhiteSpace());
+					  scanDoc(argName);
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
@@ -2633,18 +2674,58 @@ void parseDocument(OutputDocInterface &od,const QCString &docString)
 //----------------------------------------------------------------------------
 
 void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
-              const char *clName,const char *memName,const QCString &docString)
+              const char *clName,MemberDef *md,const QCString &docString)
 {
   //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
   initParser();
   initParseCodeContext();
   exampleDoc=FALSE;           // do not cross reference with member docs
   className=clName;
-  memberName=memName;
+  memberDef = md;
+  hasParamCommand = FALSE;
+  paramsFound.setAutoDelete(FALSE);
+  paramsFound.clear();
   strcpy(yyFileName,fileName);
   yyLineNr = startLine;
   parseDocument(od,docString);
 
+  if (md && hasParamCommand && Config_getBool("WARN_IF_UNDOCUMENTED"))
+  {
+    ArgumentList *al=memberDef->isDocsForDefinition() ? 
+		     memberDef->argumentList() :
+                     memberDef->declArgumentList();
+    if (al)
+    {
+      ArgumentListIterator ali(*al);
+      Argument *a;
+      bool found=FALSE;
+      for (ali.toFirst();(a=ali.current());++ali)
+      {
+	if (!a->name.isEmpty() && paramsFound.find(a->name)==0) 
+	{
+	   found = TRUE;
+	   break;
+	}
+      }
+      if (found)
+      {
+	QCString scope=memberDef->getScopeString();
+	if (!scope.isEmpty()) scope+="::"; else scope="";
+        warn(memberDef->docFile(),memberDef->docLine(),
+      	     "Warning: The following parameters of "
+	     "%s%s%s are not documented:",
+		scope.data(),memberDef->name().data(),
+		argListToString(al).data());
+	for (ali.toFirst();(a=ali.current());++ali)
+	{
+	  if (!a->name.isEmpty() && paramsFound.find(a->name)==0) 
+	  {
+	    warn_cont( "  parameter %s\n",a->name.data());
+	  }
+	}
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------------

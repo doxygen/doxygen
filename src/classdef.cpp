@@ -1580,7 +1580,6 @@ bool ClassDef::isLinkableInProject() const
   else
   {
     return !name().isEmpty() &&    /* no name */
-      //m_isTemplBaseClass==-1 &&  /* template base class */
       !m_artificial &&
       name().find('@')==-1 && /* anonymous compound */
       (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
@@ -1635,7 +1634,7 @@ bool ClassDef::hasDocumentation() const
 // returns TRUE iff class definition `bcd' represents an (in)direct base 
 // class of class definition `cd'.
 
-bool ClassDef::isBaseClass(ClassDef *bcd)
+bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances)
 {
   bool found=FALSE;
   //printf("isBaseClass(cd=%s) looking for %s\n",cd->name().data(),bcd->name().data());
@@ -1643,12 +1642,12 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
   for ( ; bcli.current() && !found ; ++bcli)
   {
     ClassDef *ccd=bcli.current()->classDef;
-    if (ccd->templateMaster()) ccd=ccd->templateMaster();
+    if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
     //printf("isBaseClass() baseclass %s\n",ccd->name().data());
     if (ccd==bcd) 
       found=TRUE;
     else 
-      found=ccd->isBaseClass(bcd);
+      found=ccd->isBaseClass(bcd,followInstances);
   }
   return found;
 }
@@ -1719,7 +1718,7 @@ void ClassDef::mergeMembers()
             {
               ClassDef *dstCd = dstMd->getClassDef();
               //printf("  Is %s a base class of %s?\n",srcCd->name().data(),dstCd->name().data());
-              if (srcCd==dstCd || dstCd->isBaseClass(srcCd)) 
+              if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE)) 
                 // member is in the same or a base class
               {
                 found=matchArguments(srcMd->argumentList(),
@@ -1731,7 +1730,7 @@ void ClassDef::mergeMembers()
                 hidden  = hidden  || !found;
               }
               else // member is in a non base class => multiple inheritance
-                // using the same base class.
+                   // using the same base class.
               {
                 //printf("$$ Existing member %s %s add scope %s\n",
                 //    dstMi->ambiguityResolutionScope.data(),
@@ -1748,7 +1747,8 @@ void ClassDef::mergeMembers()
             {
               // do not add if base class is virtual or 
               // if scope paths are equal
-              if ((srcMi->virt==Virtual && dstMi->virt==Virtual) ||
+              //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
+              if ((srcMi->virt!=Normal && dstMi->virt!=Normal) ||
                   bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath
                  ) 
               {

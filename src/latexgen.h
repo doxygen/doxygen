@@ -78,14 +78,14 @@ class LatexGenerator : public OutputGenerator
     void docify(const char *text);
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor,const char *text);
+                         const char *anchor,const char *name);
     void writeCodeLink(const char *ref, const char *file,
-                       const char *anchor,const char *text);
+                       const char *anchor,const char *name);
     void startTextLink(const char *,const char *);
     void endTextLink();
-    void startHtmlLink(const char *);
+    void startHtmlLink(const char *url);
     void endHtmlLink();
-    void writeMailLink(const char *);
+    void writeMailLink(const char *url);
     void startTypewriter() { t << "{\\tt "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();

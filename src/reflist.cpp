@@ -41,7 +41,6 @@ RefList::~RefList()
 }
 
 /*! Adds a new item to the list.
- *  \param text The item text.
  *  \returns A unique id for this item.
  */
 int RefList::addRefItem()

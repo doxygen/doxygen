@@ -102,8 +102,17 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
+void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) 
+{ 
+  if (stripWhiteSpace)
+    m_doc=((QCString)d).stripWhiteSpace();
+  else
+    m_doc=d;
+  m_docFile = docFile;
+  m_docLine = docLine;
+}
 
-void Definition::setBriefDescription(const char *b) 
+void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
 { 
   m_brief=QCString(b).stripWhiteSpace(); 
   int bl=m_brief.length(); 
@@ -115,6 +124,8 @@ void Definition::setBriefDescription(const char *b)
       default: m_brief+='.'; break;
     }
   }
+  m_briefFile = briefFile;
+  m_briefLine = briefLine;
 }
 
 /*! Reads a fragment of code from file \a fileName starting at 
