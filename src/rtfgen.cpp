@@ -1328,7 +1328,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          if (!pi->inGroup && !pi->isReference())
+          if (!pi->getGroupDef() && !pi->isReference())
           {
             QCString pageName;
             if (Config_getBool("CASE_SENSE_NAMES"))

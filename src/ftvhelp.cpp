@@ -264,7 +264,7 @@ static void generateFolderTreeViewData()
   }
 
   // Generate alternative index.html as a frame
-  fileName=Config_getString("HTML_OUTPUT")+"/index.html";
+  fileName=Config_getString("HTML_OUTPUT")+"/index"+htmlFileExtension;
   f.setName(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -291,15 +291,15 @@ static void generateFolderTreeViewData()
     }
     t << "</title></head>" << endl;
     t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
-    t << "  <frame src=\"tree.html\" name=\"treefrm\">" << endl;
-    t << "  <frame src=\"main.html\" name=\"basefrm\">" << endl;
+    t << "  <frame src=\"tree" << htmlFileExtension << "\" name=\"treefrm\">" << endl;
+    t << "  <frame src=\"main" << htmlFileExtension << "\" name=\"basefrm\">" << endl;
     t << "</frameset>" << endl;
     t << "</html>" << endl;
     f.close();
   }
   
   // Generate tree view frame
-  fileName=Config_getString("HTML_OUTPUT")+"/tree.html";
+  fileName=Config_getString("HTML_OUTPUT")+"/tree"+htmlFileExtension;
   f.setName(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -476,7 +476,7 @@ void FTVHelp::addContentsItem(bool isDir,
           << name << "\", \"" << tagName << "\", ";
     if (file)      // file optional param
     {
-      m_cts << "\"" << tagDir << file << ".html\"))";
+      m_cts << "\"" << tagDir << file << htmlFileExtension << "\"))";
     }
     else
     {
@@ -489,7 +489,7 @@ void FTVHelp::addContentsItem(bool isDir,
           << name << "\", \"" << tagName << "\", ";
     if (file)      // ref optional param
     {
-      m_cts << "\"" << tagDir << file << ".html";
+      m_cts << "\"" << tagDir << file << htmlFileExtension;
       if (anchor) m_cts << "#" << anchor;  
       m_cts << "\"))";
     }

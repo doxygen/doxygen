@@ -862,6 +862,13 @@ void Config::check()
   {
     outputLanguage = "English";
   }
+
+  QCString &htmlFileExtension=Config_getString("HTML_FILE_EXTENSION");
+  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
+  if (htmlFileExtension.isEmpty())
+  {
+    htmlFileExtension = ".html";
+  }
   
   // expand the relative stripFromPath values
   QStrList &stripFromPath = Config_getList("STRIP_FROM_PATH");
@@ -1748,6 +1755,14 @@ void Config::create()
                    );
   cs->setDefaultValue("html");
   cs->setWidgetType(ConfigString::Dir);
+  cs->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "HTML_FILE_EXTENSION",
+                    "The HTML_FILE_EXTENSION tag can be used to specify the file extension for \n"
+                    "each generated HTML page (for example: .htm,.php,.asp). If it is left blank \n"
+                    "doxygen will generate files with .html extension.\n"
+                   );
+  cs->setDefaultValue(".html");
   cs->addDependency("GENERATE_HTML");
   cs = addString(
                     "HTML_HEADER",

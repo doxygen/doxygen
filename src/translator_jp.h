@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_2_13
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -484,7 +484,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_13
      */
     virtual QCString trWrittenBy()
     {
-      return decode("担当");
+      return decode("作者");
     }
 
     /*! this text is put before a class diagram */
@@ -1317,6 +1317,25 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_13
       return decode("参照");
     }
 
-};
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
 
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return trWriteList(numEntries)+decode("を実装しています")+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return trWriteList(numEntries)+decode("に実装されています")+".";
+    }
+
+};
 #endif

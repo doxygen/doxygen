@@ -1050,7 +1050,7 @@ BN	[ \t\r\n]
 					  }
 					  BEGIN(CopyLine);
                                         }
-<Start>^{B}*[_A-Z][_A-Z0-9]*"("[^\)\n]*")"{B}*\n { // function like macro
+<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"{B}*\n { // function like macro
   					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
 					  QCString name(yytext);
 					  name=name.left(name.find('(')).stripWhiteSpace();

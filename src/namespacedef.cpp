@@ -177,13 +177,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);
   parseText(ol,theTranslator->trNamespaceReference(name()));
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
   }
   
   ol.startTextBlock();

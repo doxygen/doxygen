@@ -199,12 +199,12 @@ void LatexGenerator::init()
     << "\tmakeindex refman.idx" << endl
     << "\techo \"Rerunning latex....\"" << endl
     << "\tlatex refman.tex" << endl
-    << "\tlatex_count=5" << endl
-    << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $latex_count -gt 0 ] ;\\" << endl
+    << "\tlatex_count=5 ; \\" << endl
+    << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
     << "\t    do \\" << endl
     << "\t      echo \"Rerunning latex....\" ;\\" << endl
     << "\t      latex refman.tex ;\\" << endl
-    << "\t      latex_count=`expr $latex_count - 1` ;\\" << endl
+    << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
     << "\t    done" << endl << endl
     << "clean:" << endl
     << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out" << endl;
@@ -787,7 +787,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          if (!pi->inGroup && !pi->isReference())
+          if (!pi->getGroupDef() && !pi->isReference())
           {
             QCString pageName;
             if (Config_getBool("CASE_SENSE_NAMES"))

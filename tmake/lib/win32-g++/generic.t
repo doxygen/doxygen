@@ -85,7 +85,7 @@
 	if ( Project("TMAKE_APP_FLAG") ) {
 	    $project{"TARGET_EXT"} = ".exe";
 	} else {
-	    $project{"TARGET_EXT"} = ".lib";
+	    $project{"TARGET_EXT"} = ".a";
 	}
     }
     if ( Config("windows") ) {
@@ -141,11 +141,9 @@
 	$project{"VER_MIN"} =~ s/^\d+\.//;
     }    
     if ( Config("staticlib") ) {
-	$project{"TARGET"} = $project{"DESTDIR"} . "lib" . $project{"TARGET"} .
-			     $project{"TARGET_EXT"};
+	$project{"TARGET"} = $project{"DESTDIR"} . "lib" . $project{"TARGET"}
     } else {
-	$project{"TARGET"} = $project{"DESTDIR"} . $project{"TARGET"} .
-			     $project{"TARGET_EXT"};
+	$project{"TARGET"} = $project{"DESTDIR"} . $project{"TARGET"}
     }
 #$}
 #!

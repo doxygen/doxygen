@@ -182,13 +182,13 @@ class XMLGenerator : public OutputDocInterface
       if (!m_inParStack.isEmpty() && !m_inParStack.top())
       {
         m_inParStack.top() = TRUE;
-        m_t << "<para>" << endl;
+        m_t << "<para>";
         XML_DB(("start par at level=%d\n",m_inParStack.count()));
       }
       else if (m_inParStack.isEmpty())
       {
         m_inParStack.push(TRUE);
-        m_t << "<para>" << endl;
+        m_t << "<para>";
         XML_DB(("start par at level=%d\n",m_inParStack.count()));
       }
     }
@@ -1271,11 +1271,49 @@ static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
   t << "      </sectiondef>" << endl;
 }
 
+static void writeTemplateLists(Definition *d,QTextStream &t)
+{
+  if (d->definitionType()==Definition::TypeClass)
+  {
+    if (d->getOuterScope()) writeTemplateLists(d->getOuterScope(),t);
+    ClassDef *cd = (ClassDef *)d;
+    ArgumentList *al = cd->templateArguments();
+    if (al)
+    {
+      t << "    <templateparamlist>" << endl;
+      ArgumentListIterator ali(*al);
+      Argument *a;
+      for (ali.toFirst();(a=ali.current());++ali)
+      {
+        t << "      <param>" << endl;
+        if (!a->type.isEmpty())
+        {
+          t << "        <type>";
+          linkifyText(TextGeneratorXMLImpl(t),d->name(),0,a->type);
+          t << "</type>" << endl;
+        }
+        if (!a->name.isEmpty())
+        {
+          t << "        <name>" << a->name << "</name>" << endl;
+        }
+        if (!a->defval.isEmpty())
+        {
+          t << "        <defval>";
+          linkifyText(TextGeneratorXMLImpl(t),d->name(),0,a->defval);
+          t << "</defval>" << endl;
+        }
+        t << "      </param>" << endl;
+      }
+      t << "    </templateparamlist>" << endl;
+    }
+  }
+}
+
 static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
 {
   // + brief description
   // + detailed description
-  // - template arguments
+  // + template argument list(s)
   // - include file
   // + member groups
   // + inheritance diagram
@@ -1376,6 +1414,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
     }
   }
+  writeTemplateLists(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

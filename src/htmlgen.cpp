@@ -200,7 +200,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   //printf("HtmlGenerator::startFile(%s)\n",name);
   QCString fileName=name;
   lastTitle=title;
-  if (fileName.right(5)!=".html") fileName+=".html";
+  if (fileName.right(htmlFileExtensionLength)!=htmlFileExtension) fileName+=htmlFileExtension;
   startPlainFile(fileName);
   if (Config_getBool("GENERATE_HTMLHELP"))
   {
@@ -379,7 +379,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
     {
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
-    if (f) t << f << ".html\">";
+    if (f) t << f << htmlFileExtension << "\">";
   }
   else
   {
@@ -396,7 +396,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
   }
   //if (Config_getBool("GENERATE_HTMLHELP") && f)
   //{
-  //  htmlHelp->addItem(name,((QCString)f)+".html");
+  //  htmlHelp->addItem(name,((QCString)f)+htmlFileExtension);
   //}
 }
 
@@ -405,12 +405,12 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 {
   t << "<li>";
   if (path) docify(path);
-  t << "<a class=\"el\" href=\"" << f << ".html\">";
+  t << "<a class=\"el\" href=\"" << f << htmlFileExtension << "\">";
   docify(name);
   t << "</a> ";
   //if (Config_getBool("GENERATE_HTMLHELP") && f)
   //{
-  //  htmlHelp->addItem(name, ((QCString)f)+".html");
+  //  htmlHelp->addItem(name, ((QCString)f)+htmlFileExtension);
   //}
 }
 
@@ -434,7 +434,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   {
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
-  if (f) t << f << ".html";
+  if (f) t << f << htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -461,7 +461,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   {
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
-  if (f) t << f << ".html";
+  if (f) t << f << htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">";
   docify(name);
@@ -472,7 +472,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
-  if (f)   t << f << ".html";
+  if (f)   t << f << htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">"; 
 }
@@ -531,7 +531,7 @@ void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
   QCString *dest;
   //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
   QCString refName=name;
-  if (refName.right(5)!=".html") refName+=".html";
+  if (refName.right(htmlFileExtensionLength)!=htmlFileExtension) refName+=htmlFileExtension;
   t << "<a "; 
   if (ref) 
   {
@@ -553,7 +553,7 @@ void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
                                     const char *title)
 {
   QCString refName=name;
-  if (refName.right(5)!=".html") refName+=".html";
+  if (refName.right(htmlFileExtensionLength)!=htmlFileExtension) refName+=htmlFileExtension;
   t << "<a href=\"" << refName << "#" << lab << "\">";
   docify(title);
   t << "</a>";

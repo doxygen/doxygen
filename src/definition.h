@@ -28,6 +28,8 @@ class SectionDict;
 //class MemberDict;
 class MemberSDict;
 class MemberDef;
+class GroupDef;
+class GroupList;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
@@ -124,6 +126,9 @@ class Definition
     MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
     MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }
 
+    void makePartOfGroup(GroupDef *gd);
+    GroupList *partOfGroups() const { return m_partOfGroups; }
+
   protected:
     int      m_startBodyLine;   // line number of the start of the definition
     int      m_endBodyLine;     // line number of the end of the definition
@@ -139,6 +144,9 @@ class Definition
     QCString m_name;     // name of the definition
     QCString m_localName;      // local (unqualified) name of the definition
                                // in the future m_name should become m_localName
+    /*! List of groups this definition is part of */
+    GroupList *m_partOfGroups;
+
 
   private: 
     void writeSourceRefList(OutputList &ol,const char *scopeName,

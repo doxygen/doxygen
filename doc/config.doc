@@ -729,6 +729,13 @@ followed by the descriptions of the tags grouped by category.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
  put in front of it. If left blank `html' will be used as the default path.
 
+\anchor cfg_html_file_extension
+<dt>\c HTML_FILE_EXTENSION <dd>
+ \addindex HTML_FILE_EXTENSION
+ The \c HTML_FILE_EXTENSION tag can be used to specify the file extension for 
+ each generated HTML page (for example: .htm, .php, .asp). If it is left blank
+ doxygen will generate files with .html extension.
+
 \anchor cfg_html_header
 <dt>\c HTML_HEADER <dd>      
  \addindex HTML_HEADER

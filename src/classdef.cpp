@@ -39,7 +39,7 @@
 static QCString stripExtension(const char *fName)
 {
   QCString result=fName;
-  if (result.right(5)==".html") result=result.left(result.length()-5);
+  if (result.right(htmlFileExtensionLength)==htmlFileExtension) result=result.left(result.length()-htmlFileExtensionLength);
   return result;
 }
 
@@ -701,6 +701,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trCompoundReference(name(),m_compType,outerTempArgList!=0));
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
   ol.startTextBlock();
@@ -789,7 +790,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
     if (m_tempArgs)
     {
       ArgumentListIterator ali(*m_tempArgs);
@@ -929,7 +930,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend.html");
+        ol.startHtmlLink("graph_legend"+htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");
@@ -964,7 +965,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend.html");
+        ol.startHtmlLink("graph_legend"+htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");
@@ -1727,7 +1728,7 @@ void ClassDef::mergeMembers()
                 //    argListToString(srcMd->argumentList()).data(),
                 //    argListToString(dstMd->argumentList()).data(),
                 //    found);
-                hidden  = hidden  || !found;
+                hidden = hidden  || !found;
               }
               else // member is in a non base class => multiple inheritance
                    // using the same base class.
@@ -1746,10 +1747,12 @@ void ClassDef::mergeMembers()
             else // same members
             {
               // do not add if base class is virtual or 
-              // if scope paths are equal
+              // if scope paths are equal or
+              // if base class is an interface (and thus implicitly virtual).
               //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
               if ((srcMi->virt!=Normal && dstMi->virt!=Normal) ||
-                  bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath
+                  bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath ||
+                  dstMd->getClassDef()->compoundType()==ClassDef::Interface
                  ) 
               {
                 found=TRUE;
@@ -1783,17 +1786,23 @@ void ClassDef::mergeMembers()
           //       this case is shown anyway.
           if (!found && srcMd->protection()!=Private)
           {
+            Protection prot=srcMd->protection();
+            if (bcd->prot==Protected && prot==Public)       prot=bcd->prot;
+            else if (bcd->prot==Private)                    prot=bcd->prot;
+            
             if (inlineInheritedMembers)
             {
               if (!isStandardFunc(srcMd))
               {
                 //printf("    insertMember `%s'\n",srcMd->name().data());
-                internalInsertMember(srcMd,bcd->prot,FALSE);
+                internalInsertMember(srcMd,prot,FALSE);
               }
             }
+
             Specifier virt=srcMi->virt;
             if (srcMi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            MemberInfo *newMi = new MemberInfo(srcMd,bcd->prot,virt,TRUE);
+            
+            MemberInfo *newMi = new MemberInfo(srcMd,prot,virt,TRUE);
             newMi->scopePath=bClass->name()+"::"+srcMi->scopePath;
             if (ambigue)
             {

@@ -187,6 +187,9 @@ if test -z "$f_platform"; then
     UNIX_SV:4.2*)
       f_platform=unixware-g++
       ;;
+    Cygwin:*)
+      f_platform=win32-g++
+      ;;
     *)
     echo
     echo "Your platform was not recognised by this configure script"
@@ -407,6 +410,12 @@ EOF
     TMAKE_LFLAGS += -static
 EOF
   fi
+fi
+
+if test "$f_platform" = "win32-g++"; then
+  cat >> .tmakeconfig <<EOF
+    TMAKE_LFLAGS += -D_WIN32
+EOF
 fi
 
 if test "$f_english" = YES; then
