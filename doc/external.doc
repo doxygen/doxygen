@@ -35,6 +35,15 @@ reasons to not include all sources for these with every run of doxygen:
     linked in externally. This saves a lot of memory.
 <dt>Availability:<dd> For some projects that are documented with doxygen,
     the sources may just not be available.
+<dt>Copyright issues:<dd>If the external
+    package and its documentation are copyright someone else, it may be
+    better - or even necessary - to reference it rather than include a
+    copy of it with your project's documentation.  When the author forbids
+    redistribution, this is necessary.  If the author requires compliance
+    with some license condition as a precondition of redistribution, and
+    you do now want to be bound by those conditions, referring to their
+    copy of their documentation is preferable to including a copy.
+
 </dl>
 
 If any of the above apply, you can use doxygen's tag file mechanism.

@@ -65,13 +65,13 @@ EXCLUDE                = src/code.cpp \
                          src/pre.cpp \
                          src/scanner.cpp \
                          src/tag.cpp \
-                         src/doc.cpp \
+			 src/doctokenizer.cpp \
                          src/logos.cpp \
                          src/doxysearch.cpp \
                          src/suffixtree.cpp \
                          src/suffixtree.h \
                          src/searchindex.cpp \
-                         src/searchindex.h
+                         src/searchindex.h \
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = 

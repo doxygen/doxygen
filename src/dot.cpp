@@ -881,27 +881,25 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
   for (cli.toLast();(cd=cli.current());--cli)
   {
     //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
-    if (!hasVisibleRoot(cd->baseClasses()))
+    if (!hasVisibleRoot(cd->baseClasses()) &&
+        cd->isVisibleInHierarchy()
+       ) // root node in the forest
     {
-      if (cd->isVisibleInHierarchy()) // root node in the forest
+      QCString tmp_url="";
+      if (cd->isLinkable()) 
+        tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+      //printf("Inserting root class %s\n",cd->name().data());
+      DotNode *n = new DotNode(m_curNodeNumber++,
+          cd->displayName(),
+          tmp_url.data());
+
+      //m_usedNodes->clear();
+      m_usedNodes->insert(cd->name(),n);
+      m_rootNodes->insert(0,n);   
+      if (!cd->visited && cd->subClasses()->count()>0)
       {
-        QCString tmp_url="";
-        if (cd->isLinkable()) 
-          tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
-        //printf("Inserting root class %s\n",cd->name().data());
-        DotNode *n = new DotNode(m_curNodeNumber++,
-                cd->displayName(),
-                tmp_url.data()
-               );
-        
-        //m_usedNodes->clear();
-        m_usedNodes->insert(cd->name(),n);
-        m_rootNodes->insert(0,n);   
-        if (!cd->visited && cd->subClasses()->count()>0)
-        {
-          addHierarchy(n,cd,cd->visited);
-          cd->visited=TRUE;
-        }
+        addHierarchy(n,cd,cd->visited);
+        cd->visited=TRUE;
       }
     }
   }
@@ -911,8 +909,8 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
 {
   m_curNodeNumber=0;
   m_rootNodes = new QList<DotNode>;
-  //m_rootNodes->setAutoDelete(TRUE);    // rootNodes owns the nodes
-  m_usedNodes = new QDict<DotNode>(1009); // virtualNodes only aliases nodes
+  m_usedNodes = new QDict<DotNode>(1009); 
+  m_usedNodes->setAutoDelete(TRUE);
   m_rootSubgraphs = new DotNodeList;
   
   // build a graph with each class as a node and the inheritance relations
@@ -964,7 +962,9 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
 DotGfxHierarchyTable::~DotGfxHierarchyTable()
 {
   //printf("DotGfxHierarchyTable::~DotGfxHierarchyTable\n");
-  SDict<DotNode> skipNodes(17);
+
+#if 0 // TODO: delete this
+  SDict<DotNode> skipNodes(1009);
   skipNodes.setAutoDelete(TRUE);
   DotNode *n = m_rootNodes->first();
   while (n)
@@ -980,6 +980,15 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
     deleteNodes(n,&skipNodes); 
     n=m_rootNodes->next();
   }
+#endif
+
+  //QDictIterator<DotNode> di(*m_usedNodes);
+  //DotNode *n;
+  //for (;(n=di.current());++di)
+  //{
+  //  printf("Node %p: %s\n",n,n->label().data());
+  //}
+  
   delete m_rootNodes;
   delete m_usedNodes;
   delete m_rootSubgraphs;

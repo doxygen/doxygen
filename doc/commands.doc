@@ -1796,4 +1796,15 @@ browser generator. Do \e not use these commands in your own documentation.
 <li>\\postheader
 </ul>
 
+For PHP files there are a number of additional commands, that can be
+used inside classes to make members public, private, or protected even
+though the language itself doesn't support this notion.
+
+To mark a single item use one of \\private, \\protected, \\public.
+For starting a section with a certain protection level use one of:
+\\privatesection, \\protectedsection, \\publicsection.
+The latter commands are similar to 
+"private:", "protected:", and "public:" in C++.
+
 */
+

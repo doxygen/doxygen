@@ -126,12 +126,6 @@ class ClassDef : public Definition
      */
     ArgumentList *templateArguments() const { return m_tempArgs; }
 
-    /*! Returns the template arguments that this nested class "inherits" 
-     *  from its outer class (doxygen assumes there is only one!). 
-     *  Will return 0 if not applicable.
-     */
-    //ArgumentList *outerTemplateArguments() const;
-    
     /*! Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */

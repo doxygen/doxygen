@@ -766,6 +766,9 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
     //      );
     // check if `word' is a documented class name
     if (!word.isEmpty() && 
+        !(isdigit(word.at(0)) || word.at(0)=='-') && 
+                                // do not try to link digits 
+                                // (saves a lot of time for large arrays)
         !rightScopeMatch(word,searchName) && 
         !rightScopeMatch(scopeName,word)
        )

@@ -865,15 +865,17 @@ class IClass : public ICompound
     virtual IRelatedCompoundIterator *baseCompounds() const = 0;
     virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
     virtual ICompoundIterator *nestedCompounds() const = 0;
-	virtual IParamIterator *templateParameters() const = 0;
-	virtual const IString *locationFile() const = 0;
-	virtual int locationLine() const = 0;
-	virtual int locationBodyStartLine() const = 0;
-	virtual int locationBodyEndLine() const = 0;
+    virtual IParamIterator *templateParameters() const = 0;
+    virtual const IString *locationFile() const = 0;
+    virtual int locationLine() const = 0;
+    virtual int locationBodyStartLine() const = 0;
+    virtual int locationBodyEndLine() const = 0;
 
     // TODO:
     // class:
     //  listOfAllMembers()
+    //  protection()
+    //  isAbstract()
 };
 
 /*! \brief The interface to a struct in the object model. 
@@ -884,10 +886,10 @@ class IStruct : public ICompound
     virtual ICompoundIterator *nestedCompounds() const = 0;
     virtual IRelatedCompoundIterator *baseCompounds() const = 0;
     virtual IRelatedCompoundIterator *derivedCompounds() const = 0;
-	virtual const IString *locationFile() const = 0;
-	virtual int locationLine() const = 0;
-	virtual int locationBodyStartLine() const = 0;
-	virtual int locationBodyEndLine() const = 0;
+    virtual const IString *locationFile() const = 0;
+    virtual int locationLine() const = 0;
+    virtual int locationBodyStartLine() const = 0;
+    virtual int locationBodyEndLine() const = 0;
 };
 
 /*! \brief The interface to a union in the object model. 

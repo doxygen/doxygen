@@ -142,7 +142,7 @@ static int computeIndent(const char *str,int length)
  */
 static void parseHtmlAttribs(const char *att)
 {
-  //printf("parseHtmlAttribs(%s)\n",opt.data());
+  //printf("parseHtmlAttribs(%s)\n",att);
   QCString attribs=att;
   int len = attribs.length();
   char c;
@@ -173,7 +173,7 @@ static void parseHtmlAttribs(const char *att)
 	// search for matching quote 
         while (i<len && c!='\'') { c=attribs.at(++i); } 
 	endAttrib=i;
-        c=attribs.at(++i);
+        if (i<len) c=attribs.at(++i);
       }
       else if (attribs.at(i)=='"') // option "..."
       {
@@ -182,7 +182,7 @@ static void parseHtmlAttribs(const char *att)
 	// search for matching quote 
         while (i<len && c!='"') { c=attribs.at(++i); } 
 	endAttrib=i;
-        c=attribs.at(++i);
+        if (i<len) c=attribs.at(++i);
       }
       else // value without any quotes
       {
@@ -190,7 +190,7 @@ static void parseHtmlAttribs(const char *att)
 	// search for separator
         while (i<len && c!=' ') { c=attribs.at(++i); } 
 	endAttrib=i;
-        c=attribs.at(++i);
+	if (i<len) c=attribs.at(++i);
       }
       opt.value  = attribs.mid(startAttrib,endAttrib-startAttrib); 
     }
@@ -198,7 +198,7 @@ static void parseHtmlAttribs(const char *att)
     {
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    opt->name.data(),opt->value.data());
+    //    opt.name.data(),opt.value.data());
     g_token->attribs.append(&opt);
   }
 }

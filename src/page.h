@@ -115,7 +115,7 @@ class PageSDict : public SDict<PageInfo>
 {
   public:
     PageSDict(int size) : SDict<PageInfo>(size) {}
-   ~PageSDict() {}
+    virtual ~PageSDict() {}
     int compareItems(GCI i1,GCI i2)
     {
       return stricmp(((PageInfo *)i1)->name,((PageInfo *)i2)->name);

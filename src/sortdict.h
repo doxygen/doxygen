@@ -74,7 +74,7 @@ class SList : public QList<T>
 {
   public:
     SList(SDict<T> *owner) : m_owner(owner) {}
-    ~SList() {}
+    virtual ~SList() {}
     int compareItems(GCI item1,GCI item2)
     {
       return m_owner->compareItems(item1,item2);
@@ -280,7 +280,7 @@ class SIntList : public QList<T>
 {
   public:
     SIntList(SIntDict<T> *owner) : m_owner(owner) {}
-    ~SIntList() {}
+    virtual ~SIntList() {}
     int compareItems(GCI item1,GCI item2)
     {
       return m_owner->compareItems(item1,item2);

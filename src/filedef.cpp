@@ -73,6 +73,8 @@ FileDef::~FileDef()
   delete classSDict;
   delete includeDict;
   delete includeList;
+  delete includedByDict;
+  delete includedByList;
   delete namespaceSDict;
   delete srcDefDict;
   delete srcMemberDict;

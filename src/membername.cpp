@@ -23,6 +23,7 @@
 MemberName::MemberName(const char *n) : QList<MemberDef>()
 {
   name=n;
+  setAutoDelete(TRUE);
 }
 
 MemberName::~MemberName()

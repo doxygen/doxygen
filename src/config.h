@@ -338,6 +338,11 @@ class Config
       if (m_instance==0) m_instance = new Config;
       return m_instance;
     }
+    /*! Delete the instance */
+    static void deleteInstance()
+    {
+      delete m_instance;
+    }
     
     /*! Returns an iterator that can by used to iterate over the 
      *  configuration options.

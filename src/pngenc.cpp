@@ -106,6 +106,7 @@ void PngEncoder::write(const char *name)
          PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
          PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE
                  );
+     free(png_palette);
      ti[0] = transIndex;
      png_set_tRNS(png_ptr,info_ptr,ti,1,NULL);
      rows    = (unsigned char **) calloc(sizeof(unsigned char*),height);

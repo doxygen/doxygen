@@ -1919,7 +1919,7 @@ void initPreprocessor()
   g_fileDefineDict = new DefineDict(1009);
 }
 
-void cleanupPreprocessor()
+void cleanUpPreprocessor()
 {
   //delete fileDefineCache;
   delete g_fileDefineDict; g_fileDefineDict=0;

@@ -103,7 +103,7 @@ doxytag -t example.tag example/html
 \par Example 2:
   To generate a tag file of the Qt documentation you can do the following:
 \verbatim
-doxytag -t qt.tag $QTDIR/html
+doxytag -t qt.tag $QTDIR/doc/html
 \endverbatim
 
 A typical example to use doxytag to generate a search index is:

@@ -1399,7 +1399,7 @@ void writeAlphabeticalClassList(OutputList &ol)
       {
         QCString namesp;
         if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
-        QCString cname=cd->displayName();
+        QCString cname=cd->className();
 
         ol.writeObjectLink(cd->getReference(),
                            cd->getOutputFileBase(),0,cname);
