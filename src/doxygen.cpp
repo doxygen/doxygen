@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -5541,6 +5541,8 @@ static void findEnums(Entry *root)
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
       md->setRefItems(root->sli);
+      //printf("found enum %s nd=%p\n",name.data(),nd);
+      bool defSet=FALSE;
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
         if (isRelated || Config_getBool("HIDE_SCOPE_NAMES"))
@@ -5551,6 +5553,8 @@ static void findEnums(Entry *root)
         {
           md->setDefinition(nd->name()+"::"+name);  
         }
+        //printf("definition=%s\n",md->definition());
+        defSet=TRUE;
         nd->insertMember(md);
         md->setNamespace(nd);
       }
@@ -5560,7 +5564,7 @@ static void findEnums(Entry *root)
       // or class.
       if (isGlobal)
       {
-        md->setDefinition(name);
+        if (!defSet) md->setDefinition(name);
         if (fd==0 && root->parent)
         {
           bool ambig;
@@ -7797,7 +7801,7 @@ static void readAliases()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2004\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2005\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -7835,6 +7839,8 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 //----------------------------------------------------------------------------
 
+//extern void commentScanTest();
+
 void initDoxygen()
 {
 #if QT_VERSION >= 200
@@ -7862,6 +7868,8 @@ void initDoxygen()
   Doxygen::lookupCache.setAutoDelete(TRUE);
   Doxygen::directories.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
+
+ // commentScanTest();
 }
 
 void cleanUpDoxygen()
@@ -8196,10 +8204,10 @@ void readConfiguration(int argc, char **argv)
 
 void parseInput()
 {
-
   Doxygen::inputNameDict     = new FileNameDict(10007);
   Doxygen::includeNameDict   = new FileNameDict(10007);
   Doxygen::exampleNameDict   = new FileNameDict(1009);
+  Doxygen::exampleNameDict->setAutoDelete(TRUE);
   Doxygen::imageNameDict     = new FileNameDict(257);
   Doxygen::dotFileNameDict   = new FileNameDict(257);
 

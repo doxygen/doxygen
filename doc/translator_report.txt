@@ -1,4 +1,4 @@
-(1.3.9.1-20041221)
+(1.4.0)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 

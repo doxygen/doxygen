@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -243,20 +243,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 if (md->isDetailedSectionLinkable())
                 {
                   ol.disableAllBut(OutputGenerator::Html);
-                  //ol.endEmphasis();
                   ol.docify(" ");
-                  if (md->getGroupDef()!=0 && gd==0) // forward link to group
-                  {
-                    ol.startTextLink(md->getOutputFileBase(),
-                                     md->anchor());
-                  }
-                  else
-                  {
-                    ol.startTextLink(0,md->anchor());
-                  }
+                  ol.startTextLink(md->getOutputFileBase(),
+                                   md->anchor());
                   ol.parseText(theTranslator->trMore());
                   ol.endTextLink();
-                  //ol.startEmphasis();
                   ol.enableAll();
                 }
                 ol.endMemberDescription();

@@ -1,7 +1,7 @@
 #
 # 
 #
-# Copyright (C) 1997-2004 by Dimitri van Heesch.
+# Copyright (C) 1997-2005 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -65,6 +65,9 @@ sub GenerateDep {
 
 #$ GenerateDep("commentcnv.cpp","commentcnv.l");
 	$(LEX) -PcommentcnvYY -t commentcnv.l >commentcnv.cpp
+
+#$GenerateDep("commentscan.cpp","commentscan.l");
+	$(LEX) -PcommentScanYY -t commentscan.l >commentscan.cpp
 
 #$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
 	$(LEX) -PcppExpYY -t constexp.l >ce_lex.cpp 

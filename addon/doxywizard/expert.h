@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -65,18 +65,18 @@ class Expert : public QTabDialog
     void init();
     void addDependency(QDict<QObject> *switches,
                        const QCString &dep,const QCString &name);
+    bool hasChanged() const { return m_changed; }
 
-  signals:
-    void changed();
-    
   private slots:
     void toggle(const char *,bool);
     void handleHelp();
+    void changed();
 
   private:
     QDict<IInput>          *m_inputWidgets;
     QDict< QList<IInput> > *m_dependencies;
     QDict<QObject>         *m_switches;
+    bool                    m_changed;
 };
 
 #endif

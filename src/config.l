@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2642,7 +2642,7 @@ void Config::create()
   cs = addString(
                     "DOT_PATH",
                     "The tag DOT_PATH can be used to specify the path where the dot tool can be \n"
-                    "found. If left blank, it is assumed the dot tool can be found on the path. \n"
+                    "found. If left blank, it is assumed the dot tool can be found in the path. \n"
                    );
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("HAVE_DOT");

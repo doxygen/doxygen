@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1216,6 +1216,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
+  if (isEnumValue()) return;
+
   QCString scopeName = scName;
   QCString memAnchor = anchor();
   if (container->definitionType()==TypeGroup)
@@ -1233,8 +1235,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cname  = container->name();
   QCString cfname = getOutputFileBase();  
 
-  //ol.addIndexItem(name(),cname);
-  //ol.addIndexItem(cname,name());
 
   if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
   {
@@ -1263,7 +1263,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   int i=0,l;
   static QRegExp r("@[0-9]+");
 
-  if (isEnumValue()) return;
 
   ol.pushGeneratorState();
 
