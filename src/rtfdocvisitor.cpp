@@ -377,7 +377,10 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
+    popEnabled();
     if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    pushEnabled();
+    m_hide=TRUE;
   }
   if (op->isLast())  
   {

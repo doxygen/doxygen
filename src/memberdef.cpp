@@ -424,7 +424,7 @@ void MemberDef::insertEnumField(MemberDef *md)
 bool MemberDef::addExample(const char *anchor,const char *nameStr,
                            const char *file)
 {
-  //printf("%s::addExample(%s,%s,%s)\n",name.data(),anchor,nameStr,file);
+  //printf("%s::addExample(%s,%s,%s)\n",name().data(),anchor,nameStr,file);
   if (exampleSDict==0) exampleSDict = new ExampleSDict;
   if (exampleSDict->find(nameStr)==0) 
   {
@@ -1029,8 +1029,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     QCString cname  = container->name();
     QCString cfname = container->getOutputFileBase();  
 
-    ol.addIndexItem(name(),cname);
-    ol.addIndexItem(cname,name());
+    //ol.addIndexItem(name(),cname);
+    //ol.addIndexItem(cname,name());
 
     if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
     {

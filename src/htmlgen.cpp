@@ -59,7 +59,7 @@ static const char *defaultStyleSheet =
 "	width: 98%;\n"
 "	border: 1px solid #CCCCCC;\n"
 "	background-color: #f5f5f5;\n"
-"	padding: 0px;\n"
+"	padding-left: 4px;\n"
 "	margin: 4px;\n"
 "}\n"
 "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"

@@ -241,7 +241,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   if (m_hide) return;
   switch(s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
       m_t << "\\end{verbatim}\\normalsize" << endl; 
@@ -295,8 +295,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
 
 void LatexDocVisitor::visit(DocIncOperator *op)
 {
-  //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
+      op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
     if (!m_hide) m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
@@ -305,16 +305,19 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
+    popEnabled();
     if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    pushEnabled();
+    m_hide=TRUE;
   }
   if (op->isLast())  
   {
     popEnabled();
-    if (m_hide) m_t << "\\end{verbatim}\\normalsize" << endl; 
+    if (!m_hide) m_t << "\\end{verbatim}\\normalsize" << endl; 
   }
   else
   {
-    m_t << endl;
+    if (!m_hide) m_t << endl;
   }
 }
 

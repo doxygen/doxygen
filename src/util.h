@@ -122,7 +122,7 @@ bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceList *usingNamespaces=0,
                            ClassList *usingClasses=0);
-void mergeArguments(ArgumentList *,ArgumentList *);
+void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE);
 QCString substituteClassNames(const QCString &s);
 QCString substitute(const char *s,const char *src,const char *dst);
 QCString resolveDefines(const char *n);
