@@ -39,7 +39,7 @@
 static void addToMap(const char *name,Definition *d)
 {
   QCString symbolName = name;
-  int index=symbolName.findRev("::");
+  int index=computeQualifiedIndex(symbolName);
   if (index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
@@ -58,7 +58,7 @@ static void addToMap(const char *name,Definition *d)
 static void removeFromMap(Definition *d)
 {
   QCString symbolName = d->symbolName();
-  int index=symbolName.findRev("::");
+  int index=computeQualifiedIndex(symbolName);
   if (index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
@@ -512,8 +512,10 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
             name.prepend(scope+"::");
           }
         }
-        if (md->isFunction() || md->isSlot() || 
-            md->isPrototype() || md->isSignal()
+        if (!md->isObjCMethod() &&
+            (md->isFunction() || md->isSlot() || 
+             md->isPrototype() || md->isSignal()
+            )
            ) name+="()";
         //Definition *d = md->getOutputFileBase();
         //if (d==Doxygen::globalScope) d=md->getBodyDef();

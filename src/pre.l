@@ -397,6 +397,18 @@ static void returnCharToStream(char c)
   unput(c);
 }
 
+static inline void addTillEndOfString(const QCString &expr,QCString *rest,
+                                       uint &pos,char term,QCString &arg)
+{
+  char cc;
+  while ((cc=getNextChar(expr,rest,pos))!=EOF)
+  {
+    if (cc=='\\') arg+=cc,cc=getNextChar(expr,rest,pos);
+    else if (cc==term) return;
+    arg+=cc;
+  }
+}
+
 /*! replaces the function macro \a def whose argument list starts at
  * \a pos in expression \a expr. 
  * Notice that this routine may scan beyond the \a expr string if needed.
@@ -449,28 +461,23 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       {
 	int level=1;
 	arg+=c;
-	char term='\0';
+	//char term='\0';
 	while ((cc=getNextChar(expr,rest,j))!=EOF)
 	{
 	  char c=(char)cc;
+	  //printf("processing %c: term=%c (%d)\n",c,term,term);
 	  if (c=='\'' || c=='\"') // skip ('s and )'s inside strings
 	  {
-	    if (term!='\0') 
-	    { 
-	      if (c==term && expr.at(j-2)!='\\') term='\0'; 
-	    } 
-	    else 
-	    { 
-	      term=c; 
-	    }
+	    arg+=c;
+	    addTillEndOfString(expr,rest,j,c,arg);
 	  }
-	  if (term=='\0' && c==')')
+	  if (c==')')
 	  {
 	    level--;
 	    arg+=c;
 	    if (level==0) break;
 	  }
-	  else if (term=='\0' && c=='(')
+	  else if (c=='(')
 	  {
 	    level++;
 	    arg+=c;
@@ -625,7 +632,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	{
 	  inString=TRUE; // entering a literal string
 	}
-	else if (inString && d.at(k)=='\"' && d.at(k-1)!='\\')
+	else if (inString && d.at(k)=='\"' && (d.at(k-1)!='\\' || d.at(k-2)=='\\'))
 	{
 	  inString=FALSE; // leaving a literal string
 	}
@@ -665,10 +672,12 @@ static int getNextId(const QCString &expr,int p,int *l)
     }
     else if (c=='"') // skip string
     {
-      char pc=c;
+      char ppc=0,pc=c;
       if (p<(int)expr.length()) c=expr.at(p);
-      while (p<(int)expr.length() && (c!='"' || pc=='\\')) 
+      while (p<(int)expr.length() && (c!='"' || (pc=='\\' && ppc!='\\'))) 
+	// continue as long as no " is found, but ignoring \", but not \\"
       {
+	ppc=pc;
 	pc=c;
 	c=expr.at(p);
 	p++;
@@ -1189,6 +1198,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 					  Define *def=0;
 					  if (skipFuncMacros && 
+					      name!="Q_PROPERTY" &&
 					      !(
 					         (g_includeStack.isEmpty() || g_curlyCount>0) &&
 					         g_macroExpansion &&

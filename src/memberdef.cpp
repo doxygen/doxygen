@@ -33,8 +33,6 @@
 #include "docparser.h"
 #include "dot.h"
 #include "searchindex.h"
-//#include "xml.h"
-
 
 //-----------------------------------------------------------------------------
 
@@ -197,7 +195,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
           key=a->attrib.mid(1,a->attrib.length()-2);
           if (key!=",") key+=":"; // for normal keywords add colon
         }
-        ol.endParameterName(FALSE,FALSE);
+        ol.endParameterName(FALSE,FALSE,!md->isObjCMethod());
         ol.startParameterType(FALSE,key);
       }
     }
@@ -212,13 +210,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (!md->isDefine()) 
   {
     if (first) ol.startParameterName(defArgList->count()<2);
-    ol.endParameterName(!md->isObjCMethod(),defArgList->count()<2);
+    ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
   }
   else 
   {
     ol.endParameterType();
     ol.startParameterName(TRUE);
-    ol.endParameterName(TRUE,TRUE);
+    ol.endParameterName(TRUE,TRUE,!md->isObjCMethod());
   }
   ol.popGeneratorState();
   if (defArgList->constSpecifier)
@@ -391,6 +389,7 @@ MemberDef::MemberDef(const char *df,int dl,
   m_isTypedefValCached = FALSE;
   m_cachedTypedefValue = 0;
   m_inbodyLine = -1;
+  m_implOnly=FALSE;
 }
 
 /*! Destroys the member definition. */
@@ -1047,6 +1046,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),init);
     }
   }
+  if (isObjCMethod() && isImplementation())
+  {
+    ol.startTypewriter();
+    ol.docify(" [implementation]");
+    ol.endTypewriter();
+  }
 
   if (!detailsVisible && !annMemb)
   {
@@ -1385,7 +1390,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
          isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
          isSignal() || isSlot() ||
          isStatic() || (classDef && classDef!=container) ||
-         isSettable() || isGettable()
+         isSettable() || isGettable() || isReadable() || isWritable()
         )
        )
     {
@@ -1405,6 +1410,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isStatic())              sl.append("static");
         if      (isGettable())            sl.append("get");
         if      (isSettable())            sl.append("set");
+        if      (isReadable())            sl.append("read");
+        if      (isWritable())            sl.append("write");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
         else if (protection()==Package)   sl.append("package");
@@ -1422,6 +1429,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if (s) ol.docify(", ");
       }
       ol.docify("]");
+      ol.endTypewriter();
+    }
+    else if (isObjCMethod() && isImplementation())
+    {
+      ol.writeLatexSpacing();
+      ol.startTypewriter();
+      ol.docify(" [implementation]");
       ol.endTypewriter();
     }
     if (!isDefine() && defArgList) ol.endParameterList();

@@ -807,6 +807,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      ObjCReturnType
 %x      ObjCParams
 %x      ObjCParamType
+%x	QtPropType
+%x	QtPropName
+%x	QtPropRW
 
 %%
 
@@ -1032,6 +1035,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->bodyLine  = yyLineNr;
 					    current->section = Entry::FUNCTION_SEC;
 					    current->protection = protection = Public ;
+					    current->virt = Virtual;
 					    current->stat=yytext[0]=='+';
 					    current->mtype = mtype = Method;
 					    current->type.resize(0); 
@@ -1110,14 +1114,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lineCount();
   					}
 <PackageName>{ID}("."{ID})*		{
-  					  //current->name = yytext;
-                                          //current->fileName = yyFileName; 
-                                          //current->startLine = yyLineNr; 
-  					  //current->section=Entry::PACKAGE_SEC;
-					  //current_root->addSubEntry(current);
-					  //current = new Entry ;
-					  //initEntry();
-
   					  isTypedef=FALSE;
 					  current->name = yytext;
 					  current->name = substitute(current->name,".","::");
@@ -1567,6 +1563,31 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					    REJECT;
 					}
+<FindMembers>"Q_OBJECT"			{ // Qt object macro
+  					}
+<FindMembers>"Q_PROPERTY"		{ // Qt property declaration
+					  current->protection = protection = Public ;
+  					  current->mtype = mtype = Property;
+  					  BEGIN(QtPropType);
+  					}
+<QtPropType>{ID}			{
+  					  current->type=yytext;
+                                          BEGIN(QtPropName);
+  					}
+<QtPropName>{ID}			{
+  					  current->name=yytext;
+  					  BEGIN(QtPropRW);
+  					}
+<QtPropRW>"READ"			{
+  					  current->memSpec |= Entry::Readable;
+  					}
+<QtPropRW>"WRITE"			{
+  					  current->memSpec |= Entry::Writable;
+  					}
+<QtPropRW>")"				{
+  					  unput(';');
+					  BEGIN(FindMembers);
+  					}
 <FindMembers,FindMemberName>{SCOPENAME}	{
 					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
@@ -3869,7 +3890,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  BEGIN( tmpDocType );
   					}
-<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"){B}+	{
+<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"|"property"){B}+	{
 					  current->section = Entry::MEMBERDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;

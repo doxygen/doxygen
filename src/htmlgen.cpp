@@ -37,8 +37,8 @@
 
 // #define GROUP_COLOR "#ff8080"
 
-//#define DBG_HTML(x) x;
-#define DBG_HTML(x) 
+#define DBG_HTML(x) x;
+//#define DBG_HTML(x) 
 
 static const char *defaultStyleSheet = 
 "H1 {\n"
@@ -1069,7 +1069,7 @@ void HtmlGenerator::startParameterName(bool oneArgOnly)
   t << "\" nowrap>"; //&nbsp;";
 }
 
-void HtmlGenerator::endParameterName(bool last,bool emptyList)
+void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
 {
   DBG_HTML(t << "<!-- endParameterName -->" << endl;)
   if (last)
@@ -1077,7 +1077,9 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
     if (emptyList)
     {
       t << "          </td>" << endl;
-      t << "          <td class=\"md\" valign=\"top\">&nbsp;)&nbsp;</td>" << endl;
+      t << "          <td class=\"md\" valign=\"top\">";
+      if (closeBracket) t << "&nbsp;)";
+      t << "&nbsp;</td>" << endl;
       t << "          <td class=\"md\" nowrap>";
     }
     else
@@ -1086,7 +1088,9 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
       t << "          <td></td>" << endl;
-      t << "          <td class=\"md\">)&nbsp;</td>" << endl;
+      t << "          <td class=\"md\">";
+      if (closeBracket) t << ")";
+      t << "&nbsp;</td>" << endl;
       t << "          <td class=\"md\" colspan=\"2\">";
     }
   }

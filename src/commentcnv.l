@@ -112,6 +112,8 @@ void replaceComment(int offset);
 
 %}
 
+CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
+
 %option noyywrap
 
 %x Scan
@@ -123,13 +125,16 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^\"\/\n\\]*                 { /* eat anything that is not " / or \n */ 
+<Scan>[^"'\/\n\\]*                 { /* eat anything that is not " / or \n */ 
                                      copyToOutput(yytext,yyleng); 
 				   }
 <Scan>"\""                         { /* start of a string */ 
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(SkipString); 
                                    }
+<Scan>{CHARLIT}			   {
+                                     copyToOutput(yytext,yyleng); 
+  				   }
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,yyleng); 
                                    }

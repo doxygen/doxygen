@@ -105,6 +105,14 @@ int IntegerVariable;
 /*@}*/
 \endverbatim
 
+The \ref cmdref "\\ref" command can be used to refer to a group.
+The first argument of the \\ref command should be group's label.
+To use a custom link name, you can put the name of the links in 
+double quotes after the label, as shown by the following example
+\verbatim
+This is the \ref group_label "link" to this group.
+\endverbatim
+
 The priorities of grouping definitions are (from highest to lowest):
 \ref cmdingroup "\\ingroup", \ref cmddefgroup "\\defgroup",
 \ref cmdaddtogroup "\\addtogroup", \ref cmdweakgroup "\\weakgroup".

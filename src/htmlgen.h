@@ -200,7 +200,7 @@ class HtmlGenerator : public OutputGenerator
     void startParameterType(bool first,const char *key);
     void endParameterType();
     void startParameterName(bool);
-    void endParameterName(bool last,bool emptyList);
+    void endParameterName(bool last,bool emptyList,bool closeBracket);
     void startParameterList(bool);
     void endParameterList();
 

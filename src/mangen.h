@@ -242,7 +242,7 @@ class ManGenerator : public OutputGenerator
     void startParameterType(bool,const char *) {}
     void endParameterType() {}
     void startParameterName(bool) {}
-    void endParameterName(bool,bool) {}
+    void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
 

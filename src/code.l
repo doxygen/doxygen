@@ -103,6 +103,8 @@ static int           g_lastVerbStringContext;
 static int           g_memCallContext;
 static int	     g_lastCContext;
 
+static bool          g_insideObjC;
+
 //-------------------------------------------------------------------
 
 /*! Represents a stack of variable to class mappings as found in the
@@ -860,6 +862,8 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
       if (xd)
       {
 
+	//printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
+
 	// add usage reference
 	if (g_currentDefinition && g_currentMemberDef &&
 	    xmd!=g_currentMemberDef && g_insideBody)
@@ -1080,7 +1084,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol")
-KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
+KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"self"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean"|"id"|"SEL")
 
@@ -1106,6 +1110,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %x      ReadInclude
 %x      TemplDecl
 %x	CallEnd
+%x      ObjCMethod
+%x	ObjCParams
+%x	ObjCParamType
+%x	ObjCMemberCall
+%x	ObjCMemberCall2
+%x	ObjCMemberCall3
 
 %%
 
@@ -1115,7 +1125,15 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_code->codify(yytext);
   					  BEGIN( ReadInclude ); 
 					}
-<Body>("class"|"struct"|"union"|"namespace"|"@interface"|"@implementation"|"@interface")[ \t\n]+ { 
+<Body>("@interface"|"@implementation"|"@protocol")[ \t\n]+ { 
+                                          g_insideObjC=TRUE;
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+  					  if (!g_insideTemplate) 
+					    BEGIN( ClassName ); 
+					}
+<Body>("class"|"struct"|"union"|"namespace")[ \t\n]+ { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -1128,6 +1146,63 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  endFontClass();
 					  BEGIN( PackageName ); 
 					}
+<Body,ClassVar>"-"|"+"			{
+					  if (!g_insideObjC)
+					  { 
+  					    g_code->codify(yytext);
+					  }
+					  else // Start of Objective-C method
+					  {
+					    //printf("Method!\n");
+  					    g_code->codify(yytext);
+					    BEGIN(ObjCMethod);
+					  }
+  					}
+<ObjCMethod>":"				{
+  					  g_code->codify(yytext);
+					  BEGIN(ObjCParams);
+  					}
+<ObjCParams>"("				{
+  					  g_code->codify(yytext);
+  					  BEGIN(ObjCParamType);
+					}
+<ObjCParams,ObjCMethod>";"|"{"		{
+  					  g_code->codify(yytext);
+					  if (*yytext=='{')
+					  {
+					    g_insideBody=TRUE;
+					  }
+					  BEGIN(Body);
+  					}
+<ObjCParams>{ID}{B}*":"			{
+  					  g_code->codify(yytext);
+  					}
+<ObjCParamType>{TYPEKW} 		{
+  					  startFontClass("keywordtype");
+					  g_code->codify(yytext);
+					  endFontClass();
+  					  g_parmType=yytext;
+  					}
+<ObjCParamType>{ID}			{
+  					  g_code->codify(yytext);
+  					  g_parmType=yytext;
+  					}
+<ObjCParamType>")"			{
+  					  g_code->codify(yytext);
+  					  BEGIN(ObjCParams);
+  					}
+<ObjCParams>{ID}			{
+  					  g_code->codify(yytext);
+  					  g_parmName=yytext;
+					  g_theVarContext.addVariable(g_parmType,g_parmName);
+					  g_parmType.resize(0);g_parmName.resize(0);
+  					}
+<ObjCMethod,ObjCParams,ObjCParamType>.	{
+  					  g_code->codify(yytext);
+  					}
+<ObjCMethod,ObjCParams,ObjCParamType>\n	{
+  					  codifyLines(yytext);
+  					}
 <ReadInclude>[^\n\"\>]+/(">"|"\"")  	{
 					  //FileInfo *f;
 					  bool ambig;
@@ -1239,6 +1314,18 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  BEGIN(Body);
 					}
 <Body>"@end"				{ 
+  					  //printf("End of objc scope fd=%s\n",g_sourceFileDef->name().data());
+                                          if (g_sourceFileDef)
+					  {
+					    FileDef *fd=g_sourceFileDef;
+                                            g_insideObjC = fd->name().lower().right(2)==".m" || 
+                                                           fd->name().lower().right(3)==".mm"; 
+					    //printf("insideObjC=%d\n",g_insideObjC);
+					  }
+					  else
+					  {
+					    g_insideObjC = FALSE;
+					  }
                                           g_theVarContext.popScope();
 
 					  int *scope = g_scopeStack.pop();
@@ -1458,7 +1545,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_theCallContext.popScope();
 					  }
   					}
-<Body,TemplDecl>{TYPEKW}/{B}* {
+<Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
   					  startFontClass("keywordtype");
 					  g_code->codify(yytext);
 					  endFontClass();
@@ -1516,7 +1603,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<FuncCall,Body,MemberCall,MemberCall2>\"	{
+<FuncCall,Body,MemberCall,MemberCall2,ObjCMemberCall2,ObjCMemberCall3>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
@@ -1638,27 +1725,82 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  BEGIN(g_memCallContext); 
 					}
 <Body>[,=;\[]				{
-  					  g_code->codify(yytext);
-					  g_saveName = g_name.copy();
-					  g_saveType = g_type.copy();
-  					  if (!g_type.isEmpty()) 
+					  if (g_insideObjC && *yytext=='[')
 					  {
-					    if (g_scopeStack.top()!=CLASSBLOCK)
-					    {
-					      g_theVarContext.addVariable(g_type,g_name);
-					    }
-					    g_name.resize(0);
-					  }
-					  if (*yytext==';') 
-					  {
-					    g_type.resize(0);
-					    g_name.resize(0);
-					  }
-					  else if (*yytext=='[')
-					  {
+					    //printf("Found start of ObjC call!\n");
+					    // start of a method call
+					    g_code->codify(yytext);
 					    g_theCallContext.pushScope();
+					    BEGIN(ObjCMemberCall);
 					  }
-					  g_args.resize(0);
+					  else
+					  {
+					    g_code->codify(yytext);
+					    g_saveName = g_name.copy();
+					    g_saveType = g_type.copy();
+					    if (!g_type.isEmpty()) 
+					    {
+					      if (g_scopeStack.top()!=CLASSBLOCK)
+					      {
+					        g_theVarContext.addVariable(g_type,g_name);
+					      }
+					      g_name.resize(0);
+					    }
+					    if (*yytext==';') 
+					    {
+					      g_type.resize(0);
+					      g_name.resize(0);
+					    }
+					    else if (*yytext=='[')
+					    {
+					      g_theCallContext.pushScope();
+					    }
+					    g_args.resize(0);
+					  }
+  					}
+<ObjCMemberCall>{ID}			{
+  					  if (strcmp(yytext,"self")==0 || strcmp(yytext,"super")==0)
+					  {
+					    // TODO: get proper base class for "super"
+					    g_theCallContext.setClass(getClass(g_curClassName));
+					    startFontClass("keyword");
+					    g_code->codify(yytext); 
+					    endFontClass();
+					  }
+					  else
+					  {
+					    generateClassOrGlobalLink(*g_code,yytext);
+					  }
+					  g_name.resize(0);
+					  BEGIN(ObjCMemberCall2);
+  					}
+<ObjCMemberCall>"["			{
+					    g_code->codify(yytext);
+					    g_theCallContext.pushScope();
+  					}
+<ObjCMemberCall2>{ID}":"?		{
+  					  g_name+=yytext;
+					  if (g_theCallContext.getClass())
+					  {
+					    //printf("Calling method %s\n",g_name.data());
+					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),g_name))
+					    {
+  					      g_code->codify(yytext);
+					      addToSearchIndex(g_name);
+					    }
+					  }
+					  else
+					  {
+  					    g_code->codify(yytext);
+					    addToSearchIndex(g_name);
+					  }
+  					  g_name.resize(0);
+					  BEGIN(ObjCMemberCall3);
+  					}
+<ObjCMemberCall2,ObjCMemberCall3>"]"	{
+					  g_theCallContext.popScope();
+  					  g_code->codify(yytext);
+					  BEGIN(Body);
   					}
 <Body>"]"				{
 					  g_theCallContext.popScope();
@@ -2215,6 +2357,8 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   if (fd) 
   {
     setCurrentDoc(fd->name(),fd->getSourceFileBase());
+    g_insideObjC = fd->name().lower().right(2)==".m" || 
+                   fd->name().lower().right(3)==".mm"; 
   }
   g_currentDefinition = 0;
   g_currentMemberDef = 0;

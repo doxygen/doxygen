@@ -212,6 +212,7 @@ void replaceNamespaceAliases(QCString &scope,int i);
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
+int computeQualifiedIndex(const QString &name);
 
 #endif
 

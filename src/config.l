@@ -1608,6 +1608,14 @@ void Config::create()
                     TRUE
                  );
   cb = addBool(
+                    "EXTRACT_LOCAL_METHODS",
+                    "This flag is only useful for Objective-C code. When set to YES local \n"
+		    "methods, which are defined in the implementation section but not in \n"
+		    "the interface are included in the documentation. \n"
+		    "If set to NO (the default) only methods in the interface are included. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "HIDE_UNDOC_MEMBERS",
                     "If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all \n"
                     "undocumented members of documented classes, files or namespaces. \n"

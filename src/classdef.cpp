@@ -1371,10 +1371,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   // write the list of used files (not for man pages)
   ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Man);
 
   if (Config_getBool("SHOW_USED_FILES"))
   {
-    ol.disable(OutputGenerator::Man);
     ol.writeRuler();
     ol.parseText(theTranslator->trGeneratedFromFiles(
           m_isObjC && m_compType==Interface ? Class : m_compType,
@@ -1633,7 +1633,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("<td>");
         }
         if (
-            (prot!=Public || virt!=Normal || 
+            (prot!=Public || (virt!=Normal && !m_isObjC) || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
@@ -1655,7 +1655,8 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (prot==Protected)       sl.append("protected");
             else if (prot==Private)    sl.append("private");
             else if (prot==Package)    sl.append("package");
-            if (virt==Virtual)         sl.append("virtual");
+            if (virt==Virtual && 
+                !m_isObjC)             sl.append("virtual");
             else if (virt==Pure)       sl.append("pure virtual");
             if (md->isStatic())        sl.append("static");
             if (md->isSignal())        sl.append("signal");
@@ -2572,7 +2573,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
   ClassDef *templateClass=m_templateInstances->find(templSpec);
   if (templateClass==0)
   {
-    Debug::print(Debug::Classes,0,"  New template instance class %s%s\n",name().data(),templSpec.data());
+    Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",name().data(),templSpec.data());
     templateClass = new ClassDef(
         fileName,startLine,name()+templSpec,ClassDef::Class);
     templateClass->setTemplateMaster(this);

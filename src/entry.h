@@ -237,7 +237,9 @@ class Entry
       Explicit  = 0x02,
       Mutable   = 0x04,
       Settable  = 0x08,
-      Gettable  = 0x10
+      Gettable  = 0x10,
+      Readable  = 0x20,
+      Writable  = 0x40
     };
 
     Entry();

@@ -707,9 +707,12 @@ class TranslatorDutch : public Translator
         "relatie tussen twee klassen.\n"
         "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
         "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"
-        "<li>Een paars gestreepte pijl wordt gebruikt indien een klasse bevat is of gebruikt wordt "
+        "<li>Een paars gestippelde pijl wordt gebruikt indien een klasse bevat is of gebruikt wordt "
         "door een andere klasse. De pijl is gelabeled met de variable(n) "
         "die toegang geven tot de aangewezen klasse of structure. \n"
+        "<li>Een geel gestippelde pijl wordt gebruikt om een relatie tussen een \n"
+        "template instantie en een template klasse aan te geven. De pijl is gelabeld met \n"
+        "template parameters van de instantie.\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */

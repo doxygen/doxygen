@@ -959,6 +959,12 @@ done:
   return result;
 }
 
+int computeQualifiedIndex(const QString &name)
+{
+  int i = name.find('<');
+  return name.findRev("::",i==-1 ? name.length() : i);
+}
+
 /* Find the fully qualified class name refered to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
@@ -976,7 +982,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
   QCString name=n;
   QCString explicitScopePart;
 
-  int qualifierIndex = name.findRev("::"); // todo: deal with cases like A<B::C>
+  //int qualifierIndex = name.findRev("::"); // todo: deal with cases like A<B::C>
+  int qualifierIndex = computeQualifiedIndex(name);
+  //printf("name=%s qualifierIndex=%d\n",name.data(),qualifierIndex);
   if (qualifierIndex!=-1) // qualified name
   {
     // split off the explicit scope part
@@ -1101,7 +1109,7 @@ ClassDef *getResolvedClass(Definition *scope,
   }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
-  //
+  // 
   //printf("-------- end\n");
   return result;
 }
@@ -1168,7 +1176,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5 && !(isId(s.at(i+1)) || s.at(i+1)==' ')) // prevent const ::A from being converted to const::A
+    else if (c=='t' && csp==5 && !(isId(s.at(i+1)) || s.at(i+1)==' ' || s.at(i+1)==')' || s.at(i+1)==',' || s.at(i+1)=='\0')) // prevent const ::A from being converted to const::A
     {
       result+="t ";
       csp=0;
