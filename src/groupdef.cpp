@@ -468,7 +468,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     int i=0,p=0,l=0;
     while ((i=we.match(title,p,&l))!=-1) // foreach word in the title
     {
-      Doxygen::searchIndex->addWord(title.mid(i,l));
+      Doxygen::searchIndex->addWord(title.mid(i,l),TRUE);
       p=i+l;
     }
   }

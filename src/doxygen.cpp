@@ -1785,10 +1785,16 @@ static bool isVarWithConstructor(Entry *root)
     Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
-      //printf("a->name=%s a->type=%s\n",a->name.data(),a->type.data());
       if (!a->name.isEmpty() || !a->defval.isEmpty()) 
       {
-        result=FALSE; // arg has (type,name) pair -> function prototype
+        if (a->name.find(initChars)==0)
+        {
+          result=TRUE;
+        }
+        else
+        {
+          result=FALSE; // arg has (type,name) pair -> function prototype
+        }
         goto done;
       }
       if (a->type.isEmpty() || getResolvedClass(ctx,fd,a->type)!=0) 
@@ -2197,8 +2203,8 @@ static void buildFunctionList(Entry *root)
       ClassDef *cd=0;
       // check if this function's parent is a class
       static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
-      //printf("root->parent=`%s' cd=%p root->type.find(re,0)=%d\n",
-      //    root->parent->name.data(),getClass(root->parent->name),
+      //printf("root->parent=`%s' %x cd=%p root->type.find(re,0)=%d\n",
+      //    root->parent->name.data(),root->parent->section,getClass(root->parent->name),
       //    root->type.find(re,0));
       QCString scope=stripAnonymousNamespaceScope(root->parent->name);
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
@@ -2225,6 +2231,7 @@ static void buildFunctionList(Entry *root)
           isMember=memIndex<ts || memIndex>te;
         }
       }
+
       if (root->parent && 
           !root->parent->name.isEmpty() &&
           (root->parent->section & Entry::COMPOUND_MASK) && 
@@ -6466,7 +6473,7 @@ static void findDirDocumentation(Entry *root)
     SDict<DirDef>::Iterator sdi(Doxygen::directories);
     for (sdi.toFirst();(dir=sdi.current());++sdi)
     {
-      printf("Dir: %s<->%s\n",dir->name().data(),normalizedName.data());
+      //printf("Dir: %s<->%s\n",dir->name().data(),normalizedName.data());
       if (dir->name().right(normalizedName.length())==normalizedName)
       {
         if (matchingDir)
@@ -6486,7 +6493,7 @@ static void findDirDocumentation(Entry *root)
     }
     if (matchingDir)
     {
-      printf("Match for with dir %s\n",matchingDir->name().data());
+      //printf("Match for with dir %s\n",matchingDir->name().data());
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
     }

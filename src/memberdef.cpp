@@ -201,7 +201,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       if (!md->isDefine()) 
       {
         QCString key;
-        if (md->isObjCMethod() && a->attrib.length()>2)
+        if (md->isObjCMethod() && a->attrib.length()>=2)
         {
           //printf("Found parameter keyword %s\n",a->attrib.data());
           // strip [ and ]
@@ -845,8 +845,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
-    Doxygen::searchIndex->addWord(localName());
-    Doxygen::searchIndex->addWord(qualifiedName());
+    Doxygen::searchIndex->addWord(localName(),TRUE);
+    Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
   }
 
   Definition *d=0;

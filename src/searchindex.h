@@ -44,7 +44,7 @@ class IndexWord
 {
   public:
     IndexWord(const char *word);
-    void addUrlIndex(int);
+    void addUrlIndex(int,bool);
     const QIntDict<URLInfo> &urls() const { return m_urls; }
     QCString word() const { return m_word; }
 
@@ -58,7 +58,7 @@ class SearchIndex
   public:
     SearchIndex();
     void setCurrentDoc(const char *name,const char *baseName,const char *anchor=0);
-    void addWord(const char *word);
+    void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
     QDict<IndexWord> m_words;

@@ -388,7 +388,7 @@ static void addToSearchIndex(const char *text)
   static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
   if (searchEngineEnabled)
   {
-    Doxygen::searchIndex->addWord(text);
+    Doxygen::searchIndex->addWord(text,FALSE);
   }
 }
 

@@ -252,7 +252,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                    }
 <SComment>\n[ \t]*"//!"            |
 <SComment>\n[ \t]*"//!<"/.*\n      |
-<SComment>\n[ \t]*"//!"[^<]/.*\n   { 
+<SComment>\n[ \t]*"//!"[^<\n]/.*\n   { 
                                      replaceComment(1); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);

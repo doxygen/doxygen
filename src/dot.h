@@ -31,6 +31,7 @@ class DotNodeList;
 class ClassSDict;
 class MemberDef;
 class Definition;
+class DirDef;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
@@ -199,6 +200,13 @@ class DotCallGraph
     int             m_recDepth;
     QCString        m_diskName;
     Definition *    m_scope;
+};
+
+class DotDirDeps
+{
+  public:
+    DotDirDeps(DirDef *dir);
+   ~DotDirDeps();
 };
 
 void generateGraphLegend(const char *path);

@@ -2327,6 +2327,16 @@ bool DotCallGraph::isTrivial() const
 
 //-------------------------------------------------------------
 
+DotDirDeps::DotDirDeps(DirDef *)
+{
+}
+
+DotDirDeps::~DotDirDeps()
+{
+}
+
+//-------------------------------------------------------------
+
 void generateGraphLegend(const char *path)
 {
   QFile dotFile((QCString)path+"/graph_legend.dot");

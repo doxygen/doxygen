@@ -1247,7 +1247,7 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word);
+    Doxygen::searchIndex->addWord(word,FALSE);
   }
 }
 
@@ -1262,7 +1262,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word);
+    Doxygen::searchIndex->addWord(word,FALSE);
   }
 }
 
