@@ -126,6 +126,7 @@ class MemberDef : public Definition
     bool isGettable() const               { return (memSpec&Entry::Gettable)!=0; }
     bool isSettable() const               { return (memSpec&Entry::Settable)!=0; }
     bool isExternal() const               { return explExt; }
+    bool isObjCMethod() const;
     bool isConstructor() const;
     bool isDestructor() const;
     bool hasOneLineInitializer() const;

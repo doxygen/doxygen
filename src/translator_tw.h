@@ -646,6 +646,8 @@ class TranslatorChinesetraditional : public Translator
         case ClassDef::Struct:     result+=" 結構"; break;
         case ClassDef::Union:      result+=" 聯合"; break;
         case ClassDef::Interface:  result+=" 介面"; break;
+        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
+        case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" 例外"; break;
       }
       if (isTemplate) result+=" 樣版";
@@ -803,6 +805,8 @@ class TranslatorChinesetraditional : public Translator
         case ClassDef::Struct:     result+="結構(structure)"; break;
         case ClassDef::Union:      result+="聯合(union)"; break;
         case ClassDef::Interface:  result+="介面(interface)"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="例外(exception)"; break;
       }
       result+=" 文件是由下列檔案中產生";

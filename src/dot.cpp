@@ -604,7 +604,7 @@ void DotNode::write(QTextStream &t,
                     bool backArrows
                    )
 {
-  //printf("DotNode::write(%d) name=%s\n",distance,m_label.data());
+  //printf("DotNode::write(%d) name=%s this=%p written=%d\n",distance,m_label.data(),this,m_written);
   if (m_written) return; // node already written to the output
   if (m_distance>distance) return;
   QList<DotNode> *nl = toChildren ? m_children : m_parents; 
@@ -631,6 +631,7 @@ void DotNode::write(QTextStream &t,
       {
         if (cn->m_distance<=distance) 
         {
+          //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
           writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
         }
         cn->write(t,gt,format,topDown,toChildren,distance,backArrows);
@@ -644,19 +645,21 @@ void DotNode::write(QTextStream &t,
       {
         if (pn->m_distance<=distance) 
         {
+          //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
           writeArrow(t,
-                     gt,
-                     format,
-                     pn,
-                     pn->m_edgeInfo->at(pn->m_children->findRef(this)),
-                     FALSE,
-                     backArrows
-                    );
+              gt,
+              format,
+              pn,
+              pn->m_edgeInfo->at(pn->m_children->findRef(this)),
+              FALSE,
+              backArrows
+              );
         }
         pn->write(t,gt,format,TRUE,FALSE,distance,backArrows);
       }
     }
   }
+  //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
 }
 
 void DotNode::writeXML(QTextStream &t,bool isClassGraph)
@@ -935,12 +938,18 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       if (node->m_subgraphId==n->m_subgraphId) 
       {
         node->clearWriteFlag();
+      }
+    }
+    for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+    {
+      if (node->m_subgraphId==n->m_subgraphId) 
+      {
         node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
       }
     }
     uchar md5_sig[16];
     QCString sigStr(33);
-    MD5Buffer(buf.ascii(),buf.length(),md5_sig);
+    MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
     MD5SigToString(md5_sig,sigStr.data(),33);
     if (checkAndUpdateMd5Signature(baseName,sigStr) || 
         !QFileInfo(mapName).exists())
@@ -957,6 +966,12 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
         if (node->m_subgraphId==n->m_subgraphId) 
         {
           node->clearWriteFlag();
+        }
+      }
+      for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+      {
+        if (node->m_subgraphId==n->m_subgraphId) 
+        {
           node->write(t,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
         }
       }
@@ -1006,11 +1021,11 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
     ClassDef *bClass=bcd->classDef; 
-    //printf("Trying super class=`%s'\n",bClass->name().data());
+    //printf("  Trying super class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
     if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
       DotNode *bn;
-      //printf("Node `%s' Found visible class=`%s'\n",n->m_label.data(),
+      //printf("  Node `%s' Found visible class=`%s'\n",n->m_label.data(),
       //                                              bClass->name().data());
       if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
       {
@@ -1018,7 +1033,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
         {
           n->addChild(bn,bcd->prot);
           bn->addParent(n);
-          //printf("Adding node %s to existing base node %s (c=%d,p=%d)\n",
+          //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
           //       n->m_label.data(),
           //       bn->m_label.data(),
           //       bn->m_children ? bn->m_children->count() : 0,
@@ -1027,7 +1042,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
         }
         //else
         //{
-        //  printf("Class already has an arrow!\n");
+        //  printf("  Class already has an arrow!\n");
         //}
       }
       else 
@@ -1039,14 +1054,15 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
              bClass->displayName(),
              tmp_url.data()
            );
-        //printf("Adding node %s to new base node %s (c=%d,p=%d)\n",
+        n->addChild(bn,bcd->prot);
+        bn->addParent(n);
+        //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
         //   n->m_label.data(),
         //   bn->m_label.data(),
         //   bn->m_children ? bn->m_children->count() : 0,
         //   bn->m_parents  ? bn->m_parents->count()  : 0
         //  );
-        n->addChild(bn,bcd->prot);
-        bn->addParent(n);
+        //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
         m_usedNodes->insert(bClass->name(),bn); // add node to the used list
       }
       if (!bClass->visited && !hideSuper && bClass->subClasses()->count()>0)
@@ -1057,6 +1073,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
       }
     }
   }
+  //printf("end addHierarchy\n");
 }
 
 void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
@@ -1481,7 +1498,7 @@ QCString computeMd5Signature(DotNode *root,
   }
   uchar md5_sig[16];
   QCString sigStr(33);
-  MD5Buffer(buf.ascii(),buf.length(),md5_sig);
+  MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;

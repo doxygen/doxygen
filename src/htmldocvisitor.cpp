@@ -293,10 +293,9 @@ void HtmlDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
   bool bDisplay = f->text().at(0)=='\\';
-  if (bDisplay) m_t << "<p class=formulaDsp>" << endl;
-  m_t << "<img class=formula"
-      << (bDisplay ? "Dsp" : "Inl");
-  m_t << " alt=\"";
+  if (bDisplay) m_t << "<p class=\"formulaDsp\">" << endl;
+  m_t << "<img class=\"formula" << (bDisplay ? "Dsp" : "Inl");
+  m_t << "\" alt=\"";
   filterQuotedCdataAttr(f->text());
   m_t << "\"";
   /// @todo cache image dimensions on formula generation and give height/width
@@ -696,7 +695,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     m_t << "<div align=\"center\">" << endl;
     m_t << "<img src=\"" << img->name() << "\" alt=\"" 
-      << baseName << "\">" << endl;
+      << baseName << "\"" << htmlAttribsToString(img->attribs()) << ">" << endl;
     if (img->hasCaption())
     {
       m_t << "<p><strong>";

@@ -561,8 +561,8 @@ class DocImage : public CompAccept<DocImage>, public DocNode
 {
   public:
     enum Type { Html, Latex, Rtf };
-    DocImage(DocNode *parent,const QString &name,Type t) : 
-      m_parent(parent), m_name(name), m_type(t) {}
+    DocImage(DocNode *parent,const HtmlAttribList &attribs,const QString &name,Type t) : 
+      m_parent(parent), m_attribs(attribs), m_name(name), m_type(t) {}
     Kind kind() const          { return Kind_Image; }
     Type type() const          { return m_type; }
     QString name() const       { return m_name; }
@@ -570,11 +570,13 @@ class DocImage : public CompAccept<DocImage>, public DocNode
     bool hasCaption() const    { return !m_children.isEmpty(); }
     QString width() const      { return m_width; }
     QString height() const     { return m_height; }
+    const HtmlAttribList &attribs() const { return m_attribs; }
     void accept(DocVisitor *v) { CompAccept<DocImage>::accept(this,v); }
     void parse();
 
   private:
     DocNode *m_parent;
+    HtmlAttribList m_attribs;
     QString  m_name;
     Type     m_type;
     QString  m_width;

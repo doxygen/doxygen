@@ -608,6 +608,8 @@ class TranslatorHungarian : public Translator
         case ClassDef::Struct:     result+=" struktúra"; break;
         case ClassDef::Union:      result+=" unió"; break;
         case ClassDef::Interface:  result+=" interfész"; break;
+        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
+        case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" kivétel"; break;
       }
       if (isTemplate) result+="sablon-";
@@ -765,6 +767,8 @@ class TranslatorHungarian : public Translator
         case ClassDef::Struct:     result+="a struktúráról"; break;
         case ClassDef::Union:      result+="az unióról"; break;
         case ClassDef::Interface:  result+="az interfészrõl"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="a kivételrõl"; break;
       }
       result+=" a következõ fájl";

@@ -660,6 +660,8 @@ class TranslatorRussian : public Translator
           case ClassDef::Struct: result+="структуры"; break;
           case ClassDef::Union:  result+="объединения"; break;
           case ClassDef::Interface:  result+="интерфейса"; break;
+          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+          case ClassDef::Category:   result+="category"; break; // translate me!
           case ClassDef::Exception:  result+="исключения"; break;
         }
       }
@@ -671,6 +673,8 @@ class TranslatorRussian : public Translator
           case ClassDef::Struct: result+="Структура"; break;
           case ClassDef::Union:  result+="Объединение"; break;
           case ClassDef::Interface:  result+="Интерфейс"; break;
+          case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+          case ClassDef::Category:   result+="category"; break; // translate me!
           case ClassDef::Exception:  result+="Исключение"; break;
         }
       }
@@ -833,6 +837,10 @@ class TranslatorRussian : public Translator
           break;
         case ClassDef::Interface:  result+="интерфейс";
           if (single) result+='а'; else result+="ов";
+          break;
+        case ClassDef::Protocol:  result+="Protocol"; // translate me!
+          break;
+        case ClassDef::Category:  result+="Category"; // translate me!
           break;
         case ClassDef::Exception:  result+="исключени";
           if (single) result+='я'; else result+='й';

@@ -629,6 +629,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_18
 		case ClassDef::Struct:	   result+="štruktúry "; break;
 		case ClassDef::Union:	   result+="unionu "; break;
 		case ClassDef::Interface:  result+="rozhrania "; break;
+		case ClassDef::Protocol:   result+="protocol "; break; // translate me!
+		case ClassDef::Category:   result+="category "; break; // translate me!
 		case ClassDef::Exception:  result+="výnimky "; break;
 	  }
 	  result+=clName;
@@ -799,6 +801,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_18
 		case ClassDef::Struct:	   result+="túto štruktúru (struct)"; break;
 		case ClassDef::Union:	   result+="tento union"; break;
 		case ClassDef::Interface:  result+="toto rozhranie"; break;
+		case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+		case ClassDef::Category:   result+="category"; break; // translate me!
 		case ClassDef::Exception:  result+="túto výnimku"; break;
 	  }
 	  result+=" bola generovaná z ";

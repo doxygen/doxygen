@@ -91,6 +91,7 @@ ClassDef::ClassDef(
   m_artificial = FALSE;
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
+  m_isObjC = FALSE;
   m_membersMerged = FALSE;
   QCString ns;
   extractNamespaceName(m_name,m_className,ns);
@@ -996,6 +997,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
       if (isIDLorJava)
       {
         ol.docify("import ");
+      }
+      else if (isObjectiveC())
+      {
+        ol.docify("#import ");
       }
       else
       {
@@ -2381,6 +2386,8 @@ QCString ClassDef::compoundTypeString() const
     case Struct:    return "struct";
     case Union:     return "union";
     case Interface: return "interface";
+    case Protocol:  return "protocol";
+    case Category:  return "category";
     case Exception: return "exception";
   }
   return "unknown";

@@ -280,6 +280,8 @@ class TranslatorDutch : public Translator
         case ClassDef::Struct: result+=" Struct"; break;
         case ClassDef::Union:  result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Protocol:  result+=" Protocol"; break;
+        case ClassDef::Category:  result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
       }
       result+=" Referentie";
@@ -426,6 +428,8 @@ class TranslatorDutch : public Translator
         case ClassDef::Struct:     result+="struct"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
+        case ClassDef::Protocol:   result+="protocol"; break;
+        case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" is gegenereerd op grond van de volgende file";

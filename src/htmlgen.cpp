@@ -57,15 +57,22 @@ static const char *defaultStyleSheet =
 "	margin: 2px;\n"
 "	padding: 2px;\n"
 "}\n"
-"A.qindex { text-decoration: none; font-weight: bold; color: #1A419D}\n"
-"A.qindex:visited { text-decoration: none; font-weight: bold; color: #1A419D}\n"
+"A.qindex {\n"
+"       text-decoration: none;\n"
+"       font-weight: bold;\n"
+"       color: #1A419D;\n"
+"       padding: 2px;\n"
+"}\n"
+"A.qindex:visited {\n"
+"       text-decoration: none;\n"
+"       font-weight: bold;\n"
+"       color: #1A419D\n"
+"       padding: 2px;\n"
+"}\n"
 "A.qindex:hover {\n"
 "	text-decoration: none;\n"
 "	background-color: #ddddff;\n"
-"	padding-top: 2px;\n"
-"	padding-right: 2px;\n"
-"	padding-bottom: 2px;\n"
-"	padding-left: 2px;\n"
+"	padding: 2px;\n"
 "}\n"
 "A.qindexHL {\n"
 "	text-decoration: none;\n"
@@ -987,11 +994,13 @@ void HtmlGenerator::endMemberDocPrefixItem()
   t << "        </tr>" << endl;
 }
 
-void HtmlGenerator::startMemberDocName()
+void HtmlGenerator::startMemberDocName(bool align)
 {
   DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td class=\"md\" nowrap valign=\"top\"> ";
+  t << "          <td class=\"md\" nowrap valign=\"top\"";
+  if (align) t << " align=\"right\"";
+  t << "> ";
 }
 
 void HtmlGenerator::endMemberDocName()
@@ -1000,13 +1009,18 @@ void HtmlGenerator::endMemberDocName()
   t << "</td>" << endl;
 }
 
-void HtmlGenerator::startParameterList()
+void HtmlGenerator::startParameterList(bool openBracket)
 {
   DBG_HTML(t << "<!-- startParameterList -->" << endl;)
-  t << "          <td class=\"md\" valign=\"top\">(&nbsp;</td>" << endl;
+  t << "          <td class=\"md\" valign=\"top\">";
+  if (openBracket)
+  {
+    t << "(&nbsp;";
+  }
+  t << "</td>" << endl;
 }
 
-void HtmlGenerator::startParameterType(bool first)
+void HtmlGenerator::startParameterType(bool first,const char *key)
 {
   if (first)
   {
@@ -1017,7 +1031,9 @@ void HtmlGenerator::startParameterType(bool first)
   {
     DBG_HTML(t << "<!-- startParameterType -->" << endl;)
     t << "        <tr>" << endl;
-    t << "          <td></td>" << endl;
+    t << "          <td class=\"md\" nowrap align=\"right\">";
+    if (key) t << key;
+    t << "</td>" << endl;
     t << "          <td></td>" << endl;
     t << "          <td class=\"md\" nowrap>";
   }

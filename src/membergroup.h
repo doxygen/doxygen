@@ -22,7 +22,7 @@
 #include <qlist.h>
 #include "sortdict.h"
 
-#define NOGROUP -1
+#define DOX_NOGROUP -1
 
 class MemberDef;
 class ClassDef;

@@ -641,6 +641,8 @@ class TranslatorDanish : public Translator
         case ClassDef::Struct:     result+=" Datastruktur-"; break;
         case ClassDef::Union:      result+=" Union-"; break;
         case ClassDef::Interface:  result+=" Grænseflade-"; break;
+        case ClassDef::Protocol:   result+=" Protocol-"; break; // translate me!
+        case ClassDef::Category:   result+=" Category-"; break; // translate me!
         case ClassDef::Exception:  result+=" Exception-"; break;
       }
       if (isTemplate) result+="template-";
@@ -796,6 +798,8 @@ class TranslatorDanish : public Translator
         case ClassDef::Struct:     result+="datastruktur"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="grænseflade"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="exception"; break;
       }
       result+=" blev genereret ud fra fil";

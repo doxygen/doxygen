@@ -238,7 +238,7 @@ void replaceComment(int offset);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
   				   }
-<SComment>^[ \t]*"//!"/.*\n        { 
+<SComment>^[ \t]*"//!"/.*\n        {  
   				     replaceComment(0);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);

@@ -715,16 +715,24 @@ static void addClassToContext(Entry *root)
     {
       case Entry::UNION_SEC: 
       case Entry::UNIONDOC_SEC: 
-        sec=ClassDef::Union; break;
+        sec=ClassDef::Union; 
+        break;
       case Entry::STRUCT_SEC:
       case Entry::STRUCTDOC_SEC: 
-        sec=ClassDef::Struct; break;
+        sec=ClassDef::Struct; 
+        break;
       case Entry::INTERFACE_SEC:
       case Entry::INTERFACEDOC_SEC:
-        sec=ClassDef::Interface; break;
+        sec=ClassDef::Interface; 
+        break;
+      case Entry::PROTOCOL_SEC:
+      case Entry::PROTOCOLDOC_SEC:
+        sec=ClassDef::Protocol; 
+        break;
       case Entry::EXCEPTION_SEC:
       case Entry::EXCEPTIONDOC_SEC:
-        sec=ClassDef::Exception; break;
+        sec=ClassDef::Exception; 
+        break;
     }
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
@@ -746,8 +754,8 @@ static void addClassToContext(Entry *root)
         tagName,refFileName);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    cd->setIsObjectiveC(root->objc);
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
-
 
     ArgumentList *tArgList = 
       getTemplateArgumentsFromName(fullName,root->tArgLists);

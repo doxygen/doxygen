@@ -106,7 +106,7 @@ static bool             removeSlashes;
 static Specifier 	virt;
 static Specifier 	baseVirt;
 static QCString         msType,msName,msArgs;
-static int              memberGroupId = NOGROUP;
+static int              memberGroupId = DOX_NOGROUP;
 static QCString         memberGroupHeader;
 static QCString         memberGroupDocs;
 static bool             isTypedef;
@@ -180,7 +180,7 @@ static void initParser()
   sharpCount = 0;
   roundCount = 0;
   curlyCount = 0;
-  memberGroupId = NOGROUP;
+  memberGroupId = DOX_NOGROUP;
   memberGroupRelates.resize(0);
   memberGroupInside.resize(0);
   mtype = Method;
@@ -809,10 +809,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %%
 
 <*>\x06[^\x06]*\x06			{ // new file
-  					  if (memberGroupId!=NOGROUP)
+  					  if (memberGroupId!=DOX_NOGROUP)
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: Missing //@}");
-					    memberGroupId=NOGROUP;
+					    memberGroupId=DOX_NOGROUP;
 					  }
   					  yyLineNr= 0 ; // there is always an extra newline at the start of the file
 					  int i; 
@@ -1063,6 +1063,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ObjCParams>{ID}			{ // name of parameter
   					  current->argList->getLast()->name=yytext;
   					}
+<ObjCParams>"..."			{ // name of parameter
+  					  current->argList->getLast()->name=yytext;
+  					}
 <ObjCParams>":"				{ 
 					  current->name += ':';
 					}
@@ -1236,6 +1239,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->bodyLine  = yyLineNr;
 					  BEGIN( CompoundName );
   					}
+<FindMembers>{B}*"@protocol"{BN}+	{ // Objective-C protocol definition
+					  lineCount();
+  					  isTypedef=FALSE;
+					  current->section = Entry::PROTOCOL_SEC;
+					  current->objc = insideObjC = TRUE;
+					  current->protection = protection = Public ;
+					  addType( current ) ;
+					  current->type += " protocol" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  BEGIN( CompoundName );
+  					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
 					  current->section = Entry::EXCEPTION_SEC;
@@ -1247,6 +1263,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lineCount();
 					  BEGIN( CompoundName );
   					}
+<FindMembers>"@class" | // for Objective C class declarations
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class{" |
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -1290,15 +1307,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
-					  //if (current->mtArgList) // transfer template arguments
-					  //{
-					  //  if (current->tArgList)
-					  //  {
-					  //    delete current->tArgList;
-					  //  }
-					  //  current->tArgList = current->mtArgList;
-					  //  current->mtArgList = 0;
-					  //}
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
@@ -1868,7 +1876,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					      current->inside = current_root->name+"::";
-                                              if (current->mGrpId!=NOGROUP)
+                                              if (current->mGrpId!=DOX_NOGROUP)
                                               {
                                                 memberGroupInside = current->inside.copy();
                                               }
@@ -1892,7 +1900,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
-                                          if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
+                                          if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
                                           {
                                             warn(yyFileName,yyLineNr,
 	                                        "Warning: end of group without matching begin.");
@@ -2282,8 +2290,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					      current->args = current->args.simplifyWhiteSpace();
   					      current->type = current->type.simplifyWhiteSpace();
   					      current->name = current->name.stripWhiteSpace();
-					      //printf("adding `%s' `%s' `%s' brief=%s\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data());
-					      if (insideObjC) // method definition follows
+					      //printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
+					      if (insideObjC && 
+						  (current->section==Entry::INTERFACE_SEC || current->section==Entry::CATEGORY_SEC)
+						 ) // method definition follows
 					      {
 				                BEGIN( ReadBodyIntf ) ;
 					      }
@@ -3299,7 +3309,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  if (--sharpCount<=0)
 					  {
 					    current->name = removeRedundantWhiteSpace(current->name);
-					    BEGIN( lastClassTemplSpecContext );
+					    if (current->section == Entry::PROTOCOL_SEC)
+					    { // Objective-C protocol
+					      unput('{'); // fake start of body
+					      BEGIN( ClassVar );
+					    }
+					    else
+					    {
+					      BEGIN( lastClassTemplSpecContext );
+					    }
 					  }
 					}
 <ClassTemplSpec>"<"			{
@@ -3312,6 +3330,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
+					  if (current->section == Entry::PROTOCOL_SEC)
+					  {
+					    unput('{'); // fake start of body
+					  }
 					  BEGIN( ClassVar );
 					}
 <CompoundName>{CSSCOPENAME}	        { // C# style scope
@@ -3335,6 +3357,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    BEGIN( FindMembers );
 					  }
   					}
+<ClassVar>","				// Multiple class forward declaration
 <ClassVar>{ID}				{
   					  if (insideIDL && strcmp(yytext,"switch")==0)
 					  {
@@ -3381,6 +3404,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
     					  if (insideObjC && *yytext=='(') // class category
 					  {
 					    current->name+='(';
+					    current->section=Entry::CATEGORY_SEC;
 					    BEGIN( ClassCategory );
 					  }
 					  else
@@ -3404,7 +3428,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->type.resize(0);
 					  if (current->section == Entry::INTERFACE_SEC || 
 					      current->section == Entry::STRUCT_SEC || 
-					      insidePHP || insideCS || insideD
+					      insidePHP || insideCS || insideD || insideObjC
 					     )
 					    baseProt=Public;
 					  else
@@ -3430,7 +3454,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->name.sprintf("@%d",anonCount++);
 					  }
 					  curlyCount=0;
-					  if (current->section==Entry::NAMESPACE_SEC)
+					  if (current->section==Entry::PROTOCOL_SEC)
+					  {
+					    BEGIN( ReadBodyIntf );
+					  }
+					  else if (current->section==Entry::NAMESPACE_SEC)
 					  {
 					    BEGIN( ReadNSBody );
 					  }
@@ -3467,6 +3495,24 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->args += ' ';
 					  current->args += name;
     					}
+<Bases>^{B}*/[\-+]			{
+  					  if (!insideObjC)
+					  { 
+					    REJECT;
+					  }
+					  else
+					  {
+					    unput('{'); // insert start of fake body
+					  }
+  					}
+<ClassVar,Bases>"@end"			{ // empty ObjC interface
+  					  unput('d'); // insert fake body: {}@end
+  					  unput('n'); 
+  					  unput('e'); 
+  					  unput('@'); 
+  					  unput('}'); 
+  					  unput('{');
+					}
 <ClassVar>"<"   	                { current->name += *yytext;
   					  sharpCount=1; 
 					  lastSkipSharpContext = YY_START;
@@ -3509,7 +3555,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP || insideCS || insideD)
+					  if (current->section==Entry::INTERFACE_SEC || 
+					      insideJava || insidePHP || insideCS || 
+					      insideD || insideObjC)
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -3525,7 +3573,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  curlyCount=0;
-					  BEGIN( ReadBody ) ;
+					  if (insideObjC)
+					  {
+					    BEGIN( ReadBodyIntf );
+					  }
+					  else
+					  {
+					    BEGIN( ReadBody ) ;
+					  }
 					}
 <SkipUnionSwitch>{B}*"("		{
   					  roundCount++;
@@ -3563,7 +3618,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=NOGROUP)
+                                            if (current->mGrpId!=DOX_NOGROUP)
                                             {
                                               memberGroupInside = current->inside.copy();
                                             }
@@ -3577,7 +3632,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=NOGROUP)
+                                            if (current->mGrpId!=DOX_NOGROUP)
                                             {
                                               memberGroupInside = current->inside.copy();
                                             }
@@ -3633,7 +3688,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=NOGROUP)
+                                            if (current->mGrpId!=DOX_NOGROUP)
                                             {
                                               memberGroupInside = current->inside.copy();
                                             }
@@ -3652,7 +3707,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=NOGROUP)
+                                            if (current->mGrpId!=DOX_NOGROUP)
                                             {
                                               memberGroupInside = current->inside.copy();
                                             }
@@ -4059,7 +4114,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <ClassDocRelates>({ID}"::")*{ID}	{ 
   					  current->relates = yytext;
-                                          if (current->mGrpId!=NOGROUP) 
+                                          if (current->mGrpId!=DOX_NOGROUP) 
                                           {
                                             memberGroupRelates = yytext;
                                           }
@@ -4072,7 +4127,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ClassDocRelatesAlso>({ID}"::")*{ID}    { 
   					  current->relatesDup = TRUE;
 					  current->relates = yytext;
-					  if (current->mGrpId!=NOGROUP) 
+					  if (current->mGrpId!=DOX_NOGROUP) 
 					  {
 					    memberGroupRelates = yytext;
 					  }
@@ -4536,13 +4591,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 							  BEGIN( GroupName );
   							}
 <ClassDoc,Doc,JavaDoc>{CMD}"{"				{
-                                                          if (memberGroupId==NOGROUP && current->section==Entry::GROUPDOC_SEC)
+                                                          if (memberGroupId==DOX_NOGROUP && current->section==Entry::GROUPDOC_SEC)
 							  {
 							    startGroupInDoc();
 							  }
   							}
 <ClassDoc,Doc,JavaDoc>{CMD}"}"				{
-                                                          if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
+                                                          if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
                                                           {
                                                              warn(yyFileName,yyLineNr,
 	                                                          "Warning: end of group without matching begin.");
@@ -5352,7 +5407,7 @@ static void startGroup()
   }
   else 
   {
-    //if (memberGroupId!=NOGROUP)
+    //if (memberGroupId!=DOX_NOGROUP)
     //{
     //  //warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
     //  //	"Previous command was found at line %d.",lastMemberGroupLine);
@@ -5389,7 +5444,7 @@ static void startGroupInDoc()
   }
   else if (current->section == Entry::MEMBERGRP_SEC) /* scope for a member group: @name */
   {
-    //if (memberGroupId!=NOGROUP)
+    //if (memberGroupId!=DOX_NOGROUP)
     //{
     //  printf("startGroupInDoc ends group %d\n",memberGroupId);
     //  endGroup();
@@ -5414,7 +5469,7 @@ static void startGroupInDoc()
 
 static void endGroup()
 {
-  if (memberGroupId!=NOGROUP) // end of member group
+  if (memberGroupId!=DOX_NOGROUP) // end of member group
   {
     //Doxygen::memberDocDict.insert(memberGroupId,
     //	new QCString(memberGroupDocs)
@@ -5425,12 +5480,12 @@ static void endGroup()
       info->doc = memberGroupDocs;
       info->docFile = yyFileName;
     }
-    memberGroupId=NOGROUP;
+    memberGroupId=DOX_NOGROUP;
     memberGroupRelates.resize(0);
     memberGroupInside.resize(0);
     if (YY_START!=ReadInitializer) 
     {
-      current->mGrpId=NOGROUP;
+      current->mGrpId=DOX_NOGROUP;
       current->relates.resize(0);
     }
     memberGroupDocs.resize(0);
@@ -5450,7 +5505,7 @@ static void endGroup()
 
 static void forceEndGroup()
 {
-  while (memberGroupId!=NOGROUP || !autoGroupStack.isEmpty()) 
+  while (memberGroupId!=DOX_NOGROUP || !autoGroupStack.isEmpty()) 
   {
     //printf("forceEndGroup ends group %d\n",memberGroupId);
     endGroup();
@@ -5543,7 +5598,7 @@ static void parseCompounds(Entry *rt)
 	  current->protection = protection = Public ;
 	}
       }
-      else // named struct, union
+      else // named struct, union, protocol, category
       {
 	current->protection = protection = Public ;
       }
@@ -5551,7 +5606,7 @@ static void parseCompounds(Entry *rt)
       virt = Normal;
       //printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
 
-      memberGroupId = NOGROUP;
+      memberGroupId = DOX_NOGROUP;
       memberGroupRelates.resize(0);
       memberGroupInside.resize(0);
       

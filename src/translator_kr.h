@@ -581,6 +581,8 @@ class TranslatorKorean : public Translator
         case ClassDef::Struct:     result+=" 구조체"; break;
         case ClassDef::Union:      result+=" 공용체"; break;
         case ClassDef::Interface:  result+=" 인터페이스"; break;
+        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
+        case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" 예외"; break;
       }
       result+=" 참조";
@@ -738,6 +740,8 @@ class TranslatorKorean : public Translator
         case ClassDef::Struct:     result+="구조체"; break;
         case ClassDef::Union:      result+="공용체"; break;
         case ClassDef::Interface:  result+="인터페이스"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="예외"; break;
       }
       result+="을 위한 문서화는 다음의 파일";

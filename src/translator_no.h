@@ -346,6 +346,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_2_2
         case ClassDef::Struct: result+=" struktur"; break;
         case ClassDef::Union:  result+=" union"; break;
         case ClassDef::Interface:  result+=" grensesnitt"; break;
+        case ClassDef::Protocol:  result+=" protocol"; break; // translate me!
+        case ClassDef::Category:  result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" unntak"; break;
       }
       result+="referanse";
@@ -484,6 +486,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_2_2
         case ClassDef::Struct:     result+="denne strukt "; break;
         case ClassDef::Union:      result+="denne union "; break;
         case ClassDef::Interface:  result+="dette grensesnittet "; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="unntak "; break;
       }
       result+="var generert fra følgende fil";

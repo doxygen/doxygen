@@ -1079,9 +1079,10 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
-KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient")
+KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol")
+KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
-TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean")
+TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean"|"id"|"SEL")
 
 %option noyywrap
 
@@ -1109,12 +1110,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %%
 
 <*>\x0d
-<Body>^([ \t]*"#"[ \t]*"include"[ \t]*)("<"|"\"") {
+<Body>^([ \t]*"#"[ \t]*("include"|"import")[ \t]*)("<"|"\"") {
   					  startFontClass("preprocessor");
 					  g_code->codify(yytext);
   					  BEGIN( ReadInclude ); 
 					}
-<Body>("class"|"struct"|"union"|"namespace")[ \t\n]+ { 
+<Body>("class"|"struct"|"union"|"namespace"|"@interface"|"@implementation"|"@interface")[ \t\n]+ { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -1234,9 +1235,28 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_currentMemberDef=0;
 					    if (g_currentDefinition) 
 					      g_currentDefinition=g_currentDefinition->getOuterScope();
-					    else
-					      g_currentDefinition=0;
 					  }
+					  BEGIN(Body);
+					}
+<Body>"@end"				{ 
+                                          g_theVarContext.popScope();
+
+					  int *scope = g_scopeStack.pop();
+  					  if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
+					  {
+					    popScope();
+					  }
+
+					  startFontClass("keyword");
+  					  g_code->codify(yytext);
+					  endFontClass();
+
+  					  g_inClass=FALSE; 
+
+					  g_insideBody=FALSE;
+					  g_currentMemberDef=0;
+					  if (g_currentDefinition) 
+					    g_currentDefinition=g_currentDefinition->getOuterScope();
 					  BEGIN(Body);
 					}
 <ClassName,ClassVar>";"			{ 
@@ -1330,7 +1350,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_curClassBases.clear();
 					  BEGIN( Body );
  					}
-<Bases>"virtual"|"public"|"protected"|"private" { 
+<Bases>"virtual"|"public"|"protected"|"private"|"@public"|"@private"|"@protected" { 
   					  startFontClass("keyword");
   					  g_code->codify(yytext);
 					  endFontClass();
@@ -1354,6 +1374,22 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (--g_sharpCount<=0)
 					  BEGIN ( Bases );
 					}
+<Bases>"("                              {
+                                          g_code->codify(yytext);
+                                          g_sharpCount=1;
+                                          BEGIN ( SkipSharp );
+                                        }
+<SkipSharp>"("                          {
+                                          g_code->codify(yytext);
+                                          ++g_sharpCount;
+                                        }
+<SkipSharp>")"                          {
+                                          g_code->codify(yytext);
+                                          if (--g_sharpCount<=0)
+                                            BEGIN ( Bases );
+                                        }
+      
+      
 <Bases>","                              { 
   					  g_code->codify(yytext);
 					}
@@ -1618,9 +1654,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_type.resize(0);
 					    g_name.resize(0);
 					  }
+					  else if (*yytext=='[')
+					  {
+					    g_theCallContext.pushScope();
+					  }
 					  g_args.resize(0);
   					}
 <Body>"]"				{
+					  g_theCallContext.popScope();
   					  g_code->codify(yytext);
 					  // TODO: nested arrays like: a[b[0]->func()]->func()
 					  g_name = g_saveName.copy();
@@ -1673,6 +1714,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
 					}
 <MemberCall2,FuncCall>")"		{ 
+					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_theCallContext.popScope();
   					  g_code->codify(yytext);
   					  if (--g_bracketCount<=0) 

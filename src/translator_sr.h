@@ -645,6 +645,8 @@ private:
         case ClassDef::Struct:     result+="strukture "; break;
         case ClassDef::Union:      result+="unije "; break;
         case ClassDef::Interface:  result+="interfejsa "; break;
+        case ClassDef::Protocol:  result+="protocol "; break; // translate me!
+        case ClassDef::Category:  result+="category "; break; // translate me!
         case ClassDef::Exception:  result+="izuzetka "; break;
       }
       if (isTemplate) result += "¹ablona ";  
@@ -803,6 +805,8 @@ private:
         case ClassDef::Struct:     result+="ove strukture"; break;
         case ClassDef::Union:      result+="ove unije"; break;
         case ClassDef::Interface:  result+="ovog interfejsa"; break;
+        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
+        case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="ovog izuzetka"; break;
       }
       result+=" je napravljena iz ";

@@ -346,13 +346,13 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void lastIndexPage() = 0;
     virtual void startMemberDocPrefixItem() = 0;
     virtual void endMemberDocPrefixItem() = 0;
-    virtual void startMemberDocName() = 0;
+    virtual void startMemberDocName(bool) = 0;
     virtual void endMemberDocName() = 0;
-    virtual void startParameterType(bool) = 0;
+    virtual void startParameterType(bool,const char *) = 0;
     virtual void endParameterType() = 0;
     virtual void startParameterName(bool) = 0;
     virtual void endParameterName(bool,bool) = 0;
-    virtual void startParameterList() = 0;
+    virtual void startParameterList(bool) = 0;
     virtual void endParameterList() = 0;
 
   protected:

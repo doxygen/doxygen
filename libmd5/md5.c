@@ -174,7 +174,7 @@ void MD5Final (MD5_CTX *context, unsigned char digest[16])
   MD5_memset ((POINTER)context, 0, sizeof (*context));
 }
 
-void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16])
+void MD5Buffer (const unsigned char *buf,unsigned int len,unsigned char sig[16])
 {
   MD5_CTX md5;
   MD5Init(&md5);
