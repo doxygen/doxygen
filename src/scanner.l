@@ -519,6 +519,16 @@ TITLE     [tT][iI][tT][lL][eE]
   					  unput(*yytext);
 					  BEGIN( FindMembers );
   					}
+<FindMembers>{B}*("properties"|"__property"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
+  					  current->mtype = mtype = Property;
+					  current->protection = protection = Public ;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+					}
+
 <FindMembers>{B}*"k_dcop"{BN}*":"{BN}*  { current->mtype = mtype = DCOP;
 					  current->protection = protection = Public ;
 					  current->type.resize(0); 
@@ -566,9 +576,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->argList->clear();
 					  lineCount();
 					}
-<FindMembers>{B}*"properties"{B}":"	{ /* M$-IDL only: ignored */ }
-<FindMembers>{B}*"methods"{B}":"	{ /* M$-IDL only: ignored */ }
-<FindMembers>{B}*"public"{BN}*":"{BN}*	{ 
+<FindMembers>{B}*("public"|"methods"|"__published"){BN}*":"{BN}* { 
 					  current->protection = protection = Public ;
 					  current->mtype = mtype = Method;
 					  current->type.resize(0); 

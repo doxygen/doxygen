@@ -65,7 +65,12 @@
 // 2000/09/06 (Petr Prikryl)
 //  - Reimplementation of the method trInheritsList() which takes 
 //    into account quantity of base classes.
-//    
+//
+// 2000/09/11 (Petr Prikryl)
+//  - Update for "new since 1.2.1" version. The text of trDCOPMethods()
+//    was translated rather blindly (not knowing what exactly
+//    the DCOP means).
+//         
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
@@ -75,7 +80,7 @@
 // the conditional definition of the inline Decode() using the
 // method ISO88592ToWin1250() -- for conversion of strings for the
 // Windows version. The version which does not call the function is
-// probably slightly faster (if the inline is well optimized).
+// probably slightly faster.
 
 class TranslatorCzech : public Translator
 {
@@ -1094,6 +1099,15 @@ class TranslatorCzech : public Translator
       return Decode("Seznam testù");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return Decode("Metody DCOP");
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

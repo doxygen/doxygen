@@ -337,7 +337,7 @@ Here is what is required:
     variables (if you did not select to do this automatically during 
     installation).
 <li>Perl 5.0 or higher for Windows. This can be download from:
-    http://www.ActiveState.com/pw32
+    http://www.ActiveState.com/Products/ActivePerl/
 <li>The GNU tools flex, bison and sed.
     To get these working on Windows you should install the 
     <a href="http://sourceware.cygnus.com/cygwin/">cygwin tools</a>
@@ -351,8 +351,8 @@ Here is what is required:
     the directory they are in to the search path.
 
 <li>A professional license of 
-    <A HREF="http://www.trolltech.com/products/qt.html">Qt for Windows</A><br>
-    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
+    <A HREF="http://www.trolltech.com/products/qt.html">Qt for Windows</A>
+    \latexonly\par (see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
    
     If you do not have that and you can live without the GUI front-end 
     you can also download Qt-1.44 for X11. Doxygen only the depends on 

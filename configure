@@ -218,27 +218,27 @@ if test "$f_plf_auto" = NO; then
 fi
 
 #- check for qt --------------------------------------------------------------
-
-echo -n "  Checking for Qt..."
-if test -z "$QTDIR"; then
-  echo "QTDIR not set!"
-  echo
-  echo "tmake requires the QTDIR environment variable to be set."
-  echo "check your Qt installation!"
-  exit 2
-else
-  if test ! -d "$QTDIR/lib"; then
-    echo "QTDIR is set, but library directory does not exist!"
-    exit 2
-  fi
-  if test ! -d "$QTDIR/include"; then
-    echo "QTDIR is set, but include directory does not exist!"
-    exit 2
-  fi
-  echo " headers $QTDIR/include,"
-  echo "                     libraries $QTDIR/lib"  
-fi
-  
+# 
+# echo -n "  Checking for Qt..."
+# if test -z "$QTDIR"; then
+#   echo "QTDIR not set!"
+#   echo
+#   echo "tmake requires the QTDIR environment variable to be set."
+#   echo "check your Qt installation!"
+#   exit 2
+# else
+#   if test ! -d "$QTDIR/lib"; then
+#     echo "QTDIR is set, but library directory does not exist!"
+#     exit 2
+#   fi
+#   if test ! -d "$QTDIR/include"; then
+#     echo "QTDIR is set, but include directory does not exist!"
+#     exit 2
+#   fi
+#   echo " headers $QTDIR/include,"
+#   echo "                     libraries $QTDIR/lib"  
+# fi
+#   
 # - check for make ------------------------------------------------------------
 
 echo -n "  Checking for GNU make tool... "
@@ -268,7 +268,7 @@ echo "using $f_make"
 
 # - check for dot ------------------------------------------------------------
 
-echo -n "  Checking for dot... "
+echo -n "  Checking for dot (part of GraphViz)... "
 if test "$f_dot" = NO; then
   dot_dirs="$bin_dirs"
   dot_prog=NO
@@ -374,7 +374,7 @@ TMAKE_CXXFLAGS = -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/configgen/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -404,7 +404,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/configgen/configgen.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

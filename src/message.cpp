@@ -28,6 +28,8 @@ static int warnFormatOrder; // 1 = $file,$line,$text
                             // 5 = $text,$file,$line
                             // 6 = $line,$file,$text
 
+static FILE *warnFile = stderr;
+
 void initWarningFormat()
 {
   int filePos = Config::warnFormat.find("$file");
@@ -78,6 +80,11 @@ void initWarningFormat()
   //    replace(QRegExp("\\$text"),"%s").
   //    replace(QRegExp("\\$line"),"%d")+
   //    '\n';
+
+  if (!Config::warnLogFile.isEmpty())
+  {
+    warnFile = fopen(Config::warnLogFile,"w");
+  }
 }
 
 
@@ -104,12 +111,12 @@ void warn(const char *file,int line,const char *fmt, ...)
     va_end(args); 
     switch(warnFormatOrder)
     {
-      case 1: fprintf(stderr,outputFormat,file,line,text); break;
-      case 2: fprintf(stderr,outputFormat,text,line,file); break;
-      case 3: fprintf(stderr,outputFormat,line,text,file); break;
-      case 4: fprintf(stderr,outputFormat,file,text,line); break;
-      case 5: fprintf(stderr,outputFormat,text,file,line); break;
-      case 6: fprintf(stderr,outputFormat,line,file,text); break;
+      case 1: fprintf(warnFile,outputFormat,file,line,text); break;
+      case 2: fprintf(warnFile,outputFormat,text,line,file); break;
+      case 3: fprintf(warnFile,outputFormat,line,text,file); break;
+      case 4: fprintf(warnFile,outputFormat,file,text,line); break;
+      case 5: fprintf(warnFile,outputFormat,text,file,line); break;
+      case 6: fprintf(warnFile,outputFormat,line,file,text); break;
       default:
         printf("Error: warning format has not been initialized!\n");
     }
@@ -122,7 +129,7 @@ void warn_cont(const char *fmt, ...)
   {
     va_list args;
     va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
+    vfprintf(warnFile, fmt, args);
     va_end(args); 
   }
 }
@@ -139,12 +146,12 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
     va_end(args); 
     switch(warnFormatOrder)
     {
-      case 1: fprintf(stderr,outputFormat,file,line,text); break;
-      case 2: fprintf(stderr,outputFormat,text,line,file); break;
-      case 3: fprintf(stderr,outputFormat,line,text,file); break;
-      case 4: fprintf(stderr,outputFormat,file,text,line); break;
-      case 5: fprintf(stderr,outputFormat,text,file,line); break;
-      case 6: fprintf(stderr,outputFormat,line,file,text); break;
+      case 1: fprintf(warnFile,outputFormat,file,line,text); break;
+      case 2: fprintf(warnFile,outputFormat,text,line,file); break;
+      case 3: fprintf(warnFile,outputFormat,line,text,file); break;
+      case 4: fprintf(warnFile,outputFormat,file,text,line); break;
+      case 5: fprintf(warnFile,outputFormat,text,file,line); break;
+      case 6: fprintf(warnFile,outputFormat,line,file,text); break;
       default:
         printf("Error: warning format has not been initialized!\n");
     }
@@ -155,6 +162,6 @@ void err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
+  vfprintf(warnFile, fmt, args);
   va_end(args); 
 }

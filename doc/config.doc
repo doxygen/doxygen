@@ -103,6 +103,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_generate_html GENERATE_HTML
 <li> \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 <li> \refitem cfg_generate_latex GENERATE_LATEX
+<li> \refitem cfg_generate_legend GENERATE_LEGEND
 <li> \refitem cfg_generate_man GENERATE_MAN
 <li> \refitem cfg_generate_rtf GENERATE_RTF
 <li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
@@ -163,6 +164,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
 <li> \refitem cfg_warn_format WARN_FORMAT
 <li> \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
+<li> \refitem cfg_warn_logfile WARN_LOGFILE
 <li> \refitem cfg_warnings WARNINGS
 \htmlonly
 </ul>
@@ -481,11 +483,18 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_warn_format
 <dt>\c WARN_FORMAT <dd>
  \addindex WARN_FORMAT
- The WARN_FORMAT tag determines the format of the warning messages that
+ The \c WARN_FORMAT tag determines the format of the warning messages that
  doxygen can produce. The string should contain the <code>\$file</code>, 
  <code>\$line</code>, and <code>\$text</code> 
  tags, which will be replaced by the file and line number from which the
  warning originated and the warning text.
+
+\anchor cfg_warn_logfile
+<dt>\c WARN_LOGFILE <dd>
+ \addindex WARN_LOGFILE
+ The \c WARN_LOGFILE tag can be used to specify a file to which warning
+ and error messages should be written. If left blank the output is written 
+ to stderr.
 
 </dl>
 
@@ -1060,6 +1069,13 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  this value, doxygen will try to truncate the graph, so that it fits within
  the specified constraint. Beware that most browsers cannot cope with very
  large images.
+
+\anchor cfg_generate_legend <dd>
+<dt>\c GENERATE_LEGEND <dd>
+ \addindex GENERATE_LEGEND
+ If the \c GENERATE_LEGEND tag is set to \c YES (the default) Doxygen will
+ generate a legend page explaining the meaning of the various boxes and
+ arrows in the dot generated graphs.
 
 </dl>
 \subsection config_search Search engine options

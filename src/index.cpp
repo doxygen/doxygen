@@ -320,6 +320,7 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+
 void countFiles(int &htmlFiles,int &files)
 {
   htmlFiles=0;
@@ -334,13 +335,18 @@ void countFiles(int &htmlFiles,int &files)
     {
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      if (doc || src)
+      bool nameOk = fd->name().right(4)!=".doc" && 
+                    fd->name().right(4)!=".txt";
+      if (nameOk)
       {
-        htmlFiles++;
-      }
-      if (doc)
-      {
-        files++;
+        if (doc || src)
+        {
+          htmlFiles++;
+        }
+        if (doc)
+        {
+          files++;
+        }
       }
     }
   }
@@ -416,7 +422,10 @@ void writeFileIndex(OutputList &ol)
       //printf("Found filedef %s\n",fd->name().data());
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      if ((doc || src) && !fd->isReference())
+      bool nameOk = fd->name().right(4)!=".doc" && 
+                    fd->name().right(4)!=".txt";
+      if (nameOk && (doc || src) && 
+              !fd->isReference())
       {
         QCString path;
         if (Config::fullPathNameFlag) 
@@ -1222,11 +1231,6 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
           ol.startItemList();
           first=FALSE;
         }
-      }
-      else if (first)
-      {
-        first=FALSE;
-        ol.startItemList();
       }
       ol.writeListItem();
       ol.docify(md->name());

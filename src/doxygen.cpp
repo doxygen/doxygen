@@ -1174,7 +1174,7 @@ static MemberDef *addVariableToFile(
   NamespaceDef *nd = 0;
   if (!scope.isEmpty())
   {
-    QCString nscope=removeAnnonymousScopes(scope);
+    QCString nscope=removeAnonymousScopes(scope);
     if (!nscope.isEmpty())
     {
       nd = getResolvedNamespace(nscope);
@@ -1219,7 +1219,7 @@ static MemberDef *addVariableToFile(
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      QCString nscope=removeAnnonymousScopes(scope);
+      QCString nscope=removeAnonymousScopes(scope);
       NamespaceDef *nd=0;
       if (!nscope.isEmpty())
       {
@@ -1395,6 +1395,8 @@ void buildVarList(Entry *root)
       mtype=MemberDef::Typedef;
     else if (type.left(7)=="friend ")
       mtype=MemberDef::Friend;
+    else if (root->mtype==Property)
+      mtype=MemberDef::Property;
     else
       mtype=MemberDef::Variable;
 
@@ -1811,7 +1813,7 @@ static void buildMemberList(Entry *root)
           NamespaceDef *nd = 0;
           if (root->parent->section == Entry::NAMESPACE_SEC )
           {
-            QCString nscope=removeAnnonymousScopes(root->parent->name);
+            QCString nscope=removeAnonymousScopes(root->parent->name);
             if (!nscope.isEmpty())
             {
               nd = getResolvedNamespace(nscope);
@@ -3044,7 +3046,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
     //printf("result: scope=%s\n",scopeName.data());
   }
 
-  namespaceName=removeAnnonymousScopes(namespaceName);
+  namespaceName=removeAnonymousScopes(namespaceName);
   //printf("namespaceName=`%s' className=`%s'\n",namespaceName.data(),className.data());
   // merge class and namespace scopes again
   scopeName.resize(0);
@@ -4135,9 +4137,8 @@ static void generateFileSources()
       for (;(fd=fni.current());++fni)
       {
         bool src = !fd->isReference() &&
-                   (Config::verbatimHeaderFlag
-                    //fd->generateSource() 
-                    || Config::sourceBrowseFlag);
+                   fd->name().right(4)!=".doc" && fd->name().right(4)!=".txt" &&
+                   (Config::verbatimHeaderFlag || Config::sourceBrowseFlag);
         if (src)
         {
           msg("Generating code for file %s...\n",fd->name().data());
@@ -6044,8 +6045,11 @@ int main(int argc,char **argv)
   msg("Generating page index...\n");
   writePageIndex(*outputList);
   
-  msg("Generating graph info page...\n");
-  writeGraphInfo(*outputList);
+  if (Config::generateLegend)
+  {
+    msg("Generating graph info page...\n");
+    writeGraphInfo(*outputList);
+  }
 
   msg("Generating search index...\n");
   generateSearchIndex();

@@ -220,6 +220,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     //incDepGraph.writeGraph(Config::htmlOutputDir,fd->getOutputFileBase());
   }
 
+  //printf("%s: generateSourceFile()=%d\n",name().data(),generateSourceFile());
   if (generateSourceFile())
   {
     ol.disableAllBut(OutputGenerator::Html);

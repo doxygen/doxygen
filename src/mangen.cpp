@@ -73,10 +73,29 @@ void ManGenerator::init()
 void ManGenerator::startFile(const char *name,const char *,bool)
 {
   QCString fileName=name;
+
+  // TODO: do something sensible here.
   if (fileName.left(6)=="class_")
   {
     fileName=fileName.right(fileName.length()-6);
   }
+  else if (fileName.left(10)=="interface_")
+  {
+    fileName=fileName.right(fileName.length()-10);
+  }
+  else if (fileName.left(7)=="struct_")
+  {
+    fileName=fileName.right(fileName.length()-7);
+  }
+  else if (fileName.left(6)=="union_")
+  {
+    fileName=fileName.right(fileName.length()-6);
+  }
+  else if (fileName.left(10)=="exception_")
+  {
+    fileName=fileName.right(fileName.length()-10);
+  }
+
   int i;
   if ((i=fileName.findRev('.'))!=-1)
   {

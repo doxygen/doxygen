@@ -58,7 +58,8 @@ class MemberDef : public Definition
       Signal,
       Slot,
       Friend,
-      DCOP
+      DCOP,
+      Property
     };
 
     enum
@@ -111,6 +112,7 @@ class MemberDef : public Definition
     bool isDefine() const                 { return mtype==Define;      }
     bool isFriend() const                 { return mtype==Friend;      }
     bool isDCOP() const                   { return mtype==DCOP;        }
+    bool isProperty() const               { return mtype==Property;    }
     bool isRelated() const                { return related; }
     bool isStatic() const                 { return stat; }
     bool isInline() const                 { return (memSpec&Entry::Inline)!=0; }
@@ -132,8 +134,8 @@ class MemberDef : public Definition
     void setMemberSpecifiers(int s)       { memSpec=s; }
     void mergeMemberSpecifiers(int s)     { memSpec|=s; }
     void setInitializer(const char *i)    { init=i; 
-                                           init=init.stripWhiteSpace();
-                                           initLines=init.contains('\n');
+                                            init=init.stripWhiteSpace();
+                                            initLines=init.contains('\n');
                                           }
     void setBitfields(const char *s)      { bitfields = s; }
     void setMaxInitLines(int lines)       { if (lines!=-1) maxInitLines=lines; }

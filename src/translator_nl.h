@@ -37,19 +37,10 @@ class TranslatorDutch : public Translator
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()
     { return "Documentatie van enumeratie members"; }
-    QCString trEnumerationValueDocumentation()
-    { return "Documentatie van enumeratie waarden"; }
     QCString trMemberFunctionDocumentation()
     { return "Documentatie van functie members"; }
     QCString trMemberDataDocumentation()
     { return "Documentatie van data members"; }
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-      QCString result=(QCString)"De documentatie voor deze"+s+
-                     " is gegenereerd op grond van de volgende file";
-      if (single) result+=":";   else result+="s:";
-      return result;
-    }
     QCString trMore()
     { return "Meer..."; }
     QCString trListOfAllMembers()
@@ -185,6 +176,8 @@ class TranslatorDutch : public Translator
     { return "Documentatie van typedefs"; }
     QCString trEnumerationTypeDocumentation()
     { return "Documentatie van enumeratie types"; }
+    QCString trEnumerationValueDocumentation()
+    { return "Documentatie van enumeratie waarden"; }
     QCString trFunctionDocumentation()
     { return "Documentatie van functies"; }
     QCString trVariableDocumentation()
@@ -712,6 +705,30 @@ class TranslatorDutch : public Translator
       return "Test Lijst";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "DCOP Methoden";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return "Properties";
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return "Property Documentatie";
+    }
 };
 
 #endif

@@ -1,4 +1,4 @@
-<?xml encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- DTD describing the grammar used in doxygen's XML output -->
 
 <!-- standard character entities -->
@@ -50,6 +50,8 @@
                                 |friend
                                 |related
 				|define|prototype|typedef|enum|func|var
+	                        |dcop-func
+                                |property
                                 )                            #REQUIRED
                         '
 >

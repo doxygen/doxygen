@@ -1,10 +1,12 @@
 
 all: src/version.cpp configgen doxywizard
+	cd qtools ; $(MAKE)
 	cd src ; $(MAKE)
 
 clean: FORCE
 	cd examples ; $(MAKE) clean
 	cd doc ; $(MAKE) clean
+	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
 	cd addon/configgen ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
@@ -13,16 +15,14 @@ clean: FORCE
 	-rm -f objects/*.o
 
 distclean: clean
-	cd examples ; $(MAKE) clean
-	cd doc ; $(MAKE) clean
 	cd src ; $(MAKE) distclean
 	cd addon/configgen ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
 	-rm -f bin/doxy*
 	-rm -f html
 	-rm -f objects/*.o
-	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch
-	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile 
+	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch qtools/Makefile.qtools
+	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
 	-rm -f src/version.cpp
@@ -69,7 +69,7 @@ pdf: docs
 
 archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz addon tmake doc wintools examples bin objects \
-	       src configure configure.bin Makefile.in Makefile.win.in INSTALL \
+	       qtools src configure configure.bin Makefile.in Makefile.win.in INSTALL \
 	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION packages
 
 src/version.cpp: Makefile

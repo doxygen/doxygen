@@ -70,7 +70,9 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
     {
       switch(md->memberType())
       {
-        case MemberDef::Variable:    varCnt++,m_count++;  break;
+        case MemberDef::Variable:    // fall through
+        case MemberDef::Property:    varCnt++,m_count++;  
+                                     break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
         case MemberDef::DCOP:        // fall through
@@ -346,13 +348,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               typeDecl.enable(OutputGenerator::Man);
               enumMemCount++;
             }
-          }
-          if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE)
-          {
-            typeDecl.pushGeneratorState();
-            typeDecl.disableAllBut(OutputGenerator::Html);
-            typeDecl.lineBreak(); 
-            typeDecl.popGeneratorState();
+            if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE)
+            {
+              typeDecl.pushGeneratorState();
+              typeDecl.disableAllBut(OutputGenerator::Html);
+              typeDecl.lineBreak(); 
+              typeDecl.popGeneratorState();
+            }
           }
           typeDecl.docify(" }");
           md->setEnumDecl(typeDecl);
@@ -496,7 +498,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->isVariable() && inGroup==md->visibleMemberGroup(sectionPerType)) 
+      if ((md->isVariable() || md->isProperty()) && 
+          inGroup==md->visibleMemberGroup(sectionPerType)) 
       {
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
       }
