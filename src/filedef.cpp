@@ -31,6 +31,7 @@
 #include "code.h"
 #include "docparser.h"
 #include "ftvhelp.h"
+#include "searchindex.h"
 //#include "xml.h"
 
 class DevNullCodeDocInterface : public BaseCodeDocInterface
@@ -219,6 +220,12 @@ void FileDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
+  
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName().lower());
+  }
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

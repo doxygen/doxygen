@@ -18,7 +18,7 @@
  *
  * Nickolay Semyonov
  * Andrey V. Stolyarov released Feb 14, 2001
- * Alexandr V. Chelpanov <cav@cryptopro.ru> released Apr 21, 2001
+ * Alexandr V. Chelpanov <cav@cryptopro.ru> released Sep 16, 2003
  *
  * При переводе заголовков слова list и documentation убраны.
  *
@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_3
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -1444,6 +1444,121 @@ class TranslatorRussian : public TranslatorAdapter_1_3
     virtual QCString trEventDocumentation()
     {
       return decode( "Cобытия" );
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return decode( "Типы с областью видимости пакета" );
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return decode( "Функции с областью видимости пакета" );
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return decode( "Статические функции с областью видимости пакета" );
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return decode( "Переменные с областью видимости пакета" );
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return decode( "Статические переменные с областью видимости пакета" );
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return decode( "Указатель" );
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return decode( "Граф вызовов:" );
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return decode( "Поиск" );
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return decode( "Результаты поиска" );
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return decode( "К сожалению, по Вашему запросу ничего не найдено." );
+      }
+      else if( numDocuments == 1 )
+      {
+        return decode( "Найдено <b>$num</b> документ" ) + as_documents( numDocuments )
+          + ".";
+      }
+      else 
+      {
+        return decode( "Найдено <b>$num</b> документ" ) + as_documents( numDocuments )
+          + decode( ". Документы отсортированы по релевантности." );
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return decode( "Найдено:" );
+    }
+
+    QCString as_documents( int num )
+    {
+      if( num % 10 == 1 ) return "";
+      if( (num % 10) >= 2 && (num % 10) <= 4 ) return decode( "а" );
+      return decode( "ов" );
     }
 };
 

@@ -32,6 +32,7 @@
 #include "defargs.h"
 #include "docparser.h"
 #include "dot.h"
+#include "searchindex.h"
 //#include "xml.h"
 
 
@@ -723,6 +724,14 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // differs from the cname.
   if (getOuterScope()) osname=getOuterScope()->name();
   
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION")+"#"+anchor());
+    Doxygen::searchIndex->addWord(localName().lower());
+    Doxygen::searchIndex->addWord(qualifiedName().lower());
+  }
+
+
 
   HtmlHelp *htmlHelp=0;
   bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");

@@ -31,6 +31,7 @@
 #include "doxygen.h"
 #include "pagedef.h"
 #include "docparser.h"
+#include "searchindex.h"
 
 GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : Definition(df,dl,na)
@@ -412,6 +413,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
   ol.docify(title);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
+
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName().lower());
+  }
 
   if (Config_getBool("DETAILS_AT_TOP"))
   {

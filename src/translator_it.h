@@ -70,7 +70,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_3_3
+class TranslatorItalian : public Translator
 {
   public:
 

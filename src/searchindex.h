@@ -25,55 +25,6 @@
 #include <qintdict.h>
 #include <qvector.h>
 
-
-#if 0 // old version
-#include "suffixtree.h"
-//class IndexTree;
-class SuffixTree;
-
-class DocRef
-{
-  public:
-    DocRef(int index,const char *name,const char *url) 
-          { i=index; n=name; u=url; }
-   ~DocRef() {}
-    void setOffset(int offset) { o=offset; }
-    const char *name() const { return n; }
-    const char *url() const { return u; }
-    int index() const { return i; }
-    int offset() const { return o; }
-   
-  private:
-    QCString n;
-    QCString u;
-    int i;
-    int o;
-};
-
-typedef QList<DocRef> DocRefList;
-typedef QDict<DocRef> DocRefDict;
-
-class SearchIndex
-{
-  public:
-    SearchIndex();
-   ~SearchIndex();
-    void addReference(const char *key,const char *ref);
-    bool addWord(const char *key,const char *word,bool special);
-    bool saveIndex(const char *fileName);
-    void dump() { suffixTree->dump(); }
-   
-  private:
-    //IndexTree  *indexTree;
-    SuffixTree *suffixTree;
-    DocRefList refList;
-    DocRefDict refDict;
-    QIntDict<DocRef> nameIndex;
-    int indexCount;
-};
-
-#endif
-
 struct URL
 {
   URL(const char *n,const char *u) : name(n), url(u) {} 

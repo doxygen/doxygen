@@ -26,6 +26,7 @@
 #include "doxygen.h"
 #include "message.h"
 #include "docparser.h"
+#include "searchindex.h"
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref) : 
@@ -260,6 +261,12 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName().lower());
+  }
+
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;

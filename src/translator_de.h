@@ -77,13 +77,16 @@
 //    - Updated for "new since 1.3" version
 //    - translated Java package to Paket
 //
+//   2003/09/11 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.3.1" version
+//   
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_3_1
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -1523,7 +1526,74 @@ class TranslatorGerman : public TranslatorAdapter_1_3_1
     {
       return "Statische Paketattribute";
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
 
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Alle";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Hier ist der Graph aller Aufrufe für diese Funktion:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Suchen nach";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Suchergebnisse";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Es wurden keine Dokumente zu Ihrer Suchanfrage gefunden.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Es wurde <b>1</b> Dokument zu Ihrer Suchanfrage gefunden.";
+      }
+      else 
+      {
+        return "Es wurden <b>$num</b> Dokumente zu Ihrer Suchanfrage "
+	       "gefunden. Die besten Treffer werden zuerst angezeigt.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Treffer:";
+    }
 };
 
 #endif
