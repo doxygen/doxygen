@@ -16,7 +16,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <qstring.h>
+
+#include "qtbc.h"
 #include <qfile.h>
 #include <qfileinf.h>
 #include <qtstream.h>
@@ -28,19 +29,19 @@
 
 void writeInstallScript()
 {
-  QString fileName=htmlOutputDir+"/installdox";
+  QCString fileName=Config::htmlOutputDir+"/installdox";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
-    t << "#!" << perlPath << endl << endl << "%subst = ( ";
+    t << "#!" << Config::perlPath << endl << endl << "%subst = ( ";
     
-    char *s=tagFileList.first();
+    char *s=Config::tagFileList.first();
     while (s)
     {
       QFileInfo fi(s);
       t << "\"" << fi.fileName() << "\", \"\"";
-      s=tagFileList.next();
+      s=Config::tagFileList.next();
       if (s) t << ", ";
     }
     

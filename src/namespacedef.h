@@ -17,7 +17,7 @@
 #ifndef NAMESPACEDEF_H
 #define NAMESPACEDEF_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qstrlist.h>
 #include <qdict.h>
 #include "definition.h"
@@ -33,8 +33,8 @@ class NamespaceDef : public Definition
   public:
     NamespaceDef(const char *name,const char *ref=0);
    ~NamespaceDef();
-    //QString namespaceFile() const { return fileName; }
-    QString getOutputFileBase() const { return fileName; }
+    //QCString namespaceFile() const { return fileName; }
+    QCString getOutputFileBase() const { return fileName; }
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);
     void insertClass(ClassDef *cd);
@@ -42,10 +42,20 @@ class NamespaceDef : public Definition
     void computeAnchors();
     int countMembers();
     const char *getReference() { return reference; }
+    bool isVisible() 
+    {
+      return !getReference() && hasDocumentation() &&
+             !name().isEmpty() && name().at(0)!='@';
+    }
+    bool isVisibleExt()
+    {
+      return (getReference() || hasDocumentation()) &&
+             !name().isEmpty() && name().at(0)!='@';
+    }
     
   private:
-    QString reference;
-    QString fileName;
+    QCString reference;
+    QCString fileName;
     QStrList files;
     ClassList *classList;
     MemberList *memList;

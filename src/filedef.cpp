@@ -14,6 +14,7 @@
  *
  */
 
+#include "qtbc.h"
 #include "memberlist.h"
 #include "classlist.h"
 #include "define.h"
@@ -66,14 +67,14 @@ void FileDef::writeDocumentation(OutputList &ol)
 {
   //funcList->countDecMembers();
   
-  QString pageTitle=name()+" File Reference";
+  QCString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
   startTitle(ol);
   parseText(ol,theTranslator->trFileReference(name()));
   endTitle(ol,name());
   //ol.newParagraph();
   
-  if (genTagFile.length()>0) tagFile << "&" << name() << ":\n";
+  if (Config::genTagFile.length()>0) tagFile << "&" << name() << ":\n";
   
   //brief=brief.stripWhiteSpace();
   //int bl=brief.length();
@@ -97,17 +98,53 @@ void FileDef::writeDocumentation(OutputList &ol)
   ol.writeSynopsis();
  
   ol.startMemberSections();
+
+  if (namespaceList->count()>0)
+  {
+    NamespaceDef *nd=namespaceList->first();
+    bool found=FALSE;
+    while (nd)
+    {
+      if (nd->isVisibleExt())
+      {
+        if (!found)
+        {
+          ol.startMemberHeader();
+          parseText(ol,theTranslator->trNamespaces());
+          ol.endMemberHeader();
+          ol.startMemberList();
+          found=TRUE;
+        }
+        ol.startMemberItem();
+        ol.writeString("namespace ");
+        ol.insertMemberAlign();
+        if (nd->hasDocumentation()) 
+        {
+          ol.writeObjectLink(nd->getReference(),
+                            nd->getOutputFileBase(),
+                            0,
+                            nd->name()
+                           );
+        }
+        else
+        {
+          ol.startBold();
+          ol.docify(nd->name());
+          ol.endBold();
+        }
+        ol.endMemberItem();
+      }
+      nd=namespaceList->next();
+    }
+    if (found) ol.endMemberList();
+  }
   if (classList->count()>0)
   {
     ClassDef *cd=classList->first();
     bool found=FALSE;
     while (cd)
     {
-      if (//cd->name()[0]!='@' &&
-          //(cd->protection()!=Private || extractPrivateFlag) &&
-          //(cd->hasDocumentation() || !hideClassFlag))
-          cd->isVisibleExt()
-         )
+      if ( cd->isVisibleExt() )
       {
         if (!found)
         {
@@ -247,7 +284,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
   ol.enableAll();
   endFile(ol);
 }

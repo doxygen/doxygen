@@ -17,11 +17,11 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
-#include <qstring.h>
+//#include <qtstream.h>
+#include "qtbc.h"
 #include <qfileinf.h>
 #include <qlist.h>
 #include <qdict.h>
-#include <qtstream.h>
 #include <qstrlist.h>
 
 #include "membername.h"
@@ -51,8 +51,8 @@ class ClassDef : public Definition
     
     ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
    ~ClassDef();
-    //QString classFile() const { return fileName; }
-    QString getOutputFileBase() const { return fileName; }
+    //QCString classFile() const { return fileName; }
+    QCString getOutputFileBase() const { return fileName; }
     CompoundType compoundType() const { return compType; } 
     const char *memberListFileName() const { return memListFileName; }
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
@@ -81,34 +81,35 @@ class ClassDef : public Definition
     Protection protection() const { return prot; }
     bool isVisible() 
       { return !name().isEmpty() && name().at(0)!='@' &&
-               (prot!=Private || extractPrivateFlag) &&
+               (prot!=Private || Config::extractPrivateFlag) &&
                hasDocumentation();
       }
     bool hasNonReferenceSuperClass();
     bool isVisibleExt() 
-      { return (allExtFlag || hasNonReferenceSuperClass()) &&
+      { return (Config::allExtFlag || hasNonReferenceSuperClass()) &&
                !name().isEmpty() && name().at(0)!='@' &&
-               (prot!=Private || extractPrivateFlag) &&
-               (hasDocumentation() || !hideClassFlag || !reference.isNull());
+               (prot!=Private || Config::extractPrivateFlag) &&
+               (hasDocumentation() || !Config::hideClassFlag || 
+               !reference.isNull());
       }
     
     // template argument functions
     ArgumentList *templateArguments() const { return tempArgs; }
     void setTemplateArguments(ArgumentList *al);
-    QString getTemplateNameString();
+    QCString getTemplateNameString();
     void setNamespace(NamespaceDef *nd) { nspace = nd; }
     NamespaceDef *getNamespace() { return nspace; }
     
     bool visited;
    
   private: 
-    //QString name;                       // name of the class
-    QString fileName;                   // HTML containing the class docs
-    //QString doc;                        // general class documentation
+    //QCString name;                       // name of the class
+    QCString fileName;                   // HTML containing the class docs
+    //QCString doc;                        // general class documentation
     FileDef *incFile;                   // header file to refer to
-    QString incName;                    // alternative include file name
-    //QString brief;                      // brief class discription
-    QString memListFileName;            
+    QCString incName;                    // alternative include file name
+    //QCString brief;                      // brief class discription
+    QCString memListFileName;            
     BaseClassList *inherits;
     BaseClassList *inheritedBy;
     NamespaceDef  *nspace;              // the namespace this class is in
@@ -128,7 +129,7 @@ class ClassDef : public Definition
     MemberNameInfoDict *allMemberNameInfoDict;
     ArgumentList     *tempArgs;
     QStrList          files;
-    QString           reference;
+    QCString           reference;
     ExampleList      *exampleList;
     ExampleDict      *exampleDict;
     CompoundType      compType;
@@ -143,7 +144,7 @@ struct BaseClassDef
   ClassDef *classDef;
   Protection prot;
   Specifier  virt;
-  QString templSpecifiers;
+  QCString templSpecifiers;
 };
 
 class BaseClassList : public QList<BaseClassDef>

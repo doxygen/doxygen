@@ -82,6 +82,8 @@ class ManGenerator : public OutputGenerator
     void startMemberHeader();
     void endMemberHeader();
     void insertMemberAlign() {}
+    void startMemberSubtitle() {}
+    void endMemberSubtitle() {}
     void writeListItem();
     void startMemberList() { t << "\n.in +1c"; firstCol=FALSE; }
     void endMemberList() { t << "\n.in -1c"; firstCol=FALSE; }

@@ -14,10 +14,11 @@
  *
  */
 
-#include "debug.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <qstring.h>
+
+#include "qtbc.h"
+#include "debug.h"
 
 Debug::DebugMask Debug::curMask = Debug::Quiet;
 int Debug::curPrio = 0;
@@ -35,7 +36,7 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
 
 static int labelToEnumValue(const char *l)
 {
-  QString label=l;
+  QCString label=l;
   if (label=="FindMembers") 
     return Debug::FindMembers;
   else if (label=="Functions")

@@ -17,7 +17,7 @@
 #ifndef OUTPUTGEN_H
 #define OUTPUTGEN_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qtstream.h>
 #include <qbuffer.h>
 #include <qfile.h>
@@ -88,6 +88,8 @@ class OutputGenerator
     virtual void endMemberSections() = 0;
     virtual void startMemberHeader() = 0;
     virtual void endMemberHeader() = 0;
+    virtual void startMemberSubtitle() = 0;
+    virtual void endMemberSubtitle() = 0;
     virtual void startMemberList()  = 0;
     virtual void endMemberList()    = 0;
     virtual void startMemberItem() = 0;
@@ -168,7 +170,7 @@ class OutputGenerator
                    b.open(IO_WriteOnly); t.setDevice(&b); }
     void startPlainFile(const char *name);
     void endPlainFile();
-    QString getContents() const;
+    QCString getContents() const;
     bool isEnabled() const { return active; }
   protected:
     QTextStream fs;
@@ -176,7 +178,7 @@ class OutputGenerator
     QBuffer b;
     QTextStream t;
     QFile *file;
-    QString dir;
+    QCString dir;
     bool active;
 
   private:

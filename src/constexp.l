@@ -24,7 +24,7 @@
 #define YY_NO_UNPUT
 #define YY_NEVER_INTERACTIVE 1
   
-QString strToken;  
+QCString strToken;  
 
 static const char *inputString;
 static int         inputPosition;
@@ -94,7 +94,7 @@ static int yyread(char *buf,int max_size)
 
 %%
 
-bool parseCppExpression(const QString &s)
+bool parseCppExpression(const QCString &s)
 {
   //printf("Expression: `%s'\n",s.data());
   inputString = s;

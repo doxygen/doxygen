@@ -39,6 +39,6 @@ clean:
 	$(MAKE) -f Makefile.doxysearch clean
 	-rm -f scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp \
-	       declinfo.cpp defargs.cpp version.cpp
+	       declinfo.cpp defargs.cpp
 
 FORCE:

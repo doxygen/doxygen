@@ -10,11 +10,11 @@ EXTRACT_PRIVATE  = NO
 GENERATE_LATEX   = YES
 GENERATE_HTML    = YES
 ENABLE_PREPROCESSING = NO
-INPUT            = index.doc install.doc starting.doc trouble.doc \
+INPUT            = index.doc install.doc starting.doc faq.doc trouble.doc \
 		   history.doc features.doc \
 		   doxygen_usage.doc doxytag_usage.doc doxysearch_usage.doc \
                    installdox_usage.doc autolink.doc \
-		   config.doc commands.doc htmlcmds.doc 
+		   config.doc commands.doc htmlcmds.doc language.doc
 FILE_PATTERNS    = *.cpp *.h *.doc
 EXAMPLE_PATH     = ../examples
 RECURSIVE        = NO

@@ -17,8 +17,8 @@
 #ifndef FILEDEF_H
 #define FILEDEF_H
 
-#include <qlist.h>
 #include "index.h"
+#include <qlist.h>
 #include "config.h"
 #include "definition.h"
 
@@ -53,9 +53,9 @@ class FileDef : public Definition
    ~FileDef();
 
     /*! Returns the unique file name (this may include part of the path). */
-    QString name() const 
+    QCString name() const 
     { 
-      if (fullPathNameFlag) 
+      if (Config::fullPathNameFlag) 
         return filename; 
       else 
         return Definition::name(); 
@@ -63,10 +63,10 @@ class FileDef : public Definition
     
     /*! Returns nameString with all slashes replaced by underscores. */
     //const char *diskName() const { return diskname; }
-    QString getOutputFileBase() const { return diskname; }
+    QCString getOutputFileBase() const { return diskname; }
     
     /*! Returns the absolute path including the file name. */
-    QString absFilePath() const { return filepath; }
+    QCString absFilePath() const { return filepath; }
     
     /*! Returns the name of the verbatim copy of this file (if any). */
     const char *includeName() const { return incName; }
@@ -87,7 +87,7 @@ class FileDef : public Definition
     //void setDocumentation(const char *d) { doc=d; }
     
     /*! Returns the absolute path of this file. */ 
-    QString getPath() const { return path; }
+    QCString getPath() const { return path; }
     
     /*! Returns true iff any documentation for this file is found. */
     //bool hasDocumentation() 
@@ -117,15 +117,15 @@ class FileDef : public Definition
     FileList   *includeList;
     NamespaceList *namespaceList;
     DefineList *defineList;
-    //QString n;
-    //QString doc;
-    //QString brief;
-    QString reference;
-    QString path;
-    QString filepath;
-    QString diskname;
-    QString filename;
-    QString incName;
+    //QCString n;
+    //QCString doc;
+    //QCString brief;
+    QCString reference;
+    QCString path;
+    QCString filepath;
+    QCString diskname;
+    QCString filename;
+    QCString incName;
     //FileType ftype;
 };
 

@@ -14,6 +14,7 @@
  *
  */
 
+#include "qtbc.h"
 #include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
@@ -60,14 +61,14 @@ void NamespaceDef::computeAnchors()
 
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
-  QString pageTitle=name()+" Namespace Reference";
+  QCString pageTitle=name()+" Namespace Reference";
   startFile(ol,fileName,pageTitle);
   startTitle(ol);
   //ol.docify(pageTitle);
   parseText(ol,theTranslator->trNamespaceReference(name()));
   endTitle(ol,name());
   
-  if (genTagFile.length()>0) tagFile << "%" << name() << ":\n";
+  if (Config::genTagFile.length()>0) tagFile << "%" << name() << ":\n";
   
   OutputList briefOutput(&ol); 
   if (briefDescription()) 
@@ -103,7 +104,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
           ol.startMemberList();
           found=TRUE;
         }
-        QString clName=cd->name().copy();
+        QCString clName=cd->name().copy();
         if (clName.left(name().length()+2)==name()+"::")
         {
           clName = clName.right(clName.length()-name().length()-2);
@@ -225,7 +226,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(projectName));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config::projectName));
   ol.enableAll();
   endFile(ol);
 }

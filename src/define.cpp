@@ -39,5 +39,5 @@ Define::~Define()
 
 bool Define::hasDocumentation()
 {
-  return definition && (doc || extractAllFlag);
+  return definition && (doc || Config::extractAllFlag);
 }

@@ -19,6 +19,7 @@
 /*
  *	includes
  */
+#include "qtbc.h"
 #include <stdio.h>
 #include <iostream.h>
 #include <assert.h>
@@ -40,10 +41,10 @@
 static const char      *inputString;
 static int	        inputPosition;
 static ArgumentList    *argList;
-static QString         *copyArgValue;
-static QString          curArgTypeName;
-static QString          curArgDefValue;
-static QString		curArgName;
+static QCString         *copyArgValue;
+static QCString         curArgTypeName;
+static QCString         curArgDefValue;
+static QCString		curArgName;
 static int              argRoundCount;
 static int              argSharpCount;
 static int              argCurlyCount;
@@ -71,6 +72,8 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 ID	[a-z_A-Z][a-z_A-Z0-9]*
+
+%option noyywrap
 
 %x      Start
 %x      CopyArgString
@@ -239,7 +242,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  }
   					}
 <ReadFuncArgType,ReadFuncArgPtr>{ID}	{ 
-  					  QString name=yytext; //resolveDefines(yytext);
+  					  QCString name=yytext; //resolveDefines(yytext);
 					  //printf("resolveName `%s'->`%s'\n",yytext,name.data());
   					  curArgTypeName+=name;
 					}
@@ -250,7 +253,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  curArgDefValue+=*yytext;
   					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
-  					  QString name=yytext; //resolveDefines(yytext);
+  					  QCString name=yytext; //resolveDefines(yytext);
 					  *copyArgValue+=name;
 					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
@@ -293,6 +296,6 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
 }
 
 extern "C" { // some bogus code to keep the compiler happy
-  int  defargsYYwrap()  { return 1 ; }
+//  int  defargsYYwrap()  { return 1 ; }
   void defargsYYdummy() { yy_flex_realloc(0,0); } 
 }

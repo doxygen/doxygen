@@ -17,7 +17,6 @@ all: class/html/index.html \
      jdstyle/html/index.html \
      structcmd/html/index.html \
      autolink/html/index.html \
-     resdefine/html/index.html \
      restypedef/html/index.html \
      afterdoc/html/index.html \
      template/html/index.html \
@@ -26,7 +25,7 @@ all: class/html/index.html \
 clean:
 	rm -rf  class define enum file func page relates author \
                 par overload example include qtstyle jdstyle structcmd \
-		autolink tag resdefine restypedef afterdoc template
+		autolink tag restypedef afterdoc template
 
 class/html/index.html: class.h class.cfg
 	$(DOXYDIR)/doxygen class.cfg
@@ -80,9 +79,6 @@ tag/html/index.html: tag.cpp tag.cfg
 	$(DOXYDIR)/doxygen tag.cfg
 	sed -e "1,1s.perl.$(PERL).g" tag/html/installdox >tag/html/installdox.perl
 	cd tag/html ; $(PERL) installdox.perl -lexample.tag@../../example/html
-
-resdefine/html/index.html: resdefine.cpp resdefine.cfg 
-	$(DOXYDIR)/doxygen resdefine.cfg
 
 restypedef/html/index.html: restypedef.cpp restypedef.cfg 
 	$(DOXYDIR)/doxygen restypedef.cfg

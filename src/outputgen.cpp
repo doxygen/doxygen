@@ -15,8 +15,9 @@
  */
 
 #include <stdlib.h>
+
+#include "qtbc.h"
 #include "outputgen.h"
-#include <qstring.h>
 #include "message.h"
 
 OutputGenerator::OutputGenerator()
@@ -38,7 +39,7 @@ OutputGenerator::~OutputGenerator()
 void OutputGenerator::startPlainFile(const char *name)
 {
   //printf("startPlainFile(%s)\n",name);
-  QString fileName=dir+"/"+name;
+  QCString fileName=dir+"/"+name;
   file = new QFile(fileName);
   if (!file)
   {
@@ -66,9 +67,9 @@ void OutputGenerator::endPlainFile()
   t.setDevice(&b);
 }
 
-QString OutputGenerator::getContents() const
+QCString OutputGenerator::getContents() const
 {
-  QString s;
+  QCString s;
   s.resize(a.size()+1);
   memcpy(s.data(),a.data(),a.size());
   s.at(a.size())='\0';

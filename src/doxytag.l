@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qstring.h>  
+#include "qtbc.h"
 #include <qstrlist.h>
 #include <qfileinf.h>
 #include <qfile.h>
@@ -38,16 +38,16 @@
   
 struct MemberDef
 {
-  QString name;
-  QString anchor;
-  QString args;
+  QCString name;
+  QCString anchor;
+  QCString args;
 };  
   
 struct ClassDef
 {
-  QString  name;
+  QCString  name;
   QStrList bases;
-  QString  fileName;
+  QCString  fileName;
   bool isFile;
   QList<MemberDef> memberList;
 };  
@@ -61,19 +61,19 @@ static bool genTag;
 static bool genIndex;
 
 static QStrList bases;
-static QString  inputString;
+static QCString  inputString;
 static int      inputPosition;
-static QString  yyFileName;
+static QCString  yyFileName;
 static int      yyLineNr;
-static QString  classFile;
-static QString  memberRef;
-static QString  memberName;
-static QString  memberArgs;
-static QString  className;
+static QCString  classFile;
+static QCString  memberRef;
+static QCString  memberName;
+static QCString  memberArgs;
+static QCString  className;
 //static bool     newClass;
-static QString  docBaseLink;
-static QString  docAnchor;
-static QString  docRefName;
+static QCString  docBaseLink;
+static QCString  docAnchor;
+static QCString  docRefName;
 static bool     nameBug;
 static SearchIndex searchIndex;
 
@@ -152,9 +152,9 @@ static void addReference()
   }
 }
 
-QString unhtmlify(const char *str)
+QCString unhtmlify(const char *str)
 {
-  QString result;
+  QCString result;
   const char *p=str;
   char c;
   while ((c=*p)!='\0')
@@ -236,7 +236,7 @@ QString unhtmlify(const char *str)
   				   }
 <SkipPreformated>[^\<]+		   
 <CheckConstructor>[a-z_A-Z0-9~:]+  {
-  				     QString s=yytext;
+  				     QCString s=yytext;
 				     if (s.find("::")!=-1)
 				     {
 				       docRefName=yytext;
@@ -401,7 +401,7 @@ QString unhtmlify(const char *str)
  */
 
 
-void parse(QString &s)
+void parse(QCString &s)
 {
   bases.clear();
   nameBug       = FALSE;
@@ -425,7 +425,7 @@ void parseFile(QFileInfo &fi)
     className.resize(0);
     memberName.resize(0);
     //printf("Parsing file %s...\n",fi.fileName().data());
-    QString input(fi.size()+1);
+    QCString input(fi.size()+1);
     docBaseLink=fi.fileName();
     docRefName=fi.fileName().copy();
     searchIndex.addReference(docRefName,docBaseLink);
@@ -503,8 +503,8 @@ const char *getArg(int argc,char **argv,int &optind,const char c)
 
 int main(int argc,char **argv)
 {
-  QString tagName;
-  QString indexName;
+  QCString tagName;
+  QCString indexName;
   
   int optind=1;
   const char *arg;
@@ -554,7 +554,7 @@ int main(int argc,char **argv)
   }
   if (genIndex)
   {
-    printf("Writing search index\n");
+    //printf("Writing search index\n");
     if (!searchIndex.saveIndex(indexName))
     {
       fprintf(stderr,"Error: Could not write search index\n");
@@ -562,7 +562,7 @@ int main(int argc,char **argv)
     QFileInfo fi(indexName);
     if (fi.exists())
     {
-      QString dir=fi.dir().absPath();
+      QCString dir=convertToQCString(fi.dir().absPath());
       fi.setFile(dir+"/search.gif");
       if (!fi.exists()) writeSearchButton(dir);
       fi.setFile(dir+"/doxygen.gif");

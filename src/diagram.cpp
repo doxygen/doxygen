@@ -15,10 +15,10 @@
  *
  */
 
+#include "qtbc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <qlist.h>
-#include <qstring.h>
 #include <qarray.h>
 #include <qtstream.h>
 #include <qfile.h>
@@ -43,9 +43,9 @@ const uint labelVertSpacing = 32;  // vertical distance between labels
 const uint labelHorMargin   = 6;   // horiz. spacing between label and box
 const uint fontHeight       = 12;  // height of a character
 
-//static QString escapeLatex(const char *s)
+//static QCString escapeLatex(const char *s)
 //{
-//  QString result;
+//  QCString result;
 //  char c;
 //  while ((c=*s++))
 //  {
@@ -77,7 +77,7 @@ static uint protToColor(Protection p)
   return 0;
 }
 
-static QString protToString(Protection p)
+static QCString protToString(Protection p)
 {
   switch(p)
   {
@@ -180,12 +180,12 @@ DiagramItem::~DiagramItem()
   delete children;
 }
 
-QString DiagramItem::label() const
+QCString DiagramItem::label() const
 {
   return classDef->name()+templSpec;
 }
 
-QString DiagramItem::fileName() const
+QCString DiagramItem::fileName() const
 {
   return classDef->getOutputFileBase();
 }
@@ -960,10 +960,10 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   
   //printf("writeFigure rows=%d cols=%d\n",rows,cols);
 
-  QFile f1((QString)path+"/"+fileName+".eps");
+  QFile f1((QCString)path+"/"+fileName+".eps");
   if (!f1.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",f1.name());
+    err("Could not open file %s for writing\n",convertToQCString(f1.name()).data());
     exit(1);
   }
   QTextStream t(&f1);
@@ -1229,7 +1229,7 @@ void ClassDiagram::writeImageMap(QTextStream &t,const char *path,
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
-  image.save((QString)path+"/"+fileName+".gif");
+  image.save((QCString)path+"/"+fileName+".gif");
   
   t << "</MAP></P>" << endl;
 }

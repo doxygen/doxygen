@@ -17,6 +17,7 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
+#include "qtbc.h"
 #include <qdict.h>
 #include "filedef.h"
 
@@ -30,7 +31,7 @@ class FileName : public QList<FileDef>
     int compareItems(GCI item1,GCI item2);
 
   private:
-    QString name;
+    QCString name;
 };
 
 class FileNameIterator : public QListIterator<FileDef>

@@ -17,8 +17,9 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include "qtbc.h"
 #include <qfile.h>
-#include <qtstream.h>
+//#include <qtstream.h>
 
 enum IndexSections
 {

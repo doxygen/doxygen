@@ -17,7 +17,7 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qlist.h>
 
 enum Protection { Public, Protected, Private } ;
@@ -26,7 +26,7 @@ enum Specifier { Normal, Virtual, Pure } ;
 struct BaseInfo 
 {
   BaseInfo(const char *n,Protection p,Specifier v) : name(n),prot(p),virt(v) {}
-  QString    name; // the name of the base class
+  QCString    name; // the name of the base class
   Protection prot; // inheritance type
   Specifier  virt; // virtualness
 };
@@ -51,9 +51,9 @@ struct Argument
     return *this;
   }
   
-  QString type;    // argument type
-  QString name;    // argument name (if any)
-  QString defval;  // argument default value (if any)
+  QCString type;    // argument type
+  QCString name;    // argument name (if any)
+  QCString defval;  // argument default value (if any)
 };
 
 class ArgumentList : public QList<Argument> 
@@ -115,35 +115,37 @@ class Entry
     void	addSubEntry (Entry* e) ;
     void        reset();
 
-    int        section;       // entry type;
+    int        section;       // entry type (see Sections);
     Protection protection;    // class protection
     bool sig;                 // a Qt signal ?
     bool slot;                // a Qt slot ?
     bool stat;                // static ?
     bool proto;               // prototype ?
-    Specifier   virt;         // virtualness of the entry 
-    Entry      *parent;       // parent node in the tree
-    QString	type;         // member type 
-    QString	name;         // member name
-    QString     args;         // member argument string
+    Specifier    virt;        // virtualness of the entry 
+    Entry       *parent;      // parent node in the tree
+    QCString	 type;        // member type 
+    QCString	 name;        // member name
+    QCString     args;        // member argument string
     ArgumentList *argList;    // member arguments as a list
     ArgumentList *tArgList;   // template argument list
-    ArgumentList *tNameList;  // template name list
-    QString	program;      // the program text
-    QString     includeFile;  // include file (2 arg of \class, must be unique)
-    QString     includeName;  // include name (3 arg of \class)
-    QString     doc;          // documentation block (partly parsed)
-    QString     relates;      // related class (doc block)
-    QString     brief;        // brief description (doc block)
-    QString     inside;       // name of the class in which documents are found
-    QString     exception;    // throw specification
+    QCString	 program;     // the program text
+    QCString     body;        // the function body
+    QCString     includeFile; // include file (2 arg of \class, must be unique)
+    QCString     includeName; // include name (3 arg of \class)
+    QCString     doc;         // documentation block (partly parsed)
+    QCString     relates;     // related class (doc block)
+    QCString     brief;       // brief description (doc block)
+    QCString     inside;      // name of the class in which documents are found
+    QCString     exception;   // throw specification
+    int          mGrpId;      // member group id
+    QCString     mGrpHeader;  // member group header
     QList<Entry>    *sublist; // entries that are children of this one
     QList<BaseInfo> *extends; // list of base classes
-    QList<QString>  *groups;  // list of groups this entry belongs to
-    QList<QString>  *anchors; // list of anchors defined in this entry
-    QString	fileName;     // file this entry was extracted from
+    QList<QCString> *groups;  // list of groups this entry belongs to
+    QList<QCString> *anchors; // list of anchors defined in this entry
+    QCString	fileName;     // file this entry was extracted from
     int		startLine;    // start line of entry in the source
-    int         num;
+    static int  num;          // counts the total number of entries
   private:
     Entry &operator=(const Entry &); 
 } ;

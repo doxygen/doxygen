@@ -1,12 +1,12 @@
-DOXYGEN Version 0.49-990522
+DOXYGEN Version 0.49-990728
 
 INSTALLATION INSTRUCTIONS FOR UNIX:
 -----------------------------------
 
 1.  Unpack the archive, unless you already have:
    
-    gunzip doxygen-0.49-990522.src.tar.gz    # uncompress the archive
-    tar xf doxygen-0.49-990522.src.tar       # unpack it
+    gunzip doxygen-0.49-990728.src.tar.gz    # uncompress the archive
+    tar xf doxygen-0.49-990728.src.tar       # unpack it
 
 2.  Make sure Qt is installed properly (check the environment variable $QTDIR)
 
@@ -104,7 +104,7 @@ KNOWN CONFIGURATION PROBLEMS
 HTML RELATED PROBLEMS:
 - the indent continuously increases.
   This seems to be a problem that can be observed with Netscape 4.01.
-  It is not present in many later and earlier versions.
+  It is not present in many later and earlier versions I tested.
 
 LATEX RELATED PROBLEMS:
 
@@ -116,16 +116,32 @@ LATEX RELATED PROBLEMS:
 - the file fancyheader.sty is known as fancyhdr.sty on some systems.
   Please change that in src/latexgen.cpp
 
-HP-UX PROBLEMS:
+HP-UX / DIGITAL UNIX PROBLEMS:
 - If you are compiling for HP-UX with aCC and you get this error:
     /opt/aCC/lbin/ld: Unsatisfied symbols:
     alloca (code)
-  then you should edit ce_parse.cpp and replace
+  then you should (according to Anke Selig) edit ce_parse.cpp and replace
     extern "C" {
       void *alloca (unsigned int);
     };
   with
     #include <alloca.h>  
+- If you are compiling for Digital Unix, the same problem can be solved
+  (according to Barnard Schmallhof) by replacing the following in 
+  ce_parse.cpp:
+   
+    #else /* not GNU C.  */
+    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) ||
+    defined (__sparc) || defined (__sgi)
+    #include <alloca.h>
+
+  with
+
+    #else /* not GNU C.  */
+    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) ||
+    defined (__sparc) || defined (__sgi) || defined (__osf__)
+    #include <alloca.h>
+
   This seems to be a problem with bison, but I don't know how to fix it.
 -----------------------------------------------------------------------------
 
@@ -138,4 +154,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (22 May 1999)
+Dimitri van Heesch (30 July 1999)

@@ -17,7 +17,7 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include "classdef.h"
 #include "util.h"
 
@@ -28,166 +28,164 @@ class Translator
     // NOTICE:
     // the following functions are now obsolete: these are no longer used and 
     // will disappear in future versions. You do not have to translate them!
-    virtual QString trInherits() 
+    virtual QCString trInherits() 
     { return "Inherits"; }
-    virtual QString trAnd() 
+    virtual QCString trAnd() 
     { return "and"; }
-    virtual QString trInheritedBy() 
+    virtual QCString trInheritedBy() 
     { return "Inherited By"; }
-    virtual QString trReference() 
+    virtual QCString trReference() 
     { return "Reference"; }
-    virtual QString trReimplementedFrom()
+    virtual QCString trReimplementedFrom()
     { return "Reimplemented from"; }
-    virtual QString trReimplementedIn()
+    virtual QCString trReimplementedIn()
     { return "Reimplemented in"; }
-    virtual QString trIncludeFile()
+    virtual QCString trIncludeFile()
     { return "Include File"; }
-    virtual QString trNamespaces()
-    { return "Namespace List"; }
     // end of obsolete functions 
     //--------------------------------------------------------------------
 
-    virtual QString latexBabelPackage() 
+    virtual QCString latexBabelPackage() 
       // returns the name of the package that is included by LaTeX
     { return ""; }
 
-    virtual QString trRelatedFunctions()
+    virtual QCString trRelatedFunctions()
       // used in the compound documentation before a list of related functions.
     { return "Related Functions"; }
 
-    virtual QString trRelatedSubscript()
+    virtual QCString trRelatedSubscript()
       // subscript for the related functions.
     { return "(Note that these are not member functions.)"; }
 
-    virtual QString trDetailedDescription()
+    virtual QCString trDetailedDescription()
       // header that is put before the detailed description of files, classes and namespaces.
     { return "Detailed Description"; }
 
-    virtual QString trMemberTypedefDocumentation()
+    virtual QCString trMemberTypedefDocumentation()
       // header that is put before the list of typedefs.
     { return "Member Typedef Documentation"; }
     
-    virtual QString trMemberEnumerationDocumentation()
+    virtual QCString trMemberEnumerationDocumentation()
       // header that is put before the list of enumerations.
     { return "Member Enumeration Documentation"; }
     
-    virtual QString trMemberFunctionDocumentation()
+    virtual QCString trMemberFunctionDocumentation()
       // header that is put before the list of member functions.
     { return "Member Function Documentation"; }
     
-    virtual QString trMemberDataDocumentation()
+    virtual QCString trMemberDataDocumentation()
       // header that is put before the list of member attributes.
     { return "Member Data Documentation"; }
     
-    virtual QString trGeneratedFrom(const char *s,bool single)
+    virtual QCString trGeneratedFrom(const char *s,bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QString result=(QString)"The documentation for this"+s+
+      QCString result=(QCString)"The documentation for this"+s+
                      " was generated from the following file";
       if (single) result+=":"; else result+="s:";
       return result;
     }
 
-    virtual QString trMore() 
+    virtual QCString trMore() 
       // this is the text of a link put after brief descriptions.
     { return "More..."; }
 
-    virtual QString trListOfAllMembers()
+    virtual QCString trListOfAllMembers()
       // put in the class documentation
     { return "List of all members."; }
 
-    virtual QString trMemberList()
+    virtual QCString trMemberList()
       // used as the title of the "list of all members" page of a class
     { return "Member List"; }
 
-    virtual QString trThisIsTheListOfAllMembers()
+    virtual QCString trThisIsTheListOfAllMembers()
       // this is the first part of a sentence that is followed by a class name
     { return "This is the complete list of members for "; }
-    virtual QString trIncludingInheritedMembers()
+    virtual QCString trIncludingInheritedMembers()
       // this is the remainder of the sentence after the class name
     { return ", including all inherited members."; }
     
-    virtual QString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const char *s)
       // this is put at the author sections at the bottom of man pages.
       // parameter s is name of the project name.
-    { QString result="Generated automatically by Doxygen";
-      if (s) result+=(QString)" for "+s;
+    { QCString result="Generated automatically by Doxygen";
+      if (s) result+=(QCString)" for "+s;
       result+=" from the source code."; 
       return result;
     }
 
-    virtual QString trEnumName()
+    virtual QCString trEnumName()
       // put after an enum name in the list of all members
     { return "enum name"; }
     
-    virtual QString trEnumValue()
+    virtual QCString trEnumValue()
       // put after an enum value in the list of all members
     { return "enum value"; }
     
-    virtual QString trDefinedIn()
+    virtual QCString trDefinedIn()
       // put after an undocumented member in the list of all members
     { return "defined in"; }
 
-    virtual QString trVerbatimText(const char *f)
+    virtual QCString trVerbatimText(const char *f)
       // put as in introduction in the verbatim header file of a class.
       // parameter f is the name of the include file.
-    { return (QString)"This is the verbatim text of the "+f+" include file."; }
+    { return (QCString)"This is the verbatim text of the "+f+" include file."; }
     
     // quick reference sections
-    virtual QString trModules()
+    virtual QCString trModules()
       // This is put above each page as a link to the list of all groups of 
       // compounds or files (see the \group command).
     { return "Modules"; }
-    virtual QString trClassHierarchy()
+    virtual QCString trClassHierarchy()
       // This is put above each page as a link to the class hierarchy 
     { return "Class Hierarchy"; }
-    virtual QString trCompoundList()
+    virtual QCString trCompoundList()
       // This is put above each page as a link to the list of annotated classes
     { return "Compound List"; }
-    virtual QString trFileList()
+    virtual QCString trFileList()
       // This is put above each page as a link to the list of documented files
     { return "File List"; }
-    virtual QString trHeaderFiles()
+    virtual QCString trHeaderFiles()
       // This is put above each page as a link to the list of all verbatim headers
     { return "Header Files"; }
-    virtual QString trCompoundMembers()
+    virtual QCString trCompoundMembers()
       // This is put above each page as a link to all members of compounds.
     { return "Compound Members"; }
-    virtual QString trFileMembers()
+    virtual QCString trFileMembers()
       // This is put above each page as a link to all members of files.
     { return "File Members"; }
-    virtual QString trRelatedPages()
+    virtual QCString trRelatedPages()
       // This is put above each page as a link to all related pages.
     { return "Related Pages"; }
-    virtual QString trExamples()
+    virtual QCString trExamples()
       // This is put above each page as a link to all examples.
     { return "Examples"; }
-    virtual QString trSearch()
+    virtual QCString trSearch()
       // This is put above each page as a link to the search engine.
     { return "Search"; }
 
-    virtual QString trClassHierarchyDescription()
+    virtual QCString trClassHierarchyDescription()
       // This is an introduction to the class hierarchy.
     { return "This inheritance list is sorted roughly, "
              "but not completely, alphabetically:";
     }
-    virtual QString trFileListDescription(bool extractAll)
+    virtual QCString trFileListDescription(bool extractAll)
       // This is an introduction to the list with all files.
     {
-      QString result="Here is a list of all ";
+      QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       result+="files with brief descriptions:";
       return result;
     }
-    virtual QString trCompoundListDescription()
+    virtual QCString trCompoundListDescription()
       // This is an introduction to the annotated compound list
     { return "Here are the classes, structs and "
              "unions with brief descriptions:"; 
     }
-    virtual QString trCompoundMembersDescription(bool extractAll)
+    virtual QCString trCompoundMembersDescription(bool extractAll)
       // This is an introduction to the page with all class members
     {
-      QString result="Here is a list of all ";
+      QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       result+="class members with links to ";
       if (extractAll) 
@@ -196,10 +194,10 @@ class Translator
         result+="the classes they belong to:";
       return result;
     }
-    virtual QString trFileMembersDescription(bool extractAll)
+    virtual QCString trFileMembersDescription(bool extractAll)
       // This is an introduction to the page with all file members
     {
-      QString result="Here is a list of all ";
+      QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       result+="file members with links to ";
       if (extractAll) 
@@ -208,207 +206,207 @@ class Translator
         result+="the files they belong to:";
       return result;
     }
-    virtual QString trHeaderFilesDescription()
+    virtual QCString trHeaderFilesDescription()
       // This is an introduction to the page with the list of all header files
     { return "Here are the header files that make up the API:"; }
-    virtual QString trExamplesDescription()
+    virtual QCString trExamplesDescription()
       // This is an introduction to the page with the list of all examples
     { return "Here is a list of all examples:"; }
-    virtual QString trRelatedPagesDescription()
+    virtual QCString trRelatedPagesDescription()
       // This is an introduction to the page with the list of related pages
     { return "Here is a list of all related documentation pages:"; }
-    virtual QString trModulesDescription()
+    virtual QCString trModulesDescription()
       // This is an introduction to the page with the list of class/file groups
     { return "Here is a list of all modules:"; }
-    virtual QString trNoDescriptionAvailable()
+    virtual QCString trNoDescriptionAvailable()
       // This sentences is used in the annotated class/file lists if no brief
       // description is given.
     { return "No description available"; }
     
     // index titles (the project name is prepended for these) 
-    virtual QString trDocumentation()
+    virtual QCString trDocumentation()
       // This is used in HTML as the title of index.html. 
     { return "Documentation"; }
-    virtual QString trModuleIndex()
+    virtual QCString trModuleIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all groups.
     { return "Module Index"; }
-    virtual QString trHierarchicalIndex()
+    virtual QCString trHierarchicalIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // class hierarchy.
     { return "Hierarchical Index"; }
-    virtual QString trCompoundIndex()
+    virtual QCString trCompoundIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // annotated compound index
     { return "Compound Index"; }
-    virtual QString trFileIndex() 
+    virtual QCString trFileIndex() 
       // This is used in LaTeX as the title of the chapter with the
       // list of all files.
     { return "File Index"; }
-    virtual QString trModuleDocumentation()
+    virtual QCString trModuleDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all groups.
     { return "Module Documentation"; }
-    virtual QString trClassDocumentation()
+    virtual QCString trClassDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all classes, structs and unions.
     { return "Class Documentation"; }
-    virtual QString trFileDocumentation()
+    virtual QCString trFileDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all files.
     { return "File Documentation"; }
-    virtual QString trExampleDocumentation()
+    virtual QCString trExampleDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all examples.
     { return "Example Documentation"; }
-    virtual QString trPageDocumentation()
+    virtual QCString trPageDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all related pages.
     { return "Page Documentation"; }
-    virtual QString trReferenceManual()
+    virtual QCString trReferenceManual()
       // This is used in LaTeX as the title of the document
     { return "Reference Manual"; }
     
-    virtual QString trDefines()
+    virtual QCString trDefines()
       // This is used in the documentation of a file as a header before the 
       // list of defines
     { return "Defines"; }
-    virtual QString trFuncProtos()
+    virtual QCString trFuncProtos()
       // This is used in the documentation of a file as a header before the 
       // list of function prototypes
     { return "Function Prototypes"; }
-    virtual QString trTypedefs()
+    virtual QCString trTypedefs()
       // This is used in the documentation of a file as a header before the 
       // list of typedefs
     { return "Typedefs"; }
-    virtual QString trEnumerations()
+    virtual QCString trEnumerations()
       // This is used in the documentation of a file as a header before the 
       // list of enumerations
     { return "Enumerations"; }
-    virtual QString trFunctions()
+    virtual QCString trFunctions()
       // This is used in the documentation of a file as a header before the 
       // list of (global) functions
     { return "Functions"; }
-    virtual QString trVariables()
+    virtual QCString trVariables()
       // This is used in the documentation of a file as a header before the 
       // list of (global) variables
     { return "Variables"; }
-    virtual QString trEnumerationValues()
+    virtual QCString trEnumerationValues()
       // This is used in the documentation of a file as a header before the 
       // list of (global) variables
     { return "Enumeration values"; }
     
-    virtual QString trAuthor()
+    virtual QCString trAuthor()
       // This is used in man pages as the author section.
     { return "Author"; }
 
-    virtual QString trDefineDocumentation()
+    virtual QCString trDefineDocumentation()
       // This is used in the documentation of a file before the list of
       // documentation blocks for defines
     { return "Define Documentation"; }
-    virtual QString trFunctionPrototypeDocumentation()
+    virtual QCString trFunctionPrototypeDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for function prototypes
     { return "Function Prototype Documentation"; }
-    virtual QString trTypedefDocumentation()
+    virtual QCString trTypedefDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for typedefs
     { return "Typedef Documentation"; }
-    virtual QString trEnumerationTypeDocumentation()
+    virtual QCString trEnumerationTypeDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for enumeration types
     { return "Enumeration Type Documentation"; }
-    virtual QString trEnumerationValueDocumentation()
+    virtual QCString trEnumerationValueDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for enumeration values
     { return "Enumeration Value Documentation"; }
-    virtual QString trFunctionDocumentation()
+    virtual QCString trFunctionDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for functions
     { return "Function Documentation"; }
-    virtual QString trVariableDocumentation()
+    virtual QCString trVariableDocumentation()
       // This is used in the documentation of a file/namespace before the list 
       // of documentation blocks for variables
     { return "Variable Documentation"; }
-    virtual QString trCompounds()
+    virtual QCString trCompounds()
       // This is used in the documentation of a file/namespace/group before 
       // the list of links to documented compounds
     { return "Compounds"; }
-    virtual QString trFiles()
+    virtual QCString trFiles()
       // This is used in the documentation of a group before the list of 
       // links to documented files
     { return "Files"; }
 
-    virtual QString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QString result=(QString)"Generated at "+date;
-      if (projName) result+=(QString)" for "+projName;
-      result+=(QString)" by";
+      QCString result=(QCString)"Generated at "+date;
+      if (projName) result+=(QCString)" for "+projName;
+      result+=(QCString)" by";
       return result;
     }
-    virtual QString trWrittenBy()
+    virtual QCString trWrittenBy()
     {
       return "written by";
     }
 
-    virtual QString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const char *clName)
       // this text is put before a class diagram
     {
-      return (QString)"Class diagram for "+clName;
+      return (QCString)"Class diagram for "+clName;
     }
     
-    virtual QString trForInternalUseOnly()
+    virtual QCString trForInternalUseOnly()
       // this text is generated when the \internal command is used.
     { return "For internal use only."; }
-    virtual QString trReimplementedForInternalReasons()
+    virtual QCString trReimplementedForInternalReasons()
       // this text is generated when the \reimp command is used.
     { return "Reimplemented for internal reasons; the API is not affected."; }
-    virtual QString trWarning()
+    virtual QCString trWarning()
       // this text is generated when the \warning command is used.
     { return "Warning"; }
-    virtual QString trBugsAndLimitations()
+    virtual QCString trBugsAndLimitations()
       // this text is generated when the \bug command is used.
     { return "Bugs and limitations"; }
-    virtual QString trVersion()
+    virtual QCString trVersion()
       // this text is generated when the \version command is used.
     { return "Version"; }
-    virtual QString trDate()
+    virtual QCString trDate()
       // this text is generated when the \date command is used.
     { return "Date"; }
-    virtual QString trAuthors()
+    virtual QCString trAuthors()
       // this text is generated when the \author command is used.
     { return "Author(s)"; }
-    virtual QString trReturns()
+    virtual QCString trReturns()
       // this text is generated when the \return command is used.
     { return "Returns"; }
-    virtual QString trSeeAlso()
+    virtual QCString trSeeAlso()
       // this text is generated when the \sa command is used.
     { return "See also"; }
-    virtual QString trParameters()
+    virtual QCString trParameters()
       // this text is generated when the \param command is used.
     { return "Parameters"; }
-    virtual QString trExceptions()
+    virtual QCString trExceptions()
       // this text is generated when the \exception command is used.
     { return "Exceptions"; }
     
-    virtual QString trGeneratedBy()
+    virtual QCString trGeneratedBy()
       // this text is used in the title page of a LaTeX document.
     { return "Generated by"; }
 
     // new since 0.49-990307
     
-    virtual QString trNamespaceList()
+    virtual QCString trNamespaceList()
       // used as the title of page containing all the index of all namespaces.
     { return "Namespace List"; }
-    virtual QString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool extractAll)
       // used as an introduction to the namespace list
     {
-      QString result="Here is a list of all ";
+      QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       result+="namespaces with brief descriptions:";
       return result;
     }
-    virtual QString trFriends()
+    virtual QCString trFriends()
       // used in the class documentation as a header before the list of all
       // friends of a class
     { return "Friends"; }
@@ -417,7 +415,7 @@ class Translator
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
     
-    virtual QString trRelatedFunctionDocumentation()
+    virtual QCString trRelatedFunctionDocumentation()
       // used in the class documentation as a header before the list of all
       // related classes
     { return "Friends And Related Function Documentation"; }
@@ -426,11 +424,11 @@ class Translator
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const char *clName,
                                     ClassDef::CompoundType compType)
       // used as the title of the HTML page of a class/struct/union
     {
-      QString result=(QString)clName+" ";
+      QCString result=(QCString)clName+" ";
       switch(compType)
       {
         case ClassDef::Class:  result+=" Class"; break;
@@ -440,49 +438,49 @@ class Translator
       result+=" Reference";
       return result;
     }
-    virtual QString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const char *fileName)
       // used as the title of the HTML page of a file
     {
-      QString result=fileName;
+      QCString result=fileName;
       result+=" File Reference"; 
       return result;
     }
-    virtual QString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
-      QString result=namespaceName;
+      QCString result=namespaceName;
       result+=" Namespace Reference";
       return result;
     }
     
     // these are for the member sections of a class, struct or union 
-    virtual QString trPublicMembers()
+    virtual QCString trPublicMembers()
     { return "Public Members"; }
-    virtual QString trPublicSlots()
+    virtual QCString trPublicSlots()
     { return "Public Slots"; }
-    virtual QString trSignals()
+    virtual QCString trSignals()
     { return "Signals"; }
-    virtual QString trStaticPublicMembers()
+    virtual QCString trStaticPublicMembers()
     { return "Static Public Members"; }
-    virtual QString trProtectedMembers()
+    virtual QCString trProtectedMembers()
     { return "Protected Members"; }
-    virtual QString trProtectedSlots()
+    virtual QCString trProtectedSlots()
     { return "Protected Slots"; }
-    virtual QString trStaticProtectedMembers()
+    virtual QCString trStaticProtectedMembers()
     { return "Static Protected Members"; }
-    virtual QString trPrivateMembers()
+    virtual QCString trPrivateMembers()
     { return "Private Members"; }
-    virtual QString trPrivateSlots()
+    virtual QCString trPrivateSlots()
     { return "Private Slots"; }
-    virtual QString trStaticPrivateMembers()
+    virtual QCString trStaticPrivateMembers()
     { return "Static Private Members"; }
     // end of member sections 
     
-    virtual QString trWriteList(int numEntries)
+    virtual QCString trWriteList(int numEntries)
     {
       // this function is used to produce a comma-separated list of items.
       // use generateMarker(i) to indicate where item i should be put.
-      QString result;
+      QCString result;
       int i;
       // the inherits list contain `numEntries' classes
       for (i=0;i<numEntries;i++) 
@@ -502,38 +500,38 @@ class Translator
       return result; 
     }
     
-    virtual QString trInheritsList(int numEntries)
+    virtual QCString trInheritsList(int numEntries)
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
     {
       return "Inherits "+trWriteList(numEntries)+".";
     }
-    virtual QString trInheritedByList(int numEntries)
+    virtual QCString trInheritedByList(int numEntries)
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
       return "Inherited by "+trWriteList(numEntries)+".";
     }
-    virtual QString trReimplementedFromList(int numEntries)
+    virtual QCString trReimplementedFromList(int numEntries)
       // used in member documentation blocks to produce a list of 
       // members that are hidden by this one.
     {
       return "Reimplemented from "+trWriteList(numEntries)+".";
     }
-    virtual QString trReimplementedInList(int numEntries)
+    virtual QCString trReimplementedInList(int numEntries)
     {
       // used in member documentation blocks to produce a list of
       // all member that overwrite the implementation of this member.
       return "Reimplemented in "+trWriteList(numEntries)+".";
     }
 
-    virtual QString trNamespaceMembers()
+    virtual QCString trNamespaceMembers()
       // This is put above each page as a link to all members of namespaces.
     { return "Namespace Members"; }
-    virtual QString trNamespaceMemberDescription(bool extractAll)
+    virtual QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     { 
-      QString result="Here is a list of all ";
+      QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       result+="namespace members with links to ";
       if (extractAll) 
@@ -542,14 +540,23 @@ class Translator
         result+="the namespaces they belong to:";
       return result;
     }
-    virtual QString trNamespaceIndex()
+    virtual QCString trNamespaceIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all namespaces.
     { return "Namespace Index"; }
-    virtual QString trNamespaceDocumentation()
+    virtual QCString trNamespaceDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
     { return "Namespace Documentation"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990522
+//////////////////////////////////////////////////////////////////////////
+
+      // This is used in the documentation before the list of all
+      // namespaces in a file.
+    virtual QCString trNamespaces()
+    { return "Namespaces"; }
 };
 
 #endif

@@ -17,6 +17,7 @@
 #ifndef HTMLGEN_H
 #define HTMLGEN_H
 
+#include "qtbc.h"
 #include "outputgen.h"
 
 class QFile;
@@ -85,6 +86,8 @@ class HtmlGenerator : public OutputGenerator
     void endMemberSections();
     void startMemberHeader();
     void endMemberHeader();
+    void startMemberSubtitle();
+    void endMemberSubtitle();
     void startMemberList();
     void endMemberList();
     void startMemberItem();
@@ -169,9 +172,9 @@ class HtmlGenerator : public OutputGenerator
     //static void docifyStatic(QTextStream &t,const char *str);
     
   private:
-    QString header;
-    QString footer;
-    QString lastTitle;
+    QCString header;
+    QCString footer;
+    QCString lastTitle;
 
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);

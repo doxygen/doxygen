@@ -17,8 +17,8 @@
 #ifndef DEFARGS_H
 #define DEFARGS_H
 
+#include "qtbc.h"
 #include <stdio.h>
-#include <qstring.h>
 
 class ArgumentList;
 

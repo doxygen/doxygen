@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 // strips w from s iff s starts with w
-bool stripWord(QString &s,QString w)
+bool stripWord(QCString &s,QCString w)
 {
   bool success=FALSE;
   if (s.left(w.length())==w) 
@@ -47,12 +47,12 @@ bool stripWord(QString &s,QString w)
 
 //----------------------------------------------------------------------------
 // some quasi intelligent brief description abbreviator :^)
-QString abbreviate(const char *s,const char *name)
+QCString abbreviate(const char *s,const char *name)
 {
-  QString result=s;
-  QString start1=(QString)"The "+name+" class ";
-  QString start2=(QString)"The "+name+" widget ";
-  QString start3=(QString)"The "+name+" file ";
+  QCString result=s;
+  QCString start1=(QCString)"The "+name+" class ";
+  QCString start2=(QCString)"The "+name+" widget ";
+  QCString start3=(QCString)"The "+name+" file ";
   result=result.simplifyWhiteSpace();
   // strip trailing .
   if (result.length()>0 && result.at(result.length()-1)=='.') 
@@ -236,7 +236,7 @@ void writeHierarchicalIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"hierarchy","Hierarchical Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trClassHierarchy());
+  parseText(ol,Config::projectName+" "+theTranslator->trClassHierarchy());
   endTitle(ol,0);
   parseText(ol,theTranslator->trClassHierarchyDescription());
   ol.newParagraph();
@@ -272,10 +272,10 @@ void writeFileIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"files","File Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trFileList());
+  parseText(ol,Config::projectName+" "+theTranslator->trFileList());
   endTitle(ol,0);
   ol.newParagraph();
-  parseText(ol,theTranslator->trFileListDescription(extractAllFlag));
+  parseText(ol,theTranslator->trFileListDescription(Config::extractAllFlag));
   ol.newParagraph();
 
   ol.startIndexList();
@@ -289,13 +289,13 @@ void writeFileIndex(OutputList &ol)
       {
         //ol.writeIndexItem(fd->getReference(),fd->diskName(),
         //    fd->name());
-        QString path;
-        if (fullPathNameFlag) 
+        QCString path;
+        if (Config::fullPathNameFlag) 
         {
           path=fd->getPath().copy();
           // strip part of the path
-          if (path.left(stripFromPath.length())==stripFromPath)
-            path=path.right(path.length()-stripFromPath.length());
+          if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
+            path=path.right(path.length()-Config::stripFromPath.length());
         }
 
         ol.writeStartAnnoItem("file",
@@ -337,7 +337,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (!nd->getReference() && nd->hasDocumentation()) count++;
+    if (nd->isVisible()) count++;
   }
   return count;
 }
@@ -350,17 +350,17 @@ void writeNamespaceIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"namespaces","Namespace Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trNamespaceList());
+  parseText(ol,Config::projectName+" "+theTranslator->trNamespaceList());
   endTitle(ol,0);
   ol.newParagraph();
-  parseText(ol,theTranslator->trNamespaceListDescription(extractAllFlag));
+  parseText(ol,theTranslator->trNamespaceListDescription(Config::extractAllFlag));
   ol.newParagraph();
 
   ol.startIndexList();
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (!nd->getReference() && nd->hasDocumentation())
+    if (nd->isVisible())
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
@@ -419,12 +419,12 @@ void writeAnnotatedClassList(OutputList &ol)
   {
     if (!cd->isReference() && 
         //!cd->name().isEmpty() && cd->name()[0]!='@' && 
-        //(cd->protection()!=Private || extractPrivateFlag) &&
+        //(cd->protection()!=Private || Config::extractPrivateFlag) &&
         //(cd->hasDocumentation() || !hideClassFlag)
         cd->isVisible()
        )
     {
-      QString type;
+      QCString type;
       switch (cd->compoundType())
       {
         case ClassDef::Class:  type="class";   break;
@@ -465,7 +465,7 @@ void writeAnnotatedIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"annotated","Annotated Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trCompoundList());
+  parseText(ol,Config::projectName+" "+theTranslator->trCompoundList());
   endTitle(ol,0);
   parseText(ol,theTranslator->trCompoundListDescription());
   writeAnnotatedClassList(ol);
@@ -487,7 +487,7 @@ void writeMemberList(OutputList &ol)
     while (md && !found)
     {
       ClassDef *cd;
-      if ((md->isFriend() || md->protection()!=Private || extractPrivateFlag) && 
+      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
           !md->isReference() && md->hasDocumentation() &&
            md->name()[0]!='@' && (cd=md->memberClass()) &&
            cd->isVisible()
@@ -506,12 +506,12 @@ void writeMemberList(OutputList &ol)
       ol.writeString("\n");
 
       int count=0;
-      md=mn->first();
-      QString prevName;
+      md=mn->last();
+      QCString prevName;
       while (md)
       {
         ClassDef *cd=md->memberClass();
-        if (cd && (md->isFriend() || md->protection()!=Private || extractPrivateFlag) && 
+        if (cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
             !md->isReference() && md->hasDocumentation() && 
             prevName!=cd->name() && 
             cd->isVisible()
@@ -526,7 +526,7 @@ void writeMemberList(OutputList &ol)
           count++;
           prevName=cd->name();
         }
-        md=mn->next();
+        md=mn->prev();
       }
     }
     mn=memberNameList.next();
@@ -548,11 +548,11 @@ int countClassMembers()
     ClassDef *cd;
     while (md && !found)
     {
-      if ((md->isFriend() || md->protection()!=Private || extractPrivateFlag) && 
+      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
           !md->isReference() && !md->isRelated() && md->hasDocumentation() &&
           md->name()[0]!='@' && (cd=md->memberClass()) && cd->isVisible()) 
         otherMd=md;
-      if ((md->isFriend() || md->protection()!=Private || extractPrivateFlag) && 
+      if ((md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
           !md->isReference() && md->isRelated() && md->hasDocumentation() &&
           md->name()[0]!='@' && (cd=md->memberClass()) && cd->isVisible())
         found=TRUE;
@@ -574,9 +574,9 @@ void writeMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"functions","Compound Member Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trCompoundMembers());
+  parseText(ol,Config::projectName+" "+theTranslator->trCompoundMembers());
   endTitle(ol,0);
-  parseText(ol,theTranslator->trCompoundMembersDescription(extractAllFlag));
+  parseText(ol,theTranslator->trCompoundMembersDescription(Config::extractAllFlag));
   writeMemberList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
@@ -615,8 +615,8 @@ void writeFileMemberList(OutputList &ol)
       ol.writeString("\n");
 
       int count=0;
-      md=mn->first();
-      QString prevName;
+      md=mn->last();
+      QCString prevName;
       while (md)
       {
         FileDef *fd=md->getFileDef() ? md->getFileDef() : md->getFileDec();
@@ -633,7 +633,7 @@ void writeFileMemberList(OutputList &ol)
             ol.docify(": ");
           else 
             ol.docify(", ");
-          QString baseName=fd->name().copy();
+          QCString baseName=fd->name().copy();
           //int s;
           //if ((s=baseName.findRev("/"))!=-1) 
           //  baseName=baseName.right(baseName.length()-s-1);
@@ -642,7 +642,7 @@ void writeFileMemberList(OutputList &ol)
           count++;
           prevName=fd->name();
         }
-        md=mn->next();
+        md=mn->prev();
       }
     }
     mn=functionNameList.next();
@@ -663,11 +663,9 @@ void writeNamespaceMemberList(OutputList &ol)
     while (md && !found)
     {
       NamespaceDef *nd=md->getNamespace();
-      if (nd && nd->hasDocumentation() && 
-          !md->isReference() && 
-          md->hasDocumentation() && 
-          !md->name().isEmpty() && 
-          md->name()[0]!='@') found=TRUE;
+      if (nd && nd->isVisible() &&
+          !md->isReference() && md->hasDocumentation() && 
+          !md->name().isEmpty() && md->name().at(0)!='@') found=TRUE;
       else
         md=mn->next();
     }
@@ -679,16 +677,16 @@ void writeNamespaceMemberList(OutputList &ol)
       ol.writeString("\n");
 
       int count=0;
-      md=mn->first();
-      QString prevName;
+      md=mn->last();
+      QCString prevName;
       while (md)
       {
         NamespaceDef *nd=md->getNamespace();
-        if (nd && nd->hasDocumentation() && 
-            !md->isReference() && 
-            md->hasDocumentation() && 
-            !md->name().isEmpty() && md->name()[0]!='@'
-            )
+        if (nd && nd->isVisible() &&
+            !md->isReference() && md->hasDocumentation() && 
+            !md->name().isEmpty() && md->name().at(0)!='@' &&
+            prevName!=nd->name()
+           )
         {
           if (count==0) 
             ol.docify(": ");
@@ -697,8 +695,9 @@ void writeNamespaceMemberList(OutputList &ol)
           ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
                              md->anchor(),nd->name());
           count++;
+          prevName=nd->name();
         }
-        md=mn->next();
+        md=mn->prev();
       }
     }
     mn=functionNameList.next();
@@ -718,10 +717,11 @@ int countNamespaceMembers()
     bool found=FALSE;
     while (md && !found)
     {
-      if (md->getNamespace() &&
+      NamespaceDef *nd=md->getNamespace();
+      if (nd && nd->isVisible() &&
           !md->isReference() && md->hasDocumentation() && 
-          !md->name().isEmpty() && md->name()[0]!='@'
-         ) 
+          !md->name().isEmpty() && md->name().at(0)!='@'
+         )
         found=TRUE;
       else
         md=mn->next();
@@ -771,9 +771,9 @@ void writeFileMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"globals","File Member Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trFileMembers());
+  parseText(ol,Config::projectName+" "+theTranslator->trFileMembers());
   endTitle(ol,0);
-  parseText(ol,theTranslator->trFileMembersDescription(extractAllFlag));
+  parseText(ol,theTranslator->trFileMembersDescription(Config::extractAllFlag));
   writeFileMemberList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
@@ -789,9 +789,9 @@ void writeNamespaceMemberIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"namespacemembers","Namespace Member Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trNamespaceMembers());
+  parseText(ol,Config::projectName+" "+theTranslator->trNamespaceMembers());
   endTitle(ol,0);
-  parseText(ol,theTranslator->trNamespaceMemberDescription(extractAllFlag));
+  parseText(ol,theTranslator->trNamespaceMemberDescription(Config::extractAllFlag));
   writeNamespaceMemberList(ol);
   endFile(ol);
   ol.enable(OutputGenerator::Latex);
@@ -809,13 +809,13 @@ void writeHeaderFileList(OutputList &ol)
     while (fd)
     {
       ol.writeListItem();
-      QString path;
-      if (fullPathNameFlag) 
+      QCString path;
+      if (Config::fullPathNameFlag) 
       {
         path=fd->getPath().copy();
         // strip part of the path
-        if (path.left(stripFromPath.length())==stripFromPath)
-          path=path.right(path.length()-stripFromPath.length());
+        if (path.left(Config::stripFromPath.length())==Config::stripFromPath)
+          path=path.right(path.length()-Config::stripFromPath.length());
       }
       if (!path.isEmpty()) ol.docify(path);
       ol.writeObjectLink(0,fd->includeName(),0,fd->name());
@@ -835,7 +835,7 @@ void writeHeaderIndex(OutputList &ol)
   ol.disable(OutputGenerator::Latex);
   startFile(ol,"headers","Header File Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trHeaderFiles());
+  parseText(ol,Config::projectName+" "+theTranslator->trHeaderFiles());
   endTitle(ol,0);
   parseText(ol,theTranslator->trHeaderFilesDescription());
   writeHeaderFileList(ol);
@@ -852,7 +852,7 @@ void writeExampleIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"examples","Example Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trExamples());
+  parseText(ol,Config::projectName+" "+theTranslator->trExamples());
   endTitle(ol,0);
   parseText(ol,theTranslator->trExamplesDescription());
   ol.startIndexList();
@@ -860,7 +860,7 @@ void writeExampleIndex(OutputList &ol)
   while (pi)
   {
     ol.writeListItem();
-    QString n=convertSlashes(pi->name,TRUE)+"-example";
+    QCString n=convertSlashes(pi->name,TRUE)+"-example";
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
@@ -885,16 +885,16 @@ void writePageIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
   startTitle(ol);
-  ol.docify(projectName+" "+theTranslator->trRelatedPages());
+  ol.docify(Config::projectName+" "+theTranslator->trRelatedPages());
   endTitle(ol,0);
   parseText(ol,theTranslator->trRelatedPagesDescription());
   ol.startIndexList();
   PageInfo *pi=pageList.first();
   while (pi)
   {
-    QString pageName,pageTitle;
+    QCString pageName,pageTitle;
     
-    if (caseSensitiveNames)
+    if (Config::caseSensitiveNames)
       pageName=pi->name.copy();
     else
       pageName=pi->name.lower();
@@ -960,7 +960,7 @@ void writeGroupIndex(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   startFile(ol,"modules","Module Index");
   startTitle(ol);
-  parseText(ol,projectName+" "+theTranslator->trModules());
+  parseText(ol,Config::projectName+" "+theTranslator->trModules());
   endTitle(ol,0);
   parseText(ol,theTranslator->trModulesDescription());
   writeGroupList(ol);
@@ -975,27 +975,27 @@ void writeIndex(OutputList &ol)
   bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
   bool htmEnabled = ol.isEnabled(OutputGenerator::Html);
 
-  QString projPrefix;
-  if (!projectName.isEmpty())
+  QCString projPrefix;
+  if (!Config::projectName.isEmpty())
   {
-    projPrefix=projectName+" ";
+    projPrefix=Config::projectName+" ";
   }
   // write HTML index
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
   ol.startFile("index","Main Index",FALSE);
-  if (!noIndexFlag) writeQuickLinks(ol,TRUE);
+  if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
   ol.startTitleHead();
   parseText(ol,projPrefix+theTranslator->trDocumentation());
   ol.endTitleHead(0);
   ol.newParagraph();
-  if (!projectNumber.isEmpty())
+  if (!Config::projectNumber.isEmpty())
   {
     ol.startProjectNumber();
-    parseDoc(ol,0,0,projectNumber);
+    parseDoc(ol,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
-  if (noIndexFlag) writeQuickLinks(ol,FALSE);
+  if (Config::noIndexFlag) writeQuickLinks(ol,FALSE);
   endFile(ol);
   ol.disable(OutputGenerator::Html);
   
@@ -1004,10 +1004,10 @@ void writeIndex(OutputList &ol)
   ol.startFile("refman",0,FALSE);
   ol.startIndexSection(isTitlePageStart);
   parseText(ol,projPrefix+theTranslator->trReferenceManual());
-  if (!projectNumber.isEmpty())
+  if (!Config::projectNumber.isEmpty())
   {
     ol.startProjectNumber(); 
-    parseDoc(ol,0,0,projectNumber);
+    parseDoc(ol,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
   ol.endIndexSection(isTitlePageStart);

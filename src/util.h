@@ -41,46 +41,47 @@ extern void writeMemberDocs(OutputList &ol,
                  MemberList *ml,const char *scopeName,MemberDef::MemberType m);
 extern void setAnchors(char id,MemberList *ml);
 //extern int  countMemberDocs(MemberList *ml,MemberDef::MemberType m);
-extern QString fileToString(const char *name);
-extern QString dateToString(bool);
+extern QCString fileToString(const char *name);
+extern QCString dateToString(bool);
 //extern OutputList linkifyText(const char *clName,const char *name,
 //                        const char *text);
-extern bool getDefs(const QString &memberName,const QString &className, 
+extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd,
                     NamespaceDef *&nd);
 extern void generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);
 extern void generateLink(OutputList &ol,const char *,
                          const char *,bool inSeeBlock,const char *);
-extern void generateClassRef(OutputList &ol,const char *clName,
-                             const char *linkTxt=0);
+//extern void generateClassRef(OutputList &ol,const char *clName,
+//                             const char *linkTxt=0);
 extern void generateFileRef(OutputList &ol,const char *,
                              const char *linkTxt=0);
 extern bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
-extern QString substituteClassNames(const QString &s);
-extern QString convertSlashes(const QString &s,bool dots=FALSE);
-extern QString substitute(const char *s,const char *src,const char *dst);
-extern QString resolveDefines(const char *n);
+extern QCString substituteClassNames(const QCString &s);
+extern QCString convertSlashes(const QCString &s,bool dots=FALSE);
+extern QCString substitute(const char *s,const char *src,const char *dst);
+extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
 //extern int strcscmp(const char *s1,const char *s2);
 extern FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
 extern void showFileDefMatches(const FileNameDict *fnDict,const char *n);
 extern int guessSection(const char *name);
-//extern QString nameToFile(const char *name);
+//extern QCString nameToFile(const char *name);
 extern bool isId(char c);
-extern QString removeRedundantWhiteSpace(const QString &s);
+extern QCString removeRedundantWhiteSpace(const QCString &s);
 extern void startTitle(OutputList &ol);
 extern void endTitle(OutputList &ol,const char *name);
 void startFile(OutputList &ol,const char *name,
                const char *title,bool external=FALSE);
 void endFile(OutputList &ol,bool external=FALSE);
 void writeQuickLinks(OutputList &ol,bool compact,bool external=FALSE);
-QString argListToString(ArgumentList *al);
-QString generateMarker(int id);
+QCString argListToString(ArgumentList *al);
+QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleList *el);
-void setFileNameForSections(QList<QString> *anchorList,const char *fileName);
+void setFileNameForSections(QList<QCString> *anchorList,const char *fileName);
+QCString stripAnnonymousScope(const QCString &s);
 
 #endif

@@ -38,6 +38,11 @@ dgux-g++: src/version.cpp
 	TMAKEPATH=../tmake/lib/dgux-g++ \
 	$(MAKE)
 
+gnu-g++: src/version.cpp
+	cd src; \
+	TMAKEPATH=../tmake/lib/gnu-g++ \
+	$(MAKE)
+
 freebsd-g++: src/version.cpp
 	cd src; \
 	TMAKEPATH=../tmake/lib/freebsd-g++ \
@@ -170,7 +175,7 @@ ps: docs
 archive: clean
 	$(TAR) zcvf backup/dx`date +%y%m%d`.tgz tmake doc examples bin objects \
 	       src Makefile Makefile.windows INSTALL make.bat Makefile.config \
-	       LANGUAGE.HOWTO
+	       LANGUAGE.HOWTO LICENSE
 
 src/version.cpp: FORCE
 	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp

@@ -17,9 +17,9 @@
 #ifndef SUFFIXTREE_H
 #define SUFFIXTREE_H
 
+#include "qtbc.h"
 #include <qlist.h>
 #include <qarray.h>
-#include <qstring.h>
 #include <qfile.h>
 
 class SuffixNodeList;
@@ -56,7 +56,7 @@ class SuffixNode
   private:
     SuffixNodeList *children;
     QArray<WordRef> references;
-    QString label;
+    QCString label;
     int branchOffset;
     int totalFreq;
 };

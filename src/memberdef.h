@@ -17,7 +17,7 @@
 #ifndef MEMBERDEF_H
 #define MEMBERDEF_H
 
-#include <qstring.h>
+#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 
@@ -55,13 +55,14 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     
-    QString getOutputFileBase() const;
+    QCString getOutputFileBase() const;
     const char *declaration() const      { return decl; }
     const char *definition() const       { return def; }
     const char *typeString() const       { return type; }
     const char *argsString() const       { return args; }
     const char *excpString() const       { return exception; }     
     const char *anchor() const           { return ref; }
+    QCString bodyCode() const             { return body; }
     ClassDef *memberClass()              { return classDef; }
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
@@ -74,17 +75,25 @@ class MemberDef : public Definition
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { ref=a; }
     void setProtection(Protection p)     { prot=p; }
+    void setBody(const QCString &b)       { body=b; }
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
     bool isRelated() const               { return related; }
     bool isStatic() const                { return stat; }
+    bool hasDocumentation()  // overrides hasDocumentation in definition.h
+      { return !documentation().isNull() || 
+               !briefDescription().isNull() || 
+               !body.isEmpty() || 
+               Config::extractAllFlag; 
+      }
+
     bool detailsAreVisible() const          
-      { return !documentation().isEmpty() || 
+      { return !documentation().isEmpty() || !body.isEmpty() ||
                (mtype==Enumeration && docEnumValues) || 
                (mtype==EnumValue && !briefDescription().isEmpty()) ||
                (!briefDescription().isEmpty() && 
-                !briefMemDescFlag && repeatBriefFlag);
+                !Config::briefMemDescFlag && Config::repeatBriefFlag);
       }
     
     // relation to other members
@@ -138,7 +147,14 @@ class MemberDef : public Definition
     
     // argument related members
     ArgumentList *argumentList() const { return argList; }
+    void setArgumentList(ArgumentList *al) 
+    { if (argList) delete argList;
+      argList = al;
+    }
     ArgumentList *templateArguments() const { return tArgList; }
+    void setScopeTemplateArguments(ArgumentList *t);
+    ArgumentList *scopeTemplateArguments() const { return scopeTAL; }
+    QCString getScopeTemplateNameString();
     
     // namespace related members
     NamespaceDef *getNamespace() { return nspace; }
@@ -158,20 +174,21 @@ class MemberDef : public Definition
     MemberList *enumFields;   // enumeration fields
     OutputList *enumDeclList; // stored piece of documentation for enumeration.
     NamespaceDef *nspace;     // the namespace this member is in.
-    QString type;             // return type
-    QString args;             // function arguments/variable array specifiers
-    QString exception;        // exceptions that can be thrown
-    QString decl;             // member declaration in class
-    QString declFile;         // file where the declaration was found
+    QCString type;             // return type
+    QCString args;             // function arguments/variable array specifiers
+    QCString exception;        // exceptions that can be thrown
+    QCString body;             // function body code
+    QCString decl;             // member declaration in class
+    QCString declFile;         // file where the declaration was found
     int     declLine;         // line where the declaration was found
-    QString def;              // member definition in code (fully qualified name)
-    QString defFile;          // file where the definition was found
+    QCString def;              // member definition in code (fully qualified name)
+    QCString defFile;          // file where the definition was found
     int     defLine;          // line where the definition was found
-    QString ref;              // HTML anchor name
+    QCString ref;              // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]
     bool    related;          // is this a member that is only related to a class
-    QString external;         // anchor of a member if extracted from a tag file
+    QCString external;         // anchor of a member if extracted from a tag file
     bool    stat;             // is it a static function?
     MemberType mtype;         // returns the kind of member
     bool eUsed;               // is the enumerate already placed in a list
@@ -179,6 +196,7 @@ class MemberDef : public Definition
     bool docEnumValues;       // is an enum with documented enum values.
     ArgumentList *argList;    // argument list of this member
     ArgumentList *tArgList;   // template argument list of function template
+    ArgumentList *scopeTAL;   // template argument list of class template
 
     // disable copying of member defs
     MemberDef(const MemberDef &);

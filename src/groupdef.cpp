@@ -15,6 +15,7 @@
  */
 
 #include <ctype.h>
+#include "qtbc.h"
 #include "groupdef.h"
 #include "classdef.h"
 #include "filedef.h"
@@ -118,7 +119,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ClassDef *cd=classList->first();
     while (cd)
     {
-      QString type;
+      QCString type;
       switch (cd->compoundType())
       {
         case ClassDef::Class:  type="class";  break;

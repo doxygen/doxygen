@@ -20,7 +20,8 @@
  *	includes
  */
 #include <stdio.h>
-#include <qstring.h>
+  
+#include "qtbc.h"
 #include <qfileinf.h>
   
 #include "classdef.h"
@@ -30,18 +31,19 @@
 #include "doxygen.h"
 #include "util.h"
 #include "message.h"
+#include "defargs.h"
   
 #define YY_NO_UNPUT
 #define YY_NEVER_INTERACTIVE 1
 
 static int yyLineNr;
-static QString className;
-static QString fileName;
-static QString namespaceName;
-static QString tagName;
-static QString memberName;
-static QString anchorName;
-static QString argString;
+static QCString className;
+static QCString fileName;
+static QCString namespaceName;
+static QCString tagName;
+static QCString memberName;
+static QCString anchorName;
+static QCString argString;
 static ClassDef *cd;
 static FileDef *fd;
 static NamespaceDef *nd;
@@ -105,8 +107,11 @@ static void addMember(const char *name,const char *anchor,const char *args)
     MemberNameDict *mnd=0;
     MemberNameList *mnl=0;
     MemberDef *md;
+    ArgumentList *argList = new ArgumentList;
+    stringToArgumentList(args,argList);
     md=new MemberDef(0,name,args,0,Public,Normal,FALSE,FALSE,
-                       MemberDef::Function,0,0); 
+                       MemberDef::Function,0,argList); 
+    delete argList;
     md->setReference(anchor);
     if (cd) // member of a class
     {
@@ -129,7 +134,7 @@ static void addMember(const char *name,const char *anchor,const char *args)
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }
-    MemberName *mn;
+    MemberName *mn = 0;
     if ((mn=(*mnd)[memberName]))
     {
       //printf("mn->inSort()\n");
@@ -155,6 +160,8 @@ static void addMember(const char *name,const char *anchor,const char *args)
 ID [a-z_A-Z][a-z_A-Z0-9]*
 FILE [a-z_A-Z0-9\.\-\+\:\\\/]+
 SCOPE ({ID}"::")*{ID}
+
+%option noyywrap
 
 %x Pass1
 %x Pass2
@@ -272,6 +279,6 @@ void parseTagFile(const char *fileName)
   fclose(f);
 }
 
-extern "C" { // some bogus code to keep the compiler happy
-  int  tagYYwrap() { return 1 ; }
-}
+//extern "C" { // some bogus code to keep the compiler happy
+//  int  tagYYwrap() { return 1 ; }
+//}

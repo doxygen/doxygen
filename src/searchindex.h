@@ -17,8 +17,8 @@
 #ifndef _SEARCHINDEX_H
 #define _SEARCHINDEX_H
 
+#include "qtbc.h"
 #include <qintdict.h>
-#include <qstring.h>
 #include <qlist.h>
 #include <qdict.h>
 
@@ -40,8 +40,8 @@ class DocRef
     int offset() const { return o; }
    
   private:
-    QString n;
-    QString u;
+    QCString n;
+    QCString u;
     int i;
     int o;
 };

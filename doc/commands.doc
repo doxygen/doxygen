@@ -183,6 +183,7 @@ Doxygen. Unrecognized commands are treated as normal text.
   \sa section \ref cmdcode "\\code"
  
 <hr>
+
 \subsection cmdenum \enum <name>
 
   \addindex \enum
@@ -664,6 +665,7 @@ Doxygen. Unrecognized commands are treated as normal text.
 
   \sa 
     Section \ref cmdpage "\\page" for an example of the \\cmdsection command.
+
 <hr>
 \subsection cmdsubsection \subsection <subsection-name> (subsection title)
 
@@ -677,6 +679,7 @@ Doxygen. Unrecognized commands are treated as normal text.
 
   \sa
    Section \ref cmdpage "\\page" for an example of the \\cmdsubsection command.
+
 <hr>
 
 <h2>\htmlonly <center> --- \endhtmlonly 
@@ -1054,7 +1057,6 @@ Doxygen. Unrecognized commands are treated as normal text.
   character has to be escaped because it has a special meaning in HTML.
 
 <hr>
-
 <h2>\htmlonly <center> --- \endhtmlonly 
     Commands included for JavaDoc compatibility
     \htmlonly --- </center>\endhtmlonly</h2>

@@ -1,0 +1,264 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * All output generated with Doxygen is not covered by this license.
+ *
+ */
+/*! \page langhowto Internationalization
+
+<h3>Support for multiple languages</h3>
+
+Doxygen has support for multiple languages. This means that the text fragments that 
+doxygen generates can changed into languages other than English 
+(the default) at configuration time.
+<p>
+Currently, supported languages are English, French, Czech, Dutch, 
+Swedish, Italian, German and Japanese. A number
+of people have volunteered to add support for other languages as well.
+Here is a list of the languages and their current maintainers:
+<p>
+
+\htmlonly
+<TABLE ALIGN=center CELLSPACING=0 CELLPADDING=0 BORDER=0>
+<TR BGCOLOR="#000000">
+<TD>
+  <TABLE CELLSPACING=1 CELLPADDING=2 BORDER=0>
+  <TR BGCOLOR="#4040c0">
+  <TD ><b><font size=+1 color="#ffffff"> Language </font></b></TD>
+  <TD ><b><font size=+1 color="#ffffff"> Maintainer </font></b></TD>
+  <TD ><b><font size=+1 color="#ffffff"> Contact address </font></b></TD>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+	German
+      </TD>  
+      <TD>
+        Jens Breitenstein
+      </TD>
+      <TD>
+        <a href="mailto:Jens.Breitenstein@tlc.de">
+			Jens.Breitenstein@tlc.de</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        French
+      </TD>  
+      <TD>
+        Christophe Bordeux
+      </TD>
+      <TD>
+        <a href="mailto:bordeux@lig.di.epfl.ch">
+                          bordeux@lig.di.epfl.ch</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Swedish
+      </TD> 
+      <TD>
+        Samuel Hägglund<BR>
+        XeT Erixon
+      </TD>
+      <TD>
+        <a href="mailto:sahag96@nts.mh.se">
+	          sahag96@nts.mh.se</a><br>
+        <a href="mailto:xet@hem.passagen.se">
+		  xet@hem.passagen.se</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Czech
+      </TD>   
+      <TD>
+        Vlastimil Havran
+      </TD>
+      <TD>
+        <a href="mailto:havran@fel.cvut.cz">
+                        havran@fel.cvut.cz</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Romanian
+      </TD>
+      <TD>
+        Ionutz Borcoman
+      </TD>
+      <TD>
+        <a href="mailto:borco@borco-ei.eng.hokudai.ac.jp">
+	                borco@borco-ei.eng.hokudai.ac.jp</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Polish
+      </TD>
+      <TD>
+        Piotr Piatkowski
+      </TD>
+      <TD>
+        <a href="mailto:kompas@ceti.com.pl">
+                        kompas@ceti.com.pl</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Italian
+      </TD>
+      <TD>
+        Ahmed Aldo Faisal<br>
+        Alessandro Falappa    
+      </TD>
+      <TD>
+        <a href="mailto:aaf23@cam.ac.uk">
+                        aaf23@cam.ac.uk</a><br>
+        <a href="mailto:a.falappa@flashnet.it">
+                        a.falappa@flashnet.it</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Japanese
+      </TD>
+      <TD>
+        Kenji Nagamatsu
+      </TD>
+      <TD>
+        <a href="mailto:naga@joyful.club.ne.jp">
+                        naga@joyful.club.ne.jp</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Spanish
+      </TD>
+      <TD>
+        Francisco Oltra Thennet 
+      </TD>
+      <TD>
+        <a href="mailto:foltra@puc.cl">
+                        foltra@puc.cl</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Dutch
+      </TD>  
+      <TD>
+        Dimitri van Heesch
+      </TD>
+      <TD>
+        <a href="mailto:dimitri@stack.nl">
+	                dimitri@stack.nl</a>
+      </TD>
+  </TR>
+  </TABLE>
+</TD>
+</TR>
+</TABLE>
+\endhtmlonly
+\latexonly
+\begin{tabular}{|l|l|l|}
+  \hline
+  {\bf Language} & {\bf Maintainer} & {Contact address} \\
+  \hline
+  German  & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} \\
+  \hline
+  French  & Christophe Bordeux & {\tt bordeux@lig.di.epfl.ch} \\
+  \hline
+  Swedish & Samuel Hägglund & {\tt sahag96@nts.mh.se} \\
+          & XeT Erixon      & {\tt xet@hem.passagen.se} \\
+  \hline
+  Czech   & Vlastimil Havran & {\tt havran@fel.cvut.cz} \\
+  \hline
+  Romanian & Ionutz Borcoman & {\tt borco@borco-ei.eng.hokudai.ac.jp} \\
+  \hline
+  Polish & Piotr Piatkowski & {\tt kompas@ceti.com.pl} \\
+  \hline
+  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} \\
+          & Alessandro Falappa & {\tt a.falappa@flashnet.it} \\
+  \hline
+  Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} \\
+  \hline
+  Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} \\
+  \hline
+  Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} \\
+  \hline
+\end{tabular}
+\endlatexonly
+<p>
+
+Most people on the list have indicated that they were also busy
+doing other things, so if you want to help to speed things up please 
+let them (or me) know.
+
+If you want to add support for a language that is not yet listed 
+please see the next section.
+
+<h3>Language HOWTO</h3>
+
+This short HOWTO explains how to add support for a new language to Doxygen:
+
+Just follow these steps:
+<ol>
+<li>Tell me for which language you want to add support. If no one else
+    is already working on support for that language, you will be 
+    assigned as the maintainer for the language. 
+<li>Create a copy of translator_nl.h and name it 
+    translator_<your_2_letter_counter_code>.h
+    I'll use xx in the rest of this document.
+<li>Edit language.cpp:
+    Add a 
+\verbatim
+#include<translator_xx.h>
+\endverbatim
+    in <code>setTranslator()</code> add
+\verbatim
+    else if (L_EQUAL("your_language_name"))
+    {
+      theTranslator = new TranslatorYourLanguage;
+    }
+\endverbatim
+    after the <code>if { ... }</code>
+<li>Edit doxygen.pro and add \c translator_xx.h to 
+    the \c HEADERS line in the file doxygen.pro.
+<li>Edit <code>translator_xx.h</code>:
+   <ul>
+   <li>Rename <code>TRANSLATOR_NL_H</code> to <code>TRANSLATOR_XX_H</code> twice.
+   <li>Rename TranslatorDutch to TranslatorYourLanguage 
+   <li>In the member <code>latexBabelPackage()</code> change "dutch" into the name of the
+     latex package that adds support for your language. 
+   <li>Edit all the strings that are returned by the members that start
+     with tr. 
+     Look at the corresponding member in translator.h for the english text 
+     that is returned and translate that into your language. 
+     Try to match punctuation and capitals!
+     To enter special characters (with accents) you can:
+     <ul>
+     <li>  Enter them directly if your keyboard supports that and you are 
+           using a Latin-1 font.
+           Doxygen will translate the characters to proper Latex and
+           leave the Html and man output for what it is.
+     <li>  Use html codes like \&auml; for an a with an umlaut (i.e. &auml;).
+           See the HTML specification for the codes.
+     </ul>
+   </ul>
+<li>Recompile everything (do this from the root of the distribution, 
+    because the Makefile.dox* have to be regenerated!)
+<li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code> 
+    in the config file to generate output in your language.
+<li>Send <code>translator_xx.h</code> or a <code>diff -u</code> of the changes 
+    to me so I can add it to doxygen.
+</ol>
+*/
+

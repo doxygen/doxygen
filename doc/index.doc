@@ -58,10 +58,12 @@ sections.
 
 The first part forms a user manual:
 <ul>
-<li>Section \ref install discusses how to download, compile and install
+<li>Section \ref install discusses how to 
+      <a href="http://www.stack.nl/~dimitri/doxygen/download.html">download</a>, compile and install
                      doxygen for your platform.
 <li>Section \ref starting tells you how to generate your first piece of 
                      documentation quickly. 
+<li>Section \ref faq gives answers to frequently asked questions. 
 <li>Section \ref trouble tells you what to do when you have problems.
 </ul>
 
@@ -84,7 +86,22 @@ The second part forms a reference manual:
               used within the documentation.
 <li>Section \ref htmlcmds shows an overview of the HTML commands that
               can be used within the documentation.
+<li>Section \ref langhowto explains how to add support for new
+              output languages.
 </ul>
+
+
+<h2>Projects using doxygen</h2>
+
+I have compiled a small 
+\htmlonly
+<a href="http://www.stack.nl/~dimitri/doxygen/projects.html">list of projects</a> 
+that use doxygen
+\endhtmlonly
+\latexonly
+list of projects that use doxygen (see {\tt http://www.stack.nl/$\sim$dimitri/doxygen/projects.html})
+\endlatexonly
+If you know other projects, let me know and I'll add them. 
 
 <h2>Acknowledgements</h2>
 \addindex acknowledgements
@@ -156,9 +173,10 @@ Olaf Meeuwissen,
 Feiyi Wang,
 Robert J. Clark,
 Matthias Baas,
-Walter Mueller, and
-William van Dieten
-    for suggestions, patches and bug reports.
+Walter Mueller, 
+William van Dieten, and
+Joshua Jensen and
+many others for suggestions, patches and bug reports.
 </ul>
 */
 

@@ -14,8 +14,10 @@
  *
  */
 
-#include <qdir.h>
 #include <stdlib.h>
+
+#include "qtbc.h"
+#include <qdir.h>
 #include "message.h"
 #include "mangen.h"
 #include "config.h"
@@ -24,7 +26,7 @@
 
 ManGenerator::ManGenerator() : OutputGenerator()
 {
-  dir=manOutputDir+"/man3";
+  dir=Config::manOutputDir+"/man3";
   firstCol=TRUE;
   paragraph=FALSE;
   col=0;
@@ -37,7 +39,7 @@ ManGenerator::~ManGenerator()
 
 void ManGenerator::append(const OutputGenerator *g)
 {
-  QString r=g->getContents();
+  QCString r=g->getContents();
   if (upperCase)
     t << r.upper();
   else
@@ -52,23 +54,23 @@ void ManGenerator::append(const OutputGenerator *g)
 
 void ManGenerator::init()
 {
-  QDir d(manOutputDir);
-  if (!d.exists() && !d.mkdir(manOutputDir))
+  QDir d(Config::manOutputDir);
+  if (!d.exists() && !d.mkdir(Config::manOutputDir))
   {
-    err("Could not create output directory %s\n",manOutputDir.data());
+    err("Could not create output directory %s\n",Config::manOutputDir.data());
     exit(1);
   }
-  d.setPath(manOutputDir+"/man3");
-  if (!d.exists() && !d.mkdir(manOutputDir+"/man3"))
+  d.setPath(Config::manOutputDir+"/man3");
+  if (!d.exists() && !d.mkdir(Config::manOutputDir+"/man3"))
   {
-    err("Could not create output directory %s/man3\n",manOutputDir.data());
+    err("Could not create output directory %s/man3\n",Config::manOutputDir.data());
     exit(1);
   }
 }
 
 void ManGenerator::startFile(const char *name,const char *,bool)
 {
-  QString fileName=name;
+  QCString fileName=name;
   if (fileName.left(6)=="class_")
   {
     fileName=fileName.right(fileName.length()-6);
@@ -78,7 +80,8 @@ void ManGenerator::startFile(const char *name,const char *,bool)
   {
     fileName=fileName.left(i); 
   }
-  if (fileName.right(2)!=manExtension) fileName+=manExtension;
+  if (convertToQCString(fileName.right(2))!=Config::manExtension) 
+    fileName+=Config::manExtension;
   startPlainFile(fileName);
   firstCol=TRUE;
 }
@@ -95,10 +98,10 @@ void ManGenerator::writeDoxyAnchor(const char *, const char *,const char *)
 void ManGenerator::endTitleHead(const char *name)
 {
   t << ".TH " << name << " 3 \"" << dateToString(FALSE) << "\" \"";
-  if (projectName.isEmpty()) 
+  if (Config::projectName.isEmpty()) 
     t << "Doxygen";
   else
-    t << projectName;
+    t << Config::projectName;
   t << "\" \\\" -*- nroff -*-" << endl;
   t << ".ad l" << endl;
   t << ".nh" << endl;

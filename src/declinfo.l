@@ -37,18 +37,18 @@
   
 static const char * inputString;
 static int	    inputPosition;
-static QString      scope;
-static QString      className;
-static QString      classTempList;
-static QString      funcTempList;
-static QString      type;
-static QString      name;
-static QString      args;
-static QString      tmpType;
+static QCString      scope;
+static QCString      className;
+static QCString      classTempList;
+static QCString      funcTempList;
+static QCString      type;
+static QCString      name;
+static QCString      args;
+static QCString      tmpType;
 static int          sharpCount;
 static bool         classTempListFound;
 static bool         funcTempListFound;
-static QString      exceptionString;
+static QCString      exceptionString;
 
 static void addType()
 {
@@ -94,6 +94,8 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 ID	[a-z_A-Z][a-z_A-Z0-9]*
+
+%option noyywrap
 
 %x      Start
 %x	Template
@@ -198,8 +200,8 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 /*@ ----------------------------------------------------------------------------
  */
 
-void parseFuncDecl(const QString &decl,QString &cl,QString &ctl,QString &t,
-                   QString &n,QString &a,QString &ftl,QString &exc)
+void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
+                   QCString &n,QCString &a,QCString &ftl,QCString &exc)
 {
   inputString   = decl;
   //printf("Input=`%s'\n",inputString);
@@ -221,17 +223,18 @@ void parseFuncDecl(const QString &decl,QString &cl,QString &ctl,QString &t,
   declinfoYYlex();
 
   cl=scope.copy();
-  int i;
-  if ((i=cl.find('<'))!=-1) // split up scope and template arguments
+  int il,ir;
+  if ((il=cl.find('<'))!=-1 && (ir=cl.findRev('>'))!=-1) // split up scope and template arguments
   {
-    ctl=removeRedundantWhiteSpace(cl.right(cl.length()-i));
-    cl=cl.left(i);
+    if (ir==-1) ir=cl.length(); else ir++;
+    ctl=removeRedundantWhiteSpace(cl.mid(il,ir-il));
+    cl=cl.left(il)+cl.right(cl.length()-ir);
   }
   n=removeRedundantWhiteSpace(name);
-  if ((i=n.find('<'))!=-1 && n.left(8)!="operator")
+  if ((il=n.find('<'))!=-1 && n.left(8)!="operator")
   {
-    ftl=removeRedundantWhiteSpace(n.right(n.length()-i));
-    n=n.left(i);
+    ftl=removeRedundantWhiteSpace(n.right(n.length()-il));
+    n=n.left(il);
   }
   
   //ctl=classTempList.copy();
@@ -253,20 +256,20 @@ void parseFuncDecl(const QString &decl,QString &cl,QString &ctl,QString &t,
   
 }
 
-extern "C" { // some bogus code to keep the compiler happy
-  int  declinfoYYwrap() { return 1 ; }
-  void declinfoYYdummy() { yy_flex_realloc(0,0); } 
-}
+//extern "C" { // some bogus code to keep the compiler happy
+//  int  declinfoYYwrap() { return 1 ; }
+//  void declinfoYYdummy() { yy_flex_realloc(0,0); } 
+//}
 
 #if 0
 void dumpDecl(const char *s)
 {
-  QString className;
-  QString classTNames;
-  QString type;
-  QString name;
-  QString args;
-  QString funcTNames;
+  QCString className;
+  QCString classTNames;
+  QCString type;
+  QCString name;
+  QCString args;
+  QCString funcTNames;
   printf("-----------------------------------------\n");
   parseFuncDecl(s,className,classTNames,type,name,args,funcTNames);
   printf("type=`%s' class=`%s' classTempl=`%s' name=`%s' "

@@ -17,8 +17,8 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
+#include "qtbc.h"
 #include <qdict.h>
-#include <qstring.h>
 #include "util.h"
 
 class FileDef;
@@ -30,13 +30,13 @@ class Define
     Define(const Define &d);
    ~Define();
     bool hasDocumentation();
-    QString name;
-    QString definition;
-    QString fileName;
-    QString doc;
-    QString brief;
-    QString args;
-    QString anchor;
+    QCString name;
+    QCString definition;
+    QCString fileName;
+    QCString doc;
+    QCString brief;
+    QCString args;
+    QCString anchor;
     FileDef *fileDef;
     int lineNr;
     int nargs;
@@ -67,7 +67,7 @@ class DefineName : public QList<Define>
     }
     
   private:
-    QString name;
+    QCString name;
 };
 
 class DefineNameList : public QList<DefineName>

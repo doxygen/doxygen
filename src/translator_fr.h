@@ -12,122 +12,124 @@
  *
  * All output generated with Doxygen is not covered by this license.
  *
+ * The translation into French was provided by
+ *   Christophe Bordeux (bordeux@lig.di.epfl.ch)
  */
 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-#include <qstring.h>
+#include "translator.h"
 
 class TranslatorFrench : public Translator
 {
   public:
-    QString latexBabelPackage()
+    QCString latexBabelPackage()
     { return "french"; }
-    QString trInherits()
+    QCString trInherits()
     { return "Hérite de"; }
-    QString trAnd()
+    QCString trAnd()
     { return "et"; }
-    QString trInheritedBy()
+    QCString trInheritedBy()
     { return "Dérivée par"; }
-    QString trRelatedFunctions()
+    QCString trRelatedFunctions()
     { return "Fonctions associées"; }
-    QString trRelatedSubscript()
+    QCString trRelatedSubscript()
     { return "(Noter que ces fonctions ne sont pas des méthodes de la classe)"; }
-    QString trDetailedDescription()
+    QCString trDetailedDescription()
     { return "Description détaillée"; }
-    QString trMemberTypedefDocumentation()
+    QCString trMemberTypedefDocumentation()
     { return "Documentation des types imbriqués"; }
-    QString trMemberEnumerationDocumentation()
+    QCString trMemberEnumerationDocumentation()
     { return "Documentation des énumérations imbriqués"; }
-    QString trMemberFunctionDocumentation()
+    QCString trMemberFunctionDocumentation()
     { return "Documentation des méthodes"; }
-    QString trMemberDataDocumentation()
+    QCString trMemberDataDocumentation()
     { return "Documentation des données imbriqués"; }
-    QString trGeneratedFrom(const char *s,bool single)
+    QCString trGeneratedFrom(const char *s,bool single)
     { 
-      QString result=(QString)"La documentation pour cette"+s+
+      QCString result=(QCString)"La documentation pour cette"+s+
                      " a été générée à partir ";
       if (single) result+="du fichier suivant:";   
       else result+="des fichiers suivants:";
       return result;
     }
-    QString trMore()
+    QCString trMore()
     { return "Plus de détails..."; }
-    QString trReference()
+    QCString trReference()
     { return "Référence"; }
-    QString trListOfAllMembers()
+    QCString trListOfAllMembers()
     { return "Liste de tous les membres"; }
-    QString trMemberList()
+    QCString trMemberList()
     { return "Liste des membres"; }
-    QString trThisIsTheListOfAllMembers()
+    QCString trThisIsTheListOfAllMembers()
     { return "Ceci est la liste complète des membres de"; }
-    QString trIncludingInheritedMembers()
+    QCString trIncludingInheritedMembers()
     { return "y compris des membres des classes héritées."; }
-    QString trGeneratedAutomatically(const char *s)
-    { QString result="Généré automatiquement par Doxygen"; 
-      if (s) result+=(QString)" pour "+s;
+    QCString trGeneratedAutomatically(const char *s)
+    { QCString result="Généré automatiquement par Doxygen"; 
+      if (s) result+=(QCString)" pour "+s;
       result+=" à partir du code source."; 
       return result;
     }
-    QString trEnumName()
+    QCString trEnumName()
     { return "énumération"; }
-    QString trEnumValue()
+    QCString trEnumValue()
     { return "élément d'une énumération"; }
-    QString trDefinedIn()
+    QCString trDefinedIn()
     { return "défini dans"; }
-    QString trIncludeFile()
+    QCString trIncludeFile()
     { return "Fichier inclu"; }
-    QString trVerbatimText(const char *f)
-    { return (QString)"Ce texte provient du fichier inclu "+f+"."; }
+    QCString trVerbatimText(const char *f)
+    { return (QCString)"Ce texte provient du fichier inclu "+f+"."; }
 
 
-    QString trModules()
+    QCString trModules()
     { return "Modules"; }
-    QString trClassHierarchy()
+    QCString trClassHierarchy()
     { return "Hiérarchie des classes"; }
-    QString trCompoundList()
+    QCString trCompoundList()
     { return "Liste des composants"; }
-    QString trFileList()
+    QCString trFileList()
     { return "Liste des fichiers"; }
-    QString trHeaderFiles()
+    QCString trHeaderFiles()
     { return "Fichiers d'entête"; }
-    QString trCompoundMembers()
+    QCString trCompoundMembers()
     { return "Composants"; }
-    QString trFileMembers()
+    QCString trFileMembers()
     { return "Déclarations"; }
-    QString trRelatedPages()
+    QCString trRelatedPages()
     { return "Pages associées"; }
-    QString trExamples()
+    QCString trExamples()
     { return "Exemples"; }
-    QString trSearch()
+    QCString trSearch()
     { return "Recherche"; }
-    QString trClassHierarchyDescription()
+    QCString trClassHierarchyDescription()
     { return "Cette liste d'héritage est, autant que possible, "
 	"classée par ordre alphabétique"; }
-    QString trFileListDescription(bool extractAll)
+    QCString trFileListDescription(bool extractAll)
     {
-      QString result="Liste de tous les fichiers ";
+      QCString result="Liste de tous les fichiers ";
       if (!extractAll) result+="documentés ";
       result+="avec une brève description :";
       return result;
     }
-    QString trCompoundListDescription()
+    QCString trCompoundListDescription()
     { return "Liste des classes, des strutures et des unions "
 	"avec une brève description :"; 
     }
-    QString trCompoundMembersDescription(bool extractAll)
+    QCString trCompoundMembersDescription(bool extractAll)
     {
-      QString result="Liste de tous les membres de classe ";
+      QCString result="Liste de tous les membres de classe ";
       if (!extractAll) result+="documentés ";
       result+="avec les liens vers ";
       if (extractAll) result+="la documentation de la classe correspondante :";
       else result+="les classes auxquelles ils appartiennent :";
       return result;
     }
-    QString trFileMembersDescription(bool extractAll)
+    QCString trFileMembersDescription(bool extractAll)
     {
-      QString result="Liste de toutes les déclarations";
+      QCString result="Liste de toutes les déclarations";
       if (!extractAll) result+="documentées ";
       result+="avec liens sur ";
       if (extractAll) result+="la documentation du fichier correspondant "
@@ -135,140 +137,140 @@ class TranslatorFrench : public Translator
       else result+="les fichiers dans lesquels elles sont définies :";
       return result;
     }
-    QString trHeaderFilesDescription()
+    QCString trHeaderFilesDescription()
     { return "Liste de tous les fichiers d'entête constituant "
 	"l'interface de programmation :"; }
-    QString trExamplesDescription()
+    QCString trExamplesDescription()
     { return "Liste de tous les exemples :"; }
-    QString trRelatedPagesDescription()
+    QCString trRelatedPagesDescription()
     { return "Liste de toutes les pages de documentation associées :"; }
-    QString trModulesDescription()
+    QCString trModulesDescription()
     { return "Liste de tous les modules"; }
-    QString trNoDescriptionAvailable()
+    QCString trNoDescriptionAvailable()
     { return "Aucune description n'est disponible"; }
 
-    QString trDocumentation()
+    QCString trDocumentation()
     { return "Documentation"; }
-    QString trModuleIndex()
+    QCString trModuleIndex()
     { return "Index des modules"; }
-    QString trHierarchicalIndex()
+    QCString trHierarchicalIndex()
     { return "Index hiérarchique"; }
-    QString trCompoundIndex()
+    QCString trCompoundIndex()
     { return "Index des composants"; }
-    QString trFileIndex() 
+    QCString trFileIndex() 
     { return "Index des fichiers"; }
-    QString trModuleDocumentation()
+    QCString trModuleDocumentation()
     { return "Documentation du module"; }
-    QString trClassDocumentation()
+    QCString trClassDocumentation()
     { return "Documentation de la classe"; }
-    QString trFileDocumentation()
+    QCString trFileDocumentation()
     { return "Documentation du fichier"; }
-    QString trExampleDocumentation()
+    QCString trExampleDocumentation()
     { return "Documentation de l'exemple"; }
-    QString trPageDocumentation()
+    QCString trPageDocumentation()
     { return "Documentation de la page"; }
-    QString trReferenceManual()
+    QCString trReferenceManual()
     { return "Manuel de référence"; }
 
-    QString trDefines()
+    QCString trDefines()
     { return "Définitions des macros"; }
-    QString trFuncProtos()
+    QCString trFuncProtos()
     { return "Prototypes des fonctions"; }
-    QString trTypedefs()
+    QCString trTypedefs()
     { return "Définitions des types"; }
-    QString trEnumerations()
+    QCString trEnumerations()
     { return "Enumérations"; }
-    QString trFunctions()
+    QCString trFunctions()
     { return "Fonctions"; }
-    QString trVariables()
+    QCString trVariables()
     { return "Variables"; }
-    QString trEnumerationValues()
+    QCString trEnumerationValues()
     { return "Eléments énumérés"; }
-    QString trReimplementedFrom()
+    QCString trReimplementedFrom()
     { return "Redéfini à partir de"; }
-    QString trReimplementedIn()
+    QCString trReimplementedIn()
     { return "Redéfini dans"; }
-    QString trAuthor()
+    QCString trAuthor()
     { return "Auteur"; }
-    QString trDefineDocumentation()
+    QCString trDefineDocumentation()
     { return "Documentation de la macro"; }
-    QString trFunctionPrototypeDocumentation()
+    QCString trFunctionPrototypeDocumentation()
     { return "Documentation du prototype de la fonction"; }
-    QString trTypedefDocumentation()
+    QCString trTypedefDocumentation()
     { return "Documentation du type"; }
-    QString trEnumerationTypeDocumentation()
+    QCString trEnumerationTypeDocumentation()
     { return "Documentation du type de l'énumeration"; }
-    QString trEnumerationValueDocumentation()
+    QCString trEnumerationValueDocumentation()
     { return "Documentation de l'élément de l'énumeration"; }
-    QString trFunctionDocumentation()
+    QCString trFunctionDocumentation()
     { return "Documentation de la fonction"; }
-    QString trVariableDocumentation()
+    QCString trVariableDocumentation()
     { return "Documentation de la variable"; }
-    QString trCompounds()
+    QCString trCompounds()
     { return "Composants"; }
-    QString trFiles()
+    QCString trFiles()
     { return "Fichiers"; }
-    QString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QString result=(QString)"Généré le "+date;
-      if (projName) result+=(QString)" pour "+projName;
-      result+=(QString)" par ";
+      QCString result=(QCString)"Généré le "+date;
+      if (projName) result+=(QCString)" pour "+projName;
+      result+=(QCString)" par ";
       return result;
     }
-    QString trWrittenBy()
+    QCString trWrittenBy()
     {
       return "écrit par";
     }
-    QString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const char *clName)
     {
-      return (QString)"Graphe d'héritage de la classe "+clName;
+      return (QCString)"Graphe d'héritage de la classe "+clName;
     }
-    QString trForInternalUseOnly()
+    QCString trForInternalUseOnly()
     { return "A usage interne uniquement."; }
-    QString trReimplementedForInternalReasons()
+    QCString trReimplementedForInternalReasons()
     { return "Redéfini pour des raisons internes; "
              "l'interface n'est pas modifiée"; 
     }
-    QString trWarning()
+    QCString trWarning()
     { return "Avertissement"; }
-    QString trBugsAndLimitations()
+    QCString trBugsAndLimitations()
     { return "Bogues et limitations"; }
-    QString trVersion()
+    QCString trVersion()
     { return "Version"; }
-    QString trDate()
+    QCString trDate()
     { return "Date"; }
-    QString trAuthors()
+    QCString trAuthors()
     { return "Auteur(s)"; }
-    QString trReturns()
+    QCString trReturns()
     { return "Renvoie"; }
-    QString trSeeAlso()
+    QCString trSeeAlso()
     { return "Voir également"; }
-    QString trParameters()
+    QCString trParameters()
     { return "Paramètres"; }
-    QString trExceptions()
+    QCString trExceptions()
     { return "Exceptions"; }
-    QString trGeneratedBy()
+    QCString trGeneratedBy()
     { return "Généré par"; }
 
     // new since 0.49-990307
     
-    virtual QString trNamespaces()
+    virtual QCString trNamespaces()
     { return "Namespaces"; }
-    virtual QString trNamespaceList()
+    virtual QCString trNamespaceList()
     { return "Liste des Namespaces"; }
-    virtual QString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QString result="Liste de tous les namespaces ";
+      QCString result="Liste de tous les namespaces ";
       if (!extractAll) result+="documentés ";
       result+="avec une brève description :";
       return result;
     }
-    virtual QString trFriends()
+    virtual QCString trFriends()
     { return "Friends"; }
     
     // new since 0.49-990405
     
-    virtual QString trRelatedFunctionDocumentation()
+    virtual QCString trRelatedFunctionDocumentation()
     { return "Documentation des fonctions amies et associées"; }
 };
 

@@ -17,22 +17,9 @@
 #ifndef PRE_H
 #define PRE_H
 
+#include "qtbc.h"
 #include <stdio.h>
-#include <qstring.h>
 #include <qfile.h>
-
-#if 0
-class Define
-{
-  public:
-    Define(const char *n) { name=n; }
-   ~Define();
-   
-  private:
-    QString name;
-    QStrList args; 
-};
-#endif
 
 void initPreprocessor();
 void addSearchDir(const char *dir);

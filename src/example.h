@@ -17,16 +17,16 @@
 #ifndef EXAMPLE_H
 #define EXAMPLE_H
 
-#include <qstring.h>
+#include "qtbc.h"
 
 class ClassDef;
 class MemberName;
 
 struct Example
 {
-  QString anchor;
-  QString name;
-  QString file;
+  QCString anchor;
+  QCString name;
+  QCString file;
 };
 
 class ExampleList : public QList<Example>

@@ -17,66 +17,78 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <qstring.h>
+#ifndef DOXYWIZARD
+#include "qtbc.h"
+#endif
 #include <qstrlist.h>
 #include <qfile.h>
 
-extern void parseConfig(const QString &config);
+extern void parseConfig(const QCString &config);
 extern void writeTemplateConfig(QFile *f,bool shortList);
+extern void checkConfig();
 
-extern QString  projectName;        // the name of the project               
-extern QString  projectNumber;      // the number of the project
-extern QString  htmlOutputDir;      // the directory to put the HTML files  
-extern QString  latexOutputDir;     // the directory to put the Latex files  
-extern QString  manOutputDir;       // the directory to put the man pages
-extern QString  headerFile;         // the name of the personal HTML header 
-extern QString  footerFile;         // the name of the personal HTML footer 
-extern QString  cgiName;            // the name of the CGI binary           
-extern QString  cgiURL;             // the absolute URL to the CGI binary   
-extern QString  docURL;             // the absolute URL to the documentation
-extern QString  binAbsPath;         // the absolute path to the doxysearch  
-extern QString  docAbsPath;         // the absolute path to the documentation
-extern QString  perlPath;           // the absolute path to perl            
-extern QString  genTagFile;         // the tag file to generate
-extern QString  inputFilter;        // a filter command that is applied to input files
-extern QString  paperType;          // the page type to generate docs for
-extern QString  stripFromPath;      // the string to strip from the file path
-extern QString  manExtension;       // extension the man page files
-extern QStrList includePath;        // list of include paths                
-extern QStrList examplePath;        // list of example paths                
-extern QStrList inputSources;       // list of input files                  
-extern QStrList excludeSources;     // list of files to exclude from the input
-extern QStrList filePatternList;    // list of file patterns                
-extern QStrList excludePatternList; // list of patterns to exclude from input
-extern QStrList tagFileList;        // list of tag files                    
-extern QStrList extDocPathList;     // list of external doc. directories.   
-extern QStrList predefined;         // list of predefined macro names.
-extern QStrList extraPackageList;   // list of extra LaTeX packages.
-extern bool     quietFlag;          // generate progress messages flag      
-extern bool     warningFlag;        // generate warnings flag               
-extern bool     recursiveFlag;      // scan directories recursively         
-extern bool     allExtFlag;         // include all external classes flag    
-extern bool     searchEngineFlag;   // generate search engine flag          
-extern bool     extractAllFlag;     // gererate docs for all classes flag   
-extern bool     extractPrivateFlag; // generate docs for private members flag
-extern bool     noIndexFlag;        // generate condensed index flag
-extern bool     generateHtml;       // generate HTML output
-extern bool     generateLatex;      // generate Latex output
-extern bool     generateMan;        // generate Man pages
-extern bool     preprocessingFlag;  // enable preprocessing 
-extern bool     briefMemDescFlag;   // enable `inline' brief member descr.
-extern bool     hideMemberFlag;     // hide undocumented members.
-extern bool     hideClassFlag;      // hide undocumented members.
-extern bool     searchIncludeFlag;  // search for included files
-extern bool     macroExpansionFlag; // expand macros in the source.
-extern bool     onlyPredefinedFlag; // expand only predefined macros
-extern bool     fullPathNameFlag;   // using full path name in output
-extern bool     classDiagramFlag;   // enable the generation of class diagrams.
-extern bool     compactLatexFlag;   // generate compact LaTeX documentation.
-extern bool     repeatBriefFlag;    // repeat brief descriptions.
-extern bool     internalDocsFlag;   // determines what happens to internal docs.
-extern bool     caseSensitiveNames; // determines if output can be mixed case.
-extern bool     verbatimHeaderFlag; // enable/disable generation of verb headers.
-extern bool     htmlAlignMemberFlag; // align members in HTML using tables.
+struct Config
+{
+  static void init();
+
+  static QCString projectName;        // the name of the project               
+  static QCString projectNumber;      // the number of the project
+  static QCString outputDir;          // the global output directory
+  static QCString htmlOutputDir;      // the directory to put the HTML files  
+  static QCString latexOutputDir;     // the directory to put the Latex files  
+  static QCString manOutputDir;       // the directory to put the man pages
+  static QCString outputLanguage;     // the output language
+  static QCString headerFile;         // the name of the personal HTML header 
+  static QCString footerFile;         // the name of the personal HTML footer 
+  static QCString cgiName;            // the name of the CGI binary           
+  static QCString cgiURL;             // the absolute URL to the CGI binary   
+  static QCString docURL;             // the absolute URL to the documentation
+  static QCString binAbsPath;         // the absolute path to the doxysearch  
+  static QCString docAbsPath;         // the absolute path to the documentation
+  static QCString perlPath;           // the absolute path to perl            
+  static QCString genTagFile;         // the tag file to generate
+  static QCString inputFilter;        // a filter command that is applied to input files
+  static QCString paperType;          // the page type to generate docs for
+  static QCString stripFromPath;      // the string to strip from the file path
+  static QCString manExtension;       // extension the man page files
+  static QStrList includePath;        // list of include paths                
+  static QStrList examplePath;        // list of example paths                
+  static QStrList inputSources;       // list of input files                  
+  static QStrList excludeSources;     // list of files to exclude from the input
+  static QStrList filePatternList;    // list of file patterns                
+  static QStrList excludePatternList; // list of patterns to exclude from input
+  static QStrList tagFileList;        // list of tag files                    
+  static QStrList extDocPathList;     // list of external doc. directories.   
+  static QStrList predefined;         // list of predefined macro names.
+  static QStrList extraPackageList;   // list of extra LaTeX packages.
+  static bool     quietFlag;          // generate progress messages flag      
+  static bool     warningFlag;        // generate warnings flag               
+  static bool     recursiveFlag;      // scan directories recursively         
+  static bool     allExtFlag;         // include all external classes flag    
+  static bool     searchEngineFlag;   // generate search engine flag          
+  static bool     extractAllFlag;     // gererate docs for all classes flag   
+  static bool     extractPrivateFlag; // generate docs for private members flag
+  static bool     noIndexFlag;        // generate condensed index flag
+  static bool     generateHtml;       // generate HTML output
+  static bool     generateLatex;      // generate Latex output
+  static bool     generateMan;        // generate Man pages
+  static bool     preprocessingFlag;  // enable preprocessing 
+  static bool     briefMemDescFlag;   // enable `inline' brief member descr.
+  static bool     hideMemberFlag;     // hide undocumented members.
+  static bool     hideClassFlag;      // hide undocumented members.
+  static bool     searchIncludeFlag;  // search for included files
+  static bool     macroExpansionFlag; // expand macros in the source.
+  static bool     onlyPredefinedFlag; // expand only predefined macros
+  static bool     fullPathNameFlag;   // using full path name in output
+  static bool     classDiagramFlag;   // enable the generation of class diagrams.
+  static bool     compactLatexFlag;   // generate compact LaTeX documentation.
+  static bool     repeatBriefFlag;    // repeat brief descriptions.
+  static bool     internalDocsFlag;   // determines what happens to internal docs.
+  static bool     caseSensitiveNames; // determines if output can be mixed case.
+  static bool     verbatimHeaderFlag; // enable/disable generation of verb headers.
+  static bool     htmlAlignMemberFlag; // align members in HTML using tables.
+  static bool     includeSourceFlag;  // include source code in documentation.  
+  static bool     autoBriefFlag;      // javadoc comments behaves as Qt comments.
+};
 
 #endif
