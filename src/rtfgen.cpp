@@ -742,13 +742,17 @@ void RTFGenerator::beginRTFDocument()
   /* all the included RTF files should begin with the
    * same header
    */
-  t <<"{\\rtf1\\ansi\\ansicpg1252\\uc1 \\deff0\\deflang1033\\deflangfe1033\n";
+  t <<"{\\rtf1\\ansi\\ansicpg" << theTranslator->trRTFansicp();
+  t <<"\\uc1 \\deff0\\deflang1033\\deflangfe1033\n";
 
   DBG_RTF(t <<"{\\comment Begining font list}\n")
   t <<"{\\fonttbl ";
-  t <<"{\\f0\\froman\\fcharset0\\fprq2{\\*\\panose 02020603050405020304}Times New Roman;}\n";
-  t <<"{\\f1\\fswiss\\fcharset0\\fprq2{\\*\\panose 020b0604020202020204}Arial;}\n";
-  t <<"{\\f2\\fmodern\\fcharset0\\fprq1{\\*\\panose 02070309020205020404}Courier New;}\n";
+  t <<"{\\f0\\froman\\fcharset" << theTranslator->trRTFCharSet();
+  t <<"\\fprq2{\\*\\panose 02020603050405020304}Times New Roman;}\n";
+  t <<"{\\f1\\fswiss\\fcharset" << theTranslator->trRTFCharSet();
+  t <<"\\fprq2{\\*\\panose 020b0604020202020204}Arial;}\n";
+  t <<"{\\f2\\fmodern\\fcharset" << theTranslator->trRTFCharSet();
+  t <<"\\fprq1{\\*\\panose 02070309020205020404}Courier New;}\n";
   t <<"{\\f3\\froman\\fcharset2\\fprq2{\\*\\panose 05050102010706020507}Symbol;}\n";
   t <<"}\n";
   DBG_RTF(t <<"{\\comment begin colors}\n")
@@ -1332,9 +1336,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isEndIndex:
       beginRTFChapter();				  
       t << Rtf_Style["Heading1"]->reference;
-      t << "Index\\par "<< endl;
+      t << theTranslator->trRTFGeneralIndex() << "\\par "<< endl;
       t << Rtf_Style_Reset << endl;
-      t << "{\\tc \\v Index}" << endl;
+      t << "{\\tc \\v " << theTranslator->trRTFGeneralIndex() << "}" << endl;
       t << "{\\field\\fldedit {\\*\\fldinst INDEX \\\\c2 \\\\*MERGEFORMAT}{\\fldrslt INDEX}}\n";
 
       break;

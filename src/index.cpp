@@ -2239,13 +2239,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
       };
       MemInfo memberLists[] = 
       {
-        MemInfo(&gd->defineMembers,  theTranslator->trDefines()),
-        MemInfo(&gd->typedefMembers, theTranslator->trTypedefs()),
-        MemInfo(&gd->enumMembers,    theTranslator->trEnumerations()),
-        MemInfo(&gd->enumValMembers, theTranslator->trEnumerationValues()),
-        MemInfo(&gd->funcMembers,    theTranslator->trFunctions()),
-        MemInfo(&gd->varMembers,     theTranslator->trVariables()),
-        MemInfo(&gd->protoMembers,   theTranslator->trFuncProtos()),
+        MemInfo(&gd->docDefineMembers,  theTranslator->trDefines()),
+        MemInfo(&gd->docTypedefMembers, theTranslator->trTypedefs()),
+        MemInfo(&gd->docEnumMembers,    theTranslator->trEnumerations()),
+        MemInfo(&gd->docEnumValMembers, theTranslator->trEnumerationValues()),
+        MemInfo(&gd->docFuncMembers,    theTranslator->trFunctions()),
+        MemInfo(&gd->docVarMembers,     theTranslator->trVariables()),
+        MemInfo(&gd->docProtoMembers,   theTranslator->trFuncProtos()),
         MemInfo(0,0)
       };
 

@@ -1248,7 +1248,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<FindMembers,FindFields>"//"([!*]?){B}*{CMD}"{"|"/*"([!*]?){B}*{CMD}"{"	{
+<FindMembers,FindFields>"//"([!/]?){B}*{CMD}"{"|"/*"([!*]?){B}*{CMD}"{"	{
   					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -1267,7 +1267,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN( Doc );
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//"([!*]?){B}*{CMD}"}"|"/*"([!*]?){B}*{CMD}"}"{B}*"*/"	{
+<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}"|"/*"([!*]?){B}*{CMD}"}"{B}*"*/"	{
   					  endGroup();
   					}
 <FindMembers>"="			{
@@ -1687,6 +1687,15 @@ TITLE     [tT][iI][tT][lL][eE]
 					    varEntry->doc = current->doc.copy();
 					    varEntry->brief = current->brief.copy();
 					    varEntry->mGrpId = current->mGrpId;
+
+					    // deep copy group list
+					    QListIterator<QCString> sli(*current->groups);
+					    QCString *s;
+					    for (;(s=sli.current());++sli)
+					    {
+					      varEntry->groups->append(new QCString(*s));
+					    }
+
 					    //printf("Add: type=`%s',name=`%s',args=`%s'\n",
 					    //      varEntry->type.data(),varEntry->name.data(),varEntry->args.data());
 					    current_root->addSubEntry(varEntry);
@@ -2313,7 +2322,6 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( ClassVar );
 					}
 <ClassVar>{SCOPENAME}{BN}*/"("		{
-                                          err("Inside IDL = %d\n",insideIDL);
   					  if (insideIDL && strncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
 					  {
 					    // Corba IDL style union
@@ -3810,7 +3818,19 @@ static void parseCompounds(Entry *rt)
       mtype = Method;
       gstat = FALSE;
       virt = Normal;
+
+      memberGroupId = NOGROUP;
+      
+      // rebuild compound's group context 
+      QCString *s = ce->groups->first();
+      if (s)
+      {
+	lastDefGroup=*s;
+	startGroup();
+      }
+
       current->mGrpId = memberGroupId = ce->mGrpId;
+
       scanYYlex() ;
       delete current; current=0;
       ce->program.resize(0);

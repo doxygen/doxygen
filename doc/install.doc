@@ -358,11 +358,18 @@ Here is what is required:
 <li>The GNU tools flex, bison, and sed.
     To get these working on Windows you should install the 
     <a href="http://sources.redhat.com/cygwin/">cygwin tools</a>
-    \latexonly(see {\tt http://sources.redhat.com/cygwin/})\endlatexonly.
+    \latexonly(see {\tt http://sources.redhat.com/cygwin/})\endlatexonly
+    
+    Alternatively, you can also choose to 
+    download only a <a href="http://www.doxygen.org/dl/cygwin_tools.zip">small subset</a> 
+    \latexonly(see {\tt http://www.doxygen.org/dl/cygwin_tools.zip})\endlatexonly
+    of the cygwin tools that I put together just to compile doxygen.
     
     Make sure the <code>BISONLIB</code> environment variable points to the
     location where the files <code>bison.simple</code> and 
-    <code>bison.hairy</code> are located.
+    <code>bison.hairy</code> are located. For instance if these files are in
+    <code>c:\\tools\\cygwin\\share</code> then BISONLIB should 
+    be set to <code>//c/tools/cygwin/share/</code>
 
     Also make sure the tools are available from a dos box, by adding 
     the directory they are in to the search path.
@@ -377,16 +384,18 @@ Here is what is required:
     using WinZip -- as mentioned at the beginning of this list of
     steps.
 
-<li>Since Doxygen-1.2.2-20001015, the distribution includes the part
-    of Qt-2.x.x that is needed for compilation of doxygen, doxytag,
-    and doxysearch. The missing files for Windows were also created.
-    This allows compilation of doxygen on systems without X11 or the
-    full Qt. For doxywizard Qt-2.2 is still required however.
+<li>From Doxygen-1.2.2-20001015 onwards, the distribution includes the part
+    of Qt-2.x.x that is needed for to compile doxygen, doxytag,
+    and doxysearch. The Windows specific part were also created.
+    As a result doxygen can be compiled on systems without X11 or the
+    commerical version of Qt. 
 
-    You may be interested in the professional license of 
-    <A HREF="http://www.trolltech.com/products/qt.html">Qt for Windows</A>
-    \latexonly\par (see 
-    {\tt http://www.trolltech.com/products/qt.html})\endlatexonly.
+    For doxywizard, a complete Qt library this is 
+    still a requirement however. You may be interested in the professional 
+    license of <A HREF="http://www.trolltech.com/products/qt.html">Qt for 
+    Windows</A> \latexonly\par (see 
+    {\tt http://www.trolltech.com/products/qt.html})\endlatexonly. If you
+    donate me a professional license I'll port doxywizard for you :-)
    
 <li>To generate LaTeX documentation or formulas in HTML you need the tools:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 

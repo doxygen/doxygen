@@ -599,7 +599,7 @@ static bool addNamespace(Entry *root,ClassDef *cd)
       {
         NamespaceDef *nd=0;
         //printf("addNameSpace() trying: %s\n",e->name.data());
-        QCString nsName = stripAnnonymousNamespaceScope(e->name);
+        QCString nsName = stripAnonymousNamespaceScope(e->name);
         if (!nsName.isEmpty() && nsName.at(0)!='@' &&
             (nd=getResolvedNamespace(nsName))
            )
@@ -637,7 +637,7 @@ static void buildClassList(Entry *root)
     }
     else 
     {
-      fullName=stripAnnonymousNamespaceScope(fullName);
+      fullName=stripAnonymousNamespaceScope(fullName);
       Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
 
       bool ambig;
@@ -825,7 +825,7 @@ static void buildNamespaceList(Entry *root)
        !root->name.isEmpty()
      )
   {
-    QCString fullName=stripAnnonymousNamespaceScope(root->name.copy());
+    QCString fullName=stripAnonymousNamespaceScope(root->name.copy());
     if (!fullName.isEmpty())
     {
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
@@ -1199,13 +1199,14 @@ static MemberDef *addVariableToClass(
   md->setDefinition(def);
   md->setBitfields(root->bitfields);
   md->addSectionsToDefinition(root->anchors);
-  md->setFromAnnonymousScope(fromAnnScope);
-  md->setFromAnnonymousMember(fromAnnMemb);
+  md->setFromAnonymousScope(fromAnnScope);
+  md->setFromAnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
+  addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
   //  printf("memberdef %s in memberGroup %d\n",name.data(),root->mGrpId);
@@ -1356,8 +1357,8 @@ static MemberDef *addVariableToFile(
   md->setDocumentation(root->doc);
   md->setBriefDescription(root->brief);
   md->addSectionsToDefinition(root->anchors);
-  md->setFromAnnonymousScope(fromAnnScope);
-  md->setFromAnnonymousMember(fromAnnMemb);
+  md->setFromAnonymousScope(fromAnnScope);
+  md->setFromAnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
@@ -1366,6 +1367,7 @@ static MemberDef *addVariableToFile(
   md->setBodyDef(fd);
   md->setDefinition(def);
   md->setExplicitExternal(root->explicitExternal);
+  addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -1535,7 +1537,7 @@ void buildVarList(Entry *root)
     else
       mtype=MemberDef::Variable;
 
-    QCString classScope=stripAnnonymousNamespaceScope(scope);
+    QCString classScope=stripAnonymousNamespaceScope(scope);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
     scope=classScope;
     if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
@@ -1639,7 +1641,7 @@ static void buildMemberList(Entry *root)
       //printf("root->parent=`%s' cd=%p root->type.find(re,0)=%d\n",
       //    root->parent->name.data(),getClass(root->parent->name),
       //    root->type.find(re,0));
-      QCString scope=stripAnnonymousNamespaceScope(root->parent->name.copy());
+      QCString scope=stripAnonymousNamespaceScope(root->parent->name.copy());
 
       bool isMember=FALSE;
       int memIndex=rname.find("::");
@@ -2475,7 +2477,7 @@ static void computeClassRelations(Entry *root)
   {
     ClassDef *cd;
     // strip any annonymous scopes first 
-    QCString bName=stripAnnonymousNamespaceScope(root->name);
+    QCString bName=stripAnonymousNamespaceScope(root->name);
     Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -3201,7 +3203,7 @@ static void findMember(Entry *root,
     Entry *p=root->parent;
     while (p) // get full scope as class name
     {
-      QCString sc = stripAnnonymousNamespaceScope(p->name);
+      QCString sc = stripAnonymousNamespaceScope(p->name);
       if ((p->section & Entry::SCOPE_MASK) 
           && !sc.isEmpty() && sc[0]!='@'
          )

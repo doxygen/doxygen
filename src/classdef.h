@@ -70,6 +70,8 @@ class ClassDef : public Definition
     QCString getFileBase() const;
     QCString getSourceFileBase() const; 
 
+    bool hasDocumentation() const;
+
     /*! Returns the name as it is appears in the documentation */
     QCString displayName() const;
 
@@ -247,7 +249,6 @@ class ClassDef : public Definition
 
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    void addMemberListToGroup(MemberList *);
     bool hasExamples();
     bool hasNonReferenceSuperClass();
 

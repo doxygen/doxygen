@@ -87,6 +87,7 @@ void NamespaceDef::insertClass(ClassDef *cd)
   }
 }
 
+#if 0
 void NamespaceDef::addMemberListToGroup(MemberList *ml,
                                         bool (MemberDef::*func)() const)
 {
@@ -114,14 +115,16 @@ void NamespaceDef::addMemberListToGroup(MemberList *ml,
     }
   }
 }
+#endif
 
 void NamespaceDef::addMembersToMemberGroup()
 {
-  addMemberListToGroup(&allMemberList,&MemberDef::isTypedef);
-  addMemberListToGroup(&allMemberList,&MemberDef::isEnumerate);
-  addMemberListToGroup(&allMemberList,&MemberDef::isEnumValue);
-  addMemberListToGroup(&allMemberList,&MemberDef::isFunction);
-  addMemberListToGroup(&allMemberList,&MemberDef::isVariable);
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupDict,memberGroupList);
 }
 
 void NamespaceDef::insertMember(MemberDef *md)
@@ -131,49 +134,55 @@ void NamespaceDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
+      decVarMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        varMembers.inSort(md); 
+        docVarMembers.inSort(md); 
       else
-        varMembers.append(md);
+        docVarMembers.append(md);
       break;
     case MemberDef::Function: 
+      decFuncMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))    
-        funcMembers.inSort(md); 
+        docFuncMembers.inSort(md); 
       else
-        funcMembers.append(md);
+        docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
+      decTypedefMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        typedefMembers.inSort(md); 
+        docTypedefMembers.inSort(md); 
       else
-        typedefMembers.append(md);
+        docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
+      decEnumMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        enumMembers.inSort(md); 
+        docEnumMembers.inSort(md); 
       else
-        enumMembers.append(md);
+        docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      if (Config_getBool("SORT_MEMBER_DOCS"))
-        enumValMembers.inSort(md); 
-      else
-        enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
+      decProtoMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        protoMembers.inSort(md); 
+        docProtoMembers.inSort(md); 
       else
-        protoMembers.append(md);
+        docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
+      decDefineMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        defineMembers.inSort(md); 
+        docDefineMembers.inSort(md); 
       else
-        defineMembers.append(md);
+        docDefineMembers.append(md);
       break;
     default:
-       err("NamespaceDef::insertMembers(): unexpected member inserted in namespace!\n");
+      err("NamespaceDef::insertMembers(): "
+           "member `%s' with class scope `%s' inserted in namespace scope `%s'!\n",
+           md->name().data(),
+           md->getClassDef() ? md->getClassDef()->name().data() : "",
+           name().data());
   }
   //addMemberToGroup(md,groupId);
 }
@@ -238,7 +247,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     mg->writeDeclarations(ol,0,this,0,0);
   }
   
-  allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
+
+  //allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
+  decDefineMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trDefines(),0);
+  decProtoMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trFuncProtos(),0);
+  decTypedefMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trTypedefs(),0);
+  decEnumMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trEnumerations(),0);
+  decFuncMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trFunctions(),0);
+  decVarMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trVariables(),0);
   ol.endMemberSections();
   
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
@@ -273,76 +289,23 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.endTextBlock();
   }
 
-  //memList->countDocMembers();
-  defineMembers.countDocMembers();
-  if ( defineMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDefineDocumentation());
-    ol.endGroupHeader();
-    defineMembers.writeDocumentation(ol,name(),this);
-  }
+  docDefineMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trDefineDocumentation());
   
-  protoMembers.countDocMembers(); 
-  if ( protoMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
-    ol.endGroupHeader();
-    protoMembers.writeDocumentation(ol,name(),this);
-  }
+  docProtoMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trFunctionPrototypeDocumentation());
 
-  typedefMembers.countDocMembers();
-  if ( typedefMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trTypedefDocumentation());
-    ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name(),this);
-  }
+  docTypedefMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trTypedefDocumentation());
   
-  enumMembers.countDocMembers();
-  if ( enumMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationTypeDocumentation());
-    ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name(),this);
-  }
+  docEnumMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trEnumerationTypeDocumentation());
 
-  //enumValMembers.countDocMembers();
-  //if ( enumValMembers.totalCount()>0 )
-  //{
-  //  ol.writeRuler();
-  //  ol.startGroupHeader();
-  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
-  //  ol.endGroupHeader();
-  //  enumValMembers.writeDocumentation(ol,name());
-  //}
-
-  funcMembers.countDocMembers();
-  if ( funcMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trFunctionDocumentation());
-    ol.endGroupHeader();
-    funcMembers.writeDocumentation(ol,name(),this);
-  }
+  docFuncMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trFunctionDocumentation());
   
-  varMembers.countDocMembers();
-  if ( varMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trVariableDocumentation());
-    ol.endGroupHeader();
-    varMembers.writeDocumentation(ol,name(),this);
-  }
+  docVarMembers.writeDocumentation(ol,name(),this,
+                          theTranslator->trVariableDocumentation());
 
   // write Author section (Man only)
   ol.pushGeneratorState();
@@ -365,7 +328,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 int NamespaceDef::countMembers()
 {
   allMemberList.countDocMembers();
-  return allMemberList.totalCount()+classList->count();
+  return allMemberList.numDocMembers()+classList->count();
 }
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)

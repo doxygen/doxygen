@@ -1841,21 +1841,49 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					}
 					
 <DocScan,DocRefName>{ID}"<"[^>\ \t\n]*">"("::"{ID})+"("?[a-z_A-Z0-9,:\<\> \t\*\&]*")"?	{
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  				          if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  BEGIN(DocScan);
   					}
 <DocScan,DocRefName>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")" {
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  BEGIN(DocScan);
   					}
 <DocScan,DocRefName>{SCOPEMASK}("()")?	{
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  BEGIN(DocScan);
   					}
 <DocScan,DocRefName>({SCOPEMASK}"::")?"operator"{OPMASK} { 
 				          QCString oName=yytext;
-					  generateRef(*outDoc,className,
-					              removeRedundantWhiteSpace(oName),inSeeBlock);
+					  if (!insideHtmlLink)
+					  {
+					    generateRef(*outDoc,className,
+					                removeRedundantWhiteSpace(oName),inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  BEGIN(DocScan);
 					}
 <DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->startHtmlLink(yytext); 
@@ -1864,10 +1892,24 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
                                                         }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILESCHAR}*{FILEECHAR}+/".\\n" { // special exception that is otherwise matches by FILEMASK
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+  					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
   					}
 <DocScan>{FILEMASK}			{
-					  generateFileRef(*outDoc,yytext);
+  					  if (!insideHtmlLink)
+					  {
+					    generateFileRef(*outDoc,yytext);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					}
 <DocCodeBlock>{BN}*{CMD}"endcode"/[^a-z_A-Z0-9]  { // needed to match things like \endcode. (note the dot)
 				          parseCode(*outDoc,className,codeBlock,exampleDoc,exampleName);
@@ -2156,55 +2198,118 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					}
 <DocEmphasis>{FILEMASK}			{
   					  outDoc->startEmphasis();
-					  generateFileRef(*outDoc,yytext);
+  					  if (!insideHtmlLink)
+					  {
+					    generateFileRef(*outDoc,yytext);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
 <DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startEmphasis();
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
   					}
 <DocEmphasis>{WORD}			{ 
   					  outDoc->startEmphasis();
-  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  if (!insideHtmlLink)
+					  {
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
 <DocBold>{FILEMASK}			{
   					  outDoc->startBold();
-					  generateFileRef(*outDoc,yytext);
+					  if (!insideHtmlLink)
+					  {
+					    generateFileRef(*outDoc,yytext);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
 <DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startBold();
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endBold();
 					  BEGIN( DocScan );
   					}
 <DocBold>{WORD}				{ 
   					  outDoc->startBold();
-  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  if (!insideHtmlLink)
+					  {
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
 <DocCode>{FILEMASK}			{
   					  outDoc->startTypewriter();
-					  generateFileRef(*outDoc,yytext);
+					  if (!insideHtmlLink)
+					  {
+					    generateFileRef(*outDoc,yytext);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}
 <DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()!\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startTypewriter();
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  if (!insideHtmlLink)
+					  {
+  					    generateRef(*outDoc,className,yytext,inSeeBlock);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
   					}
 <DocCode>{WORD}				{ 
   					  outDoc->startTypewriter();
-  					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  if (!insideHtmlLink)
+					  {
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+					  }
+					  else
+					  {
+					    outDoc->docify(yytext);
+					  }
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}

@@ -22,25 +22,30 @@
 //   RK (who are you?)
 //    - Update for "new since 1.1.3" version
 //
-//   2001/03/23 Jens Seidel (jens.seidel@mathematik.tu-chemnitz.de)
+//   2001/03/23 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - fixed typos
 //    - changed trPageDocumentation() "Seitenbeschreibung" to
-//      "Zus&auml;tzliche Informationen"
+//      "Zusätzliche Informationen"
 //    - removed old trGeneratedFrom()
-//    - /*! ==> /* (documentation is inherited from translator.h; 
-//      INHERIT_DOCS = YES)
+//    - changed "/*!" to "/*" (documentation is inherited from translator.h
+//      (INHERIT_DOCS = YES), there's no need to make changes twice)
 //    - Update for "new since 1.2.4" version
+//
+//   2001/04/17 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - fixed typos ("Vererbunsbeziehung", "gesch&uumltzter")
+//    - use umlauts instead of html code ("&auml;",...)
+//      this makes it easier to read and fixes three problems (two in 
+//      \code segment)
 //
 // Todo: 
 //   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
 //     strings (see translator.h)
 //   - translation of "compound"
-//   - see FIXME for further changes
-//   - use "ä",... (instead of "&auml;") in \code segments (or is there a bug
-//     in doxygen-1.2.6)?
+//   - see FIXME
 //   - was ist richtig: "Liste aller dokumentierter Elemente" oder
 //                      "Liste aller dokumentierten Elemente" (aktuell)
 //     (nach "aller" suchen)
+//     "Mithilfe" oder "Mit Hilfe"
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
@@ -67,7 +72,7 @@ class TranslatorGerman : public Translator
 
     QCString trDetailedDescription()
       // header that is put before the detailed description of files, classes and namespaces.
-    { return "Ausf&uuml;hrliche Beschreibung"; }
+    { return "Ausführliche Beschreibung"; }
 
     QCString trMemberTypedefDocumentation()
       // header that is put before the list of typedefs.
@@ -75,7 +80,7 @@ class TranslatorGerman : public Translator
     
     QCString trMemberEnumerationDocumentation()
       // header that is put before the list of enumerations.
-    { return "Dokumentation der Aufz&auml;hlungstypen"; }
+    { return "Dokumentation der Aufzählungstypen"; }
 
     QCString trMemberFunctionDocumentation()
       // header that is put before the list of member functions.
@@ -99,17 +104,17 @@ class TranslatorGerman : public Translator
 
     QCString trThisIsTheListOfAllMembers()
       // this is the first part of a sentence that is followed by a class name
-    { return "Vollst&auml;ndige Aufstellung aller Elemente f&uuml;r "; }
+    { return "Vollständige Aufstellung aller Elemente für "; }
 
     QCString trIncludingInheritedMembers()
       // this is the remainder of the sentence after the class name
-    { return " einschlie&szlig;lich aller geerbten Elemente."; }
+    { return " einschließlich aller geerbten Elemente."; }
 
     QCString trGeneratedAutomatically(const char *s)
       // this is put at the author sections at the bottom of man pages.
       // parameter s is name of the project name.
     { QCString result="Automatisch erzeugt von Doxygen";
-      if (s) result+=(QCString)" f&uuml;r "+s;
+      if (s) result+=(QCString)" für "+s;
       result+=" aus dem Quellcode.";
       return result;
     }
@@ -129,7 +134,7 @@ class TranslatorGerman : public Translator
     QCString trVerbatimText(const char *f)
       // put as in introduction in the verbatim header file of a class.
       // parameter f is the name of the include file.
-    { return (QCString)"Dieses ist der unver&auml;nderte Text aus der "
+    { return (QCString)"Dieses ist der unveränderte Text aus der "
              "Include-Datei "+f+"."; }
 
     // quick reference sections
@@ -145,7 +150,7 @@ class TranslatorGerman : public Translator
 
     QCString trCompoundList()
       // This is put above each page as a link to the list of annotated classes
-    { return "&Uuml;bersicht"; }
+    { return "Übersicht"; }
 
     QCString trFileList()
       // This is put above each page as a link to the list of documented files
@@ -157,7 +162,7 @@ class TranslatorGerman : public Translator
 
     QCString trCompoundMembers()
       // This is put above each page as a link to all members of compounds.
-    { return "Element&uuml;bersicht"; }
+    { return "Elementübersicht"; }
 
     QCString trFileMembers()
       // This is put above each page as a link to all members of files.
@@ -165,7 +170,7 @@ class TranslatorGerman : public Translator
 
     QCString trRelatedPages()
       // This is put above each page as a link to all related pages.
-    { return "Zus&auml;tzliche Informationen"; }
+    { return "Zusätzliche Informationen"; }
 
     QCString trExamples()
       // This is put above each page as a link to all examples.
@@ -177,14 +182,14 @@ class TranslatorGerman : public Translator
 
     QCString trClassHierarchyDescription()
       // This is an introduction to the class hierarchy.
-    { return "Die Liste der Ableitungen ist -mit Einschr&auml;nkungen- "
+    { return "Die Liste der Ableitungen ist -mit Einschränkungen- "
              "alphabetisch sortiert:";
     }
 
     QCString trFileListDescription(bool extractAll)
       // This is an introduction to the list with all files.
     {
-      QCString result="Hier folgt die Aufz&auml;hlung aller ";
+      QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Dateien mit einer Kurzbeschreibung:";
       return result;
@@ -194,17 +199,17 @@ class TranslatorGerman : public Translator
       // This is an introduction to the annotated compound list
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	return "Hier folgt die Aufz&auml;hlung aller Datenstrukturen "
+	return "Hier folgt die Aufzählung aller Datenstrukturen "
 	       "mit einer Kurzbeschreibung:";
       else
-	return "Hier folgt die Aufz&auml;hlung aller Klassen, Strukturen "
+	return "Hier folgt die Aufzählung aller Klassen, Strukturen "
 	       "und Varianten mit einer Kurzbeschreibung:"; // FIXME: "interfaces" = ??
     }
 
     QCString trCompoundMembersDescription(bool extractAll)
       // This is an introduction to the page with all class members
     {
-      QCString result="Hier folgt die Aufz&auml;hlung aller ";
+      QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         result+="Strukturen und Varianten mit Verweisen auf ";
@@ -217,9 +222,9 @@ class TranslatorGerman : public Translator
           result+="die Klassendokumentation zu jedem Element:";
       } else { 
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-          result+="die zugeh&ouml;rigen Elemente:";
+          result+="die zugehörigen Elemente:";
         else
-          result+="die zugeh&ouml;rigen Klassen:";
+          result+="die zugehörigen Klassen:";
       }
       return result;
     }
@@ -227,11 +232,11 @@ class TranslatorGerman : public Translator
     QCString trFileMembersDescription(bool extractAll)
       // This is an introduction to the page with all file members
     {
-      QCString result="Hier folgt die Aufz&auml;hlung aller ";
+      QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Dateielemente mit Verweisen auf ";
       if (extractAll) result+="die Dateidokumentation zu jedem Element:";
-      else result+="die zugeh&ouml;rigen Dateien:";
+      else result+="die zugehörigen Dateien:";
       return result;
     }
 
@@ -245,16 +250,16 @@ class TranslatorGerman : public Translator
 
     QCString trRelatedPagesDescription()
       // This is an introduction to the page with the list of related pages
-    { return "Hier folgt eine Liste mit zusammengeh&ouml;rigen Themengebieten:"; }
+    { return "Hier folgt eine Liste mit zusammengehörigen Themengebieten:"; }
 
     QCString trModulesDescription()
       // This is an introduction to the page with the list of class/file groups
-    { return "Hier folgt die Aufz&auml;hlung aller Module:"; }
+    { return "Hier folgt die Aufzählung aller Module:"; }
 
     QCString trNoDescriptionAvailable()
       // This sentences is used in the annotated class/file lists if no brief
       // description is given.
-    { return "Keine Beschreibung verf&uuml;gbar"; }
+    { return "Keine Beschreibung verfügbar"; }
 
     // index titles (the project name is prepended for these)
    
@@ -310,7 +315,7 @@ class TranslatorGerman : public Translator
     QCString trPageDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all related pages.
-    { return "Zus&auml;tzliche Informationen"; }
+    { return "Zusätzliche Informationen"; }
 
     QCString trReferenceManual()
       // This is used in LaTeX as the title of the document
@@ -334,7 +339,7 @@ class TranslatorGerman : public Translator
     QCString trEnumerations()
       // This is used in the documentation of a file as a header before the
       // list of enumerations
-    { return "Aufz&auml;hlungen"; }
+    { return "Aufzählungen"; }
 
     QCString trFunctions()
       // This is used in the documentation of a file as a header before the
@@ -349,7 +354,7 @@ class TranslatorGerman : public Translator
     QCString trEnumerationValues()
       // This is used in the documentation of a file as a header before the
       // list of (global) variables
-    { return "Aufz&auml;hlungswerte"; }
+    { return "Aufzählungswerte"; }
 
     QCString trAuthor()
       // This is used in man pages as the author section.
@@ -373,12 +378,12 @@ class TranslatorGerman : public Translator
     QCString trEnumerationTypeDocumentation()
       // This is used in the documentation of a file/namespace before the list
       // of documentation blocks for enumeration types
-    { return "Dokumentation der Aufz&auml;hlungstypen"; }
+    { return "Dokumentation der Aufzählungstypen"; }
 
     QCString trEnumerationValueDocumentation()
       // This is used in the documentation of a file/namespace before the list
       // of documentation blocks for enumeration values
-    { return "Dokumentation des Wertebereiches der Aufz&auml;hlungstypen"; }
+    { return "Dokumentation des Wertebereiches der Aufzählungstypen"; }
 
     QCString trFunctionDocumentation()
       // This is used in the documentation of a file/namespace before the list
@@ -393,7 +398,7 @@ class TranslatorGerman : public Translator
     QCString trCompounds()
       // This is used in the documentation of a file/namespace/group before
       // the list of links to documented compounds
-    { return "&Uuml;bersicht"; }
+    { return "Übersicht"; }
 
     QCString trFiles()
       // This is used in the documentation of a group before the list of
@@ -403,7 +408,7 @@ class TranslatorGerman : public Translator
     QCString trGeneratedAt(const char *date,const char *projName)
     {
       QCString result=(QCString)"Erzeugt am "+date;
-      if (projName) result+=(QCString)" f&uuml;r "+projName;
+      if (projName) result+=(QCString)" für "+projName;
       result+=(QCString)" von";
       return result;
     }
@@ -416,17 +421,17 @@ class TranslatorGerman : public Translator
     QCString trClassDiagram(const char *clName)
       // this text is put before a class diagram
     {
-      return (QCString)"Klassendiagramm f&uuml;r "+clName;
+      return (QCString)"Klassendiagramm für "+clName;
     }
 
     QCString trForInternalUseOnly()
       // this text is generated when the \internal command is used.
-    { return "Nur f&uuml;r den internen Gebrauch."; }
+    { return "Nur für den internen Gebrauch."; }
 
     QCString trReimplementedForInternalReasons()
       // this text is generated when the \reimp command is used.
-    { return "Aus internen Gr&uuml;nden neu implementiert. "
-             "Das API wird davon nicht ber&uuml;hrt."; }
+    { return "Aus internen Gründen neu implementiert. "
+             "Das API wird davon nicht berührt."; }
 
     QCString trWarning()
       // this text is generated when the \warning command is used.
@@ -434,7 +439,7 @@ class TranslatorGerman : public Translator
 
     QCString trBugsAndLimitations()
       // this text is generated when the \bug command is used.
-    { return "Fehler und Einschr&auml;nkungen"; }
+    { return "Fehler und Einschränkungen"; }
 
     QCString trVersion()
       // this text is generated when the \version command is used.
@@ -450,7 +455,7 @@ class TranslatorGerman : public Translator
 
     QCString trReturns()
       // this text is generated when the \return command is used.
-    { return "R&uuml;ckgabe"; }
+    { return "Rückgabe"; }
 
     QCString trSeeAlso()
       // this text is generated when the \sa command is used.
@@ -539,25 +544,25 @@ class TranslatorGerman : public Translator
 
     // these are for the member sections of a class, struct or union
     QCString trPublicMembers()
-    { return "&Ouml;ffentliche Datenelemente"; }
+    { return "Öffentliche Datenelemente"; }
 
     QCString trPublicSlots()
-    { return "&Ouml;ffentliche Slots"; }
+    { return "Öffentliche Slots"; }
 
     QCString trSignals()
     { return "Signale"; }
 
     QCString trStaticPublicMembers()
-    { return "&Ouml;ffentliche, statische Datenelemente"; }
+    { return "Öffentliche, statische Datenelemente"; }
 
     QCString trProtectedMembers()
-    { return "Gesch&uuml;tzte Datenelemente"; }
+    { return "Geschützte Datenelemente"; }
 
     QCString trProtectedSlots()
-    { return "Gesch&uuml;tzte Slots"; }
+    { return "Geschützte Slots"; }
 
     QCString trStaticProtectedMembers()
-    { return "Gesch&uuml;tzte, statische Datenelemente"; }
+    { return "Geschützte, statische Datenelemente"; }
 
     QCString trPrivateMembers()
     { return "Private Datenelemente"; }
@@ -605,7 +610,7 @@ class TranslatorGerman : public Translator
       // used in class documentation to produce a list of super classes,
       // if class diagrams are disabled.
     {
-      return "Basisklasse f&uuml;r "+trWriteList(numEntries)+".";
+      return "Basisklasse für "+trWriteList(numEntries)+".";
     }
 
     QCString trReimplementedFromList(int numEntries)
@@ -629,13 +634,13 @@ class TranslatorGerman : public Translator
     QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     {
-      QCString result="Hier folgt die Aufz&auml;hlung aller ";
+      QCString result="Hier folgt die Aufzählung aller ";
       if (!extractAll) result+="dokumentierten ";
       result+="Namensbereichselemente mit Verweisen auf ";
       if (extractAll)
-        result+="die Namensbereichsdokumentation f&uuml;r jedes Element:";
+        result+="die Namensbereichsdokumentation für jedes Element:";
       else
-        result+="die zugeh&ouml;rigen Dateien:";
+        result+="die zugehörigen Dateien:";
       return result;
     }
 
@@ -670,7 +675,7 @@ class TranslatorGerman : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Die Dokumentation f&uuml;r diese";
+      QCString result=(QCString)"Die Dokumentation für diese";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasse"; break;
@@ -696,7 +701,7 @@ class TranslatorGerman : public Translator
 
     /* This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return "R&uuml;ckgabewerte"; }
+    { return "Rückgabewerte"; }
 
     /* This is in the (quick) index as a link to the main page (index.html)
      */
@@ -744,14 +749,13 @@ class TranslatorGerman : public Translator
     /* this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Zusammengeh&ouml;rigkeiten von "+clName+":";
+      return (QCString)"Zusammengehörigkeiten von "+clName+":";
     }
 
-    //RK: Apparently Jens missed the Umlaut here. Corrected that.
     /* this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Include-Abh&auml;ngigkeitsdiagramm f&uuml;r "+fName+":";
+      return (QCString)"Include-Abhängigkeitsdiagramm für "+fName+":";
     }
 
     /* header that is put before the list of constructor/destructors. */
@@ -834,32 +838,32 @@ class TranslatorGerman : public Translator
 
     virtual QCString trPublicTypes()
     {
-      return "&Ouml;ffentliche Typen";
+      return "Öffentliche Typen";
     }
 
     virtual QCString trPublicAttribs()
     {
-      return "&Ouml;ffentliche Attribute";
+      return "Öffentliche Attribute";
     }
 
     virtual QCString trStaticPublicAttribs()
     {
-      return "Statische &ouml;ffentliche Attribute";
+      return "Statische öffentliche Attribute";
     }
 
     virtual QCString trProtectedTypes()
     {
-      return "Gesch&uuml;tzte Typen";
+      return "Geschützte Typen";
     }
 
     virtual QCString trProtectedAttribs()
     {
-      return "Gesch&uuml;tzte Attribute";
+      return "Geschützte Attribute";
     }
 
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Statische gesch&uuml;tzte Attribute";
+      return "Statische geschützte Attribute";
     }
 
     virtual QCString trPrivateTypes()
@@ -881,7 +885,6 @@ class TranslatorGerman : public Translator
 // new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
-//RK: Started from here
     /* Used as a marker that is put before a \todo item */
     virtual QCString trTodo()
     {
@@ -916,7 +919,7 @@ class TranslatorGerman : public Translator
     virtual QCString trInclByDepGraph()
     {
       return "Dieser Graph zeigt, welche Datei direkt oder "
-             "indirekt diese Datei enth&auml;lt:";
+             "indirekt diese Datei enthält:";
     }
 
     virtual QCString trSince()
@@ -931,26 +934,26 @@ class TranslatorGerman : public Translator
     /* title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return "Erkl&auml;rung des Graphen";
+      return "Erklärung des Graphen";
     }
 
     /* page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
       return 
-        "Diese Seite erkl&auml;rt die Interpretation der von doxygen "
+        "Diese Seite erklärt die Interpretation der von doxygen "
         "erzeugten Graphen.<p>\n"
         "Beispiel:\n"
         "\\code\n"
-        "/*! Wegen Verk&uuml;rzung unsichtbare Klasse */\n"
+        "/*! Wegen Verkürzung unsichtbare Klasse */\n"
         "class Invisible { };\n\n"
-        "/*! Klasse verk&uuml;rzt dargestellt, Vererbunsbeziehung ist versteckt */\n"
+        "/*! Klasse verkürzt dargestellt, Vererbungsbeziehung ist versteckt */\n"
         "class Truncated : public Invisible { };\n\n"
         "/* Nicht mit doxygen-Kommentaren dokumentierte Klasse */\n"
         "class Undocumented { };\n\n"
-        "/*! Mithilfe &ouml;ffentlicher Vererbung vererbte Klasse */\n"
+        "/*! Mithilfe öffentlicher Vererbung vererbte Klasse */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Mithilfe gesch&uumltzter Vererbung vererbte Klasse */\n"
+        "/*! Mithilfe geschützter Vererbung vererbte Klasse */\n"
         "class ProtectedBase { };\n\n"
         "/*! Mithilfe privater Vererbung vererbte Klasse */\n"
         "class PrivateBase { };\n\n"
@@ -972,22 +975,22 @@ class TranslatorGerman : public Translator
         "<p>\n"
         "Die Rechtecke in obigem Graphen bedeuten:\n"
         "<ul>\n"
-        "<li>Ein schwarz gef&uuml;lltes Rechteck stellt die Struktur oder "
-        "Klasse dar, f&uuml;r die der Graph erzeugt wurde.\n"
+        "<li>Ein schwarz gefülltes Rechteck stellt die Struktur oder "
+        "Klasse dar, für die der Graph erzeugt wurde.\n"
         "<li>Ein Rechteck mit schwarzem Rahmen kennzeichnet eine dokumentierte "
         " Struktur oder Klasse.\n"
         "<li>Ein Rechteck mit grauem Rahmen kennzeichnet eine undokumentierte "
         " Struktur oder Klasse.\n"
         "<li>Ein Rechteck mit rotem Rahmen kennzeichnet eine dokumentierte "
-        " Struktur oder Klasse, f&uuml;r die nicht alle Vererbungs-/"
-        "Enthaltenseinsbeziehungen dargestellt werden. Ein Graph wird gek&uuml;rzt, "
+        " Struktur oder Klasse, für die nicht alle Vererbungs-/"
+        "Enthaltenseinsbeziehungen dargestellt werden. Ein Graph wird gekürzt, "
         "wenn er nicht in die angegebenen Schranken passt."  
         "</ul>\n"
         "Die Pfeile bedeuten:\n"
         "<ul>\n"
-        "<li>Ein dunkelblauer Pfeil stellt eine &ouml;ffentliche Vererbungsbeziehung "
+        "<li>Ein dunkelblauer Pfeil stellt eine öffentliche Vererbungsbeziehung "
         "zwischen zwei Klassen dar.\n"
-        "<li>Ein dunkelgr&uuml;ner Pfeil stellt gesch&uuml;tzte Vererbung dar.\n"
+        "<li>Ein dunkelgrüner Pfeil stellt geschützte Vererbung dar.\n"
         "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.\n"
         "<li>Ein gestrichelter violetter Pfeil bedeutet, dass eine Klasse in einer "
         "anderen enthalten ist oder von einer anderen benutzt wird. Am Pfeil "

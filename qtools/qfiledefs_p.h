@@ -1,5 +1,5 @@
 /****************************************************************************
-** $Id$
+** 
 **
 ** Common macros and system include files for QFile, QFileInfo and QDir.
 **

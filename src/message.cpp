@@ -85,6 +85,10 @@ void initWarningFormat()
   {
     warnFile = fopen(Config_getString("WARN_LOGFILE"),"w");
   }
+  if (!warnFile) // point it to something valid, because warn() relies on it
+  {
+    warnFile = stderr;
+  }
 }
 
 

@@ -30,6 +30,9 @@
 MemberList::MemberList() : QList<MemberDef>()
 {
   memberGroupList=0;
+  m_numDecMembers=-1; // special value indicating that computation is needed
+  m_numDocMembers=-1; // special value indicating that computation is needed
+  m_inGroup=FALSE;
 }
 
 MemberList::~MemberList()
@@ -44,96 +47,98 @@ int MemberList::compareItems(GCI item1, GCI item2)
   return strcmp(c1->name(),c2->name());
 }
 
-void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPerType)
+/*! Count the number of members in this list that are visible in
+ *  the declaration part of a compound's documentation page.
+ */
+void MemberList::countDecMembers(/*bool inGroup,bool countSubGroups,bool sectionPerType*/)
 {
-  //printf("----- countDecMembers ----\n");
-  varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
-  m_count=0;
-  MemberDef *md=first();
-  while (md)
+  if (m_numDecMembers!=-1) return; 
+  
+  //printf("----- countDecMembers count=%d ----\n",count());
+  m_varCnt=m_funcCnt=m_enumCnt=m_enumValCnt=0;
+  m_typeCnt=m_protoCnt=m_defCnt=m_friendCnt=0;
+  m_numDecMembers=0;
+  QListIterator<MemberDef> mli(*this);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
   {
-    //printf("md=%p md->name()=`%s' inGroup=%d getMemberGroup()=%p\n",
-    //    md,md->name().data(),inGroup,md->getMemberGroup());
-    if (!(md->getClassDef()==0 && md->isStatic() && !Config_getBool("EXTRACT_STATIC")) &&
-        (!Config_getBool("HIDE_UNDOC_MEMBERS") || md->hasDocumentation()) &&
-        (
-         (!Config_getBool("HIDE_UNDOC_MEMBERS") || !md->documentation().isEmpty() || 
-          Config_getBool("BRIEF_MEMBER_DESC") || Config_getBool("REPEAT_BRIEF")
-         ) || Config_getBool("EXTRACT_ALL") || 
-         (md->isEnumerate() &&
-          md->hasDocumentedEnumValues()
-         )
-        ) && 
-        inGroup==md->visibleMemberGroup(sectionPerType) &&
-        !(inGroup && md->protection()==Private && !Config_getBool("EXTRACT_PRIVATE"))
-       )
+    if (md->isBriefSectionVisible())
     {
       switch(md->memberType())
       {
         case MemberDef::Variable:    // fall through
-        case MemberDef::Property:    varCnt++,m_count++;  
+        case MemberDef::Property:    m_varCnt++,m_numDecMembers++;  
                                      break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
         case MemberDef::DCOP:        // fall through
         case MemberDef::Slot:        if (!md->isRelated() || md->getClassDef())
-                                       funcCnt++,m_count++; 
+                                       m_funcCnt++,m_numDecMembers++; 
                                      break;
-        case MemberDef::Enumeration: enumCnt++,m_count++; break;
-        case MemberDef::EnumValue:   enumValCnt++,m_count++; break;
-        case MemberDef::Typedef:     typeCnt++,m_count++; break;
-        case MemberDef::Prototype:   protoCnt++,m_count++; break;
+        case MemberDef::Enumeration: m_enumCnt++,m_numDecMembers++; break;
+        case MemberDef::EnumValue:   m_enumValCnt++,m_numDecMembers++; break;
+        case MemberDef::Typedef:     m_typeCnt++,m_numDecMembers++; break;
+        case MemberDef::Prototype:   m_protoCnt++,m_numDecMembers++; break;
         case MemberDef::Define:      if (Config_getBool("EXTRACT_ALL") || 
                                          md->argsString() || 
                                          !md->initializer().isEmpty() ||
                                          md->hasDocumentation() 
-                                        ) defCnt++,m_count++;     
+                                        ) m_defCnt++,m_numDecMembers++;     
                                      break;
-        case MemberDef::Friend:      friendCnt++,m_count++;  break;
+        case MemberDef::Friend:      m_friendCnt++,m_numDecMembers++;  break;
         default:
-          err("Error: Unknown member type found!");
+          err("Error: Unknown member type found for member `%s'\n!",md->name().data());
       }
     }
-    md=next();
   }
-  if (memberGroupList && countSubGroups)
+  if (memberGroupList /*&& countSubGroups*/)
   {
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      int mgCount = mg->countDecMembers(sectionPerType);
-      //printf("memberGroupList adding %d inGroup=%d\n",mgCount,inGroup);
-      m_count+=mgCount;
+      mg->countDecMembers();
+      m_varCnt+=mg->varCount();
+      m_funcCnt+=mg->funcCount();
+      m_enumCnt+=mg->enumCount();
+      m_enumValCnt+=mg->enumValueCount();
+      m_typeCnt+=mg->typedefCount();
+      m_protoCnt+=mg->protoCount();
+      m_defCnt+=mg->defineCount();
+      m_friendCnt+=mg->friendCount();
+      m_numDecMembers+=mg->numDecMembers();
     }
   }
   //printf("----- end countDecMembers ----\n");
 
-  //printf("MemberList::countDecMembers(%d)=%d\n",inGroup,m_count);
+  //printf("MemberList::countDecMembers()=%d\n",m_numDecMembers);
 }
 
-void MemberList::countDocMembers(bool listOfGroup)
+void MemberList::countDocMembers()
 {
-  /*varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;*/
-  m_count=0;
-  MemberDef *md=first();
-  while (md)
+  if (m_numDocMembers!=-1) return; // used cached value
+  m_numDocMembers=0;
+  QListIterator<MemberDef> mli(*this);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
   {
-    //printf("%s MemberList::countDocMembers() details=%d\n",
-    //    md->name().data(),md->detailsAreVisible());
-    bool visibleIfStatic = 
-      !(md->getClassDef()==0 && md->isStatic() && !Config_getBool("EXTRACT_STATIC"));
-
-    bool inOwnGroup = (md->getGroupDef()!=0 && !listOfGroup);
-    
-    if (visibleIfStatic && !inOwnGroup &&
-        (Config_getBool("EXTRACT_ALL") || md->detailsAreVisible()) 
-       )
+    if (md->isDetailedSectionVisible(m_inGroup)) 
     {
-      if (md->memberType()!=MemberDef::EnumValue) m_count++;
+      // do not count enum values, since they do not produce entries of their own
+      if (md->memberType()!=MemberDef::EnumValue) m_numDocMembers++;
     }
-    md=next();
   }
+  if (memberGroupList)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->countDecMembers();
+      m_numDocMembers+=mg->numDocMembers();
+    }
+  }
+  //printf("MemberList::countDocMembers()=%d memberGroupList=%p\n",m_numDocMembers,memberGroupList);
 }
 
 bool MemberList::insert(uint index,const MemberDef *md)
@@ -157,183 +162,88 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 }
 
 void MemberList::writePlainDeclarations(OutputList &ol,
-                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                       bool inGroup,bool countSubGroups
+                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd
                       )
 {
-  bool sectionPerType = !inGroup && (fd || nd || gd);
   //printf("----- writePlainDeclaration() ----\n");
-  countDecMembers(inGroup,countSubGroups,sectionPerType);
-  if (totalCount()==0) return; // no members in this list
+  countDecMembers(/*inGroup,countSubGroups,sectionPerType*/);
+  if (numDecMembers()==0) return; // no members in this list
   //printf("----> writePlainDeclaration() inGroup=%d totalCount()=%d\n",inGroup,totalCount());
   
   ol.pushGeneratorState();
 
-  //int prevGroupId = -1;
-  if (!sectionPerType) ol.startMemberList();
+  ol.startMemberList();
   MemberDef *md;
-
-  if (defineCount()>0)
+  MemberListIterator mli(*this);
+  for ( ; (md=mli.current()); ++mli )
   {
-    if (sectionPerType)
+    //printf(">>> Member `%s' type=%d\n",md->name().data(),md->memberType());
+    switch(md->memberType())
     {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trDefines());
-      ol.endMemberHeader();
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()); ++mli )
-    {
-      //printf("md->isDefined()=%d inGroup=%d md->getMemberGroup()=%p\n",
-      //   md->isDefine(),inGroup,md->getMemberGroup());
-      if (md->isDefine() && 
-          (md->argsString() || md->hasDocumentation() || 
-           !md->initializer().isEmpty() ||
-           Config_getBool("EXTRACT_ALL")) &&
-          inGroup==md->visibleMemberGroup(sectionPerType)         
-         ) 
+      case MemberDef::Define:    // fall through
+      case MemberDef::Prototype: // fall through
+      case MemberDef::Typedef:   // fall through
+      case MemberDef::Variable:  // fall through
+      case MemberDef::Function:  // fall through
+      case MemberDef::Signal:    // fall through
+      case MemberDef::Slot:      // fall through
+      case MemberDef::DCOP:      // fall through
+      case MemberDef::Property:  
+        md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+        break;
+      case MemberDef::Enumeration: 
       {
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
-      }
-    }
-    if (sectionPerType)
-    {
-      ol.endMemberList();
-    }
-  }
-  
-  if (protoCount()>0)
-  {
-    //printf("There are %d prototypes\n",protoCount());
-    if (sectionPerType)
-    {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trFuncProtos());
-      ol.endMemberHeader();
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()); ++mli )
-    {
-      if (md->isPrototype() && inGroup==md->visibleMemberGroup(sectionPerType)) 
-      {
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
-      }
-    }
-    if (sectionPerType)
-    {
-      ol.endMemberList();
-    }
-  }
-  
-  if (typedefCount()>0)
-  {
-    //printf("There are %d typedefs\n",typedefCount());
-    if (sectionPerType) 
-    {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trTypedefs());
-      ol.endMemberHeader();
-      //ol.writeMemberHeader("Typedefs");
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli )
-    {
-      if (md->isTypedef() && inGroup==md->visibleMemberGroup(sectionPerType)) 
-      {
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
-      }
-    }
-    if (sectionPerType) ol.endMemberList();
-  }
- 
-  // write enums 
-  if (enumCount()>0)
-  {
-    //printf("There are %d enums\n",enumCount());
-    if (sectionPerType) 
-    {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trEnumerations());
-      ol.endMemberHeader();
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli ) // iterate through the members
-    {
-      // see if member is hidden by protection
-      if (md->protection()==Private && !Config_getBool("EXTRACT_PRIVATE")) continue;
-      
-      QCString type=md->typeString();
-      type=type.stripWhiteSpace();  // TODO: is this really needed?
-
-      // filter out enums that are in a group iff inGroup holds
-      if (md->isEnumerate() && inGroup==md->visibleMemberGroup(sectionPerType) /*&& (hasDocs || !Config_getBool("HIDE_UNDOC_MEMBERS"))*/) 
-      {
-        // filter out invisible enums
-        if ( !Config_getBool("HIDE_UNDOC_MEMBERS") ||        // do not hide undocumented members or
-             !md->documentation().isEmpty() || // member has detailed descr. or
-             md->hasDocumentedEnumValues() ||  // member has documented enum vales.
-             ( 
-               !md->briefDescription().isEmpty() &&
-               Config_getBool("BRIEF_MEMBER_DESC")              // brief descr. is shown or
-             )                                        
-           )
+        OutputList typeDecl(&ol);
+        QCString name(md->name());
+        int i=name.findRev("::");
+        if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
+        if (name[0]!='@') // not an anonymous enum
         {
-          OutputList typeDecl(&ol);
-          QCString name=md->name().copy();
-          int i=name.findRev("::");
-          if (i!=-1) name=name.right(name.length()-i-2); // strip scope
-          if (name[0]!='@') // not an anonymous enum
+          if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
           {
-            if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
+            if (!Config_getString("GENERATE_TAGFILE").isEmpty())
             {
-              if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-              {
-                Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
-                Doxygen::tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
-                Doxygen::tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
-                Doxygen::tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
-                Doxygen::tagFile << "    </member>" << endl;
-              }
-              md->writeLink(typeDecl,cd,nd,fd,gd);
+              Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
+              Doxygen::tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
+              Doxygen::tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
+              Doxygen::tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
+              Doxygen::tagFile << "    </member>" << endl;
             }
-            else
-            {
-              typeDecl.startBold();
-              typeDecl.docify(name);
-              typeDecl.endBold();
-            }
-            typeDecl.writeChar(' ');
+            md->writeLink(typeDecl,cd,nd,fd,gd);
           }
-
-          int enumMemCount=0;
-          
-          uint enumValuesPerLine = 
-            (uint)Config_getInt("ENUM_VALUES_PER_LINE");
-          typeDecl.docify("{ ");
-          QList<MemberDef> *fmdl=md->enumFieldList();
-          if (fmdl)
+          else
           {
-            MemberDef *fmd=fmdl->first();
-            while (fmd)
-            {
-              /* in html we start a new line after a number of items */
-              if (fmdl->count()>enumValuesPerLine
-                  && (enumMemCount%enumValuesPerLine)==0
-                 )
-              {
-                typeDecl.pushGeneratorState();
-                typeDecl.disableAllBut(OutputGenerator::Html);
-                typeDecl.lineBreak(); 
-                typeDecl.writeString("&nbsp;&nbsp;");
-                typeDecl.popGeneratorState();
-              }
+            typeDecl.startBold();
+            typeDecl.docify(name);
+            typeDecl.endBold();
+          }
+          typeDecl.writeChar(' ');
+        }
 
-              if (fmd->hasDocumentation()) // enum value has docs
-              {
+        int enumMemCount=0;
+
+        uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
+        typeDecl.docify("{ ");
+        QList<MemberDef> *fmdl=md->enumFieldList();
+        if (fmdl)
+        {
+          MemberDef *fmd=fmdl->first();
+          while (fmd)
+          {
+            /* in html we start a new line after a number of items */
+            if (fmdl->count()>enumValuesPerLine
+                && (enumMemCount%enumValuesPerLine)==0
+               )
+            {
+              typeDecl.pushGeneratorState();
+              typeDecl.disableAllBut(OutputGenerator::Html);
+              typeDecl.lineBreak(); 
+              typeDecl.writeString("&nbsp;&nbsp;");
+              typeDecl.popGeneratorState();
+            }
+
+            if (fmd->hasDocumentation()) // enum value has docs
+            {
               if (!Config_getString("GENERATE_TAGFILE").isEmpty())
               {
                 Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
@@ -342,130 +252,95 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
                 Doxygen::tagFile << "    </member>" << endl;
               }
-                fmd->writeLink(typeDecl,cd,nd,fd,gd);
-              }
-              else // no docs for this enum value
-              {
-                typeDecl.startBold();
-                typeDecl.docify(fmd->name());
-                typeDecl.endBold();
-              }
-              if (!fmd->initializer().isEmpty()) // enum value has initializer
-              {
-                typeDecl.writeString(" = ");
-                parseText(typeDecl,fmd->initializer());
-              }
-              
-              fmd=fmdl->next();
-              if (fmd) typeDecl.writeString(", ");
-              typeDecl.disable(OutputGenerator::Man);
-              typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
-              typeDecl.enable(OutputGenerator::Man);
-              enumMemCount++;
+              fmd->writeLink(typeDecl,cd,nd,fd,gd);
             }
-            if (fmdl->count()>enumValuesPerLine)
+            else // no docs for this enum value
             {
-              typeDecl.pushGeneratorState();
-              typeDecl.disableAllBut(OutputGenerator::Html);
-              typeDecl.lineBreak(); 
-              typeDecl.popGeneratorState();
+              typeDecl.startBold();
+              typeDecl.docify(fmd->name());
+              typeDecl.endBold();
             }
+            if (!fmd->initializer().isEmpty()) // enum value has initializer
+            {
+              typeDecl.writeString(" = ");
+              parseText(typeDecl,fmd->initializer());
+            }
+
+            fmd=fmdl->next();
+            if (fmd) typeDecl.writeString(", ");
+            typeDecl.disable(OutputGenerator::Man);
+            typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
+            typeDecl.enable(OutputGenerator::Man);
+            enumMemCount++;
           }
-          typeDecl.docify(" }");
-          md->setEnumDecl(typeDecl);
-          int enumVars=0;
-          MemberListIterator vmli(*this);
-          MemberDef *vmd;
-          if (name[0]=='@') // anonymous enum => append variables
+          if (fmdl->count()>enumValuesPerLine)
           {
-            for ( ; (vmd=vmli.current()) ; ++vmli)
-            {
-              QCString vtype=vmd->typeString();
-              if ((vtype.find(name))!=-1) 
-              {
-                enumVars++;
-                vmd->setAnonymousEnumType(md);
-              }
-            }
+            typeDecl.pushGeneratorState();
+            typeDecl.disableAllBut(OutputGenerator::Html);
+            typeDecl.lineBreak(); 
+            typeDecl.popGeneratorState();
           }
-          // if this is an annoymous enum and there are variable of this
-          // enum type (i.e. enumVars>0), then we do not show the enum here.
-          if (enumVars==0) // show enum here
-          {
-            ol.startMemberItem(0);
-            ol.writeString("enum ");
-            ol.insertMemberAlign();
-            ol+=typeDecl; // append the enum values.
-            ol.endMemberItem(FALSE);
-            if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
-            {
-              ol.startMemberDescription();
-              parseDoc(ol,
-                       md->getDefFileName(),md->getDefLine(),
-                       cd?cd->name().data():0,md->name().data(),
-                       md->briefDescription()
-                      );
-              if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
-              {
-                ol.disableAllBut(OutputGenerator::Html);
-                ol.endEmphasis();
-                ol.docify(" ");
-                ol.startTextLink(0,md->anchor());
-                parseText(ol,theTranslator->trMore());
-                ol.endTextLink();
-                ol.startEmphasis();
-                ol.enableAll();
-              }
-              ol.endMemberDescription();
-            }
-          }
-          md->warnIfUndocumented();
         }
-      } // md->isEnumerate()
-    } // enum loop
-    if (sectionPerType) ol.endMemberList();
-  } // write enums
- 
-  // write functions
-  if (funcCount()>0)
-  {
-    //printf("There are %d functions\n",funcCount());
-    if (sectionPerType) 
-    {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trFunctions());
-      ol.endMemberHeader();
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli )
-    {
-      if (
-          ( md->isFunction() || md->isSignal() || md->isSlot() || md->isDCOP()) &&
-          ( !md->isRelated() || md->getClassDef() ) &&
-          inGroup==md->visibleMemberGroup(sectionPerType)
-         ) 
-      {
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
+        typeDecl.docify(" }");
+        md->setEnumDecl(typeDecl);
+        int enumVars=0;
+        MemberListIterator vmli(*this);
+        MemberDef *vmd;
+        if (name[0]=='@') // anonymous enum => append variables
+        {
+          for ( ; (vmd=vmli.current()) ; ++vmli)
+          {
+            QCString vtype=vmd->typeString();
+            if ((vtype.find(name))!=-1) 
+            {
+              enumVars++;
+              vmd->setAnonymousEnumType(md);
+            }
+          }
+        }
+        // if this is an anoymous enum and there are variable of this
+        // enum type (i.e. enumVars>0), then we do not show the enum here.
+        if (enumVars==0) // show enum here
+        {
+          ol.startMemberItem(0);
+          ol.writeString("enum ");
+          ol.insertMemberAlign();
+          ol+=typeDecl; // append the enum values.
+          ol.endMemberItem(FALSE);
+          if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+          {
+            ol.startMemberDescription();
+            parseDoc(ol,
+                md->getDefFileName(),md->getDefLine(),
+                cd?cd->name().data():0,md->name().data(),
+                md->briefDescription()
+                    );
+            if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
+            {
+              ol.disableAllBut(OutputGenerator::Html);
+              ol.endEmphasis();
+              ol.docify(" ");
+              ol.startTextLink(0,md->anchor());
+              parseText(ol,theTranslator->trMore());
+              ol.endTextLink();
+              ol.startEmphasis();
+              ol.enableAll();
+            }
+            ol.endMemberDescription();
+          }
+        }
+        md->warnIfUndocumented();
+        break;
       }
-    }
-    if (sectionPerType) ol.endMemberList();
-  }
-  
-  if (friendCount()>0)
-  {
-    //printf("There are %d friends\n",friendCount());
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli )
-    {
-      if (md->isFriend() && inGroup==md->visibleMemberGroup(sectionPerType)) 
+      case MemberDef::Friend:
       {
+        //printf("Writing friend `%s'\n",md->name().data());
         QCString type=md->typeString();
         //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
         bool isFriendClass = type=="friend class";
         if (!isFriendClass)
         {
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
+          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         }
         else // isFriendClass
              // friend is undocumented as a member but it is a class, 
@@ -499,52 +374,31 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.endMemberItem(FALSE);
           }
         }
+        break;
       }
+      case MemberDef::EnumValue: 
+        break;
     }
   }
 
-  // write variables
-  if (varCount()>0)
-  {
-    //printf("There are %d variables\n",varCount());
-    if (sectionPerType) 
-    {
-      ol.startMemberHeader();
-      parseText(ol,theTranslator->trVariables());
-      ol.endMemberHeader();
-      ol.startMemberList();
-    }
-    MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli )
-    {
-      if ((md->isVariable() || md->isProperty()) && 
-          inGroup==md->visibleMemberGroup(sectionPerType)) 
-      {
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
-      }
-    }
-    if (sectionPerType) ol.endMemberList();
-  }
-
-  // handle members that are inside annonymous compounds and for which
-  // no variables of the annonymous compound type exist.
+  // handle members that are inside anonymous compounds and for which
+  // no variables of the anonymous compound type exist.
   if (cd)
   {
     MemberListIterator mli(*this);
     for  ( ; (md=mli.current()) ; ++mli )
     {
-      if (md->fromAnnonymousScope() && !md->annonymousDeclShown()
-          && inGroup==md->visibleMemberGroup(sectionPerType))
+      if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
-        //printf("annonymous compound members\n");
-        md->setFromAnnonymousScope(FALSE);
-        md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
-        md->setFromAnnonymousScope(TRUE);
+        //printf("anonymous compound members\n");
+        md->setFromAnonymousScope(FALSE);
+        md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+        md->setFromAnonymousScope(TRUE);
       }
     }
   }
  
-  if (!sectionPerType) { ol.endMemberList(); /*ol.writeChar('\n');*/ }
+  ol.endMemberList(); 
 
   ol.popGeneratorState();
   //printf("----- end writePlainDeclaration() ----\n");
@@ -552,24 +406,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle,
-             bool inGroup,bool countSubGroups)
+             const char *title,const char *subtitle
+             /*, bool inGroup,bool countSubGroups*/)
 {
   //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",title,subtitle);
   //printf("----- writeDeclaration() ----\n");
-  bool sectionPerType = !inGroup && (fd || nd || gd);
-  countDecMembers(FALSE,countSubGroups,sectionPerType); // count member not in group
-  int normalMembers = totalCount();
-  int ingroupMembers = 0;
-  //printf("Normal members %d\n",normalMembers);
-  if (inGroup)
-  {
-    countDecMembers(TRUE,countSubGroups,sectionPerType); // count member inside group
-    ingroupMembers = totalCount();
-  }
-  int totalMembers = normalMembers + ingroupMembers;
-  //printf("Total members %d\n",totalMembers);
-  if (totalMembers==0) return;
+  countDecMembers(); // count member not in group
+  if (numDecMembers()==0) return;
   if (title) 
   {
     ol.startMemberHeader();
@@ -580,15 +423,16 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    if (inGroup)
+    if (m_inGroup)
       parseDoc(ol,"<generated>",1,0,0,subtitle);
     else
       parseText(ol,subtitle);
     ol.endMemberSubtitle();
   }
 
-  writePlainDeclarations(ol,cd,nd,fd,gd,inGroup,FALSE);
+  writePlainDeclarations(ol,cd,nd,fd,gd);
   
+  //printf("memberGroupList=%p\n",memberGroupList);
   if (memberGroupList)
   {
     MemberGroupListIterator mgli(*memberGroupList);
@@ -611,8 +455,8 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       ol.startMemberGroup();
       mg->writePlainDeclarations(ol,cd,nd,fd,gd);
-      ++mgli;
       ol.endMemberGroup(hasHeader);
+      ++mgli;
     }
   }
   //printf("----- end writeDeclaration() ----\n");
@@ -620,13 +464,37 @@ void MemberList::writeDeclarations(OutputList &ol,
 }
 
 void MemberList::writeDocumentation(OutputList &ol,
-                     const char *scopeName, Definition *container)
+                     const char *scopeName, Definition *container,
+                     const char *title)
 {
+  //printf("MemberList::writeDocumentation()\n");
+
+  countDocMembers();
+  if (numDocMembers()==0) return;
+
+  if (title)
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,title);
+    ol.endGroupHeader();
+  }
+  
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,container);
+    md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+  }
+  if (memberGroupList)
+  {
+    //printf("MemberList::writeDocumentation()  --  member groups\n");
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->writeDocumentation(ol,scopeName,container);
+    }
   }
 }
 

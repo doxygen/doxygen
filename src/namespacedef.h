@@ -66,8 +66,8 @@ class NamespaceDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     
-  protected:
-    void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
+  //protected:
+  //  void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private:
     //QCString reference;
@@ -79,13 +79,23 @@ class NamespaceDef : public Definition
     ClassList *usingDeclList;
 
     MemberList allMemberList;
-    MemberList defineMembers;
-    MemberList protoMembers;
-    MemberList typedefMembers;
-    MemberList enumMembers;
-    MemberList enumValMembers;
-    MemberList funcMembers;
-    MemberList varMembers;
+
+    // members in the declaration part of the documentation
+    MemberList decDefineMembers;
+    MemberList decProtoMembers;
+    MemberList decTypedefMembers;
+    MemberList decEnumMembers;
+    MemberList decFuncMembers;
+    MemberList decVarMembers;
+
+    // members in the documentation part of the documentation
+    MemberList docAllMemberList;
+    MemberList docDefineMembers;
+    MemberList docProtoMembers;
+    MemberList docTypedefMembers;
+    MemberList docEnumMembers;
+    MemberList docFuncMembers;
+    MemberList docVarMembers;
 
     /* user defined member groups */
     MemberGroupList    *memberGroupList;

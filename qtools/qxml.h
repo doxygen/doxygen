@@ -1,5 +1,5 @@
 /****************************************************************************
-** $Id$
+** 
 **
 ** Definition of QXmlSimpleReader and related classes.
 **

@@ -43,15 +43,28 @@ class MemberGroup /* : public Definition */
     void insertMember(MemberDef *);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup=TRUE);
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+
+    void writeDocumentation(OutputList &ol,const char *scopeName,
+               Definition *container);
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();
-    int countDecMembers(bool sectionPerType);
+    int countDecMembers(/*bool sectionPerType*/);
     void distributeMemberGroupDocumentation();
+    int varCount() const;
+    int funcCount() const;
+    int enumCount() const;
+    int enumValueCount() const;
+    int typedefCount() const;
+    int protoCount() const;
+    int defineCount() const;
+    int friendCount() const;
+    int numDecMembers() const;
+    int numDocMembers() const;
+    void setInGroup(bool b);
 
   private: 
     MemberList *memberList;      // list of all members in the group
@@ -62,7 +75,7 @@ class MemberGroup /* : public Definition */
     QCString doc;
     MemberList *inDeclSection;
     bool inSameSection;
-    int  numDeclMembers;
+    int  m_numDecMembers;
 };
 
 class MemberGroupList : public QList<MemberGroup>

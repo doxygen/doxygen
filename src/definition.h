@@ -73,7 +73,7 @@ class Definition
      */
     void setBriefDescription(const char *b);
     /*! Returns TRUE iff the definition is documented */
-    virtual bool hasDocumentation();
+    virtual bool hasDocumentation() const;
     virtual bool isLinkableInProject() = 0;
     virtual bool isLinkable() = 0;
 
