@@ -52,7 +52,8 @@ class DocNode
       OrderedList,
       ListItem,
       ParameterList,
-      Parameter
+      Parameter,
+      SimpleSect
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -225,11 +226,13 @@ class ParameterListHandler : public DocNode,
 /* \brief Node representing a simple section with an unnumbered header.
  *
  */
+// children: title, para
 class SimpleSectHandler : public DocNode, 
                           public BaseHandler<SimpleSectHandler>
 {
   public:
-    enum Types { See, Return, Author, Version, 
+    enum Types { Invalid = 0,
+                 See, Return, Author, Version, 
                  Since, Date, Bug, Note,
                  Warning, Par, Deprecated, Pre, 
                  Post, Invar, Remark, Attention,
@@ -240,11 +243,15 @@ class SimpleSectHandler : public DocNode,
     virtual ~SimpleSectHandler();
     virtual void startSimpleSect(const QXmlAttributes& attrib);
     virtual void endSimpleSect();
+    virtual void startTitle(const QXmlAttributes& attrib);
+    virtual void endTitle();
+    virtual void startParagraph(const QXmlAttributes& attrib);
 
   private:
     IBaseHandler            *m_parent;
-    ParameterHandler        *m_curParam;
+    ParagraphHandler        *m_paragraph;
     Types                    m_type;
+    // TODO: a title can also contain links (for todo sections for instance!)
     QString                  m_title;
 };
 
@@ -253,6 +260,13 @@ class SimpleSectHandler : public DocNode,
 /*! \brief Node representing a paragraph of text and commands.
  *
  */
+// children: itemizedlist, orderedlist, parameterlist, simplesect,
+//           programlisting, hruler, variablelist, 
+//           linebreak, nonbreakablespace, ref, ulink, email,
+//           table, link, indexentry, formula, image, dotfile, ref
+// children handled by MarkupHandler: 
+//           bold, computeroutput, emphasis, center,
+//           small, subscript, superscript. 
 class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
 {
   public:
@@ -261,6 +275,7 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     virtual void startItemizedList(const QXmlAttributes& attrib);
     virtual void startOrderedList(const QXmlAttributes& attrib);
     virtual void startParameterList(const QXmlAttributes& attrib);
+    virtual void startSimpleSect(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();
@@ -277,6 +292,7 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
 /*! \brief Node representing a documentation block.
  *
  */
+// children: para, title, sect1, sect2, sect3
 class DocHandler : public BaseHandler<DocHandler>
 {
   public:
@@ -288,7 +304,7 @@ class DocHandler : public BaseHandler<DocHandler>
     virtual ~DocHandler();
   private:
     IBaseHandler *m_parent;
-    QList<ParagraphHandler> m_children;
+    QList<DocNode> m_children;
 };
 
 #endif

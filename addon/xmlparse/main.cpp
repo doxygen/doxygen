@@ -63,10 +63,6 @@ int main(int argc,char **argv)
   }
 
   QFile xmlFile(argv[1]);
-  if (!xmlFile.open( IO_ReadOnly ))
-  {
-    qFatal("Could not read %s",argv[1] );
-  }
 
 #ifdef USE_SAX
   MainHandler handler;
@@ -79,6 +75,10 @@ int main(int argc,char **argv)
 #endif
 
 #ifdef USE_DOM
+  if (!xmlFile.open( IO_ReadOnly ))
+  {
+    qFatal("Could not read %s",argv[1] );
+  }
   QDomDocument doc;
   doc.setContent( &xmlFile );
 

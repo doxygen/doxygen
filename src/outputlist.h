@@ -407,10 +407,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParameterType,first); }
     void endParameterType()
     { forall(&OutputGenerator::endParameterType); }
-    void startParameterName()
-    { forall(&OutputGenerator::startParameterName); }
-    void endParameterName(bool last,bool emptyList)
-    { forall(&OutputGenerator::endParameterName,last,emptyList); }
+    void startParameterName(bool one)
+    { forall(&OutputGenerator::startParameterName,one); }
+    void endParameterName(bool last,bool one)
+    { forall(&OutputGenerator::endParameterName,last,one); }
     void startParameterList()
     { forall(&OutputGenerator::startParameterList); }
     void endParameterList()

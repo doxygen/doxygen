@@ -104,6 +104,7 @@ ClassDef::ClassDef(
   m_templBaseClassNames = 0;
   m_artificial = FALSE;
   m_isAbstract = FALSE;
+  m_isStatic = FALSE;
 }
 
 // destroy the class definition
@@ -1073,9 +1074,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (exampleFlag)
     {
       ol.startDescList(BaseOutputDocInterface::Examples);
-      ol.startBold();
       parseText(ol,theTranslator->trExamples()+": ");
-      ol.endBold();
       ol.endDescTitle();
       ol.writeDescItem();
       ol.newParagraph();
@@ -1546,7 +1545,8 @@ bool ClassDef::isLinkableInProject() const
       name().find('@')==-1 && /* anonymous compound */
       (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
       hasDocumentation() &&   /* documented */ 
-      !isReference();         /* not an external reference */
+      !isReference() &&         /* not an external reference */
+      (!m_isStatic || Config_getBool("EXTRACT_STATIC"));
   }
 }
 
@@ -1578,7 +1578,9 @@ bool ClassDef::isVisibleInHierarchy()
       (hasDocumentation() || 
        !Config_getBool("HIDE_UNDOC_CLASSES") || 
        isReference()
-      );
+      ) &&
+      // is not part of an unnamed namespace or shown anyway
+      (!m_isStatic || Config_getBool("EXTRACT_STATIC"));
 }
 
 bool ClassDef::hasDocumentation() const

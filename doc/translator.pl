@@ -50,10 +50,10 @@
 #    can be updated so that the generated language.doc does not contain
 #    the link to the translator_report.txt.
 #
-# Todo:
-# -----
-# - Something changed. The environment variables like VERSION,
-#   DOXYGEN_DOCDIR are not set now when make is run.
+# 2001/08/20
+#  - StripArgIdentifiers() enhanced to be more robust in producing
+#    equal prototypes from the base class and from the derived
+#    classes (if they should be considered equal).
 #
 ################################################################
 
@@ -174,6 +174,8 @@ sub StripArgIdentifiers  ##{{{
     
     foreach my $arg (@a) {
         
+        # Only the type of the identifier is important...
+        #
         $arg =~ s{^(\s*             # there can be spaces behind comma,
                     (const\s+)?     # possibly const at the beginning
                     [A-Za-z0-9_:]+  # type identifier can be qualified
@@ -183,6 +185,20 @@ sub StripArgIdentifiers  ##{{{
                  }
                  {$1}x;             # remember only the important things
         
+        # People may differ in opinion whether a space should
+        # or should not be written between a type identifier and 
+        # the '*' or '&' (when the argument is a pointer or a reference).
+        #
+        $arg =~ s{\s*([*&])}{ $1};
+        
+        # Whitespaces are not only spaces. Moreover, the difference
+        # may be in number of them in a sequence or in the type 
+        # of a whitespace. This is the reason to replace each sequence
+        # of whitespace by a single, real space.
+        #
+        $arg =~ s{\s+}{ }g;
+        
+        # Remember the stripped form of the arguments
         push(@stripped, $arg); 
     }
     
@@ -683,6 +699,11 @@ print STDERR "\n\n";
     #
     my @expected = GetPureVirtualFrom("$srcdir/translator.h");
 
+    # The details for translators will be collected into the output
+    # string.
+    #
+    my $output = '';
+
     # Remove the argument identifiers from the method prototypes
     # to get only the required form of the prototype. Fill the
     # hash with them. #{{{
@@ -700,11 +721,6 @@ print STDERR "\n\n";
     #
     my %cb = ();
     
-    # The details for translators will be collected into the output
-    # string.
-    #
-    my $output = '';
-
     # Loop through all translator files.  Extract the implemented
     # virtual methods and compare it with the requirements. Prepare
     # the output.

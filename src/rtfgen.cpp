@@ -1931,11 +1931,13 @@ void RTFGenerator::startDescList(SectionTypes)
   DBG_RTF(t << "{\\comment (startDescList)}"    << endl)
   t << "{";
   newParagraph();
+  startBold();
 }
 
 void RTFGenerator::endDescTitle()      
 { 
   DBG_RTF(t << "{\\comment (endDescTitle) }"    << endl)
+  endBold();
   newParagraph();
   //t << Rtf_Style_Reset << styleStack.top();
   incrementIndentLevel();

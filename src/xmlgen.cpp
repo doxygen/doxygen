@@ -68,20 +68,16 @@ static inline void writeXMLString(QTextStream &t,const char *s)
 }
 
 static void writeXMLLink(QTextStream &t,const char *compoundId,
-                  const char *memId,const char *text)
+                  const char *anchorId,const char *text)
 {
-  if (memId==0)
+  t << "<ref idref=\"" << compoundId << "\"";
+  if (anchorId)
   {
-    t << "<compoundref idref=\"" << compoundId << "\">";
-    writeXMLString(t,text);
-    t << "</compoundref>";
+    t << " anchor=\"" << anchorId << "\"";
   }
-  else
-  {
-    t << "<memberref idref=\"" << compoundId << "_1" << memId << "\">";
-    writeXMLString(t,text);
-    t << "</memberref>";
-  }
+  t << ">";
+  writeXMLString(t,text);
+  t << "</ref>";
 }
 
 class TextGeneratorXMLImpl : public TextGeneratorIntf
@@ -218,11 +214,13 @@ class XMLGenerator : public OutputDocInterface
     }
     void startItemList()       
     { 
+      startParMode();
       m_t << "<itemizedlist>" << endl;; 
       m_inListStack.push(TRUE);
     }
     void startEnumList()       
     { 
+      startParMode();
       m_t << "<orderedlist>"; 
       m_inListStack.push(TRUE);
     }
@@ -295,7 +293,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCodeFragment()   
     { 
-      endParMode();
+      startParMode();
       m_t << "<programlisting>";
     }
     void endCodeFragment()     
@@ -304,7 +302,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startPreFragment()    
     { 
-      endParMode();
+      startParMode();
       m_t << "<programlisting>";
     }
     void endPreFragment()      
@@ -313,11 +311,12 @@ class XMLGenerator : public OutputDocInterface
     }
     void writeRuler()          
     { 
-      endParMode();
+      startParMode();
       m_t << "<hruler/>"; 
     }
     void startDescription()    
     { 
+      startParMode();
       m_t << "<variablelist>"; 
       m_inListStack.push(TRUE);
     }
@@ -351,6 +350,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startDescList(SectionTypes st)       
     { 
+      startParMode();
       m_t << "<simplesect kind=\"" << sectionTypeToString(st);
       m_t << "\"><title>"; 
     }
@@ -361,6 +361,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startParamList(ParamListTypes t)      
     { 
+      startParMode();
       QCString kind;
       switch(t)
       {
@@ -380,7 +381,6 @@ class XMLGenerator : public OutputDocInterface
     { 
       m_t << "</title>"; 
       if (!m_inParamList) startNestedPar();
-      printf("endDescTitle %d\n",m_inParamList);
     }
     void writeDescItem()       { }
     void startDescTable()      { }
@@ -405,11 +405,12 @@ class XMLGenerator : public OutputDocInterface
     }
     void lineBreak()           
     { 
+      startParMode();
       m_t << "<linebreak/>"; // non docbook
     }
     void writeNonBreakableSpace(int num) 
     { 
-      int i;for (i=0;i<num;i++) m_t << "<nonbreakablespace/>";  // non docbook
+      int i;for (i=0;i<num;i++) m_t << "&nbsp;"; 
     }
     
     //// TODO: translate these as well....
@@ -440,6 +441,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startHtmlLink(const char *url)
     {
+      startParMode();
       m_t << "<ulink url=\"" << url << "\">";
     }
     void endHtmlLink()
@@ -448,6 +450,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void writeMailLink(const char *url) 
     {
+      startParMode();
       m_t << "<email>";
       docify(url); 
       m_t << "</email>";
@@ -478,6 +481,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCenter() 
     {
+      startParMode();
       m_t << "<center>"; // non docbook
     }
     void endCenter() 
@@ -486,6 +490,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startSmall() 
     {
+      startParMode();
       m_t << "<small>"; // non docbook
     }
     void endSmall() 
@@ -494,6 +499,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startSubscript() 
     {
+      startParMode();
       m_t << "<subscript>";
     }
     void endSubscript() 
@@ -502,6 +508,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startSuperscript() 
     {
+      startParMode();
       m_t << "<superscript>";
     }
     void endSuperscript() 
@@ -510,6 +517,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startTable(int cols) 
     {
+      startParMode();
       m_t << "<table><tgroup cols=\"" << cols << "\"><tbody>\n";
     }
     void endTable() 
@@ -554,11 +562,13 @@ class XMLGenerator : public OutputDocInterface
     }
     void writeAnchor(const char *id,const char *name) 
     {
+      startParMode();
       m_t << "<anchor id=\"" << id << "_" << name << "\"/>";
     }
     void writeSectionRef(const char *,const char *id,
                          const char *name,const char *text) 
     {
+      startParMode();
       m_t << "<link linkend=\"" << id << "_" << name << "\">";
       docify(text);
       m_t << "</link>";
@@ -569,6 +579,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void addIndexItem(const char *primaryie,const char *secondaryie) 
     {
+      startParMode();
       m_t << "<indexentry><primaryie>";
       docify(primaryie);
       m_t << "</primaryie><secondaryie>";
@@ -577,12 +588,14 @@ class XMLGenerator : public OutputDocInterface
     }
     void writeFormula(const char *id,const char *text) 
     {
+      startParMode();
       m_t << "<formula id=\"" << id << "\">"; // non Docbook
       docify(text);
       m_t << "</formula>";
     }
     void startImage(const char *name,const char *size,bool caption) 
     {
+      startParMode();
       m_t << "<image name=\"" << name << "\" size=\"" << size 
           << "\" caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
     }
@@ -592,6 +605,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startDotFile(const char *name,bool caption) 
     {
+      startParMode();
       m_t << "<dotfile name=\"" << name << "\" " 
           << "caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
     }
@@ -601,6 +615,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startTextLink(const char *name,const char *anchor) 
     {
+      startParMode();
       m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
     }
     void endTextLink() 
@@ -615,6 +630,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCodeLine() 
     {
+      startParMode();
       m_t << "<linenumber>"; // non DocBook
     }
     void endCodeLine() 
@@ -623,6 +639,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCodeAnchor(const char *id) 
     {
+      startParMode();
       m_t << "<anchor id=\"" << id << "\">";
     }
     void endCodeAnchor() 
@@ -631,7 +648,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startFontClass(const char *colorClass) 
     {
-      m_t << "<highlight class=\"" << colorClass << "\""; // non DocBook
+      m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
     }
     void endFontClass()
     {

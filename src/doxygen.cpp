@@ -888,6 +888,7 @@ static void buildClassList(Entry *root)
         cd->setTemplateArguments(tArgList);
         cd->setProtection(root->protection);
         cd->addSectionsToDefinition(root->anchors);
+        cd->setIsStatic(root->stat);
 
         // file definition containing the class cd
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -2677,14 +2678,20 @@ static bool findTemplateInstanceRelation(Entry *root,
     // search for new template instances caused by base classes of 
     // instanceClass 
     Entry *templateRoot = classEntries.find(templateClass->name());
+    if (templateRoot)
+    {
+      ArgumentList *templArgs = new ArgumentList;
+      stringToArgumentList(templSpec,templArgs);
+      findBaseClassesForClass(templateRoot,templateClass,instanceClass,
+          TemplateInstances,isArtificial,templArgs,templateNames);
 
-    ArgumentList *templArgs = new ArgumentList;
-    stringToArgumentList(templSpec,templArgs);
-    findBaseClassesForClass(templateRoot,templateClass,instanceClass,
-        TemplateInstances,isArtificial,templArgs,templateNames);
-
-    findUsedClassesForClass(templateRoot,templateClass,instanceClass,
-        isArtificial,templArgs,templateNames);
+      findUsedClassesForClass(templateRoot,templateClass,instanceClass,
+          isArtificial,templArgs,templateNames);
+    }
+    else
+    {
+      // TODO: what happened if we get here?
+    }
 
     //Debug::print(Debug::Classes,0,"    Template instance %s : \n",instanceClass->name().data());
     //ArgumentList *tl = templateClass->templateArguments();
@@ -7132,7 +7139,7 @@ void parseInput()
   msg("Adding source references...\n");
   addSourceReferences();
 
-  msg("Adding todo/test/bug list item...\n");
+  msg("Adding todo/test/bug list items...\n");
   addTodoTestBugReferences();
   
 }

@@ -224,7 +224,7 @@ class ManGenerator : public OutputGenerator
     void endMemberDocName() {}
     void startParameterType(bool) {}
     void endParameterType() {}
-    void startParameterName() {}
+    void startParameterName(bool) {}
     void endParameterName(bool,bool) {}
     void startParameterList() {}
     void endParameterList() {}

@@ -270,6 +270,7 @@ class ClassDef : public Definition
     void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
     void setClassIsArtificial() { m_artificial = TRUE; }
+    void setIsStatic(bool b) { m_isStatic=b; }
 
     /*! Creates a new compound definition.
      *  \param outerScope class, file or namespace in which this class is
@@ -401,6 +402,9 @@ class ClassDef : public Definition
     bool m_isAbstract;
 
     QCString m_className;
+
+    /*! Is the class part of an unnamed namespace? */
+    bool m_isStatic;
 };
 
 /*! \brief Class that contains information about a usage relation. 
