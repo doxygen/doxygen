@@ -41,6 +41,7 @@ class GroupDef : public Definition
   public:
     GroupDef(const char *fileName,int line,const char *name,const char *title);
    ~GroupDef();
+    DefType definitionType() { return TypeGroup; }
     QCString getOutputFileBase() const { return fileName; }
     const char *groupTitle() const { return title; }
     void addFile(const FileDef *def); 

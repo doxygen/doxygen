@@ -386,10 +386,13 @@ void ClassDef::insertMember(MemberDef *md)
                 functionMembers.append(md);
               break;
             case Private:   
-              if (Config::sortMembersFlag)
-                functionMembers.inSort(md); 
-              else
-                functionMembers.append(md);
+              if (Config::extractPrivateFlag)
+              {
+                if (Config::sortMembersFlag)
+                  functionMembers.inSort(md); 
+                else
+                  functionMembers.append(md);
+              }
               break;
           }
           break;

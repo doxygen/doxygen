@@ -56,6 +56,7 @@ Entry::Entry(const Entry &e)
   type        = e.type.copy();
   name        = e.name.copy();
   args        = e.args.copy();
+  bitfields   = e.bitfields.copy();
   exception   = e.exception.copy();
   program     = e.program.copy();
   includeFile = e.includeFile.copy();
@@ -197,6 +198,7 @@ void Entry::reset()
   name.resize(0);
   type.resize(0);
   args.resize(0);
+  bitfields.resize(0);
   exception.resize(0);
   program.resize(0);
   //body.resize(0);
@@ -242,6 +244,7 @@ int Entry::getSize()
   size+=type.length()+1;
   size+=name.length()+1;
   size+=args.length()+1;
+  size+=bitfields.length()+1;
   size+=exception.length()+1;
   size+=program.length()+1;
   //size+=body.length()+1;

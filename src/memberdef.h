@@ -73,6 +73,7 @@ class MemberDef : public Definition
               bool related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al);
    ~MemberDef(); 
+    DefType definitionType() { return TypeMember; }
     
     QCString getOutputFileBase() const;
     const char *declaration() const       { return decl; }
@@ -80,6 +81,7 @@ class MemberDef : public Definition
     const char *typeString() const        { return type; }
     const char *argsString() const        { return args; }
     const char *excpString() const        { return exception; }     
+    const char *bitfieldString() const    { return bitfields; }     
     QCString anchor() const;
     const QCString &initializer() const   { return init; }
     int initializerLines() const          { return initLines; }
@@ -133,6 +135,7 @@ class MemberDef : public Definition
                                            init=init.stripWhiteSpace();
                                            initLines=init.contains('\n');
                                           }
+    void setBitfields(const char *s)      { bitfields = s; }
     void setMaxInitLines(int lines)       { if (lines!=-1) maxInitLines=lines; }
     void setMemberClass(ClassDef *cd)     { classDef=cd; }
     void setSectionList(MemberList *sl)   { section=sl; }
@@ -231,6 +234,7 @@ class MemberDef : public Definition
     NamespaceDef *nspace;     // the namespace this member is in.
     QCString type;            // return type
     QCString args;            // function arguments/variable array specifiers
+    QCString bitfields;       // struct member bitfields
     QCString exception;       // exceptions that can be thrown
     QCString init;            // initializer
     int initLines;            // number of lines in the initializer

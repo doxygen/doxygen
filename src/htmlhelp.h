@@ -23,6 +23,7 @@
 
 #include "qtbc.h"
 #include <qtextstream.h>
+#include <qstrlist.h>
 
 class QFile;
 class HtmlHelpIndex;
@@ -45,12 +46,17 @@ class HtmlHelp
                          const char *anchor = 0);
     void addIndexItem(const char *level1, const char *level2, 
                       const char *ref, const char *anchor);
+    void addIndexFile(const char *name);
+
   private:
+    void createProjectFile();
+
     HtmlHelp();
     QFile *cf,*kf; 
     QTextStream cts,kts;
     HtmlHelpIndex *index;
     int dc;
+    QStrList indexFiles;
     static HtmlHelp *theInstance;
 };
 

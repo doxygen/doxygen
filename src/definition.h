@@ -32,27 +32,32 @@ class MemberDef;
 class Definition
 {
   public:
-    /*! create a new definition */
+    /*! Types of derived classes */
+    enum DefType { TypeClass, TypeMember, TypeFile, TypeGroup, TypeNamespace };
+    /*! Use this for dynamic inspection of the derived class */
+    virtual DefType definitionType() = 0;
+    
+    /*! Create a new definition */
     Definition(
         const char *defFileName,int defLine,
         const char *name,const char *b=0,const char *d=0);
-    /*! destroys the definition */
+    /*! Destroys the definition */
     virtual ~Definition();
-    /*! returns the name of the definition */
+    /*! Returns the name of the definition */
     const QCString& name() const { return n; }
-    /*! returns the base name of the output file that contains this 
+    /*! Returns the base name of the output file that contains this 
      *  definition. 
      */
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */
     const QCString sourceName() const { return getOutputFileBase()+"-source"; }
-    /*! returns the detailed description of this definition */
+    /*! Returns the detailed description of this definition */
     const QCString& documentation() const { return doc; }
-    /*! returns the brief description of this definition */
+    /*! Returns the brief description of this definition */
     const QCString& briefDescription() const { return brief; }
-    /*! sets a new \a name for the definition */
+    /*! Sets a new \a name for the definition */
     void setName(const char *name) { n=name; }
-    /*! sets the documentation of this definition to \a d. */
+    /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,bool stripWhiteSpace=TRUE) 
       { 
         if (stripWhiteSpace)
@@ -60,11 +65,11 @@ class Definition
         else
           doc=d;
       }
-    /*! sets the brief description of this definition to \a b.
+    /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
     void setBriefDescription(const char *b);
-    /*! returns TRUE iff the definition is documented */
+    /*! Returns TRUE iff the definition is documented */
     virtual bool hasDocumentation();
     virtual bool isLinkableInProject() = 0;
     virtual bool isLinkable() = 0;

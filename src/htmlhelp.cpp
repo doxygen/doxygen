@@ -287,9 +287,12 @@ void HtmlHelp::initialize()
          "<param name=\"ImageType\" value=\"Folder\">\n"
          "</OBJECT>\n"
          "<UL>\n";
+}
 
+void HtmlHelp::createProjectFile()
+{
   /* Write the project file */
-  fName = Config::htmlOutputDir + "/index.hhp";
+  QCString fName = Config::htmlOutputDir + "/index.hhp";
   QFile f(fName);
   if (f.open(IO_WriteOnly))
   {
@@ -298,18 +301,34 @@ void HtmlHelp::initialize()
          "Compatibility=1.1\n"
          "Full-text search=Yes\n"
          "Contents file=index.hhc\n"
-         "Default Window=indexHelp\n"
+         "Default Window=main\n"
          "Default topic=index.html\n"
          "Index file=index.hhk\n"
-         "Title=" << Config::projectName << endl << endl 
-      << "[FILES]\n"
-         "index.html";
+         "Title=" << Config::projectName << endl << endl;
+    
+    t << "[WINDOWS]" << endl;
+    t << "main=\"" << Config::projectName << "\",\"index.hhc\","
+         "\"index.hhk\",\"index.html\",\"index.html\",,,,,0x23520,,"
+         "0x3006,,,,,,,,0" << endl << endl;
+    
+    t << "[FILES]" << endl;
+    char *s = indexFiles.first();
+    while (s)
+    {
+      t << s << endl;
+      s=indexFiles.next();
+    }
     f.close();
   }
   else
   {
     err("Could not open file %s for writing\n",fName.data());
   }
+}
+
+void HtmlHelp::addIndexFile(const char *s)
+{
+  indexFiles.append(s);
 }
 
 /*! Finalizes the HTML help. This will finish and close the
@@ -331,6 +350,8 @@ void HtmlHelp::finalize()
   kts.unsetDevice();
   kf->close();
   delete kf;
+
+  createProjectFile();
 }
 
 /*! Increase the level of the contents hierarchy. 

@@ -775,26 +775,27 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Korean, Hungarian, Spanish, Romanian, Russian, Croatian, Polish, and \n"
-                    "Portuguese.\n"
+                    "Korean, Hungarian, Spanish, Romanian, Russian, Croatian, Polish, \n"
+                    "Portuguese and Slovene.\n"
                    );
-  ConfigString::addFixedValue("outputLanguage","English");
-  ConfigString::addFixedValue("outputLanguage","Dutch");
-  ConfigString::addFixedValue("outputLanguage","French");
-  ConfigString::addFixedValue("outputLanguage","Italian");
+  ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Czech");
-  ConfigString::addFixedValue("outputLanguage","Swedish");
-  ConfigString::addFixedValue("outputLanguage","German");
+  ConfigString::addFixedValue("outputLanguage","Dutch");
+  ConfigString::addFixedValue("outputLanguage","English");
+  ConfigString::addFixedValue("outputLanguage","French");
   ConfigString::addFixedValue("outputLanguage","Finnish");
+  ConfigString::addFixedValue("outputLanguage","German");
   ConfigString::addFixedValue("outputLanguage","Hungarian");
+  ConfigString::addFixedValue("outputLanguage","Italian");
   ConfigString::addFixedValue("outputLanguage","Japanese");
   ConfigString::addFixedValue("outputLanguage","Korean");
-  ConfigString::addFixedValue("outputLanguage","Spanish");
   ConfigString::addFixedValue("outputLanguage","Romanian");
   ConfigString::addFixedValue("outputLanguage","Russian");
-  ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Polish");
   ConfigString::addFixedValue("outputLanguage","Portuguese");
+  ConfigString::addFixedValue("outputLanguage","Slovene");
+  ConfigString::addFixedValue("outputLanguage","Spanish");
+  ConfigString::addFixedValue("outputLanguage","Swedish");
   ConfigBool::add(  "extractAllFlag",
                     "EXTRACT_ALL",
                     "FALSE",
@@ -956,12 +957,13 @@ void init()
                  );
   ConfigBool::add(  "autoBriefFlag",
                     "JAVADOC_AUTOBRIEF",
-                    "TRUE",
-                    "javadoc comments behaves as Qt comments.",
-                    "If the JAVADOC_AUTOBRIEF tag is set to YES (the default) then Doxygen \n"
+                    "FALSE",
+                    "should javadoc comments behaves as Qt comments.",
+                    "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
                     "will interpret the first line (until the first dot) of a JavaDoc-style \n"
-                    "comment as the brief description. If set to NO, the Javadoc-style will \n"
-                    "behave just like the Qt-style comments. \n"
+                    "comment as the brief description. If set to NO, the JavaDoc \n"
+                    "comments  will behave just like the Qt-style comments (thus requiring an \n"
+                    "explict @brief command for a brief description. \n"
                  );
   ConfigBool::add(  "inheritDocsFlag",
                     "INHERIT_DOCS",

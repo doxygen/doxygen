@@ -450,8 +450,15 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
 {
   Definition *d=0;
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
-  if (d==0) return;
-  ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
+  if (d==0) { err("Member %s without group! Please report this bug!\n",name().data()); return; }
+  if (group!=0 && gd==0) // forward link to the group
+  {
+    ol.writeObjectLink(group->getReference(),group->getOutputFileBase(),anchor(),name());
+  }
+  else // local link
+  {
+    ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
+  }
 }
 
 
@@ -689,19 +696,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
     // write name
     if (!name().isEmpty() && name().at(0)!='@')
     {
-      //if (grpId!=-1)
-      //{
-      //  if (annMemb)
-      //  {
-      //    //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-      //    annMemb->writeLink(ol,cd,nd,fd,gd,inGroup ? memberGroup : 0);
-      //    annMemb->annUsed=annUsed=TRUE;
-      //  }
-      //  else
-      //    writeLink(ol,0,0,0,0,memberGroup);
-      //  //ol.writeBoldString(name()); 
-      //}
-      //else 
       if (isLinkable())
       {
         if (annMemb)
@@ -748,7 +742,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.docify(excpString());
     }
 
-    if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
+    if (!bitfields.isEmpty()) // add bitfields
+    {
+      linkifyText(TextGeneratorOLImpl(ol),cname,name(),bitfields.simplifyWhiteSpace());
+    }
+    else if (!init.isEmpty() && initLines==0 && maxInitLines>0) // add initializer
     {
       if (!isDefine()) 
       {
@@ -797,9 +795,15 @@ void MemberDef::writeDeclaration(OutputList &ol,
  *  all active output formats.
  */
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
-                                   const char *scopeName,Definition *container)
+                                   const char *scopeName,
+                                   Definition *container
+                                  )
 {
+  // hide global static functions unless extractStaticFlag is enabled
   if (getClassDef()==0 && isStatic() && !Config::extractStaticFlag) return;
+  // hide member that are documented in their own group
+  if (group!=0 && container->definitionType()!=TypeGroup) return;
+  
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
   if (
@@ -996,7 +1000,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
         if      (lvirt==Virtual)          sl.append("virtual");
-        else if (lvirt==Pure)              sl.append("pure virtual");
+        else if (lvirt==Pure)             sl.append("pure virtual");
         if      (isSignal())              sl.append("signal");
         if      (isSlot())                sl.append("slot");
       }

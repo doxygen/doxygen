@@ -339,6 +339,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	Bases
 %x	BasesProt
 %x	NextSemi
+%x	BitFields
 %x	FindMembers
 %x	FindMemberName
 %x      FindFields
@@ -501,7 +502,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    --curlyCount ;
 					  }
 					  else
-					    BEGIN( NextSemi ) ;
+					    BEGIN( NextSemi );
 					}
 <NextSemi>"'"\\[0-7]{1,3}"'"            
 <NextSemi>"'"\\."'"                     
@@ -512,8 +513,12 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <NextSemi>[;,]				{ 
   					  unput(*yytext);
-  					  BEGIN( FindMembers ) ; 
+  					  BEGIN( FindMembers ); 
 					}
+<BitFields>[;,]				{
+  					  unput(*yytext);
+					  BEGIN( FindMembers );
+  					}
 <FindMembers>{B}*"k_dcop"{BN}*":"{BN}*  { current->mtype = mtype = DCOP;
 					  current->protection = protection = Public ;
 					  current->type.resize(0); 
@@ -779,7 +784,16 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( NSAliasArg );
   					}
 <NSAliasArg>({ID}"::")*{ID}		{
-  					  namespaceAliasDict.insert(aliasName,new QCString(yytext));
+  					  printf("Inserting namespace alias %s::%s->%s\n",current_root->name.data(),aliasName.data(),yytext);
+					  if (current_root->name.isEmpty())
+					  {
+					    namespaceAliasDict.insert(aliasName,new QCString(yytext));
+					  }
+					  else
+					  {
+					    namespaceAliasDict.insert(current_root->name+"::"+aliasName,
+						new QCString(current_root->name+"::"+yytext));
+					  }
   					}
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
@@ -997,7 +1011,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <DefineEnd>.				
 					
 <FindMembers>[*&]+			{ current->name += yytext ; }
-<FindMembers,MemberSpec,Function,NextSemi,ReadInitializer>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
 					    current->bodyLine=yyLineNr;
@@ -1019,7 +1033,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<MemberSpec,FindFields,FindMembers,NextSemi,ReadInitializer>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ',';
@@ -1043,7 +1057,10 @@ TITLE     [tT][iI][tT][lL][eE]
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  if (YY_START==DefineEnd)
+					  {
 					    afterDocTerminator = '\n';
+					    yyLineNr--;
+					  }
 					  else
 					    afterDocTerminator = 0;
 					  if (yytext[yyleng-3]=='/')
@@ -1241,59 +1258,54 @@ TITLE     [tT][iI][tT][lL][eE]
   					  yyLineNr++;
 					  *pCopyCurlyString+=*yytext;
   					}
-
-<FindMembers>[:;,]			{ 
+<FindMembers>":"			{
+  					  BEGIN(BitFields);
+					  current->bitfields+=":";
+  					}
+<BitFields>.				{
+  					  current->bitfields+=*yytext;
+  					}
+<FindMembers>[;,]			{ 
   					  QCString oldType = current->type.copy();
 					  QCString oldDocs = current->doc.copy();
-  					  if ( *yytext != ':')
+					  if (current->bodyLine==-1)
 					  {
-					    if (current->bodyLine==-1)
-					    {
-					      current->bodyLine = yyLineNr;
-					    }
-					    current->type=current->type.simplifyWhiteSpace();
-					    current->args=current->args.simplifyWhiteSpace();
-					    current->name=current->name.stripWhiteSpace();
-					    if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
-					    {
-					      // add typedef to dictionary
-					      QCString dest = extractName(current->type.right(current->type.length()-8));
-					      if (typedefDict[current->name]==0 && !dest.isEmpty())
-					      {		
-						//printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
-					        typedefDict.insert(current->name, new QCString(dest));
-					      }
-					    }
-					    current->section = Entry::VARIABLE_SEC ;
-					    current->fileName = yyFileName;
-					    current->startLine = yyLineNr;
-					    //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
-					    current_root->addSubEntry( current ) ;
-					    current = new Entry ;
-					    // variable found 
-					    current->section = Entry::EMPTY_SEC ;
-					    current->protection = protection;
-				            current->mtype = Method;
-					    current->virt = Normal; 
-					    current->stat = gstat;
-					    current->mGrpId = memberGroupId;
+					    current->bodyLine = yyLineNr;
 					  }
-					  // skip expression or bitfield if needed
-					  if ( *yytext == ':') 
+					  current->type=current->type.simplifyWhiteSpace();
+					  current->args=current->args.simplifyWhiteSpace();
+					  current->name=current->name.stripWhiteSpace();
+					  if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
 					  {
-					    BEGIN( NextSemi );
-					  }
-					  else 
-					  {
-					    if ( *yytext == ',' )
-					    {
-					      int i=oldType.length(); 
-					      while (i>0 && (oldType[i-1]=='*' || oldType[i-1]==' ')) i--;
-					      current->type = oldType.left(i);
-					      current->doc  = oldDocs;
+					    // add typedef to dictionary
+					    QCString dest = extractName(current->type.right(current->type.length()-8));
+					    if (typedefDict[current->name]==0 && !dest.isEmpty())
+					    {		
+					      //printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
+					      typedefDict.insert(current->name, new QCString(dest));
 					    }
-					    BEGIN( FindMembers ) ;
 					  }
+					  current->section = Entry::VARIABLE_SEC ;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
+					  current_root->addSubEntry( current ) ;
+					  current = new Entry ;
+					  // variable found 
+					  current->section = Entry::EMPTY_SEC ;
+					  current->protection = protection;
+				          current->mtype = Method;
+					  current->virt = Normal; 
+					  current->stat = gstat;
+					  current->mGrpId = memberGroupId;
+					  if ( *yytext == ',' )
+					  {
+					    int i=oldType.length(); 
+					    while (i>0 && (oldType[i-1]=='*' || oldType[i-1]==' ')) i--;
+					    current->type = oldType.left(i);
+					    current->doc  = oldDocs;
+					  }
+					  BEGIN( FindMembers ) ;
 					}
 
 <FindMembers>"["			{ 
@@ -2661,7 +2673,7 @@ TITLE     [tT][iI][tT][lL][eE]
   					  lastDocRelContext = YY_START;
   					  BEGIN( ClassDocRelates ); 
 					}
-<ClassDocRelates>{ID}			{ 
+<ClassDocRelates>({ID}"::")*{ID}	{ 
   					  current->relates = yytext;
 					  BEGIN( lastDocRelContext );
 					}

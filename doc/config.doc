@@ -47,10 +47,10 @@ file using a <code>\@INCLUDE</code> tag as follows:
 \endverbatim 
 The include file is searched in the current working directory. You can 
 also specify a list of directories that should be searched before looking
-in the current working directory. Do this by putting a <code>\@INCLUDEPATH</code> tag 
+in the current working directory. Do this by putting a <code>\@INCLUDE_PATH</code> tag 
 with these paths before the <code>\@INCLUDE</code> tag, e.g:
 \verbatim
-@INCLUDEPATH = my_config_dir
+@INCLUDE_PATH = my_config_dir
 \endverbatim
 
 The configuration options can be divided into several categories.
@@ -370,10 +370,10 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
  \addindex JAVADOC_AUTOBRIEF
-  If the \c JAVADOC_AUTOBRIEF is set to \c YES (the default) then Doxygen
+  If the \c JAVADOC_AUTOBRIEF is set to \c YES then Doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
-  comment as the brief description. If set to NO, the Javadoc-style will
-  behave just like the Qt-style comments.
+  comment as the brief description. If set to NO (the default), the 
+  Javadoc-style will behave just like the Qt-style comments.
 
 \anchor cfg_inherit_docs
 <dt>\c INHERIT_DOCS <dd>

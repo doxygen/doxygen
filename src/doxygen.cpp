@@ -1107,6 +1107,7 @@ static MemberDef *addVariableToClass(
   md->setDocumentation(root->doc);
   md->setBriefDescription(root->brief);
   md->setDefinition(def);
+  md->setBitfields(root->bitfields);
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnnonymousScope(fromAnnScope);
   md->setFromAnnonymousMember(fromAnnMemb);
@@ -2038,6 +2039,22 @@ static void transferRelatedFunctionDocumentation()
 }
 
 //----------------------------------------------------------------------
+static void replaceNamespaceAliases(QCString &scope,int i)
+{
+  //printf("replaceNamespaceAliases(%s,%d)\n",scope.data(),i);
+  while (i>0)
+  {
+    QCString *s = namespaceAliasDict[scope.left(i)];
+    if (s)
+    {
+      scope=*s+scope.right(scope.length()-i);
+      i=s->length();
+    }
+    i=scope.findRev("::",i-1);
+  }
+  //printf("replaceNamespaceAliases() result=%s\n",scope.data());
+}
+
 
 static bool findBaseClassRelation(Entry *root,ClassDef *cd,
                            BaseInfo *bi,
@@ -2109,6 +2126,14 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
 
         bool found=baseClass!=0 && baseClass!=cd;
         NamespaceDef *nd=cd->getNamespaceDef();
+        if (!found && (i=baseClassName.findRev("::"))!=-1)
+        {
+          // replace any namespace aliases
+          replaceNamespaceAliases(baseClassName,i);
+          baseClass=getResolvedClass(baseClassName);
+          found=baseClass!=0 && baseClass!=cd;
+        }
+        
         if (!found)
         {
           FileDef *fd=cd->getFileDef();
@@ -2148,7 +2173,6 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           }
           if (!found && nd) // class is inside a namespace
           {
-            //printf("    class %s inside namespace %s\n",cd->name().data(),nd->name().data());
             NamespaceList *nl = nd->getUsedNamespaces();
             QCString fName = nd->name()+"::"+baseClassName;
             found = (baseClass=getResolvedClass(fName))!=0 && root->name!=fName;
@@ -2264,18 +2288,21 @@ static void computeClassRelations(Entry *root)
   if (
       (
        (
+        // is it a compound (class, struct, union, interface ...)
         root->section & Entry::COMPOUND_MASK 
        ) 
        || 
        (
+        // is it a documentation block with inheritance info.
         (root->section & Entry::COMPOUNDDOC_MASK) && root->extends->count()>0 
        )
       )
       &&
-       !root->name.isEmpty()
+       !root->name.isEmpty() // sanity check
      )
   {
     ClassDef *cd;
+    // strip any annonymous scopes first 
     QCString bName=stripAnnonymousNamespaceScope(root->name);
     Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
     if ((cd=getClass(bName)))

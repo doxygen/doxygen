@@ -29,6 +29,7 @@
 #include "version.h"
 #include "dot.h"
 #include "language.h"
+#include "htmlhelp.h"
 
 #define GROUP_COLOR "#ff8080"
 
@@ -157,6 +158,11 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
+  if (Config::htmlHelpFlag)
+  {
+    HtmlHelp::getInstance()->addIndexFile(fileName);
+  }
+ 
   lastFile = fileName;
   if (header.isEmpty()) 
   {
