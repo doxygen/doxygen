@@ -588,7 +588,7 @@ class Translator
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Inheritance diagram for "+clName;
+      return (QCString)"Inheritance diagram for "+clName+":";
     }
     
     /*! this text is generated when the \internal command is used. */

@@ -602,7 +602,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     out << "<map name=\"" << n->m_label << "_map\">" << endl;
     convertMapFile(out,mapName);
     out << "</map>" << endl;
-    thisDir.remove(dotName);
+    if (Config::dotCleanUp) thisDir.remove(dotName);
     thisDir.remove(mapName);
   }
   out << "</table>" << endl;
@@ -1187,7 +1187,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
            "\\end{center}\n"
            "\\end{figure}\n";
   }
-  thisDir.remove(baseName+".dot");
+  if (Config::dotCleanUp) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1387,7 +1387,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
            "\\end{figure}\n";
   }
 
-  thisDir.remove(baseName+".dot");
+  if (Config::dotCleanUp) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }

@@ -16,6 +16,8 @@
  *
  */
 
+#include <stdlib.h>
+
 #include "qtbc.h"
 #include "xml.h"
 #include "doxygen.h"

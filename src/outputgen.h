@@ -204,6 +204,8 @@ class BaseOutputDocInterface
     virtual void writeSharpS() = 0;
     virtual void startDescList() = 0;
     virtual void endDescList() = 0;
+    virtual void startParamList() = 0;
+    virtual void endParamList() = 0;
     virtual void endDescTitle() = 0;
     virtual void writeDescItem() = 0;
     virtual void startTitle() = 0;

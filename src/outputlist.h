@@ -302,12 +302,16 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endMemberDescription); }
     void startDescList() 
     { forall(&OutputGenerator::startDescList); }
+    void endDescList() 
+    { forall(&OutputGenerator::endDescList); }
+    void startParamList() 
+    { forall(&OutputGenerator::startParamList); }
+    void endParamList() 
+    { forall(&OutputGenerator::endParamList); }
     void endDescTitle() 
     { forall(&OutputGenerator::endDescTitle); }
     void writeDescItem() 
     { forall(&OutputGenerator::writeDescItem); }
-    void endDescList() 
-    { forall(&OutputGenerator::endDescList); }
     void startIndent() 
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 

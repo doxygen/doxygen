@@ -1177,6 +1177,11 @@ class TranslatorCzech : public Translator
     {
       return Decode("Dokumentace balíku");
     }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return Decode("Hodnota:");
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

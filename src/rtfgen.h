@@ -163,9 +163,11 @@ class RTFGenerator : public OutputGenerator
     void startMemberDescription();
     void endMemberDescription();
     void startDescList();
+    void endDescList();
+    void startParamList() { startDescList(); }
+    void endParamList() { endDescList(); }
     void endDescTitle();
     void writeDescItem();
-    void endDescList();
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
     void writeSectionRef(const char *,const char *,const char *,const char *);

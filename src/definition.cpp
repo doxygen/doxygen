@@ -141,7 +141,7 @@ void Definition::setBriefDescription(const char *b)
 }
 
 /*! Reads a fragment of code from file \a fileName starting at 
- * line \a startLine and ending at line \a endLine. The fragment is
+ * line \a startLine and ending at line \a endLine (inclusive). The fragment is
  * stored in \a result. If FALSE is returned the code fragment could not be
  * found.
  *
@@ -201,10 +201,15 @@ static bool readCodeFragment(const char *fileName,
       }
       if (found) 
       {
-        // fill the line with spaces until the right column
-        QCString spaces;
-        spaces.fill(' ',col);
-        result+=spaces;
+        // For code with more than one line,
+        // fill the line with spaces until we are at the right column
+        // so that the opening brace lines up with the closing brace
+        if (endLine!=startLine)
+        {
+          QCString spaces;
+          spaces.fill(' ',col);
+          result+=spaces;
+        }
         // copy until end of line
         result+=c;
         if (c==':') result+=cn;
@@ -221,15 +226,16 @@ static bool readCodeFragment(const char *fileName,
           } while (size_read == (maxLineLength-1));
 
           lineNr++; 
-        } while (lineNr<endLine && !f.atEnd());
+        } while (lineNr<=endLine && !f.atEnd());
 
-        int charIndex = result.findRev('}');
-        if (charIndex > 0) 
+        // strip stuff after closing bracket
+        int newLineIndex = result.findRev('\n');
+        int braceIndex   = result.findRev('}');
+        if (braceIndex > newLineIndex) 
         {
-          result.truncate(charIndex+1);
-          result+='\n';
+          result.truncate(braceIndex+1);
         }
-        endLine=lineNr;
+        endLine=lineNr-1;
         return TRUE;
       }
     }

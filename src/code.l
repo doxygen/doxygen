@@ -809,7 +809,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (!g_insideTemplate) 
 					    BEGIN( ClassName ); 
 					}
-<ReadInclude>[a-z_A-Z0-9.]+(("/"[a-z_A-Z0-9.]+)*)/(">"|"\"")  {
+<ReadInclude>[^\n\"\>]+/(">"|"\"")  	{
 					  //FileInfo *f;
 					  bool ambig;
                                           FileDef *fd;

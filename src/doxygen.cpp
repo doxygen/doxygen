@@ -6405,12 +6405,6 @@ void generateOutput()
     writeGraphicalClassHierarchy(*outputList);
   }
 
-  //if (Config::generateXML) 
-  //{
-  //  msg("Generating XML output\n");
-  //  generateXML();
-  //}
-
   if (Doxygen::formulaList.count()>0 && Config::generateHtml)
   {
     msg("Generating bitmaps for formulas in HTML...\n");
@@ -6439,8 +6433,7 @@ void generateOutput()
     delete tag;
   }
 
-
-  if (Config::generateHtml) removeDoxFont(Config::htmlOutputDir);
-  if (Config::generateRTF)  removeDoxFont(Config::rtfOutputDir);
+  if (Config::generateHtml && Config::dotCleanUp) removeDoxFont(Config::htmlOutputDir);
+  if (Config::generateRTF && Config::dotCleanUp)  removeDoxFont(Config::rtfOutputDir);
 }
 
