@@ -38,7 +38,6 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   fileList = new FileList;
   classSDict = new ClassSDict(257);
   groupList = new GroupList;
-  parentGroupList = new GroupList;
   namespaceList = new NamespaceList;
   pageDict = new PageSDict(257);
   exampleDict = new PageSDict(257);
@@ -72,7 +71,6 @@ GroupDef::~GroupDef()
   delete fileList;
   delete classSDict;
   delete groupList;
-  delete parentGroupList;
   delete namespaceList;
   delete pageDict;
   delete exampleDict;
@@ -134,7 +132,7 @@ void GroupDef::addNamespace(const NamespaceDef *def)
 void GroupDef::addPage(PageInfo *def)
 {
   pageDict->append(def->name,def);
-  def->inGroup = this;
+  def->makePartOfGroup(this);
 }
 
 void GroupDef::addExample(const PageInfo *def)
@@ -316,19 +314,10 @@ void GroupDef::addGroup(const GroupDef *def)
   groupList->append(def);
 }
 
-void GroupDef::addParentGroup(const GroupDef *def)
-{
-  //if (Config_getBool("SORT_MEMBER_DOCS"))
-  //  parentGroupList->inSort(def);
-  //else
-  parentGroupList->append(def);
-}
-
 bool GroupDef::isASubGroup() const
 {
-  return parentGroupList->count()!=0;
+  return m_partOfGroups && m_partOfGroups->count()!=0;
 }
-
 
 int GroupDef::countMembers() const
 {
@@ -354,6 +343,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
 
   //brief=brief.stripWhiteSpace();
@@ -379,7 +369,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"group\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
   }
   
   ol.startMemberSections();
@@ -597,6 +587,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addClass(cd);
+      cd->makePartOfGroup(gd);
       //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
     }
   }
@@ -614,6 +605,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addNamespace(nd);
+      nd->makePartOfGroup(gd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
     }
   }
@@ -630,7 +622,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
 	!gd->containsGroup(subGroup) )
     {
       gd->addGroup(subGroup);
-      subGroup->addParentGroup(gd);
+      subGroup->makePartOfGroup(gd);
     }
   }
 }
@@ -681,7 +673,9 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       // - the new one has a higher priority
       // - the new entry has the same priority, but with docs where the old one had no docs
       if( md->getGroupPri() < pri )
+      {
 	  moveit = TRUE;
+      }
       else
       {
 	  if( md->getGroupPri() == pri )
@@ -731,6 +725,7 @@ void addExampleToGroups(Entry *root,PageInfo *eg)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addExample(eg);
+      eg->makePartOfGroup(gd);
       //printf("Example %s: in group %s\n",eg->name().data(),s->data());
     }
   }

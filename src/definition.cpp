@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
@@ -27,6 +27,7 @@
 #include "doc.h"
 #include "code.h"
 #include "util.h"
+#include "groupdef.h"
 
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
@@ -50,6 +51,7 @@ Definition::Definition(const char *df,int dl,
   m_testId=0;
   m_bugId=0;
   m_outerScope=Doxygen::globalScope;
+  m_partOfGroups=0;
 }
 
 Definition::~Definition()
@@ -57,8 +59,8 @@ Definition::~Definition()
   delete m_sectionDict;
   delete m_sourceRefByDict;
   delete m_sourceRefsDict;
+  delete m_partOfGroups;
 }
-
 
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 {
@@ -543,4 +545,11 @@ void Definition::setBodySegment(int bls,int ble)
   m_startBodyLine=bls; 
   m_endBodyLine=ble; 
 }
+
+void Definition::makePartOfGroup(GroupDef *gd)
+{
+  if (m_partOfGroups==0) m_partOfGroups = new GroupList;
+  m_partOfGroups->append(gd);
+}
+
 

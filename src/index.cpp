@@ -181,11 +181,11 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   if (!compact) ol.writeListItem();
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
-    ol.startQuickIndexItem(extLink,"main.html");
+    ol.startQuickIndexItem(extLink,"main"+htmlFileExtension);
   }
   else
   {
-    ol.startQuickIndexItem(extLink,"index.html");
+    ol.startQuickIndexItem(extLink,"index"+htmlFileExtension);
   }
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
@@ -193,28 +193,28 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   if (documentedPackages>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"packages.html");
+    ol.startQuickIndexItem(extLink,"packages"+htmlFileExtension);
     parseText(ol,theTranslator->trPackages());
     ol.endQuickIndexItem();
   }
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"modules.html");
+    ol.startQuickIndexItem(extLink,"modules"+htmlFileExtension);
     parseText(ol,theTranslator->trModules());
     ol.endQuickIndexItem();
   } 
   if (documentedNamespaces>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespaces.html");
+    ol.startQuickIndexItem(extLink,"namespaces"+htmlFileExtension);
     parseText(ol,theTranslator->trNamespaceList());
     ol.endQuickIndexItem();
   }
   if (hierarchyClasses>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"hierarchy.html");
+    ol.startQuickIndexItem(extLink,"hierarchy"+htmlFileExtension);
     parseText(ol,theTranslator->trClassHierarchy());
     ol.endQuickIndexItem();
   } 
@@ -223,68 +223,68 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
     if (Config_getBool("ALPHABETICAL_INDEX"))
     {
       if (!compact) ol.writeListItem();
-      ol.startQuickIndexItem(extLink,"classes.html");
+      ol.startQuickIndexItem(extLink,"classes"+htmlFileExtension);
       parseText(ol,theTranslator->trAlphabeticalList());
       ol.endQuickIndexItem();
     }
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"annotated.html");
+    ol.startQuickIndexItem(extLink,"annotated"+htmlFileExtension);
     parseText(ol,theTranslator->trCompoundList());
     ol.endQuickIndexItem();
   } 
   if (documentedHtmlFiles>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"files.html");
+    ol.startQuickIndexItem(extLink,"files"+htmlFileExtension);
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
   //if (documentedIncludeFiles>0 && Config_getBool("VERBATIM_HEADERS"))
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"headers.html");
+  //  ol.startQuickIndexItem(extLink,"headers"+htmlFileExtension);
   //  parseText(ol,theTranslator->trHeaderFiles());
   //  ol.endQuickIndexItem();
   //}
   //if (Config_getBool("SOURCE_BROWSER")) 
   //{
   //  if (!compact) ol.writeListItem();
-  //  ol.startQuickIndexItem(extLink,"sources.html");
+  //  ol.startQuickIndexItem(extLink,"sources"+htmlFileExtension);
   //  parseText(ol,theTranslator->trSources());
   //  ol.endQuickIndexItem();
   //}
   if (documentedNamespaceMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"namespacemembers.html");
+    ol.startQuickIndexItem(extLink,"namespacemembers"+htmlFileExtension);
     parseText(ol,theTranslator->trNamespaceMembers());
     ol.endQuickIndexItem();
   }
   if (documentedMembers>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"functions.html");
+    ol.startQuickIndexItem(extLink,"functions"+htmlFileExtension);
     parseText(ol,theTranslator->trCompoundMembers());
     ol.endQuickIndexItem();
   } 
   if (documentedFunctions>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"globals.html");
+    ol.startQuickIndexItem(extLink,"globals"+htmlFileExtension);
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
   if (indexedPages>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"pages.html");
+    ol.startQuickIndexItem(extLink,"pages"+htmlFileExtension);
     parseText(ol,theTranslator->trRelatedPages());
     ol.endQuickIndexItem();
   } 
   if (Doxygen::exampleSDict->count()>0)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"examples.html");
+    ol.startQuickIndexItem(extLink,"examples"+htmlFileExtension);
     parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
@@ -683,7 +683,10 @@ void writeHierarchicalIndex(OutputList &ol)
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) 
+  {
+    title.prepend(Config_getString("PROJECT_NAME")+" ");
+  }
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
@@ -714,7 +717,6 @@ void writeHierarchicalIndex(OutputList &ol)
     ol.enable(OutputGenerator::RTF);
   }
   parseText(ol,theTranslator->trClassHierarchyDescription());
-  //ol.newParagraph();
   ol.endTextBlock();
   writeClassHierarchy(ol);
   endFile(ol);
@@ -1388,7 +1390,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"classes.html",0,"Alphabetical index");
+  startFile(ol,"classes"+htmlFileExtension,0,"Alphabetical index");
   startTitle(ol,0);
   parseText(ol,Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
@@ -2060,7 +2062,7 @@ void countRelatedPages(int &docPages,int &indexPages)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pi->getGroupDef() && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       indexPages++;
       if (!pi->isReference()) docPages++;
@@ -2125,7 +2127,7 @@ void writePageIndex(OutputList &ol)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pi->getGroupDef() && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       QCString pageName,pageTitle;
 

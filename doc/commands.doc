@@ -137,6 +137,7 @@ documentation:
 <li> \refitem cmdat \@
 <li> \refitem cmdbackslash \\
 <li> \refitem cmdamp \&
+<li> \refitem cmdtilde \~
 <li> \refitem cmdlt \\<
 <li> \refitem cmdgt \\>
 <li> \refitem cmdhash \#
@@ -1330,6 +1331,7 @@ ALIASES  = "english=\if english" \
   \addindex \b
   Displays the argument \<word\> using a bold font.
   Equivalent to \<b\>word\</b\>.
+  To put multiple words in bold use \<b\>multiple words\</b\>.
   
 <hr>
 \subsection cmdc \c <word>
@@ -1348,6 +1350,7 @@ ALIASES  = "english=\if english" \
      ... This function returns \c void and not \c int ...
 
   Equivalent to \ref cmdp "\\p"
+  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
 
 <hr>
 \subsection cmdcode \code
@@ -1393,7 +1396,8 @@ ALIASES  = "english=\if english" \
   will result in the following text:<br><br>
   ... this is a \e really good example ...
 
-  Equivalent to \ref cmdem "\\em"
+  Equivalent to \ref cmdem "\\em". 
+  To emphasis multiple words use \<em\>multiple words\</em\>.
 
 <hr>
 \subsection cmdem \em <word>
@@ -1640,6 +1644,23 @@ ALIASES  = "english=\if english" \
   This command writes an at-sign (@) to the HTML and 
   \f$\mbox{\LaTeX}\f$ output. The at-sign has to be escaped in some cases 
   because doxygen uses it to detect JavaDoc commands.
+
+<hr>
+\subsection cmdtilde \~[LanguageId]
+  \addindex \~
+  This command enables/disables a language specific filter. This can be
+  used to put documentation for different language into one comment block
+  and use the \c OUTPUT_LANGUAGE tag to filter out only a specific language.
+  Use \\~language_id to enable output for a specific language only and
+  \\~ to enable output for all languages (this is also the default mode).
+
+  Example:
+\verbatim
+/*! \~english This is english \~dutch Dit is Nederlands \~german Dieses ist
+    deutsch. \~ output for all languages.
+ */
+\endverbatim
+   
 
 <hr>
 \subsection cmdamp \&

@@ -182,6 +182,8 @@ static void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
 
 const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
+QCString htmlFileExtension;
+int htmlFileExtensionLength;
 
 //----------------------------------------------------------------------------
 
@@ -2837,7 +2839,7 @@ static bool findClassRelation(
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileName);
-          baseClass->setOuterScope(fd);
+          baseClass->setOuterScope(Doxygen::globalScope);
           return TRUE;
         }
         else
@@ -3717,7 +3719,7 @@ static void findMember(Entry *root,
   
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
   // rebuild the function declaration (needed to get the scope right).
-  if (!scopeName.isEmpty() && /*!isRelated &&*/ !isFriend && !Config_getBool("HIDE_SCOPE_NAMES"))
+  if (!scopeName.isEmpty() && !isRelated && !isFriend && !Config_getBool("HIDE_SCOPE_NAMES"))
   {
     if (!funcType.isEmpty())
     {
@@ -4000,8 +4002,13 @@ static void findMember(Entry *root,
                 {
                   warn_cont("  template %s\n",tempArgListToString(md->templateArguments()).data());
                 }
-                warn_cont("  %s %s::%s%s\n",
-                    md->typeString(),cd->name().data(),
+                warn_cont("  ");
+                if (md->typeString()) 
+                {
+                  warn_cont("%s",md->typeString());
+                }
+                warn_cont("%s::%s%s\n",
+                    cd->name().data(),
                     md->name().data(),md->argsString());
               }
             }
@@ -4090,6 +4097,16 @@ static void findMember(Entry *root,
       {
         bool newMember=TRUE; // assume we have a new member
         bool newMemberName=FALSE; 
+        bool isDefine=FALSE;
+        {
+          MemberName *mn = Doxygen::functionNameSDict[funcName];
+          MemberDef *md = mn->first();
+          while (md && !isDefine)
+          {
+            isDefine = isDefine || md->isDefine();
+            md = mn->next();
+          }
+        }
         if ((mn=Doxygen::memberNameSDict[funcName])==0)
         {
           mn=new MemberName(funcName);
@@ -4115,7 +4132,9 @@ static void findMember(Entry *root,
         if (newMember) // need to create a new member
         {
           MemberDef::MemberType mtype;
-          if (root->mtype==Signal)  
+          if (isDefine)
+            mtype=MemberDef::Define;
+          else if (root->mtype==Signal)  
             mtype=MemberDef::Signal;
           else if (root->mtype==Slot) 
             mtype=MemberDef::Slot;
@@ -5419,9 +5438,9 @@ static void resolveUserReferences()
     // have to adjust the link file name to point to the group.
     if (!si->fileName.isEmpty() && 
         (pi=Doxygen::pageSDict->find(si->fileName)) &&
-        pi->inGroup)
+        pi->getGroupDef())
     {
-      si->fileName=pi->inGroup->getOutputFileBase().copy();
+      si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
     }
 
 
@@ -5468,7 +5487,7 @@ static void generatePageDocs()
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup && !pi->isReference())
+    if (!pi->getGroupDef() && !pi->isReference())
     {
       msg("Generating docs for page %s...\n",pi->name.data());
       //outputList->disable(OutputGenerator::Man);
@@ -5771,9 +5790,9 @@ static void generateSearchIndex()
     //outputList->generateExternalIndex();
     outputList->pushGeneratorState();
     outputList->disableAllBut(OutputGenerator::Html);
-    startFile(*outputList,"header.html",0,"Search Engine",TRUE);
+    startFile(*outputList,"header"+htmlFileExtension,0,"Search Engine",TRUE);
     outputList->endPlainFile();
-    outputList->startPlainFile("footer.html");
+    outputList->startPlainFile("footer"+htmlFileExtension);
     endFile(*outputList,TRUE);
     outputList->popGeneratorState();
   }
@@ -5818,6 +5837,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
+    Config::instance()->init();
     Config::instance()->writeTemplate(&f,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -6611,6 +6631,9 @@ void readConfiguration(int argc, char **argv)
     s=includePath.next();
   }
 
+  /* Set the global html file extension. */ 
+  htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
+  htmlFileExtensionLength = htmlFileExtension.length();
 }
 
 void parseInput()

@@ -401,7 +401,7 @@ static QCString stripKnownExtensions(const char *text)
 {
   QCString result=text;
   if (result.right(4)==".tex")       result=result.left(result.length()-4);
-  else if (result.right(5)==".html") result=result.left(result.length()-5);
+  else if (result.right(htmlFileExtensionLength)==htmlFileExtension) result=result.left(result.length()-htmlFileExtensionLength);
   //printf("%s stripKnowExtensions(%s)\n",result.data(),text); 
   return result;
 }
@@ -686,26 +686,6 @@ static void forceEndItemList()
 
 static void endArgumentList()
 {
-#if 0
-  IndentInfo *info;
-  while ((info=listIndentStack.pop())!=0)
-  {
-    delete info;
-  }
-  while (!currentListIndent.isEmpty())
-  {
-    char c=*currentListIndent.pop();
-    switch(c)
-    {
-       case 'O': outDoc->endEnumList(); break;
-       case 'U': outDoc->endItemList(); break;
-       case 'D':
-	if (!inBlock()) outDoc->endDescription(); 
-	break;
-    }
-  }
-  insideItemList=FALSE;
-#endif
   if (insideArgumentList)
   {
     insideArgumentList=FALSE;
@@ -897,18 +877,20 @@ static void checkArgName(const QCString &name)
     Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
-      if (name==a->name) 
+      QCString argName = memberDef->isDefine() ? a->type : a->name;
+      if (aName==argName) 
       {
 	paramsFound.insert(name,(void *)(0x8));
 	return;
       }
     }
+    printf("member type=%d\n",memberDef->memberType());
     QCString scope=memberDef->getScopeString();
     if (!scope.isEmpty()) scope+="::"; else scope="";
     warn(memberDef->docFile(),memberDef->docLine(),
 	"Warning: argument `%s' of command @param "
 	"is not found in the argument list of %s%s%s",
-	name.data(),scope.data(),memberDef->name().data(),
+	aName.data(),scope.data(),memberDef->name().data(),
 	argListToString(al).data()
        );
     p=i+l;
@@ -1053,6 +1035,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocRtfImageOpt
 %x	DocDotFile
 %x	DocDotFileOpt
+%x	DocSkipLanguage
 
 %%
 
@@ -1171,19 +1154,35 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  char c[2];c[0]=*yytext;c[1]='\0';
   					  outDoc->codify(c);
   					}
+<DocScan>{CMD}"~"[a-z_A-Z0-9]*/{BN}	{
+  					  if (yytext[2])
+					  {
+					    if (theTranslator->idLanguage()!=&yytext[2]) // not current language
+					    {
+					      BEGIN(DocSkipLanguage);
+					    }
+					  }
+  					}
+<DocSkipLanguage>{CMD}"~"[a-z_A-Z0-9]*/{BN} {
+  					  if (yytext[2])
+					  {
+					    if (theTranslator->idLanguage()==&yytext[2])
+					    {
+					      BEGIN( DocScan ); // current language => include
+					    }
+					  }
+					  else // back to "all language" processing.
+					  {
+					    BEGIN( DocScan );
+					  }
+  					}
+<DocSkipLanguage>[^\\\@\~\n]+
 <DocScan>{CMD}"internal"/{BN}	        { 
-					  //if (!Config_getBool("INTERNAL_DOCS"))
-					  //{
-  					  //  BEGIN( DocInternal ); 
-					  //}
-					  //else
-					  //{
-					    outDoc->newParagraph();
-					    outDoc->startBold();
-					    scanString(theTranslator->trForInternalUseOnly()+"\n");
-					    outDoc->endBold();
-					    outDoc->newParagraph();
-					  //}
+					  outDoc->newParagraph();
+					  outDoc->startBold();
+					  scanString(theTranslator->trForInternalUseOnly()+"\n");
+					  outDoc->endBold();
+					  outDoc->newParagraph();
 					}
 <DocScan>"\\reimp"/{BN}			{
   					  outDoc->newParagraph();
@@ -1269,6 +1268,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  bool b = inBlock();
 					  if (!title.isEmpty())
 					  {
+  					    if (insideItemList)
+					    {
+					      forceEndItemList();
+					    }
   				            endArgumentList();
 					    if (b) endBlock();  
 					    inParBlock=TRUE;
@@ -1285,6 +1288,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}"warning"{BSEP}		{ 
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inWarningBlock)
 					  {
@@ -1302,6 +1309,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 				        }
 <DocScan>{CMD}"remark"[s]?{BSEP}	{ 
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inRemarkBlock)
 					  {
@@ -1319,6 +1330,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 				        }
 <DocScan>{CMD}"attention"{BSEP}		{ 
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inAttentionBlock)
 					  {
@@ -1336,6 +1351,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 				        }
 <DocScan>{CMD}"note"[s]?{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inNoteBlock)
 					  {
@@ -1353,6 +1372,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"pre"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inPreBlock)
 					  {
@@ -1370,6 +1393,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"post"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inPostBlock)
 					  {
@@ -1387,6 +1414,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"invariant"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inInvarBlock)
 					  {
@@ -1404,6 +1435,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"version"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inVersionBlock)
 					  {
@@ -1421,6 +1456,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"since"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inSinceBlock)
 					  {
@@ -1438,6 +1477,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"date"{BSEP}		{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inDateBlock)
 					  {
@@ -1462,6 +1505,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    bool ok; int num = numStr.toUInt(&ok);
 					    RefItem *item = todoList.getRefItem(num);
 					    ASSERT(item!=0);
+  					    if (insideItemList)
+					    {
+					      forceEndItemList();
+					    }
 					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
@@ -1482,6 +1529,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    bool ok; int num = numStr.toUInt(&ok);
 					    RefItem *item = testList.getRefItem(num);
 					    ASSERT(item!=0);
+  					    if (insideItemList)
+					    {
+					      forceEndItemList();
+					    }
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
@@ -1502,6 +1553,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    bool ok; int num = numStr.toUInt(&ok);
 					    RefItem *item = bugList.getRefItem(num);
 					    ASSERT(item!=0);
+  					    if (insideItemList)
+					    {
+					      forceEndItemList();
+					    }
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("P");
@@ -1515,6 +1570,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}"deprecated"{BSEP}	{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   					  endArgumentList();
 					  if (!inDeprecatedBlock)
 					  {
@@ -1537,6 +1596,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  tagName=tagName.left(i);
 					  QCString tagText=&yytext[i+2];
 					  tagText=tagText.left(tagText.length()-1);
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
 					  if (inBlock()) endBlock();
 					  currentListIndent.push("P");
@@ -1549,6 +1612,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  currentListIndent.pop();
   					}
 <DocScan>{CMD}"author"[s]?{BSEP}	{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inAuthorBlock)
 					  {
@@ -1567,6 +1634,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}("return"([s])?|"result"){BSEP}	{
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inReturnBlock)
 					  {
@@ -1580,6 +1651,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>{CMD}("sa"|"see"){BSEP}        { 
+  					  if (insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inSeeBlock)
 					  {
@@ -2701,7 +2776,8 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
       bool found=FALSE;
       for (ali.toFirst();(a=ali.current());++ali)
       {
-	if (!a->name.isEmpty() && paramsFound.find(a->name)==0) 
+        QCString argName = memberDef->isDefine() ? a->type : a->name;
+	if (!argName.isEmpty() && paramsFound.find(argName)==0) 
 	{
 	   found = TRUE;
 	   break;

@@ -176,6 +176,7 @@ void addRelatedPage(const char *name,const QCString &ptitle,
                            TagInfo *tagInfo=0
                           );
 QCString escapeCharsInString(const char *name,bool allowDots);
+void addGroupListToTitle(OutputList &ol,Definition *d);
 
 #endif
 

@@ -116,6 +116,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trFileReference(docname));
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),docName());
   //ol.newParagraph();
   
@@ -124,7 +125,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << htmlFileExtension << "</filename>" << endl;
   }
   
   ol.startTextBlock();
@@ -256,9 +257,9 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   //ol.disableAllBut(OutputGenerator::Html);
   //ol.writeString((QCString)"<p>Interface collaboration diagram for "
-  //               "<a href=\"usage_intf_graph_"+name()+".html\">here</a>");
+  //               "<a href=\"usage_intf_graph_"+name()+htmlFileExtension+"\">here</a>");
   //ol.writeString((QCString)"<p>Include dependency diagram for "+fn+" can be found "+
-  //               "<a href=\""+diskname+"_incldep.html\">here</a>.");
+  //               "<a href=\""+diskname+"_incldep+htmlFileExtension+"\">here</a>.");
   //ol.enableAll();
 
   ol.endTextBlock();

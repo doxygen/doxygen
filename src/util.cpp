@@ -2603,7 +2603,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   }
   else if ((pi=Doxygen::pageSDict->find(linkRef))) // link to a page
   {
-    GroupDef *gd = pi->inGroup;
+    GroupDef *gd = pi->getGroupDef();
     if (gd)
     {
       SectionInfo *si=0;
@@ -3467,8 +3467,8 @@ void addRelatedPage(const char *name,const QCString &ptitle,
     QCString baseName=name;
     if (baseName.right(4)==".tex") 
       baseName=baseName.left(baseName.length()-4);
-    else if (baseName.right(5)==".html")
-      baseName=baseName.left(baseName.length()-5);
+    else if (baseName.right(htmlFileExtensionLength)==htmlFileExtension)
+      baseName=baseName.left(baseName.length()-htmlFileExtensionLength);
     
     QCString title=ptitle.stripWhiteSpace();
     pi=new PageInfo(fileName,startLine,baseName,doc,title);
@@ -3504,9 +3504,9 @@ void addRelatedPage(const char *name,const QCString &ptitle,
       {
         si->fileName=gd->getOutputFileBase();
       }
-      else if (pi->inGroup)
+      else if (pi->getGroupDef())
       {
-        si->fileName=pi->inGroup->getOutputFileBase().copy();
+        si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
       }
       else
       {
@@ -3621,4 +3621,27 @@ void addRefItem(int todoId,int testId,int bugId,const char *prefix,
   }
 }
 
+void addGroupListToTitle(OutputList &ol,Definition *d)
+{
+  if (d->partOfGroups()) // write list of group to which this definition belongs
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.lineBreak();
+    ol.startSmall();
+    ol.docify("[");
+    GroupListIterator gli(*d->partOfGroups());
+    GroupDef *gd;
+    bool first=TRUE;
+    for (gli.toFirst();(gd=gli.current());++gli)
+    {
+      if (!first) { ol.docify(","); ol.writeNonBreakableSpace(1); } else first=FALSE; 
+      ol.writeObjectLink(gd->getReference(),
+                         gd->getOutputFileBase(),0,gd->groupTitle());
+    }
+    ol.docify("]");
+    ol.endSmall();
+    ol.popGeneratorState();
+  }
+}
 

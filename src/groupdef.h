@@ -118,7 +118,7 @@ class GroupDef : public Definition
     ClassSDict *classSDict;             // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
     GroupList *groupList;              // list of sub groups.
-    GroupList *parentGroupList;        // list of parent groups.
+    //GroupList *parentGroupList;        // list of parent groups.
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
 
@@ -137,6 +137,13 @@ class GroupSDict : public SDict<GroupDef>
 
 class GroupList : public QList<GroupDef>
 {
+};
+
+class GroupListIterator : public QListIterator<GroupDef>
+{
+  public:
+    GroupListIterator(const GroupList &l) : QListIterator<GroupDef>(l) {}
+    virtual ~GroupListIterator() {}
 };
 
 void addClassToGroups(Entry *root,ClassDef *cd);
