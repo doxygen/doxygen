@@ -21,6 +21,8 @@ CompoundHandler::CompoundHandler(IBaseHandler *parent)
   : m_parent(parent), m_brief(0), m_detailed(0)
 {
   m_superClasses.setAutoDelete(TRUE);
+  m_subClasses.setAutoDelete(TRUE);
+  m_sections.setAutoDelete(TRUE);
 
   addEndHandler("compounddef",this,&CompoundHandler::endCompound);
 
@@ -42,6 +44,8 @@ CompoundHandler::CompoundHandler(IBaseHandler *parent)
 
 CompoundHandler::~CompoundHandler()
 {
+  delete m_brief;
+  delete m_detailed;
 }
 
 void CompoundHandler::startSection(const QXmlAttributes& attrib)

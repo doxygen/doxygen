@@ -329,11 +329,16 @@ class XMLGenerator : public OutputDocInterface
       endNestedPar();
       m_t << "</simplesect>";
     }
-    void startParamList()      
+    void startParamList(ParamListTypes t)      
     { 
-      m_t << "<parameterlist><title>"; // non DocBook
-                                // TODO: what kind of list
-                                // param, retval, exception
+      QCString kind;
+      switch(t)
+      {
+        case Param:       kind="param";     break;
+        case RetVal:      kind="retval";    break;
+        case Exception:   kind="exception"; break;
+      }
+      m_t << "<parameterlist kind=\"" << kind << "\"><title>"; // non DocBook
       m_inParamList = TRUE;
     }
     void endParamList()        

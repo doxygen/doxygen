@@ -67,7 +67,7 @@
     if ( Config("moc") ) {
 	$moc_aware = 1;
     }
-    Project('TMAKE_LIBS += $$LIBS');
+    Project('TMAKE_LIBS = $$LIBS $$TMAKE_LIBS');
     if ( !Project("TMAKE_RUN_CC") ) {
 	Project('TMAKE_RUN_CC = $(CC) -c $(CFLAGS) $(INCPATH) -o $obj $src');
     }

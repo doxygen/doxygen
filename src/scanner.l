@@ -419,7 +419,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim") 
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -468,6 +468,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	Using
 %x	UsingDirective
 %x	NameSpaceDocArg1
+%x	PackageDocArg1
 %x	SkipCurly
 %x	SkipCurlyCpp
 %x	SkipCurlyEndDoc
@@ -1086,21 +1087,12 @@ TITLE     [tT][iI][tT][lL][eE]
   					  *currentTemplateSpec+=*yytext; 
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
-  					  // correct for misinterpreting return type as scope name: example: A<T> func()
-                                          //printf("YY_START=%d current->tArgList=%p current->mtArgList=%p\n",
-					  //       YY_START,current->tArgList,current->mtArgList);
-  					  //if (YY_START==FindMembers /*&& current->tArgList*/ && current->mtArgList==0)
-					  //{
-					  //  current->mtArgList=current->tArgList;
-					  //  current->tArgList=0;
-					  //  current->scopeSpec.resize(0);
-					  //}
 					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
 					  }
-					  else if (insideIDL && yyleng==6 && strcmp(yytext,"import")==0)
+					  else if ((insideIDL || insideJava) && yyleng==6 && strcmp(yytext,"import")==0)
 					  {
 					    BEGIN(NextSemi);
 					  }
@@ -2511,6 +2503,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <Specialization>{BN}+			{ lineCount(); *specName +=' '; }
 <Specialization>"<<"			{ *specName += yytext; }
 <Specialization>">>"			{ *specName += yytext; }
+<Specialization>"typename"{BN}+		{ lineCount(); }
 <Specialization>.			{
   					  *specName += *yytext;
   					}
@@ -2766,6 +2759,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr;
   					  BEGIN( NameSpaceDocArg1 );
   					}
+<Doc,JavaDoc>{B}*{CMD}"package"{B}+	{
+  					  current->section = Entry::PACKAGEDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+  					  BEGIN( PackageDocArg1 );
+  					}
 <Doc,JavaDoc>{B}*{CMD}"class"{B}+  	{
   					  current->section = Entry::CLASSDOC_SEC;
 					  current->fileName = yyFileName;
@@ -2983,6 +2982,18 @@ TITLE     [tT][iI][tT][lL][eE]
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
 					       "\\namespace."
+                                              );
+  					  yyLineNr++;
+  					}
+<PackageDocArg1>{SCOPENAME}		{
+  					  current->name = yytext;
+					  newDocState();
+  					}
+<PackageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<PackageDocArg1>"\n"			{
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\package."
                                               );
   					  yyLineNr++;
   					}

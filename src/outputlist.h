@@ -310,8 +310,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDescList); }
     void endDescList() 
     { forall(&OutputGenerator::endDescList); }
-    void startParamList() 
-    { forall(&OutputGenerator::startParamList); }
+    void startParamList(ParamListTypes t) 
+    { forall(&OutputGenerator::startParamList,t); }
     void endParamList() 
     { forall(&OutputGenerator::endParamList); }
     void endDescTitle() 
@@ -455,6 +455,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(DotClassGraph &);
     FORALLPROTO1(DotInclDepGraph &);
     FORALLPROTO1(DotGfxHierarchyTable &);
+    FORALLPROTO1(ParamListTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);

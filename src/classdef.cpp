@@ -98,7 +98,7 @@ ClassDef::ClassDef(
   //  m_scopelessName=name().right(name().length()-i-2);
   //}
   m_subGrouping=TRUE;
-  m_isTemplBaseClass=-1;
+  //m_isTemplBaseClass=-1;
   m_templateInstances = 0;
   m_templateMaster =0;
   m_templBaseClassNames = 0;
@@ -1408,13 +1408,34 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
   }
 }
 
-
+/*! Returns \c TRUE iff this class or a class inheriting from this class
+ *  is \e not defined in an external tag file. 
+ */
 bool ClassDef::hasNonReferenceSuperClass()
 {
-  bool found=!isReference();
+  bool found=!isReference(); 
+  if (found) return TRUE; // we're done if this class is not a reference
   BaseClassListIterator bcli(*m_inheritedBy);
-  for ( ; bcli.current() && !found ; ++bcli )
-    found=found || bcli.current()->classDef->hasNonReferenceSuperClass();
+  for ( ; bcli.current() && !found ; ++bcli ) // for each super class
+  {
+    ClassDef *bcd=bcli.current()->classDef;
+    // recurse into the super class branch
+    found = found || bcd->hasNonReferenceSuperClass(); 
+    if (!found)
+    {
+      // look for template instances that might have non-reference super classes
+      QDict<ClassDef> *cil = bcd->getTemplateInstances();
+      if (cil)
+      {
+        QDictIterator<ClassDef> tidi(*cil);
+        for ( ; tidi.current() && !found ; ++tidi) // for each template instance
+        {
+          // recurse into the template instance branch
+          found = found || tidi.current()->hasNonReferenceSuperClass();
+        }
+      }
+    }
+  }
   return found;
 }
 
@@ -1512,28 +1533,50 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 /*! a link to this class is possible within this project */
 bool ClassDef::isLinkableInProject() const
 { 
-  return !name().isEmpty() &&    /* no name */
-         m_isTemplBaseClass==-1 &&  /* template base class */
-         name().find('@')==-1 && /* anonymous compound */
-         (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
-         hasDocumentation() &&   /* documented */ 
-         !isReference();         /* not an external reference */
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkableInProject();
+  }
+  else
+  {
+    return !name().isEmpty() &&    /* no name */
+      //m_isTemplBaseClass==-1 &&  /* template base class */
+      name().find('@')==-1 && /* anonymous compound */
+      (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
+      hasDocumentation() &&   /* documented */ 
+      !isReference();         /* not an external reference */
+  }
 }
+
+bool ClassDef::isLinkable() const
+{
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkable();
+  }
+  else
+  {
+    return isLinkableInProject() || isReference();
+  }
+}
+
 
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
-{ return // show all classes or a subclass is visible
-    (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
-    // and not an annonymous compound
-    name().find('@')==-1 &&
-    // not an artifically introduced class
-    !m_artificial &&
-    // and not an inherited template argument
-    //m_isTemplBaseClass==-1 && 
-    // and not privately inherited
-    (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
-    // documented or show anyway or documentation is external 
-    (hasDocumentation() || !Config_getBool("HIDE_UNDOC_CLASSES") || isReference());
+{ 
+    return // show all classes or a subclass is visible
+      (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
+      // and not an annonymous compound
+      name().find('@')==-1 &&
+      // not an artifically introduced class
+      !m_artificial &&
+      // and not privately inherited
+      (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
+      // documented or shown anyway or documentation is external 
+      (hasDocumentation() || 
+       !Config_getBool("HIDE_UNDOC_CLASSES") || 
+       isReference()
+      );
 }
 
 bool ClassDef::hasDocumentation() const
@@ -1554,6 +1597,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
   for ( ; bcli.current() && !found ; ++bcli)
   {
     ClassDef *ccd=bcli.current()->classDef;
+    if (ccd->templateMaster()) ccd=ccd->templateMaster();
     //printf("isBaseClass() baseclass %s\n",ccd->name().data());
     if (ccd==bcd) 
       found=TRUE;
@@ -2212,6 +2256,18 @@ QCString ClassDef::getReference() const
   }
 }
 
+bool ClassDef::isReference() const
+{
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getReference();
+  }
+  else
+  {
+    return Definition::isReference();
+  }
+}
+
 void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
 {
   Definition *d=getOuterScope();
@@ -2273,4 +2329,23 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   return scName;
 }
 
-
+QCString ClassDef::className() const
+{
+  if (!m_className.isEmpty())
+  {
+    return m_className;
+  }
+  else
+  {
+    ClassDef *that = (ClassDef *)this; 
+    // m_className is a cache value, so we fake that this function is "const".
+    that->m_className=m_localName.copy();
+    Definition *p=getOuterScope();
+    while (p && p->definitionType()==TypeClass)
+    {
+      that->m_className.prepend(p->localName()+"::");
+      p=p->getOuterScope();
+    }
+    return m_className;
+  }
+};

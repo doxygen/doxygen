@@ -72,6 +72,7 @@ class ClassDef : public Definition
     QCString getFileBase() const;
     QCString getSourceFileBase() const; 
     QCString getReference() const;
+    bool isReference() const;
 
     bool hasDocumentation() const;
 
@@ -114,10 +115,7 @@ class ClassDef : public Definition
     /*! return TRUE iff a link to this class is possible (either within 
      *  this project, or as a cross-reference to another project).
      */
-    bool isLinkable() const
-    {
-      return isLinkableInProject() || isReference();
-    }
+    bool isLinkable() const;
 
     /*! the class is visible in a class diagram, or class hierarchy */
     bool isVisibleInHierarchy();
@@ -152,12 +150,6 @@ class ClassDef : public Definition
      *  inheritance tree.
      */
     bool isBaseClass(ClassDef *bcd);
-
-    /*! Is this an artificial class that is the template argument of
-     *  a class. If so the argument number is returned, otherwise -1 
-     *  is returned.
-     */
-    int isTemplateBaseClass() const { return m_isTemplBaseClass; }
 
     /*! Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
@@ -199,6 +191,11 @@ class ClassDef : public Definition
      *  class.
      */
     bool isAbstract() const { return m_isAbstract; }
+
+    /*! returns the name of the class including outer classes, but not
+     *  including namespaces.
+     */
+    QCString className() const;
 
     /* member lists by protection */
     MemberList pubMembers;
@@ -262,7 +259,6 @@ class ClassDef : public Definition
     void setProtection(Protection p) { m_prot=p; }
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
-    void setIsTemplateBaseClass(int num) { m_isTemplBaseClass = num; }
     void addUsedClass(ClassDef *cd,const char *accessName);
     //void initTemplateMapping();
     //void setTemplateArgumentMapping(const char *formal,const char *actual);
@@ -384,13 +380,6 @@ class ClassDef : public Definition
     UsesClassDict *m_usesImplClassDict;
     UsesClassDict *m_usesIntfClassDict;
 
-    /*! Is this a class that exists because of template class that 
-     *  inherited one of it's template arguments. If so that this
-     *  variable indicate the template argument number, otherwise
-     *  this is -1
-     */
-    int m_isTemplBaseClass;
-
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */ 
@@ -410,6 +399,8 @@ class ClassDef : public Definition
 
     /*! Is this an abstact class? */
     bool m_isAbstract;
+
+    QCString m_className;
 };
 
 /*! \brief Class that contains information about a usage relation. 

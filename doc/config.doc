@@ -171,6 +171,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
 <li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
+<li> \refitem cfg_template_relations TEMPLATE_RELATIONS
 <li> \refitem cfg_toc_expand TOC_EXPAND
 <li> \refitem cfg_treeview_width TREEVIEW_WIDTH
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
@@ -1148,6 +1149,12 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  will generate a graph for each documented class showing the direct and
  indirect implementation dependencies (inheritance, containment, and
  class references variables) of the class with other documented classes.
+
+\anchor cfg_template_relations
+<dt>\c TEMPLATE_RELATIONS <dd>
+ \addindex TEMPLATE_RELATIONS
+ If the \c TEMPLATE_RELATIONS and \c HAVE_DOT tags are set to \c YES then 
+ doxygen will show the relations between templates and their instances.
 
 \anchor cfg_include_graph
 <dt>\c INCLUDE_GRAPH <dd>

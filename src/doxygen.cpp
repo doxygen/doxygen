@@ -2527,7 +2527,7 @@ static void findUsedClassesForClass(Entry *root,
                   usedCd = new ClassDef(
                      masterCd->getDefFileName(),masterCd->getDefLine(),
                      usedName,ClassDef::Class);
-                  usedCd->setIsTemplateBaseClass(count);
+                  //usedCd->setIsTemplateBaseClass(count);
                   Doxygen::hiddenClasses.inSort(usedName,usedCd);
                 }
                 if (isArtificial) usedCd->setClassIsArtificial();
@@ -2599,36 +2599,43 @@ static void findBaseClassesForClass(
   BaseInfo *bi=0;
   for (bii.toFirst();(bi=bii.current());++bii)
   {
-    bool delTempNames=FALSE;
-    if (templateNames==0)
-    {
-      templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
-      delTempNames=TRUE;
-    }
-    BaseInfo tbi(bi->name,bi->prot,bi->virt);
-    if (actualArgs) // substitute the formal template arguments of the base class
-    {
-      tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
-    }
-
-    if (mode==DocumentedOnly)
-    {
-      // find a documented base class in the correct scope
-      if (!findClassRelation(root,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+    //printf("masterCd=%s bi->name=%s\n",masterCd->localName().data(),bi->name.data());
+    //if ( masterCd->localName()!=bi->name.left(masterCd->localName().length()) 
+    //     || bi->name.at(masterCd->localName().length())!='<'
+    //   ) // to avoid recursive lock-up in cases like 
+    //     // template<typename T> class A : public A<typename T::B>
+    //{
+      bool delTempNames=FALSE;
+      if (templateNames==0)
       {
-        // no documented base class -> try to find an undocumented one
-        findClassRelation(root,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
+        templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
+        delTempNames=TRUE;
       }
-    }
-    else if (mode==TemplateInstances)
-    {
-      findClassRelation(root,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
-    }
-    if (delTempNames)
-    {
-      delete templateNames;
-      templateNames=0;
-    }  
+      BaseInfo tbi(bi->name,bi->prot,bi->virt);
+      if (actualArgs) // substitute the formal template arguments of the base class
+      {
+        tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
+      }
+
+      if (mode==DocumentedOnly)
+      {
+        // find a documented base class in the correct scope
+        if (!findClassRelation(root,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+        {
+          // no documented base class -> try to find an undocumented one
+          findClassRelation(root,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
+        }
+      }
+      else if (mode==TemplateInstances)
+      {
+        findClassRelation(root,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
+      }
+      if (delTempNames)
+      {
+        delete templateNames;
+        templateNames=0;
+      }  
+    //}
   }
 }
 
@@ -2736,9 +2743,11 @@ static bool findClassRelation(
       //                     baseClass?baseClass->name().data():"<none>",
       //                     templSpec.data()
       //      );
-      if (baseClassName!=root->name) // Check for base class with the same name.
-                                     // If found then look in the outer scope for a match
-                                     // and prevent recursion.
+      if (baseClassName.left(root->name.length())!=root->name ||
+          baseClassName.at(root->name.length())!='<'
+         ) // Check for base class with the same name.
+           // If found then look in the outer scope for a match
+           // and prevent recursion.
       {
         Debug::print(
             Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",
@@ -2942,17 +2951,17 @@ static bool findClassRelation(
           baseClass->insertUsedFile(root->fileName);
           // is this an inherited template argument?
           //printf("%s->setIsTemplateBaseClass(%d)\n",baseClass->name().data(),isTemplBaseClass);
-          if (isATemplateArgument)
-          {
-            baseClass->setIsTemplateBaseClass(*templateNames->find(bi->name));
-          }
+          //if (isATemplateArgument)
+          //{
+          //  baseClass->setIsTemplateBaseClass(*templateNames->find(bi->name));
+          //}
           // add class to the list
-          if (!isATemplateArgument)
-          {
-          }
-          else
-          {
-          }
+          //if (!isATemplateArgument)
+          //{
+          //}
+          //else
+          //{
+          //}
           return TRUE;
         }
         else
@@ -3117,10 +3126,6 @@ static void computeTemplateClassRelations()
       for (tdi.toFirst();(tcd=tdi.current());++tdi) // for each template instance
       {
         Debug::print(Debug::Classes,0,"    Template instance %s : \n",tcd->name().data());
-        //QCString templName = tcd->name();
-        //int index = templName.find('<');
-        //ASSERT(index!=-1);
-        //  templName.right(templName.length()-index);
         QCString templSpec = tdi.currentKey().data();
         ArgumentList *templArgs = new ArgumentList;
         stringToArgumentList(templSpec,templArgs);
@@ -3214,7 +3219,7 @@ static void computeMemberReferences()
 
 //----------------------------------------------------------------------
 
-static void addClassMemberTodoTestBufReferences(Definition *compound)
+static void addClassMemberTodoTestBugReferences(Definition *compound)
 {
   MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn=0;
@@ -3229,7 +3234,7 @@ static void addClassMemberTodoTestBufReferences(Definition *compound)
       if (d) scopeName=d->name();
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
-      if (compound==d || (compound==0 && d!=0 && !md->visited))
+      if (d!=0 && ((compound==0 && !md->visited) || compound==d))
       {
         QCString memLabel;
         md->visited=TRUE;
@@ -3247,7 +3252,7 @@ static void addClassMemberTodoTestBufReferences(Definition *compound)
   }
 }
 
-static void addFileMemberTodoTestBufReferences(Definition *compound)
+static void addFileMemberTodoTestBugReferences(Definition *compound)
 {
   MemberNameListIterator fnli(Doxygen::functionNameList);
   MemberName *mn=0;
@@ -3262,7 +3267,7 @@ static void addFileMemberTodoTestBufReferences(Definition *compound)
       if (d) scopeName=d->name();
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
-      if (compound==d || (compound==0 && d!=0 && !md->visited))
+      if (d!=0 && ((compound==0 && !md->visited) || compound==d))
       {
         QCString memLabel;
         md->visited=TRUE;
@@ -3312,7 +3317,7 @@ static void addTodoTestBugReferences()
                theTranslator->trClass(TRUE,TRUE),
                cd->getOutputFileBase(),cd->name()
               );
-    addClassMemberTodoTestBufReferences(cd);
+    addClassMemberTodoTestBugReferences(cd);
   } 
   FileName *fn=Doxygen::inputNameList.first();
   while (fn)
@@ -3323,7 +3328,7 @@ static void addTodoTestBugReferences()
       addRefItem(fd->todoId(),fd->testId(),fd->bugId(),
                  theTranslator->trFile(TRUE,TRUE),
                  fd->getOutputFileBase(),fd->name());
-      addFileMemberTodoTestBufReferences(fd);
+      addFileMemberTodoTestBugReferences(fd);
       fd=fn->next();
     }
     fn=Doxygen::inputNameList.next();
@@ -3334,7 +3339,7 @@ static void addTodoTestBugReferences()
     addRefItem(nd->todoId(),nd->testId(),nd->bugId(),
                theTranslator->trNamespace(TRUE,TRUE),
                nd->getOutputFileBase(),nd->name());
-    addFileMemberTodoTestBufReferences(nd);
+    addFileMemberTodoTestBugReferences(nd);
     nd=Doxygen::namespaceList.next();
   }
   GroupDef *gd=Doxygen::groupList.first();
@@ -3343,7 +3348,7 @@ static void addTodoTestBugReferences()
     addRefItem(gd->todoId(),gd->testId(),gd->bugId(),
                theTranslator->trGroup(TRUE,TRUE),
                gd->getOutputFileBase(),gd->groupTitle());
-    addFileMemberTodoTestBufReferences(gd);
+    addFileMemberTodoTestBugReferences(gd);
     gd=Doxygen::groupList.next();
   }
   PageSDictIterator pdi(*Doxygen::pageSDict);
@@ -3354,8 +3359,8 @@ static void addTodoTestBugReferences()
                theTranslator->trPage(TRUE,TRUE),
                pi->name,pi->title);
   }
-  addClassMemberTodoTestBufReferences(0);
-  addFileMemberTodoTestBufReferences(0);
+  addClassMemberTodoTestBugReferences(0);
+  addFileMemberTodoTestBugReferences(0);
 }
 
 
@@ -5143,8 +5148,8 @@ static void generateClassDocs()
   {
     ClassDef *cd=cli.current();
     if ( cd->isLinkableInProject() && cd->templateMaster()==0 &&
-        (cd->getOuterScope()==0 || 
-         cd->getOuterScope()->definitionType()!=Definition::TypeClass
+        (cd->getOuterScope()==0 || // <-- should not happen
+         cd->getOuterScope()==Doxygen::globalScope
         )
        ) // skip external references, anonymous compounds and 
          // template instances and nested classes
@@ -5465,10 +5470,10 @@ static void findMainPage(Entry *root)
  */
 static void buildPackageList(Entry *root)
 {
-  if (root->section == Entry::PACKAGE_SEC)
+  if (root->section == Entry::PACKAGE_SEC || root->section == Entry::PACKAGEDOC_SEC && !root->name.isEmpty())
   {
     PackageDef *pd=0;
-    if (!root->name.isEmpty() && (pd=Doxygen::packageDict.find(root->name))==0)
+    if ((pd=Doxygen::packageDict.find(root->name))==0)
     {
       QCString tagName;
       if (root->tagInfo)
@@ -5477,15 +5482,25 @@ static void buildPackageList(Entry *root)
       }
       pd = new PackageDef(root->fileName,root->startLine,root->name,tagName);
       Doxygen::packageDict.inSort(root->name,pd);
+      pd->setDocumentation(root->doc);
+      pd->setBriefDescription(root->brief);
     } 
-    if (pd)
+    else
     {
-      bool ambig;
-      FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-      if (fd)
+      if (!pd->documentation() && !root->doc.isEmpty())
       {
-        fd->setPackageDef(pd);
+        pd->setDocumentation(root->doc);
       }
+      if (!pd->briefDescription() && !root->brief.isEmpty())
+      {
+        pd->setBriefDescription(root->brief);
+      }
+    }
+    bool ambig;
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+    if (fd)
+    {
+      fd->setPackageDef(pd);
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -5495,6 +5510,8 @@ static void buildPackageList(Entry *root)
     buildPackageList(e);
   }
 }
+
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 
@@ -5729,6 +5746,22 @@ static void generateNamespaceDocs()
     {
       msg("Generating docs for namespace %s\n",nd->name().data());
       nd->writeDocumentation(*outputList);
+    }
+    ClassSDict::Iterator cli(Doxygen::classSDict);
+    for ( ; cli.current() ; ++cli )
+    {
+      ClassDef *cd=cli.current();
+      if ( cd->getOuterScope()==nd &&
+           cd->isLinkableInProject() && 
+           cd->templateMaster()==0
+         ) // skip external references, anonymous compounds and 
+           // template instances and nested classes
+      {
+        msg("Generating docs for compound %s...\n",cd->name().data());
+
+        cd->writeDocumentation(*outputList);
+        cd->writeMemberList(*outputList);
+      }
     }
   }
 }

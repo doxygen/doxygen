@@ -115,7 +115,7 @@ template<class T> class BaseHandler : public IBaseHandler,
 
     virtual ~BaseHandler() 
     {
-      delete m_fallBackHandler;
+      ASSERT(m_delegateHandler==0);
     }
 
     virtual bool startDocument() 

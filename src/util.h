@@ -153,7 +153,9 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
 bool extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec);
 QCString substituteTemplateArgumentsInString(
-       const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs);
+       const QCString &name,
+       ArgumentList *formalArgs,
+       ArgumentList *actualArgs);
 
 ArgumentList *copyArgumentList(const ArgumentList *src);
 QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);

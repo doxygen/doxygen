@@ -1504,7 +1504,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inParamBlock=TRUE;
 					    currentListIndent.push("D");
-					    outDoc->startParamList();
+					    outDoc->startParamList(BaseOutputDocInterface::Param);
 					    scanString(theTranslator->trParameters()+": ");
   					    outDoc->endDescTitle();
   					    outDoc->writeDescItem();
@@ -1528,7 +1528,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inRetValBlock=TRUE;
 					    currentListIndent.push("D");
-					    outDoc->startParamList();
+					    outDoc->startParamList(BaseOutputDocInterface::RetVal);
 					    scanString(theTranslator->trReturnValues()+": ");
   					    outDoc->endDescTitle();
   					    outDoc->writeDescItem();
@@ -1552,7 +1552,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inExceptionBlock=TRUE;
 					    currentListIndent.push("D");
-					    outDoc->startParamList();
+					    outDoc->startParamList(BaseOutputDocInterface::Exception);
 					    scanString(theTranslator->trExceptions()+": ");
   					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();

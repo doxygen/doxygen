@@ -172,7 +172,7 @@ class ManGenerator : public OutputGenerator
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
     void startDescList();
     void endDescList()        {}
-    void startParamList()     { startDescList(); }
+    void startParamList(ParamListTypes)     { startDescList(); }
     void endParamList()       { endDescList(); }
     void endDescTitle();
     void writeDescItem();

@@ -152,26 +152,57 @@ for class QList is to define:
 PREDEFINED = QListT:=QList
 \endverbatim
 
-Here is example provided by Valter Minute that helps doxygen to
-wade through the boilerplate code in Microsoft's ATL library:
+Here is an example provided by Valter Minute & Reyes Ponce that helps 
+doxygen to wade through the boilerplate code in Microsoft's ATL & MFC 
+libraries:
 
 \verbatim
-PREDEFINED = DECLARE_REGISTRY_RESOURCEID=// \                                   
-   DECLARE_PROTECT_FINAL_CONSTRUCT=// \                                         
-   BEGIN_COM_MAP=/* \                                    
-   END_COM_MAP=*/// \                                            
-   BEGIN_PROP_MAP=/* \                                   
-   END_PROP_MAP=*/// \                                        
-   BEGIN_MSG_MAP=/* \                                                     
-   END_MSG_MAP=*/// \                                                          
-   DECLARE_VIEW_STATUS=// \
-   "STDMETHOD(a)=HRESULT a" \                                                   
-   "ATL_NO_VTABLE= "\                                                      
-   "__declspec(a)= "\                                                  
-   BEGIN_CONNECTION_POINT_MAP=/* \
-   END_CONNECTION_POINT_MAP=*/// \
-   "DECLARE_AGGREGATABLE(Class)= " \
-   "DECLARE_REGISTRY_RESOURCEID(id)= " 
+PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
+                       "STDMETHOD(result,name)=virtual result name" \
+                       "PURE= = 0" \
+                       THIS_= \
+                       THIS= \
+                       DECLARE_REGISTRY_RESOURCEID=// \
+                       DECLARE_PROTECT_FINAL_CONSTRUCT=// \
+                       "DECLARE_AGGREGATABLE(Class)= " \
+                       "DECLARE_REGISTRY_RESOURCEID(Id)= " \
+                       DECLARE_MESSAGE_MAP = \
+                       BEGIN_MESSAGE_MAP=/* \
+                       END_MESSAGE_MAP=*/// \
+                       BEGIN_COM_MAP=/* \
+                       END_COM_MAP=*/// \
+                       BEGIN_PROP_MAP=/* \
+                       END_PROP_MAP=*/// \
+                       BEGIN_MSG_MAP=/* \
+                       END_MSG_MAP=*/// \
+                       BEGIN_PROPERTY_MAP=/* \
+                       END_PROPERTY_MAP=*/// \
+                       BEGIN_OBJECT_MAP=/* \
+                       END_OBJECT_MAP()=*/// \
+                       DECLARE_VIEW_STATUS=// \
+                       "STDMETHOD(a)=HRESULT a" \
+                       "ATL_NO_VTABLE= " \
+                       "__declspec(a)= " \
+                       BEGIN_CONNECTION_POINT_MAP=/* \
+                       END_CONNECTION_POINT_MAP=*/// \
+                       "DECLARE_DYNAMIC(class)= " \
+                       "IMPLEMENT_DYNAMIC(class1, class2)= " \
+                       "DECLARE_DYNCREATE(class)= " \
+                       "IMPLEMENT_DYNCREATE(class1, class2)= " \
+                       "IMPLEMENT_SERIAL(class1, class2, class3)= " \
+                       "DECLARE_MESSAGE_MAP()= " \
+                       TRY=try \
+                       "CATCH_ALL(e)= catch(...)" \
+                       END_CATCH_ALL= \
+                       "THROW_LAST()= throw"\
+                       "RUNTIME_CLASS(class)=class" \
+                       "MAKEINTRESOURCE(nId)=nId" \
+                       "IMPLEMENT_REGISTER(v, w, x, y, z)= " \
+                       "ASSERT(x)=assert(x)" \
+                       "ASSERT_VALID(x)=assert(x)" \
+                       "TRACE0(x)=printf(x)" \
+                       "OS_ERR(A,B)={ #A, B }" \
+                       __cplusplus
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
