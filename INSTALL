@@ -1,4 +1,4 @@
-DOXYGEN Version 1.1.1-20000402
+DOXYGEN Version 1.1.2
 
 CONTENTS
 --------
@@ -15,8 +15,8 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 
 1.  Unpack the archive, unless you already have:
    
-     gunzip doxygen-1.1.1-20000402.src.tar.gz    # uncompress the archive
-     tar xf doxygen-1.1.1-20000402.src.tar       # unpack it
+     gunzip doxygen-1.1.2.src.tar.gz    # uncompress the archive
+     tar xf doxygen-1.1.2.src.tar       # unpack it
 
 2.  Run the configure script:
  
@@ -252,4 +252,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (02 April 2000)
+Dimitri van Heesch (09 April 2000)

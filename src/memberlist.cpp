@@ -94,8 +94,8 @@ void MemberList::countDecMembers(bool inGroup)
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      printf("memberGroupList adding %d inGroup=%d\n",
-          mg->countDecMembers(),m_count);
+      //printf("memberGroupList adding %d inGroup=%d\n",
+      //    mg->countDecMembers(),m_count);
       m_count+=mg->countDecMembers();
     }
   }
@@ -355,6 +355,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             MemberDef *fmd=fmdl->first();
             while (fmd)
             {
+              /* in html we start each enum item on a new line */
+              typeDecl.pushGeneratorState();
+              typeDecl.disableAllBut(OutputGenerator::Html);
+              typeDecl.lineBreak(); 
+              typeDecl.writeString("&nbsp;&nbsp;");
+              typeDecl.popGeneratorState();
+
               if (fmd->hasDocumentation()) // enum value has docs
               {
                 if (!Config::genTagFile.isEmpty())
@@ -379,6 +386,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               typeDecl.enable(OutputGenerator::Man);
             }
           }
+          typeDecl.pushGeneratorState();
+          typeDecl.disableAllBut(OutputGenerator::Html);
+          typeDecl.lineBreak(); 
+          typeDecl.popGeneratorState();
           typeDecl.docify(" }");
           md->setEnumDecl(typeDecl);
           int enumVars=0;
@@ -571,7 +582,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   
   if (memberGroupList)
   {
-    printf("MemberList::writeDeclarations()\n");
+    //printf("MemberList::writeDeclarations()\n");
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     while ((mg=mgli.current()))
@@ -581,7 +592,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       ol.endMemberGroupHeader();
       if (!mg->documentation().isEmpty())
       {
-        printf("Member group has docs!\n");
+        //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
         parseDoc(ol,0,0,mg->documentation());
         ol.endMemberGroupDocs();
@@ -608,7 +619,7 @@ void MemberList::writeDocumentation(OutputList &ol,
 
 void MemberList::addMemberGroup(MemberGroup *mg)
 {
-  printf("MemberList::addMemberGroup(%p)\n",mg);
+  //printf("MemberList::addMemberGroup(%p)\n",mg);
   if (memberGroupList==0)
   {
     memberGroupList=new MemberGroupList;

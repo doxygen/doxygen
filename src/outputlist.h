@@ -312,8 +312,6 @@ class OutputList
     { forall(&OutputGenerator::addToIndex,s1,s2); }
     void writeSynopsis() 
     { forall(&OutputGenerator::writeSynopsis); }
-    //void generateExternalIndex()
-    //{ forall(&OutputGenerator::generateExternalIndex); }
     void startClassDiagram()
     { forall(&OutputGenerator::startClassDiagram); }
     void endClassDiagram(ClassDiagram &d,const char *f,const char *n)
@@ -365,6 +363,11 @@ class OutputList
     { forall(&OutputGenerator::endTextBlock); }
     void lastIndexPage()
     { forall(&OutputGenerator::lastIndexPage); }
+
+    void startParameter(bool first)
+    { forall(&OutputGenerator::startParameter,first); }
+    void endParameter(bool last)
+    { forall(&OutputGenerator::endParameter,last); }
 
   private:
     void debug();

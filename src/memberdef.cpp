@@ -101,22 +101,12 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   }
   //printf("~~~ %s cName=%s\n",md->name().data(),cName.data());
 
-  // You can set the next to TRUE to experiment with multiline parameter lists.
-  // I'll add this in some form in a future release.
-  bool multiLineArgs = FALSE; /* argList->count()>2; */
+  bool first=TRUE;
   while (a)
   {
+    ol.startParameter(first); first=FALSE;
     QRegExp re(")(");
     int vp;
-    if (multiLineArgs)
-    {
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.lineBreak();
-      ol.writeNonBreakableSpace();
-      ol.writeNonBreakableSpace();
-      ol.popGeneratorState();
-    }
     if (!a->attrib.isEmpty()) // argument has an IDL attribute
     {
       ol.docify(a->attrib+" ");
@@ -161,14 +151,11 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       linkifyText(ol,scopeName,md->name(),n); 
     }
     a=argList->next();
-    if (a) ol.docify(", "); // there are more arguments
-  }
-  if (multiLineArgs)
-  {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.lineBreak();
-    ol.popGeneratorState();
+    if (a) 
+    {
+      ol.docify(", "); // there are more arguments
+      ol.endParameter(FALSE);
+    }
   }
   ol.docify(")"); // end argument list
   if (argList->constSpecifier)
@@ -971,6 +958,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.docify("]");
       ol.endTypewriter();
     }
+    ol.endParameter(TRUE);
     ol.endMemberDoc();
     ol.endDoxyAnchor();
     ol.startIndent();

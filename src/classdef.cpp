@@ -1649,19 +1649,19 @@ void ClassDef::determineImplUsageRelation()
 #ifdef DUMP
   if (usesClassDict)
   {
-    printf("Class %s uses the following classes:\n",name().data());
+    msg("Class %s uses the following classes:\n",name().data());
     UsesClassDictIterator ucdi(*usesClassDict);
     UsesClassDef *ucd;
     for (;(ucd=ucdi.current());++ucdi)
     {
-      printf("  %s via ",ucd->classDef->name().data());
+      msg("  %s via ",ucd->classDef->name().data());
       QDictIterator<void> dvi(*ucd->accessors); 
       const char *s;
       for (;(s=dvi.currentKey());++dvi)
       {
-        printf("%s ",s);
+        msg("%s ",s);
       }
-      printf("\n");
+      msg("\n");
     }
   }
 #endif
@@ -1697,8 +1697,8 @@ void ClassDef::addUsedInterfaceClasses(MemberDef *md,const char *typeStr)
         //  name().data(),cd->name().data());
       }
       ucd->addAccessor(md->name());
-      printf("in class `%s' adding accessor `%s' to class `%s'\n",
-          name().data(),md->name().data(),ucd->classDef->name().data());
+      //printf("in class `%s' adding accessor `%s' to class `%s'\n",
+      //    name().data(),md->name().data(),ucd->classDef->name().data());
     }
     p=i+l;
   }

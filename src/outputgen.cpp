@@ -28,6 +28,9 @@ OutputGenerator::OutputGenerator()
   b.setBuffer(a);
   b.open( IO_WriteOnly );
   t.setDevice(&b);
+#if QT_VERSION >= 200
+  t.setEncoding(QTextStream::Latin1);
+#endif
   active=TRUE;
   genStack = new QStack<bool>;
   genStack->setAutoDelete(TRUE);

@@ -577,11 +577,6 @@ void HtmlGenerator::startMemberItem(int annoType)
   if (Config::htmlAlignMemberFlag)
   {
     t << "<tr>";
-    //if (inGroup)
-    //  t << "<td bgcolor=\"" << GROUP_COLOR << "\">";
-    //else
-    //t << "<td>";
-    //t << "<img src=\"null.gif\"></td><td><img src=\"null.gif\"></td>";
     switch(annoType)
     {
       case 0:  t << "<td nowrap align=right valign=top>"; break;
@@ -600,25 +595,29 @@ void HtmlGenerator::endMemberItem(bool)
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
   if (Config::htmlAlignMemberFlag)
   {
-    //if (inGroup)
-    //{
-    //  t << "&nbsp;</td><td";
-    //  if (headerName)
-    //  {
-    //    t << " align=right valign=top><a class=\"gl\" href=\"" 
-    //      << fileName << ".html\">&nbsp;" << headerName << "&nbsp;</a>";
-    //  }
-    //  else
-    //  {
-    //    t << ">";
-    //  }
-    //  t << "</td><td bgcolor=\"" << GROUP_COLOR 
-    //    << "\"><img src=\"null.gif\">";
-    //}
     t << "</td></tr>"; 
   }
   t << endl; 
 }
+
+void HtmlGenerator::startParameter(bool first)
+{
+  if (first)
+  {
+    t << endl << "</b></td>" << endl;
+    t << "<td><b>" << endl;
+  }
+  else
+  {
+    t << "<tr><td></td><td><b>" << endl;
+  }
+}
+
+void HtmlGenerator::endParameter(bool)
+{
+  t << "</b></td></tr>" << endl;
+}
+
 
 void HtmlGenerator::insertMemberAlign() 
 { 
@@ -762,12 +761,24 @@ void HtmlGenerator::writeImage(const char *name,const char *,const char *)
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
-  t << endl << "<p><table width=100% cellpadding=2 cellspacing=0 border=0><tr><td class=\"md\"><b>" << endl; 
+  t << "<p>" << endl;
+  t << "<table width=100% cellpadding=2 cellspacing=0 border=0>" << endl;
+  t << "  <tr>" << endl;
+  t << "    <td class=\"md\"><b>" << endl; 
+  t << "      <table cellspadding=0 cellspacing=0 border=0>" << endl;
+  t << "        <tr>" << endl;
+  t << "          <td><b>" << endl;
 }
 
 void HtmlGenerator::endMemberDoc()     
 { 
-  t << endl << "</b></td></tr></table>" << endl; 
+  t << endl;
+  t << "          </b></td>" << endl;
+  t << "        </tr>" << endl;
+  t << "      </table>" << endl;
+  t << "    </td>" << endl;
+  t << "  </tr>" << endl;
+  t << "</table>" << endl; 
 }
 
 void HtmlGenerator::startCollaborationDiagram()

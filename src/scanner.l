@@ -355,6 +355,16 @@ static void endTable()
   curTable=tableStack.top();
 }
 
+static void forceEndTable()
+{
+  err("Error: More <table> tags found than </table> "
+      "tags in documentation block in file %s!\n",yyFileName); 
+  while (!tableStack.isEmpty())
+  {
+    endTable();
+  }
+}
+
 //-----------------------------------------------------------------------------
 
 static void lineCount()
@@ -4853,6 +4863,10 @@ void parseDocument(OutputList &ol,const QCString &docString)
   if (depthIf!=0)
   {
     warn("Warning: Documentation block contains \\if without matching \\endif: %d\n",depthIf);
+  }
+  if (!tableStack.isEmpty())
+  {
+    forceEndTable();
   }
   ol+=*outDoc;
   delete outDoc; outDoc=0;

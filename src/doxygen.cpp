@@ -358,7 +358,12 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
           iName=iName.mid(1,iName.length()-2); // strip quotes or brackets
         }
       }
-      if (Config::verbatimHeaderFlag) // generate code for header
+      else // use name of the file containing the class definition
+      {
+        iName=fd->name();
+      }
+      if (Config::verbatimHeaderFlag || Config::sourceBrowseFlag) 
+        // generate code for header
       {
         cd->setIncludeFile(fd,iName,local);
         fd->setGenerateSource(TRUE);
@@ -858,7 +863,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer);
+  md->setInitializer(root->initializer.simplifyWhiteSpace());
   //if (root->mGrpId!=-1) 
   //{
   //  printf("memberdef %s in memberGroup %d\n",name.data(),root->mGrpId);
@@ -917,7 +922,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer);
+  md->setInitializer(root->initializer.simplifyWhiteSpace());
   bool ambig;
   FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
@@ -1380,9 +1385,12 @@ void buildMemberList(Entry *root)
           MemberDef *md=mn->first();
           while (md && !found)
           {
-            if (md->getFileDef() && 
-                md->getFileDef()->absFilePath()==root->fileName && 
-                matchArguments(md->argumentList(),root->argList)
+            NamespaceDef *nd = md->getNamespace();
+            FileDef *fd = md->getFileDef();
+            QCString nsName = nd ? nd->name().data() : "";
+            //printf("namespace `%s'\n",nsName.data());
+            if ((nd || (fd && fd->absFilePath()==root->fileName)) && 
+                matchArguments(md->argumentList(),root->argList,0,nsName)
                )
             {
               // function already found in the same file, one is probably
@@ -2002,7 +2010,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
     
     if (md->initializer().isEmpty() && !root->initializer.isEmpty())
     {
-      md->setInitializer(root->initializer);
+      md->setInitializer(root->initializer.simplifyWhiteSpace());
     }
     
     //if (md->bodyCode().isEmpty() && !root->body.isEmpty()) /* no body yet */
@@ -4419,8 +4427,11 @@ void copyAndFilterFile(const char *fileName,BufStr &dest)
     const int bufSize=1024;
     char buf[bufSize];
     int numRead;
-    while ((numRead=fread(buf,1,bufSize,f))!=bufSize) 
+    while ((numRead=fread(buf,1,bufSize,f))>0) 
+    {
+      //printf(">>>>>>>>Reading %d bytes\n",numRead);
       dest.addArray(buf,numRead),size+=numRead;
+    }
     pclose(f);
   }
   // filter unwanted bytes from the resulting data
@@ -4761,7 +4772,10 @@ const char *getArg(int argc,char **argv,int &optind)
 
 int main(int argc,char **argv)
 {
-
+#if QT_VERSION >= 200
+  setlocale(LC_ALL,"");
+#endif
+  
   initPreprocessor();
   
   /**************************************************************************

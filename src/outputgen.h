@@ -210,6 +210,9 @@ class OutputGenerator
     virtual void endTextBlock() = 0;
     virtual void lastIndexPage() = 0;
 
+    virtual void startParameter(bool) = 0;
+    virtual void endParameter(bool) = 0;
+
     
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }

@@ -224,6 +224,9 @@ class HtmlGenerator : public OutputGenerator
     void endTextBlock() {}
     void lastIndexPage() {}
 
+    void startParameter(bool first);
+    void endParameter(bool last);
+
   private:
     QCString header;
     QCString footer;
