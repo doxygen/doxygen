@@ -33,7 +33,21 @@ To define a group, you should put the \ref cmddefgroup "\\defgroup"
 command in a special comment block. The first argument of the command 
 is a label that should uniquely identify the group.  You can make an 
 entity a member of a specific group by putting 
-a \ref cmdingroup "\\ingroup" command inside its documentation.
+a \ref cmdingroup "\\ingroup" command inside its documentation block.
+
+To avoid putting \ref cmdingroup "\\ingroup" commands in the documentation
+of each member you can also group members together by the 
+open marker <code>\@{</code> before the group and the 
+closing marker <code>\@}</code> after the group. The markers can 
+be put in the documentation of the group definition or in a separate 
+documentation block. 
+
+Groups can also be nested using these grouping markers.
+
+Note that compound entities (like classes, files and namespaces) can
+be put into multiple groups, but members (like variable, functions, typedefs
+and enums) can only be a member of one group 
+(this restriction is to avoid ambiguous linking targets).
 
 \par Example:
 \verbinclude group.cpp

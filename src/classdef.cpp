@@ -654,7 +654,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
   QCString pageTitle=name().copy();
   QCString pageType;
   ArgumentList *outerTempArgList = outerTemplateArguments();
-  if (outerTempArgList) pageType+=" Template";
   switch(compType)
   {
     case Class:  pageType+=" Class"; break;
@@ -663,6 +662,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     default:     pageType+=" Interface"; break;
   } 
   pageTitle+=pageType+" Reference";
+  if (outerTempArgList) pageTitle.prepend(" Template");
   startFile(ol,fileName,pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trCompoundReference(name(),compType,outerTempArgList!=0));

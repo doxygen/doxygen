@@ -225,6 +225,9 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
   BEGIN( Start );
   declinfoYYlex();
 
+  //printf("type=`%s' class=`%s' name=`%s' args=`%s'\n",
+  //        type.data(),scope.data(),name.data(),args.data());
+
   cl=scope.copy();
   //printf("scope=`%s'\n",scope.data());
   int il=0,ir=0;
@@ -248,7 +251,7 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
   a=removeRedundantWhiteSpace(args);
   exc=removeRedundantWhiteSpace(exceptionString);
   
-  if (!t.isEmpty() && t.at(t.length()-1)==')')
+  if (!t.isEmpty() && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);

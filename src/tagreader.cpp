@@ -719,6 +719,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     me->protection = tmi->prot;
     me->virt       = tmi->virt;
     me->stat       = tmi->isStatic;
+    me->fileName   = ce->fileName;
     TagInfo *ti    = new TagInfo;
     ti->tagName    = m_tagName;
     ti->anchor     = tmi->anchor;

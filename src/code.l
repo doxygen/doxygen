@@ -1140,6 +1140,9 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <Body>[0-9]+				{
 					  g_code->codify(yytext);
 					}
+<Body>[0-9]+[xX][0-9A-F]+		{
+					  g_code->codify(yytext);
+					}
 <MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
 					  addParmType();
 					  g_parmName=yytext; 

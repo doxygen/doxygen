@@ -292,7 +292,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               if (!Config::genTagFile.isEmpty())
               {
-                tagFile << "    <member>" << endl;
+                tagFile << "    <member kind=\"enumeration\">" << endl;
                 tagFile << "      <name>" << convertToXML(md->name()) << "</name>" << endl; 
                 tagFile << "      <anchor>" << convertToXML(md->anchor()) << "</anchor>" << endl; 
                 tagFile << "      <arglist>" << convertToXML(md->argsString()) << "</arglist>" << endl; 
@@ -332,7 +332,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               {
               if (!Config::genTagFile.isEmpty())
               {
-                tagFile << "    <member>" << endl;
+                tagFile << "    <member kind=\"enumvalue\">" << endl;
                 tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
                 tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
                 tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 

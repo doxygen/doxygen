@@ -1000,7 +1000,8 @@ BN	[ \t\r\n]
   					  if (g_includeStack.isEmpty()) 
 					    g_curlyCount--;
 					  outputChar(*yytext);
-					  ASSERT(g_curlyCount>=0);
+					  // This should hold otherwise the preprocessor is confused
+					  //ASSERT(g_curlyCount>=0); 
   					}
 <CopyLine>"'"\\[0-7]{1,3}"'"		{ 
   					  outputArray(yytext,yyleng);

@@ -510,7 +510,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() && nd->countMembers()>0)
+          if (nd->isLinkableInProject())
           {
             if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":

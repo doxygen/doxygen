@@ -66,8 +66,6 @@
 // lists
 ClassList      classList;          // all documented classes
 NamespaceList  namespaceList;      // all namespaces
-//PageList       *exampleList = new PageList; // all example files
-//PageList       *pageList = new PageList; // all related documentation pages
 MemberNameList memberNameList;     // class member + related functions
 MemberNameList functionNameList;   // all unrelated functions
 FileNameList   inputNameList;      // all input files
@@ -122,7 +120,6 @@ void clearAll()
   namespaceDict.clear();     
   memberNameDict.clear();  
   functionNameDict.clear();
-  //substituteDict.clear();   
   sectionDict.clear();       
   inputNameDict->clear();    
   excludeNameDict.clear();  
@@ -1077,7 +1074,6 @@ static void findUsingDeclarations(Entry *root)
         }
         else if (fd)
         {
-          //printf("Inside file %s\n",fd->name().data());
           fd->addUsingDeclaration(usingCd);
         }
       }
@@ -1252,7 +1248,7 @@ static MemberDef *addVariableToFile(
               );
 
   bool ambig;
-  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+  FileDef *fd = findFileDef(inputNameDict,root->fileName,ambig);
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
@@ -1678,8 +1674,9 @@ static void buildMemberList(Entry *root)
         //}
 
         // new member function, signal or slot.
-        //printf("new member: %s class template args=`%s'\n",
-        //          root->args.data(),argListToString(cd->templateArguments()).data());
+        //printf("new member: %s member template args=`%s'\n",
+        //          root->args.data(),
+        //          argListToString(root->mtArgList).data());
         MemberDef *md=new MemberDef(
             root->fileName,root->startLine,
             root->type,name,root->args,root->exception,
@@ -3246,11 +3243,12 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
     }
   }
   
-  if (root->tArgList==0 && !classTempList.isEmpty())
+  if (root->tArgList==0 && root->mtArgList==0 && !classTempList.isEmpty())
   {
     // no template specifiers found during parsing (because \fn was used), 
     // but there are template names in the scope, so we build the template 
     // specifiers from that.
+    printf("Building template list from `%s'\n",classTempList.data());
     root->tArgList = new ArgumentList;
     QRegExp re(idMask);
     int i,p=0,l;
@@ -3385,7 +3383,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
                          "4. class definition %s found\n",cd->name().data());
             int ci;
             ArgumentList *classTemplArgs = cd->templateArguments();
-            ArgumentList *funcTemplArgs  = md->templateArguments();
+            ArgumentList *funcTemplArgs  = md->memberDefTemplateArguments();
             if ((ci=cd->name().find("::"))!=-1) // nested class
             {
               ClassDef *parentClass = getClass(cd->name().left(ci));
@@ -3475,8 +3473,11 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
               //printf("root->tArgList=`%s'\n",argListToString(root->tArgList).data());
               if (matching) // replace member's argument list
               {
-                //printf("Setting scope template argument of member to %s\n",
-                //    argListToString(root->tArgList).data()
+                //printf("Setting scope template argument of member %s to %s\n",
+                //    md->name().data(), argListToString(root->tArgList).data()
+                //    );
+                //printf("Setting member template argument of member %s to %s\n",
+                //    md->name().data(), argListToString(root->mtArgList).data()
                 //    );
                 md->setScopeDefTemplateArguments(root->tArgList);
                 md->setMemberDefTemplateArguments(root->mtArgList);
@@ -3949,7 +3950,17 @@ static void findEnums(Entry *root)
       else if (isGlobal)
       {
         md->setDefinition(name);
-        fd->insertMember(md);
+        if (fd==0 && root->tagInfo)
+        {
+          bool ambig;
+          QCString filePathName = root->parent->fileName;
+          fd=findFileDef(inputNameDict,filePathName,ambig);
+        }
+        if (fd) 
+        {
+          fd->insertMember(md);
+          md->setFileDef(fd);
+        }
       }
       else if (cd)
       {

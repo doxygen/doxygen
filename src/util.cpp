@@ -299,12 +299,8 @@ QCString stripAnnonymousNamespaceScope(const QCString &s)
 
 void writePageRef(OutputList &ol,const char *cn,const char *mn)
 {
-  //bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-  //bool manOn  = ol.isEnabled(OutputGenerator::Man);
-
   ol.pushGeneratorState();
   
-  //ol.enableAll();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Man);
   if (Config::pdfHyperFlag) ol.disable(OutputGenerator::Latex);
@@ -313,12 +309,13 @@ void writePageRef(OutputList &ol,const char *cn,const char *mn)
   ol.docify(theTranslator->trPageAbbreviation());
   ol.endPageRef(cn,mn);
 
-  //if (htmlOn) ol.enable(OutputGenerator::Html);
-  //if (manOn)  ol.enable(OutputGenerator::Man);
-
   ol.popGeneratorState();
 }
 
+/*! Generate a place holder for a position in a list. Used for
+ *  translators to be able to specify different elements orders
+ *  depending on whether text flows from left to right or visa versa.
+ */
 QCString generateMarker(int id)
 {
   QCString result;
@@ -326,8 +323,9 @@ QCString generateMarker(int id)
   return result;
 }
 
-// strip part of the path if it matches
-// one of the paths in the stripFromPath list
+/*! strip part of \a path if it matches
+ *  one of the paths in the Config::stripFromPath list
+ */
 QCString stripFromPath(const QCString &path)
 {
   const char *s=Config::stripFromPath.first();
@@ -343,9 +341,10 @@ QCString stripFromPath(const QCString &path)
   return path;
 }
 
-// try to determine if this files is a source or a header file by looking
-// at the extension (5 variations are allowed in both upper and lower case)
-// If anyone knows or uses another extension please let me know :-)
+/*! try to determine if \a name is a source or a header file name by looking
+ * at the extension. A number of variations is allowed in both upper and 
+ * lower case) If anyone knows or uses another extension please let me know :-)
+ */
 int guessSection(const char *name)
 {
   QCString n=((QCString)name).lower();
@@ -369,35 +368,9 @@ int guessSection(const char *name)
   return 0;
 }
 
-
-//QCString resolveDefines(const char *n)
-//{
-//  return n;
-//  if (n)
-//  {
-//    Define *def=defineDict[n]; 
-//    if (def && def->nargs==0 && !def->definition.isEmpty())
-//    {
-//      return def->definition;
-//    }
-//    return n;
-//  }
-//  return 0;
-//}
-
-//QCString resolveTypedefs(const QCString &n)
-//{
-// QCString *subst=typedefDict[n];
-//  if (subst && !subst->isEmpty())
-//  {
-//    return *subst;
-//  }
-//  else
-//  {
-//    return n;
-//  }
-//}
-
+/*! Get a class definition given its name. 
+ *  Returns 0 if the class is not found.
+ */
 ClassDef *getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
@@ -515,9 +488,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
 	(i!=0 && i!=l-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
        )
     {
-      if ((c=='*' || c=='&' || c=='@') && 
-	  !result.isEmpty() && isId(result.at(result.length()-1))
-	 ) result+=' ';
+      if ((c=='*' || c=='&' || c=='@'))
+      {  
+        uint rl=result.length();
+	if (rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) result+=' ';
+      }
       result+=c;
     }
   }
@@ -571,12 +546,6 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
       if (i==-1) i=splitText.find(' ');
       if (i!=-1) // add a link-break at i in case of Html output
       {
-        //ol.docify(splitText.left(i+1));
-        //ol.pushGeneratorState();
-        //ol.disableAllBut(OutputGenerator::Html);
-        //ol.lineBreak();
-        //ol.popGeneratorState();
-        //ol.docify(splitText.right(splitLength-i-1));
         out.writeString(splitText.left(i+1));
         out.writeBreak();
         out.writeString(splitText.right(splitLength-i-1));
@@ -644,12 +613,13 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
         }
       } while (!found && scopeOffset>=0);
 
-      //if (!found) printf("Trying to link %s in %s\n",word.data(),scName);
+      //if (!found) printf("Trying to link %s in %s\n",word.data(),scName); 
       if (!found && 
           getDefs(scName,word,0,md,cd,fd,nd,gd) && 
           (md->isTypedef() || md->isEnumerate() || 
-           md->isReference() || md->isVariable()) && 
-           (external ? md->isLinkable() : md->isLinkableInProject()) 
+           md->isReference() || md->isVariable()
+          ) && 
+          (external ? md->isLinkable() : md->isLinkableInProject()) 
          )
       {
         //printf("Found ref\n");
@@ -759,26 +729,6 @@ QCString argListToString(ArgumentList *al)
   if (al->volatileSpecifier) result+=" volatile";
   return result;
 }
-
-//QCString tempArgListToString(ArgumentList *al)
-//{
-//  QCString result;
-//  if (al==0) return result;
-//  Argument *a=al->first();
-//  result+="<";
-//  while (a)
-//  {
-//    int ni=a->type.findRev(' ');
-//    if (ni!=-1) 
-//      result+=a->type.right(a->type.length()-ni-1);
-//    else
-//      result+=a->type;
-//    a = al->next();
-//    if (a) result+=",";
-//  }
-//  result+=">";
-//  return result;
-//}
 
 QCString tempArgListToString(ArgumentList *al)
 {
@@ -1001,13 +951,16 @@ void setAnchors(char id,MemberList *ml,int groupId)
   MemberDef *md;
   for (;(md=mli.current());++mli)
   {
-    QCString anchor;
-    if (groupId==-1)
-      anchor.sprintf("%c%d",id,count++);
-    else
-      anchor.sprintf("%c%d_%d",id,groupId,count++);
-    //printf("Member %s anchor %s\n",md->name(),anchor.data());
-    md->setAnchor(anchor);
+    if (!md->isReference())
+    {
+      QCString anchor;
+      if (groupId==-1)
+        anchor.sprintf("%c%d",id,count++);
+      else
+        anchor.sprintf("%c%d_%d",id,groupId,count++);
+      //printf("Member %s anchor %s\n",md->name(),anchor.data());
+      md->setAnchor(anchor);
+    }
   }
 }
 
@@ -2112,7 +2065,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       {
         QList<MemberDef> members;
         
-        //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
+        //printf("  Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
         MemberListIterator mli(*mn);
         for (mli.toFirst();(md=mli.current());++mli)
         {
@@ -2821,28 +2774,6 @@ QCString convertNameToFile(const char *name,bool allowDots)
   return result;
 }
 
-/*! Converts a string to HTML-encoded string */
-QCString convertToHtml(const QCString &s)
-{
-  QCString result;
-  char c;
-  const char *p=s.data();
-  while ((c=*p++)!=0)
-  {
-    switch(c)
-    {
-      case '<': result+="&lt;"; break;
-      case '>': result+="&gt;"; break;
-      case '&': result+="&amp;"; break;
-      case '"': result+="&quot;"; break;
-      default: 
-          result+=c;
-          break;
-    }
-  }
-  return result;
-}
-
 /*! Input is a scopeName, output is the scopename split into a
  *  namespace part (as large as possible) and a classname part.
  */
@@ -2923,6 +2854,7 @@ QCString stripScope(const char *name)
   return result;
 }
 
+/*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
 {
   QCString result;
@@ -2943,3 +2875,10 @@ QCString convertToXML(const char *s)
   }
   return result;
 }
+
+/*! Converts a string to a HTML-encoded string */
+QCString convertToHtml(const char *s)
+{
+  return convertToXML(s);
+}
+

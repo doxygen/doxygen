@@ -141,7 +141,8 @@ static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
 static QCString         *pSkipDoc;
-static QCString         autoGroupName;
+static QStack<QCString> autoGroupNameStack;
+static QCString         lastDefGroup;
 
 static bool             insideFormula;
 
@@ -165,6 +166,7 @@ static void initParser()
   virt = Normal;
   baseVirt = Normal;
   isTypedef = FALSE;
+  autoGroupNameStack.clear();
 }
 
 static void initEntry()
@@ -174,11 +176,49 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->mGrpId     = memberGroupId;
-  if (!autoGroupName.isEmpty())
+  if (!autoGroupNameStack.isEmpty())
   {
-    current->groups->append(new QCString(autoGroupName));
+    current->groups->append(new QCString(*autoGroupNameStack.top()));
   }
 }
+
+//-----------------------------------------------------------------------------
+
+/// remove old group name (if given) and add new one (if given)
+static void setCurrentGroup( QCString *oldgroup, QCString *newgroup )
+{
+   if (oldgroup)
+   {
+      /* remove auto group name from current entry and discard it */
+      QCString *s = current->groups->first();
+      int i=0;
+      while (s)
+      {
+         if (*s==*oldgroup)
+         {
+            current->groups->remove(i);
+            break;
+         }
+         s=current->groups->next();
+         i++;
+      }
+   }
+
+   /* use new group name instead? */
+   if ( newgroup )
+   {
+      current->groups->append(new QCString(*newgroup));
+   } 
+}
+
+static int newMemberGroupId()
+{
+  static int curGroupId=0;
+  return curGroupId++;
+}
+
+static void startGroup();
+static void endGroup();
 //-----------------------------------------------------------------------------
 
 static void lineCount()
@@ -211,12 +251,6 @@ static QCString stripQuotes(const char *s)
     name=name.mid(1,name.length()-2);
   }
   return name;
-}
-
-static int newMemberGroupId()
-{
-  static int curGroupId=0;
-  return curGroupId++;
 }
 
 static void newDocState();
@@ -707,6 +741,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->bodyLine  = yyLineNr;
 					  if (current->mtArgList) // transfer template arguments
 					  {
+					    if (current->tArgList)
+					    {
+					      delete current->tArgList;
+					    }
 					    current->tArgList = current->mtArgList;
 					    current->mtArgList = 0;
 					  }
@@ -721,6 +759,15 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
+					  if (current->mtArgList) // transfer template arguments
+					  {
+					    if (current->tArgList)
+					    {
+					      delete current->tArgList;
+					    }
+					    current->tArgList = current->mtArgList;
+					    current->mtArgList = 0;
+					  }
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
@@ -771,13 +818,15 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //  printf("-------> member template \n");
 					    if (current->mtArgList)
 					    {
-					      current->mtArgList->clear();
+					      if (current->tArgList)
+					      {
+					        delete current->tArgList;
+					      }
+					      current->tArgList = current->mtArgList;
+					      current->mtArgList = 0;
                                             }
-					    else
-					    {
-					      current->mtArgList = new ArgumentList;
-					      current->mtArgList->setAutoDelete(TRUE);
-					    }
+					    current->mtArgList = new ArgumentList;
+					    current->mtArgList->setAutoDelete(TRUE);
 					    currentArgumentList = current->mtArgList;
 					  //}
 					  //else // class template specifier
@@ -858,6 +907,11 @@ TITLE     [tT][iI][tT][lL][eE]
   					  sharpCount=0;
 					  lineCount();
 					  addType( current );
+					  if (current->mtArgList && current->tArgList==0)
+					  {
+					    current->tArgList=current->mtArgList;
+					    current->mtArgList=0;
+					  }
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
 					  current->scopeSpec.resize(0);
@@ -1101,26 +1155,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  }
   					}
 <FindMembers,FindFields>"//"([!*]?){B}*"@{"|"/*"([!*]?){B}*"@{"	{
-					  if (memberGroupId!=NOGROUP)
-					  {
-  					    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
-					         "Previous command was found at line %d.",lastMemberGroupLine);
-					  }
-					  else if (memberGroupHeader.isEmpty())
-					  {
-					    //warn("Warning: member group does not have a header "
-					    //	 "at line %d of %s.\n",yyLineNr,yyFileName);
-					    memberGroupHeader="[NOHEADER]";
-					    memberGroupId = newMemberGroupId();
-					    current->mGrpId = memberGroupId;
-					    lastMemberGroupLine = yyLineNr;
-					  }
-					  else
-					  {
-					    memberGroupId = newMemberGroupId();
-					    current->mGrpId = memberGroupId;
-					    lastMemberGroupLine = yyLineNr;
-					  }
+  					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
 					      current->inside = current_root->name+"::";
@@ -1139,43 +1174,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!*]?){B}*"@}"|"/*"([!*]?){B}*"@}"{B}*"*/"	{
-					  if (memberGroupId==NOGROUP && autoGroupName.isEmpty())
-					  {
-					    warn(yyFileName,yyLineNr,
-                                                 "Warning: end of group without matching begin.");
-					  }
-					  else if (memberGroupId!=NOGROUP) // end of member group
-					  {
-  					    memberHeaderDict.insert(memberGroupId,
-					                            new QCString(memberGroupHeader.stripWhiteSpace())
-					  			  );
-					    memberDocDict.insert(memberGroupId,
-					      	               new QCString(memberGroupDocs)
-							      );
-					    memberGroupId=NOGROUP;
-					    if (YY_START!=ReadInitializer) 
-					    {
-					      current->mGrpId=NOGROUP;
-					    }
-					    memberGroupHeader.resize(0);
-					    memberGroupDocs.resize(0);
-					  }
-					  else if (!autoGroupName.isEmpty()) // end of group
-					  {
-					    QCString *s = current->groups->first();
-					    int i=0;
-					    while (s)
-					    {
-					      if (*s==autoGroupName)
-					      {
-					         current->groups->remove(i);
-					         break;
-					      }
-					      s=current->groups->next();
-					      i++;
-					    }
-					    autoGroupName.resize(0);
-					  }
+  					  endGroup();
   					}
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
@@ -2604,6 +2603,7 @@ TITLE     [tT][iI][tT][lL][eE]
  					  BEGIN( ExampleDocArg1 );
 					}
 <LineDoc>{CMD}"name"[^\n]*\n		{
+  					  lastDefGroup.resize(0);
   					  memberGroupHeader=&yytext[5];
 					  memberGroupHeader=memberGroupHeader.stripWhiteSpace(); 
 					  current->section = Entry::MEMBERGRP_SEC;
@@ -2613,12 +2613,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					  BEGIN( lastDocContext );
   					}
 <Doc,JavaDoc>{CMD}"name"{B}+ 		{
-  					  //printf("--> mgroup found!\n");
+  					  lastDefGroup.resize(0);
 					  current->section = Entry::MEMBERGRP_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-  					  //lastMemberGroupContext = lastDocContext;
-					  //lastDocContext = StoreGroupDocs;
 					  memberGroupHeader.resize(0);
 					  memberGroupDocs.resize(0);
 					  BEGIN(GroupHeader);
@@ -2761,8 +2759,10 @@ TITLE     [tT][iI][tT][lL][eE]
   					  yyLineNr++;
 					  
   					}
-<GroupDocArg1>{ID}(".html"?)		{ // the .html stuff is for Qt compatibility
+<GroupDocArg1>{ID}(".html"?)		{ 
   					  current->name = yytext;
+					  lastDefGroup = yytext;
+  					  // the .html stuff is for Qt compatibility
 					  if (current->name.right(5)==".html") 
 					    current->name=current->name.left(current->name.length()-5);
 					  BEGIN(GroupDocArg2);
@@ -2990,6 +2990,9 @@ TITLE     [tT][iI][tT][lL][eE]
 <SkipCode>"//"				{
   					  *pSkipDoc+=yytext;
   					}
+<SkipCode>"/*"				{
+  					  *pSkipDoc+=yytext;
+  					}
 <SkipCode>[^ \<\*\t\/\\\n]+		{
   					  *pSkipDoc+=yytext;
   					}
@@ -3028,10 +3031,10 @@ TITLE     [tT][iI][tT][lL][eE]
 							  lineCount();
 							  BEGIN( GroupName );
   							}
-<ClassDoc,Doc,JavaDoc>{CMD}"{"				{
+<ClassDoc,Doc,JavaDoc>"@{"				{
   							  if (current->section == Entry::GROUPDOC_SEC)
 							  {
-							    autoGroupName=current->name;
+							    autoGroupNameStack.push(new QCString(current->name));
 							  }
 							  else if (current->section == Entry::MEMBERGRP_SEC)
 							  {
@@ -3043,6 +3046,9 @@ TITLE     [tT][iI][tT][lL][eE]
 							  {
 							    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
 							  }
+  							}
+<ClassDoc,Doc,JavaDoc>"@}"				{
+  							  endGroup();
   							}
 <ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
@@ -3499,6 +3505,64 @@ TITLE     [tT][iI][tT][lL][eE]
 %%
 
 //----------------------------------------------------------------------------
+
+static void startGroup()
+{
+  if (memberGroupId!=NOGROUP)
+  {
+    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
+	"Previous command was found at line %d.",lastMemberGroupLine);
+  }
+  else if (!lastDefGroup.isEmpty())
+  {
+    setCurrentGroup( autoGroupNameStack.top(), &lastDefGroup);   
+    autoGroupNameStack.push(new QCString(lastDefGroup));
+    lastDefGroup.resize(0);
+  }
+  else 
+  {
+    if (memberGroupHeader.isEmpty())
+    {
+      //warn("Warning: member group does not have a header "
+      //	 "at line %d of %s.\n",yyLineNr,yyFileName);
+      memberGroupHeader="[NOHEADER]";
+    }
+    memberGroupId = newMemberGroupId();
+    current->mGrpId = memberGroupId;
+    lastMemberGroupLine = yyLineNr;
+  }
+}
+
+static void endGroup()
+{
+  if (memberGroupId==NOGROUP && autoGroupNameStack.isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	"Warning: end of group without matching begin.");
+  }
+  else if (memberGroupId!=NOGROUP) // end of member group
+  {
+    memberHeaderDict.insert(memberGroupId,
+	new QCString(memberGroupHeader.stripWhiteSpace())
+			   );
+    memberDocDict.insert(memberGroupId,
+	new QCString(memberGroupDocs)
+			);
+    memberGroupId=NOGROUP;
+    if (YY_START!=ReadInitializer) 
+    {
+      current->mGrpId=NOGROUP;
+    }
+    memberGroupHeader.resize(0);
+    memberGroupDocs.resize(0);
+  }
+  else if (!autoGroupNameStack.isEmpty()) // end of group
+  {
+    QCString *oldName = autoGroupNameStack.pop();
+    setCurrentGroup(oldName,autoGroupNameStack.top());
+    delete oldName;
+  }
+}
 
 static void newDocState()
 {
