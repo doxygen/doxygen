@@ -85,6 +85,14 @@
 //    I tried my best to guess the Czech terminology for the Java.
 //    Let me know if some wording should be changed/improved.
 //         
+// 2001/02/15 (Petr Prikryl)
+//  - trMore() now returns only "..." (ellipsis).  The Czech replacement
+//    of "(more)" was too much visible.  The previous "(...)" did not 
+//    look well.
+//    
+// 2001/02/26 (Petr Prikryl)
+//  - Update for "new since 1.2.5" version (trBug(), trBugList()).
+//         
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
@@ -166,7 +174,7 @@ class TranslatorCzech : public Translator
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
-    { return Decode("(...)"); }
+    { return Decode("..."); }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
@@ -1182,6 +1190,22 @@ class TranslatorCzech : public Translator
     {
       return Decode("Hodnota:");
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \bug item */
+    virtual QCString trBug()
+    {
+      return Decode("Chyba");
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return Decode("Seznam chyb");
+    }
+
 };
 
 #endif // TRANSLATOR_CZ_H
