@@ -125,6 +125,8 @@ class FileDef : public Definition
     QList<IncludeInfo> *includeFileList() const { return includeList; }
     QDict<IncludeInfo> *includeFileDict() const { return includeDict; }
 
+    void distributeMemberGroupDocumentation();
+
   private: 
     MemberList allMemberList;
     MemberList defineMembers;

@@ -39,7 +39,7 @@ class MemberGroupDict;
 class GroupDef : public Definition
 {
   public:
-    GroupDef(const char *name,const char *title);
+    GroupDef(const char *fileName,int line,const char *name,const char *title);
    ~GroupDef();
     QCString getOutputFileBase() const { return fileName; }
     const char *groupTitle() const { return title; }
@@ -60,6 +60,7 @@ class GroupDef : public Definition
       return isLinkableInProject() || isReference();
     }
     void computeAnchors();
+    void distributeMemberGroupDocumentation();
 
   private: 
     QCString title;                     // title of the group

@@ -55,7 +55,7 @@ void FileName::generateDiskNames()
     //printf("Multiple occurrences of %s\n",name.data());
     int i=0,j=0;
     bool found=FALSE;
-    while (!found)
+    while (!found) // search for the common prefix of all paths
     {
       fd=first();
       while (fd && fd->isReference()) fd=next();
@@ -66,7 +66,7 @@ void FileName::generateDiskNames()
       {
         if (!fd->isReference())
         {
-          //printf("i=%d fd->path=`%s' fd->name=`%s'\n",i,fd->path.data(),fd->name().data());
+          //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
           if (i==(int)fd->path.length())
           {
             //warning("Warning: Input file %s found multiple times!\n"
@@ -88,8 +88,9 @@ void FileName::generateDiskNames()
       //printf("fd->setName(%s)\n",(fd->path.right(fd->path.length()-j-1)+name).data());
       if (!fd->isReference())
       {
-        fd->setName(fd->path.right(fd->path.length()-j-1)+name);
-        fd->diskname=convertSlashes(fd->name());
+        QCString prefix = fd->path.right(fd->path.length()-j-1);
+        fd->setName(prefix+name);
+        fd->diskname=convertSlashes(prefix+name);
       }
       fd=next();
     }

@@ -53,7 +53,9 @@ class ClassDef : public Definition
                         Interface=Entry::INTERFACE_SEC,
                         Exception=Entry::EXCEPTION_SEC
                       };
-    ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
+    ClassDef(const char *fileName,int startLine,
+             const char *name,CompoundType ct,
+             const char *ref=0,const char *fName=0);
    ~ClassDef();
     QCString getOutputFileBase() const { return fileName; }
     CompoundType compoundType() const { return compType; } 
@@ -115,8 +117,11 @@ class ClassDef : public Definition
     {
       return usesIntfClassDict;
     }
+    void setSubGrouping(bool enabled) { subGrouping = enabled; }
     
     bool visited;
+
+    void distributeMemberGroupDocumentation();
    
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
@@ -126,6 +131,7 @@ class ClassDef : public Definition
     IncludeInfo *incInfo;                // header file to refer to
     QCString incName;                    // alternative include file name
     QCString memListFileName;            
+    QCString scopelessName;              // name without any scopes
     BaseClassList *inherits;
     BaseClassList *inheritedBy;
     NamespaceDef  *nspace;              // the namespace this class is in
@@ -177,6 +183,10 @@ class ClassDef : public Definition
     FileDef            *fileDef;
     UsesClassDict      *usesImplClassDict;
     UsesClassDict      *usesIntfClassDict;
+
+    bool subGrouping; // does this class group its user-grouped members
+                      // as a sub-section of the normal (public/protected/..) 
+                      // groups?
 };
 
 struct UsesClassDef

@@ -35,7 +35,7 @@
     file was read from a tag file or 0 otherwise
 */
 FileDef::FileDef(const char *p,const char *nm,const char *ref)
-   : Definition(nm)
+   : Definition((QCString)p+nm,1,nm)
 {
   path=p;
   filepath=path+nm;
@@ -83,6 +83,16 @@ void FileDef::computeAnchors()
   setAnchors('a',&allMemberList);
 }
 
+void FileDef::distributeMemberGroupDocumentation()
+{
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->distributeMemberGroupDocumentation();
+  }
+}
+
 /*! Write the documentation page for this file to the file of output
     generators \a ol. 
 */
@@ -95,6 +105,8 @@ void FileDef::writeDocumentation(OutputList &ol)
   //{
   //  fn.prepend(stripFromPath(getPath().copy()));
   //}
+
+  //printf("WriteDocumentation %p diskname=%s\n",this,diskname.data());
   
   QCString pageTitle=name()+" File Reference";
   startFile(ol,diskname,pageTitle);
@@ -113,7 +125,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     //if (brief.at(bl-1)!='.' && brief.at(bl-1)!='!' && brief.at(bl!='?')) 
     //  brief+='.';
-    parseDoc(briefOutput,0,0,briefDescription());
+    parseDoc(briefOutput,filepath,1,0,0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
@@ -293,7 +305,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     {
       //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
       //  doc+='.';
-      parseDoc(ol,0,0,documentation()+"\n");
+      parseDoc(ol,filepath,1,0,0,documentation()+"\n");
     }
     //printf("Writing source ref for file %s\n",name().data());
     if (Config::sourceBrowseFlag) 

@@ -13,6 +13,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <qmainwindow.h>
 #include <qpopupmenu.h>
 #include <qfileinfo.h>

@@ -393,7 +393,8 @@ void writeFileIndex(OutputList &ol)
           {
             ol.docify(" (");
             OutputList briefOutput(&ol);
-            parseDoc(briefOutput,0,0,
+            parseDoc(briefOutput,fd->absFilePath(),1,
+                0,0,
                 abbreviate(fd->briefDescription(),fd->name()));
             ol+=briefOutput;
             ol.docify(")");
@@ -432,7 +433,9 @@ void writeFileIndex(OutputList &ol)
         {
           ol.docify(" (");
           OutputList briefOutput(&ol);
-          parseDoc(briefOutput,0,0,
+          parseDoc(briefOutput,
+              fd->absFilePath(),1,
+              0,0,
               abbreviate(fd->briefDescription(),fd->name()));
           ol+=briefOutput;
           ol.docify(")");
@@ -580,8 +583,10 @@ void writeNamespaceIndex(OutputList &ol)
       if (!nd->briefDescription().isEmpty())
       {
         OutputList briefOutput(&ol);
-        parseDoc(briefOutput,nd->name(),0,
-                      abbreviate(nd->briefDescription(),nd->name()));
+        parseDoc(briefOutput,
+                 nd->getDefFileName(),nd->getDefLine(),
+                 nd->name(),0,
+                 abbreviate(nd->briefDescription(),nd->name()));
         ol+=briefOutput;
       }
       else
@@ -654,8 +659,10 @@ void writeAnnotatedClassList(OutputList &ol)
       if (!cd->briefDescription().isEmpty())
       {
         OutputList briefOutput(&ol);
-        parseDoc(briefOutput,cd->name(),0,
-                      abbreviate(cd->briefDescription(),cd->name()));
+        parseDoc(briefOutput,
+                 cd->getDefFileName(),cd->getDefLine(),
+                 cd->name(),0,
+                 abbreviate(cd->briefDescription(),cd->name()));
         ol+=briefOutput;
       }
       else
@@ -1454,10 +1461,15 @@ void writeGroupList(OutputList &ol)
     {
       ol.startDescItem();
       ol.startTextLink(gd->getOutputFileBase(),0);
-      parseDoc(ol,0,0,gd->groupTitle());
+      parseDoc(ol,
+          gd->getDefFileName(),gd->getDefLine(),
+          0,0,
+          gd->groupTitle());
       ol.endTextLink();
       ol.endDescItem();
-      parseDoc(ol,0,0,gd->briefDescription());
+      parseDoc(ol,
+          gd->getDefFileName(),gd->getDefLine(),
+          0,0,gd->briefDescription());
       ol.newParagraph();
     }
   }
@@ -1517,6 +1529,11 @@ void writeIndex(OutputList &ol)
   //ol.disable(OutputGenerator::Latex);
   ol.disableAllBut(OutputGenerator::Html);
 
+  QCString defFileName = 
+    mainPage ? mainPage->defFileName.data() : "<generated>";
+  int defLine =
+    mainPage ? mainPage->defLine : 1;
+
   if (!mainPage || mainPage->title.isEmpty())
     ol.startFile("index","Main Index",FALSE);
   else 
@@ -1526,7 +1543,7 @@ void writeIndex(OutputList &ol)
   ol.startTitleHead(0);
   if (mainPage && !mainPage->title.isEmpty())
   {
-    parseDoc(ol,0,0,mainPage->title);
+    parseDoc(ol,defFileName,defLine,0,0,mainPage->title);
   }
   else
   {
@@ -1537,14 +1554,14 @@ void writeIndex(OutputList &ol)
   if (!Config::projectNumber.isEmpty())
   {
     ol.startProjectNumber();
-    parseDoc(ol,0,0,Config::projectNumber);
+    parseDoc(ol,defFileName,defLine,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
   if (Config::noIndexFlag) writeQuickLinks(ol,FALSE);
 
   if (mainPage)
   {
-    parseDoc(ol,0,0,mainPage->doc);
+    parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);
   }
   
   endFile(ol);
@@ -1565,7 +1582,7 @@ void writeIndex(OutputList &ol)
   if (!Config::projectNumber.isEmpty())
   {
     ol.startProjectNumber(); 
-    parseDoc(ol,0,0,Config::projectNumber);
+    parseDoc(ol,defFileName,defLine,0,0,Config::projectNumber);
     ol.endProjectNumber();
   }
   ol.endIndexSection(isTitlePageStart);
@@ -1577,7 +1594,7 @@ void writeIndex(OutputList &ol)
     ol.startIndexSection(isMainPage);
     if (!mainPage->title.isEmpty())
     {
-      parseDoc(ol,0,0,mainPage->title);
+      parseDoc(ol,defFileName,defLine,0,0,mainPage->title);
     }
     else
     {
@@ -1674,7 +1691,7 @@ void writeIndex(OutputList &ol)
       ol.writeSection(si->label,si->title,FALSE);
     }
     ol.startTextBlock();
-    parseDoc(ol,0,0,mainPage->doc);
+    parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);
     ol.endTextBlock();
     endFile(ol);
     ol.enable(OutputGenerator::Man);

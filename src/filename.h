@@ -61,7 +61,8 @@ class FileNameListIterator : public QListIterator<FileName>
 class FileNameDict : public QDict<FileName>
 {
   public:
-    FileNameDict(uint size) : QDict<FileName>(size) {}
+    FileNameDict(uint size) : 
+       QDict<FileName>(size,Config::caseSensitiveNames) {}
    ~FileNameDict() {}
 };
 

@@ -207,6 +207,7 @@ void Entry::reset()
   scopeSpec.resize(0);
   memberSpec.resize(0);
   initializer.resize(0);
+  startLine = 1;
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
@@ -217,6 +218,7 @@ void Entry::reset()
   stat    = FALSE;
   proto   = FALSE;
   inLine  = FALSE;
+  subGrouping = TRUE;
   protection = Public;
   sublist->clear();
   extends->clear();

@@ -596,7 +596,7 @@ void LatexGenerator::writeStyleInfo(int part)
         t << "\\newenvironment{CompactItemize}\n";
         t << "{\n";
         t << "  \\begin{itemize}\n";
-        t << "  \\setlength{\\itemsep}{-4pt}\n";
+        t << "  \\setlength{\\itemsep}{-3pt}\n";
         t << "  \\setlength{\\parsep}{0pt}\n";
         t << "  \\setlength{\\topsep}{0pt}\n";
         t << "  \\setlength{\\partopsep}{0pt}\n";

@@ -75,7 +75,7 @@ void MemberGroup::setAnchors()
 void MemberGroup::writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,doc,TRUE);
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,doc,TRUE,TRUE);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
@@ -101,8 +101,26 @@ int MemberGroup::countDecMembers()
 {
   if (numDeclMembers==-1) /* number of member not cached */
   {
-    memberList->countDecMembers(TRUE);
+    memberList->countDecMembers(TRUE,TRUE);
     numDeclMembers = memberList->totalCount();
   }
   return numDeclMembers;
+}
+
+void MemberGroup::distributeMemberGroupDocumentation()
+{
+  MemberDef *md=memberList->first();
+  if (md && md->hasDocumentation())
+  {
+    MemberDef *omd=memberList->next();
+    while (omd)
+    {
+      if (!omd->hasDocumentation())
+      {
+        omd->setBriefDescription(md->briefDescription());
+        omd->setDocumentation(md->documentation());
+      }
+      omd=memberList->next();
+    }
+  }
 }

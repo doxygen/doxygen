@@ -25,9 +25,17 @@
 #include "outputlist.h"
 #include "scanner.h"
 
-Definition::Definition(const char *name,const char *b,const char *d)
+Definition::Definition(const char *df,int dl,
+                       const char *name,const char *b,const char *d)
 {
-  n=name; brief=b; doc=d; sectionList=0, startBodyLine=endBodyLine=-1, bodyDef=0;
+  defFileName = df;
+  defLine = dl;
+  n=name; 
+  brief=b; 
+  doc=d; 
+  sectionList=0, 
+  startBodyLine=endBodyLine=-1, 
+  bodyDef=0;
 }
 
 Definition::~Definition()

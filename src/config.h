@@ -35,8 +35,6 @@ struct Config
   static QCString projectNumber; // the number of the project
   static QCString outputDir; // the global output directory
   static QCString outputLanguage; // the output language
-  static bool     quietFlag; // generate progress messages flag
-  static bool     warningFlag; // generate warnings flag
   static bool     noIndexFlag; // generate condensed index flag
   static bool     extractAllFlag; // gererate docs for all classes flag
   static bool     extractPrivateFlag; // generate docs for private members flag
@@ -61,6 +59,10 @@ struct Config
   static bool     sortMembersFlag; // sort members alphabetically?
   static int      tabSize; // number of spaces in a tab
   static QStrList sectionFilterList; // list of section filters that are enabled
+  static bool     quietFlag; // generate progress messages flag
+  static bool     warningFlag; // generate warnings flag
+  static bool     warningUndocFlag; // generate undocumented warnings
+  static QCString warnFormat; // format of the warning messages
   static QStrList inputSources; // list of input files
   static QStrList filePatternList; // list of file patterns
   static bool     recursiveFlag; // scan directories recursively

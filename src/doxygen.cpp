@@ -183,13 +183,14 @@ void buildGroupList(Entry *root)
     
     if ((gd=groupDict[root->name]))
     {
-      warn("Warning: group %s already documented\n"
-           "         skipping documentation in file %s at line %d\n",
-           root->name.data(),root->fileName.data(),root->startLine);
+      warn(root->fileName,root->startLine,
+           "Warning: group %s already documented. "
+           "Skipping documentation.",
+           root->name.data());
     }
     else
     {
-      gd = new GroupDef(root->name,root->type);
+      gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
       gd->setBriefDescription(root->brief);
       gd->setDocumentation(root->doc);
       gd->addSectionsToDefinition(root->anchors);
@@ -253,9 +254,12 @@ void buildFileList(Entry *root)
       if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
           (!root->brief.isEmpty() && !fd->briefDescription().isEmpty()))
       {
-        warn("Warning: file %s already documented\n"
-            "         skipping documentation in file %s at line %d\n",
-            root->name.data(),root->fileName.data(),root->startLine);
+        warn(
+             root->fileName,root->startLine,
+             "Warning: file %s already documented. "
+             "Skipping documentation.",
+             root->name.data()
+            );
       }
       else
       {
@@ -281,21 +285,23 @@ void buildFileList(Entry *root)
     else
     {
       const char *fn = root->fileName.data();
-      warn("Warning: the name `%s' supplied as "
-           "the second argument in the \\file statement in file "
-           "%s at line %d ",
-           root->name.data(),
-           fn ? fn : "???",
-           root->startLine);
+      QCString text;
+      text.sprintf("Warning: the name `%s' supplied as "
+                   "the second argument in the \\file statement.",
+                    root->name.data()
+                  );
       if (ambig) // name is ambigious
       {
-        warn("matches the following input files:\n");
-        showFileDefMatches(&inputNameDict,root->name);
-        warn("Please use a more specific name by "
-             "including a (larger) part of the path!\n");
+        text+="matches the following input files:\n";
+        text+=showFileDefMatches(&inputNameDict,root->name);
+        text+="Please use a more specific name by "
+              "including a (larger) part of the path!";
       }
       else // name is not an input file
-        warn("is not an input file\n");
+      {
+        text+="is not an input file";
+      }
+      warn(fn,root->startLine,text);
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -325,21 +331,23 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
         (fd=findFileDef(&inputNameDict,root->includeFile,ambig))==0
        )
     { // explicit request
-      warn("Warning: the name `%s' supplied as "
-          "the second argument in the \\class statement in file "
-          "%s at line %d ",
-          root->includeFile.data(),
-          root->fileName.data(),
-          root->startLine);
+      QCString text;
+      text.sprintf("Warning: the name `%s' supplied as "
+                  "the second argument in the \\class statement.",
+                  root->includeFile.data()
+                 );
       if (ambig) // name is ambigious
       {
-        warn("matches the following input files:\n");
-        showFileDefMatches(&inputNameDict,root->includeFile);
-        warn("Please use a more specific name by "
-            "including a (larger) part of the path!\n");
+        text+="matches the following input files:\n";
+        text+=showFileDefMatches(&inputNameDict,root->includeFile);
+        text+="Please use a more specific name by "
+            "including a (larger) part of the path!";
       }
       else // name is not an input file
-        warn("is not an input file\n");
+      {
+        text+="is not an input file";
+      }
+      warn(root->fileName,root->startLine,text);
     }
     else if (root->includeFile.isEmpty() && ifd &&
         // see if the file extension makes sense
@@ -424,8 +432,9 @@ void buildClassList(Entry *root)
     if (fullName.isEmpty())
     {
       // this should not be called
-      warn("Warning: invalid class found in file %s at %d\n",
-                  root->fileName.data(),root->startLine);
+      warn(root->fileName,root->startLine,
+           "Warning: invalid class name found!"
+          );
     }
     else 
     {
@@ -452,9 +461,12 @@ void buildClassList(Entry *root)
         { 
           if (!root->doc.isEmpty() && !cd->documentation().isEmpty())
           {
-            warn("Warning: class %s already has a detailed description\n"
-                 "         skipping the one in file %s at line %d\n",
-                 fullName.data(),root->fileName.data(),root->startLine);
+            warn(
+                 root->fileName,root->startLine,
+                 "Warning: class %s already has a detailed description. "
+                 "Skipping the one found here.",
+                 fullName.data()
+                );
           }
           else if (!root->doc.isEmpty())
           {
@@ -462,9 +474,12 @@ void buildClassList(Entry *root)
           }
           if (!root->brief.isEmpty() && !cd->briefDescription().isEmpty())
           {
-            warn("Warning: class %s already has a brief description\n"
-                 "         skipping the one in file %s at line %d\n",
-                 fullName.data(),root->fileName.data(),root->startLine);
+            warn(
+                 root->fileName,root->startLine,
+                 "Warning: class %s already has a brief description\n"
+                 "         skipping the one found here.",
+                 fullName.data()
+                );
           }
           else if (!root->brief.isEmpty())
           {
@@ -494,6 +509,7 @@ void buildClassList(Entry *root)
           fd->insertClass(cd);
         }
         addClassToGroups(root,cd);
+        if (!root->subGrouping) cd->setSubGrouping(FALSE);
       }
       else // new class
       {
@@ -520,7 +536,7 @@ void buildClassList(Entry *root)
 
         //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
         
-        ClassDef *cd=new ClassDef(fullName,sec);
+        ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec);
         cd->setDocumentation(root->doc); // copy docs to definition
         cd->setBriefDescription(root->brief);
         //printf("new ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
@@ -530,6 +546,7 @@ void buildClassList(Entry *root)
         // file definition containing the class cd
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
         cd->setBodyDef(fd);
+        if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
         addClassToGroups(root,cd);
 
@@ -614,9 +631,11 @@ void buildNamespaceList(Entry *root)
           }
           else if (!nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
-            warn("Warning: namespace %s already has a detailed description,\n"
-                 "         skipping documentation in file %s at line %d\n",
-                 fullName.data(),root->fileName.data(),root->startLine);
+            warn(
+                 root->fileName,root->startLine,
+                 "Warning: namespace %s already has a detailed description. "
+                 "Skipping the documentation found here.",
+                 fullName.data());
           }
           if (nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
@@ -625,9 +644,11 @@ void buildNamespaceList(Entry *root)
           }
           else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
-            warn("Warning: namespace %s already has a brief description,\n"
-                 "         skipping documentation in file %s at line %d\n",
-                 fullName.data(),root->fileName.data(),root->startLine);
+            warn(root->fileName,root->startLine,
+                 "Warning: namespace %s already has a brief description. "
+                 "Skipping the documentation found here.",
+                 fullName.data()
+                );
           }
         }
 
@@ -643,7 +664,7 @@ void buildNamespaceList(Entry *root)
               )
            */ 
       {
-        NamespaceDef *nd=new NamespaceDef(fullName);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName);
         nd->setDocumentation(root->doc); // copy docs to definition
         nd->setBriefDescription(root->brief);
         nd->addSectionsToDefinition(root->anchors);
@@ -739,7 +760,8 @@ void findUsingDirectives(Entry *root)
       }
       else // unknown namespace, but add it anyway.
       {
-        NamespaceDef *nd=new NamespaceDef(root->name);
+        NamespaceDef *nd=new NamespaceDef(
+            root->fileName,root->startLine,root->name);
         nd->setDocumentation(root->doc); // copy docs to definition
         nd->setBriefDescription(root->brief);
         nd->addSectionsToDefinition(root->anchors);
@@ -846,12 +868,14 @@ static MemberDef *addVariableToClass(
     } 
   }
   // new member variable, typedef or enum value
-  MemberDef *md=new MemberDef(root->type,name,root->args,0,
+  MemberDef *md=new MemberDef(
+      root->fileName,root->startLine,
+      root->type,name,root->args,0,
       prot,Normal,root->stat,FALSE,
       mtype,0,0);
   md->setMemberClass(cd);
-  md->setDefFile(root->fileName);
-  md->setDefLine(root->startLine);
+  //md->setDefFile(root->fileName);
+  //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc);
   md->setBriefDescription(root->brief);
   md->setDefinition(def);
@@ -912,11 +936,13 @@ static MemberDef *addVariableToFile(
               );
 
   // new global variable, enum value or typedef
-  MemberDef *md=new MemberDef(root->type,name,root->args,0,
+  MemberDef *md=new MemberDef(
+      root->fileName,root->startLine,
+      root->type,name,root->args,0,
       Public, Normal,root->stat,FALSE,
       mtype,0,0);
-  md->setDefFile(root->fileName);
-  md->setDefLine(root->startLine);
+  //md->setDefFile(root->fileName);
+  //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc);
   md->setBriefDescription(root->brief);
   md->addSectionsToDefinition(root->anchors);
@@ -1260,12 +1286,14 @@ void buildMemberList(Entry *root)
         // new member function, signal or slot.
         //printf("new member: %s class template args=`%s'\n",
         //          root->args.data(),argListToString(cd->templateArguments()).data());
-        MemberDef *md=new MemberDef(root->type,name,root->args,root->exception,
-                             root->protection,root->virt,root->stat,!root->relates.isEmpty(),
-                             mtype,root->mtArgList,root->argList);
+        MemberDef *md=new MemberDef(
+            root->fileName,root->startLine,
+            root->type,name,root->args,root->exception,
+            root->protection,root->virt,root->stat,!root->relates.isEmpty(),
+            mtype,root->mtArgList,root->argList);
         md->setMemberClass(cd);
-        md->setDefFile(root->fileName);
-        md->setDefLine(root->startLine);
+        //md->setDefFile(root->fileName);
+        //md->setDefLine(root->startLine);
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
         md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -1425,11 +1453,13 @@ void buildMemberList(Entry *root)
           
           // new global function
           QCString name=removeRedundantWhiteSpace(root->name);
-          MemberDef *md=new MemberDef(root->type,name,root->args,root->exception,
+          MemberDef *md=new MemberDef(
+              root->fileName,root->startLine,
+              root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,FALSE,
               MemberDef::Function,root->tArgList,root->argList);
-          md->setDefFile(root->fileName);
-          md->setDefLine(root->startLine);
+          //md->setDefFile(root->fileName);
+          //md->setDefLine(root->startLine);
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
           md->setPrototype(root->proto);
@@ -1538,8 +1568,9 @@ void buildMemberList(Entry *root)
     }
     else if (root->name.isEmpty())
     {
-        warn("Warning: Illegal member name found in file %s at line %d\n",
-               root->fileName.data(),root->startLine);
+        warn(root->fileName,root->startLine,
+             "Warning: Illegal member name found."
+            );
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -1819,7 +1850,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         else if (insertUndocumented)
         {
           Debug::print(Debug::Classes,0,"    Undocumented base class `%s' baseClassName=%s\n",bi->name.data(),baseClassName.data());
-          baseClass=new ClassDef(baseClassName,ClassDef::Class);
+          baseClass=new ClassDef(root->fileName,root->startLine,baseClassName,ClassDef::Class);
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
@@ -1912,10 +1943,11 @@ void computeClassRelations(Entry *root)
     else if (bName.right(2)!="::")
     {
       if (!root->name.isEmpty() && root->name[0]!='@')
-        warn("Warning: Compound %s\n"
-             "         defined in file %s at line %d\n"
-             "         is not documented\n",
-              root->name.data(),root->fileName.data(),root->startLine);
+        warn_undoc(
+                   root->fileName,root->startLine,
+                   "Warning: Compound %s is not documented.",
+                   root->name.data()
+             );
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -2055,8 +2087,8 @@ void addMemberDocs(Entry *root,
       md->setBodyDef(fd);
     }
   }
-  md->setDefFile(root->fileName);
-  md->setDefLine(root->startLine);
+  //md->setDefFile(root->fileName);
+  //md->setDefLine(root->startLine);
   if (root->inLine && !md->isInline()) md->setInline(TRUE);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
@@ -2067,9 +2099,12 @@ void addMemberDocs(Entry *root,
     {
       if (md->getMemberGroup()->groupId()!=root->mGrpId)
       {
-        warn("Warning: member %s belongs to two different group. The second "
-            "one is found at line %d of %s and will be ignored\n",
-            md->name().data(),root->startLine,root->fileName.data());
+        warn(
+             root->fileName,root->startLine,
+             "Warning: member %s belongs to two different groups. The second "
+             "one found here will be ignored.",
+             md->name().data()
+            );
       }
     }
     else // set group id
@@ -2184,16 +2219,15 @@ static bool findUnrelatedFunction(Entry *root,
     } 
     if (!found) // no match
     {
-      warn("Warning: no matching member found for \n%s\n"
-           "in file %s at line %d\n",
-           decl,root->fileName.data(),root->startLine);   
+      warn(root->fileName,root->startLine,
+           "Warning: no matching member found for \n%s",decl);   
     }
   }
   else // got docs for an undefined member!
   {
-    warn("Warning: documented function `%s'\nin file %s at line %d "
-         "was not defined \n",decl,
-         root->fileName.data(),root->startLine);
+    warn(root->fileName,root->startLine,
+         "Warning: documented function `%s' was not defined.",decl
+        );
   }
   return TRUE;
 }
@@ -2771,9 +2805,10 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           } 
         } 
         if (count==0 && !(isFriend && funcType=="class"))
-          warn("Warning: no matching member found for \n%s\n"
-                 "in file %s at line %d\n",
-                 fullFuncDecl.data(),root->fileName.data(),root->startLine);   
+          warn(root->fileName,root->startLine,
+               "Warning: no matching member found for \n%s",
+               fullFuncDecl.data()
+              );   
 #if 0
         else if (count>1)
         {
@@ -2828,9 +2863,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           else                 mtype=MemberDef::Function;
           
           // new overloaded member function
-          MemberDef *md=new MemberDef(funcType,funcName,funcArgs,exceptions,
-                            root->protection,root->virt,root->stat,TRUE,
-                            mtype,root->tArgList,root->argList);
+          MemberDef *md=new MemberDef(
+              root->fileName,root->startLine,
+              funcType,funcName,funcArgs,exceptions,
+              root->protection,root->virt,root->stat,TRUE,
+              mtype,root->tArgList,root->argList);
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
           QCString doc=getOverloadDocs();
@@ -2839,8 +2876,8 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setDocumentation(doc);
           //md->setDecFile(root->fileName);
           //md->setDecLine(root->startLine);
-          md->setDefFile(root->fileName);
-          md->setDefLine(root->startLine);
+          //md->setDefFile(root->fileName);
+          //md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
           md->addSectionsToDefinition(root->anchors);
           //if (root->mGrpId!=-1) 
@@ -2862,9 +2899,10 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
       {
         if (!findUnrelatedFunction(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
         {
-          warn("Warning: Cannot determine class for function\n%s\n"
-               "in file %s at line %d\n",fullFuncDecl.data(),
-               root->fileName.data(),root->startLine);   
+          warn(root->fileName,root->startLine,
+               "Warning: Cannot determine class for function\n%s",
+               fullFuncDecl.data()
+              );   
         }
       }
     }
@@ -2908,7 +2946,9 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
             mtype=MemberDef::Function;
 
           // new related (member) function
-          MemberDef *md=new MemberDef(funcType,funcName,funcArgs,exceptions,
+          MemberDef *md=new MemberDef(
+              root->fileName,root->startLine,
+              funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,root->tArgList,root->argList);
           //printf("Related member name=`%s' decl=`%s' bodyLine=`%d'\n",
@@ -2959,8 +2999,8 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setMemberClass(cd);
           md->setInline(root->inLine);
           md->setDefinition(funcDecl);
-          md->setDefFile(root->fileName);
-          md->setDefLine(root->startLine);
+          //md->setDefFile(root->fileName);
+          //md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
@@ -2978,8 +3018,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
       }
       else
       {
-        warn("Warning: class `%s' for related function `%s' is not "
-            "documented\n", className.data(),funcName.data());
+        warn_undoc(root->fileName,root->startLine,
+                   "Warning: class `%s' for related function `%s' is not "
+                   "documented.", 
+                   className.data(),funcName.data()
+                  );
       }
     }
     else // unrelated not overloaded member found
@@ -2987,17 +3030,18 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
       if (className.isEmpty() && 
           !findUnrelatedFunction(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
       {
-        warn("Warning: class for member %s (file %s at line %d) cannot "
-             "be found\n", funcName.data(),root->fileName.data(),
-             root->startLine); 
+        warn(root->fileName,root->startLine,
+             "Warning: class for member %s cannot "
+             "be found.", funcName.data()
+            ); 
       }
     }
   }
   else
   {
     // this should not be called
-    warn("Warning: member with no name found in %s at line %d\n",
-              root->fileName.data(),root->startLine);
+    warn(root->fileName,root->startLine,
+         "Warning: member with no name found.");
   }
   return;
 } 
@@ -3164,11 +3208,13 @@ void findEnums(Entry *root)
     if (!name.isEmpty())
     {
       // new enum type
-      md = new MemberDef(0,name,0,0,root->protection,Normal,FALSE,FALSE,
-               MemberDef::Enumeration,0,0);
+      md = new MemberDef(
+          root->fileName,root->startLine,
+          0,name,0,0,root->protection,Normal,FALSE,FALSE,
+          MemberDef::Enumeration,0,0);
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
-      md->setDefFile(root->fileName);
-      md->setDefLine(root->startLine);
+      //md->setDefFile(root->fileName);
+      //md->setDefLine(root->startLine);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
       md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
@@ -3360,9 +3406,10 @@ void findEnumDocumentation(Entry *root)
       } 
       if (!found)
       {
-        warn("Warning: Documentation for undefined enum `%s' found at"
-             " line %d of file %s\n",name.data(),
-               root->startLine,root->fileName.data());
+        warn(root->fileName,root->startLine,
+             "Warning: Documentation for undefined enum `%s' found.",
+             name.data()
+            );
       }
     }
   }
@@ -3739,6 +3786,45 @@ void inheritDocumentation()
 
 //----------------------------------------------------------------------------
 
+void distributeMemberGroupDocumentation()
+{
+  // for each class
+  ClassListIterator cli(classList);
+  ClassDef *cd;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    cd->distributeMemberGroupDocumentation();
+  }
+  // for each file
+  FileName *fn=inputNameList.first();
+  while (fn)
+  {
+    FileDef *fd=fn->first();
+    while (fd)
+    {
+      fd->distributeMemberGroupDocumentation();
+      fd=fn->next();
+    }
+    fn=inputNameList.next();
+  }
+  // for each namespace
+  NamespaceDef *nd=namespaceList.first();
+  while (nd)
+  {
+    nd->distributeMemberGroupDocumentation();
+    nd=namespaceList.next();
+  }
+  // for each group
+  GroupDef *gd=groupList.first();
+  while (gd)
+  {
+    gd->distributeMemberGroupDocumentation();
+    gd=groupList.next();
+  }
+}
+
+//----------------------------------------------------------------------------
+
 void findDefineDocumentation(Entry *root)
 {
   if ((root->section==Entry::DEFINEDOC_SEC ||
@@ -3833,8 +3919,10 @@ void findDefineDocumentation(Entry *root)
     }
     else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
-      warn("Warning: documentation for unknown define %s found at line %d of "
-           "file %s\n",root->name.data(),root->startLine,root->fileName.data());
+      warn(root->fileName,root->startLine,
+           "Warning: documentation for unknown define %s found.\n",
+           root->name.data()
+          );
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -3873,7 +3961,8 @@ void buildPageList(Entry *root)
           baseName=baseName.left(baseName.length()-4);
         else if (baseName.right(5)==".html")
           baseName=baseName.left(baseName.length()-5);
-        pi=new PageInfo(baseName, root->doc,
+        pi=new PageInfo(root->fileName,root->startLine,
+                        baseName, root->doc,
                         root->args.stripWhiteSpace());
         QCString pageName;
         if (Config::caseSensitiveNames)
@@ -3914,14 +4003,17 @@ void findMainPage(Entry *root)
     if (mainPage==0)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
-      mainPage = new PageInfo("index", root->doc,
-                        root->args.stripWhiteSpace());
+      mainPage = new PageInfo(root->fileName,root->startLine,
+                              "index", root->doc,
+                              root->args.stripWhiteSpace());
       setFileNameForSections(root->anchors,"index");
     }
     else
     {
-      warn("Warning: found more than one \\mainpage comment block!\n Skipping the "
-           "block at line %d of %s\n",root->startLine,root->fileName.data());
+      warn(root->fileName,root->startLine,
+           "Warning: found more than one \\mainpage comment block! Skipping this "
+           "block."
+          );
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -3995,7 +4087,7 @@ void generatePageDocs()
       outputList->writeSection(si->label,si->title,FALSE);
     }
     outputList->startTextBlock();
-    parseDoc(*outputList,0,0,pi->doc);
+    parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
     outputList->endTextBlock();
     endFile(*outputList);
     outputList->enable(OutputGenerator::Man);
@@ -4014,13 +4106,16 @@ void buildExampleList(Entry *root)
     {
       if (exampleDict[root->name])
       {
-        warn("Warning: Example %s was already documented. Ignoring "
-             "documentation at line %d of %s\n",root->name.data(),
-             root->startLine,root->fileName.data());
+        warn(root->fileName,root->startLine,
+             "Warning: Example %s was already documented. Ignoring "
+             "documentation found here.",
+             root->name.data()
+            );
       }
       else
       {
-        PageInfo *pi=new PageInfo(root->name,root->doc,root->args);
+        PageInfo *pi=new PageInfo(root->fileName,root->startLine,
+                                  root->name,root->doc,root->args);
         setFileNameForSections(root->anchors,
                                convertSlashes(pi->name,TRUE)+"-example"
                               );
@@ -4340,7 +4435,7 @@ void readTagFile(const char *tl)
   QFileInfo fi(fileName);
   if (!fi.exists() || !fi.isFile())
   {
-    warn("Warning: Tag file `%s' does not exist or is not a file. Skipping it...\n",
+    err("Error: Tag file `%s' does not exist or is not a file. Skipping it...\n",
         fileName.data());
     return;
   }
@@ -4457,12 +4552,12 @@ void copyStyleSheet()
       }
       else
       {
-        warn("Warning: could not write to style sheet %s\n",destFileName.data());
+        err("Error: could not write to style sheet %s\n",destFileName.data());
       }
     }
     else
     {
-      warn("Warning: could not open user specified style sheet %s\n",Config::htmlStyleSheet.data());
+      err("Error: could not open user specified style sheet %s\n",Config::htmlStyleSheet.data());
       Config::htmlStyleSheet.resize(0); // revert to the default
     }
   }
@@ -4709,7 +4804,7 @@ void readFormulaRepository()
       int se=line.find(':'); // find name and text separator.
       if (se==-1)
       {
-        warn("Warning: formula.repository is corrupted!\n");
+        err("Error: formula.repository is corrupted!\n");
         break;
       }
       else
@@ -4969,7 +5064,7 @@ int main(int argc,char **argv)
 
   if (input.isEmpty())
   {
-    warn("No input read, no output generated!\n");
+    err("No input read, no output generated!\n");
     exit(1);
   }
   else
@@ -5116,6 +5211,9 @@ int main(int argc,char **argv)
     msg("Inheriting documentation...\n");
     inheritDocumentation();
   }
+
+  msg("Distributing member group documentation.\n");
+  distributeMemberGroupDocumentation();
 
   /**************************************************************************
    *                        Generate documentation                          *

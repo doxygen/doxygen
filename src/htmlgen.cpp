@@ -154,7 +154,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
         }
         t << "doxygen.gif\" alt=\"doxygen\" " 
           << "align=center border=0 " << endl << 
-             "width=118 height=53></a> " << versionString <<" ";
+             "width=110 height=53></a>" << versionString <<" ";
       }
       break;
     default:

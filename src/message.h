@@ -19,7 +19,10 @@
 #define MESSAGE_H
 
 extern void msg(const char *fmt, ...);
-extern void warn(const char *fmt, ...);
+extern void warn(const char *file,int line,const char *fmt, ...);
+extern void warn_cont(const char *fmt, ...);
+extern void warn_undoc(const char *file,int line,const char *fmt, ...);
 extern void err(const char *fmt, ...);
+void initWarningFormat();
 
 #endif

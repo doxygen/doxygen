@@ -1002,10 +1002,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <SkipCxxComment>.			{
   					  g_code->codify(yytext);
   					}
-<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*{B}*"/*"[*!]/[^/*] {
+<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*"//@"[{}]{B}*\n)?{B}*"/*"[*!]/[^/*] {
   					  g_yyLineNr+=QCString(yytext).contains('\n');
 					}
-<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)* {
+<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*"//@"[{}]{B}*\n)? {
   					  g_yyLineNr+=QCString(yytext).contains('\n');
                                           g_code->endCodeLine();
                                           if (g_yyLineNr<g_inputLines) 
@@ -1033,6 +1033,40 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    startFontClass("comment");
+					    codifyLines(yytext);
+					    endFontClass();
+					  }
+  					}
+<*>\n({B}*"//@"[{}]{B}*\n)		{ // remove one-line group marker
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr+=((QCString)yytext).contains('\n');
+					    g_code->endCodeLine();
+					    if (g_yyLineNr<g_inputLines) 
+					    {
+					      startCodeLine(*g_code);
+					    }
+					  }
+					  else
+					  {
+					    startFontClass("comment");
+					    codifyLines(yytext);
+					    endFontClass();
+					  }
+  					}
+<*>^{B}*"//@"[{}]{B}*\n			{ // remove one-line group marker
+  					  if (Config::stripCommentsFlag)
+					  {
+					    g_yyLineNr++;
 					    g_code->endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {

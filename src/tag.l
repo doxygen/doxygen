@@ -54,7 +54,7 @@ static void addClass(const char *name,const char *fileName)
   //printf("adding class %s\n",name);
   if (name!=0 && strlen(name)>0 && classDict[name]==0)
   {
-    cd = new ClassDef(name,ClassDef::Class,tagName,fileName);
+    cd = new ClassDef(fileName,1,name,ClassDef::Class,tagName,fileName);
     fd = 0;
     nd = 0;
     classList.inSort(cd);
@@ -92,7 +92,7 @@ static void addNamespace(const char *name)
     // since namespace are open, this need not to be the case. As a result
     // namespace may contain members that are located in 
     // different namespaces!
-    nd = new NamespaceDef(name,tagName);
+    nd = new NamespaceDef("<tagfile>",1,name,tagName);
     namespaceList.inSort(nd);
     namespaceDict.insert(name,nd);
   }
@@ -110,7 +110,8 @@ static void addMember(const char *name,const char *anchor,const char *args)
     MemberDef *md;
     ArgumentList *argList = new ArgumentList;
     stringToArgumentList(args,argList);
-    md=new MemberDef(0,name,args,0,Public,Normal,FALSE,FALSE,
+    md=new MemberDef("<tagfile>",1,
+                       0,name,args,0,Public,Normal,FALSE,FALSE,
                        MemberDef::Function,0,argList); 
     delete argList;
     md->setAnchor(anchor);

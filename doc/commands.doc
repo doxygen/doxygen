@@ -87,6 +87,7 @@ documentation:
 <li> \refitem cmdmainpage \mainpage
 <li> \refitem cmdname \name
 <li> \refitem cmdnamespace \namespace
+<li> \refitem cmdnosubgrouping \nosubgrouping
 <li> \refitem cmdoverload \overload
 <li> \refitem cmdpage \page
 <li> \refitem cmdpar \par
@@ -366,6 +367,14 @@ See section \ref memgroup for an example.
   Indicates that a comment block contains documentation for a
   namespace with name \<name\>. 
   
+<hr>
+\subsection cmdnosubgrouping \nosubgrouping
+
+This command can be put in the documentation
+of a class. It can be used in combination with member grouping
+to avoid that doxygen puts a member group as a subgroup of a
+Public/Protected/Private/... section.
+
 <hr>
 \subsection cmdoverload \overload [(function declaration)]
 

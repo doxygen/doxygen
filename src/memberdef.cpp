@@ -225,12 +225,13 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al,bool br=TRUE)
  *           all types.
  */
 
-MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
+MemberDef::MemberDef(const char *df,int dl,
+                     const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,bool r,MemberType mt,
                      const ArgumentList *tal,const ArgumentList *al
-                    ) : Definition(substituteClassNames(na))
+                    ) : Definition(df,dl,substituteClassNames(na))
 {
-  //printf("++++++ MemberDef(%s,%s,%s) ++++++ \n",t,na,a);
+  //printf("++++++ MemberDef(%s file=%s,line=%d) ++++++ \n",na,df,dl);
   classDef=0;
   fileDef=0;
   fileDec=0;
@@ -251,7 +252,6 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   args=substituteClassNames(a);
   if (type.isNull()) decl=name()+args; else decl=type+" "+name()+args;
   declLine=0;
-  defLine=0;
   memberGroup=0;
   virt=v;
   prot=p;
@@ -395,8 +395,10 @@ QCString MemberDef::getOutputFileBase() const
   {
     return nspace->getOutputFileBase();
   }
-  warn("Warning: Internal inconsistency: member %s does not belong to any\n"
-       " container!\n",name().data());
+  warn(defFileName,defLine,
+       "Warning: Internal inconsistency: member %s does not belong to any"
+       " container!",name().data()
+      );
   return "dummy";
 }
 
@@ -773,7 +775,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!briefDescription().isEmpty() && Config::briefMemDescFlag && !annMemb)
     {
       ol.startMemberDescription();
-      parseDoc(ol,cname,name(),briefDescription());
+      parseDoc(ol,defFileName,defLine,cname,name(),briefDescription());
       if (/*!documentation().isEmpty()*/ detailsAreVisible()) 
       {
         ol.disableAllBut(OutputGenerator::Html);
@@ -1044,14 +1046,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) /* || !annMemb */
        )  
     { 
-      parseDoc(ol,scopeName,name(),briefDescription());
+      parseDoc(ol,defFileName,defLine,scopeName,name(),briefDescription());
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!documentation().isEmpty())
     { 
-      parseDoc(ol,scopeName,name(),documentation()+"\n");
+      parseDoc(ol,defFileName,defLine,scopeName,name(),documentation()+"\n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1083,7 +1085,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.endEmphasis();
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,scopeName,name(),a->docs);
+          parseDoc(ol,defFileName,defLine,scopeName,name(),a->docs);
           ol.endDescTableData();
         }
       }
@@ -1138,7 +1140,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              parseDoc(ol,scopeName,fmd->name(),fmd->briefDescription());
+              parseDoc(ol,defFileName,defLine,scopeName,fmd->name(),fmd->briefDescription());
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1148,7 +1150,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              parseDoc(ol,scopeName,fmd->name(),fmd->documentation()+"\n");
+              parseDoc(ol,defFileName,defLine,scopeName,fmd->name(),fmd->documentation()+"\n");
             }
             ol.endDescTableData();
           }
@@ -1329,7 +1331,7 @@ void MemberDef::warnIfUndocumented()
     t="group", d=gd;
 
   if (d && d->isLinkable() && !isLinkable() && name().find('@')==-1)
-   warn("Warning: Member %s of %s %s is not documented\n",
+   warn_undoc(defFileName,defLine,"Warning: Member %s of %s %s is not documented.",
         name().data(),t,d->name().data());
 }
 

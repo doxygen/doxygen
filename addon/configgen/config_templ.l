@@ -40,12 +40,15 @@ void err(const char *fmt, ...)
   vfprintf(stderr, fmt, args);
   va_end(args); 
 }
-void warn(const char *fmt, ...)
+void warn_cont(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
   va_end(args);
+}
+void initWarningFormat()
+{
 }
 #else
 #include "doxygen.h"
@@ -183,7 +186,7 @@ static int yyread(char *buf,int max_size)
 					  else 
 					  {
 					    *b=FALSE; 
-					    warn("Warning: Invalid value `%s' for "
+					    warn_cont("Warning: Invalid value `%s' for "
 						 "boolean tag in line %d; use YES or NO\n",
 						 bs.data(),yyLineNr);
 					  }
@@ -248,7 +251,7 @@ static void writeStringList(QTextStream &t,QStrList &l)
     const char *s=p;
     bool hasBlanks=FALSE;
     while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
-    if (!first) t << "                       ";
+    if (!first) t << "                        ";
     first=FALSE;
     if (hasBlanks) t << "\"" << s << "\""; else t << s;
     p = l.next();
@@ -288,7 +291,7 @@ void configStrToVal()
     int ts = tabSizeString.toInt(&ok);
     if (!ok || ts<1 || ts>16)
     {
-      warn("Warning: argument of TAB_SIZE is not a valid number, using tab size of 8 spaces!\n");
+      warn_cont("Warning: argument of TAB_SIZE is not a valid number, using tab size of 8 spaces!\n");
       ts=8;
     }
     Config::tabSize = ts;
@@ -304,7 +307,7 @@ void configStrToVal()
     int cols = colsInAlphaIndexString.toInt(&ok);
     if (!ok || cols<1 || cols>20)
     {
-      warn("Warning: argument of COLS_IN_ALPHA_INDEX is not a valid number in the range [1..20]!\n"
+      warn_cont("Warning: argument of COLS_IN_ALPHA_INDEX is not a valid number in the range [1..20]!\n"
 	   "Using the default of 5 columns!\n");
       cols = 5;
     }
@@ -341,7 +344,8 @@ static void substEnvVarsInStrList(QStrList &sl)
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
 		       add to sl. If the orginal string already 
-		       contained multiple elements no splitting is done! */
+		       contained multiple elements no further 
+		       splitting is done to allow quoted items with spaces! */
     {
 
 
@@ -354,10 +358,10 @@ static void substEnvVarsInStrList(QStrList &sl)
       {
 	char c;
 	// skip until start of new word
-	for (;i<l && ((c=result.at(i))==' ' || c=='\t');i++) 
-	  p=i; // p marks the start index of the word
+	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++; 
+	p=i; // p marks the start index of the word
 	// skip until end of a word
-	for (;i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"');i++);
+	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
 	if (i<l) // not at the end of the string
 	{
 	  if (c=='"') // word within quotes
@@ -424,6 +428,29 @@ void checkConfig()
   //  projectName[0]=toupper(projectName[0]);
   //}
 
+  if (Config::warnFormat.isEmpty())
+  {
+    Config::warnFormat="$file:$line $text";
+  }
+  else
+  {
+    if (Config::warnFormat.find("$file")==-1)
+    {
+      err("Error: warning format does not contain a $file tag!\n");
+      exit(1);
+    }
+    if (Config::warnFormat.find("$line")==-1)
+    {
+      err("Error: warning format does not contain a $line tag!\n");
+      exit(1);
+    }
+    if (Config::warnFormat.find("$text")==-1)
+    {
+      err("Error: wanring format foes not contain a $text tag!\n");
+      exit(1);
+    }
+  }
+  initWarningFormat();
 
   // set default man page extension if non is given by the user
   if (Config::manExtension.isEmpty())
@@ -715,7 +742,7 @@ void checkConfig()
       QFileInfo fi(Config::perlPath);
       if (!fi.exists())
       {
-        warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
+        warn_cont("Warning: tag PERL_PATH: perl interpreter not found at default or"
             "user specified (%s) location\n",
         Config::perlPath.data());
       }
