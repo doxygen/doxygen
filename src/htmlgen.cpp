@@ -80,7 +80,8 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
          "<title>" << title << "</title>\n";
     t << "<link ";
     if (external) 
-      t << "doxygen=\"_doc:\" href=\"/";
+      t << "doxygen=\"_doc:" << Config::docURL 
+        << "\" href=\"" << Config::docURL << "/";
     else
       t << "href=\"";
     if (Config::htmlStyleSheet.isEmpty())
@@ -147,7 +148,8 @@ void HtmlGenerator::writeFooter(int part,bool external)
         t << endl << "<img ";
         if (external)
         {
-          t << "doxygen=\"_doc:\" src=\"/";
+          t << "doxygen=\"_doc:" << Config::docURL 
+            << "\" src=\"" << Config::docURL << "/";
         }
         else
         {

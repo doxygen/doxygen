@@ -29,10 +29,6 @@ class IndexTree;
 enum WordRefMasks { WORDINNAME_MASK=4, INNAME_MASK=2, FULLWORD_MASK=1 };
 enum WordRefBits  { WORDINNAME_BIT=2, INNAME_BIT=1, FULLWORD_BIT=0 };
 
-//  bool  inName;
-//  bool  fullWord;
-//  bool  wordInName;
-
 struct WordRef
 {
   int   id;
@@ -77,7 +73,6 @@ class SuffixTree
     SuffixTree();
    ~SuffixTree();
     void insertWord(const char *word,int index,bool inName);
-    //void buildIndex();
     void resolveForwardReferences();
     void dump();
     int size(); // return the size of the (flat) tree in bytes

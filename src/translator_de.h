@@ -25,26 +25,8 @@
 class TranslatorGerman : public Translator
 {
   public:
-    //--------------------------------------------------------------------
-    // NOTICE:
-    // the following functions are now obsolete: these are no longer used and
-    // will disappear in future versions. You do not have to translate them!
-    QCString trInherits()
-    { return "Abgeleitet von "; }
-    QCString trAnd()
-    { return "und"; }
-    QCString trInheritedBy()
-    { return "Basisklasse f&uuml;r"; }
-    QCString trReference()
-    { return "Verweis"; }
-    QCString trReimplementedFrom()
-    { return "Implementiert von"; }
-    QCString trReimplementedIn()
-    { return "erneute Implementation in"; }
-    QCString trIncludeFile()
-    { return "Include-Datei"; }
-    // end of obsolete functions
-    //--------------------------------------------------------------------
+    QCString idLanguage()
+    { return "german"; }
 
     QCString latexBabelPackage()
       // returns the name of the package that is included by LaTeX

@@ -212,6 +212,10 @@ ClassDef *getResolvedClass(const char *name)
   QCString *subst = typedefDict[name];
   if (subst) // there is a typedef with this name
   {
+    if (*subst==name) // avoid resolving typedef struct foo foo; 
+    {
+      return classDict[name];
+    }
     int count=0; // recursion detection guard
     QCString *newSubst;
     while ((newSubst=typedefDict[*subst]) && count<10)
@@ -241,11 +245,20 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   if (s.isEmpty()) return s;
   QCString result;
   uint i;
-  for (i=0;i<s.length();i++)
+  uint l=s.length();
+  for (i=0;i<l;i++)
   {
     char c=s.at(i);
-    if (c!=' ' ||
-	(i!=0 && i!=s.length()-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
+    if (i<l-2 && c=='<' && s.at(i+1)!='<')
+    {
+      result+="< ";
+    }
+    else if (i>0 && c=='>' && s.at(i-1)!='>')
+    {
+      result+=" >";
+    }
+    else if (c!=' ' ||
+	(i!=0 && i!=l-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
        )
     {
       if ((c=='*' || c=='&' || c=='@') && 
@@ -547,7 +560,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
   ol.disableAllBut(OutputGenerator::Html);
   QCString extLink,absPath;
-  if (ext) { extLink="_doc"; absPath="/"; }
+  if (ext) { extLink="_doc"; absPath=Config::docURL+"/"; }
   //if (manEnabled) ol.disable(OutputGenerator::Man);
   //if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
@@ -651,7 +664,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   if (Config::searchEngineFlag)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem("_cgi","");
+    ol.startQuickIndexItem("_cgi",Config::cgiURL+"/"+Config::cgiName);
     parseText(ol,theTranslator->trSearch());
     ol.endQuickIndexItem();
   } 
@@ -968,6 +981,8 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
 void stripIrrelevantConstVolatile(QCString &s)
 {
   int i,j;
+  if (s=="const")    { s.resize(0); return; }
+  if (s=="volatile") { s.resize(0); return; }
   i = s.find("const ");
   if (i!=-1) 
   {
@@ -2323,8 +2338,10 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 QCString stripScope(const char *name)
 {
   QCString result = name;
-  int i=result.findRev("::");
-  if (i!=-1)
+  int ti=result.find('<'); // find start of template
+  if (ti==-1) ti=result.length();
+  int i = ti>2 ? result.findRev("::",ti-2) : -1; // find scope just before template
+  if (i!=-1) // found scope
   {
     result=result.right(result.length()-i-2);
   }

@@ -131,15 +131,17 @@ bool     Config::generateRTF = TRUE;
 QCString Config::rtfOutputDir = "rtf";
 bool     Config::compactRTFFlag = FALSE;
 bool     Config::rtfHyperFlag = FALSE;
+QCString Config::rtfStylesheetFile;
 bool     Config::generateMan = TRUE;
 QCString Config::manOutputDir = "man";
 QCString Config::manExtension = ".3";
 bool     Config::preprocessingFlag = TRUE;
 bool     Config::macroExpansionFlag = FALSE;
+bool     Config::onlyPredefinedFlag = FALSE;
 bool     Config::searchIncludeFlag = TRUE;
 QStrList Config::includePath;
 QStrList Config::predefined;
-bool     Config::onlyPredefinedFlag = FALSE;
+QStrList Config::expandAsDefinedList;
 QStrList Config::tagFileList;
 QCString Config::genTagFile;
 bool     Config::allExtFlag = FALSE;
@@ -175,8 +177,6 @@ static bool    *    b=0;
 static QStrList *   l=0;
 static int          lastState;
 static QCString     elemStr;
-//static QCString     tabSizeString;
-//static QCString     colsInAlphaIndexString;
 static QCString     tabSizeString;
 static QCString     colsInAlphaIndexString;
 static QCString     maxDotGraphWidthString;
@@ -279,15 +279,17 @@ static int yyread(char *buf,int max_size)
 <Start>"RTF_OUTPUT"[ \t]*"="            { BEGIN(GetString); s=&Config::rtfOutputDir; s->resize(0); }
 <Start>"COMPACT_RTF"[ \t]*"="           { BEGIN(GetBool); b=&Config::compactRTFFlag; }
 <Start>"RTF_HYPERLINKS"[ \t]*"="        { BEGIN(GetBool); b=&Config::rtfHyperFlag; }
+<Start>"RTF_STYLESHEET_FILE"[ \t]*"="   { BEGIN(GetString); s=&Config::rtfStylesheetFile; s->resize(0); }
 <Start>"GENERATE_MAN"[ \t]*"="          { BEGIN(GetBool); b=&Config::generateMan; }
 <Start>"MAN_OUTPUT"[ \t]*"="            { BEGIN(GetString); s=&Config::manOutputDir; s->resize(0); }
 <Start>"MAN_EXTENSION"[ \t]*"="         { BEGIN(GetString); s=&Config::manExtension; s->resize(0); }
 <Start>"ENABLE_PREPROCESSING"[ \t]*"="  { BEGIN(GetBool); b=&Config::preprocessingFlag; }
 <Start>"MACRO_EXPANSION"[ \t]*"="       { BEGIN(GetBool); b=&Config::macroExpansionFlag; }
+<Start>"EXPAND_ONLY_PREDEF"[ \t]*"="    { BEGIN(GetBool); b=&Config::onlyPredefinedFlag; }
 <Start>"SEARCH_INCLUDES"[ \t]*"="       { BEGIN(GetBool); b=&Config::searchIncludeFlag; }
 <Start>"INCLUDE_PATH"[ \t]*"="          { BEGIN(GetStrList); l=&Config::includePath; l->clear(); elemStr=""; }
 <Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined; l->clear(); elemStr=""; }
-<Start>"EXPAND_ONLY_PREDEF"[ \t]*"="    { BEGIN(GetBool); b=&Config::onlyPredefinedFlag; }
+<Start>"EXPAND_AS_DEFINED"[ \t]*"="     { BEGIN(GetStrList); l=&Config::expandAsDefinedList; l->clear(); elemStr=""; }
 <Start>"TAGFILES"[ \t]*"="              { BEGIN(GetStrList); l=&Config::tagFileList; l->clear(); elemStr=""; }
 <Start>"GENERATE_TAGFILE"[ \t]*"="      { BEGIN(GetString); s=&Config::genTagFile; s->resize(0); }
 <Start>"ALLEXTERNALS"[ \t]*"="          { BEGIN(GetBool); b=&Config::allExtFlag; }
@@ -546,6 +548,7 @@ void dumpConfig()
   printf("rtfOutputDir=`%s'\n",Config::rtfOutputDir.data());
   printf("compactRTFFlag=`%d'\n",Config::compactRTFFlag);
   printf("rtfHyperFlag=`%d'\n",Config::rtfHyperFlag);
+  printf("rtfStylesheetFile=`%s'\n",Config::rtfStylesheetFile.data());
   printf("# configuration options related to the man page output\n");
   printf("generateMan=`%d'\n",Config::generateMan);
   printf("manOutputDir=`%s'\n",Config::manOutputDir.data());
@@ -553,6 +556,7 @@ void dumpConfig()
   printf("# Configuration options related to the preprocessor   \n");
   printf("preprocessingFlag=`%d'\n",Config::preprocessingFlag);
   printf("macroExpansionFlag=`%d'\n",Config::macroExpansionFlag);
+  printf("onlyPredefinedFlag=`%d'\n",Config::onlyPredefinedFlag);
   printf("searchIncludeFlag=`%d'\n",Config::searchIncludeFlag);
   {
     char *is=Config::includePath.first();
@@ -570,7 +574,14 @@ void dumpConfig()
       is=Config::predefined.next();
     }
   }
-  printf("onlyPredefinedFlag=`%d'\n",Config::onlyPredefinedFlag);
+  {
+    char *is=Config::expandAsDefinedList.first();
+    while (is)
+    {
+      printf("expandAsDefinedList=`%s'\n",is);
+      is=Config::expandAsDefinedList.next();
+    }
+  }
   printf("# Configuration::addtions related to external references   \n");
   {
     char *is=Config::tagFileList.first();
@@ -677,15 +688,17 @@ void Config::init()
   Config::rtfOutputDir = "rtf";
   Config::compactRTFFlag = FALSE;
   Config::rtfHyperFlag = FALSE;
+  Config::rtfStylesheetFile.resize(0);
   Config::generateMan = TRUE;
   Config::manOutputDir = "man";
   Config::manExtension = ".3";
   Config::preprocessingFlag = TRUE;
   Config::macroExpansionFlag = FALSE;
+  Config::onlyPredefinedFlag = FALSE;
   Config::searchIncludeFlag = TRUE;
   Config::includePath.clear();
   Config::predefined.clear();
-  Config::onlyPredefinedFlag = FALSE;
+  Config::expandAsDefinedList.clear();
   Config::tagFileList.clear();
   Config::genTagFile.resize(0);
   Config::allExtFlag = FALSE;
@@ -1556,6 +1569,17 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# Load stylesheet definitions from file. Syntax is similar to doxygen's \n";
+    t << "# config file, i.e. a series of assigments. You only have to provide \n";
+    t << "# replacements, missing definitions are set to their default value. \n";
+    t << "\n";
+  }
+  t << "RTF_STYLESHEET_FILE   = ";
+  writeStringValue(t,Config::rtfStylesheetFile);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the man page output\n";
@@ -1614,11 +1638,23 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
     t << "# If the MACRO_EXPANSION tag is set to YES Doxygen will expand all macro \n";
     t << "# names in the source code. If set to NO (the default) only conditional \n";
-    t << "# compilation will be performed. \n";
+    t << "# compilation will be performed. Macro expansion can be done in a controlled \n";
+    t << "# way by setting EXPAND_ONLY_PREDEF to YES. \n";
     t << "\n";
   }
   t << "MACRO_EXPANSION       = ";
   writeBoolValue(t,Config::macroExpansionFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n";
+    t << "# then the macro expansion is limited to the macros specified with the \n";
+    t << "# PREDEFINED and EXPAND_AS_PREDEFINED tags. \n";
+    t << "\n";
+  }
+  t << "EXPAND_ONLY_PREDEF    = ";
+  writeBoolValue(t,Config::onlyPredefinedFlag);
   t << "\n";
   if (!sl)
   {
@@ -1657,13 +1693,14 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n";
-    t << "# then the macro expansion is limited to the macros specified with the \n";
-    t << "# PREDEFINED tag. \n";
+    t << "# If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then \n";
+    t << "# this tag can be used to specify a list of macro names that should be expanded. \n";
+    t << "# The macro definition that is found in the sources will be used. \n";
+    t << "# Use the PREDEFINED tag if you want to use a different macro definition. \n";
     t << "\n";
   }
-  t << "EXPAND_ONLY_PREDEF    = ";
-  writeBoolValue(t,Config::onlyPredefinedFlag);
+  t << "EXPAND_AS_DEFINED     = ";
+  writeStringList(t,Config::expandAsDefinedList);
   t << "\n";
   if (!sl)
   {
@@ -1942,6 +1979,56 @@ void configStrToVal()
     }
     Config::colsInAlphaIndex=cols;
   }
+  
+  if (maxDotGraphWidthString.isEmpty())
+  {
+    Config::maxDotGraphWidth=1024;
+  }
+  else
+  {
+    bool ok;
+    int width =maxDotGraphWidthString.toInt(&ok);
+    if (!ok)
+    {
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+	   "Using the default of 1024 pixels!\n");
+      width=1024;
+    }
+    else if (width<250) // clip to lower bound
+    {
+      width=250;
+    }
+    else if (width>30000) // clip to upper bound
+    {
+      width=30000;
+    }
+    Config::maxDotGraphWidth=width;
+  }
+
+  if (maxDotGraphHeightString.isEmpty())
+  {
+    Config::maxDotGraphHeight=1024;
+  }
+  else
+  {
+    bool ok;
+    int height =maxDotGraphHeightString.toInt(&ok);
+    if (!ok)
+    {
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+	   "Using the default of 1024 pixels!\n");
+      height=1024;
+    }
+    else if (height<250) // clip to lower bound
+    {
+      height=250;
+    }
+    else if (height>30000) // clip to upper bound
+    {
+      height=30000;
+    }
+    Config::maxDotGraphHeight=height;
+  }
 }
 
 static void substEnvVarsInString(QCString &s)
@@ -2073,10 +2160,12 @@ void substituteEnvironmentVars()
   substEnvVarsInStrList( Config::extraPackageList );
   substEnvVarsInString( Config::latexHeaderFile );
   substEnvVarsInString( Config::rtfOutputDir );
+  substEnvVarsInString( Config::rtfStylesheetFile );
   substEnvVarsInString( Config::manOutputDir );
   substEnvVarsInString( Config::manExtension );
   substEnvVarsInStrList( Config::includePath );
   substEnvVarsInStrList( Config::predefined );
+  substEnvVarsInStrList( Config::expandAsDefinedList );
   substEnvVarsInStrList( Config::tagFileList );
   substEnvVarsInString( Config::genTagFile );
   substEnvVarsInString( Config::perlPath );

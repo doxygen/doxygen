@@ -82,8 +82,6 @@ static bool    *    b=0;
 static QStrList *   l=0;
 static int          lastState;
 static QCString     elemStr;
-//static QCString     tabSizeString;
-//static QCString     colsInAlphaIndexString;
 #CONFIG Static
 
 /* -----------------------------------------------------------------
@@ -312,6 +310,56 @@ void configStrToVal()
       cols = 5;
     }
     Config::colsInAlphaIndex=cols;
+  }
+  
+  if (maxDotGraphWidthString.isEmpty())
+  {
+    Config::maxDotGraphWidth=1024;
+  }
+  else
+  {
+    bool ok;
+    int width =maxDotGraphWidthString.toInt(&ok);
+    if (!ok)
+    {
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+	   "Using the default of 1024 pixels!\n");
+      width=1024;
+    }
+    else if (width<250) // clip to lower bound
+    {
+      width=250;
+    }
+    else if (width>30000) // clip to upper bound
+    {
+      width=30000;
+    }
+    Config::maxDotGraphWidth=width;
+  }
+
+  if (maxDotGraphHeightString.isEmpty())
+  {
+    Config::maxDotGraphHeight=1024;
+  }
+  else
+  {
+    bool ok;
+    int height =maxDotGraphHeightString.toInt(&ok);
+    if (!ok)
+    {
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+	   "Using the default of 1024 pixels!\n");
+      height=1024;
+    }
+    else if (height<250) // clip to lower bound
+    {
+      height=250;
+    }
+    else if (height>30000) // clip to upper bound
+    {
+      height=30000;
+    }
+    Config::maxDotGraphHeight=height;
   }
 }
 

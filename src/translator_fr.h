@@ -25,6 +25,8 @@
 class TranslatorFrench : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "french"; }
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
     { return "french"; }

@@ -1338,6 +1338,16 @@ void init()
                     "Note: wordpad (write) and others do not support links. \n"
                  );
   addDependency("rtfHyperFlag","generateRTF");
+  ConfigString::add("rtfStylesheetFile",
+                    "RTF_STYLESHEET_FILE",
+                    "",
+                    "file to load stylesheet definitions from",
+                    "Load stylesheet definitions from file. Syntax is similar to doxygen's \n"
+                    "config file, i.e. a series of assigments. You only have to provide \n"
+                    "replacements, missing definitions are set to their default value. \n",
+                    ConfigString::File
+                   );
+  addDependency("rtfStylesheetFile","generateRTF");                  
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Man","configuration options related to the man page output");
   //-----------------------------------------------------------------------------------------------
@@ -1383,9 +1393,19 @@ void init()
                     "expand macros in the source.",
                     "If the MACRO_EXPANSION tag is set to YES Doxygen will expand all macro \n"
                     "names in the source code. If set to NO (the default) only conditional \n"
-                    "compilation will be performed. \n"
+                    "compilation will be performed. Macro expansion can be done in a controlled \n"
+                    "way by setting EXPAND_ONLY_PREDEF to YES. \n"
                  );
   addDependency("macroExpansionFlag","preprocessingFlag");
+  ConfigBool::add(  "onlyPredefinedFlag",
+                    "EXPAND_ONLY_PREDEF",
+                    "FALSE",
+                    "expand only predefined macros",
+                    "If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n"
+                    "then the macro expansion is limited to the macros specified with the \n"
+                    "PREDEFINED and EXPAND_AS_PREDEFINED tags. \n"
+                 );
+  addDependency("onlyPredefinedFlag","preprocessingFlag");
   ConfigBool::add(  "searchIncludeFlag",
                     "SEARCH_INCLUDES",
                     "TRUE",
@@ -1415,15 +1435,15 @@ void init()
                     "omitted =1 is assumed. \n"
                  );
   addDependency("predefined","preprocessingFlag");
-  ConfigBool::add(  "onlyPredefinedFlag",
-                    "EXPAND_ONLY_PREDEF",
-                    "FALSE",
-                    "expand only predefined macros",
-                    "If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n"
-                    "then the macro expansion is limited to the macros specified with the \n"
-                    "PREDEFINED tag. \n"
+  ConfigList::add(  "expandAsDefinedList",
+                    "EXPAND_AS_DEFINED",
+                    "",
+                    "list of defines to expand",
+                    "If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then \n"
+                    "this tag can be used to specify a list of macro names that should be expanded. \n"
+                    "The macro definition that is found in the sources will be used. \n"
+                    "Use the PREDEFINED tag if you want to use a different macro definition. \n" 
                  );
-  addDependency("onlyPredefinedFlag","preprocessingFlag");
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "External","Configuration::addtions related to external references   ");
   //-----------------------------------------------------------------------------------------------

@@ -126,6 +126,7 @@ extern PageInfo *mainPage;
 extern StringDict tagDestinationDict; 
 extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
 extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
+extern QDict<void> expandAsDefinedDict;
 
 extern int annotatedClasses;
 extern int hierarchyClasses;

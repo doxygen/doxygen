@@ -143,7 +143,7 @@ static bool readCodeFragment(const char *fileName,
     {
       // skip until the opening bracket or lonely : is found
       bool found=FALSE;
-      char cn;
+      char cn=0;
       while (lineNr<=endLine && !f.atEnd() && !found)
       {
         while ((c=f.getch())!='{' && c!=':' && c!=-1) if (c=='\n') lineNr++; 

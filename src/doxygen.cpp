@@ -81,10 +81,6 @@ MemberNameDict functionNameDict(10007); // all functions
 StringDict     substituteDict(1009);    // class name substitutes
 SectionDict    sectionDict(257);        // all page sections
 StringDict     excludeNameDict(1009);   // sections
-//FileNameDict   inputNameDict(1009);     // sections
-//FileNameDict   includeNameDict(1009);   // include names
-//FileNameDict   exampleNameDict(1009);   // examples
-//FileNameDict   imageNameDict(257);      // images
 FileNameDict   *inputNameDict;          // sections
 FileNameDict   *includeNameDict;        // include names
 FileNameDict   *exampleNameDict;        // examples
@@ -96,6 +92,7 @@ FormulaDict    formulaNameDict(1009);   // the label name of all formulas
 StringDict     tagDestinationDict(257); // all tag locations
                                         // a member group
 QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
+QDict<void>    expandAsDefinedDict(257); // all macros that should be expanded
 OutputList     *outputList = 0;         // list of output generating objects
 
 PageInfo       *mainPage = 0;
@@ -906,6 +903,15 @@ static MemberDef *addVariableToClass(
       root->protection,
       fromAnnScope
               );
+
+  // class friends may be templatized
+  //QCString name=n;
+  //int i;
+  //if (root->type.left(7)=="friend " && (i=name.find('<'))!=-1)
+  //{
+  //  name=name.left(i); 
+  //} 
+  
   // add template names, if the class is a non-specialized template
   //if (scope.find('<')==-1 && cd->templateArguments())
   //{
@@ -1332,7 +1338,7 @@ static void buildMemberList(Entry *root)
       
       ClassDef *cd=0;
       // check if this function's parent is a class
-      QRegExp re("([a-zA-Z0-9: ]*[ *]*[ ]*");
+      QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
       //printf("root->parent=`%s' cd=%p root->type.find(re,0)=%d\n",
       //    root->parent->name.data(),getClass(root->parent->name),
       //    root->type.find(re,0));
@@ -1896,7 +1902,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
             templSpec=baseClassName.mid(i,e-i);
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
             baseClass=getResolvedClass(baseClassName);
-            //printf("baseClass=%p baseClass=%s templSpec=%s\n",
+            //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
             //      baseClass,baseClassName.data(),templSpec.data());
           }
         }
@@ -2823,10 +2829,10 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
   { 
     Debug::print(Debug::FindMembers,0,
                  "1. funcName=`%s'\n",funcName.data());
-    //if (!funcTempList.isEmpty()) // try with member specialization
-    //{
-    //  mn=memberNameDict[funcName+funcTempList];
-    //}
+    if (!funcTempList.isEmpty()) // try with member specialization
+    {
+      mn=memberNameDict[funcName+funcTempList];
+    }
     if (mn==0) // try without specialization
     {
       mn=memberNameDict[funcName];
@@ -2978,15 +2984,39 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
                "Warning: no matching class member found for \n  %s",
                fullFuncDecl.data()
               );   
+          int candidates=0;
           if (mn->count()>0)
+          {
+            md=mn->first();
+            while (md)
+            {
+              ClassDef *cd=md->memberClass();
+              if (cd!=0 && cd->name()==className) candidates++;
+              md=mn->next();
+            }
+          }
+          if (candidates>0)
           {
             warn_cont("Possible candidates:\n");
             md=mn->first();
             while (md)
             {
               ClassDef *cd=md->memberClass();
-              if (!cd || cd->name()==className)
-                warn_cont("  %s\n",md->declaration());
+              if (cd!=0 && cd->name()==className)
+              {
+                warn_cont("  %s",md->declaration());
+#if 0
+                if (cd->name().at(0)!='@')
+                {
+                  warn_cont(" in class %s",cd->name().data());
+                }
+                if (!md->getDefFileName().isEmpty() && md->getDefLine()!=-1)
+                {
+                  warn_cont(" defined at line %d of file %s",md->getDefLine(),md->getDefFileName().data());
+                }
+#endif
+                warn_cont("\n");
+              }
               md=mn->next();
             }
           }
@@ -3207,7 +3237,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
 static void findMemberDocumentation(Entry *root)
 {
   int i=-1,l;
-  QRegExp re("([a-zA-Z0-9: ]*\\*+[ \\*]*");
+  QRegExp re("([a-z_A-Z0-9: ]*\\*+[ \\*]*");
   Debug::print(Debug::FindMembers,0,
          "root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d root->mGrpId=%d\n",
           root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
@@ -4374,6 +4404,12 @@ static void generateGroupDocs()
   {
     //printf("group %s #members=%d\n",gd->name().data(),gd->countMembers());
     if (gd->countMembers()>0) gd->writeDocumentation(*outputList);
+    else
+    {
+      warn(gd->getDefFileName(),gd->getDefLine(),
+           "Warning: group %s does not have any (documented) members.",
+            gd->name().data());
+    }
   }
 }
 
@@ -4540,7 +4576,8 @@ static void generateSearchIndex()
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
-      t << Config::docURL << endl << Config::cgiURL << "/" << Config::cgiName << endl;
+      t << Config::docURL << endl << Config::cgiURL 
+        << "/" << Config::cgiName << endl;
       f.close();
     }
     else
@@ -5276,9 +5313,21 @@ int main(int argc,char **argv)
                                    &inputFiles,0);
     s=Config::inputSources.next();
   }
-  //msg("Input size %d bytes\n",inputSize);
+  
+  // add predefined macro name to a dictionary
+  s=Config::expandAsDefinedList.first();
+  while (s)
+  {
+    if (expandAsDefinedDict[s]==0)
+    {
+      expandAsDefinedDict.insert(s,(void *)666);
+    }
+    s=Config::expandAsDefinedList.next();
+  }
   
   BufStr input(inputSize+1); // Add one byte extra for \0 termination
+
+  // read and preprocess all input files
   readFiles(input);
 
   if (input.isEmpty())
@@ -5288,8 +5337,9 @@ int main(int argc,char **argv)
   }
   else
   {
-    msg("Read %d bytes\n",input.length());
+    msg("Read %d bytes\n",input.curPos());
   }
+
 
   /**************************************************************************
    *             Handle Tag Files                                           *

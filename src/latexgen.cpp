@@ -216,17 +216,37 @@ void LatexGenerator::startIndexSection(IndexSections is)
               << "            linkcolor=blue" << endl
               << "           ]{hyperref}" << endl;
           }
-          if (!theTranslator->latexBabelPackage().isEmpty())
+          // Try to get the command for switching on the language
+          // support
+          QCString sLanguageSupportCommand(
+              theTranslator->latexLanguageSupportCommand());
+
+          if (!sLanguageSupportCommand.isEmpty())
           {
-            if (theTranslator->latexBabelPackage()=="russian")
+            // The command is not empty. The language does
+            // not want to use the babel package. Use this
+            // command instead.
+            t << sLanguageSupportCommand;
+          }
+          else
+          {
+            if (!theTranslator->latexBabelPackage().isEmpty())
             {
+              // The result of the LatexLanguageSupportCommand()
+              // is empty, which means that the language prefers
+              // the babel package, or no package is needed at all.
+              if (theTranslator->latexBabelPackage()=="russian")
+              {
+                // The russian babel package also needs an encoding.
+                // Assume the encoding matched the platform.
 #if defined(_WIN32)
-              t << "\\usepackage[cp1251]{inputenc}\n";
+                t << "\\usepackage[cp1251]{inputenc}\n";
 #else
-              t << "\\usepackage[koi8-r]{inputenc}\n";
+                t << "\\usepackage[koi8-r]{inputenc}\n";
 #endif
+              }
+              t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
             }
-            t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
           }
 
           const char *s=Config::extraPackageList.first();
@@ -425,7 +445,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->isLinkableInProject() || gd->countMembers()>0)
+          if (gd->countMembers()>0)
           {
             t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -434,7 +454,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while (gd)
         {
-          if (gd->isLinkableInProject() || gd->countMembers()>0)
+          if (gd->countMembers()>0)
           {
             if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
             t << "{" << gd->getOutputFileBase() << "}\n";
@@ -602,14 +622,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch (c) 1997-2000}]{}\n";
+        t << " Dimitri van Heesch \\copyright{} 1997-2000}]{}\n";
         //QCString dtString=dateToString(FALSE);
         t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize ";
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch (c) 1997-2000}}\n";
+        t << " Dimitri van Heesch \\copyright{} 1997-2000}}\n";
         t << "\\cfoot{}\n";
         t << "\\newenvironment{CompactList}\n";
         t << "{\\begin{list}{}{\n";
@@ -812,7 +832,7 @@ void LatexGenerator::startPageRef()
 
 void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 {
-  t << "~\\pageref{";
+  t << "\\,\\pageref{";
   if (clname) t << clname; 
   if (anchor) t << "_" << anchor;
   t << "})}";
@@ -998,7 +1018,8 @@ void LatexGenerator::writeSectionRef(const char *,const char *lab,
   {
     if (strcmp(lab,text)!=0) // lab!=text
     {
-      t << "{\\bf " << text << " (\\ref " << lab << ")}}";
+      // todo: don't hardcode p. here!
+      t << "{\\bf " << text << "} (p.\\,\\pageref{" << lab << "})";
     }
     else
     {
@@ -1022,7 +1043,7 @@ void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
   startBold();
   docify(title);
   endBold();
-  t << " (p.~\\pageref{" << lab << "})" << endl;
+  t << " (p.\\,\\pageref{" << lab << "})" << endl;
 }
 
 //void LatexGenerator::docify(const char *str)
@@ -1033,9 +1054,10 @@ void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
-  static bool isJapanese = theTranslator->latexBabelPackage()=="a4j";
-  static bool isRussian  = theTranslator->latexBabelPackage()=="russian";
-  static bool isGerman   = theTranslator->latexBabelPackage()=="german";
+  static bool isCzech    = theTranslator->idLanguage()=="czech";
+  static bool isJapanese = theTranslator->idLanguage()=="japanese";
+  static bool isRussian  = theTranslator->idLanguage()=="russian";
+  static bool isGerman   = theTranslator->idLanguage()=="german";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;

@@ -22,6 +22,8 @@
 class TranslatorRussian : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "russian"; }
     QCString latexBabelPackage()
     { return "russian"; }
     QCString trRelatedFunctions()

@@ -79,6 +79,8 @@ positiiviset kommentit otetaan ilolla vastaan.
 class TranslatorFinnish : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "finnish"; }
     QCString latexBabelPackage()
       // returns the name of the package that is included by LaTeX
     { return "finnish"; }

@@ -23,6 +23,8 @@
 class TranslatorDutch : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "dutch"; }
     QCString latexBabelPackage()
     { return "dutch"; }
     QCString trRelatedFunctions()
