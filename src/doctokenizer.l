@@ -754,7 +754,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 					BEGIN(St_Sections);
 				      }
                                     }
-<St_SecSkip>[^a-z_A-Z0-9\-]+
+<St_SecSkip>[^a-z_A-Z0-9\-\\\@]+
 <St_SecSkip>.
 <St_SecSkip>\n
 <St_Sections>.
