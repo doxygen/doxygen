@@ -2497,8 +2497,8 @@ QCString ClassDef::compoundTypeString() const
     case Protocol:  return "protocol";
     case Category:  return "category";
     case Exception: return "exception";
+    default:        return "unknown";
   }
-  return "unknown";
 }
 
 QCString ClassDef::getOutputFileBase() const 

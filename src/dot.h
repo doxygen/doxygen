@@ -32,6 +32,8 @@ class ClassSDict;
 class MemberDef;
 class Definition;
 class DirDef;
+class GroupDef;
+class DotGroupCollaboration;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
@@ -66,6 +68,7 @@ class DotNode
     void deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes=0);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
+    int findParent( DotNode *n );
     void write(QTextStream &t,GraphType gt,GraphOutputFormat f,
                bool topDown,bool toChildren,int maxDistance,bool backArrows,bool reNumber);
     int  m_subgraphId;
@@ -100,6 +103,8 @@ class DotNode
     friend class DotInclDepGraph;
     friend class DotNodeList;
     friend class DotCallGraph;
+    friend class DotGroupCollaboration;
+
     friend void writeDotGraph(
                       DotNode *root, GraphType gt,
                       GraphOutputFormat f, const QCString &baseName,
@@ -113,6 +118,13 @@ class DotNode
                       int distance, bool backArrows
                      );
 };
+inline
+int DotNode::findParent( DotNode *n )
+{
+    if( !m_parents )
+        return -1;
+    return m_parents->find(n);
+}
 
 class DotGfxHierarchyTable
 {
@@ -215,6 +227,63 @@ class DotDirDeps
                         bool writeImageMap=TRUE);
   private:
     DirDef *m_dir;
+};
+
+class DotGroupCollaboration
+{
+  public :
+    enum EdgeType 
+    {  tmember = 0,
+       tclass,
+       tnamespace,
+       tfile,
+       tpages,
+       tdir,
+       thierarchy 
+    };
+
+    class Link
+    {
+      public:
+        Link(const QCString lab,const QCString &u) : label(lab), url(u) {}
+        QCString label;
+        QCString url;
+    };
+
+    class Edge
+    {
+      public :
+        Edge(DotNode *start,DotNode *end,EdgeType type) 
+          : pNStart(start), pNEnd(end), eType(type)
+        { links.setAutoDelete(TRUE); }
+
+        DotNode* pNStart;
+        DotNode* pNEnd;
+        EdgeType eType;
+
+        QList<Link> links;
+        void write( QTextStream &t, int& curNodeId );
+    };
+
+    DotGroupCollaboration(GroupDef* gd);
+    ~DotGroupCollaboration();
+    QCString writeGraph(QTextStream &t, GraphOutputFormat format,
+                    const char *path,const char *relPath,
+                    bool writeImageMap=TRUE);
+    void buildGraph(GroupDef* gd,int distance);
+    bool isTrivial() const;
+  private :
+    void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
+    void addMemberList( class MemberList* ml );
+    void writeGraphHeader(QTextStream &t);
+    Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
+                   const QCString& _label, const QCString& _url );
+
+    DotNode        *m_rootNode;
+    int             m_curNodeId;
+    QDict<DotNode> *m_usedNodes;
+    QCString        m_diskName;
+    QList<Edge>     m_edges;
 };
 
 void generateGraphLegend(const char *path);

@@ -1448,6 +1448,15 @@ void LatexGenerator::endInclDepGraph(DotInclDepGraph &g)
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
 
+void LatexGenerator::startGroupCollaboration() 
+{
+}
+
+void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g) 
+{
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
+}
+
 void LatexGenerator::startCallGraph() 
 {
 }

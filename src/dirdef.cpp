@@ -27,9 +27,9 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
   { // remove everything till the last /
     m_shortName = m_shortName.mid(pi+1);
   }
+  setLocalName(m_shortName);
   
   m_fileList   = new FileList;
-  m_classSDict = new ClassSDict(17);
   m_usedDirs   = new QDict<UsedDir>(257);
   m_usedDirs->setAutoDelete(TRUE);
   m_dirCount   = g_dirCount++;
@@ -39,6 +39,8 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
 
 DirDef::~DirDef()
 {
+  delete m_fileList;
+  delete m_usedDirs;
 }
 
 bool DirDef::isLinkableInProject() const 

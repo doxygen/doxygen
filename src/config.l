@@ -2656,6 +2656,13 @@ void Config::create()
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
+                    "GROUP_GRAPHS",
+                    "If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen \n"
+                    "will generate a graph for groups, showing the direct groups dependencies\n",
+                    TRUE
+                 );                 
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
                     "UML_LOOK",
                     "If the UML_LOOK tag is set to YES doxygen will generate inheritance and \n"
 	            "collaboration diagrams in a style similar to the OMG's Unified Modeling \n"

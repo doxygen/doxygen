@@ -184,6 +184,8 @@ class LatexGenerator : public OutputGenerator
     void startInclDepGraph();
     void endInclDepGraph(DotInclDepGraph &);
     void startCallGraph();
+    void startGroupCollaboration();
+    void endGroupCollaboration(DotGroupCollaboration &g);
     void endCallGraph(DotCallGraph &);
     void startDirDepGraph();
     void endDirDepGraph(DotDirDeps &g);

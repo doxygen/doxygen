@@ -32,8 +32,10 @@ class DotInclDepGraph;
 class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
+class DotGroupCollaboration;
 class DocNode;
 class MemberDef;
+class GroupDef;
 
 /*! \brief Output interface for code parser. 
  */
@@ -338,6 +340,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endDotGraph(DotClassGraph &g) = 0;
     virtual void startInclDepGraph() = 0;
     virtual void endInclDepGraph(DotInclDepGraph &g) = 0;
+    virtual void startGroupCollaboration() = 0;
+    virtual void endGroupCollaboration(DotGroupCollaboration &g) = 0;
     virtual void startCallGraph() = 0;
     virtual void endCallGraph(DotCallGraph &g) = 0;
     virtual void startDirDepGraph() = 0;

@@ -716,6 +716,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
+  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (Config_getBool("REFERENCED_BY_RELATION") && 
       (src->isFunction() || src->isSlot()) 

@@ -190,6 +190,8 @@ class HtmlGenerator : public OutputGenerator
     void endDotGraph(DotClassGraph &g);
     void startInclDepGraph();
     void endInclDepGraph(DotInclDepGraph &g);
+    void startGroupCollaboration();
+    void endGroupCollaboration(DotGroupCollaboration &g);
     void startCallGraph();
     void endCallGraph(DotCallGraph &g);
     void startDirDepGraph();

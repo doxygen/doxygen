@@ -28,6 +28,7 @@
 #include "defargs.h"
 #include "docparser.h"
 #include "debug.h"
+#include "pagedef.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -2646,4 +2647,412 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
 }
 // end MDG mods
 
+//-------------------------------------------------------------
 
+DotGroupCollaboration::DotGroupCollaboration(GroupDef* gd)
+{
+    m_curNodeId = 0;
+    QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
+    m_usedNodes = new QDict<DotNode>(1009);
+    m_rootNode = new DotNode(m_curNodeId++, gd->groupTitle(), tmp_url, 0, TRUE );
+    m_usedNodes->insert(gd->name(), m_rootNode );
+    m_edges.setAutoDelete(TRUE);
+
+    m_diskName = gd->getOutputFileBase();
+
+    buildGraph( gd, 0 );
+}
+
+DotGroupCollaboration::~DotGroupCollaboration()
+{
+  delete m_usedNodes;
+}
+
+void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
+{
+  QCString tmp_url;
+  //===========================
+  // hierarchy.
+
+  // Write parents
+  if ( gd->partOfGroups() )
+  {
+    GroupListIterator gli(*gd->partOfGroups());
+    GroupDef *d;
+    for (gli.toFirst();(d=gli.current());++gli)
+    {
+      DotNode* nnode = m_usedNodes->find(d->name());
+      if ( !nnode )
+      { // add node
+        tmp_url = d->getReference()+"$"+d->getOutputFileBase();
+        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tmp_url );
+        m_usedNodes->insert(d->name(), nnode );
+      }
+      tmp_url = "";
+      addEdge( nnode, m_rootNode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
+    }
+  }
+
+  // Add subgroups
+  if ( gd->getSubGroups() && gd->getSubGroups()->count() )
+  {
+    QListIterator<GroupDef> defli(*gd->getSubGroups());
+    GroupDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      DotNode* nnode = m_usedNodes->find(def->name());
+      if ( !nnode )
+      { // add node
+        tmp_url = def->getReference()+"$"+def->getOutputFileBase();
+        nnode = new DotNode(m_curNodeId++, def->groupTitle(), tmp_url );
+        m_usedNodes->insert(def->name(), nnode );
+      }
+      tmp_url = "";
+      addEdge( m_rootNode, nnode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
+    }
+  }
+
+  //=======================
+  // Write collaboration
+
+  // Add members
+  addMemberList( gd->getMembers() );
+
+  // Add classes
+  if ( gd->getClasses() && gd->getClasses()->count() )
+  {
+    ClassSDict::Iterator defli(*gd->getClasses());
+    ClassDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tclass );          
+    }
+  }
+
+  // Add namespaces
+  if ( gd->getNamespaces() && gd->getNamespaces()->count() )
+  {
+    NamespaceSDict::Iterator defli(*gd->getNamespaces());
+    NamespaceDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tnamespace );          
+    }
+  }
+
+  // Add files
+  if ( gd->getFiles() && gd->getFiles()->count() )
+  {
+    QListIterator<FileDef> defli(*gd->getFiles());
+    FileDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );          
+    }
+  }
+
+  // Add pages
+  if ( gd->getPages() && gd->getPages()->count() )
+  {
+    PageSDict::Iterator defli(*gd->getPages());
+    PageDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );          
+    }
+  }
+
+  // Add directories
+  if ( gd->getDirs() && gd->getDirs()->count() )
+  {
+    QListIterator<DirDef> defli(*gd->getDirs());
+    DirDef *def;
+    for (;(def=defli.current());++defli)
+    {
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );          
+    }
+  }
+}
+
+void DotGroupCollaboration::addMemberList( MemberList* ml )
+{
+  if ( !( ml && ml->count()) ) return;
+  MemberListIterator defli(*ml);
+  MemberDef *def;
+  for (;(def=defli.current());++defli)
+  {
+    QCString tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension
+      +"#"+def->anchor();
+    addCollaborationMember( def, tmp_url, DotGroupCollaboration::tmember );
+  }
+}
+
+DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge( 
+    DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
+    const QCString& _label, const QCString& _url )
+{
+  // search a existing link.
+  QListIterator<Edge> lli(m_edges);
+  Edge* newEdge = 0;
+  for ( lli.toFirst(); (newEdge=lli.current()); ++lli)
+  {
+    if ( newEdge->pNStart==_pNStart && 
+         newEdge->pNEnd==_pNEnd &&
+         newEdge->eType==_eType 
+       )
+    { // edge already found
+      break;
+    }
+  }
+  if ( newEdge==0 ) // new link
+  {
+    newEdge = new Edge(_pNStart,_pNEnd,_eType);
+    m_edges.append( newEdge );
+  } 
+
+  if (!_label.isEmpty())
+  {
+    newEdge->links.append(new Link(_label,_url));
+  }
+
+  return newEdge;
+}
+
+void DotGroupCollaboration::addCollaborationMember( 
+    Definition* def, QCString& url, EdgeType eType )
+{
+  // Create group nodes
+  if ( !def->partOfGroups() )
+    return;
+  GroupListIterator gli(*def->partOfGroups());
+  GroupDef *d;
+  QCString tmp_str;
+  for (;(d=gli.current());++gli)
+  {
+    DotNode* nnode = m_usedNodes->find(d->name());
+    if ( nnode != m_rootNode )
+    {
+      if ( nnode==0 )
+      { // add node
+        tmp_str = d->getReference()+"$"+d->getOutputFileBase();
+        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tmp_str );
+        m_usedNodes->insert(d->name(), nnode );
+      }
+      tmp_str = def->qualifiedName();
+      addEdge( m_rootNode, nnode, eType, tmp_str, url );
+    }
+  }
+}
+
+
+QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat format,
+    const char *path, const char *,
+    bool writeImageMap)
+{
+  QDir d(path);
+  // store the original directory
+  if (!d.exists()) 
+  { 
+    err("Error: Output dir %s does not exist!\n",path);
+    exit(1);
+  }
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // go to the output directory (i.e. path)
+  QDir::setCurrent(d.absPath());
+  QDir thisDir;
+  QCString baseName = m_diskName;
+
+  QFile dotfile(baseName+".dot");
+  if (dotfile.open(IO_WriteOnly))
+  {
+    QTextStream tdot(&dotfile);
+    writeGraphHeader(tdot);
+
+    // clean write flags
+    QDictIterator<DotNode> dni(*m_usedNodes);
+    DotNode *pn;
+    for (dni.toFirst();(pn=dni.current());++dni)
+      pn->clearWriteFlag();
+
+    // write other nodes.
+    for (dni.toFirst();(pn=dni.current());++dni)
+    {
+      pn->write(tdot,DotNode::Inheritance,format,TRUE,FALSE,1,FALSE,FALSE);
+    }
+
+    // write edges
+    QListIterator<Edge> eli(m_edges);
+    Edge* edge;
+    for (eli.toFirst();(edge=eli.current());++eli)
+    {
+      edge->write( tdot, m_curNodeId );
+    }
+
+    writeGraphFooter(tdot);
+    dotfile.close();
+  }
+
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  if (format==BITMAP) // run dot to create a bitmap image
+  {
+    QCString dotArgs(maxCmdLine);
+    QCString imgName = baseName+"."+imgExt;
+    dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
+        baseName.data(), imgExt.data(), imgName.data());
+    QCString mapName=baseName+".map";
+
+    if (writeImageMap)
+    {
+      // run dot also to create an image map
+      dotArgs+=" -Timap -o \""+mapName+"\"";
+    }
+
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    {
+      err("Error: Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+
+    if (writeImageMap)
+    {
+      QCString mapLabel = convertNameToFile(baseName);
+      t << "<center><table><tr><td><img src=\"" << imgName
+        << "\" border=\"0\" alt=\"\" usemap=\"#" 
+        << mapLabel << "_map\">" << endl;
+      t << "<map name=\"" << mapLabel << "_map\">" << endl;
+      convertMapFile(t,mapName,"");
+      t << "</map></td></tr></table></center>" << endl;
+      thisDir.remove(mapName);
+    }
+  }
+  else if (format==EPS)
+  {
+    QCString dotArgs(maxCmdLine);
+    dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
+        baseName.data(),baseName.data());
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    {
+      err("Error: Problems running dot. Check your installation!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    if (Config_getBool("USE_PDFLATEX"))
+    {
+      QCString epstopdfArgs(maxCmdLine);
+      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
+          baseName.data(),baseName.data());
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      {
+        err("Error: Problems running epstopdf. Check your TeX installation!\n");
+        QDir::setCurrent(oldDir);
+        return baseName;
+      }
+    }
+    int width,height;
+    if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
+    {
+      err("Error: Could not extract bounding box from .eps!\n");
+      QDir::setCurrent(oldDir);
+      return baseName;
+    }
+    int maxWidth = 420; /* approx. page width in points */
+    t << "\\begin{figure}[H]\n"
+         "\\begin{center}\n"
+         "\\leavevmode\n"
+         "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+          << "pt]{" << baseName << "}\n"
+         "\\end{center}\n"
+         "\\end{figure}\n";
+  }
+  if (Config_getBool("DOT_CLEANUP"))
+  {
+    thisDir.remove(baseName+".dot");
+  }
+
+  QDir::setCurrent(oldDir);
+
+  return baseName;
+}
+
+void DotGroupCollaboration::Edge::write( QTextStream &t, int& )
+{
+  const char* linkTypeColor[] = {
+    "darkorchid3"
+      ,"orange"
+      ,"blueviolet"
+      ,"darkgreen"   
+      ,"firebrick4"  
+      ,"grey75"
+      ,"midnightblue"
+  };
+  QCString arrowStyle = "dir=\"none\", style=\"dashed\"";
+  t << "  Node" << pNStart->number();
+  t << "->";
+  t << "Node" << pNEnd->number();
+
+  t << " [shape=plaintext";
+  if (links.count()>0) // there are links
+  {
+    t << ", ";
+    // HTML-like edge labels crash on my Mac with Graphviz 2.0! and
+    // are not supported by older version of dot.
+    //
+    //t << label=<<TABLE BORDER=\"0\" CELLBORDER=\"0\">";
+    //QListIterator<Link> lli(links);
+    //Link *link;
+    //for( lli.toFirst(); (link=lli.current()); ++lli)
+    //{
+    //  t << "<TR><TD";
+    //  if ( !link->url.isEmpty() )
+    //    t << " HREF=\"" << link->url << "\"";
+    //  t << ">" << link->label << "</TD></TR>";
+    //}
+    //t << "</TABLE>>";
+
+    t << "label=\"";
+    QListIterator<Link> lli(links);
+    Link *link;
+    bool first=TRUE;
+    for( lli.toFirst(); (link=lli.current()); ++lli)
+    {
+      if (first) first=FALSE; else t << "\\n"; 
+      t << link->label;
+    }
+    t << "\"";
+
+  }
+  switch( eType )
+  {
+    case thierarchy :
+      arrowStyle = "dir=\"back\", style=\"solid\"";
+    default :
+      t << ", color=\"" << linkTypeColor[(int)eType] << "\"";
+      break;
+  }
+  t << ", " << arrowStyle;
+  t << "];" << endl;
+}
+
+bool DotGroupCollaboration::isTrivial() const
+{
+  return m_usedNodes->count() <= 1;
+}
+
+void DotGroupCollaboration::writeGraphHeader(QTextStream &t)
+{
+  t << "digraph structs" << endl;
+  t << "{" << endl;
+#if defined(DOT_TRANSPARENT)
+  t << "  bgcolor=\"transparent\"" << endl;
+#endif
+  t << "  edge [fontname=\"Helvetica\",fontsize=8,"
+    "labelfontname=\"Helvetica\",labelfontsize=8];\n";
+  t << "  node [fontname=\"Helvetica\",fontsize=10,shape=record];\n";
+  t << "rankdir=LR;\n";
+}

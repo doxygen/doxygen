@@ -15156,16 +15156,18 @@ QCString qt_winQString2MB( const QString& s, int uclen )
     if ( uclen == 0 )
 	return QCString();
     BOOL used_def;
-    QCString mb(4096);
+    int bufSize=4096;
+    QCString mb(bufSize);
     int len;
     while ( !(len=WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)s.unicode(), uclen,
-		mb.data(), mb.size()-1, 0, &used_def)) )
+		mb.data(), bufSize-1, 0, &used_def)) )
     {
 	int r = GetLastError();
 	if ( r == ERROR_INSUFFICIENT_BUFFER ) {
-	    mb.resize(1+WideCharToMultiByte( CP_ACP, 0,
-				(const WCHAR*)s.unicode(), uclen,
-				0, 0, 0, &used_def));
+            bufSize=1+WideCharToMultiByte( CP_ACP, 0,
+			(const WCHAR*)s.unicode(), uclen,
+			0, 0, 0, &used_def);
+            mb.resize(bufSize);
 		// and try again...
 	} else {
 	    // Fail.

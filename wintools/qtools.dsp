@@ -92,7 +92,7 @@ SOURCE=..\qtools\qcollection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\qtools\qcstring.cpp
+SOURCE=..\qtools\scstring.cpp
 # End Source File
 # Begin Source File
 

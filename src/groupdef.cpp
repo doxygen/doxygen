@@ -33,6 +33,7 @@
 #include "pagedef.h"
 #include "docparser.h"
 #include "searchindex.h"
+#include "dot.h"
 
 GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : Definition(df,dl,na)
@@ -482,6 +483,23 @@ void GroupDef::writeDocumentation(OutputList &ol)
       p=i+l;
     }
   }
+
+  if (Config_getBool("HAVE_DOT") && Config_getBool("GROUP_GRAPHS") )
+  {
+    DotGroupCollaboration graph(this);
+    if (!graph.isTrivial())
+    {
+      msg("Generating dependency graph for group %s\n",qualifiedName().data());
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.newParagraph();
+      ol.startGroupCollaboration();
+      ol.parseText(theTranslator->trCollaborationDiagram(title));
+      ol.endGroupCollaboration(graph);
+      ol.popGeneratorState();
+    }
+  }
+
 
   if (Config_getBool("DETAILS_AT_TOP"))
   {

@@ -197,6 +197,8 @@ class Definition
     void writeNavigationPath(OutputList &ol) const;
 
   protected:
+    void setLocalName(const QCString name) { m_localName=name; }
+    
     int      m_startBodyLine;   // line number of the start of the definition
     int      m_endBodyLine;     // line number of the end of the definition
     FileDef *m_bodyDef;         // file definition containing the function body

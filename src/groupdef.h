@@ -112,6 +112,7 @@ class GroupDef : public Definition
     GroupList *     getSubGroups() const    { return groupList; }
     PageSDict *     getPages() const        { return pageDict; }
     DirList *       getDirs() const         { return dirList; }
+    MemberList*     getMembers() const      { return allMemberList; }
     
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
