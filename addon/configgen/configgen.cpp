@@ -1075,6 +1075,14 @@ void init()
                     "tags, which will be replaced by the file and line number from which the \n"
                     "warning originated and the warning text. \n"
                    ); 
+  ConfigString::add("warnLogFile",
+                    "WARN_LOGFILE",
+                    "",
+                    "log file to write warning to",
+                    "The WARN_LOGFILE tag can be used to specify a file to which warning \n"
+                    "and error messages should be written. If left blank the output is written \n"
+                    "to stderr. \n"
+                   );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Input","configuration options related to the input files");
   //-----------------------------------------------------------------------------------------------
@@ -1658,7 +1666,15 @@ void init()
                     100,30000
                 );
   addDependency("maxDotGraphHeight","haveDotFlag");
- 
+  ConfigBool::add(  "generateLegend",
+                    "GENERATE_LEGEND",
+                    "TRUE",
+                    "generate legend page",
+                    "If the GENERATE_LEGEND tag is set to YES (the default) Doxygen will \n"
+                    "generate a legend page explaining the meaning of the various boxes and \n"
+                    "arrows in the dot generated graphs. \n"
+                 );
+  addDependency("generateLegend","haveDotFlag");
 
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Search","Configuration::addtions related to the search engine   ");

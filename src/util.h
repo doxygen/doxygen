@@ -85,11 +85,16 @@ extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const cha
 extern void setAnchors(char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name);
 extern QCString dateToString(bool);
-extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
-                    const char *, MemberDef *&md, 
-                    ClassDef *&cd,FileDef *&fd, 
-                    NamespaceDef *&nd,GroupDef *&gd,
-                    bool forceEmptyScope=FALSE
+extern bool getDefs(const QCString &scopeName,
+                    const QCString &memberName, 
+                    const char *, 
+                    MemberDef *&md, 
+                    ClassDef *&cd,
+                    FileDef *&fd, 
+                    NamespaceDef *&nd,
+                    GroupDef *&gd,
+                    bool forceEmptyScope=FALSE,
+                    FileDef *currentFile=0
                    );
 extern bool generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);
@@ -133,7 +138,8 @@ bool leftScopeMatch(const QCString &scope, const QCString &name);
 void writePageRef(OutputList &ol,const char *cn,const char *mn);
 QCString substituteKeywords(const QCString &s,const char *title);
 int getPrefixIndex(const QCString &name);
-QCString removeAnnonymousScopes(const QCString &s);
+QCString removeAnonymousScopes(const QCString &s);
+QCString replaceAnonymousScopes(const QCString &s);
 void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);

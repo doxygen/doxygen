@@ -1,0 +1,4 @@
+This directory contains a small subset of Troll-Tech's Qt library
+The subset is enough to build the doxygen executable, but lacks many of
+the features found in the Qt library. See http://www.trolltech.com 
+for the full package. 

@@ -50,10 +50,20 @@ ClassDef::ClassDef(
  : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm)) 
 {
   //name=n;
+
+  QCString compoundName;
+  switch(ct)
+  {
+    case Class: compoundName="class"; break; 
+    case Struct: compoundName="struct"; break; 
+    case Union: compoundName="union"; break; 
+    case Interface: compoundName="interface"; break; 
+    case Exception: compoundName="exception"; break; 
+  }
   if (fName)
     fileName=stripExtension(fName);
   else
-    fileName="class_"+nameToFile(nm);
+    fileName=compoundName+"_"+nameToFile(nm);
   if (lref) 
   {
     //url=(QCString)"doxygen=\""+lref+":\" href=\""+fileName;
@@ -66,7 +76,7 @@ ClassDef::ClassDef(
     exampleList = new ExampleList;
     exampleDict = new ExampleDict(29);
   }
-  memListFileName="class_"+nameToFile(nm)+"-members";
+  memListFileName=compoundName+"_"+nameToFile(nm)+"-members";
   inherits      = new BaseClassList;
   inherits->setAutoDelete(TRUE);
   inheritedBy   = new BaseClassList;
@@ -195,6 +205,7 @@ void ClassDef::addMembersToMemberGroup()
   addMemberListToGroup(&priStaticAttribs);
   addMemberListToGroup(&friends);
   addMemberListToGroup(&related);
+  addMemberListToGroup(&properties);
 }
 
 // adds new member definition to the class
@@ -227,6 +238,10 @@ void ClassDef::insertMember(MemberDef *md)
         case MemberDef::DCOP:   // KDE2 specific
           dcopMethods.append(md);
           md->setSectionList(&dcopMethods);
+          break;
+        case MemberDef::Property:
+          properties.append(md);
+          md->setSectionList(&properties);
           break;
         case MemberDef::Slot:   // Qt specific
           switch (md->protection())
@@ -363,6 +378,12 @@ void ClassDef::insertMember(MemberDef *md)
     {
       switch (md->memberType())
       {
+        case MemberDef::Property:
+          if (Config::sortMembersFlag)
+            propertyMembers.inSort(md);
+          else
+            propertyMembers.append(md);
+          break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
           if (Config::sortMembersFlag)
@@ -521,6 +542,7 @@ void ClassDef::computeAnchors()
   setAnchors('t',&proTypes);
   setAnchors('u',&priTypes);
   setAnchors('v',&dcopMethods);
+  setAnchors('w',&properties);
 }
 
 void ClassDef::distributeMemberGroupDocumentation()
@@ -789,6 +811,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trClassDiagram(name()));
       ol.endDotGraph(inheritanceGraph);
+      if (Config::generateLegend)
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -821,6 +844,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
       ol.endDotGraph(usageImplGraph);
+      if (Config::generateLegend)
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -870,6 +894,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pubSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
   signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
   dcopMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
+  properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
 
   // static public members
   pubStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
@@ -1049,6 +1074,16 @@ void ClassDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trMemberDataDocumentation());
     ol.endGroupHeader();
     variableMembers.writeDocumentation(ol,name(),this);
+  }
+  
+  propertyMembers.countDocMembers();
+  if (propertyMembers.totalCount()>0) 
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    parseText(ol,theTranslator->trPropertyDocumentation());
+    ol.endGroupHeader();
+    propertyMembers.writeDocumentation(ol,name(),this);
   }
   
   ol.startTextBlock();
@@ -1355,6 +1390,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     pubSlots.writePlainDeclarations(ol,this,0,0,0); 
     signals.writePlainDeclarations(ol,this,0,0,0); 
     dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
+    properties.writePlainDeclarations(ol,this,0,0,0); 
     pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
     pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
     proTypes.writePlainDeclarations(ol,this,0,0,0); 
@@ -1808,6 +1844,7 @@ void ClassDef::generateXMLSection(QTextStream &t,MemberList *ml,const char *type
 
 void ClassDef::generateXML(QTextStream &t)
 {
+  if (name().find('@')!=-1) return; // skip anonymous compounds
   t << "    <compounddef id=\"" 
     << getOutputFileBase() << "\" type=\"";
   switch(compType)
@@ -1893,6 +1930,7 @@ void ClassDef::generateXML(QTextStream &t)
     generateXMLSection(t,&pubSlots,"public-slot");
     generateXMLSection(t,&signals,"signal");
     generateXMLSection(t,&dcopMethods,"dcop-func");
+    generateXMLSection(t,&properties,"property");
     generateXMLSection(t,&pubStaticMembers,"public-static-func");
     generateXMLSection(t,&pubStaticAttribs,"public-static-attrib");
     generateXMLSection(t,&proTypes,"protected-type");

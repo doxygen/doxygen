@@ -169,28 +169,65 @@ bool isId(char c)
 //  return result;
 //}
 
-// remove all annoymous scopes from string s
-QCString removeAnnonymousScopes(const QCString &s)
+/*! 
+  Removes all anoymous scopes from string s
+  Possible examples:
+\verbatim
+   "bla::@10::blep"      => "bla::blep"
+   "bla::@10::@11::blep" => "bla::blep"
+   "@10::blep"           => "blep"
+   " @10::blep"          => "blep"
+   "@9::@10::blep"       => "blep"
+   "bla::@1"             => "bla"
+   "bla::@1::@2"         => "bla"
+   "bla @1"              => "bla"
+\endverbatim
+ */
+QCString removeAnonymousScopes(const QCString &s)
 {
   QCString result;
-  int i,ni,l=s.length();
+  if (s.isEmpty()) return result;
+  static QRegExp re("[ :]*@[0-9]+[: ]*");
+  int i,l,sl=s.length();
   int p=0;
-  while ((i=s.find('@',p))!=-1)
+  while ((i=re.match(s,p,&l))!=-1)
   {
-    if (i>p+2) result+=s.mid(p,i-p-2);
-    if ((ni=s.find("::",i+1))!=-1)
-    {
-      p=ni+2;
+    result+=s.mid(p,i-p);
+    int c=i;
+    bool b1=FALSE,b2=FALSE;
+    while (c<i+l && s.at(c)!='@') if (s.at(c++)==':') b1=TRUE;
+    c=i+l-1;
+    while (c>=i && s.at(c)!='@') if (s.at(c--)==':') b2=TRUE;
+    if (b1 && b2) 
+    { 
+      result+="::"; 
     }
-    else
-    {
-      p=l;
-    }
+    p=i+l;
   }
-  if (p!=l) result+=s.mid(p,l-p);
-  //printf("removeAnnonymousScopes(`%s')=`%s'\n",s.data(),result.data());
+  result+=s.right(sl-p);
+  //printf("removeAnonymousScopes(`%s')=`%s'\n",s.data(),result.data());
   return result;
 }
+
+// replace anonymous scopes with __anonymous__ 
+QCString replaceAnonymousScopes(const QCString &s)
+{
+  QCString result;
+  if (s.isEmpty()) return result;
+  static QRegExp re("@[0-9]+");
+  int i,l,sl=s.length();
+  int p=0;
+  while ((i=re.match(s,p,&l))!=-1)
+  {
+    result+=s.mid(p,i-p);
+    result+="__anonymous__";
+    p=i+l;
+  }
+  result+=s.right(sl-p);
+  //printf("replaceAnonymousScopes(`%s')=`%s'\n",s.data(),result.data());
+  return result;
+}
+
 
 // strip annonymous left hand side part of the scope
 QCString stripAnnonymousNamespaceScope(const QCString &s)
@@ -1203,13 +1240,375 @@ void stripIrrelevantConstVolatile(QCString &s)
   }
 }
 
-//----------------------------------------------------------------------
-// Matches the arguments list srcAl with the argument list dstAl
-// Returns TRUE if the argument lists are equal. Two argument list are 
-// considered equal if the number of arguments is equal and the types of all 
-// arguments are equal. Furthermore the const and volatile specifiers 
-// stored in the list should be equal.
+// a bit of debug support for matchArguments
+#define MATCH
+#define NOMATCH
+//#define MATCH printf("Match at line %d\n",__LINE__);
+//#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
 
+static bool matchArgument(const Argument *srcA,const Argument *dstA,
+                   const QCString &className,
+                   const QCString &namespaceName,
+                   NamespaceList *usingList)
+{
+  QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
+  QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
+  if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
+  if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+  stripIrrelevantConstVolatile(srcAType);
+  stripIrrelevantConstVolatile(dstAType);
+
+  if (srcA->array!=dstA->array) // nomatch for char[] against char
+  {
+    NOMATCH
+    return FALSE;
+  }
+  if (srcAType!=dstAType) // check if the argument only differs on name 
+  {
+    //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
+
+    // remove a namespace scope that is only in one type 
+    // (assuming a using statement was used)
+    trimNamespaceScope(srcAType,dstAType);
+
+    //QCString srcScope;
+    //QCString dstScope;
+
+    // strip redundant scope specifiers
+    if (!className.isEmpty())
+    {
+      srcAType=trimScope(className,srcAType);
+      dstAType=trimScope(className,dstAType);
+      //printf("trimScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
+      ClassDef *cd;
+      if (!namespaceName.isEmpty())
+        cd=getClass(namespaceName+"::"+className);
+      else
+        cd=getClass(className);
+      if (cd && cd->baseClasses()->count()>0)
+      {
+        trimBaseClassScope(cd->baseClasses(),srcAType); 
+        trimBaseClassScope(cd->baseClasses(),dstAType); 
+      }
+      //printf("trimBaseClassScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
+    }
+    if (!namespaceName.isEmpty())
+    {
+      srcAType=trimScope(namespaceName,srcAType);
+      dstAType=trimScope(namespaceName,dstAType);
+    }
+    if (usingList && usingList->count()>0)
+    {
+      NamespaceListIterator nli(*usingList);
+      NamespaceDef *nd;
+      for (;(nd=nli.current());++nli)
+      {
+        srcAType=trimScope(nd->name(),srcAType);
+        dstAType=trimScope(nd->name(),dstAType);
+      }
+    }
+
+    if (!srcA->name.isEmpty() && !dstA->type.isEmpty() &&
+        (srcAType+" "+srcA->name)==dstAType)
+    {
+      MATCH
+      return TRUE;
+    }
+    else if (!dstA->name.isEmpty() && !srcA->type.isEmpty() &&
+        (dstAType+" "+dstA->name)==srcAType)
+    {
+      MATCH
+      return TRUE;
+    }
+    //printf("srcA=%s::%s dstA=%s::%s\n",srcAType.data(),srcA->name.data(),
+    //    dstAType.data(),dstA->name.data());
+
+    uint srcPos=0,dstPos=0; 
+    bool equal=TRUE;
+    while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
+    {
+      equal=srcAType.at(srcPos)==dstAType.at(dstPos);
+      if (equal) srcPos++,dstPos++; 
+    }
+    if (srcPos<srcAType.length() && dstPos<dstAType.length())
+    {
+      // if nothing matches or the match ends in the middle or at the
+      // end of a string then there is no match
+      if (srcPos==0 || dstPos==0) 
+      {
+        NOMATCH
+        return FALSE;
+      }
+      if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
+      {
+        // check if a name if already found -> if no then there is no match
+        if (!srcA->name.isEmpty() || !dstA->name.isEmpty()) 
+        {
+          NOMATCH
+          return FALSE;
+        }
+        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
+        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+        if (srcPos<srcAType.length() || dstPos<dstAType.length()) 
+        {
+          NOMATCH
+          return FALSE;
+        }
+      }
+      else
+      {
+        // otherwise we assume that a name starts at the current position.
+        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
+        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+        // if nothing more follows for both types then we assume we have
+        // found a match. Note that now `signed int' and `signed' match, but
+        // seeing that int is not a name can only be done by looking at the
+        // semantics.
+
+        if (srcPos!=srcAType.length() || dstPos!=dstAType.length()) 
+        { 
+          NOMATCH
+          return FALSE; 
+        }
+      }
+    }
+    else if (dstPos<dstAType.length())
+    {
+      if (!isspace(dstAType.at(dstPos))) // maybe the names differ
+      {
+        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+        if (dstPos!=dstAType.length()) 
+        {
+          NOMATCH
+          return FALSE; // more than a difference in name -> no match
+        }
+      }
+      else // maybe dst has a name while src has not
+      {
+        dstPos++;
+        while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+        if (dstPos!=dstAType.length()) 
+        {
+          NOMATCH
+          return FALSE; // nope not a name -> no match
+        }
+      }
+    }
+    else if (srcPos<srcAType.length())
+    {
+      if (!isspace(srcAType.at(srcPos))) // maybe the names differ
+      {
+        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
+        if (srcPos!=srcAType.length()) 
+        {
+          NOMATCH
+          return FALSE; // more than a difference in name -> no match
+        }
+      }
+      else // maybe src has a name while dst has not
+      {
+        srcPos++;
+        while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
+        if (srcPos!=srcAType.length()) 
+        {
+          NOMATCH
+          return FALSE; // nope not a name -> no match
+        }
+      }
+    }
+  }
+  MATCH
+  return TRUE;
+}
+
+static void mergeArgument(Argument *srcA,Argument *dstA,
+                   const QCString &className,
+                   const QCString &namespaceName,
+                   NamespaceList *usingList)
+{
+  QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
+  QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
+  if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
+  if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+  stripIrrelevantConstVolatile(srcAType);
+  stripIrrelevantConstVolatile(dstAType);
+
+  if (srcAType!=dstAType) // check if the argument only differs on name 
+  {
+    //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
+
+    // remove a namespace scope that is only in one type 
+    // (assuming a using statement was used)
+    trimNamespaceScope(srcAType,dstAType);
+
+    //QCString srcScope;
+    //QCString dstScope;
+
+    // strip redundant scope specifiers
+    if (!className.isEmpty())
+    {
+      srcAType=trimScope(className,srcAType);
+      dstAType=trimScope(className,dstAType);
+      //printf("trimScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
+      ClassDef *cd;
+      if (!namespaceName.isEmpty())
+        cd=getClass(namespaceName+"::"+className);
+      else
+        cd=getClass(className);
+      if (cd && cd->baseClasses()->count()>0)
+      {
+        trimBaseClassScope(cd->baseClasses(),srcAType); 
+        trimBaseClassScope(cd->baseClasses(),dstAType); 
+      }
+      //printf("trimBaseClassScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
+    }
+    if (!namespaceName.isEmpty())
+    {
+      srcAType=trimScope(namespaceName,srcAType);
+      dstAType=trimScope(namespaceName,dstAType);
+    }
+    if (usingList && usingList->count()>0)
+    {
+      NamespaceListIterator nli(*usingList);
+      NamespaceDef *nd;
+      for (;(nd=nli.current());++nli)
+      {
+        srcAType=trimScope(nd->name(),srcAType);
+        dstAType=trimScope(nd->name(),dstAType);
+      }
+    }
+
+    if (!srcA->name.isEmpty() && !dstA->type.isEmpty() &&
+        (srcAType+" "+srcA->name)==dstAType)
+    {
+      srcA->type=srcAType+" "+srcA->name;
+      srcA->name.resize(0);
+      return;
+    }
+    else if (!dstA->name.isEmpty() && !srcA->type.isEmpty() &&
+        (dstAType+" "+dstA->name)==srcAType)
+    {
+      dstA->type=dstAType+" "+dstA->name;
+      dstA->name.resize(0);
+      return;
+    }
+    //printf("srcA=%s::%s dstA=%s::%s\n",srcAType.data(),srcA->name.data(),
+    //    dstAType.data(),dstA->name.data());
+
+    uint srcPos=0,dstPos=0; 
+    bool equal=TRUE;
+    while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
+    {
+      equal=srcAType.at(srcPos)==dstAType.at(dstPos);
+      if (equal) srcPos++,dstPos++; 
+    }
+    if (srcPos<srcAType.length() && dstPos<dstAType.length())
+    {
+      // if nothing matches or the match ends in the middle or at the
+      // end of a string then there is no match
+      int srcStart=srcPos;
+      int dstStart=dstPos;
+      if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
+      {
+        // find the start of the name
+        while (srcStart>=0 && isId(srcAType.at(srcStart))) srcStart--;
+        while (dstStart>=0 && isId(dstAType.at(dstStart))) dstStart--;
+        if (srcStart>0) // move the name from the type to the name field
+        {
+          srcA->name=srcAType.right(srcAType.length()-srcStart-1);
+          srcA->type=srcAType.left(srcStart+1).stripWhiteSpace(); 
+        } 
+        if (dstStart>0) // move the name from the type to the name field
+        {
+          dstA->name=dstAType.right(dstAType.length()-dstStart-1);
+          dstA->type=dstAType.left(dstStart+1).stripWhiteSpace(); 
+        } 
+      }
+      else
+      {
+        dstA->name=dstAType.right(dstAType.length()-dstStart);
+        dstA->type=dstAType.left(dstStart).stripWhiteSpace();
+        srcA->name=srcAType.right(dstAType.length()-srcStart);
+        srcA->type=srcAType.left(srcStart).stripWhiteSpace();
+      }
+    }
+    else if (dstPos<dstAType.length())
+    {
+      if (!isspace(dstAType.at(dstPos))) // maybe the names differ
+      {
+        int startPos=dstPos;
+        while (startPos>=0 && isId(dstAType.at(startPos))) startPos--;
+        if (startPos>0)
+        {
+          dstA->name=dstAType.right(dstAType.length()-startPos-1);
+          dstA->type=dstAType.left(startPos+1).stripWhiteSpace(); 
+        } 
+      }
+      else // maybe dst has a name while src has not
+      {
+        dstPos++;
+        int startPos=dstPos;
+        dstA->name=dstAType.right(dstAType.length()-startPos);
+        dstA->type=dstAType.left(startPos).stripWhiteSpace();
+      }
+    }
+    else if (srcPos<srcAType.length())
+    {
+      if (!isspace(srcAType.at(srcPos))) // maybe the names differ
+      {
+        int startPos=srcPos;
+        while (startPos>=0 && isId(srcAType.at(startPos))) startPos--;
+        if (startPos>0)
+        {
+          srcA->name=srcAType.right(srcAType.length()-startPos-1);
+          srcA->type=srcAType.left(startPos+1).stripWhiteSpace(); 
+        } 
+      }
+      else // maybe src has a name while dst has not
+      {
+        srcPos++;
+        int startPos=srcPos;
+        srcA->name=srcAType.right(srcAType.length()-startPos);
+        srcA->type=srcAType.left(startPos).stripWhiteSpace();
+      }
+    }
+    return;
+  }
+  //printf("match exactly\n");
+  if (srcA->name.isEmpty() && dstA->name.isEmpty()) 
+    // arguments match exactly but no name ->
+    // see if we can find the name
+  {
+    int i=srcAType.length()-1;
+    while (i>=0 && isId(srcAType.at(i))) i--;
+    if (i>0 && i<(int)srcAType.length()-1 && srcAType.at(i)!=':') 
+      // there is (probably) a name
+    {
+      srcA->name=srcAType.right(srcAType.length()-i-1);
+      srcA->type=srcAType.left(i+1).stripWhiteSpace();
+      dstA->name=dstAType.right(dstAType.length()-i-1);
+      dstA->type=dstAType.left(i+1).stripWhiteSpace();
+    } 
+  }
+  else if (!dstA->name.isEmpty())
+  {
+    srcA->name = dstA->name.copy();
+  }
+  else if (!srcA->name.isEmpty())
+  {
+    dstA->name = srcA->name.copy(); 
+  }
+  return;
+}
+
+
+/*!
+ * Matches the arguments list srcAl with the argument list dstAl
+ * Returns TRUE if the argument lists are equal. Two argument list are 
+ * considered equal if the number of arguments is equal and the types of all 
+ * arguments are equal. Furthermore the const and volatile specifiers 
+ * stored in the list should be equal.
+ */
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
                     const char *cl,const char *ns,bool checkCV,
                     NamespaceList *usingList)
@@ -1231,7 +1630,17 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
 
   if (srcAl==0 || dstAl==0)
   {
-    return srcAl==dstAl; // at least one of the members is not a function
+    bool match = srcAl==dstAl; // at least one of the members is not a function
+    if (match)
+    {
+      MATCH
+      return TRUE;
+    }
+    else
+    {
+      NOMATCH
+      return FALSE;
+    }
   }
   
   // handle special case with void argument
@@ -1241,6 +1650,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     Argument *a=new Argument;
     a->type = "void";
     srcAl->append(a);
+    MATCH
     return TRUE;
   }
   if ( dstAl->count()==0 && srcAl->count()==1 &&
@@ -1249,11 +1659,13 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     Argument *a=new Argument;
     a->type = "void";
     dstAl->append(a);
+    MATCH
     return TRUE;
   }
   
   if (srcAl->count() != dstAl->count())
   {
+    NOMATCH
     return FALSE; // different number of arguments -> no match
   }
 
@@ -1261,10 +1673,12 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   {
     if (srcAl->constSpecifier != dstAl->constSpecifier) 
     {
+      NOMATCH
       return FALSE; // one member is const, the other not -> no match
     }
     if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
     {
+      NOMATCH
       return FALSE; // one member is volatile, the other not -> no match
     }
   }
@@ -1274,200 +1688,22 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
   for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
-  {
-    QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
-    QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
-    if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
-    if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
-    stripIrrelevantConstVolatile(srcAType);
-    stripIrrelevantConstVolatile(dstAType);
-
-    if (srcA->array!=dstA->array) return FALSE;
-    if (srcAType!=dstAType) // check if the argument only differs on name 
+  { 
+    if (!matchArgument(srcA,dstA,className,namespaceName,usingList))
     {
-      //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
-
-      // remove a namespace scope that is only in one type 
-      // (assuming a using statement was used)
-      trimNamespaceScope(srcAType,dstAType);
-
-      //QCString srcScope;
-      //QCString dstScope;
-
-      // strip redundant scope specifiers
-      if (!className.isEmpty())
-      {
-        srcAType=trimScope(className,srcAType);
-        dstAType=trimScope(className,dstAType);
-        //printf("trimScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
-        ClassDef *cd;
-        if (!namespaceName.isEmpty())
-          cd=getClass(namespaceName+"::"+className);
-        else
-          cd=getClass(className);
-        if (cd && cd->baseClasses()->count()>0)
-        {
-          trimBaseClassScope(cd->baseClasses(),srcAType); 
-          trimBaseClassScope(cd->baseClasses(),dstAType); 
-        }
-        //printf("trimBaseClassScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
-      }
-      if (!namespaceName.isEmpty())
-      {
-        srcAType=trimScope(namespaceName,srcAType);
-        dstAType=trimScope(namespaceName,dstAType);
-      }
-      if (usingList && usingList->count()>0)
-      {
-        NamespaceListIterator nli(*usingList);
-        NamespaceDef *nd;
-        for (;(nd=nli.current());++nli)
-        {
-          srcAType=trimScope(nd->name(),srcAType);
-          dstAType=trimScope(nd->name(),dstAType);
-        }
-      }
-      //printf("srcAType=%s dstAType=%s\n",srcAType.data(),dstAType.data());
-      
-      uint srcPos=0,dstPos=0; 
-      bool equal=TRUE;
-      while (srcPos<srcAType.length() && dstPos<dstAType.length() && equal)
-      {
-        equal=srcAType.at(srcPos)==dstAType.at(dstPos);
-        if (equal) srcPos++,dstPos++; 
-      }
-      if (srcPos<srcAType.length() && dstPos<dstAType.length())
-      {
-        // if nothing matches or the match ends in the middle or at the
-        // end of a string then there is no match
-        //if (srcPos==0 || isalnum(srcAType.at(srcPos-1)) ||
-        //    dstPos==0 || isalnum(dstAType.at(dstPos-1))) { printf("No match1\n"); return FALSE; }
-        int srcStart=srcPos;
-        int dstStart=dstPos;
-        if (srcPos==0 || dstPos==0) return FALSE;
-        if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
-        {
-          // check if a name if already found -> if no then there is no match
-          if (!srcA->name.isEmpty() || !dstA->name.isEmpty()) return FALSE;
-          while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-          while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-          if (srcPos<srcAType.length() || dstPos<dstAType.length()) return FALSE;
-          // find the start of the name
-          while (srcStart>=0 && isId(srcAType.at(srcStart))) srcStart--;
-          while (dstStart>=0 && isId(dstAType.at(dstStart))) dstStart--;
-          if (srcStart>0) // move the name from the type to the name field
-          {
-            srcA->name=srcAType.right(srcAType.length()-srcStart-1);
-            srcA->type=srcAType.left(srcStart+1).stripWhiteSpace(); 
-          } 
-          if (dstStart>0) // move the name from the type to the name field
-          {
-            dstA->name=dstAType.right(dstAType.length()-dstStart-1);
-            dstA->type=dstAType.left(dstStart+1).stripWhiteSpace(); 
-          } 
-        }
-        else
-        {
-          // otherwise we assume that a name starts at the current position.
-          while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-          while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-          // if nothing more follows for both types then we assume we have
-          // found a match. Note that now `signed int' and `signed' match, but
-          // seeing that int is not a name can only be done by looking at the
-          // semantics.
-
-          if (srcPos!=srcAType.length() || dstPos!=dstAType.length()) { return FALSE; }
-          dstA->name=dstAType.right(dstAType.length()-dstStart);
-          dstA->type=dstAType.left(dstStart).stripWhiteSpace();
-          srcA->name=srcAType.right(dstAType.length()-srcStart);
-          srcA->type=srcAType.left(srcStart).stripWhiteSpace();
-        }
-      }
-      else if (dstPos<dstAType.length())
-      {
-        if (!isspace(dstAType.at(dstPos))) // maybe the names differ
-        {
-          int startPos=dstPos;
-          while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-          if (dstPos!=dstAType.length()) return FALSE; // more than a difference in name -> no match
-          while (startPos>=0 && isId(dstAType.at(startPos))) startPos--;
-          if (startPos>0)
-          {
-            dstA->name=dstAType.right(dstAType.length()-startPos-1);
-            dstA->type=dstAType.left(startPos+1).stripWhiteSpace(); 
-          } 
-        }
-        else // maybe dst has a name while src has not
-        {
-          dstPos++;
-          int startPos=dstPos;
-          while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-          if (dstPos!=dstAType.length()) return FALSE; // nope not a name -> no match
-          else // its a name (most probably) so move it
-          {
-            dstA->name=dstAType.right(dstAType.length()-startPos);
-            dstA->type=dstAType.left(startPos).stripWhiteSpace();
-          }
-        }
-      }
-      else if (srcPos<srcAType.length())
-      {
-        if (!isspace(srcAType.at(srcPos))) // maybe the names differ
-        {
-          int startPos=srcPos;
-          while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-          if (srcPos!=srcAType.length()) return FALSE; // more than a difference in name -> no match
-          while (startPos>=0 && isId(srcAType.at(startPos))) startPos--;
-          if (startPos>0)
-          {
-            srcA->name=srcAType.right(srcAType.length()-startPos-1);
-            srcA->type=srcAType.left(startPos+1).stripWhiteSpace(); 
-          } 
-        }
-        else // maybe src has a name while dst has not
-        {
-          srcPos++;
-          int startPos=srcPos;
-          while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-          if (srcPos!=srcAType.length()) return FALSE; // nope not a name -> no match
-          else // its a name (most probably) so move it
-          {
-            srcA->name=srcAType.right(srcAType.length()-startPos);
-            srcA->type=srcAType.left(startPos).stripWhiteSpace();
-          }
-        }
-      }
-      else // without scopes the names match exactly
-      {
-      }
-      return TRUE;
-    }
-    //printf("match exactly\n");
-    if (srcA->name.isEmpty() && dstA->name.isEmpty()) 
-                          // arguments match exactly but no name ->
-                          // see if we can find the name
-    {
-      int i=srcAType.length()-1;
-      while (i>=0 && isId(srcAType.at(i))) i--;
-      if (i>0 && i<(int)srcAType.length()-1 && srcAType.at(i)!=':') 
-        // there is (probably) a name
-      {
-        srcA->name=srcAType.right(srcAType.length()-i-1);
-        srcA->type=srcAType.left(i+1).stripWhiteSpace();
-        dstA->name=dstAType.right(dstAType.length()-i-1);
-        dstA->type=dstAType.left(i+1).stripWhiteSpace();
-      } 
-    }
-    else if (!dstA->name.isEmpty())
-    {
-      srcA->name=dstA->name.copy();
-    }
-    else if (!srcA->name.isEmpty())
-    {
-      dstA->name=srcA->name.copy(); 
+      NOMATCH
+      return FALSE;
     }
   }
-  //printf("Match found!\n");
+  // merge/correct argument type/names
+  for (srcAli.toFirst(),dstAli.toFirst();
+       (srcA=srcAli.current(),dstA=dstAli.current());
+       ++srcAli,++dstAli
+      )
+  { 
+    mergeArgument(srcA,dstA,className,namespaceName,usingList);
+  }
+  MATCH
   return TRUE; // all arguments match 
 }
 
@@ -1572,7 +1808,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
              const char *args,
              MemberDef *&md, 
              ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd,
-             bool forceEmptyScope)
+             bool forceEmptyScope,
+             FileDef *currentFile
+            )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
@@ -1784,6 +2022,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       }
       else // no scope => global function
       {
+        QList<MemberDef> members;
+        
         //printf("Function with global scope `%s' args=`%s'\n",namespaceName.data(),args);
         MemberListIterator mli(*mn);
         for (mli.toFirst();(md=mli.current());++mli)
@@ -1794,12 +2034,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             gd=md->getGroupDef();
             //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
             //    md->name().data(),args,fd,gd);
-            bool inGroup=FALSE;
             if ((fd && fd->isLinkable()) || 
-                (inGroup=(gd && gd->isLinkable()))
+                (gd && gd->isLinkable())
                )
             {
-              if (inGroup) fd=0;
               //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
               bool match=TRUE;
               ArgumentList *argList=0;
@@ -1813,7 +2051,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               if (match) 
               {
                 //printf("Found match!\n");
-                return TRUE;
+                members.append(md);
               }
             }
           }
@@ -1831,17 +2069,43 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               //printf("member is linkable md->name()=`%s'\n",md->name().data());
               fd=md->getFileDef();
               gd=md->getGroupDef();
-              bool inGroup=FALSE;
               if ((fd && fd->isLinkable()) ||
-                  (inGroup=(gd && gd->isLinkable()))
+                  (gd && gd->isLinkable())
                  )
               {
-                if (inGroup) fd=0;
-                return TRUE;
+                members.append(md);
               }
             }
             md=mn->prev();
           }
+        }
+        if (members.count()==1 || currentFile!=0)
+        {
+          md=members.first();
+        }
+        else if (members.count()>1)
+        {
+          // use some C scoping rules to determine the correct link
+          // 1. member in current file
+          // 2. non-static member in different file
+          MemberDef *bmd = 0;
+          for (md=members.first(); md; md=members.next())
+          {
+            if (md->getFileDef() == currentFile)
+            {
+              bmd = 0;
+              break;
+            }
+            if (!(md->isStatic())) bmd = md;     
+          }
+          if (bmd) md=bmd;
+        }
+        if (md) // found a matching global member
+        {
+          fd=md->getFileDef();
+          gd=md->getGroupDef();
+          if (gd && gd->isLinkable()) fd=0; else gd=0;
+          return TRUE;
         }
       }
       if (scopeOffset==0)

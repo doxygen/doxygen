@@ -92,12 +92,12 @@ static QCString         sectionRef;
 static bool             insideVerbatim = FALSE;
 static bool             insidePre = FALSE;
 static int              depthIf;
-//static int              currentListIndentLevel;
-static QStack<char>	currentListIndent;
 static QCString         curImageName;
 static QCString         curImageCaption;
 static QCString         internalRefFile;
 static QCString         internalRefAnchor;
+static QStack<char>	  currentListIndent; // indent stack of all list items 
+static bool insideItemList = FALSE;
 
 //-----------------------------------------------------------------------------
 
@@ -456,6 +456,32 @@ static void showUntil(OutputList &ol,const char *key)
 
 //-----------------------------------------------------------------
 
+static bool inBlock()
+{
+  return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
+         inVersionBlock || inSinceBlock || inDateBlock || inWarningBlock || inRemarkBlock || 
+	 inAttentionBlock || inBugBlock || inNoteBlock ||
+	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
+	 inPostBlock || inInvarBlock;
+}
+
+static void endBlock()
+{
+    if (inParamBlock || inRetValBlock || inExceptionBlock) 
+    {
+      outDoc->endDescTableData();
+      outDoc->endDescTable();
+    }
+    outDoc->endDescList();
+    currentListIndent.pop();
+    inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
+    inVersionBlock=inSinceBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
+    inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
+    inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
+}
+
+//-----------------------------------------------------------------
+
 struct IndentInfo
 {
   public:
@@ -477,8 +503,7 @@ struct IndentInfo
     bool enumerated;
 };
 
-static QStack<IndentInfo> listIndentStack;
-static bool insideItemList = FALSE;
+static QStack<IndentInfo> listIndentStack;   // indent stack of - items
 
 static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
 {
@@ -504,6 +529,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
   //printf("list marker found at column %d enumerated %d\n",indent,enumerated);
   if (!insideItemList)
   {
+    currentListIndent.push(enumerated ? "O" : "U");
     listIndentStack.push(new IndentInfo(indent,enumerated));
     listIndentStack.top()->startList();
     listIndentStack.top()->writeItem();
@@ -528,6 +554,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     }
     else if (pPrevInfo->indent<indent) // start sub item list
     {
+      currentListIndent.push(enumerated ? "O" : "U");
       listIndentStack.push(new IndentInfo(indent,enumerated));
       listIndentStack.top()->startList();
       listIndentStack.top()->writeItem();
@@ -536,6 +563,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     {
       pPrevInfo->endList();
       listIndentStack.pop();
+      currentListIndent.pop();
       delete pPrevInfo;
       // safe guard against wrong indenting
       if (listIndentStack.isEmpty()) 
@@ -558,35 +586,27 @@ static void forceEndItemList()
   IndentInfo *info;
   while ((info=listIndentStack.pop())!=0)
   {
-    info->endList();
     delete info;
   }
-  insideItemList=FALSE;
-}
-
-//-----------------------------------------------------------------
-
-static bool inBlock()
-{
-  return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
-         inVersionBlock || inSinceBlock || inDateBlock || inWarningBlock || inRemarkBlock || 
-	 inAttentionBlock || inBugBlock || inNoteBlock ||
-	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
-	 inPostBlock || inInvarBlock;
-}
-
-static void endBlock()
-{
-    if (inParamBlock || inRetValBlock || inExceptionBlock) 
+  while (!currentListIndent.isEmpty())
+  {
+    char c=*currentListIndent.pop();
+    switch(c)
     {
-      outDoc->endDescTableData();
-      outDoc->endDescTable();
+       case 'O': outDoc->endEnumList(); break;
+       case 'U': outDoc->endItemList(); break;
+       case 'D':
+	if (inBlock()) 
+	{
+	  currentListIndent.push("D"); // hack!
+	  endBlock(); 
+	}
+	else 
+	  outDoc->endDescription(); 
+	break;
     }
-    outDoc->endDescList();
-    inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
-    inVersionBlock=inSinceBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
-    inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
-    inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
+  }
+  insideItemList=FALSE;
 }
 
 //-----------------------------------------------------------------
@@ -999,6 +1019,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   				            endArgumentList();
 					    if (b) endBlock();  
 					    inParBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    outDoc->docify(title);
@@ -1018,6 +1039,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inWarningBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trWarning()+": ");
@@ -1036,6 +1058,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inRemarkBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trRemarks()+": ");
@@ -1054,6 +1077,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inAttentionBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trAttention()+": ");
@@ -1072,6 +1096,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inBugBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trBugsAndLimitations()+": ");
@@ -1090,6 +1115,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inNoteBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trNote()+": ");
@@ -1108,6 +1134,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inPreBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trPrecondition()+": ");
@@ -1126,6 +1153,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inPostBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trPostcondition()+": ");
@@ -1144,6 +1172,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inInvarBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trInvariant()+": ");
@@ -1162,6 +1191,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inVersionBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trVersion()+": ");
@@ -1180,6 +1210,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inSinceBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trSince()+": ");
@@ -1198,6 +1229,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inDateBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trDate()+": ");
@@ -1220,6 +1252,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    ASSERT(item!=0);
 					    endArgumentList();
 					    if (inBlock()) endBlock();
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"todo",item->listAnchor,theTranslator->trTodo()+": ");
@@ -1228,6 +1261,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->writeDescItem();
 					    internalParseDocument(item->text);
 					    outDoc->endDescList();
+					    currentListIndent.pop();
 					  }
   					}
 <DocScan>"\\test "[0-9]+		{ // this tag is generated in an earlier pass
@@ -1240,6 +1274,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    ASSERT(item!=0);
   					    endArgumentList();
 					    if (inBlock()) endBlock();
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
@@ -1248,6 +1283,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->writeDescItem();
 					    internalParseDocument(item->text);
 					    outDoc->endDescList();
+					    currentListIndent.pop();
 					  }
   					}
 <DocScan>{CMD}"deprecated"/{BN}		{
@@ -1256,6 +1292,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inDeprecatedBlock=TRUE;
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trDeprecated()+": ");
@@ -1276,6 +1313,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  tagText=tagText.left(tagText.length()-1);
   				          endArgumentList();
 					  if (inBlock()) endBlock();
+					  currentListIndent.push("D");
   					  outDoc->startDescList();
 					  outDoc->startBold();
 					  scanString(tagName+": ");
@@ -1284,6 +1322,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->writeDescItem();
 					  scanString(tagText);
 					  outDoc->endDescList();
+					  currentListIndent.pop();
   					}
 <DocScan>{CMD}"author"/{BN}		{
   				          endArgumentList();
@@ -1291,6 +1330,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inAuthorBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trAuthors()+": ");
@@ -1309,6 +1349,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
+					    currentListIndent.push("D");
   					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trReturns()+": ");
@@ -1323,6 +1364,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trSeeAlso()+": ");
@@ -1346,6 +1388,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inParamBlock=TRUE;
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trParameters()+": ");
@@ -1371,6 +1414,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inRetValBlock=TRUE;
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trReturnValues()+": ");
@@ -1396,6 +1440,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    if (inBlock()) endBlock();
 					    inExceptionBlock=TRUE;
+					    currentListIndent.push("D");
 					    outDoc->startDescList();
 					    outDoc->startBold();
 					    scanString(theTranslator->trExceptions()+": ");
@@ -1819,7 +1864,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
                                                  "Warning in the documentation of this entity:\nMore </ol> tags than <ol> tags in the documentation of this entity."
                                                 );
 					  }
-					  else if (currentListIndent.top()!="O")
+					  else if (*currentListIndent.top()!='O')
 					  {
 					    warn(yyFileName,yyLineNr,
 						 "Warning in the documentation of this entity:\nThe </ol> tag does not end a <ol> tag."
@@ -1841,7 +1886,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
                                                  "Warning in the documentation of this entity:\nMore </ul> tags than <ul> tags."
                                                 );
 					  }
-					  else if (currentListIndent.top()!="U")
+					  else if (*currentListIndent.top()!='U')
 					  {
 					    warn(yyFileName,yyLineNr,
 						 "Warning in the documentation of this entity:\nThe </ul> tag does not end a <ul> tag."
@@ -1855,7 +1900,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <DocScan>"<"{LI}{ATTR}">"		{
   					  if (/*currentListIndent.isEmpty() ||*/  //DvH: I removed this check because I use this in the manual (the <ul> is in a \htmlonly block!)
-					      currentListIndent.top()=="D")
+					      !currentListIndent.isEmpty() && *currentListIndent.top()=='D')
 					  {
  					    warn(yyFileName,yyLineNr,
 					         "Warning in the documentation of this entity:\nThe <li> tag can only be used inside a <ul> ... </ul> or a <ol> ... </ol> block."
@@ -1882,7 +1927,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
                                                  "Warning in the documentation of this entity:\nMore </dl> tags than <dl> tags in the documentation."
                                                 );
 					  }
-					  else if (currentListIndent.top()!="D")
+					  else if (*currentListIndent.top()!='D')
 					  {
 					    warn(yyFileName,yyLineNr,
 						 "Warning in the documentation of this entity:\nThe </dl> tag does not end a <dl> tag in the documentation."
@@ -1896,7 +1941,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <DocScan>"<"{DT}{ATTR}">"		{ 
   					  if (currentListIndent.isEmpty() ||
-					      currentListIndent.top()!="D")
+					      *currentListIndent.top()!='D')
 					  {
  					    warn(yyFileName,yyLineNr,
 					         "Warning in the documentation of this entity:\nThe <dt> tag can only be used inside a <dl> ... </dl> block."
@@ -1910,7 +1955,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan>"</"{DT}{ATTR}">"	
 <DocScan>"<"{DD}{ATTR}">"		{ 
   					  if (currentListIndent.isEmpty() ||
-					      currentListIndent.top()!="D")
+					      *currentListIndent.top()!='D')
 					  {
  					    warn(yyFileName,yyLineNr,
 					         "Warning in the documentation of this entity:\nThe <dd> tag can only be used inside a <dl> ... </dl> block."

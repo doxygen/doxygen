@@ -285,7 +285,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     while (nd)
     {
       ol.startMemberItem(0);
-      ol.docify("namespace");
+      ol.docify("namespace ");
       ol.insertMemberAlign();
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
       ol.endMemberItem(FALSE);

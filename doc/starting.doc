@@ -131,7 +131,7 @@ of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory. 
 By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
-<code>make</code> ofcourse). This file can then be viewed using \c xdvi or 
+<code>make</code> of course). This file can then be viewed using \c xdvi or 
 converted into a postscript file \c refman.ps by 
 typing <code>make ps</code> (this requires <code>dvips</code>).  
 To put 2 pages on one physical page use <code>make ps_2on1</code> instead.
@@ -152,7 +152,7 @@ capabilities of the man page format, so some information
 \subsection step3 Step 3: Documenting the sources
 
 Although documenting the source is presented as step 3, in a new project 
-this should ofcourse be step 1. Here I assume
+this should of course be step 1. Here I assume
 you already have some code and you want doxygen to generate a nice document 
 describing the API and maybe the internals as well.
 

@@ -18,6 +18,8 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
+#include <stdio.h>
+
 extern void msg(const char *fmt, ...);
 extern void warn(const char *file,int line,const char *fmt, ...);
 extern void warn_cont(const char *fmt, ...);

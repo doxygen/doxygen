@@ -417,7 +417,8 @@ static bool getLink(const char *className,
   QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
   //printf("Trying `%s'::`%s'\n",c.data(),m.data());
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd) && md->isLinkable())
+  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
+      md->isLinkable())
   {
     //printf("Found!\n");
     if (g_exampleBlock)

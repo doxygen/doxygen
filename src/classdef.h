@@ -169,6 +169,7 @@ class ClassDef : public Definition
     MemberList signals;
     MemberList friends;
     MemberList dcopMethods;
+    MemberList properties;
     
     /* member list by types */
     MemberList constructors;
@@ -178,6 +179,7 @@ class ClassDef : public Definition
     MemberList functionMembers;
     MemberList relatedMembers;
     MemberList variableMembers;
+    MemberList propertyMembers;
 
     /* user defined member groups */
     MemberGroupList    *memberGroupList;

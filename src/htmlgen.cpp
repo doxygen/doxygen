@@ -89,7 +89,7 @@ void HtmlGenerator::init()
     exit(1);
   }
   writeLogo(Config::htmlOutputDir);
-  writeNullImage(Config::htmlOutputDir);
+  //writeNullImage(Config::htmlOutputDir);
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)

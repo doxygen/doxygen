@@ -1411,6 +1411,7 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
   {
     case Define:      t << "definedef";   xmlType=define_t;   break;
     case EnumValue:   // fall through
+    case Property:    // fall through
     case Variable:    t << "variabledef"; xmlType=variable_t; break;
     case Typedef:     t << "typedef";     xmlType=typedef_t;  break;
     case Enumeration: t << "enumdef";     xmlType=enum_t;     break;
@@ -1423,7 +1424,8 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
   }
   t << " id=\"";
   t << def->getOutputFileBase()
-    << ":"
+    << "__"      // can we change this to a non ID char? 
+                 // : do not seem allowed for some parsers!
     << anchor();
   t << "\"";
   if (xmlType==function_t && virtualness()!=Normal) 
@@ -1444,15 +1446,13 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
       (xmlType!=function_t || !type.isEmpty()) // Type is optional here.
      )
   {
+    QCString typeStr = replaceAnonymousScopes(type);
+    if (xmlType==typedef_t && typeStr.left(8)=="typedef ") 
+      typeStr=typeStr.right(typeStr.length()-8);
+    if (xmlType==function_t && typeStr.left(8)=="virtual ") 
+      typeStr=typeStr.right(typeStr.length()-8);
     t << "              <type>";
-    if (xmlType==typedef_t && type.left(8)=="typedef ")
-      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),
-          type.right(type.length()-8)); // strip "typedef "
-    else if (xmlType==function_t && type.left(8)=="virtual ")
-      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),
-          type.right(type.length()-8)); // strip "virtual "
-    else
-      linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),type);
+    linkifyText(TextGeneratorXMLImpl(t),scopeName,name(),typeStr);
     t << "</type>" << endl;
   }
 
@@ -1560,6 +1560,7 @@ void MemberDef::generateXML(QTextStream &t,Definition *def)
   {
     case Define:      t << "definedef";   break;
     case EnumValue:   // fall through
+    case Property:    // fall through
     case Variable:    t << "variabledef"; break;
     case Typedef:     t << "typedef";     break;
     case Enumeration: t << "enumdef";     break;

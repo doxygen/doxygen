@@ -1,5 +1,8 @@
 all: src\version.cpp
 	set TMAKEPATH=$(TMAKEPATH)
+	cd qtools
+	$(MAKE)
+	cd ..
 	cd src 
 	$(MAKE)
 
