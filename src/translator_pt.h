@@ -38,7 +38,7 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_2_18
 {
   public:
 

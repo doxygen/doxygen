@@ -122,6 +122,7 @@ static QCString         formulaText;
 static bool             useOverrideCommands = FALSE;
 static bool             insideIDL = FALSE;
 static bool             insideJava = FALSE;
+static bool             insideCS = FALSE;
 static bool             insidePHP = FALSE;
 static bool             insidePHPCode = FALSE;
 static bool             insideCppQuote = FALSE;
@@ -391,7 +392,8 @@ static void setContext()
   QCString fileName = yyFileName;
   insideIDL  = fileName.right(4)==".idl" || fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
-  insidePHP = fileName.right(4)==".php" || fileName.right(4)==".inc";
+  insideCS   = fileName.right(3)==".cs";
+  insidePHP  = fileName.right(4)==".php" || fileName.right(4)==".inc";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -510,6 +512,7 @@ ID        [a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BR	  [bB][rR]
@@ -653,6 +656,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	PackageName
 %x	GetCallType
 %x	JavaImport
+%x	CSAccessorDecl
 
 %%
 
@@ -1277,25 +1281,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    insideTryBlock=FALSE;
 					    BEGIN(TryFunctionBlock);
 					  }
-//                                        else if ( insidePHP && strcmp(yytext,"function")==0 )
-//                                        {
-//                                           BEGIN(
-//                                        }
 					  else
 					  {
 					    if (YY_START==FindMembers)
 					    {
 					      addType( current ) ;
 					    }
-					    if (insideJava && strcmp(yytext,"public")==0)
+					    if ((insideJava || insideCS) && strcmp(yytext,"public")==0)
 					    {
 					      current->protection = Public;
 					    }
-					    else if (insideJava && strcmp(yytext,"protected")==0)
+					    else if ((insideJava || insideCS) && strcmp(yytext,"protected")==0)
 					    {
 					      current->protection = Protected;
 					    }
-					    else if (insideJava && strcmp(yytext,"private")==0)
+					    else if ((insideJava || insideCS) && strcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
 					    }
@@ -1318,7 +1318,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					}
 <FindMembers>"."			{
-  					  if (insideJava)
+  					  if (insideJava || insideCS)
 					  {
 					    current->name+=".";
 					  }
@@ -2727,6 +2727,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  lineCount();
 					  BEGIN( ClassVar );
 					}
+<CompoundName>{CSSCOPENAME}	        { // C# style scope
+					  current->name = substitute(yytext,".","::");
+					  lineCount();
+					  BEGIN( ClassVar );
+                                        }
 <ClassVar>{SCOPENAME}{BN}*/"("		{
   					  if (insideIDL && strncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
 					  {
@@ -2792,7 +2797,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
-					  if (current->section == Entry::INTERFACE_SEC || current->section == Entry::STRUCT_SEC || insidePHP)
+					  if (current->section == Entry::INTERFACE_SEC || 
+					      current->section == Entry::STRUCT_SEC || 
+					      insidePHP || insideCS
+					     )
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -2889,7 +2897,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP)
+					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP || insideCS)
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -3040,23 +3048,59 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  lineCount();
 					}
 <FindMembers>"{"			{
-  					  if (insideJava && current->stat && current->name.isEmpty() && current->type.isEmpty())
+                                          if (insideCS && !current->name.isEmpty() && !current->type.isEmpty())
 					  {
-					    // static Java initializer
-					    needsSemi = FALSE;
+					    if (current->type.left(6)=="event " || current->type.find("event")!=-1) // event
+					    {
+  					      current->mtype = mtype = Event;
+					    }
+					    else // property
+					    {				
+  					      current->mtype = mtype = Property;
+					    }
+					    current->bodyLine = yyLineNr;
+					    curlyCount=0;
+					    BEGIN(CSAccessorDecl);
 					  }
 					  else
 					  {
-					    needsSemi = TRUE;
+					    if ((insideJava || insideCS) && 
+						current->stat && 
+						current->name.isEmpty() && 
+						current->type.isEmpty()
+					       )
+					    {
+					      // static Java initializer
+					      needsSemi = FALSE;
+					    }
+					    else
+					    {
+					      needsSemi = TRUE;
+					    }
+					    current->type.resize(0);
+					    current->name.resize(0);
+					    current->args.resize(0);
+					    current->argList->clear();
+					    curlyCount=0;
+					    BEGIN( SkipCurlyBlock );
 					  }
-					  current->type.resize(0);
-					  current->name.resize(0);
-					  current->args.resize(0);
-					  current->argList->clear();
-					  curlyCount=0;
-					  BEGIN( SkipCurlyBlock );
-					  	
   					}
+<CSAccessorDecl>"{"			{ curlyCount++; }
+<CSAccessorDecl>"}"			{ 
+                                          if (curlyCount) 
+                                          {
+                                            curlyCount--; 
+					  }
+					  else
+					  {
+                                            unput(';');
+					    BEGIN(FindMembers);
+					  }
+                                        }
+<CSAccessorDecl>"set"			{ if (curlyCount==0) current->memSpec |= Entry::Settable; }
+<CSAccessorDecl>"get"			{ if (curlyCount==0) current->memSpec |= Entry::Gettable; }
+<CSAccessorDecl>.			{}
+<CSAccessorDecl>\n			{ yyLineNr++; }
 <JavaDoc>{CMD}("brief"|"short"){B}+	{
   					  lastBriefContext=tmpDocType;
   					  BEGIN( ClassDocBrief ); 

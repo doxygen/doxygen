@@ -71,11 +71,11 @@ class LatexGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList()  { t << "\\begin{CompactItemize}" << endl; }
     void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
-    void startEnumList()  { t << "\\begin{enumerate}"      << endl; }
-    void endEnumList()    { t << "\\end{enumerate}"        << endl; }
-    void startAlphabeticalIndexList() {}
-    void endAlphabeticalIndexList() {} 
-    void writeIndexHeading(const char *) {}
+    //void startEnumList()  { t << "\\begin{enumerate}"      << endl; }
+    //void endEnumList()    { t << "\\end{enumerate}"        << endl; }
+    //void startAlphabeticalIndexList() {}
+    //void endAlphabeticalIndexList() {} 
+    //void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -87,7 +87,7 @@ class LatexGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void writeMailLink(const char *url);
+    //void writeMailLink(const char *url);
     void startTypewriter() { t << "{\\tt "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
@@ -118,14 +118,14 @@ class LatexGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment() { t << endl << endl << "\\footnotesize\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
-    void startPreFragment()  { t << "\\small\\begin{alltt}"; 
-                               insidePre=TRUE; 
-                             }
-    void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; 
-                               insidePre=FALSE; 
-                             }
-    void startVerbatimFragment() { t << endl << endl << "\\footnotesize\\begin{verbatim}"; }
-    void endVerbatimFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
+    //void startPreFragment()  { t << "\\small\\begin{alltt}"; 
+    //                           insidePre=TRUE; 
+    //                         }
+    //void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; 
+    //                           insidePre=FALSE; 
+    //                         }
+    //void startVerbatimFragment() { t << endl << endl << "\\footnotesize\\begin{verbatim}"; }
+    //void endVerbatimFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }
@@ -160,52 +160,52 @@ class LatexGenerator : public OutputGenerator
     void endCenter()        { t << "\\end{center}" << endl; }
     void startSmall()       { t << "\\footnotesize "; }
     void endSmall()         { t << "\\normalsize "; }
-    void startSubscript()   { t << "$_{\\mbox{"; }
-    void endSubscript()     { t << "}}$"; }
-    void startSuperscript() { t << "$^{\\mbox{"; }
-    void endSuperscript()   { t << "}}$"; }
-    void startTable(bool hasCaption,int c)  
-                            { 
-                              if (hasCaption) t << "\\begin{table}[h]";
-                              t << "\\begin{TabularC}{" << c << "}\n\\hline\n"; 
-                            }
-    void endTable(bool hasCaption)         
-                            { 
-                              if (hasCaption)
-                              {
-                                t << "\\end{table}\n";
-                              }
-                              else
-                              {
-                                t << "\\\\\\hline\n\\end{TabularC}\n"; 
-                              }
-                            }
-    void startCaption()     { t << "\\\\\\hline\n\\end{TabularC}\n"
-                                   "\\centering\n\\caption{"; 
-                            }
-    void endCaption()       { t << "}\n"; }
-    void nextTableRow()     {}
-    void endTableRow()      { t << "\\\\\\hline\n"; }
-    void nextTableColumn()  { t << "&"; }
-    void endTableColumn()   {}
-    void writeCopyright()    { t << "\\copyright"; }
-    void writeQuote()        { t << "''"; }
-    void writeUmlaut(char c) { if (c=='i') t << "\\\"{\\i}"; else 
-                                           t << "\\\"{" << c << "}"; 
-                             }
-    void writeAcute(char c)  { if (c=='i') t << "\\'{\\i}"; else
-                                           t << "\\'{"  << c << "}"; 
-                             }
-    void writeGrave(char c)  { if (c=='i') t << "\\`{\\i}"; else
-                                           t << "\\`{"  << c << "}"; 
-                             }
-    void writeCirc(char c)   { if (c=='i') t << "\\^{\\i}"; else
-                                           t << "\\^{"  << c << "}"; 
-                             }
-    void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
-    void writeRing(char c)   { t << "\\" << c << c; }
-    void writeSharpS()       { t << "\"s"; }
-    void writeCCedil(char c) { t << "\\c{" << c << "}"; }
+    //void startSubscript()   { t << "$_{\\mbox{"; }
+    //void endSubscript()     { t << "}}$"; }
+    //void startSuperscript() { t << "$^{\\mbox{"; }
+    //void endSuperscript()   { t << "}}$"; }
+    //void startTable(bool hasCaption,int c)  
+    //                        { 
+    //                          if (hasCaption) t << "\\begin{table}[h]";
+    //                          t << "\\begin{TabularC}{" << c << "}\n\\hline\n"; 
+    //                        }
+    //void endTable(bool hasCaption)         
+    //                        { 
+    //                          if (hasCaption)
+    //                          {
+    //                            t << "\\end{table}\n";
+    //                          }
+    //                          else
+    //                          {
+    //                            t << "\\\\\\hline\n\\end{TabularC}\n"; 
+    //                          }
+    //                        }
+    //void startCaption()     { t << "\\\\\\hline\n\\end{TabularC}\n"
+    //                               "\\centering\n\\caption{"; 
+    //                        }
+    //void endCaption()       { t << "}\n"; }
+    //void nextTableRow()     {}
+    //void endTableRow()      { t << "\\\\\\hline\n"; }
+    //void nextTableColumn()  { t << "&"; }
+    //void endTableColumn()   {}
+    //void writeCopyright()    { t << "\\copyright"; }
+    //void writeQuote()        { t << "''"; }
+    //void writeUmlaut(char c) { if (c=='i') t << "\\\"{\\i}"; else 
+    //                                       t << "\\\"{" << c << "}"; 
+    //                         }
+    //void writeAcute(char c)  { if (c=='i') t << "\\'{\\i}"; else
+    //                                       t << "\\'{"  << c << "}"; 
+    //                         }
+    //void writeGrave(char c)  { if (c=='i') t << "\\`{\\i}"; else
+    //                                       t << "\\`{"  << c << "}"; 
+    //                         }
+    //void writeCirc(char c)   { if (c=='i') t << "\\^{\\i}"; else
+    //                                       t << "\\^{"  << c << "}"; 
+    //                         }
+    //void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
+    //void writeRing(char c)   { t << "\\" << c << c; }
+    //void writeSharpS()       { t << "\"s"; }
+    //void writeCCedil(char c) { t << "\\c{" << c << "}"; }
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
@@ -214,12 +214,12 @@ class LatexGenerator : public OutputGenerator
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
-    void endDescTitle()      { t << "]"; }
+    //void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
-    void writeSectionRef(const char *,const char *,const char *,const char *);
-    void writeSectionRefItem(const char *,const char *,const char *);
+    //void writeSectionRef(const char *,const char *,const char *,const char *);
+    //void writeSectionRefItem(const char *,const char *,const char *);
     //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *);
     void startIndent()       {}
@@ -234,12 +234,12 @@ class LatexGenerator : public OutputGenerator
     void endPageRef(const char *,const char *);
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
-    void writeFormula(const char *,const char *);
+    //void writeFormula(const char *,const char *);
     void writeNonBreakableSpace(int);
-    void startImage(const char *,const char *,bool);
-    void endImage(bool);
-    void startDotFile(const char *,bool);
-    void endDotFile(bool);
+    //void startImage(const char *,const char *,bool);
+    //void endImage(bool);
+    //void startDotFile(const char *,bool);
+    //void endDotFile(bool);
     
     void startDescTable()
     { t << "\\begin{description}" << endl; }
@@ -278,13 +278,13 @@ class LatexGenerator : public OutputGenerator
     void startFontClass(const char *) {}
     void endFontClass() {}
 
-    void startHtmlOnly()  {}
-    void endHtmlOnly()    {}
-    void startLatexOnly() {}
-    void endLatexOnly()   {}
+    //void startHtmlOnly()  {}
+    //void endHtmlOnly()    {}
+    //void startLatexOnly() {}
+    //void endLatexOnly()   {}
     
-    void startSectionRefList();
-    void endSectionRefList();
+    //void startSectionRefList();
+    //void endSectionRefList();
 
     void writeCodeAnchor(const char *) {}
 

@@ -227,7 +227,7 @@ TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
 SCOPESEP  "::"|"#"|"."
 SCOPEPRE  {ID}("<"{TEMPCHAR}*">")?{SCOPESEP}
-SCOPEMASK {SCOPEPRE}*(~)?{ID}
+SCOPEMASK {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
 FUNCARG   "("{FUNCCHAR}*")"
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
@@ -594,7 +594,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">"
                          warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
 <*>[\\@<>&$#%~]	       { /* unescaped special character */
-                         warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
+                         //warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;
                        }

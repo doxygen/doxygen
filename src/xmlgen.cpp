@@ -1251,6 +1251,20 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
   {
     name.prepend(scope+"::");
   }
+  t << "        <" << tagName << " id=\"";
+  t << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\"";
+  if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef()) 
+  {
+    t << " compoundref=\"" << rmd->getBodyDef()->getOutputFileBase() << "\"";
+    t << " startline=\"" << rmd->getStartBodyLine() << "\"";
+    if (rmd->getEndBodyLine()!=-1)
+    {
+      t << " endline=\"" << rmd->getEndBodyLine() << "\"";
+    }
+  }
+  t << ">" << convertToXML(name) << "</" << tagName << ">" << endl;
+  
+#if 0
   Definition *d = rmd->getOuterScope();
   if (d==Doxygen::globalScope) d=rmd->getBodyDef();
   if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef()) 
@@ -1273,6 +1287,7 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
       << "\">" << convertToXML(name) 
       << "</" << tagName << ">" << endl;
   } 
+#endif
 }
 
 static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,Definition *def)
@@ -1301,6 +1316,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     case MemberDef::Define:      memType="define";    break;
     case MemberDef::EnumValue:   ASSERT(0);           break;
     case MemberDef::Property:    memType="property";  break;
+    case MemberDef::Event:       memType="event";     break;
     case MemberDef::Variable:    memType="variable";  break;
     case MemberDef::Typedef:     memType="typedef";   break;
     case MemberDef::Enumeration: memType="enum";      break;
@@ -1744,6 +1760,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   generateXMLSection(cd,ti,t,&cd->signals,"signal");
   generateXMLSection(cd,ti,t,&cd->dcopMethods,"dcop-func");
   generateXMLSection(cd,ti,t,&cd->properties,"property");
+  generateXMLSection(cd,ti,t,&cd->events,"event");
   generateXMLSection(cd,ti,t,&cd->pubStaticMethods,"public-static-func");
   generateXMLSection(cd,ti,t,&cd->pubStaticAttribs,"public-static-attrib");
   generateXMLSection(cd,ti,t,&cd->proTypes,"protected-type");

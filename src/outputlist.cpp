@@ -156,20 +156,20 @@ bool OutputList::isEnabled(OutputGenerator::OutputType o)
   return result;
 }
 
-OutputList &OutputList::operator+=(const OutputList &outputList)
-{
-  OutputList *ol=(OutputList *)&outputList;
-  OutputGenerator *ogsrc=ol->outputs->first();
-  OutputGenerator *ogdst=outputs->first();
-  //printf("OutputList::operator+= src=%d dst=%d\n",outputs->count(),ol->outputs->count());
-  while (ogdst && ogsrc)
-  {
-    ogdst->append(ogsrc);
-    ogsrc=ol->outputs->next();
-    ogdst=outputs->next();
-  }
-  return *this;
-}
+//OutputList &OutputList::operator+=(const OutputList &outputList)
+//{
+//  OutputList *ol=(OutputList *)&outputList;
+//  OutputGenerator *ogsrc=ol->outputs->first();
+//  OutputGenerator *ogdst=outputs->first();
+//  //printf("OutputList::operator+= src=%d dst=%d\n",outputs->count(),ol->outputs->count());
+//  while (ogdst && ogsrc)
+//  {
+//    ogdst->append(ogsrc);
+//    ogsrc=ol->outputs->next();
+//    ogdst=outputs->next();
+//  }
+//  return *this;
+//}
 
 void OutputList::pushGeneratorState()
 {

@@ -144,6 +144,7 @@ class LatexDocVisitor : public DocVisitor
     QTextStream &m_t;
     BaseCodeDocInterface &m_ci;
     bool m_insidePre;
+    bool m_insideItem;
     bool m_hide;
 };
 

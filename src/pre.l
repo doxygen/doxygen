@@ -2049,7 +2049,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   }
   else
   {
-    QCString cmd = inputFilter+" "+fileName;
+    QCString cmd = inputFilter+" \""+fileName+"\"";
     preYYin = popen(cmd,"r");
     if (!preYYin)
     {

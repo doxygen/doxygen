@@ -23,7 +23,7 @@
 
 enum Protection { Public, Protected, Private } ;
 enum Specifier { Normal, Virtual, Pure } ;
-enum MethodTypes { Method, Signal, Slot, DCOP, Property };
+enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
 
 struct ListItemInfo
 {
@@ -226,9 +226,11 @@ class Entry
     };
     enum MemberSpecifier
     {
-      Inline    = 0x1,
-      Explicit  = 0x2,
-      Mutable   = 0x4
+      Inline    = 0x01,
+      Explicit  = 0x02,
+      Mutable   = 0x04,
+      Settable  = 0x08,
+      Gettable  = 0x10
     };
 
     Entry();

@@ -301,7 +301,7 @@ MemberDef::MemberDef(const char *df,int dl,
   exception=e;
   proto=FALSE;
   annScope=FALSE;
-  memSpec=FALSE;
+  memSpec=0;
   annMemb=0;
   annUsed=FALSE;
   annShown=FALSE;
@@ -651,6 +651,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       case Define:      Doxygen::tagFile << "define";      break;
       case EnumValue:   Doxygen::tagFile << "enumvalue";   break;
       case Property:    Doxygen::tagFile << "property";    break;
+      case Event:       Doxygen::tagFile << "event";       break;
       case Variable:    Doxygen::tagFile << "variable";    break;
       case Typedef:     Doxygen::tagFile << "typedef";     break;
       case Enumeration: Doxygen::tagFile << "enumeration"; break;
@@ -776,7 +777,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
       if (getAnonymousEnumType()) // type is an anonymous enum
       {
         linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype.left(i),TRUE); 
-        ol+=*getAnonymousEnumType()->enumDecl();
+        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
+        //ol+=*getAnonymousEnumType()->enumDecl();
         linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype.right(ltype.length()-i-l),TRUE); 
       }
       else
@@ -1053,7 +1055,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             htmlHelp->addIndexItem(cname,name(),cfname,anchor());
           }
           linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.left(i));
-          ol+=*vmd->enumDecl();
+          //ol+=*vmd->enumDecl();
+          vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
           linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.right(ldef.length()-i-l));
 
           found=TRUE;
@@ -1169,7 +1172,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         isFriend() || isRelated() || isExplicit() ||
         isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
         isSignal() || isSlot() ||
-        isStatic() || (classDef && classDef!=container) 
+        isStatic() || (classDef && classDef!=container) ||
+        isSettable() || isGettable()
        )
     {
       // write the member specifier list
@@ -1186,6 +1190,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isExplicit())            sl.append("explicit");
         if      (isMutable())             sl.append("mutable");
         if      (isStatic())              sl.append("static");
+        if      (isGettable())            sl.append("get");
+        if      (isSettable())            sl.append("set");
         if      (protection()==Protected) sl.append("protected");
         else if (protection()==Private)   sl.append("private");
         if      (lvirt==Virtual)          sl.append("virtual");
@@ -1585,11 +1591,11 @@ bool MemberDef::isLinkable() const
   }
 }
 
-void MemberDef::setEnumDecl(OutputList &ed) 
-{ 
-  enumDeclList=new OutputList(&ed); 
-  *enumDeclList+=ed;
-}
+//void MemberDef::setEnumDecl(OutputList &ed) 
+//{ 
+//  enumDeclList=new OutputList(&ed); 
+//  *enumDeclList+=ed;
+//}
 
 bool MemberDef::isDocumentedFriendClass() const
 {
@@ -1706,6 +1712,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
   imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getStartBodyLine(),getEndBodyLine());
+  imd->setBodyMember(this);
 
   // TODO: init other member variables (if needed).
   // TODO: reimplemented info
@@ -1794,5 +1801,124 @@ bool MemberDef::isConstructor() const
 bool MemberDef::isDestructor() const
 { 
   return name().find('~')!=-1 && name().find("operator")==-1; 
+}
+
+void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
+     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
+{
+  int enumMemCount=0;
+
+  QList<MemberDef> *fmdl=enumFieldList();
+  uint numVisibleEnumValues=0;
+  if (fmdl)
+  {
+    MemberDef *fmd=fmdl->first();
+    while (fmd)
+    {
+      if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
+      fmd=fmdl->next();
+    }
+  }
+  if (numVisibleEnumValues==0 && !isBriefSectionVisible()) return;
+
+  QCString n = name();
+  int i=n.findRev("::");
+  if (i!=-1) n=n.right(n.length()-i-2); // strip scope (TODO: is this needed?)
+  if (n[0]!='@') // not an anonymous enum
+  {
+    if (isLinkableInProject() || hasDocumentedEnumValues())
+    {
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+      {
+        Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
+        Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl; 
+        Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl; 
+        Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl; 
+        Doxygen::tagFile << "    </member>" << endl;
+      }
+      writeLink(typeDecl,cd,nd,fd,gd);
+    }
+    else
+    {
+      typeDecl.startBold();
+      typeDecl.docify(n);
+      typeDecl.endBold();
+    }
+    typeDecl.writeChar(' ');
+  }
+
+  if (numVisibleEnumValues>0)
+  {
+    uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
+    typeDecl.docify("{ ");
+    if (fmdl)
+    {
+      MemberDef *fmd=fmdl->first();
+      bool fmdVisible = fmd->isBriefSectionVisible();
+      while (fmd)
+      {
+        if (fmdVisible)
+        {
+          /* in html we start a new line after a number of items */
+          if (numVisibleEnumValues>enumValuesPerLine
+              && (enumMemCount%enumValuesPerLine)==0
+             )
+          {
+            typeDecl.pushGeneratorState();
+            typeDecl.disableAllBut(OutputGenerator::Html);
+            typeDecl.lineBreak(); 
+            typeDecl.writeString("&nbsp;&nbsp;");
+            typeDecl.popGeneratorState();
+          }
+
+          if (fmd->hasDocumentation()) // enum value has docs
+          {
+            if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+            {
+              Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
+              Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+              Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
+              Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
+              Doxygen::tagFile << "    </member>" << endl;
+            }
+            fmd->writeLink(typeDecl,cd,nd,fd,gd);
+          }
+          else // no docs for this enum value
+          {
+            typeDecl.startBold();
+            typeDecl.docify(fmd->name());
+            typeDecl.endBold();
+          }
+          if (fmd->hasOneLineInitializer()) // enum value has initializer
+          {
+            typeDecl.writeString(" = ");
+            typeDecl.parseText(fmd->initializer());
+          }
+        }
+
+        bool prevVisible = fmdVisible;
+        fmd=fmdl->next();
+        if (fmd && (fmdVisible=fmd->isBriefSectionVisible())) 
+        {
+          typeDecl.writeString(", ");
+        }
+        if (prevVisible)
+        {
+          typeDecl.disable(OutputGenerator::Man);
+          typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
+          typeDecl.enable(OutputGenerator::Man);
+          enumMemCount++;
+        }
+      }
+      if (numVisibleEnumValues>enumValuesPerLine)
+      {
+        typeDecl.pushGeneratorState();
+        typeDecl.disableAllBut(OutputGenerator::Html);
+        typeDecl.lineBreak(); 
+        typeDecl.popGeneratorState();
+      }
+    }
+    typeDecl.docify(" }");
+  }
 }
 

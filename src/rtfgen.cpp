@@ -882,25 +882,25 @@ void RTFGenerator::endItemList()
   m_omitParagraph = TRUE;
 }
 
-/*! start enumeration list */
-void RTFGenerator::startEnumList()  // starts an enumeration list
-{
-  DBG_RTF(t << "{\\comment (startEnumList)}" << endl)
-  t << "{" << endl;
-  incrementIndentLevel();
-  rtf_listItemInfo[m_listLevel].isEnum = TRUE;
-  rtf_listItemInfo[m_listLevel].number = 1;
-}
-
-/*! end enumeration list */
-void RTFGenerator::endEnumList()
-{
-  newParagraph();
-  DBG_RTF(t << "{\\comment (endEnumList)}" << endl)
-  t << "}";
-  decrementIndentLevel();
-  m_omitParagraph = TRUE;
-}
+///*! start enumeration list */
+//void RTFGenerator::startEnumList()  // starts an enumeration list
+//{
+//  DBG_RTF(t << "{\\comment (startEnumList)}" << endl)
+//  t << "{" << endl;
+//  incrementIndentLevel();
+//  rtf_listItemInfo[m_listLevel].isEnum = TRUE;
+//  rtf_listItemInfo[m_listLevel].number = 1;
+//}
+//
+///*! end enumeration list */
+//void RTFGenerator::endEnumList()
+//{
+//  newParagraph();
+//  DBG_RTF(t << "{\\comment (endEnumList)}" << endl)
+//  t << "}";
+//  decrementIndentLevel();
+//  m_omitParagraph = TRUE;
+//}
 
 /*! write bullet or enum item */
 void RTFGenerator::writeListItem()
@@ -976,12 +976,12 @@ void RTFGenerator::endHtmlLink()
   }
 }
 
-void RTFGenerator::writeMailLink(const char *url)
-{
-  startTypewriter();
-  docify(url);
-  endTypewriter();
-}
+//void RTFGenerator::writeMailLink(const char *url)
+//{
+//  startTypewriter();
+//  docify(url);
+//  endTypewriter();
+//}
 
 void RTFGenerator::writeStartAnnoItem(const char *,const char *f,
     const char *path,const char *name)
@@ -1096,73 +1096,73 @@ void RTFGenerator::endSubsubsection()
 //  t << "}";
 //}
 
-void RTFGenerator::startTable(bool,int colNumbers) 
-{
-  DBG_RTF(t << "{\\comment startTable}\n";)
-  m_numCols=colNumbers;
-  t << "\\par\n";
-}
-
-void RTFGenerator::endTable(bool hasCaption) 
-{ 
-  DBG_RTF(t << "{\\comment endTable}\n";)
-  if (!hasCaption) 
-    t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n"; 
-  t << "\\pard\n" << endl; 
-}
-
-void  RTFGenerator::startCaption() 
-{
-  DBG_RTF(t << "{\\comment startCaption}\n";)
-  endTableRow();
-  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10" << endl;
-  t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<rtf_pageWidth<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright " << endl;
-  nextTableColumn();
-}
-
-void  RTFGenerator::endCaption() 
-{
-  DBG_RTF(t << "{\\comment endCaption}\n";)
-  endTableColumn();
-  endTableRow();
-}
-
-void RTFGenerator::nextTableRow() 
-{  
-  DBG_RTF(t << "{\\comment nextTableRow}\n";)
-  ASSERT(m_numCols>0 && m_numCols<25);
-  uint columnWidth=rtf_pageWidth/m_numCols;
-  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 "
-       "\\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 "
-       "\\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 "
-       "\\trbrdrv\\brdrs\\brdrw10 "<<endl;
-  for (int i=0;i<m_numCols;i++) 
-  {
-    t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 "
-         "\\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb "
-         "\\cellx" << (i*columnWidth) << endl;
-  }
-  t << "\\pard \\widctlpar\\intbl\\adjustright\n{";
-}
- 
-void RTFGenerator::endTableRow() 
-{ 
-  DBG_RTF(t << "{\\comment endTableRow}\n";)
-  t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
-}
- 
-void RTFGenerator::nextTableColumn() 
-{
-  DBG_RTF(t << "{\\comment nextTableColumn}\n";)
-  t << "{ ";
-}
-
-void RTFGenerator::endTableColumn() 
-{ 
-  DBG_RTF(t << "{\\comment endTableColumn}\n";)
-  t << " \\cell }";
-}
-
+//void RTFGenerator::startTable(bool,int colNumbers) 
+//{
+//  DBG_RTF(t << "{\\comment startTable}\n";)
+//  m_numCols=colNumbers;
+//  t << "\\par\n";
+//}
+//
+//void RTFGenerator::endTable(bool hasCaption) 
+//{ 
+//  DBG_RTF(t << "{\\comment endTable}\n";)
+//  if (!hasCaption) 
+//    t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n"; 
+//  t << "\\pard\n" << endl; 
+//}
+//
+//void  RTFGenerator::startCaption() 
+//{
+//  DBG_RTF(t << "{\\comment startCaption}\n";)
+//  endTableRow();
+//  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 \\trbrdrv\\brdrs\\brdrw10" << endl;
+//  t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 \\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb \\cellx"<<rtf_pageWidth<<"\\pard \\qc\\nowidctlpar\\widctlpar\\intbl\\adjustright " << endl;
+//  nextTableColumn();
+//}
+//
+//void  RTFGenerator::endCaption() 
+//{
+//  DBG_RTF(t << "{\\comment endCaption}\n";)
+//  endTableColumn();
+//  endTableRow();
+//}
+//
+//void RTFGenerator::nextTableRow() 
+//{  
+//  DBG_RTF(t << "{\\comment nextTableRow}\n";)
+//  ASSERT(m_numCols>0 && m_numCols<25);
+//  uint columnWidth=rtf_pageWidth/m_numCols;
+//  t << "\\trowd \\trgaph108\\trleft-108\\trbrdrt\\brdrs\\brdrw10 "
+//       "\\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 "
+//       "\\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10 "
+//       "\\trbrdrv\\brdrs\\brdrw10 "<<endl;
+//  for (int i=0;i<m_numCols;i++) 
+//  {
+//    t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 \\clbrdrl\\brdrs\\brdrw10 "
+//         "\\clbrdrb\\brdrs\\brdrw10 \\clbrdrr \\brdrs\\brdrw10 \\cltxlrtb "
+//         "\\cellx" << (i*columnWidth) << endl;
+//  }
+//  t << "\\pard \\widctlpar\\intbl\\adjustright\n{";
+//}
+// 
+//void RTFGenerator::endTableRow() 
+//{ 
+//  DBG_RTF(t << "{\\comment endTableRow}\n";)
+//  t << "\n\\pard \\widctlpar\\intbl\\adjustright\n{\\row }\n";
+//}
+// 
+//void RTFGenerator::nextTableColumn() 
+//{
+//  DBG_RTF(t << "{\\comment nextTableColumn}\n";)
+//  t << "{ ";
+//}
+//
+//void RTFGenerator::endTableColumn() 
+//{ 
+//  DBG_RTF(t << "{\\comment endTableColumn}\n";)
+//  t << " \\cell }";
+//}
+//
 void RTFGenerator::startTextLink(const char *f,const char *anchor)
 {
   if (Config_getBool("RTF_HYPERLINKS"))
@@ -1490,29 +1490,29 @@ void RTFGenerator::startDescList(SectionTypes)
   newParagraph();
 }
 
-void RTFGenerator::endDescTitle()
-{
-  DBG_RTF(t << "{\\comment (endDescTitle) }"    << endl)
-  endBold();
-  t << "}";
-  newParagraph();
-  incrementIndentLevel();
-  t << rtf_Style_Reset << rtf_DList_DepthStyle();
-}
+//void RTFGenerator::endDescTitle()
+//{
+//  DBG_RTF(t << "{\\comment (endDescTitle) }"    << endl)
+//  endBold();
+//  t << "}";
+//  newParagraph();
+//  incrementIndentLevel();
+//  t << rtf_Style_Reset << rtf_DList_DepthStyle();
+//}
 
 void RTFGenerator::writeDescItem()
 {
   DBG_RTF(t << "{\\comment (writeDescItem) }"    << endl)
 }
 
-void RTFGenerator::endDescList()
-{
-  DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
-  newParagraph();
-  decrementIndentLevel();
-  m_omitParagraph = TRUE;
-  t << "}";
-}
+//void RTFGenerator::endDescList()
+//{
+//  DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
+//  newParagraph();
+//  decrementIndentLevel();
+//  m_omitParagraph = TRUE;
+//  t << "}";
+//}
 
 
 void RTFGenerator::startSection(const char *,const char *title,SectionInfo::SectionType type)
@@ -1549,34 +1549,34 @@ void RTFGenerator::endSection(const char *lab,SectionInfo::SectionType)
   t << "}";
 }
 
-void RTFGenerator::writeSectionRef(const char *ref,const char *,
-                                   const char *lab,const char *title)
-{
-  if (ref)
-  {
-    docify(title);
-  }
-  else
-  {
-    startBold();
-    docify(title);
-    endBold();
-    t << " (";
-    docify(theTranslator->trPageAbbreviation());
-    writeRTFReference(lab);
-    t << ")" << endl;
-  }
-}
-
-void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
-    const char *title)
-{
-  docify(title);
-  t << "\\tab";
-  writeRTFReference(lab);
-  t << endl;
-}
-
+//void RTFGenerator::writeSectionRef(const char *ref,const char *,
+//                                   const char *lab,const char *title)
+//{
+//  if (ref)
+//  {
+//    docify(title);
+//  }
+//  else
+//  {
+//    startBold();
+//    docify(title);
+//    endBold();
+//    t << " (";
+//    docify(theTranslator->trPageAbbreviation());
+//    writeRTFReference(lab);
+//    t << ")" << endl;
+//  }
+//}
+//
+//void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
+//    const char *title)
+//{
+//  docify(title);
+//  t << "\\tab";
+//  writeRTFReference(lab);
+//  t << endl;
+//}
+//
 //void RTFGenerator::writeSectionRefAnchor(const char *name,const char *lab,
 //    const char *title)
 //{
@@ -1711,10 +1711,10 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
   t << "}" << endl;
 }
 
-void RTFGenerator::writeFormula(const char *,const char *text)
-{
-  t << text;
-}
+//void RTFGenerator::writeFormula(const char *,const char *text)
+//{
+//  t << text;
+//}
 
 void RTFGenerator::startMemberItem(int)
 {
@@ -1802,46 +1802,46 @@ void RTFGenerator::endMemberList()
 #endif
 }
 
-void RTFGenerator::startImage(const char *name,const char *,bool)
-{
-  newParagraph();
-  t << "{" << endl;
-  t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << name;
-  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
-  t << "}" << endl;
-}
-
-void RTFGenerator::endImage(bool)
-{
-  // not yet implemented
-}
-
-void RTFGenerator::startDotFile(const char *name,bool)
-{
-  QCString baseName=name;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  }
-  QCString outDir = Config_getString("RTF_OUTPUT");
-  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
-  newParagraph();
-  t << "{" << endl;
-  t << rtf_Style_Reset << endl;
-  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << outDir << "\\" << baseName;
-  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
-  t << "}" << endl;
-}
-
-void RTFGenerator::endDotFile(bool)
-{
-  // not yet implemented
-}
-
+//void RTFGenerator::startImage(const char *name,const char *,bool)
+//{
+//  newParagraph();
+//  t << "{" << endl;
+//  t << rtf_Style_Reset << endl;
+//  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+//  t << name;
+//  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+//  t << "}" << endl;
+//}
+//
+//void RTFGenerator::endImage(bool)
+//{
+//  // not yet implemented
+//}
+//
+//void RTFGenerator::startDotFile(const char *name,bool)
+//{
+//  QCString baseName=name;
+//  int i;
+//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+//  {
+//    baseName=baseName.right(baseName.length()-i-1);
+//  }
+//  QCString outDir = Config_getString("RTF_OUTPUT");
+//  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
+//  newParagraph();
+//  t << "{" << endl;
+//  t << rtf_Style_Reset << endl;
+//  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+//  t << outDir << "\\" << baseName;
+//  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+//  t << "}" << endl;
+//}
+//
+//void RTFGenerator::endDotFile(bool)
+//{
+//  // not yet implemented
+//}
+//
 void RTFGenerator::startDescTable()
 {
   DBG_RTF(t << "{\\comment (startDescTable) }"    << endl)
@@ -1993,116 +1993,116 @@ void RTFGenerator::endMemberSubtitle()
   t << "}" << endl;
 }
 
-void RTFGenerator::writeUmlaut(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\304'; break;
-    case 'E' : t << '\313'; break;
-    case 'I' : t << '\317'; break;
-    case 'O' : t << '\326'; break;
-    case 'U' : t << '\334'; break;
-    case 'Y' : t << 'Y';    break;
-    case 'a' : t << '\344'; break;
-    case 'e' : t << '\353'; break;
-    case 'i' : t << '\357'; break;
-    case 'o' : t << '\366'; break;
-    case 'u' : t << '\374'; break;
-    case 'y' : t << '\377'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeAcute(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\301'; break;
-    case 'E' : t << '\311'; break;
-    case 'I' : t << '\315'; break;
-    case 'O' : t << '\323'; break;
-    case 'U' : t << '\332'; break;
-    case 'Y' : t << '\335'; break;
-    case 'a' : t << '\341'; break;
-    case 'e' : t << '\351'; break;
-    case 'i' : t << '\355'; break;
-    case 'o' : t << '\363'; break;
-    case 'u' : t << '\372'; break;
-    case 'y' : t << '\375'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeGrave(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\300'; break;
-    case 'E' : t << '\310'; break;
-    case 'I' : t << '\314'; break;
-    case 'O' : t << '\322'; break;
-    case 'U' : t << '\331'; break;
-    case 'a' : t << '\340'; break;
-    case 'e' : t << '\350'; break;
-    case 'i' : t << '\354'; break;
-    case 'o' : t << '\362'; break;
-    case 'u' : t << '\371'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeCirc(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\302'; break;
-    case 'E' : t << '\312'; break;
-    case 'I' : t << '\316'; break;
-    case 'O' : t << '\324'; break;
-    case 'U' : t << '\333'; break;
-    case 'a' : t << '\342'; break;
-    case 'e' : t << '\352'; break;
-    case 'i' : t << '\356'; break;
-    case 'o' : t << '\364'; break;
-    case 'u' : t << '\373'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeTilde(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\303'; break;
-    case 'N' : t << '\321'; break;
-    case 'O' : t << '\325'; break;
-    case 'a' : t << '\343'; break;
-    case 'n' : t << '\361'; break;
-    case 'o' : t << '\365'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeRing(char c)
-{
-  switch(c)
-  {
-    case 'A' : t << '\305'; break;
-    case 'a' : t << '\345'; break;
-    default: t << '?'; break;
-  }
-}
-
-void RTFGenerator::writeCCedil(char c)
-{
-  switch(c)
-  {
-    case 'C' : t << '\307'; break;
-    case 'c' : t << '\347'; break;
-    default: t << '?'; break;
-  }
-}
-
+//void RTFGenerator::writeUmlaut(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\304'; break;
+//    case 'E' : t << '\313'; break;
+//    case 'I' : t << '\317'; break;
+//    case 'O' : t << '\326'; break;
+//    case 'U' : t << '\334'; break;
+//    case 'Y' : t << 'Y';    break;
+//    case 'a' : t << '\344'; break;
+//    case 'e' : t << '\353'; break;
+//    case 'i' : t << '\357'; break;
+//    case 'o' : t << '\366'; break;
+//    case 'u' : t << '\374'; break;
+//    case 'y' : t << '\377'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeAcute(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\301'; break;
+//    case 'E' : t << '\311'; break;
+//    case 'I' : t << '\315'; break;
+//    case 'O' : t << '\323'; break;
+//    case 'U' : t << '\332'; break;
+//    case 'Y' : t << '\335'; break;
+//    case 'a' : t << '\341'; break;
+//    case 'e' : t << '\351'; break;
+//    case 'i' : t << '\355'; break;
+//    case 'o' : t << '\363'; break;
+//    case 'u' : t << '\372'; break;
+//    case 'y' : t << '\375'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeGrave(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\300'; break;
+//    case 'E' : t << '\310'; break;
+//    case 'I' : t << '\314'; break;
+//    case 'O' : t << '\322'; break;
+//    case 'U' : t << '\331'; break;
+//    case 'a' : t << '\340'; break;
+//    case 'e' : t << '\350'; break;
+//    case 'i' : t << '\354'; break;
+//    case 'o' : t << '\362'; break;
+//    case 'u' : t << '\371'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeCirc(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\302'; break;
+//    case 'E' : t << '\312'; break;
+//    case 'I' : t << '\316'; break;
+//    case 'O' : t << '\324'; break;
+//    case 'U' : t << '\333'; break;
+//    case 'a' : t << '\342'; break;
+//    case 'e' : t << '\352'; break;
+//    case 'i' : t << '\356'; break;
+//    case 'o' : t << '\364'; break;
+//    case 'u' : t << '\373'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeTilde(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\303'; break;
+//    case 'N' : t << '\321'; break;
+//    case 'O' : t << '\325'; break;
+//    case 'a' : t << '\343'; break;
+//    case 'n' : t << '\361'; break;
+//    case 'o' : t << '\365'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeRing(char c)
+//{
+//  switch(c)
+//  {
+//    case 'A' : t << '\305'; break;
+//    case 'a' : t << '\345'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
+//void RTFGenerator::writeCCedil(char c)
+//{
+//  switch(c)
+//  {
+//    case 'C' : t << '\307'; break;
+//    case 'c' : t << '\347'; break;
+//    default: t << '?'; break;
+//  }
+//}
+//
 /**
  * VERY brittle routine inline RTF's included by other RTF's.
  * it is recursive and ugly.

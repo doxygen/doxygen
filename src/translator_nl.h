@@ -1013,6 +1013,23 @@ class TranslatorDutch : public Translator
     {
       return "Deprecated Lijst";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for a section of events found in a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Events";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Event Documentatie";
+    }
+
 };
 
 #endif

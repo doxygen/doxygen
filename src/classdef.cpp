@@ -181,6 +181,7 @@ void ClassDef::addMembersToMemberGroup()
   ::addMembersToMemberGroup(&friends,memberGroupSDict,this);
   ::addMembersToMemberGroup(&related,memberGroupSDict,this);
   ::addMembersToMemberGroup(&properties,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&events,memberGroupSDict,this);
 
   // add members inside sections to their groups
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
@@ -233,6 +234,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
         case MemberDef::Property:
           properties.append(md);
           md->setSectionList(this,&properties);
+          break;
+        case MemberDef::Event:
+          events.append(md);
+          md->setSectionList(this,&events);
           break;
         case MemberDef::Slot:   // Qt specific
           switch (prot)
@@ -374,6 +379,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
             propertyMembers.inSort(md);
           else
             propertyMembers.append(md);
+          break;
+        case MemberDef::Event:
+          if (Config_getBool("SORT_MEMBER_DOCS"))
+            eventMembers.inSort(md);
+          else
+            eventMembers.append(md);
           break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
@@ -522,6 +533,7 @@ void ClassDef::computeAnchors()
   setAnchors(context,'u',&priTypes);
   setAnchors(context,'v',&dcopMethods);
   setAnchors(context,'w',&properties);
+  setAnchors(context,'x',&events);
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1078,7 +1090,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pubSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
   signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
   dcopMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
-  properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
   pubMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
   pubStaticMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
 
@@ -1097,6 +1108,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // protected attribs
   proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
   proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
+
+  // properties
+  properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
+
+  // events
+  events.writeDeclarations(ol,this,0,0,0,theTranslator->trEvents(),0); 
 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
@@ -1150,6 +1167,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   propertyMembers.writeDocumentation(ol,name(),this,
                          theTranslator->trPropertyDocumentation());
   
+  eventMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trEventDocumentation());
+
   ol.startTextBlock();
 
   // write the list of used files (not for man pages)
@@ -1556,6 +1576,8 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
   properties.setInGroup(inGroup);
   properties.writePlainDeclarations(ol,this,0,0,0); 
+  events.setInGroup(inGroup);
+  events.writePlainDeclarations(ol,this,0,0,0); 
   pubStaticMethods.setInGroup(inGroup);
   pubStaticMethods.writePlainDeclarations(ol,this,0,0,0); 
   pubStaticAttribs.setInGroup(inGroup);
@@ -2476,6 +2498,7 @@ void ClassDef::addListReferences()
   relatedMembers.addListReferences(this);
   variableMembers.addListReferences(this);
   propertyMembers.addListReferences(this);
+  eventMembers.addListReferences(this);
 }
 
 MemberDef *ClassDef::getMemberByName(const QCString &name) 

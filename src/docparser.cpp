@@ -174,7 +174,7 @@ static void checkUndocumentedParams()
       {
         QString argName = g_memberDef->isDefine() ? a->type : a->name;
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-        if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
+        if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
           found = TRUE;
           break;

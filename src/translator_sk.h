@@ -23,7 +23,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public Translator
+class TranslatorSlovak : public TranslatorAdapter_1_2_18
 {
   private:
 	/*! The Decode() inline assumes the source written in the

@@ -2191,7 +2191,7 @@ void Config::create()
 
                FALSE );
   //-----------------------------------------------------------------------------------------------
-  addInfo(  "Perl","configuration options related to the Perl output");
+  addInfo(  "PerlMod","configuration options related to the Perl module output");
   //-----------------------------------------------------------------------------------------------
   cb = addBool(  
                     "GENERATE_PERLMOD",

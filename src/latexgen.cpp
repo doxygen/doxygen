@@ -899,18 +899,18 @@ void LatexGenerator::endHtmlLink()
   t << "}";
 }
 
-void LatexGenerator::writeMailLink(const char *url)
-{
-  if (Config_getBool("PDF_HYPERLINKS"))
-  {
-    t << "\\href{mailto:";
-    t << url;
-    t << "}";
-  }
-  t << "{\\tt "; 
-  docify(url);
-  t << "}";
-}
+//void LatexGenerator::writeMailLink(const char *url)
+//{
+//  if (Config_getBool("PDF_HYPERLINKS"))
+//  {
+//    t << "\\href{mailto:";
+//    t << url;
+//    t << "}";
+//  }
+//  t << "{\\tt "; 
+//  docify(url);
+//  t << "}";
+//}
 
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,
                                         const char *path,const char *name)
@@ -1238,49 +1238,49 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
   t << "}\\label{" << lab << "}" << endl;
 }
 
-void LatexGenerator::writeSectionRef(const char *ref,const char *,
-                                     const char *lab,const char *text)
-{
-  if (ref) // external reference
-  {
-    docify(text);
-  }
-  else // local reference
-  {
-    if (text && Config_getBool("PDF_HYPERLINKS"))
-    {
-      t << "\\hyperlink{";
-      if (lab) t << lab; 
-      t << "}{";
-      docify(text);
-      t << "}";
-      //t << " {\\rm (p.\\,\\pageref{" << lab << "})}";
-    }
-    else
-    {
-      if (strcmp(lab,text)!=0) // lab!=text
-      {
-        // todo: don't hardcode p. here!
-        t << "{\\bf ";
-        docify(text);
-        t << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
-      }
-      else
-      {
-        t << "\\ref{" << lab << "}";
-      }
-    }
-  }
-}
-
-void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
-                                     const char *title)
-{
-  t << "\\item \\contentsline{section}{";
-  docify(title);
-  t << "}{\\ref{" << lab << "}}{}" << endl;
-}
-
+//void LatexGenerator::writeSectionRef(const char *ref,const char *,
+//                                     const char *lab,const char *text)
+//{
+//  if (ref) // external reference
+//  {
+//    docify(text);
+//  }
+//  else // local reference
+//  {
+//    if (text && Config_getBool("PDF_HYPERLINKS"))
+//    {
+//      t << "\\hyperlink{";
+//      if (lab) t << lab; 
+//      t << "}{";
+//      docify(text);
+//      t << "}";
+//      //t << " {\\rm (p.\\,\\pageref{" << lab << "})}";
+//    }
+//    else
+//    {
+//      if (strcmp(lab,text)!=0) // lab!=text
+//      {
+//        // todo: don't hardcode p. here!
+//        t << "{\\bf ";
+//        docify(text);
+//        t << "} {\\rm (p.\\,\\pageref{" << lab << "})}";
+//      }
+//      else
+//      {
+//        t << "\\ref{" << lab << "}";
+//      }
+//    }
+//  }
+//}
+//
+//void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
+//                                     const char *title)
+//{
+//  t << "\\item \\contentsline{section}{";
+//  docify(title);
+//  t << "}{\\ref{" << lab << "}}{}" << endl;
+//}
+//
 // TODO: remove this function
 //void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
 //                                     const char *title)
@@ -1420,10 +1420,10 @@ void LatexGenerator::endClassDiagram(ClassDiagram &d,
   d.writeFigure(t,dir,fileName);
 }
 
-void LatexGenerator::writeFormula(const char *,const char *text)
-{
-  t << text;
-}
+//void LatexGenerator::writeFormula(const char *,const char *text)
+//{
+//  t << text;
+//}
 
 void LatexGenerator::startMemberItem(int annType) 
 { 
@@ -1479,86 +1479,86 @@ void LatexGenerator::endMemberList()
     t << "\\end{CompactItemize}"   << endl; 
 }
 
-void LatexGenerator::startImage(const char *name,const char *size,bool hasCaption)
-{
-  if (hasCaption)
-  {
-    t << "\\begin{figure}[H]" << endl;
-    t << "\\begin{center}" << endl;
-  }
-  else
-  {
-    t << "\\mbox{";
-  }
-  QCString gfxName = name;
-  if (gfxName.right(4)==".eps") gfxName.left(gfxName.length()-4);
-  //     "\\epsfig{file=" << name;
-  t << "\\includegraphics";
-  if (size) t << "[" << size << "]";
-  t << "{" << gfxName << "}";
-  if (hasCaption) 
-  {
-    t << "\\caption{";
-  }
-  else
-  {
-    t << "}" << endl;
-  }
-}
-
-void LatexGenerator::endImage(bool hasCaption)
-{
-  if (hasCaption)
-  {
-    t << "}" << endl;
-    t << "\\end{center}" << endl;
-    t << "\\end{figure}" << endl;
-  }
-}
-
-void LatexGenerator::startDotFile(const char *name,bool hasCaption)
-{
-  QCString baseName=name;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1); 
-  }
-  QCString outDir = Config_getString("LATEX_OUTPUT");
-  writeDotGraphFromFile(name,outDir,baseName,EPS);
-  if (hasCaption)
-  {
-    t << "\\begin{figure}[H]" << endl;
-    t << "\\begin{center}" << endl;
-  }
-  else
-    t << "\\mbox{";
-  t << "\\includegraphics";
-  if( Config_getBool("USE_PDFLATEX") )
-  {
-    t << "{" << baseName << ".pdf}";
-  }
-  else
-  {
-    t << "{" << baseName << ".eps}";
-  }
-
-  if (hasCaption) 
-    t << "\\caption{";
-  else
-    t << "}" << endl;
-}
-
-void LatexGenerator::endDotFile(bool hasCaption)
-{
-  if (hasCaption)
-  {
-    t << "}" << endl;
-    t << "\\end{center}" << endl;
-    t << "\\end{figure}" << endl;
-  }
-}
-
+//void LatexGenerator::startImage(const char *name,const char *size,bool hasCaption)
+//{
+//  if (hasCaption)
+//  {
+//    t << "\\begin{figure}[H]" << endl;
+//    t << "\\begin{center}" << endl;
+//  }
+//  else
+//  {
+//    t << "\\mbox{";
+//  }
+//  QCString gfxName = name;
+//  if (gfxName.right(4)==".eps") gfxName.left(gfxName.length()-4);
+//  //     "\\epsfig{file=" << name;
+//  t << "\\includegraphics";
+//  if (size) t << "[" << size << "]";
+//  t << "{" << gfxName << "}";
+//  if (hasCaption) 
+//  {
+//    t << "\\caption{";
+//  }
+//  else
+//  {
+//    t << "}" << endl;
+//  }
+//}
+//
+//void LatexGenerator::endImage(bool hasCaption)
+//{
+//  if (hasCaption)
+//  {
+//    t << "}" << endl;
+//    t << "\\end{center}" << endl;
+//    t << "\\end{figure}" << endl;
+//  }
+//}
+//
+//void LatexGenerator::startDotFile(const char *name,bool hasCaption)
+//{
+//  QCString baseName=name;
+//  int i;
+//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+//  {
+//    baseName=baseName.right(baseName.length()-i-1); 
+//  }
+//  QCString outDir = Config_getString("LATEX_OUTPUT");
+//  writeDotGraphFromFile(name,outDir,baseName,EPS);
+//  if (hasCaption)
+//  {
+//    t << "\\begin{figure}[H]" << endl;
+//    t << "\\begin{center}" << endl;
+//  }
+//  else
+//    t << "\\mbox{";
+//  t << "\\includegraphics";
+//  if( Config_getBool("USE_PDFLATEX") )
+//  {
+//    t << "{" << baseName << ".pdf}";
+//  }
+//  else
+//  {
+//    t << "{" << baseName << ".eps}";
+//  }
+//
+//  if (hasCaption) 
+//    t << "\\caption{";
+//  else
+//    t << "}" << endl;
+//}
+//
+//void LatexGenerator::endDotFile(bool hasCaption)
+//{
+//  if (hasCaption)
+//  {
+//    t << "}" << endl;
+//    t << "\\end{center}" << endl;
+//    t << "\\end{figure}" << endl;
+//  }
+//}
+//
 
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
@@ -1671,19 +1671,19 @@ void LatexGenerator::endParamList()
   t << "\\end{Desc}" << endl;
 }
 
-void LatexGenerator::startSectionRefList()
-{
-  t << "\\footnotesize" << endl;
-  t << "\\begin{multicols}{2}" << endl;
-  t << "\\begin{CompactList}" << endl;
-}
+//void LatexGenerator::startSectionRefList()
+//{
+//  t << "\\footnotesize" << endl;
+//  t << "\\begin{multicols}{2}" << endl;
+//  t << "\\begin{CompactList}" << endl;
+//}
 
-void LatexGenerator::endSectionRefList()
-{
-  t << "\\end{CompactList}" << endl;
-  t << "\\end{multicols}" << endl;
-  t << "\\normalsize" << endl;
-}
+//void LatexGenerator::endSectionRefList()
+//{
+//  t << "\\end{CompactList}" << endl;
+//  t << "\\end{multicols}" << endl;
+//  t << "\\normalsize" << endl;
+//}
 
 void LatexGenerator::printDoc(DocNode *n)
 {

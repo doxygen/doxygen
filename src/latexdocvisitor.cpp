@@ -68,7 +68,7 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 
 
 LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_insideItem(FALSE), m_hide(FALSE) 
 {
 }
 
@@ -160,7 +160,9 @@ void LatexDocVisitor::visit(DocURL *u)
   {
     m_t << "\\href{" << u->url() << "}";
   }
-  m_t << "{\\tt " << u->url() << "}";
+  m_t << "{\\tt ";
+  filter(u->url());
+  m_t << "}";
 }
 
 void LatexDocVisitor::visit(DocLineBreak *)
@@ -398,6 +400,10 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   {
     m_t << ":]";
   }
+  else
+  {
+    m_insideItem=TRUE;
+  }
 }
 
 void LatexDocVisitor::visitPost(DocSimpleSect *)
@@ -411,6 +417,7 @@ void LatexDocVisitor::visitPre(DocTitle *)
 
 void LatexDocVisitor::visitPost(DocTitle *)
 {
+  m_insideItem=FALSE;
   m_t << "]";
 }
 
@@ -517,10 +524,12 @@ void LatexDocVisitor::visitPost(DocHtmlDescList *)
 void LatexDocVisitor::visitPre(DocHtmlDescTitle *)
 {
   m_t << "\\item[";
+  m_insideItem=TRUE;
 }
 
 void LatexDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
+  m_insideItem=FALSE;
   m_t << "]";
 }
 
@@ -829,7 +838,9 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   for (li.toFirst();(s=li.current());++li)
   {
     if (!first) m_t << ","; else first=FALSE;
-    m_t << s;
+    m_insideItem=TRUE;
+    filter(s);
+    m_insideItem=FALSE;
   }
   m_t << "}]";
 }
@@ -850,7 +861,9 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   {
     m_t << "{\\bf ";
   }
+  m_insideItem=TRUE;
   filter(x->title());
+  m_insideItem=FALSE;
   m_t << "}]";
 }
 
@@ -888,7 +901,7 @@ void LatexDocVisitor::visitPost(DocText *)
 
 void LatexDocVisitor::filter(const char *str)
 { 
-  filterLatexString(m_t,str,FALSE,m_insidePre);
+  filterLatexString(m_t,str,FALSE,m_insidePre,m_insideItem);
 }
 
 void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
