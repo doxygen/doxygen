@@ -173,5 +173,7 @@ class DotInclDepGraph
 void generateGraphLegend(const char *path);
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);
+QString getDotImageMapFromFile(const QString& inFile, const QString& outDir);
+
 
 #endif

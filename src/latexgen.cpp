@@ -246,6 +246,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{graphicx}\n"
     "\\usepackage{multicol}\n"
     "\\usepackage{float}\n"
+    "\\usepackage{textcomp}\n"
     "\\usepackage{alltt}\n";
   if (Config_getBool("PDF_HYPERLINKS")) 
   {

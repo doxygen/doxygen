@@ -264,6 +264,7 @@ class PrintDocVisitor : public DocVisitor
 	case DocSimpleSect::Remark: printf("remark"); break;
 	case DocSimpleSect::Attention: printf("attention"); break;
 	case DocSimpleSect::User: printf("user"); break;
+	case DocSimpleSect::Rcs: printf("rcs"); break;
 	case DocSimpleSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");

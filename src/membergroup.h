@@ -36,7 +36,8 @@ class Definition;
 class MemberGroup 
 {
   public:
-    MemberGroup(Definition *parent,int id,const char *header,const char *docs);
+    MemberGroup(Definition *parent,int id,const char *header,
+                const char *docs,const char *docFile);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
@@ -81,6 +82,7 @@ class MemberGroup
     bool inSameSection;
     int  m_numDecMembers;
     Definition *m_parent;
+    QCString m_docFile;
 };
 
 class MemberGroupList : public QList<MemberGroup>
@@ -99,6 +101,13 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
   public:
     MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
    ~MemberGroupSDict() {}
+};
+
+struct MemberGroupInfo
+{
+  QCString header;
+  QCString doc;
+  QCString docFile;
 };
 
 //class MemberGroupDict : public QIntDict<MemberGroup>

@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2002/11: translated new items used since version 1.2.18
  *  2002/08: translated new items used since version 1.2.17
  *  2002/07: translated new items used since version 1.2.16
  *  2002/06: modified trRelatedPagesDescription() method
@@ -57,7 +58,7 @@
  *
  * Il plurale dei termini inglesi non tradotti è stato reso con il singolare
  * della parola inglese secondo una convenzione spesso ritrovata nella documentazione
- * tecnica (ad es "lista dei file" e non "lista dei files")
+ * tecnica (ad es. "lista dei file" e non "lista dei files")
  *
  * Se avete suggerimenti sulla traduzione di alcuni termini o volete segnalare
  * eventuali sviste potete scrivermi all'indirizzo: alessandro@falappa.net
@@ -66,7 +67,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_18
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1370,6 +1371,24 @@ class TranslatorItalian : public TranslatorAdapter_1_2_18
     {
       return "Lista degli elementi deprecati";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Eventi";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Documentazione degli eventi";
+    }
+
 };
 
 #endif

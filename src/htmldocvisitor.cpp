@@ -91,6 +91,8 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Hash:    m_t << "#"; break;
     case DocSymbol::Percent: m_t << "%"; break;
     case DocSymbol::Copy:    m_t << "&copy;"; break;
+    case DocSymbol::Tm:      m_t << "&tm;"; break;
+    case DocSymbol::Reg:     m_t << "&reg;"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;
     case DocSymbol::Uml:     m_t << "&" << s->letter() << "uml;"; break;
@@ -364,11 +366,12 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
     case DocSimpleSect::User: break;
+    case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
   }
 
   // special case 1: user defined title
-  if (s->type()!=DocSimpleSect::User)
+  if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
     m_t << ":</b></dt><dd>";
   }
@@ -644,9 +647,13 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
   QString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
   m_t << "<div align=\"center\">" << endl;
+  QString mapName = baseName+".map";
+  QString mapFile = df->file()+".map";
   m_t << "<img src=\"" << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-    << baseName << "\">" << endl;
+    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+  QString imap = getDotImageMapFromFile(df->file(),outDir);
+  m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
   if (df->hasCaption())
   { 
     m_t << "<p><strong>";

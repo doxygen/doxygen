@@ -103,8 +103,9 @@ StringDict     Doxygen::tagDestinationDict(257); // all tag locations
                                         // a member group
 QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
 
-QIntDict<QCString> Doxygen::memberHeaderDict(1009); // dictionary of the member groups heading
-QIntDict<QCString> Doxygen::memberDocDict(1009);    // dictionary of the member groups heading
+QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
+//QIntDict<QCString> Doxygen::memberHeaderDict(1009); // dictionary of the member groups heading
+//QIntDict<QCString> Doxygen::memberDocDict(1009);    // dictionary of the member groups heading
 
 PageInfo      *Doxygen::mainPage = 0;           
 QTextStream    Doxygen::tagFile;
@@ -173,10 +174,8 @@ void statistics()
   compoundKeywordDict.statistics();
   fprintf(stderr,"--- expandAsDefinedDict stats ----\n");
   Doxygen::expandAsDefinedDict.statistics();
-  fprintf(stderr,"--- memberHeaderDict stats ----\n");
-  Doxygen::memberHeaderDict.statistics();
-  fprintf(stderr,"--- memberDocDict stats ----\n");
-  Doxygen::memberDocDict.statistics();
+  fprintf(stderr,"--- memGrpInfoDict stats ----\n");
+  Doxygen::memGrpInfoDict.statistics();
 }
 
 
@@ -1061,10 +1060,13 @@ static void findUsingDirectives(Entry *root)
 
 static void findUsingDeclarations(Entry *root)
 {
-  if (root->section==Entry::USINGDECL_SEC)
+  if (root->section==Entry::USINGDECL_SEC &&
+      !(root->parent->section&Entry::COMPOUND_MASK) // not a class/struct member
+     )
   {
-    //printf("Found using declaration %s at line %d of %s\n",
-    //    root->name.data(),root->startLine,root->fileName.data());
+    printf("Found using declaration %s at line %d of %s inside section %x\n",
+        root->name.data(),root->startLine,root->fileName.data(),
+        root->parent->section);
     bool ambig;
     if (!root->name.isEmpty())
     {
@@ -1137,6 +1139,88 @@ static void findUsingDeclarations(Entry *root)
   for (;(e=eli.current());++eli)
   {
     findUsingDeclarations(e);
+  }
+}
+
+//----------------------------------------------------------------------
+
+static void findUsingDeclImports(Entry *root)
+{
+  if (root->section==Entry::USINGDECL_SEC &&
+      (root->parent->section&Entry::COMPOUND_MASK) // in a class/struct member
+     )
+  {
+    //printf("Found using declaration %s at line %d of %s inside section %x\n",
+    //    root->name.data(),root->startLine,root->fileName.data(),
+    //    root->parent->section);
+    QCString fullName=removeRedundantWhiteSpace(root->parent->name);
+    fullName=stripAnonymousNamespaceScope(fullName);
+    fullName=stripTemplateSpecifiersFromScope(fullName);
+    ClassDef *cd = getClass(fullName);
+    if (cd)
+    {
+      //printf("found class %s\n",cd->name().data());
+      int i=root->name.find("::");
+      if (i!=-1)
+      {
+        QCString scope=root->name.left(i);
+        QCString memName=root->name.right(root->name.length()-i-2);
+        ClassDef *bcd = getResolvedClass(cd,scope);
+        if (bcd)
+        {
+          //printf("found class %s\n",bcd->name().data());
+          MemberNameInfoSDict *mndict=bcd->memberNameInfoSDict();
+          MemberNameInfo *mni = mndict->find(memName);
+          if (mni)
+          {
+            MemberNameInfoIterator mnii(*mni); 
+            MemberInfo *mi;
+            for ( ; (mi=mnii.current()) ; ++mnii )
+            {
+              MemberDef *md = mi->memberDef;
+              if (md && md->protection()!=Private)
+              {
+                //printf("found member %s\n",mni->memberName());
+                MemberDef *newMd = new MemberDef(
+                            root->fileName,root->startLine,
+                            md->typeString(),memName,md->argsString(),
+                            md->excpString(),root->protection,root->virt,
+                            md->isStatic(),FALSE,md->memberType(),
+                            md->templateArguments(),md->argumentList()
+                           );
+                cd->insertMember(newMd);
+                newMd->setMemberClass(cd);
+                if (!root->doc.isEmpty() || !root->brief.isEmpty())
+                {
+                  newMd->setDocumentation(root->doc,root->docFile,root->docLine);
+                  newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                }
+                else
+                {
+                  newMd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+                  newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+                }
+                newMd->setDefinition(md->definition());
+                newMd->setBitfields(md->bitfieldString());
+                newMd->addSectionsToDefinition(root->anchors);
+                newMd->setBodySegment(md->getStartBodyLine(),md->getEndBodyLine());
+                newMd->setBodyDef(md->getBodyDef());
+                newMd->setInitializer(md->initializer());
+                newMd->setMaxInitLines(md->initializerLines());
+                newMd->setMemberGroupId(root->mGrpId);
+                newMd->setMemberSpecifiers(md->getMemberSpecifiers());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    findUsingDeclImports(e);
   }
 }
 
@@ -7702,6 +7786,9 @@ void parseInput()
   findMemberDocumentation(root); // may introduce new members !
   transferRelatedFunctionDocumentation();
   
+  msg("Searching for members imported via using declarations...\n");
+  findUsingDeclImports(root);
+
   msg("Building page list...\n");
   buildPageList(root);
 
@@ -7833,7 +7920,7 @@ void generateOutput()
   msg("Resolving user defined references...\n");
   resolveUserReferences();
 
-  msg("Finding anchor and section in the documentation...\n");
+  msg("Finding anchors and sections in the documentation...\n");
   findSectionsInDocumentation();
 
   msg("Generating index page...\n"); 

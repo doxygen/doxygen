@@ -80,7 +80,7 @@ class PageInfo
     }
     void findSectionsInDocumentation()
     {
-      docFindSections(doc,this,0,0);
+      docFindSections(doc,this,0,0,defFileName);
     }
     
     void writeDocAnchorsToTagFile()

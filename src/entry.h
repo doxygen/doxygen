@@ -132,15 +132,13 @@ struct Grouping
   enum GroupPri_t 
   {
     GROUPING_LOWEST,
-    GROUPING_AUTO_WEAK =
-    GROUPING_LOWEST,   //!< membership in group was defined via \@weakgroup \@{ \@}
+    GROUPING_AUTO_WEAK = 
+      GROUPING_LOWEST,   //!< membership in group was defined via \@weakgroup \@{ \@}
     GROUPING_AUTO_ADD,    //!< membership in group was defined via \@add[to]group \@{ \@}
     GROUPING_AUTO_DEF,    //!< membership in group was defined via \@defgroup \@{ \@}
-    GROUPING_AUTO_HIGHEST =
-    GROUPING_AUTO_DEF,
+    GROUPING_AUTO_HIGHEST = GROUPING_AUTO_DEF,
     GROUPING_INGROUP,      //!< membership in group was defined by \@ingroup
-    GROUPING_HIGHEST =
-    GROUPING_INGROUP
+    GROUPING_HIGHEST = GROUPING_INGROUP
   };
 
   static const char *getGroupPriName( GroupPri_t priority )

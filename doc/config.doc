@@ -195,6 +195,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_treeview_width TREEVIEW_WIDTH
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
+\refitem cfg_warn_if_doc_error WARN_IF_DOC_ERROR
 \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
 \refitem cfg_warn_logfile WARN_LOGFILE
 \refitem cfg_warnings WARNINGS
@@ -582,6 +583,13 @@ function's detailed documentation block.
  If \c WARN_IF_UNDOCUMENTED is set to \c YES, then doxygen will generate warnings
  for undocumented members. If \c EXTRACT_ALL is set to \c YES then this flag will
  automatically be disabled.
+
+\anchor cfg_warn_if_doc_error
+<dt>\c WARN_IF_DOC_ERROR <dd>
+ If \c WARN_IF_DOC_ERROR is set to \c YES, doxygen will generate warnings for
+ potential errors in the documentation, such as not documenting some
+ parameters in a documented function, or documenting parameters that
+ don't exist or using markup commands wrongly. 
 
 \anchor cfg_warn_format
 <dt>\c WARN_FORMAT <dd>

@@ -80,7 +80,9 @@ void ManDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Dollar:  m_t << "$"; break;
     case DocSymbol::Hash:    m_t << "#"; break;
     case DocSymbol::Percent: m_t << "%"; break;
-    case DocSymbol::Copy:    m_t << "(c)"; break;
+    case DocSymbol::Copy:    m_t << "(C)"; break;
+    case DocSymbol::Tm:      m_t << "(TM)"; break;
+    case DocSymbol::Reg:     m_t << "(R)"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "''"; break;
     case DocSymbol::Uml:     m_t << s->letter() << "\\*(4"; break;
@@ -379,11 +381,12 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Attention:
       m_t << theTranslator->trAttention(); break;
     case DocSimpleSect::User: break;
+    case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
   }
 
   // special case 1: user defined title
-  if (s->type()!=DocSimpleSect::User)
+  if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
     m_t << ":\\fP" << endl;
     m_t << ".RS 4" << endl;

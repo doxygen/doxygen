@@ -3132,7 +3132,8 @@ const char *getOverloadDocs()
 }
       
 void addMembersToMemberGroup(MemberList *ml,
-    MemberGroupSDict *memberGroupSDict,Definition *context)
+                             MemberGroupSDict *memberGroupSDict,
+                             Definition *context)
 {
   //printf("addMemberToMemberGroup()\n");
   MemberListIterator mli(*ml);
@@ -3151,14 +3152,21 @@ void addMembersToMemberGroup(MemberList *ml,
           int groupId=fmd->getMemberGroupId();
           if (groupId!=-1)
           {
-            QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-            QCString *pDocs      = Doxygen::memberDocDict[groupId];
-            if (pGrpHeader)
+            MemberGroupInfo *info = Doxygen::memGrpInfoDict[groupId];
+            //QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+            //QCString *pDocs      = Doxygen::memberDocDict[groupId];
+            if (info)
             {
               MemberGroup *mg = memberGroupSDict->find(groupId);
               if (mg==0)
               {
-                mg = new MemberGroup(context,groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+                mg = new MemberGroup(
+                       context,
+                       groupId,
+                       info->header,
+                       info->doc,
+                       info->docFile
+                      );
                 memberGroupSDict->append(groupId,mg);
               }
               mg->insertMember(context,fmd); // insert in member group
@@ -3172,14 +3180,21 @@ void addMembersToMemberGroup(MemberList *ml,
     int groupId=md->getMemberGroupId();
     if (groupId!=-1)
     {
-      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      if (pGrpHeader)
+      MemberGroupInfo *info = Doxygen::memGrpInfoDict[groupId];
+      //QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      //QCString *pDocs      = Doxygen::memberDocDict[groupId];
+      if (info)
       {
         MemberGroup *mg = memberGroupSDict->find(groupId);
         if (mg==0)
         {
-          mg = new MemberGroup(context,groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          mg = new MemberGroup(
+                  context,
+                  groupId,
+                  info->header,
+                  info->doc,
+                  info->docFile
+                 );
           memberGroupSDict->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list

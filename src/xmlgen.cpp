@@ -479,6 +479,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     case Protected: t << "protected";  break;
     case Private:   t << "private";    break;
   }
+  t << "\" static=\"";
+  if (md->isStatic()) t << "yes"; else t << "no";
   t << "\"";
 
   if (isFunc)

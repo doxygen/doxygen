@@ -1664,6 +1664,14 @@ void Config::create()
                     "automatically be disabled. \n",
                     TRUE
                  );
+  cb = addBool(
+                    "WARN_IF_DOC_ERROR",
+                    "If WARN_IF_DOC_ERROR is set to YES, doxygen will generate warnings for \n"
+                    "potential errors in the documentation, such as not documenting some \n"
+		    "parameters in a documented function, or documenting parameters that \n"
+		    "don't exist or using markup commands wrongly. \n",
+                    TRUE
+                 );
   cs = addString(
                     "WARN_FORMAT",
                     "The WARN_FORMAT tag determines the format of the warning messages that \n"

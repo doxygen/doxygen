@@ -109,13 +109,15 @@ static int	     g_lastCContext;
 class VariableContext
 {
   public:
+    static const ClassDef *dummyContext;
+    
     class Scope : public SDict<ClassDef>
     {
       public:
 	Scope() : SDict<ClassDef>(17) {}
     };
     
-    VariableContext()
+    VariableContext() 
     {
       m_scopes.setAutoDelete(TRUE);
     }
@@ -157,12 +159,14 @@ class VariableContext
     void addVariable(const QCString &type,const QCString &name);
     ClassDef *findVariable(const QCString &name);
     
+  private:
     Scope        m_globalScope;
     QList<Scope> m_scopes;
 };
 
 void VariableContext::addVariable(const QCString &type,const QCString &name)
 {
+  //printf("VariableContext::addVariable(%s,%s)\n",type.data(),name.data());
   QCString ltype = type.simplifyWhiteSpace();
   QCString lname = name.simplifyWhiteSpace();
   if (ltype.left(7)=="struct ") 
@@ -191,6 +195,11 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     // probably a template class, try without arguments as well
     addVariable(ltype.left(i),name);
   }
+  else // add a dummy entry so the name is hidden
+  {
+    //printf("adding dummy context!\n");
+    scope->append(lname,dummyContext);
+  }
 }
 
 ClassDef *VariableContext::findVariable(const QCString &name)
@@ -214,6 +223,8 @@ ClassDef *VariableContext::findVariable(const QCString &name)
   DBG_CTX((stderr,"** findVariable(%s)=%p\n",name.data(),result));
   return result;
 }
+
+const ClassDef *VariableContext::dummyContext = (ClassDef*)0x8;
 
 static VariableContext g_theVarContext;
 
@@ -539,8 +550,11 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
-    //printf("local var `%s' mcd=%s\n",name.data(),mcd->name().data());
-    g_theCallContext.setClass(mcd);
+    if (mcd!=VariableContext::dummyContext)
+    {
+      //printf("local var `%s' mcd=%s\n",name.data(),mcd->name().data());
+      g_theCallContext.setClass(mcd);
+    }
   }
   else
   {
@@ -611,7 +625,8 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 
 }
 
-static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int *clNameLen=0)
+static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
+                                      bool typeOnly=FALSE)
 {
   int i=0;
   //printf("generateClassOrGlobalLink(clName=%s)\n",clName);
@@ -621,12 +636,12 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int 
     clName++;
   }
   QCString className=clName;
-  if (clNameLen) *clNameLen=0;
   if (className.isEmpty()) return;
   ClassDef *cd=0;
 
   if (!g_theVarContext.findVariable(className)) // not a local variable
   {
+    //printf("not a local var!\n");
     Definition *d = g_currentDefinition;
     cd = getResolvedClass(d,className);
     if (cd==0 && (i=className.find('<'))!=-1)
@@ -650,11 +665,10 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int 
       }
     }
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
-    if (clNameLen) *clNameLen=className.length()-i-1;
   }
   else 
   {
-    if (cd==0) // not a class, see if it is a global enum/variable/typedef.
+    if (cd==0 && !typeOnly) // not a class, see if it is a global enum/variable/typedef.
     {
       MemberDef *md = setCallContextForVar(clName);
       //printf("is a global md=%p\n",md);
@@ -677,7 +691,6 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,int 
     }
     
     codifyLines(clName);
-    if (clNameLen) *clNameLen=className.length()-1;
   }
 }
 
@@ -804,23 +817,26 @@ static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
   ClassDef *vcd = g_theVarContext.findVariable(varName);
   if (vcd) 
   {
-    //printf("Class found!\n");
-    if (getLink(vcd->name(),memName,ol)) 
+    if (vcd!=VariableContext::dummyContext)
     {
-      //printf("Found result!\n");
-      return;
-    }
-    BaseClassListIterator bcli(*vcd->baseClasses());
-    for ( ; bcli.current() ; ++bcli)
-    {
-      if (getLink(bcli.current()->classDef->name(),memName,ol)) 
+      //printf("Class found!\n");
+      if (getLink(vcd->name(),memName,ol)) 
       {
 	//printf("Found result!\n");
 	return;
       }
+      BaseClassListIterator bcli(*vcd->baseClasses());
+      for ( ; bcli.current() ; ++bcli)
+      {
+	if (getLink(bcli.current()->classDef->name(),memName,ol)) 
+	{
+	  //printf("Found result!\n");
+	  return;
+	}
+      }
     }
   }
-  else // variable not in current context, maybe it is
+  else // variable not in current context, maybe it is in a parent context
   {
     vcd = getResolvedClass(g_currentDefinition,g_classScope);
     if (vcd && vcd->isLinkable())
@@ -1536,7 +1552,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\<\>]*">")? {
 					  addParmType();
 					  g_parmName=yytext; 
-					  generateClassOrGlobalLink(*g_code,yytext);
+					  generateClassOrGlobalLink(*g_code,yytext,TRUE);
 					}
 <MemberCall2,FuncCall>,			{
   					  g_code->codify(yytext);

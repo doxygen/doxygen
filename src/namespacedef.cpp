@@ -65,7 +65,7 @@ void NamespaceDef::distributeMemberGroupDocumentation()
 
 void NamespaceDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0);
+  docFindSections(documentation(),0,this,0,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

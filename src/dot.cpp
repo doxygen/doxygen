@@ -33,6 +33,8 @@
 
 //--------------------------------------------------------------------
 
+static const int maxCmdLine = 4096;
+
 /*! mapping from protection levels to color names */
 static const char *edgeColorMap[] =
 {
@@ -54,9 +56,12 @@ static const char *edgeStyleMap[] =
  *  site image map.
  *  \param t the stream to which the result is written.
  *  \param mapName the name of the map file.
+ *  \param urlOnly if FALSE the url field in the map contains an external 
+ *                 references followed by a $ and then the URL.  
  *  \returns TRUE if succesful.
  */
-static bool convertMapFile(QTextStream &t,const char *mapName)
+static bool convertMapFile(QTextStream &t,const char *mapName,
+                           bool urlOnly=FALSE)
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly)) 
@@ -93,30 +98,39 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
         x2=x1;
         x1=temp;
       }
-      char *refPtr = url;
-      char *urlPtr = strchr(url,'$');
-      //printf("url=`%s'\n",url);
-      if (urlPtr)
+      if (urlOnly)
       {
-        QCString *dest;
-        *urlPtr++='\0';
-        //printf("refPtr=`%s' urlPtr=`%s'\n",refPtr,urlPtr);
-        //printf("Found url=%s coords=%d,%d,%d,%d\n",url,x1,y1,x2,y2);
-        t << "<area ";
-        if (*refPtr!='\0')
+          t << "<area href=\"" << url << "\" shape=\"rect\" coords=\"" 
+            << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
+            << " alt=\"\">" << endl;
+      }
+      else // name and external reference are separated by a $
+      {
+        char *refPtr = url;
+        char *urlPtr = strchr(url,'$');
+        //printf("url=`%s'\n",url);
+        if (urlPtr)
         {
-          t << "doxygen=\"" << refPtr << ":";
-          if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
-          t << "\" ";
+          QCString *dest;
+          *urlPtr++='\0';
+          //printf("refPtr=`%s' urlPtr=`%s'\n",refPtr,urlPtr);
+          //printf("Found url=%s coords=%d,%d,%d,%d\n",url,x1,y1,x2,y2);
+          t << "<area ";
+          if (*refPtr!='\0')
+          {
+            t << "doxygen=\"" << refPtr << ":";
+            if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
+            t << "\" ";
+          }
+          t << "href=\""; 
+          if (*refPtr!='\0')
+          {
+            if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
+          }
+          t << urlPtr << "\" shape=\"rect\" coords=\"" 
+            << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
+            << " alt=\"\">" << endl;
         }
-        t << "href=\""; 
-        if (*refPtr!='\0')
-        {
-          if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
-        }
-        t << urlPtr << "\" shape=\"rect\" coords=\"" 
-          << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-          << " alt=\"\">" << endl;
       }
     }
   }
@@ -766,7 +780,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     t << "}" << endl;
     f.close();
 
-    QCString dotArgs(4096);
+    QCString dotArgs(maxCmdLine);
     dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",
            imgExt.data(), dotName.data(),imgName.data());
     //printf("Running: dot -T%s %s -o %s\n",imgExt.data(),dotName.data(),imgName.data());
@@ -1239,64 +1253,63 @@ static void findMaximalDotGraph(DotNode *root,
                                )
 {
   int minDistance=1; // min distance that shows only direct children.
-  int curDistance=2; // current distance to try
+  int curDistance; //=QMIN(2,maxDist); // current distance to try
   int maxDistance=maxDist; // max distance that show whole graph
   int width=0;
   int height=0;
   int maxDotGraphWidth  = Config_getInt("MAX_DOT_GRAPH_WIDTH");
   int maxDotGraphHeight = Config_getInt("MAX_DOT_GRAPH_HEIGHT");
+  int lastFit=minDistance;
 
   // binary search for the maximal inheritance depth that fits in a reasonable
   // sized image (dimensions: Config_getInt("MAX_DOT_GRAPH_WIDTH"), Config_getInt("MAX_DOT_GRAPH_HEIGHT"))
-  if (maxDistance>1)
+  while (minDistance<=maxDistance)
   {
-    do
+    curDistance = (minDistance+maxDistance)/2;
+
+    writeDotGraph(root,format,baseName,lrRank,renderParents,
+        curDistance,backArrows);
+
+    QCString dotArgs(maxCmdLine);
+    // create annotated dot file
+    dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
-      writeDotGraph(root,format,baseName,lrRank,renderParents,
-          curDistance,backArrows);
+      err("Problems running dot. Check your installation!\n");
+      return;
+    }
 
-      QCString dotArgs(4096);
-      // create annotated dot file
-      dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
-      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      {
-        err("Problems running dot. Check your installation!\n");
-        return;
-      }
+    // extract bounding box from the result
+    readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
+    width  = width *96/72; // 96 pixels/inch, 72 points/inch
+    height = height*96/72; // 96 pixels/inch, 72 points/inch
+    //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
+    //    Config_getInt("MAX_DOT_GRAPH_WIDTH"),Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
 
-      // extract bounding box from the result
-      readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
-      width  = width *96/72; // 96 pixels/inch, 72 points/inch
-      height = height*96/72; // 96 pixels/inch, 72 points/inch
-      //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
-      //    Config_getInt("MAX_DOT_GRAPH_WIDTH"),Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
+    // remove temporary dot file
+    thisDir.remove(baseName+"_tmp.dot");
 
-      // remove temporary dot file
-      thisDir.remove(baseName+"_tmp.dot");
-
-      bool graphFits=(width<maxDotGraphWidth && height<maxDotGraphHeight);
-      if (graphFits) // graph is small enough
-      {
-        minDistance=curDistance;
-        //printf("Image fits [%d-%d]\n",minDistance,maxDistance);
-      }
-      else // graph does not fit anymore with curDistance
-      {
-        //printf("Image does not fit [%d-%d]\n",minDistance,maxDistance);
-        maxDistance=curDistance;
-      }
-      curDistance=minDistance+(maxDistance-curDistance)/2;
-      //printf("curDistance=%d\n",curDistance);
-
-    } while ((maxDistance-minDistance)>1);
+    bool graphFits=(width<maxDotGraphWidth && height<maxDotGraphHeight);
+    if (graphFits) // graph is small enough
+    {
+      lastFit=curDistance;
+      minDistance=curDistance+1;
+      //printf("Image fits [%d-%d]\n",minDistance,maxDistance);
+    }
+    else // graph does not fit anymore with curDistance
+    {
+      //printf("Image does not fit [%d-%d]\n",minDistance,maxDistance);
+      maxDistance=curDistance-1;
+    }
   }
+  //printf("lastFit=%d\n",lastFit);
 
   writeDotGraph(root,
                   format,
                   baseName,
                   lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
                   renderParents,
-                  minDistance,
+                  lastFit,
                   backArrows
                  );
 }
@@ -1357,7 +1370,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
   if (format==BITMAP) // run dot to create a bitmap image
   {
-    QCString dotArgs(4096);
+    QCString dotArgs(maxCmdLine);
     QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
     QCString imgName = baseName+"."+imgExt;
     dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
@@ -1410,7 +1423,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   }
   else if (format==EPS) // run dot to create a .eps image
   {
-    QCString dotArgs(4096);
+    QCString dotArgs(maxCmdLine);
     dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
     if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
@@ -1427,7 +1440,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     }
     if (Config_getBool("USE_PDFLATEX"))
     {
-      QCString epstopdfArgs(4096);
+      QCString epstopdfArgs(maxCmdLine);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
       if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
@@ -1594,7 +1607,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   if (format==BITMAP)
   {
     // run dot to create a bitmap image
-    QCString dotArgs(4096);
+    QCString dotArgs(maxCmdLine);
     QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
     QCString imgName=baseName+"."+imgExt;
     dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
@@ -1640,7 +1653,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   else if (format==EPS)
   {
     // run dot to create a .eps image
-    QCString dotArgs(4096);
+    QCString dotArgs(maxCmdLine);
     dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
                    baseName.data(),baseName.data());
     if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
@@ -1658,7 +1671,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     }
     if (Config_getBool("USE_PDFLATEX"))
     {
-      QCString epstopdfArgs(4096);
+      QCString epstopdfArgs(maxCmdLine);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                      baseName.data(),baseName.data());
       if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
@@ -1747,7 +1760,7 @@ void generateGraphLegend(const char *path)
   QDir::setCurrent(d.absPath());
 
   // run dot to generate the a bitmap image from the graph
-  QCString dotArgs(4096);
+  QCString dotArgs(maxCmdLine);
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = "graph_legend."+imgExt;
   dotArgs.sprintf("-T%s graph_legend.dot -o %s",imgExt.data(),imgName.data());
@@ -1789,7 +1802,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   //  outf.writeBlock(a.data(),s);
   //}
   
-  QCString dotArgs(4096);
+  QCString dotArgs(maxCmdLine);
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
   if (format==BITMAP)
@@ -1812,7 +1825,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   // Added by Nils Strom
   if ( (format==EPS) && (Config_getBool("USE_PDFLATEX")) )
   {
-    QCString epstopdfArgs(4096);
+    QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          outFile,outFile);
     if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
@@ -1825,4 +1838,44 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 
   QDir::setCurrent(oldDir);
 }
+
+ 
+/*! Marco Dalla Gasperina [marcodg@attbi.com] added this to allow
+ *  dotfiles to generate image maps.
+ *  \param inFile just the basename part of the filename
+ *  \param outDir output directory
+ *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
+ */
+QString getDotImageMapFromFile(const QString& inFile, const QString& outDir)
+{
+  QString outFile = inFile + ".map";
+
+  // chdir to the output dir, so dot can find the font file.
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // go to the html output directory (i.e. path)
+  QDir::setCurrent(outDir);
+  //printf("Going to dir %s\n",QDir::currentDirPath().data());
+
+  QCString dotArgs(maxCmdLine);
+  dotArgs.sprintf("-Timap \"%s\" -o \"%s\"", inFile.data(), outFile.data());
+
+  QCString dotExe = Config_getString("DOT_PATH") + "dot";
+  //printf("Running: %s %s\n",dotExe.data(),dotArgs.data());
+  if (iSystem(dotExe,dotArgs)!=0)
+  {
+    err("Problems running dot. Check your installation!\n");
+    QDir::setCurrent(oldDir);
+    return "";
+  }
+  QString result;
+  QTextOStream tmpout(&result);
+  convertMapFile(tmpout, outFile, TRUE);
+  QDir().remove(outFile);
+  //printf("result=%s\n",result.data());
+
+  QDir::setCurrent(oldDir);
+  return result;
+}
+// end MDG mods
+
 

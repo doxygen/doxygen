@@ -111,7 +111,7 @@ const char *tokToString(int token);
 
 // operations on the scanner
 void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
-                                MemberGroup *mg);
+                                MemberGroup *mg,const char *fileName);
 void doctokenizerYYinit(const char *input,const char *fileName);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();

@@ -542,6 +542,8 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   case DocSymbol::Ring:    accent = "ring"; break;
   case DocSymbol::BSlash:  s = "\\\\"; break;
   case DocSymbol::Copy:    symbol = "copyright"; break;
+  case DocSymbol::Tm:      symbol = "trademark"; break;
+  case DocSymbol::Reg:     symbol = "registered"; break;
   case DocSymbol::Szlig:   symbol = "szlig"; break;
   case DocSymbol::Apos:    s = "\\\'"; break;
   case DocSymbol::Unknown:
@@ -770,6 +772,7 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   case DocSimpleSect::Remark:		type = "remark"; break;
   case DocSimpleSect::Attention:	type = "attention"; break;
   case DocSimpleSect::User:		type = "par"; break;
+  case DocSimpleSect::Rcs:		type = "rcs"; break;
   case DocSimpleSect::Unknown:
     err("Error: unknown simple section found\n");
     break;
