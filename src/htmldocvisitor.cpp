@@ -33,13 +33,13 @@ HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci)
   // visitor functions for leaf nodes
   //--------------------------------------
 
-void HtmlDocVisitor::HtmlDocVisitor::visit(DocWord *w)
+void HtmlDocVisitor::visit(DocWord *w)
 {
   if (m_hide) return;
   filter(w->word());
 }
 
-void HtmlDocVisitor::HtmlDocVisitor::visit(DocLinkedWord *w)
+void HtmlDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
   startLink(w->ref(),w->file(),w->anchor());
@@ -47,7 +47,7 @@ void HtmlDocVisitor::HtmlDocVisitor::visit(DocLinkedWord *w)
   endLink();
 }
 
-void HtmlDocVisitor::HtmlDocVisitor::visit(DocWhiteSpace *w)
+void HtmlDocVisitor::visit(DocWhiteSpace *w)
 {
   if (m_hide) return;
   if (m_insidePre)
