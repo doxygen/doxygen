@@ -21,17 +21,19 @@
 #include <qdict.h>
 #include "filedef.h"
 
-class FileName : public QList<FileDef>
+class FileName : public FileList
 { 
   public:
-    FileName(const char *name);
+    FileName(const char *fn,const char *name);
    ~FileName();
     const char *fileName() const { return name; }
+    const char *fullName() const { return fName; }
     void generateDiskNames();
     int compareItems(GCI item1,GCI item2);
 
   private:
     QCString name;
+    QCString fName;
 };
 
 class FileNameIterator : public QListIterator<FileDef>

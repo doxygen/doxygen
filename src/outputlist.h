@@ -169,6 +169,10 @@ class OutputList
     { forall(&OutputGenerator::startCodeFragment); }
     void endCodeFragment() 
     { forall(&OutputGenerator::endCodeFragment); }
+    void startCodeLine() 
+    { forall(&OutputGenerator::startCodeLine); }
+    void endCodeLine() 
+    { forall(&OutputGenerator::endCodeLine); }
     void writeBoldString(const char *text)
     { forall(&OutputGenerator::writeBoldString,text); }
     void startEmphasis() 
@@ -187,6 +191,10 @@ class OutputList
     { forall(&OutputGenerator::startDoxyAnchor,fn,cn,anchor,name); }
     void endDoxyAnchor()
     { forall(&OutputGenerator::endDoxyAnchor); }
+    void startCodeAnchor(const char *label)
+    { forall(&OutputGenerator::startCodeAnchor,label); }
+    void endCodeAnchor()
+    { forall(&OutputGenerator::endCodeAnchor); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
     //void writeLatexLabel(const char *scope,const char *anchor) 
@@ -307,6 +315,19 @@ class OutputList
     { forall(&OutputGenerator::writeNonBreakableSpace); }
     void writeImage(const char *n,const char *w,const char *h)
     { forall(&OutputGenerator::writeImage,n,w,h); }
+
+    void startDescTable()
+    { forall(&OutputGenerator::startDescTable); }
+    void endDescTable()
+    { forall(&OutputGenerator::endDescTable); }
+    void startDescTableTitle()
+    { forall(&OutputGenerator::startDescTableTitle); }
+    void endDescTableTitle()
+    { forall(&OutputGenerator::endDescTableTitle); }
+    void startDescTableData()
+    { forall(&OutputGenerator::startDescTableData); }
+    void endDescTableData()
+    { forall(&OutputGenerator::endDescTableData); }
 
   private:
     void debug();

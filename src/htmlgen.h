@@ -77,7 +77,7 @@ class HtmlGenerator : public OutputGenerator
                          const char *anchor,const char *name);
     void writeCodeLink(const char *ref,const char *f,
                        const char *anchor,const char *name)
-           { writeObjectLink(ref,f,anchor,name); }
+           { writeObjectLink(ref,f,anchor,name); col+=strlen(name); }
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
     void writeHtmlLink(const char *url,const char *text);
@@ -107,7 +107,9 @@ class HtmlGenerator : public OutputGenerator
     void writeAnchor(const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
-    void endCodeFragment()   { t << "</pre></div>"; }
+    void endCodeFragment()   { t << "</div></pre>"; }
+    void startCodeLine() { col=0; }
+    void endCodeLine()   { codify("\n"); }
     void writeBoldString(const char *text) 
                          { t << "<b>"; docify(text); t << "</b>"; }
     void startEmphasis() { t << "<em>";  }
@@ -127,6 +129,8 @@ class HtmlGenerator : public OutputGenerator
     void startDoxyAnchor(const char *fName,const char *clName,
                          const char *anchor,const char *name);
     void endDoxyAnchor();
+    void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\">"; }
+    void endCodeAnchor() { t << "</a>"; }
     void writeLatexSpacing() {}
     //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
@@ -181,6 +185,18 @@ class HtmlGenerator : public OutputGenerator
     void writeNonBreakableSpace() { t << "&nbsp;&nbsp;&nbsp;"; }
     void writeImage(const char *,const char *,const char *);
     
+    void startDescTable()
+    { t << "<table border=0 cellspacing=2 cellpadding=0>" << endl; }
+    void endDescTable()
+    { t << "</table>" << endl; }
+    void startDescTableTitle()
+    { t << "<tr><td valign=top>"; }
+    void endDescTableTitle()
+    { t << endl << "&nbsp;</td>"; }
+    void startDescTableData()
+    { t << "<td>" << endl; }
+    void endDescTableData()
+    { t << "</td></tr>" << endl; }
     //static void docifyStatic(QTextStream &t,const char *str);
     
   private:
@@ -193,6 +209,7 @@ class HtmlGenerator : public OutputGenerator
     HtmlGenerator(const HtmlGenerator &g);
 
     static HtmlHelp *htmlHelp;
+    int col;
 };
 
 #endif

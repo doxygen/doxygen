@@ -18,7 +18,8 @@ all: class/html/index.html \
      restypedef/html/index.html \
      afterdoc/html/index.html \
      template/html/index.html \
-     tag/html/index.html 
+     tag/html/index.html \
+     group/html/index.html
 
 clean:
 	rm -rf  class define enum file func page relates author \
@@ -86,3 +87,6 @@ afterdoc/html/index.html: afterdoc.h afterdoc.cfg
 
 template/html/index.html: templ.cpp templ.cfg
 	$(DOXYGEN)/bin/doxygen templ.cfg
+
+group/html/index.html: group.cpp group.cfg
+	$(DOXYGEN)/bin/doxygen group.cfg

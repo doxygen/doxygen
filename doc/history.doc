@@ -22,8 +22,6 @@
 <li>Add support for grouping members, and document then as a group.
 <li>Support for K&R-style function arguments.
 <li>More ouput formats: suggested are info format and RTF format.
-<li>Reintroduction of the multi-column class list (and file list) to quickly 
-    select a class or file
 <li>Split long lists in an index to a set of smaller lists.
 <li>Add a nice graphical front-end for creating and modifying the 
     configuration file (it should be flexible enough to quickly add new options).
@@ -34,15 +32,18 @@
     not yet listed here, please let me know.
 </ul>
 
-<h3>Features scheduled for version 0.5</h3>
+<h3>Features scheduled for version 1.0</h3>
 <ul>
-<li>Proper support for namespaces.
-<li>Include LaTeX style formulas in LaTeX and HTML output (in HTML as a gif).
-<li>Proper support for template classes, members, functions and specializations.
-<li>Multi-lingual support.
-<li>Generation of class diagrams (clickable image maps in HTML, eps images in
-    postscript).
-<li>Add generator for man pages format.
+ <li>Include LaTeX style formulas in LaTeX and HTML output (in HTML as a gif). 
+ <li>Multi-lingual support: currently supported languages are: English,
+     Dutch, French, German, Italian, Swedish, Czech, Japanese.
+ <li>Generation of class diagrams (clickable image maps in HTML, eps images 
+     in postscript). 
+ <li>Output generator for the man page format. 
+ <li>Proper support for template classes, members, functions and specializations. 
+ <li>Proper support for namespaces. 
+ <li>Reintroduction of the multi-column class list (and file list) to quickly 
+     select a class or file 
 </ul>
 
 <h3>Version 0.4</h3>

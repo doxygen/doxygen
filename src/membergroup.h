@@ -19,6 +19,7 @@
 
 #include "qtbc.h"
 #include <qlist.h>
+#include <qintdict.h>
 
 #include "definition.h"
 
@@ -57,6 +58,12 @@ class MemberGroupListIterator : public QListIterator<MemberGroup>
   public:
     MemberGroupListIterator(const MemberGroupList &l) : 
       QListIterator<MemberGroup>(l) {}
+};
+
+class MemberGroupDict : public QIntDict<MemberGroup>
+{
+  public:
+    MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
 };
 
 #endif

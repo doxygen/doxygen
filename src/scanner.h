@@ -27,7 +27,7 @@
 #include "membergroup.h"
 
 class OutputList;
-typedef QIntDict<MemberGroup> MemberGroupDict;
+//typedef QIntDict<MemberGroup> MemberGroupDict;
 typedef QIntDictIterator<MemberGroup> MemberGroupDictIterator;
 
 extern void parseMain(Entry *);

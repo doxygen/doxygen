@@ -16,7 +16,7 @@
 /*! \page htmlcmds HTML Commands
 
 Here is a list of all HTML commands that may be used inside the
-documentation. Notice that all attributes of a HTML tag are ignored 
+documentation. Note that all attributes of a HTML tag are ignored 
 (the HREF and NAME attributes for the A tag are the only exception).
 
 <ul>

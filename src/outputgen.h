@@ -18,7 +18,7 @@
 #define OUTPUTGEN_H
 
 #include "qtbc.h"
-#include <qtstream.h>
+#include <qtextstream.h>
 #include <qbuffer.h>
 #include <qfile.h>
 #include "index.h"
@@ -105,6 +105,8 @@ class OutputGenerator
     virtual void writeAnchor(const char *name) = 0;
     virtual void startCodeFragment() = 0;
     virtual void endCodeFragment() = 0;
+    virtual void startCodeLine() = 0;
+    virtual void endCodeLine() = 0;
     virtual void writeBoldString(const char *text) = 0;
     virtual void startEmphasis() = 0;
     virtual void endEmphasis() = 0;
@@ -115,6 +117,8 @@ class OutputGenerator
     virtual void startDoxyAnchor(const char *fileName,const char *clName,
                                  const char *anchor,const char *name) = 0;
     virtual void endDoxyAnchor() = 0;
+    virtual void startCodeAnchor(const char *label) = 0;
+    virtual void endCodeAnchor() = 0;
     virtual void writeLatexSpacing() = 0;
     //virtual void writeLatexLabel(const char *clName,const char *anchor) = 0;
     virtual void writeStartAnnoItem(const char *type,const char *file,
@@ -177,6 +181,13 @@ class OutputGenerator
     virtual void writeNonBreakableSpace() = 0;
     virtual void writeImage(const char *,const char *,const char *) = 0;
     
+    virtual void startDescTable() = 0;
+    virtual void endDescTable() = 0;
+    virtual void startDescTableTitle() = 0;
+    virtual void endDescTableTitle() = 0;
+    virtual void startDescTableData() = 0;
+    virtual void endDescTableData() = 0;
+
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }
     void startPlainFile(const char *name);

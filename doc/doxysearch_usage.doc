@@ -80,7 +80,7 @@ follow these steps:
     <li>\c search.gif: this is the image that is used for the search button.
     </ul>
 
-    \par Notice:
+    \par Note:
       On the Windows platform Unix shell scripts cannot be used. 
       In fact the HTTP daemon that I tried (apache for Windows) only 
       recognized <code>.cgi</code> files that were renamed 
@@ -106,9 +106,11 @@ follow these steps:
 <li>Run <a href="installdox_usage.html">installdox</a> to replace
     any dummy links in the documentation with real links.
 
-    <b>Notice:</b> When using a search engine this step is <em>required</em>
+    \par Note: 
+    When using a search engine this step is <em>required</em>
     even if no tag files are used. If tag files are used you must specify
     the correct options.
+
 </ol>
 
 <a name="searchqt">
@@ -128,7 +130,7 @@ This can be done by carefully following these steps:
     Apart from the file <code>search.idx</code> two other files
     will be generated: <code>search.gif</code> and <code>search.cgi</code>
 
-    \par Notice: 
+    \par Note: 
        Doxytag requires quite a large amount of memory to
        generate the search index (about 30 Mb on my Linux box)!
        The resulting index file requires about 3 Mb space on your disk.

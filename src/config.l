@@ -24,9 +24,9 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qfileinf.h>
+#include <qfileinfo.h>
 #include <qdir.h>
-#include <qtstream.h>
+#include <qtextstream.h>
   
 #include "config.h"
 #include "version.h"
@@ -83,12 +83,16 @@ QCString Config::genTagFile;
 QCString Config::inputFilter;
 QCString Config::paperType;
 QCString Config::manExtension;
+QCString Config::htmlStyleSheet;
 QStrList Config::includePath;                
 QStrList Config::examplePath;
+QStrList Config::imagePath;
 QStrList Config::inputSources;               
 QStrList Config::excludeSources;
 QStrList Config::filePatternList;            
 QStrList Config::excludePatternList;
+QStrList Config::examplePatternList;
+QStrList Config::imagePatternList;
 QStrList Config::tagFileList;                
 QStrList Config::extDocPathList;             
 QStrList Config::predefined;
@@ -109,10 +113,11 @@ bool     Config::fullPathNameFlag    = FALSE;
 bool     Config::compactLatexFlag    = FALSE;
 bool     Config::internalDocsFlag    = FALSE;
 bool     Config::caseSensitiveNames  = FALSE;
-bool     Config::includeSourceFlag   = FALSE;
+bool     Config::sourceBrowseFlag    = FALSE;
 bool     Config::htmlHelpFlag        = FALSE;
 bool     Config::alphaIndexFlag      = FALSE;
 bool     Config::pdfHyperFlag        = FALSE;
+bool     Config::alwaysDetailsFlag   = FALSE;
 bool     Config::autoBriefFlag       = TRUE;
 bool     Config::warningFlag         = TRUE; 
 bool     Config::generateHtml        = TRUE;
@@ -127,6 +132,8 @@ bool     Config::verbatimHeaderFlag  = TRUE;
 bool     Config::htmlAlignMemberFlag = TRUE;
 bool     Config::inheritDocsFlag     = TRUE;
 bool     Config::inlineInfoFlag      = TRUE;
+int      Config::tabSize             = 8;
+int      Config::colsInAlphaIndex    = 5;
   
 /* -----------------------------------------------------------------
  *
@@ -136,13 +143,15 @@ bool     Config::inlineInfoFlag      = TRUE;
 static const char * inputString;
 static int	    inputPosition;
 static int          yyLineNr;
-static QCString      tmpString;
-static QCString *    s=0;
+static QCString     tmpString;
+static QCString *   s=0;
 static bool    *    b=0;
 static QStrList *   l=0;
 static int          lastState;
 static int          lastEnvState;
-static QCString      elemStr;
+static QCString     elemStr;
+static QCString     tabSizeString;
+static QCString     colsInAlphaIndexString;
 
 /* -----------------------------------------------------------------
  */
@@ -196,12 +205,18 @@ static int yyread(char *buf,int max_size)
 <Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&Config::paperType;        }
 <Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputLanguage;   }
 <Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manExtension;     }
+<Start>"TAB_SIZE"[ \t]*"="		{ BEGIN(GetString);  s=&tabSizeString;            }
+<Start>"HTML_STYLESHEET"[ \t]*"="	{ BEGIN(GetString);  s=&Config::htmlStyleSheet;   }
+<Start>"COLS_IN_ALPHA_INDEX"[ \t]*"="   { BEGIN(GetString);  s=&colsInAlphaIndexString;   }
 <Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::includePath;        elemStr=""; }
 <Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::examplePath;        elemStr=""; }
+<Start>"IMAGE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::imagePath;          elemStr=""; }
 <Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&Config::inputSources;       elemStr=""; }
 <Start>"EXCLUDE"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::excludeSources;     elemStr=""; }
 <Start>"FILE_PATTERNS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::filePatternList;    elemStr=""; }
 <Start>"EXCLUDE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::excludePatternList; elemStr=""; }
+<Start>"EXAMPLE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::examplePatternList; elemStr=""; }
+<Start>"IMAGE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::imagePatternList;   elemStr=""; }
 <Start>"TAGFILES"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::tagFileList;        elemStr=""; }
 <Start>"EXT_DOC_PATHS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::extDocPathList;     elemStr=""; }
 <Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined;         elemStr=""; }
@@ -222,6 +237,7 @@ static int yyread(char *buf,int max_size)
 <Start>"MACRO_EXPANSION"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::macroExpansionFlag; }
 <Start>"SEARCH_INCLUDES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::searchIncludeFlag; }
 <Start>"BRIEF_MEMBER_DESC"[ \t]*"="     { BEGIN(GetBool);    b=&Config::briefMemDescFlag; }
+<Start>"ALWAYS_DETAILED_SEC"[ \t]*"="   { BEGIN(GetBool);    b=&Config::alwaysDetailsFlag; }
 <Start>"HIDE_UNDOC_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&Config::hideMemberFlag; }
 <Start>"HIDE_UNDOC_CLASSES"[ \t]*"="    { BEGIN(GetBool);    b=&Config::hideClassFlag; }
 <Start>"EXPAND_ONLY_PREDEF"[ \t]*"="    { BEGIN(GetBool);    b=&Config::onlyPredefinedFlag; }
@@ -233,7 +249,7 @@ static int yyread(char *buf,int max_size)
 <Start>"CASE_SENSE_NAMES"[ \t]*"="      { BEGIN(GetBool);    b=&Config::caseSensitiveNames; }
 <Start>"VERBATIM_HEADERS"[ \t]*"="      { BEGIN(GetBool);    b=&Config::verbatimHeaderFlag; }
 <Start>"HTML_ALIGN_MEMBERS"[ \t]*"="    { BEGIN(GetBool);    b=&Config::htmlAlignMemberFlag; }
-<Start>"SOURCE_BROWSER"[ \t]*"="        { BEGIN(GetBool);    b=&Config::includeSourceFlag; }
+<Start>"SOURCE_BROWSER"[ \t]*"="        { BEGIN(GetBool);    b=&Config::sourceBrowseFlag; }
 <Start>"JAVADOC_AUTOBRIEF"[ \t]*"="     { BEGIN(GetBool);    b=&Config::autoBriefFlag; }
 <Start>"GENERATE_HTMLHELP"[ \t]*"="     { BEGIN(GetBool);    b=&Config::htmlHelpFlag; }
 <Start>"ALPHABETICAL_INDEX"[ \t]*"="    { BEGIN(GetBool);    b=&Config::alphaIndexFlag; }
@@ -395,17 +411,23 @@ void Config::init()
   Config::inputFilter.resize(0);
   Config::paperType = "a4wide";
   Config::manExtension = ".3";
+  Config::htmlStyleSheet.resize(0);
   Config::includePath.clear();                
   Config::examplePath.clear();
+  Config::imagePath.clear();
   Config::inputSources.clear();               
   Config::excludeSources.clear();
   Config::filePatternList.clear();            
+  Config::examplePatternList.clear();            
+  Config::imagePatternList.clear();            
   Config::excludePatternList.clear();
   Config::tagFileList.clear();                
   Config::extDocPathList.clear();             
   Config::predefined.clear();
   Config::extraPackageList.clear();
   Config::stripFromPath.clear();
+  Config::tabSize=8;
+  Config::colsInAlphaIndex=5;
   Config::quietFlag           = FALSE; 
   Config::recursiveFlag       = FALSE; 
   Config::allExtFlag          = FALSE; 
@@ -421,10 +443,11 @@ void Config::init()
   Config::compactLatexFlag    = FALSE;
   Config::internalDocsFlag    = FALSE;
   Config::caseSensitiveNames  = FALSE;
-  Config::includeSourceFlag   = FALSE;
+  Config::sourceBrowseFlag    = FALSE;
   Config::htmlHelpFlag        = FALSE;
   Config::alphaIndexFlag      = FALSE;
   Config::pdfHyperFlag        = FALSE;
+  Config::alwaysDetailsFlag   = FALSE;
   Config::warningFlag         = TRUE; 
   Config::generateHtml        = TRUE;
   Config::generateLatex       = TRUE;
@@ -571,16 +594,6 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
-    t << "# The INTERNAL_DOCS tag determines if documentation\n";
-    t << "# that is typed after a \\internal command is included. If the tag is set \n";
-    t << "# to NO (the default) then the documentation will be excluded.\n";
-    t << "# Set it to YES to include the internal documentation.\n";
-    t << "\n";
-  }
-  t << "INTERNAL_DOCS        = NO\n";
-  if (!sl)
-  {
-    t << "\n";
     t << "# If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend\n";
     t << "# the brief description of a member or function before the detailed description.\n";
     t << "# Note: if both HIDE_UNDOC_MEMBERS and BRIEF_MEMBER_DESC are set to NO, the \n";
@@ -590,8 +603,17 @@ void writeTemplateConfig(QFile *f,bool sl)
   t << "REPEAT_BRIEF         = YES\n";
   if (!sl)
   {
+    t <<"\n";
+    t << "# If the ALWAYS_DETAILS_SEC and REPEAT_BRIEF tags are both set to YES then\n";
+    t << "# Doxygen will generate a detailed section even if there is only a brief\n";
+    t << "# description.\n"; 
+    t <<"\n";
+  }
+  t << "ALWAYS_DETAILED_SEC  = NO\n";
+  if (!sl)
+  {
     t << "\n";
-    t << "# If the FULL_PATH_NAMES tag is set to YES Doxygen will prepend the full\n";
+    t << "# If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full\n";
     t << "# path before files name in the file list and in the header files. If set\n" ;
     t << "# to NO the shortest path that makes the file name unique will be used.\n";
     t << "\n";
@@ -607,6 +629,16 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "STRIP_FROM_PATH      =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The INTERNAL_DOCS tag determines if documentation\n";
+    t << "# that is typed after a \\internal command is included. If the tag is set \n";
+    t << "# to NO (the default) then the documentation will be excluded.\n";
+    t << "# Set it to YES to include the internal documentation.\n";
+    t << "\n";
+  }
+  t << "INTERNAL_DOCS        = NO\n";
   if (!sl)
   {
     t << "\n";
@@ -675,6 +707,14 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# the TAB_SIZE tag can be used to set the number of spaces in a tab\n";
+    t << "# Doxygen uses this value to replace tabs by spaces in code fragments.\n";
+    t << "\n";
+  }
+  t << "TAB_SIZE             = 8\n";
+  if (!sl)
+  {
+    t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the input files\n";
@@ -738,6 +778,36 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# If the value of the EXAMPLE_PATH tag contains directories, you can use the\n";
+    t << "# EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp \n";
+    t << "# and *.h) to filter out the source-files in the directories. If left \n";
+    t << "# blank all files are included.\n";
+    t << "\n";
+  }
+  t << "EXAMPLE_PATTERNS     =\n";
+
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The IMAGE_PATH tag can be used to specify one or more files or \n";
+    t << "# directories that contain image that are included in the documentation (see \n";
+    t << "# the \\image command).\n";
+    t << "\n";
+  }
+  t << "IMAGE_PATH           =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the value of the IMAGE_PATH tag contains directories, you can use the\n";
+    t << "# IMAGE_PATTERNS tag to specify one or more wildcard pattern (like *.gif \n";
+    t << "# and *.eps) to filter out the image files in the directories. If left \n";
+    t << "# blank all files are included.\n";
+    t << "\n";
+  }
+  t << "IMAGE_PATTERNS       =\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# The INPUT_FILTER tag can be used to specify a program that doxygen should\n";
     t << "# invoke to filter for each input file. Doxygen will invoke the filter program \n";
     t << "# by executing (via popen()) the command <filter> <input-file>, where <filter>\n";
@@ -792,6 +862,16 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# The HTML_STYLESHEET tag can be used to specify a user defined cascading\n";
+    t << "# style sheet that is used by each HTML page. It can be used to \n";
+    t << "# fine-tune the look of the HTML output. If the tag is left blank doxygen\n"; 
+    t << "# will generate a default style sheet\n";
+    t << "\n";
+  }
+  t << "HTML_STYLESHEET      =\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes,\n";
     t << "# files or namespaces will be aligned in HTML using tables. If set to\n";
     t << "# NO a bullet list will be used.\n";
@@ -817,6 +897,15 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "ALPHABETICAL_INDEX   = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then\n";
+    t << "# the COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns\n";
+    t << "# in which this list will be split (can be a number in the range [1..20])\n";
+    t << "\n";
+  }
+  t << "COLS_IN_ALPHA_INDEX  = 5\n";
   if (!sl)
   {
     t << "\n";
@@ -1097,6 +1186,39 @@ void checkConfig()
   //{
   //  projectName[0]=toupper(projectName[0]);
   //}
+
+  if (tabSizeString.isEmpty())
+  {
+    Config::tabSize=8;
+  }
+  else
+  {
+    bool ok;
+    int ts = tabSizeString.toInt(&ok);
+    if (!ok || ts<1 || ts>16)
+    {
+      warn("Warning: argument of TAB_SIZE is not a valid number, using tab size of 8 spaces!\n");
+      ts=8;
+    }
+    Config::tabSize = ts;
+  }
+  
+  if (colsInAlphaIndexString.isEmpty())
+  {
+    Config::colsInAlphaIndex=5;
+  }
+  else
+  {
+    bool ok;
+    int cols = colsInAlphaIndexString.toInt(&ok);
+    if (!ok || cols<1 || cols>20)
+    {
+      warn("Warning: argument of COLS_IN_ALPHA_INDEX is not a valid number in the range [1..20]!\n"
+	   "Using the default of 5 columns!\n");
+      cols = 5;
+    }
+    Config::colsInAlphaIndex=cols;
+  }
   
   // set default man page extension if non is given by the user
   if (Config::manExtension.isEmpty())
@@ -1269,10 +1391,23 @@ void checkConfig()
       s=Config::inputSources.next();
     }
   }
+
   // add default pattern if needed
   if (Config::filePatternList.count()==0)
   {
     Config::filePatternList.append("*");
+  }
+
+  // add default pattern if needed
+  if (Config::examplePatternList.count()==0)
+  {
+    Config::examplePatternList.append("*");
+  }
+
+  // add default pattern if needed
+  if (Config::imagePatternList.count()==0)
+  {
+    Config::imagePatternList.append("*");
   }
   
   // more checks needed if and only if the search engine is enabled.

@@ -17,18 +17,13 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
-//#include <qtstream.h>
 #include "qtbc.h"
-#include <qfileinf.h>
 #include <qlist.h>
 #include <qdict.h>
 #include <qstrlist.h>
 
-#include "membername.h"
-#include "memberlist.h"
-#include "memberdef.h"
-#include "example.h"
 #include "entry.h"
+#include "memberlist.h"
 #include "definition.h"
 
 typedef QDict<MemberDef> MemberDict;
@@ -40,6 +35,9 @@ class MemberInfoList;
 class MemberInfoDict;
 class NamespaceDef;
 class MemberDef;
+class ExampleList;
+class MemberNameInfoList;
+class MemberNameInfoDict;
 
 class ClassDef : public Definition
 {
@@ -50,13 +48,10 @@ class ClassDef : public Definition
                         Union=Entry::UNION_SEC,
                         Interface=Entry::INTERFACE_SEC
                       };
-    
     ClassDef(const char *name,CompoundType ct,const char *ref=0,const char *fName=0);
    ~ClassDef();
-    //QCString classFile() const { return fileName; }
     QCString getOutputFileBase() const { return fileName; }
     CompoundType compoundType() const { return compType; } 
-    //const char *memberListFileName() const { return memListFileName; }
     void insertBaseClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *baseClasses() { return inherits; }
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
@@ -66,8 +61,6 @@ class ClassDef : public Definition
     void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
-    //bool isReference() { return !reference.isNull(); }
-    //const char *getReference() const { return reference; }
     void insertMember(const MemberDef *);
     void insertUsedFile(const char *);
     void computeAnchors();
@@ -83,14 +76,7 @@ class ClassDef : public Definition
     //void writeExample(OutputList &ol);
     void setProtection(Protection p) { prot=p; }
     Protection protection() const { return prot; }
-    /*! a link to this class is possible within this project */
-    bool isLinkableInProject() 
-    { //int i = name().findRev("::");
-      //if (i==-1) i=0; else i+=2;
-      return !name().isEmpty() && name().find('@')==-1 && 
-             (prot!=Private || Config::extractPrivateFlag) &&
-             hasDocumentation() && !isReference();
-    }
+    bool isLinkableInProject();
     /*! a link to this class is possible (either within this project,
      *  or as a cross-reference to another project
      */
@@ -100,16 +86,7 @@ class ClassDef : public Definition
     }
     bool hasNonReferenceSuperClass();
     /*! the class is visible in a class diagram, or class hierarchy */
-    bool isVisibleInHierarchy() 
-    { return // show all classes or a superclass is visible
-             (Config::allExtFlag || hasNonReferenceSuperClass()) &&
-             // and not an annonymous compound
-             name().find('@')==-1 &&
-             // and not privately inherited
-             (prot!=Private || Config::extractPrivateFlag) &&
-             // documented or show anyway or documentation is external 
-             (hasDocumentation() || !Config::hideClassFlag || isReference());
-    }
+    bool isVisibleInHierarchy();
     
     // template argument functions
     ArgumentList *templateArguments() const { return tempArgs; }
@@ -117,16 +94,15 @@ class ClassDef : public Definition
     //QCString getTemplateNameString();
     void setNamespace(NamespaceDef *nd) { nspace = nd; }
     NamespaceDef *getNamespace() { return nspace; }
+    void setFileDef(FileDef *fd) { fileDef=fd; }
+    FileDef *getFileDef() const { return fileDef; }
     
     bool visited;
    
   private: 
-    //QCString name;                       // name of the class
     QCString fileName;                   // HTML containing the class docs
-    //QCString doc;                        // general class documentation
     FileDef *incFile;                   // header file to refer to
     QCString incName;                    // alternative include file name
-    //QCString brief;                      // brief class discription
     QCString memListFileName;            
     BaseClassList *inherits;
     BaseClassList *inheritedBy;
@@ -147,11 +123,11 @@ class ClassDef : public Definition
     MemberNameInfoDict *allMemberNameInfoDict;
     ArgumentList     *tempArgs;
     QStrList          files;
-    //QCString           reference;
     ExampleList      *exampleList;
     ExampleDict      *exampleDict;
     CompoundType      compType;
     Protection        prot;
+    FileDef          *fileDef;
 };
 
 

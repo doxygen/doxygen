@@ -202,17 +202,22 @@ void ManGenerator::docify(const char *str)
 
 void ManGenerator::codify(const char *str)
 {
-  static char spaces[]="        ";
+  //static char spaces[]="        ";
   if (str)
   {
     const char *p=str;
     char c;
+    int spacesToNextTabStop;
     while (*p)
     {
       c=*p++;
       switch(c)
       {
-        case '\t':  t << &spaces[col&7]; col+=8-(col&7); break;
+        case '\t':  spacesToNextTabStop =
+                          Config::tabSize - (col%Config::tabSize);
+                    t << spaces.left(spacesToNextTabStop); 
+                    col+=spacesToNextTabStop; 
+                    break;
         case '\n':  t << "\n.br\n"; firstCol=TRUE; col=0; break;
         case '\\':  t << "\\\\"; col++; break;
         default:    t << c; firstCol=FALSE; col++; break;

@@ -23,6 +23,7 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "language.h"
+#include "scanner.h"
 
 static QCString idToName(int id)
 {

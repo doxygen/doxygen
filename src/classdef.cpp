@@ -29,6 +29,8 @@
 #include "diagram.h"
 #include "language.h"
 #include "htmlhelp.h"
+#include "example.h"
+#include "outputlist.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -73,6 +75,7 @@ ClassDef::ClassDef(const char *nm,CompoundType ct,const char *ref,const char *fN
   tempArgs=0;
   prot=Public;
   nspace=0;
+  fileDef=0;
 }
 
 // destroy the class definition
@@ -262,18 +265,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (incName.isNull()) nm=incFile->name();
     ol.startTypewriter();
     ol.docify("#include <");
-    ol.disable(OutputGenerator::Man);
-    if (Config::verbatimHeaderFlag)
-    {
-      ol.writeObjectLink(0,fileName+"-include",0,nm);
-    }
-    else
-    {
-      ol.docify(nm);
-    }
-    ol.enable(OutputGenerator::Man);
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Html);
     ol.docify(nm);
+    ol.enableAll();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.writeObjectLink(0,fileName+"-include",0,nm);
     ol.enableAll();
     ol.docify(">");
     ol.endTypewriter();
@@ -420,7 +416,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
     
   // write detailed description
   bool exampleFlag=hasExamples();
-  if (!briefDescription().isEmpty() || !documentation().isEmpty() || exampleFlag)
+  if (!briefDescription().isEmpty() || 
+      !documentation().isEmpty() || 
+      (bodyLine!=-1 && bodyDef) ||
+      exampleFlag)
   {
     ol.writeRuler();
     bool latexOn = ol.isEnabled(OutputGenerator::Latex);
@@ -495,6 +494,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       //ol.endDescItem();
       ol.endDescList();
     }
+    writeSourceRef(ol);
   }
   
   pubMembers.countDocMembers();
@@ -841,7 +841,7 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   parseText(ol,n);
   endTitle(ol,0,0);
   parseText(ol,theTranslator->trVerbatimText(incFile->name()));
-  ol.writeRuler();
+  //ol.writeRuler();
   ol.startCodeFragment();
   parseCode(ol,n,fileToString(incFile->absFilePath()),FALSE,0);
   ol.endCodeFragment();
@@ -1033,4 +1033,24 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md)
   }
   friends.writePlainDeclarations(ol,this,0,0);
   related.writePlainDeclarations(ol,this,0,0); 
+}
+
+/*! a link to this class is possible within this project */
+bool ClassDef::isLinkableInProject() 
+{ 
+  return !name().isEmpty() && name().find('@')==-1 && 
+    (prot!=Private || Config::extractPrivateFlag) &&
+    hasDocumentation() && !isReference();
+}
+
+/*! the class is visible in a class diagram, or class hierarchy */
+bool ClassDef::isVisibleInHierarchy() 
+{ return // show all classes or a superclass is visible
+  (Config::allExtFlag || hasNonReferenceSuperClass()) &&
+    // and not an annonymous compound
+    name().find('@')==-1 &&
+    // and not privately inherited
+    (prot!=Private || Config::extractPrivateFlag) &&
+    // documented or show anyway or documentation is external 
+    (hasDocumentation() || !Config::hideClassFlag || isReference());
 }

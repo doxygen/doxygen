@@ -16,12 +16,17 @@
 
 #include "qtbc.h"
 #include <ctype.h>
+#include "config.h"
 #include "definition.h"
 #include "doxygen.h"
+#include "language.h"
+#include "message.h"
+#include "outputlist.h"
+#include "scanner.h"
 
 Definition::Definition(const char *name,const char *b,const char *d)
 {
-  n=name; brief=b; doc=d; sectionList=0;
+  n=name; brief=b; doc=d; sectionList=0, bodyLine=-1, bodyDef=0;
 }
 
 Definition::~Definition()
@@ -87,3 +92,103 @@ void Definition::setBriefDescription(const char *b)
     }
   }
 }
+
+/*! Write a reference to the source code defining this definition */
+void Definition::writeSourceRef(OutputList &ol)
+{
+  //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
+  if (Config::sourceBrowseFlag && bodyLine!=-1 && bodyDef)
+  {
+    ol.newParagraph();
+
+    QCString refText = theTranslator->trDefinedAtLineInSourceFile();
+    int lineMarkerPos = refText.find("@0");
+    int fileMarkerPos = refText.find("@1");
+    if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
+    {
+      QString lineStr,anchorStr;
+      lineStr.sprintf("%d",bodyLine);
+      anchorStr.sprintf("l%05d",bodyLine);
+      if (lineMarkerPos<fileMarkerPos) // line marker before file marker
+      {
+        // write text left from linePos marker
+        parseText(ol,refText.left(lineMarkerPos)); 
+        ol.disableAllBut(OutputGenerator::Html); 
+        // write line link (HTML only)
+        ol.writeObjectLink(0,bodyDef->sourceName(),
+            anchorStr,lineStr);
+        ol.enableAll();
+        ol.disable(OutputGenerator::Html);
+        // write normal text (Latex/Man only)
+        ol.docify(lineStr);
+        ol.enableAll();
+        
+        // write text between markers
+        parseText(ol,refText.mid(lineMarkerPos+2,
+              fileMarkerPos-lineMarkerPos-2));
+
+        ol.disableAllBut(OutputGenerator::Html); 
+        // write file link (HTML only)
+        ol.writeObjectLink(0,bodyDef->sourceName(),
+            0,bodyDef->name());
+        ol.enableAll();
+        ol.disable(OutputGenerator::Html);
+        // write normal text (Latex/Man only)
+        ol.docify(bodyDef->name());
+        ol.enableAll();
+        
+        // write text right from file marker
+        parseText(ol,refText.right(
+              refText.length()-fileMarkerPos-2)); 
+      }
+      else // file marker before line marker
+      {
+        // write text left from file marker
+        parseText(ol,refText.left(fileMarkerPos)); 
+        ol.disableAllBut(OutputGenerator::Html); 
+        // write file link (HTML only)
+        ol.writeObjectLink(0,bodyDef->sourceName(),
+            0,bodyDef->name());
+        ol.enableAll();
+        ol.disable(OutputGenerator::Html);
+        // write normal text (Latex/Man only)
+        ol.docify(bodyDef->name());
+        ol.enableAll();
+        
+        // write text between markers
+        parseText(ol,refText.mid(fileMarkerPos+2,
+              lineMarkerPos-fileMarkerPos-2)); 
+
+        ol.disableAllBut(OutputGenerator::Html); 
+        // write line link (HTML only)
+        ol.writeObjectLink(0,bodyDef->sourceName(),
+            anchorStr,lineStr);
+        ol.enableAll();
+        ol.disable(OutputGenerator::Html);
+        // write normal text (Latex/Man only)
+        ol.docify(lineStr);
+        ol.enableAll();
+
+        // write text right from linePos marker
+        parseText(ol,refText.right(
+              refText.length()-lineMarkerPos-2)); 
+      }
+    }
+    else
+    {
+      err("Error: translation error: invalid markers in trDefinedInSourceFile()\n");
+    }
+  }
+}
+
+bool Definition::hasDocumentation() 
+{ 
+  return !doc.isNull() ||              // has detailed docs
+         !brief.isNull() ||            // has brief description
+         (Config::sourceBrowseFlag && 
+          bodyLine!=-1 && 
+          bodyDef
+         ) ||                          // has a source reference
+         Config::extractAllFlag;       // extract everything
+}
+

@@ -193,8 +193,8 @@ class Translator
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { return "Here are the classes, structs and "
-             "unions with brief descriptions:"; 
+    { return "Here are the classes, structs, "
+             "unions and interfaces with brief descriptions:"; 
     }
 
     /*! This is an introduction to the page with all class members. */
@@ -716,7 +716,23 @@ class Translator
      */
     virtual QCString trPageAbbreviation()
     { return "p."; }
-};
 
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-991003
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSources()
+    {
+      return "Sources";
+    }
+    virtual QCString trDefinedAtLineInSourceFile()
+    {
+      return "Definition at line @0 of file @1.";
+    }
+    virtual QCString trDefinedInSourceFile()
+    {
+      return "Definition in file @0.";
+    }
+};
 
 #endif

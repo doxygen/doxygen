@@ -19,6 +19,7 @@
 
 #include "qtbc.h"
 #include <qregexp.h>
+#include <qfileinfo.h>
 #include "util.h"
 #include "message.h"
 #include "classdef.h"
@@ -30,6 +31,7 @@
 #include "language.h"
 #include "config.h"
 #include "htmlhelp.h"
+#include "example.h"
 
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
@@ -317,6 +319,9 @@ void writeExample(OutputList &ol,ExampleList *el)
 {
   QCString exampleLine=theTranslator->trWriteList(el->count());
  
+  bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
+  bool manEnabled   = ol.isEnabled(OutputGenerator::Html);
+  bool htmlEnabled  = ol.isEnabled(OutputGenerator::Man);
   QRegExp marker("@[0-9]+");
   int index=0,newIndex,matchLen;
   // now replace all markers in inheritLine with links to the classes
@@ -326,7 +331,20 @@ void writeExample(OutputList &ol,ExampleList *el)
     parseText(ol,exampleLine.mid(index,newIndex-index));
     uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
     Example *e=el->at(entryIndex);
-    if (ok && e) ol.writeObjectLink(0,e->file,e->anchor,e->name);
+    if (ok && e) 
+    {
+      if (latexEnabled) ol.disable(OutputGenerator::Latex);
+      // link for Html / man
+      ol.writeObjectLink(0,e->file,e->anchor,e->name);
+      if (latexEnabled) ol.enable(OutputGenerator::Latex);
+      if (manEnabled) ol.disable(OutputGenerator::Man);
+      if (htmlEnabled) ol.disable(OutputGenerator::Html);
+      // link for Latex / pdf with anchor because the sources
+      // are not hyperlinked (not possible with a verbatim environment).
+      ol.writeObjectLink(0,e->file,0,e->name);
+      if (manEnabled) ol.enable(OutputGenerator::Man);
+      if (htmlEnabled) ol.enable(OutputGenerator::Html);
+    }
     index=newIndex+matchLen;
   } 
   parseText(ol,exampleLine.right(exampleLine.length()-index));
@@ -479,7 +497,14 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     ol.startQuickIndexItem(extLink,absPath+"headers.html");
     parseText(ol,theTranslator->trHeaderFiles());
     ol.endQuickIndexItem();
-  } 
+  }
+  if (Config::sourceBrowseFlag) 
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,absPath+"sources.html");
+    parseText(ol,theTranslator->trSources());
+    ol.endQuickIndexItem();
+  }
   if (documentedNamespaceMembers>0)
   {
     if (!compact) ol.writeListItem();
@@ -587,19 +612,30 @@ void setAnchors(char id,MemberList *ml)
 QCString fileToString(const char *name)
 {
   if (name==0 || name[0]==0) return 0;
-  QFileInfo fi(name);
-  if (!fi.exists() || !fi.isFile())
+  QFile f;
+
+  bool fileOpened=FALSE;
+  if (name[0]=='-' && name[1]==0) // read from stdin
   {
-    err("Error: file `%s' not found\n",name);
+    fileOpened=f.open(IO_ReadOnly,stdin);
+  }
+  else // read from file
+  {
+    QFileInfo fi(name);
+    if (!fi.exists() || !fi.isFile())
+    {
+      err("Error: file `%s' not found\n",name);
+      exit(1);
+    }
+    f.setName(name);
+    fileOpened=f.open(IO_ReadOnly);
+  }
+  if (!fileOpened)  
+  {
+    err("Error: cannot open file `%s' for reading\n",name);
     exit(1);
   }
-  QFile f(name);
-  if (!f.open(IO_ReadOnly))
-  {
-    err("Error: cannot open file `%s'\n",name);
-    exit(1);
-  }
-  int fsize=fi.size();
+  int fsize=f.size();
   QCString contents(fsize+1);
   f.readBlock(contents.data(),fsize);
   contents[fsize]='\0';
@@ -741,7 +777,7 @@ static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s)
   for (;(bcd=bcli.current());++bcli)
   {
     ClassDef *cd=bcd->classDef;
-    int spos=s.find(cd->name());
+    int spos=s.find(cd->name()+"::");
     if (spos!=-1)
     {
       return s.left(spos)+s.right(
@@ -836,6 +872,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
       {
         srcAType=trimScope(className,srcAType);
         dstAType=trimScope(className,dstAType);
+        //printf("trimScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
         ClassDef *cd;
         if (!namespaceName.isEmpty())
           cd=getClass(namespaceName+"::"+className);
@@ -846,6 +883,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
           srcAType=trimBaseClassScope(cd->baseClasses(),srcAType); 
           dstAType=trimBaseClassScope(cd->baseClasses(),dstAType); 
         }
+        //printf("trimBaseClassScope: `%s' <=> `%s'\n",srcAType.data(),dstAType.data());
       }
       if (!namespaceName.isEmpty())
       {
@@ -1320,14 +1358,14 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           {
             if (md->isLinkable())
             {
-              //printf("md->name()=`%s'\n",md->name().data());
+              //printf("md->name()=`%s' md->args=`%s'\n",md->name().data(),args);
               fd=md->getFileDef();
               if (fd && fd->isLinkable())
               {
                 //printf("fd->name()=`%s'\n",fd->name().data());
                 bool match=TRUE;
                 ArgumentList *argList=0;
-                if (args)
+                if (args && !md->isDefine())
                 {
                   argList=new ArgumentList;
                   stringToArgumentList(args,argList);
@@ -1524,6 +1562,7 @@ void generateRef(OutputList &ol,const char *scName,
   ClassDef *cd     = 0;
   FileDef *fd      = 0;
   NamespaceDef *nd = 0;
+  GroupDef *gd     = 0;
 
   //printf("Try with scName=`%s' nameStr=`%s' argsStr=`%s'\n",
   //        scopeStr.data(),nameStr.data(),argsStr.data());
@@ -1567,7 +1606,7 @@ void generateRef(OutputList &ol,const char *scName,
     }
 
     // for functions we add the arguments if explicitly specified or else "()"
-    if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot())) 
+    if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
     {
       if (argsStr.isNull())
         ol.writeString("()");
@@ -1587,6 +1626,18 @@ void generateRef(OutputList &ol,const char *scName,
         writePageRef(ol,cName,aName);
       }
     }
+    return;
+  }
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=groupDict[nameStr]))
+  { // group link
+    ol.startTextLink(gd->getOutputFileBase(),0);
+    if (rt) // explict link text
+      ol.docify(rt);
+    else // use group title as the default link text
+    {
+      ol.docify(gd->groupTitle());
+    }
+    ol.endTextLink();
     return;
   }
 
@@ -1615,6 +1666,7 @@ void generateLink(OutputList &ol,const char *clName,
   //printf("generateLink(%s,%s,%s) inSeeBlock=%d\n",clName,lr,lt,inSeeBlock);
   //FileInfo *fi=0;
   FileDef *fd;
+  GroupDef *gd;
   bool ambig;
   if (linkRef.length()==0) // no reference name!
     ol.docify(lt);
@@ -1622,6 +1674,15 @@ void generateLink(OutputList &ol,const char *clName,
     ol.writeObjectLink(0,linkRef,0,lt);  
   else if ((exampleDict[linkRef])) // link to an example
     ol.writeObjectLink(0,linkRef+"-example",0,lt);
+  else if ((gd=groupDict[linkRef])) // link to a group
+  {
+    ol.startTextLink(gd->getOutputFileBase(),0);
+    if (lt)
+      ol.docify(lt);
+    else
+      ol.docify(gd->groupTitle());
+    ol.endTextLink();
+  }
   else if ((fd=findFileDef(&inputNameDict,linkRef,ambig))
        && fd->isLinkable())
         // link to documented input file

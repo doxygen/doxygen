@@ -65,6 +65,7 @@ Entry::Entry(const Entry &e)
   fileName    = e.fileName.copy();
   startLine   = e.startLine;
   mGrpId      = e.mGrpId;
+  bodyLine    = e.bodyLine;
   inLine      = e.inLine;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
@@ -191,7 +192,7 @@ void Entry::reset()
   args.resize(0);
   exception.resize(0);
   program.resize(0);
-  body.resize(0);
+  //body.resize(0);
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
@@ -201,6 +202,7 @@ void Entry::reset()
   fileName.resize(0);
   scopeSpec.resize(0);
   memberSpec.resize(0);
+  bodyLine = -1;
   mGrpId = -1;
   section = EMPTY_SEC;
   sig     = FALSE;
@@ -228,7 +230,7 @@ int Entry::getSize()
   size+=args.length()+1;
   size+=exception.length()+1;
   size+=program.length()+1;
-  size+=body.length()+1;
+  //size+=body.length()+1;
   size+=includeFile.length()+1;
   size+=includeName.length()+1;
   size+=doc.length()+1;

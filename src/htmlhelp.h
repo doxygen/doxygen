@@ -21,7 +21,7 @@
 #define HTMLHELP_H
 
 #include "qtbc.h"
-#include <qtstream.h>
+#include <qtextstream.h>
 
 class QFile;
 class HtmlHelpIndex;

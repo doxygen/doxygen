@@ -17,8 +17,9 @@
 #include "filename.h"
 #include "util.h"
 
-FileName::FileName(const char *n) : QList<FileDef>()
+FileName::FileName(const char *fn,const char *n) : FileList()
 {
+  fName=fn;
   name=n;
 }
 
@@ -124,7 +125,11 @@ int FileNameList::compareItems(GCI item1, GCI item2)
 {
   FileName *f1=(FileName *)item1;
   FileName *f2=(FileName *)item2;
-  return stricmp(f1->fileName(),f2->fileName());
+  //printf("FileNameList::compareItems `%s'<->`%s'\n",
+  //    f1->fileName(),f2->fileName());
+  return Config::fullPathNameFlag ?
+         stricmp(f1->fullName(),f2->fullName()) :
+         stricmp(f1->fileName(),f2->fileName());
 }
 
 FileNameListIterator::FileNameListIterator(const FileNameList &fnlist) :

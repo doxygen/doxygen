@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <qlist.h>
 #include <qarray.h>
-#include <qtstream.h>
+#include <qtextstream.h>
 #include <qfile.h>
 
 #include "diagram.h"
@@ -155,7 +155,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
     t << "href=\"" << cd->getOutputFileBase() << ".html\" ";
     t << "ALT=\"" << cd->name(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
-    t << x+w << "," << y+h << "\">" << endl;
+    t << (x+w) << "," << (y+h) << "\">" << endl;
   }
 }
 //-----------------------------------------------------------------------------
@@ -620,13 +620,13 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
             t << protToString(di->protection()) << endl;
             if (doBase)
             {
-              t << "1 " << di->xPos()/(float)gridWidth << " " 
-                << di->yPos()/(float)gridHeight+superRows-1 << " in\n";
+              t << "1 " << (di->xPos()/(float)gridWidth) << " " 
+                << (di->yPos()/(float)gridHeight+superRows-1) << " in\n";
             }
             else
             {
-              t << "0 " << di->xPos()/(float)gridWidth << " " 
-                << (float)superRows-0.25-di->yPos()/(float)gridHeight 
+              t << "0 " << (di->xPos()/(float)gridWidth) << " " 
+                << ((float)superRows-0.25-di->yPos()/(float)gridHeight)
                 << " in\n";
             }
           }
@@ -740,7 +740,7 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
             }
             else
             {
-              t << xf << " " << ysf + 0.25 << " " << yf << " vedge\n";
+              t << xf << " " << (ysf + 0.25) << " " << yf << " vedge\n";
             }
           }
         }
@@ -787,12 +787,12 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
             if (doBase)
             {
               t << "1 " << di->xPos()/(float)gridWidth << " " 
-                << di->yPos()/(float)gridHeight+superRows-1 << " in\n";
+                << (di->yPos()/(float)gridHeight+superRows-1) << " in\n";
             }
             else
             {
               t << "0 " << di->xPos()/(float)gridWidth << " " 
-                << (float)superRows-0.25-di->yPos()/(float)gridHeight 
+                << ((float)superRows-0.25-di->yPos()/(float)gridHeight)
                 << " in\n";
             }
           }
@@ -827,12 +827,12 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
             if (doBase)
             {
               t << "0 " << di->xPos()/(float)gridWidth  << " " 
-                << di->yPos()/(float)gridHeight+superRows-1 << " out\n";
+                << (di->yPos()/(float)gridHeight+superRows-1) << " out\n";
             }
             else
             {
               t << "1 " << di->xPos()/(float)gridWidth  << " " 
-                << (float)superRows-1.75-di->yPos()/(float)gridHeight 
+                << ((float)superRows-1.75-di->yPos()/(float)gridHeight)
                 << " out\n";
             }
           }
@@ -863,14 +863,14 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
               {
                 t << first->xPos()/(float)gridWidth << " " 
                   << last->xPos()/(float)gridWidth << " "
-                  << first->yPos()/(float)gridHeight+superRows-1 
+                  << (first->yPos()/(float)gridHeight+superRows-1) 
                   << " conn\n";
               }
               else
               {
                 t << first->xPos()/(float)gridWidth << " " 
                   << last->xPos()/(float)gridWidth << " "
-                  << (float)superRows-first->yPos()/(float)gridHeight 
+                  << ((float)superRows-first->yPos()/(float)gridHeight)
                   << " conn\n";
               }
             }

@@ -73,8 +73,8 @@ class LatexGenerator : public OutputGenerator
                          const char *anchor,const char *text);
     void writeCodeLink(const char *ref, const char *file,
                        const char *anchor,const char *text);
-    void startTextLink(const char *,const char *) {}
-    void endTextLink() {}
+    void startTextLink(const char *,const char *);
+    void endTextLink();
     void writeHtmlLink(const char *,const char *);
     void startTypewriter() { t << "{\\tt "; }
     void endTypewriter()   { t << "}";      }
@@ -100,6 +100,8 @@ class LatexGenerator : public OutputGenerator
     void writeAnchor(const char *name) { t << "\\label{" << name << "}" << endl; }
     void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
+    void startCodeLine() { col=0; }
+    void endCodeLine() { t << endl; }
     void writeBoldString(const char *text) 
                          { t << "{\\bf "; docify(text); t << "}"; }
     void startEmphasis() { t << "{\\em ";  }
@@ -115,6 +117,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberDoc() { t << "}"; }
     void startDoxyAnchor(const char *,const char *,const char *,const char *);
     void endDoxyAnchor();
+    void startCodeAnchor(const char *) {}
+    void endCodeAnchor() {}
     void writeChar(char c);
     void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
     //void writeLatexLabel(const char *scope,const char *anchor);
@@ -183,6 +187,17 @@ class LatexGenerator : public OutputGenerator
     void writeNonBreakableSpace();
     void writeImage(const char *,const char *,const char *);
     
+    void startDescTable()
+    { t << "\\begin{description}" << endl; }
+    void endDescTable()
+    { t << "\\end{description}" << endl; }
+    void startDescTableTitle()
+    { t << "\\item[" << endl; }
+    void endDescTableTitle()
+    { t << "]"; }
+    void startDescTableData() {}
+    void endDescTableData() {}
+
     //static void docifyStatic(QTextStream &t,const char *str);
     
   private:

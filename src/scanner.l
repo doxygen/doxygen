@@ -39,6 +39,7 @@
 #include "index.h"
 #include "defargs.h"
 #include "language.h"
+#include "outputlist.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -544,6 +545,11 @@ static bool inBlock()
 
 static void endBlock()
 {
+    if (inParamBlock || inRetValBlock) 
+    {
+      outDoc->endDescTableData();
+      outDoc->endDescTable();
+    }
     outDoc->endDescList();
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
     inVersionBlock=inDateBlock=inBugBlock=inWarningBlock=
@@ -610,10 +616,107 @@ static void checkDocs()
   }
 }
 
+static bool curLatexState;
+static bool curManState;
+static bool curHtmlState;
+
+static void storeOutputListState()
+{
+  curLatexState = outDoc->isEnabled(OutputGenerator::Latex);
+  curHtmlState  = outDoc->isEnabled(OutputGenerator::Html);
+  curManState   = outDoc->isEnabled(OutputGenerator::Man);
+}
+
+static void restoreOutputListState()
+{
+  if (curLatexState) 
+    outDoc->enable(OutputGenerator::Latex);
+  else
+    outDoc->disable(OutputGenerator::Latex);
+  if (curHtmlState) 
+    outDoc->enable(OutputGenerator::Html);
+  else
+    outDoc->disable(OutputGenerator::Html);
+  if (curManState)   
+    outDoc->enable(OutputGenerator::Man);
+  else
+    outDoc->disable(OutputGenerator::Man);
+}
+
+enum ImageTypes
+{
+  IT_Html,
+  IT_Latex
+};
+
+// search for an image in the imageNameDict and if found
+// copies the image to the output directory (which is the
+// html directory if type==0 or the latex directory if type==1)
+static QCString findAndCopyImage(const char *fileName,ImageTypes type)
+{
+  QCString result;
+  bool ambig;
+  FileDef *fd;
+  if ((fd=findFileDef(&imageNameDict,fileName,ambig)))
+  {
+    QFile inImage(fd->absFilePath());
+    if (inImage.open(IO_ReadOnly))
+    {
+      result = fileName;
+      int i;
+      if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
+      {
+	result.right(result.length()-i-1);
+      }
+      QCString outputDir;
+      switch(type)
+      {
+	case IT_Html: 
+	  outputDir = Config::htmlOutputDir;
+	  break;
+	case IT_Latex: 
+	  outputDir = Config::latexOutputDir;
+	  break;
+      }
+      QCString outputFile = outputDir+"/"+result;
+      QFile outImage(outputFile);
+      if (outImage.open(IO_WriteOnly)) // copy the image
+      {
+	char *buffer = new char[inImage.size()];
+	inImage.readBlock(buffer,inImage.size());
+	outImage.writeBlock(buffer,inImage.size());
+	outImage.flush();
+	delete buffer;
+      }
+      else
+      {
+	warn("Warning: could not write output image %s\n",outputFile.data());
+      }
+    }
+    else
+    {
+      warn("Warning: could not open image %s\n",fileName);
+    }
+  }
+  else if (ambig)
+  {
+    warn("Warning: image file name %s is ambigious.\n",fileName);
+    warn("Possible candidates:\n");
+    //includeFileList.writeMatches(fileName);
+    showFileDefMatches(&imageNameDict,fileName);
+  }
+  else
+  {
+    warn("Warning: image file %s is not found. ",fileName);
+    warn("Check your IMAGE_PATH\n");
+  }
+  return result;
+}
+
 /* ----------------------------------------------------------------- */
 
-static void addToBody(const char *text);
-static void addToBodyCond(const char *text);
+//static void addToBody(const char *text);
+//static void addToBodyCond(const char *text);
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -709,6 +812,7 @@ VAR	  [vV][aA][rR]
 %x	Array
 %x	Curly
 %x	Using
+%x	UsingDirective
 %x	NameSpaceDocArg1
 %x	SkipCurly
 %x	SkipCurlyCpp
@@ -834,7 +938,7 @@ VAR	  [vV][aA][rR]
 					    warn("Warning: Missing \\endmgroup in file %s\n",yyFileName);
 					    memberGroupId=-1;
 					  }
-  					  yyLineNr= 1 ; 
+  					  yyLineNr= 0 ; // there is always an extra newline at the start of the file
 					  int i; 
 					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
 					    yyFileName[i] = yytext[i+1] ;
@@ -962,7 +1066,9 @@ VAR	  [vV][aA][rR]
 					}
 <DocLinkText>.				{ linkText += *yytext; }
 <DocLinkText>"\n"			{ linkText += " "; }
-<DocLink,DocLinkText>("\\"|"@")"endlink"/[^a-z_A-Z0-9] { // <- needed for things like \endlink. 
+<DocLink,DocLinkText>("\\"|"@")"endlink" { // <- needed for things like \endlink. 
+  					  //printf("GenerateLink className=`%s' linkRef=`%s' linkText=`%s'\n",
+					  //        className.data(),linkRef.data(),linkText.data());
 					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText);
   					  BEGIN( DocScan ); 
 					}
@@ -1162,6 +1268,12 @@ VAR	  [vV][aA][rR]
 					    scanString(theTranslator->trParameters()+": ");
 					    outDoc->endBold();
   					    outDoc->endDescTitle();
+  					    outDoc->writeDescItem();
+					    outDoc->startDescTable();
+					  }
+					  else
+					  {
+					    outDoc->endDescTableData();
 					  }
   				          BEGIN(DocParam); 
   					}
@@ -1176,6 +1288,12 @@ VAR	  [vV][aA][rR]
 					    scanString(theTranslator->trReturnValues()+": ");
 					    outDoc->endBold();
   					    outDoc->endDescTitle();
+  					    outDoc->writeDescItem();
+					    outDoc->startDescTable();
+					  }
+					  else
+					  {
+					    outDoc->endDescTableData();
 					  }
   				          BEGIN(DocParam); 
   					}
@@ -1195,12 +1313,13 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocException);
   					}
 <DocScan>"\\capt".*
-<DocParam>[a-z_A-Z0-9:]+		{
-  					  outDoc->writeDescItem();
+<DocParam>([a-z_A-Z0-9:]+)|("\"".*"\"")	{
+					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
 					  outDoc->endEmphasis();
-					  outDoc->docify(" - ");
+					  outDoc->endDescTableTitle();
+					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
 <DocException>{SCOPENAME}		{
@@ -1320,32 +1439,43 @@ VAR	  [vV][aA][rR]
 <DocImage>[lL][aA][tT][eE][xX]		{
   					  BEGIN(DocLatexImageName);
   					}
-<DocHtmlImageName>{FILE}|{URLMASK}      {
-  				          outDoc->disableAllBut(OutputGenerator::Html);
-					  outDoc->writeImage(yytext,0,0);
-					  outDoc->enableAll();
+<DocHtmlImageName>{FILE}                {
+  					  curImageName = findAndCopyImage(yytext,IT_Html);
+					  if (!curImageName.isEmpty())
+					  {
+					    storeOutputListState();
+  				            outDoc->disableAllBut(OutputGenerator::Html);
+					    outDoc->writeImage(curImageName,0,0);
+					    restoreOutputListState();
+					  }
 					  BEGIN(DocScan);
   					}
 <DocLatexImageName>{FILE}		{
-  					  curImageName = yytext;
-					  BEGIN(DocLatexImageWidth);
+  					  curImageName = findAndCopyImage(yytext,IT_Latex);
+					  if (curImageName.isEmpty())
+					    BEGIN(DocScan);
+					  else
+					    BEGIN(DocLatexImageWidth);
   					}
 <DocLatexImageWidth>\n			{ // no width specified
-  				          outDoc->disableAllBut(OutputGenerator::Html);
+					  storeOutputListState();
+  				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,0,0);
-					  outDoc->enableAll();
+					  restoreOutputListState();
 					  BEGIN(DocScan);
   					}
 <DocLatexImageWidth>"width"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
+					  storeOutputListState();
   				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,yytext,0);
-					  outDoc->enableAll();
+					  restoreOutputListState();
 					  BEGIN(DocScan);
   					}
 <DocLatexImageWidth>"height"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
+					  storeOutputListState();
   				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,0,yytext);
-					  outDoc->enableAll();
+					  restoreOutputListState();
 					  BEGIN(DocScan);
   					}
 <DocImage>[a-z_A-Z0-9\.\-]+		{
@@ -1353,11 +1483,10 @@ VAR	  [vV][aA][rR]
   					}
 <DocImage,DocHtmlImageName,DocLatexImageName>\n {
   					  warn("Warning: invalid \\image command found!\n");
-					  yyLineNr++;
 					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
-<DocScan>("\\"|"@")"code"/{BN}+	        { 
+<DocScan>("\\"|"@")"code"({BN}*"\n"|{B}*) { 
 					  outDoc->startCodeFragment();
   					  codeBlock.resize(0);
 					  BEGIN( DocCodeBlock ); 
@@ -1494,9 +1623,11 @@ VAR	  [vV][aA][rR]
 <DocScan>"</"{DFN}{ATTR}">"		{ outDoc->endTypewriter(); }
 <DocScan>"<"{VAR}{ATTR}">"		{ outDoc->startEmphasis(); }
 <DocScan>"</"{VAR}{ATTR}">"		{ outDoc->endEmphasis(); }
-<DocScan>"<"{IMG}{ATTR}">"		{ outDoc->disableAllBut(OutputGenerator::Html);
+<DocScan>"<"{IMG}{ATTR}">"		{ 
+                                          storeOutputListState();
+                                          outDoc->disableAllBut(OutputGenerator::Html);
 					  outDoc->writeString(yytext); 
-					  outDoc->enableAll();
+                                          restoreOutputListState();
 					}
 <DocScan>"<"{PRE}{ATTR}">"			{ 
   					  outDoc->startCodeFragment();
@@ -1789,6 +1920,7 @@ VAR	  [vV][aA][rR]
 					  current->type = "namespace" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount();
   					  BEGIN( ClassName ); 
 					}
@@ -1798,6 +1930,7 @@ VAR	  [vV][aA][rR]
 					  current->type = "module" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount();
   					  BEGIN( ClassName ); 
 					}
@@ -1808,6 +1941,7 @@ VAR	  [vV][aA][rR]
 					  current->type += " interface" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount();
 					  BEGIN( ClassName );
   					}
@@ -1818,6 +1952,7 @@ VAR	  [vV][aA][rR]
 					  current->type += " class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  BEGIN( ClassName ) ;
 					}
@@ -1828,6 +1963,7 @@ VAR	  [vV][aA][rR]
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  BEGIN( ClassName ) ;
 					}
@@ -1838,6 +1974,7 @@ VAR	  [vV][aA][rR]
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  BEGIN( ClassName ) ;
 					}
@@ -1848,6 +1985,7 @@ VAR	  [vV][aA][rR]
 					  current->type += " enum" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  BEGIN( ClassName ) ;
 					}
@@ -1904,9 +2042,26 @@ VAR	  [vV][aA][rR]
 					  //printf("Start template list\n");
 					  BEGIN( ReadTempArgs );
   					}
-  /* for now the using statement is completely ignored */
-<FindMembers>"using"{BN}+		{ lineCount(); BEGIN(Using); }
+<FindMembers>"using"{BN}+		{ 
+					  current->startLine=yyLineNr; 
+                                          lineCount(); 
+                                          BEGIN(Using); 
+                                        }
+<Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
 <Using>";"				{ BEGIN(FindMembers); }
+<UsingDirective>{SCOPENAME}		{ current->name=yytext;
+                                          current->fileName = yyFileName; 
+  					  current->section=Entry::USINGDIR_SEC;
+					  printf("Found using directive %s\n",yytext);
+					  current_root->addSubEntry(current);
+					  current             = new Entry ;
+					  current->protection = protection ;
+				          current->sig        = sig;
+					  current->virt       = virt;
+					  current->stat       = gstat;
+					  current->slot       = slot;
+					  BEGIN(Using);
+  					}
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
 					  QCString n=yytext;
 					  addType( current );
@@ -2001,7 +2156,7 @@ VAR	  [vV][aA][rR]
 					    current->name += yytext;
 					  }
 				          QCString tmp=yytext;
-					  if (tmp.right(8)=="operator") 
+					  if (nameIsOperator(tmp)) 
 					    BEGIN( Operator );
 					  else
 					    BEGIN(FindMembers);
@@ -2010,6 +2165,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( SkipCPP ) ; 
 					}
 <FindMembers>{B}*"#"{B}*"define"	{
+  					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
 <SkipCPP>.
@@ -2018,6 +2174,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN( lastCPPContext) ;
 					}
 <Define>{ID}/"("			{
+  					  current->bodyLine = yyLineNr;
   					  current->name = yytext;
 					  BEGIN( DefineArg );
   					}
@@ -2031,11 +2188,13 @@ VAR	  [vV][aA][rR]
   					}
 <Define>{ID}				{
   					  //printf("Define `%s' without args\n",yytext);
+  					  current->bodyLine = yyLineNr;
   					  current->name = yytext;
 					  BEGIN(DefineEnd);
   					}
 <DefineEnd>\n				{
   					  //printf("End define\n");
+					  yyLineNr++;
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
 					  current->type.resize(0);
@@ -2051,12 +2210,20 @@ VAR	  [vV][aA][rR]
 					  current->slot       = slot;
 					  BEGIN(FindMembers);
   					}
-<DefineEnd>\\\n
+<DefineEnd>\\\n				{
+  					  yyLineNr++;
+  					}
+<DefineEnd>\"				{
+					  lastStringContext=DefineEnd;
+					  BEGIN(SkipString);
+  					}
 <DefineEnd>.				
 					
 <FindMembers>[*&]+			{ current->name += yytext ; }
 <FindMembers,MemberSpec,Function,NextSemi>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
+					  if (current->bodyLine==-1)
+					    current->bodyLine=yyLineNr;
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ';';
 					  if (yytext[yyleng-3]=='/')
@@ -2119,6 +2286,7 @@ VAR	  [vV][aA][rR]
 					  }
   					}
 <FindMembers>"="			{
+  					  current->bodyLine=yyLineNr;
   					  BEGIN(NextSemi);
   					}
 <FindMembers>[:;,]			{ 
@@ -2126,21 +2294,23 @@ VAR	  [vV][aA][rR]
 					  QCString oldDocs = current->doc.copy();
   					  if ( *yytext != ':')
 					  {
-  					  current->type=current->type.simplifyWhiteSpace();
-  					  current->args=current->args.simplifyWhiteSpace();
-  					  current->name=current->name.stripWhiteSpace();
-  					  current->section = Entry::VARIABLE_SEC ;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  current_root->addSubEntry( current ) ;
-					  current = new Entry ;
-					  // variable found 
-					  current->section = Entry::EMPTY_SEC ;
-  					  current->protection = protection;
-					  current->slot = slot = FALSE;
-					  current->sig = sig = FALSE;
-					  current->virt = Normal; 
-					  current->stat = gstat;
+					    if (current->bodyLine==-1)
+					      current->bodyLine = yyLineNr;
+					    current->type=current->type.simplifyWhiteSpace();
+					    current->args=current->args.simplifyWhiteSpace();
+					    current->name=current->name.stripWhiteSpace();
+					    current->section = Entry::VARIABLE_SEC ;
+					    current->fileName = yyFileName;
+					    current->startLine = yyLineNr;
+					    current_root->addSubEntry( current ) ;
+					    current = new Entry ;
+					    // variable found 
+					    current->section = Entry::EMPTY_SEC ;
+					    current->protection = protection;
+					    current->slot = slot = FALSE;
+					    current->sig = sig = FALSE;
+					    current->virt = Normal; 
+					    current->stat = gstat;
 					  }
 					  // skip expression or bitfield if needed
 					  if ( *yytext == ':') 
@@ -2405,6 +2575,7 @@ VAR	  [vV][aA][rR]
 <Curly>.				{ current->program += yytext ; }
 
 <FindMembers>"("({ID}{BN}*"::"{BN}*)*("*"{BN}*)+ {
+  					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
 					  funcPtrType=yytext;
@@ -2479,6 +2650,7 @@ VAR	  [vV][aA][rR]
   					  current->type += *yytext;
   					}
 <FindMembers>"("			{ current->args = yytext;
+  					  current->bodyLine = yyLineNr;
 					  currentArgumentContext = FuncQual;
 					  copyArgString=&current->args;
 					  BEGIN( ReadFuncArgType ) ;
@@ -2701,8 +2873,8 @@ VAR	  [vV][aA][rR]
 					      current->proto = TRUE;
 					    }
 					  }
-					  //printf("Adding entry `%s' inLine`%d'\n",
-					  //    current->name.data(),current->inLine);
+					  //printf("Adding entry `%s' inLine`%d' bodyLine=`%d'\n",
+					  //    current->name.data(),current->inLine,current->bodyLine);
 					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
@@ -2717,29 +2889,33 @@ VAR	  [vV][aA][rR]
 					  {
 					    if (current_root->section & Entry::COMPOUND_MASK)
 					      previous->inLine = TRUE;
-					    addToBody(yytext);
+					    //addToBody(yytext);
 					    BEGIN( SkipCurly ) ;
 					  }
 					  else if( *yytext == ':' )
 					  {
-					    addToBody(yytext);
+					    //addToBody(yytext);
 					    BEGIN( SkipInits ) ;
 					  }
 					  else
+					  {
+					    if (previous->section!=Entry::VARIABLE_SEC)
+					      previous->bodyLine=-1; // a function/member declaration
 					    BEGIN( FindMembers ) ;
+					  }
 					}
 
 <SkipInits>"{"				{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   				          lastCurlyContext = FindMembers;
   					  BEGIN( SkipCurly ) ; 
 					}
 <SkipCurly>"{"				{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  ++bracketCount ; 
 					}
 <SkipCurly>"}"				{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  if( bracketCount )
 					    --bracketCount ;
 					  else
@@ -2748,7 +2924,7 @@ VAR	  [vV][aA][rR]
 <SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
   					  if ( bracketCount )
 					  {
-					    addToBody(yytext);
+					    //addToBody(yytext);
 					    --bracketCount ;
 					  }
 					  else
@@ -2769,73 +2945,73 @@ VAR	  [vV][aA][rR]
 					  }
 					}
 <SkipCurlyEndDoc>"}"			{
-  				          addToBody("}");
+  				          //addToBody("}");
 					  current = tempEntry;
   					  BEGIN( lastCurlyContext );
   					}
 <SkipCurly>"'"\\[0-7]{1,3}"'"           {
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipCurly>"'"\\."'"                    {
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipCurly>"'"."'"                      {
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipCurly>\"			        { 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  lastStringContext=SkipCurly;
   				          BEGIN( SkipString ); 
 					}
 <SkipCurly>^{B}*"#"			{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  BEGIN( SkipCurlyCpp ); 
 					}
 <SkipCurly,SkipInits>\n			{
   					  yyLineNr++;
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipCurly,SkipCurlyCpp>.		{
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  yyLineNr++; 
   					  lastCurlyContext = FindMembers;
   					  BEGIN( SkipCurly ); 
 					}
 <SkipCurlyCpp>\\[\r]*"\n"[\r]*		{ 
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					  yyLineNr++; 
 					}
 <SkipInits,SkipCurly,SkipCurlyCpp>"/*"		{
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>"*/"		{
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>"//".*        {
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipInits,SkipCurly,SkipCurlyCpp>.		{
-  				          addToBody(yytext);
+  				          //addToBody(yytext);
   					}
 <SkipString>\\.				{
-  				          addToBodyCond(yytext);
+  				          //addToBodyCond(yytext);
   					}
 <SkipString>\"				{ 
-  				          addToBodyCond(yytext);
+  				          //addToBodyCond(yytext);
   					  BEGIN( lastStringContext ); 
 					}
 <SkipString>"/*"|"*/"|"//"		{
-  				          addToBodyCond(yytext);
+  				          //addToBodyCond(yytext);
   					}
 <SkipString>\n				{
   					  yyLineNr++;
-  				          addToBodyCond(yytext);
+  				          //addToBodyCond(yytext);
   					}
 <SkipString>.				{
-  				          addToBodyCond(yytext);
+  				          //addToBodyCond(yytext);
   					}
 <Bases,ClassName>";"			{ 
 					  current->section = Entry::EMPTY_SEC ;
@@ -2847,6 +3023,7 @@ VAR	  [vV][aA][rR]
 					}
 <ClassName>{SCOPENAME}			{ 
 					  current->name = yytext ;
+					  lineCount();
 					  BEGIN( ClassVar );
 					}
   /*
@@ -2978,6 +3155,7 @@ VAR	  [vV][aA][rR]
 <Comment>.				{ current->program += *yytext ; }
 
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator>("//"{B}*)?"/*!" { 
+  					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
 					  if (YY_START==Curly)
@@ -3087,9 +3265,9 @@ VAR	  [vV][aA][rR]
 					  current->brief+=".";
 					  BEGIN( tmpDocType );
 					}
-<JavaDoc>("\\"|"@")"internal"		{
-  					  current->doc+="\\internal";
-  					  BEGIN( tmpDocType );
+<JavaDoc>("\\"|"@")("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
+  					  current->doc+=yytext;
+					  BEGIN( tmpDocType );
   					}
 <Doc,JavaDoc>{B}*("\\"|"@")("fn"|"var"|"typedef"){B}*	{
 					  current->section = Entry::MEMBERDOC_SEC;
@@ -3468,7 +3646,10 @@ VAR	  [vV][aA][rR]
 							}
 <ReadFormulaShort>"\\f$"				{
   							  formulaText+="$";
-							  if (lastFormulaContext==ClassDocBrief)
+							  if (lastFormulaContext==ClassDocBrief || 
+							      lastFormulaContext==LineDoc || 
+							      lastFormulaContext==JavaDoc
+							     )
 							    current->brief += addFormula();
 							  else
 							    current->doc += addFormula();
@@ -3476,16 +3657,26 @@ VAR	  [vV][aA][rR]
   							}
 <ReadFormulaLong>"\\f]"					{
 							  formulaText+="\\]";
-							  if (lastFormulaContext==ClassDocBrief)
+							  if (lastFormulaContext==ClassDocBrief ||
+							      lastFormulaContext==LineDoc ||
+							      lastFormulaContext==JavaDoc
+							     )
 							    current->brief += addFormula();
 							  else
 							    current->doc += addFormula();
 							  BEGIN(lastFormulaContext);
   							}
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
-<ExampleDoc,PageDoc,ClassDocBrief,ClassDoc>"*/"    	{
+<ExampleDoc,PageDoc,ClassDocBrief,SkipCode,ClassDoc>{B}*"*/"  	{
   					  checkDocs();
-  					  if (YY_START==ClassDocBrief &&
+					  if (YY_START==SkipCode) // premature end of code block
+					  {
+					    err("Error: comment block ended inside \\code ... \\endcode block at line %d in %s!\n",
+						yyLineNr,yyFileName);
+					    current->doc += "\\endcode\n\n";
+					    BEGIN( lastDocContext );
+					  }
+					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
   					    current->doc += "\n\n";
@@ -3549,7 +3740,10 @@ VAR	  [vV][aA][rR]
   					  current->brief=current->brief.stripWhiteSpace();
 					  BEGIN( lastBriefContext ); 
   					}
-<ClassDocBrief>{BS}/("\\"|"@")"image"	{ BEGIN( lastBriefContext ); }
+<ClassDocBrief>{BS}/("\\"|"@")("image"|"author"|"internal"|"version"|"date"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see") { 
+                                          BEGIN( lastBriefContext ); 
+                                        }
+  /*
 <ClassDocBrief>{BS}/("\\"|"@")"author"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"internal" { BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"version"	{ BEGIN( lastBriefContext ); }
@@ -3561,6 +3755,7 @@ VAR	  [vV][aA][rR]
 <ClassDocBrief>{BS}/("\\"|"@")"bug"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"warning"	 { BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"par"{BN}+ { BEGIN( lastBriefContext ); }
+  */
 <ClassDocBrief>{BS}/("\\brief"|"@short"){BN}+ {
   					  lastBriefContext=YY_START;
   					  BEGIN( ClassDocBrief ); 
@@ -3653,7 +3848,7 @@ VAR	  [vV][aA][rR]
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }
-<LineDoc>[\n\r]{B}*"//"[!/]
+<LineDoc>[\n\r]+{B}*"//"[!/]		{ lineCount(); }
 <LineDoc>\n				{ 
 					  yyLineNr++;  
 					  BEGIN( lastDocContext );
@@ -3666,6 +3861,7 @@ VAR	  [vV][aA][rR]
 
 <AfterDocLine>"/*"|"//"			{ current->brief+=yytext; }
 <AfterDocLine>\n			{
+  					  yyLineNr++;
                                           if (afterDocTerminator!=0)
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
@@ -3701,7 +3897,7 @@ VAR	  [vV][aA][rR]
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
   					}
-<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,FileDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs>"*/" {
+<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,FileDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
 					  current->doc += "\n\n";
 					  err("Warning: unexpected end of "
 				              "documentation block found in "
@@ -3711,6 +3907,7 @@ VAR	  [vV][aA][rR]
 <Doc>"*/"				{ 
   				          checkDocs();
   					  current->doc += "\n\n";
+					  //printf("End of docs at line %d\n",yyLineNr);
   					  BEGIN( lastDocContext ); 
 					}
 <JavaDoc>"*/"				{ 
@@ -3723,6 +3920,7 @@ VAR	  [vV][aA][rR]
 <SkipCxxComment>.*\n			{ yyLineNr++ ;
 					  BEGIN( lastCContext ) ;
 					}
+<SkipComment>[^\*\n]+
 <*>.
 <*>\n					{ yyLineNr++ ; }
 <SkipComment>"//"|"/*"
@@ -3738,17 +3936,17 @@ VAR	  [vV][aA][rR]
 
 //----------------------------------------------------------------------------
 
-static void addToBody(const char *text)
-{
-  if (Config::includeSourceFlag)
-    previous->body+=text;
-}
+//static void addToBody(const char *text)
+//{
+//  if (Config::includeSourceFlag)
+//    previous->body+=text;
+//}
 
-static void addToBodyCond(const char *text)
-{
-  if (Config::includeSourceFlag && lastStringContext==SkipCurly)
-    previous->body+=text;
-}
+//static void addToBodyCond(const char *text)
+//{
+//  if (Config::includeSourceFlag && lastStringContext==SkipCurly)
+//    previous->body+=text;
+//}
 
 //----------------------------------------------------------------------------
 
@@ -3809,6 +4007,7 @@ void parseCompounds(Entry *rt)
       current_root = ce ;
       strcpy( yyFileName, ce->fileName ) ;
       yyLineNr = ce->startLine ;
+      //printf("---> Inner block starts at line %d\n",yyLineNr);
       //current->reset();
       current = new Entry;
       // set default protection based on the compound type

@@ -19,8 +19,10 @@
 
 #include "qtbc.h"
 #include <qlist.h>
-#include "config.h"
-#include "section.h"
+
+class FileDef;
+class OutputList;
+class SectionList;
 
 /*! The common base class of all definitions. */
 class Definition
@@ -36,6 +38,8 @@ class Definition
      *  definition. 
      */
     virtual QCString getOutputFileBase() const = 0;
+    /*! Returns the name of the source listing of this file. */
+    QCString sourceName() const { return getOutputFileBase()+"-source"; }
     /*! returns the detailed description of this definition */
     QCString documentation() const { return doc; }
     /*! returns the brief description of this definition */
@@ -52,9 +56,7 @@ class Definition
      */
     void setBriefDescription(const char *b);
     /*! returns TRUE iff the definition is documented */
-    virtual bool hasDocumentation() 
-      { return !doc.isNull() || !brief.isNull() || Config::extractAllFlag; }
-
+    virtual bool hasDocumentation();
     virtual bool isLinkableInProject() = 0;
     virtual bool isLinkable() = 0;
 
@@ -75,6 +77,15 @@ class Definition
      */
     void addSectionsToDefinition(QList<QCString> *anchorList);
 
+    void setBodyLine(int bl)             { bodyLine=bl; }
+    void setBodyDef(FileDef *fd)         { bodyDef=fd; }
+    int getBodyLine() const              { return bodyLine; }
+    FileDef *getBodyDef()                { return bodyDef; }
+    void writeSourceRef(OutputList &ol);
+
+  protected:
+    int      bodyLine;        // line number of the definition
+    FileDef *bodyDef;         // file definition containing the function body
   private: 
     QCString n;     // name of the definition
     QCString brief; // brief description

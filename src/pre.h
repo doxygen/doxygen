@@ -19,7 +19,9 @@
 
 #include "qtbc.h"
 #include <stdio.h>
-#include <qfile.h>
+//#include <qfile.h>
+
+class BufStr;
 
 void initPreprocessor();
 void addSearchDir(const char *dir);

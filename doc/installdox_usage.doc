@@ -40,7 +40,7 @@ The following options are available:
    that is used by doxygen. The location <tt>\<location\></tt> can be 
    an absolute path or a URL.
 
-   \par Notice:
+   \par Note:
      Each <tagfile> must be unique and should only be the name of the
      file, not including the path. 
 

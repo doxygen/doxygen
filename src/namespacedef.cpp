@@ -30,6 +30,7 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
   memList = new MemberList;
+  usingList = 0;
   setReference(ref);
 }
 
@@ -37,6 +38,7 @@ NamespaceDef::~NamespaceDef()
 {
   delete classList;
   delete memList;
+  delete usingList;
 }
 
 void NamespaceDef::insertUsedFile(const char *f)
@@ -239,4 +241,13 @@ int NamespaceDef::countMembers()
 {
   memList->countDocMembers();
   return memList->totalCount()+classList->count();
+}
+
+void NamespaceDef::addUsingDirective(NamespaceDef *nd)
+{
+  if (usingList==0)
+  {
+    usingList = new NamespaceList;
+  }
+  usingList->append(nd);
 }

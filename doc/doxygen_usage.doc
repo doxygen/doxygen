@@ -41,9 +41,15 @@ doxygen <config_file>
 \endverbatim
 </ol>
 
-The \c -s option is optional and can be used suppress the description that 
-doxygen normally generates for each tag. Try to use this option if you send 
-me configuration files!
+<b>Note:</b><br>
+<ul>
+<li> If you do not want the description for each item in the configuration
+     file then you can use the optional \c -s option.
+     Try to use this option if you send me a configuration file as part of
+     a bug report!
+<li> To make doxygen read/write to standard input/output instead of from/to 
+     a file, use \c - for the file name.
+</ul>
 
 If you also want to use the search engine, you should look
 at section \ref doxysearch_usage. 

@@ -105,9 +105,11 @@ extern FileNameList inputNameList;
 extern FileNameDict includeNameDict;
 extern FileNameDict exampleNameDict;
 extern FileNameDict inputNameDict;
+extern FileNameDict imageNameDict;
 extern FileList includeFiles; 
 extern StringDict typedefDict;
 extern GroupList groupList;
+extern GroupDict groupDict;
 extern NamespaceList namespaceList;
 extern NamespaceDict namespaceDict;
 extern FormulaList formulaList;
@@ -125,5 +127,6 @@ extern int documentedGroups;
 extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
+extern QCString spaces;
 
 #endif

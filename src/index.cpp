@@ -14,10 +14,11 @@
  *
  */
 
-#include <qtstream.h>
-#include <qdatetm.h>
-#include <qdir.h>
 #include <stdlib.h>
+
+#include <qtextstream.h>
+#include <qdatetime.h>
+#include <qdir.h>
 
 #include "message.h"
 #include "index.h"
@@ -391,6 +392,68 @@ void writeFileIndex(OutputList &ol)
 }
 
 //----------------------------------------------------------------------------
+
+void writeSourceIndex(OutputList &ol)
+{
+  ol.disableAllBut(OutputGenerator::Html);
+  startFile(ol,"sources","Source Index");
+  startTitle(ol,0);
+  QCString title = Config::projectName+" "+theTranslator->trSources();
+  parseText(ol,title);
+  endTitle(ol,0,0);
+  HtmlHelp *htmlHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(title,"sources"); 
+    htmlHelp->incContentsDepth();
+  }
+  //ol.newParagraph();
+  //parseText(ol,theTranslator->trFileListDescription(Config::extractAllFlag));
+  //ol.newParagraph();
+
+  //ol.startIndexList();
+  bool started=FALSE;
+  FileName *fn=inputNameList.first();
+  while (fn)
+  {
+    FileDef *fd=fn->first();
+    while (fd)
+    {
+      if (!started)
+      {
+        started=TRUE;
+        ol.startItemList();
+      }
+      ol.writeListItem();
+      QCString path;
+      if (Config::fullPathNameFlag) 
+      {
+        path=stripFromPath(fd->getPath().copy());
+      }
+      if (!path.isEmpty()) ol.docify(path);
+      ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+      ol.writeString("\n");
+      if (Config::generateHtml && Config::htmlHelpFlag)
+      {
+        HtmlHelp::getInstance()->addContentsItem(
+            fd->name(),fd->sourceName());
+      }
+      fd=fn->next();
+    }
+    fn=inputNameList.next();
+  }
+  if (started) ol.endItemList();
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
+  endFile(ol);
+  ol.enable(OutputGenerator::Man);
+}
+
+//----------------------------------------------------------------------------
 int countNamespaces()
 {
   int count=0;
@@ -559,7 +622,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   }
 
   // the number of columns in the table
-  const int columns = 5;
+  const int columns = Config::colsInAlphaIndex;
 
   int i,j;
   int totalItems = headerItems + annotatedClasses;            // number of items in the table
@@ -1052,14 +1115,16 @@ int countIncludeFiles()
   FileDef *fd=includeFiles.first();
   while (fd)
   {
-    if (fd->isLinkableInProject())
-    {
+    //if (fd->isLinkableInProject())
+    //{
       count++;
-    }
+    //}
     fd=includeFiles.next();
   }  
   return count;
 }
+
+//----------------------------------------------------------------------------
 
 void writeHeaderFileList(OutputList &ol)
 {
@@ -1067,8 +1132,10 @@ void writeHeaderFileList(OutputList &ol)
   FileDef *fd=includeFiles.first();
   while (fd)
   {
+    /*
     if (fd->isLinkableInProject())
     {
+    */
       if (!started)
       {
         started=TRUE;
@@ -1088,7 +1155,9 @@ void writeHeaderFileList(OutputList &ol)
         HtmlHelp::getInstance()->addContentsItem(
             fd->name(),fd->includeName());
       }
+    /*
     }
+    */
     fd=includeFiles.next();
   }  
   if (started) ol.endItemList();
@@ -1305,7 +1374,12 @@ void writeIndex(OutputList &ol)
   // write HTML index
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Latex);
-  ol.startFile("index","Main Index",FALSE);
+
+  if (!mainPage || mainPage->title.isEmpty())
+    ol.startFile("index","Main Index",FALSE);
+  else 
+    ol.startFile("index",mainPage->title,FALSE);
+
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
   ol.startTitleHead(0);
   if (mainPage && !mainPage->title.isEmpty())
@@ -1338,29 +1412,32 @@ void writeIndex(OutputList &ol)
   ol.enable(OutputGenerator::Latex);
   ol.startFile("refman",0,FALSE);
   ol.startIndexSection(isTitlePageStart);
-  parseText(ol,projPrefix+theTranslator->trReferenceManual());
-  if (!Config::projectNumber.isEmpty())
+  if (Config::latexHeaderFile.isEmpty())
   {
-    ol.startProjectNumber(); 
-    parseDoc(ol,0,0,Config::projectNumber);
-    ol.endProjectNumber();
-  }
-  ol.endIndexSection(isTitlePageStart);
-  ol.startIndexSection(isTitlePageAuthor);
-  parseText(ol,theTranslator->trGeneratedBy());
-  ol.endIndexSection(isTitlePageAuthor);
-  if (mainPage)
-  {
-    ol.startIndexSection(isMainPage);
-    if (!mainPage->title.isEmpty())
+    parseText(ol,projPrefix+theTranslator->trReferenceManual());
+    if (!Config::projectNumber.isEmpty())
     {
-      parseDoc(ol,0,0,mainPage->title);
+      ol.startProjectNumber(); 
+      parseDoc(ol,0,0,Config::projectNumber);
+      ol.endProjectNumber();
     }
-    else
+    ol.endIndexSection(isTitlePageStart);
+    ol.startIndexSection(isTitlePageAuthor);
+    parseText(ol,theTranslator->trGeneratedBy());
+    ol.endIndexSection(isTitlePageAuthor);
+    if (mainPage)
     {
-      parseText(ol,projPrefix+theTranslator->trMainPage());
+      ol.startIndexSection(isMainPage);
+      if (!mainPage->title.isEmpty())
+      {
+        parseDoc(ol,0,0,mainPage->title);
+      }
+      else
+      {
+        parseText(ol,projPrefix+theTranslator->trMainPage());
+      }
+      ol.endIndexSection(isMainPage);
     }
-    ol.endIndexSection(isMainPage);
   }
   if (documentedGroups>0)
   {
@@ -1430,6 +1507,21 @@ void writeIndex(OutputList &ol)
   }
   ol.endIndexSection(isEndIndex);
   endFile(ol);
+
+  if (mainPage)
+  {
+    ol.disable(OutputGenerator::Man);
+    startFile(ol,mainPage->name,mainPage->title);
+    SectionInfo *si=0;
+    if (mainPage->title.length()>0 && mainPage->name.length()>0 &&
+        (si=sectionDict[mainPage->name])!=0)
+    {
+      ol.writeSection(si->label,si->title,FALSE);
+    }
+    parseDoc(ol,0,0,mainPage->doc);
+    endFile(ol);
+    ol.enable(OutputGenerator::Man);
+  }
 
   // restore generator state
   if (manEnabled) ol.enable(OutputGenerator::Man); 

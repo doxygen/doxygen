@@ -24,8 +24,8 @@
     properly. If you find such a piece, please send it to me, so I can
     improve doxygen's parsing capabilities. Try to make the piece of code 
     you send as small as possible, to help me narrow down the search.
-<li>Using declarations and directives are not yet. They are 
-    simply ignored. 
+<li>Using declarations are not yet supported. They are simply ignored.
+    Using directives are supported however. 
 <li>Doxygen does not work properly if there are multiple classes, structs
     or unions with the same name in your code. It should not crash however,
     rather it should ignore all of the classes with the same name except one.
@@ -42,7 +42,8 @@
 \verbatim
   const int (a);
 \endverbatim
-  is also seen as a function declaration, because only the syntax is analysed,
+  is also seen as a function declaration with name 
+  <code>int</code>, because only the syntax is analysed,
   not the semantics. If the redundant braces can be detected, as in
 \verbatim
   int *(a[20]);

@@ -19,7 +19,6 @@
 
 #include "qtbc.h"
 #include <qfile.h>
-//#include <qtstream.h>
 
 enum IndexSections
 {
@@ -47,6 +46,7 @@ void writeHierarchicalIndex(OutputList &ol);
 void writeAlphabeticalIndex(OutputList &ol);
 void writeClassHierarchy(OutputList &ol);
 void writeFileIndex(OutputList &ol);
+void writeSourceIndex(OutputList &ol);
 void writeAnnotatedIndex(OutputList &ol);
 void writeAnnotatedClassList(OutputList &ol);
 void writeMemberIndex(OutputList &ol);

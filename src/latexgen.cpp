@@ -25,6 +25,7 @@
 #include "util.h"
 #include "diagram.h"
 #include "language.h"
+#include "version.h"
 
 static QCString filterTitle(const char *s)
 {
@@ -63,8 +64,7 @@ static QCString filterTitle(const char *s)
 //}
 
 
-LatexGenerator::LatexGenerator()
-  : OutputGenerator()
+LatexGenerator::LatexGenerator() : OutputGenerator()
 {
   dir=Config::latexOutputDir;
   col=0;
@@ -191,7 +191,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
           }
           if (!theTranslator->latexBabelPackage().isEmpty())
           {
-            t << "\\usepackage{" << theTranslator->latexBabelPackage() << "}\n";
+            t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
           }
           const char *s=Config::extraPackageList.first();
           while (s)
@@ -203,7 +203,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
             "\\setcounter{tocdepth}{1}\n"
             "\\setlength{\\footrulewidth}{0.4pt}\n"
             "\\begin{document}\n"
-            "\\title{";
+            "\\begin{titlepage}\n"
+            "\\vspace*{7cm}\n"
+            "\\begin{center}\n"
+            "{\\Large ";
           //docify(projectName);
           //t << " Reference Manual";
           //if (!projectNumber.isEmpty()) 
@@ -221,7 +224,9 @@ void LatexGenerator::startIndexSection(IndexSections is)
     case isTitlePageAuthor:
       if (Config::latexHeaderFile.isEmpty())
       {
-        t << "}\n\\author{";
+        t << "}\\\\" << endl
+          << "\\vspace*{1cm}" << endl
+          << "{\\large ";
       }
       break;
     case isMainPage:
@@ -347,11 +352,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isTitlePageAuthor:
       if (Config::latexHeaderFile.isEmpty())
       {
-        t << " Doxygen}\n"
-          "\\date{" << dateToString(TRUE) << "}\n"
-          "\\maketitle\n"
-          "\\pagenumbering{roman}\n";
+        t << " Doxygen " << versionString << "}\\\\" << endl
+          << "\\vspace*{0.5cm}" << endl
+          << "{\\small " << dateToString(TRUE) << "}\\\\" << endl
+          << "\\end{center}" << endl
+          << "\\end{titlepage}" << endl;
         if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
+        t << "\\pagenumbering{roman}\n";
         t << "\\tableofcontents\n";
         if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
         t << "\\pagenumbering{arabic}\n";
@@ -681,6 +688,25 @@ void LatexGenerator::writeEndAnnoItem(const char *name)
 //  t << "}"; 
 //}
 
+void LatexGenerator::startTextLink(const char *f,const char *anchor)
+{
+  if (Config::pdfHyperFlag)
+  {
+    t << "\\hyperlink{";
+    if (f) t << f;
+    if (anchor) t << "_" << anchor; 
+    t << "}{";
+  }
+}
+
+void LatexGenerator::endTextLink()
+{
+  if (Config::pdfHyperFlag)
+  {
+    t << "}";
+  }
+}
+
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
@@ -739,10 +765,10 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
       << name << "@{";
     docify(name);
     t << "}}" << endl;
-    if (Config::pdfHyperFlag && fileName)
-    {
-      t << "}" << endl;
-    }
+  }
+  if (Config::pdfHyperFlag && fileName)
+  {
+    t << "}" << endl;
   }
 }
 
@@ -1040,6 +1066,7 @@ void LatexGenerator::codify(const char *str)
       c=*p++;
       switch(c)
       {
+        case 0x0c: break; // remove ^L
         case '\t': t << &spaces[col&7]; col+=8-(col&7); break; 
         case '\n': t << '\n'; col=0;                    break;
         default:   t << c;    col++;                    break;

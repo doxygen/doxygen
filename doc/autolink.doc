@@ -58,9 +58,9 @@
   </ol>
   where n>0. 
 
-  \par Notice 1: 
+  \par Note 1: 
     The patterns above should not contain spaces, tabs or newlines. 
-  \par Notice 2: 
+  \par Note 2: 
     For JavaDoc compatibility a \c # may be used instead of a \c :: in 
     the patterns above.
 
