@@ -90,8 +90,8 @@
   <li> A \b white box indicates a class or struct or file. 
   <li> A box with a \b red border indicates a node that has
        \e more arrows than are shown! 
-       In order words: the graph is \e truncated with respect to this node.
-       The reason a graph is sometimes truncated is to prevent images
+       In other words: the graph is \e truncated with respect to this node.
+       The reason why a graph is sometimes truncated is to prevent images
        from becoming too large. 
        For the graphs generated with dot doxygen tries
        to limit the width of the resulting image to 1024 pixels.  

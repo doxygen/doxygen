@@ -2588,7 +2588,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
 
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 

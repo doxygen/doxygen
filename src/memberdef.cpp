@@ -504,7 +504,7 @@ bool MemberDef::isBriefSectionVisible() const
                                 hasDocumentation()
                                );
 
-    // hide members with no detailed desciption and brief descriptions 
+    // hide members with no detailed description and brief descriptions 
     // explicitly disabled.
     bool visibleIfEnabled = !(Config_getBool("HIDE_UNDOC_MEMBERS") && 
                               documentation().isEmpty() &&
@@ -592,7 +592,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   ol.startMemberItem((annoClassDef || annMemb || annEnumType) ? 1 : 0);
 
   // If there is no detailed description we need to write the anchor here.
-  bool detailsVisible = isDetailedSectionVisible();
+  bool detailsVisible = isDetailedSectionLinkable();
   if (!detailsVisible && !annMemb)
   {
     QCString doxyName=name().copy();
@@ -779,7 +779,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   //ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef || annMemb);
   // write brief description
-  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC") && !annMemb)
+  if (!briefDescription().isEmpty() && 
+      Config_getBool("BRIEF_MEMBER_DESC") && 
+      !annMemb)
   {
     ol.startMemberDescription();
     parseDoc(ol,m_defFileName,m_defLine,cname,name(),briefDescription());
@@ -808,7 +810,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   warnIfUndocumented();
 }
 
-bool MemberDef::isDetailedSectionVisible(bool inGroup) const          
+bool MemberDef::isDetailedSectionLinkable() const          
 { 
   // the member has details documentation for any of the following reasons
   bool docFilter = 
@@ -835,16 +837,19 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup) const
   // this is not a global static or global statics should be extracted
   bool staticFilter = getClassDef()!=0 || !isStatic() || Config_getBool("EXTRACT_STATIC"); 
          
-  // details are not part of a group or this is for a group documentation page
-  // TODO: FIX THIS!!! This should made such that it is always TRUE.
-  bool groupFilter = getGroupDef()==0 || inGroup; 
-
   // member is part of an anonymous scope that is the type of
   // another member in the list.
   //
   bool inAnonymousScope = !briefDescription().isEmpty() && annUsed;
 
-  return ((docFilter && staticFilter) || inAnonymousScope) && groupFilter;
+  return ((docFilter && staticFilter) || inAnonymousScope);
+}
+
+bool MemberDef::isDetailedSectionVisible(bool inGroup) const          
+{ 
+  bool groupFilter = getGroupDef()==0 || inGroup; 
+
+  return isDetailedSectionLinkable() && groupFilter;
 }
 
 /*! Writes the "detailed documentation" section of this member to
@@ -1147,7 +1152,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.endEmphasis();
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),a->docs);
+          parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),a->docs+"\n");
           ol.endDescTableData();
         }
       }
@@ -1477,3 +1482,17 @@ void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString
   groupStartLine=startLine;
   groupHasDocs=hasDocs;
 }
+
+void MemberDef::setEnumScope(MemberDef *md) 
+{ 
+  enumScope=md; 
+  if (md->group)
+  {
+    group=md->group;
+    grouppri=md->grouppri;
+    groupFileName=md->groupFileName;
+    groupStartLine=md->groupStartLine;
+    groupHasDocs=md->groupHasDocs;
+  }
+}
+

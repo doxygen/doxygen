@@ -16,8 +16,6 @@
  */
 /*! \page config Configuration
 
-\section config Configuration
-
 \subsection config_format Format
 
 A configuration file is a free-form ASCII text file with a structure that

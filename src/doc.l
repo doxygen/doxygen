@@ -817,6 +817,7 @@ static int yyread(char *buf,int max_size)
 CMD	  ("\\"|"@")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
+BSEP      [ \t\r]*([ \t\r]|"\n")({BL}{0,100})
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
@@ -946,7 +947,11 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  addListItemMarker(yytext+1,dashPos,isEnumerated);
   					}
 <DocScan,Text>"&copy;"			{ outDoc->writeCopyright(); }
-<DocScan,Text>"&quot;"			{ outDoc->writeQuote(); }
+<DocScan,Text>"&lt;"			{ outDoc->docify("<"); }
+<DocScan,Text>"&gt;"			{ outDoc->docify(">"); }
+<DocScan,Text>"&amp;"			{ outDoc->docify("&"); }
+<DocScan,Text>"&apos;"			{ outDoc->docify("'"); }
+<DocScan,Text>"&quot;"			{ outDoc->docify("\""); }
 <DocScan,Text>"&"[AEIOUYaeiouy]"uml;"	{ outDoc->writeUmlaut(yytext[1]); }
 <DocScan,Text>"&"[AEIOUYaeiouy]"acute;"	{ outDoc->writeAcute(yytext[1]);  }
 <DocScan,Text>"&"[AEIOUaeiou]"grave;"	{ outDoc->writeGrave(yytext[1]);  }
@@ -1115,7 +1120,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					  BEGIN(DocPar);
   					}
-<DocPar>[^\n]*{BN}+			{
+<DocPar>[^\n]*{BSEP}			{
   					  QCString title=QCString(yytext).stripWhiteSpace();
 					  bool b = inBlock();
 					  if (!title.isEmpty())
@@ -1137,7 +1142,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 					  BEGIN(DocScan);
   					}
-<DocScan>{CMD}"warning"{BN}+		{ 
+<DocScan>{CMD}"warning"{BSEP}		{ 
   				          endArgumentList();
   					  if (!inWarningBlock)
 					  {
@@ -1156,7 +1161,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
 				        }
-<DocScan>{CMD}"remark"[s]?{BN}+		{ 
+<DocScan>{CMD}"remark"[s]?{BSEP}	{ 
   				          endArgumentList();
   					  if (!inRemarkBlock)
 					  {
@@ -1175,7 +1180,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
 				        }
-<DocScan>{CMD}"attention"{BN}+		{ 
+<DocScan>{CMD}"attention"{BSEP}		{ 
   				          endArgumentList();
   					  if (!inAttentionBlock)
 					  {
@@ -1194,28 +1199,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
 				        }
-  /*
-<DocScan>{CMD}"bug"[s]?{BN}+		{
-  				          endArgumentList();
-  					  if (!inBugBlock)
-					  {
-					    if (inBlock()) endBlock();
-					    inBugBlock=TRUE;
-					    currentListIndent.push("D");
-  					    outDoc->startDescList();
-					    outDoc->startBold();
-					    scanString(theTranslator->trBugsAndLimitations()+": ");
-					    outDoc->endBold();
-					    outDoc->endDescTitle();
-					    outDoc->writeDescItem();
-					  }
-					  else
-					  {
-  					    outDoc->writeDescItem();
-					  }
-  					}
-  */
-<DocScan>{CMD}"note"[s]?{BN}+		{
+<DocScan>{CMD}"note"[s]?{BSEP}		{
   				          endArgumentList();
   					  if (!inNoteBlock)
 					  {
@@ -1234,7 +1218,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"pre"{BN}+		{
+<DocScan>{CMD}"pre"{BSEP}		{
   				          endArgumentList();
   					  if (!inPreBlock)
 					  {
@@ -1253,7 +1237,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"post"{BN}+		{
+<DocScan>{CMD}"post"{BSEP}		{
   				          endArgumentList();
   					  if (!inPostBlock)
 					  {
@@ -1272,7 +1256,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"invariant"{BN}+		{
+<DocScan>{CMD}"invariant"{BSEP}		{
   				          endArgumentList();
   					  if (!inInvarBlock)
 					  {
@@ -1291,7 +1275,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"version"{BN}+		{
+<DocScan>{CMD}"version"{BSEP}		{
   				          endArgumentList();
   					  if (!inVersionBlock)
 					  {
@@ -1310,7 +1294,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"since"{BN}+		{
+<DocScan>{CMD}"since"{BSEP}		{
   				          endArgumentList();
   					  if (!inSinceBlock)
 					  {
@@ -1329,7 +1313,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}"date"{BN}+		{
+<DocScan>{CMD}"date"{BSEP}		{
   				          endArgumentList();
   					  if (!inDateBlock)
 					  {
@@ -1414,7 +1398,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    currentListIndent.pop();
 					  }
   					}
-<DocScan>{CMD}"deprecated"{BN}+		{
+<DocScan>{CMD}"deprecated"{BSEP}	{
   					  endArgumentList();
 					  if (!inDeprecatedBlock)
 					  {
@@ -1452,7 +1436,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  outDoc->endDescList();
 					  currentListIndent.pop();
   					}
-<DocScan>{CMD}"author"[s]?{BN}+		{
+<DocScan>{CMD}"author"[s]?{BSEP}	{
   				          endArgumentList();
   					  if (!inAuthorBlock)
 					  {
@@ -1472,7 +1456,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    outDoc->docify(", ");
 					  }
   					}
-<DocScan>{CMD}("return"([s])?|"result"){BN}+	{
+<DocScan>{CMD}("return"([s])?|"result"){BSEP}	{
   				          endArgumentList();
   					  if (!inReturnBlock)
 					  {
@@ -1487,7 +1471,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    outDoc->writeDescItem();
 					  }
   					}
-<DocScan>{CMD}("sa"|"see"){BN}+       { 
+<DocScan>{CMD}("sa"|"see"){BSEP}        { 
   				          endArgumentList();
   					  if (!inSeeBlock)
 					  {
@@ -1506,7 +1490,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    outDoc->docify(", ");
 					  }
 					}
-<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"{BN}+	{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"{BSEP}	{
 					  QCString t=yytext;
   					  if (t.contains('\n')>1 && insideItemList)
 					  {
@@ -1532,7 +1516,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"retval"{BN}+	{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"retval"{BSEP}	{
 					  QCString t=yytext;
   					  if (t.contains('\n')>1 && insideItemList)
 					  {
@@ -1558,7 +1542,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   				          BEGIN(DocParam); 
   					}
-<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}("exception"|"throw")s?{BN}+	{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}("exception"|"throw")s?{BSEP}	{
 					  QCString t=yytext;
   					  if (t.contains('\n')>1 && insideItemList)
 					  {
@@ -1585,7 +1569,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  BEGIN(DocException);
   					}
 <DocScan>"\\capt".*
-<DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BN}* {
+<DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BSEP}* {
 					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
   					  outDoc->docify(substitute(yytext,"\"","").stripWhiteSpace()); 

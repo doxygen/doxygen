@@ -145,13 +145,9 @@ QCString abbreviate(const char *s,const char *name)
 void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
 {
   ol.pushGeneratorState();
-  //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
-  //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
   ol.disableAllBut(OutputGenerator::Html);
   QCString extLink;
   if (ext) { extLink="_doc"; }
-  //if (manEnabled) ol.disable(OutputGenerator::Man);
-  //if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
 
   if (!compact) ol.writeListItem();
@@ -280,23 +276,19 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   {
     ol.endItemList();
   }
-  //if (manEnabled) ol.enable(OutputGenerator::Man);
-  //if (texEnabled) ol.enable(OutputGenerator::Latex);
   ol.popGeneratorState();
 }
-
-static bool manIsEnabled;
 
 void startTitle(OutputList &ol,const char *fileName)
 {
   ol.startTitleHead(fileName);
-  manIsEnabled=ol.isEnabled(OutputGenerator::Man);
-  if (manIsEnabled) ol.disable(OutputGenerator::Man);
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Man);
 }
 
 void endTitle(OutputList &ol,const char *fileName,const char *name)
 {
-  if (manIsEnabled) ol.enable(OutputGenerator::Man); 
+  ol.popGeneratorState();
   ol.endTitleHead(fileName,name);
 }
 
@@ -675,7 +667,6 @@ void writeHierarchicalIndex(OutputList &ol)
   ol.endTextBlock();
   writeClassHierarchy(ol);
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -959,7 +950,6 @@ void writeFileIndex(OutputList &ol)
     ftvHelp->decContentsDepth();
   }
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -1059,7 +1049,6 @@ void writeNamespaceIndex(OutputList &ol)
     ftvHelp->decContentsDepth();
   }
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -1984,7 +1973,6 @@ void writeExampleIndex(OutputList &ol)
     ftvHelp->decContentsDepth();
   }
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -2102,7 +2090,6 @@ void writePageIndex(OutputList &ol)
     ftvHelp->decContentsDepth();
   }
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 
@@ -2797,13 +2784,6 @@ void writeIndex(OutputList &ol)
     ol.enable(OutputGenerator::Man);
   }
 
-  // restore generator state
-  //if (manEnabled) ol.enable(OutputGenerator::Man); 
-  //           else ol.disable(OutputGenerator::Man);
-  //if (texEnabled) ol.enable(OutputGenerator::Latex);
-  //           else ol.disable(OutputGenerator::Latex);
-  //if (htmEnabled) ol.enable(OutputGenerator::Html);
-  //           else ol.disable(OutputGenerator::Html);
   ol.popGeneratorState();
 }
 

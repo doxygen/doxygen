@@ -320,12 +320,20 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 cd?cd->name().data():0,md->name().data(),
                 md->briefDescription()
                     );
-            if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
+            if (md->isDetailedSectionLinkable())
             {
               ol.disableAllBut(OutputGenerator::Html);
               ol.endEmphasis();
               ol.docify(" ");
-              ol.startTextLink(0,md->anchor());
+              if (md->getGroupDef()!=0 && gd==0) // forward link to group
+              {
+                ol.startTextLink(md->getGroupDef()->getOutputFileBase(),
+                                 md->anchor());
+              }
+              else
+              {
+                ol.startTextLink(0,md->anchor());
+              }
               parseText(ol,theTranslator->trMore());
               ol.endTextLink();
               ol.startEmphasis();

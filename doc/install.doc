@@ -164,7 +164,7 @@ Compilation is now done by performing the following steps:
     Binaries are installed in the directory <code>\<prefix\>/bin</code>,
     documentation and examples in the directory 
     <code>\<prefix\>/share/doc/packages/doxygen</code> (use
-    <code>DOCDIR\\<path\></code> after <code>make</code> to change this).
+    <code>make install DOCDIR=\<path\></code> to change this).
 
     <code>\<prefix\></code> defaults to /usr but can be changed with 
     the <code>--prefix</code> option of the configure script. 
@@ -274,7 +274,7 @@ ce_parse.cpp:
 I tried compiling doxygen only with Sun's C++ WorkShop Compiler
 version 5.0 (I used <code>./configure --platform solaris-cc</code>)
 
-Qt-2.x.x is required for this compiler (Qt-1.44 has problems with the bool
+Qt-2.x.y is required for this compiler (Qt-1.44 has problems with the bool
 type).
 
 Compiling the \c doxygen binary went ok, but while linking <code>doxytag</code> I got a 
@@ -386,7 +386,7 @@ Here is what is required:
     steps.
 
 <li>From Doxygen-1.2.2-20001015 onwards, the distribution includes the part
-    of Qt-2.x.x that is needed for to compile doxygen, doxytag,
+    of Qt-2.x.y that is needed for to compile doxygen, doxytag,
     and doxysearch. The Windows specific part were also created.
     As a result doxygen can be compiled on systems without X11 or the
     commerical version of Qt. 
@@ -497,7 +497,7 @@ Compilation is now done by performing the following steps:
 
 \subsection install_bin_windows Installating the binaries on Windows
 
-There is no fancy installation procedure at the moment (If anyone wants
+There is no fancy installation procedure at the moment (if anyone wants
 to add it please let me know).
 
 To install doxygen, just copy the binaries from the <code>bin</code> directory

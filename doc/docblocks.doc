@@ -180,16 +180,19 @@ additional comment blocks:
 \verbatim
 /*!< ... */
 \endverbatim
-This block can be used to put a Qt style documentation blocks after a member.
-The one line version look as follows:
+This block can be used to put a Qt style detailed 
+documentation block after a member.
+The one line brief description looks as follows:
 \verbatim
 //!< ...
 \endverbatim
-There are also JavaDoc versions:
+There are also JavaDoc versions for detailed documentation:
 \verbatim
 /**< ... */
 \endverbatim
-and
+(where the first sentence is the brief description 
+if \c JAVADOC_AUTOBRIEF is set to \c YES)
+and there is a separate brief description as well:
 \verbatim
 ///< ... 
 \endverbatim

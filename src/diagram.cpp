@@ -1008,7 +1008,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   
   //printf("writeEPS() rows=%d cols=%d\n",rows,cols);
   
-  // generate EPS header and postscipt variables and procedures
+  // generate EPS header and postscript variables and procedures
   
   t << "%!PS-Adobe-2.0 EPSF-2.0\n";
   t << "%%Title: ClassName\n";

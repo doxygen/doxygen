@@ -45,11 +45,23 @@ class TranslatorAdapterCVS : public Translator
 // The first five lines below should be uncommented, and the
 // release number at the fifth of those lines should be set.
 
-// class TranslatorAdapter_1_2_7 : public TranslatorAdapterCVS
+// class TranslatorAdapter_1_2_8 : public TranslatorAdapterCVS
 // {
 //   public:
 //     virtual QCString updateNeededMessage() 
 //     { return createUpdateNeededMessage(idLanguage(),"release 1.2.7"); }
+   
+    // Put new adapter methods below...
+    // 
+    
+};
+
+
+class TranslatorAdapter_1_2_7 : public TranslatorAdapterCVS
+{
+  public:
+    virtual QCString updateNeededMessage() 
+    { return createUpdateNeededMessage(idLanguage(),"release 1.2.7"); }
    
     /*! These are the default implementations of the obsolete methods
      *  for introducing author/authors (possibly localized).
@@ -72,12 +84,13 @@ class TranslatorAdapterCVS : public Translator
     }
 };
 
+
 /*! \brief Translator adapter class for release 1.2.6
  *  
  *  Translator adapter for dealing with translator changes since 
  *  release 1.2.6
  */
-class TranslatorAdapter_1_2_6 : public TranslatorAdapterCVS
+class TranslatorAdapter_1_2_6 : public TranslatorAdapter_1_2_7
 {
   public:
     virtual QCString updateNeededMessage() 

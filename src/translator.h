@@ -567,7 +567,7 @@ class Translator
     virtual QCString trStaticPrivateMembers() = 0;
     
     /*! this function is used to produce a comma-separated list of items.
-     *  use generateMarker(i) to indicate where item i should be put.
+     *  Use generateMarker(i) to indicate where item i should be put.
      */
     virtual QCString trWriteList(int numEntries) = 0;
     

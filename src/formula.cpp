@@ -56,7 +56,7 @@ void FormulaList::generateBitmaps(const char *path)
   // store the original directory
   if (!d.exists()) { err("Error: Output dir %s does not exist!\n",path); exit(1); }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
   // generate a latex file containing one formula per page.

@@ -1,5 +1,5 @@
 #
-# $Id$
+# 
 #
 # Copyright (C) 1997-2001 by Dimitri van Heesch.
 #
@@ -30,7 +30,7 @@ clean:
 
 language: language.doc 
 
-language.doc: maintainers.txt language.tpl translator.pl
+language.doc: $(wildcard ../src/translator*.h) maintainers.txt language.tpl translator.pl
 	$(PERL) translator.pl
 
 FORCE:

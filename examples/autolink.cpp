@@ -46,7 +46,7 @@
   
   A link to the enumeration type #EType.
 
-  A link to some enumeration values: ::Val1 and ::GVal1.
+  A link to some enumeration values: \link Test::Val1 Val1 \endlink and ::GVal1.
 
   And last but not least a link to a file: autolink.cpp.
   

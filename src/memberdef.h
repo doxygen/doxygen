@@ -126,6 +126,7 @@ class MemberDef : public Definition
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup=FALSE) const;
+    bool isDetailedSectionLinkable() const;
 
     // set functions
     void setMemberType(MemberType t)      { mtype=t; }
@@ -167,7 +168,7 @@ class MemberDef : public Definition
     
     // enumeration specific members
     void insertEnumField(MemberDef *md);
-    void setEnumScope(MemberDef *md)         { enumScope=md; }
+    void setEnumScope(MemberDef *md);
     MemberDef *getEnumScope() const          { return enumScope; }
     void setEnumDecl(OutputList &ed);
     //void setEnumUsed()                       { eUsed=TRUE; }

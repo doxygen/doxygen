@@ -1830,7 +1830,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           return TRUE; /* found match */
         }
       } 
-      /* goto the parent scope */
+      /* go to the parent scope */
       
       if (scopeOffset==0)
       {
@@ -2650,18 +2650,16 @@ QCString convertNameToFile(const char *name,bool allowDots)
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName)
 {
-  QCString clName=scopeName.copy();
-  //QCString nsName;
+  int i,p;
+  QCString clName=scopeName;
   NamespaceDef *nd = 0;
   if (!clName.isEmpty() && (nd=getResolvedNamespace(clName)) && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=nd->name().copy();
     className.resize(0);
-    //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
-    //     className.data(),namespaceName.data());
-    return;
+    goto done;
   }
-  int i,p=clName.length()-2;
+  p=clName.length()-2;
   while (p>=0 && (i=clName.findRev("::",p))!=-1) 
     // see if the first part is a namespace (and not a class)
   {
@@ -2669,14 +2667,16 @@ void extractNamespaceName(const QCString &scopeName,
     {
       namespaceName=nd->name().copy();
       className=clName.right(clName.length()-i-2);
-      //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
-      //   className.data(),namespaceName.data());
-      return;
+      goto done;
     } 
     p=i-2; // try a smaller piece of the scope
   }
+
+  // not found, so we just have to guess.
   className=scopeName.copy();
   namespaceName.resize(0);
+
+done:
   //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
   //       className.data(),namespaceName.data());
   return;

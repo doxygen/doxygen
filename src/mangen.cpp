@@ -97,45 +97,38 @@ void ManGenerator::init()
 
 static QCString buildFileName(const char *name)
 {
-  QCString fileName=name;
+  QCString fileName;
 
-#if 0
-  // TODO: do something sensible here.
-  if (fileName.left(6)=="class_")
+  const char *p=name;
+  char c;
+  while ((c=*p++))
   {
-    fileName=fileName.right(fileName.length()-6);
-  }
-  else if (fileName.left(10)=="interface_")
-  {
-    fileName=fileName.right(fileName.length()-10);
-  }
-  else if (fileName.left(7)=="struct_")
-  {
-    fileName=fileName.right(fileName.length()-7);
-  }
-  else if (fileName.left(6)=="union_")
-  {
-    fileName=fileName.right(fileName.length()-6);
-  }
-  else if (fileName.left(10)=="exception_")
-  {
-    fileName=fileName.right(fileName.length()-10);
-  }
-  else if (fileName.left(6)=="group_")
-  {
-    fileName=fileName.right(fileName.length()-6);
+    switch (c)
+    {
+      case ':':
+        fileName+="_";
+        if (*p==':') p++;
+        break;
+      case '<':
+      case '>':
+      case '&':
+      case '*':
+      case '!':
+      case '^':
+      case '~':
+      case '%':
+      case '+':
+        fileName+="_";
+        break;
+      default:
+        fileName+=c;
+    }
   }
 
-  int i;
-  if ((i=fileName.findRev('.'))!=-1)
+  QCString &manExtension = Config_getString("MAN_EXTENSION");
+  if (convertToQCString(fileName.right(2))!=manExtension) 
   {
-    fileName=fileName.left(i); 
-  }
-#endif
-
-  if (convertToQCString(fileName.right(2))!=Config_getString("MAN_EXTENSION")) 
-  {
-    fileName+=Config_getString("MAN_EXTENSION");
+    fileName+=manExtension;
   }
 
   return fileName;

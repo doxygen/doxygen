@@ -57,7 +57,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapterCVS
+class TranslatorItalian : public TranslatorAdapter_1_2_7
 {
   public:
 

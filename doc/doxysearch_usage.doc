@@ -98,7 +98,7 @@ follow these steps:
     Consult the manual of your HTTP daemon or your system administrator to
     find out where this directory resides on your system.
 
-<li>Goto the directory where the generated HTML files are located and run 
+<li>Go to the directory where the generated HTML files are located and run 
     doxytag as follows:
     <pre>doxytag -s search.idx</pre>
     This will create a search index with the name <code>search.idx</code>.
@@ -120,7 +120,7 @@ Using <code>doxytag</code> and <code>doxysearch</code> it is possible to create 
 the Qt documentation, without needing the sources!
 This can be done by carefully following these steps:
 <ol>
-<li>Goto the html directory of the Qt-distribution:
+<li>Go to the html directory of the Qt-distribution:
     <pre>cd $QTDIR/html</pre>
 <li>Generate the search index by typing:
     <pre>doxytag -s search.idx</pre>
