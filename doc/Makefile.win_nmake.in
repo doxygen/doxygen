@@ -28,9 +28,9 @@ clean:
 	del /s /q ..\html ..\latex
 	del translator_report.txt *.bak
 
-language: language.doc language.tpl translator.pl
+language: language.doc 
 
-language.doc: language.tpl FORCE
+language.doc: maintainers.txt language.tpl translator.pl
 	$(PERL) translator.pl
 
 FORCE:
