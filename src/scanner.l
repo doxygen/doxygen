@@ -3051,7 +3051,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                               );
   					  yyLineNr++;
   					}
-<PackageDocArg1>{SCOPENAME}		{
+<PackageDocArg1>{ID}("."{ID})*		{
   					  current->name = yytext;
 					  newDocState();
   					}

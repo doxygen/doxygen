@@ -77,7 +77,6 @@ class CodeVarDef
     QCString classScope;
 };
 
-typedef QList<CodeClassDef> CodeClassList; 
 typedef QDict<CodeClassDef> CodeClassDict;
 typedef QList<CodeVarDef>   CodeVarList; 
 
@@ -86,7 +85,6 @@ typedef QList<CodeVarDef>   CodeVarList;
  */
   
 static OutputDocInterface * g_code;
-//static CodeClassList g_codeClassList;
 static CodeClassDict g_codeClassDict(1009);
 static CodeVarList   g_codeVarList;
 static CodeVarList   g_codeParmList;

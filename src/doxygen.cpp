@@ -2421,6 +2421,10 @@ static void findUsedClassesForClass(Entry *root,
           ClassDef *usedCd = Doxygen::hiddenClasses.find(type);
           if (usedCd==0 && !Config_getBool("HIDE_UNDOC_RELATIONS"))
           {
+             if (type.right(2)=="(*") // type is a function pointer
+             {
+               type+=md->argsString();
+             }
              Debug::print(Debug::Classes,0,"  New undocumented used class `%s'\n", type.data());
              usedCd = new ClassDef(
                masterCd->getDefFileName(),masterCd->getDefLine(),
@@ -5012,19 +5016,23 @@ static void generateClassDocs()
   for ( ; cli.current() ; ++cli )
   {
     ClassDef *cd=cli.current();
-    if ( cd->isLinkableInProject() && cd->templateMaster()==0 &&
-        (cd->getOuterScope()==0 || // <-- should not happen
-         cd->getOuterScope()==Doxygen::globalScope
-        )
-       ) // skip external references, anonymous compounds and 
-         // template instances and nested classes
+   
+    if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+        cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+       ) 
     {
-      msg("Generating docs for compound %s...\n",cd->name().data());
-      
-      cd->writeDocumentation(*outputList);
-      cd->writeMemberList(*outputList);
+      // skip external references, anonymous compounds and 
+      // template instances 
+      if ( cd->isLinkableInProject() && cd->templateMaster()==0)
+      {
+        msg("Generating docs for compound %s...\n",cd->name().data());
+
+        cd->writeDocumentation(*outputList);
+        cd->writeMemberList(*outputList);
+      }
+      // even for undocumented classes, the inner classes can be documented.
+      cd->writeDocumentationForInnerClasses(*outputList);
     }
-    cd->writeDocumentationForInnerClasses(*outputList);
   }
 }
 
@@ -5607,6 +5615,7 @@ static void generateNamespaceDocs()
   
   NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;
+  // for each namespace...
   for (;(nd=nli.current());++nli)
   {
     if (nd->isLinkableInProject())
@@ -5614,12 +5623,12 @@ static void generateNamespaceDocs()
       msg("Generating docs for namespace %s\n",nd->name().data());
       nd->writeDocumentation(*outputList);
     }
-    ClassSDict::Iterator cli(Doxygen::classSDict);
+    // for each class in the namespace...
+    ClassSDict::Iterator cli(*nd->classSDict);
     for ( ; cli.current() ; ++cli )
     {
       ClassDef *cd=cli.current();
-      if ( cd->getOuterScope()==nd &&
-           cd->isLinkableInProject() && 
+      if ( cd->isLinkableInProject() && 
            cd->templateMaster()==0
          ) // skip external references, anonymous compounds and 
            // template instances and nested classes
@@ -6965,7 +6974,7 @@ void parseInput()
   msg("Building page list...\n");
   buildPageList(root);
 
-  msg("Buidling package list...\n");
+  msg("Building package list...\n");
   buildPackageList(root);
 
   msg("Search for main page...\n");

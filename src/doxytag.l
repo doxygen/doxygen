@@ -391,6 +391,7 @@ QCString unhtmlify(const char *str)
 <ReadArgs>"&amp;"		   { memberArgs+="&"; }
 <ReadArgs>"&lt;"		   { memberArgs+="<"; }
 <ReadArgs>"&gt;"		   { memberArgs+=">"; }
+<ReadArgs>"&nbsp;"		   { memberArgs+=" "; }
   /*
 <ReadArgs>[{}]			   { // handle enums
   				     memberArgs.resize(0);

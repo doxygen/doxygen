@@ -51,21 +51,10 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = . \
-                         $(QTDIR)/src/doc/qarray.doc \
-                         $(QTDIR)/src/doc/qdict.doc \
-                         $(QTDIR)/src/doc/qintdict.doc \
-                         $(QTDIR)/src/doc/qlist.doc \
-                         $(QTDIR)/src/doc/qptrdict.doc \
-                         $(QTDIR)/src/doc/qsortedlist.doc \
-                         $(QTDIR)/src/doc/qstack.doc \
-                         $(QTDIR)/src/doc/qstrlist.doc \
-                         $(QTDIR)/src/doc/qvector.doc \
-                         $(QTDIR)/src/doc/qvaluelist.doc \
-                         $(QTDIR)/src/doc/qtl.doc
+INPUT                  = .
 FILE_PATTERNS          = *.h \
                          *.cpp \
-                         q*.doc
+                         *.doc
 RECURSIVE              = NO
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 
@@ -77,8 +66,8 @@ FILTER_SOURCE_FILES    = NO
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
 ALPHABETICAL_INDEX     = YES
-COLS_IN_ALPHA_INDEX    = 5
-IGNORE_PREFIX          = 
+COLS_IN_ALPHA_INDEX    = 4
+IGNORE_PREFIX          = Q
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------

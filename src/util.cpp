@@ -2638,12 +2638,15 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   }
   else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
   {
-    od.startTextLink(gd->getOutputFileBase(),0);
-    if (lt)
-      od.docify(lt);
-    else
-      od.docify(gd->groupTitle());
-    od.endTextLink();
+    //od.startTextLink(gd->getOutputFileBase(),0);
+    //if (lt)
+    //  od.docify(lt);
+    //else
+    //  od.docify(gd->groupTitle());
+    //od.endTextLink();
+    QCString title;
+    if (lt) title=lt; else title=gd->groupTitle();
+    od.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,title);  
     if (gd->isLinkableInProject())
     {
       writePageRef(od,gd->getOutputFileBase(),0);
@@ -3436,8 +3439,8 @@ found:
 void addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
-                           int todoId,int testId,int bugId,GroupDef *gd=0,
-                           TagInfo *tagInfo=0
+                           int todoId,int testId,int bugId,GroupDef *gd,
+                           TagInfo *tagInfo
                           )
 {
   PageInfo *pi=0;
@@ -3509,7 +3512,7 @@ void addRelatedPage(const char *name,const QCString &ptitle,
 //----------------------------------------------------------------------------
 
 void addRefItem(int todoId,int testId,int bugId,const char *prefix,
-                        const char *name,const char *title,const char *args=0)
+                        const char *name,const char *title,const char *args)
 {
 
   //printf("addRefItem(%s) todoId=%d testId=%d bugId=%d\n",name,todoId,testId,bugId);
