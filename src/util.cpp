@@ -453,86 +453,105 @@ ClassDef *getResolvedClass(
                            QCString *pTemplSpec
                           )
 {
-  //printf("getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
   QCString name = n;
-  if (name.isEmpty()) return 0;
   if (scope==0) scope=Doxygen::globalScope;
-  int i = name.findRev("::");
-  QCString subst;
-  if (i!=-1)
-  {
-    subst = resolveTypeDef(scope,name.right(name.length()-i-2));
-  }
-  else
-  {
-    subst = resolveTypeDef(scope,name);
-  }
-  //printf("  typedef subst=`%s'\n",subst.data());
-  
-  if (!subst.isEmpty())
-  {
-    // strip * and & from n
-    int ip=subst.length()-1;
-    while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
-    subst=subst.left(ip+1);
+  if (name.isEmpty()) return 0;
+  int index = name.findRev("::");
+  ClassDef *cd=0;
 
-    if (pIsTypeDef) *pIsTypeDef=TRUE;
-    //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
-    if (subst==name) // avoid resolving typedef struct foo foo; 
+  do
+  {
+    //fprintf(stderr,"getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
+    QCString subst;
+    if (index!=-1)
     {
-      return Doxygen::classSDict.find(name);
-    }
-    int count=0; // recursion detection guard
-    QCString newSubst;
-    QCString typeName = subst;
-  
-    if (i!=-1) typeName.prepend(name.left(i)+"::");
-    while (!(newSubst=resolveTypeDef(scope,typeName)).isEmpty() 
-           && count<10)
-    {
-      if (typeName==newSubst) 
-      {
-        ClassDef *cd = Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
-        //printf("  getClass: exit `%s' %p\n",subst.data(),cd);
-        return cd;
-      }
-      subst=newSubst;
-      // strip * and & from n
-      int ip=subst.length()-1;
-      while (ip>=0 && subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
-      subst=subst.left(ip+1);
-      //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
-
-      typeName=newSubst;
-      if (i!=-1) typeName.prepend(name.left(i)+"::");
-      count++;
-    }
-    if (count==10)
-    {
-      warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",n);
-      return Doxygen::classSDict.find(name);
+      subst = resolveTypeDef(scope,name.right(name.length()-index-2));
     }
     else
     {
-      int i;
-      ClassDef *cd = Doxygen::classSDict.find(typeName);
-      //printf("  getClass: subst %s->%s cd=%p\n",name.data(),typeName.data(),cd);
-      if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
+      subst = resolveTypeDef(scope,name);
+    }
+    //printf("  typedef subst=`%s'\n",subst.data());
+
+    if (!subst.isEmpty())
+    {
+      // strip * and & from n
+      int ip=subst.length()-1;
+      while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
+      subst=subst.left(ip+1);
+
+      if (pIsTypeDef) *pIsTypeDef=TRUE;
+      if (subst==name) // avoid resolving typedef struct foo foo; 
       {
-        if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
-        return Doxygen::classSDict.find(typeName.left(i));
+        cd = Doxygen::classSDict.find(name);
+        if (cd) goto found;
       }
       else
       {
-        return cd;
+        int count=0; // recursion detection guard
+        QCString newSubst;
+        QCString typeName = subst;
+
+        if (index!=-1) typeName.prepend(name.left(index)+"::");
+        while (!(newSubst=resolveTypeDef(scope,typeName)).isEmpty() 
+            && count<10)
+        {
+          if (typeName==newSubst) 
+          {
+            cd = Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
+            //printf("  getClass: exit `%s' %p\n",subst.data(),cd);
+            if (cd) goto found;
+            break;
+          }
+          subst=newSubst;
+          // strip * and & from n
+          int ip=subst.length()-1;
+          while (ip>=0 && subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ') ip--;
+          subst=subst.left(ip+1);
+          //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
+
+          typeName=newSubst;
+          if (index!=-1) typeName.prepend(name.left(index)+"::");
+          count++;
+        }
+        if (count==10)
+        {
+          warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",n);
+          cd = Doxygen::classSDict.find(name);
+          if (cd) goto found;
+        }
+        else
+        {
+          int i;
+          cd = Doxygen::classSDict.find(typeName);
+          //printf("  getClass: subst %s->%s cd=%p\n",name.data(),typeName.data(),cd);
+          if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
+          {
+            if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
+            cd = Doxygen::classSDict.find(typeName.left(i));
+          }
+          if (cd) goto found;
+        }
       }
     }
-  }
-  else
-  {
-    if (pIsTypeDef) *pIsTypeDef=FALSE;
-    return Doxygen::classSDict.find(name);
-  }
+    else
+    {
+      if (pIsTypeDef) *pIsTypeDef=FALSE;
+      if (scope!=Doxygen::globalScope) 
+        cd = Doxygen::classSDict.find(scope->name()+"::"+name);
+      else
+        cd = Doxygen::classSDict.find(name);
+      if (cd) goto found;
+    }
+
+    if (scope==Doxygen::globalScope) scope=0; 
+    else if (scope) scope=scope->getOuterScope();
+    //fprintf(stderr,"scope=%p\n",scope);
+  } while (scope);
+
+found:
+  //fprintf(stderr, "getResolvedClass()=%s\n",cd?cd->name().data():"<none>");
+  return cd;
 }
 
 static bool findOperator(const QCString &s,int i)

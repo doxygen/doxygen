@@ -155,6 +155,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
 <li> \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
 <li> \refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
+<li> \refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
 <li> \refitem cfg_output_directory OUTPUT_DIRECTORY
 <li> \refitem cfg_output_language OUTPUT_LANGUAGE
 <li> \refitem cfg_paper_type PAPER_TYPE
@@ -497,6 +498,14 @@ followed by the descriptions of the tags grouped by category.
  of C sources only. Doxygen will then generate output that is more tailored 
  for C. For instance some of the names that are used will be different. 
  The list of all members will be omitted, etc. 
+
+\anchor cfg_optimize_output_java
+<dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
+ \addindex OPTIMIZE_OUTPUT_JAVA
+ Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources 
+ only. Doxygen will then generate output that is more tailored for Java.
+ For instance namespaces will be presented as packages, qualified scopes 
+ will look different, etc. 
 
 \anchor cfg_show_used_files
 <dt>\c SHOW_USED_FILES <dd>

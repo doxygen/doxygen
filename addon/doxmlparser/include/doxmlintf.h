@@ -391,7 +391,7 @@ class IDocIterator
 class IEdgeLabel
 {
   public:
-    virtual QString label() = 0;
+    virtual QString label() const = 0;
 };
 
 class IEdgeLabelIterator 
@@ -409,10 +409,11 @@ class IChildNode
 {
   public:
     enum NodeRelation { PublicInheritance, ProtectedInheritance,
-                        PrivateInheritance, Usage, TemplateInstace
+                        PrivateInheritance, Usage, TemplateInstance
                       };
     virtual QString id() const = 0;
     virtual NodeRelation relation() const = 0;
+    virtual QString relationString() const = 0;
     virtual IEdgeLabelIterator *edgeLabels() const = 0;
 };
 
@@ -551,6 +552,8 @@ class ICompound
     virtual ISectionIterator *sections() const = 0;
     virtual IDocRoot *briefDescription() const = 0;
     virtual IDocRoot *detailedDescription() const = 0;
+    virtual IGraph *inheritanceGraph() const = 0;
+    virtual IGraph *collaborationGraph() const = 0;
 
     /*! Returns an interface to a member given its id. 
      *  @param id The member id.

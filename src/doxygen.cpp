@@ -440,13 +440,14 @@ static bool addNamespace(Entry *root,ClassDef *cd)
       if (e->section==Entry::NAMESPACE_SEC)
       {
         NamespaceDef *nd=0;
-        //printf("addNameSpace() trying: %s\n",e->name.data());
         QCString nsName = stripAnonymousNamespaceScope(e->name);
+        //printf("addNameSpace() trying: %s\n",nsName.data());
         if (!nsName.isEmpty() && nsName.at(0)!='@' &&
             (nd=getResolvedNamespace(nsName))
            )
         {
           cd->setNamespace(nd);
+          cd->setOuterScope(nd);
           nd->insertClass(cd);
           return TRUE;
         }
@@ -1080,18 +1081,25 @@ static MemberDef *addVariableToClass(
     Entry *root,
     ClassDef *cd,
     MemberDef::MemberType mtype,
-    const QCString &scope,
+    /*const QCString &scope,*/
     const QCString &name,
     bool fromAnnScope,
     int indentDepth,
     MemberDef *fromAnnMemb,
     Protection prot)
 {
+  QCString qualScope = cd->qualifiedNameWithTemplateParameters();
+  QCString scopeSeparator="::";
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    qualScope = substitute(qualScope,"::",".");
+    scopeSeparator=".";
+  }
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
       "    %s' %s'::`%s' `%s' prot=`%d ann=%d init=%s\n",
       root->type.data(),
-      scope.data(), 
+      qualScope.data(), 
       name.data(),
       root->args.data(),
       root->protection,
@@ -1099,20 +1107,6 @@ static MemberDef *addVariableToClass(
       root->initializer.data()
               );
 
-  // class friends may be templatized
-  //QCString name=n;
-  //int i;
-  //if (root->type.left(7)=="friend " && (i=name.find('<'))!=-1)
-  //{
-  //  name=name.left(i); 
-  //} 
-  
-  // add template names, if the class is a non-specialized template
-  //if (scope.find('<')==-1 && cd->templateArguments())
-  //{
-  //  scope+=cd->getTemplateNameString();
-  //}
-  // generate member definition.
   QCString def;
   if (!root->type.isEmpty())
   {
@@ -1122,7 +1116,7 @@ static MemberDef *addVariableToClass(
     }
     else
     {
-      def=root->type+" "+scope+"::"+name+root->args;
+      def=root->type+" "+qualScope+scopeSeparator+name+root->args;
     }
   }
   else
@@ -1133,7 +1127,7 @@ static MemberDef *addVariableToClass(
     }
     else
     {
-      def=scope+"::"+name+root->args;
+      def=qualScope+scopeSeparator+name+root->args;
     }
   }
   if (def.left(7)=="static ") def=def.right(def.length()-7);
@@ -1510,7 +1504,7 @@ void buildVarList(Entry *root)
          cd=getClass(scope);
          if (cd)
          {
-           addVariableToClass(root,cd,MemberDef::Friend,scope,
+           addVariableToClass(root,cd,MemberDef::Friend,/*scope,*/
                                root->name,FALSE,0,0,Public);
          }
       }
@@ -1563,7 +1557,7 @@ void buildVarList(Entry *root)
           if (!pScope.isEmpty() && (pcd=getClass(pScope)))
           {
             //Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
-            md=addVariableToClass(root,pcd,mtype,pScope,name,TRUE,indentDepth,0,root->protection);
+            md=addVariableToClass(root,pcd,mtype,/*pScope,*/name,TRUE,indentDepth,0,root->protection);
           }
           else // annonymous scope inside namespace or file => put variable in the global scope
           {
@@ -1573,7 +1567,7 @@ void buildVarList(Entry *root)
           }
         }
       } 
-      addVariableToClass(root,cd,mtype,scope,name,FALSE,indentDepth,md,root->protection);
+      addVariableToClass(root,cd,mtype,/*scope,*/name,FALSE,indentDepth,md,root->protection);
     }
     else if (!name.isEmpty()) // global variable
     {
@@ -1607,8 +1601,8 @@ nextMember:
 // Searches the Entry tree for Function sections.
 // If found they are stored in their class or in the global list.
 
-void addNewMemberToClass(Entry *root,ClassDef *cd,
-                  const QCString &rname,const QCString &scope,bool isFriend)
+void addMethodToClass(Entry *root,ClassDef *cd,
+                  const QCString &rname,/*const QCString &scope,*/bool isFriend)
 {
   int l,i;
   static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
@@ -1658,6 +1652,13 @@ void addNewMemberToClass(Entry *root,ClassDef *cd,
   //md->setScopeTemplateArguments(root->tArgList);
   md->addSectionsToDefinition(root->anchors);
   QCString def;
+  QCString qualScope = cd->qualifiedNameWithTemplateParameters();
+  QCString scopeSeparator="::";
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    qualScope = substitute(qualScope,"::",".");
+    scopeSeparator=".";
+  }
   if (!root->relates.isEmpty() || isFriend || Config_getBool("HIDE_SCOPE_NAMES"))
   {
     if (!root->type.isEmpty())
@@ -1685,27 +1686,26 @@ void addNewMemberToClass(Entry *root,ClassDef *cd,
   }
   else
   {
-    QCString qualScope = cd->qualifiedNameWithTemplateParameters();
     if (!root->type.isEmpty())
     {
       if (root->argList)
       {
-        def=root->type+" "+qualScope+"::"+name;
+        def=root->type+" "+qualScope+scopeSeparator+name;
       }
       else
       {
-        def=root->type+" "+qualScope+"::"+name+root->args;
+        def=root->type+" "+qualScope+scopeSeparator+name+root->args;
       }
     }
     else
     {
       if (root->argList)
       {
-        def=qualScope+"::"+name;
+        def=qualScope+scopeSeparator+name;
       }
       else
       {
-        def=qualScope+"::"+name+root->args;
+        def=qualScope+scopeSeparator+name+root->args;
       }
     }
   }
@@ -1717,7 +1717,7 @@ void addNewMemberToClass(Entry *root,ClassDef *cd,
       "    `%s' `%s'::`%s' `%s' proto=%d\n"
       "    def=`%s'\n",
       root->type.data(),
-      scope.data(),
+      qualScope.data(),
       rname.data(),
       root->args.data(),
       root->proto,
@@ -1815,7 +1815,7 @@ static void buildFunctionList(Entry *root)
           )
          )
       {
-        addNewMemberToClass(root,cd,rname,scope,isFriend);
+        addMethodToClass(root,cd,rname,/*scope,*/isFriend);
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
@@ -4125,7 +4125,7 @@ static void findMember(Entry *root,
                   // for which there is only a definition, no declaration in
                   // the class. TODO: we should actually check whether
                   // the arguments match!
-                  addNewMemberToClass(root,cd,md->name(),cd->name(),isFriend);
+                  addMethodToClass(root,cd,md->name(),/*cd->name(),*/isFriend);
                   return;
                 }
                 candidates++;
@@ -5157,6 +5157,7 @@ static void generateClassList(ClassSDict &classSDict)
   {
     ClassDef *cd=cli.current();
    
+    //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
     if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
         cd->getOuterScope()==Doxygen::globalScope // only look at global classes
        ) 

@@ -1565,6 +1565,14 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
+                    "OPTIMIZE_OUTPUT_JAVA",
+                    "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources \n"
+                    "only. Doxygen will then generate output that is more tailored for Java. \n"
+                    "For instance namespaces will be presented as packages, qualified scopes \n"
+                    "will look different, etc. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "SHOW_USED_FILES",
                     "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
                     "at the bottom of the documentation of classes and structs. If set to YES the \n"

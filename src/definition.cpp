@@ -388,7 +388,14 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
         if (!scope.isEmpty() && scope!=scopeName)
         {
-          name.prepend(scope+"::");
+          if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+          {
+            name.prepend(scope+".");
+          }
+          else
+          {
+            name.prepend(scope+"::");
+          }
         }
         Definition *d = md->getOuterScope();
         if (d==Doxygen::globalScope) d=md->getBodyDef();
@@ -429,7 +436,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         {
           ol.docify(name);
         }
-        if (md->isFunction() && md->isSlot()) ol.docify("()");
+        if (md->isFunction() || md->isSlot() || md->isPrototype() || md->isSignal()) ol.docify("()");
       }
       index=newIndex+matchLen;
     } 

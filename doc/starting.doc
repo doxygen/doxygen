@@ -184,7 +184,12 @@ basically two options:
     namespace or file). See section \ref structuralcommands to learn more 
     about structural commands.
 </ol>
-Files can only be documented using the second option.
+Files can only be documented using the second option, since there is
+no way to but a documentation block before a file. Of course, file members 
+(functions, variable, typedefs, defines) do not need an explicit 
+structural command; just putting a special documentation block in front or 
+behind them will do. 
+
 The text inside a special documentation block is parsed
 before it is written to the HTML and/or \f$\mbox{\LaTeX}\f$ output files.
 

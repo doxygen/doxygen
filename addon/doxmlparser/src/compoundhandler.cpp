@@ -98,7 +98,7 @@ void compoundhandler_exit()
 CompoundHandler::CompoundHandler(const QString &xmlDir) 
   : m_brief(0), m_detailed(0), m_programListing(0),
     m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
-    m_mainHandler(0)
+    m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
@@ -309,5 +309,15 @@ IDocRoot *CompoundHandler::detailedDescription() const
 IMember *CompoundHandler::memberById(const QString &id) const 
 { 
   return m_memberDict[id]; 
+}
+
+IGraph *CompoundHandler::inheritanceGraph() const 
+{ 
+  return m_inheritanceGraph; 
+}
+
+IGraph *CompoundHandler::collaborationGraph() const 
+{ 
+  return m_collaborationGraph; 
 }
 

@@ -60,6 +60,8 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     ISectionIterator *sections() const;
     IDocRoot *briefDescription() const;
     IDocRoot *detailedDescription() const;
+    IGraph *inheritanceGraph() const;
+    IGraph *collaborationGraph() const;
     IMember *memberById(const QString &id) const;
     IMemberIterator *memberByName(const QString &name) const;
     void release();

@@ -623,10 +623,11 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
 
   if (!g_theVarContext.findVariable(className)) // not a local variable
   {
-    cd = getResolvedClass(g_currentDefinition,className);
+    Definition *d = g_currentDefinition;
+    cd = getResolvedClass(d,className);
     if (cd==0 && (i=className.find('<'))!=-1)
     {
-      cd=getResolvedClass(g_currentDefinition,className.left(i));
+      cd=getResolvedClass(d,className.left(i));
     }
   }
   if (cd && cd->isLinkable()) // is it a linkable class
@@ -976,9 +977,9 @@ SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
-KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile")
-FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"try"|"while")
-TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t")
+KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient")
+FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
+TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean")
 
 %option noyywrap
 
@@ -994,6 +995,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %x      MemberCall2
 %x      SkipInits
 %x      ClassName
+%x      PackageName
 %x      ClassVar
 %x      Bases
 %x      SkipSharp
@@ -1012,9 +1014,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
-					  //g_code->codify(yytext);
   					  if (!g_insideTemplate) 
 					    BEGIN( ClassName ); 
+					}
+<Body>("package")[ \t\n]+ 		{ 
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					  BEGIN( PackageName ); 
 					}
 <ReadInclude>[^\n\"\>]+/(">"|"\"")  	{
 					  //FileInfo *f;
@@ -1108,10 +1115,24 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
 					}
+<PackageName>{ID}("."{ID})*		{
+                                          g_curClassName=yytext;
+					  g_curClassName=substitute(g_curClassName,".","::");
+					  //printf("found package: %s\n",g_curClassName.data());
+					  addType();
+					  codifyLines(yytext);
+  					}
 <ClassVar>"="				{
 					  unput(*yytext);
 					  BEGIN( Body );
   					}
+<ClassVar>("extends"|"implements")	{ // Java
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					  g_curClassBases.clear();
+  					  BEGIN( Bases ); 
+					}
 <ClassVar>{ID}				{
   					  g_type = g_curClassName.copy();
 					  g_name = yytext;
@@ -1123,6 +1144,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_curClassBases.clear();
   					  BEGIN( Bases ); 
 					}
+<PackageName>[ \t]*";"				|
 <Bases,ClassName,ClassVar>[ \t]*"{"[ \t]*	{
                                           g_theVarContext.pushScope();
   					  g_code->codify(yytext);
@@ -1138,6 +1160,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  {
   					    g_scopeStack.push(SCOPEBLOCK);
 					    pushScope(g_curClassName);
+					    //printf("***** g_curClassName=%s\n",g_curClassName.data());
 					    //CodeClassDef *cd=new CodeClassDef(g_ccd);
 					    //g_codeClassDict.insert(cd->name,cd);
 					    if (getResolvedClass(g_currentDefinition,g_curClassName)==0)
