@@ -135,7 +135,7 @@ class HtmlDocVisitor : public DocVisitor
     void filter(const char *str);
     void filterQuotedCdataAttr(const char* str);
     void startLink(const QString &ref,const QString &file,
-                   const QString &anchor);
+                   const QString &relPath,const QString &anchor);
     void endLink();
     void writeDotFile(const QString &fileName);
 

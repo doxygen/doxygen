@@ -58,7 +58,7 @@ class Definition
     /*! Returns the base name of the output file that contains this 
      *  definition. 
      */
-    QCString qualifiedName() const;
+    virtual QCString qualifiedName() const;
     QCString localName() const;
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */

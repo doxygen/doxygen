@@ -516,7 +516,7 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       int s=bi2+1;
       oldStyleArgType = current->args.left(s);
       int i=s;
-      while (i<si && ((c=current->args.at(i))=='*' || isspace(c))) i++;
+      while (i<si && ((c=current->args.at(i))=='*' || isspace((uchar)c))) i++;
       oldStyleArgType += current->args.mid(s,i-s);
       s=i;
       while (i<si && isId(current->args.at(i))) i++;
@@ -529,7 +529,7 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       oldStyleArgType = current->args.left(s);
       s++;
       int i=s+1;
-      while (i<si && ((c=current->args.at(i))=='*' || isspace(c))) i++;
+      while (i<si && ((c=current->args.at(i))=='*' || isspace((uchar)c))) i++;
       oldStyleArgType += current->args.mid(s,i-s);
       s=i;
       while (i<si && isId(current->args.at(i))) i++;
@@ -543,7 +543,7 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       while (i>=0 && isId(current->args.at(i))) i--;
       j=i+1;
       // look for start of *'s
-      while (i>=0 && ((c=current->args.at(i))=='*' || isspace(c))) i--;
+      while (i>=0 && ((c=current->args.at(i))=='*' || isspace((uchar)c))) i--;
       i++;
       if (i!=l)
       {
@@ -561,7 +561,7 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
   {
     int l=si,j=0;
     char c;
-    while (j<l && ((c=current->args.at(j))=='*' || isspace(c))) j++;
+    while (j<l && ((c=current->args.at(j))=='*' || isspace((uchar)c))) j++;
     if (j>0)
     {
       oldStyleArgPtr=current->args.left(j);
@@ -750,7 +750,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      PageDocArg2
 %x      FileDocArg1
 %x      FileDocArg2
-%x      ExampleDoc
 %x	ExampleDocArg1
 %x	EnumDocArg1
 %x	FuncPtr
@@ -1067,9 +1066,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ObjCReturnType>")"			{
   					  BEGIN( ObjCMethod );
   					}
-<ObjCParams>{ID}/":"			{ // Keyword of parameter
-  					  current->argList->getLast()->attrib=(QCString)"["+yytext+"]";
-					  current->name += yytext;
+<ObjCParams>{ID}{BN}*/":"		{ // Keyword of parameter
+  					  lineCount();
+					  QCString keyw = QCString(yytext).stripWhiteSpace();
+					  current->name += keyw;
+					  if (current->argList->getLast()->type.isEmpty())
+					  {
+					    current->argList->getLast()->type="id";
+					  }
+  					  Argument *a = new Argument;
+  					  a->attrib=(QCString)"["+keyw+"]";
+					  current->argList->append(a);
   					}
 <ObjCParams>{ID}{BN}*			{ // name of parameter
   					  lineCount();
@@ -1085,17 +1092,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ObjCParams>"("				{
   					  BEGIN( ObjCParamType );
   					}
-<ObjCParams>{BN}*			{
-  					  lineCount();
-					  if (current->argList->getLast()->type.isEmpty())
-					  {
-					    current->argList->getLast()->type="id";
-					  }
-  					  Argument *a = new Argument;
-					  current->argList->append(a);
-  					}
 <ObjCParamType>[^)]*			{
-  					  current->argList->last()->type=yytext;
+  					  current->argList->getLast()->type=yytext;
   					}
 <ObjCParamType>")"{B}*			{
   					  BEGIN( ObjCParams );
@@ -1107,6 +1105,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  BEGIN( Function );
   					}
 <ObjCMethod,ObjCParams>"{"		{ // start of a method body
+                                          //printf("Type=%s Name=%s args=%s\n",
+					  //    current->type.data(),current->name.data(),argListToString(current->argList).data()
+					  //    );
                                           unput('{');
   					  BEGIN( Function );
   					}
@@ -3940,14 +3941,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->groupDocType = Entry::GROUPDOC_NORMAL;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,PageDoc,ExampleDoc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
+<Doc,PageDoc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->groupDocType = Entry::GROUPDOC_ADD;
 					  BEGIN( GroupDocArg1 );
   					}
-<Doc,PageDoc,ExampleDoc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
+<Doc,PageDoc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
   					  current->section = Entry::GROUPDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -4163,7 +4164,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
-					  BEGIN( ExampleDoc );
+					  BEGIN( PageDoc );
 					}
 <ClassDoc,Doc,JavaDoc>{B}*{CMD}"relate"[sd]{B}*    { 
   					  lastDocRelContext = YY_START;
@@ -4362,22 +4363,22 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <PageDoc>{CMD}"refitem".*"\n"		{
   					  current->doc+=yytext;
   					}
-<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"section"{B}+		{
+<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"section"{B}+		{
   					  //sectionType=SectionInfo::Section;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsection"{B}+		{
+<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsection"{B}+		{
   					  //sectionType=SectionInfo::Subsection;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsubsection"{B}+	{
+<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsubsection"{B}+	{
   					  //sectionType=SectionInfo::Subsubsection;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"paragraph"{B}+		{
+<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"paragraph"{B}+		{
   					  //sectionType=SectionInfo::Paragraph;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
@@ -4418,7 +4419,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->brief.resize(0);
 					  BEGIN(lastDocContext);
   					}
-<ExampleDoc,Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
+<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
   					  lastAnchorContext = YY_START;
   					  //sectionType=SectionInfo::Anchor;
 					  current->doc+=yytext;
@@ -4640,9 +4641,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  sectionTitle+=yytext;
                                           current->doc+=yytext;
   					}
-<ExampleDoc,PageDoc,ClassDoc>"\n"			{ yyLineNr++ ; current->doc+=yytext; }
-<ExampleDoc,PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }
-<ExampleDoc,PageDoc>{CMD}"ingroup"{B}+			{
+<PageDoc,ClassDoc>"\n"			{ yyLineNr++ ; current->doc+=yytext; }
+<PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }
+<PageDoc>{CMD}"ingroup"{B}+			{
   							  lastGroupContext = YY_START;
 							  lineCount();
 							  BEGIN( GroupName );
@@ -4663,20 +4664,20 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   							  endGroup();
                                                           memberGroupHeader.resize(0);
   							}
-<ExampleDoc,PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
-<Doc,JavaDoc,LineDoc,ExampleDoc,PageDoc,ClassDoc>^{B}*"//" 
-<Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
+<PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
+<Doc,JavaDoc,LineDoc,PageDoc,ClassDoc>^{B}*"//" 
+<Doc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
 <LineDoc,JavaDoc,ClassDocBrief>"//"			{ current->brief += yytext; }
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
+<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += yytext; 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f$"	{ 
+<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="$"; 
 							  insideFormula=TRUE;
 							  BEGIN(ReadFormulaShort); 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f["	{ 
+<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f["	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="\\["; 
 							  insideFormula=TRUE;
@@ -4742,7 +4743,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   							}
 <ReadFormulaLong>\n					{ formulaText+=*yytext; yyLineNr++; }
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
-<ExampleDoc,PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
+<PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
   					  checkDocs();
 					  //printf("current->section=%x\n",current->section);
 					  if (YY_START==SkipCode) // premature end of code block
@@ -4814,11 +4815,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
 
   /* escaped versions of the conditional commands (for putting them in the docs) */
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
 <LineDoc,JavaDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->brief+=yytext; }
 <LineDoc,JavaDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
 <LineDoc,JavaDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->brief+=yytext; }
@@ -4826,15 +4827,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
 
   /* conditional commands */
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"{B}+ {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"if"{B}+ {
                                           lastIfContext = YY_START;
 					  BEGIN(IfGuard);
   					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"ifnot"{B}+ {
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"ifnot"{B}+ {
                                           lastIfContext = YY_START;
 					  BEGIN(IfNotGuard);
   					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"(\r?)\n |
+<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"if"(\r?)\n |
 <IfGuard>\n				{
   					  warn(yyFileName,yyLineNr,"Missing guard for if statement!");
 					  yyLineNr++;
@@ -4897,17 +4898,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++;
   					}
 <SkipSection>"//"|"*/"
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
                                           // previous section enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"else"/[^a-z_A-Z0-9] {
                                           // section was enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
                                           // section enabled => absorb endif
   					}
 
@@ -5222,7 +5223,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                             current->doc+="\\internal"; 
 					  }
 					}
-<Doc,JavaDoc,ExampleDoc,PageDoc,ClassDoc,AfterDoc>{CMD}"internal"		{ 
+<Doc,JavaDoc,PageDoc,ClassDoc,AfterDoc>{CMD}"internal"		{ 
                                           if (!Config_getBool("INTERNAL_DOCS"))
                                           {
 					    lastInternalDocContext = YY_START;
@@ -5294,10 +5295,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->doc += yytext; 
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
   				         current->doc += yytext; 
 					 yyLineNr++;
 					}
@@ -5307,12 +5308,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
   				         current->brief += "."; yyLineNr++; 
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
+<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
 					  current->doc+=' '; 
 					}
 
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
+<Doc,ClassDoc,PageDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
   /*
@@ -5328,13 +5329,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    }
                                           }
   */
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
+<Doc,ClassDoc,PageDoc,AfterDoc,CopyArgComment>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
 					    if (YY_START==CopyArgComment)
 					      fullArgString+=yytext;
 					    else
   					      current->doc+=yytext;
                                           }
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<Doc,ClassDoc,PageDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
                                           bool handled=FALSE;
                                           if ( useOverrideCommands)
                                           {
@@ -5422,7 +5423,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					      current->brief+=yytext;
 					  //}
   					}
-<DefLineDoc,LineDoc,ClassDoc,PageDoc,ExampleDoc,Doc>"/*"|"//"   { current->doc += yytext; }
+<DefLineDoc,LineDoc,ClassDoc,PageDoc,Doc>"/*"|"//"   { current->doc += yytext; }
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}

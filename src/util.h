@@ -49,6 +49,7 @@ class MemberNameInfoSDict;
 struct ListItemInfo;
 class PageDef;
 struct SectionInfo;
+class QDir;
 
 //--------------------------------------------------------------------
 
@@ -213,6 +214,11 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
 int computeQualifiedIndex(const QString &name);
+void addDirPrefix(QCString &fileName);
+QCString relativePathToRoot(const char *name);
+#define REL_PATH_TO_ROOT "../../"
+void createSubDirs(QDir &d);
+QCString stripPath(const char *s);
 
 #endif
 

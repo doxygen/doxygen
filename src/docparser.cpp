@@ -84,6 +84,7 @@ static QStack<DocStyleChange> g_styleStack;
 static QStack<DocStyleChange> g_initialStyleStack;
 static QList<Definition>      g_copyStack;
 static QString                g_fileName;
+static QString                g_relPath;
 
 struct DocParserContext
 {
@@ -96,6 +97,7 @@ struct DocParserContext
   QList<Definition> copyStack;
   MemberDef *memberDef;
   QString fileName;
+  QString relPath;
 };
 
 static QStack<DocParserContext> g_parserStack;
@@ -114,6 +116,7 @@ static void docParserPushContext()
   ctx->initialStyleStack  = g_initialStyleStack;
   ctx->copyStack          = g_copyStack;
   ctx->fileName           = g_fileName;
+  ctx->relPath            = g_relPath;
   g_parserStack.push(ctx);
 }
 
@@ -128,6 +131,7 @@ static void docParserPopContext()
   g_initialStyleStack   = ctx->initialStyleStack;
   g_copyStack           = ctx->copyStack;
   g_fileName            = ctx->fileName;
+  g_relPath             = ctx->relPath;
   delete ctx;
   doctokenizerYYpopContext();
 }
@@ -1191,7 +1195,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
                   const QString &ref,const QString &file,
                   const QString &anchor) : 
       m_parent(parent), m_word(word), m_ref(ref), 
-      m_file(file), m_anchor(anchor) 
+      m_file(file), m_relPath(g_relPath), m_anchor(anchor) 
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
@@ -1281,7 +1285,7 @@ void DocIncOperator::parse()
           if (nonEmpty) break; // we have a pattern to match
           so=o+1; // no pattern, skip empty line
         }
-        else if (!isspace(c)) // no white space char
+        else if (!isspace((uchar)c)) // no white space char
         {
           nonEmpty=TRUE;
         }
@@ -1306,7 +1310,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(c)) // no white space char
+          else if (!isspace((uchar)c)) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -1334,7 +1338,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(c)) // no white space char
+          else if (!isspace((uchar)c)) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -1361,7 +1365,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(c)) // no white space char
+          else if (!isspace((uchar)c)) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -1635,7 +1639,7 @@ endsecreflist:
 //---------------------------------------------------------------------------
 
 DocInternalRef::DocInternalRef(DocNode *parent,const QString &ref) 
-  : m_parent(parent)
+  : m_parent(parent), m_relPath(g_relPath)
 {
   int i=ref.find('#');
   if (i!=-1)
@@ -1691,6 +1695,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   Definition  *compound = 0;
   QCString     anchor;
   ASSERT(!target.isEmpty());
+  m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict[target];
   if (sec) // ref to section or anchor
   {
@@ -1779,6 +1784,7 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
   //PageInfo *page;
   QCString anchor;
   m_refText = target;
+  m_relPath = g_relPath;
   if (!m_refText.isEmpty() && m_refText.at(0)=='#')
   {
     m_refText = m_refText.right(m_refText.length()-1);
@@ -4889,6 +4895,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   }
 
   g_fileName = fileName;
+  g_relPath = ctx ? relativePathToRoot(ctx->getOutputFileBase()) : QString("");
   g_memberDef = md;
   g_nodeStack.clear();
   g_styleStack.clear();
@@ -4940,6 +4947,7 @@ DocNode *validatingParseText(const char *input)
   g_token = new TokenInfo;
   g_context = "";
   g_fileName = "<parseText>";
+  g_relPath = "";
   g_memberDef = 0;
   g_nodeStack.clear();
   g_styleStack.clear();

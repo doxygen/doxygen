@@ -99,6 +99,7 @@ class MemberDef : public Definition
     const char *getGroupFileName() const     { return groupFileName; }
     int getGroupStartLine() const            { return groupStartLine; }
     bool getGroupHasDocs() const             { return groupHasDocs; }
+    QCString qualifiedName() const;
 
     // direct kind info 
     Protection protection() const         { return prot; }

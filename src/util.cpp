@@ -1127,7 +1127,7 @@ static bool findOperator(const QCString &s,int i)
   while (b<i) // check if there are only spaces inbetween 
               // the operator and the >
   {
-    if (!isspace(s.at(b))) return FALSE;
+    if (!isspace((uchar)s.at(b))) return FALSE;
     b++;
   }
   return TRUE;
@@ -1147,20 +1147,20 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     char c=s.at(i);
     if (csp<6 && c==constScope[csp]) csp++; else csp=0;
     if (i<l-2 && c=='<' &&  // current char is a <
-        (isId(s.at(i+1)) || isspace(s.at(i+1))) && // next char is an id char or space
+        (isId(s.at(i+1)) || isspace((uchar)s.at(i+1))) && // next char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
        )
     {
       result+="< "; // insert extra space for layouting (nested) templates
     }
     else if (i>0 && c=='>' && // current char is a >
-             (isId(s.at(i-1)) || isspace(s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
+             (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
              (i<8 || !findOperator(s,i)) // string in front is not "operator"
             )
     {
       result+=" >"; // insert extra space for layouting (nested) templates
     }
-    else if (i>0 && c==',' && !isspace(s.at(i-1))
+    else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
              && ((i<l-1 && isId(s.at(i+1)))
                  || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
                  || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
@@ -1186,7 +1186,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=" :";
       csp=0;
     }
-    else if (!isspace(c) ||
+    else if (!isspace((uchar)c) ||
 	      ( i>0 && i<l-1 && 
                 (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']')
                  && (isId(s.at(i+1)) || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))
@@ -2247,7 +2247,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     }
     else if (dstPos<dstAType.length())
     {
-      if (!isspace(dstAType.at(dstPos))) // maybe the names differ
+      if (!isspace((uchar)dstAType.at(dstPos))) // maybe the names differ
       {
         if (!dstA->name.isEmpty()) // dst has its name separated from its type
         {
@@ -2274,7 +2274,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     }
     else if (srcPos<srcAType.length())
     {
-      if (!isspace(srcAType.at(srcPos))) // maybe the names differ
+      if (!isspace((uchar)srcAType.at(srcPos))) // maybe the names differ
       {
         if (!srcA->name.isEmpty()) // src has its name separated from its type
         {
@@ -2646,7 +2646,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           delete argList; argList=0;
         }
-        if (mdist==maxInheritanceDepth && !strcmp(args,"()"))
+        if (mdist==maxInheritanceDepth && args && strcmp(args,"()")!=0)
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
@@ -2746,7 +2746,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             }
           }
         }
-        if (!found && !strcmp(args,"()")) 
+        if (!found && args && !strcmp(args,"()")) 
           // no exact match found, but if args="()" an arbitrary 
           // member will do
         {
@@ -2812,7 +2812,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             }
           }
         }
-        if (members.count()!=1 && !strcmp(args,"()"))
+        if (members.count()!=1 && args && !strcmp(args,"()"))
         {
           // no exact match found, but if args="()" an arbitrary 
           // member will do
@@ -3548,11 +3548,12 @@ QCString escapeCharsInString(const char *name,bool allowDots)
 }
 
 /*! This function determines the file name on disk of an item
- *  given its name, which could be a class name with templete 
+ *  given its name, which could be a class name with template 
  *  arguments, so special characters need to be escaped.
  */
 QCString convertNameToFile(const char *name,bool allowDots)
 {
+  QCString result;
   if (Config_getBool("SHORT_NAMES"))
   {
     static QDict<void> usedNames(10007);
@@ -3569,13 +3570,75 @@ QCString convertNameToFile(const char *name,bool allowDots)
     {
       num = *(int*)&value;
     }
-    QCString result;
     result.sprintf("a%05d",num); 
-    return result;
   }
   else // long names
   {
-    return escapeCharsInString(name,allowDots);
+    result=escapeCharsInString(name,allowDots);
+  }
+  if (Config_getBool("CREATE_SUBDIRS"))
+  {
+    if (Doxygen::htmlDirMap==0) 
+    {
+      Doxygen::htmlDirMap=new QDict<int>(100003);
+      Doxygen::htmlDirMap->setAutoDelete(TRUE);
+    }
+    static int curDirNum=0;
+    int *dirNum = Doxygen::htmlDirMap->find(result);
+    int l1Dir=0,l2Dir=0;
+    if (dirNum==0) // new name
+    {
+      Doxygen::htmlDirMap->insert(result,new int(curDirNum)); 
+      l1Dir = (curDirNum)%10;
+      l2Dir = ((curDirNum)/10)%10;
+      curDirNum++;
+    }
+    else // existing name
+    {
+      l1Dir = (*dirNum)%10;
+      l2Dir = ((*dirNum)/10)%10;
+    }
+    result.prepend(QCString().sprintf("d%d/d%d/",l1Dir,l2Dir));
+  }
+  return result;
+}
+
+QCString relativePathToRoot(const char *name)
+{
+  QCString result;
+  if (Config_getBool("CREATE_SUBDIRS"))
+  {
+    if (name==0)
+    {
+      return REL_PATH_TO_ROOT;
+    }
+    else
+    {
+      QCString n = name;
+      int i = n.findRev('/');
+      if (i!=-1)
+      {
+        result=REL_PATH_TO_ROOT;
+      }
+    }
+  }
+  return result;
+}
+
+void createSubDirs(QDir &d)
+{
+  if (Config_getBool("CREATE_SUBDIRS"))
+  {
+    // create 100 subdirectories
+    int l1,l2;
+    for (l1=0;l1<10;l1++)
+    {
+      d.mkdir(QString().sprintf("d%d",l1));
+      for (l2=0;l2<10;l2++)
+      {
+        d.mkdir(QString().sprintf("d%d/d%d",l1,l2));
+      }
+    }
   }
 }
 
@@ -4714,3 +4777,13 @@ void replaceNamespaceAliases(QCString &scope,int i)
   //printf("replaceNamespaceAliases() result=%s\n",scope.data());
 }
 
+QCString stripPath(const char *s)
+{
+  QCString result=s;
+  int i=result.findRev('/');
+  if (i!=-1)
+  {
+    result=result.mid(i+1);
+  }
+  return result;
+}

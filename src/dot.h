@@ -137,7 +137,7 @@ class DotClassGraph
    ~DotClassGraph();
     bool isTrivial() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
-                    bool TBRank=TRUE,bool imageMap=TRUE);
+                    const char *relPath, bool TBRank=TRUE,bool imageMap=TRUE);
 
     void writeXML(QTextStream &t);
     void writeDEF(QTextStream &t);
@@ -163,6 +163,7 @@ class DotInclDepGraph
     DotInclDepGraph(FileDef *fd,int maxRecusionDepth,bool inverse);
    ~DotInclDepGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
+                    const char *relPath,
                     bool writeImageMap=TRUE);
     bool isTrivial() const;
     QCString diskName() const;
@@ -185,7 +186,7 @@ class DotCallGraph
     DotCallGraph(MemberDef *md,int maxRecursionDepth);
    ~DotCallGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,
-                        const char *path,bool writeImageMap=TRUE);
+                        const char *path,const char *relPath,bool writeImageMap=TRUE);
     void buildGraph(DotNode *n,MemberDef *md,int distance);
     bool isTrivial() const;
     

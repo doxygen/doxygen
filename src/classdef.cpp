@@ -1186,7 +1186,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend"+Doxygen::htmlFileExtension);
+        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");
@@ -1220,7 +1220,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       {
         ol.disableAllBut(OutputGenerator::Html);
         ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink("graph_legend"+Doxygen::htmlFileExtension);
+        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
         ol.docify(theTranslator->trLegend());
         ol.endHtmlLink();
         ol.writeString("]</font></center>");

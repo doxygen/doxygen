@@ -298,6 +298,7 @@ void HtmlGenerator::init()
     g_footer=fileToString(Config_getString("HTML_FOOTER"));
     //printf("g_footer='%s'\n",g_footer.data());
   }
+  createSubDirs(d);
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
@@ -306,7 +307,8 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   t << defaultStyleSheet;
 }
 
-static void writeDefaultHeaderFile(QTextStream &t, const char *title)
+static void writeDefaultHeaderFile(QTextStream &t, const char *title,
+                                   const char *relPath)
 {
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
     "<html><head>" 
@@ -319,7 +321,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title)
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
   {
-    t << "doxygen.css";
+    t << relPath << "doxygen.css";
   }
   else
   {
@@ -342,7 +344,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 #if QT_VERSION >= 200
   t.setEncoding(QTextStream::Latin1);
 #endif
-  writeDefaultHeaderFile(t,"$title");
+  writeDefaultHeaderFile(t,"$title",relativePathToRoot(0));
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
@@ -366,6 +368,8 @@ void HtmlGenerator::startFile(const char *name,const char *,
   //printf("HtmlGenerator::startFile(%s)\n",name);
   QCString fileName=name;
   lastTitle=title;
+  relPath = relativePathToRoot(fileName);
+
   if (fileName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
   {
     fileName+=Doxygen::htmlFileExtension;
@@ -386,7 +390,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   lastFile = fileName;
   if (g_header.isEmpty()) 
   {
-    writeDefaultHeaderFile(t,dispTitle);
+    writeDefaultHeaderFile(t,dispTitle,relPath);
   }
   else
   {
@@ -425,7 +429,8 @@ void HtmlGenerator::startFile(const char *name,const char *,
 //  t << "</a> &nbsp; ";
 //}
 
-static void writePageFooter(QTextStream &t,const QCString lastTitle)
+static void writePageFooter(QTextStream &t,const QCString &lastTitle,
+                            const QCString relPath)
 {
   if (g_footer.isEmpty())
   {
@@ -435,8 +440,8 @@ static void writePageFooter(QTextStream &t,const QCString lastTitle)
         Config_getString("PROJECT_NAME")
         );
     t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
-    t << endl << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-      << "align=\"middle\" border=0 > " << "</a>" << versionString << " ";
+    t << endl << "<img src=\"" << relPath << "doxygen.png\" alt=\"doxygen\" " 
+      << "align=\"middle\" border=0 >" << "</a> " << versionString << " ";
     t << "</small></address>\n</body>\n</html>\n";
   }
   else
@@ -447,7 +452,7 @@ static void writePageFooter(QTextStream &t,const QCString lastTitle)
 
 void HtmlGenerator::writeFooter()
 {
-  writePageFooter(t,lastTitle);
+  writePageFooter(t,lastTitle,relPath);
 }
 
 void HtmlGenerator::endFile()
@@ -562,10 +567,6 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
   {
     t << "</b>";
   }
-  //if (Config_getBool("GENERATE_HTMLHELP") && f)
-  //{
-  //  htmlHelp->addItem(name,((QCString)f)+htmlFileExtension);
-  //}
 }
 
 void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
@@ -576,10 +577,6 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
   t << "<a class=\"el\" href=\"" << f << Doxygen::htmlFileExtension << "\">";
   docify(name);
   t << "</a> ";
-  //if (Config_getBool("GENERATE_HTMLHELP") && f)
-  //{
-  //  htmlHelp->addItem(name, ((QCString)f)+htmlFileExtension);
-  //}
 }
 
 void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
@@ -600,7 +597,11 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   t << "href=\"";
   if (ref)
   {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << relPath << *dest << "/";
+  }
+  else
+  {
+    t << relPath;
   }
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
@@ -627,7 +628,11 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   t << "href=\"";
   if (ref)
   {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << relPath << *dest << "/";
+  }
+  else
+  {
+    t << relPath;
   }
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
@@ -640,7 +645,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
-  if (f)   t << f << Doxygen::htmlFileExtension;
+  if (f)   t << relPath << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">"; 
 }
@@ -1019,7 +1024,7 @@ void HtmlGenerator::startMemberDocName(bool align)
 void HtmlGenerator::endMemberDocName()
 {
   DBG_HTML(t << "<!-- endMemberDocName -->" << endl;)
-  t << "</td>" << endl;
+  t << "          </td>" << endl;
 }
 
 void HtmlGenerator::startParameterList(bool openBracket)
@@ -1108,10 +1113,13 @@ void HtmlGenerator::endParameterList()
   t << "        </tr>" << endl;
 }
 
-void HtmlGenerator::endMemberDoc()     
+void HtmlGenerator::endMemberDoc(bool hasArgs)     
 { 
   DBG_HTML(t << "<!-- endMemberDoc -->" << endl;)
-  t << endl;
+  if (!hasArgs)
+  {
+    t << "        </tr>" << endl;
+  }
   t << "      </table>" << endl;
   t << "    </td>" << endl;
   t << "  </tr>" << endl;
@@ -1124,7 +1132,7 @@ void HtmlGenerator::startDotGraph()
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,BITMAP,dir,relPath);
 }
 
 void HtmlGenerator::startInclDepGraph()
@@ -1133,7 +1141,7 @@ void HtmlGenerator::startInclDepGraph()
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,BITMAP,dir,relPath);
 }
 
 void HtmlGenerator::startCallGraph()
@@ -1142,12 +1150,12 @@ void HtmlGenerator::startCallGraph()
 
 void HtmlGenerator::endCallGraph(DotCallGraph &g)
 {
-  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,BITMAP,dir,relPath);
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
-  g.writeGraph(t,Config_getString("HTML_OUTPUT"));
+  g.writeGraph(t,dir);
 }
 
 void HtmlGenerator::startMemberGroupHeader(bool)
@@ -1278,7 +1286,8 @@ void HtmlGenerator::printDoc(DocNode *n)
 }
 
 static void startQuickIndexItem(QTextStream &t,const char *l,
-                                bool hl,bool compact,bool &first)
+                                bool hl,bool compact,bool &first,
+                                const QCString &relPath)
 {
   if (!first && compact) t << " | ";
   first=FALSE;
@@ -1291,7 +1300,7 @@ static void startQuickIndexItem(QTextStream &t,const char *l,
   {
     t << "<a class=\"qindex\" ";
   }
-  t << "href=\"" << l << "\">";
+  t << "href=\"" << relPath << l << "\">";
 }
 
 static void endQuickIndexItem(QTextStream &t)
@@ -1304,7 +1313,8 @@ static QCString fixSpaces(const QCString &s)
   return substitute(s," ","&nbsp;");
 }
 
-static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem hli)
+static void writeDefaultQuickLinks(QTextStream &t,bool compact,
+                                   HighlightedItem hli,const QCString &relPath)
 {
   bool first=TRUE;
   if (compact) 
@@ -1318,18 +1328,19 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem h
 
   if (Config_getBool("SEARCHENGINE"))
   {
-    t << "  <form class=\"search\" action=\"search.php\" method=\"get\">\n";
+    t << "  <form class=\"search\" action=\"" << relPath 
+      << "search.php\" method=\"get\">\n";
   }
 
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
     startQuickIndexItem(t,"main"+Doxygen::htmlFileExtension,
-                        hli==HLI_Main,compact,first);
+                        hli==HLI_Main,compact,first,relPath);
   }
   else
   {
     startQuickIndexItem(t,"index"+Doxygen::htmlFileExtension,
-                        hli==HLI_Main,compact,first);
+                        hli==HLI_Main,compact,first,relPath);
   }
   t << fixSpaces(theTranslator->trMainPage());
   endQuickIndexItem(t);
@@ -1337,14 +1348,14 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem h
   if (documentedGroups>0)
   {
     startQuickIndexItem(t,"modules"+Doxygen::htmlFileExtension,
-                        hli==HLI_Modules,compact,first);
+                        hli==HLI_Modules,compact,first,relPath);
     t << fixSpaces(theTranslator->trModules());
     endQuickIndexItem(t);
   } 
   if (documentedNamespaces>0)
   {
     startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
-                        hli==HLI_Namespaces,compact,first);
+                        hli==HLI_Namespaces,compact,first,relPath);
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
       t << fixSpaces(theTranslator->trPackages());
@@ -1358,7 +1369,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem h
   if (hierarchyClasses>0)
   {
     startQuickIndexItem(t,"hierarchy"+Doxygen::htmlFileExtension,
-                           hli==HLI_Hierarchy,compact,first);
+                           hli==HLI_Hierarchy,compact,first,relPath);
     t << fixSpaces(theTranslator->trClassHierarchy());
     endQuickIndexItem(t);
   } 
@@ -1367,54 +1378,54 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem h
     if (Config_getBool("ALPHABETICAL_INDEX"))
     {
       startQuickIndexItem(t,"classes"+Doxygen::htmlFileExtension,
-                          hli==HLI_Classes,compact,first);
+                          hli==HLI_Classes,compact,first,relPath);
       t << fixSpaces(theTranslator->trAlphabeticalList());
       endQuickIndexItem(t);
     }
     startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
-                        hli==HLI_Annotated,compact,first);
+                        hli==HLI_Annotated,compact,first,relPath);
     t << fixSpaces(theTranslator->trCompoundList());
     endQuickIndexItem(t);
   } 
   if (documentedHtmlFiles>0)
   {
     startQuickIndexItem(t,"files"+Doxygen::htmlFileExtension,
-                        hli==HLI_Files,compact,first);
+                        hli==HLI_Files,compact,first,relPath);
     t << fixSpaces(theTranslator->trFileList());
     endQuickIndexItem(t);
   } 
   if (documentedNamespaceMembers[NMHL_All]>0)
   {
     startQuickIndexItem(t,"namespacemembers"+Doxygen::htmlFileExtension,
-                        hli==HLI_NamespaceMembers,compact,first);
+                        hli==HLI_NamespaceMembers,compact,first,relPath);
     t << fixSpaces(theTranslator->trNamespaceMembers());
     endQuickIndexItem(t);
   }
   if (documentedClassMembers[CMHL_All]>0)
   {
     startQuickIndexItem(t,"functions"+Doxygen::htmlFileExtension,
-                        hli==HLI_Functions,compact,first);
+                        hli==HLI_Functions,compact,first,relPath);
     t << fixSpaces(theTranslator->trCompoundMembers());
     endQuickIndexItem(t);
   } 
   if (documentedFileMembers[FMHL_All]>0)
   {
     startQuickIndexItem(t,"globals"+Doxygen::htmlFileExtension,
-                        hli==HLI_Globals,compact,first);
+                        hli==HLI_Globals,compact,first,relPath);
     t << fixSpaces(theTranslator->trFileMembers());
     endQuickIndexItem(t);
   } 
   if (indexedPages>0)
   {
     startQuickIndexItem(t,"pages"+Doxygen::htmlFileExtension,
-                        hli==HLI_Pages,compact,first);
+                        hli==HLI_Pages,compact,first,relPath);
     t << fixSpaces(theTranslator->trRelatedPages());
     endQuickIndexItem(t);
   } 
   if (Doxygen::exampleSDict->count()>0)
   {
     startQuickIndexItem(t,"examples"+Doxygen::htmlFileExtension,
-                        hli==HLI_Examples,compact,first);
+                        hli==HLI_Examples,compact,first,relPath);
     t << fixSpaces(theTranslator->trExamples());
     endQuickIndexItem(t);
   } 
@@ -1454,7 +1465,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,HighlightedItem h
 
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
 {
-  writeDefaultQuickLinks(t,compact,hli);
+  writeDefaultQuickLinks(t,compact,hli,relPath);
 }
 
 void HtmlGenerator::writeSearchPage()
@@ -1471,7 +1482,7 @@ void HtmlGenerator::writeSearchPage()
 #endif
       if (g_header.isEmpty()) 
       {
-        writeDefaultHeaderFile(t,"Search");
+        writeDefaultHeaderFile(t,"Search",0);
       }
       else
       {
@@ -1481,7 +1492,7 @@ void HtmlGenerator::writeSearchPage()
         << versionString << " -->" << endl;
       if (!Config_getBool("DISABLE_INDEX")) 
       { 
-        writeDefaultQuickLinks(t,TRUE,HLI_Search);
+        writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
       }
 
       t << "\n<?php\n\n";
@@ -1514,7 +1525,7 @@ void HtmlGenerator::writeSearchPage()
       t << search_script;
       t << "\n";
       t << "?>\n";
-      writePageFooter(t,"Search");
+      writePageFooter(t,"Search","");
     }
   }
 }

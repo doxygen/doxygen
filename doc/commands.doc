@@ -147,6 +147,7 @@ documentation:
 \refitem cmdlt \\\<
 \refitem cmdgt \\\>
 \refitem cmdhash \\\#
+\refitem cmdperc \\\%
 \endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
@@ -1956,6 +1957,15 @@ class C {};
   \f$\mbox{\LaTeX}\f$ output. This 
   character has to be escaped because it has a special meaning in HTML.
 
+\section cmdperc \%
+
+  \addindex \\\%
+  This command writes the \% character to the HTML and 
+  \f$\mbox{\LaTeX}\f$ output. This 
+  character has to be escaped in some cases, because it is used to 
+  prevent auto-linking to word that is also a documented class or struct. 
+
+<hr>
 <hr>
 <h2>\htmlonly <center> --- \endhtmlonly 
     Commands included for Qt compatibility

@@ -292,7 +292,8 @@ TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
 SCOPESEP  "::"|"#"|"."
 SCOPEPRE  {ID}("<"{TEMPCHAR}*">")?{SCOPESEP}
-SCOPEMASK {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
+SCOPEKEYS ":"({ID}":")*
+SCOPEMASK {SCOPEPRE}*(~)?{ID}{SCOPEKEYS}?("<"{TEMPCHAR}*">")?
 FUNCARG   "("{FUNCCHAR}*")"
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?

@@ -71,6 +71,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 \refitem cfg_compact_latex COMPACT_LATEX 
 \refitem cfg_compact_rtf COMPACT_RTF
+\refitem cfg_create_subdirs CREATE_SUBDIRS
 \refitem cfg_details_at_top DETAILS_AT_TOP 
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
@@ -232,6 +233,16 @@ followed by the descriptions of the tags grouped by category.
  path into which the generated documentation will be written. 
  If a relative path is entered, it will be relative to the location 
  where doxygen was started. If left blank the current directory will be used.
+
+\anchor cfg_create_subdirs
+<dt>\c CREATE_SUBDIRS <dd> 
+ \addindex CREATE_SUBDIRS
+ If the \c CREATE_SUBDIRS tag is set to \c YES, then doxygen will create
+ 2 levels of 10 sub-directories under the output directory of each output 
+ format and will distribute the generated files over these directories. 
+ Enabling this option can be useful when feeding doxygen a huge amount of source
+ files, where putting all generated files in the same directory would otherwise
+ causes performance problems for the file system. 
 
 \anchor cfg_output_language
 <dt>\c OUTPUT_LANGUAGE <dd>

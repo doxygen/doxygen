@@ -118,11 +118,13 @@ QTime          Doxygen::runningTime;
 SearchIndex *  Doxygen::searchIndex=0;
 SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
+QDict<int> *   Doxygen::htmlDirMap = 0;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
 static QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
 static OutputList     *outputList = 0;         // list of output generating objects
+
 
 void clearAll()
 {

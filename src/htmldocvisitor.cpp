@@ -61,7 +61,7 @@ void HtmlDocVisitor::visit(DocWord *w)
 void HtmlDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
-  startLink(w->ref(),w->file(),w->anchor());
+  startLink(w->ref(),w->file(),w->relPath(),w->anchor());
   filter(w->word());
   endLink();
 }
@@ -750,7 +750,7 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
 void HtmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
-  startLink(lnk->ref(),lnk->file(),lnk->anchor());
+  startLink(lnk->ref(),lnk->file(),lnk->relPath(),lnk->anchor());
 }
 
 void HtmlDocVisitor::visitPost(DocLink *) 
@@ -762,7 +762,10 @@ void HtmlDocVisitor::visitPost(DocLink *)
 void HtmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) 
+  {
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->anchor());
+  }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
@@ -891,7 +894,7 @@ void HtmlDocVisitor::visitPost(DocXRefItem *)
 void HtmlDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->anchor());
+  startLink(0,ref->file(),ref->relPath(),ref->anchor());
 }
 
 void HtmlDocVisitor::visitPost(DocInternalRef *) 
@@ -972,7 +975,8 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
   }
 }
 
-void HtmlDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
+void HtmlDocVisitor::startLink(const QString &ref,const QString &file,
+                               const QString &relPath,const QString &anchor)
 {
   QCString *dest;
   if (!ref.isEmpty()) // link to entity imported via tag file
@@ -989,7 +993,11 @@ void HtmlDocVisitor::startLink(const QString &ref,const QString &file,const QStr
   m_t << "href=\"";
   if (!ref.isEmpty())
   {
-    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << relPath << *dest << "/";
+  }
+  else
+  {
+    m_t << relPath;
   }
   if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
   if (!anchor.isEmpty()) m_t << "#" << anchor;

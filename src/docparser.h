@@ -203,6 +203,7 @@ class DocLinkedWord : public DocNode
     Kind kind() const          { return Kind_Word; }
     DocNode *parent() const    { return m_parent; }
     QString file() const       { return m_file; }
+    QString relPath() const    { return m_relPath; }
     QString ref() const        { return m_ref; }
     QString anchor() const     { return m_anchor; }
     void accept(DocVisitor *v) { v->visit(this); }
@@ -212,6 +213,7 @@ class DocLinkedWord : public DocNode
     QString  m_word;
     QString  m_ref;
     QString  m_file;
+    QString  m_relPath;
     QString  m_anchor;
 };
 
@@ -614,6 +616,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
     QString parse(bool);
     Kind kind() const          { return Kind_Link; }
     QString file() const       { return m_file; }
+    QString relPath() const    { return m_relPath; }
     QString ref() const        { return m_ref; }
     QString anchor() const     { return m_anchor; }
     DocNode *parent() const    { return m_parent; }
@@ -622,6 +625,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
   private:
     DocNode *m_parent;
     QString  m_file;
+    QString  m_relPath;
     QString  m_ref;
     QString  m_anchor;
     QString  m_refText;
@@ -635,6 +639,7 @@ class DocRef : public CompAccept<DocRef>, public DocNode
     void parse();
     Kind kind() const            { return Kind_Ref; }
     QString file() const         { return m_file; }
+    QString relPath() const      { return m_relPath; }
     QString ref() const          { return m_ref; }
     QString anchor() const       { return m_anchor; }
     QString targetTitle() const  { return m_text; }
@@ -649,6 +654,7 @@ class DocRef : public CompAccept<DocRef>, public DocNode
     bool      m_refToSection;
     bool      m_refToAnchor;
     QString   m_file;
+    QString   m_relPath;
     QString   m_ref;
     QString   m_anchor;
     QString   m_text;
@@ -662,6 +668,7 @@ class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
     void parse();
     Kind kind() const            { return Kind_Ref; }
     QString file() const         { return m_file; }
+    QString relPath() const      { return m_relPath; }
     QString anchor() const       { return m_anchor; }
     DocNode *parent() const      { return m_parent; }
     void accept(DocVisitor *v)   { CompAccept<DocInternalRef>::accept(this,v); }
@@ -669,6 +676,7 @@ class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
   private:
     DocNode * m_parent;
     QString   m_file;
+    QString   m_relPath;
     QString   m_anchor;
 };
 

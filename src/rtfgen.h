@@ -134,7 +134,7 @@ class RTFGenerator : public OutputGenerator
     void endDescItem();
     void lineBreak();
     void startMemberDoc(const char *,const char *,const char *,const char *);
-    void endMemberDoc();
+    void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
     void startCodeAnchor(const char *) {};
@@ -282,6 +282,7 @@ class RTFGenerator : public OutputGenerator
     int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.
     bool m_omitParagraph; // should a the next paragraph command be ignored?
     int  m_numCols; // number of columns in a table
+    QCString relPath;
 
     void beginRTFDocument();
     void beginRTFChapter();

@@ -135,7 +135,7 @@ class ManGenerator : public OutputGenerator
     void lineBreak() { t << "\n.br" << endl; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
-    void endMemberDoc();
+    void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *) {}
     void startCodeAnchor(const char *) {}
