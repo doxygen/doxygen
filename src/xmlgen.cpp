@@ -544,21 +544,33 @@ class XMLGenerator : public OutputDocInterface
       docify(url); 
       m_t << "</email>";
     }
-    void startSection(const char *id,const char *,bool subsection) 
+    void startSection(const char *id,const char *,SectionInfo::SectionType type) 
     {
       XML_DB(("(startSection)\n"));
       endParMode();
       m_t << "<sect";
-      if (subsection) m_t << "2"; else m_t << "1";
+      switch(type)
+      {
+        case SectionInfo::Page:       m_t << "1"; break;
+        case SectionInfo::Section:    m_t << "2"; break;
+        case SectionInfo::Subsection: m_t << "3"; break;
+        default: ASSERT(0); break;
+      }
       m_t << " id=\"" << id << "\">";
       startNestedPar();
       m_inParStack.top() = TRUE;
     }
-    void endSection(const char *,bool subsection)
+    void endSection(const char *,SectionInfo::SectionType type)
     {
       XML_DB(("(endSection)\n"));
       m_t << "</sect";
-      if (subsection) m_t << "2"; else m_t << "1";
+      switch(type)
+      {
+        case SectionInfo::Page:       m_t << "1"; break;
+        case SectionInfo::Section:    m_t << "2"; break;
+        case SectionInfo::Subsection: m_t << "3"; break;
+        default: ASSERT(0); break;
+      }
       m_t << ">";
       m_inParStack.top() = FALSE;
       endNestedPar();
@@ -874,6 +886,14 @@ class XMLGenerator : public OutputDocInterface
     {
       XML_DB(("(endLatexOnly)\n"));
       m_t << "</latexonly>" << endl;
+    }
+    void startSectionRefList()
+    {
+      XML_DB(("(startSectionRefList)\n"));
+    }
+    void endSectionRefList()
+    {
+      XML_DB(("(endSectionRefList)\n"));
     }
     
     // Generator specific functions

@@ -13,9 +13,11 @@
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@icmc.sc.usp.br>
  *      http://www.icmc.sc.usp.br/~chino
- *   Version: 1.2.17 (2002/07/10)
+ *   Version: 1.2.18 (2002/07/30)
  *
  * History:
+ *   1.2.18 (2002/07/30):
+ *      - Updated to Doxygen 1.2.18
  *   1.2.17 (2002/07/10):
  *      - Updated to Doxygen 1.2.17.
  *   1.2.13.2 (2002/05/10):
@@ -25,7 +27,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_2_17
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -804,7 +806,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_17
       * This note is for brazilians only.
       * Esta é uma boa tradução para "deprecated"?
       */
-      return "Descontinuada";
+      return "Descontinuado(a)";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1346,6 +1348,18 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_17
     virtual QCString trRTFTableOfContents()
     {
       return "Conteúdo";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Lista de Descontinuados(as)";
     }
 
 };

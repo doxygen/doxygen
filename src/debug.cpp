@@ -38,18 +38,23 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
 static int labelToEnumValue(const char *l)
 {
   QCString label=l;
-  if (label=="FindMembers") 
+  label=label.lower();
+  if (label=="findmembers") 
     return Debug::FindMembers;
-  else if (label=="Functions")
+  else if (label=="functions")
     return Debug::Functions;
-  else if (label=="Variables")
+  else if (label=="variables")
     return Debug::Variables;
-  else if (label=="Preprocessor")
+  else if (label=="preprocessor")
     return Debug::Preprocessor;
-  else if (label=="Classes")
+  else if (label=="classes")
     return Debug::Classes;
-  else if (label=="CommentCnv")
+  else if (label=="commentcnv")
     return Debug::CommentCnv;
+  else if (label=="validate")
+    return Debug::Validate;
+  else if (label=="printtree")
+    return Debug::PrintTree;
   else
     return 0;
 }

@@ -16,7 +16,7 @@
  */
 /*! \page docblocks Documenting the code
 
-\subsection specialblock Special documentation blocks
+\section specialblock Special documentation blocks
 
 A special documentation block is a C or C++ comment block with some 
 additional markings, so doxygen knows it is a piece of documentation that
@@ -95,7 +95,7 @@ documentation. For this purpose you can use the following:
 
 For the brief description there are also several posibilities:
 <ol>
-<li>One could use the \ref cmdbrief "\brief" command with one of the 
+<li>One could use the \ref cmdbrief "\\brief" command with one of the 
 above comment blocks. This command ends at the end of a paragraph, 
 so the detailed description follows after an empty line.
 
@@ -215,7 +215,7 @@ implementer of the members more direct access to the documentation.
 As a compromise the brief description could be placed before the
 declaration and the detailed description before the member definition.
 
-\subsection memberdoc Putting documentation after members 
+\section memberdoc Putting documentation after members 
 
 If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,
@@ -272,7 +272,7 @@ Here is an example of the use of these comment blocks:
          commands mentioned in the next section 
          (like <code>\\class</code>) are ignored inside these comment blocks.
 
-\subsection structuralcommands Documentation at other places
+\section structuralcommands Documentation at other places
 
 So far we have assumed that the documentation blocks are always located in 
 front of the declaration or definition of a file, class or namespace or in
@@ -303,20 +303,20 @@ in the input that is read by doxygen:
 */
 \endverbatim
 
-Here the special command \c \class is used to indicate that the
+Here the special command \c \\class is used to indicate that the
 comment block contains documentation for the class \c Test.
 Other structural commands are:
 <ul>
-<li>\c \struct to document a C-struct.
-<li>\c \union to document a union.
-<li>\c \enum to document an enumeration type.
-<li>\c \fn to document a function.
-<li>\c \var to document a variable or typedef or enum value.
-<li>\c \def to document a \#define.
-<li>\c \file to document a file.
-<li>\c \namespace to document a namespace.
-<li>\c \package to document a Java package.
-<li>\c \interface to document an IDL interface.
+<li>\c \\struct to document a C-struct.
+<li>\c \\union to document a union.
+<li>\c \\enum to document an enumeration type.
+<li>\c \\fn to document a function.
+<li>\c \\var to document a variable or typedef or enum value.
+<li>\c \\def to document a \#define.
+<li>\c \\file to document a file.
+<li>\c \\namespace to document a namespace.
+<li>\c \\package to document a Java package.
+<li>\c \\interface to document an IDL interface.
 </ul>
 See section \ref commands for detailed information about these and many other 
 commands. 

@@ -536,32 +536,30 @@ void ManGenerator::endMemberGroup(bool)
   firstCol=FALSE;
 }
 
-void ManGenerator::startSection(const char *,const char *,bool sub)
+void ManGenerator::startSection(const char *,const char *,SectionInfo::SectionType type)
 {
   if( !inHeader ) 
   {
-    if( sub )
+    switch(type)
     {
-      startMemberHeader();
-    }
-    else
-    {
-      startGroupHeader();
+      case SectionInfo::Page:       startGroupHeader(); break;
+      case SectionInfo::Section:    startGroupHeader(); break;
+      case SectionInfo::Subsection: startMemberHeader(); break;
+      default: ASSERT(0); break;
     }
   }
 }
 
-void ManGenerator::endSection(const char *,bool sub)
+void ManGenerator::endSection(const char *,SectionInfo::SectionType type)
 {
   if( !inHeader )
   {
-    if( sub )
+    switch(type)
     {
-      endMemberHeader();
-    }
-    else
-    {
-      endGroupHeader();
+      case SectionInfo::Page:       endGroupHeader(); break;
+      case SectionInfo::Section:    endGroupHeader(); break;
+      case SectionInfo::Subsection: endMemberHeader(); break;
+      default: ASSERT(0); break;
     }
   }
   else

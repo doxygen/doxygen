@@ -1,0 +1,598 @@
+/******************************************************************************
+ *
+ * 
+ *
+ *
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+#ifndef _PRINTDOCVISITOR_H
+#define _PRINTDOCVISITOR_H
+
+#include "docvisitor.h"
+
+/*! Concrete visitor implementation for pretty printing */
+class PrintDocVisitor : public DocVisitor
+{
+  public:
+    PrintDocVisitor() : m_indent(0), m_needsEnter(FALSE), m_insidePre(FALSE) {}
+    
+    //--------------------------------------
+    
+    void visit(DocWord *w)
+    {
+      indent_leaf();
+      printf("%s",w->word().data());
+    }
+    void visit(DocWhiteSpace *w)
+    {
+      indent_leaf();
+      if (m_insidePre)
+      {
+        printf("%s",w->chars().data());
+      }
+      else
+      {
+        printf(" ");
+      }
+    }
+    void visit(DocSymbol *s)
+    {
+      indent_leaf();
+      switch(s->symbol())
+      {
+	case DocSymbol::BSlash:  printf("\\"); break;
+	case DocSymbol::At:      printf("@"); break;
+	case DocSymbol::Less:    printf("<"); break;
+	case DocSymbol::Greater: printf(">"); break;
+	case DocSymbol::Amp:     printf("&"); break;
+	case DocSymbol::Dollar:  printf("$"); break;
+	case DocSymbol::Hash:    printf("#"); break;
+	case DocSymbol::Percent: printf("%%"); break;
+	case DocSymbol::Copy:    printf("&copy;"); break;
+	case DocSymbol::Apos:    printf("'"); break;
+	case DocSymbol::Quot:    printf("\""); break;
+	case DocSymbol::Uml:     printf("&%cuml;",s->letter()); break;
+	case DocSymbol::Acute:   printf("&%cacute;",s->letter()); break;
+	case DocSymbol::Grave:   printf("&%cgrave;",s->letter()); break;
+	case DocSymbol::Circ:    printf("&%ccirc;",s->letter()); break;
+	case DocSymbol::Tilde:   printf("&%ctilde;",s->letter()); break;
+	case DocSymbol::Szlig:   printf("&szlig;"); break;
+	case DocSymbol::Cedil:   printf("&%ccedul;",s->letter()); break;
+	case DocSymbol::Ring:    printf("&%cring;",s->letter()); break;
+	case DocSymbol::Nbsp:    printf("&nbsp;"); break;
+	default:
+	  printf("Error: unknown symbol found\n");
+      }
+    }
+    void visit(DocURL *u)
+    {
+      indent_leaf();
+      printf("%s",u->url().data());
+    }
+    void visit(DocLineBreak *)
+    {
+      indent_leaf();
+      printf("<br/>");
+    }
+    void visit(DocHorRuler *)
+    {
+      indent_leaf();
+      printf("<hr>");
+    }
+    void visit(DocStyleChange *s)
+    {
+      indent_leaf();
+      switch (s->style())
+      {
+        case DocStyleChange::Bold:
+         if (s->enable()) printf("<bold>"); else printf("</bold>");
+         break;
+        case DocStyleChange::Italic:
+         if (s->enable()) printf("<italic>"); else printf("</italic>");
+         break;
+        case DocStyleChange::Code:
+         if (s->enable()) printf("<code>"); else printf("</code>");
+         break;
+        case DocStyleChange::Subscript:
+         if (s->enable()) printf("<sub>"); else printf("</sub>");
+         break;
+        case DocStyleChange::Superscript:
+         if (s->enable()) printf("<sup>"); else printf("</sup>");
+         break;
+        case DocStyleChange::Center:
+         if (s->enable()) printf("<center>"); else printf("</center>");
+         break;
+        case DocStyleChange::Small:
+         if (s->enable()) printf("<small>"); else printf("</small>");
+         break;
+      }
+    }
+    void visit(DocVerbatim *s)
+    {
+      indent_leaf();
+      switch(s->type())
+      {
+        case DocVerbatim::Code: printf("<code>"); break;
+        case DocVerbatim::Verbatim: printf("<verbatim>"); break;
+        case DocVerbatim::HtmlOnly: printf("<htmlonly>"); break;
+        case DocVerbatim::LatexOnly: printf("<latexonly>"); break;
+      }
+      printf("%s",s->text().data());
+      switch(s->type())
+      {
+        case DocVerbatim::Code: printf("</code>"); break;
+        case DocVerbatim::Verbatim: printf("</verbatim>"); break;
+        case DocVerbatim::HtmlOnly: printf("</htmlonly>"); break;
+        case DocVerbatim::LatexOnly: printf("</latexonly>"); break;
+      }
+    }
+    void visit(DocXRefItem *x)
+    {
+      indent_leaf();
+      printf("<xrefitem id=\"%d\"/>",x->id());
+    }
+    void visit(DocAnchor *a)
+    {
+      indent_leaf();
+      printf("<anchor name=\"%s\"/>",a->anchor().data());
+    }
+    void visit(DocCopy *c)
+    {
+      indent_leaf();
+      printf("<copy link=\"%s\"/>",c->link().data());
+    }
+    void visit(DocInclude *inc)
+    {
+      indent_leaf();
+      printf("<include file=\"%s\" type=\"",inc->file().data());
+      switch(inc->type())
+      {
+        case DocInclude::Include: printf("include"); break;
+        case DocInclude::DontInclude: printf("dontinclude"); break;
+        case DocInclude::HtmlInclude: printf("htmlinclude"); break;
+        case DocInclude::VerbInclude: printf("verbinclude"); break;
+      }
+      printf("\"/>");
+    }
+    void visit(DocIncOperator *op)
+    {
+      indent_leaf();
+      printf("<incoperator pattern=\"%s\" type=\"",op->pattern().data());
+      switch(op->type())
+      {
+        case DocIncOperator::Line:     printf("line");     break;
+        case DocIncOperator::Skip:     printf("skip");     break;
+        case DocIncOperator::SkipLine: printf("skipline"); break;
+        case DocIncOperator::Until:    printf("until");    break;
+      }
+      printf("\"/>");
+    }
+    void visit(DocFormula *f)
+    {
+      indent_leaf();
+      printf("<formula id=%d/>",f->id());
+    }
+
+    //--------------------------------------
+    
+    void visitPre(DocAutoList *l)
+    {
+      indent_pre();
+      if (l->isEnumList())
+      {
+        printf("<ol>\n");
+      }
+      else
+      {
+        printf("<ul>\n");
+      }
+    }
+    void visitPost(DocAutoList *l)
+    {
+      indent_post();
+      if (l->isEnumList())
+      {
+        printf("</ol>\n");
+      }
+      else
+      {
+        printf("</ul>\n");
+      }
+    }
+    void visitPre(DocAutoListItem *)
+    {
+      indent_pre();
+      printf("<li>\n");
+    }
+    void visitPost(DocAutoListItem *) 
+    {
+      indent_post();
+      printf("</li>\n");
+    }
+    void visitPre(DocPara *) 
+    {
+      indent_pre();
+      printf("<para>\n");
+    }
+    void visitPost(DocPara *)
+    {
+      indent_post();
+      printf("</para>\n");
+    }
+    void visitPre(DocRoot *)
+    {
+      indent_pre();
+      printf("<root>\n");
+    }
+    void visitPost(DocRoot *)
+    {
+      indent_post();
+      printf("</root>\n");
+    }
+    void visitPre(DocSimpleSect *s)
+    {
+      indent_pre();
+      printf("<simplesect type=");
+      switch(s->sectionType())
+      {
+	case DocSimpleSect::See: printf("see"); break;
+	case DocSimpleSect::Return: printf("return"); break;
+	case DocSimpleSect::Author: printf("author"); break;
+	case DocSimpleSect::Version: printf("version"); break;
+	case DocSimpleSect::Since: printf("since"); break;
+	case DocSimpleSect::Date: printf("date"); break;
+	case DocSimpleSect::Note: printf("note"); break;
+	case DocSimpleSect::Warning: printf("warning"); break;
+	case DocSimpleSect::Pre: printf("pre"); break;
+	case DocSimpleSect::Post: printf("post"); break;
+	case DocSimpleSect::Invar: printf("invar"); break;
+	case DocSimpleSect::Remark: printf("remark"); break;
+	case DocSimpleSect::Attention: printf("attention"); break;
+	case DocSimpleSect::User: printf("user"); break;
+	case DocSimpleSect::Param: 
+          {
+            printf("param["); 
+            QStrListIterator li(s->parameters());
+            const char *s;
+            bool first=TRUE;
+            for (li.toFirst();(s=li.current());++li)
+            {
+              if (!first) printf(","); else first=FALSE;
+              printf("%s",s);
+            }
+            printf("]");
+          }
+          break;
+	case DocSimpleSect::RetVal: 
+          {
+            printf("retval["); 
+            QStrListIterator li(s->parameters());
+            const char *s;
+            bool first=TRUE;
+            for (li.toFirst();(s=li.current());++li)
+            {
+              if (!first) printf(","); else first=FALSE;
+              printf("%s",s);
+            }
+            printf("]");
+          }
+          break;
+	case DocSimpleSect::Exception: printf("exception"); break;
+          {
+            printf("exception["); 
+            QStrListIterator li(s->parameters());
+            const char *s;
+            bool first=TRUE;
+            for (li.toFirst();(s=li.current());++li)
+            {
+              if (!first) printf(","); else first=FALSE;
+              printf("%s",s);
+            }
+            printf("]");
+          }
+          break;
+	case DocSimpleSect::Unknown: printf("unknown"); break;
+      }
+      printf(">\n");
+    }
+    void visitPost(DocSimpleSect *)
+    {
+      indent_post();
+      printf("</simplesect>\n");
+    }
+    void visitPre(DocTitle *)
+    {
+      indent_pre();
+      printf("<title>\n");
+    }
+    void visitPost(DocTitle *)
+    {
+      indent_post();
+      printf("</title>\n");
+    }
+    void visitPre(DocSimpleList *)
+    {
+      indent_pre();
+      printf("<ul>\n");
+    }
+    void visitPost(DocSimpleList *)
+    {
+      indent_post();
+      printf("</ul>\n");
+    }
+    void visitPre(DocSimpleListItem *)
+    {
+      indent_pre();
+      printf("<li>\n");
+    }
+    void visitPost(DocSimpleListItem *) 
+    {
+      indent_post();
+      printf("</li>\n");
+    }
+    void visitPre(DocSection *s)
+    {
+      indent_pre();
+      printf("<sect%d>\n",s->level());
+    }
+    void visitPost(DocSection *s) 
+    {
+      indent_post();
+      printf("</sect%d>\n",s->level());
+    }
+    void visitPre(DocHtmlList *s)
+    {
+      indent_pre();
+      if (s->type()==DocHtmlList::Ordered) printf("<ol>\n"); else printf("<ul>\n");
+    }
+    void visitPost(DocHtmlList *s) 
+    {
+      indent_post();
+      if (s->type()==DocHtmlList::Ordered) printf("</ol>\n"); else printf("</ul>\n");
+    }
+    void visitPre(DocHtmlListItem *)
+    {
+      indent_pre();
+      printf("<li>\n");
+    }
+    void visitPost(DocHtmlListItem *) 
+    {
+      indent_post();
+      printf("</li>\n");
+    }
+    void visitPre(DocHtmlPre *)
+    {
+      indent_pre();
+      printf("<pre>\n");
+      m_insidePre=TRUE;
+    }
+    void visitPost(DocHtmlPre *) 
+    {
+      m_insidePre=FALSE;
+      indent_post();
+      printf("</pre>\n");
+    }
+    void visitPre(DocHtmlDescList *)
+    {
+      indent_pre();
+      printf("<dl>\n");
+    }
+    void visitPost(DocHtmlDescList *) 
+    {
+      indent_post();
+      printf("</dl>\n");
+    }
+    void visitPre(DocHtmlDescTitle *)
+    {
+      indent_pre();
+      printf("<dt>\n");
+    }
+    void visitPost(DocHtmlDescTitle *) 
+    {
+      indent_post();
+      printf("</dt>\n");
+    }
+    void visitPre(DocHtmlDescData *)
+    {
+      indent_pre();
+      printf("<dd>\n");
+    }
+    void visitPost(DocHtmlDescData *) 
+    {
+      indent_post();
+      printf("</dd>\n");
+    }
+    void visitPre(DocHtmlTable *t)
+    {
+      indent_pre();
+      printf("<table rows=\"%d\" cols=\"%d\">\n",
+          t->numRows(),t->numCols());
+    }
+    void visitPost(DocHtmlTable *) 
+    {
+      indent_post();
+      printf("</table>\n");
+    }
+    void visitPre(DocHtmlRow *)
+    {
+      indent_pre();
+      printf("<tr>\n");
+    }
+    void visitPost(DocHtmlRow *) 
+    {
+      indent_post();
+      printf("</tr>\n");
+    }
+    void visitPre(DocHtmlCell *c)
+    {
+      indent_pre();
+      printf("<t%c>\n",c->isHeading()?'h':'d');
+    }
+    void visitPost(DocHtmlCell *c) 
+    {
+      indent_post();
+      printf("</t%c>\n",c->isHeading()?'h':'d');
+    }
+    void visitPre(DocHtmlCaption *)
+    {
+      indent_pre();
+      printf("<caption>\n");
+    }
+    void visitPost(DocHtmlCaption *) 
+    {
+      indent_post();
+      printf("</caption>\n");
+    }
+    void visitPre(DocIndexEntry *)
+    {
+      indent_pre();
+      printf("<indexentry>\n");
+    }
+    void visitPost(DocIndexEntry *) 
+    {
+      indent_post();
+      printf("</indexentry>\n");
+    }
+    void visitPre(DocInternal *)
+    {
+      indent_pre();
+      printf("<internal>\n");
+    }
+    void visitPost(DocInternal *) 
+    {
+      indent_post();
+      printf("</internal>\n");
+    }
+    void visitPre(DocHRef *href)
+    {
+      indent_pre();
+      printf("<a url=\"%s\">\n",href->url().data());
+    }
+    void visitPost(DocHRef *) 
+    {
+      indent_post();
+      printf("</a>\n");
+    }
+    void visitPre(DocHtmlHeader *header)
+    {
+      indent_pre();
+      printf("<h%d>\n",header->level());
+    }
+    void visitPost(DocHtmlHeader *header) 
+    {
+      indent_post();
+      printf("</h%d>\n",header->level());
+    }
+    void visitPre(DocImage *img)
+    {
+      indent_pre();
+      printf("<image src=\"%s\">\n",img->name().data());
+    }
+    void visitPost(DocImage *) 
+    {
+      indent_post();
+      printf("</image>\n");
+    }
+    void visitPre(DocDotFile *df)
+    {
+      indent_pre();
+      printf("<dotfile src=\"%s\">\n",df->name().data());
+    }
+    void visitPost(DocDotFile *) 
+    {
+      indent_post();
+      printf("</dotfile>\n");
+    }
+    void visitPre(DocLink *lnk)
+    {
+      indent_pre();
+      printf("<link target=\"%s\">\n",lnk->target().data());
+    }
+    void visitPost(DocLink *) 
+    {
+      indent_post();
+      printf("</link>\n");
+    }
+    void visitPre(DocRef *ref)
+    {
+      indent_pre();
+      printf("<ref target=\"%s\">\n",ref->target().data());
+    }
+    void visitPost(DocRef *) 
+    {
+      indent_post();
+      printf("</ref>\n");
+    }
+    void visitPre(DocSecRefItem *ref)
+    {
+      indent_pre();
+      printf("<secrefitem target=\"%s\">\n",ref->target().data());
+    }
+    void visitPost(DocSecRefItem *) 
+    {
+      indent_post();
+      printf("</secrefitem>\n");
+    }
+    void visitPre(DocSecRefList *)
+    {
+      indent_pre();
+      printf("<secreflist>\n");
+    }
+    void visitPost(DocSecRefList *) 
+    {
+      indent_post();
+      printf("</secreflist>\n");
+    }
+    void visitPre(DocLanguage *l)
+    {
+      indent_pre();
+      printf("<language id=%s>\n",l->id().data());
+    }
+    void visitPost(DocLanguage *) 
+    {
+      indent_post();
+      printf("</language>\n");
+    }
+
+  private:
+    // helper functions
+    void indent() 
+    { 
+      if (m_needsEnter) printf("\n");
+      for (int i=0;i<m_indent;i++) printf("."); 
+      m_needsEnter=FALSE;
+    } 
+    void indent_leaf()
+    {
+      if (!m_needsEnter) indent();
+      m_needsEnter=TRUE;
+    }
+    void indent_pre()
+    {
+      indent();
+      m_indent++;
+    }
+    void indent_post()
+    {
+      m_indent--;
+      indent();
+    }
+    
+    // member variables
+    int m_indent;
+    bool m_needsEnter;
+    bool m_insidePre;
+};
+
+#endif

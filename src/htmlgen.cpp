@@ -517,16 +517,28 @@ void HtmlGenerator::endGroupHeader()
   t << "</h2>" << endl;
 }
 
-void HtmlGenerator::startSection(const char *lab,const char *,bool sub)
+void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
-  if (sub) t << "<h3>"; else t << "<h2>";
+  switch(type)
+  {
+    case SectionInfo::Page:       t << "<h1>"; break;
+    case SectionInfo::Section:    t << "<h2>"; break;
+    case SectionInfo::Subsection: t << "<h3>"; break;
+    default: ASSERT(0); break;
+  }
   t << "<a name=\"" << lab << "\">";
 }
 
-void HtmlGenerator::endSection(const char *,bool sub)
+void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
 {
   t << "</a>" << endl;
-  if (sub) t << "</h3>"; else t << "</h2>";
+  switch(type)
+  {
+    case SectionInfo::Page:       t << "</h1>"; break;
+    case SectionInfo::Section:    t << "</h2>"; break;
+    case SectionInfo::Subsection: t << "</h3>"; break;
+    default: ASSERT(0); break;
+  }
 }
 
 void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
@@ -558,7 +570,7 @@ void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
 {
   QCString refName=name;
   if (refName.right(htmlFileExtensionLength)!=htmlFileExtension) refName+=htmlFileExtension;
-  t << "<a href=\"" << refName << "#" << lab << "\">";
+  t << "<li><a href=\"" << refName << "#" << lab << "\">";
   docify(title);
   t << "</a>";
 }
@@ -1205,4 +1217,15 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
+void HtmlGenerator::startSectionRefList()
+{
+  t << "<multicol cols=3>" << endl;
+  t << "<ul>" << endl;
+}
+
+void HtmlGenerator::endSectionRefList()
+{
+  t << "</ul>" << endl;
+  t << "</multicol>" << endl;
+}
 

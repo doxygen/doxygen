@@ -141,6 +141,9 @@
 // 2002/07/08 (my birthday! ;)
 //  - The new trRTFTableOfContents() implemented.
 //
+// 2002/07/29
+//  - The new trDeprecatedList() implemented.
+//
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -160,7 +163,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public TranslatorAdapter_1_2_17
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1517,9 +1520,20 @@ class TranslatorCzech : public TranslatorAdapter_1_2_17
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "Obsah";
+      return decode("Obsah");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return decode("Seznam zastaralých prvkù");
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

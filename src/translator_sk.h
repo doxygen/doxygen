@@ -23,7 +23,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public TranslatorAdapter_1_2_13
+class TranslatorSlovak : public Translator
 {
   private:
 	/*! The Decode() inline assumes the source written in the
@@ -1341,6 +1341,50 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_13
 	virtual QCString trReferences()
 	{
 	  return Decode("Odkazuje sa na");
+	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+	/*! used in member documentation blocks to produce a list of
+	 *	members that are implemented by this one.
+	 */
+	virtual QCString trImplementedFromList(int numEntries)
+	{
+	  return "Implementuje " + trWriteList(numEntries) + ".";
+	}
+
+	/*! used in member documentation blocks to produce a list of
+	 *	all members that implement this member.
+	 */
+	virtual QCString trImplementedInList(int numEntries)
+	{
+	  return Decode("Implementované v " + trWriteList(numEntries) + ".");
+	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+	/*! used in RTF documentation as a heading for the Table
+	 *	of Contents.
+	 */
+	virtual QCString trRTFTableOfContents()
+	{
+	  return "Obsah";
+	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+	/*! Used as the header of the list of item that have been
+	 *	flagged deprecated
+	 */
+	virtual QCString trDeprecatedList()
+	{
+	  return "Zastarané metódy";
 	}
 };
 

@@ -54,6 +54,8 @@ Definition::Definition(const char *df,int dl,
   m_outerScope=Doxygen::globalScope;
   m_partOfGroups=0;
   m_specialListItems=0;
+  m_briefLine=1;
+  m_docFile=1;
 }
 
 Definition::~Definition()
@@ -109,6 +111,8 @@ void Definition::writeDocAnchorsToTagFile()
 
 void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
 { 
+  if (d==0) return;
+  //printf("Definition::setDocumentation(%s,%s,%d)\n",d,docFile,docLine);
   if (stripWhiteSpace)
     m_doc=((QCString)d).stripWhiteSpace();
   else
@@ -119,6 +123,8 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
 
 void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
 { 
+  if (b==0) return;
+  //printf("Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
   m_brief=QCString(b).stripWhiteSpace(); 
   int bl=m_brief.length(); 
   if (bl>0) // add puntuation if needed

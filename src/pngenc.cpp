@@ -30,6 +30,8 @@
 #include "pngenc.h"
 #include "message.h"
 
+#undef jmpbuf
+
 static void user_error_fn(png_structp, png_const_charp error_msg)
 {
     err("%s\n", error_msg);

@@ -106,7 +106,7 @@ For compatibility with the Troll Tech's internal documentation tool and
 with KDoc, doxygen has two commands that can be used to create simple
 unnested lists. 
 
-See \ref cmdarg "\arg" and \ref cmdli "\li" for more info.
+See \ref cmdarg "\\arg" and \ref cmdli "\\li" for more info.
 
 \htmlonly
 Go to the <a href="grouping.html">next</a> section or return to the

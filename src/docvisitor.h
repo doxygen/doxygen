@@ -1,0 +1,151 @@
+/******************************************************************************
+ *
+ * 
+ *
+ *
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+#ifndef _DOCVISITOR_H
+#define _DOCVISITOR_H
+
+class DocWord;
+class DocWhiteSpace;
+class DocAutoList;
+class DocAutoListItem;
+class DocPara;
+class DocRoot;
+class DocSymbol;
+class DocURL;
+class DocStyleChange;
+class DocSimpleSect;
+class DocTitle;
+class DocSimpleList;
+class DocSimpleListItem;
+class DocSection;
+class DocVerbatim;
+class DocXRefItem;
+class DocHtmlList;
+class DocHtmlListItem;
+class DocHtmlPre;
+class DocHtmlDescList;
+class DocHtmlDescTitle;
+class DocHtmlDescData;
+class DocHtmlTable;
+class DocHtmlRow;
+class DocHtmlCell;
+class DocHtmlCaption;
+class DocLineBreak;
+class DocHorRuler;
+class DocAnchor;
+class DocIndexEntry;
+class DocInternal;
+class DocHRef;
+class DocCopy;
+class DocInclude;
+class DocIncOperator;
+class DocHtmlHeader;
+class DocImage;
+class DocDotFile;
+class DocLink;
+class DocRef;
+class DocFormula;
+class DocSecRefItem;
+class DocSecRefList;
+class DocLanguage;
+
+/*! @brief Abstract visitor that participates in the visitor pattern.
+ */
+class DocVisitor
+{
+  public:
+    /*! @name Visitor functions for leaf nodes */
+    virtual void visit(DocWord *) = 0;
+    virtual void visit(DocWhiteSpace *) = 0;
+    virtual void visit(DocSymbol *) = 0;
+    virtual void visit(DocURL *) = 0;
+    virtual void visit(DocStyleChange *) = 0;
+    virtual void visit(DocVerbatim *) = 0;
+    virtual void visit(DocXRefItem *) = 0;
+    virtual void visit(DocLineBreak *) = 0;
+    virtual void visit(DocHorRuler *) = 0;
+    virtual void visit(DocAnchor *) = 0;
+    virtual void visit(DocCopy *) = 0;
+    virtual void visit(DocInclude *) = 0;
+    virtual void visit(DocIncOperator *) = 0;
+    virtual void visit(DocFormula *) = 0;
+
+    /*! @name Visitor functions for internal nodes */
+    virtual void visitPre(DocAutoList *) = 0;
+    virtual void visitPost(DocAutoList *) = 0;
+    virtual void visitPre(DocAutoListItem *) = 0;
+    virtual void visitPost(DocAutoListItem *) = 0;
+    virtual void visitPre(DocPara *) = 0;
+    virtual void visitPost(DocPara *) = 0;
+    virtual void visitPre(DocRoot *) = 0;
+    virtual void visitPost(DocRoot *) = 0;
+    virtual void visitPre(DocSimpleSect *) = 0;
+    virtual void visitPost(DocSimpleSect *) = 0;
+    virtual void visitPre(DocTitle *) = 0;
+    virtual void visitPost(DocTitle *) = 0;
+    virtual void visitPre(DocSimpleList *) = 0;
+    virtual void visitPost(DocSimpleList *) = 0;
+    virtual void visitPre(DocSimpleListItem *) = 0;
+    virtual void visitPost(DocSimpleListItem *) = 0;
+    virtual void visitPre(DocSection *) = 0;
+    virtual void visitPost(DocSection *) = 0;
+    virtual void visitPre(DocHtmlList *) = 0;
+    virtual void visitPost(DocHtmlListItem *) = 0;
+    virtual void visitPre(DocHtmlListItem *) = 0;
+    virtual void visitPost(DocHtmlList *) = 0;
+    virtual void visitPre(DocHtmlPre *) = 0;
+    virtual void visitPost(DocHtmlPre *) = 0;
+    virtual void visitPre(DocHtmlDescList *) = 0;
+    virtual void visitPost(DocHtmlDescList *) = 0;
+    virtual void visitPre(DocHtmlDescTitle *) = 0;
+    virtual void visitPost(DocHtmlDescTitle *) = 0;
+    virtual void visitPre(DocHtmlDescData *) = 0;
+    virtual void visitPost(DocHtmlDescData *) = 0;
+    virtual void visitPre(DocHtmlTable *) = 0;
+    virtual void visitPost(DocHtmlRow *) = 0;
+    virtual void visitPre(DocHtmlCell *) = 0;
+    virtual void visitPost(DocHtmlCell *) = 0;
+    virtual void visitPre(DocHtmlRow *) = 0;
+    virtual void visitPost(DocHtmlTable *) = 0;
+    virtual void visitPre(DocHtmlCaption *) = 0;
+    virtual void visitPost(DocHtmlCaption *) = 0;
+    virtual void visitPre(DocIndexEntry *) = 0;
+    virtual void visitPost(DocIndexEntry *) = 0;
+    virtual void visitPre(DocInternal *) = 0;
+    virtual void visitPost(DocInternal *) = 0;
+    virtual void visitPre(DocHRef *) = 0;
+    virtual void visitPost(DocHRef *) = 0;
+    virtual void visitPre(DocHtmlHeader *) = 0;
+    virtual void visitPost(DocHtmlHeader *) = 0;
+    virtual void visitPre(DocImage *) = 0;
+    virtual void visitPost(DocImage *) = 0;
+    virtual void visitPre(DocDotFile *) = 0;
+    virtual void visitPost(DocDotFile *) = 0;
+    virtual void visitPre(DocLink *) = 0;
+    virtual void visitPost(DocLink *) = 0;
+    virtual void visitPre(DocRef *) = 0;
+    virtual void visitPost(DocRef *) = 0;
+    virtual void visitPre(DocSecRefItem *) = 0;
+    virtual void visitPost(DocSecRefItem *) = 0;
+    virtual void visitPre(DocSecRefList *) = 0;
+    virtual void visitPost(DocSecRefList *) = 0;
+    virtual void visitPre(DocLanguage *) = 0;
+    virtual void visitPost(DocLanguage *) = 0;
+};
+
+#endif

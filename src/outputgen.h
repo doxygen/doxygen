@@ -24,6 +24,7 @@
 #include <qfile.h>
 #include <qstack.h>
 #include "index.h"
+#include "section.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -234,8 +235,8 @@ class BaseOutputDocInterface
     virtual void startTitle() = 0;
     virtual void endTitle()   = 0;
     virtual void writeAnchor(const char *fileName,const char *name) = 0;
-    virtual void startSection(const char *,const char *,bool) = 0;
-    virtual void endSection(const char *,bool) = 0;
+    virtual void startSection(const char *,const char *,SectionInfo::SectionType) = 0;
+    virtual void endSection(const char *,SectionInfo::SectionType) = 0;
     virtual void writeSectionRef(const char *,const char *,
                                  const char *,const char *) = 0;
     virtual void writeSectionRefItem(const char *,const char *,const char *) = 0;
@@ -272,6 +273,9 @@ class BaseOutputDocInterface
     virtual void endHtmlOnly() = 0;
     virtual void startLatexOnly() = 0;
     virtual void endLatexOnly() = 0;
+
+    virtual void startSectionRefList() = 0;
+    virtual void endSectionRefList() = 0;
 
     /*! Writes an ASCII string to the output. This function should keep 
      *  spaces visible, should break lines at a newline and should convert 

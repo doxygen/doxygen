@@ -214,8 +214,8 @@ class LatexGenerator : public OutputGenerator
     void endParamList();
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
-    void startSection(const char *,const char *,bool);
-    void endSection(const char *,bool);
+    void startSection(const char *,const char *,SectionInfo::SectionType);
+    void endSection(const char *,SectionInfo::SectionType);
     void writeSectionRef(const char *,const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
     //void writeSectionRefAnchor(const char *,const char *,const char *);
@@ -281,6 +281,9 @@ class LatexGenerator : public OutputGenerator
     void startLatexOnly() {}
     void endLatexOnly()   {}
     
+    void startSectionRefList();
+    void endSectionRefList();
+
   private:
     void latin2ToLatex(unsigned char);
     LatexGenerator(const LatexGenerator &);

@@ -202,7 +202,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+      parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -211,7 +211,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,docFile(),docLine(),name(),0,documentation()+"\n");
       ol.newParagraph();
     }
     ol.endTextBlock();
@@ -250,7 +250,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
   else if (!briefDescription().isEmpty()) 
   {
-    parseDoc(ol,m_defFileName,m_defLine,name(),0,briefDescription());
+    parseDoc(ol,briefFile(),briefLine(),name(),0,briefDescription());
     ol.writeString(" \n");
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -366,7 +366,7 @@ void NamespaceDef::addListReferences()
 {
   addRefItem(specialListItems(),
              theTranslator->trNamespace(TRUE,TRUE),
-             getOutputFileBase(),name()
+             getOutputFileBase(),displayName()
             );
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;

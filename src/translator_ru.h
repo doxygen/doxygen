@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_2_17
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -1406,6 +1406,17 @@ class TranslatorRussian : public TranslatorAdapter_1_2_17
       return decode("Оглавление");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return decode( "Список устаревших определений и описаний" );
+    }
 };
 
 #endif

@@ -42,7 +42,7 @@ The following options are available:
    an absolute path or a URL.
 
    \par Note:
-     Each <tagfile> must be unique and should only be the name of the
+     Each \<tagfile\> must be unique and should only be the name of the
      file, not including the path. 
 
 <dt><b>-q</b><dd>

@@ -485,7 +485,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -2956,6 +2956,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"//!" { 
   					  current->brief.resize(0);
+					  current->briefFile=yyFileName;
+					  current->briefLine=yyLineNr;
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -2970,6 +2972,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
   					  current->brief.resize(0);
+					  current->briefFile=yyFileName;
+					  current->briefLine=yyLineNr;
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -3416,12 +3420,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                                "Warning: missing argument after "
 					       "\\page."
                                               );
+					  current->doc+="\n";
   					  yyLineNr++;
 					  BEGIN( Doc );
   					}
 <PageDocArg2>.*"\n"			{
   				          yyLineNr++;
 					  current->args = yytext;
+					  current->doc+="\n";
 					  BEGIN( PageDoc );
 					}
 <EnumDocArg1>{SCOPEID}			{
@@ -3594,7 +3600,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <AnchorLabel>{LABELID}			{
   					  sectionLabel=yytext;
 					  addSection();
-					  current->doc += "\\anchor "+sectionLabel+"\n";
+					  current->doc += "\\anchor "+sectionLabel+" ";
 					  BEGIN(lastAnchorContext);
   					}
 <SectionLabel>{LABELID}			{
@@ -3605,7 +3611,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SectionTitle>[^\n*]*/"\n"		{
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  current->doc += "\\section "+sectionLabel+"\n";
+					  current->doc += "\\section "+sectionLabel+" ";
 					  addSection();
 					  BEGIN(PageDoc);
   					}
@@ -3643,7 +3649,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,ExampleDoc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
 <LineDoc,JavaDoc,ClassDocBrief>"//"			{ current->brief += yytext; }
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
-							  current->doc += &yytext[1]; 
+							  current->doc += yytext; 
 							}
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
@@ -3727,6 +3733,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN( BugParam );
 					  }
 					  else if (YY_START==ClassDocBrief &&
+					      lastBriefContext==DeprecatedParam)
+					  {
+					    unput('/');unput('*'); // make sure we have something to read
+					    BEGIN( DeprecatedParam );
+					  }
+					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
   					    current->doc += "\n\n";
@@ -3757,16 +3769,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
 
   /* escaped versions of the conditional commands (for putting them in the docs) */
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=&yytext[1]; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=&yytext[1]; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=&yytext[1]; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=&yytext[1]; }
-<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=&yytext[1]; }
-<LineDoc,JavaDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->brief+=&yytext[1]; }
-<LineDoc,JavaDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->brief+=&yytext[1]; }
-<LineDoc,JavaDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->brief+=&yytext[1]; }
-<LineDoc,JavaDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->brief+=&yytext[1]; }
-<LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=&yytext[1]; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=yytext; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
+<LineDoc,JavaDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->brief+=yytext; }
+<LineDoc,JavaDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
+<LineDoc,JavaDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->brief+=yytext; }
+<LineDoc,JavaDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->brief+=yytext; }
+<LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
 
   /* conditional commands */
 <ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"{B}+ {
@@ -3897,7 +3909,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if (!current->doc.isEmpty()) current->doc+=" <p>";
 					  if (lastBriefContext==TodoParam || 
 					      lastBriefContext==TestParam || 
-					      lastBriefContext==BugParam
+					      lastBriefContext==BugParam ||
+					      lastBriefContext==DeprecatedParam
 					     )
 					  {
 					    unput('\n');
@@ -3938,6 +3951,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    unput('\n'); // make sure we have something to read
 					    BEGIN( BugParam );
+					  }
+					  else if
+					     (lastBriefContext==DeprecatedParam &&
+					      (slStartContext==LineDoc ||
+					       slStartContext==AfterDocLine
+					      )
+					     )
+					  {
+					    unput('\n'); // make sure we have something to read
+					    BEGIN( DeprecatedParam );
 					  }
 					  else
 					  {

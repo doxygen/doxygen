@@ -1012,7 +1012,7 @@ void writeFileIndex(OutputList &ol)
         {
           //ol.docify(" (");
           parseDoc(ol,
-              fd->absFilePath(),1,
+              fd->briefFile(),fd->briefLine(),
               0,0,
               abbreviate(fd->briefDescription(),fd->name()));
           //ol.docify(")");
@@ -1135,7 +1135,7 @@ void writeNamespaceIndex(OutputList &ol)
       {
         //ol.docify(" (");
         parseDoc(ol,
-                 nd->getDefFileName(),nd->getDefLine(),
+                 nd->briefFile(),nd->briefLine(),
                  nd->name(),0,
                  abbreviate(nd->briefDescription(),nd->displayName()));
         //ol.docify(")");
@@ -1211,7 +1211,7 @@ void writeAnnotatedClassList(OutputList &ol)
       {
         //ol.docify(" (");
         parseDoc(ol,
-                 cd->getDefFileName(),cd->getDefLine(),
+                 cd->briefFile(),cd->briefLine(),
                  cd->name(),0,
                  abbreviate(cd->briefDescription(),cd->name()));
         //ol.docify(")");
@@ -1581,9 +1581,9 @@ void writeMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.startSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
-          ol.endSection(anchor,TRUE);
+          ol.endSection(anchor,SectionInfo::Subsection);
           ol.startItemList();
           first=FALSE;
         }
@@ -1763,9 +1763,9 @@ void writeFileMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.startSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
-          ol.endSection(anchor,TRUE);
+          ol.endSection(anchor,SectionInfo::Subsection);
           ol.startItemList();
           first=FALSE;
         }
@@ -1841,9 +1841,9 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
           lastChar=cs[0]=tolower(name.at(0));cs[1]='\0';
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cs+" -";
-          ol.startSection(anchor,title,TRUE);
+          ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
-          ol.endSection(anchor,TRUE);
+          ol.endSection(anchor,SectionInfo::Subsection);
           ol.startItemList();
           first=FALSE;
         }
@@ -2589,7 +2589,7 @@ void writeGroupList(OutputList &ol)
       ol.endTextLink();
       ol.endDescItem();
       parseDoc(ol,
-          gd->getDefFileName(),gd->getDefLine(),
+          gd->briefFile(),gd->briefLine(),
           0,0,gd->briefDescription());
       ol.newParagraph();
       //}

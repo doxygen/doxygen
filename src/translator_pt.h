@@ -14,11 +14,13 @@
  * input used in their production; they are not affected by this license.
  *
  * The translation into Portuguese was provided by
- *   Rui Godinho Lopes <ruiglopes@yahoo.com>
+ *   Rui Godinho Lopes <rui@ruilopes.com>
  *     http://www.ruilopes.com
  *
  * VERSION HISTORY
  * ---------------
+ * 006 30 july 2002
+ *   ! Updated for doxygen v1.2.17
  * 005 10 july 2002
  *   ! Updated for doxygen v1.2.16
  * 004 03 march 2002
@@ -36,7 +38,7 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_2_17
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -1380,6 +1382,18 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_17
     virtual QCString trRTFTableOfContents()
     {
       return "Índice";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Lista de Deprecados";
     }
 
 };

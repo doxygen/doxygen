@@ -17,11 +17,11 @@
 
 /*! \page history Doxygen History
 
-<h3>Version 1.2.0</h3>
-<h4>Major new features:</h4>
+<h2>Version 1.2.0</h2>
+<h3>Major new features:</h3>
 <ul>
 <li>Support for RTF output.
-<li>Using the dot tool of the AT&T's GraphViz package, doxygen can now
+<li>Using the dot tool of the AT\&T's GraphViz package, doxygen can now
     generate inheritance diagrams, collaboration diagrams, include
     dependency graphs, included by graphs and graphical inheritance overviews.
 <li>Function arguments can now be documented with separate comment blocks.
@@ -46,26 +46,26 @@
     The colors can be changed using cascading style sheets.
 </ul>
 
-<h3>Version 1.0.0</h3>
+<h2>Version 1.0.0</h2>
 
-<h4>Major new features:</h4>
+<h3>Major new features:</h3>
 <ul>
 <li>Support for templates and namespaces.
 <li>Internationalization support. Currently supported languages are:
     English, Czech, German, Spanish, Finnish, French, Italian, Japanese,
     Dutch, and Swedish. 
-<li>Automatic generation of inheritance diagrams for sub & super classes.
+<li>Automatic generation of inheritance diagrams for sub and super classes.
 <li>Support for man page, compressed HTML help, and hyperlinked PDF output.
 <li>Cross-referencing documentation with source code and source inlining.
 <li>LaTeX formulas can be included in the documentation.
-<li>Support for parsing Corba & Microsoft IDL.
+<li>Support for parsing Corba and Microsoft IDL.
 <li>Images can be included in the documentation.
-<li>Improved parsing & preprocessing.
+<li>Improved parsing and preprocessing.
 </ul>
 
-<h3>Version 0.4</h3>
+<h2>Version 0.4</h2>
 
-<h4>Major new features:</h4>
+<h3>Major new features:</h3>
 <ul>
 <li>LaTeX output generation.
 <li>Full JavaDoc support. 
@@ -82,8 +82,8 @@
 <li>A lot of small examples are now included.
 </ul>
 
-<h3>Version 0.3</h3>
-<h4>Major new features:</h4>
+<h2>Version 0.3</h2>
+<h3>Major new features:</h3>
 <ul>
 <li>A search engine <a href="doxysearch_usage.html">doxysearch</a>, 
     that allows you to search through the generated documentation.
@@ -99,8 +99,8 @@
     documentation.
 </ul>
 
-<h3>Version 0.2</h3>
-<h4>Major new features:</h4>
+<h2>Version 0.2</h2>
+<h3>Major new features:</h3>
 <ul>
 <li>Blocks of code are now parsed. Function calls and variables are
     replaced by links to their documentation if possible.
@@ -120,7 +120,7 @@
     instead of only the used ones.
 </ul>
 
-<h3>Version 0.1</h3>
+<h2>Version 0.1</h2>
 Initial version.
 
 */

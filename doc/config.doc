@@ -16,7 +16,7 @@
  */
 /*! \page config Configuration
 
-\subsection config_format Format
+\section config_format Format
 
 A configuration file is a free-form ASCII text file with a structure
 that is similar to that of a Makefile, default name \c Doxyfile. It is
@@ -54,160 +54,144 @@ The configuration options can be divided into several categories.
 Below is an alphabetical index of the tags that are recognized 
 followed by the descriptions of the tags grouped by category.
 
-\htmlonly
-<multicol cols=3>
-<ul>
-\endhtmlonly
-\latexonly
-\footnotesize
-\begin{multicols}{2}
-\begin{CompactList}
-\endlatexonly
-<li> \refitem cfg_aliases ALIASES
-<li> \refitem cfg_allexternals ALLEXTERNALS 
-<li> \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
-<li> \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
-<li> \refitem cfg_bin_abspath BIN_ABSPATH 
-<li> \refitem cfg_binary_toc BINARY_TOC
-<li> \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
-<li> \refitem cfg_case_sense_names CASE_SENSE_NAMES 
-<li> \refitem cfg_cgi_name CGI_NAME 
-<li> \refitem cfg_cgi_url CGI_URL 
-<li> \refitem cfg_chm_file CHM_FILE
-<li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
-<li> \refitem cfg_class_graph CLASS_GRAPH
-<li> \refitem cfg_collaboration_graph COLLABORATION_GRAPH
-<li> \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
-<li> \refitem cfg_compact_latex COMPACT_LATEX 
-<li> \refitem cfg_compact_rtf COMPACT_RTF
-<li> \refitem cfg_details_at_top DETAILS_AT_TOP 
-<li> \refitem cfg_disable_index DISABLE_INDEX 
-<li> \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
-<li> \refitem cfg_doc_abspath DOC_ABSPATH 
-<li> \refitem cfg_doc_url DOC_URL
-<li> \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
-<li> \refitem cfg_dot_path DOT_PATH
-<li> \refitem cfg_dotfile_dirs DOTFILE_DIRS
-<li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
-<li> \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
-<li> \refitem cfg_enabled_sections ENABLED_SECTIONS
-<li> \refitem cfg_example_path EXAMPLE_PATH
-<li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
-<li> \refitem cfg_example_recursive EXAMPLE_RECURSIVE
-<li> \refitem cfg_exclude EXCLUDE
-<li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
-<li> \refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
-<li> \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
-<li> \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
-<li> \refitem cfg_ext_doc_paths EXT_DOC_PATHS
-<li> \refitem cfg_external_groups EXTERNAL_GROUPS
-<li> \refitem cfg_extra_packages EXTRA_PACKAGES
-<li> \refitem cfg_extract_all EXTRACT_ALL
-<li> \refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
-<li> \refitem cfg_extract_private EXTRACT_PRIVATE
-<li> \refitem cfg_extract_static EXTRACT_STATIC
-<li> \refitem cfg_file_patterns FILE_PATTERNS
-<li> \refitem cfg_filter_source_files FILTER_SOURCE_FILES
-<li> \refitem cfg_full_path_names FULL_PATH_NAMES
-<li> \refitem cfg_generate_buglist GENERATE_BUGLIST
-<li> \refitem cfg_generate_chi GENERATE_CHI
-<li> \refitem cfg_generate_html GENERATE_HTML
-<li> \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
-<li> \refitem cfg_generate_latex GENERATE_LATEX
-<li> \refitem cfg_generate_legend GENERATE_LEGEND
-<li> \refitem cfg_generate_man GENERATE_MAN
-<li> \refitem cfg_generate_rtf GENERATE_RTF
-<li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
-<li> \refitem cfg_generate_testlist GENERATE_TESTLIST
-<li> \refitem cfg_generate_todolist GENERATE_TODOLIST
-<li> \refitem cfg_generate_treeview GENERATE_TREEVIEW
-<li> \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
-<li> \refitem cfg_have_dot HAVE_DOT
-<li> \refitem cfg_hhc_location HHC_LOCATION
-<li> \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
-<li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
-<li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
-<li> \refitem cfg_hide_undoc_relations HIDE_UNDOC_RELATIONS
-<li> \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
-<li> \refitem cfg_html_footer HTML_FOOTER
-<li> \refitem cfg_html_header HTML_HEADER
-<li> \refitem cfg_html_output HTML_OUTPUT
-<li> \refitem cfg_html_stylesheet HTML_STYLESHEET
-<li> \refitem cfg_ignore_prefix IGNORE_PREFIX
-<li> \refitem cfg_image_path IMAGE_PATH
-<li> \refitem cfg_include_graph INCLUDE_GRAPH
-<li> \refitem cfg_include_path INCLUDE_PATH
-<li> \refitem cfg_inherit_docs INHERIT_DOCS
-<li> \refitem cfg_inline_info INLINE_INFO
-<li> \refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
-<li> \refitem cfg_inline_sources INLINE_SOURCES
-<li> \refitem cfg_input INPUT
-<li> \refitem cfg_input_filter INPUT_FILTER
-<li> \refitem cfg_internal_docs INTERNAL_DOCS
-<li> \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
-<li> \refitem cfg_latex_batchmode LATEX_BATCHMODE
-<li> \refitem cfg_latex_cmd_name LATEX_CMD_NAME
-<li> \refitem cfg_latex_header LATEX_HEADER
-<li> \refitem cfg_latex_output LATEX_OUTPUT
-<li> \refitem cfg_macro_expansion MACRO_EXPANSION
-<li> \refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
-<li> \refitem cfg_man_extension MAN_EXTENSION
-<li> \refitem cfg_man_links MAN_LINKS
-<li> \refitem cfg_man_output MAN_OUTPUT
-<li> \refitem cfg_max_dot_graph_height MAX_DOT_GRAPH_HEIGHT
-<li> \refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
-<li> \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
-<li> \refitem cfg_multiline_cpp_is_brief MULTILINE_CPP_IS_BRIEF
-<li> \refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
-<li> \refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
-<li> \refitem cfg_output_directory OUTPUT_DIRECTORY
-<li> \refitem cfg_output_language OUTPUT_LANGUAGE
-<li> \refitem cfg_paper_type PAPER_TYPE
-<li> \refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
-<li> \refitem cfg_perl_path PERL_PATH
-<li> \refitem cfg_predefined PREDEFINED
-<li> \refitem cfg_project_name PROJECT_NAME
-<li> \refitem cfg_project_number PROJECT_NUMBER
-<li> \refitem cfg_quiet QUIET
-<li> \refitem cfg_recursive RECURSIVE
-<li> \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
-<li> \refitem cfg_references_relation REFERENCES_RELATION
-<li> \refitem cfg_repeat_brief REPEAT_BRIEF
-<li> \refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
-<li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
-<li> \refitem cfg_rtf_output RTF_OUTPUT
-<li> \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
-<li> \refitem cfg_search_includes SEARCH_INCLUDES
-<li> \refitem cfg_searchengine SEARCHENGINE
-<li> \refitem cfg_short_names SHORT_NAMES
-<li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
-<li> \refitem cfg_show_used_files SHOW_USED_FILES
-<li> \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
-<li> \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
-<li> \refitem cfg_source_browser SOURCE_BROWSER
-<li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
-<li> \refitem cfg_strip_from_path STRIP_FROM_PATH
-<li> \refitem cfg_tab_size TAB_SIZE
-<li> \refitem cfg_tagfiles TAGFILES
-<li> \refitem cfg_template_relations TEMPLATE_RELATIONS
-<li> \refitem cfg_toc_expand TOC_EXPAND
-<li> \refitem cfg_treeview_width TREEVIEW_WIDTH
-<li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
-<li> \refitem cfg_warn_format WARN_FORMAT
-<li> \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
-<li> \refitem cfg_warn_logfile WARN_LOGFILE
-<li> \refitem cfg_warnings WARNINGS
-\htmlonly
-</ul>
-</multicol>
-\endhtmlonly
-\latexonly
-\end{CompactList}
-\end{multicols}
-\normalsize
-\endlatexonly
+\secreflist
+\refitem cfg_aliases ALIASES
+\refitem cfg_allexternals ALLEXTERNALS 
+\refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
+\refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
+\refitem cfg_bin_abspath BIN_ABSPATH 
+\refitem cfg_binary_toc BINARY_TOC
+\refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
+\refitem cfg_case_sense_names CASE_SENSE_NAMES 
+\refitem cfg_cgi_name CGI_NAME 
+\refitem cfg_cgi_url CGI_URL 
+\refitem cfg_chm_file CHM_FILE
+\refitem cfg_class_diagrams CLASS_DIAGRAMS 
+\refitem cfg_class_graph CLASS_GRAPH
+\refitem cfg_collaboration_graph COLLABORATION_GRAPH
+\refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
+\refitem cfg_compact_latex COMPACT_LATEX 
+\refitem cfg_compact_rtf COMPACT_RTF
+\refitem cfg_details_at_top DETAILS_AT_TOP 
+\refitem cfg_disable_index DISABLE_INDEX 
+\refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
+\refitem cfg_doc_abspath DOC_ABSPATH 
+\refitem cfg_doc_url DOC_URL
+\refitem cfg_dot_image_format DOT_IMAGE_FORMAT
+\refitem cfg_dot_path DOT_PATH
+\refitem cfg_dotfile_dirs DOTFILE_DIRS
+\refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
+\refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
+\refitem cfg_enabled_sections ENABLED_SECTIONS
+\refitem cfg_example_path EXAMPLE_PATH
+\refitem cfg_example_patterns EXAMPLE_PATTERNS
+\refitem cfg_example_recursive EXAMPLE_RECURSIVE
+\refitem cfg_exclude EXCLUDE
+\refitem cfg_exclude_patterns EXCLUDE_PATTERNS
+\refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
+\refitem cfg_expand_as_defined EXPAND_AS_DEFINED
+\refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
+\refitem cfg_ext_doc_paths EXT_DOC_PATHS
+\refitem cfg_external_groups EXTERNAL_GROUPS
+\refitem cfg_extra_packages EXTRA_PACKAGES
+\refitem cfg_extract_all EXTRACT_ALL
+\refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
+\refitem cfg_extract_private EXTRACT_PRIVATE
+\refitem cfg_extract_static EXTRACT_STATIC
+\refitem cfg_file_patterns FILE_PATTERNS
+\refitem cfg_filter_source_files FILTER_SOURCE_FILES
+\refitem cfg_full_path_names FULL_PATH_NAMES
+\refitem cfg_generate_buglist GENERATE_BUGLIST
+\refitem cfg_generate_chi GENERATE_CHI
+\refitem cfg_generate_html GENERATE_HTML
+\refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
+\refitem cfg_generate_latex GENERATE_LATEX
+\refitem cfg_generate_legend GENERATE_LEGEND
+\refitem cfg_generate_man GENERATE_MAN
+\refitem cfg_generate_rtf GENERATE_RTF
+\refitem cfg_generate_tagfile GENERATE_TAGFILE
+\refitem cfg_generate_testlist GENERATE_TESTLIST
+\refitem cfg_generate_todolist GENERATE_TODOLIST
+\refitem cfg_generate_treeview GENERATE_TREEVIEW
+\refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
+\refitem cfg_have_dot HAVE_DOT
+\refitem cfg_hhc_location HHC_LOCATION
+\refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
+\refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
+\refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
+\refitem cfg_hide_undoc_relations HIDE_UNDOC_RELATIONS
+\refitem cfg_html_align_members HTML_ALIGN_MEMBERS
+\refitem cfg_html_footer HTML_FOOTER
+\refitem cfg_html_header HTML_HEADER
+\refitem cfg_html_output HTML_OUTPUT
+\refitem cfg_html_stylesheet HTML_STYLESHEET
+\refitem cfg_ignore_prefix IGNORE_PREFIX
+\refitem cfg_image_path IMAGE_PATH
+\refitem cfg_include_graph INCLUDE_GRAPH
+\refitem cfg_include_path INCLUDE_PATH
+\refitem cfg_inherit_docs INHERIT_DOCS
+\refitem cfg_inline_info INLINE_INFO
+\refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
+\refitem cfg_inline_sources INLINE_SOURCES
+\refitem cfg_input INPUT
+\refitem cfg_input_filter INPUT_FILTER
+\refitem cfg_internal_docs INTERNAL_DOCS
+\refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
+\refitem cfg_latex_batchmode LATEX_BATCHMODE
+\refitem cfg_latex_cmd_name LATEX_CMD_NAME
+\refitem cfg_latex_header LATEX_HEADER
+\refitem cfg_latex_output LATEX_OUTPUT
+\refitem cfg_macro_expansion MACRO_EXPANSION
+\refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
+\refitem cfg_man_extension MAN_EXTENSION
+\refitem cfg_man_links MAN_LINKS
+\refitem cfg_man_output MAN_OUTPUT
+\refitem cfg_max_dot_graph_height MAX_DOT_GRAPH_HEIGHT
+\refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
+\refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
+\refitem cfg_multiline_cpp_is_brief MULTILINE_CPP_IS_BRIEF
+\refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
+\refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
+\refitem cfg_output_directory OUTPUT_DIRECTORY
+\refitem cfg_output_language OUTPUT_LANGUAGE
+\refitem cfg_paper_type PAPER_TYPE
+\refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
+\refitem cfg_perl_path PERL_PATH
+\refitem cfg_predefined PREDEFINED
+\refitem cfg_project_name PROJECT_NAME
+\refitem cfg_project_number PROJECT_NUMBER
+\refitem cfg_quiet QUIET
+\refitem cfg_recursive RECURSIVE
+\refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
+\refitem cfg_references_relation REFERENCES_RELATION
+\refitem cfg_repeat_brief REPEAT_BRIEF
+\refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
+\refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
+\refitem cfg_rtf_output RTF_OUTPUT
+\refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
+\refitem cfg_search_includes SEARCH_INCLUDES
+\refitem cfg_searchengine SEARCHENGINE
+\refitem cfg_short_names SHORT_NAMES
+\refitem cfg_show_include_files SHOW_INCLUDE_FILES
+\refitem cfg_show_used_files SHOW_USED_FILES
+\refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
+\refitem cfg_sort_member_docs SORT_MEMBER_DOCS
+\refitem cfg_source_browser SOURCE_BROWSER
+\refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
+\refitem cfg_strip_from_path STRIP_FROM_PATH
+\refitem cfg_tab_size TAB_SIZE
+\refitem cfg_tagfiles TAGFILES
+\refitem cfg_template_relations TEMPLATE_RELATIONS
+\refitem cfg_toc_expand TOC_EXPAND
+\refitem cfg_treeview_width TREEVIEW_WIDTH
+\refitem cfg_verbatim_headers VERBATIM_HEADERS
+\refitem cfg_warn_format WARN_FORMAT
+\refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
+\refitem cfg_warn_logfile WARN_LOGFILE
+\refitem cfg_warnings WARNINGS
+\endsecreflist
 
-\subsection config_general General options
+\section config_general General options
 \anchor cfg_project_name
 <dl>
 
@@ -510,7 +494,7 @@ followed by the descriptions of the tags grouped by category.
  consists of more lines than specified here it will be hidden. Use a value
  of 0 to hide initializers completely. The appearance of the value of
  individual variables and defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
- or \ref cmdhideinitializer "\hideinitializer" command in the documentation.
+ or \ref cmdhideinitializer "\\hideinitializer" command in the documentation.
 
 \anchor cfg_optimize_output_for_c
 <dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
@@ -537,7 +521,7 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
-\subsection messages_input Options related to warning and progress messages 
+\section messages_input Options related to warning and progress messages 
 \anchor cfg_quiet
 <dl>
 
@@ -582,7 +566,7 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
-\subsection config_input Input related options
+\section config_input Input related options
 \anchor cfg_input
 <dl>
 
@@ -663,7 +647,7 @@ followed by the descriptions of the tags grouped by category.
  \addindex IMAGE_PATH
  The \c IMAGE_PATH tag can be used to specify one or more files or
  directories that contain images that are to be included in the 
- documentation (see the \ref cmdimage "\image" command).
+ documentation (see the \ref cmdimage "\\image" command).
 
 \anchor cfg_input_filter
 <dt>\c INPUT_FILTER <dd>
@@ -688,7 +672,7 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
-\subsection sourcebrowser_index Source browsing related options
+\section sourcebrowser_index Source browsing related options
 \anchor cfg_source_browser
 <dl>
 
@@ -719,7 +703,7 @@ followed by the descriptions of the tags grouped by category.
 
 </dl>
 
-\subsection alphabetical_index Alphabetical index options
+\section alphabetical_index Alphabetical index options
 \anchor cfg_alphabetical_index
 <dl>
 
@@ -746,7 +730,7 @@ followed by the descriptions of the tags grouped by category.
  headers.
 
 </dl>
-\subsection html_output HTML related options
+\section html_output HTML related options
 \anchor cfg_generate_html
 <dl>
 
@@ -774,7 +758,7 @@ followed by the descriptions of the tags grouped by category.
  \addindex HTML_HEADER
  The \c HTML_HEADER tag can be used to specify a user defined HTML 
  header file for each generated HTML page. To get valid HTML the header file
- should contain at least a \c <HTML> and a \c <BODY> tag, but it is
+ should contain at least a \c \<HTML\> and a \c \<BODY\> tag, but it is
  good idea to include the style sheet that is generated by doxygen as well. 
  Minimal example:
 \verbatim
@@ -805,7 +789,7 @@ followed by the descriptions of the tags grouped by category.
  \addindex HTML_FOOTER
  The \c HTML_FOOTER tag can be used to specify a user defined HTML footer for 
  each generated HTML page. To get valid HTML the header file should contain
- at least a \c </BODY> and a \c </HTML> tag. A minimal example:
+ at least a \c \</BODY\> and a \c \</HTML\> tag. A minimal example:
 \verbatim
     </BODY>
   </HTML>
@@ -935,7 +919,7 @@ followed by the descriptions of the tags grouped by category.
  is shown.
 
 </dl>
-\subsection latex_output LaTeX related options
+\section latex_output LaTeX related options
 \anchor cfg_generate_latex
 <dl>
 
@@ -1049,7 +1033,7 @@ EXTRA_PACKAGES = times
  in HTML.
 
 </dl>
-\subsection rtf_output RTF related options
+\section rtf_output RTF related options
 \anchor cfg_generate_rtf
 <dl>
 
@@ -1104,7 +1088,7 @@ EXTRA_PACKAGES = times
 
 </dl>
 
-\subsection man_output Man page related options
+\section man_output Man page related options
 \anchor cfg_generate_man
 <dl>
 
@@ -1139,7 +1123,7 @@ EXTRA_PACKAGES = times
 
 </dl>
 
-\subsection config_prepro Preprocessor related options
+\section config_prepro Preprocessor related options
 \anchor cfg_enable_preprocessing
 <dl>
 
@@ -1204,7 +1188,7 @@ EXTRA_PACKAGES = times
  used for boiler-plate code, and will confuse the parser if not removed. 
 
 </dl>
-\subsection config_extref External reference options
+\section config_extref External reference options
 \anchor cfg_tagfiles
 <dl>
 
@@ -1263,7 +1247,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  interpreter (i.e. the result of `<tt>which perl</tt>').
 
 </dl>
-\subsection config_dot Dot options
+\section config_dot Dot options
 \anchor cfg_class_diagrams
 <dl>
 
@@ -1282,7 +1266,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
  available from the path. This tool is part of 
  <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
- visualization toolkit from AT&T and Lucent Bell Labs. The other options in 
+ visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
  
 \anchor cfg_class_graph
@@ -1374,7 +1358,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  the specified constraint. Beware that most browsers cannot cope with very
  large images.
 
-\anchor cfg_generate_legend <dd>
+\anchor cfg_generate_legend 
 <dt>\c GENERATE_LEGEND <dd>
  \addindex GENERATE_LEGEND
  If the \c GENERATE_LEGEND tag is set to \c YES (the default) doxygen will
@@ -1388,7 +1372,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  If left blank, "NO" is assumed.
 
 </dl>
-\subsection config_search Search engine options
+\section config_search Search engine options
 \anchor cfg_searchengine
 <dl>
 

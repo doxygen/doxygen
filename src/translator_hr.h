@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_2_17
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1051,7 +1051,17 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_17
     {
       return decode("Sadr¾aj");
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
 
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Popis zastarjelih metoda";
+    }
 };
 
 #endif

@@ -5988,9 +5988,9 @@ static void generatePageDocs()
       if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
           (si=Doxygen::sectionDict.find(pi->name))!=0)
       {
-        outputList->startSection(si->label,si->title,si->type==SectionInfo::Subsection);
+        outputList->startSection(si->label,si->title,si->type);
         outputList->docify(si->title);
-        outputList->endSection(si->label,si->type==SectionInfo::Subsection);
+        outputList->endSection(si->label,si->type);
       }
       outputList->startTextBlock();
       parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
