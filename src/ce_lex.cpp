@@ -445,7 +445,7 @@ char *yytext;
  * $Id$
  *
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 

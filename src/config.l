@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -62,13 +62,13 @@ void warn(const char *fmt, ...)
  *	exported variables
  */
   
-
 QCString Config::projectName;          
 QCString Config::projectNumber;          
 QCString Config::outputDir;          
 QCString Config::htmlOutputDir;          
 QCString Config::latexOutputDir;          
 QCString Config::manOutputDir;          
+QCString Config::rtfOutputDir;
 QCString Config::outputLanguage;
 QCString Config::headerFile;          
 QCString Config::latexHeaderFile;          
@@ -84,6 +84,7 @@ QCString Config::inputFilter;
 QCString Config::paperType;
 QCString Config::manExtension;
 QCString Config::htmlStyleSheet;
+QCString Config::ignorePrefix;
 QStrList Config::includePath;                
 QStrList Config::examplePath;
 QStrList Config::imagePath;
@@ -119,11 +120,15 @@ bool     Config::alphaIndexFlag      = FALSE;
 bool     Config::pdfHyperFlag        = FALSE;
 bool     Config::alwaysDetailsFlag   = FALSE;
 bool     Config::inlineSourceFlag    = FALSE;
+bool     Config::rtfHyperFlag        = FALSE;
+bool     Config::compactRTFFlag      = FALSE;
+bool     Config::haveDotFlag         = FALSE;
 bool     Config::autoBriefFlag       = TRUE;
 bool     Config::warningFlag         = TRUE; 
 bool     Config::generateHtml        = TRUE;
 bool     Config::generateLatex       = TRUE;
 bool     Config::generateMan         = TRUE;
+bool     Config::generateRTF         = FALSE;
 bool     Config::preprocessingFlag   = TRUE;
 bool     Config::briefMemDescFlag    = TRUE;
 bool     Config::searchIncludeFlag   = TRUE;
@@ -133,9 +138,13 @@ bool     Config::verbatimHeaderFlag  = TRUE;
 bool     Config::htmlAlignMemberFlag = TRUE;
 bool     Config::inheritDocsFlag     = TRUE;
 bool     Config::inlineInfoFlag      = TRUE;
+bool     Config::collGraphFlag       = TRUE;
+bool     Config::includeGraphFlag    = TRUE;
+bool     Config::gfxHierarchyFlag    = TRUE;
 int      Config::tabSize             = 8;
 int      Config::colsInAlphaIndex    = 5;
-  
+
+
 /* -----------------------------------------------------------------
  *
  *	static variables
@@ -186,50 +195,52 @@ static int yyread(char *buf,int max_size)
 
 <*>\0x0d
 <Start,GetString,GetStrList,GetBool>"#"	{ BEGIN(SkipComment); }
-<Start>"PROJECT_NAME"[ \t]*"="		{ BEGIN(GetString);  s=&Config::projectName;      }
-<Start>"PROJECT_NUMBER"[ \t]*"="	{ BEGIN(GetString);  s=&Config::projectNumber;    }
-<Start>"OUTPUT_DIRECTORY"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputDir;        }
-<Start>"HTML_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::htmlOutputDir;    }
-<Start>"MAN_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manOutputDir;     }
-<Start>"LATEX_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::latexOutputDir;   }
-<Start>"HTML_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::headerFile;       }
-<Start>"HTML_FOOTER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::footerFile;       }
-<Start>"LATEX_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::latexHeaderFile;  }
-<Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString);  s=&Config::cgiName;          }
-<Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString);  s=&Config::cgiURL;           }
-<Start>"DOC_URL"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docURL;           }
-<Start>"BIN_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::binAbsPath;       }
-<Start>"DOC_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docAbsPath;       }
-<Start>"PERL_PATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::perlPath;         }
-<Start>"GENERATE_TAGFILE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::genTagFile;       }
-<Start>"INPUT_FILTER"[ \t]*"="		{ BEGIN(GetString);  s=&Config::inputFilter;      }
-<Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&Config::paperType;        }
-<Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputLanguage;   }
-<Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manExtension;     }
-<Start>"TAB_SIZE"[ \t]*"="		{ BEGIN(GetString);  s=&tabSizeString;            }
-<Start>"HTML_STYLESHEET"[ \t]*"="	{ BEGIN(GetString);  s=&Config::htmlStyleSheet;   }
-<Start>"COLS_IN_ALPHA_INDEX"[ \t]*"="   { BEGIN(GetString);  s=&colsInAlphaIndexString;   }
-<Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::includePath;        elemStr=""; }
-<Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::examplePath;        elemStr=""; }
-<Start>"IMAGE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::imagePath;          elemStr=""; }
-<Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&Config::inputSources;       elemStr=""; }
-<Start>"EXCLUDE"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::excludeSources;     elemStr=""; }
-<Start>"FILE_PATTERNS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::filePatternList;    elemStr=""; }
-<Start>"EXCLUDE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::excludePatternList; elemStr=""; }
-<Start>"EXAMPLE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::examplePatternList; elemStr=""; }
-<Start>"IMAGE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::imagePatternList;   elemStr=""; }
-<Start>"TAGFILES"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::tagFileList;        elemStr=""; }
-<Start>"EXT_DOC_PATHS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::extDocPathList;     elemStr=""; }
-<Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined;         elemStr=""; }
-<Start>"EXTRA_PACKAGES"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::extraPackageList;   elemStr=""; }
-<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::stripFromPath;      elemStr=""; }
-<Start>"QUIET"[ \t]*"="			{ BEGIN(GetBool);    b=&Config::quietFlag;        }
-<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool);    b=&Config::warningFlag;      }
-<Start>"RECURSIVE"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::recursiveFlag;    }
-<Start>"ALLEXTERNALS"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::allExtFlag;       }
+<Start>"PROJECT_NAME"[ \t]*"="		{ BEGIN(GetString);  s=&Config::projectName;        s->resize(0);  }
+<Start>"PROJECT_NUMBER"[ \t]*"="	{ BEGIN(GetString);  s=&Config::projectNumber;      s->resize(0);  }
+<Start>"OUTPUT_DIRECTORY"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputDir;          s->resize(0);  }
+<Start>"HTML_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::htmlOutputDir;      s->resize(0);  }
+<Start>"MAN_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manOutputDir;       s->resize(0);  }
+<Start>"LATEX_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::latexOutputDir;     s->resize(0);  }
+<Start>"RTF_OUTPUT"[ \t]*"="		{ BEGIN(GetString);  s=&Config::rtfOutputDir;       s->resize(0);  }
+<Start>"HTML_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::headerFile;         s->resize(0);  }
+<Start>"HTML_FOOTER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::footerFile;         s->resize(0);  }
+<Start>"LATEX_HEADER"[ \t]*"="	        { BEGIN(GetString);  s=&Config::latexHeaderFile;    s->resize(0);  }
+<Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString);  s=&Config::cgiName;            s->resize(0);  }
+<Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString);  s=&Config::cgiURL;             s->resize(0);  }
+<Start>"DOC_URL"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docURL;             s->resize(0);  }
+<Start>"BIN_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::binAbsPath;         s->resize(0);  }
+<Start>"DOC_ABSPATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::docAbsPath;         s->resize(0);  }
+<Start>"PERL_PATH"[ \t]*"="		{ BEGIN(GetString);  s=&Config::perlPath;           s->resize(0);  }
+<Start>"GENERATE_TAGFILE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::genTagFile;         s->resize(0);  }
+<Start>"INPUT_FILTER"[ \t]*"="		{ BEGIN(GetString);  s=&Config::inputFilter;        s->resize(0);  }
+<Start>"PAPER_TYPE"[ \t]*"="		{ BEGIN(GetString);  s=&Config::paperType;          s->resize(0);  }
+<Start>"OUTPUT_LANGUAGE"[ \t]*"="	{ BEGIN(GetString);  s=&Config::outputLanguage;     s->resize(0);  }
+<Start>"MAN_EXTENSION"[ \t]*"="		{ BEGIN(GetString);  s=&Config::manExtension;       s->resize(0);  }
+<Start>"TAB_SIZE"[ \t]*"="		{ BEGIN(GetString);  s=&tabSizeString;              s->resize(0);  }
+<Start>"HTML_STYLESHEET"[ \t]*"="	{ BEGIN(GetString);  s=&Config::htmlStyleSheet;     s->resize(0);  }
+<Start>"COLS_IN_ALPHA_INDEX"[ \t]*"="   { BEGIN(GetString);  s=&colsInAlphaIndexString;     s->resize(0);  }
+<Start>"IGNORE_PREFIX"[ \t]*"="		{ BEGIN(GetString);  s=&Config::ignorePrefix;       s->resize(0);  }
+<Start>"INCLUDE_PATH"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::includePath;        l->clear(); elemStr=""; }
+<Start>"EXAMPLE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::examplePath;        l->clear(); elemStr=""; }
+<Start>"IMAGE_PATH"[ \t]*"="	        { BEGIN(GetStrList); l=&Config::imagePath;          l->clear(); elemStr=""; }
+<Start>"INPUT"[ \t]*"="			{ BEGIN(GetStrList); l=&Config::inputSources;       l->clear(); elemStr=""; }
+<Start>"EXCLUDE"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::excludeSources;     l->clear(); elemStr=""; }
+<Start>"FILE_PATTERNS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::filePatternList;    l->clear(); elemStr=""; }
+<Start>"EXCLUDE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::excludePatternList; l->clear(); elemStr=""; }
+<Start>"EXAMPLE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::examplePatternList; l->clear(); elemStr=""; }
+<Start>"IMAGE_PATTERNS"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::imagePatternList;   l->clear(); elemStr=""; }
+<Start>"TAGFILES"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::tagFileList;        l->clear(); elemStr=""; }
+<Start>"EXT_DOC_PATHS"[ \t]*"="		{ BEGIN(GetStrList); l=&Config::extDocPathList;     l->clear(); elemStr=""; }
+<Start>"PREDEFINED"[ \t]*"="            { BEGIN(GetStrList); l=&Config::predefined;         l->clear(); elemStr=""; }
+<Start>"EXTRA_PACKAGES"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::extraPackageList;   l->clear(); elemStr=""; }
+<Start>"STRIP_FROM_PATH"[ \t]*"="	{ BEGIN(GetStrList); l=&Config::stripFromPath;      l->clear(); elemStr=""; }
+<Start>"QUIET"[ \t]*"="			{ BEGIN(GetBool);    b=&Config::quietFlag; }
+<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool);    b=&Config::warningFlag; }
+<Start>"RECURSIVE"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::recursiveFlag; }
+<Start>"ALLEXTERNALS"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::allExtFlag; }
 <Start>"SEARCHENGINE"[ \t]*"="          { BEGIN(GetBool);    b=&Config::searchEngineFlag; }
-<Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool);    b=&Config::extractAllFlag;   }
-<Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool);    b=&Config::extractPrivateFlag;   }
+<Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool);    b=&Config::extractAllFlag; }
+<Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool);    b=&Config::extractPrivateFlag; }
 <Start>"DISABLE_INDEX"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::noIndexFlag; }
 <Start>"GENERATE_LATEX"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::generateLatex; }
 <Start>"GENERATE_HTML"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::generateHtml; }
@@ -258,11 +269,18 @@ static int yyread(char *buf,int max_size)
 <Start>"INHERIT_DOCS"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inheritDocsFlag; }
 <Start>"INLINE_INFO"[ \t]*"="	        { BEGIN(GetBool);    b=&Config::inlineInfoFlag; }
 <Start>"INLINE_SOURCES"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::inlineSourceFlag; }
+<Start>"HAVE_DOT"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::haveDotFlag; }
+<Start>"COLLABORATION_GRAPH"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::collGraphFlag; }
+<Start>"INCLUDE_GRAPH"[ \t]*"="		{ BEGIN(GetBool);    b=&Config::includeGraphFlag; }
+<Start>"GRAPHICAL_HIERARCHY"[ \t]*"="	{ BEGIN(GetBool);    b=&Config::gfxHierarchyFlag; }
+<Start>"GENERATE_RTF"[ \t]*"="          { BEGIN(GetBool);    b=&Config::generateRTF; }
+<Start>"COMPACT_RTF"[ \t]*"="           { BEGIN(GetBool);    b=&Config::compactRTFFlag; }
+<Start>"RTF_HYPERLINKS"[ \t]*"="        { BEGIN(GetBool);    b=&Config::rtfHyperFlag; }
 <Start>[a-z_A-Z0-9]+			{ err("Warning: ignoring unknown tag `%s' at line %d\n",yytext,yyLineNr); }
 <GetString,GetBool>\n			{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
   					  yyLineNr++; 
-					  if (elemStr.length()>0)
+					  if (!elemStr.isEmpty())
 					  {
 					    //printf("elemStr1=`%s'\n",elemStr.data());
 					    l->append(elemStr);
@@ -270,7 +288,7 @@ static int yyread(char *buf,int max_size)
 					  BEGIN(Start); 
 					}
 <GetStrList>[ \t]+			{
-  				          if (elemStr.length()>0)
+  				          if (!elemStr.isEmpty())
 					  {
 					    //printf("elemStr2=`%s'\n",elemStr.data());
   					    l->append(elemStr);
@@ -399,6 +417,7 @@ void Config::init()
   Config::htmlOutputDir = "html";          
   Config::latexOutputDir ="latex";          
   Config::manOutputDir ="man";          
+  Config::rtfOutputDir = "rtf";
   Config::outputLanguage = "English";
   Config::headerFile.resize(0);          
   Config::latexHeaderFile.resize(0);          
@@ -414,6 +433,7 @@ void Config::init()
   Config::paperType = "a4wide";
   Config::manExtension = ".3";
   Config::htmlStyleSheet.resize(0);
+  Config::ignorePrefix.resize(0);
   Config::includePath.clear();                
   Config::examplePath.clear();
   Config::imagePath.clear();
@@ -451,10 +471,14 @@ void Config::init()
   Config::pdfHyperFlag        = FALSE;
   Config::alwaysDetailsFlag   = FALSE;
   Config::inlineSourceFlag    = FALSE;
+  Config::haveDotFlag         = FALSE;
+  Config::compactRTFFlag      = FALSE;
+  Config::rtfHyperFlag        = FALSE;
   Config::warningFlag         = TRUE; 
   Config::generateHtml        = TRUE;
   Config::generateLatex       = TRUE;
   Config::generateMan         = TRUE;
+  Config::generateRTF         = FALSE;
   Config::preprocessingFlag   = TRUE;
   Config::briefMemDescFlag    = TRUE;
   Config::searchIncludeFlag   = TRUE;
@@ -465,6 +489,9 @@ void Config::init()
   Config::autoBriefFlag       = TRUE;
   Config::inheritDocsFlag     = TRUE;
   Config::inlineInfoFlag      = TRUE;
+  Config::collGraphFlag       = TRUE;
+  Config::includeGraphFlag    = TRUE;
+  Config::gfxHierarchyFlag    = TRUE;
 }
 
 void writeTemplateConfig(QFile *f,bool sl)
@@ -891,6 +918,13 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+  }
+  t << "#---------------------------------------------------------------------------\n";
+  t << "# configuration options related to the alphabetical class index\n";
+  t << "#---------------------------------------------------------------------------\n";
+  if (!sl)
+  {
+    t << "\n";
     t << "# If the ALPHABETICAL_INDEX tag is set to YES, an alphabetical index\n";
     t << "# of all compounds will be generated. Enable this if the project\n";
     t << "# contains a lot of classes, structs, unions or interfaces.\n";
@@ -906,6 +940,16 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "COLS_IN_ALPHA_INDEX  = 5\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# In case all classes in a project start with a common prefix, all\n";
+    t << "# classes will be put under the same header in the alphabetical index.\n";
+    t << "# The IGNORE_PREFIX tag can be use to specify a prefix that should be ignored\n";
+    t << "# while generating the index headers.\n";
+    t << "\n";
+  }
+  t << "IGNORE_PREFIX        = \n";
   if (!sl)
   {
     t << "\n";
@@ -980,6 +1024,50 @@ void writeTemplateConfig(QFile *f,bool sl)
   {
     t << "\n";
   }
+  t << "#---------------------------------------------------------------------------\n";
+  t << "# configuration options related to the RTF output\n";
+  t << "#---------------------------------------------------------------------------\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output\n";
+    t << "# For now this is experimental and is disabled by default. The RTF output\n";
+    t << "# is optimised for Word 97 and may not look too pretty with other readers\n";
+    t << "# or editors.\n";
+    t << "\n";
+  }
+  t << "GENERATE_RTF         = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The RTF_OUTPUT tag is used to specify where the RTF docs will be put.\n";
+    t << "# If a relative path is entered the value of OUTPUT_DIRECTORY will be\n";
+    t << "# put in front of it. If left blank `rtf' will be used as the default path.\n";
+    t << "\n";
+  }
+  t << "RTF_OUTPUT           =\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the COMPACT_RTF tag is set to YES Doxygen generates more compact\n";
+    t << "# RTF documents. This may be useful for small projects and may help to\n";
+    t << "# save some trees in general.\n"; 
+    t << "\n";
+  }
+  t << "COMPACT_RTF          = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the RTF_HYPERLINKS tag is set to YES, the RTF that is generated\n";
+    t << "# will contain hyperlink fields. The RTF file will\n";
+    t << "# contain links (just like the HTML output) instead of page references.\n";
+    t << "# This makes the output suitable for online browsing using a WORD or other.\n";
+    t << "# programs which support those fields.\n";
+    t << "# Note: wordpad (write) and others do not support links.\n";
+    t << "\n";
+  }
+  t << "RTF_HYPERLINKS       = NO\n";
+
   t << "#---------------------------------------------------------------------------\n";
   t << "# configuration options related to the man page output\n";
   t << "#---------------------------------------------------------------------------\n";
@@ -1115,6 +1203,51 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
+  t << "# Configuration options related to the dot tool \n";
+  t << "#---------------------------------------------------------------------------\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is\n";
+    t << "# available from the path. This tool is part of Graphviz, a graph visualization\n";
+    t << "# toolkit from AT&T and Lucent Bell Labs. The other options in this section\n";  
+    t << "# have no effect if this option is set to NO (the default)\n";
+    t << "\n";
+  }
+  t << "HAVE_DOT             = NO\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the COLLABORATION_GRAPH and HAVE_DOT tags are set to YES then doxygen\n"; 
+    t << "# will generate a graph for each documented class showing the direct and\n";
+    t << "# indirect implementation dependencies (inheritance, containment, and\n";
+    t << "# class references variables) of the class with other documented classes.\n";
+    t << "\n";
+  }
+  t << "COLLABORATION_GRAPH  = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the ENABLE_PREPROCESSING, INCLUDE_GRAPH, and HAVE_DOT tags are set to\n";
+    t << "# YES then doxygen will generate a graph for each documented file showing\n";
+    t << "# the direct and indirect include dependencies of the file with other \n";
+    t << "# documented files.\n";
+    t << "\n";
+  }
+  t << "INCLUDE_GRAPH        = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen\n";
+    t << "# will graphical hierarchy of all classes instead of a textual one.\n";
+    t << "\n";
+  }
+  t << "GRAPHICAL_HIERARCHY  = YES\n";
+  if (!sl)
+  {
+    t << "\n";
+  }
+  t << "#---------------------------------------------------------------------------\n";
   t << "# Configuration options related to the search engine \n";
   t << "#---------------------------------------------------------------------------\n";
   if (!sl)
@@ -1182,7 +1315,7 @@ void writeTemplateConfig(QFile *f,bool sl)
 
 void checkConfig()
 {
-  //if (projectName.length()>0)
+  //if (!projectName.isEmpty())
   //{
   //  projectName[0]=toupper(projectName[0]);
   //}
@@ -1290,7 +1423,8 @@ void checkConfig()
     Config::htmlOutputDir.prepend(Config::outputDir+'/');
   }
   QDir htmlDir(Config::htmlOutputDir);
-  if (!htmlDir.exists() && !htmlDir.mkdir(Config::htmlOutputDir))
+  if (Config::generateHtml && !htmlDir.exists() && 
+      !htmlDir.mkdir(Config::htmlOutputDir))
   {
     err("Could not create output directory %s\n",Config::htmlOutputDir.data());
     exit(1);
@@ -1305,12 +1439,29 @@ void checkConfig()
     Config::latexOutputDir.prepend(Config::outputDir+'/');
   }
   QDir latexDir(Config::latexOutputDir);
-  if (!latexDir.exists() && !latexDir.mkdir(Config::latexOutputDir))
+  if (Config::generateLatex && !latexDir.exists() && 
+      !latexDir.mkdir(Config::latexOutputDir))
   {
     err("Could not create output directory %s\n",Config::latexOutputDir.data());
     exit(1);
   }
   
+  if (Config::rtfOutputDir.isEmpty() && Config::generateRTF)
+  {
+    Config::rtfOutputDir=Config::outputDir+"/rtf";
+  }
+  else if (Config::rtfOutputDir && Config::rtfOutputDir[0]!='/')
+  {
+    Config::rtfOutputDir.prepend(Config::outputDir+'/');
+  }
+  QDir rtfDir(Config::rtfOutputDir);
+  if (Config::generateRTF && !rtfDir.exists() && 
+      !rtfDir.mkdir(Config::rtfOutputDir))
+  {
+    err("Could not create output directory %s\n",Config::rtfOutputDir.data());
+    exit(1);
+  }
+
   if (Config::manOutputDir.isEmpty() && Config::generateMan)
   {
     Config::manOutputDir=Config::outputDir+"/man";
@@ -1320,14 +1471,15 @@ void checkConfig()
     Config::manOutputDir.prepend(Config::outputDir+'/');
   }
   QDir manDir(Config::manOutputDir);
-  if (!manDir.exists() && !manDir.mkdir(Config::manOutputDir))
+  if (Config::generateMan && !manDir.exists() && 
+      !manDir.mkdir(Config::manOutputDir))
   {
     err("Could not create output directory %s\n",Config::manOutputDir.data());
     exit(1);
   }
   
   // Test to see if HTML header is valid
-  if (Config::headerFile.length()>0)
+  if (!Config::headerFile.isEmpty())
   {
     QFileInfo fi(Config::headerFile);
     if (!fi.exists())
@@ -1338,7 +1490,7 @@ void checkConfig()
     }
   }
   // Test to see if HTML footer is valid
-  if (Config::footerFile.length()>0)
+  if (!Config::footerFile.isEmpty())
   {
     QFileInfo fi(Config::footerFile);
     if (!fi.exists())
@@ -1349,7 +1501,7 @@ void checkConfig()
     }
   }
   // Test to see if LaTeX header is valid
-  if (Config::latexHeaderFile.length()>0)
+  if (!Config::latexHeaderFile.isEmpty())
   {
     QFileInfo fi(Config::latexHeaderFile);
     if (!fi.exists())
@@ -1414,13 +1566,13 @@ void checkConfig()
   if (Config::searchEngineFlag)
   {
     // check cgi name
-    if (Config::cgiName.length()==0)
+    if (Config::cgiName.isEmpty())
     {
       err("Error: tag CGI_NAME: no cgi script name after the CGI_NAME tag.\n");
       exit(1);
     }
     // check cgi URL
-    if (Config::cgiURL.length()==0)
+    if (Config::cgiURL.isEmpty())
     {
       err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
       exit(1);
@@ -1432,7 +1584,7 @@ void checkConfig()
       exit(1);
     }
     // check documentation URL
-    if (Config::docURL.length()==0)
+    if (Config::docURL.isEmpty())
     {
       Config::docURL = Config::outputDir.copy().prepend("file://").append("html");
     }
@@ -1443,7 +1595,7 @@ void checkConfig()
       exit(1);
     }
     // check absolute documentation path
-    if (Config::docAbsPath.length()==0)
+    if (Config::docAbsPath.isEmpty())
     {
       Config::docAbsPath = Config::outputDir+"/html"; 
     }
@@ -1453,7 +1605,7 @@ void checkConfig()
       exit(1);
     }
     // check path to doxysearch
-    if (Config::binAbsPath.length()==0)
+    if (Config::binAbsPath.isEmpty())
     {
       err("Error: tag BIN_ABSPATH: no absolute path to doxysearch "
 	  "specified.\n");
@@ -1467,7 +1619,7 @@ void checkConfig()
 
     // check perl path
     bool found=FALSE;
-    if (Config::perlPath.length()==0)
+    if (Config::perlPath.isEmpty())
     {
       QFileInfo fi;
       fi.setFile("/usr/bin/perl");

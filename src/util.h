@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -77,6 +77,8 @@ QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 void writePageRef(OutputList &ol,const char *cn,const char *mn);
-QCString substituteKeywords(QCString &s,const char *title);
+QCString substituteKeywords(const QCString &s,const char *title);
+//void pushGeneratorState(OutputList &ol);
+//void popGeneratorState(OutputList &ol);
 
 #endif

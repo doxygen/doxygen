@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -201,6 +201,16 @@ class HtmlGenerator : public OutputGenerator
     { t << "</td></tr>" << endl; }
     //static void docifyStatic(QTextStream &t,const char *str);
     
+    void startCollaborationDiagram();
+    void endCollaborationDiagram(DotGfxUsageGraph &g);
+    void startInclDepGraph();
+    void endInclDepGraph(DotInclDepGraph &g);
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
+
+    void startTextBlock(bool) {}
+    void endTextBlock() {}
+    void lastIndexPage() {}
+
   private:
     QCString header;
     QCString footer;

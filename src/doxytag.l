@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -142,9 +142,9 @@ static void addReference()
 {
   //printf("addReference() key: %s ref:%s\n",
   //  docRefName.data(),(docBaseLink+"#"+docAnchor).data());
-  if (genIndex && docRefName.length()>0 && docBaseLink.length()>0)
+  if (genIndex && !docRefName.isEmpty() && !docBaseLink.isEmpty())
   {
-    if (docAnchor.length()==0)
+    if (!docAnchor.isEmpty())
       searchIndex.addReference(docRefName,docBaseLink);
     else
       searchIndex.addReference(docRefName,docBaseLink+"#"+docAnchor);
@@ -226,7 +226,7 @@ QCString unhtmlify(const char *str)
   				     //printf("tag: %s#%s ref: %s word: `%s'\n",
 				     // docBaseLink.data(),docAnchor.data(),
 				     // docRefName.data(),yytext);
-  				     if (genIndex && docRefName.length()>0 && yyleng>2)
+  				     if (genIndex && !docRefName.isEmpty() && yyleng>2)
 				       searchIndex.addWord(docRefName,
 					                   yytext,FALSE
 							  );
@@ -358,7 +358,7 @@ QCString unhtmlify(const char *str)
 			           }  
 <SearchArgs>"</a>"		   { 
   				     //printf("SearchArg className=%s memberName=%s\n",className.data(),memberName.data());
-				     if (className.length()>0 && memberName.length()>0)
+				     if (!className.isEmpty() && !memberName.isEmpty())
 				       BEGIN( ReadArgs ); 
 				     else
 				       BEGIN( Start );
@@ -478,7 +478,7 @@ void parseFileOrDir(const char *fileName)
 
 void usage(const char *name)
 {
-  fprintf(stderr,"Doxytag version %s\nCopyright Dimitri van Heesch 1997-1999\n\n",
+  fprintf(stderr,"Doxytag version %s\nCopyright Dimitri van Heesch 1997-2000\n\n",
       versionString);
   fprintf(stderr,"  Generates a tag file and/or a search index for a set of HTML files\n\n");
   fprintf(stderr,"Usage: %s [-t tag_file] [-s index_file] [ html_file [html_file...] ]\n",name);
@@ -535,8 +535,8 @@ int main(int argc,char **argv)
     optind++;
   }
   
-  genTag   = tagName.length()>0;
-  genIndex = indexName.length()>0;
+  genTag   = !tagName.isEmpty();
+  genIndex = !indexName.isEmpty();
 
   if (!genTag && !genIndex)
   {

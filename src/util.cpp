@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,7 @@
 #include "qtbc.h"
 #include <qregexp.h>
 #include <qfileinfo.h>
+
 #include "util.h"
 #include "message.h"
 #include "classdef.h"
@@ -79,14 +80,24 @@ QCString stripAnnonymousNamespaceScope(const QCString &s)
 
 void writePageRef(OutputList &ol,const char *cn,const char *mn)
 {
-  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-  bool manOn  = ol.isEnabled(OutputGenerator::Man);
+  //bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  //bool manOn  = ol.isEnabled(OutputGenerator::Man);
+
+  ol.pushGeneratorState();
+  
+  ol.enableAll();
+  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputGenerator::Man);
+  if (Config::pdfHyperFlag) ol.disable(OutputGenerator::Latex);
+  if (Config::rtfHyperFlag) ol.disable(OutputGenerator::RTF);
   ol.startPageRef();
-  ol.disableAllBut(OutputGenerator::Latex);
   ol.docify(theTranslator->trPageAbbreviation());
   ol.endPageRef(cn,mn);
-  if (htmlOn) ol.enable(OutputGenerator::Html);
-  if (manOn)  ol.enable(OutputGenerator::Man);
+
+  //if (htmlOn) ol.enable(OutputGenerator::Html);
+  //if (manOn)  ol.enable(OutputGenerator::Man);
+
+  ol.popGeneratorState();
 }
 
 QCString generateMarker(int id)
@@ -151,33 +162,32 @@ int guessSection(const char *name)
 //  return 0;
 //}
 
-QCString resolveTypedefs(const QCString &n)
-{
-  QCString *subst=typedefDict[n];
-  if (subst && !subst->isEmpty())
-  {
-    return *subst;
-  }
-  else
-  {
-    return n;
-  }
-}
+//QCString resolveTypedefs(const QCString &n)
+//{
+// QCString *subst=typedefDict[n];
+//  if (subst && !subst->isEmpty())
+//  {
+//    return *subst;
+//  }
+//  else
+//  {
+//    return n;
+//  }
+//}
 
 ClassDef *getClass(const char *name)
 {
-  if (!name) return 0;
-  //QCString key=resolveTypedefs(resolveDefines(name));
-  //Define *def=defineDict[key];
-  //if (def && def->nargs==0 && def->definition.length()>0) // normal define
-  //  key=def->definition; // use substitution
-  
-  return classDict[resolveTypedefs(name)];
+  if (name==0 || name[0]=='\0') return 0;
+//  QCString *subst = typedefDict[name];
+//  if (subst)
+//    return classDict[subst->data()];
+//  else
+  return classDict[name];
 }
 
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
-  if (s.length()==0) return s;
+  if (s.isEmpty()) return s;
   QCString result;
   uint i;
   for (i=0;i<s.length();i++)
@@ -188,7 +198,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
        )
     {
       if ((c=='*' || c=='&') && 
-	  result.length()>0 && isId(result.at(result.length()-1))
+	  !result.isEmpty() && isId(result.at(result.length()-1))
 	 ) result+=' ';
       result+=c;
     }
@@ -217,7 +227,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
-  QRegExp regExp("[a-z_A-Z0-9:<>]+");
+  static QRegExp regExp("[a-z_A-Z0-9:]+");
   QCString txtStr=text;
   OutputList result(&ol);
   int matchLen;
@@ -242,7 +252,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
     //        word.data(),scopeName.data(),searchName.data()
     //      );
     // check if `word' is a documented class name
-    if (word.length()>0 && 
+    if (!word.isEmpty() && 
         !rightScopeMatch(word,searchName) && 
         !rightScopeMatch(scopeName,word)
        )
@@ -320,9 +330,9 @@ void writeExample(OutputList &ol,ExampleList *el)
 {
   QCString exampleLine=theTranslator->trWriteList(el->count());
  
-  bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-  bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
-  bool htmlEnabled  = ol.isEnabled(OutputGenerator::Html);
+  //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
+  //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
+  //bool htmlEnabled  = ol.isEnabled(OutputGenerator::Html);
   QRegExp marker("@[0-9]+");
   int index=0,newIndex,matchLen;
   // now replace all markers in inheritLine with links to the classes
@@ -334,17 +344,24 @@ void writeExample(OutputList &ol,ExampleList *el)
     Example *e=el->at(entryIndex);
     if (ok && e) 
     {
-      if (latexEnabled) ol.disable(OutputGenerator::Latex);
+      ol.pushGeneratorState();
+      //if (latexEnabled) ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
       // link for Html / man
       ol.writeObjectLink(0,e->file,e->anchor,e->name);
-      if (latexEnabled) ol.enable(OutputGenerator::Latex);
-      if (manEnabled) ol.disable(OutputGenerator::Man);
-      if (htmlEnabled) ol.disable(OutputGenerator::Html);
+      ol.popGeneratorState();
+      
+      ol.pushGeneratorState();
+      //if (latexEnabled) ol.enable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputGenerator::Html);
       // link for Latex / pdf with anchor because the sources
       // are not hyperlinked (not possible with a verbatim environment).
       ol.writeObjectLink(0,e->file,0,e->name);
-      if (manEnabled) ol.enable(OutputGenerator::Man);
-      if (htmlEnabled) ol.enable(OutputGenerator::Html);
+      //if (manEnabled) ol.enable(OutputGenerator::Man);
+      //if (htmlEnabled) ol.enable(OutputGenerator::Html);
+      ol.popGeneratorState();
     }
     index=newIndex+matchLen;
   } 
@@ -362,7 +379,7 @@ QCString argListToString(ArgumentList *al)
   result+="(";
   while (a)
   {
-    result+= a->type+" "+a->name;
+    result+= a->type+" "+a->name+a->array;
     a = al->next();
     if (a) result+=","; 
   }
@@ -400,7 +417,7 @@ QCString tempArgListToString(ArgumentList *al)
   Argument *a=al->first();
   while (a)
   {
-    if (a->name.length()>0) // add template argument name
+    if (!a->name.isEmpty()) // add template argument name
     {
       result+=a->name;
     }
@@ -437,12 +454,14 @@ void endTitle(OutputList &ol,const char *fileName,const char *name)
 
 void writeQuickLinks(OutputList &ol,bool compact,bool ext)
 {
-  bool manEnabled = ol.isEnabled(OutputGenerator::Man);
-  bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
+  ol.pushGeneratorState();
+  //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
+  //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
+  ol.disableAllBut(OutputGenerator::Html);
   QCString extLink,absPath;
   if (ext) { extLink="_doc:"; absPath="/"; }
-  if (manEnabled) ol.disable(OutputGenerator::Man);
-  if (texEnabled) ol.disable(OutputGenerator::Latex);
+  //if (manEnabled) ol.disable(OutputGenerator::Man);
+  //if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
 
   if (!compact) ol.writeListItem();
@@ -492,20 +511,20 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
-  if (documentedIncludeFiles>0 && Config::verbatimHeaderFlag)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"headers.html");
-    parseText(ol,theTranslator->trHeaderFiles());
-    ol.endQuickIndexItem();
-  }
-  if (Config::sourceBrowseFlag) 
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,absPath+"sources.html");
-    parseText(ol,theTranslator->trSources());
-    ol.endQuickIndexItem();
-  }
+  //if (documentedIncludeFiles>0 && Config::verbatimHeaderFlag)
+  //{
+  //  if (!compact) ol.writeListItem();
+  //  ol.startQuickIndexItem(extLink,absPath+"headers.html");
+  //  parseText(ol,theTranslator->trHeaderFiles());
+  //  ol.endQuickIndexItem();
+  //}
+  //if (Config::sourceBrowseFlag) 
+  //{
+  //  if (!compact) ol.writeListItem();
+  //  ol.startQuickIndexItem(extLink,absPath+"sources.html");
+  //  parseText(ol,theTranslator->trSources());
+  //  ol.endQuickIndexItem();
+  //}
   if (documentedNamespaceMembers>0)
   {
     if (!compact) ol.writeListItem();
@@ -544,7 +563,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   if (Config::searchEngineFlag)
   {
     if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem("_cgi:","");
+    ol.startQuickIndexItem("_cgi","");
     parseText(ol,theTranslator->trSearch());
     ol.endQuickIndexItem();
   } 
@@ -557,8 +576,9 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   {
     ol.endItemList();
   }
-  if (manEnabled) ol.enable(OutputGenerator::Man);
-  if (texEnabled) ol.enable(OutputGenerator::Latex);
+  //if (manEnabled) ol.enable(OutputGenerator::Man);
+  //if (texEnabled) ol.enable(OutputGenerator::Latex);
+  ol.popGeneratorState();
 }
 
 void startFile(OutputList &ol,const char *name,const char *title,bool external)
@@ -569,12 +589,14 @@ void startFile(OutputList &ol,const char *name,const char *title,bool external)
 
 void endFile(OutputList &ol,bool external)
 {
-  bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-  bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
-  if (latexEnabled) ol.disable(OutputGenerator::Latex);
-  if (manEnabled)   ol.disable(OutputGenerator::Man);
+  //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
+  //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
+  //if (latexEnabled) ol.disable(OutputGenerator::Latex);
+  //if (manEnabled)   ol.disable(OutputGenerator::Man);
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
   ol.writeFooter(0,external); // write the footer
-  if (Config::footerFile.length()==0)
+  if (Config::footerFile.isEmpty())
   {
     parseText(ol,theTranslator->trGeneratedAt(
               dateToString(TRUE),
@@ -582,13 +604,14 @@ void endFile(OutputList &ol,bool external)
              ));
   }
   ol.writeFooter(1,external); // write the link to the picture
-  if (Config::footerFile.length()==0)
+  if (Config::footerFile.isEmpty())
   {
     parseText(ol,theTranslator->trWrittenBy());
   }
   ol.writeFooter(2,external); // end the footer
-  if (latexEnabled) ol.enable(OutputGenerator::Latex);
-  if (manEnabled)   ol.enable(OutputGenerator::Man);
+  //if (latexEnabled) ol.enable(OutputGenerator::Latex);
+  //if (manEnabled)   ol.enable(OutputGenerator::Man);
+  ol.popGeneratorState();
   ol.endFile();
 }
 
@@ -697,7 +720,7 @@ static int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0)
 //  printf("(");
 //  for (;(a=ali.current());++ali)
 //  {
-//    printf("t=`%s' n=`%s' v=`%s' ",a->type.data(),a->name.length()>0?a->name.data():"",a->defval.length()>0?a->defval.data():""); 
+//    printf("t=`%s' n=`%s' v=`%s' ",a->type.data(),!a->name.isEmpty()>0?a->name.data():"",!a->defval.isEmpty()>0?a->defval.data():""); 
 //  }
 //  printf(")");
 //}
@@ -775,8 +798,9 @@ static QCString trimScope(const QCString &name,const QCString &s)
   return result;
 }
 
-static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s)
+static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s,int level=0)
 {
+  //printf("trimBaseClassScope level=%d `%s'\n",level,s.data());
   BaseClassListIterator bcli(*bcl);
   BaseClassDef *bcd;
   for (;(bcd=bcli.current());++bcli)
@@ -789,8 +813,9 @@ static QCString trimBaseClassScope(BaseClassList *bcl,const QCString &s)
                       s.length()-spos-cd->name().length()-2
                      );
     }
+    //printf("base class `%s'\n",cd->name().data());
     if (cd->baseClasses()->count()>0)
-      trimBaseClassScope(cd->baseClasses(),s); 
+      trimBaseClassScope(cd->baseClasses(),s,level+1); 
   }
   return s;
 }
@@ -866,7 +891,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
     if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
     if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
-    
+
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
       //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
@@ -919,7 +944,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
         if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
         {
           // check if a name if already found -> if no then there is no match
-          if (srcA->name.length()>0 || dstA->name.length()>0) return FALSE;
+          if (!srcA->name.isEmpty() || !dstA->name.isEmpty()) return FALSE;
           while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
           while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
           if (srcPos<srcAType.length() || dstPos<dstAType.length()) return FALSE;
@@ -1059,12 +1084,12 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
   Argument *srcA,*dstA;
   for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
   {
-    if (srcA->defval.length()==0 && dstA->defval.length()>0)
+    if (srcA->defval.isEmpty() && !dstA->defval.isEmpty())
     {
       //printf("Defval changing `%s'->`%s'\n",srcA->defval.data(),dstA->defval.data());
       srcA->defval=dstA->defval.copy();
     }
-    else if (srcA->defval.length()>0 && dstA->defval.length()==0)
+    else if (!srcA->defval.isEmpty() && dstA->defval.isEmpty())
     {
       //printf("Defval changing `%s'->`%s'\n",dstA->defval.data(),srcA->defval.data());
       dstA->defval=srcA->defval.copy();
@@ -1137,7 +1162,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
              MemberDef *&md, ClassDef *&cd, FileDef *&fd,NamespaceDef *&nd)
 {
   fd=0, md=0, cd=0, nd=0;
-  if (memberName.length()==0) return FALSE; /* empty name => nothing to link */
+  if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName.copy();
   //printf("Search for name=%s args=%s in scope=%s\n",
@@ -1170,7 +1195,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
   MemberName *mn = memberNameDict[mName];
-  if (mn && scopeName.length()+mScope.length()>0)
+  if (mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name found\n");
     int scopeOffset=scopeName.length();
@@ -1195,23 +1220,17 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         //printf("  Found fcd=%p\n",fcd);
         MemberDef *mmd=mn->first();
         int mdist=maxInheritanceDepth; 
+        ArgumentList *argList=0;
+        if (args)
+        {
+          argList=new ArgumentList;
+          stringToArgumentList(args,argList);
+        }
         while (mmd)
         {
-          if (//(mmd->protection()!=Private || Config::extractPrivateFlag) &&
-              //mmd->hasDocumentation() 
-              mmd->isLinkable()
-              /*mmd->detailsAreVisible()*/
-              /* && (args==0 || matchArgumentsOld(mmd->argsString(),args)) */
-             )
+          if (mmd->isLinkable())
           {
-            bool match=TRUE;
-            ArgumentList *argList=0;
-            if (args)
-            {
-              argList=new ArgumentList;
-              stringToArgumentList(args,argList);
-              match=matchArguments(mmd->argumentList(),argList); 
-            }
+            bool match=args==0 || matchArguments(mmd->argumentList(),argList); 
             if (match)
             {
               ClassDef *mcd=mmd->memberClass();
@@ -1223,12 +1242,12 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 md=mmd;
               }
             }
-            if (argList)
-            {
-              delete argList;
-            }
           }
           mmd=mn->next();
+        }
+        if (argList)
+        {
+          delete argList; argList=0;
         }
         if (mdist==maxInheritanceDepth && !strcmp(args,"()"))
           // no exact match found, but if args="()" an arbitrary member will do
@@ -1297,7 +1316,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           namespaceName=mScope.copy();
         }
-        if (namespaceName.length()>0 && 
+        if (!namespaceName.isEmpty() && 
             (fnd=namespaceDict[namespaceName]) &&
             fnd->isLinkable()
            )
@@ -1330,7 +1349,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               }
               if (args)
               {
-                delete argList;
+                delete argList; argList=0;
               }
             }
             mmd=mn->next();
@@ -1377,7 +1396,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                   argList=new ArgumentList;
                   stringToArgumentList(args,argList);
                   match=matchArguments(md->argumentList(),argList); 
-                  delete argList;
+                  delete argList; argList=0;
                 }
                 if (match) return TRUE;
               }
@@ -1443,7 +1462,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
 
   QCString scopeName=scope;
   //printf("getScopeDefs: docScope=`%s' scope=`%s'\n",docScope,scope);
-  if (scopeName.length()==0) return FALSE;
+  if (scopeName.isEmpty()) return FALSE;
 
   QCString docScopeName=docScope;
   int scopeOffset=docScopeName.length();
@@ -1513,7 +1532,7 @@ bool generateRef(OutputList &ol,const char *scName,
       {
         ol.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),0,linkText);
-        if (!cd->isReference() && !Config::pdfHyperFlag) 
+        if (!cd->isReference() /*&& !Config::pdfHyperFlag*/) 
         {
           writePageRef(ol,cd->name(),0);
         }
@@ -1522,7 +1541,7 @@ bool generateRef(OutputList &ol,const char *scName,
       {
         ol.writeObjectLink(nd->getReference(),
             nd->getOutputFileBase(),0,linkText);
-        if (!nd->getReference() && !Config::pdfHyperFlag) 
+        if (!nd->getReference() /*&& !Config::pdfHyperFlag*/) 
         {
           writePageRef(ol,nd->name(),0);
         }
@@ -1615,14 +1634,14 @@ bool generateRef(OutputList &ol,const char *scName,
     // for functions we add the arguments if explicitly specified or else "()"
     if (!rt && (md->isFunction() || md->isPrototype() || md->isSignal() || md->isSlot() || md->isDefine())) 
     {
-      if (argsStr.isEmpty())
+      if (argsStr.isEmpty() && (!md->isDefine() || md->argsString()!=0))
         ol.writeString("()");
       else
         ol.docify(argsStr);
     }
 
     // generate the page reference (for LaTeX)
-    if (!Config::pdfHyperFlag && (cName.length()>0 || aName.length()>0))
+    if (/*!Config::pdfHyperFlag && */(!cName.isEmpty() || !aName.isEmpty()))
     {
       if (
           (cd && cd->isLinkableInProject()) || 
@@ -1676,7 +1695,7 @@ bool generateLink(OutputList &ol,const char *clName,
   FileDef *fd;
   GroupDef *gd;
   bool ambig;
-  if (linkRef.length()==0) // no reference name!
+  if (linkRef.isEmpty()) // no reference name!
   {
     ol.docify(lt);
     return FALSE;
@@ -1781,6 +1800,7 @@ QCString convertSlashes(const QCString &s,bool dots)
 
 QCString substitute(const char *s,const char *src,const char *dst)
 {
+  // TODO: optimize by using strstr() instead of find
   QCString input=s;
   QCString output;
   int i=0,p;
@@ -1881,14 +1901,17 @@ void setFileNameForSections(QList<QCString> *anchorList,const char *fileName)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(QCString &s,const char *title)
+QCString substituteKeywords(const QCString &s,const char *title)
 {
-  if (title) s = substitute(s,"$title",title);
-  s = substitute(s,"$datetime",dateToString(TRUE));
-  s = substitute(s,"$date",dateToString(FALSE));
-  s = substitute(s,"$doxygenversion",versionString);
-  s = substitute(s,"$projectname",Config::projectName);
-  s = substitute(s,"$projectnumber",Config::projectNumber);
-  return s;
+  QCString result = s.copy();
+  if (title) result = substitute(result,"$title",title);
+  result = substitute(result,"$datetime",dateToString(TRUE));
+  result = substitute(result,"$date",dateToString(FALSE));
+  result = substitute(result,"$doxygenversion",versionString);
+  result = substitute(result,"$projectname",Config::projectName);
+  result = substitute(result,"$projectnumber",Config::projectNumber);
+  return result;
 }
     
+//----------------------------------------------------------------------
+

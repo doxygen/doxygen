@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -40,17 +40,20 @@ class MemberList : public QList<MemberDef>
     void countDecMembers();
     void countDocMembers(bool inGroup=FALSE);
     int totalCount() const 
-         { return varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
-                  protoCnt+defCnt+friendCnt; }
+         { return //varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
+                  //protoCnt+defCnt+friendCnt; 
+                  m_count;
+         }
     void writePlainDeclarations(OutputList &ol,ClassDef *cd,
                NamespaceDef *nd,FileDef *fd,bool inGroup=FALSE);
     void writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
                const char *title,const char *subtitle,bool inGroup=FALSE);
-    void writeDocumentation(OutputList &ol,const char *scopeName,
-               MemberDef::MemberType m);
+    void writeDocumentation(OutputList &ol,const char *scopeName
+               /*,MemberDef::MemberType m*/);
 
   private:
     int varCnt,funcCnt,enumCnt,enumValCnt,typeCnt,protoCnt,defCnt,friendCnt; 
+    int m_count;
 };
 
 class MemberListIterator : public QListIterator<MemberDef>

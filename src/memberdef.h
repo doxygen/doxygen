@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -49,6 +49,12 @@ class MemberDef : public Definition
       Slot,
       Friend
     };
+
+    enum
+    {
+      maxInitLines = 30 // maximum number of lines shown for member
+                        // initialization 
+    };
     
     MemberDef(const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
@@ -61,7 +67,7 @@ class MemberDef : public Definition
     void writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
                int prevGroupId,bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
-                            const char *scopeName,MemberType m);
+                            const char *scopeName/*,MemberType m*/);
     void warnIfUndocumented();
     
     QCString getOutputFileBase() const;
@@ -71,7 +77,8 @@ class MemberDef : public Definition
     const char *argsString() const       { return args; }
     const char *excpString() const       { return exception; }     
     const char *anchor() const           { return anc; }
-    //QCString bodyCode() const            { return body; }
+    const QCString &initializer() const  { return init; }
+    int initializerLines() const         { return initLines; }
     ClassDef *memberClass()              { return classDef; }
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
@@ -84,8 +91,11 @@ class MemberDef : public Definition
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
-    //void setBody(const QCString &b)      { body=b; }
     void setInline(bool in)              { inLine=in; }
+    void setInitializer(const char *i)   { init=i; 
+                                           init=init.stripWhiteSpace();
+                                           initLines=init.contains('\n');
+                                         }
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
     void setMemberClass(ClassDef *cd)    { classDef=cd; }
@@ -195,7 +205,8 @@ class MemberDef : public Definition
     QCString type;            // return type
     QCString args;            // function arguments/variable array specifiers
     QCString exception;       // exceptions that can be thrown
-    //QCString body;            // function body code
+    QCString init;            // initializer
+    int initLines;            // number of lines in the initializer
     QCString decl;            // member declaration in class
     QCString declFile;        // file where the declaration was found
     int      declLine;        // line where the declaration was found

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -68,6 +68,7 @@ Entry::Entry(const Entry &e)
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   inLine      = e.inLine;
+  initializer = e.initializer;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -203,6 +204,7 @@ void Entry::reset()
   fileName.resize(0);
   scopeSpec.resize(0);
   memberSpec.resize(0);
+  initializer.resize(0);
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
@@ -240,6 +242,7 @@ int Entry::getSize()
   size+=brief.length()+1;
   size+=inside.length()+1;
   size+=fileName.length()+1;
+  size+=initializer.length()+1;
   BaseInfo *bi=extends->first();
   while (bi)
   {
@@ -301,4 +304,19 @@ int Entry::getSize()
     }
   }
   return size;
+}
+
+/*! the argument list is documented if one of its
+ *  arguments is documented 
+ */
+bool ArgumentList::hasDocumentation() const
+{
+  bool hasDocs=FALSE;
+  ArgumentListIterator ali(*this);
+  Argument *a;
+  for (ali.toFirst();!hasDocs && (a=ali.current());++ali)
+  {
+    hasDocs = hasDocs || a->hasDocumentation(); 
+  }
+  return hasDocs;
 }

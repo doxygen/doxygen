@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,12 +28,15 @@ OutputGenerator::OutputGenerator()
   b.open( IO_WriteOnly );
   t.setDevice(&b);
   active=TRUE;
+  genStack = new QStack<bool>;
+  genStack->setAutoDelete(TRUE);
 }
 
 OutputGenerator::~OutputGenerator()
 {
   //printf("OutputGenerator::~OutputGenerator()\n");
   delete file;
+  delete genStack;
 }
 
 void OutputGenerator::startPlainFile(const char *name)
@@ -76,3 +79,15 @@ QCString OutputGenerator::getContents() const
   return s;
 }
 
+void OutputGenerator::pushGeneratorState()
+{
+  genStack->push(new bool(isEnabled()));
+}
+
+void OutputGenerator::popGeneratorState()
+{
+  bool *b = genStack->pop();
+  ASSERT(b!=0);
+  if (b==0) return; // for some robustness against superfluous \endhtmlonly commands.
+  if (*b) enable(); else disable();
+}

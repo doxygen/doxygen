@@ -14,7 +14,7 @@ struct CoordStruct
 };
 
 /*! Creates a type name for CoordStruct */ 
-typedef struct CoordStruct Coord;
+typedef CoordStruct Coord;
 
 /*! 
  * This function returns the addition of \a c1 and \a c2, i.e:

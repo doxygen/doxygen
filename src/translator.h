@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -430,7 +430,7 @@ class Translator
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Class diagram for "+clName;
+      return (QCString)"Inheritance diagram for "+clName;
     }
     
     /*! this text is generated when the \internal command is used. */
@@ -741,6 +741,77 @@ class Translator
     virtual QCString trDeprecated()
     {
       return "Deprecated";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! this text is put before a collaboration diagram */
+    virtual QCString trCollaborationDiagram(const char *clName)
+    {
+      return (QCString)"Collaboration diagram for "+clName+":";
+    }
+    /*! this text is put before an include dependency graph */
+    virtual QCString trInclDepGraph(const char *fName)
+    {
+      return (QCString)"Include dependency graph for "+fName+":";
+    }
+    /*! header that is put before the list of constructor/destructors. */
+    virtual QCString trConstructorDocumentation()
+    {
+      return "Constructor & Destructor Documentation"; 
+    }
+    /*! Used in the file documentation to point to the corresponding sources. */
+    virtual QCString trGotoSourceCode()
+    {
+      return "Go to the source code of this file.";
+    }
+    /*! Used in the file sources to point to the corresponding documentation. */
+    virtual QCString trGotoDocumentation()
+    {
+      return "Go to the documentation of this file.";
+    }
+    /*! Text for the \pre command */
+    virtual QCString trPrecondition()
+    {
+      return "Precondition";
+    }
+    /*! Text for the \post command */
+    virtual QCString trPostcondition()
+    {
+      return "Postcondition";
+    }
+    /*! Text for the \invariant command */
+    virtual QCString trInvariant()
+    {
+      return "Invariant";
+    }
+    /*! Text shown before a multi-line variable/enum initialization */
+    virtual QCString trInitialValue()
+    {
+      return "Initial value:";
+    }
+    /*! Text used the source code in the file index */
+    virtual QCString trCode()
+    {
+      return "code";
+    }
+    virtual QCString trGraphicalHierarchy()
+    {
+      return "Graphical Class Hierarchy";
+    }
+    virtual QCString trGotoGraphicalHierarchy()
+    {
+      return "Go to the graphical class hierarchy";
+    }
+    virtual QCString trGotoTextualHierarchy()
+    {
+      return "Go to the textual class hierarchy";
+    }
+    virtual QCString trPageIndex()
+    {
+      return "Page Index";
     }
 };
 

@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -39,6 +39,7 @@
 #include "util.h"
 #include "pre.h"
 #include "tag.h"
+#include "dot.h"
 
 #include "outputlist.h"
 #include "declinfo.h"
@@ -49,6 +50,7 @@
 #include "debug.h"
 #include "htmlhelp.h"
 #include "defargs.h"
+#include "rtfgen.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -57,45 +59,78 @@
 
 
 // lists
-ClassList      classList;          // list of all documented classes
-NamespaceList  namespaceList;      // list of all namespaces
-PageList       exampleList;        // list of all example files
-PageList       pageList;           // list of all related documentation pages
-MemberNameList memberNameList;     // list of class member + related functions
-MemberNameList functionNameList;   // list of all unrelated functions
-FileNameList   inputNameList;      // list of all input files
+ClassList      classList;          // all documented classes
+NamespaceList  namespaceList;      // all namespaces
+PageList       exampleList;        // all example files
+PageList       pageList;           // all related documentation pages
+MemberNameList memberNameList;     // class member + related functions
+MemberNameList functionNameList;   // all unrelated functions
+FileNameList   inputNameList;      // all input files
 StringList     inputFiles;         
-FileList       includeFiles;
-GroupList      groupList;          // list of all groups
-FormulaList    formulaList;        // list of all formulas
+GroupList      groupList;          // all groups
+FormulaList    formulaList;        // all formulas
 
 // dictionaries
-PageDict       pageDict(1009);          // dictionary of all doc pages
-PageDict       exampleDict(1009);       // dictionary of all examples
-ClassDict      classDict(1009);         // dictionary of all documented classes
-NamespaceDict  namespaceDict(257);      // dictionary of all documented namespaces
-MemberNameDict memberNameDict(10007);   // dictionary of all class member names
-MemberNameDict functionNameDict(10007); // dictionary of all functions
-StringDict     substituteDict(1009);    // dictionary of class name substitutes
-SectionDict    sectionDict(257);        // dictionary of all page sections
-FileNameDict   inputNameDict(1009);     // dictionary of sections
-StringDict     excludeNameDict(1009);   // dictionary of sections
-FileNameDict   includeNameDict(1009);   // dictionary of include names
-FileNameDict   exampleNameDict(1009);   // dictionary of examples
-FileNameDict   imageNameDict(257);      // dictionary of images
-FileDict       includeDict(1009);       // dictionary of include files
-DefineDict     defineDict(10007);       // dictionary of all defines
-StringDict     typedefDict(1009);       // dictionary of all typedefs
-GroupDict      groupDict(257);          // dictionary of all groups
-FormulaDict    formulaDict(1009);       // dictionary of all formulas
-FormulaDict    formulaNameDict(1009);   // dictionary of the label name of all formulas
-StringDict     tagDestinationDict(257); // dictionary of all tag locations
+PageDict       pageDict(1009);          // all doc pages
+PageDict       exampleDict(1009);       // all examples
+ClassDict      classDict(1009);         // all documented classes
+NamespaceDict  namespaceDict(257);      // all documented namespaces
+MemberNameDict memberNameDict(10007);   // all class member names
+MemberNameDict functionNameDict(10007); // all functions
+StringDict     substituteDict(1009);    // class name substitutes
+SectionDict    sectionDict(257);        // all page sections
+FileNameDict   inputNameDict(1009);     // sections
+StringDict     excludeNameDict(1009);   // sections
+FileNameDict   includeNameDict(1009);   // include names
+FileNameDict   exampleNameDict(1009);   // examples
+FileNameDict   imageNameDict(257);      // images
+DefineDict     defineDict(10007);       // all defines
+StringDict     typedefDict(1009);       // all typedefs
+GroupDict      groupDict(257);          // all groups
+FormulaDict    formulaDict(1009);       // all formulas
+FormulaDict    formulaNameDict(1009);   // the label name of all formulas
+StringDict     tagDestinationDict(257); // all tag locations
                                         // a member group
+OutputList     *outputList = 0;         // list of output generating objects
 
-OutputList     *outputList;           // list of output generating objects
-
-PageInfo       *mainPage=0;
+PageInfo       *mainPage = 0;
   
+
+void clearAll()
+{
+  classList.clear();       
+  namespaceList.clear();   
+  exampleList.clear();     
+  pageList.clear();        
+  memberNameList.clear();  
+  functionNameList.clear();
+  inputNameList.clear();   
+  inputFiles.clear();      
+  groupList.clear();       
+  formulaList.clear();     
+  pageDict.clear();         
+  exampleDict.clear();      
+  classDict.clear();        
+  namespaceDict.clear();     
+  memberNameDict.clear();  
+  functionNameDict.clear();
+  substituteDict.clear();   
+  sectionDict.clear();       
+  inputNameDict.clear();    
+  excludeNameDict.clear();  
+  includeNameDict.clear();  
+  exampleNameDict.clear();  
+  imageNameDict.clear();     
+  defineDict.clear();      
+  typedefDict.clear();      
+  groupDict.clear();         
+  formulaDict.clear();      
+  formulaNameDict.clear();  
+  tagDestinationDict.clear();
+  delete outputList; outputList=0;
+  delete mainPage; mainPage=0;
+}
+
 //bool           unrelatedFunctionsUsed;
 
 //ClassDef unrelatedClass("nothing",ClassDef::Class); 
@@ -135,7 +170,7 @@ const char *getOverloadDocs()
 
 void buildGroupList(Entry *root)
 {
-  if (root->section==Entry::GROUPDOC_SEC && root->name.length()>0)
+  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
   {
     //printf("Found group %s title=`%s'\n",root->name.data(),root->type.data());
     
@@ -169,7 +204,7 @@ void buildGroupList(Entry *root)
 
 //void computeGroupRelations(Entry *root)
 //{
-//  if (root->section==Entry::GROUPDOC_SEC && root->name.length()>0)
+//  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
 //  {
 //    GroupDef *gd;
 //    
@@ -180,7 +215,7 @@ void buildGroupList(Entry *root)
 //      for (;(s=sli.current());++sli)
 //      {
 //        GroupDef *pgd;
-//        if (s->length()>0 && (pgd=groupDict[*s]))
+//        if (!s->isEmpty() && (pgd=groupDict[*s]))
 //        {
 //          pgd->addGroup(gd);
 //          printf("Group %s: in group %s\n",gd->groupName(),s->data());
@@ -202,15 +237,15 @@ void buildFileList(Entry *root)
 {
   if (((root->section==Entry::FILEDOC_SEC) ||
       ((root->section & Entry::FILE_MASK) && Config::extractAllFlag)) &&
-      root->name.length()>0
+      !root->name.isEmpty()
      )
   {
     bool ambig;
     FileDef *fd=findFileDef(&inputNameDict,root->name,ambig);
     if (fd && !ambig)
     {
-      if ((root->doc.length()>0 && !fd->documentation().isEmpty()) ||
-          (root->brief.length()>0 && !fd->briefDescription().isEmpty()))
+      if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
+          (!root->brief.isEmpty() && !fd->briefDescription().isEmpty()))
       {
         warn("Warning: file %s already documented\n"
             "         skipping documentation in file %s at line %d\n",
@@ -226,7 +261,7 @@ void buildFileList(Entry *root)
         for (;(s=sli.current());++sli)
         {
           GroupDef *gd=0;
-          if (s->length()>0 && (gd=groupDict[*s]))
+          if (!s->isEmpty() && (gd=groupDict[*s]))
           {
             gd->addFile(fd);
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
@@ -262,7 +297,7 @@ void buildFileList(Entry *root)
   }
 }
 
-void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
+static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
 {
   if ( 
       (!root->doc.stripWhiteSpace().isEmpty() || 
@@ -304,25 +339,42 @@ void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       fd=ifd;
     }
 
-    // if a file is found, we mark it for verbatim inclusion.
+    
+    // if a file is found, we mark it as a source file.
     if (fd)
     {
+      //printf("Adding file %s used by %s\n",fd->name().data(),cd->name().data());
       //printf("fd->name()=%s fd->absFilePath()=%s\n",fd->name().data(),
       //                                              fd->absFilePath().data());
       // set include file definition
-      cd->setIncludeFile(fd);
+      //cd->setIncludeFile(fd);
       // set include supplied name 
-      cd->setIncludeName(root->includeName);
-      if (cd->name().find('@')==-1)
+      //cd->setIncludeName(root->includeName);
+      
+      QCString iName = !root->includeName.isEmpty() ? 
+                       root->includeName.data() : root->includeFile.data();
+      bool local=FALSE;
+      if (!iName.isEmpty())
       {
-        fd->setIncludeName(cd->getOutputFileBase()+"-include");
+        local = iName.at(0)=='"';
+        if (local || iName.at(0)=='<')
+        {
+          iName=iName.mid(1,iName.length()-2);
+        }
       }
-      if (!fd->absFilePath().isEmpty() && 
-          includeDict[fd->absFilePath()]==0) // include not inserted earlier
-      {
-        includeFiles.inSort(fd);
-        includeDict.insert(fd->absFilePath(),fd);
-      }
+      fd->setGenerateSource(TRUE);
+      cd->setIncludeFile(fd,iName,local);
+      
+      //if (cd->name().find('@')==-1)
+      //{
+      //  fd->setIncludeName(cd->getOutputFileBase()+"-include");
+      //}
+      //if (!fd->absFilePath().isEmpty() && 
+      //    includeDict[fd->absFilePath()]==0) // include not inserted earlier
+      //{
+      //  includeFiles.inSort(fd);
+      //  includeDict.insert(fd->absFilePath(),fd);
+      //}
     }
   }
 }
@@ -335,7 +387,7 @@ void extractNamespaceName(const QCString &scopeName,
 {
   QCString clName=scopeName.copy();
   QCString nsName;
-  if (clName.length()>0 && namespaceDict[clName] && getClass(clName)==0)
+  if (!clName.isEmpty() && namespaceDict[clName] && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=clName.copy();
     className.resize(0);
@@ -401,11 +453,11 @@ void buildClassList(Entry *root)
   if (
        ((root->section & Entry::COMPOUNDDOC_MASK) ||
        ((root->section & Entry::COMPOUND_MASK))) && 
-       root->name.length()>0
+       !root->name.isEmpty()
      )
   {
     QCString fullName=root->name.copy();
-    if (fullName.length()==0)
+    if (fullName.isEmpty())
     {
       // this should not be called
       warn("Warning: invalid class found in file %s at %d\n",
@@ -418,6 +470,8 @@ void buildClassList(Entry *root)
 
       bool ambig;
       ClassDef *cd;
+      //printf("findFileDef(%s)\n",root->fileName.data());
+      FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
       if ((cd=getClass(fullName))) 
       {
         if (cd->templateArguments()==0)
@@ -458,13 +512,21 @@ void buildClassList(Entry *root)
           cd->addSectionsToDefinition(root->anchors);
           cd->setName(fullName); // change name to match docs
         }
-        if (cd->includeFile()==0)
+        cd->setFileDef(fd);
+        if (cd->hasDocumentation())
         {
-          FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
-          cd->setFileDef(fd);
           addIncludeFile(cd,fd,root);
         }
         addNamespace(root,cd);
+        if (fd && (root->section & Entry::COMPOUND_MASK)) 
+        {
+          //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
+          //    cd->name().data(),
+          //    fd->name().data(),
+          //    root->fileName.data()
+          //   );
+          fd->insertClass(cd);
+        }
       }
       else // new class
       {
@@ -489,16 +551,15 @@ void buildClassList(Entry *root)
         cd->setProtection(root->protection);
         cd->addSectionsToDefinition(root->anchors);
         // file definition containing the class cd
-        FileDef *ifd=findFileDef(&inputNameDict,root->fileName,ambig);
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
-        cd->setBodyDef(ifd);
+        cd->setBodyDef(fd);
 
         QListIterator<QCString> sli(*root->groups);
         QCString *s;
         for (;(s=sli.current());++sli)
         {
           GroupDef *gd=0;
-          if (s->length()>0 && (gd=groupDict[*s]))
+          if (!s->isEmpty() && (gd=groupDict[*s]))
           {
             gd->addClass(cd);
             //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
@@ -507,13 +568,23 @@ void buildClassList(Entry *root)
 
         bool found=addNamespace(root,cd);
 
-
-        cd->setFileDef(ifd);
-        addIncludeFile(cd,ifd,root);
+        cd->setFileDef(fd);
+        if (cd->hasDocumentation())
+        {
+          addIncludeFile(cd,fd,root);
+        }
         
         // if the class is not in a namespace then we insert 
         // it in the file definition
-        if (!found && ifd) ifd->insertClass(cd);
+        if (!found && fd && (root->section & Entry::COMPOUND_MASK)) 
+        {
+          //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
+          //    cd->name().data(),
+          //    fd->name().data(),
+          //    root->fileName.data()
+          //   );
+          fd->insertClass(cd);
+        }
         
         // the empty string test is needed for extract all case
         cd->setBriefDescription(root->brief);
@@ -542,37 +613,37 @@ void buildNamespaceList(Entry *root)
   if (
        (root->section==Entry::NAMESPACE_SEC) ||
        (root->section==Entry::NAMESPACEDOC_SEC) && 
-       root->name.length()>0
+       !root->name.isEmpty()
      )
   {
     QCString fullName=stripAnnonymousNamespaceScope(root->name.copy());
-    if (fullName.length()>0)
+    if (!fullName.isEmpty())
     {
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDef *nd;
       if ((nd=namespaceDict[fullName])) 
       {
-        if (root->doc.length()>0 || root->brief.length()>0) // block contains docs
+        if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
-          if (nd->documentation().isEmpty() && root->doc.length()>0)
+          if (nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
             nd->setDocumentation(root->doc);
             nd->setName(fullName); // change name to match docs
             nd->addSectionsToDefinition(root->anchors);
           }
-          else if (!nd->documentation().isEmpty() && root->doc.length()>0)
+          else if (!nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
             warn("Warning: namespace %s already has a detailed description,\n"
                  "         skipping documentation in file %s at line %d\n",
                  fullName.data(),root->fileName.data(),root->startLine);
           }
-          if (nd->briefDescription().isEmpty() && root->brief.length()>0)
+          if (nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
             nd->setBriefDescription(root->brief);
             nd->setName(fullName); // change name to match docs
           }
-          else if (!nd->briefDescription().isEmpty() && root->brief.length()>0)
+          else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
             warn("Warning: namespace %s already has a brief description,\n"
                  "         skipping documentation in file %s at line %d\n",
@@ -586,8 +657,8 @@ void buildNamespaceList(Entry *root)
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
       }
-      else /* if (root->doc.length()>0 || 
-               root->brief.length()>0 || 
+      else /* if (!root->doc.isEmpty() || 
+                  !root->brief.isEmpty() || 
                Config::extractAllFlag
               )
            */ 
@@ -602,7 +673,7 @@ void buildNamespaceList(Entry *root)
         for (;(s=sli.current());++sli)
         {
           GroupDef *gd=0;
-          if (s->length()>0 && (gd=groupDict[*s]))
+          if (!s->isEmpty() && (gd=groupDict[*s]))
             gd->addNamespace(nd);
         }
 
@@ -705,16 +776,17 @@ void findUsingDirectives(Entry *root)
 
 static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
     MemberDef::MemberType mtype,const QCString &scope,const QCString &name,
-    bool fromAnnScope,int indentDepth,MemberDef *fromAnnMemb)
+    bool fromAnnScope,int indentDepth,MemberDef *fromAnnMemb,Protection prot)
 {
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
-      "    %s' %s'::`%s' `%s' prot=`%d\n",
+      "    %s' %s'::`%s' `%s' prot=`%d ann=%d\n",
       root->type.data(),
       scope.data(), 
       name.data(),
       root->args.data(),
-      root->protection
+      root->protection,
+      fromAnnScope
               );
   // add template names, if the class is a non-specialized template
   //if (scope.find('<')==-1 && cd->templateArguments())
@@ -723,7 +795,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   //}
   // generate member definition.
   QCString def;
-  if (root->type.length()>0)
+  if (!root->type.isEmpty())
   {
     if (mtype==MemberDef::Friend)
     {
@@ -760,7 +832,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   }
   // new member variable, typedef or enum value
   MemberDef *md=new MemberDef(root->type,name,root->args,0,
-      root->protection,Normal,root->stat,FALSE,
+      prot,Normal,root->stat,FALSE,
       mtype,0,0);
   md->setMemberClass(cd);
   md->setDefFile(root->fileName);
@@ -773,6 +845,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setInitializer(root->initializer);
   bool ambig;
   md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
 
@@ -826,13 +899,14 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setInitializer(root->initializer);
   bool ambig;
   FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
-  if (scope.length()>0)
+  if (!scope.isEmpty())
   {
     nd = namespaceDict[scope];
   }
@@ -856,7 +930,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
     // variable is inside a namespace, so put the scope before the name
   {
-    if (root->type.length()>0)
+    if (!root->type.isEmpty())
     {
       def=root->type+" "+nd->name()+"::"+name+root->args;
     }
@@ -867,7 +941,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   }
   else
   {
-    if (root->type.length()>0)
+    if (!root->type.isEmpty())
     {
       if (name.at(0)=='@') // dummy variable representing annonymous union
         def=root->type;
@@ -906,8 +980,9 @@ void buildVarList(Entry *root)
 {
   QRegExp re("([^)]*)");
   int i=-1;
-  if (root->name.length()>0 &&
-      root->type!="class" && root->type!="interface" &&
+  if (!root->name.isEmpty() &&
+      root->type!="class" && root->type!="interface" && 
+      root->type!="struct" && root->type!="union" &&
       (
        (root->section==Entry::VARIABLE_SEC 
        ) ||
@@ -1006,7 +1081,7 @@ void buildVarList(Entry *root)
     QCString classScope=stripAnnonymousNamespaceScope(scope);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
     scope=classScope;
-    if (scope.length()>0 && name.length()>0 && (cd=getClass(scope)))
+    if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
     {
       MemberDef *md=0;
       // if cd is an annonymous scope we insert the member 
@@ -1020,40 +1095,17 @@ void buildVarList(Entry *root)
         ClassDef *pcd=0;
         pScope = scope.left(QMAX(si-2,0));
         indentDepth = scope.right(scope.length()-si).contains("::")+1;
-#if 0
-        // Find the last annonymous scope while search from right to left
-        // Keep track of the number of scope names we skipped.
-        while ((i=pScope.findRev("::"))!=-1 && (int)pScope.length()>i+2 && 
-                  pScope.at(i+2)!='@'
-              ) 
-        {
-          pScope=pScope.left(i);
-          indentDepth++;
-        }
-        while ((i=pScope.findRev("::"))!=-1 && (int)pScope.length()>i+2 && 
-                  pScope.at(i+2)=='@'
-              ) 
-        {
-          pScope=pScope.left(i);
-          indentDepth++;
-        }
-        if (pScope.length()>0 && pScope.at(0)=='@')
-        {
-          pScope.resize(0);
-          indentDepth++;
-        }
-#endif
         if (!pScope.isEmpty())
           pScope.prepend(annScopePrefix);
         else if (annScopePrefix.length()>2)
           pScope=annScopePrefix.left(annScopePrefix.length()-2);
         //printf("pScope=`%s'\n",pScope.data());
-        if (!name.isEmpty() && name.at(0)!='@')
+        if (name.at(0)!='@')
         {
-          if (pScope.length()>0 && (pcd=getClass(pScope)))
+          if (!pScope.isEmpty() && (pcd=getClass(pScope)))
           {
-            //printf("Inserting member in parent scope!\n");
-            md=addVariableToClass(root,pcd,mtype,pScope,name,TRUE,indentDepth,0);
+            Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
+            md=addVariableToClass(root,pcd,mtype,pScope,name,TRUE,indentDepth,0,p);
           }
           else // annonymous scope inside namespace or file => put variable in the global scope
           {
@@ -1062,13 +1114,26 @@ void buildVarList(Entry *root)
           }
         }
       } 
-      addVariableToClass(root,cd,mtype,scope,name,FALSE,indentDepth,md);
+      addVariableToClass(root,cd,mtype,scope,name,FALSE,indentDepth,md,root->protection);
     }
-    else if (name.length()>0) // global variable
+    else if (!name.isEmpty()) // global variable
     {
       //printf("Inserting member in global scope %s!\n",scope.data());
       addVariableToFile(root,mtype,scope,name,FALSE,0,0);
     }
+    //if (mtype==MemberDef::Typedef)
+    //{
+    //  static QRegExp r("[a-z_A-Z][a-z_A-Z0-9]*");
+    //  int i,l;
+    //  if ((i=r.match(type,8,&l))!=-1)
+    //  {
+    //    //printf(">>> inserting typedef `%s'->`%s'\n",type.mid(i,l).data(),name.data());
+    //    if (getClass(type.mid(i,l))!=0)
+    //    {
+    //      typedefDict.insert(name,new QCString(type.mid(i,l))); 
+    //    }
+    //  }
+    //}
   }
 nextMember:
   EntryListIterator eli(*root->sublist);
@@ -1105,7 +1170,7 @@ void buildMemberList(Entry *root)
 
     bool isFriend=root->type.find("friend ")!=-1;
 
-    if (root->name.length()>0)
+    if (!root->name.isEmpty())
     {
       
       ClassDef *cd=0;
@@ -1117,7 +1182,7 @@ void buildMemberList(Entry *root)
       QCString scope=stripAnnonymousNamespaceScope(root->parent->name.copy());
       int i;
       if (root->parent && 
-          root->parent->name.length()>0 &&
+          !root->parent->name.isEmpty() &&
           (root->parent->section & Entry::COMPOUND_MASK) && 
           (cd=getClass(scope)) &&
           // do some fuzzy things to exclude function pointers 
@@ -1159,7 +1224,7 @@ void buildMemberList(Entry *root)
         //printf("new member: %s class template args=`%s'\n",
         //          root->args.data(),argListToString(cd->templateArguments()).data());
         MemberDef *md=new MemberDef(root->type,name,root->args,root->exception,
-                             root->protection,root->virt,root->stat,root->relates.length()>0,
+                             root->protection,root->virt,root->stat,!root->relates.isEmpty(),
                              mtype,root->mtArgList,root->argList);
         md->setMemberClass(cd);
         md->setDefFile(root->fileName);
@@ -1175,9 +1240,9 @@ void buildMemberList(Entry *root)
         //md->setScopeTemplateArguments(root->tArgList);
         md->addSectionsToDefinition(root->anchors);
         QCString def;
-        if (root->relates.length()>0 || isFriend)
+        if (!root->relates.isEmpty() || isFriend)
         {
-          if (root->type.length()>0)
+          if (!root->type.isEmpty())
           {
             if (root->argList)
             {
@@ -1202,7 +1267,7 @@ void buildMemberList(Entry *root)
         }
         else
         {
-          if (root->type.length()>0)
+          if (!root->type.isEmpty())
           {
             if (root->argList)
             {
@@ -1263,7 +1328,7 @@ void buildMemberList(Entry *root)
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
                root->name.find("::")==-1 &&
-               root->relates.length()==0 &&
+               root->relates.isEmpty() &&
                root->type.left(7)!="extern " &&
                root->type.left(8)!="typedef " 
               )
@@ -1332,7 +1397,7 @@ void buildMemberList(Entry *root)
           md->setGroupId(root->mGrpId);
           md->setInline(root->inLine);
           QCString def;
-          if (root->type.length()>0)
+          if (!root->type.isEmpty())
           {
             if (root->argList)
             {
@@ -1384,7 +1449,7 @@ void buildMemberList(Entry *root)
             // find file definition
             //FileDef *fd=0;
             //bool ambig;
-            //if (root->fileName.length()>0 && 
+            //if (!root->fileName.isEmpty() && 
             //    (fd=findFileDef(&inputNameDict,root->fileName,ambig))
             //   )
             if (fd)
@@ -1418,7 +1483,7 @@ void buildMemberList(Entry *root)
         //    root->parent->section,root->type.data(),root->name.data(),root->args.data());
       }
     }
-    else if (root->name.length()==0)
+    else if (root->name.isEmpty())
     {
         warn("Warning: Illegal member name found in file %s at line %d\n",
                root->fileName.data(),root->startLine);
@@ -1578,7 +1643,7 @@ bool findBaseClassRelation(Entry *root,ClassDef *cd,const char *scopePrefix,
         //        baseClass,baseClassName.data(),templSpec.data());
       }
 
-      bool found=baseClass!=0;
+      bool found=baseClass!=0 && baseClass!=cd;
       NamespaceDef *nd=cd->getNamespace();
       if (!found)
       {
@@ -1594,21 +1659,26 @@ bool findBaseClassRelation(Entry *root,ClassDef *cd,const char *scopePrefix,
             NamespaceDef *nd;
             for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
             {
-              found = (baseClass=getClass(nd->name()+"::"+baseClassName))!=0;
+              QCString fName = nd->name()+"::"+baseClassName;
+              found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                      root->name!=fName;
             }
           }
         }
         if (!found && nd) // class is inside a namespace
         {
           NamespaceList *nl = nd->getUsedNamespaces();
-          found = (baseClass=getClass(nd->name()+"::"+baseClassName))!=0;
+          QCString fName = nd->name()+"::"+baseClassName;
+          found = (baseClass=getClass(fName))!=0 && root->name!=fName;
           if (nl) // try to prepend any of the using namespace scopes.
           {
             NamespaceListIterator nli(*nl);
             NamespaceDef *nd;
             for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
             {
-              found = (baseClass=getClass(nd->name()+"::"+baseClassName))!=0;
+              fName = nd->name()+"::"+baseClassName;
+              found = (baseClass=getClass(fName))!=0 && baseClass!=cd &&
+                      root->name!=fName;
             }
           }
         }
@@ -1659,7 +1729,7 @@ void computeClassRelations(Entry *root)
        )
       )
       &&
-       root->name.length()>0
+       !root->name.isEmpty()
      )
   {
     ClassDef *cd;
@@ -1692,7 +1762,7 @@ void computeClassRelations(Entry *root)
     }
     else if (bName.right(2)!="::")
     {
-      if (root->name.length()>0 && root->name[0]!='@')
+      if (!root->name.isEmpty() && root->name[0]!='@')
         warn("Warning: Compound %s\n"
              "         defined in file %s at line %d\n"
              "         is not documented\n",
@@ -1789,7 +1859,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
          (root->parent->name.isEmpty() &&     /* or overwrite prototype docs */
           !root->proto && md->isPrototype()  /* with member definition docs */
          )
-        ) && root->doc.length()>0 
+        ) && !root->doc.isEmpty() 
        )
     {
       md->setDocumentation(root->doc);
@@ -1801,10 +1871,15 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
         ( 
          md->briefDescription().isEmpty() ||  /* no docs yet */
          !root->parent->name.isEmpty()         /* member of a class */
-        ) && root->brief.length()>0
+        ) && !root->brief.isEmpty()
        )
     {
       md->setBriefDescription(root->brief);
+    }
+    
+    if (md->initializer().isEmpty() && !root->initializer.isEmpty())
+    {
+      md->setInitializer(root->initializer);
     }
     
     //if (md->bodyCode().isEmpty() && !root->body.isEmpty()) /* no body yet */
@@ -1906,7 +1981,7 @@ static bool findUnrelatedFunction(Entry *root,
                            const char *decl)
 {
   QCString n=name;
-  if (n.length()==0) return FALSE;
+  if (n.isEmpty()) return FALSE;
   if (n.find("::")!=-1) return FALSE; // skip undefined class members
   //printf("findUnrelatedFunction(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
   //        namespaceName.data(),name,tempArg,decl);
@@ -1931,7 +2006,7 @@ static bool findUnrelatedFunction(Entry *root,
       //printf("NamespaceList %p\n",nl);
       bool viaUsingDirective = nl && nd && nl->find(nd)!=-1;
 
-      if ((namespaceName.length()==0 && nd==0) ||  // not in a namespace
+      if ((namespaceName.isEmpty() && nd==0) ||  // not in a namespace
           (nd && nd->name()==namespaceName) ||     // or in the same namespace 
           viaUsingDirective                        // member in `using' namespace
          )     
@@ -2105,6 +2180,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
     funcDecl=funcDecl.right(funcDecl.length()-7);
     root->inLine=TRUE;
   }
+  if (funcDecl.left(8)=="virtual ")
+  {
+    funcDecl=funcDecl.right(funcDecl.length()-7);
+    root->inLine=TRUE;
+  }
   
   // delete any ; from the function declaration
   int sep;
@@ -2114,7 +2194,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   }
   
   // make sure the first character is a space to simplify searching.
-  if (funcDecl.length()>0 && funcDecl[0]!=' ') funcDecl.prepend(" ");
+  if (!funcDecl.isEmpty() && funcDecl[0]!=' ') funcDecl.prepend(" ");
   
   // remove some superfluous spaces
   funcDecl=substitute(
@@ -2207,7 +2287,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
 
   if (!scopeName.isEmpty() && 
       scopeName.find('<')==-1 && 
-      classTempList.length()==0
+      classTempList.isEmpty()
      )
   { 
     ClassDef *cd=getClass(scopeName);
@@ -2258,9 +2338,9 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
   // rebuild the function declaration (needed to get the scope right).
-  if (scopeName.length()>0 && !isRelated && !isFriend)
+  if (!scopeName.isEmpty() && !isRelated && !isFriend)
   {
-    if (funcType.length()>0)
+    if (!funcType.isEmpty())
     {
       if (isFunc) // a function -> we use argList for the arguments
       {
@@ -2285,7 +2365,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   }
   else // build declaration without scope
   {
-    if (funcType.length()>0) // but with a type
+    if (!funcType.isEmpty()) // but with a type
     {
       if (isFunc) // function => omit argument list
       {
@@ -2316,7 +2396,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
 
   // destructor => do backward class name substitution if needed
-  //if (funcName.length()>0 && funcName[0]=='~') 
+  //if (!funcName.isEmpty() && funcName[0]=='~') 
   //  funcName="~"+resolveDefines(className);
   // constructor => do backward class name substitution if needed
   //if (funcName==className) funcName=resolveDefines(className);
@@ -2344,11 +2424,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           );
 
   MemberName *mn=0;
-  if (funcName.length()>0) // function name is valid
+  if (!funcName.isEmpty()) // function name is valid
   { 
     Debug::print(Debug::FindMembers,0,
                  "1. funcName=`%s'\n",funcName.data());
-    //if (funcTempList.length()>0) // try with member specialization
+    //if (!funcTempList.isEmpty()) // try with member specialization
     //{
     //  mn=memberNameDict[funcName+funcTempList];
     //}
@@ -2360,11 +2440,13 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
     {
       Debug::print(Debug::FindMembers,0,
                    "2. member name exists \n");
-      if (className.length()>0) // class name is valid
+      if (!className.isEmpty()) // class name is valid
       {
         int count=0;
-        MemberDef *md=mn->first(); // for each member with that name
-        while (md)
+        //MemberDef *md=mn->first(); // for each member with that name
+        MemberNameIterator mni(*mn);
+        MemberDef *md;
+        for (mni.toFirst();(md=mni.current());++mni)
         {
           Debug::print(Debug::FindMembers,0,
                  "3. member definition found scopeName=`%s'\n",scopeName.data());
@@ -2380,7 +2462,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
             NamespaceDef *nd = 0;
             FileDef *fd = 0;
             NamespaceList *nl = 0;
-            if (namespaceName.length()>0 && (nd=namespaceDict[namespaceName]))
+            if (!namespaceName.isEmpty() && (nd=namespaceDict[namespaceName]))
             {
               nl=nd->getUsedNamespaces();
             }
@@ -2506,7 +2588,6 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
               count++;
             }
           } 
-          md=mn->next();
         } 
         if (count==0) 
           warn("Warning: no matching member found for \n%s\n"
@@ -2602,7 +2683,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
         }
       }
     }
-    else if (isRelated && related.length()>0)
+    else if (isRelated && !related.isEmpty())
     {
       if (className.isEmpty()) className=related.copy();
       ClassDef *cd;
@@ -2714,7 +2795,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
     }
     else // unrelated not overloaded member found
     {
-      if (className.length()==0 && 
+      if (className.isEmpty() && 
           !findUnrelatedFunction(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
       {
         warn("Warning: class for member %s (file %s at line %d) cannot "
@@ -2775,33 +2856,24 @@ void findMemberDocumentation(Entry *root)
     findMember(root,root->name,root->relates,TRUE,isFunc);
   }
   else if 
-    (root->section==Entry::FUNCTION_SEC && 
-      (!root->doc.isEmpty() || !root->brief.isEmpty() || 
-       root->bodyLine!=-1 || root->mGrpId!=-1 /*|| Config::extractAllFlag*/
-       || root->inLine
-      )
+    ((root->section==Entry::FUNCTION_SEC ||   // function
+      (root->section==Entry::VARIABLE_SEC && 
+      !root->type.isEmpty() && root->type.left(8)!="typedef " &&
+       root->type!="class"  && root->type!="interface" && 
+       root->type!="struct" && root->type!="union")
+     ) && 
+     (!root->doc.isEmpty() || !root->brief.isEmpty() || 
+      root->bodyLine!=-1 || root->mGrpId!=-1 /*|| Config::extractAllFlag*/
+      || root->inLine
+     )
     )
   {
     //printf("Documentation for member `%s' found args=`%s' excp=`%s'\n",
     //    root->name.data(),root->args.data(),root->exception.data());
     //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
     //printf("Inside=%s\n Relates=%s\n",root->inside.data(),root->relates.data());
-    if (root->type.length()>0)
+    if (!root->type.isEmpty())
     {
-      //if (root->tArgList && root->mtArgList) // add member template specifier
-      //{
-      //  findMember(root,
-      //      root->type+" "+
-      //      root->inside+
-      //      root->name+
-      //      tempArgListToString(root->mtArgList)+
-      //      root->args+
-      //      root->exception,
-      //     root->relates,
-      //    FALSE,isFunc);
-      //
-      //else
-      //
         findMember(root,
             root->type+" "+
             root->inside+
@@ -2826,7 +2898,7 @@ void findMemberDocumentation(Entry *root)
   else if (root->section==Entry::VARIABLEDOC_SEC)
   {
     //printf("Documentation for variable %s found\n",root->name.data());
-    //if (root->relates.length()>0) printf("  Relates %s\n",root->relates.data());
+    //if (!root->relates.isEmpty()) printf("  Relates %s\n",root->relates.data());
     findMember(root,root->name,root->relates,FALSE,FALSE);
   }
   else
@@ -2869,7 +2941,7 @@ void findEnums(Entry *root)
     else // no scope, check the scope in which the docs where found
     {
       if (( root->parent->section & Entry::SCOPE_MASK )
-          && root->parent->name.length()>0
+          && !root->parent->name.isEmpty()
          ) // found enum docs inside a compound
       {
         QCString scope=root->parent->name;
@@ -2877,7 +2949,7 @@ void findEnums(Entry *root)
       }
       name=root->name.copy();
     }
-    if (cd && name.length()>0) // found a enum inside a compound
+    if (cd && !name.isEmpty()) // found a enum inside a compound
     {
       //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
       fd=0;
@@ -2899,7 +2971,7 @@ void findEnums(Entry *root)
       mnl=&functionNameList;
       isGlobal=TRUE;
     }
-    if (name.length()>0)
+    if (!name.isEmpty())
     {
       // new enum type
       md = new MemberDef(0,name,0,0,root->protection,Normal,FALSE,FALSE,
@@ -2953,7 +3025,7 @@ void findEnums(Entry *root)
       for (;(e=eli.current());++eli)
       {
         MemberName *fmn=0;
-        if (e->name.length()>0 && (fmn=(*mnd)[e->name])) 
+        if (!e->name.isEmpty() && (fmn=(*mnd)[e->name])) 
            // get list of members with the same name as the field
         {
           MemberDef *fmd=fmn->first();
@@ -3009,7 +3081,7 @@ void findEnums(Entry *root)
 void findEnumDocumentation(Entry *root)
 {
   if (root->section==Entry::ENUMDOC_SEC
-      && root->name.length()>0
+      && !root->name.isEmpty()
       && root->name[0]!='@'        // skip anonymous enums
      )
   {
@@ -3027,14 +3099,14 @@ void findEnumDocumentation(Entry *root)
     else // no scope, check the scope in which the docs where found
     {
       if (( root->parent->section & Entry::COMPOUND_MASK )
-          && root->parent->name.length()>0
+          && !root->parent->name.isEmpty()
          ) // found enum docs inside a compound
       {
         cd=getClass(root->parent->name);
       }
       name=root->name.copy();
     }
-    if (name.length()>0)
+    if (!name.isEmpty())
     {
       bool found=FALSE;
       if (cd)
@@ -3051,14 +3123,14 @@ void findEnumDocumentation(Entry *root)
             if (cd && cd->name()==className)
             {
               // documentation outside a compound overrides the documentation inside it
-              if (!md->documentation() || root->parent->name.length()==0) 
+              if (!md->documentation() || root->parent->name.isEmpty()) 
               {
                 md->setDocumentation(root->doc);
               }
 
               // brief descriptions inside a compound override the documentation 
               // outside it
-              if (!md->briefDescription() || root->parent->name.length()>0)
+              if (!md->briefDescription() || !root->parent->name.isEmpty())
               {
                 md->setBriefDescription(root->brief);
               }
@@ -3144,27 +3216,6 @@ void findDocumentedEnumValues()
   findDEV(functionNameList); 
 }
 
-//----------------------------------------------------------------------
-// recursive function:
-// returns TRUE iff class definition `bcd' represents an (in)direct base 
-// class of class definition `cd'.
-
-bool isBaseClass(ClassDef *bcd,ClassDef *cd)
-{
-  bool found=FALSE;
-  //printf("isBaseClass(cd=%s) looking for %s\n",cd->name().data(),bcd->name().data());
-  BaseClassListIterator bcli(*cd->baseClasses());
-  for ( ; bcli.current() && !found ; ++bcli)
-  {
-    ClassDef *ccd=bcli.current()->classDef;
-    //printf("isBaseClass() baseclass %s\n",ccd->name().data());
-    if (ccd==bcd) 
-      found=TRUE;
-    else 
-      found=isBaseClass(bcd,ccd);
-  }
-  return found;
-}
 
 //----------------------------------------------------------------------
 // computes the relation between all members. For each member `m'
@@ -3190,7 +3241,7 @@ void computeMemberRelations()
         //       mcd->name().data(),md->name().data(),
         //       bmcd->name().data(),bmd->name().data()
         //      );
-        if (md!=bmd && bmcd && mcd && isBaseClass(bmcd,mcd))
+        if (md!=bmd && bmcd && mcd && mcd->isBaseClass(bmcd))
         {
           //printf(" Base argList=`%s'\n Super argList=`%s'\n",
           //        argListToString(bmd->argumentList()).data(),
@@ -3214,161 +3265,33 @@ void computeMemberRelations()
   }  
 }
 
+
 //----------------------------------------------------------------------------
-// recusively merges the `all members' lists of class cd's base classes
-// with that of class `cd' itself.
-
-void mergeMembers(ClassDef *cd,BaseClassList *bcl)
+void computeClassImplUsageRelations()
 {
-  //if (mcd->flag==TRUE)
-  //{
-  //  err("Error: Cyclic inhertance dependency found for class %s\n",mcd->name());
-  // return;
-  //}
-  //mcd->flag=TRUE;
-
-  BaseClassListIterator bcli(*bcl);
-  BaseClassDef *bcd;
-  for ( ; (bcd=bcli.current()) ; ++bcli )
+  ClassDef *cd;
+  ClassListIterator cli(classList);
+  for (;(cd=cli.current());++cli)
   {
-    ClassDef *bClass=bcd->classDef; 
-    // merge the members of bClass with the onces from cd
-    
-    mergeMembers(bClass,bClass->baseClasses());
-    // the all member list of the branch until bClass is now complete
-    // so we can merge it with cd
-    
-    MemberNameInfoList *srcMnl  = bClass->memberNameInfoList();
-    MemberNameInfoDict *dstMnd  =     cd->memberNameInfoDict();
-    MemberNameInfoList *dstMnl  =     cd->memberNameInfoList();
-    
-    MemberNameInfoListIterator srcMnili(*srcMnl);
-    MemberNameInfo *srcMni;
-    for ( ; (srcMni=srcMnili.current()) ; ++srcMnili)
-    {
-      //printf("Base member name %s\n",srcMni->memberName());
-      MemberNameInfo *dstMni;
-      if ((dstMni=dstMnd->find(srcMni->memberName())))
-        // a member with that name is already in the class.
-        // the member may hide or reimplement the one in the super class
-        // or there may be another path to the base class that is already 
-        // visited via another branch in the class hierarchy.
-      {
-        MemberNameInfoIterator srcMnii(*srcMni); 
-        MemberInfo *srcMi;
-        for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
-        {
-          MemberDef *srcMd = srcMi->memberDef;
-          bool found=FALSE;
-          bool ambigue=FALSE;
-          MemberNameInfoIterator dstMnii(*dstMni); 
-          MemberInfo *dstMi;
-          for ( ; (dstMi=dstMnii.current()) && !found; ++dstMnii )
-          {
-            MemberDef *dstMd = dstMi->memberDef;
-            if (srcMd!=dstMd) // different members
-            {
-              ClassDef *srcCd = srcMd->memberClass();
-              ClassDef *dstCd = dstMd->memberClass();
-              //printf("Is %s a base class of %s?\n",srcCd->name(),dstCd->name());
-              if (srcCd==dstCd || isBaseClass(srcCd,dstCd)) 
-                // member is in the same or a base class
-              {
-                found = 
-                  /*matchArguments(srcMd->argsString(),dstMd->argsString());*/
-                  matchArguments(srcMd->argumentList(),dstMd->argumentList());
-                ambigue=!found;
-              }
-              else // member is in a non base class => multiple inheritance
-                   // using the same base class.
-              {
-                //printf("$$ Existing member %s %s add scope %s\n",
-                //    dstMi->ambiguityResolutionScope.data(),
-                //    dstMd->name().data(),
-                //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
-                         
-                QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
-                if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
-                  dstMi->ambiguityResolutionScope.prepend(scope);
-                ambigue=TRUE;
-              }
-            }
-            else // same members
-            {
-              // do not add if base class is virtual or 
-              // if scope paths are equal
-              if ((srcMi->virt==Virtual && dstMi->virt==Virtual) ||
-                  bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath
-                 ) found=TRUE;
-              else // member can be reached via multiple paths in the 
-                   // inheritance tree
-              {
-                //printf("$$ Existing member %s %s add scope %s\n",
-                //    dstMi->ambiguityResolutionScope.data(),
-                //    dstMd->name().data(),
-                //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
-
-                QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
-                if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
-                  dstMi->ambiguityResolutionScope.prepend(scope);
-                ambigue=TRUE;
-              }
-            }
-          }
-          if (!found && srcMd->protection()!=Private)
-          {
-            Specifier virt=srcMi->virt;
-            if (srcMi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            MemberInfo *newMi = new MemberInfo(srcMd,bcd->prot,virt);
-            newMi->scopePath=bClass->name()+"::"+srcMi->scopePath;
-            if (ambigue)
-            {
-              //printf("$$ New member %s %s add scope %s::\n",
-              //     srcMi->ambiguityResolutionScope.data(),
-              //     srcMd->name().data(),
-              //     bClass->name().data());
-
-              QCString scope=bClass->name().copy(); scope+="::";
-              if (scope!=srcMi->ambiguityResolutionScope.left(scope.length()))
-                newMi->ambiguityResolutionScope=
-                  scope+srcMi->ambiguityResolutionScope;
-            }
-            dstMni->append(newMi);
-          }
-        }
-      }
-      else // base class has a member that is not in the super class => copy
-      {
-        // create a deep copy of the list (only the MemberInfo's will be 
-        // copied, not the actual MemberDef's)
-        MemberNameInfo *newMni = new MemberNameInfo(srcMni->memberName()); 
-        
-        // copy the member(s) from the base to the super class
-        MemberNameInfoIterator mnii(*srcMni);
-        MemberInfo *mi;
-        for (;(mi=mnii.current());++mnii)
-        {
-          if (mi->memberDef->protection()!=Private)
-          {
-            Specifier virt=mi->virt;
-            if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            MemberInfo *newMi=new MemberInfo(mi->memberDef,bcd->prot,virt);
-            //if (mi->memberDef->memberClass()!=bClass)
-            newMi->scopePath=bClass->name()+"::"+mi->scopePath;
-            newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
-            newMni->append(newMi);
-          }
-        }
-        
-        // add it to the list and dictionary
-        dstMnl->inSort(newMni);
-        dstMnd->insert(newMni->memberName(),newMni);
-      }
-    }
+    cd->determineImplUsageRelation();
   }
 }
 
 //----------------------------------------------------------------------------
+#if 0
+void computeClassIntfUsageRelations()
+{
+  ClassDef *cd;
+  ClassListIterator cli(classList);
+  for (;(cd=cli.current());++cli)
+  {
+    cd->determineIntfUsageRelation();
+  }
+}
+#endif
+
+//----------------------------------------------------------------------------
+
 // builds the list of all members for each class
 
 void buildCompleteMemberLists()
@@ -3384,8 +3307,9 @@ void buildCompleteMemberLists()
          cd->superClasses()->count()==0 && // is a root of the hierarchy
          cd->baseClasses()->count()>0) // and has at least one base class
     {
+      cd->mergeMembers();
       //printf("merging members for class %s\n",cd->name());
-      mergeMembers(cd,cd->baseClasses());
+      //mergeMembers(cd,cd->baseClasses());
     }
   }
 }
@@ -3405,11 +3329,22 @@ void generateFileDocs()
       FileDef *fd=fn->first();
       while (fd)
       {
-        if (fd->isLinkableInProject())
+        bool doc = fd->isLinkableInProject();
+        bool src = fd->generateSource() || 
+                   (!fd->isReference() && Config::sourceBrowseFlag);
+        if (doc || src)
         {
           msg("Generating docs for file %s...\n",fd->name().data());
+        }
+        if (doc)
+        {
           fd->writeDocumentation(*outputList);
         }
+        if (src) // TODO: can this be TRUE for tag files?
+        {
+          fd->writeSource(*outputList);
+        }
+
         fd=fn->next();
       }
       fn=inputNameList.next();
@@ -3419,29 +3354,29 @@ void generateFileDocs()
 
 //----------------------------------------------------------------------------
 
-void generateSources()
-{
-  if (Config::sourceBrowseFlag)
-  {
-    writeSourceIndex(*outputList);
-  
-    if (inputNameList.count()>0)
-    {
-      FileName *fn=inputNameList.first();
-      while (fn)
-      {
-        FileDef *fd=fn->first();
-        while (fd && !fd->isReference())
-        {
-          msg("Generating source listing for file %s...\n",fd->name().data());
-          fd->writeSource(*outputList);
-          fd=fn->next();
-        }
-        fn=inputNameList.next();
-      }
-    }
-  }
-}
+//void generateSources()
+//{
+//  if (Config::sourceBrowseFlag)
+//  {
+//    writeSourceIndex(*outputList);
+//  
+//    if (inputNameList.count()>0)
+//    {
+//      FileName *fn=inputNameList.first();
+//      while (fn)
+//      {
+//        FileDef *fd=fn->first();
+//        while (fd && !fd->isReference())
+//        {
+//          msg("Generating source listing for file %s...\n",fd->name().data());
+//          fd->writeSource(*outputList);
+//          fd=fn->next();
+//        }
+//        fn=inputNameList.next();
+//      }
+//    }
+//  }
+//}
 
 void addSourceReferences()
 {
@@ -3526,11 +3461,11 @@ void generateClassDocs()
   msg("Generating hierarchical class index...\n");
   writeHierarchicalIndex(*outputList);
 
-  if (documentedIncludeFiles>0)
-  {
-    msg("Generating header index...\n");
-    writeHeaderIndex(*outputList);
-  }
+  //if (documentedIncludeFiles>0)
+  //{
+  //  msg("Generating header index...\n");
+  //  writeHeaderIndex(*outputList);
+  //}
 
   msg("Generating member index...\n");
   writeMemberIndex(*outputList);
@@ -3551,7 +3486,11 @@ void generateClassDocs()
       
       cd->writeDocumentation(*outputList);
       cd->writeMemberList(*outputList);
-      if (Config::verbatimHeaderFlag) cd->writeIncludeFile(*outputList);
+
+      //DotGfxUsageGraph usageIntfGraph(cd,FALSE,1);
+      //usageIntfGraph.writeGraph(Config::htmlOutputDir,FALSE);
+
+      //if (Config::verbatimHeaderFlag) cd->writeIncludeFile(*outputList);
     }
   }
 }
@@ -3594,7 +3533,7 @@ void inheritDocumentation()
 void findDefineDocumentation(Entry *root)
 {
   if ((root->section==Entry::DEFINEDOC_SEC ||
-       root->section==Entry::DEFINE_SEC) && root->name.length()>0
+       root->section==Entry::DEFINE_SEC) && !root->name.isEmpty()
      )
   {
     //printf("found define `%s' `%s' brief=`%s' doc=`%s'\n",
@@ -3629,7 +3568,11 @@ void findDefineDocumentation(Entry *root)
         }
       }
       else if (count>1 && 
-          (root->doc.length()>0 || root->brief.length()>0 || root->bodyLine!=-1)) 
+               (!root->doc.isEmpty() || 
+                !root->brief.isEmpty() || 
+                root->bodyLine!=-1
+               )
+              ) 
         // multiple defines don't know where to add docs
         // but maybe they are in different files together with their documentation
       {
@@ -3660,7 +3603,7 @@ void findDefineDocumentation(Entry *root)
         //     root->startLine,root->fileName.data());
       }
     }
-    else if (root->doc.length()>0 || root->brief.length()>0) // define not found
+    else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
       warn("Warning: documentation for unknown define %s found at line %d of "
            "file %s\n",root->name.data(),root->startLine,root->fileName.data());
@@ -3683,7 +3626,7 @@ void buildPageList(Entry *root)
 {
   if (root->section == Entry::PAGEDOC_SEC)
   {
-    if (root->name.length()>0)
+    if (!root->name.isEmpty())
     {
       PageInfo *pi=0;
       if ((pi=pageDict[root->name]))
@@ -3713,7 +3656,7 @@ void buildPageList(Entry *root)
 
         pageList.append(pi);
         pageDict.insert(baseName,pi);
-        if (pi->title.length()>0)
+        if (!pi->title.isEmpty())
         {
           //outputList->writeTitle(pi->name,pi->title);
           
@@ -3792,7 +3735,7 @@ void resolveUserReferences()
 //    outputList->disable(OutputGenerator::Man);
 //   startFile(*outputList,mainPage->name,mainPage->title);
 //    SectionInfo *si=0;
-//    if (mainPage->title.length()>0 && mainPage->name.length()>0 &&
+//    if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
 //        (si=sectionDict[mainPage->name])!=0)
 //    {
 //      outputList->writeSection(si->label,si->title,FALSE);
@@ -3818,12 +3761,14 @@ void generatePageDocs()
     
     startFile(*outputList,pageName,pi->title);
     SectionInfo *si=0;
-    if (pi->title.length()>0 && pi->name.length()>0 &&
+    if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
         (si=sectionDict[pi->name])!=0)
     {
       outputList->writeSection(si->label,si->title,FALSE);
     }
+    outputList->startTextBlock();
     parseDoc(*outputList,0,0,pi->doc);
+    outputList->endTextBlock();
     endFile(*outputList);
     outputList->enable(OutputGenerator::Man);
     pi=pageList.next();
@@ -3837,7 +3782,7 @@ void buildExampleList(Entry *root)
 {
   if (root->section == Entry::EXAMPLE_SEC)
   {
-    if (root->name.length()>0) 
+    if (!root->name.isEmpty()) 
     {
       if (exampleDict[root->name])
       {
@@ -4385,7 +4330,7 @@ int readDir(QFileInfo *fi,
         {
           FileDef  *fd=new FileDef(cfi->dirPath()+"/",name);
           FileName *fn=0;
-          if (name.length()>0 && (fn=(*fnDict)[name]))
+          if (!name.isEmpty() && (fn=(*fnDict)[name]))
           {
             fn->append(fd);
           }
@@ -4486,7 +4431,7 @@ int readFileOrDirectory(const char *s,
         {
           FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
           FileName *fn=0;
-          if (name.length()>0 && (fn=(*fnDict)[name]))
+          if (!name.isEmpty() && (fn=(*fnDict)[name]))
           {
             fn->append(fd);
           }
@@ -4550,7 +4495,7 @@ void readFormulaRepository()
 
 void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-1999\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2000\n\n",versionString);
   msg("You can use doxygen in two ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -4679,6 +4624,11 @@ int main(int argc,char **argv)
     outputList->add(new ManGenerator);
     ManGenerator::init();
   }
+  if (Config::generateRTF)
+  {
+    outputList->add(new RTFGenerator);
+    RTFGenerator::init();
+  }
   
   /**************************************************************************
    *             Read and preprocess input                                  *
@@ -4738,7 +4688,7 @@ int main(int argc,char **argv)
   BufStr input(inputSize+1); // Add one byte extra for \0 termination
   readFiles(input);
 
-  if (input.length()==0)
+  if (input.isEmpty())
   {
     warn("No input read, no output generated!\n");
     exit(1);
@@ -4762,7 +4712,7 @@ int main(int argc,char **argv)
   }
   
   QFile *tag =new QFile(Config::genTagFile);
-  if (Config::genTagFile.length()>0)
+  if (!Config::genTagFile.isEmpty())
   {
     if (!tag->open(IO_WriteOnly))
     {
@@ -4820,9 +4770,6 @@ int main(int argc,char **argv)
   msg("Search for main page...\n");
   findMainPage(root);
   
-//  msg("Adding compounds to file pages...\n");
-//  findClassDefsInFiles(root);
-
   msg("Building member list...\n"); // using class info only !
   buildMemberList(root);
   transferFunctionDocumentation();
@@ -4863,9 +4810,18 @@ int main(int argc,char **argv)
   msg("Computing member relations...\n");
   computeMemberRelations();
 
+  if (Config::haveDotFlag && Config::collGraphFlag)
+  {
+    msg("Computing class implementation usage relations...\n");
+    computeClassImplUsageRelations();
+  }
+  
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
   
+  //msg("Computing class interface usage relations...\n");
+  //computeClassIntfUsageRelations();
+
   msg("Determining member group documentation...\n");
   computeMemberGroupDocumentation();
 
@@ -4879,10 +4835,13 @@ int main(int argc,char **argv)
     msg("Inheriting documentation...\n");
     inheritDocumentation();
   }
-  
+
   /**************************************************************************
    *                        Generate documentation                          *
    **************************************************************************/
+
+  if (Config::generateHtml) writeDoxFont(Config::htmlOutputDir);
+  if (Config::generateRTF)  writeDoxFont(Config::rtfOutputDir);
 
   // count the number of documented elements in the lists we have built. 
   // If the result is 0 we do not generate the lists and omit the 
@@ -4896,7 +4855,7 @@ int main(int argc,char **argv)
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();
-  documentedIncludeFiles     = countIncludeFiles();
+  //documentedIncludeFiles     = countIncludeFiles();
  
   // compute the shortest possible names of all files
   // without loosing the uniqueness of the file names.
@@ -4911,9 +4870,6 @@ int main(int argc,char **argv)
 
   msg("Generating file documentation...\n");
   generateFileDocs();
-  
-  msg("Generating source listings...\n");
-  generateSources();
   
   msg("Generating class documentation...\n");
   generateClassDocs();
@@ -4942,9 +4898,6 @@ int main(int argc,char **argv)
   msg("Generating namespace member index...\n");
   writeNamespaceMemberIndex(*outputList);
 
-//  msg("Generating define index...\n");
-//  writeDefineIndex(*outputList);
-  
   msg("Generating page index...\n");
   writePageIndex(*outputList);
   
@@ -4968,6 +4921,22 @@ int main(int argc,char **argv)
   outputList->writeStyleInfo(4); // write last part
   outputList->enableAll();
   
+  if (Config::generateRTF)
+  {
+    msg("Combining RTF output...\n");
+    if (!RTFGenerator::preProcessFileInplace(Config::rtfOutputDir,"refman.rtf"))
+    {
+      err("Error processing RTF files!\n");
+      exit(1);
+    }
+  }
+  
+  if (Config::haveDotFlag && Config::gfxHierarchyFlag)
+  {
+    msg("Generating graphical class hierarchy...\n");
+    writeGraphicalClassHierarchy(*outputList);
+  }
+
   if (formulaList.count()>0 && Config::generateHtml)
   {
     msg("Generating bitmaps for formulas in HTML...\n");
@@ -4986,6 +4955,9 @@ int main(int argc,char **argv)
   {
     HtmlHelp::getInstance()->finalize();
   }
+
+  if (Config::generateHtml) removeDoxFont(Config::htmlOutputDir);
+  if (Config::generateRTF)  removeDoxFont(Config::rtfOutputDir);
 
   delete tag;
   return 0;

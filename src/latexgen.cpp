@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -254,6 +254,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Annotated File Index}\n"
       break;
+    case isPageIndex:
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Annotated Page Index}\n"
+      break;
     case isModuleDocumentation:
       {
         GroupDef *gd=groupList.first();
@@ -382,6 +386,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isFileIndex:
       t << "}\n\\input{files}\n";
+      break;
+    case isPageIndex:
+      t << "}\n\\input{pages}\n";
       break;
     case isModuleDocumentation:
       {
@@ -566,14 +573,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch (c) 1997-1999}]{}\n";
+        t << " Dimitri van Heesch (c) 1997-2000}]{}\n";
         //QCString dtString=dateToString(FALSE);
         t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize ";
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch (c) 1997-1999}}\n";
+        t << " Dimitri van Heesch (c) 1997-2000}}\n";
         t << "\\cfoot{}\n";
         t << "\\newenvironment{CompactList}\n";
         t << "{\\begin{list}{}{\n";
@@ -617,6 +624,25 @@ void LatexGenerator::writeStyleInfo(int part)
         t << "{\\end{list}}\n";
         t << "\\setlength{\\parindent}{0cm}\n";
         t << "\\setlength{\\parskip}{0.2cm}\n";
+        t << "\\addtocounter{secnumdepth}{1}\n";
+        if (!Config::compactLatexFlag)
+        {
+          t << "\\renewcommand{\\subsection}{\\@startsection{subsection}{2}{\\z@}\n";
+          t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
+          t << "                             {1.5ex \\@plus.2ex}\n";
+          t << "                             {\\normalfont\\large\\bfseries\\medskip\n";
+          t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
+          t << "                            }\n";
+        }
+        else
+        {
+          t << "\\renewcommand{\\subsubsection}{\\@startsection{subsubsection}{3}{\\z@}\n";
+          t << "                             {-3.25ex \\@plus -1ex \\@minus -.2ex}\n";
+          t << "                             {1.5ex \\@plus.2ex}\n";
+          t << "                             {\\normalfont\\normalsize\\bfseries\\medskip\n";
+          t << "                              \\vspace{0.6cm}\\hrule\\vspace{-0.6cm}}\n";
+          t << "                            }\n";
+        }
         t << "\\sloppy\n";
         endPlainFile();
       }
@@ -789,7 +815,7 @@ void LatexGenerator::startTitle()
 
 void LatexGenerator::startGroupHeader()
 {
-  if (Config::compactLatexFlag) t << "\\subsubsection*{"; else t << "\\subsection*{";
+  if (Config::compactLatexFlag) t << "\\subsubsection{"; else t << "\\subsection{";
 }
 
 void LatexGenerator::endGroupHeader()
@@ -824,9 +850,15 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   t << "}" << endl;
   //
-  if (Config::compactLatexFlag) t << "\\subsubsection"; else t << "\\subsection";
+  if (Config::compactLatexFlag) t << "\\paragraph"; else t << "\\subsubsection";
   if (Config::pdfHyperFlag && title) t << "[" << filterTitle(title) << "]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
+}
+
+void LatexGenerator::endMemberDoc() 
+{ 
+  t << "}";
+  if (Config::compactLatexFlag) t << "\\hfill";
 }
 
 void LatexGenerator::startDoxyAnchor(const char *fName,const char *clname,
@@ -915,6 +947,7 @@ void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
+  static bool isJapanese = theTranslator->latexBabelPackage()=="a4j";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -965,7 +998,7 @@ void LatexGenerator::docify(const char *str)
                    break;           
         
         default:   
-          if (theTranslator->latexBabelPackage()=="a4j")
+          if (isJapanese)
           { // language is japanese
             if (c>=128) // wide character
             {
@@ -1095,8 +1128,8 @@ void LatexGenerator::writeChar(char c)
 
 void LatexGenerator::startClassDiagram()
 {
-  if (Config::compactLatexFlag) t << "\\subsubsection*"; else t << "\\subsection*";
-  t << "{";
+  //if (Config::compactLatexFlag) t << "\\subsubsection"; else t << "\\subsection";
+  //t << "{";
 }
 
 void LatexGenerator::endClassDiagram(ClassDiagram &d,

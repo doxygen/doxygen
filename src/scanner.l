@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -76,19 +76,21 @@ static int              lastBriefContext;
 static int              lastVerbState;
 static int              lastStringContext;
 static int              lastCurlyContext;
+static int              lastRoundContext;
 static int              lastCodeState;
 static int              lastAfterDocContext;
 static int              lastGroupContext;
 static int              lastMemberGroupContext;
 static int              lastFormulaContext;
 static int              lastAnchorContext;
+static int              lastInitializerContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
 static Protection	baseProt;
-static int		bracketCount = 0 ;
 static int		sharpCount   = 0 ;
 static int		roundCount   = 0 ;
+static int		curlyCount   = 0 ;
 static int              ifCount      = 0 ;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
@@ -125,6 +127,9 @@ static bool             inDeprecatedBlock;
 static bool             inVersionBlock;
 static bool             inDateBlock;
 static bool             inBugBlock;
+static bool             inPreBlock;
+static bool             inPostBlock;
+static bool             inInvarBlock;
 static bool             inWarningBlock;
 static bool             inParBlock;
 static bool             firstSeeArg;
@@ -149,10 +154,15 @@ static int              lastCopyArgStringContext;
 static int              lastCopyArgContext;
 static int              currentListIndentLevel;
 static QCString         *copyArgString;
+static QCString         fullArgString;
 
 static ArgumentList     *currentArgumentList;
 static QCString         *currentTemplateSpec;
 static QCString         curImageName;
+static char             lastCopyArgChar;
+static QCString         *pCopyRoundString;
+static QCString         *pCopyCurlyString;
+static QCString         *pCopyQuotedString;
 
 //-----------------------------------------------------------------------------
 
@@ -161,7 +171,7 @@ static void initParser()
   insideArgumentList=FALSE;
   className.resize(0);
   memberName.resize(0);
-  refName.resize(0);
+  refName="<unknown>";
   code.resize(0);
   linkRef.resize(0);
   linkText.resize(0);
@@ -175,9 +185,9 @@ static void initParser()
   formulaText.resize(0);
   protection = Public;
   baseProt = Public;
-  bracketCount = 0;
   sharpCount = 0;
   roundCount = 0;
+  curlyCount = 0;
   ifCount = 0;
   memberGroupId = -1;
   sig = FALSE;
@@ -199,6 +209,9 @@ static void initParser()
   inVersionBlock = FALSE;
   inDateBlock = FALSE;
   inBugBlock = FALSE;
+  inPreBlock = FALSE;
+  inPostBlock = FALSE;
+  inInvarBlock = FALSE;
   inWarningBlock = FALSE;
   inParBlock = FALSE;
   firstSeeArg = FALSE;
@@ -237,7 +250,7 @@ TableElem::TableElem(int r,int c)
 TableElem::~TableElem()
 {
   //printf("TableElem::~TableElem(%d,%d)\n",row,col);
-  delete ol; 
+  delete ol; ol=0;
 }
 
 class Table
@@ -293,7 +306,7 @@ Table::~Table()
     }
     parentDoc->endTable();
   }
-  delete elemList;
+  delete elemList; elemList=0;
   outDoc=parentDoc;
 }
 
@@ -494,7 +507,7 @@ static void showLine(OutputList &ol,const char *key)
     while ( includeFileOffset<includeFileLength && 
 	(c=currentIncludeFile[includeFileOffset++])!='\n' && c!=0
 	  ) s+=c;
-    if (s.stripWhiteSpace().length()>0 || 
+    if (!s.stripWhiteSpace().isEmpty() || 
 	includeFileOffset==includeFileLength) found=TRUE;
   }
   if (s.find(key)!=-1)
@@ -515,7 +528,7 @@ static void showUntil(OutputList &ol,const char *key)
     while ( includeFileOffset<includeFileLength && 
 	    (c=currentIncludeFile[includeFileOffset++])!='\n' && c!=0
 	  ) s+=c;
-    if (s.stripWhiteSpace().length()>0)
+    if (!s.stripWhiteSpace().isEmpty())
     {
       ol.writeString("    ");
       parseCode(ol,className,s,exampleDoc,exampleName);
@@ -537,11 +550,97 @@ static void newDocState();
 
 //-----------------------------------------------------------------
 
+static QStack<int> listIndentStack;
+static bool insideItemList = FALSE;
+
+static void addListItemMarker(const char *marker)
+{
+  // find the actual position at which the bullet was found
+  int indent=0;
+  const char *p=marker;
+  char c;
+  while ((c=*p++))
+  {
+    if (c=='\t')
+    {
+      indent+=Config::tabSize - (indent%Config::tabSize);
+    }
+    else
+    {
+      indent++;
+    }
+  }
+  //printf("list marker found at column %d\n",indent);
+  if (!insideItemList)
+  {
+    outDoc->startItemList();
+    outDoc->writeListItem();
+    listIndentStack.push(new int(indent));
+    insideItemList=TRUE;
+  } 
+  else
+  {
+    int *pPrevIndent = listIndentStack.top(); 
+    if (*pPrevIndent==indent) // new item at the same indent level
+    {
+      outDoc->writeListItem(); 
+    }
+    else if (*pPrevIndent<indent) // start sub item list
+    {
+      outDoc->startItemList();
+      outDoc->writeListItem();
+      listIndentStack.push(new int(indent));
+    }
+    else // end sub item list
+    {
+      listIndentStack.pop();
+      delete pPrevIndent;
+      outDoc->endItemList();
+      // safe guard against wrong indenting
+      if (listIndentStack.isEmpty()) 
+      {
+	insideItemList=FALSE;
+	warn("Warning: list item with invalid indent found!\n");
+      }
+      else
+      {
+	outDoc->writeListItem();
+      }
+    }
+  }
+}
+
+static void forceEndItemList()
+{
+  int *indent;
+  while ((indent=listIndentStack.pop())!=0)
+  {
+    outDoc->endItemList();
+    delete indent;
+  }
+  insideItemList=FALSE;
+}
+
+#if 0
+static void tryEndItemList()
+{
+  if (listIndentStack.count()==1) // no subitems => end list
+  {
+    outDoc->endItemList();
+    delete listIndentStack.pop();
+    insideItemList=FALSE;
+  } 
+}
+#endif
+
+//-----------------------------------------------------------------
+
 static bool inBlock()
 {
   return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
          inVersionBlock || inDateBlock || inWarningBlock || inBugBlock ||
-	 inParBlock || inExceptionBlock || inDeprecatedBlock;
+	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
+	 inPostBlock || inInvarBlock;
 }
 
 static void endBlock()
@@ -554,7 +653,8 @@ static void endBlock()
     outDoc->endDescList();
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
     inVersionBlock=inDateBlock=inBugBlock=inWarningBlock=
-    inParBlock=inExceptionBlock=inDeprecatedBlock=FALSE;
+    inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
+    inInvarBlock=FALSE;
 }
 
 static void addSection()
@@ -617,32 +717,32 @@ static void checkDocs()
   }
 }
 
-static bool curLatexState;
-static bool curManState;
-static bool curHtmlState;
-
-static void storeOutputListState()
-{
-  curLatexState = outDoc->isEnabled(OutputGenerator::Latex);
-  curHtmlState  = outDoc->isEnabled(OutputGenerator::Html);
-  curManState   = outDoc->isEnabled(OutputGenerator::Man);
-}
-
-static void restoreOutputListState()
-{
-  if (curLatexState) 
-    outDoc->enable(OutputGenerator::Latex);
-  else
-    outDoc->disable(OutputGenerator::Latex);
-  if (curHtmlState) 
-    outDoc->enable(OutputGenerator::Html);
-  else
-    outDoc->disable(OutputGenerator::Html);
-  if (curManState)   
-    outDoc->enable(OutputGenerator::Man);
-  else
-    outDoc->disable(OutputGenerator::Man);
-}
+//static bool curLatexState;
+//static bool curManState;
+//static bool curHtmlState;
+//
+//static void storeOutputListState()
+//{
+//  curLatexState = outDoc->isEnabled(OutputGenerator::Latex);
+//  curHtmlState  = outDoc->isEnabled(OutputGenerator::Html);
+//  curManState   = outDoc->isEnabled(OutputGenerator::Man);
+//}
+//
+//static void restoreOutputListState()
+//{
+//  if (curLatexState) 
+//    outDoc->enable(OutputGenerator::Latex);
+//  else
+//    outDoc->disable(OutputGenerator::Latex);
+//  if (curHtmlState) 
+//    outDoc->enable(OutputGenerator::Html);
+//  else
+//    outDoc->disable(OutputGenerator::Html);
+//  if (curManState)   
+//    outDoc->enable(OutputGenerator::Man);
+//  else
+//    outDoc->disable(OutputGenerator::Man);
+//}
 
 enum ImageTypes
 {
@@ -660,7 +760,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   FileDef *fd;
   if ((fd=findFileDef(&imageNameDict,fileName,ambig)))
   {
-    QFile inImage(fd->absFilePath().data());
+    QFile inImage(fd->absFilePath());
     if (inImage.open(IO_ReadOnly))
     {
       result = fileName;
@@ -929,6 +1029,8 @@ VAR	  [vV][aA][rR]
 %x      CopyArgString
 %x	CopyArgRound
 %x	CopyArgSharp
+%x	CopyArgComment
+%x	CopyArgCommentLine
 %x	ReadFuncArgType
 %x	ReadTempArgs
 %x	Specialization
@@ -936,6 +1038,10 @@ VAR	  [vV][aA][rR]
 %x      ReadFormulaShort
 %x	ReadFormulaLong
 %x	AnchorLabel
+%x	ReadInitializer
+%x	CopyString
+%x	CopyRound
+%x	CopyCurly
 
 %%
 
@@ -980,6 +1086,9 @@ VAR	  [vV][aA][rR]
 					  if (inBlock()) endBlock();
 					}
   */
+<DocScan>^{B}*(("//"{B}*)?)"*"*[ \t]*"-" { /* found list item marker */
+  					  addListItemMarker(yytext);
+  					}
 <DocScan>"<!--"				{ BEGIN(DocSkipHtmlComment); }
 <DocSkipHtmlComment>"--"[!]?">"		{ BEGIN(DocScan); }
 <DocSkipHtmlComment>.
@@ -998,16 +1107,25 @@ VAR	  [vV][aA][rR]
 					  outDoc->docify(getenv(envvar));
 					}
 <DocScan>{CMD}"htmlonly"/[^a-z_A-Z0-9]	{
+  				          outDoc->pushGeneratorState(); /*storeOutputListState();*/
   					  outDoc->disableAllBut(OutputGenerator::Html); 
 					  BEGIN(DocHtmlScan);
   					}
 <DocHtmlScan>{CMD}"endhtmlonly"/[^a-z_A-Z0-9] {
-  					  outDoc->enableAll();
+  					  /*restoreOutputListState();*/
+  					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
+  				          /*storeOutputListState();*/
+  					  outDoc->pushGeneratorState();
   					  outDoc->disableAllBut(OutputGenerator::Latex);
 					  BEGIN(DocLatexScan);
+  					}
+<DocLatexScan>{CMD}"endlatexonly"/[^a-z_A-Z0-9] {
+  					  /*restoreOutputListState();*/
+  					  outDoc->popGeneratorState();
+					  BEGIN(DocScan);
   					}
 <DocHtmlScan,DocLatexScan>"//"|"/*"|"*/"	{
   					  outDoc->writeString(yytext);
@@ -1016,10 +1134,6 @@ VAR	  [vV][aA][rR]
   					  char c[2];
 					  c[0]=*yytext;c[1]='\0';
   					  outDoc->writeString(c);
-  					}
-<DocLatexScan>{CMD}"endlatexonly"/[^a-z_A-Z0-9] {
-  					  outDoc->enableAll();
-					  BEGIN(DocScan);
   					}
 <DocScan>"\\postheader"/{BN}
 <DocScan>"\\functionindex"/{BN}		{ writeMemberList(*outDoc); }
@@ -1053,7 +1167,7 @@ VAR	  [vV][aA][rR]
 					  char c[2];c[0]=*yytext;c[1]='\0';
   					  outDoc->codify(c);
   					}
-<DocScan>{CMD}"internal"/{BN}      { 
+<DocScan>{CMD}"internal"{BN}+	        { 
 					  if (!Config::internalDocsFlag)
 					  {
 					    outDoc->newParagraph();
@@ -1078,7 +1192,7 @@ VAR	  [vV][aA][rR]
 <DocLink,DocLinkText>{CMD}"endlink" { // <- needed for things like \endlink. 
   					  //printf("GenerateLink className=`%s' linkRef=`%s' linkText=`%s'\n",
 					  //        className.data(),linkRef.data(),linkText.data());
-					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText);
+					  generateLink(*outDoc,className,linkRef,inSeeBlock,linkText.stripWhiteSpace());
   					  BEGIN( DocScan ); 
 					}
   /*
@@ -1174,6 +1288,60 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
   					}
+<DocScan>{CMD}"pre"[s]?{BN}+		{
+  				          endArgumentList();
+  					  if (!inPreBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inPreBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trPrecondition()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+  					}
+<DocScan>{CMD}"post"[s]?{BN}+		{
+  				          endArgumentList();
+  					  if (!inPostBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inPostBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trPostcondition()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+  					}
+<DocScan>{CMD}"invariant"[s]?{BN}+	{
+  				          endArgumentList();
+  					  if (!inInvarBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inInvarBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trInvariant()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+  					}
 <DocScan>{CMD}"version"{BN}+		{
   				          endArgumentList();
   					  if (!inVersionBlock)
@@ -1181,7 +1349,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inVersionBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Version: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trVersion()+": ");
 					    outDoc->endBold();
@@ -1200,7 +1367,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inDateBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Date: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trDate()+": ");
 					    outDoc->endBold();
@@ -1237,7 +1403,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inAuthorBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Author(s): ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trAuthors()+": ");
 					    outDoc->endBold();
@@ -1256,7 +1421,6 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Returns: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trReturns()+": ");
 					    outDoc->endBold();
@@ -1270,9 +1434,7 @@ VAR	  [vV][aA][rR]
 					  {
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
-					    //firstSeeArg=TRUE;
 					    outDoc->startDescList();
-					    //outDoc->writeBoldString("See also: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trSeeAlso()+": ");
 					    outDoc->endBold();
@@ -1439,7 +1601,7 @@ VAR	  [vV][aA][rR]
 					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
 					    }
 					  }
-					  else if (!generateLink(*outDoc,className,yytext,TRUE,text))
+					  else if (!generateLink(*outDoc,className,sectionRef,TRUE,text))
 					  {
 					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
 					    outDoc->writeBoldString("unknown reference!");
@@ -1477,10 +1639,12 @@ VAR	  [vV][aA][rR]
   					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_Html);
 					  if (!curImageName.isEmpty())
 					  {
-					    storeOutputListState();
+					    /*storeOutputListState();*/
+					    outDoc->pushGeneratorState();
   				            outDoc->disableAllBut(OutputGenerator::Html);
 					    outDoc->writeImage(curImageName,0,0);
-					    restoreOutputListState();
+					    /*restoreOutputListState();*/
+					    outDoc->popGeneratorState();
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1492,24 +1656,30 @@ VAR	  [vV][aA][rR]
 					    BEGIN(DocLatexImageWidth);
   					}
 <DocLatexImageWidth>\n			{ // no width specified
-					  storeOutputListState();
+					  /*storeOutputListState();*/
+  					  outDoc->pushGeneratorState();
   				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,0,0);
-					  restoreOutputListState();
+					  /*restoreOutputListState();*/
+					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
 <DocLatexImageWidth>"width"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
-					  storeOutputListState();
+					  /*storeOutputListState();*/
+  					  outDoc->pushGeneratorState();
   				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,yytext,0);
-					  restoreOutputListState();
+					  /*restoreOutputListState();*/
+					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
 <DocLatexImageWidth>"height"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
-					  storeOutputListState();
+					  /*storeOutputListState();*/
+  					  outDoc->pushGeneratorState();
   				          outDoc->disableAllBut(OutputGenerator::Latex);
 					  outDoc->writeImage(curImageName,0,yytext);
-					  restoreOutputListState();
+					  /*restoreOutputListState();*/
+					  outDoc->popGeneratorState();
 					  BEGIN(DocScan);
   					}
 <DocImage>[a-z_A-Z0-9\.\-]+		{
@@ -1546,7 +1716,7 @@ VAR	  [vV][aA][rR]
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
 <DocScan>("http:"|"ftp:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
-<DocScan>[a-zA-Z\.]+"@"[a-zA-Z\.]+	{ outDoc->writeMailLink(yytext); }
+<DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILEMASK}			{
 					  generateFileRef(*outDoc,yytext);
 					}
@@ -1563,16 +1733,17 @@ VAR	  [vV][aA][rR]
 					  BEGIN( DocScan ); 
 					}
 <DocScan>{CMD}"e"{BN}+	                { BEGIN( DocEmphasis ); }
-<DocScan>{CMD}"a"{BN}+                     { BEGIN( DocEmphasis ); }
+<DocScan>{CMD}"a"{BN}+                  { BEGIN( DocEmphasis ); }
 <DocScan>{CMD}"b"{BN}+			{ BEGIN( DocBold ); }
-<DocScan>{CMD}"c"{BN}+                     { BEGIN( DocCode ); }
+<DocScan>{CMD}"c"{BN}+                  { BEGIN( DocCode ); }
 <DocScan>{CMD}"l"{BN}+		
+<DocScan>{CMD}"n"			{ outDoc->lineBreak(); }
 <DocScan>{CMD}"include"{BN}+		{ BEGIN( DocInclude ); }
-<DocScan>{CMD}"dontinclude"{BN}+		{ BEGIN( DocDontInclude ); }
-<DocScan>{CMD}"skip"{BN}+		 	{ BEGIN( DocSkipKey ); }	
+<DocScan>{CMD}"dontinclude"{BN}+	{ BEGIN( DocDontInclude ); }
+<DocScan>{CMD}"skip"{BN}+	 	{ BEGIN( DocSkipKey ); }	
 <DocScan>{CMD}"skipline"{BN}+		{ BEGIN( DocSkiplineKey ); firstLine=TRUE; }
-<DocScan>{CMD}"line"{BN}+			{ BEGIN( DocLineKey ); firstLine=TRUE; }
-<DocScan>{CMD}"until"{BN}+			{ BEGIN( DocUntilKey ); firstLine=TRUE; }
+<DocScan>{CMD}"line"{BN}+		{ BEGIN( DocLineKey ); firstLine=TRUE; }
+<DocScan>{CMD}"until"{BN}+		{ BEGIN( DocUntilKey ); firstLine=TRUE; }
 <DocSkipKey>[^ \t\r\n]+			{ 
   					  if (includeFileLength>0) 
 					    skipUntil(yytext); 
@@ -1660,10 +1831,12 @@ VAR	  [vV][aA][rR]
 <DocScan>"<"{VAR}{ATTR}">"		{ outDoc->startEmphasis(); }
 <DocScan>"</"{VAR}{ATTR}">"		{ outDoc->endEmphasis(); }
 <DocScan>"<"{IMG}{ATTR}">"		{ 
-                                          storeOutputListState();
+                                          /*storeOutputListState();*/
+  					  outDoc->pushGeneratorState();
                                           outDoc->disableAllBut(OutputGenerator::Html);
 					  outDoc->writeString(yytext); 
-                                          restoreOutputListState();
+                                          /*restoreOutputListState();*/
+					  outDoc->popGeneratorState();
 					}
 <DocScan>"<"{PRE}{ATTR}">"			{ 
   					  outDoc->startCodeFragment();
@@ -1754,25 +1927,42 @@ VAR	  [vV][aA][rR]
 <DocScan>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
   					}
-<DocEmphasis>[^ \t\n\r]+		{ 
+<DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+  					  outDoc->startEmphasis();
+  					  linkifyText(*outDoc,className,0,yytext);
+					  outDoc->endEmphasis();
+					  BEGIN( DocScan );
+					}
+<DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
   					  outDoc->startEmphasis();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
-					  //addToIndex(yytext);
+  					}
+<DocBold>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+  					  outDoc->startBold();
+  					  linkifyText(*outDoc,className,0,yytext);
+					  outDoc->endBold();
+					  BEGIN( DocScan );
 					}
-<DocBold>[^ \t\n\r]+			{
+<DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
   					  outDoc->startBold();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  outDoc->endBold();
 					  BEGIN( DocScan );
   					}
-<DocCode>[^ \t\n\r]+			{ 
-					  outDoc->startTypewriter();
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+<DocCode>[a-z_A-Z][a-z_A-Z:0-9<>]*	{ 
+  					  outDoc->startTypewriter();
+  					  linkifyText(*outDoc,className,0,yytext);
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}
+<DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
+  					  outDoc->startTypewriter();
+  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  outDoc->endTypewriter();
+					  BEGIN( DocScan );
+  					}
 <DocInclude>{FILE}			{
 					  includeFile(*outDoc,stripQuotes(yytext),FALSE); 
 					  BEGIN( DocScan );
@@ -1793,11 +1983,15 @@ VAR	  [vV][aA][rR]
   					  outDoc->docify(yytext);
 					}
 <DocCode,DocEmphasis,DocBold>"\n"	{ outDoc->writeChar('\n'); }
-<DocScan>({B}*"\n"{B}*){2,}		{ 
+<DocScan>({B}*"\n"){2,}{B}*		{ 
   					  if (insideArgumentList)
 					  {
 					    insideArgumentList=FALSE;
 					    outDoc->endItemList();
+					  }
+					  else if (insideItemList)
+					  {
+					    forceEndItemList();
 					  }
 					  else
 					  {
@@ -1805,14 +1999,23 @@ VAR	  [vV][aA][rR]
 					  }
 					  if (inBlock()) endBlock();
 					}
-<DocScan>{BN}+				{ 
+<DocScan>{BN}+/\n			{ 
   					  outDoc->writeChar(' '); 
+					}
+<DocScan>{B}+				{
+  					  outDoc->writeChar(' '); 
+  					}
+<DocScan>\n				{
+  					  outDoc->writeChar('\n'); 
+  					}
+<DocCode,DocEmphasis,DocBold,DocScan,Text>[a-z_A-Z0-9]+ { 
+					  outDoc->docify(yytext);
 					}
 <DocCode,DocEmphasis,DocBold,DocScan,Text>.  { 
 					  outDoc->writeChar(*yytext);
 					}
 <NextSemi>"{"				{
-  					  bracketCount=0;
+  					  curlyCount=0;
   					  BEGIN(SkipCurlyBlock); 
 					}
 <NextSemi>"("				{
@@ -1829,11 +2032,13 @@ VAR	  [vV][aA][rR]
 					    BEGIN( NextSemi ) ;
   					}
 <SkipCurlyBlock>"{"			{
-  					  ++bracketCount ; 
+  					  ++curlyCount ; 
 					}
 <SkipCurlyBlock>"}"			{ 
-  				          if( bracketCount )
-					    --bracketCount ;
+  				          if( curlyCount )
+					  {
+					    --curlyCount ;
+					  }
 					  else
 					    BEGIN( NextSemi ) ;
 					}
@@ -2063,7 +2268,8 @@ VAR	  [vV][aA][rR]
 					    currentArgumentList = current->tArgList;
 					  }
 					  templateStr="<";
-					  copyArgString=&templateStr;
+					  fullArgString = templateStr.copy();
+					  copyArgString = &templateStr;
 					  currentArgumentContext = FindMembers;
 					  //printf("Start template list\n");
 					  BEGIN( ReadTempArgs );
@@ -2152,7 +2358,8 @@ VAR	  [vV][aA][rR]
 					  {
 					    current->args = "(";
 					    currentArgumentContext = FuncQual;
-					    copyArgString=&current->args;
+					    fullArgString = current->args.copy();
+					    copyArgString = &current->args;
 					    //printf("Found %s\n",current->name.data());
 					    BEGIN( ReadFuncArgType ) ;
 					  }
@@ -2236,7 +2443,7 @@ VAR	  [vV][aA][rR]
 					  current->slot       = slot;
 					  BEGIN(FindMembers);
   					}
-<DefineEnd>\\\n				{
+<DefineEnd>\\[\r]?\n			{
   					  yyLineNr++;
   					}
 <DefineEnd>\"				{
@@ -2246,7 +2453,7 @@ VAR	  [vV][aA][rR]
 <DefineEnd>.				
 					
 <FindMembers>[*&]+			{ current->name += yytext ; }
-<FindMembers,MemberSpec,Function,NextSemi>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,ReadInitializer>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
 					    current->bodyLine=yyLineNr;
@@ -2268,7 +2475,7 @@ VAR	  [vV][aA][rR]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<MemberSpec,FindFields,FindMembers,NextSemi>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi,ReadInitializer>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ',';
@@ -2288,7 +2495,7 @@ VAR	  [vV][aA][rR]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<DefineEnd,FindFields,FindFieldArg>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<DefineEnd,FindFields,FindFieldArg,ReadInitializer>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  if (YY_START==DefineEnd)
@@ -2312,16 +2519,129 @@ VAR	  [vV][aA][rR]
 					  }
   					}
 <FindMembers>"="			{
-  					  current->bodyLine=yyLineNr;
-  					  BEGIN(NextSemi);
+  					  current->bodyLine = yyLineNr;
+					  lastInitializerContext = YY_START;
+					  BEGIN(ReadInitializer);
   					}
+  /* Read initializer rules */
+<ReadInitializer>"("			{
+  					  lastRoundContext=YY_START;
+  					  pCopyRoundString=&current->initializer;
+					  roundCount=0;
+  					  current->initializer+=*yytext; 
+  					  BEGIN(CopyRound);
+  					}
+<ReadInitializer>"{"			{
+  					  lastCurlyContext=YY_START;
+  					  pCopyCurlyString=&current->initializer;
+					  curlyCount=0;
+  					  current->initializer+=*yytext; 
+  					  BEGIN(CopyCurly);
+  					}
+<ReadInitializer>[;,]			{
+  					  //printf(">> initializer `%s' <<\n",current->initializer.data());
+  					  unput(*yytext);
+  					  BEGIN(lastInitializerContext);
+  					}
+<ReadInitializer>\"			{
+                                          lastStringContext=YY_START;
+  					  current->initializer+=*yytext; 
+  					  pCopyQuotedString=&current->initializer;
+					  BEGIN(CopyString);
+					}
+<ReadInitializer>"'"\\[0-7]{1,3}"'"            
+<ReadInitializer>"'"\\."'"                     
+<ReadInitializer>"'"."'"                       
+<ReadInitializer>\n			{
+  					  current->initializer+=*yytext;
+					  yyLineNr++;
+  					}
+<ReadInitializer>.			{ 
+  					  current->initializer+=*yytext; 
+					}
+
+  /* generic quoted string copy rules */
+<CopyString>\\.				{
+  					  *pCopyQuotedString+=yytext;
+  					}
+<CopyString>\"				{ 
+  					  *pCopyQuotedString+=*yytext;
+  					  BEGIN( lastStringContext ); 
+					}
+<CopyString>"/*"|"*/"|"//"		{
+  					  *pCopyQuotedString+=yytext;
+  					}
+<CopyString>\n				{
+  					  *pCopyQuotedString+=*yytext;
+  					  yyLineNr++;
+  					}
+<CopyString>.				{
+  					  *pCopyQuotedString+=*yytext;
+  					}
+
+  /* generic round bracket list copy rules */
+<CopyRound>\"				{
+					  *pCopyRoundString+=*yytext;
+  					  pCopyQuotedString=pCopyRoundString;
+					  lastStringContext=YY_START;
+					  BEGIN(CopyString);
+					}
+<CopyRound>"("				{
+  					  *pCopyRoundString+=*yytext;
+  					  roundCount++;
+  					}
+<CopyRound>")"				{
+  					  *pCopyRoundString+=*yytext;
+					  if (--roundCount<0)
+					    BEGIN(lastRoundContext);
+  					}
+<CopyRound>\n				{
+  					  yyLineNr++;
+  					  *pCopyRoundString+=*yytext;
+  					}
+<CopyRound>"'"\\[0-7]{1,3}"'"           { *pCopyRoundString+=yytext; }
+<CopyRound>"'"\\."'"                    { *pCopyRoundString+=yytext; }
+<CopyRound>"'"."'"                      { *pCopyRoundString+=yytext; }
+<CopyRound>[^"'()\n]+			{
+  					  *pCopyRoundString+=yytext;
+  					}
+
+  /* generic curly bracket list copy rules */
+<CopyCurly>\"				{
+					  *pCopyCurlyString+=*yytext;
+  					  pCopyQuotedString=pCopyCurlyString;
+					  lastStringContext=YY_START;
+					  BEGIN(CopyString);
+					}
+<CopyCurly>"{"				{
+  					  *pCopyCurlyString+=*yytext;
+					  curlyCount++;
+  					}
+<CopyCurly>"}"				{
+					  *pCopyCurlyString+=*yytext;
+					  if (--curlyCount<0)
+					    BEGIN(lastCurlyContext); 
+  					}
+<CopyCurly>"'"\\[0-7]{1,3}"'"           { *pCopyCurlyString+=yytext; }
+<CopyCurly>"'"\\."'"                    { *pCopyCurlyString+=yytext; }
+<CopyCurly>"'"."'"                      { *pCopyCurlyString+=yytext; }
+<CopyCurly>[^"'{}\n]+			{
+  					  *pCopyCurlyString+=yytext;
+  					}
+<CopyCurly>\n				{
+  					  yyLineNr++;
+					  *pCopyCurlyString+=*yytext;
+  					}
+
 <FindMembers>[:;,]			{ 
   					  QCString oldType = current->type.copy();
 					  QCString oldDocs = current->doc.copy();
   					  if ( *yytext != ':')
 					  {
 					    if (current->bodyLine==-1)
+					    {
 					      current->bodyLine = yyLineNr;
+					    }
 					    current->type=current->type.simplifyWhiteSpace();
 					    current->args=current->args.simplifyWhiteSpace();
 					    current->name=current->name.stripWhiteSpace();
@@ -2388,7 +2708,8 @@ VAR	  [vV][aA][rR]
   					  current->name = yytext;
 					}
 <FindFields>"="				{
-  					  BEGIN(FindFieldArg);
+  					  lastInitializerContext = YY_START;
+  					  BEGIN(ReadInitializer);
   					}
 <FindFields>","				{
 					  //printf("adding `%s' `%s' `%s' to enum `%s'\n",
@@ -2412,7 +2733,9 @@ VAR	  [vV][aA][rR]
 					  current->stat       = gstat;
 					  current->slot       = slot;
   					}
+  /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
+  */
 <Curly>[^\r\n{}"'/]*			{ current->program += yytext ; }
 <Curly>"//".*				{ current->program += yytext ; }
 <Curly>\"[^\r\n"]*\"			{ current->program += yytext ; }
@@ -2429,12 +2752,13 @@ VAR	  [vV][aA][rR]
 <Curly>"'"\\."'"                        { current->program += yytext; }
 <Curly>"'"."'"                          { current->program += yytext; }
 <Curly>"{"				{ current->program += yytext ;
-					  ++bracketCount ;
+					  ++curlyCount ;
 					}
-<Curly>"}"				{ if ( bracketCount )
+<Curly>"}"				{ //err("Curly count=%d\n",curlyCount);
+  					  if ( curlyCount>0 )
 					  {
 					    current->program += yytext ;
-					    --bracketCount ;
+					    --curlyCount ;
 					  }
 					  else
 					  {
@@ -2558,7 +2882,7 @@ VAR	  [vV][aA][rR]
 					    varEntry->name = msName.stripWhiteSpace();
 					    varEntry->type = current->type.simplifyWhiteSpace()+" ";
 					    varEntry->args = msArgs; //current->args.simplifyWhiteSpace();
-					    //if (current->name.length()>0 && current->name[0]!='@' && 
+					    //if (!current->name.isEmpty() && current->name[0]!='@' && 
 					    //    current->parent->section & Entry::COMPOUND_MASK)
 					    //  varEntry->type+=current->parent->name+"::";
 					    if (isTypedef)
@@ -2587,13 +2911,19 @@ VAR	  [vV][aA][rR]
 					    BEGIN( FindMembers );
 					  }
   					}					
-<MemberSpec>"="				{ BEGIN(MemberSpecSkip); }
+<MemberSpec>"="				{ 
+  					  lastInitializerContext=YY_START;
+  					  BEGIN(ReadInitializer);
+  					  /* BEGIN(MemberSpecSkip); */
+					}
+  /*
 <MemberSpecSkip>"{"			{
-  					  bracketCount=0;
+  					  curlyCount=0;
 					  lastCurlyContext = MemberSpecSkip;
 					  previous = current;
   					  BEGIN(SkipCurly);
   					}
+  */
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
 <Curly>{BN}+				{ current->program += yytext ;
@@ -2634,7 +2964,7 @@ VAR	  [vV][aA][rR]
   					}
 <EndFuncPtr>"("				{ // a function returning a function
   					  current->args += *yytext ;
-					  bracketCount=0;
+					  roundCount=0;
 					  BEGIN( FuncFunc );
   					}
 <EndFuncPtr>")"				{
@@ -2642,12 +2972,12 @@ VAR	  [vV][aA][rR]
   					}
 <FuncFunc>"("				{
   					  current->args += *yytext ;
-  					  ++bracketCount;
+  					  ++roundCount;
 					}
 <FuncFunc>")"				{
   					  current->args += *yytext ;
-  					  if ( bracketCount )
-					    --bracketCount;
+  					  if ( roundCount )
+					    --roundCount;
 					  else
 					  {
 					    BEGIN(FuncFuncEnd);
@@ -2668,12 +2998,12 @@ VAR	  [vV][aA][rR]
   					}
 <FuncFuncType>"("			{
   					  current->type += *yytext;
-					  bracketCount++;
+					  roundCount++;
   					}
 <FuncFuncType>")"			{
   					  current->type += *yytext;
-  					  if (bracketCount)
-					    --bracketCount;
+  					  if (roundCount)
+					    --roundCount;
 					  else
 					    BEGIN(Function);
 					}
@@ -2685,6 +3015,7 @@ VAR	  [vV][aA][rR]
 <FindMembers>"("			{ current->args = yytext;
   					  current->bodyLine = yyLineNr;
 					  currentArgumentContext = FuncQual;
+					  fullArgString=current->args.copy();
 					  copyArgString=&current->args;
 					  BEGIN( ReadFuncArgType ) ;
 					  //printf(">>> Read function arguments!\n");
@@ -2699,46 +3030,96 @@ VAR	  [vV][aA][rR]
 
   /*- Function argument reading rules ---------------------------------------*/
 
-<ReadFuncArgType>[^ \/\r\t\n\)\(\"\']+	{ *copyArgString+=yytext; }
-<CopyArgString>[^\n\\\"\']+		{ *copyArgString+=yytext; }
-<CopyArgRound>[^\/\n\)\(\"\']+		{ *copyArgString+=yytext; }
+<ReadFuncArgType>[^ \/\r\t\n\)\(\"\']+	{ *copyArgString+=yytext; 
+  					  fullArgString+=yytext;
+  					}
+<CopyArgString>[^\n\\\"\']+		{ *copyArgString+=yytext; 
+					  fullArgString+=yytext;
+					}
+<CopyArgRound>[^\/\n\)\(\"\']+		{ 
+  					  *copyArgString+=yytext; 
+  					  fullArgString+=yytext;
+  					}
 <ReadFuncArgType,ReadTempArgs>{BN}*	{
   					  *copyArgString+=" ";
+  					  fullArgString+=" ";
   					  lineCount();
   					}
 <ReadFuncArgType,CopyArgRound,CopyArgSharp,ReadTempArgs>\"	{
   					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
 					  lastCopyArgStringContext = YY_START;
   					  BEGIN( CopyArgString );
   					}
 <ReadFuncArgType,ReadTempArgs>"("	{
   					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
   					  argRoundCount=0; 
 					  lastCopyArgContext = YY_START;
 					  BEGIN( CopyArgRound ); 
   					}
 <ReadFuncArgType>")"			{ 
   					  *copyArgString+=*yytext;
-					  stringToArgumentList(*copyArgString,current->argList);
+  					  fullArgString+=*yytext;
+					  stringToArgumentList(fullArgString,current->argList);
 					  BEGIN( currentArgumentContext );
 					}
+	/* a special comment */
+<ReadFuncArgType>("/*"[*!]|"//"[/!])("<"?)	{ 
+  					  fullArgString+=yytext;
+  					  lastCopyArgChar=0;
+					  if (yytext[1]=='/')
+					    BEGIN( CopyArgCommentLine );
+					  else
+  					    BEGIN( CopyArgComment );
+  					}
+	/* `)' followed by a special comment */
+<ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<"	{
+  					  lineCount();
+					  lastCopyArgChar=*yytext;
+					  QCString text=&yytext[1];
+					  text=text.stripWhiteSpace();
+					  fullArgString+=text;
+					  if (text.find("//")!=-1)
+					    BEGIN( CopyArgCommentLine );
+					  else
+					    BEGIN( CopyArgComment );
+  					}
+<CopyArgComment>[^\n\*]+		{ fullArgString+=yytext; }
+<CopyArgComment>"*/"			{ fullArgString+=yytext; 
+  					  if (lastCopyArgChar!=0)
+					    unput(lastCopyArgChar); 
+                                          BEGIN( ReadFuncArgType ); 
+					}
+<CopyArgCommentLine>\n			{ fullArgString+=yytext;
+  					  if (lastCopyArgChar!=0)
+					    unput(lastCopyArgChar);
+					  BEGIN( ReadFuncArgType );
+  					}
+<CopyArgCommentLine>[^\n]+		{ fullArgString+=yytext; }
+<CopyArgComment>\n			{ fullArgString+=*yytext; yyLineNr++; }
+<CopyArgComment>.			{ fullArgString+=*yytext; }
 <ReadTempArgs>"<"			{
 					  *copyArgString+=*yytext;
+					  fullArgString+=*yytext;
 					  argSharpCount=0;
 					  BEGIN( CopyArgSharp );
 					}
 <ReadTempArgs>">"			{
 					  *copyArgString+=*yytext;
+					  fullArgString+=*yytext;
 					  //printf("end template list %s\n",copyArgString->data());
-					  stringToArgumentList(*copyArgString,currentArgumentList);
+					  stringToArgumentList(fullArgString,currentArgumentList);
 					  BEGIN( currentArgumentContext );
 					}
 <CopyArgRound>"("			{
   					  argRoundCount++;
 					  *copyArgString+=*yytext;
+					  fullArgString+=*yytext;
   					}
 <CopyArgRound>")"			{
 					  *copyArgString+=*yytext;
+					  fullArgString+=*yytext;
 					  if (argRoundCount>0) 
 					    argRoundCount--;
 					  else 
@@ -2747,9 +3128,11 @@ VAR	  [vV][aA][rR]
 <CopyArgSharp>"<"			{
   					  argSharpCount++;
 					  *copyArgString+=*yytext;
+					  fullArgString+=*yytext;
   					}
 <CopyArgSharp>">"			{
   					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
 					  if (argRoundCount>0)
 					    argRoundCount--;
 					  else
@@ -2757,16 +3140,34 @@ VAR	  [vV][aA][rR]
   					}
 <CopyArgString>\\.			{
   					  *copyArgString+=yytext;
+  					  fullArgString+=yytext;
   					}
 <CopyArgString>\"			{
   					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
 					  BEGIN( lastCopyArgStringContext );
   					}
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\[0-7]{1,3}"'" { *copyArgString+=yytext; }
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\."'"   { *copyArgString+=yytext; }
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"."'"     { *copyArgString+=yytext; }
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>\n  { yyLineNr++; *copyArgString+=*yytext; }
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>.	  { *copyArgString+=*yytext; }
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\[0-7]{1,3}"'" { 
+                                          *copyArgString+=yytext; 
+                                          fullArgString+=yytext; 
+					}
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"\\."'"   { 
+  					  *copyArgString+=yytext; 
+  					  fullArgString+=yytext; 
+					}
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>"'"."'"     { 
+  					  *copyArgString+=yytext; 
+  					  fullArgString+=yytext; 
+					}
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>\n  { 
+  					  yyLineNr++; 
+					  *copyArgString+=*yytext; 
+					  fullArgString+=*yytext; 
+					}
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgRound,CopyArgSharp>.	  { 
+  					  *copyArgString+=*yytext; 
+  					  fullArgString+=*yytext; 
+					}
 
 
 
@@ -2774,11 +3175,11 @@ VAR	  [vV][aA][rR]
 
 
 <FuncRound>"("				{ current->args += *yytext ;
-					  ++bracketCount ;
+					  ++roundCount ;
 					}
 <FuncRound>")"                          { current->args += *yytext ; 
-					  if ( bracketCount )
-					    --bracketCount ;
+					  if ( roundCount )
+					    --roundCount ;
 				          else
 					    BEGIN( FuncQual ) ;
 					}
@@ -2824,11 +3225,11 @@ VAR	  [vV][aA][rR]
 					  BEGIN( ExcpRound ) ;
   					}
 <ExcpRound>"("				{ current->exception += *yytext ;
-					  ++bracketCount ;
+					  ++roundCount ;
 					}
 <ExcpRound>")"                          { current->exception += *yytext ; 
-					  if ( bracketCount )
-					    --bracketCount ;
+					  if ( roundCount )
+					    --roundCount ;
 				          else
 					    BEGIN( FuncQual ) ;
 					}
@@ -2923,6 +3324,7 @@ VAR	  [vV][aA][rR]
 					    if (current_root->section & Entry::COMPOUND_MASK)
 					      previous->inLine = TRUE;
 					    //addToBody(yytext);
+					    curlyCount=0;
 					    BEGIN( SkipCurly ) ;
 					  }
 					  else if( *yytext == ':' )
@@ -2945,12 +3347,14 @@ VAR	  [vV][aA][rR]
 					}
 <SkipCurly>"{"				{ 
   				          //addToBody(yytext);
-  					  ++bracketCount ; 
+  					  ++curlyCount ; 
 					}
 <SkipCurly>"}"				{ 
   				          //addToBody(yytext);
-  					  if( bracketCount )
-					    --bracketCount ;
+  					  if( curlyCount )
+					  {
+					    --curlyCount ;
+					  }
 					  else
 					  {
 					    previous->endBodyLine=yyLineNr;
@@ -2958,10 +3362,10 @@ VAR	  [vV][aA][rR]
 					  }
 					}
 <SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
-  					  if ( bracketCount )
+  					  if ( curlyCount )
 					  {
 					    //addToBody(yytext);
-					    --bracketCount ;
+					    --curlyCount ;
 					  }
 					  else
 					  {
@@ -3008,7 +3412,7 @@ VAR	  [vV][aA][rR]
   					  yyLineNr++;
   				          //addToBody(yytext);
   					}
-<SkipCurly,SkipCurlyCpp>.		{
+<SkipCurly,SkipCurlyCpp>[^\n"'\\/{}]+	{
   				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 
@@ -3021,16 +3425,17 @@ VAR	  [vV][aA][rR]
   				          //addToBody(yytext);
   					  yyLineNr++; 
 					}
-<SkipInits,SkipCurly,SkipCurlyCpp>"/*"		{
+<SkipInits,SkipCurly,SkipCurlyCpp>"/*"	{
   				          //addToBody(yytext);
+  					  lastCContext = YY_START;
+					  BEGIN(SkipComment);
   					}
-<SkipInits,SkipCurly,SkipCurlyCpp>"*/"		{
+<SkipInits,SkipCurly,SkipCurlyCpp>"//"  {
   				          //addToBody(yytext);
+  					  lastCContext = YY_START;
+					  BEGIN(SkipCxxComment);
   					}
-<SkipInits,SkipCurly,SkipCurlyCpp>"//".*        {
-  				          //addToBody(yytext);
-  					}
-<SkipInits,SkipCurly,SkipCurlyCpp>.		{
+<SkipInits,SkipCurly,SkipCurlyCpp>.	{
   				          //addToBody(yytext);
   					}
 <SkipString>\\.				{
@@ -3083,19 +3488,15 @@ VAR	  [vV][aA][rR]
 					  lineCount();
 					  BEGIN( ClassVar );
 					}
-  /*
-<ClassVar>{ID}/{BN}*"{"			{ // we probably got some M$ extension
-  					  current->name = yytext ;
-  					}
-<ClassVar>{ID}/{BN}*":"			{ // we probably got some M$ extension
-  					  current->name = yytext ;
-  					}
-  */
 <ClassVar>{ID}				{
 					  if (isTypedef)
 					  {
-					    typedefDict.insert(yytext,new QCString(current->name));
-					    current->type.prepend("typedef ");
+					  //  typedefDict.insert(yytext,new QCString(current->name));
+					  //  current->type.prepend("typedef ");
+					  //  current->extends
+					    current->extends->append(
+					      new BaseInfo(yytext,Public,Normal)
+					    );
 					  }
   					  current->type += ' ' ;
 					  current->type += current->name ;
@@ -3104,7 +3505,7 @@ VAR	  [vV][aA][rR]
   					}
 <ClassVar>[(\[]				{
                                           // probably a function anyway
-                                          unput('(');
+                                          unput(*yytext);
 					  BEGIN( FindMembers );
 					}
 <ClassVar>":"				{ 
@@ -3124,8 +3525,9 @@ VAR	  [vV][aA][rR]
 <ClassName,ClassVar>{B}*"{"{B}*		{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
 					  current->name = removeRedundantWhiteSpace(current->name);
-					  if (current->name.length()==0 && !isTypedef) // anonymous compound
+					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
 					    current->name.sprintf("@%d",anonCount++);
+					  curlyCount=0;
 					  BEGIN( Curly ) ;
 					}
 <BasesProt>"virtual"                    { baseVirt = Virtual; }
@@ -3182,7 +3584,7 @@ VAR	  [vV][aA][rR]
 					}
 <Bases>","				{ current->args += ',' ; 
 					  current->name = removeRedundantWhiteSpace(current->name);
-  					  if (baseName.length()>0)
+  					  if (!baseName.isEmpty())
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
@@ -3194,10 +3596,11 @@ VAR	  [vV][aA][rR]
 <Bases>{B}*"{"{B}*			{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
 					  current->name = removeRedundantWhiteSpace(current->name);
-  					  if (baseName.length()>0)
+  					  if (!baseName.isEmpty())
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
+					  curlyCount=0;
 					  BEGIN( Curly ) ;
 					}
 <Comment>{BN}+				{ current->program += yytext ;
@@ -3207,7 +3610,7 @@ VAR	  [vV][aA][rR]
 <Comment>"//"				{ current->program += yytext ; }
 <Comment>[^\n\*]+			{ current->program += yytext ; }
 <Comment>.*"*/"				{ current->program += yytext ;
-					  BEGIN( Curly ) ;
+					  BEGIN( lastContext ) ;
 					}
 <Comment>.				{ current->program += *yytext ; }
 
@@ -3278,7 +3681,7 @@ VAR	  [vV][aA][rR]
   					  current->name.resize(0);
   					  current->args.resize(0);
 					  current->argList->clear();
-					  bracketCount=0;
+					  curlyCount=0;
 					  BEGIN( SkipCurlyBlock );
 					  	
   					}
@@ -3489,9 +3892,9 @@ VAR	  [vV][aA][rR]
 <ClassDocArg2>{BL}			{ yyLineNr++; 
 					  newDocState();
 					}
-<ClassDocArg3>{FILE}			{
+<ClassDocArg3>[<]?{FILE}[>]?		{
   					  //printf("ClassDocArg3=%s\n",yytext);
- 					  current->includeName = stripQuotes(yytext);
+ 					  current->includeName = yytext;
   					  newDocState();
 					}
 <ClassDocArg3>{BL}			{ yyLineNr++; 
@@ -3687,12 +4090,12 @@ VAR	  [vV][aA][rR]
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>{CMD}"f$"	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="$"; 
 							  BEGIN(ReadFormulaShort); 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>{CMD}"f["	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc>{CMD}"f["	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="\\["; 
 							  BEGIN(ReadFormulaLong); 
@@ -3784,6 +4187,7 @@ VAR	  [vV][aA][rR]
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
 <ClassDocBrief>{BS}{BL}			{ 
   					  current->brief=current->brief.stripWhiteSpace();
+					  if (!current->doc.isEmpty()) current->doc+="<p>";
   					  yyLineNr++; 
 					  BEGIN( lastBriefContext );
 					}
@@ -3825,7 +4229,7 @@ VAR	  [vV][aA][rR]
 <ClassDocFunc>"\n"			{ 
   					  yyLineNr++; 
 					  current->name = current->name.stripWhiteSpace();
-					  if (current->section == Entry::MEMBERDOC_SEC && current->args.length()==0)
+					  if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
 					    current->section = Entry::VARIABLEDOC_SEC;
 					  newDocState();
 					}
@@ -3835,7 +4239,8 @@ VAR	  [vV][aA][rR]
 <ClassDocFunc>"("			{
   					  current->args+=*yytext;
 					  currentArgumentContext = ClassDocFuncQual;
-					  copyArgString=&current->args;
+					  fullArgString = current->args.copy();
+					  copyArgString = &current->args;
 					  BEGIN( ReadFuncArgType ) ;
   					}
 <ClassDocFunc>"("({B}*"*")+		{
@@ -3955,10 +4360,15 @@ VAR	  [vV][aA][rR]
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-" { 
+  				         current->doc += yytext; 
+					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
-<DefLineDoc,LineDoc,ClassDoc,Doc>"/*"              { current->doc += yytext; }
-
-<SkipCxxComment>.*\n			{ yyLineNr++ ;
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
+  					  current->doc+=' '; 
+					}
+<DefLineDoc,LineDoc,ClassDoc,Doc>"/*"   { current->doc += yytext; }
+<SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}
 <SkipComment>[^\*\n]+
@@ -4033,7 +4443,7 @@ void parseCompounds(Entry *rt)
   Entry *ce;
   for (;(ce=eli.current());++eli)
   {
-    if (ce->program.length()>0)
+    if (!ce->program.isEmpty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
       //  ce->name.data(),ce->program.data());
@@ -4056,7 +4466,7 @@ void parseCompounds(Entry *rt)
         current->protection = protection = Private ;
       else if (ce->section == Entry::ENUM_SEC ) // enum
 	current->protection = protection = ce->protection;
-      else if (ce->name.length()>0 && ce->name.at(0)=='@') // anonymous union
+      else if (!ce->name.isEmpty() && ce->name.at(0)=='@') // anonymous union
 	current->protection = protection = ce->protection;
       else // named struct, union, or interface
 	current->protection = protection = Public ;
@@ -4065,7 +4475,7 @@ void parseCompounds(Entry *rt)
       gstat = FALSE;
       virt = Normal;
       scanYYlex() ;
-      delete current;
+      delete current; current=0;
       ce->program.resize(0);
     }
     parseCompounds(ce);
@@ -4093,7 +4503,7 @@ void parseMain(Entry *rt)
   BEGIN( FindMembers );
   scanYYlex();
   rt->program.resize(0);
-  delete current;
+  delete current; current=0;
   parseCompounds(rt);
 }
 
@@ -4118,6 +4528,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
   insideArgumentList = FALSE;
   scanYYlex();
   if (insideArgumentList) { insideArgumentList=FALSE; outDoc->endItemList(); }
+  if (insideItemList) { forceEndItemList(); }
   if (inBlock()) endBlock();
   if (currentListIndentLevel!=0)
   {
@@ -4140,7 +4551,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
     }
   }
   ol+=*outDoc;
-  delete outDoc;
+  delete outDoc; outDoc=0;
   return;
 }
 
@@ -4149,6 +4560,7 @@ void parseDocument(OutputList &ol,const QCString &docString)
 void parseDoc(OutputList &ol,const char *clName,
               const char *memName,const QCString &docString)
 {
+  //printf("Doc---------\n%s\n---------\n",docString.data());
   initParser();
   initParseCodeContext();
   exampleDoc=FALSE;           // do not cross reference with member docs
@@ -4158,9 +4570,13 @@ void parseDoc(OutputList &ol,const char *clName,
   {
     refName=className+"::"+memberName;
   }
-  else
+  else if (clName)
   {
     refName=className;
+  }
+  else
+  {
+    refName="<unknown>";
   }
   parseDocument(ol,docString);
 }
@@ -4169,6 +4585,7 @@ void parseDoc(OutputList &ol,const char *clName,
 
 void parseText(OutputList &ol,const QCString &txtString)
 {
+  if (txtString.isEmpty()) return;
   inputString = txtString;
   outDoc = new OutputList(&ol);
   inputPosition = 0;
@@ -4181,7 +4598,7 @@ void parseText(OutputList &ol,const QCString &txtString)
     memberGroupId=-1;
   }
   ol+=*outDoc;
-  delete outDoc;
+  delete outDoc; outDoc=0;
   return;
 }
 
@@ -4194,6 +4611,7 @@ void parseExample(OutputList &ol,const QCString &docString,
   initParseCodeContext();
   exampleDoc=TRUE;            // cross reference with member docs
   exampleName=fileName;
+  refName="example "+exampleName;
   parseDocument(ol,docString); 
 }
 

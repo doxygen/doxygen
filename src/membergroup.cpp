@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -76,15 +76,18 @@ void MemberGroup::writeDocumentation(OutputList &ol)
     ol.writeString(" \n");
     if (!documentation().isEmpty() || Config::repeatBriefFlag)
     {
-      bool htmlEnabled = ol.isEnabled(OutputGenerator::Html);
-      bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-      if (htmlEnabled) ol.disable(OutputGenerator::Html);
-      if (latexEnabled) ol.disable(OutputGenerator::Latex);
+      //bool htmlEnabled = ol.isEnabled(OutputGenerator::Html);
+      //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
+      //if (htmlEnabled) ol.disable(OutputGenerator::Html);
+      //if (latexEnabled) ol.disable(OutputGenerator::Latex);
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.startTextLink(0,"_details");
       parseText(ol,theTranslator->trMore());
       ol.endTextLink();
-      if (htmlEnabled) ol.enable(OutputGenerator::Html);
-      if (latexEnabled) ol.enable(OutputGenerator::Latex);
+      ol.popGeneratorState();
+      //if (htmlEnabled) ol.enable(OutputGenerator::Html);
+      //if (latexEnabled) ol.enable(OutputGenerator::Latex);
     }
   }
   // TODO: man page synopsis
@@ -138,10 +141,13 @@ void MemberGroup::writeDocumentation(OutputList &ol)
       !documentation().isEmpty())
   {
     ol.writeRuler();
-    bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    if (latexOn) ol.disable(OutputGenerator::Latex);
+    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
+    //if (latexOn) ol.disable(OutputGenerator::Latex);
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
     ol.writeAnchor("_details");
-    if (latexOn) ol.enable(OutputGenerator::Latex);
+    //if (latexOn) ol.enable(OutputGenerator::Latex);
+    ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();

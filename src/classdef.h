@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -38,11 +38,12 @@ class MemberDef;
 class ExampleList;
 class MemberNameInfoList;
 class MemberNameInfoDict;
+class UsesClassDict;
+struct IncludeInfo;
 
 class ClassDef : public Definition
 {
   public:
-    
     enum CompoundType { Class=Entry::CLASS_SEC, 
                         Struct=Entry::STRUCT_SEC, 
                         Union=Entry::UNION_SEC,
@@ -56,9 +57,9 @@ class ClassDef : public Definition
     BaseClassList *baseClasses() { return inherits; }
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *superClasses() { return inheritedBy; }
-    void setIncludeFile(FileDef *fd) { incFile=fd; }
-    FileDef *includeFile() const { return incFile; }
-    void setIncludeName(const char *n_) { incName=n_; }
+    void setIncludeFile(FileDef *fd,const char *incName,bool local); 
+    //FileDef *includeFile() const { return incFile; }
+    //void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
     void insertMember(const MemberDef *);
@@ -68,7 +69,7 @@ class ClassDef : public Definition
     void dumpMembers();
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
-    void writeIncludeFile(OutputList &ol);
+    //void writeIncludeFile(OutputList &ol);
     //void writeMembersToContents();
     void writeDeclaration(OutputList &ol,MemberDef *md);
     bool addExample(const char *anchor,const char *name, const char *file);
@@ -96,17 +97,34 @@ class ClassDef : public Definition
     NamespaceDef *getNamespace() { return nspace; }
     void setFileDef(FileDef *fd) { fileDef=fd; }
     FileDef *getFileDef() const { return fileDef; }
+    void mergeMembers();
+    bool isBaseClass(ClassDef *bcd);
+    void determineImplUsageRelation();
+    void determineIntfUsageRelation();
+    UsesClassDict *usedImplementationClasses() const 
+    { 
+      return usesImplClassDict; 
+    }
+    UsesClassDict *usedInterfaceClasses() const
+    {
+      return usesIntfClassDict;
+    }
     
     bool visited;
    
+  protected:
+    void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
+
   private: 
     QCString fileName;                   // HTML containing the class docs
-    FileDef *incFile;                   // header file to refer to
+    IncludeInfo *incInfo;                // header file to refer to
     QCString incName;                    // alternative include file name
     QCString memListFileName;            
     BaseClassList *inherits;
     BaseClassList *inheritedBy;
     NamespaceDef  *nspace;              // the namespace this class is in
+
+    /* member list by protection */
     MemberList pubMembers;
     MemberList proMembers;
     MemberList priMembers;
@@ -119,6 +137,16 @@ class ClassDef : public Definition
     MemberList related;
     MemberList signals;
     MemberList friends;
+    
+    /* member list by types */
+    MemberList constructors;
+    MemberList typedefMembers;
+    MemberList enumMembers;
+    MemberList enumValMembers;
+    MemberList functionMembers;
+    MemberList relatedMembers;
+    MemberList variableMembers;
+
     MemberNameInfoList *allMemberNameInfoList;
     MemberNameInfoDict *allMemberNameInfoDict;
     ArgumentList     *tempArgs;
@@ -128,8 +156,45 @@ class ClassDef : public Definition
     CompoundType      compType;
     Protection        prot;
     FileDef          *fileDef;
+    UsesClassDict    *usesImplClassDict;
+    UsesClassDict    *usesIntfClassDict;
 };
 
+struct UsesClassDef
+{
+  UsesClassDef(ClassDef *cd) : classDef(cd) 
+  { 
+    accessors = new QDict<void>(17); 
+  }
+ ~UsesClassDef()
+  {
+    delete accessors;
+  }
+  void addAccessor(const char *s)
+  {
+    if (accessors->find(s)==0)
+    {
+      accessors->insert(s,(void *)666);
+    }
+  }
+  ClassDef *classDef;
+  QDict<void> *accessors;
+};
+
+class UsesClassDict : public QDict<UsesClassDef>
+{
+  public:
+    UsesClassDict(int size) : QDict<UsesClassDef>(size) {}
+   ~UsesClassDict() {}
+};
+
+class UsesClassDictIterator : public QDictIterator<UsesClassDef>
+{
+  public:
+    UsesClassDictIterator(const QDict<UsesClassDef> &d) 
+      : QDictIterator<UsesClassDef>(d) {}
+   ~UsesClassDictIterator() {}
+};
 
 struct BaseClassDef
 {

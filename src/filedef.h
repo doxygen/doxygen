@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,10 +20,12 @@
 #include "index.h"
 #include <qlist.h>
 #include <qintdict.h>
+#include <qdict.h>
 #include "config.h"
 #include "definition.h"
+#include "memberlist.h"
 
-class MemberList;
+class FileDef;
 class FileList;
 class ClassList;
 class ClassDef;
@@ -33,6 +35,15 @@ class DefineList;
 class NamespaceDef;
 class NamespaceList;
 class NamespaceDict;
+
+struct IncludeInfo
+{
+  IncludeInfo() { fileDef=0; local=FALSE; }
+  ~IncludeInfo() {}
+  FileDef *fileDef;
+  QCString includeName;
+  bool local;
+};
 
 /*! \class FileDef filedef.h
     \brief A File definition.
@@ -69,14 +80,17 @@ class FileDef : public Definition
     QCString absFilePath() const { return filepath; }
     
     /*! Returns the name of the verbatim copy of this file (if any). */
-    const char *includeName() const { return incName; }
+    QCString includeName() const { return diskname+"-source"; }
+    
+    /*! Returns the name as it is used in the documentation */
+    QCString docName() const { return docname; }
     
     void addSourceRef(int line,Definition *d,const char *anchor);
     Definition *getSourceDefinition(int lineNr);
     QCString getSourceAnchor(int lineNr);
 
-    /*! Sets the name of the include file to \a n. */
-    void setIncludeName(const char *n_) { incName=n_; }
+    /* Sets the name of the include file to \a n. */
+    //void setIncludeName(const char *n_) { incName=n_; }
     
     /*! Returns the absolute path of this file. */ 
     QCString getPath() const { return path; }
@@ -102,10 +116,25 @@ class FileDef : public Definition
     void addUsingDirective(NamespaceDef *nd);
     NamespaceList *getUsedNamespaces() const { return usingList; }
 
+    void setGenerateSource(bool b) { isSource=b; }
+    bool generateSource() const { return isSource; }
+    void addIncludeDependency(FileDef *fd,const char *incName,bool local);
+    QList<IncludeInfo> *includeFileList() const { return includeList; }
+    QDict<IncludeInfo> *includeFileDict() const { return includeDict; }
+
   private: 
-    MemberList *memList;
+    MemberList allMemberList;
+    MemberList defineMembers;
+    MemberList protoMembers;
+    MemberList typedefMembers;
+    MemberList enumMembers;
+    MemberList enumValMembers;
+    MemberList funcMembers;
+    MemberList varMembers;
+    
     ClassList  *classList;
-    FileList   *includeList;
+    QDict<IncludeInfo> *includeDict;
+    QList<IncludeInfo> *includeList;
     NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
     NamespaceList *usingList;
@@ -114,9 +143,11 @@ class FileDef : public Definition
     QCString filepath;
     QCString diskname;
     QCString filename;
-    QCString incName;
+    QCString docname;
+    //QCString incName;
     QIntDict<Definition> *srcDefDict;
     QIntDict<QCString> *srcAnchorDict;
+    bool isSource;
 };
 
 /*! \class FileList filedef.h

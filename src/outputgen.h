@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -21,14 +21,18 @@
 #include <qtextstream.h>
 #include <qbuffer.h>
 #include <qfile.h>
+#include <qstack.h>
 #include "index.h"
 
 class ClassDiagram;
+class DotGfxUsageGraph;
+class DotInclDepGraph;
+class DotGfxHierarchyTable;
 
 class OutputGenerator
 {
   public:
-    enum OutputType { Html, Latex, Man };
+    enum OutputType { Html, Latex, Man, RTF };
 
     OutputGenerator();
     virtual ~OutputGenerator();
@@ -191,12 +195,25 @@ class OutputGenerator
     virtual void startDescTableData() = 0;
     virtual void endDescTableData() = 0;
 
+    virtual void startCollaborationDiagram() = 0;
+    virtual void endCollaborationDiagram(DotGfxUsageGraph &g) = 0;
+    virtual void startInclDepGraph() = 0;
+    virtual void endInclDepGraph(DotInclDepGraph &g) = 0;
+    virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
+
+    virtual void startTextBlock(bool) = 0;
+    virtual void endTextBlock() = 0;
+    virtual void lastIndexPage() = 0;
+
+    
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }
     void startPlainFile(const char *name);
     void endPlainFile();
     QCString getContents() const;
     bool isEnabled() const { return active; }
+    void pushGeneratorState();
+    void popGeneratorState();
   protected:
     QTextStream fs;
     QByteArray a;
@@ -209,6 +226,7 @@ class OutputGenerator
   private:
     OutputGenerator(const OutputGenerator &o);
     OutputGenerator &operator=(const OutputGenerator &o);
+    QStack<bool> *genStack;
 };
 
 #endif

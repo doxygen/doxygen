@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -14,29 +14,29 @@
  *
  */
 
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef RTFGEN_H
+#define RTFGEN_H
 
 #include "outputgen.h"
 
 class QFile;
 
-class LatexGenerator : public OutputGenerator
+class RTFGenerator : public OutputGenerator
 {
   public:
-    LatexGenerator();
-   ~LatexGenerator();
+    RTFGenerator();
+   ~RTFGenerator();
 
     OutputGenerator *copy();
-    //OutputGenerator *clone() { return new LatexGenerator(*this); }
+    //OutputGenerator *clone() { return new RTFGenerator(*this); }
     void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
     void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Latex) active=TRUE;  }
-    void disableIf(OutputType o) { if (o==Latex) active=FALSE; }
-    void disableIfNot(OutputType o) { if (o!=Latex) active=FALSE; }
-    bool isEnabled(OutputType o) { return (o==Latex && active); } 
-    OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
+    void enableIf(OutputType o)  { if (o==RTF) active=TRUE;  }
+    void disableIf(OutputType o) { if (o==RTF) active=FALSE; }
+    void disableIfNot(OutputType o) { if (o!=RTF) active=FALSE; }
+    bool isEnabled(OutputType o) { return (o==RTF && active); } 
+    OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
     static void init();
     void startFile(const char *name,const char *title, bool external);
@@ -45,24 +45,25 @@ class LatexGenerator : public OutputGenerator
     void clearBuffer();
     
     //void writeIndex();
+	
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
     void startProjectNumber();
-    void endProjectNumber() {}
+    void endProjectNumber();
     void writeStyleInfo(int part);
     void startTitleHead(const char *);
     void startTitle();
     void endTitleHead(const char *,const char *name);
-    void endTitle()   { t << "}"; }
+    void endTitle() {};  //{ t << "}"; }
 
     void newParagraph();
     void writeString(const char *text);
-    void startIndexList() { t << "\\begin{CompactList}"    << endl; }
-    void endIndexList()   { t << "\\end{CompactList}"      << endl; }
-    void startItemList()  { t << "\\begin{CompactItemize}" << endl; }
-    void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
-    void startEnumList()  { t << "\\begin{enumerate}"      << endl; }
-    void endEnumList()    { t << "\\end{enumerate}"        << endl; }
+    void startIndexList();
+    void endIndexList();
+    void startItemList();
+    void endItemList();
+    void startEnumList();
+    void endEnumList();
     void startAlphabeticalIndexList() {}
     void endAlphabeticalIndexList() {} 
     void writeIndexHeading(const char *) {}
@@ -73,22 +74,22 @@ class LatexGenerator : public OutputGenerator
                          const char *anchor,const char *text);
     void writeCodeLink(const char *ref, const char *file,
                        const char *anchor,const char *text);
-    void startTextLink(const char *,const char *);
+    void startTextLink(const char *f,const char *anchor);
     void endTextLink();
     void writeHtmlLink(const char *,const char *);
-    void writeMailLink(const char *);
-    void startTypewriter() { t << "{\\tt "; }
+    void writeMailLink(const char *url);
+    void startTypewriter() { t << "{\\f2 "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
     void endGroupHeader();
-    void writeListItem() { t << "\\item " << endl; }
+    void writeListItem();
 
     void startMemberSections() {}
     void endMemberSections() {} 
     void startMemberHeader() { startGroupHeader(); }
     void endMemberHeader() { endGroupHeader(); }
-    void startMemberSubtitle() {}
-    void endMemberSubtitle() {}
+    void startMemberSubtitle(); 
+    void endMemberSubtitle(); 
     void startMemberList();
     void endMemberList();
     void startMemberItem(bool,int);
@@ -97,57 +98,56 @@ class LatexGenerator : public OutputGenerator
     void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
-    void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
-    void writeAnchor(const char *name) { t << "\\label{" << name << "}" << endl; }
-    void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
-    void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
+    void writeRuler(){RtfwriteRuler_thin();};
+	
+    void writeAnchor(const char *name);
+    void startCodeFragment();
+    void endCodeFragment();
     void startCodeLine() { col=0; }
-    void endCodeLine() { t << endl; }
+    void endCodeLine() { lineBreak(); }
     void writeBoldString(const char *text) 
-                         { t << "{\\bf "; docify(text); t << "}"; }
-    void startEmphasis() { t << "{\\em ";  }
+                         { t << "{\\b "; docify(text); t << "}"; }
+    void startEmphasis() { t << "{\\i ";  }
     void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "{\\bf "; }
+    void startBold()     { t << "{\\b "; }
     void endBold()       { t << "}"; }
-    void startDescription() { t << "\\begin{description}" << endl; }
-    void endDescription()   { t << "\\end{description}" << endl; }
-    void startDescItem()    { t << "\\item["; }
-    void endDescItem()      { t << "]" << endl; }
-    void lineBreak() { t << "\\par\n"; }
+    void startDescription();
+    void endDescription();
+    void startDescItem();
+    void endDescItem();
+    void lineBreak();
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc();
     void startDoxyAnchor(const char *,const char *,const char *,const char *);
     void endDoxyAnchor();
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
+    void startCodeAnchor(const char *) {};
+    void endCodeAnchor() {};
     void writeChar(char c);
-    void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
+    void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
     //void writeLatexLabel(const char *scope,const char *anchor);
     void writeStartAnnoItem(const char *type,const char *file, 
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
-    void startSubsection() { t << "\\subsection*{"; }
-    void endSubsection() { t << "}" << endl; }
-    void startSubsubsection() { t << "\\subsubsection*{"; }
-    void endSubsubsection() { t << "}" << endl; }
-    void startCenter()      { t << "\\begin{center}" << endl; }
-    void endCenter()        { t << "\\end{center}" << endl; }
-    void startSmall()       { t << "\\footnotesize "; }
-    void endSmall()         { t << "\\normalsize "; }
-    void startSubscript()   { t << "$_{\\mbox{"; }
-    void endSubscript()     { t << "}}$"; }
-    void startSuperscript() { t << "$^{\\mbox{"; }
-    void endSuperscript()   { t << "}}$"; }
-    void startTable(int c)  { t << "\\begin{TabularC}{" << c 
-                                  << "}\n\\hline\n"; 
-                            }
-    void endTable()         { t << "\\\\\\hline\n\\end{TabularC}\n"; }
-    void nextTableRow()     {}
-    void endTableRow()      { t << "\\\\\\hline\n"; }
-    void nextTableColumn()  { t << "&"; }
-    void endTableColumn()   {}
+    void startSubsection();
+    void endSubsection();
+    void startSubsubsection();
+    void endSubsubsection();
+    void startCenter()      { t << "{\\qc" << endl; }
+    void endCenter()        { t << "}"; }
+    void startSmall()       { t << "{\\sub "; }
+    void endSmall()         { t << "}"; }
+    void startSubscript()   { t << "{\\sub " << endl;}
+    void endSubscript()     { t << "}"; }
+    void startSuperscript() { t << "{\\super " << endl;}
+    void endSuperscript()   { t << "}"; }
+    void startTable(int )   { }//t << "\\begin{TabularC}{" << c << "}\n\\hline\n";
+    void endTable()         { }//t << "\\\\\\hline\n\\end{TabularC}\n";
+    void nextTableRow()     { }
+    void endTableRow()      { }//t << "\\\\\\hline\n";
+    void nextTableColumn()  { }//t << "&";
+    void endTableColumn()   { }
     void writeCopyright()    { t << "\\copyright"; }
-    void writeQuote()        { t << "''"; }
+    void writeQuote()        { t << "\""; }
     void writeUmlaut(char c) { if (c=='i') t << "\\\"{\\i}"; else 
                                            t << "\\\"{" << c << "}"; 
                              }
@@ -163,23 +163,24 @@ class LatexGenerator : public OutputGenerator
     void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
     void writeRing(char c)   { t << "\\" << c << c; }
     void writeSharpS()       { t << "\"s"; }
-    void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
-    void endMemberDescription() { t << "\\item\\end{CompactList}"; }
-    void startDescList()     { t << "\\begin{Desc}\n\\item["; }
-    void endDescTitle()      { t << "]"; }
-    void writeDescItem()     { t << "\\par" << endl; }
-    void endDescList()       { t << "\\end{Desc}" << endl; }
+
+    void startMemberDescription();
+    void endMemberDescription();
+    void startDescList();
+    void endDescTitle();
+    void writeDescItem();
+    void endDescList();
     void writeSection(const char *,const char *,bool);
     void writeSectionRef(const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
     void writeSectionRefAnchor(const char *,const char *,const char *);
     void addToIndex(const char *,const char *);
-    void startIndent()       {}
-    void endIndent()         {}
+    void startIndent();
+    void endIndent();
     void writeSynopsis()     {}
     //void generateExternalIndex() {}
     void startClassDiagram();
-    void endClassDiagram(ClassDiagram &,const char *,const char *);
+    void endClassDiagram(ClassDiagram &,const char *filename,const char *name);
     void startColorFont(uchar,uchar,uchar) {}
     void endColorFont()   {}
     void startPageRef();
@@ -189,35 +190,52 @@ class LatexGenerator : public OutputGenerator
     void writeFormula(const char *,const char *);
     void writeNonBreakableSpace();
     void writeImage(const char *,const char *,const char *);
+	
+    void startDescTable();
+    void endDescTable();
+    void startDescTableTitle();
+    void endDescTableTitle();
+    void startDescTableData();
+    void endDescTableData();
     
-    void startDescTable()
-    { t << "\\begin{description}" << endl; }
-    void endDescTable()
-    { t << "\\end{description}" << endl; }
-    void startDescTableTitle()
-    { t << "\\item[" << endl; }
-    void endDescTableTitle()
-    { t << "]"; }
-    void startDescTableData() {}
-    void endDescTableData() {}
-    void lastIndexPage() {}
-
-    //static void docifyStatic(QTextStream &t,const char *str);
-
-    void startCollaborationDiagram() {}
-    void endCollaborationDiagram(DotGfxUsageGraph &) {}
-    void startInclDepGraph() {}
-    void endInclDepGraph(DotInclDepGraph &) {}
+    void startCollaborationDiagram();
+    void endCollaborationDiagram(DotGfxUsageGraph &);
+    void startInclDepGraph();
+    void endInclDepGraph(DotInclDepGraph &);
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
-    void startTextBlock(bool) {}
-    void endTextBlock() {}
+    void startTextBlock(bool dense);
+    void endTextBlock();
+    void lastIndexPage();
+
+    static bool preProcessFileInplace(const char *path,const char *name);
     
   private:
-    LatexGenerator(const LatexGenerator &);
-    LatexGenerator &operator=(const LatexGenerator &);
-    int col;
-    bool insideTabbing;
+    RTFGenerator(const RTFGenerator &);
+    RTFGenerator &operator=(const RTFGenerator &);
+
+    const char *Rtf_BList_DepthStyle();
+    const char *Rtf_CList_DepthStyle();
+    const char *Rtf_EList_DepthStyle();
+    const char *Rtf_LCList_DepthStyle();
+    const char *Rtf_DList_DepthStyle();
+    const char *Rtf_Code_DepthStyle();
+    void incrementIndentLevel();
+    void decrementIndentLevel();
+    int  col;
+
+    bool m_bstartedBody;  // has startbody been called yet?
+    int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.
+    bool m_omitParagraph; // should a the next paragraph command be ignored?
+
+    void beginRTFDocument();
+    void beginRTFChapter();
+    void beginRTFSection();
+    void RtfwriteRuler_doubleline() {t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_emboss() {t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_thick() {t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
+    void RtfwriteRuler_thin() {t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
+    void WriteRTFReference(const char *label);
 };
 
 #endif

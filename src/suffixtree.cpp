@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -201,7 +201,7 @@ void SuffixNode::resolveForwardReferences(int &offset)
 {
   if (children->count()>0)
   {
-    if (label.length()>0) offset++; // terminator for the previous level
+    if (!label.isEmpty()) offset++; // terminator for the previous level
     branchOffset=offset;
   }
   else
@@ -241,7 +241,7 @@ void SuffixNode::resolveForwardReferences(int &offset)
 int SuffixNode::size()
 {
   int s=0;
-  if (label.length()>0 && children->count()>0) s++; // for the terminator
+  if (!label.isEmpty() && children->count()>0) s++; // for the terminator
   SuffixNode *sn=children->first();
   while (sn)
   {
@@ -271,7 +271,7 @@ int SuffixNode::size()
 bool SuffixNode::write(QFile &f)
 {
   bool error=FALSE;
-  if (children->count()>0 && label.length()>0) error=error || (f.putch(0)==-1);
+  if (children->count()>0 && !label.isEmpty()) error=error || (f.putch(0)==-1);
   SuffixNode *sn=children->first();
   while (sn)
   {

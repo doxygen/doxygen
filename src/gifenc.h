@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -45,7 +45,11 @@ class GifEncoder
     void writeCode(int code, QFile &fp);
     void writeChar( Byte c, QFile &fp );
     void writePacket(QFile &fp);
-    int  nextPixel();
+    int  nextPixel()
+    {
+      if ( --numPixels < 0) return EOF;
+      return *dataPtr++;
+    }
     void clearHashTable();
     
   private:

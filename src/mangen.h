@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -189,6 +189,16 @@ class ManGenerator : public OutputGenerator
     void endDescTableTitle() { endBold(); }
     void startDescTableData() { }
     void endDescTableData() {}
+
+    void startCollaborationDiagram() {}
+    void endCollaborationDiagram(DotGfxUsageGraph &) {}
+    void startInclDepGraph() {}
+    void endInclDepGraph(DotInclDepGraph &) {}
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
+
+    void startTextBlock(bool) {}
+    void endTextBlock() {}
+    void lastIndexPage() {}
 
   private:
     bool firstCol;

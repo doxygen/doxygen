@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -42,32 +42,38 @@ int MemberList::compareItems(GCI item1, GCI item2)
 void MemberList::countDecMembers()
 {
   varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
+  m_count=0;
   MemberDef *md=first();
   while (md)
   {
-    if ((!Config::hideMemberFlag || md->hasDocumentation()) &&
-        (!Config::hideMemberFlag || !md->documentation().isEmpty() || 
-         Config::briefMemDescFlag || Config::repeatBriefFlag
-        ) || Config::extractAllFlag || 
-        (md->isEnumerate() &&
-         md->hasDocumentedEnumValues()
+    if (!(md->memberClass()==0 && md->isStatic() && !Config::extractPrivateFlag) &&
+        (!Config::hideMemberFlag || md->hasDocumentation()) &&
+        (
+         (!Config::hideMemberFlag || !md->documentation().isEmpty() || 
+          Config::briefMemDescFlag || Config::repeatBriefFlag
+         ) || Config::extractAllFlag || 
+         (md->isEnumerate() &&
+          md->hasDocumentedEnumValues()
+         )
         )
        )
     {
       switch(md->memberType())
       {
-        case MemberDef::Variable:    varCnt++;     break;
+        case MemberDef::Variable:    varCnt++,m_count++;  break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
-        case MemberDef::Slot:        funcCnt++;    break;
-        case MemberDef::Enumeration: enumCnt++;    break;
-        case MemberDef::EnumValue:   enumValCnt++; break;
-        case MemberDef::Typedef:     typeCnt++;    break;
-        case MemberDef::Prototype:   protoCnt++;   break;
-        case MemberDef::Define:      if (Config::extractAllFlag || md->argsString() || md->hasDocumentation() ) 
-                                       defCnt++;     
+        case MemberDef::Slot:        funcCnt++,m_count++; break;
+        case MemberDef::Enumeration: enumCnt++,m_count++; break;
+        case MemberDef::EnumValue:   enumValCnt++,m_count++; break;
+        case MemberDef::Typedef:     typeCnt++,m_count++; break;
+        case MemberDef::Prototype:   protoCnt++,m_count++; break;
+        case MemberDef::Define:      if (Config::extractAllFlag || 
+                                         md->argsString() || 
+                                         md->hasDocumentation() 
+                                        ) defCnt++,m_count++;     
                                      break;
-        case MemberDef::Friend:      friendCnt++;  break;
+        case MemberDef::Friend:      friendCnt++,m_count++;  break;
         default:
           err("Error: Unknown member type found!");
       }
@@ -78,31 +84,29 @@ void MemberList::countDecMembers()
 
 void MemberList::countDocMembers(bool inGroup)
 {
-  varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
+  /*varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;*/
+  m_count=0;
   MemberDef *md=first();
   while (md)
   {
     //printf("%s MemberList::countDocMembers() details=%d\n",
     //    md->name().data(),md->detailsAreVisible());
-    if ((Config::extractAllFlag || md->detailsAreVisible()) &&
-        (md->groupId()==-1 || inGroup))
+    bool visibleIfStatic = 
+      !(md->memberClass()==0 && md->isStatic() && !Config::extractPrivateFlag);
+
+    if (visibleIfStatic && 
+        (Config::extractAllFlag || md->detailsAreVisible()) &&
+        (md->groupId()==-1 || inGroup)
+       )
     {
-      QRegExp r("@[0-9]+");
+      static QRegExp r("@[0-9]+");
       int dummy;
       switch(md->memberType())
       {
-        case MemberDef::Variable:    
-          varCnt++;     
-          break;
-        case MemberDef::Function:    
-        case MemberDef::Signal:
-        case MemberDef::Slot:
-          funcCnt++;    
-          break;
         case MemberDef::Enumeration:
           if (r.match(md->name(),0,&dummy)==-1)
           {
-            enumCnt++;
+            m_count++;
           }
           break;
         case MemberDef::EnumValue:   
@@ -110,21 +114,52 @@ void MemberList::countDocMembers(bool inGroup)
             MemberDef *scope;
             scope=md->getEnumScope();
             if (scope && r.match(scope->name(),0,&dummy)!=-1) 
-              enumValCnt++;
+              m_count++;
           }
           break;
-        case MemberDef::Typedef:     
-          typeCnt++;    
+        default:
+          m_count++;
           break;
-        case MemberDef::Prototype:   
-          protoCnt++;   
-          break;
-        case MemberDef::Define:      
-          defCnt++;
-          break;
-        case MemberDef::Friend:
-          friendCnt++;
       }
+
+//      QRegExp r("@[0-9]+");
+//      int dummy;
+//      switch(md->memberType())
+//      {
+//        case MemberDef::Variable:    
+//          varCnt++;     
+//          break;
+//        case MemberDef::Function:    
+//        case MemberDef::Signal:
+//        case MemberDef::Slot:
+//          funcCnt++;    
+//          break;
+//        case MemberDef::Enumeration:
+//          if (r.match(md->name(),0,&dummy)==-1)
+//          {
+//            enumCnt++;
+//          }
+//          break;
+//        case MemberDef::EnumValue:   
+//          {
+//            MemberDef *scope;
+//            scope=md->getEnumScope();
+//            if (scope && r.match(scope->name(),0,&dummy)!=-1) 
+//              enumValCnt++;
+//          }
+//          break;
+//        case MemberDef::Typedef:     
+//          typeCnt++;    
+//          break;
+//        case MemberDef::Prototype:   
+//          protoCnt++;   
+//          break;
+//        case MemberDef::Define:      
+//          defCnt++;
+//          break;
+//        case MemberDef::Friend:
+//          friendCnt++;
+//      }
     }
     md=next();
   }
@@ -262,7 +297,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
             //   )
             if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
             {
-              if (Config::genTagFile.length()>0)
+              if (!Config::genTagFile.isEmpty())
                 tagFile << md->name() << " " << md->anchor() 
                   << " \"\"" << endl;
               md->writeLink(typeDecl,cd,nd,fd,0);
@@ -281,15 +316,23 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
             MemberDef *fmd=fmdl->first();
             while (fmd)
             {
-              if (fmd->hasDocumentation())
+              if (fmd->hasDocumentation()) // enum value has docs
               {
-                if (Config::genTagFile.length()>0)
+                if (!Config::genTagFile.isEmpty())
                   tagFile << fmd->name() << " " << fmd->anchor() 
                     << " \"" << fmd->argsString() << "\"";
                 fmd->writeLink(typeDecl,cd,nd,fd,0);
               }
-              else
+              else // no docs for this enum value
+              {
                 typeDecl.writeBoldString(fmd->name());
+              }
+              if (!fmd->initializer().isEmpty()) // enum value has initializer
+              {
+                typeDecl.writeString(" = ");
+                parseText(typeDecl,fmd->initializer());
+              }
+              
               fmd=fmdl->next();
               if (fmd) typeDecl.writeString(", ");
               typeDecl.disable(OutputGenerator::Man);
@@ -499,12 +542,12 @@ void MemberList::writeDeclarations(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
 }
 
 void MemberList::writeDocumentation(OutputList &ol,
-                     const char *scopeName, MemberDef::MemberType m)
+                     const char *scopeName/*, MemberDef::MemberType m*/)
 {
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,m);
+    md->writeDocumentation(this,ol,scopeName);
   }
 }

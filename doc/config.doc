@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -58,8 +58,10 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_cgi_name CGI_NAME 
 <li> \refitem cfg_cgi_url CGI_URL 
 <li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
+<li> \refitem cfg_collaboration_graph COLLABORATION_GRAPH
 <li> \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 <li> \refitem cfg_compact_latex COMPACT_LATEX 
+<li> \refitem cfg_compact_rtf COMPACT_RTF
 <li> \refitem cfg_disable_index DISABLE_INDEX 
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
 <li> \refitem cfg_doc_url DOC_URL
@@ -79,7 +81,10 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 <li> \refitem cfg_generate_latex GENERATE_LATEX
 <li> \refitem cfg_generate_man GENERATE_MAN
+<li> \refitem cfg_generate_rtf GENERATE_RTF
 <li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
+<li> \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
+<li> \refitem cfg_have_dot HAVE_DOT
 <li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 <li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
 <li> \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
@@ -87,7 +92,9 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_html_header HTML_HEADER
 <li> \refitem cfg_html_output HTML_OUTPUT
 <li> \refitem cfg_html_stylesheet HTML_STYLESHEET
+<li> \refitem cfg_ignore_prefix IGNORE_PREFIX
 <li> \refitem cfg_image_path IMAGE_PATH
+<li> \refitem cfg_include_graph INCLUDE_GRAPH
 <li> \refitem cfg_include_path INCLUDE_PATH
 <li> \refitem cfg_inherit_docs INHERIT_DOCS
 <li> \refitem cfg_inline_info INLINE_INFO
@@ -115,6 +122,8 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
+<li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
+<li> \refitem cfg_rtf_output RTF_OUTPUT
 <li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
@@ -502,7 +511,6 @@ TD.md { background-color: #f2f2ff }
 
 \anchor cfg_html_align_members
 <dt>\c HTML_ALIGN_MEMBERS <dd>
-
 If the \c HTML_ALIGN_MEMBERS tag is set to \c YES, the members of classes,
 files or namespaces will be aligned in HTML using tables. If set to
 NO a bullet list will be used. 
@@ -513,7 +521,6 @@ intent to support and test the aligned representation.
 
 \anchor cfg_generate_htmlhelp
 <dt>\c GENERATE_HTMLHELP <dd>
-
 If the \c GENERATE_HTMLHELP tag is set to \c YES then
 doxygen generates three additional HTML index files: 
 \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
@@ -534,19 +541,28 @@ and you can search for words in the documentation
 (which basically renders \c doxysearch obsolete on Windows). 
 The HTML workshop also contains a viewer for compressed HTML files.
 
+</dl>
+\subsection alphabetical_index Alphabetical index options
+<dl>
+
 \anchor cfg_alphabetical_index
 <dt>\c ALPHABETICAL_INDEX <dd>
-
 If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
 of all compounds will be generated. Enable this if the project contains 
 a lot of classes, structs, unions or interfaces.
 
 \anchor cfg_cols_in_alpha_index
 <dt>\c COLS_IN_ALPHA_INDEX <dd>
-
 If the alphabetical index is enabled 
 (see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
 used to specify the number of columns in which this list will be split (can be a number in the range [1..20])
+
+\anchor cfg_ignore_prefix
+<dt>\c IGNORE_PREFIX <dd>
+In case all classes in a project start with a common prefix, all
+classes will be put under the same header in the alphabetical index.
+The \c IGNORE_PREFIX tag can be use to specify a prefix that should be ignored
+while generating the index headers.
 
 </dl>
 
@@ -643,6 +659,44 @@ EXTRA_PACKAGES = times
  the version number of doxygen, the project name (see PROJECT_NAME), or the
  project number (see PROJECT_NUMBER).
    
+</dl>
+
+\subsection rtf_output RTF related options
+<dl>
+\anchor cfg_generate_rtf
+<dt>\c GENERATE_RTF <dd>
+ \addindex GENERATE_RTF
+  If the \c GENERATE_RTF tag is set to \c YES Doxygen will generate RTF output.
+  For now this is experimental and is disabled by default. The RTF
+  output is optimised for Word 97 and may not look too pretty with
+  other readers/editors.
+
+\anchor cfg_rtf_output
+<dt>\c RTF_OUTPUT <dd>
+ \addindex RTF_OUTPUT
+ The \c RTF_OUTPUT tag is used to specify where the RTF docs will be put.
+ If a relative path is entered the value of OUTPUT_DIRECTORY will be
+ put in front of it. If left blank \c rtf will be used as the default path.
+ 
+\anchor cfg_compact_rtf
+<dt>\c COMPACT_RTF <dd>
+ \addindex COMPACT_RTF
+ If the \c COMPACT_RTF tag is set to \c YES Doxygen generates more compact
+ RTF documents. This may be useful for small projects and may help to
+ save some trees in general.
+
+\anchor cfg_rtf_hyperlinks
+<dt>\c RTF_HYPERLINKS <dd>
+ \addindex RTF_HYPERLINKS
+ If the \c RTF_HYPERLINKS tag is set to \c YES, the RTF that is generated
+ will contain hyperlink fields. The RTF file will
+ contain links (just like the HTML output) instead of page references.
+ This makes the output suitable for online browsing using Word or some other
+ Word compatible reader that support those fields.
+
+ \par note:
+   wordpad (write) and others do not support links.
+
 </dl>
 
 \subsection man_output Man page related options
@@ -758,7 +812,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_allexternals
 <dt>\c ALLEXTERNALS <dd>
  \addindex ALLEXTERNALS
- if the \c ALLEXTERNALS tag is set to \c YES all external class will be listed
+ If the \c ALLEXTERNALS tag is set to \c YES all external class will be listed
  in the class index. If set to \c NO only the inherited external classes
  will be listed.
 
@@ -767,6 +821,41 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex PERL_PATH
  The \c PERL_PATH should be the absolute path and name of the perl script
  interpreter (i.e. the result of `<tt>which perl</tt>').
+
+</dl>
+\subsection config_dot Dot options
+<dl>
+
+\anchor cfg_have_dot
+<dt>\c HAVE_DOT <dd>
+ \addindex HAVE_DOT
+ If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
+ available from the path. This tool is part of 
+ <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
+ visualization toolkit from AT&T and Lucent Bell Labs. The other options in 
+ this section have no effect if this option is set to \c NO (the default)
+ 
+\anchor cfg_collaboration_graph
+<dt>\c COLLABORATION_GRAPH <dd>
+ \addindex COLLABORATION_GRAPH
+ If the \c COLLABORATION_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen
+ will generate a graph for each documented class showing the direct and
+ indirect implementation dependencies (inheritance, containment, and
+ class references variables) of the class with other documented classes.
+
+\anchor cfg_include_graph
+<dt>\c INCLUDE_GRAPH <dd>
+ \addindex INCLUDE_GRAPH 
+ If the \c ENABLE_PREPROCESSING, \c INCLUDE_GRAPH, and \c HAVE_DOT tags are 
+ set to \c YES then doxygen will generate a graph for each documented file 
+ showing the direct and indirect include dependencies of the file with other
+ documented files.
+
+\anchor cfg_graphical_hierarchy
+<dt>\c GRAPHICAL_HIERARCHY <dd>
+ \addindex GRAPHICAL_HIERATCHY
+ If the \c GRAPHICAL_HIERARCHY and \c HAVE_DOT tags are set to \c YES then 
+ doxygen will graphical hierarchy of all classes instead of a textual one.
 
 </dl>
 \subsection config_search Search engine options

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,6 +37,7 @@ struct Config
   static QCString htmlOutputDir;       // the directory to put the HTML files  
   static QCString latexOutputDir;      // the directory to put the Latex files  
   static QCString manOutputDir;        // the directory to put the man pages
+  static QCString rtfOutputDir;        // the directory to put the RTF files
   static QCString outputLanguage;      // the output language
   static QCString headerFile;          // the name of the personal HTML header 
   static QCString latexHeaderFile;     // the name of the personal LaTeX header 
@@ -52,6 +53,7 @@ struct Config
   static QCString paperType;           // the page type to generate docs for
   static QCString manExtension;        // extension the man page files
   static QCString htmlStyleSheet;      // user defined cascading style sheet
+  static QCString ignorePrefix;        // prefix to ignore for the alphabetical index
   static QStrList includePath;         // list of include paths                
   static QStrList examplePath;         // list of example paths                
   static QStrList imagePath;           // list of image paths                
@@ -103,6 +105,13 @@ struct Config
   static int      tabSize;             // number of spaces in a tab
   static int      colsInAlphaIndex;    // number of columns in the alphabetical index
   static bool     inlineSourceFlag;    // inline the definition bodies in the docs?
+  static bool     haveDotFlag;         // indicates wether or not dot is present
+  static bool     collGraphFlag;       // collaboration graph
+  static bool     includeGraphFlag;    // include graph
+  static bool     gfxHierarchyFlag;    // flag to enable graphical hierarchy 
+  static bool     generateRTF;         // generate RTF flag
+  static bool     compactRTFFlag;      // generate more compact RTF
+  static bool     rtfHyperFlag;        // generate hyper links in RTF
 };
 
 #endif

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -22,17 +22,20 @@
 <li>Requires very little overhead from the writer of the documentation. 
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
-<li>Supports C++, (Corba or Microsoft) IDL and C sources.
+<li>Supports C++, (Corba and Microsoft) IDL and C sources.
 <li>Supports documentation of files, namespaces, classes, structs, unions, 
     templates, variables, functions, typedefs, enums and defines. 
 <li>JavaDoc (1.1), Qt-Doc, and KDOC compatible.
 <li>Automatically generates class diagrams in HTML (as clickable 
     image maps) and \f$\mbox{\LaTeX}\f$ (as encapsulated postscript images).
+<li>Using the dot tool of the Graphviz tool kit doxygen can generate
+    include dependency graphs, collaboration diagrams, and 
+    graphical class hierarchy graphs. 
 <li>Allows you to put documentation in the header file (before the 
     declaration of an entity), source file (before the definition of an entity) 
     or in a separate file.
 <li>Outputs documentation in on-line format (HTML and UNIX man page) and 
-    off-line format (\f$\mbox{\LaTeX}\f$) simultaniously 
+    off-line format (\f$\mbox{\LaTeX}\f$) and RTF simultaniously 
     (any one can be disabled if desired). Both formats are optimized for 
     ease of reading. <br>
     Furthermore, compressed HTML can be generated from HTML output using 

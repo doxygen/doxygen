@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -30,6 +30,7 @@ enum IndexSections
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
+  isPageIndex,
   isModuleDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
@@ -59,6 +60,7 @@ void writeFileMemberIndex(OutputList &ol);
 void writeGroupIndex(OutputList &ol);
 void writeNamespaceIndex(OutputList &ol);
 void writeNamespaceMemberIndex(OutputList &ol);
+void writeGraphicalClassHierarchy(OutputList &ol);
 
 int countClassHierarchy();
 int countClassMembers();
