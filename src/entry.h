@@ -33,7 +33,9 @@ struct BaseInfo
 
 struct Argument
 {
+  /*! Construct a new argument. */
   Argument() {}
+  /*! Copy an argument (does a deep copy of all strings). */
   Argument(const Argument &a) 
   { 
     attrib=a.attrib.copy();
@@ -43,6 +45,7 @@ struct Argument
     docs=a.docs.copy();
     array=a.array.copy();
   }
+  /* Assignment of an argument (does a deep copy of all strings). */
   Argument &operator=(const Argument &a)
   {
     if (this!=&a)
@@ -56,17 +59,20 @@ struct Argument
     }
     return *this;
   }
+  /*! return TRUE if this argument is documentation and the argument has a
+   *  non empty name.
+   */
   bool hasDocumentation() const 
   { 
     return !name.isEmpty() && !docs.isEmpty(); 
   }
   
-  QCString attrib;   // argument attribute (IDL only)
-  QCString type;     // argument type
-  QCString name;     // argument name (if any)
-  QCString array;    // argument array specifier (if any)
-  QCString defval;   // argument default value (if any)
-  QCString docs;     // arguments documentation (if any)
+  QCString attrib;   /*!< Argument's attribute (IDL only) */
+  QCString type;     /*!< Argument's type */
+  QCString name;     /*!< Argument's name (may be empty) */
+  QCString array;    /*!< Argument's array specifier (may be empty) */
+  QCString defval;   /*!< Argument's default value (may be empty) */
+  QCString docs;     /*!< Argument's documentation (may be empty) */
 };
 
 class ArgumentList : public QList<Argument> 

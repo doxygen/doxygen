@@ -314,11 +314,13 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
 
 void ClassDef::setIncludeFile(FileDef *fd,const char *incName,bool local)
 {
+  //printf("ClassDef::setInclude(%p,%s,%d)\n",fd,incName,local);
   if (!incInfo) incInfo=new IncludeInfo;
   if ((incName && incInfo->includeName.isEmpty()) ||
       (fd!=0 && incInfo->fileDef==0)
      )
   {
+    //printf("Setting file info\n");
     incInfo->fileDef     = fd;
     incInfo->includeName = incName;
     incInfo->local       = local;
@@ -1396,7 +1398,7 @@ void ClassDef::determineImplUsageRelation()
         {
           ClassDef *cd=getClass(name()+"::"+type.mid(i,l));
           if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try inbetween scopes!
-          if (cd && cd->isLinkable()) // class exists and is linkable 
+          if (cd /*&& cd->isLinkable()*/) // class exists and is linkable 
           {
             found=TRUE;
             if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 

@@ -479,7 +479,7 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
-  classList->append(cd);
+  classList->inSort(cd);
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
@@ -487,7 +487,7 @@ void FileDef::insertNamespace(NamespaceDef *nd)
 {
   if (!nd->name().isEmpty() && namespaceDict->find(nd->name())==0)
   {
-    namespaceList->append(nd);
+    namespaceList->inSort(nd);
     namespaceDict->insert(nd->name(),nd);
   }
 }
@@ -541,11 +541,10 @@ void FileDef::addUsingDirective(NamespaceDef *nd)
 
 void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
 {
+  //printf("FileDef::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
   if (!iName.isEmpty() && includeDict->find(iName)==0)
   {
-    //printf("Adding include dependency `%s' to `%s'\n",
-    //    fd->name().data(),name().data());
     IncludeInfo *ii = new IncludeInfo;
     ii->fileDef     = fd;
     ii->includeName = incName;
@@ -574,8 +573,8 @@ int FileList::compareItems(GCI item1, GCI item2)
   FileDef *f2=(FileDef *)item2;
   ASSERT(f1!=0 && f2!=0);
   return Config::fullPathNameFlag ? 
-         strcmp(f1->absFilePath(),f2->absFilePath()) : 
-         strcmp(f1->name(),f2->name());
+         strcasecmp(f1->absFilePath(),f2->absFilePath()) : 
+         strcasecmp(f1->name(),f2->name());
 }
 
 /*! Create a file list iterator. */

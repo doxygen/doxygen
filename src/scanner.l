@@ -148,6 +148,8 @@ static QCString         baseName;
 static QCString         *specName;
 static QCString         formulaText;
 static QCString         sectionRef;
+static bool             insideIDL = FALSE;
+static bool             insideCppQuote = FALSE;
 
 // state variable for reading the argument list of a function
 static int              argRoundCount;
@@ -960,6 +962,8 @@ VAR	  [vV][aA][rR]
 %x      ClassDocBrief
 %x      ClassDocOverload
 %x	ClassDefineArgs
+%x	CppQuote
+%x	EndCppQuote
 %x	GroupDocArg1
 %x	GroupDocArg2
 %x	GroupName
@@ -1060,6 +1064,7 @@ VAR	  [vV][aA][rR]
 					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
 					    yyFileName[i] = yytext[i+1] ;
 					  yyFileName[i] = 0 ;
+					  insideIDL = i>4 && strcmp(&yyFileName[i-4],".idl")==0;
 					  msg("Parsing file %s...\n",yyFileName);
 					  current_root  = global_root ;
 					  initParser();
@@ -1719,7 +1724,7 @@ VAR	  [vV][aA][rR]
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
 					}
-<DocScan>("http:"|"ftp:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
+<DocScan>("http:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
 <DocScan>{FILEMASK}			{
 					  generateFileRef(*outDoc,yytext);
@@ -2413,22 +2418,37 @@ VAR	  [vV][aA][rR]
   					  *currentTemplateSpec+=*yytext; 
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
-					  lineCount();
-					  if (YY_START==FindMembers)
+                                          if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
-					    addType( current ) ;
-					    current->name  = yytext;
+					    BEGIN(CppQuote);
 					  }
 					  else
 					  {
-					    current->name += yytext;
+					    lineCount();
+					    if (YY_START==FindMembers)
+					    {
+					      addType( current ) ;
+					      current->name  = yytext;
+					    }
+					    else
+					    {
+					      current->name += yytext;
+					    }
+					    QCString tmp=yytext;
+					    if (nameIsOperator(tmp)) 
+					      BEGIN( Operator );
+					    else
+					      BEGIN(FindMembers);
 					  }
-				          QCString tmp=yytext;
-					  if (nameIsOperator(tmp)) 
-					    BEGIN( Operator );
-					  else
-					    BEGIN(FindMembers);
 					}
+<CppQuote>"("{B}*"\""			{
+  					  insideCppQuote=TRUE;
+  					  BEGIN(FindMembers);
+  					}
+<EndCppQuote>")"			{
+  					  insideCppQuote=FALSE;
+					  BEGIN(FindMembers);
+  					}
 <FindMembers>{B}*"#"			{ lastCPPContext = YY_START; 
 					  BEGIN( SkipCPP ) ; 
 					}
@@ -2482,8 +2502,15 @@ VAR	  [vV][aA][rR]
   					  yyLineNr++;
   					}
 <DefineEnd>\"				{
-					  lastStringContext=DefineEnd;
-					  BEGIN(SkipString);
+					  if (insideIDL && insideCppQuote)
+					  {
+					    BEGIN(EndCppQuote);
+					  }
+					  else
+					  {
+					    lastStringContext=DefineEnd;
+					    BEGIN(SkipString);
+					  }
   					}
 <DefineEnd>.				
 					
@@ -2579,10 +2606,17 @@ VAR	  [vV][aA][rR]
   					  BEGIN(lastInitializerContext);
   					}
 <ReadInitializer>\"			{
-                                          lastStringContext=YY_START;
-  					  current->initializer+=*yytext; 
-  					  pCopyQuotedString=&current->initializer;
-					  BEGIN(CopyString);
+					  if (insideIDL && insideCppQuote)
+  					  {
+					    BEGIN(EndCppQuote);
+					  }
+					  else
+					  {
+                                            lastStringContext=YY_START;
+  					    current->initializer+=*yytext; 
+  					    pCopyQuotedString=&current->initializer;
+					    BEGIN(CopyString);
+					  }
 					}
 <ReadInitializer>"'"\\[0-7]{1,3}"'"            
 <ReadInitializer>"'"\\."'"                     
@@ -3578,6 +3612,10 @@ VAR	  [vV][aA][rR]
 					}
 <ClassVar>[;=*&]			{
     					  unput(*yytext);
+					  if (isTypedef) // typedef of a class, put typedef keyword back
+					  {
+					    current->type.prepend("typedef");
+					  }
 					  BEGIN( FindMembers );
     					}
 <ClassName,ClassVar>{B}*"{"{B}*		{ current->fileName = yyFileName ;
@@ -3911,6 +3949,7 @@ VAR	  [vV][aA][rR]
   					  current->name = yytext;
 					  newDocState();
   					}
+<NameSpaceDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <NameSpaceDocArg1>"\n"			{
   					  warn("Warning: missing argument after "
 					       "\\namespace at line %d of %s.\n",yyLineNr,yyFileName);
@@ -3935,6 +3974,7 @@ VAR	  [vV][aA][rR]
 					  }
 					  BEGIN( ClassDocArg2 );
 					}
+<ClassDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <ClassDocArg1>"\n"			{
   					  warn("Warning: missing argument after "
 					       "\\class at line %d of %s.\n",yyLineNr,yyFileName);
@@ -3947,6 +3987,7 @@ VAR	  [vV][aA][rR]
 					    current->name=current->name.left(current->name.length()-5);
 					  BEGIN(GroupDocArg2);
   					}
+<GroupDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <GroupDocArg1>"\n"			{
   					  warn("Warning: missing argument after "
 					       "\\defgroup at line %d of %s.\n",yyLineNr,yyFileName);
@@ -3958,6 +3999,7 @@ VAR	  [vV][aA][rR]
 					  current->type = current->type.stripWhiteSpace();
 					  newDocState();
   					}
+<GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; }
 <GroupDocArg2>"\n"			{
  					  newDocState();
   					}
@@ -3966,7 +4008,8 @@ VAR	  [vV][aA][rR]
 					  current->includeFile = stripQuotes(yytext);
 					  BEGIN( ClassDocArg3 );
 					}
-<ClassDocArg2>{BL}			{ yyLineNr++; 
+<ClassDocArg2>"\\"{B}*"\n"		{ yyLineNr++; }
+<ClassDocArg2>"\n"			{ yyLineNr++; 
 					  newDocState();
 					}
 <ClassDocArg3>[<]?{FILE}[>]?		{
@@ -3974,13 +4017,15 @@ VAR	  [vV][aA][rR]
  					  current->includeName = yytext;
   					  newDocState();
 					}
-<ClassDocArg3>{BL}			{ yyLineNr++; 
+<ClassDocArg3>"\\"{B}*"\n"		{ yyLineNr++; }
+<ClassDocArg3>"\n"			{ yyLineNr++; 
   					  newDocState();
 					}
 <FileDocArg1>{FILE}			{
   					  current->name = stripQuotes(yytext);
 					  newDocState();
   				        }
+<FileDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <FileDocArg1>"\n"			{
   					  current->name = yyFileName;
   					  yyLineNr++;
@@ -3990,6 +4035,7 @@ VAR	  [vV][aA][rR]
 					  current->name = stripQuotes(yytext);
 					  BEGIN( PageDocArg2 ); 
 					}
+<PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <PageDocArg1>"\n"			{
   					  warn("Warning: missing argument after "
 					       "\\page at line %d of %s.\n",yyLineNr,yyFileName);
@@ -4009,6 +4055,7 @@ VAR	  [vV][aA][rR]
 					  }
   					  newDocState();
   					}
+<EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <EnumDocArg1>"\n"			{
   					  warn("Warning: missing argument after "
 					       "\\enum at line %d of %s.\n",yyLineNr,yyFileName);
@@ -4303,6 +4350,7 @@ VAR	  [vV][aA][rR]
 <ClassDefineArgs>.			{
   					  current->args+= yytext;
   					}
+<ClassDocFunc>"\\"{B}*"\n"		{ yyLineNr++; }
 <ClassDocFunc>"\n"			{ 
   					  yyLineNr++; 
 					  current->name = current->name.stripWhiteSpace();
@@ -4450,6 +4498,12 @@ VAR	  [vV][aA][rR]
 					}
 <SkipComment>[^\*\n]+
 <*>\n					{ yyLineNr++ ; }
+<*>\"					{
+					  if (insideIDL && insideCppQuote)
+					  {
+					    BEGIN(EndCppQuote);
+					  }
+					}
 <*>.
 <SkipComment>"//"|"/*"
 <*>"/*"					{ lastCContext = YY_START ;

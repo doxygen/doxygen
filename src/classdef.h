@@ -218,7 +218,7 @@ class BaseClassList : public QList<BaseClassDef>
       if (c1==0 || c2==0) 
         return FALSE;
       else
-        return strcmp(c1->name(),c2->name());
+        return strcasecmp(c1->name(),c2->name());
     }
 };
 

@@ -90,49 +90,6 @@ QCString abbreviate(const char *s,const char *name)
 
 //----------------------------------------------------------------------------
 
-void initBaseClassHierarchy(BaseClassList *bcl)
-{
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current(); ++bcli)
-  {
-    ClassDef *cd=bcli.current()->classDef;
-    if (cd->baseClasses()->count()==0) // no base classes => new root
-    {
-      initBaseClassHierarchy(cd->baseClasses());
-    }
-    cd->visited=FALSE;
-  }
-}
-
-//----------------------------------------------------------------------------
-
-void initClassHierarchy(ClassList *cl)
-{
-  ClassListIterator cli(*cl);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()); ++cli)
-  {
-    cd->visited=FALSE;
-    initBaseClassHierarchy(cd->baseClasses());
-  }
-}
-
-//----------------------------------------------------------------------------
-
-bool hasVisibleRoot(BaseClassList *bcl)
-{
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current(); ++bcli)
-  {
-    ClassDef *cd=bcli.current()->classDef;
-    if (cd->isVisibleInHierarchy()) return TRUE;
-    hasVisibleRoot(cd->baseClasses());
-  }
-  return FALSE;
-}
-
-//----------------------------------------------------------------------------
-
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 {
   HtmlHelp *htmlHelp=0;

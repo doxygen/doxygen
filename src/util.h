@@ -31,6 +31,8 @@ class ArgumentList;
 class OutputList;
 class MemberDef;
 class ExampleList;
+class ClassList;
+class BaseClassList;
 
 extern void setAnchors(char id,MemberList *ml);
 extern QCString fileToString(const char *name);
@@ -80,5 +82,7 @@ void writePageRef(OutputList &ol,const char *cn,const char *mn);
 QCString substituteKeywords(const QCString &s,const char *title);
 int getPrefixIndex(const QCString &name);
 QCString removeAnnonymousScopes(const QCString &s);
+void initClassHierarchy(ClassList *cl);
+bool hasVisibleRoot(BaseClassList *bcl);
 
 #endif
