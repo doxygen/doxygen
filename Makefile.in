@@ -45,7 +45,7 @@ distclean: clean
 	-rm -f addon/xmlgen/*.o
 
 
-install: doxywizard_install
+install: doxywizard_install xmlgen_install
 	$(INSTTOOL) -d $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin

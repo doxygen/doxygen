@@ -10,3 +10,7 @@ tmake:
 Makefile.xmlgen: xmlgen.pro
 	$(ENV) $(PERL) $(TMAKE) xmlgen.pro >Makefile.xmlgen
 
+install:
+	$(INSTTOOL) -d $(INSTALL)/bin	
+	$(INSTTOOL) -m 755 ../../bin/doxygen_xml $(INSTALL)/bin	
+

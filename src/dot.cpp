@@ -772,18 +772,6 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
       //                                              bClass->name().data());
       if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
       {
-        //printf("Base node `%s'\n",bn->m_label.data());
-        //if (n->m_children)
-        //{
-        //  QListIterator<DotNode> dnli(*n->m_children);
-        //  DotNode *cn;
-        //  for (dnli.toFirst();(cn=dnli.current());++dnli)
-        //  {
-        //    printf("Child node `%s'\n",cn->m_label.data());
-        //  }
-        //  printf("ref node = %p\n",n->m_children->findRef(bn));
-        //}
-
         if (n->m_children==0 || n->m_children->findRef(bn)==-1) // no arrow yet
         {
           n->addChild(bn,bcd->prot);
@@ -847,7 +835,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
     //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
     if (!hasVisibleRoot(cd->baseClasses()))
     {
-      if (cd->isVisibleInHierarchy()) // root class in the graph
+      if (cd->isVisibleInHierarchy()) // root node in the forest
       {
         QCString tmp_url="";
         if (cd->isLinkable()) 
@@ -1075,8 +1063,13 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
   m_recDepth = maxRecursionDepth;
   QCString tmp_url="";
   if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+  QCString className = cd->displayName();
+  if (cd->templateArguments())
+  {
+    className+=tempArgListToString(cd->templateArguments());
+  }
   m_startNode = new DotNode(m_curNodeNumber++,
-                            cd->displayName(),
+                            className,
                             tmp_url.data(),
                             0,                         // distance
                             TRUE                       // is a root node
@@ -1250,7 +1243,7 @@ QCString DotClassGraph::diskName() const
   return result;
 }
 
-void DotClassGraph::writeGraph(QTextStream &out,
+QCString DotClassGraph::writeGraph(QTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
                                bool isTBRank,
@@ -1295,7 +1288,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
-       return;
+       return baseName;
     }
     if (generateImageMap)
     {
@@ -1305,7 +1298,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
       {
         err("Error: Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
-        return;
+        return baseName;
       }
       out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
         << m_startNode->m_label << "_" << mapName << "\" alt=\"";
@@ -1336,14 +1329,14 @@ void DotClassGraph::writeGraph(QTextStream &out,
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
-       return;
+       return baseName;
     }
     int width,height;
     if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
     {
       err("Error: Could not extract bounding box from .eps!\n");
       QDir::setCurrent(oldDir);
-      return;
+      return baseName;
     }
     if (Config_getBool("USE_PDFLATEX"))
     {
@@ -1354,7 +1347,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);
-         return;
+         return baseName;
       }
     }
     int maxWidth = 420; /* approx. page width in points */
@@ -1370,6 +1363,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
   if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
+  return baseName;
 }
 
 //--------------------------------------------------------------------
@@ -1461,7 +1455,7 @@ QCString DotInclDepGraph::diskName() const
   return convertNameToFile(result); 
 }
 
-void DotInclDepGraph::writeGraph(QTextStream &out,
+QCString DotInclDepGraph::writeGraph(QTextStream &out,
                                  GraphOutputFormat format,
                                  const char *path,
                                  bool generateImageMap
@@ -1498,7 +1492,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
-      return;
+      return baseName;
     }
 
     if (generateImageMap)
@@ -1510,7 +1504,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       {
         err("Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
-        return;
+        return baseName;
       }
 
       out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
@@ -1534,14 +1528,14 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
-      return;
+      return baseName;
     }
     int width,height;
     if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
     {
       err("Error: Could not extract bounding box from .eps!\n");
       QDir::setCurrent(oldDir);
-      return;
+      return baseName;
     }
     if (Config_getBool("USE_PDFLATEX"))
     {
@@ -1552,7 +1546,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       {
          err("Error: Problems running epstopdf. Check your TeX installation!\n");
          QDir::setCurrent(oldDir);
-         return;
+         return baseName;
       }
     }
     int maxWidth = 420; /* approx. page width in points */
@@ -1571,6 +1565,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
+  return baseName;
 }
 
 bool DotInclDepGraph::isTrivial() const

@@ -462,7 +462,7 @@ class TranslatorCroatian : public Translator
         case ClassDef::Interface:  result+="suèelja (interface)"; break;
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
       }
-      result+=" je generirana iz " + trFile(false, single) + ": ";
+      result+=" je generirana iz " + trFile(FALSE, single) + ": ";
 	  return decode(result);
     }
 

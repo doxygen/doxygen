@@ -142,7 +142,7 @@ class MemberDef : public Definition
                                           }
     void setBitfields(const char *s)      { bitfields = s; }
     void setMaxInitLines(int lines)       { userInitLines=lines; }
-    void setMemberClass(ClassDef *cd)     { classDef=cd; }
+    void setMemberClass(ClassDef *cd);
     void setSectionList(MemberList *sl)   { section=sl; }
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void setExplicitExternal(bool b)      { explExt=b; }
@@ -202,7 +202,7 @@ class MemberDef : public Definition
     ArgumentList *memberDefTemplateArguments() const { return membTAL; }
     
     // namespace related members
-    void setNamespace(NamespaceDef *nd) { nspace=nd; }
+    void setNamespace(NamespaceDef *nd);
 
     // member group related members
     void setMemberGroup(MemberGroup *grp);

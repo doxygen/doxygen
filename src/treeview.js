@@ -172,7 +172,9 @@ function drawFolder(leftSide)
     doc.write("<layer id='folder" + this.id + "' top=" + doc.yPos + " visibility=hidden>") 
   } 
   if (browserVersion == 3) 
-    doc.write("<div id='folder" + this.id + "' style='display:none;'>") 
+  {
+    doc.write("<div id='folder" + this.id + "' style='visibility:hide;'>") 
+  }
    
   doc.write("\n<table ") 
   if (browserVersion == 1) 

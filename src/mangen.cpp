@@ -366,7 +366,7 @@ void ManGenerator::startMemberDoc(const char *,const char *,const char *,const c
 }
 
 void ManGenerator::startDoxyAnchor(const char *,const char *manName,
-                                   const char *, const char *)
+                                   const char *, const char *name)
 {
     // something to be done?
     if( !Config_getBool("MAN_LINKS") ) 
@@ -374,9 +374,16 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
 	return; // no
     }
 
-    // only create file when it doesn't exist
-    QCString fileName=dir+"/"+buildFileName( manName );
+    // the name of the link file is derived from the name of the anchor:
+    // - truncate after an (optional) ::
+    QCString baseName = name;
+    int i=baseName.findRev(':');
+    if (i!=-1) baseName=baseName.right(baseName.length()-i-1);
+    
+    // - remove dangerous characters and append suffix, then add dir prefix
+    QCString fileName=dir+"/"+buildFileName( baseName );
     QFile linkfile( fileName );
+    // - only create file if it doesn't exist already
     if ( !linkfile.open( IO_ReadOnly ) ) 
     {
 	if ( linkfile.open( IO_WriteOnly ) ) 

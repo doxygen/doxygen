@@ -168,7 +168,7 @@ void GroupDef::addMembersToMemberGroup()
 
 void GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
-  // fprintf(stderr, "GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
+  //fprintf(stderr, "GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoDict)[md->name()]))
   { // member with this name already found
@@ -177,7 +177,8 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
       MemberDef *srcMd = srcMi->memberDef;
-      if (matchArguments(srcMd->argumentList(),md->argumentList()))
+      if (matchArguments(srcMd->argumentList(),md->argumentList()) && 
+          srcMd->getOuterScope()==md->getOuterScope())
       {
         return; // member already added
       }

@@ -3396,7 +3396,9 @@ static void findMember(Entry *root,
       scopeName=related.copy();
   }
 
-  if (related.isEmpty() && root->parent && !root->parent->name.isEmpty())
+  if (related.isEmpty() && root->parent && 
+      (root->parent->section&Entry::SCOPE_MASK) &&
+      !root->parent->name.isEmpty())
   {
     scopeName = mergeScopes(root->parent->name,scopeName);
   }
@@ -3982,6 +3984,7 @@ static void findMember(Entry *root,
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
           md->setRefItems(root->todoId,root->testId,root->bugId);
+          addMemberToGroups(root,md);
           if (newMemberName)
           {
             //printf("Adding memberName=%s\n",mn->memberName());
@@ -5986,7 +5989,7 @@ static const char *getArg(int argc,char **argv,int &optind)
   char *s=0;
   if (strlen(&argv[optind][2])>0)
     s=&argv[optind][2];
-  else if (optind+1<argc)
+  else if (optind+1<argc && argv[optind+1][0]!='-')
     s=argv[++optind];
   return s;
 }

@@ -24,7 +24,7 @@ f_dot=NO
 f_perl=NO
 f_plf_auto=NO
 f_prefix=/usr
-f_insttool=ginstall
+f_insttool=NO
 f_english=NO
 f_wizard=NO
 f_xmlgen=NO
@@ -116,7 +116,7 @@ Options:
                         [default: /usr]
   
   --install name        Use \`name' as the name of the GNU install tool
-                        [default: install]
+                        [default: autodetect]
 
   --english-only        Include support for English only.
 
@@ -265,6 +265,40 @@ if test "$f_make" = NO; then
 fi
 echo "using $f_make"
 
+# - check for install ------------------------------------------------------------
+
+echo -n "  Checking for GNU install tool... "
+if test "$f_insttool" = NO; then
+  install_names="ginstall install"
+  install_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  install_prog=NO
+  install_found=NO
+  for i in $install_names; do
+    for j in $install_dirs; do
+      if test -x "$j/$i"; then
+        install_found=YES
+        if $j/$i --version 2>/dev/null | grep GNU >/dev/null; then
+          install_prog="$j/$i"
+          break 2
+        fi
+      fi
+    done
+  done
+  f_insttool="$install_prog" 
+fi
+
+if test "$f_insttool" = NO; then
+  if test "$install_found" = YES; then
+    echo "GNU version of install is required!"
+  else
+    echo "not found!";
+  fi
+  echo
+  exit 2
+fi
+echo "using $f_insttool";
+
+
 # - check for dot ------------------------------------------------------------
 
 echo -n "  Checking for dot (part of GraphViz)... "
@@ -401,6 +435,12 @@ EOF
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard install" >> $DST
        fi
+       echo "" >> $DST
+       echo "xmlgen_install:" >> $DST
+       if test $f_xmlgen = YES; then
+         echo "	\$(MAKE) -C addon/xmlgen install" >> $DST
+       fi
+       echo "" >> $DST
      fi
      cat $SRC >> $DST
      echo "  Created $DST from $SRC..."

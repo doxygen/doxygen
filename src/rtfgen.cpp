@@ -1372,9 +1372,9 @@ void RTFGenerator::writeStyleInfo(int)
 
 void RTFGenerator::lineBreak()
 {
-  //t << "\\par" << endl;
+  t << "\\par" << endl;
   //newParagraph();
-  t << "\\line" << endl;
+  //t << "\\line" << endl;
 }
 
 void RTFGenerator::writeString(const char *text)
@@ -2541,13 +2541,14 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
+  QCString fileName = 
+    g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << g.diskName() << ".gif";
+  t << fileName << ".gif";
   t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
@@ -2560,15 +2561,13 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),FALSE);
-
-  //QCString diskName = g.diskName();
+  QCString fileName = g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),FALSE);
 
   // display the file
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << g.diskName() << ".gif";
+  t << fileName << ".gif";
   t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
