@@ -2153,6 +2153,7 @@ static void transferFunctionDocumentation()
         matchArguments(mdef->argumentList(),mdec->argumentList())
        ) /* match found */
     {
+      /* FIX: Always match declaration and definition.
       FileDef *fdef = mdef->getFileDef();
       FileDef *fdec = mdec->getFileDef();
 
@@ -2161,6 +2162,7 @@ static void transferFunctionDocumentation()
           fdef==fdec || 
           (fdef!=0 && (!fdef->hasDocumentation() || !fdec->hasDocumentation()))
          )
+      */
       {
         //printf("Found member %s: definition in %s (doc=%d) and declation in %s (doc=%d)\n",
         //    mn->memberName(),
@@ -2214,6 +2216,90 @@ static void transferFunctionDocumentation()
         int testId = QMAX(mdec->testId(),mdef->testId());
         int bugId  = QMAX(mdec->bugId() ,mdef->bugId() );
         mdec->setRefItems(todoId,testId,bugId);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------
+
+static void transferFunctionReferences()
+{
+  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberName *mn;
+  for (;(mn=mnli.current());++mnli)
+  {
+    MemberDef *md,*mdef=0,*mdec=0;
+    MemberNameIterator mni(*mn);
+    /* find a matching function declaration and definition for this function */
+    for (;(md=mni.current());++mni)
+    {
+      if (md->isPrototype()) 
+        mdec=md;
+      else if (md->isVariable() && md->isExternal()) 
+        mdec=md;
+      
+      if (md->isFunction() && !md->isStatic() && !md->isPrototype()) 
+        mdef=md;
+      else if (md->isVariable() && !md->isExternal() && !md->isStatic())
+        mdef=md;
+    }
+    if (mdef && mdec && 
+        matchArguments(mdef->argumentList(),mdec->argumentList())
+       ) /* match found */
+    {
+      MemberSDict *defDict = mdef->getReferencesMembers();
+      MemberSDict *decDict = mdec->getReferencesMembers();
+      if (defDict)
+      {
+        MemberSDict::Iterator msdi(*defDict);
+        MemberDef *rmd;
+        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        {
+          if (decDict==0 || decDict->find(rmd->name())==0)
+          {
+            mdec->addSourceReferences(rmd);
+          }
+        }
+      }
+      if (decDict)
+      {
+        MemberSDict::Iterator msdi(*decDict);
+        MemberDef *rmd;
+        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        {
+          if (defDict==0 || defDict->find(rmd->name())==0)
+          {
+            mdef->addSourceReferences(rmd);
+          }
+        }
+      }
+
+      defDict = mdef->getReferencedByMembers();
+      decDict = mdec->getReferencedByMembers();
+      if (defDict)
+      {
+        MemberSDict::Iterator msdi(*defDict);
+        MemberDef *rmd;
+        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        {
+          if (decDict==0 || decDict->find(rmd->name())==0)
+          {
+            mdec->addSourceReferencedBy(rmd);
+          }
+        }
+      }
+      if (decDict)
+      {
+        MemberSDict::Iterator msdi(*decDict);
+        MemberDef *rmd;
+        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        {
+          if (defDict==0 || defDict->find(rmd->name())==0)
+          {
+            mdef->addSourceReferencedBy(rmd);
+          }
+        }
       }
     }
   }
@@ -4010,7 +4096,7 @@ static void findMember(Entry *root,
                 warn_cont("  ");
                 if (md->typeString()) 
                 {
-                  warn_cont("%s",md->typeString());
+                  warn_cont("%s ",md->typeString());
                 }
                 warn_cont("%s::%s%s\n",
                     cd->name().data(),
@@ -7198,6 +7284,7 @@ void generateOutput()
 
   msg("Generating file sources...\n");
   generateFileSources();
+  transferFunctionReferences();
 
   msg("Generating file documentation...\n");
   generateFileDocs();

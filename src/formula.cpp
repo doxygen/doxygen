@@ -1,5 +1,5 @@
 /******************************************************************************
- *
+ i
  * 
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
@@ -85,7 +85,7 @@ void FormulaList::generateBitmaps(const char *path)
     for (fli.toFirst();(formula=fli.current());++fli)
     {
       QCString resultName;
-      resultName.sprintf("form_%d.gif",formula->getId());
+      resultName.sprintf("form_%d.png",formula->getId());
       // only formulas for which no image exists are generated
       QFileInfo fi(resultName);
       if (!fi.exists())
@@ -116,7 +116,7 @@ void FormulaList::generateBitmaps(const char *path)
     for (;(pagePtr=pli.current());++pli,++pageIndex)
     {
       int pageNum=*pagePtr;
-      msg("Generating image form_%d.gif for formula\n",pageNum);
+      msg("Generating image form_%d.png for formula\n",pageNum);
       char dviArgs[4096];
       QCString formBase;
       formBase.sprintf("_form%d",pageNum);
@@ -297,9 +297,9 @@ void FormulaList::generateBitmaps(const char *path)
               dstImage.setPixel(x,y,QMIN(15,(c*15)/(16*10)));
             }
           }
-          // save the result as a gif
+          // save the result as a png
           QCString resultName;
-          resultName.sprintf("form_%d.gif",pageNum);
+          resultName.sprintf("form_%d.png",pageNum);
           // the option parameter 1 is used here as a temporary hack
           // to select the right color palette! 
           dstImage.save(resultName,1);
@@ -320,8 +320,8 @@ void FormulaList::generateBitmaps(const char *path)
   // remove the latex file itself
   if (!formulaError) thisDir.remove("_formulas.tex");
   // write/update the formula repository so we know what text the 
-  // generated gifs represent (we use this next time to avoid regeneration
-  // of the gifs, and to avoid forcing the user to delete all gifs in order
+  // generated pngs represent (we use this next time to avoid regeneration
+  // of the pngs, and to avoid forcing the user to delete all pngs in order
   // to let a browser refresh the images).
   f.setName("formula.repository");
   if (f.open(IO_WriteOnly))

@@ -939,7 +939,7 @@ class TranslatorFrench : public Translator
         "\\endcode\n"
 		"Si la valeur 200 est attribuée au tag \\c MAX_DOT_GRAPH_HEIGHT "
 		"du fichier de configuration, cela génèrera le graphe suivant:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
 		"Les rectangles du graphe ci-dessus ont la signification suivante:\n"
         "<ul>\n"

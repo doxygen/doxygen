@@ -965,7 +965,7 @@ class TranslatorRomanian: public TranslatorAdapter_1_2_1
         "\\endcode\n"
         "Dacã tagul \\c MAX_DOT_GRAPH_HEIGHT din fiºierul de configuraþie "
         "Este setat la 200 acesta este graful rezultat:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "Cãsuþele din partea de sus au urmãtoarea semnificaþie:\n"
         "<ul>\n"

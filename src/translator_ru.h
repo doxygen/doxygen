@@ -1095,7 +1095,7 @@ class TranslatorRussian : public Translator
         "\\endcode\n"
         "Если \\c MAX_DOT_GRAPH_HEIGHT в конфигурационном файле "
         "установлен в 240, получится следующий граф:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "Прямоугольники в этом графе имеют следующее значение:\n"
         "<ul>\n"
@@ -1371,7 +1371,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trReferences()
     {
-      return "Перекрестные ссылки";
+      return decode("Перекрестные ссылки");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1383,7 +1383,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "Замещает "+trWriteList(numEntries)+".";
+      return decode("Замещает ")+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1391,7 +1391,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Замещается в "+trWriteList(numEntries)+".";
+      return decode("Замещается в ")+trWriteList(numEntries)+".";
     }
 
 };

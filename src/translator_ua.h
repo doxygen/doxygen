@@ -1060,7 +1060,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_2_11
         "\\endcode\n"
         "Якщо \\c MAX_DOT_GRAPH_HEIGHT в конф╕гурац╕йному файл╕ "
         "установлене на 200, отрима╓мо наступний граф:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "Прямокутники в цьому граф╕ мають наступний зм╕ст:\n"
         "<ul>\n"

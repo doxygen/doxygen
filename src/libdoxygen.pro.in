@@ -35,7 +35,6 @@ HEADERS      =	bufstr.h \
 		filename.h \
 		formula.h \
 		ftvhelp.h \
-		gifenc.h \
 		groupdef.h \
 		htmlgen.h \
 		htmlhelp.h \
@@ -56,6 +55,7 @@ HEADERS      =	bufstr.h \
 		outputlist.h \
 		packagedef.h \
 		page.h \
+                pngenc.h \
 		pre.h \
 		qtbc.h \
 		reflist.h \
@@ -116,7 +116,6 @@ SOURCES      =	ce_lex.cpp \
 		filename.cpp \
 		formula.cpp \
 		ftvhelp.cpp \
-		gifenc.cpp \
 		groupdef.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \
@@ -136,6 +135,7 @@ SOURCES      =	ce_lex.cpp \
 		outputgen.cpp \
 		outputlist.cpp \
 		packagedef.cpp \
+                pngenc.cpp \
 		pre.cpp \
 		reflist.cpp \
 		rtfgen.cpp \
@@ -151,6 +151,7 @@ SOURCES      =	ce_lex.cpp \
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 INCLUDEPATH                += ../qtools
+INCLUDEPATH                += ../libpng
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen

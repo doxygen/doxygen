@@ -3,6 +3,9 @@ all: src\version.cpp
 	cd qtools
 	$(MAKE)
 	cd ..
+	cd libpng
+	$(MAKE)
+	cd ..
 	cd src 
 	$(MAKE)
 

@@ -1578,8 +1578,8 @@ BN	[ \t\r\n]
   					  g_defText+=yytext;
 					  g_defLitText+=yytext;
   					}
-<DefineText>"/*"			{
-  					  outputChar('/');outputChar('*');
+<DefineText>"/*"|"/**<"|"/*!<"		{
+  					  outputArray(yytext,yyleng);
 					  g_defText+=' ';
 					  g_defLitText+=' ';
 					  g_lastCContext=YY_START;

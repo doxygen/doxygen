@@ -1010,7 +1010,7 @@ class TranslatorJapanese : public Translator
         "\\endcode\n"
         "設定ファイル中で、タグ \\c MAX_DOT_GRAPH_HEIGHT が 200 にセットされた"
         "場合、次のようなグラフとなります。"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "上のグラフ内のボックスには次のような意味があります。\n"
         "<ul>\n"

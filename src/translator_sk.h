@@ -1069,7 +1069,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_13
 		"\\endcode\n"
 		"Pokia¾ je položka \\c MAX_DOT_GRAPH_HEIGHT konfiguraèného súboru "
 		"nastavená na hodnotu 200, bude vygenerovaný nasledujúci graf:"
-		"<p><center><img src=\"graph_legend.gif\"></center>\n"
+		"<p><center><img src=\"graph_legend.png\"></center>\n"
 		"<p>\n"
 		"Bloky (tj. uzly) v uvedenom grafe majú nasledujúci význam:\n"
 		"<ul>\n"

@@ -936,7 +936,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_2_1
         "\\endcode\n"
         "Ha a konfigurációs fájl \\c MAX_DOT_GRAPH_HEIGHT elemének értékét "
         "200-ra állítjuk, az eredmény a következõ ábra lesz:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "Az ábrán levõ dobozok jelentése:\n"
         "<ul>\n"

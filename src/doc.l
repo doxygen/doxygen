@@ -861,7 +861,7 @@ static void writeDotFile(const char *fileName, const char *captionText)
 
 /* ----------------------------------------------------------------- */
 
-static void checkArgName(const QCString &name)
+static void checkArgName(const QCString &name,bool isParam)
 {
   hasParamCommand=TRUE;
   if (memberDef==0) return; // not a member
@@ -871,31 +871,39 @@ static void checkArgName(const QCString &name)
   if (al==0) return; // no argument list
   if (!Config_getBool("WARN_IF_UNDOCUMENTED")) return;
 
+  //printf("name=%s\n",name.data());
   static QRegExp re("[a-zA-Z0-9_]+");
   int p=0,i=0,l;
   while ((i=re.match(name,p,&l))!=-1)
   {
     QCString aName=name.mid(i,l);
+    //printf("aName=%s\n",aName.data());
     ArgumentListIterator ali(*al);
     Argument *a;
+    bool found=FALSE;
     for (ali.toFirst();(a=ali.current());++ali)
     {
       QCString argName = memberDef->isDefine() ? a->type : a->name;
       if (aName==argName) 
       {
-	paramsFound.insert(name,(void *)(0x8));
-	return;
+	//printf("adding `%s'\n",aName.data());
+	paramsFound.insert(aName,(void *)(0x8));
+	found=TRUE;
+	break;
       }
     }
-    //printf("member type=%d\n",memberDef->memberType());
-    QCString scope=memberDef->getScopeString();
-    if (!scope.isEmpty()) scope+="::"; else scope="";
-    warn(memberDef->docFile(),memberDef->docLine(),
-	"Warning: argument `%s' of command @param "
-	"is not found in the argument list of %s%s%s",
-	aName.data(),scope.data(),memberDef->name().data(),
-	argListToString(al).data()
-       );
+    if (!found && isParam)
+    {
+      //printf("member type=%d\n",memberDef->memberType());
+      QCString scope=memberDef->getScopeString();
+      if (!scope.isEmpty()) scope+="::"; else scope="";
+      warn(memberDef->docFile(),memberDef->docLine(),
+	  "Warning: argument `%s' of command @param "
+	  "is not found in the argument list of %s%s%s",
+	  aName.data(),scope.data(),memberDef->name().data(),
+	  argListToString(al).data()
+	  );
+    }
     p=i+l;
   }
 }
@@ -1749,7 +1757,14 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"\\capt".*
 <DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BSEP}* {
   					  QCString argName = substitute(yytext,"\"","").stripWhiteSpace();
-					  if (inParamBlock) checkArgName(argName);
+					  if (inParamBlock) 
+					  {
+					    checkArgName(argName,TRUE);
+					  }
+					  else if (inRetValBlock)
+					  {
+					    checkArgName(argName,FALSE);
+					  }
 					  outDoc->startDescTableTitle();
 					  scanDoc(argName);
 					  outDoc->endDescTableTitle();
@@ -2797,9 +2812,10 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
 		argListToString(al).data());
 	for (ali.toFirst();(a=ali.current());++ali)
 	{
-	  if (!a->name.isEmpty() && paramsFound.find(a->name)==0) 
+          QCString argName = memberDef->isDefine() ? a->type : a->name;
+	  if (!argName.isEmpty() && paramsFound.find(argName)==0) 
 	  {
-	    warn_cont( "  parameter %s\n",a->name.data());
+	    warn_cont( "  parameter %s\n",argName.data());
 	  }
 	}
       }

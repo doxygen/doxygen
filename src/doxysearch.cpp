@@ -249,7 +249,7 @@ void printSearchPage(bool open=FALSE)
          "  <tr>\n"
          "    <td><input name=query size=44 wrap=virtual maxlength=1000 value=\"%s\">\n"
          "    </td>\n"
-         "    <td><input type=image src=\"%s/search.gif\" height=26 width=120 border=0 name=\"search\">\n"
+         "    <td><input type=image src=\"%s/search.png\" height=26 width=120 border=0 name=\"search\">\n"
          "    </td>\n"
          "  </tr>\n",
          cgiBin,
