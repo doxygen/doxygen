@@ -616,6 +616,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   ol.startTextBlock();
   
+  //printf("Class %s brief=`%s' doc=`%s'\n",name().data(),briefDescription().data(),documentation().data());
+  
   // write brief description
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty())
@@ -1421,7 +1423,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
  * superclasses!
  */
 
-void ClassDef::mergeMembers(/*ClassDef *cd,BaseClassList *bcl*/)
+void ClassDef::mergeMembers()
 {
   BaseClassListIterator bcli(*baseClasses());
   BaseClassDef *bcd;
@@ -1648,9 +1650,15 @@ void ClassDef::determineImplUsageRelation()
             QCString templSpec;
             if (te>ts) templSpec = type.mid(ts,te-ts);
             // TODO: also check using Nx::Cx cases here!
-            ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
-            if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
-            //printf("Search for class %s result=%p\n",type.mid(i,l).data(),cd);
+            QCString usedClassName = type.mid(i,l);
+            ClassDef *cd=0;
+            if (getNamespaceDef()!=0)
+            {
+              cd=getResolvedClass(getNamespaceDef()->name()+"::"+usedClassName);
+            }
+            if (cd==0) cd=getResolvedClass(name()+"::"+usedClassName);
+            if (cd==0) cd=getResolvedClass(usedClassName); // TODO: also try inbetween scopes!
+            //printf("Search for class %s result=%p\n",usedClassName.data(),cd);
             if (cd) // class exists 
             {
               found=TRUE;

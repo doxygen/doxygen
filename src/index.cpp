@@ -1673,9 +1673,10 @@ void writeIndex(OutputList &ol)
   {
     projPrefix=Config::projectName+" ";
   }
+
+  //--------------------------------------------------------------------
   // write HTML index
-  //ol.disable(OutputGenerator::Man);
-  //ol.disable(OutputGenerator::Latex);
+  //--------------------------------------------------------------------
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString defFileName = 
@@ -1690,7 +1691,7 @@ void writeIndex(OutputList &ol)
   }
   else 
   {
-    title = mainPage->title;
+    title = substitute(mainPage->title,"%","");
   }
   ol.startFile("index",title,FALSE);
 
@@ -1727,7 +1728,9 @@ void writeIndex(OutputList &ol)
   endFile(ol);
   ol.disable(OutputGenerator::Html);
   
+  //--------------------------------------------------------------------
   // write LaTeX/RTF index
+  //--------------------------------------------------------------------
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::RTF);
 
@@ -1844,14 +1847,14 @@ void writeIndex(OutputList &ol)
   {
     ol.disable(OutputGenerator::Man);
     startFile(ol,mainPage->name,mainPage->title);
-    SectionInfo *si=0;
-    if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
-        (si=sectionDict[mainPage->name])!=0)
-    {
-      ol.startSection(si->label,si->title,FALSE);
-      ol.docify(si->title);
-      ol.endSection(si->label,FALSE);
-    }
+    //SectionInfo *si=0;
+    //if (!mainPage->title.isEmpty() && !mainPage->name.isEmpty() &&
+    //    (si=sectionDict[mainPage->name])!=0)
+    //{
+    //  ol.startSection(si->label,si->title,FALSE);
+    //  ol.docify(si->title);
+    //  ol.endSection(si->label,FALSE);
+    //}
     ol.startTextBlock();
     parseDoc(ol,defFileName,defLine,0,0,mainPage->doc);
     ol.endTextBlock();

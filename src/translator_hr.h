@@ -23,6 +23,11 @@
 //    As opposed to Czech translation this one assumes that Doxygen strings are written in Linux ( it's true,
 //    I don't have QT pro licence ) , and uses ISOToWin function when built in WIN32
 //
+// 2000/09/18
+// - Added strings from 1.2.1
+// - Removed unneeeded decode() calls
+// - Changed some CS terminology
+// 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
@@ -32,9 +37,6 @@ class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
-        /*  Speed loss is actualy less than in Czech version due to
-                fewer QCString copying. 
-         */
         inline QCString decode(const QCString& sInput)
         { 
 #ifdef _WIN32
@@ -56,30 +58,30 @@ class TranslatorCroatian : public Translator
     QCString latexBabelPackage()
     { return "croatian"; }
     QCString trRelatedFunctions()
-    { return decode("Povezane funkcije"); }
+    { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
-    { return decode("(To nisu member funkcije.)"); }
+    { return "(To nisu member funkcije.)"; }
     QCString trDetailedDescription()
     { return decode("Detaljno obja¹njenje"); }
     QCString trMemberTypedefDocumentation()
     { return decode("Dokumentacija typedef èlanova"); }
     QCString trMemberEnumerationDocumentation()
-    { return decode("Dokumentacija enum èlanova"); }
+    { return decode("Dokumentacija enumeracijskih èlanova"); }
     QCString trEnumerationValueDocumentation()
-    { return decode("Dokumentacija enum vrijednosti"); }
+    { return "Dokumentacija enumeracijskih vrijednosti"; }
     QCString trMemberFunctionDocumentation()
-        { return decode("Dokumentacija funkcija"); }
+        { return "Dokumentacija funkcija"; }
     QCString trMemberDataDocumentation()
-    { return decode("Documentacija varijabli"); }
+    { return "Documentacija varijabli"; }
     QCString trGeneratedFrom(const char *s,bool single)
     { 
-      QCString result= decode("Dokumentacija za ")+s+
-                       decode("je generirana iz ");
+      QCString result= (QCString)"Dokumentacija za "+s+
+                       "je generirana iz ";
       if (single)
-                  result+= decode("datoteke :");
+                  result+= "datoteke :";
           else
-                  result+= decode("slijedeæih datoteka:");
-      return result;
+                  result+= "slijedeæih datoteka:";
+      return decode(result);
     }
     QCString trMore()
     { return decode("Op¹irnije..."); }
@@ -93,9 +95,9 @@ class TranslatorCroatian : public Translator
     { return decode(", ukljuèujuæi naslijeðene èlanove."); }
     QCString trGeneratedAutomatically(const char *s)
     { QCString result=decode("generirano automatski Doxygen-om"); 
-      if (s) result+=(QCString)decode(" za ")+s;
-      result+=decode(" iz programskog koda."); 
-      return result;
+      if (s) result+=(QCString)" za "+s;
+      result+=" iz programskog koda."; 
+      return decode(result);
     }
     QCString trEnumName()
     { return decode("enum ime"); }
@@ -104,17 +106,17 @@ class TranslatorCroatian : public Translator
     QCString trDefinedIn()
     { return decode("definirano u"); }
     QCString trVerbatimText(const char *f)
-    { return (QCString)decode("Ovo je citirani tekst iz include datoteke ")+f+"."; }
+    { return (QCString)"Ovo je citirani tekst iz include datoteke "+f+"."; }
     QCString trModules()
-    { return decode("Moduli"); }
+    { return "Moduli"; }
     QCString trClassHierarchy()
-    { return decode("Stablo klasa"); }
+    { return "Stablo klasa"; }
     QCString trCompoundList()
-    { return decode("Sve klase"); }
+    { return "Sve klase"; }
     QCString trFileList()
-    { return decode("Popis datoteka"); }
+    { return "Popis datoteka"; }
     QCString trHeaderFiles()
-    { return decode("Header datoteke"); }
+    { return "Header datoteke"; }
     QCString trCompoundMembers()
     { return decode("Svi èlanovi"); }
     QCString trFileMembers()
@@ -122,7 +124,7 @@ class TranslatorCroatian : public Translator
     QCString trRelatedPages()
     { return decode("Povezane stranice"); }
     QCString trExamples()
-    { return decode("Primjeri"); }
+    { return "Primjeri"; }
     QCString trSearch()
     { return decode("Tra¾i"); }
     QCString trClassHierarchyDescription()
@@ -131,105 +133,105 @@ class TranslatorCroatian : public Translator
     }
     QCString trFileListDescription(bool extractAll)
     {
-      QCString result=decode("Popis svih ");
-      if (!extractAll) result+=decode("dokumentiranih ");
-      result+=decode("datoteka, s kratkim opisom:");
-      return result;
+      QCString result="Popis svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="datoteka, s kratkim opisom:";
+      return decode(result);
     }
     QCString trCompoundListDescription()
-    { return decode("Popis svih klasa, unija i struktura "
-                                        "s kratkim opisom :"); 
+    { return "Popis svih klasa, unija i struktura "
+		  "s kratkim opisom :"; 
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result=decode("Popis svih ");
-      if (!extractAll) result+=decode("dokumentiranih ");
-      result+=decode("èlanova klasa s linkovima na ");
-      if (extractAll) result+=decode("dokumentaciju svakog èlana:");
-      else result+=decode("dokumentaciju klase :");
-      return result;
+      QCString result="Popis svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="èlanova klasa s linkovima na ";
+      if (extractAll) result+="dokumentaciju svakog èlana:";
+      else result+="dokumentaciju klase :";
+      return decode(result);
     }
     QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result=decode("Popis svih ");
-      if (!extractAll) result+=decode("dokumentiranih ");
-      result+=decode("èlanova s linkovima na ");
-      if (extractAll) result+=decode("dokumentaciju datoteke u kojima se nalaze:");
-      else result+=decode("datoteke u kojima se nalaze:");
-      return result;
+      QCString result="Popis svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="èlanova s linkovima na ";
+      if (extractAll) result+="dokumentaciju datoteke u kojima se nalaze:";
+      else result+="datoteke u kojima se nalaze:";
+      return decode(result);
     }
     QCString trHeaderFilesDescription()
     { return decode("Popis header datoteka koje èine API :"); }
     QCString trExamplesDescription()
-    { return decode("Popis primjera :"); }
+    { return "Popis primjera :"; }
     QCString trRelatedPagesDescription()
-    { return decode("Popis povezanih stranica:"); }
+    { return "Popis povezanih stranica:"; }
     QCString trModulesDescription()
-    { return decode("Popis svih modula:"); }
+    { return "Popis svih modula:"; }
     QCString trNoDescriptionAvailable()
-    { return decode("Opis nije dostupan"); }
+    { return "Opis nije dostupan"; }
 
     QCString trDocumentation()
-    { return decode("Dokumentacija"); }
+    { return "Dokumentacija"; }
     QCString trModuleIndex()
-    { return decode("Indeks modula"); }
+    { return "Kazalo modula"; }
     QCString trHierarchicalIndex()
-    { return decode("Hijerarhijski indeks"); }
+    { return "Hijerarhijsko kazalo"; }
     QCString trCompoundIndex()
-    { return decode("Skupni indeks"); }
+    { return "Skupno kazalo "; }
     QCString trFileIndex() 
-    { return decode("Indeks datoteka"); }
+    { return "Kazalo datoteka"; }
     QCString trModuleDocumentation()
-    { return decode("Dokumentacija modula"); }
+    { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
-    { return decode("Dokumentacija klasa"); }
+    { return "Dokumentacija klasa"; }
     QCString trFileDocumentation()
-    { return decode("Dokumentacija datoteka"); }
+    { return "Dokumentacija datoteka"; }
     QCString trExampleDocumentation()
-    { return decode("Dokumentacija primjera"); }
+    { return "Dokumentacija primjera"; }
     QCString trPageDocumentation()
-    { return decode("Dokumentacija za povezane stranice"); }
+    { return "Dokumentacija vezane stranice"; }
     QCString trReferenceManual()
     { return decode("Priruènik"); }
 
     QCString trDefines()
-    { return decode("Define-ovi"); }
+    { return "Definicije"; }
     QCString trFuncProtos()
-    { return decode("Prototipi funkcija"); }
+    { return "Prototipi funkcija"; }
     QCString trTypedefs()
-    { return decode("Typedef-ovi"); }
+    { return "Typedef-ovi"; }
     QCString trEnumerations()
-    { return decode("Enumeracije"); }
+    { return "Enumeracije"; }
     QCString trFunctions()
-    { return decode("Funkcije"); }
+    { return "Funkcije"; }
     QCString trVariables()
-    { return decode("Varijable"); }
+    { return "Varijable"; }
     QCString trEnumerationValues()
-    { return decode("Vrijednosti enum-ova"); }
+    { return "Vrijednosti enumeracija"; }
     QCString trAuthor()
-    { return decode("autor"); }
+    { return "autor"; }
     QCString trDefineDocumentation()
-    { return decode("Dokumentacija define-a"); }
+    { return "Dokumentacija definicija"; }
     QCString trFunctionPrototypeDocumentation()
-    { return decode("Dokumentacija prototipa funkcije"); }
+    { return "Dokumentacija prototipa funkcije"; }
     QCString trTypedefDocumentation()
-    { return decode("Dokumentacija typedef-a"); }
+    { return "Dokumentacija typedef-a"; }
     QCString trEnumerationTypeDocumentation()
-    { return decode("Dokumentacija enum tipa"); }
+    { return "Dokumentacija enumeracijskog tipa"; }
     QCString trFunctionDocumentation()
-    { return decode("Dokumentacije funkcijs"); }
+    { return "Dokumentacije funkcija"; }
     QCString trVariableDocumentation()
-    { return decode("Dokumentacija varijable"); }
+    { return "Dokumentacija varijable"; }
     QCString trCompounds()
-    { return decode("Strukture"); }
+    { return "Strukture"; }
     QCString trFiles()
-    { return decode("Datoteke"); }
+    { return "Datoteke"; }
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
-      QCString result=(QCString)decode("Generirano ")+date;
-      if (projName) result+=(QCString)decode(" projekt: ")+projName;
-      result+=(QCString)decode(" generator: ");
-      return result;
+      QCString result=(QCString)"Generirano "+date;
+      if (projName) result+=(QCString)" projekt: "+projName;
+      result+=" generator: ";
+      return decode(result);
     }
     QCString trWrittenBy()
     {
@@ -246,38 +248,38 @@ class TranslatorCroatian : public Translator
                                         "Nema utjecaja na API."); 
     }
     QCString trWarning()
-    { return decode("Upozorenje"); }
+    { return "Upozorenje"; }
     QCString trBugsAndLimitations()
     { return decode("Gre¹ke i ogranièenja"); }
     QCString trVersion()
-    { return decode("Verzija"); }
+    { return "Verzija"; }
     QCString trDate()
-    { return decode("Datum"); }
+    { return "Datum"; }
     QCString trAuthors()
-    { return decode("Autor(i)"); }
+    { return "Autor(i)"; }
     QCString trReturns()
-    { return decode("Povratne vrijednosti"); }
+    { return "Povratne vrijednosti"; }
     QCString trSeeAlso()
     { return decode("Vidi takoðer"); }
     QCString trParameters()
-    { return decode("Parametri"); }
+    { return "Parametri"; }
     QCString trExceptions()
-    { return decode("Iznimke"); }
+    { return "Iznimke"; }
     QCString trGeneratedBy()
-    { return decode("Generirao"); }
+    { return "Generirao"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307 
 //////////////////////////////////////////////////////////////////////////
     
     QCString trNamespaceList()
-    { return decode("Popis namespace-ova"); }
+    { return "Popis namespace-ova"; }
     QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result=decode("Popis svih ");
-      if (!extractAll) result+=decode("dokumentiranih ");
-      result+=decode("namespace-ova s kratkim opisom:");
-      return result;
+      QCString result="Popis svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="namespace-ova s kratkim opisom:";
+      return decode(result);
     }
     QCString trFriends()
     { return decode("Friend-ovi "); }
@@ -287,7 +289,7 @@ class TranslatorCroatian : public Translator
 //////////////////////////////////////////////////////////////////////////
     
     QCString trRelatedFunctionDocumentation()
-    { return decode("Dokumentacija povezanih funkcija"); }
+    { return "Dokumentacija povezanih funkcija"; }
     
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -298,48 +300,48 @@ class TranslatorCroatian : public Translator
                                     bool /*isTemplate*/)
       // used as the title of the HTML page of a class/struct/union
     {
-      QCString result=decode("Opis ");
+      QCString result="Opis ";
       switch(compType)
       {
-        case ClassDef::Class:  result+=decode(" klase "); break;
-        case ClassDef::Struct: result+=decode(" strukture "); break;
-        case ClassDef::Union:  result+=decode(" unije "); break;
-        case ClassDef::Interface:  result+=decode(" suèelja (interface) "); break;
-        case ClassDef::Exception:  result+=decode(" iznimke (exception) "); break;
+        case ClassDef::Class:  result+=" klase "; break;
+        case ClassDef::Struct: result+=" strukture "; break;
+        case ClassDef::Union:  result+=" unije "; break;
+        case ClassDef::Interface:  result+=" suèelja (interface) "; break;
+        case ClassDef::Exception:  result+=" iznimke (exception) "; break;
       }
-          result += (QCString)clName;
+          result += clName;
       
-      return result;
+      return decode(result);
     }
     QCString trFileReference(const char *fileName)
       // used as the title of the HTML page of a file
     {
-      QCString result=decode("Opis datoteke "); 
+      QCString result="Opis datoteke "; 
           result+=fileName;
-          return result;
+          return decode(result);
     }
     QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
-      QCString result =decode("Opis namespace-a ");
+      QCString result ="Opis namespace-a ";
           result+=namespaceName;
       
-      return result;
+      return decode(result);
     }
     
     // these are for the member sections of a class, struct or union 
     QCString trPublicMembers()
     { return decode("Public èlanovi"); }
     QCString trPublicSlots()
-    { return decode("Public slotovi"); }
+    { return "Public slotovi"; }
     QCString trSignals()
-    { return decode("Signali"); }
+    { return "Signali"; }
     QCString trStaticPublicMembers()
     { return decode("Static public èlanovi"); }
     QCString trProtectedMembers()
     { return decode("Protected èlanovi"); }
     QCString trProtectedSlots()
-    { return decode("Protected slotovi"); }
+    { return "Protected slotovi"; }
     QCString trStaticProtectedMembers()
     { return decode("Static protected èlanovi"); }
     QCString trPrivateMembers()
@@ -405,23 +407,23 @@ class TranslatorCroatian : public Translator
     QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     { 
-      QCString result=decode("Lista svih ");
-      if (!extractAll) result+=decode("dokumentiranih ");
-      result+=decode("namespace èlanova s linkovima na ");
+      QCString result="Lista svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="namespace èlanova s linkovima na ";
       if (extractAll) 
-        result+=decode("namespace dokumentaciju svakog èlana:");
+        result+="namespace dokumentaciju svakog èlana:";
       else 
-        result+=decode("namespace kojima pripadaju:");
-      return result;
+        result+="namespace kojima pripadaju:";
+      return decode(result);
     }
     QCString trNamespaceIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all namespaces.
-    { return decode("Indeks namespace-a"); }
+    { return "Kazalo namespace-a"; }
     QCString trNamespaceDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
-    { return decode("Dokumentacija namespace-a"); }
+    { return "Dokumentacija namespace-a"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -434,25 +436,25 @@ class TranslatorCroatian : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)decode("Dokumentacija ove ");
+      QCString result="Dokumentacija ove ";
       switch(compType)
       {
-        case ClassDef::Class:      result+=decode("klase"); break;
-        case ClassDef::Struct:     result+=decode("strukture"); break;
-        case ClassDef::Union:      result+=decode("unije"); break;
-        case ClassDef::Interface:  result+=decode("suèelja (interface)"); break;
-        case ClassDef::Exception:  result+=decode("iznimke (exception)"); break;
+        case ClassDef::Class:      result+="klase"; break;
+        case ClassDef::Struct:     result+="strukture"; break;
+        case ClassDef::Union:      result+="unije"; break;
+        case ClassDef::Interface:  result+="suèelja (interface)"; break;
+        case ClassDef::Exception:  result+="iznimke (exception)"; break;
       }
-      result+=decode(" je generirana iz datotek");
+      result+=" je generirana iz datotek";
       if (single) result+="e :"; else result+="a :";
-      return result;
+      return decode(result);
     }
 
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
     QCString trAlphabeticalList()
-    { return decode("Abecedni popis"); }
+    { return "Abecedni popis"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -460,18 +462,18 @@ class TranslatorCroatian : public Translator
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues()
-    { return decode("Povratna vrijednost"); }
+    { return "Povratna vrijednost"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage()
-    { return decode("Glavna stranica"); }
+    { return "Glavna stranica"; }
 
     /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation()
-    { return decode("str."); }
+    { return "str."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991106
@@ -479,15 +481,15 @@ class TranslatorCroatian : public Translator
 
     QCString trSources()
     {
-      return decode("Izvorne datoteke");
+      return "Izvorne datoteke";
     }
     QCString trDefinedAtLineInSourceFile()
     {
-      return decode("Definirano u liniji @0 datoteke @1.");
+      return "Definirano u liniji @0 datoteke @1.";
     }
     QCString trDefinedInSourceFile()
     {
-      return decode("Definirano u datoteci @0.");
+      return "Definirano u datoteci @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -496,7 +498,7 @@ class TranslatorCroatian : public Translator
 
     QCString trDeprecated()
     {
-      return decode("Zastarjelo");
+      return "Zastarjelo";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -516,32 +518,32 @@ class TranslatorCroatian : public Translator
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
     {
-      return decode("Dokumentacija konstruktora i destruktora "); 
+      return "Dokumentacija konstruktora i destruktora "; 
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     QCString trGotoSourceCode()
     {
-      return decode("Izvorni kod");
+      return "Izvorni kod";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     QCString trGotoDocumentation()
     {
-      return decode("Dokumenacija za ovu datoteku.");
+      return "Dokumenacija za ovu datoteku.";
     }
     /*! Text for the \pre command */
     QCString trPrecondition()
     {
-      return decode("Preduvjeti");
+      return "Preduvjeti";
     }
     /*! Text for the \post command */
     QCString trPostcondition()
     {
-      return decode("Postuvjeti");
+      return "Postuvjeti";
     }
     /*! Text for the \invariant command */
     QCString trInvariant()
     {
-      return decode("Invarijanta");
+      return "Invarijanta";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     QCString trInitialValue()
@@ -551,7 +553,7 @@ class TranslatorCroatian : public Translator
     /*! Text used the source code in the file index */
     QCString trCode()
     {
-      return decode("kod");
+      return "kod";
     }
     QCString trGraphicalHierarchy()
     {
@@ -563,11 +565,11 @@ class TranslatorCroatian : public Translator
     }
     QCString trGotoTextualHierarchy()
     {
-      return decode("Tekstualno stablo klasa");
+      return "Tekstualno stablo klasa";
     }
     QCString trPageIndex()
     {
-      return decode("Indeks stranice");
+      return "Indeks stranice";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -576,43 +578,43 @@ class TranslatorCroatian : public Translator
     
     QCString trNote()
     {
-      return decode("Primjedba");
+      return "Primjedba";
     }
     QCString trPublicTypes()
     {
-      return decode("Public tipovi");
+      return "Public tipovi";
     }
     QCString trPublicAttribs()
     {
-      return decode("Public atributi");
+      return "Public atributi";
     }
     QCString trStaticPublicAttribs()
     {
-      return decode("Static public atributi");
+      return "Static public atributi";
     }
     QCString trProtectedTypes()
     {
-      return decode("Protected tipovi");
+      return "Protected tipovi";
     }
     QCString trProtectedAttribs()
     {
-      return decode("Protected atributi");
+      return "Protected atributi";
     }
     QCString trStaticProtectedAttribs()
     {
-      return decode("Static protected atributi");
+      return "Static protected atributi";
     }
     QCString trPrivateTypes()
     {
-      return decode("Private tipovi");
+      return "Private tipovi";
     }
     QCString trPrivateAttribs()
     {
-      return decode("Private atributi");
+      return "Private atributi";
     }
     QCString trStaticPrivateAttribs()
     {
-      return decode("Static private atributi");
+      return "Static private atributi";
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.3
@@ -621,12 +623,12 @@ class TranslatorCroatian : public Translator
     /*! Used as a marker that is put before a todo item */
     virtual QCString trTodo()
     {
-      return decode("Za uraditi");
+      return "Za uraditi";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return decode("Ostalo za uraditi");
+      return "Ostalo za uraditi";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -635,11 +637,11 @@ class TranslatorCroatian : public Translator
 
     virtual QCString trReferencedBy()
     {
-      return decode("Referencirano od");
+      return "Referencirano od";
     }
     virtual QCString trRemarks()
     {
-      return decode("Napomene");
+      return "Napomene";
     }
     virtual QCString trAttention()
     {
@@ -652,7 +654,7 @@ class TranslatorCroatian : public Translator
     }
     virtual QCString trSince()
     {
-      return decode("Od");
+      return "Od";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -662,7 +664,7 @@ class TranslatorCroatian : public Translator
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return decode("Legenda");
+      return "Legenda";
     }
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
@@ -721,7 +723,7 @@ class TranslatorCroatian : public Translator
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return decode("legenda");
+      return "legenda";
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
@@ -736,6 +738,16 @@ class TranslatorCroatian : public Translator
     virtual QCString trTestList()
     {
       return "Test lista";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "DCOP metode";
     }
 };
 

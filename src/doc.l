@@ -2069,24 +2069,6 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					    outDoc->writeChar(' '); 
 					  }
   					}
-<DocScan>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
-  					  outDoc->docify(yytext);
-  					}
-<DocScan>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  QCString *pValue=aliasDict[yytext+1];
-					  if (pValue)
-					  {
-					    int i,l=pValue->length();
-					    for (i=l-1;i>=0;i--)
-					    {
-					      unput(pValue->at(i));
-					    }
-					  }
-					  else
-					  {
-  					    warn(yyFileName,yyLineNr,"Warning in the documentation of this entity:\nUnknown command `%s' found.",yytext);
-					  }
-  					}
 <DocCode,DocEmphasis,DocBold,DocScan,Text>[a-z_A-Z0-9]+ { 
 					  outDoc->docify(yytext);
 					}

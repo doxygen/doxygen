@@ -26,6 +26,10 @@ class TranslatorRussian : public Translator
     { return "russian"; }
     QCString latexBabelPackage()
     { return "russian"; }
+    QCString idLanguageCharset()
+    {
+      return "koi8-r";
+    }
     QCString trRelatedFunctions()
     {
 	return "Связанные Функции";
@@ -691,7 +695,108 @@ class TranslatorRussian : public Translator
     {
 	return "Статические Закрытые Аттрибуты";
     }
-	
+    QCString trTodo()
+    {
+      return "Todo";
+    }
+    QCString trTodoList()
+    {
+      return "Список Оставшихся Дел";
+    }
+    QCString trReferencedBy()
+    {
+      return "Упоминается в";
+    }
+    QCString trRemarks()
+    {
+      return "Примечания";
+    }
+    QCString trAttention()
+    {
+      return "Внимание";
+    }
+    QCString trInclByDepGraph()
+    {
+      return "Этот граф показывает, какие файлы прямо или "
+             "косвенно включают этот файл:";
+    }
+    QCString trSince()
+    {
+      return "После";
+    }
+    QCString trLegendTitle()
+    {
+      return "Толкование графа";
+    }
+    QCString trLegendDocs()
+    {
+      return 
+        "Эта страница обьясняет, как понимать графы, которые генерирует "
+        "doxygen.<p>\n"
+        "Рассмотрим следующий пример:\n"
+        "\\code\n"
+        "/*! Невидимый класс из-за усечения */\n"
+        "class Invisible { };\n\n"
+        "/*! Усеченный класс, отношение наследования скрыто */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* Класс, не документированный комментариями doxygen */\n"
+        "class Undocumented { };\n\n"
+        "/*! Класс, использующий открытое наследование */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Класс, использующий защищенное наследование */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Класс, использующий закрытое наследование */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Класс, используемый классом Inherited */\n"
+        "class Used { };\n\n"
+        "/*! Класс, порожденный от других классов */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "Если \\c MAX_DOT_GRAPH_HEIGHT тэг в конфигурационном файле "
+        "установлен в 200, получится следующий граф:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "Прямоугольники в этом графе имеют следующее значение:\n"
+        "<ul>\n"
+        "<li>Заполненный чернный прямоугольник представляет структуру или класс, "
+	"для которого создан граф.\n"
+        "<li>Прямоугольник с черной границей обозначает документированную структуру или класс.\n"
+        "<li>Прямоугольник с серой границей обозначает документированную структуру или класс.\n"
+        "<li>Прямоугольник с красной границей обозначает документированную структуру или класс, для которого\n"
+        " не все отношения наследования/содержания показаны. Граф усечен, "
+        "если он не поместился в указанных границах."
+        "</ul>\n"
+        "Стрелки имеют следующее значение:\n"
+        "<ul>\n"
+        "<li>Темносиняя стрелка используется для изображения отношения открытого наследования "
+        "между двумя классами.\n"
+        "<li>Темнозеленая стрелка используется при защищенном наследовании.\n"
+        "<li>Темнозеленая стрелка используется при закрытом наследовании.\n"
+        "<li>Фиолетовая стрелка используется, если класс содержится в или используется другим классом"
+        ". Стрелка маркированна переменной, "
+        "через которую доступен указываемый класс или структура. \n"
+        "</ul>\n";
+    }
+    QCString trLegend()
+    {
+      return "толкование";
+    }
+    QCString trTest()
+    {
+      return "Тест";
+    }
+    QCString trTestList()
+    {
+      return "Список Тестов";
+    }
+
 };
 
 #endif
