@@ -392,6 +392,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("DETAILS_AT_TOP"))
   {
     writeDetailedDocumentation(ol);
+    ol.newParagraph();
   }
   else if (!briefDescription().isEmpty())
   {

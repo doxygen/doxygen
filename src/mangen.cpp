@@ -29,6 +29,7 @@
 #include "doxygen.h"
 #include <string.h>
 #include "docparser.h"
+#include "mandocvisitor.h"
 
 static QCString getExtension()
 {
@@ -613,7 +614,10 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::printDoc(DocNode *)
+void ManGenerator::printDoc(DocNode *n)
 {
+  ManDocVisitor *visitor = new ManDocVisitor(t,*this);
+  n->accept(visitor);
+  delete visitor; 
 }
 

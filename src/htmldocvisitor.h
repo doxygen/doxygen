@@ -23,7 +23,7 @@
 
 class QTextStream;
 class BaseCodeDocInterface;
-class QCString;
+class QString;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
@@ -130,8 +130,8 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
     
     void filter(const char *str);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
+    void startLink(const QString &ref,const QString &file,
+                   const QString &anchor);
     void endLink();
 
     //--------------------------------------

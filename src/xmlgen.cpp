@@ -1199,7 +1199,7 @@ static void writeXMLDocBlock(QTextStream &t,
                       const QCString &text)
 {
   QCString stext = text.stripWhiteSpace();
-  if (text.isEmpty()) return;
+  if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
   DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext);
   // create a code generator
@@ -1489,20 +1489,20 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
           t << "</initializer>" << endl;
         }
         t << "          <briefdescription>" << endl;
-        writeXMLDocBlock(t,emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->briefDescription());
+        writeXMLDocBlock(t,emd->briefFile(),emd->briefLine(),scopeName,emd,emd->briefDescription());
         t << "          </briefdescription>" << endl;
         t << "          <detaileddescription>" << endl;
-        writeXMLDocBlock(t,emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->documentation());
+        writeXMLDocBlock(t,emd->docFile(),emd->docLine(),scopeName,emd,emd->documentation());
         t << "          </detaileddescription>" << endl;
         t << "        </enumvalue>" << endl;
       }
     }
   }
   t << "        <briefdescription>" << endl;
-  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md,md->briefDescription());
+  writeXMLDocBlock(t,md->briefFile(),md->briefLine(),scopeName,md,md->briefDescription());
   t << "        </briefdescription>" << endl;
   t << "        <detaileddescription>" << endl;
-  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md,md->documentation());
+  writeXMLDocBlock(t,md->docFile(),md->docLine(),scopeName,md,md->documentation());
   t << "        </detaileddescription>" << endl;
   if (md->getDefLine()!=-1)
   {
@@ -1763,10 +1763,10 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   generateXMLSection(cd,ti,t,&cd->related,"related");
 
   t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
+  writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd->name(),0,cd->briefDescription());
   t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->documentation());
+  writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd->name(),0,cd->documentation());
   t << "    </detaileddescription>" << endl;
   DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);
   if (!inheritanceGraph.isTrivial())
@@ -1868,10 +1868,10 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   generateXMLSection(nd,ti,t,&nd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,nd->getDefFileName(),nd->getDefLine(),0,0,nd->briefDescription());
+  writeXMLDocBlock(t,nd->briefFile(),nd->briefLine(),0,0,nd->briefDescription());
   t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,nd->getDefFileName(),nd->getDefLine(),0,0,nd->documentation());
+  writeXMLDocBlock(t,nd->docFile(),nd->docLine(),0,0,nd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "    <location file=\"" 
     << nd->getDefFileName() << "\" line=\"" 
@@ -2002,10 +2002,10 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   generateXMLSection(fd,ti,t,&fd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->briefDescription());
+  writeXMLDocBlock(t,fd->briefFile(),fd->briefLine(),0,0,fd->briefDescription());
   t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->documentation());
+  writeXMLDocBlock(t,fd->docFile(),fd->docLine(),0,0,fd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "    <programlisting>" << endl;
   writeXMLCodeBlock(t,fd);
@@ -2125,10 +2125,10 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   generateXMLSection(gd,ti,t,&gd->decVarMembers,"var");
 
   t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->briefDescription());
+  writeXMLDocBlock(t,gd->briefFile(),gd->briefLine(),0,0,gd->briefDescription());
   t << "    </briefdescription>" << endl;
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,gd->getDefFileName(),gd->getDefLine(),0,0,gd->documentation());
+  writeXMLDocBlock(t,gd->docFile(),gd->docLine(),0,0,gd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;

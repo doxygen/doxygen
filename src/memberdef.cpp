@@ -554,8 +554,8 @@ bool MemberDef::isBriefSectionVisible() const
 {
     //printf("Member %s grpId=%d docs=%s file=%s args=%s\n",
     //    name().data(),
-    //    grpId,grpId==-1?"<none>":Doxygen::memberDocDict[grpId]->data(),
-    //    getFileDef()->name().data(),
+    //    0,"", //grpId,grpId==-1?"<none>":Doxygen::memberDocDict[grpId]->data(),
+    //    "", //getFileDef()->name().data(),
     //    argsString());
     bool hasDocs = hasDocumentation() || 
                     // part of a documented member group
@@ -600,8 +600,10 @@ bool MemberDef::isBriefSectionVisible() const
                             );
     
     // hide member if it overrides a member in a superclass and has no
-    // documentation
-    bool visibleIfDocVirtual = (reimplements() || hasDocs);
+    // documentation of its own
+    //bool visibleIfDocVirtual = !reimplements() || 
+    //                           !Config_getBool("INHERIT_DOCS") ||  
+    //                           hasDocs;
 
     // true if this member is a constructor or destructor
     bool cOrDTor = isConstructor() || isDestructor();
@@ -624,7 +626,7 @@ bool MemberDef::isBriefSectionVisible() const
     
     bool visible = visibleIfStatic     && visibleIfDocumented      && 
                    visibleIfEnabled    && visibleIfPrivate         &&
-                   visibleIfDocVirtual && visibleIfNotDefaultCDTor && 
+                   /*visibleIfDocVirtual &&*/ visibleIfNotDefaultCDTor && 
                    visibleIfFriendCompound &&
                    !annScope;
     //printf("MemberDef::isBriefSectionVisible() %d\n",visible);
@@ -1539,6 +1541,10 @@ void MemberDef::warnIfUndocumented()
   else
     t="file", d=fd;
 
+  //printf("warnIfUndoc: d->isLinkable()=%d isLinkable()=%d "
+  //       "isDocumentedFriendClass()=%d name()=%s prot=%d\n",
+  //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
+  //       name().data(),prot);
   if (d && d->isLinkable() && !isLinkable() && 
       !isDocumentedFriendClass() && 
       name().find('@')==-1 &&

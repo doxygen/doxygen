@@ -48,29 +48,29 @@ static MemberDef * g_memberDef;
 static QDict<void> g_paramsFound;
 
 // include file state
-static QCString g_includeFileText;
+static QString g_includeFileText;
 static uint     g_includeFileOffset;
 static uint     g_includeFileLength;
 
 // parser state
-static QCString               g_context;
+static QString               g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
 static QStack<DocNode>        g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
 static QList<Definition>      g_copyStack;
-static QCString               g_fileName;
+static QString               g_fileName;
 
 struct DocParserContext
 {
-  QCString context;
+  QString context;
   bool inSeeBlock;
   bool insideHtmlLink;
   QStack<DocNode> nodeStack;
   QStack<DocStyleChange> styleStack;
   QList<Definition> copyStack;
   MemberDef *memberDef;
-  QCString fileName;
+  QString fileName;
 };
 
 static QStack<DocParserContext> g_parserStack;
@@ -107,7 +107,7 @@ static void docParserPopContext()
 
 //---------------------------------------------------------------------------
 
-static void checkArgumentName(const QCString &name,bool isParam)
+static void checkArgumentName(const QString &name,bool isParam)
 {                
   if (g_memberDef==0) return; // not a member
   ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
@@ -120,14 +120,14 @@ static void checkArgumentName(const QCString &name,bool isParam)
   int p=0,i=0,l;
   while ((i=re.match(name,p,&l))!=-1)
   {
-    QCString aName=name.mid(i,l);
+    QString aName=name.mid(i,l);
     //printf("aName=%s\n",aName.data());
     ArgumentListIterator ali(*al);
     Argument *a;
     bool found=FALSE;
     for (ali.toFirst();(a=ali.current());++ali)
     {
-      QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+      QString argName = g_memberDef->isDefine() ? a->type : a->name;
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName) 
       {
@@ -140,7 +140,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
     if (!found && isParam)
     {
       //printf("member type=%d\n",memberDef->memberType());
-      QCString scope=g_memberDef->getScopeString();
+      QString scope=g_memberDef->getScopeString();
       if (!scope.isEmpty()) scope+="::"; else scope="";
       warn(g_memberDef->docFile(),g_memberDef->docLine(),
 	  "Warning: argument `%s' of command @param "
@@ -167,7 +167,7 @@ static void checkUndocumentedParams()
       bool found=FALSE;
       for (ali.toFirst();(a=ali.current());++ali)
       {
-        QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+        QString argName = g_memberDef->isDefine() ? a->type : a->name;
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
         if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
         {
@@ -177,7 +177,7 @@ static void checkUndocumentedParams()
       }
       if (found)
       {
-        QCString scope=g_memberDef->getScopeString();
+        QString scope=g_memberDef->getScopeString();
         if (!scope.isEmpty()) scope+="::"; else scope="";
         warn(g_memberDef->docFile(),g_memberDef->docLine(),
             "Warning: The following parameters of "
@@ -186,7 +186,7 @@ static void checkUndocumentedParams()
             argListToString(al).data());
         for (ali.toFirst();(a=ali.current());++ali)
         {
-          QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+          QString argName = g_memberDef->isDefine() ? a->type : a->name;
           if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
           {
             warn_cont( "  parameter %s\n",argName.data());
@@ -199,15 +199,15 @@ static void checkUndocumentedParams()
 
 //---------------------------------------------------------------------------
 
-static QCString stripKnownExtensions(const char *text)
+static QString stripKnownExtensions(const char *text)
 {
-  QCString result=text;
+  QString result=text;
   if (result.right(4)==".tex")
   {
     result=result.left(result.length()-4);
   }
   else if (result.right(Doxygen::htmlFileExtension.length())==
-         Doxygen::htmlFileExtension) 
+         QString(Doxygen::htmlFileExtension)) 
   {
     result=result.left(result.length()-Doxygen::htmlFileExtension.length());
   }
@@ -293,12 +293,12 @@ static bool insideLang(DocNode *n)
  *  @retval FALSE if name was not found.
  */
 static bool findDocsForMemberOrCompound(const char *commandName,
-                                 QCString *pDoc,
+                                 QString *pDoc,
                                  Definition **pDef)
 {
-  pDoc->resize(0);
+  *pDoc="";
   *pDef=0;
-  QCString cmdArg=commandName;
+  QString cmdArg=commandName;
   int l=cmdArg.length();
   if (l==0) return FALSE;
 
@@ -306,10 +306,10 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   if (funcStart==-1) funcStart=l;
   //int lastScopeStart=cmdArg.findRev("::",funcStart);
   //int lastScopeEnd = lastScopeStart==-1 ? 0 : lastScopeStart+2;
-  //QCString scope=cmdArg.left(QMAX(lastScopeStart,0));
-  //QCString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
-  QCString name=cmdArg.left(funcStart);
-  QCString args=cmdArg.right(l-funcStart);
+  //QString scope=cmdArg.left(QMAX(lastScopeStart,0));
+  //QString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
+  QString name=cmdArg.left(funcStart);
+  QString args=cmdArg.right(l-funcStart);
 
   // try if the link is to a member
   MemberDef    *md=0;
@@ -318,7 +318,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   NamespaceDef *nd=0;
   GroupDef     *gd=0;
   PageInfo     *pi=0;
-  bool found = getDefs(g_context,name,args,md,cd,fd,nd,gd,FALSE,0,TRUE);
+  bool found = getDefs(g_context.latin1(),name.latin1(),args,md,cd,fd,nd,gd,FALSE,0,TRUE);
   if (found && md)
   {
     *pDoc=md->documentation();
@@ -330,7 +330,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   int scopeOffset=g_context.length();
   do // for each scope
   {
-    QCString fullName=cmdArg;
+    QString fullName=cmdArg;
     if (scopeOffset>0)
     {
       fullName.prepend(g_context.left(scopeOffset)+"::");
@@ -398,8 +398,9 @@ static bool defaultHandleToken(DocNode *parent,int tok,
 
 
 static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
-                               const QCString &cmdName)
+                               const QString &cmdName)
 {
+  QString tokenName = g_token->name;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -407,7 +408,9 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
 	cmdName.data());
     return tok;
   }
-  while ((tok=doctokenizerYYlex()) && tok!=TK_WHITESPACE && tok!=TK_NEWPARA)
+  while ((tok=doctokenizerYYlex()) && 
+         tok!=TK_WHITESPACE && tok!=TK_NEWPARA && tok!=TK_LISTITEM && tok!=TK_ENDLIST
+        )
   {
     if (!defaultHandleToken(parent,tok,children))
     {
@@ -415,15 +418,15 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
       {
         case TK_COMMAND: 
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Illegal command \\%s as the argument of a \\%s command",
-	       g_token->name.data(),cmdName.data());
+	       tokenName.data(),cmdName.data());
           break;
         case TK_SYMBOL: 
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unsupported symbol %s found",
-               g_token->name.data());
+               tokenName.data());
           break;
         default:
 	  warn(g_fileName,doctokenizerYYlineno,"Error: Unexpected token %s",
-		g_token->name.data());
+	       tokenName.data());
           break;
       }
     }
@@ -540,7 +543,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
     DBG((" name=%s",g_token->name.data()));
   }
   DBG(("\n"));
-  QCString tokenName = g_token->name;
+  QString tokenName = g_token->name;
   switch (tok)
   {
     case TK_COMMAND: 
@@ -803,7 +806,7 @@ handlepara:
 
 //---------------------------------------------------------------------------
 
-DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
+DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
 {
   int l=symName.length();
   DBG(("decodeSymbol(%s) l=%d\n",symName.data(),l));
@@ -856,7 +859,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
 //---------------------------------------------------------------------------
 
 static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
-                                    const QCString &doc)
+                                    const QString &doc)
 {
   int retval = RetVal_OK;
 
@@ -887,7 +890,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 //---------------------------------------------------------------------------
 
-static void readTextFileByName(const QCString &file,QCString &text)
+static void readTextFileByName(const QString &file,QString &text)
 {
   bool ambig;
   FileDef *fd;
@@ -911,7 +914,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
 
 //---------------------------------------------------------------------------
 
-DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor) 
+DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor) 
   : m_parent(parent)
 {
   if (id.isEmpty())
@@ -1080,7 +1083,7 @@ void DocIncOperator::parse()
 
 void DocCopy::parse()
 {
-  QCString doc;
+  QString doc;
   Definition *def;
   if (findDocsForMemberOrCompound(m_link,&doc,&def))
   {
@@ -1114,7 +1117,7 @@ void DocCopy::parse()
 
 void DocXRefItem::parse()
 {
-  QCString listName;
+  QString listName;
   switch(m_type)
   {
     case Bug:        listName="bug"; break; 
@@ -1143,7 +1146,7 @@ void DocXRefItem::parse()
 DocFormula::DocFormula(DocNode *parent,int id) :
       m_parent(parent) 
 {
-  QCString formCmd;
+  QString formCmd;
   formCmd.sprintf("\\form#%d",id);
   Formula *formula=Doxygen::formulaNameDict[formCmd];
   if (formula)
@@ -1306,7 +1309,7 @@ endsecreflist:
 
 //---------------------------------------------------------------------------
 
-DocInternalRef::DocInternalRef(DocNode *parent,const QCString &ref) 
+DocInternalRef::DocInternalRef(DocNode *parent,const QString &ref) 
   : m_parent(parent)
 {
   int i=ref.find('#');
@@ -1357,11 +1360,12 @@ void DocInternalRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocRef::DocRef(DocNode *parent,const QCString &target) : 
+DocRef::DocRef(DocNode *parent,const QString &target) : 
    m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
 {
   Definition  *compound = 0;
-  MemberDef   *member   = 0;
+  PageInfo    *pageInfo = 0;
+  QCString     anchor;
   ASSERT(!target.isEmpty());
   SectionInfo *sec = Doxygen::sectionDict[target];
   if (sec) // ref to section or anchor
@@ -1375,16 +1379,25 @@ DocRef::DocRef(DocNode *parent,const QCString &target) :
     m_refToAnchor  = sec->type==SectionInfo::Anchor;
     m_refToSection = sec->type!=SectionInfo::Anchor;
   }
-  else if (resolveRef(g_context,target,TRUE,&compound,&member))
+  else if (resolveLink(g_context,target,TRUE,&compound,&pageInfo,anchor))
   {
-    if (member) // ref to member 
+    m_text = target;
+    m_anchor = anchor;
+    if (pageInfo) // ref to page 
     {
-      m_file   = compound->getOutputFileBase();
-      m_ref    = compound->getReference();
-      m_anchor = member->anchor();
+      m_file   = pageInfo->getOutputFileBase();
+      m_ref    = pageInfo->getReference();
     }
-    else // ref to compound
+    else if (compound) // ref to compound
     {
+      if (anchor.isEmpty() &&                                  /* compound link */
+          compound->definitionType()==Definition::TypeGroup && /* is group */
+          ((GroupDef *)compound)->groupTitle()                 /* with title */
+         )
+      {
+        m_text=((GroupDef *)compound)->groupTitle(); // use group's title as l
+      }
+
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
@@ -1432,14 +1445,16 @@ void DocRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocLink::DocLink(DocNode *parent,const QCString &target) : 
+DocLink::DocLink(DocNode *parent,const QString &target) : 
       m_parent(parent)
 {
   Definition *compound;
   PageInfo *page;
+  QCString anchor;
   if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
-                  &compound,&page,m_anchor))
+                  &compound,&page,anchor))
   {
+    m_anchor = anchor;
     if (compound)
     {
       m_file = compound->getOutputFileBase();
@@ -1459,9 +1474,9 @@ DocLink::DocLink(DocNode *parent,const QCString &target) :
 }
 
 
-QCString DocLink::parse(bool isJavaLink)
+QString DocLink::parse(bool isJavaLink)
 {
-  QCString result;
+  QString result;
   g_nodeStack.push(this);
   DBG(("DocLink::parse() start\n"));
 
@@ -1495,7 +1510,7 @@ QCString DocLink::parse(bool isJavaLink)
         case TK_WORD: 
           if (isJavaLink) // special case to detect closing }
           {
-            QCString w = g_token->name;
+            QString w = g_token->name;
             uint l=w.length();
             int p;
             if (w=="}")
@@ -1882,7 +1897,7 @@ int DocIndexEntry::parse()
     warn(g_fileName,doctokenizerYYlineno,"Error: expected whitespace after \\addindex command");
     goto endindexentry;
   }
-  m_entry.resize(0);
+  m_entry="";
   while ((tok=doctokenizerYYlex()) && tok!=TK_WHITESPACE && tok!=TK_NEWPARA)
   {
     switch (tok)
@@ -2078,7 +2093,7 @@ int DocHtmlRow::parse()
   // parse one or more cells
   do
   {
-    cell=new DocHtmlCell(this,isHeading);
+    cell=new DocHtmlCell(this,g_token->attribs,isHeading);
     cell->markFirst(isFirst);
     isFirst=FALSE;
     m_children.append(cell);
@@ -2125,7 +2140,7 @@ getrow:
       }
       else
       {
-        m_caption = new DocHtmlCaption(this);
+        m_caption = new DocHtmlCaption(this,g_token->attribs);
         retval=m_caption->parse();
 
         if (retval==RetVal_OK) // caption was parsed ok
@@ -2154,7 +2169,7 @@ getrow:
   // parse one or more rows
   while (retval==RetVal_TableRow)
   {
-    DocHtmlRow *tr=new DocHtmlRow(this);
+    DocHtmlRow *tr=new DocHtmlRow(this,g_token->attribs);
     m_children.append(tr);
     retval=tr->parse();
   } 
@@ -2231,6 +2246,7 @@ endtitle:
 
 int DocHtmlDescData::parse()
 {
+  m_attribs = g_token->attribs;
   int retval=0;
   g_nodeStack.push(this);
   DBG(("DocHtmlDescData::parse() start\n"));
@@ -2295,7 +2311,7 @@ int DocHtmlDescList::parse()
 
   do
   {
-    DocHtmlDescTitle *dt=new DocHtmlDescTitle(this);
+    DocHtmlDescTitle *dt=new DocHtmlDescTitle(this,g_token->attribs);
     m_children.append(dt);
     DocHtmlDescData *dd=new DocHtmlDescData(this);
     m_children.append(dd);
@@ -2417,7 +2433,7 @@ int DocHtmlList::parse()
 
   do
   {
-    DocHtmlListItem *li=new DocHtmlListItem(this);
+    DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs);
     m_children.append(li);
     retval=li->parse();
   } while (retval==RetVal_ListItem);
@@ -2598,7 +2614,7 @@ int DocSimpleSect::parse(bool userTitle)
 
 //--------------------------------------------------------------------------
 
-int DocParamList::parse(const QCString &cmdName)
+int DocParamList::parse(const QString &cmdName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamList::parse() start\n"));
@@ -2648,7 +2664,7 @@ int DocParamList::parse(const QCString &cmdName)
 
 //--------------------------------------------------------------------------
 
-int DocParamSect::parse(const QCString &cmdName)
+int DocParamSect::parse(const QString &cmdName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
@@ -2686,7 +2702,7 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t)
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-int DocPara::handleParamSection(const QCString &cmdName,DocParamSect::Type t)
+int DocPara::handleParamSection(const QString &cmdName,DocParamSect::Type t)
 {
   DocParamSect *ps=0;
   
@@ -2722,7 +2738,7 @@ int DocPara::handleXRefItem(DocXRefItem::Type t)
   return retval;
 }
 
-void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
+void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2772,7 +2788,7 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   op->parse();
 }
 
-void DocPara::handleImage(const QCString &cmdName)
+void DocPara::handleImage(const QString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2796,7 +2812,7 @@ void DocPara::handleImage(const QCString &cmdName)
     return;
   }
   DocImage::Type t;
-  QCString imgType = g_token->name.lower();
+  QString imgType = g_token->name.lower();
   if      (imgType=="html")  t=DocImage::Html;
   else if (imgType=="latex") t=DocImage::Latex;
   else if (imgType=="rtf")   t=DocImage::Rtf;
@@ -2821,7 +2837,7 @@ void DocPara::handleImage(const QCString &cmdName)
   img->parse();
 }
 
-void DocPara::handleDotFile(const QCString &cmdName)
+void DocPara::handleDotFile(const QString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2844,7 +2860,7 @@ void DocPara::handleDotFile(const QCString &cmdName)
   df->parse();
 }
 
-void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
+void DocPara::handleLink(const QString &cmdName,bool isJavaLink)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2864,14 +2880,14 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   doctokenizerYYsetStatePara();
   DocLink *lnk = new DocLink(this,g_token->name);
   m_children.append(lnk);
-  QCString leftOver = lnk->parse(isJavaLink);
+  QString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
     m_children.append(new DocWord(this,leftOver));
   }
 }
 
-void DocPara::handleRef(const QCString &cmdName)
+void DocPara::handleRef(const QString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2941,7 +2957,7 @@ endlang:
   return retval;
 }
 
-void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
+void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -2971,7 +2987,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 }
 
 
-int DocPara::handleCommand(const QCString &cmdName)
+int DocPara::handleCommand(const QString &cmdName)
 {
   int retval = RetVal_OK;
   switch (CmdMapper::map(cmdName))
@@ -3310,23 +3326,23 @@ int DocPara::handleCommand(const QCString &cmdName)
 }
 
 
-int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tagOptions)
+int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs)
 {
-  DBG(("handleHtmlStartTag(%s,%d)\n",tagName.data(),tagOptions.count()));
+  DBG(("handleHtmlStartTag(%s,%d)\n",tagName.data(),tagHtmlAttribs.count()));
   int retval=RetVal_OK;
   int tagId = HtmlTagMapper::map(tagName);
   switch (tagId)
   {
     case HTML_UL: 
       {
-        DocHtmlList *list = new DocHtmlList(this,DocHtmlList::Unordered);
+        DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Unordered);
         m_children.append(list);
         retval=list->parse();
       }
       break;
     case HTML_OL: 
       {
-        DocHtmlList *list = new DocHtmlList(this,DocHtmlList::Ordered);
+        DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Ordered);
         m_children.append(list);
         retval=list->parse();
       }
@@ -3343,7 +3359,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
       break;
     case HTML_PRE:
       {
-        DocHtmlPre *pre = new DocHtmlPre(this);
+        DocHtmlPre *pre = new DocHtmlPre(this,tagHtmlAttribs);
         m_children.append(pre);
         retval=pre->parse();
       }
@@ -3374,7 +3390,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
       break;
     case HTML_DL:
       {
-        DocHtmlDescList *list = new DocHtmlDescList(this);
+        DocHtmlDescList *list = new DocHtmlDescList(this,tagHtmlAttribs);
         m_children.append(list);
         retval=list->parse();
       }
@@ -3387,7 +3403,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
       break;
     case HTML_TABLE:
       {
-        DocHtmlTable *table = new DocHtmlTable(this);
+        DocHtmlTable *table = new DocHtmlTable(this,tagHtmlAttribs);
         m_children.append(table);
         retval=table->parse();
       }
@@ -3418,8 +3434,8 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
       break;
     case HTML_A:
       {
-        QListIterator<Option> li(tagOptions);
-        Option *opt;
+        HtmlAttribListIterator li(tagHtmlAttribs);
+        HtmlAttrib *opt;
         for (li.toFirst();(opt=li.current());++li)
         {
           if (opt->name=="name") // <a name=label> tag
@@ -3428,7 +3444,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
             {
               DocAnchor *anc = new DocAnchor(this,opt->value,TRUE);
               m_children.append(anc);
-              break; // stop looking for other tag options
+              break; // stop looking for other tag attribs
             }
             else
             {
@@ -3452,29 +3468,29 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
       break;
     case HTML_H1:
       {
-        DocHtmlHeader *header = new DocHtmlHeader(this,1);
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,1);
         m_children.append(header);
         retval = header->parse();
       }
       break;
     case HTML_H2:
       {
-        DocHtmlHeader *header = new DocHtmlHeader(this,2);
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,2);
         m_children.append(header);
         retval = header->parse();
       }
       break;
     case HTML_H3:
       {
-        DocHtmlHeader *header = new DocHtmlHeader(this,3);
+        DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,3);
         m_children.append(header);
         retval = header->parse();
       }
       break;
     case HTML_IMG:
       {
-        QListIterator<Option> li(tagOptions);
-        Option *opt;
+        HtmlAttribListIterator li(tagHtmlAttribs);
+        HtmlAttrib *opt;
         for (li.toFirst();(opt=li.current());++li)
         {
           if (opt->name=="src" && !opt->value.isEmpty())
@@ -3496,7 +3512,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const QList<Option> &tag
   return retval;
 }
 
-int DocPara::handleHtmlEndTag(const QCString &tagName)
+int DocPara::handleHtmlEndTag(const QString &tagName)
 {
   DBG(("handleHtmlEndTag(%s)\n",tagName.data()));
   int tagId = HtmlTagMapper::map(tagName);
@@ -3817,7 +3833,7 @@ reparsetoken:
         {
           if (!g_token->endTag) // found a start tag
           {
-            retval = handleHtmlStartTag(g_token->name,g_token->options);
+            retval = handleHtmlStartTag(g_token->name,g_token->attribs);
           }
           else // found an end tag
           {
@@ -4023,9 +4039,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,MemberDef *md,
                             const char *input)
 {
-  //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   
-  //printf("========== validating %s at line %d\n",fileName,startLine);
+  printf("========== validating %s at line %d\n",fileName,startLine);
+  printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   g_token = new TokenInfo;
 
   g_context = context;
@@ -4035,7 +4051,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_styleStack.clear();
   g_inSeeBlock = FALSE;
   g_insideHtmlLink = FALSE;
-  g_includeFileText.resize(0);
+  g_includeFileText = "";
   g_includeFileOffset = 0;
   g_includeFileLength = 0;
   g_hasParamCommand = FALSE;

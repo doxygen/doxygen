@@ -1459,13 +1459,6 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
-                    "STRIP_CODE_COMMENTS",
-                    "Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct \n"
-                    "doxygen to hide any special comment blocks from generated source code \n"
-                    "fragments. Normal C and C++ comments will always remain visible. \n",
-                    TRUE
-                 );
-  cb = addBool(
                     "CASE_SENSE_NAMES",
                     "If the CASE_SENSE_NAMES tag is set to NO then Doxygen will only generate \n"
                     "file names in lower case letters. If set to YES upper case letters are also \n"
@@ -1783,6 +1776,13 @@ void Config::create()
                     "Setting the INLINE_SOURCES tag to YES will include the body \n"
                     "of functions and classes directly in the documentation. \n",
                     FALSE
+                 );
+  cb = addBool(
+                    "STRIP_CODE_COMMENTS",
+                    "Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct \n"
+                    "doxygen to hide any special comment blocks from generated source code \n"
+                    "fragments. Normal C and C++ comments will always remain visible. \n",
+                    TRUE
                  );
   cb = addBool(     "REFERENCED_BY_RELATION",
                     "If the REFERENCED_BY_RELATION tag is set to YES (the default) \n"

@@ -32,9 +32,9 @@ RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci)
 {
 }
 
-QCString RTFDocVisitor::getStyle(const char *name)
+QString RTFDocVisitor::getStyle(const char *name)
 {
-  QCString n;
+  QString n;
   n.sprintf("%s%d",name,m_indentLevel);
   StyleData *sd = rtf_Style[n];
   ASSERT(sd!=0);
@@ -271,7 +271,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,s->context(),s->text(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
       m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -295,7 +295,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
 void RTFDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  QCString anchor;
+  QString anchor;
   if (!anc->file().isEmpty())
   {
     anchor+=anc->file();
@@ -321,7 +321,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,inc->context(),inc->text(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
       m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -353,7 +353,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
   }
   if (op->isLast())  
   {
@@ -534,7 +534,7 @@ void RTFDocVisitor::visitPre(DocSection *s)
 {
   m_t << "{" // start section
       << rtf_Style_Reset;
-  QCString heading;
+  QString heading;
   int level = QMIN(s->level()+2,4);
   heading.sprintf("Heading%d",level);
   // set style
@@ -750,7 +750,7 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
 {
   m_t << "{" // start section
       << rtf_Style_Reset;
-  QCString heading;
+  QString heading;
   int level = QMIN(header->level()+2,4);
   heading.sprintf("Heading%d",level);
   // set style
@@ -793,13 +793,13 @@ void RTFDocVisitor::visitPost(DocImage *)
 
 void RTFDocVisitor::visitPre(DocDotFile *df)
 {
-  QCString baseName=df->file();
+  QString baseName=df->file();
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QCString outDir = Config_getString("RTF_OUTPUT");
+  QString outDir = Config_getString("RTF_OUTPUT");
   writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
   m_t << "\\par" << endl;
   m_t << "{" << endl;
@@ -927,7 +927,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   m_t << "\\par" << endl;
   if (Config_getBool("RTF_HYPERLINKS"))
   {
-    QCString refName;
+    QString refName;
     if (!x->file().isEmpty())
     {
       refName+=x->file();
@@ -1033,11 +1033,11 @@ void RTFDocVisitor::filter(const char *str)
   }
 }
 
-void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void RTFDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
 {
   if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
   {
-    QCString refName;
+    QString refName;
     if (!file.isEmpty())
     {
       refName+=file;
@@ -1059,7 +1059,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
   }
 }
 
-void RTFDocVisitor::endLink(const QCString &ref)
+void RTFDocVisitor::endLink(const QString &ref)
 {
   if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
   {

@@ -37,6 +37,8 @@
  * -------------+------------------------------------------------------------
  *  2002-07-11  | Update for new since 1.2.16
  * -------------+------------------------------------------------------------
+ *  2002-09-24  | Update for new since 1.2.17
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
@@ -1268,6 +1270,17 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
       return "Table des matières";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Liste obsolète";
+    }
 
 
 };

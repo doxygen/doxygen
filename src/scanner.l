@@ -3925,33 +3925,33 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  yyLineNr++;
   					}
 <SkipSection>"//"|"*/"			  					
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
                                           // previous section enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
                                           // section was enabled => skip now
   					  depthIf=1;
   					  BEGIN(SkipSection);
   					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
                                           // section enabled => absorb endif
   					}
 
 
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
   					  BEGIN( GroupName ); 
 					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
                                           current->subGrouping = FALSE; 
                                         }
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 100000; // ON
   					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 0; // OFF
   					}
 <GroupName>{ID}				{
@@ -3992,7 +3992,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-					    yyLineNr++;
+					    if (yytext[yyleng-1]=='\n') yyLineNr++;
 					  }
 					  BEGIN( lastBriefContext );
 					}
@@ -4295,7 +4295,18 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment,SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]*  {
+  					    QCString *pValue=Doxygen::aliasDict[yytext+1];
+					    if (pValue)
+					    {
+					      int i,l=pValue->length();
+					      for (i=l-1;i>=0;i--)
+					      {
+					        unput(pValue->at(i));
+					      }
+					    }
+                                          }
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
                                           bool handled=FALSE;
                                           if ( useOverrideCommands)
                                           {
@@ -4338,9 +4349,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    if (pValue)
 					    {
 					      int i,l=pValue->length();
+					      char c;
 					      for (i=l-1;i>=0;i--)
 					      {
-					        unput(pValue->at(i));
+						c=pValue->at(i);
+					        unput(c);
+						if (c=='\n') yyLineNr--;
 					      }
 					    }
 					    else

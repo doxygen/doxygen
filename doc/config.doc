@@ -103,6 +103,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_full_path_names FULL_PATH_NAMES
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
+\refitem cfg_generate_todolist GENERATE_DEPRECIATELIST
 \refitem cfg_generate_html GENERATE_HTML
 \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 \refitem cfg_generate_latex GENERATE_LATEX
@@ -458,6 +459,14 @@ followed by the descriptions of the tags grouped by category.
  The \c ENABLED_SECTIONS tag can be used to enable conditional
  documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
  \ref cmdendif "\\endif" blocks.
+
+\anchor cfg_generate_deprecatedlist
+<dt>\c GENERATE_DEPRECATEDLIST <dd>
+ \addindex GENERATE_DEPRECATEDLIST
+ The GENERATE_DEPRECATEDLIST tag can be used to enable (YES) or
+ disable (NO) the deprecated list. This list is created by 
+ putting \ref cmddeprecated "\\deprecated"
+ commands in the documentation.
 
 \anchor cfg_generate_todolist
 <dt>\c GENERATE_TODOLIST <dd>

@@ -148,7 +148,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
-      parseCode(m_ci,s->context(),s->text(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
       m_t << "</programlisting>"; 
       break;
     case DocVerbatim::Verbatim: 
@@ -182,7 +182,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << "<programlisting>";
-      parseCode(m_ci,inc->context(),inc->text(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
       m_t << "</programlisting>"; 
       break;
     case DocInclude::DontInclude: 
@@ -211,7 +211,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
   }
   if (op->isLast())  
   {
@@ -536,7 +536,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   }
   m_t << "\"";
 
-  QCString baseName=img->name();
+  QString baseName=img->name();
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
@@ -719,7 +719,7 @@ void XmlDocVisitor::filter(const char *str)
   }
 }
 
-void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void XmlDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
 {
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;

@@ -19,8 +19,9 @@
 #ifndef _DOCTOKENIZER_H
 #define _DOCTOKENIZER_H
 
-#include <qcstring.h>
+#include <qstring.h>
 #include <qlist.h>
+#include "htmlattrib.h"
 
 enum Tokens
 {
@@ -53,24 +54,16 @@ enum Tokens
   RetVal_SwitchLang   = 0x1000E
 };
 
-struct Option
-{
-  QCString name;
-  QCString value;
-};
-
 struct TokenInfo
 {
-  TokenInfo() { options.setAutoDelete(TRUE); }
-  
   // unknown token
   char unknownChar;
   
   // command token
-  QCString name;
+  QString name;
 
   // command text (RCS tag)
-  QCString text;
+  QString text;
 
   // comment blocks
   
@@ -79,23 +72,23 @@ struct TokenInfo
   int indent;
 
   // sections
-  QCString sectionId;
+  QString sectionId;
 
   // simple section
-  QCString simpleSectName;
+  QString simpleSectName;
 
   // verbatim fragment
-  QCString verb;
+  QString verb;
 
   // xrefitem
   int id;
 
   // html tag
-  QList<Option> options;
+  HtmlAttribList attribs;
   bool endTag;
 
   // whitespace
-  QCString chars;
+  QString chars;
 };
 
 // globals

@@ -19,6 +19,7 @@
 #ifndef _DOCVISITOR_H
 #define _DOCVISITOR_H
 
+// forward declarations
 class DocWord;
 class DocWhiteSpace;
 class DocAutoList;
@@ -73,7 +74,9 @@ class DocCopy;
 class DocVisitor
 {
   public:
-    /*! @name Visitor functions for leaf nodes */
+    /*! @name Visitor functions for leaf nodes 
+     *  @{
+     */
     virtual void visit(DocWord *) = 0;
     virtual void visit(DocWhiteSpace *) = 0;
     virtual void visit(DocSymbol *) = 0;
@@ -88,8 +91,11 @@ class DocVisitor
     virtual void visit(DocFormula *) = 0;
     virtual void visit(DocLinkedWord *) = 0;
     virtual void visit(DocIndexEntry *) = 0;
+    /*! @} */
 
-    /*! @name Visitor functions for internal nodes */
+    /*! @name Visitor functions for internal nodes 
+     *  @{
+     */
     virtual void visitPre(DocAutoList *) = 0;
     virtual void visitPost(DocAutoList *) = 0;
     virtual void visitPre(DocAutoListItem *) = 0;
@@ -158,6 +164,7 @@ class DocVisitor
     virtual void visitPost(DocInternalRef *) = 0;
     virtual void visitPre(DocCopy *) = 0;
     virtual void visitPost(DocCopy *) = 0;
+    /*! @} */
 };
 
 #endif

@@ -266,11 +266,18 @@ void Wizard::saveAsFile()
 void Wizard::runDoxygen()
 {
   saveFile();
-  QString s = "doxygen " + configFileName;
+  QString orgDir = QDir::currentDirPath();
+  QFileInfo fi(configFileName);
+  // cd to the config dir
+  QDir::setCurrent(fi.dirPath());
+  // run doxygen on the config file
+  QString s = "doxygen \"" + fi.fileName() + "\"";
+  // actually run the exe
   system((const char*)s);  
   statusBar()->message("doxygen completed: "+ configFileName, messageTimeout );
   hasChanged = FALSE;
   refreshCaption();
+  QDir::setCurrent(orgDir);
 } 
 
 

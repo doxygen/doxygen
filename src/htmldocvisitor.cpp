@@ -25,6 +25,24 @@
 #include "dot.h"
 #include "message.h"
 
+static QString htmlAttribsToString(const HtmlAttribList &attribs)
+{
+  QString result;
+  HtmlAttribListIterator li(attribs);
+  HtmlAttrib *att;
+  for (li.toFirst();(att=li.current());++li)
+  {
+    printf("Found attion name=`%s' value=`%s'\n",
+        att->name.data(),att->value.data());
+    result+=" ";
+    result+=att->name;
+    if (!att->value.isEmpty()) result+="=\""+att->value+"\"";
+  }
+  return result;
+}
+
+//-------------------------------------------------------------------------
+
 HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
 {
@@ -147,7 +165,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "<div class=\"fragment\"><pre>"; 
-      parseCode(m_ci,s->context(),s->text(),FALSE,0);
+      parseCode(m_ci,s->context(),s->text().latin1(),FALSE,0);
       m_t << "</pre></div>"; 
       break;
     case DocVerbatim::Verbatim: 
@@ -177,7 +195,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << "<div class=\"fragment\"><pre>";
-      parseCode(m_ci,inc->context(),inc->text(),FALSE,0);
+      parseCode(m_ci,inc->context(),inc->text().latin1(),FALSE,0);
       m_t << "</pre></div>"; 
       break;
     case DocInclude::DontInclude: 
@@ -204,7 +222,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text(),FALSE,0);
+    parseCode(m_ci,op->context(),op->text().latin1(),FALSE,0);
   }
   if (op->isLast())  
   {
@@ -395,9 +413,9 @@ void HtmlDocVisitor::visitPost(DocSection *)
 void HtmlDocVisitor::visitPre(DocHtmlList *s)
 {
   if (s->type()==DocHtmlList::Ordered) 
-    m_t << "<ol>\n"; 
+    m_t << "<ol" << htmlAttribsToString(s->attribs()) << ">\n"; 
   else 
-    m_t << "<ul>\n";
+    m_t << "<ul" << htmlAttribsToString(s->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlList *s) 
@@ -408,9 +426,9 @@ void HtmlDocVisitor::visitPost(DocHtmlList *s)
     m_t << "</ul>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlListItem *)
+void HtmlDocVisitor::visitPre(DocHtmlListItem *i)
 {
-  m_t << "<li>\n";
+  m_t << "<li" << htmlAttribsToString(i->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlListItem *) 
@@ -418,9 +436,9 @@ void HtmlDocVisitor::visitPost(DocHtmlListItem *)
   m_t << "</li>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlPre *)
+void HtmlDocVisitor::visitPre(DocHtmlPre *p)
 {
-  m_t << "<pre>\n";
+  m_t << "<pre" << htmlAttribsToString(p->attribs()) << ">\n";
   m_insidePre=TRUE;
 }
 
@@ -430,9 +448,9 @@ void HtmlDocVisitor::visitPost(DocHtmlPre *)
   m_t << "</pre>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlDescList *)
+void HtmlDocVisitor::visitPre(DocHtmlDescList *dl)
 {
-  m_t << "<dl>\n";
+  m_t << "<dl" << htmlAttribsToString(dl->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescList *) 
@@ -440,9 +458,9 @@ void HtmlDocVisitor::visitPost(DocHtmlDescList *)
   m_t << "</dl>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlDescTitle *)
+void HtmlDocVisitor::visitPre(DocHtmlDescTitle *dt)
 {
-  m_t << "<dt>";
+  m_t << "<dt" << htmlAttribsToString(dt->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescTitle *) 
@@ -450,9 +468,9 @@ void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
   m_t << "</dt>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlDescData *)
+void HtmlDocVisitor::visitPre(DocHtmlDescData *dd)
 {
-  m_t << "<dd>";
+  m_t << "<dd" << htmlAttribsToString(dd->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescData *) 
@@ -460,9 +478,25 @@ void HtmlDocVisitor::visitPost(DocHtmlDescData *)
   m_t << "</dd>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlTable *)
+void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 {
-  m_t << "<table border=\"1\" cellspacing=\"3\" cellpadding=\"3\">\n";
+  bool hasBorder      = FALSE;
+  bool hasCellSpacing = FALSE;
+  bool hasCellPadding = FALSE;
+
+  HtmlAttribListIterator li(t->attribs());
+  HtmlAttrib *att;
+  for (li.toFirst();(att=li.current());++li)
+  {
+    if      (att->name=="border")      hasBorder=TRUE;
+    else if (att->name=="cellspacing") hasCellSpacing=TRUE;
+    else if (att->name=="cellpadding") hasCellPadding=TRUE;
+  }
+  m_t << "<table" << htmlAttribsToString(t->attribs());
+  if (!hasBorder)      m_t << " border=\"1\"";
+  if (!hasCellSpacing) m_t << " cellspacing=\"3\"";
+  if (!hasCellPadding) m_t << " cellpadding=\"3\"";
+  m_t << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlTable *) 
@@ -470,9 +504,9 @@ void HtmlDocVisitor::visitPost(DocHtmlTable *)
   m_t << "</table>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlRow *)
+void HtmlDocVisitor::visitPre(DocHtmlRow *tr)
 {
-  m_t << "<tr>\n";
+  m_t << "<tr" << htmlAttribsToString(tr->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlRow *) 
@@ -482,7 +516,14 @@ void HtmlDocVisitor::visitPost(DocHtmlRow *)
 
 void HtmlDocVisitor::visitPre(DocHtmlCell *c)
 {
-  if (c->isHeading()) m_t << "<th>"; else m_t << "<td>";
+  if (c->isHeading()) 
+  {
+    m_t << "<th" << htmlAttribsToString(c->attribs()) << ">"; 
+  }
+  else 
+  {
+    m_t << "<td" << htmlAttribsToString(c->attribs()) << ">";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlCell *c) 
@@ -490,9 +531,18 @@ void HtmlDocVisitor::visitPost(DocHtmlCell *c)
   if (c->isHeading()) m_t << "</th>"; else m_t << "</td>";
 }
 
-void HtmlDocVisitor::visitPre(DocHtmlCaption *)
+void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 {
-  m_t << "<caption align=\"bottom\">";
+  bool hasAlign      = FALSE;
+  HtmlAttribListIterator li(c->attribs());
+  HtmlAttrib *att;
+  for (li.toFirst();(att=li.current());++li)
+  {
+    if (att->name=="align") hasAlign=TRUE;
+  }
+  m_t << "<caption" << htmlAttribsToString(c->attribs());
+  if (!hasAlign) m_t << " align=\"bottom\"";
+  m_t << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlCaption *) 
@@ -523,7 +573,8 @@ void HtmlDocVisitor::visitPost(DocHRef *)
 
 void HtmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
-  m_t << "<h" << header->level() << ">";
+  m_t << "<h" << header->level() 
+      << htmlAttribsToString(header->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlHeader *header) 
@@ -535,7 +586,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Html)
   {
-    QCString baseName=img->name();
+    QString baseName=img->name();
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
@@ -573,13 +624,13 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
-  QCString baseName=df->file();
+  QString baseName=df->file();
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QCString outDir = Config_getString("HTML_OUTPUT");
+  QString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
   m_t << "<div align=\"center\">" << endl;
   m_t << "<img src=\"" << baseName << "." 
@@ -624,8 +675,9 @@ void HtmlDocVisitor::visitPost(DocRef *)
 
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
-  QCString refName=ref->file();
-  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension)
+  QString refName=ref->file();
+  if (refName.right(Doxygen::htmlFileExtension.length())!=
+      QString(Doxygen::htmlFileExtension))
   {
     refName+=Doxygen::htmlFileExtension;
   }
@@ -752,7 +804,7 @@ void HtmlDocVisitor::filter(const char *str)
   }
 }
 
-void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void HtmlDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
 {
   QCString *dest;
   if (!ref.isEmpty()) // link to entity imported via tag file
