@@ -59,7 +59,12 @@ class DocNode
       VariableList,
       VariableListEntry,
       HRuler,
-      LineBreak
+      LineBreak,
+      ULink,
+      EMail,
+      Link,
+      ProgramListing,
+      CodeLine
     };
     DocNode(NodeKind k) : m_kind(k) {}
     virtual ~DocNode() {}
@@ -247,6 +252,67 @@ class LineBreakHandler : public DocNode, public BaseHandler<LineBreakHandler>
 
 //-----------------------------------------------------------------------------
 
+/* \brief Node representing a link to section
+ *
+ */
+class LinkHandler : public DocNode, public BaseHandler<LinkHandler>
+{
+  public:
+    LinkHandler(IBaseHandler *parent);
+    virtual ~LinkHandler();
+
+    void startLink(const QXmlAttributes& attrib);
+    void endLink();
+
+  private:
+    IBaseHandler   *m_parent;
+    QString         m_ref;
+    QString         m_text;
+};
+
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a link to an email address
+ *
+ */
+class EMailHandler : public DocNode, public BaseHandler<EMailHandler>
+{
+  public:
+    EMailHandler(IBaseHandler *parent);
+    virtual ~EMailHandler();
+
+    void startEMail(const QXmlAttributes& attrib);
+    void endEMail();
+
+  private:
+    IBaseHandler   *m_parent;
+    QString         m_address;
+};
+
+
+//-----------------------------------------------------------------------------
+
+/* \brief Node representing a link to an URL
+ *
+ */
+class ULinkHandler : public DocNode, public BaseHandler<ULinkHandler>
+{
+  public:
+    ULinkHandler(IBaseHandler *parent);
+    virtual ~ULinkHandler();
+
+    void startULink(const QXmlAttributes& attrib);
+    void endULink();
+
+  private:
+    IBaseHandler   *m_parent;
+    QString         m_url;
+    QString         m_text;
+};
+
+//-----------------------------------------------------------------------------
+
 /* \brief Node representing a horizontal ruler
  *
  */
@@ -385,15 +451,56 @@ class VariableListHandler : public DocNode, public BaseHandler<VariableListHandl
 
 //-----------------------------------------------------------------------------
 
+class CodeLineHandler : public DocNode, public BaseHandler<CodeLineHandler>
+{
+  public:
+
+    virtual void startCodeLine(const QXmlAttributes&);
+    virtual void endCodeLine();
+    virtual void startLineNumber(const QXmlAttributes&);
+    virtual void endLineNumber();
+    
+    CodeLineHandler(IBaseHandler *parent);
+    virtual ~CodeLineHandler();
+  private:
+    IBaseHandler   *m_parent;
+    int            m_lineNumber;
+    QString        m_anchor;
+    QString        m_ref;
+    QList<DocNode> m_children;
+};
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a program listing
+ *
+ */
+class ProgramListingHandler : public DocNode, public BaseHandler<ProgramListingHandler>
+{
+  public:
+    virtual void startProgramListing(const QXmlAttributes& attrib);
+    virtual void endProgramListing();
+    virtual void startCodeLine(const QXmlAttributes&);
+    virtual void startLineNumber(const QXmlAttributes&);
+
+    ProgramListingHandler(IBaseHandler *parent);
+    virtual ~ProgramListingHandler();
+  private:
+    IBaseHandler   *m_parent;
+    QList<CodeLineHandler> m_children;
+    bool m_hasLineNumber;
+};
+
+//-----------------------------------------------------------------------------
+
 /*! \brief Node representing a paragraph of text and commands.
  *
  */
 // children: itemizedlist, orderedlist, parameterlist, simplesect, ref,
-//           variablelist, hruler, linebreak,
+//           variablelist, hruler, linebreak, ulink, email, link
 // TODO:
-//           ulink, email, link
-//           table,
 //           programlisting, 
+//           table,
 //           indexentry, formula, image, dotfile
 // children handled by MarkupHandler: 
 //           bold, computeroutput, emphasis, center,
@@ -411,6 +518,10 @@ class ParagraphHandler : public DocNode, public BaseHandler<ParagraphHandler>
     virtual void startVariableList(const QXmlAttributes& attrib);
     virtual void startHRuler(const QXmlAttributes& attrib);
     virtual void startLineBreak(const QXmlAttributes& attrib);
+    virtual void startULink(const QXmlAttributes& attrib);
+    virtual void startEMail(const QXmlAttributes& attrib);
+    virtual void startLink(const QXmlAttributes& attrib);
+    virtual void startProgramListing(const QXmlAttributes& attrib);
 
     ParagraphHandler(IBaseHandler *parent);
     virtual ~ParagraphHandler();

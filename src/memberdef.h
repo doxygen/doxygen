@@ -255,8 +255,8 @@ class MemberDef : public Definition
     QCString init;            // initializer
     int initLines;            // number of lines in the initializer
     QCString decl;            // member declaration in class
-    QCString declFile;        // file where the declaration was found
-    int      declLine;        // line where the declaration was found
+    //QCString declFile;        // file where the declaration was found
+    //int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual

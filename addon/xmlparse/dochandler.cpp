@@ -373,12 +373,102 @@ void ParameterListHandler::startParameterDescription(const QXmlAttributes& attri
 }
 
 //----------------------------------------------------------------------
+// LinkHandler
+//----------------------------------------------------------------------
+
+LinkHandler::LinkHandler(IBaseHandler *parent)
+  : DocNode(Link), m_parent(parent)
+{
+  addEndHandler("link",this,&LinkHandler::endLink);
+}
+
+LinkHandler::~LinkHandler()
+{
+}
+
+void LinkHandler::startLink(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  printf("Start link\n");
+  m_ref = attrib.value("linkend");
+  m_curString="";
+}
+
+void LinkHandler::endLink()
+{
+  m_text = m_curString;
+  m_curString="";
+  m_parent->setDelegate(0);
+  printf("End link\n");
+}
+
+//----------------------------------------------------------------------
+// EMailHandler
+//----------------------------------------------------------------------
+
+EMailHandler::EMailHandler(IBaseHandler *parent)
+  : DocNode(EMail), m_parent(parent)
+{
+  addEndHandler("email",this,&EMailHandler::endEMail);
+}
+
+EMailHandler::~EMailHandler()
+{
+}
+
+void EMailHandler::startEMail(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("Start email\n");
+  m_curString="";
+}
+
+void EMailHandler::endEMail()
+{
+  m_address = m_curString;
+  m_curString="";
+  m_parent->setDelegate(0);
+  printf("End email\n");
+}
+
+//----------------------------------------------------------------------
+// ULinkHandler
+//----------------------------------------------------------------------
+
+ULinkHandler::ULinkHandler(IBaseHandler *parent)
+  : DocNode(ULink), m_parent(parent)
+{
+  addEndHandler("ulink",this,&ULinkHandler::endULink);
+}
+
+ULinkHandler::~ULinkHandler()
+{
+}
+
+void ULinkHandler::startULink(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  printf("Start ulink\n");
+  m_url = attrib.value("url");
+  m_curString="";
+}
+
+void ULinkHandler::endULink()
+{
+  m_text = m_curString;
+  m_curString="";
+  m_parent->setDelegate(0);
+  printf("End ulink\n");
+}
+
+//----------------------------------------------------------------------
 // LineBreakHandler
 //----------------------------------------------------------------------
 
 LineBreakHandler::LineBreakHandler(IBaseHandler *parent)
   : DocNode(LineBreak), m_parent(parent)
 {
+  addEndHandler("linebreak",this,&LineBreakHandler::endLineBreak);
 }
 
 LineBreakHandler::~LineBreakHandler()
@@ -388,7 +478,6 @@ LineBreakHandler::~LineBreakHandler()
 void LineBreakHandler::startLineBreak(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  addEndHandler("linebreak",this,&LineBreakHandler::endLineBreak);
   printf("Start linebreak\n");
 }
 
@@ -405,6 +494,7 @@ void LineBreakHandler::endLineBreak()
 HRulerHandler::HRulerHandler(IBaseHandler *parent)
   : DocNode(HRuler), m_parent(parent)
 {
+  addEndHandler("hruler",this,&HRulerHandler::endHRuler);
 }
 
 HRulerHandler::~HRulerHandler()
@@ -414,7 +504,6 @@ HRulerHandler::~HRulerHandler()
 void HRulerHandler::startHRuler(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  addEndHandler("hruler",this,&HRulerHandler::endHRuler);
   printf("Start hruler\n");
 }
 
@@ -431,6 +520,7 @@ void HRulerHandler::endHRuler()
 RefHandler::RefHandler(IBaseHandler *parent)
   : DocNode(Ref), m_parent(parent)
 {
+  addEndHandler("ref",this,&RefHandler::endRef);
 }
 
 RefHandler::~RefHandler()
@@ -440,7 +530,6 @@ RefHandler::~RefHandler()
 void RefHandler::startRef(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  addEndHandler("ref",this,&RefHandler::endRef);
   m_refId = attrib.value("idref");
   m_anchor = attrib.value("anchor");
   printf("Start ref refId=%s anchor=%s\n",m_refId.data(),m_anchor.data());
@@ -466,6 +555,7 @@ TitleHandler::TitleHandler(IBaseHandler *parent)
   m_markupHandler = new MarkupHandler(m_children,m_curString);
   setFallBackHandler(m_markupHandler);
   addStartHandler("ref",this,&TitleHandler::startRef);
+  addEndHandler("title",this,&TitleHandler::endTitle);
 }
 
 TitleHandler::~TitleHandler()
@@ -476,7 +566,6 @@ TitleHandler::~TitleHandler()
 void TitleHandler::startTitle(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
-  addEndHandler("title",this,&TitleHandler::endTitle);
   printf("Start title\n");
   m_curString="";
 }
@@ -515,6 +604,7 @@ SimpleSectHandler::SimpleSectHandler(IBaseHandler *parent)
 {
   addStartHandler("title",this,&SimpleSectHandler::startTitle);
   addStartHandler("para",this,&SimpleSectHandler::startParagraph);
+  addEndHandler("simplesect",this,&SimpleSectHandler::endSimpleSect);
 }
 
 SimpleSectHandler::~SimpleSectHandler()
@@ -524,7 +614,6 @@ SimpleSectHandler::~SimpleSectHandler()
 void SimpleSectHandler::startSimpleSect(const QXmlAttributes& attrib)
 {
   m_type = g_typeMapper.stringToType(attrib.value("kind"));
-  addEndHandler("simplesect",this,&SimpleSectHandler::endSimpleSect);
   printf("start simple section %s\n",attrib.value("kind").data());
   m_parent->setDelegate(this);
 }
@@ -559,6 +648,8 @@ VariableListEntryHandler::VariableListEntryHandler(IBaseHandler *parent)
   addStartHandler("term",this,&VariableListEntryHandler::startTerm);
   addEndHandler("term",this,&VariableListEntryHandler::endTerm);
   addStartHandler("para",this,&VariableListEntryHandler::startParagraph);
+  addEndHandler("varlistentry",this,&VariableListEntryHandler::endVarListEntry);
+  addEndHandler("listitem",this,&VariableListEntryHandler::endListItem);
 }
 
 VariableListEntryHandler::~VariableListEntryHandler()
@@ -570,7 +661,6 @@ void VariableListEntryHandler::startVarListEntry(const QXmlAttributes& /*attrib*
 {
   m_parent->setDelegate(this);
   printf("start varlistentry\n");
-  addEndHandler("varlistentry",this,&VariableListEntryHandler::endVarListEntry);
 }
 
 void VariableListEntryHandler::endVarListEntry()
@@ -583,7 +673,6 @@ void VariableListEntryHandler::startListItem(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
   printf("start listitem\n");
-  addEndHandler("listitem",this,&VariableListEntryHandler::endListItem);
 }
 
 void VariableListEntryHandler::endListItem()
@@ -622,6 +711,7 @@ VariableListHandler::VariableListHandler(IBaseHandler *parent)
   m_entries.setAutoDelete(TRUE);
   addStartHandler("varlistentry",this,&VariableListHandler::startVarListEntry);
   addStartHandler("listitem",this,&VariableListHandler::startListItem);
+  addEndHandler("variablelist",this,&VariableListHandler::endVariableList);
 }
 
 VariableListHandler::~VariableListHandler()
@@ -632,7 +722,6 @@ void VariableListHandler::startVariableList(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
   printf("start variablelist\n");
-  addEndHandler("variablelist",this,&VariableListHandler::endVariableList);
 }
 
 void VariableListHandler::endVariableList()
@@ -653,6 +742,101 @@ void VariableListHandler::startListItem(const QXmlAttributes& attrib)
 {
   ASSERT(m_curEntry!=0);
   m_curEntry->startListItem(attrib);
+}
+
+//----------------------------------------------------------------------
+// CodeLineHandler
+//----------------------------------------------------------------------
+
+CodeLineHandler::CodeLineHandler(IBaseHandler *parent)
+  : DocNode(CodeLine), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("codeline",this,&CodeLineHandler::endCodeLine);
+  addEndHandler("linenumber",this,&CodeLineHandler::endLineNumber);
+}
+
+CodeLineHandler::~CodeLineHandler()
+{
+}
+
+void CodeLineHandler::startCodeLine(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start codeline\n");
+}
+
+void CodeLineHandler::endCodeLine()
+{
+  printf("end codeline\n");
+  m_parent->setDelegate(0);
+}
+
+void CodeLineHandler::startLineNumber(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start linenumber\n");
+}
+
+void CodeLineHandler::endLineNumber()
+{
+  printf("end linenumber\n");
+  m_parent->setDelegate(0);
+}
+//----------------------------------------------------------------------
+// ProgramListingHandler
+//----------------------------------------------------------------------
+
+ProgramListingHandler::ProgramListingHandler(IBaseHandler *parent)
+  : DocNode(ProgramListing), m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  m_hasLineNumber=FALSE;
+  addEndHandler("programlisting",this,&ProgramListingHandler::endProgramListing);
+
+  addStartHandler("linenumber",this,&ProgramListingHandler::startLineNumber);
+  addStartHandler("codeline",this,&ProgramListingHandler::startCodeLine);
+}
+
+ProgramListingHandler::~ProgramListingHandler()
+{
+}
+
+void ProgramListingHandler::startProgramListing(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+  printf("start programlisting\n");
+}
+
+void ProgramListingHandler::endProgramListing()
+{
+  printf("end programlisting\n");
+  m_parent->setDelegate(0);
+}
+
+void ProgramListingHandler::startLineNumber(const QXmlAttributes& attrib)
+{
+  CodeLineHandler *clh = new CodeLineHandler(this);
+  m_children.append(clh);
+  m_hasLineNumber=TRUE;
+  clh->startLineNumber(attrib);
+}
+  
+void ProgramListingHandler::startCodeLine(const QXmlAttributes& attrib)
+{
+  CodeLineHandler *clh = 0;
+  if (!m_hasLineNumber) 
+  {
+    clh = new CodeLineHandler(this);
+    m_children.append(clh);
+  }
+  else
+  {
+    clh = m_children.getLast();
+  }
+  ASSERT(clh!=0);
+  clh->startCodeLine(attrib);
+  m_hasLineNumber=FALSE; 
 }
 
 //----------------------------------------------------------------------
@@ -677,6 +861,10 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("variablelist",this,&ParagraphHandler::startVariableList);
   addStartHandler("hruler",this,&ParagraphHandler::startHRuler);
   addStartHandler("linebreak",this,&ParagraphHandler::startLineBreak);
+  addStartHandler("ulink",this,&ParagraphHandler::startULink);
+  addStartHandler("email",this,&ParagraphHandler::startEMail);
+  addStartHandler("link",this,&ParagraphHandler::startLink);
+  addStartHandler("programlisting",this,&ParagraphHandler::startProgramListing);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -755,6 +943,34 @@ void ParagraphHandler::startLineBreak(const QXmlAttributes& attrib)
   LineBreakHandler *lb = new LineBreakHandler(this);
   lb->startLineBreak(attrib);
   m_children.append(lb);
+}
+
+void ParagraphHandler::startULink(const QXmlAttributes& attrib)
+{
+  ULinkHandler *uh = new ULinkHandler(this);
+  uh->startULink(attrib);
+  m_children.append(uh);
+}
+
+void ParagraphHandler::startEMail(const QXmlAttributes& attrib)
+{
+  EMailHandler *eh = new EMailHandler(this);
+  eh->startEMail(attrib);
+  m_children.append(eh);
+}
+
+void ParagraphHandler::startLink(const QXmlAttributes& attrib)
+{
+  LinkHandler *lh = new LinkHandler(this);
+  lh->startLink(attrib);
+  m_children.append(lh);
+}
+
+void ParagraphHandler::startProgramListing(const QXmlAttributes& attrib)
+{
+  ProgramListingHandler *pl = new ProgramListingHandler(this);
+  pl->startProgramListing(attrib);
+  m_children.append(pl);
 }
 
 void ParagraphHandler::addTextNode()

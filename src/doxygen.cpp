@@ -937,7 +937,7 @@ static void buildClassList(Entry *root)
 
         // add class to the list
         //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-        Doxygen::classSDict.inSort(fullName,cd);
+        Doxygen::classSDict.append(fullName,cd);
 
         // also add class to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
@@ -2543,7 +2543,7 @@ static void findUsedClassesForClass(Entry *root,
                      masterCd->getDefFileName(),masterCd->getDefLine(),
                      usedName,ClassDef::Class);
                   //usedCd->setIsTemplateBaseClass(count);
-                  Doxygen::hiddenClasses.inSort(usedName,usedCd);
+                  Doxygen::hiddenClasses.append(usedName,usedCd);
                 }
                 if (isArtificial) usedCd->setClassIsArtificial();
                 instanceCd->addUsedClass(usedCd,md->name());
@@ -2600,7 +2600,7 @@ static void findUsedClassesForClass(Entry *root,
              usedCd = new ClassDef(
                masterCd->getDefFileName(),masterCd->getDefLine(),
                type,ClassDef::Class);
-             Doxygen::hiddenClasses.inSort(type,usedCd);
+             Doxygen::hiddenClasses.append(type,usedCd);
           }
           if (isArtificial) usedCd->setClassIsArtificial();
           instanceCd->addUsedClass(usedCd,md->name()); 
@@ -2700,7 +2700,7 @@ static bool findTemplateInstanceRelation(Entry *root,
 
   if (freshInstance)
   {
-    Doxygen::classSDict.inSort(instanceClass->name(),instanceClass);
+    Doxygen::classSDict.append(instanceClass->name(),instanceClass);
     instanceClass->setTemplateBaseClassNames(templateNames);
 
     // search for new template instances caused by base classes of 
@@ -2967,7 +2967,7 @@ static bool findClassRelation(
             {
               baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
-              Doxygen::hiddenClasses.inSort(baseClassName,baseClass);
+              Doxygen::hiddenClasses.append(baseClassName,baseClass);
               if (isArtificial) baseClass->setClassIsArtificial();
             }
           }
@@ -2975,7 +2975,7 @@ static bool findClassRelation(
           {
             baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
-            Doxygen::classSDict.inSort(baseClassName,baseClass);
+            Doxygen::classSDict.append(baseClassName,baseClass);
             if (isArtificial) baseClass->setClassIsArtificial();
           }
           // add base class to this class
@@ -4413,14 +4413,14 @@ static void findMember(Entry *root,
           !findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
       {
         warn(root->fileName,root->startLine,
-             "Warning: class for member %s cannot "
+             "Warning: class for member `%s' cannot "
              "be found.", funcName.data()
             ); 
       }
       else if (!className.isEmpty())
       {
         warn(root->fileName,root->startLine,
-             "Warning: member %s of class %s cannot be found",
+             "Warning: member `%s' of class `%s' cannot be found",
              funcName.data(),className.data());
       }
     }
@@ -7130,9 +7130,11 @@ void parseInput()
   msg("Search for main page...\n");
   findMainPage(root);
 
-  msg("Sorting member lists...\n");
+  msg("Sorting lists...\n");
   Doxygen::memberNameList.sort();
   Doxygen::functionNameList.sort();
+  Doxygen::hiddenClasses.sort();
+  Doxygen::classSDict.sort();
   
   msg("Freeing entry tree\n");
   delete root;

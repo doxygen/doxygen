@@ -2342,21 +2342,12 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
 QCString ClassDef::className() const
 {
-  if (!m_className.isEmpty())
+  QCString className=m_localName;
+  Definition *p=getOuterScope();
+  while (p && p->definitionType()==TypeClass)
   {
-    return m_className;
+    className.prepend(p->localName()+"::");
+    p=p->getOuterScope();
   }
-  else
-  {
-    ClassDef *that = (ClassDef *)this; 
-    // m_className is a cache value, so we fake that this function is "const".
-    that->m_className=m_localName.copy();
-    Definition *p=getOuterScope();
-    while (p && p->definitionType()==TypeClass)
-    {
-      that->m_className.prepend(p->localName()+"::");
-      p=p->getOuterScope();
-    }
-    return m_className;
-  }
+  return className;
 };

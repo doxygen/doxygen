@@ -401,8 +401,6 @@ class ClassDef : public Definition
     /*! Is this an abstact class? */
     bool m_isAbstract;
 
-    QCString m_className;
-
     /*! Is the class part of an unnamed namespace? */
     bool m_isStatic;
 };

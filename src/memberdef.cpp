@@ -288,7 +288,7 @@ MemberDef::MemberDef(const char *df,int dl,
   args=a;
   args=removeRedundantWhiteSpace(args);
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
-  declLine=0;
+  //declLine=0;
   memberGroup=0;
   virt=v;
   prot=p;

@@ -240,6 +240,7 @@ static void endCodeLine()
  */
 static void codifyLines(char *text)
 {
+  //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
   char *p=text,*sp=p;
   char c;
   bool done=FALSE;
