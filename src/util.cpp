@@ -1275,6 +1275,8 @@ void stripIrrelevantConstVolatile(QCString &s)
   int i;
   if (s=="const")    { s.resize(0); return; }
   if (s=="volatile") { s.resize(0); return; }
+
+  // strip occurrences of const
   i = s.find("const ");
   if (i!=-1) 
   {
@@ -1284,6 +1286,8 @@ void stripIrrelevantConstVolatile(QCString &s)
       s=s.left(i)+s.right(s.length()-i-6); 
     }
   }
+
+  // strip occurrences of volatile
   i = s.find("volatile ");
   if (i!=-1) 
   {
@@ -1295,22 +1299,6 @@ void stripIrrelevantConstVolatile(QCString &s)
   }
 }
 
-#if 0 // should be done differently
-static QCString resolveTypeDefs(const QCString &s)
-{
-  QCString result;
-  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
-  int p=0,l,i;
-  while ((i=re.match(s,p,&l))!=-1)
-  {
-    result += s.mid(p,i-p);
-    result += resolveTypeDef(s.mid(i,l));
-    p=i+l;
-  }
-  result+=s.right(s.length()-p);
-  return result;
-}
-#endif
 
 // a bit of debug support for matchArguments
 #define MATCH
@@ -1485,6 +1473,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         // otherwise we assume that a name starts at the current position.
         while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
         while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
+
         // if nothing more follows for both types then we assume we have
         // found a match. Note that now `signed int' and `signed' match, but
         // seeing that int is not a name can only be done by looking at the
@@ -3108,8 +3097,7 @@ const char *getOverloadDocs()
          "function only in what argument(s) it accepts.";
 }
       
-void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
-                             MemberGroupList *memberGroupList)
+void addMembersToMemberGroup(MemberList *ml,MemberGroupSDict *memberGroupSDict)
 {
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -3123,12 +3111,11 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
       QCString *pDocs      = Doxygen::memberDocDict[groupId];
       if (pGrpHeader)
       {
-        MemberGroup *mg = memberGroupDict->find(groupId);
+        MemberGroup *mg = memberGroupSDict->find(groupId);
         if (mg==0)
         {
           mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-          memberGroupDict->insert(groupId,mg);
-          memberGroupList->append(mg);
+          memberGroupSDict->append(groupId,mg);
         }
         md = ml->take(index);
         mg->insertMember(md);

@@ -4,6 +4,8 @@
 #include <qlist.h>
 #include <qstring.h>
 
+class IMember;
+
 class IParam
 {
   public:
@@ -13,6 +15,14 @@ class IParam
     virtual QString attrib() const = 0;
     virtual QString arraySpecifier() const = 0;
     virtual QString defaultValue() const = 0;
+};
+
+class IMemberReference
+{
+  public:
+    virtual IMember *getMember() const = 0;
+    virtual QString getMemberName() const = 0;
+    virtual int getLineNumber() const = 0;
 };
 
 class IMember

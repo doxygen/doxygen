@@ -17,6 +17,11 @@
 
 // includes
 
+#ifdef _WIN32
+#include <windows.h> // for AllocConsole
+#endif
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -805,7 +810,11 @@ void getConfig(const char *s)
   int l;
   char configFile[MAXSTRLEN];
   strcpy(configFile,s);
+#if defined(_WIN32)
+  strcat(configFile,"\\search.cfg");
+#else
   strcat(configFile,"/search.cfg");
+#endif
 
   FILE *f;
   if ((f=fopen(configFile,"r"))==NULL)
@@ -860,6 +869,10 @@ void strlowercpy(char *d,const char *s)
 
 int main(int argc,char **argv)
 {
+#ifdef _WIN32
+  AllocConsole();
+#endif
+  
 #ifdef PROFILING
   struct timeval tv_start,tv_end;
   gettimeofday(&tv_start,0);

@@ -84,9 +84,8 @@ ClassDef::ClassDef(
   m_fileDef=0;
   m_usesImplClassDict=0;
   m_usesIntfClassDict=0;
-  m_memberGroupList = new MemberGroupList;
-  m_memberGroupList->setAutoDelete(TRUE);
-  m_memberGroupDict = new MemberGroupDict(17);
+  memberGroupSDict = new MemberGroupSDict;
+  memberGroupSDict->setAutoDelete(TRUE);
   m_innerClasses = new ClassSDict(17);
   //int i=name().findRev("::"); // TODO: broken if A<N::C> is the class name
   //if (i==-1)
@@ -117,8 +116,7 @@ ClassDef::~ClassDef()
   delete m_usesImplClassDict;
   delete m_usesIntfClassDict;
   delete m_incInfo;
-  delete m_memberGroupList;
-  delete m_memberGroupDict;
+  delete memberGroupSDict;
   delete m_innerClasses;
   delete m_templateInstances;
   delete m_templBaseClassNames;
@@ -157,29 +155,29 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
 
 void ClassDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&pubTypes,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&pubMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&pubAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&pubSlots,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&signals,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&dcopMethods,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&pubStaticMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&pubStaticAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proTypes,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proSlots,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proStaticMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&proStaticAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priTypes,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priSlots,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priStaticMembers,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&priStaticAttribs,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&friends,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&related,m_memberGroupDict,m_memberGroupList);
-  ::addMembersToMemberGroup(&properties,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubTypes,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubSlots,memberGroupSDict);
+  ::addMembersToMemberGroup(&signals,memberGroupSDict);
+  ::addMembersToMemberGroup(&dcopMethods,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&proTypes,memberGroupSDict);
+  ::addMembersToMemberGroup(&proMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&proAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&proSlots,memberGroupSDict);
+  ::addMembersToMemberGroup(&proStaticMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&proStaticAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&priTypes,memberGroupSDict);
+  ::addMembersToMemberGroup(&priMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&priAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&priSlots,memberGroupSDict);
+  ::addMembersToMemberGroup(&priStaticMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&priStaticAttribs,memberGroupSDict);
+  ::addMembersToMemberGroup(&friends,memberGroupSDict);
+  ::addMembersToMemberGroup(&related,memberGroupSDict);
+  ::addMembersToMemberGroup(&properties,memberGroupSDict);
 }
 
 // adds new member definition to the class
@@ -527,7 +525,7 @@ void ClassDef::computeAnchors()
 
 void ClassDef::distributeMemberGroupDocumentation()
 {
-  MemberGroupListIterator mgli(*m_memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -737,8 +735,17 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (!nm.isEmpty())
     {
       ol.startTypewriter();
-      ol.docify("#include ");
-      if (m_incInfo->local)
+      bool isIDLorJava = nm.right(4)==".idl" || 
+                         nm.right(5)==".java";
+      if (isIDLorJava)
+      {
+        ol.docify("import ");
+      }
+      else
+      {
+        ol.docify("#include ");
+      }
+      if (m_incInfo->local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify("<");
@@ -756,10 +763,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      if (m_incInfo->local)
+      if (m_incInfo->local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify(">");
+      if (isIDLorJava) 
+        ol.docify(";");
       ol.endTypewriter();
       ol.newParagraph();
     }
@@ -973,7 +982,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.startMemberSections();
 
   // write user defined member groups
-  MemberGroupListIterator mgli(*m_memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -1485,7 +1494,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   ol.endMemberItem(FALSE); 
 
   // write user defined member groups
-  MemberGroupListIterator mgli(*m_memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -2361,7 +2370,7 @@ void ClassDef::addListReferences()
              theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),name()
             );
-  MemberGroupListIterator mgli(*m_memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {

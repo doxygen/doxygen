@@ -11,13 +11,17 @@
  * input used in their production; they are not affected by this license.
  *
  * Brazilian Portuguese version by
- *   Fabio "FJTC" Jun Takada Chino <chino@grad.icmc.sc.usp.br>
- *   Version: 1.2.8.2 (2001/07/24)
+ *   Fabio "FJTC" Jun Takada Chino <chino@icmc.sc.usp.br>
+ *      http://www.icmc.sc.usp.br/~chino
+ *   Version: 1.2.11 (2001/11/23)
+ *
+ * News:
+ *   - Everything was revised.
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_2_11
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -61,7 +65,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return "(Note que estes não são funções membros.)"; }
+    { return "(Note que estas não são funções membros.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
@@ -102,15 +106,15 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return "Lista de Membros"; }
+    { return "Lista dos Membros"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return "Esta é a lista completa dos membros da "; }
+    { return "Esta é a lista de todos os membros da "; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return ", incluindo todos os membros herdados."; }
+    { return ", incluindo os membros herdados."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -118,7 +122,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Gerado automaticamente por Doxygen";
       if (s) result+=(QCString)" para "+s;
-      result+=" a partir do código-fonte.";
+      result+=" a partir de seu código-fonte.";
       return result;
     }
 
@@ -207,7 +211,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Esta lista de hierarquia é parcialmente ordenada em ordem alfabética:"; }
+    { return "Esta lista de hierarquia está parcialmente ordenada em ordem alfabética:"; }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
@@ -235,7 +239,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Aqui está a lista de todos os membros de classes ";
+      QCString result="Esta é lista de todos os membros das classes ";
       if (!extractAll) result+="documentados ";
       result+="com links para ";
       if (extractAll)
@@ -248,7 +252,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Aqui esta a lista de ";
+      QCString result="Esta é a lista de ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="tadas as funções, variáveis, definições, enumerações e definições de tipos ";
@@ -271,25 +275,25 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! This is an introduction to the page with the list of all header files. */
     virtual QCString trHeaderFilesDescription()
-    { return "Aqui estão os arquivos de cabeçalho que compõe a API:"; }
+    { return "Estes são os arquivos de cabeçalho que compõe a API:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return "Aqui está a lista de todos os exemplos:"; }
+    { return "Esta é a lista de todos os exemplos:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return "Aqui está a lista de toda a documentação relacionadas:"; }
+    { return "Esta é a lista de toda a documentação relacionadas:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "Aqui está a lista de todos os médulos:"; }
+    { return "Esta é a lista de todos os médulos:"; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given.
      */
     virtual QCString trNoDescriptionAvailable()
-    { return "Sem descriçãodisponível"; }
+    { return "Sem descrição disponível"; }
 
     // index titles (the project name is prepended for these)
 
@@ -302,7 +306,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "Índice de Módulos"; }
+    { return "Índice dos Módulos"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
@@ -363,7 +367,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Manual de Referência"; }
+    { return "Guia de Referência"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
@@ -417,13 +421,13 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return "Protótipos de funções"; }
+    { return "Protótipos das funções"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "Definições de tipos"; }
+    { return "Definições dos tipos"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
@@ -552,7 +556,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "Amigos"; }
+    { return "Amigas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -562,7 +566,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "Amigos e Funções Relacionadas"; }
+    { return "Amigas e Funções Relacionadas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -777,7 +781,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     virtual QCString trSources()
     {
-      return "Fontes";
+      return "Códigos-Fonte";
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
@@ -794,8 +798,9 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     virtual QCString trDeprecated()
     {
-      /* This note is for brazilians.
-       Esta é uma boa tradução para "deprecated"?
+      /*
+      * This note is for brazilians only.
+      * Esta é uma boa tradução para "deprecated"?
       */
       return "Descontinuada";
     }
@@ -935,7 +940,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return "Lista de tarefas futuras";
+      return "Lista de Tarefas Futuras";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1049,7 +1054,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return "Lista de Teste";
+      return "Lista de Testes";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1150,8 +1155,7 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_11
 
     /*! Used as ansicpg for RTF file
      *
-     * The following table shows the correlation of Charset name, Charset Value
-and
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1297,6 +1301,17 @@ and
       QCString result((first_capital ? "Autor" : "autor"));
       if (!singular)  result+="es";
       return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Referências";
     }
 };
 #endif

@@ -427,13 +427,13 @@ QCString MemberDef::getOutputFileBase() const
   {
     return classDef->getOutputFileBase();
   }
-  else if (fileDef)
-  {
-    return fileDef->getOutputFileBase();
-  }
   else if (nspace)
   {
     return nspace->getOutputFileBase();
+  }
+  else if (fileDef)
+  {
+    return fileDef->getOutputFileBase();
   }
   warn(m_defFileName,m_defLine,
        "Warning: Internal inconsistency: member %s does not belong to any"

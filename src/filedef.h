@@ -37,8 +37,7 @@ class OutputList;
 class NamespaceDef;
 class NamespaceList;
 class NamespaceDict;
-class MemberGroupList;
-class MemberGroupDict;
+class MemberGroupSDict;
 class PackageDef;
 
 struct IncludeInfo
@@ -169,6 +168,9 @@ class FileDef : public Definition
     MemberList docFuncMembers;
     MemberList docVarMembers;
 
+    /* user defined member groups */
+    MemberGroupSDict *memberGroupSDict;
+
   private: 
     
     ClassSDict *classSDict;
@@ -191,9 +193,6 @@ class FileDef : public Definition
     QIntDict<MemberDef> *srcMemberDict;
     bool isSource;
 
-    /* user defined member groups */
-    MemberGroupList *memberGroupList;
-    MemberGroupDict *memberGroupDict;
 
     PackageDef *package;
 };

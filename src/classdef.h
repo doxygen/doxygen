@@ -39,8 +39,7 @@ class MemberDef;
 class ExampleSDict;
 class MemberNameInfoSDict;
 class UsesClassDict;
-class MemberGroupList;
-class MemberGroupDict;
+class MemberGroupSDict;
 class QTextStream;
 class PackageDef;
 class GroupDef;
@@ -235,6 +234,9 @@ class ClassDef : public Definition
     MemberList variableMembers;
     MemberList propertyMembers;
 
+    /* user defined member groups */
+    MemberGroupSDict *memberGroupSDict;
+
     /*! \} Public API */
 
     /*! \name Doxygen internal API
@@ -377,9 +379,6 @@ class ClassDef : public Definition
      */
     ClassSDict *m_innerClasses;
 
-    /* user defined member groups */
-    MemberGroupList *m_memberGroupList;
-    MemberGroupDict *m_memberGroupDict;
 
     /* classes for the collaboration diagram */
     UsesClassDict *m_usesImplClassDict;

@@ -151,6 +151,7 @@ class DotInclDepGraph
                     bool writeImageMap=TRUE);
     bool isTrivial() const;
     QCString diskName() const;
+    void writeXML(QTextStream &t);
 
   private:
     void buildGraph(DotNode *n,FileDef *fd,int distance);

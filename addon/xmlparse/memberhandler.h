@@ -25,6 +25,7 @@
 #include "doxmlintf.h"
 
 class DocHandler;
+class MainHandler;
 
 class MemberHandler : public IMember, public BaseHandler<MemberHandler>
 {
@@ -54,12 +55,21 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual QString name() const { return m_name; }
     virtual QListIterator<IParam> getParamIterator() const { return m_params; }
 
+    void initialize(MainHandler *m);
+
   private:
-    struct MemberReference
+    struct MemberReference : public IMemberReference
     {
-      QString m_memId;
-      QString m_name;
-      int line;
+      virtual ~MemberReference() {}
+      virtual IMember *getMember() const;
+      virtual QString getMemberName() const { return m_name; }
+      virtual int getLineNumber() const { return m_line; }
+      void initialize(MainHandler *m);
+
+      QString  m_memId;
+      QString  m_name;
+      int      m_line;
+      MainHandler *m_mainHandler;
     };
     
     IBaseHandler *m_parent;

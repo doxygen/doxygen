@@ -85,7 +85,9 @@ static int yyread(char *buf,int max_size)
 [1-9][0-9]*[uUlL]*                 { g_strToken=yytext; 
   				     return TOK_DECIMALINT; 
 				   }
-(0x|0X)[0-9a-fA-F]+[uUlL]*         { g_strToken=yytext; return TOK_HEXADECIMALINT; }
+(0x|0X)[0-9a-fA-F]+[uUlL]*         { g_strToken=yytext+2; 
+                                     return TOK_HEXADECIMALINT; 
+                                   }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
                                      g_strToken=yytext; return TOK_FLOAT; 
                                    }
@@ -106,7 +108,7 @@ bool parseCppExpression(const char *fileName,int lineNr,const QCString &s)
   g_inputPosition = 0;
   cppExpYYrestart( cppExpYYin );
   cppExpYYparse();
-  //printf("Result: %ld\n",(long)resultValue);
+  //printf("Result: %ld\n",(long)g_resultValue);
   return (long)g_resultValue!=0;
 }
 

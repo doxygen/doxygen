@@ -1520,6 +1520,16 @@ bool DotInclDepGraph::isTrivial() const
   return m_startNode->m_children==0;
 }
 
+void DotInclDepGraph::writeXML(QTextStream &t)
+{
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *node;
+  for (;(node=dni.current());++dni)
+  {
+    node->writeXML(t);
+  }
+}
+
 //-------------------------------------------------------------
 
 void generateGraphLegend(const char *path)
