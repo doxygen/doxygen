@@ -380,11 +380,10 @@ MemberDef::~MemberDef()
 
 void MemberDef::setReimplements(MemberDef *md)   
 { 
-  //if (m_templateMaster) 
-  //{
-  // m_templateMaster->setReimplements(md);
-  //}
-  redefines=md; 
+  //if (redefines==0) redefines = new MemberList;
+  //if (redefines->find(md)==-1) redefines->inSort(md);
+
+  redefines = md;
 }
 
 void MemberDef::insertReimplementedBy(MemberDef *md)
@@ -394,10 +393,13 @@ void MemberDef::insertReimplementedBy(MemberDef *md)
     m_templateMaster->insertReimplementedBy(md);
   }
   if (redefinedBy==0) redefinedBy = new MemberList;
-  if (redefinedBy->find(md)==-1) redefinedBy->inSort(md);
+  if (redefinedBy->findRef(md)==-1) 
+  {
+    redefinedBy->inSort(md);
+  }
 }
 
-MemberDef  *MemberDef::reimplements() const      
+MemberDef *MemberDef::reimplements() const      
 { 
   return redefines; 
 }
@@ -1315,7 +1317,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
 
     MemberDef *bmd=reimplements();
-    ClassDef  *bcd=0; 
+    ClassDef *bcd=0;
     if (bmd && (bcd=bmd->getClassDef()))
     {
       // write class that contains a member that is reimplemented by this one
@@ -1342,7 +1344,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             if (bd==0) bd=bcd;
             ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            
+
             //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
             //    bmd->anchor(),bcd->name());
             if ( bd->isLinkableInProject() ) 
@@ -1374,6 +1376,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
       //ol.writeString(".");
     }
+
     MemberList *bml=reimplementedBy();
     if (bml)
     {

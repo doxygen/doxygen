@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.14-20020224), 25 languages 
+Currently (version 1.2.14-20020310), 25 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -162,7 +162,7 @@ when the translator was updated.
       <TD>Romanian</TD>  
       <TD>Alexandru Iosup</TD>
       <TD>aiosup@NOSPAM.yahoo.com</TD>
-      <TD>1.2.1</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Russian</TD>  
@@ -251,7 +251,7 @@ when the translator was updated.
   \hline
   Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & up-to-date \\
   \hline
-  Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.1 \\
+  Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & up-to-date \\
   \hline
   Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
   \hline

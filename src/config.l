@@ -1900,6 +1900,23 @@ void Config::create()
   cs->setDefaultValue("latex");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_LATEX");
+  cs = addString(
+                    "LATEX_CMD_NAME",
+                    "The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be "
+                    "invoked. If left blank `latex' will be used as the default command name. \n"
+                   );
+  cs->setDefaultValue("latex");
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_LATEX");
+  cs = addString(
+                    "MAKEINDEX_CMD_NAME",
+                    "The MAKEINDEX_CMD_NAME tag can be used to specify the command name to \n"
+		    "generate index for LaTeX. If left blank `makeindex' will be used as the \n"
+		    "default command name. \n"
+                   );
+  cs->setDefaultValue("makeindex");
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_LATEX");
   cb = addBool(
                     "COMPACT_LATEX",
                     "If the COMPACT_LATEX tag is set to YES Doxygen generates more compact \n"

@@ -760,7 +760,7 @@ class TranslatorCroatian : public Translator
         "\\endcode\n"
         "Ako je \\c MAX_DOT_GRAPH_HEIGHT tag u konfiguracijskoj datoteci "
         "postavljen na  200 gornje veze æe rezultirati grafikonom:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Pravokutnici imaju slijedeæe znaèenje:\n"
         "<ul>\n"

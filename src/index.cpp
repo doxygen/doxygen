@@ -351,6 +351,21 @@ void endFile(OutputList &ol,bool external)
 
 //----------------------------------------------------------------------------
 
+static bool classHasVisibleChildren(ClassDef *cd)
+{
+  if (cd->subClasses()->count()==0) return FALSE;
+  BaseClassList *bcl=cd->subClasses();
+  BaseClassListIterator bcli(*bcl);
+  for ( ; bcli.current() ; ++bcli)
+  {
+    if (bcli.current()->classDef->isVisibleInHierarchy())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 {
   HtmlHelp *htmlHelp=0;
@@ -381,7 +396,8 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
         started=TRUE;
       }
       //printf("Passed...\n");
-      bool hasChildren = !cd->visited && !hideSuper && cd->subClasses()->count()>0;
+      bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
+      //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
         //printf("Writing class %s\n",cd->displayName().data());
@@ -454,7 +470,8 @@ void writeClassTree(BaseClassList *cl,int level)
   for ( ; cli.current() ; ++cli)
   {
     ClassDef *cd=cli.current()->classDef;
-    if (cd->isVisibleInHierarchy() && !cd->visited)
+    if (cd->isVisibleInHierarchy() && hasVisibleRoot(cd->baseClasses()))
+    //if (cd->isVisibleInHierarchy() && !cd->visited)
     {
       if (!started)
       {
@@ -462,7 +479,8 @@ void writeClassTree(BaseClassList *cl,int level)
         if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
       }
-      bool hasChildren = cd->subClasses()->count()>0;
+      bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
+      //printf("tree2: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
         if (hasHtmlHelp)
@@ -499,7 +517,8 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
       {
         started=TRUE;
       }
-      bool hasChildren = cd->subClasses()->count()>0;
+      bool hasChildren = classHasVisibleChildren(cd);
+      //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
         if (hasHtmlHelp)
@@ -583,7 +602,8 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
           if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
         }
-        bool hasChildren = !cd->visited && cd->subClasses()->count()>0; 
+        bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
+        //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
         if (cd->isLinkable())
         {
           //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->templateMaster()=%p\n",
@@ -2412,7 +2432,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       }
 
       // write classes
-      if(gd->classSDict->count()>0)
+      if (gd->classSDict->count()>0)
       {
         if(htmlHelp)
         {
@@ -2616,19 +2636,11 @@ void writeGroupIndex(OutputList &ol)
   writeGroupHierarchy(ol);
   if (hasHtmlHelp)
   {
-    //writeGroupTree(ol);   // KPW - modified to write hierarchial HMTL Help
-    //if(!Config::instance()->get(""))
-    //{
-        htmlHelp->decContentsDepth();
-    //}
+    htmlHelp->decContentsDepth();
   }
   if (hasFtvHelp)
   {
-    //writeGroupTree(ol);   // KPW - modified to write hierarchial FTV Help
-    //if(!Config::instance()->get(""))
-    //{
-        ftvHelp->decContentsDepth();
-    //}
+    ftvHelp->decContentsDepth();
   }
   endFile(ol);
   ol.popGeneratorState();

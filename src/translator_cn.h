@@ -951,7 +951,7 @@ class TranslatorChinese : public TranslatorAdapter_1_2_13
         "\\endcode\n"
         "如果在配置文件中指定了"CN_SPC"MAX_DOT_GRAPH_HEIGHT"CN_SPC"的值为200，"
         "则Doxygen将生成如下的图形："
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "以上图形中的矩形有如下的含义：\n"
         "<ul>\n"

@@ -164,7 +164,7 @@ class MemberDef : public Definition
     // relation to other members
     void setReimplements(MemberDef *md);
     void insertReimplementedBy(MemberDef *md);
-    MemberDef  *reimplements() const;
+    MemberDef *reimplements() const;
     MemberList *reimplementedBy() const;
     
     // enumeration specific members
@@ -249,9 +249,9 @@ class MemberDef : public Definition
   private:
     ClassDef   *classDef;     // member of or related to 
     FileDef    *fileDef;      // member of file definition 
-    MemberDef  *redefines;    // the member that is redefined by this one
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field
     MemberDef  *annEnumType;  // the annonymous enum that is the type of this member
+    MemberDef  *redefines;    // the members that this member redefines 
     MemberList *redefinedBy;  // the list of members that redefine this one
     MemberDef  *memDef;       // member definition for this declaration
     MemberDef  *memDec;       // member declaration for this definition

@@ -947,7 +947,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
         "\\endcode\n"
         "Si la etiqueta \\c MAX_DOT_GRAPH_HEIGHT en el archivo de configuración "
         "tiene valor 200 resultará en el siguiente gráfico:"
-	"<p><center><img src=\"graph_legend.png\"></center>\n"
+	"<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Las cajas en el gráfico arriba tienen el significado que sigue:\n"
         "<ul>\n"

@@ -147,6 +147,10 @@ void LatexGenerator::init()
     err("Could not open file %s for writing\n",fileName.data());
     exit(1);
   }
+  // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
+  QCString latex_command = Config_getString("LATEX_CMD_NAME");
+  QCString mkidx_command = Config_getString("MAKEINDEX_CMD_NAME");
+  // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QTextStream t(&file);
   t << "all: refman.dvi" << endl
     << endl
@@ -194,16 +198,16 @@ void LatexGenerator::init()
     << endl
     << "refman.dvi: refman.tex doxygen.sty" << endl
     << "\techo \"Running latex...\"" << endl
-    << "\tlatex refman.tex" << endl
+    << "\t" << latex_command << " refman.tex" << endl
     << "\techo \"Running makeindex...\"" << endl
-    << "\tmakeindex refman.idx" << endl
+    << "\t" << mkidx_command << " refman.idx" << endl
     << "\techo \"Rerunning latex....\"" << endl
-    << "\tlatex refman.tex" << endl
+    << "\t" << latex_command << " refman.tex" << endl
     << "\tlatex_count=5 ; \\" << endl
     << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
     << "\t    do \\" << endl
     << "\t      echo \"Rerunning latex....\" ;\\" << endl
-    << "\t      latex refman.tex ;\\" << endl
+    << "\t      " << latex_command << " refman.tex ;\\" << endl
     << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
     << "\t    done" << endl << endl
     << "clean:" << endl

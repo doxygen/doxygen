@@ -138,7 +138,7 @@ void DumpDoc(IDoc *doc)
       break;
     case IDoc::SimpleSect:
       {
-        IDocSimpleSect *ss = dynamic_cast<IDocSimpleSect*>(ss);
+        IDocSimpleSect *ss = dynamic_cast<IDocSimpleSect*>(doc);
         ASSERT(ss!=0);
       }
       break;
@@ -188,91 +188,91 @@ void DumpDoc(IDoc *doc)
       break;
     case IDoc::HRuler:
       {
-        IDocHRuler *hr = dynamic_cast<IDocHRuler*>(hr);
+        IDocHRuler *hr = dynamic_cast<IDocHRuler*>(doc);
         ASSERT(hr!=0);
       }
       break;
     case IDoc::LineBreak:
       {
-        IDocLineBreak *lb = dynamic_cast<IDocLineBreak*>(lb);
+        IDocLineBreak *lb = dynamic_cast<IDocLineBreak*>(doc);
         ASSERT(lb!=0);
       }
       break;
     case IDoc::ULink:
       {
-        IDocULink *ul = dynamic_cast<IDocULink*>(ul);
+        IDocULink *ul = dynamic_cast<IDocULink*>(doc);
         ASSERT(ul!=0);
       }
       break;
     case IDoc::EMail:
       {
-        IDocEMail *em = dynamic_cast<IDocEMail*>(em);
+        IDocEMail *em = dynamic_cast<IDocEMail*>(doc);
         ASSERT(em!=0);
       }
       break;
     case IDoc::Link:
       {
-        IDocLink *lk = dynamic_cast<IDocLink*>(lk);
+        IDocLink *lk = dynamic_cast<IDocLink*>(doc);
         ASSERT(lk!=0);
       }
       break;
     case IDoc::ProgramListing:
       {
-        IDocProgramListing *pl = dynamic_cast<IDocProgramListing*>(pl);
+        IDocProgramListing *pl = dynamic_cast<IDocProgramListing*>(doc);
         ASSERT(pl!=0);
       }
       break;
     case IDoc::CodeLine:
       {
-        IDocCodeLine *cl = dynamic_cast<IDocCodeLine*>(cl);
+        IDocCodeLine *cl = dynamic_cast<IDocCodeLine*>(doc);
         ASSERT(cl!=0);
       }
       break;
     case IDoc::Highlight:
       {
-        IDocHighlight *hl = dynamic_cast<IDocHighlight*>(hl);
+        IDocHighlight *hl = dynamic_cast<IDocHighlight*>(doc);
         ASSERT(hl!=0);
       }
       break;
     case IDoc::Formula:
       {
-        IDocFormula *fm = dynamic_cast<IDocFormula*>(fm);
+        IDocFormula *fm = dynamic_cast<IDocFormula*>(doc);
         ASSERT(fm!=0);
       }
       break;
     case IDoc::Image:
       {
-        IDocImage *img = dynamic_cast<IDocImage*>(img);
+        IDocImage *img = dynamic_cast<IDocImage*>(doc);
         ASSERT(img!=0);
       }
       break;
     case IDoc::DotFile:
       {
-        IDocDotFile *df = dynamic_cast<IDocDotFile*>(df);
+        IDocDotFile *df = dynamic_cast<IDocDotFile*>(doc);
         ASSERT(df!=0);
       }
       break;
     case IDoc::IndexEntry:
       {
-        IDocIndexEntry *ie = dynamic_cast<IDocIndexEntry*>(ie);
+        IDocIndexEntry *ie = dynamic_cast<IDocIndexEntry*>(doc);
         ASSERT(ie!=0);
       }
       break;
     case IDoc::Table:
       {
-        IDocTable *tbl = dynamic_cast<IDocTable*>(tbl);
+        IDocTable *tbl = dynamic_cast<IDocTable*>(doc);
         ASSERT(tbl!=0);
       }
       break;
     case IDoc::Row:
       {
-        IDocRow *row = dynamic_cast<IDocRow*>(row);
+        IDocRow *row = dynamic_cast<IDocRow*>(doc);
         ASSERT(row!=0);
       }
       break;
     case IDoc::Entry:
       {
-        IDocEntry *ent = dynamic_cast<IDocEntry*>(ent);
+        IDocEntry *ent = dynamic_cast<IDocEntry*>(doc);
         ASSERT(ent!=0);
       }
       break;

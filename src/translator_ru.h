@@ -1095,7 +1095,7 @@ class TranslatorRussian : public Translator
         "\\endcode\n"
         "Если \\c MAX_DOT_GRAPH_HEIGHT в конфигурационном файле "
         "установлен в 240, получится следующий граф:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Прямоугольники в этом графе имеют следующее значение:\n"
         "<ul>\n"

@@ -685,7 +685,7 @@ class TranslatorDutch : public Translator
         "\\endcode\n"
         "Als de \\c MAX_DOT_GRAPH_HEIGHT tag in the configuratie file "
         "op 200 gezet is, zal het bestaande voorbeeld resulteren in de volgende graaf:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "De rechthoeken in the bovenstaande graaf hebben de volgende betekenis:\n"
         "<ul>\n"

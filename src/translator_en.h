@@ -1072,7 +1072,7 @@ class TranslatorEnglish : public Translator
         "\\endcode\n"
         "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
         "is set to 240 this will result in the following graph:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "The boxes in the above graph have the following meaning:\n"
         "<ul>\n"
