@@ -30,12 +30,15 @@ line.
 
 The file essentially consists of a list of assignment statements.
 Each statement consists of a \c TAG_NAME written in capitals,
-followed by the \c = character and one or more values.
-Values are sequences of non-blanks. If the value should contain one or more
-blanks it must be surrounded by quotes (&quot;...&quot;).
+followed by the <code>=</code> character and one or more values. If the same tag
+is assigned more than once, the last assignment overwrites any earlier
+assignment. For options that take a list as their argument,
+the <code>+=</code> operator can be used instead of <code>=</code> to append 
+new values to the list. Values are sequences of non-blanks. If the value should 
+contain one or more blanks it must be surrounded by quotes (&quot;...&quot;).
 Multiple lines can be concatenated by inserting a backslash (\\)
-as the last character of a line.
-Environment variables can expanded using the pattern \c $(ENV_VARIABLE_NAME).
+as the last character of a line. Environment variables can be expanded 
+using the pattern \c $(ENV_VARIABLE_NAME).
 
 The configuration options can be divided into several categories.
 Below is an alphabetical index of the tags that are recognized 

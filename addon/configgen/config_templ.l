@@ -272,6 +272,8 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# All text after a hash (#) is considered a comment and will be ignored\n";
     t << "# The format is:\n";
     t << "#       TAG = value [value, ...]\n";
+    t << "# For lists items can also be appended using:\n";
+    t << "#       TAG += value [value, ...]\n";
     t << "# Values that contain spaces should be placed between quotes (\" \")\n";
   }
 #CONFIG Template

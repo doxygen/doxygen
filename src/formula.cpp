@@ -189,7 +189,7 @@ void FormulaList::generateBitmaps(const char *path)
         "gswin32.exe",              /* file to execute */
         gsArgs,                     /* argument list */ 
         NULL,                       /* use current working dir */
-        SW_HIDE                     /* minimize on start-up */
+        SW_HIDE,                    /* minimize on start-up */
         0,                          /* application instance handle */
         NULL,                       /* ignored: id list */
         NULL,                       /* ignored: class name */

@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_OPTION_LENGTH 22
+#define MAX_OPTION_LENGTH 23
 
 static QString spaces="                                                ";
 
@@ -259,10 +259,17 @@ class ConfigList : public ConfigOption
                     const char * short_,const char * long_,WidgetType w=String);
     virtual void printRules(QTextStream &t)
     {
+      // rule for assignment
       t << "<Start>\"" << cfgName << "\"[ \\t]*\"=\"";
       t << spaces.left(MAX_OPTION_LENGTH-cfgName.length());
       t << "{ BEGIN(GetStrList); l=&Config::" << varName;
       t << "; l->clear(); elemStr=\"\"; }" << endl;
+
+      // rule for appending
+      t << "<Start>\"" << cfgName << "\"[ \\t]*\"+=\"";
+      t << spaces.left(MAX_OPTION_LENGTH-cfgName.length()-1);
+      t << "{ BEGIN(GetStrList); l=&Config::" << varName;
+      t << "; elemStr=\"\"; }" << endl;
     }
     virtual void printInit(QTextStream &t)
     {

@@ -586,18 +586,38 @@ static void newDocState();
 
 //-----------------------------------------------------------------
 
-static QStack<int> listIndentStack;
+struct IndentInfo
+{
+  public:
+    IndentInfo(int i,bool e) : indent(i), enumerated(e) {};
+   ~IndentInfo() {}
+    void startList() 
+    { 
+      if (enumerated) outDoc->startEnumList(); else outDoc->startItemList();
+    }
+    void endList()
+    {
+      if (enumerated) outDoc->endEnumList(); else outDoc->endItemList();
+    }
+    void writeItem()
+    {
+      outDoc->writeListItem();
+    }
+    int indent;
+    bool enumerated;
+};
+
+static QStack<IndentInfo> listIndentStack;
 static bool insideItemList = FALSE;
 
-static void addListItemMarker(const char *marker)
+static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
 {
   // find the actual position at which the bullet was found
+  int i;
   int indent=0;
-  const char *p=marker;
-  char c;
-  while ((c=*p++))
+  for (i=0;i<dashPos;i++)
   {
-    if (c=='\t')
+    if (marker[i]=='\t')
     {
       indent+=Config::tabSize - (indent%Config::tabSize);
     }
@@ -606,32 +626,42 @@ static void addListItemMarker(const char *marker)
       indent++;
     }
   }
-  //printf("list marker found at column %d\n",indent);
+  //printf("list marker found at column %d enumerated %d\n",indent,enumerated);
   if (!insideItemList)
   {
-    outDoc->startItemList();
-    outDoc->writeListItem();
-    listIndentStack.push(new int(indent));
+    listIndentStack.push(new IndentInfo(indent,enumerated));
+    listIndentStack.top()->startList();
+    listIndentStack.top()->writeItem();
     insideItemList=TRUE;
   } 
   else
   {
-    int *pPrevIndent = listIndentStack.top(); 
-    if (*pPrevIndent==indent) // new item at the same indent level
+    IndentInfo *pPrevInfo = listIndentStack.top(); 
+    if (pPrevInfo->indent==indent && pPrevInfo->enumerated==enumerated) 
+      // new item of same kind at the same indent level
     {
-      outDoc->writeListItem(); 
+      pPrevInfo->writeItem(); 
     }
-    else if (*pPrevIndent<indent) // start sub item list
+    else if (pPrevInfo->indent==indent)
+      // new item of diffent kind at the same indent level
     {
-      outDoc->startItemList();
-      outDoc->writeListItem();
-      listIndentStack.push(new int(indent));
+      // switch to a diffent list type
+      pPrevInfo->endList();
+      pPrevInfo->enumerated=enumerated;
+      pPrevInfo->startList();
+      pPrevInfo->writeItem(); 
+    }
+    else if (pPrevInfo->indent<indent) // start sub item list
+    {
+      listIndentStack.push(new IndentInfo(indent,enumerated));
+      listIndentStack.top()->startList();
+      listIndentStack.top()->writeItem();
     }
     else // end sub item list
     {
+      pPrevInfo->endList();
       listIndentStack.pop();
-      delete pPrevIndent;
-      outDoc->endItemList();
+      delete pPrevInfo;
       // safe guard against wrong indenting
       if (listIndentStack.isEmpty()) 
       {
@@ -641,34 +671,23 @@ static void addListItemMarker(const char *marker)
       }
       else
       {
-	outDoc->writeListItem();
+	listIndentStack.top()->writeItem();
       }
     }
   }
 }
 
+// end the current (nested) list regardless of the nesting level.
 static void forceEndItemList()
 {
-  int *indent;
-  while ((indent=listIndentStack.pop())!=0)
+  IndentInfo *info;
+  while ((info=listIndentStack.pop())!=0)
   {
-    outDoc->endItemList();
-    delete indent;
+    info->endList();
+    delete info;
   }
   insideItemList=FALSE;
 }
-
-#if 0
-static void tryEndItemList()
-{
-  if (listIndentStack.count()==1) // no subitems => end list
-  {
-    outDoc->endItemList();
-    delete listIndentStack.pop();
-    insideItemList=FALSE;
-  } 
-}
-#endif
 
 //-----------------------------------------------------------------
 
@@ -1144,25 +1163,19 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  BEGIN( FindMembers );
 					}
 <*>\x0d
-  /*
-<DocScan>^{BL} 	                        { 
-  					  if (insideArgumentList)
-					  {
-					    insideArgumentList=FALSE;
-					    outDoc->endItemList();
-					  }
-					  else
-					  {
-					    outDoc->newParagraph();
-					  }
-					  if (inBlock()) endBlock();
-					}
-  */
-<DocScan>^{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+ { /* found list item marker */
-  					  addListItemMarker(yytext);
+<DocScan>^{B}*(("//"{B}*)?)"*"*{B}*"-"("#")?{B}+ { /* found list item marker */
+  					  QCString text=yytext;
+					  int dashPos = text.findRev('-');
+					  //printf("dashPos=%d char='%c'\n",dashPos,text.at(dashPos+1));
+					  bool isEnumerated = text.at(dashPos+1)=='#';
+  					  addListItemMarker(yytext,dashPos,isEnumerated);
   					}
-<DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"{B}+			{
-  					  addListItemMarker(yytext+1);
+<DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"("#")?{B}+ { /* found list item marker */
+  					  QCString text=yytext;
+					  int dashPos = text.findRev('-');
+					  //printf("dashPos=%d char='%c'\n",dashPos,text.at(dashPos+1));
+					  bool isEnumerated = text.at(dashPos+1)=='#';
+  					  addListItemMarker(yytext+1,dashPos,isEnumerated);
   					}
 <DocScan,Text>"&copy;"			{ outDoc->writeCopyright(); }
 <DocScan,Text>"&quot;"			{ outDoc->writeQuote(); }
@@ -2222,19 +2235,19 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
   					}
+<DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
+  					  outDoc->startEmphasis();
+  					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  outDoc->endEmphasis();
+					  BEGIN( DocScan );
+  					}
 <DocEmphasis>{WORD}			{ 
   					  outDoc->startEmphasis();
   					  linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
-<DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
-  					  outDoc->startEmphasis();
-  					  generateRef(*outDoc,className,yytext,inSeeBlock);
-					  outDoc->endEmphasis();
-					  BEGIN( DocScan );
-  					}
-<DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
+<DocBold>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startBold();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  outDoc->endBold();
@@ -2246,7 +2259,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
-<DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"()" {
+<DocCode>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()!\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
   					  outDoc->startTypewriter();
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
 					  outDoc->endTypewriter();
@@ -2278,7 +2291,10 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->docify(yytext);
 					}
 <DocCode,DocEmphasis,DocBold>"\n"	{ outDoc->writeChar('\n'); }
-<DocScan>({B}*"\n"){2,}{B}*"*"*{B}*"-"{B}+	{ // new paragraph & start of a list
+<DocScan>({B}*"\n"){2,}{B}*"*"*{B}*"-"("#")?{B}+	{ // new paragraph & start of a list
+  					  QCString text=yytext;
+					  int dashPos = text.findRev('-');
+					  bool isEnumerated = text.at(dashPos+1)=='#';
   					  if (insideArgumentList)
 					  {
 					    insideArgumentList=FALSE;
@@ -2293,7 +2309,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->newParagraph(); 
 					  }
 					  if (inBlock()) endBlock();
-  					  addListItemMarker(strrchr(yytext,'\n')+1);
+  					  addListItemMarker(strrchr(yytext,'\n')+1,dashPos,isEnumerated);
 					}
 <DocScan>({B}*"\n"){2,}{B}*		{ // new paragraph
   					  if (insideArgumentList)
@@ -5163,7 +5179,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"{B}+ { 
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->doc += yytext; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
