@@ -1,0 +1,72 @@
+% comments start with % sign at the beginning
+% xml entities like &auml; are used for special characters
+
+Brazilian
+Fabio "FJTC" Jun Takada Chino: chino@grad.icmc.sc.usp.br
+
+Chinese
+Wang Weihan: wangweihan@capinfo.com.cn
+
+Croatian
+Boris Bralo: boris.bralo@zg.tel.hr
+
+Czech 
+Petr P&rcaron;ikryl: prikrylp@skil.cz
+Vlastimil Havran: havran@fel.cvut.cz
+
+Danish
+Erik Søe Sørensen: erik@mail.nu
+
+Dutch 
+Dimitri van Heesch: dimitri@stack.nl
+
+English 
+Dimitri van Heesch: dimitri@stack.nl
+
+Finnish
+Olli Korhonen: Olli.Korhonen@ccc.fi
+
+French
+Christophe Bordeux: bordeux@lig.di.epfl.ch
+
+German  
+Jens Breitenstein: Jens.Breitenstein@tlc.de
+
+Hungarian
+F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari@diatronltd.com
+
+Italian 
+Ahmed Aldo Faisal: aaf23@cam.ac.uk
+Alessandro Falappa: a.falappa@flashnet.it
+
+Japanese 
+Kenji Nagamatsu: naga@joyful.club.ne.jp
+
+Korean
+Richard Kim: ryk@dspwiz.com
+
+Norwegian
+Lars Erik Jordet: larsej@stud.ifd.hibu.no
+
+Polish 
+Grzegorz Kowal:  g_kowal@poczta.onet.pl
+
+Portuguese
+Rui Godinho Lopes: ruiglopes@yahoo.com
+
+Romanian
+Alexandru Iosup: aiosup@yahoo.com
+
+Russian
+Alexandr Chelpanov: cav@cryptopro.ru
+
+Slovene
+Matjaz Ostroversnik: matjaz.ostroversnik@zrs-tk.si
+
+Spanish 
+Francisco Oltra Thennet: foltra@puc.cl
+
+Swedish 
+Samuel H&auml;agglund: sahag96@nts.mh.se
+XeT Erixon: xet@hem.passagen.se
+
