@@ -1731,6 +1731,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CopyCurly>[^"'{}\/\n]+			{
   					  *pCopyCurlyString+=yytext;
   					}
+<CopyCurly>"/"				{ *pCopyCurlyString+=yytext; }
 <CopyCurly>\n				{
   					  yyLineNr++;
 					  *pCopyCurlyString+=*yytext;

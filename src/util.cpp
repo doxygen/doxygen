@@ -416,10 +416,6 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   {
     resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
   }
-  else
-  {
-    resName=qualifiedName;
-  }
   MemberDef *md=0;
   while (mContext && md==0)
   {
@@ -445,6 +441,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
         ps=is+l;
       }
     }
+    //printf("resScope=%s\n",resScope?resScope->name().data():"<none>");
     
     // step 2: get the member
     if (resScope) // no scope or scope found in the current context 
@@ -471,9 +468,14 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
           //    tmd->name().data(), resScope->name().data(), 
           //    tmd->getOuterScope()->name().data(), mContext);
           if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
-            /*! TODO: look if resScope is visible within tmd->getOuterScope() */
           {
-            md=tmd;
+            // look if resScope is visible within tmd->getOuterScope()
+            Definition *d = tmd->getOuterScope();
+            while (d && d!=resScope) d=d->getOuterScope();
+            if (d)
+            {
+              md=tmd;
+            }
           }
         }
       }
@@ -544,13 +546,13 @@ ClassDef *getResolvedClass(
   QCString name = n;
   if (scope==0) scope=Doxygen::globalScope;
   if (name.isEmpty()) return 0;
-  //int index = name.findRev("::");
   ClassDef *cd=0;
 
   //printf("===================\n");
   do
   {
     Definition *typedefScope = 0;
+    //printf("-----------------------------------------------------\n");
     QCString subst = resolveTypeDef(scope,name,&typedefScope);
     //printf("trying getResolvedClass(%s,%s) => subst=%s\n",
     //    scope ? scope->name().data() : "<none>", name.data(),subst.data());
@@ -753,11 +755,12 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 }
 
 
-void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *name,const char *text,bool autoBreak,bool external)
+void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*name*/,const char *text,bool autoBreak,bool external)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
   QCString txtStr=text;
+  QCString scopeName;
   int strLen = txtStr.length();
   //printf("linkifyText strtxt=%s strlen=%d\n",txtStr.data(),strLen);
   int matchLen;
@@ -803,39 +806,38 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
     NamespaceDef *nd=0;
     GroupDef     *gd=0;
 
-    QCString scopeName=scName;
-    QCString searchName=name;
-    //printf("word=`%s' scopeName=`%s' searchName=`%s'\n",
-    //        word.data(),scopeName.data(),searchName.data()
+    //QCString searchName=name;
+    //printf("word=`%s' scope=`%s'\n",
+    //        word.data(),scope ? scope->name().data() : "<none>"
     //      );
+    Definition *curScope = scope;
     // check if `word' is a documented class name
-    if (//!word.isEmpty() && 
-        //!(isdigit(word.at(0)) || word.at(0)=='-') && 
-        //                        // do not try to link digits 
-        //                        // (saves a lot of time for large arrays)
-        !rightScopeMatch(word,searchName) && 
-        !rightScopeMatch(scopeName,word)
+    if (
+        1
+        /* !rightScopeMatch(word,searchName) && 
+        !rightScopeMatch(scopeName,word) */
        )
     {
       //printf("Searching...\n");
-      int scopeOffset=scopeName.length();
+      //int scopeOffset=scopeName.length();
       bool found=FALSE;
       do // for each scope (starting with full scope and going to empty scope)
       {
         QCString fullName = word;
         QCString prefix;
         replaceNamespaceAliases(fullName,fullName.length());
-        if (scopeOffset>0)
+        //if (scopeOffset>0)
+        if (curScope)
         {
-
-          prefix = scopeName.left(scopeOffset);
-          replaceNamespaceAliases(prefix,scopeOffset);
+          //prefix = scopeName.left(scopeOffset);
+          prefix = curScope->name();
+          replaceNamespaceAliases(prefix,prefix.length());
           fullName.prepend(prefix+"::");
         }
         //printf("Trying class %s\n",fullName.data());
 
         bool isTypeDef=FALSE;
-        if ((cd=getResolvedClass(Doxygen::globalScope,fullName,&isTypeDef)))
+        if ((cd=getResolvedClass(scope,fullName,&isTypeDef)))
         {
           // add link to the result
           if (external ? cd->isLinkable() : cd->isLinkableInProject())
@@ -850,20 +852,30 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
           goto endloop;
         }
         
-        if (scopeOffset==0)
-        {
-          scopeOffset=-1;
-        }
-        else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
-        {
-          scopeOffset=0;
-        }
-      } while (!found && scopeOffset>=0);
+        //if (scopeOffset==0)
+        //{
+        //  scopeOffset=-1;
+        //}
+        //else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+        //{
+        //  scopeOffset=0;
+        //}
+        if (curScope) curScope = curScope->getOuterScope();
+      } //while (!found && scopeOffset>=0);
+      while (!found && curScope);
 
 endloop:      
+      if (scope && 
+           (scope->definitionType()==Definition::TypeClass || 
+            scope->definitionType()==Definition::TypeNamespace
+           ) 
+         )
+      {
+        scopeName=scope->name();
+      }
       //if (!found) printf("Trying to link %s in %s\n",word.data(),scName); 
       if (!found && 
-          getDefs(scName,word,0,md,cd,fd,nd,gd) && 
+          getDefs(scopeName,word,0,md,cd,fd,nd,gd) && 
           (md->isTypedef() || md->isEnumerate() || 
            md->isReference() || md->isVariable()
           ) && 
@@ -2265,7 +2277,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           {
             fd=md->getFileDef();
             gd=md->getGroupDef();
-            //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
+            //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
             //    md->name().data(),args,fd,gd);
             if (
                 (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
@@ -3416,14 +3428,14 @@ QCString substituteTemplateArgumentsInString(
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
           // replace formal argument with the actual argument of the instance
-          result += actArg->type; 
+          result += actArg->type+" "; 
           found=TRUE;
         }
         else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&
                  formArg->defval!=name /* to prevent recursion */
                 )
         {
-          result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs);
+          result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs)+" ";
           found=TRUE;
         }
       }

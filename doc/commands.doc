@@ -1439,10 +1439,14 @@ ALIASES  = "english=\if english" \
   duplicated or it can be used to extend the documentation of an inherited 
   member.
   
-  The link object can point to a member, a class, a namespace, a group,
-  a page, or a file (checked in that order). To copy the 
-  documentation for a member of a class for instance one can put the 
-  following in the documentation
+  The link object can point to a member (of a class, file or group), 
+  a class, a namespace, a group, a page, or a file (checked in that order). 
+  Note that if the object pointed to is a member (function, variable, 
+  typedef, etc), the compound (class, file, or group) containing it 
+  should also be documented for the copying to work. 
+
+  To copy the documentation for a member of a 
+  class for instance one can put the following in the documentation
 
 \verbatim
   /*! @copydoc MyClass::myfunction() 

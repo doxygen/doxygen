@@ -49,11 +49,14 @@
 //
 // 2003/02/26
 // - Added strings for 1.2.18
+//
+// 2003/04/29
+// - Added strings for 1.3.0
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_3
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -887,12 +890,12 @@ class TranslatorCroatian : public TranslatorAdapter_1_3
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return decode("Gre¹ka");
+      return decode("Greška");
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode("Popis gre¹aka");
+      return decode("Popis grešaka");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1089,6 +1092,45 @@ class TranslatorCroatian : public TranslatorAdapter_1_3
     {
       return decode("Dokumentacija dogaðaja");
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Tipovi u paketu";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Funkcije u paketu";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return decode("Statièke funkcije u paketu");
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Atributi u paketu";
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return decode("Statièki atributi u paketu");
+    }
+
 };
 
 #endif

@@ -320,7 +320,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
 };
 
 
-static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char *name,int indent)
+static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,Definition *scope,int indent)
 {
   QCString indentStr;
   indentStr.fill(' ',indent);
@@ -335,7 +335,7 @@ static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char
       if (!a->type.isEmpty())
       {
         t << indentStr <<  "    <type>";
-        linkifyText(TextGeneratorXMLImpl(t),name,0,a->type);
+        linkifyText(TextGeneratorXMLImpl(t),scope,0,a->type);
         t << "</type>" << endl;
       }
       if (!a->name.isEmpty())
@@ -346,7 +346,7 @@ static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char
       if (!a->defval.isEmpty())
       {
         t << indentStr << "    <defval>";
-        linkifyText(TextGeneratorXMLImpl(t),name,0,a->defval);
+        linkifyText(TextGeneratorXMLImpl(t),scope,0,a->defval);
         t << "</defval>" << endl;
       }
       t << indentStr << "  </param>" << endl;
@@ -357,17 +357,15 @@ static void writeTemplateArgumentList(ArgumentList *al,QTextStream &t,const char
 
 static void writeMemberTemplateLists(MemberDef *md,QTextStream &t)
 {
-  ClassDef *cd = md->getClassDef();
-  const char *cname = cd ? cd->name().data() : 0;
   if (md->templateArguments()) // function template prefix
   {
-    writeTemplateArgumentList(md->templateArguments(),t,cname,8);
+    writeTemplateArgumentList(md->templateArguments(),t,md->getClassDef(),8);
   }
 }
 
 static void writeTemplateList(ClassDef *cd,QTextStream &t)
 {
-  writeTemplateArgumentList(cd->templateArguments(),t,cd->name(),4);
+  writeTemplateArgumentList(cd->templateArguments(),t,cd,4);
 }
 
 static void writeXMLDocBlock(QTextStream &t,
@@ -556,7 +554,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     }
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     t << "        <type>";
-    linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),typeStr);
+    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),typeStr);
     t << "</type>" << endl;
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
@@ -604,7 +602,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         if (!a->type.isEmpty())
         {
           t << "          <type>";
-          linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),a->type);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->name(),a->type);
           t << "</type>" << endl;
         }
         if (!a->name.isEmpty())
@@ -628,7 +626,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         if (!a->defval.isEmpty())
         {
           t << "          <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),a->defval);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->name(),a->defval);
           t << "</defval>" << endl;
         }
         if (defArg && defArg->hasDocumentation())
@@ -656,14 +654,14 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   if (!md->initializer().isEmpty())
   {
     t << "        <initializer>";
-    linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),md->initializer());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),md->initializer());
     t << "</initializer>" << endl;
   }
 
   if (md->excpString())
   {
     t << "        <exceptions>";
-    linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),md->excpString());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->name(),md->excpString());
     t << "</exceptions>" << endl;
   }
   
@@ -983,7 +981,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd->name(),0,cd->documentation());
   t << "    </detaileddescription>" << endl;
-  DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance,
+  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance,
                                  Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!inheritanceGraph.isTrivial())
   {
@@ -991,7 +989,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     inheritanceGraph.writeXML(t);
     t << "    </inheritancegraph>" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotClassGraph::Implementation,
+  DotClassGraph collaborationGraph(cd,DotNode::Collaboration,
                                  Config_getInt("MAX_DOT_GRAPH_DEPTH"));
   if (!collaborationGraph.isTrivial())
   {

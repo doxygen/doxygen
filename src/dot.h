@@ -47,21 +47,9 @@ struct EdgeInfo
 
 class DotNode
 {
-  friend class DotGfxHierarchyTable;
-  friend class DotClassGraph;
-  friend class DotInclDepGraph;
-  friend class DotNodeList;
-  friend void writeDotGraph(
-                      DotNode *root,
-                      GraphOutputFormat f,
-                      const QCString &baseName,
-                      bool lrRank,
-                      bool renderParents,
-                      int distance,
-                      bool backArrow
-                     );
   public:
-    DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE);
+    enum GraphType { Dependency, Inheritance, Collaboration, Hierarchy };
+    DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE,ClassDef *cd=0);
    ~DotNode();
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
@@ -75,8 +63,8 @@ class DotNode
     void deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes=0);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
-    void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,
-               int maxDistance,bool backArrows);
+    void write(QTextStream &t,GraphType gt,GraphOutputFormat f,
+               bool topDown,bool toChildren,int maxDistance,bool backArrows);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t,bool isClassGraph);
@@ -86,9 +74,9 @@ class DotNode
 
   private:
     void colorConnectedNodes(int curColor);
-    void writeBox(QTextStream &t,GraphOutputFormat f,
+    void writeBox(QTextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren);
-    void writeArrow(QTextStream &t,GraphOutputFormat f,DotNode *cn,
+    void writeArrow(QTextStream &t,GraphType gt,GraphOutputFormat f,DotNode *cn,
                     EdgeInfo *ei,bool topDown, bool pointBack=TRUE);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
@@ -102,6 +90,22 @@ class DotNode
     bool             m_hasDoc;    //!< used to mark a node as documented
     int              m_distance;  //!< distance to the root node
     bool             m_isRoot;    //!< indicates if this is a root node
+    ClassDef *       m_classDef;  //!< class representing this node (can be 0)
+
+    friend class DotGfxHierarchyTable;
+    friend class DotClassGraph;
+    friend class DotInclDepGraph;
+    friend class DotNodeList;
+    friend void writeDotGraph(
+                      DotNode *root,
+                      GraphType gt,
+                      GraphOutputFormat f,
+                      const QCString &baseName,
+                      bool lrRank,
+                      bool renderParents,
+                      int distance,
+                      bool backArrow
+                     );
 };
 
 class DotGfxHierarchyTable
@@ -124,8 +128,8 @@ class DotGfxHierarchyTable
 class DotClassGraph
 {
   public:
-    enum GraphType { Interface, Implementation, Inheritance };
-    DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth);
+    //enum GraphType { Interface, Implementation, Inheritance };
+    DotClassGraph(ClassDef *cd,DotNode::GraphType t,int maxRecusionDepth);
    ~DotClassGraph();
     bool isTrivial() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
@@ -140,13 +144,13 @@ class DotClassGraph
     void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
                   int level,const char *usedName,const char *templSpec,
                   bool base);
-    DotNode        *m_startNode;
-    QDict<DotNode> *m_usedNodes;
-    static int      m_curNodeNumber;
-    GraphType       m_graphType;
-    int             m_recDepth;
-    QCString        m_diskName;
-    int             m_maxDistance;
+    DotNode        *   m_startNode;
+    QDict<DotNode> *   m_usedNodes;
+    static int         m_curNodeNumber;
+    DotNode::GraphType m_graphType;
+    int                m_recDepth;
+    QCString           m_diskName;
+    int                m_maxDistance;
 };
 
 class DotInclDepGraph

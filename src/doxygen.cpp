@@ -2133,8 +2133,15 @@ static void buildFunctionList(Entry *root)
       //printf("root->parent=`%s' cd=%p root->type.find(re,0)=%d\n",
       //    root->parent->name.data(),getClass(root->parent->name),
       //    root->type.find(re,0));
-      QCString scope=stripAnonymousNamespaceScope(root->parent->name.copy());
+      QCString scope=stripAnonymousNamespaceScope(root->parent->name);
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+
+      cd=getClass(scope);
+      if (cd && scope+"::"==rname.left(scope.length()+2)) // found A::f inside A
+      {
+        // strip scope from name
+        rname=rname.right(rname.length()-root->parent->name.length()-2); 
+      }
 
       bool isMember=FALSE;
       int memIndex=rname.find("::");
@@ -2154,7 +2161,7 @@ static void buildFunctionList(Entry *root)
       if (root->parent && 
           !root->parent->name.isEmpty() &&
           (root->parent->section & Entry::COMPOUND_MASK) && 
-          (cd=getClass(scope)) &&
+          cd &&
           // do some fuzzy things to exclude function pointers 
           (root->type.isEmpty() || root->type.find(re,0)==-1 || 
            root->type.find(")(")!=-1 || root->type.find("operator")!=-1
@@ -4379,7 +4386,7 @@ static void findMember(Entry *root,
   { 
     Debug::print(Debug::FindMembers,0,
                  "1. funcName=`%s'\n",funcName.data());
-    if (funcName.left(9)=="operator ")
+    if (funcName.left(9)=="operator ") // strip class scope from cast operator
     {
       funcName = substitute(funcName,className+"::","");
     }
