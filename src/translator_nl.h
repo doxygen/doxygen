@@ -1068,6 +1068,23 @@ class TranslatorDutch : public Translator
     { 
       return "Statische Package Attributen";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Alle";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Hier is de call graaf voor deze functie:";
+    }
     
 };
 

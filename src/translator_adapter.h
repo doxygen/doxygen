@@ -40,7 +40,19 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_3 : public TranslatorAdapterBase
+class TranslatorAdapter_1_3_1 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage() 
+    { return createUpdateNeededMessage(idLanguage(),"release 1.3.1"); }
+
+    virtual QCString trAll()
+    { return english.trAll(); }
+    virtual QCString trCallGraph()
+    { return english.trCallGraph(); }
+};
+
+class TranslatorAdapter_1_3 : public TranslatorAdapter_1_3_1
 {
   public:
     virtual QCString updateNeededMessage() 
@@ -57,7 +69,6 @@ class TranslatorAdapter_1_3 : public TranslatorAdapterBase
     virtual QCString trStaticPackageAttribs() 
     { return english.trStaticPackageAttribs(); }
 };
-
 
 class TranslatorAdapter_1_2_18 : public TranslatorAdapter_1_3
 {

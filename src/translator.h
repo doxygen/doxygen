@@ -400,6 +400,13 @@ class Translator
     virtual QCString trPackageAttribs() = 0;
     virtual QCString trStaticPackageAttribs() = 0;
     
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trAll() = 0;
+    virtual QCString trCallGraph() = 0;
+
 };
 
 #endif

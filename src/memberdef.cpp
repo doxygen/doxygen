@@ -1581,7 +1581,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.disable(OutputGenerator::Man);
         ol.newParagraph();
         ol.startCallGraph();
-        //ol.parseText(theTranslator->trCallGraph());
+        ol.parseText(theTranslator->trCallGraph());
         ol.endCallGraph(callGraph);
         ol.enableAll();
       }

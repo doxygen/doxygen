@@ -1472,6 +1472,23 @@ class TranslatorEnglish : public Translator
       return "Static Package Attributes";
     }
     
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "All";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Here is the call graph for this function:";
+    }
+
 
 };
 
