@@ -54,6 +54,12 @@ static const char index_xsd[] =
 ;
 
 //------------------
+//
+static const char compound_xsd[] =
+#include "compound_xsd.h"
+;
+
+//------------------
 
 
 inline void writeXMLString(QTextStream &t,const char *s)
@@ -82,22 +88,28 @@ inline void writeXMLCodeString(QTextStream &t,const char *s)
 
 static void writeXMLHeader(QTextStream &t)
 {
-  QCString dtdName = Config_getString("XML_DTD");
-  QCString schemaName = Config_getString("XML_SCHEMA");
+  //QCString dtdName = Config_getString("XML_DTD");
+  //QCString schemaName = Config_getString("XML_SCHEMA");
+  //t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
+  //  << "' standalone='";
+  //if (dtdName.isEmpty() && schemaName.isEmpty()) t << "yes"; else t << "no";
+  //t << "'?>" << endl;
+  //if (!dtdName.isEmpty())
+  //{
+  //  t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
+  //}
+  //t << "<doxygen ";
+  //if (!schemaName.isEmpty())
+  //{
+  //  t << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+  //  t << "xsi:noNamespaceSchemaLocation=\"doxygen.xsd\" ";
+  //}
+  //t << "version=\"" << versionString << "\">" << endl;
+
   t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
-    << "' standalone='";
-  if (dtdName.isEmpty() && schemaName.isEmpty()) t << "yes"; else t << "no";
-  t << "'?>" << endl;
-  if (!dtdName.isEmpty())
-  {
-    t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
-  }
-  t << "<doxygen ";
-  if (!schemaName.isEmpty())
-  {
-    t << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
-    t << "xsi:noNamespaceSchemaLocation=\"doxygen.xsd\" ";
-  }
+    << "' standalone='no'?>" << endl;;
+  t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+  t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
 }
 
@@ -422,7 +434,7 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
   {
     name.prepend(scope+"::");
   }
-  t << "        <" << tagName << " id=\"";
+  t << "        <" << tagName << " refid=\"";
   t << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\"";
   if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef()) 
   {
@@ -529,7 +541,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 	t << "\" virt=\"";
 	switch (md->virtualness())
 	{
-	case Normal:  t << "normal";       break;
+	case Normal:  t << "non-virtual";  break;
 	case Virtual: t << "virtual";      break;
 	case Pure:    t << "pure-virtual"; break;
 	default: ASSERT(0);
@@ -544,8 +556,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << " volatile=\"";
     if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
 
-	t << "\" mutable=\"";
-	if (md->isMutable()) t << "yes"; else t << "no";
+    t << "\" mutable=\"";
+    if (md->isMutable()) t << "yes"; else t << "no";
 
     t << "\"";
   }
@@ -572,9 +584,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   MemberDef *rmd = md->reimplements();
   if (rmd)
   {
-    t << "        <reimplements id=\"" 
+    t << "        <reimplements refid=\"" 
       << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
-      << convertToXML(rmd->name()) << "</reimplements>";
+      << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
   MemberList *rbml = md->reimplementedBy();
   if (rbml)
@@ -582,9 +594,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     MemberListIterator mli(*rbml);
     for (mli.toFirst();(rmd=mli.current());++mli)
     {
-      t << "        <reimplementedby id=\"" 
+      t << "        <reimplementedby refid=\"" 
         << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
-        << convertToXML(rmd->name()) << "</reimplementedby>";
+        << convertToXML(rmd->name()) << "</reimplementedby>" << endl;
     }
   }
   
@@ -919,6 +931,24 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
 
+  IncludeInfo *ii=cd->includeInfo();
+  if (ii)
+  {
+    QCString nm = ii->includeName;
+    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.isEmpty())
+    {
+      t << "    <includes";
+      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
+      {
+        t << " refid=\"" << ii->fileDef->getOutputFileBase() << "\"";
+      }
+      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
+      t << nm;
+      t << "</includes>" << endl;
+    }
+  }
+
   ClassSDict *cl = cd->getInnerClasses();
   if (cl)
   {
@@ -931,26 +961,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
 
-  IncludeInfo *ii=cd->includeInfo();
-  if (ii)
-  {
-    QCString nm = ii->includeName;
-    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
-    if (!nm.isEmpty())
-    {
-      t << "    <includes";
-      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
-      {
-        t << " id=\"" << ii->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
-      t << nm;
-      t << "</includes>" << endl;
-    }
-  }
 
   writeTemplateList(cd,t);
-  writeListOfAllMembers(cd,t);
   MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -1014,6 +1026,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         << cd->getEndBodyLine() << "\"";
     }
   t << "/>" << endl;
+  writeListOfAllMembers(cd,t);
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
@@ -1153,7 +1166,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    <includes";
     if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
     {
-      t << " id=\"" << inc->fileDef->getOutputFileBase() << "\"";
+      t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
     }
     t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
     t << inc->includeName;
@@ -1166,7 +1179,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    <includedby";
     if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
     {
-      t << " id=\"" << inc->fileDef->getOutputFileBase() << "\"";
+      t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
     }
     t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
     t << inc->includeName;
@@ -1466,6 +1479,16 @@ void generateXML()
   f.writeBlock(index_xsd,strlen(index_xsd));
   f.close();
 
+  fileName=outputDirectory+"/compound.xsd";
+  f.setName(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  f.writeBlock(compound_xsd,strlen(compound_xsd));
+  f.close();
+
   fileName=outputDirectory+"/index.xml";
   f.setName(fileName);
   if (!f.open(IO_WriteOnly))
@@ -1479,7 +1502,7 @@ void generateXML()
   // write index header
   t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
     << "' standalone='no'?>" << endl;;
-  t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+  t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
 
@@ -1487,12 +1510,14 @@ void generateXML()
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
+    msg("Generating XML output for class %s\n",cd->name().data());
     generateXMLForClass(cd,t);
   }
   NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
+    msg("Generating XML output for namespace %s\n",nd->name().data());
     generateXMLForNamespace(nd,t);
   }
   FileNameListIterator fnli(Doxygen::inputNameList);
@@ -1503,6 +1528,7 @@ void generateXML()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
+      msg("Generating XML output for file %s\n",fd->name().data());
       generateXMLForFile(fd,t);
     }
   }
@@ -1510,21 +1536,24 @@ void generateXML()
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
+    msg("Generating XML output for group %s\n",gd->name().data());
     generateXMLForGroup(gd,t);
   }
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
+    msg("Generating XML output for page %s\n",pd->name().data());
     generateXMLForPage(pd,t);
   }
   if (Doxygen::mainPage)
   {
+    msg("Generating XML output for the main page\n");
     generateXMLForPage(Doxygen::mainPage,t);
   }
 
   //t << "  </compoundlist>" << endl;
-  t << "</doxygen>" << endl;
+  t << "</doxygenindex>" << endl;
 }
 
 

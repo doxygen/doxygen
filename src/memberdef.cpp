@@ -500,18 +500,10 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
   else // local link
   {
     QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
-    if (cd)
-    {
-      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),cd->name()+sep+name());
-    }
-    else if (nd)
-    {
-      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),nd->name()+sep+name());
-    }
-    else
-    {
-      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
-    }
+    QCString n = name();
+    if (classDef && gd) n.prepend(classDef->name()+sep);
+    else if (nspace && gd) n.prepend(nspace->name()+sep);
+    ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),n);
   }
 }
 

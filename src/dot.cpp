@@ -612,10 +612,10 @@ void DotNode::writeXML(QTextStream &t,bool isClassGraph)
     if (urlPtr)
     {
       *urlPtr++='\0';
-      t << "        <link id=\"" << urlPtr << "\"";
+      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
       if (*refPtr!='\0')
       {
-        t << " external=\"" << refPtr << "\"";
+        t << " external=\"" << convertToXML(refPtr) << "\"";
       }
       t << "/>" << endl;
     }
@@ -629,7 +629,7 @@ void DotNode::writeXML(QTextStream &t,bool isClassGraph)
     for (;(childNode=nli.current());++nli,++eli)
     {
       edgeInfo=eli.current();
-      t << "        <childnode id=\"" << childNode->m_number << "\" relation=\"";
+      t << "        <childnode refid=\"" << childNode->m_number << "\" relation=\"";
       if (isClassGraph)
       {
         switch(edgeInfo->m_color)
