@@ -73,7 +73,7 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 extern void linkifyText(const TextGeneratorIntf &ol,const char *clName,const char *name,
                         const char *text,bool autoBreak=FALSE,bool external=TRUE);
 
-extern void setAnchors(char id,MemberList *ml,int groupId=-1);
+extern void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
 extern QCString fileToString(const char *name,bool filter=FALSE);
 extern QCString dateToString(bool);
 extern bool getDefs(const QCString &scopeName,
@@ -172,6 +172,7 @@ void addRelatedPage(const char *name,const QCString &ptitle,
                            int todoId,int testId,int bugId,GroupDef *gd=0,
                            TagInfo *tagInfo=0
                           );
+QCString escapeCharsInString(const char *name,bool allowDots);
 
 #endif
 

@@ -87,6 +87,14 @@
 #    like "almost up-to-date" any more.  The script was simplified
 #    to reflect the changes.  
 #
+# 2001/11/26
+#  - Information about version of doxygen added to the top 
+#    of the translator report (the ASCII file).
+#  - TranslatorEnglish can be used to solve really obsolete translators
+#    to make adapter classes simpler.  Such translators are marked
+#    as "obsolete" in the status (i.e. no guessing when it was last updated).
+#    The translator report include the notice about that situation.
+#
 ################################################################
 
 use 5.005;
@@ -527,7 +535,12 @@ xxxTABLE_FOOTxxx
                              {$1.$2.$3}x;
         }
         
-        if ($i == 0) { $status = '?'; }
+        if ($i == 0) { 
+            $i = $status =~ s{^TranslatorEnglish$}
+                             {obsolete}x;
+        }
+        
+        if ($i == 0) { $status = 'strange'; }
         
         ##}}}
         
@@ -890,11 +903,15 @@ print STDERR "\n\n";
         # Loop through the list of expected methods and collect 
         # the missing (new) methods.  Do this only when it derives
         # from Translator or TranslatorAdapter classes (i.e. ignore
-        # any unusual kind of TranslatorXxxx implementation). #{{{
+        # any unusual kind of TranslatorXxxx implementation). 
+        # Accept also deriving from TranslatorEnglish, that can
+        # be done by doxygen developers to solve problems with
+        # some really outdated translators. #{{{
         #
         my @missing_methods = ();
         
-        if ($base =~ m/^Translator(Adapter.*)?$/) {
+        if ($base =~ m/^Translator(Adapter.*)?$/
+            || $base =~ m/^TranslatorEnglish$/) {
             foreach my $method (@expected) {
                 
                 # Get the stripped version of the prototype.
@@ -921,15 +938,34 @@ print STDERR "\n\n";
             $output .= "\n\n\n";
             $output .= $class . " ($base)\n" . '-' x length($class) . "\n";
             
-            if ($base !~ m/^Translator(Adapter.*)?$/) {
-                $output .= "\nThis is the unusual implementation of the "
-                         . "translator.  Its class is derived\n"
+            if ($base =~ m/^TranslatorEnglish$/) {
+                $output .= "\nThis translator is implemented via deriving "
+                         . "from the English translator.\n"
+                         . "This should be done only in the case when "
+                         . "the language maintainer\n"
+                         . "or the doxygen "
+                         . "developers need to update some really old-dated "
+                         . "translator.\n"
+                         . "Otherwise, deriving from "
+                         . "the translator adapter classes should be used\n"
+                         . "for obsolete translators.  "
+                         . "If you still want some texts to be in English\n"
+                         . "copy the sources of the English translator.\n\n"
+                         . "The obsolete and missing method lists (below) "
+                         . "reflect what have to be done\n"
+                         . "to derive "
+                         . "directly from the Translator class "
+                         . "(i.e. to reach up-to-date status).\n";
+            }
+            elsif ($base !~ m/^Translator(Adapter.*)?$/) {
+                $output .= "\nThis is some unusual implementation of the "
+                         . "translator class.  It is derived\n"
                          . "from the $base base class. The usual translator"
                          . "class derives\n"
                          . "or from the Translator class or from some "
                          . "TranslatorAdapter_x_x_x classes.\n"
                          . "Because of that, nothing can be guessed about "
-                         . "missing methods.\n";
+                         . "missing or obsolete methods.\n";
             }
                 
             if (@missing_methods) {
@@ -951,24 +987,34 @@ print STDERR "\n\n";
     }
 
     
-    # Generate the textual output file.
+    # Generate the ASCII output file.
     #
     my $fout = "$docdir/$ftranslatortxt";
     
-    # Open it first.
+    # Open it first, and output the version information. #{{{
     #
     open(FOUT, "> $fout") or die "\nError when open > $fout: $!";
 
+    print FOUT "(version $doxversion)\n\n";
+    ##}}}
+    
     # List the supported languages. #{{{
     #
     my @all_translators = keys %cb;
 
     print FOUT "Doxygen supports the following (" . @all_translators
              . ") languages (sorted alphabetically):\n\n";
-    
-    foreach (sort grep { s/^Translator(\w+)\b.*$/$1/ } @all_translators) {
-        print FOUT "  $_\n";
-    }
+
+    my @languages = sort 
+                    grep { s/^Translator(\w+)\b.*$/$1/ } 
+                    @all_translators;
+
+    my $languages =  join(", ", @languages);
+    $languages =~ s{((\w+,\s){5})}{$1\n}g;
+    $languages =~ s{Brazilian}{Brazilian Portuguese};
+    $languages =~ s{(,\s+)(\w+)$}{$1and $2.}s;
+
+    print FOUT "$languages\n";
     ##}}}
 
     # If there are up-to-date translators, list them.  #{{{
@@ -1019,11 +1065,35 @@ print STDERR "\n\n";
     }
     ##}}}
 
+    # If there are translators derived from TranslatorEnglish, list them
+    # and name them as obsolete. #{{{
+    #
+    @list = sort grep { $cb{$_} =~ m/^TranslatorEnglish$/ } keys %cb;
+
+    if (@list) {
+        print FOUT "\n" .'-' x 70 . "\n";
+        print FOUT "The following translator classes are implemented "
+                 . "via deriving\n"
+                 . "from the English translator.  This should be done only "
+                 . "in the case\n"
+                 . "when the language maintainer or the doxygen "
+                 . "developers need to update\n"
+                 . "some really outdated translator.  Otherwise, deriving "
+                 . "from\n"
+                 . "the translator adapter classes should be prefered "
+                 . "for obsolete translators.\n"
+                 . "See details below in the report.\n\n";
+        
+        foreach (@list) { print FOUT "  $_\t($cb{$_})\n"; }        
+    }
+    ##}}}
+    
     # If there are other translators, list them. #{{{
     #
     @list = sort 
             grep { $cb{$_} !~ m/^Translator$/ } 
-            grep { $cb{$_} !~ m/^TranslatorAdapter_/ } 
+            grep { $cb{$_} !~ m/^TranslatorAdapter_/ }
+            grep { $cb{$_} !~ m/^TranslatorEnglish$/ }     
             keys %cb;
 
     if (@list) {
@@ -1031,11 +1101,15 @@ print STDERR "\n\n";
         print FOUT "The following translator classes are somehow different\n"
                  . "(sorted alphabetically).  This means that they "
                  . "do not derive from\n"
-                 . "the Translator class, nor from some of the adapter classes.\n\n";
-        
+                 . "the Translator class, nor from some of the adapter "
+                 . "classes,\n"
+                 . "nor from the TranslatorEnglish.  Nothing can be guessed "
+                 . "about the methods.\n\n";
+
         foreach (@list) { print FOUT "  $_\t($cb{$_})\n"; }        
     }
     ##}}}
+
 
     # List the methods that are expected to be implemented.  #{{{
     #
@@ -1059,7 +1133,7 @@ print STDERR "\n\n";
     }
     ##}}}
 
-    # Close the output file
+    # Close the ASCII output file
     #
     close FOUT;
 

@@ -19,41 +19,53 @@
 #include <qstring.h>
 #include <qlist.h>
 #include <qxml.h>
+#include <doxmlintf.h>
 
 #include "basehandler.h"
-#include "doxmlintf.h"
+#include "baseiterator.h"
+#include "linkedtexthandler.h"
+
+class ParamIterator : public BaseIterator<IParamIterator,IParam,IParam>
+{
+  public:
+    ParamIterator(const QList<IParam> &list) : 
+      BaseIterator<IParamIterator,IParam,IParam>(list) {}
+};
 
 class ParamHandler : public IParam, public BaseHandler<ParamHandler>
 {
   public:
     virtual void startParam(const QXmlAttributes& attrib);
     virtual void endParam();
-    virtual void endType();
+    virtual void startType(const QXmlAttributes& attrib);
     virtual void endDeclName();
     virtual void endDefName();
     virtual void endAttrib();
     virtual void endArray();
-    virtual void endDefVal();
+    virtual void startDefVal(const QXmlAttributes& attrib);
 
     ParamHandler(IBaseHandler *parent);
     virtual ~ParamHandler();
 
     // IParam
-    virtual QString type() const { return m_type; }
+    virtual ILinkedTextIterator *type() const 
+    { return new LinkedTextIterator(m_type); }
     virtual QString declarationName() const { return m_declName; }
     virtual QString definitionName() const { return m_defName; }
     virtual QString attrib() const { return m_attrib; } 
     virtual QString arraySpecifier() const { return m_array; }
-    virtual QString defaultValue() const { return m_defVal; }
+    virtual ILinkedTextIterator *defaultValue() const 
+    { return new LinkedTextIterator(m_defVal); }
 
   private:
     IBaseHandler *m_parent;
-    QString m_type;
+    QList<ILinkedText> m_type;
     QString m_declName;
     QString m_defName;
     QString m_attrib;
     QString m_array;
-    QString m_defVal;
+    QList<ILinkedText> m_defVal;
+    LinkedTextHandler *m_linkedTextHandler;
 };
 
 #endif

@@ -21,3 +21,4 @@
 #define LANG_DK
 #define LANG_SK
 #define LANG_UA
+#define LANG_GR

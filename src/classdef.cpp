@@ -87,23 +87,24 @@ ClassDef::ClassDef(
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
   m_innerClasses = new ClassSDict(17);
-  //int i=name().findRev("::"); // TODO: broken if A<N::C> is the class name
-  //if (i==-1)
-  //{
-  //  m_scopelessName=name();
-  //}
-  //else
-  //{
-  //  m_scopelessName=name().right(name().length()-i-2);
-  //}
   m_subGrouping=TRUE;
-  //m_isTemplBaseClass=-1;
   m_templateInstances = 0;
   m_templateMaster =0;
   m_templBaseClassNames = 0;
   m_artificial = FALSE;
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
+  m_membersMerged = FALSE;
+
+  if (((QCString)defFileName).right(5)!=".java" && 
+      guessSection(defFileName)==Entry::SOURCE_SEC)
+  {
+    m_isLocal=TRUE;
+  }
+  else
+  {
+    m_isLocal=FALSE;
+  }
 }
 
 // destroy the class definition
@@ -181,7 +182,10 @@ void ClassDef::addMembersToMemberGroup()
 }
 
 // adds new member definition to the class
-void ClassDef::insertMember(MemberDef *md)
+void ClassDef::internalInsertMember(MemberDef *md,
+                                    Protection prot,
+                                    bool addToAllList
+                                   )
 {
   //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
@@ -190,7 +194,7 @@ void ClassDef::insertMember(MemberDef *md)
     /* insert member in the declaration section */
     /********************************************/
     if (md->isRelated() && 
-        (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
+        (Config_getBool("EXTRACT_PRIVATE") || prot!=Private))
     {
       related.append(md);
       md->setSectionList(&related);
@@ -217,7 +221,7 @@ void ClassDef::insertMember(MemberDef *md)
           md->setSectionList(&properties);
           break;
         case MemberDef::Slot:   // Qt specific
-          switch (md->protection())
+          switch (prot)
           {
             case Protected: 
               proSlots.append(md); 
@@ -238,7 +242,7 @@ void ClassDef::insertMember(MemberDef *md)
           {
             if (md->isVariable())
             {
-              switch (md->protection())
+              switch (prot)
               {
                 case Protected: 
                   proStaticAttribs.append(md); 
@@ -256,7 +260,7 @@ void ClassDef::insertMember(MemberDef *md)
             }
             else // function
             {
-              switch (md->protection())
+              switch (prot)
               {
                 case Protected: 
                   proStaticMembers.append(md); 
@@ -277,7 +281,7 @@ void ClassDef::insertMember(MemberDef *md)
           {
             if (md->isVariable())
             {
-              switch (md->protection())
+              switch (prot)
               {
                 case Protected: 
                   proAttribs.append(md); 
@@ -295,7 +299,7 @@ void ClassDef::insertMember(MemberDef *md)
             }
             else if (md->isTypedef() || md->isEnumerate() || md->isEnumValue())
             {
-              switch (md->protection())
+              switch (prot)
               {
                 case Protected: 
                   proTypes.append(md); 
@@ -313,7 +317,7 @@ void ClassDef::insertMember(MemberDef *md)
             }
             else // member function
             {
-              switch (md->protection())
+              switch (prot)
               {
                 case Protected: 
                   proMembers.append(md); 
@@ -338,7 +342,7 @@ void ClassDef::insertMember(MemberDef *md)
     /* insert member in the detailed documentation section */
     /*******************************************************/
     if ((md->isRelated() && 
-          (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private)
+          (Config_getBool("EXTRACT_PRIVATE") || prot!=Private)
         ) || md->isFriend()
        )
     {
@@ -365,7 +369,7 @@ void ClassDef::insertMember(MemberDef *md)
             functionMembers.append(md);
           break;
         case MemberDef::Slot:
-          switch (md->protection())
+          switch (prot)
           {
             case Protected: 
               if (Config_getBool("SORT_MEMBER_DOCS"))
@@ -391,7 +395,7 @@ void ClassDef::insertMember(MemberDef *md)
           }
           break;
         default: // any of the other members
-          if (md->protection()!=Private || Config_getBool("EXTRACT_PRIVATE"))
+          if (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
           {
             switch (md->memberType())
             {
@@ -458,21 +462,28 @@ void ClassDef::insertMember(MemberDef *md)
     m_isAbstract=TRUE;
   }
 
-  MemberInfo *mi = new MemberInfo((MemberDef *)md,
-                       md->protection(),md->virtualness(),FALSE);
-  MemberNameInfo *mni=0;
-  if ((mni=m_allMemberNameInfoSDict->find(md->name())))
+  if (addToAllList)
   {
-    mni->append(mi);
-  }
-  else
-  {
-    mni = new MemberNameInfo(md->name());
-    mni->append(mi);
-    m_allMemberNameInfoSDict->inSort(mni->memberName(),mni);
+    MemberInfo *mi = new MemberInfo((MemberDef *)md,
+                                     prot,md->virtualness(),FALSE);
+    MemberNameInfo *mni=0;
+    if ((mni=m_allMemberNameInfoSDict->find(md->name())))
+    {
+      mni->append(mi);
+    }
+    else
+    {
+      mni = new MemberNameInfo(md->name());
+      mni->append(mi);
+      m_allMemberNameInfoSDict->append(mni->memberName(),mni);
+    }
   }
 }
 
+void ClassDef::insertMember(MemberDef *md)
+{
+  internalInsertMember(md,md->protection(),TRUE);
+}
 
 //void ClassDef::computeMemberGroups()
 //{
@@ -498,29 +509,30 @@ void ClassDef::insertMember(MemberDef *md)
 // compute the anchors for all members
 void ClassDef::computeAnchors()
 {
-  setAnchors('a',&pubMembers);
-  setAnchors('b',&proMembers);
-  setAnchors('c',&priMembers);
-  setAnchors('d',&pubStaticMembers);
-  setAnchors('e',&proStaticMembers);
-  setAnchors('f',&priStaticMembers);
-  setAnchors('g',&pubSlots);
-  setAnchors('h',&proSlots);
-  setAnchors('i',&priSlots);
-  setAnchors('j',&signals);
-  setAnchors('k',&related);
-  setAnchors('l',&friends);
-  setAnchors('m',&pubAttribs);
-  setAnchors('n',&proAttribs);
-  setAnchors('o',&priAttribs);
-  setAnchors('p',&pubStaticAttribs);
-  setAnchors('q',&proStaticAttribs);
-  setAnchors('r',&priStaticAttribs);
-  setAnchors('s',&pubTypes);
-  setAnchors('t',&proTypes);
-  setAnchors('u',&priTypes);
-  setAnchors('v',&dcopMethods);
-  setAnchors('w',&properties);
+  ClassDef *context = Config_getBool("INLINE_INHERITED_MEMB") ? this : 0;
+  setAnchors(context,'a',&pubMembers);
+  setAnchors(context,'b',&proMembers);
+  setAnchors(context,'c',&priMembers);
+  setAnchors(context,'d',&pubStaticMembers);
+  setAnchors(context,'e',&proStaticMembers);
+  setAnchors(context,'f',&priStaticMembers);
+  setAnchors(context,'g',&pubSlots);
+  setAnchors(context,'h',&proSlots);
+  setAnchors(context,'i',&priSlots);
+  setAnchors(context,'j',&signals);
+  setAnchors(context,'k',&related);
+  setAnchors(context,'l',&friends);
+  setAnchors(context,'m',&pubAttribs);
+  setAnchors(context,'n',&proAttribs);
+  setAnchors(context,'o',&priAttribs);
+  setAnchors(context,'p',&pubStaticAttribs);
+  setAnchors(context,'q',&proStaticAttribs);
+  setAnchors(context,'r',&priStaticAttribs);
+  setAnchors(context,'s',&pubTypes);
+  setAnchors(context,'t',&proTypes);
+  setAnchors(context,'u',&priTypes);
+  setAnchors(context,'v',&dcopMethods);
+  setAnchors(context,'w',&properties);
 }
 
 void ClassDef::distributeMemberGroupDocumentation()
@@ -967,7 +979,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   // write link to list of all members (HTML only)
   if (m_allMemberNameInfoSDict->count()>0 && 
-      !Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      !Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
+      /* && !Config_getBool("INLINE_INHERITED_MEMB") */
+     )
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(m_memListFileName,0);
@@ -1213,7 +1227,9 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
     ClassDef *innerCd;
     for (cli.toFirst();(innerCd=cli.current());++cli)
     {
-      if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0)
+      if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+          (innerCd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE"))
+         )
       {
         msg("Generating docs for nested compound %s...\n",innerCd->name().data());
         innerCd->writeDocumentation(ol);
@@ -1568,6 +1584,7 @@ bool ClassDef::isLinkableInProject() const
       !m_artificial &&
       name().find('@')==-1 && /* anonymous compound */
       (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
+      (!m_isLocal || Config_getBool("EXTRACT_LOCAL_CLASSES")) && /* local */
       hasDocumentation() &&   /* documented */ 
       !isReference() &&         /* not an external reference */
       (!m_isStatic || Config_getBool("EXTRACT_STATIC"));
@@ -1637,6 +1654,17 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
 }
 
 //----------------------------------------------------------------------------
+
+static bool isStandardFunc(MemberDef *md)
+{
+  ClassDef *cd=md->getClassDef();
+  if (cd->templateMaster()) cd=cd->templateMaster();
+  return md->name()=="operator=" || // assignment operator
+         md->name()==cd->localName() || // constructor
+         (md->name().find('~')!=-1 && 
+          md->name().find("operator")==-1); // destructor
+}
+
 /*! 
  * recusively merges the `all members' lists of a class base 
  * with that of this class. Must only be called for classes without
@@ -1645,19 +1673,22 @@ bool ClassDef::isBaseClass(ClassDef *bcd)
 
 void ClassDef::mergeMembers()
 {
+  if (m_membersMerged) return;
+  m_membersMerged=TRUE;
+  //printf("  mergeMembers for %s\n",name().data());
+  bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB" );
   BaseClassListIterator bcli(*baseClasses());
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
     ClassDef *bClass=bcd->classDef; 
-    
+
     // merge the members in the base class of this inheritance branch first
     bClass->mergeMembers();
 
-    MemberNameInfoSDict *srcMnd  = bClass->memberNameInfoSDict();
-    MemberNameInfoSDict *dstMnd  =         memberNameInfoSDict();
-    //MemberNameInfoList *dstMnl  =         memberNameInfoList();
-    
+    MemberNameInfoSDict *srcMnd  = bClass->m_allMemberNameInfoSDict;
+    MemberNameInfoSDict *dstMnd  =         m_allMemberNameInfoSDict;
+
     MemberNameInfoSDict::Iterator srcMnili(*srcMnd);
     MemberNameInfo *srcMni;
     for ( ; (srcMni=srcMnili.current()) ; ++srcMnili)
@@ -1687,24 +1718,26 @@ void ClassDef::mergeMembers()
             if (srcMd!=dstMd) // different members
             {
               ClassDef *dstCd = dstMd->getClassDef();
-              //printf("Is %s a base class of %s?\n",srcCd->name(),dstCd->name());
+              //printf("  Is %s a base class of %s?\n",srcCd->name().data(),dstCd->name().data());
               if (srcCd==dstCd || dstCd->isBaseClass(srcCd)) 
                 // member is in the same or a base class
               {
                 found=matchArguments(srcMd->argumentList(),
-                                     dstMd->argumentList()
-                                    );
-                //ambigue = ambigue || !found;
+                    dstMd->argumentList());
+                //printf("  Yes, matching (%s<->%s): %d\n",
+                //    argListToString(srcMd->argumentList()).data(),
+                //    argListToString(dstMd->argumentList()).data(),
+                //    found);
                 hidden  = hidden  || !found;
               }
               else // member is in a non base class => multiple inheritance
-                   // using the same base class.
+                // using the same base class.
               {
                 //printf("$$ Existing member %s %s add scope %s\n",
                 //    dstMi->ambiguityResolutionScope.data(),
                 //    dstMd->name().data(),
                 //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
-                         
+
                 QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
                 if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
                   dstMi->ambiguityResolutionScope.prepend(scope);
@@ -1722,7 +1755,7 @@ void ClassDef::mergeMembers()
                 found=TRUE;
               }
               else // member can be reached via multiple paths in the 
-                   // inheritance tree
+                // inheritance tree
               {
                 //printf("$$ Existing member %s %s add scope %s\n",
                 //    dstMi->ambiguityResolutionScope.data(),
@@ -1731,7 +1764,9 @@ void ClassDef::mergeMembers()
 
                 QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
                 if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
+                {
                   dstMi->ambiguityResolutionScope.prepend(scope);
+                }
                 ambigue=TRUE;
               }
             }
@@ -1748,6 +1783,14 @@ void ClassDef::mergeMembers()
           //       this case is shown anyway.
           if (!found && srcMd->protection()!=Private)
           {
+            if (inlineInheritedMembers)
+            {
+              if (!isStandardFunc(srcMd))
+              {
+                //printf("    insertMember `%s'\n",srcMd->name().data());
+                internalInsertMember(srcMd,bcd->prot,FALSE);
+              }
+            }
             Specifier virt=srcMi->virt;
             if (srcMi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
             MemberInfo *newMi = new MemberInfo(srcMd,bcd->prot,virt,TRUE);
@@ -1761,8 +1804,10 @@ void ClassDef::mergeMembers()
 
               QCString scope=bClass->name()+"::";
               if (scope!=srcMi->ambiguityResolutionScope.left(scope.length()))
+              {
                 newMi->ambiguityResolutionScope=
                   scope+srcMi->ambiguityResolutionScope.copy();
+              }
             }
             if (hidden)
             {
@@ -1777,7 +1822,6 @@ void ClassDef::mergeMembers()
                 newMi->ambiguityResolutionScope=srcMi->ambigClass->name()+"::";
               }
             }
-            //printf("Adding!\n");
             dstMni->append(newMi);
           }
         }
@@ -1786,8 +1830,9 @@ void ClassDef::mergeMembers()
       {
         // create a deep copy of the list (only the MemberInfo's will be 
         // copied, not the actual MemberDef's)
-        MemberNameInfo *newMni = new MemberNameInfo(srcMni->memberName()); 
-        
+        MemberNameInfo *newMni = 0;
+        newMni = new MemberNameInfo(srcMni->memberName()); 
+
         // copy the member(s) from the base to the sub class
         MemberNameInfoIterator mnii(*srcMni);
         MemberInfo *mi;
@@ -1805,12 +1850,20 @@ void ClassDef::mergeMembers()
           //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
           //    name().data(),mi->memberDef->name().data(),mi->prot,
           //    bcd->prot,prot);
-          
+
           if (mi->prot!=Private)
           {
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-            
+
+            if (inlineInheritedMembers)
+            {
+              if (!isStandardFunc(mi->memberDef))
+              {
+                //printf("    insertMember `%s'\n",mi->memberDef->name().data());
+                internalInsertMember(mi->memberDef,prot,FALSE);
+              }
+            }
             //printf("Adding!\n");
             MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
@@ -1819,13 +1872,13 @@ void ClassDef::mergeMembers()
             newMni->append(newMi);
           }
         }
-        
+
         // add it to the dictionary
-        //dstMnl->append(newMni);
         dstMnd->append(newMni->memberName(),newMni);
       }
     }
   }
+  //printf("  end mergeMembers\n");
 }
 
 //----------------------------------------------------------------------------

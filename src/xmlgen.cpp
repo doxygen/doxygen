@@ -37,7 +37,14 @@
 #include <qfile.h>
 #include <qtextstream.h>
 
-#define XML_DB(x)
+// no debug info
+#define XML_DB(x) do {} while(0)
+
+// debug to stdout
+//#define XML_DB(x) printf x
+
+// debug inside output
+//#define XML_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
 QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
 {
@@ -76,14 +83,15 @@ inline void writeXMLString(QTextStream &t,const char *s)
 void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
                   const char *anchorId,const char *text)
 {
-  t << "<ref idref=\"" << compoundId << "\"";
+  t << "<ref idref=\"" << compoundId;
+  if (anchorId)
+  {
+    t << "_1" << anchorId;
+  }
+  t << "\"";
   if (extRef)
   {
     t << " external=\"" << extRef << "\"";
-  }
-  if (anchorId)
-  {
-    t << " anchor=\"" << anchorId << "\"";
   }
   t << ">";
   writeXMLString(t,text);
@@ -166,7 +174,6 @@ template<class T> class ValStack
  *  Its methods are called when some XML text or markup
  *  needs to be written.
  */
-// TODO: htmlonly, latexonly 
 class XMLGenerator : public OutputDocInterface
 {
   public:
@@ -179,13 +186,13 @@ class XMLGenerator : public OutputDocInterface
       {
         m_inParStack.top() = TRUE;
         m_t << "<para>" << endl;
-        XML_DB(("start par at level=%d\n",m_inParStack.count());)
+        XML_DB(("start par at level=%d\n",m_inParStack.count()));
       }
       else if (m_inParStack.isEmpty())
       {
         m_inParStack.push(TRUE);
         m_t << "<para>" << endl;
-        XML_DB(("start par at level=%d\n",m_inParStack.count());)
+        XML_DB(("start par at level=%d\n",m_inParStack.count()));
       }
     }
     void endParMode()
@@ -194,24 +201,24 @@ class XMLGenerator : public OutputDocInterface
       {
         m_inParStack.top() = FALSE;
         m_t << "</para>" << endl;
-        XML_DB(("end par at level=%d\n",m_inParStack.count());)
+        XML_DB(("end par at level=%d\n",m_inParStack.count()));
       }
     }
     void startNestedPar()
     {
       m_inParStack.push(FALSE);
-      XML_DB(("enter par level=%d\n",m_inParStack.count());)
+      XML_DB(("enter par level=%d\n",m_inParStack.count()));
     }
     void endNestedPar()
     {
-      XML_DB(("leave par level=%d\n",m_inParStack.count());)
+      XML_DB(("leave par level=%d\n",m_inParStack.count()));
       if (m_inParStack.pop())
       {
         m_t << "</para>" << endl;
       }
       else
       {
-        XML_DB(("ILLEGAL par level!\n");)
+        //XML_DB(("ILLEGAL par level!\n"));
       }
     }
   
@@ -219,35 +226,37 @@ class XMLGenerator : public OutputDocInterface
 
     void docify(const char *s) 
     {
+      XML_DB(("(docify \"%s\")\n",s));
       startParMode();
       writeXMLString(m_t,s);
     }
     void writeChar(char c) 
     {
-      startParMode();
       char s[2];s[0]=c;s[1]=0;
       docify(s);
     }
     void writeString(const char *text) 
     {
-      startParMode();
       //m_t << text;
       docify(text);
     }
     void startItemList()       
     { 
+      XML_DB(("(startItemList)\n"));
       startParMode();
       m_t << "<itemizedlist>" << endl;; 
       m_inListStack.push(TRUE);
     }
     void startEnumList()       
     { 
+      XML_DB(("(startEnumList)\n"));
       startParMode();
       m_t << "<orderedlist>"; 
       m_inListStack.push(TRUE);
     }
     void writeListItem()       
     { 
+      XML_DB(("(writeListItem)\n"));
       if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
       {
         m_inListStack.top()=FALSE;
@@ -263,6 +272,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void endItemList()         
     {
+      XML_DB(("(endItemList)\n"));
       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
       {
         endParMode(); 
@@ -273,6 +283,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void endEnumList()         
     { 
+      XML_DB(("(endEnumList)\n"));
       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
       {
         endParMode(); 
@@ -283,65 +294,81 @@ class XMLGenerator : public OutputDocInterface
     }
     void newParagraph()        
     { 
+      XML_DB(("(newParagraph)\n"));
       endParMode();
       startParMode();
     }
     void startBold()           
     { 
+      XML_DB(("(startBold)\n"));
       startParMode();
       m_t << "<bold>"; // non DocBook
     }
     void endBold()             
     { 
+      XML_DB(("(endBold)\n"));
       m_t << "</bold>"; // non DocBook
     }
     void startTypewriter()     
     { 
+      XML_DB(("(startTypewriter)\n"));
       startParMode();
       m_t << "<computeroutput>";
     }
     void endTypewriter()       
     { 
+      XML_DB(("(endTypewriter)\n"));
       m_t << "</computeroutput>";
     }
     void startEmphasis()       
     { 
+      XML_DB(("(startEmphasis)\n"));
       startParMode();
       m_t << "<emphasis>";
     }
     void endEmphasis()         
     { 
+      XML_DB(("(endEmphasis)\n"));
       m_t << "</emphasis>";
     }
     void startCodeFragment()   
     { 
+      XML_DB(("(startCodeFragment)\n"));
+      startParMode();
       m_t << "<programlisting>";
     }
     void endCodeFragment()     
     { 
+      XML_DB(("(endCodeFragment)\n"));
       m_t << "</programlisting>"; 
     }
     void startPreFragment()    
     { 
+      XML_DB(("(startPreFragment)\n"));
+      startParMode();
       m_t << "<programlisting>";
     }
     void endPreFragment()      
     { 
+      XML_DB(("(endPreFragment)\n"));
       m_t << "</programlisting>"; 
     }
     void writeRuler()          
     { 
+      XML_DB(("(startParMode)\n"));
       startParMode();
       m_t << "<hruler/>"; 
     }
     void startDescription()    
     { 
+      XML_DB(("(startDescription)\n"));
       startParMode();
       m_t << "<variablelist>"; 
       m_inListStack.push(TRUE);
     }
     void endDescription()      
     { 
+      XML_DB(("(endDescription)\n"));
       if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
       {
         endNestedPar(); 
@@ -352,6 +379,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startDescItem()       
     { 
+      XML_DB(("(startDescItem)\n"));
       if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
       {
         m_inListStack.top()=FALSE;
@@ -365,22 +393,28 @@ class XMLGenerator : public OutputDocInterface
     }
     void endDescItem()         
     { 
+      XML_DB(("(endDescItem)\n"));
       m_t << "</term></varlistentry><listitem>"; 
       startNestedPar();
     }
     void startDescList(SectionTypes st)       
     { 
-      startParMode();
+      XML_DB(("(startDescList)\n"));
+      endParMode();
       m_t << "<simplesect kind=\"" << sectionTypeToString(st);
       m_t << "\"><title>"; 
+      startNestedPar();
+      m_inParStack.top() = TRUE;
     }
     void endDescList()         
     { 
+      XML_DB(("(endDescList)\n"));
       endNestedPar();
       m_t << "</simplesect>";
     }
     void startParamList(ParamListTypes t)      
     { 
+      XML_DB(("(startParamList)\n"));
       startParMode();
       QCString kind;
       switch(t)
@@ -390,150 +424,209 @@ class XMLGenerator : public OutputDocInterface
         case Exception:   kind="exception"; break;
       }
       m_t << "<parameterlist kind=\"" << kind << "\"><title>"; // non DocBook
+      startNestedPar();
+      m_inParStack.top() = TRUE;
       m_inParamList = TRUE;
     }
     void endParamList()        
     { 
+      XML_DB(("(endParamList)\n"));
       m_inParamList = FALSE;
       m_t << "</parameterlist>";
     }
     void endDescTitle()        
     { 
+      m_inParStack.top() = FALSE;
+      endNestedPar();
+      XML_DB(("(endDescTitle)\n"));
       m_t << "</title>"; 
       if (!m_inParamList) startNestedPar();
     }
-    void writeDescItem()       { }
-    void startDescTable()      { }
-    void endDescTable()        { }
+    void writeDescItem()       
+    { 
+      XML_DB(("(writeDescItem)\n"));
+    }
+    void startDescTable()      
+    { 
+      XML_DB(("(startDescTable)\n"));
+    }
+    void endDescTable()        
+    { 
+      XML_DB(("(endDescTable)\n"));
+    }
     void startDescTableTitle() 
     { 
+      XML_DB(("(startDescTableTitle)\n"));
       m_t << "<parametername>"; // non docbook
     }
     void endDescTableTitle()   
     { 
+      XML_DB(("(endDescTableTitle)\n"));
       m_t << "</parametername>"; // non docbook
     }
     void startDescTableData()  
     { 
+      XML_DB(("(startDescTableData)\n"));
       m_t << "<parameterdescription>"; // non docbook
       startNestedPar();
     }
     void endDescTableData()    
     { 
+      XML_DB(("(endDescTableData)\n"));
       endNestedPar();
       m_t << "</parameterdescription>"; // non docbook
     }
     void lineBreak()           
     { 
+      XML_DB(("(lineBreak)\n"));
       startParMode();
       m_t << "<linebreak/>"; // non docbook
     }
     void writeNonBreakableSpace(int num) 
     { 
+      XML_DB(("(writeNonBreakableSpace)\n"));
       int i;for (i=0;i<num;i++) m_t << "&nbsp;"; 
     }
     
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor, const char *text) 
     {
+      XML_DB(("(writeObjectLink)\n"));
       startParMode();
       writeXMLLink(m_t,ref,file,anchor,text);
     }
     void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *text) 
     {
+      XML_DB(("(writeCodeLink)\n"));
       writeXMLLink(m_t,ref,file,anchor,text);
     }
     void startHtmlLink(const char *url)
     {
+      XML_DB(("(startHtmlLink)\n"));
       startParMode();
       m_t << "<ulink url=\"" << url << "\">";
     }
     void endHtmlLink()
     {
+      XML_DB(("(endHtmlLink)\n"));
       m_t << "</ulink>";
     }
     void writeMailLink(const char *url) 
     {
+      XML_DB(("(writeMailLink)\n"));
       startParMode();
       m_t << "<email>";
       docify(url); 
       m_t << "</email>";
     }
-    void startSection(const char *id,const char *,bool) 
+    void startSection(const char *id,const char *,bool subsection) 
     {
-      m_t << "<sect1 id=\"" << id << "\">";
+      XML_DB(("(startSection)\n"));
+      endParMode();
+      m_t << "<sect";
+      if (subsection) m_t << "2"; else m_t << "1";
+      m_t << " id=\"" << id << "\">";
+      startNestedPar();
+      m_inParStack.top() = TRUE;
     }
-    void endSection(const char *,bool)
+    void endSection(const char *,bool subsection)
     {
-      m_t << "</sect1>";
+      XML_DB(("(endSection)\n"));
+      m_t << "</sect";
+      if (subsection) m_t << "2"; else m_t << "1";
+      m_t << ">";
+      m_inParStack.top() = FALSE;
+      endNestedPar();
     }
     void startSubsection() 
     {
+      XML_DB(("(startSubsection)\n"));
+      endParMode();
       m_t << "<sect2>";
+      startNestedPar();
+      m_inParStack.top() = TRUE;
     }
     void endSubsection() 
     {
+      XML_DB(("(endSubsection)\n"));
       m_t << "</sect2>";
+      m_inParStack.top() = FALSE;
+      endNestedPar();
     }
     void startSubsubsection() 
     {
+      XML_DB(("(startSubsubsection)\n"));
+      endParMode();
       m_t << "<sect3>";
+      startNestedPar();
+      m_inParStack.top() = TRUE;
     }
     void endSubsubsection() 
     {
+      XML_DB(("(endSubsubsection)\n"));
       m_t << "</sect3>";
+      m_inParStack.top() = FALSE;
+      endNestedPar();
     }
     void startCenter() 
     {
+      XML_DB(("(startCenter)\n"));
       startParMode();
       m_t << "<center>"; // non docbook
     }
     void endCenter() 
     {
+      XML_DB(("(endCenter)\n"));
       m_t << "</center>"; // non docbook
     }
     void startSmall() 
     {
+      XML_DB(("(startSmall)\n"));
       startParMode();
       m_t << "<small>"; // non docbook
     }
     void endSmall() 
     {
+      XML_DB(("(endSmall)\n"));
       m_t << "</small>"; // non docbook
     }
     void startSubscript() 
     {
+      XML_DB(("(startSubscript)\n"));
       startParMode();
       m_t << "<subscript>";
     }
     void endSubscript() 
     {
+      XML_DB(("(endSubscript)\n"));
       m_t << "</subscript>";
     }
     void startSuperscript() 
     {
+      XML_DB(("(startSuperscript)\n"));
       startParMode();
       m_t << "<superscript>";
     }
     void endSuperscript() 
     {
+      XML_DB(("(endSuperscript)\n"));
       m_t << "</superscript>";
     }
     void startTable(int cols) 
     {
-      XML_DB(("startTable\n");)
+      XML_DB(("startTable\n"));
       startParMode();
       m_t << "<table cols=\"" << cols << "\">\n";
     }
     void endTable() 
     {
-      XML_DB(("endTable\n");)
+      XML_DB(("endTable\n"));
       m_t << "</row>\n</table>";
     }
     void nextTableRow() 
     {
-      XML_DB(("nextTableRow\n");)
+      XML_DB(("(nextTableRow)\n"));
       m_t << "<row><entry>";
 
       // we need manually add a para here because cells are
@@ -543,12 +636,12 @@ class XMLGenerator : public OutputDocInterface
     }
     void endTableRow() 
     {
-      XML_DB(("endTableRow\n");)
+      XML_DB(("(endTableRow)\n"));
       m_t << "</row>" << endl;
     }
     void nextTableColumn() 
     {
-      XML_DB(("nextTableColumn\n");)
+      XML_DB(("(nextTableColumn)\n"));
       m_t << "<entry>";
       
       // we need manually add a para here because cells are
@@ -558,7 +651,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void endTableColumn() 
     {
-      XML_DB(("endTableColumn\n");)
+      XML_DB(("(endTableColumn)\n"));
       // we need manually add a para here because cells are
       // parsed before the table is generated, and thus
       // are already parsed as if they are inside a paragraph.
@@ -579,20 +672,28 @@ class XMLGenerator : public OutputDocInterface
 
     void startTitle() 
     {
+      XML_DB(("(startTitle)\n"));
       m_t << "<title>";
+      startNestedPar();
+      m_inParStack.top() = TRUE;
     }
     void endTitle()   
     {
+      m_inParStack.top() = FALSE;
+      endNestedPar();
+      XML_DB(("(endTitle)\n"));
       m_t << "</title>" << endl;
     }
     void writeAnchor(const char *id,const char *name) 
     {
+      XML_DB(("(writeAnchor)\n"));
       startParMode();
       m_t << "<anchor id=\"" << id << "_" << name << "\"/>";
     }
     void writeSectionRef(const char *,const char *id,
                          const char *name,const char *text) 
     {
+      XML_DB(("(writeSectionRef)\n"));
       startParMode();
       m_t << "<link linkend=\"" << id << "_" << name << "\">";
       docify(text);
@@ -604,6 +705,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void addIndexItem(const char *primaryie,const char *secondaryie) 
     {
+      XML_DB(("(addIndexItem)\n"));
       startParMode();
       m_t << "<indexentry><primaryie>";
       docify(primaryie);
@@ -613,6 +715,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void writeFormula(const char *id,const char *text) 
     {
+      XML_DB(("(writeFormula)\n"));
       startParMode();
       m_t << "<formula id=\"" << id << "\">"; // non Docbook
       docify(text);
@@ -620,6 +723,7 @@ class XMLGenerator : public OutputDocInterface
     }
     void startImage(const char *name,const char *size,bool /*caption*/) 
     {
+      XML_DB(("(startImage)\n"));
       startParMode();
       m_t << "<image name=\"" << name << "\"";
       if (size) m_t << " size=\"" << size << "\"";
@@ -627,35 +731,43 @@ class XMLGenerator : public OutputDocInterface
     }
     void endImage(bool) 
     {
+      XML_DB(("(endImage)\n"));
       m_t << "</image>";
     }
     void startDotFile(const char *name,bool /*caption*/) 
     {
+      XML_DB(("(startDotFile)\n"));
       startParMode();
       m_t << "<dotfile name=\"" << name << "\">"; // non docbook 
     }
     void endDotFile(bool) 
     {
+      XML_DB(("(endDotFile)\n"));
       m_t << "</dotfile>";
     }
     void startTextLink(const char *name,const char *anchor) 
     {
+      XML_DB(("(startTextLink)\n"));
       startParMode();
       m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
     }
     void endTextLink() 
     {
+      XML_DB(("(endTextLink)\n"));
       m_t << "<ulink>";
     }
     void startPageRef() 
     {
+      XML_DB(("(startPageRef)\n"));
     }
     void endPageRef(const char *,const char *) 
     {
+      XML_DB(("(endPageRef)\n"));
     }
     void writeLineNumber(const char *,const char *file, // TODO: support external references
                          const char *anchor,int l)
     {
+      XML_DB(("(writeLineNumber)\n"));
       m_t << "<linenumber";
       m_t << " line=\"" << l << "\"";
       if (file)
@@ -666,33 +778,60 @@ class XMLGenerator : public OutputDocInterface
     }
     void startCodeLine() 
     {
+      XML_DB(("(startCodeLine)\n"));
       startParMode();
       m_t << "<codeline>"; // non DocBook
     }
     void endCodeLine() 
     {
+      XML_DB(("(endCodeLine)\n"));
       m_t << "</codeline>" << endl; // non DocBook
     }
     void startCodeAnchor(const char *id) 
     {
+      XML_DB(("(startCodeAnchor)\n"));
       startParMode();
       m_t << "<anchor id=\"" << id << "\">";
     }
     void endCodeAnchor() 
     {
+      XML_DB(("(endCodeAnchor)\n"));
       m_t << "</anchor>";
     }
     void startFontClass(const char *colorClass) 
     {
+      XML_DB(("(startFontClass)\n"));
       m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
     }
     void endFontClass()
     {
+      XML_DB(("(endFontClass)\n"));
       m_t << "</highlight>"; // non DocBook
     }
     void codify(const char *text) 
     {
+      XML_DB(("(codify \"%s\")\n",text));
       docify(text);
+    }
+    void startHtmlOnly()  
+    {
+      XML_DB(("(startHtmlOnly)\n"));
+      m_t << "<htmlonly>" << endl;
+    }
+    void endHtmlOnly()    
+    {
+      XML_DB(("(endHtmlOnly)\n"));
+      m_t << "</htmlonly>" << endl;
+    }
+    void startLatexOnly() 
+    {
+      XML_DB(("(startLatexOnly)\n"));
+      m_t << "<latexonly>" << endl;
+    }
+    void endLatexOnly()   
+    {
+      XML_DB(("(endLatexOnly)\n"));
+      m_t << "</latexonly>" << endl;
     }
     
     // Generator specific functions
@@ -782,15 +921,16 @@ static void writeXMLDocBlock(QTextStream &t,
                       const QCString &name,
                       const QCString &text)
 {
-  if (text.stripWhiteSpace().isEmpty()) return;
+  QCString stext = text.stripWhiteSpace();
+  if (text.isEmpty()) return;
   XMLGenerator *xmlGen = new XMLGenerator;
-  xmlGen->startParMode();
+  //xmlGen->startParMode();
   parseDoc(*xmlGen,
            fileName, // input definition file
            lineNr,   // input definition line
            scope,    // scope (which should not be linked to)
            name,     // member (which should not be linked to)
-           text+"\n" // actual text
+           stext+"\n" // actual text
           );
   xmlGen->endParMode();
   t << xmlGen->getContents();
@@ -812,7 +952,39 @@ void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
   delete xmlGen;
 }
 
-
+static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,const char *tagName)
+{
+  QCString scope = rmd->getScopeString();
+  QCString name = rmd->name();
+  if (!scope.isEmpty() && scope!=def->name())
+  {
+    name.prepend(scope+"::");
+  }
+  Definition *d = rmd->getOuterScope();
+  if (d==Doxygen::globalScope) d=rmd->getBodyDef();
+  if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef()) 
+    // link to definition in code
+  {
+    t << "        <" << tagName << " id=\"";
+    t << rmd->getBodyDef()->getOutputFileBase()
+      << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+      << rmd->anchor()
+      << "\">";
+    writeXMLString(t,name);
+    t << "</" << tagName << ">" << endl;
+  }
+  else if (rmd->isLinkable() && d && d->isLinkable()) 
+    // link to declaration in documentation (in absense of a definition)
+  {
+    t << "        <" << tagName << " id=\"";
+    t << d->getOutputFileBase()
+      << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
+      << rmd->anchor()
+      << "\">";
+    writeXMLString(t,name);
+    t << "</" << tagName << ">" << endl;
+  } 
+}
 
 static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
 {
@@ -894,7 +1066,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
       md->memberType()!=MemberDef::Enumeration
      )
   {
-    QCString typeStr = replaceAnonymousScopes(md->typeString());
+    QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),typeStr);
     t << "</type>" << endl;
@@ -1035,7 +1207,13 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   {
     t << "        <location file=\"" 
       << md->getDefFileName() << "\" line=\"" 
-      << md->getDefLine() << "\"/>" << endl;
+      << md->getDefLine() << "\"";
+    if (md->getStartBodyLine()!=-1)
+    {
+      t << " bodystart=\"" << md->getStartBodyLine() << "\" bodyend=\"" 
+        << md->getEndBodyLine() << "\"";
+    }
+    t << "/>" << endl;
   }
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
@@ -1045,24 +1223,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
-      {
-        t << "        <references id=\"";
-        t << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
-          << rmd->anchor()
-          << "\" line=\""
-          << rmd->getStartBodyLine()
-          << "\">";
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-        writeXMLString(t,name);
-        t << "</references>" << endl;
-      }
+      writeMemberReference(t,def,rmd,"references");
     }
   }
   if (md->getReferencedByMembers())
@@ -1071,24 +1232,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
-      {
-        t << "        <referencedby id=\"";
-        t << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
-          << rmd->anchor()
-          << "\" line=\""
-          << rmd->getStartBodyLine()
-          << "\">";
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-        writeXMLString(t,name);
-        t << "</referencedby>" << endl;
-      }
+      writeMemberReference(t,def,rmd,"referencedby");
     }
   }
   
@@ -1256,9 +1400,15 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
     collaborationGraph.writeXML(t);
     t << "    </collaborationgraph>" << endl;
   }
-  t << "      <location file=\"" 
+  t << "    <location file=\"" 
     << cd->getDefFileName() << "\" line=\"" 
-    << cd->getDefLine() << "\"/>" << endl;
+    << cd->getDefLine() << "\"";
+    if (cd->getStartBodyLine()!=-1)
+    {
+      t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\"" 
+        << cd->getEndBodyLine() << "\"";
+    }
+  t << "/>" << endl;
   t << "  </compounddef>" << endl;
 }
 
@@ -1461,7 +1611,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &t)
 
   t << "  <compounddef id=\"" 
     << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
-  t << "    <name>" << convertToXML(gd->name()) << "</name>" << endl;
+  t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>" << endl;
   t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>" << endl;
 
   FileList *fl = gd->getFiles();
@@ -1540,8 +1690,8 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &t)
 
   t << "  <compounddef id=\"";
   if (Config_getBool("CASE_SENSE_NAMES")) t << pi->name; else t << pi->name.lower();
-  t << "\">" << endl;
-  t << "    <name>" << pi->name << "</name>" << endl;
+  t << "\" kind=\"page\">" << endl;
+  t << "    <compoundname>" << pi->name << "</compoundname>" << endl;
   SectionInfo *si = Doxygen::sectionDict.find(pi->name);
   if (si)
   {

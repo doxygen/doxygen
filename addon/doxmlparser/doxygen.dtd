@@ -1,0 +1,123 @@
+<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+<!-- NOTE: THIS DTD IS NOT UP TO DATE!!! DO NOT DEPEND ON IT --> 
+<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- DTD describing the grammar used in doxygen's XML output -->
+
+<!-- standard character entities -->
+<!ENTITY lt     "&#38;#60;"> 
+<!ENTITY gt     "&#62;"> 
+<!ENTITY amp    "&#38;#38;"> 
+<!ENTITY apos   "&#39;"> 
+<!ENTITY quot   "&#34;"> 
+
+<!-- required attributes for compounds -->
+<!ENTITY % compound-req.att 
+                       'id      ID                           #REQUIRED
+                        type    (group|file|namespace|
+                                 class|struct|union|
+                                 interface|dispinterface|
+                                 valuetype|library)          #REQUIRED'
+>
+<!-- required attributes for references -->
+<!ENTITY % ref-req.att   'idref IDREF                        #REQUIRED'
+>
+<!-- required attributes for inheritance relations -->
+<!ENTITY % inheritcompref-req.att
+                         '%ref-req.att;
+                          prot (public|protected|private)    #REQUIRED
+                          virt (non-virtual|virtual)         #REQUIRED'
+>
+
+<!-- required attributes for member sections -->
+<!ENTITY % sec-req.att  'type   (user
+                                |public-type
+                                |public-func
+                                |public-attrib
+                                |public-slot
+                                |public-static-func
+                                |public-static-attrib
+                                |protected-type
+                                |protected-func
+                                |protected-attrib
+                                |protected-slot
+                                |protected-static-func
+                                |protected-static-attrib
+                                |private-type
+                                |private-func
+                                |private-attrib
+                                |private-slot
+                                |private-static-func
+                                |private-static-attrib
+                                |signal
+                                |friend
+                                |related
+				|define|prototype|typedef|enum|func|var
+	                        |dcop-func
+                                |property
+                                )                            #REQUIRED
+                        '
+>
+<!-- required attributes for members -->
+<!ENTITY % mem-req.att  'id     ID                           #REQUIRED'>
+
+<!-- optional attributes for function -->
+<!ENTITY % func-opt.att 'virt   (virtual|pure-virtual)       #IMPLIED'>
+
+<!-- elements -->
+<!ELEMENT doxygen (compounddef)*>
+<!ELEMENT compounddef (compoundname,
+                       basecompoundref*,  
+                       derivedcompoundref*, 
+                       sectiondef*,
+                       briefdescription,
+                       detaileddescription,
+                       inheritancegraph?,
+                       collaborationgraph?,
+                       sourcecode?
+                      )
+>
+<!ATTLIST compounddef %compound-req.att;>
+<!ELEMENT compoundref (#PCDATA)>
+<!ATTLIST compoundref %ref-req.att;>
+<!ELEMENT memberref   (#PCDATA)>
+<!ATTLIST memberref   %ref-req.att;>
+<!ELEMENT basecompoundref EMPTY>
+<!ATTLIST basecompoundref %inheritcompref-req.att;>
+<!ELEMENT derivedcompoundref EMPTY>
+<!ATTLIST derivedcompoundref %inheritcompref-req.att;>
+<!ELEMENT sectionlist (sectiondef)+>
+<!ELEMENT sectiondef  (memberlist)>
+<!ATTLIST sectiondef  %sec-req.att;>
+<!ELEMENT memberlist  (functiondef|variabledef|typedef|definedef|enumdef)+>
+<!ELEMENT functiondef (type?,name,paramlist)>
+<!ATTLIST functiondef %mem-req.att; %func-opt.att;>
+<!ELEMENT variabledef (type,name,array?,initializer?)>
+<!ATTLIST variabledef %mem-req.att;>
+<!ELEMENT typedef     (type,name)>
+<!ATTLIST typedef     %mem-req.att;>
+<!ELEMENT definedef   (name,defparamlist?,initializer?)>
+<!ATTLIST definedef   %mem-req.att;>
+<!ELEMENT enumdef     (name,enumvaluelist)>
+<!ATTLIST enumdef     %mem-req.att;>
+<!ELEMENT slotdef     (type,name,paramlist)>
+<!ATTLIST slotdef     %mem-req.att;>
+<!ELEMENT signaldef   (type,name,paramlist)>
+<!ATTLIST signaldef   %mem-req.att;>
+<!ELEMENT paramlist (param)*>
+<!ELEMENT param (attributes?,type,declname?,defname?,array?,defval?)>
+<!ELEMENT defparamlist (defarg)*>
+<!ELEMENT defarg (#PCDATA)>
+<!ELEMENT enumvaluelist (enumvalue)*>
+<!ELEMENT enumvalue (name,initializer?)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT compoundname (#PCDATA)>
+<!ELEMENT declname (#PCDATA)>
+<!ELEMENT defname (#PCDATA)>
+<!ELEMENT type (#PCDATA|memberref|compoundref|compounddef)*>
+<!ELEMENT defval (#PCDATA|memberref|compoundref)*>
+<!ELEMENT initializer (#PCDATA|memberref|compoundref)*>
+<!ELEMENT array (#PCDATA)>
+<!ELEMENT attributes (#PCDATA)>
+

@@ -711,7 +711,7 @@ static void substEnvVarsInStrList(QStrList &sl)
       // search for a "word"
       for (i=0;i<l;i++)
       {
-	char c;
+	char c=0;
 	// skip until start of new word
 	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++; 
 	p=i; // p marks the start index of the word
@@ -868,6 +868,15 @@ void Config::check()
   char *sfp = stripFromPath.first();
   while (sfp)
   {
+    register char *p = sfp;
+    if (p)
+    {
+      char c;
+      while ((c=*p++))
+      {
+	if (c=='\\') c='/';
+      }
+    }
     QCString path = sfp;
     if (path.at(0)!='/' && (path.length()<=2 || path.at(1)!=':'))
     {
@@ -1213,34 +1222,83 @@ void Config::create()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
 		    "Brazilian, Chinese, Croatian, Czech, Danish, Dutch, Finnish, French, \n"
-		    "German, Hungarian, Italian, Japanese, Korean, Norwegian, Polish, \n"
+		    "German, Greek, Hungarian, Italian, Japanese, Korean, Norwegian, Polish, \n"
 		    "Portuguese, Romanian, Russian, Slovak, Slovene, Spanish and Swedish.\n",
 		    "English"
                    );
+#ifdef LANG_BR
   ce->addValue("Brazilian");
+#endif
+#ifdef LANG_CN
   ce->addValue("Chinese");
+#endif
+#ifdef LANG_HR
   ce->addValue("Croatian");
+#endif
+#ifdef LANG_CZ
   ce->addValue("Czech");
+#endif
+#ifdef LANG_DK
   ce->addValue("Danish");
+#endif
+#ifdef LANG_NL
   ce->addValue("Dutch");
+#endif
   ce->addValue("English");
+#ifdef LANG_FI
   ce->addValue("Finnish");
+#endif
+#ifdef LANG_FR
   ce->addValue("French");
+#endif
+#ifdef LANG_DE
   ce->addValue("German");
+#endif
+#ifdef LANG_GR
+  ce->addValue("Greek");
+#endif
+#ifdef LANG_HU
   ce->addValue("Hungarian");
+#endif
+#ifdef LANG_IT
   ce->addValue("Italian");
+#endif
+#ifdef LANG_JP
   ce->addValue("Japanese");
+#endif
+#ifdef LANG_KR
   ce->addValue("Korean");
+#endif
+#ifdef LANG_NO
   ce->addValue("Norwegian");
+#endif
+#ifdef LANG_PL
   ce->addValue("Polish");
+#endif
+#ifdef LANG_PT
   ce->addValue("Portuguese");
+#endif
+#ifdef LANG_RO
   ce->addValue("Romanian");
+#endif
+#ifdef LANG_RU
   ce->addValue("Russian");
+#endif
+#ifdef LANG_SK
   ce->addValue("Slovak");
+#endif
+#ifdef LANG_SI
   ce->addValue("Slovene");
+#endif
+#ifdef LANG_ES
   ce->addValue("Spanish");
+#endif
+#ifdef LANG_SE
   ce->addValue("Swedish");
+#endif
+#ifdef LANG_UA
   ce->addValue("Ukrainian");
+#endif
   cb = addBool(
                     "EXTRACT_ALL",
                     "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
@@ -1260,6 +1318,13 @@ void Config::create()
                     "If the EXTRACT_STATIC tag is set to YES all static members of a file \n"
                     "will be included in the documentation. \n",
                     FALSE
+                 );
+  cb = addBool(
+                    "EXTRACT_LOCAL_CLASSES",
+                    "If the EXTRACT_LOCAL_CLASSES tag is set to YES classes (and structs) \n"
+		    "defined locally in source files will be included in the documentation. \n"
+		    "If set to NO only classes defined in header files are included. \n",
+                    TRUE
                  );
   cb = addBool(
                     "HIDE_UNDOC_MEMBERS",
@@ -1300,6 +1365,14 @@ void Config::create()
                     "Doxygen will generate a detailed section even if there is only a brief \n"
                     "description. \n",
                     FALSE
+                 );
+  cb = addBool(
+                    "INLINE_INHERITED_MEMB",
+                    "If the INLINE_INHERITED_MEMB tag is set to YES, doxygen will show all inherited \n"
+                    "members of a class in the documentation of that class as if those members were \n"
+		    "ordinary class members. Constructors, destructors and assignment operators of \n"
+		    "the base classes will not be shown. \n",
+		    FALSE
                  );
   cb = addBool(
                     "FULL_PATH_NAMES",

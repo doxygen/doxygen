@@ -240,6 +240,11 @@ class RTFGenerator : public OutputGenerator
     void startFontClass(const char *) {}
     void endFontClass() {}
 
+    void startHtmlOnly()  {}
+    void endHtmlOnly()    {}
+    void startLatexOnly() {}
+    void endLatexOnly()   {}
+
     static bool preProcessFileInplace(const char *path,const char *name);
     
   private:

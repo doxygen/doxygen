@@ -272,8 +272,9 @@ static void writeDefaultHeaderPart1(QTextStream &t)
   t << "\\makeindex\n"
     "\\setcounter{tocdepth}{1}\n"
     "\\setlength{\\footrulewidth}{0.4pt}\n"
-    "\\begin{document}\n"
-    "\\begin{titlepage}\n"
+    "\\begin{document}\n";
+  if (theTranslator->idLanguage()=="greek") t << "\\selectlanguage{greek}\n";
+  t << "\\begin{titlepage}\n"
     "\\vspace*{7cm}\n"
     "\\begin{center}\n"
     "{\\Large ";
@@ -1380,13 +1381,15 @@ void LatexGenerator::latin2ToLatex(unsigned char c)
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
-  static bool isCzech     = theTranslator->idLanguage()=="czech";
-  static bool isJapanese  = theTranslator->idLanguage()=="japanese";
-  static bool isKorean    = theTranslator->idLanguage()=="korean";
-  static bool isRussian   = theTranslator->idLanguage()=="russian";
-  static bool isUkrainian = theTranslator->idLanguage()=="ukrainian";
-  static bool isChinese   = theTranslator->idLanguage()=="chinese";
-  static bool isLatin2    = theTranslator->idLanguageCharset()=="iso-8859-2";
+  static bool isCzech         = theTranslator->idLanguage()=="czech";
+  static bool isJapanese      = theTranslator->idLanguage()=="japanese";
+  static bool isJapaneseSjis  = theTranslator->idLanguage()=="japanese-sjis";
+  static bool isKorean        = theTranslator->idLanguage()=="korean";
+  static bool isRussian       = theTranslator->idLanguage()=="russian";
+  static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
+  static bool isChinese       = theTranslator->idLanguage()=="chinese";
+  static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
+  static bool isGreek         = theTranslator->idLanguage()=="greek";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1452,7 +1455,7 @@ void LatexGenerator::docify(const char *str)
 
           default:   
              // Some languages uses wide characters
-             if (isJapanese || isKorean || isChinese)
+             if (isJapanese || isJapaneseSjis || isKorean || isChinese)
              { 
                if (c>=128) 
                {
@@ -1494,6 +1497,17 @@ void LatexGenerator::docify(const char *str)
                  t << (char)c;
                }
 	     }
+             else if (isGreek)
+             {
+               if (c<128)
+               {
+                 t << "\\textlatin{" << (char)c << "}";
+               }
+               else
+               {
+                 t << (char)c;
+               }
+             }
              else // language is other than Czech, Russian or Japanese
              {
                switch(c)

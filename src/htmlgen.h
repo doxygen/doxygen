@@ -249,6 +249,11 @@ class HtmlGenerator : public OutputGenerator
     void startFontClass(const char *s) { t << "<font class=\"" << s << "\">"; }
     void endFontClass() { t << "</font>"; }
 
+    void startHtmlOnly()  {}
+    void endHtmlOnly()    {}
+    void startLatexOnly() {}
+    void endLatexOnly()   {}
+
   private:
     QCString lastTitle;
     QCString lastFile;

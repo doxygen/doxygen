@@ -19,7 +19,8 @@
 #include <qlist.h>
 #include "basehandler.h"
 #include "compoundhandler.h"
-#include "doxmlintf.h"
+#include <doxmlintf.h>
+#include "memberhandler.h"
 
 class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
 {
@@ -28,26 +29,29 @@ class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
     MainHandler();
     virtual ~MainHandler();
 
-    QListIterator<ICompound> getCompoundIterator() const
+    ICompoundIterator *compounds() const
     {
-      return m_compounds;
+      return new CompoundIterator(m_compounds);
     }
-    ICompound *getCompoundById(const QString &id) const
+    ICompound *compoundById(const QString &id) const
     {
       return m_compoundDict[id];
     }
-    virtual ICompound *getCompoundByName(const QString &name) const
+    virtual ICompound *compoundByName(const QString &name) const
     {
       return name.isEmpty() ? 0 : m_compoundNameDict[name]; 
     }
-    virtual IMember *getMemberById(const QString &id) const
+    virtual IMember *memberById(const QString &id) const
     {
       return m_memberDict[id];
     }
-    virtual QList<IMember> *getMemberByName(const QString &name) const
+    virtual IMemberIterator *memberByName(const QString &name) const
     {
-      return m_memberNameDict[name]; 
+      QList<IMember> *ml = m_memberNameDict[name];
+      if (ml==0) return 0;
+      return new MemberIterator(*ml); 
     }
+    virtual void release() { delete this; }
     void insertMemberById(const QString &id,IMember *h);
     void insertMemberByName(const QString &name,IMember *h);
 

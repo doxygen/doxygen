@@ -91,6 +91,12 @@
 #ifdef LANG_UA
 #include "translator_ua.h"
 #endif
+#ifdef LANG_GR
+#include "translator_gr.h"
+#endif
+//#ifdef LANG_JS
+//#include "translator_js.h"
+//#endif
 #endif
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -242,6 +248,16 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorUkrainian;
   }
 #endif
+#ifdef LANG_GR
+  else if (L_EQUAL("greek"))
+  {
+    theTranslator=new TranslatorGreek;
+  }
+#endif
+//  else if (L_EQUAL("japanese-sjis"))
+//  {
+//    theTranslator=new TranslatorJapaneseSjis;
+//  }
 #endif
   else // use the default language (i.e. english)
   {

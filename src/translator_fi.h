@@ -27,58 +27,67 @@ Olli Korhonen      <olli.korhonen@ccc.fi>
          olla vakiintuneessa käytössä.
 
 * Tehtävää: 
-	- Termien kokoaminen listaksi ja suomennosten järkevyyden tarkastelu. (lista on jo melko kattava)
-		Author		= Tekijä
-		Class		= Luokka
-		Compound 	= Kooste ?
-		Data		= Data
-		Documentation	= Dokumentaatio
-		Defines		= Määrittelyt ?
-		Description	= Selite
-		Detailed	= Yksityiskohtainen
-		diagram		= kaavio
-		Enum		= Enumeraatio ?
-		Exceptions	= Poikkeukset
-		File		= Tiedosto
-		Friends		= Ystävät ?
-		Functions	= Funktiot
-		Hierarchical	= Hierarkinen
-		Index		= Indeksi
-		Inherits	= Perii
-		Member		= Jäsen
-		Module		= Moduli
-		Namespace	= Nimiavaruus ?
-		Parameters	= Parametrit
-		Private		= Yksityinen
-		Protected	= Suojattu
-		Prototypes	= Prototyypit
-		Public		= Julkinen
-		Reference Manual= Käsikirja
-		Reimplemented	= Uudelleen toteutettu
-		Related		= Liittyvä
-		Signals		= Signaali
-		Slots		= ? 
-		Static		= Staattinen
-		Struct		= ?
-		Typedef		= Tyyppimäärittely
-		Union		= ?
-		Variables	= Muuttujat
-	- Taivutusmuotojen virheettömyyden tarkastelu prepositioiden korvauskohdissa.
-	- Sanasta sanaan käännöskohtien mielekkyyden tarkastelu valmiista dokumentista.
-	- umlaut vastineiden käyttö scandien kohdalla.
+        - Termien kokoaminen listaksi ja suomennosten järkevyyden tarkastelu. (lista on jo melko kattava)
+                Author          = Tekijä
+                Class           = Luokka
+                Compound        = Kooste ?
+                Data            = Data
+                Documentation   = Dokumentaatio
+                Defines         = Määrittelyt ?
+                Description     = Selite
+                Detailed        = Yksityiskohtainen
+                diagram         = kaavio
+                Enum            = Enumeraatio ?
+                Exceptions      = Poikkeukset
+                File            = Tiedosto
+                Friends         = Ystävät ?
+                Functions       = Funktiot
+                Hierarchical    = Hierarkinen
+                Index           = Indeksi
+                Inherits        = Perii
+                Member          = Jäsen
+                Module          = Moduli
+                Namespace       = Nimiavaruus ?
+                Parameters      = Parametrit
+                Private         = Yksityinen
+                Protected       = Suojattu
+                Prototypes      = Prototyypit
+                Public          = Julkinen
+                Reference Manual= Käsikirja
+                Reimplemented   = Uudelleen toteutettu
+                Related         = Liittyvä
+                Signals         = Signaali
+                Slots           = ? 
+                Static          = Staattinen
+                Struct          = ?
+                Typedef         = Tyyppimäärittely
+                Union           = ?
+                Variables       = Muuttujat
+        - Taivutusmuotojen virheettömyyden tarkastelu prepositioiden korvauskohdissa.
+        - Sanasta sanaan käännöskohtien mielekkyyden tarkastelu valmiista dokumentista.
+        - umlaut vastineiden käyttö scandien kohdalla.
 
 positiiviset kommentit otetaan ilolla vastaan.
 ===================================================================================
 */
 
-#ifndef TRANSLATOR_SF_H
-#define TRANSLATOR_SF_H
+#ifndef TRANSLATOR_FI_H
+#define TRANSLATOR_FI_H
 
-#include "translator_adapter.h"
-
-class TranslatorFinnish : public TranslatorAdapter_1_0_0
+class TranslatorFinnish : public TranslatorEnglish
 {
   public:
+    /*! This method is used to generate a warning message to signal
+     *  the user that the translation of his/her language of choice
+     *  needs updating.
+     */
+    virtual QCString updateNeededMessage()
+    {
+      return "Warning: The Finnish translator is really obsolete.\n"
+             "It was not updated since version 1.0.0.  As a result,\n"
+             "some sentences may appear in English.\n\n";
+    }
+
     QCString idLanguage()
     { return "finnish"; }
     QCString latexBabelPackage()
@@ -119,7 +128,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_0_0
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result=(QCString)"Tämän "+s+ // "The documentation for this"+s+
-			" dokumentaatio on generoitu ";// " was generated from the following file";
+                        " dokumentaatio on generoitu ";// " was generated from the following file";
       if (single) 
         result+="seuraavasta tiedostosta:";   
       else 
@@ -379,7 +388,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_0_0
 
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
-	// funktio on hiukan vaikea kääntää prepositioihin sidotun rakenteen vuoksi.
+        // funktio on hiukan vaikea kääntää prepositioihin sidotun rakenteen vuoksi.
       QCString result=(QCString)"Generoitu "+date; // "Generated at "
       if (projName) result+=(QCString)" projektille "+projName; // " for "
       result+=(QCString)" tekijä: "; // " by"

@@ -167,7 +167,7 @@ void NamespaceDef::insertMember(MemberDef *md)
 
 void NamespaceDef::computeAnchors()
 {
-  setAnchors('a',&allMemberList);
+  setAnchors(0,'a',&allMemberList);
 }
 
 void NamespaceDef::writeDocumentation(OutputList &ol)

@@ -296,5 +296,22 @@ translator adapter base class.  The reason is that the adapter
 classes implement also obsolete methods.  Another reason is that
 some of the methods could become obsolete from some newer adapter on.
 
+<b>The really obsolete language translators</b> may lead to too much
+complicated adapters.  Because of that, doxygen developers may decide
+to derive such translators from the \c TranslatorEnglish class, which 
+is by definition always up-to-date.
+
+When doing so, all the missing methods will be replaced by the
+English translation.  This means that not-implemented methods will
+always return the English result.  Such translators are marked using
+word \c obsolete.  You should read it <b>really obsolete</b>. No
+guess about the last update can be done.  
+
+Often, it is possible to construct better result from the obsolete
+methods.  Because of that, the translator adapter classes should be
+used if possible.  On the other hand, implementation of adapters for
+really obsolete translators brings too much maintenance and
+run-time overhead.
+
 */
 

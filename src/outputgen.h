@@ -257,6 +257,11 @@ class BaseOutputDocInterface
     virtual void startFontClass(const char *) = 0;
     virtual void endFontClass() = 0;
 
+    virtual void startHtmlOnly() = 0;
+    virtual void endHtmlOnly() = 0;
+    virtual void startLatexOnly() = 0;
+    virtual void endLatexOnly() = 0;
+
     /*! Writes an ASCII string to the output. This function should keep 
      *  spaces visible, should break lines at a newline and should convert 
      *  tabs to the right number of spaces.

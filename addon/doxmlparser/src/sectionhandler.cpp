@@ -53,7 +53,7 @@ void SectionHandler::initialize(MainHandler *m)
   MemberHandler *mh;
   for (;(mh=(MemberHandler *)mli.current());++mli)
   {
-    m->insertMemberById(mh->name(),mh);
+    m->insertMemberById(mh->id(),mh);
     m->insertMemberByName(mh->name(),mh);
   }
 }

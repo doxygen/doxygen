@@ -76,6 +76,7 @@ HEADERS      =	bufstr.h \
 		translator_es.h \
 		translator_fi.h \
 		translator_fr.h \
+		translator_gr.h \
 		translator_hr.h \
 		translator_hu.h \
 		translator_it.h \

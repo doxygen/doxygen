@@ -196,8 +196,8 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
   					  g_argRoundCount++;
 					  *g_copyArgValue += *yytext;
   					}
-<CopyArgRound,CopyArgRound2>")"		{
-					  *g_copyArgValue += *yytext;
+<CopyArgRound,CopyArgRound2>")"({B}*{ID})* {
+					  *g_copyArgValue += yytext;
 					  if (g_argRoundCount>0) 
 					  {
 					    g_argRoundCount--;
@@ -251,6 +251,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
 					  g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
 					  g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
+					  //printf("curArgType=`%s' curArgDefVal=`%s'\n",g_curArgTypeName.data(),g_curArgDefValue.data());
 					  int l=g_curArgTypeName.length();
 					  if (l>0)
 					  {

@@ -555,215 +555,214 @@ static void buildClassList(Entry *root)
     {
       // this should not be called
       warn(root->fileName,root->startLine,
-           "Warning: invalid class name found!"
+          "Warning: invalid class name found!"
           );
+      goto error;
     }
-    else 
+    Debug::print(Debug::Classes,0,"  Found class with raw name %s\n",fullName.data());
+
+    fullName=stripAnonymousNamespaceScope(fullName);
+    fullName=stripTemplateSpecifiersFromScope(fullName);
+
+    Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
+
+    bool ambig;
+    ClassDef *cd;
+    //printf("findFileDef(%s)\n",root->fileName.data());
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+
+    if ((cd=getClass(fullName))) 
     {
-      Debug::print(Debug::Classes,0,"  Found class with raw name %s\n",fullName.data());
-
-      fullName=stripAnonymousNamespaceScope(fullName);
-      fullName=stripTemplateSpecifiersFromScope(fullName);
-        
-      Debug::print(Debug::Classes,0,"  Found class with name %s\n",fullName.data());
-
-      bool ambig;
-      ClassDef *cd;
-      //printf("findFileDef(%s)\n",root->fileName.data());
-      FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-
-      if ((cd=getClass(fullName))) 
+      Debug::print(Debug::Classes,0,"  Existing class!\n",fullName.data());
+      //if (cd->templateArguments()==0)
+      //{
+      //  //printf("existing ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
+      //  cd->setTemplateArguments(tArgList);
+      //}
+      if (!root->doc.isEmpty() || !root->brief.isEmpty() || 
+          (root->bodyLine!=-1 && Config_getBool("SOURCE_BROWSER"))
+         ) 
+        // block contains something that ends up in the docs
+      { 
+        if (!root->doc.isEmpty() && !cd->documentation().isEmpty())
+        {
+          warn(
+              root->fileName,root->startLine,
+              "Warning: class %s already has a detailed description. "
+              "Skipping the one found here.",
+              fullName.data()
+              );
+        }
+        else if (!root->doc.isEmpty())
+        {
+          cd->setDocumentation(root->doc);
+        }
+        if (!root->brief.isEmpty() && !cd->briefDescription().isEmpty())
+        {
+          warn(
+              root->fileName,root->startLine,
+              "Warning: class %s already has a brief description\n"
+              "         skipping the one found here.",
+              fullName.data()
+              );
+        }
+        else if (!root->brief.isEmpty())
+        {
+          cd->setBriefDescription(root->brief);
+        }
+        if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
+        {
+          cd->setBodySegment(root->bodyLine,root->endBodyLine);
+          cd->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
+        }
+        cd->addSectionsToDefinition(root->anchors);
+        cd->setName(fullName); // change name to match docs
+      }
+      cd->setFileDef(fd);
+      if (cd->hasDocumentation())
       {
-        Debug::print(Debug::Classes,0,"  Existing class!\n",fullName.data());
-        //if (cd->templateArguments()==0)
-        //{
-        //  //printf("existing ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
-        //  cd->setTemplateArguments(tArgList);
-        //}
-        if (!root->doc.isEmpty() || !root->brief.isEmpty() || 
-            (root->bodyLine!=-1 && Config_getBool("SOURCE_BROWSER"))
-           ) 
-          // block contains something that ends up in the docs
-        { 
-          if (!root->doc.isEmpty() && !cd->documentation().isEmpty())
-          {
-            warn(
-                 root->fileName,root->startLine,
-                 "Warning: class %s already has a detailed description. "
-                 "Skipping the one found here.",
-                 fullName.data()
-                );
-          }
-          else if (!root->doc.isEmpty())
-          {
-            cd->setDocumentation(root->doc);
-          }
-          if (!root->brief.isEmpty() && !cd->briefDescription().isEmpty())
-          {
-            warn(
-                 root->fileName,root->startLine,
-                 "Warning: class %s already has a brief description\n"
-                 "         skipping the one found here.",
-                 fullName.data()
-                );
-          }
-          else if (!root->brief.isEmpty())
-          {
-            cd->setBriefDescription(root->brief);
-          }
-          if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
-          {
-            cd->setBodySegment(root->bodyLine,root->endBodyLine);
-            cd->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
-          }
-          cd->addSectionsToDefinition(root->anchors);
-          cd->setName(fullName); // change name to match docs
-        }
-        cd->setFileDef(fd);
-        if (cd->hasDocumentation())
-        {
-          addIncludeFile(cd,fd,root);
-        }
-        addNamespace(root,cd);
-        if (fd && (root->section & Entry::COMPOUND_MASK)) 
-        {
-          //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
-          //    cd->name().data(),
-          //    fd->name().data(),
-          //    root->fileName.data()
-          //   );
-          fd->insertClass(cd);
-        }
-        addClassToGroups(root,cd);
-        cd->setRefItems(root->todoId,root->testId,root->bugId);
-        if (!root->subGrouping) cd->setSubGrouping(FALSE);
+        addIncludeFile(cd,fd,root);
+      }
+      addNamespace(root,cd);
+      if (fd && (root->section & Entry::COMPOUND_MASK)) 
+      {
+        //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
+        //    cd->name().data(),
+        //    fd->name().data(),
+        //    root->fileName.data()
+        //   );
+        fd->insertClass(cd);
+      }
+      addClassToGroups(root,cd);
+      cd->setRefItems(root->todoId,root->testId,root->bugId);
+      if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
-        if (cd->templateArguments()==0) 
+      if (cd->templateArguments()==0) 
+      {
+        // this happens if a template class declared with @class is found
+        // before the actual definition.
+        ArgumentList *tArgList = 
+          getTemplateArgumentsFromName(fullName,root->tArgLists);
+        cd->setTemplateArguments(tArgList);
+      }
+    }
+    else // new class
+    {
+
+      ClassDef::CompoundType sec=ClassDef::Class; 
+      switch(root->section)
+      {
+        case Entry::UNION_SEC: 
+        case Entry::UNIONDOC_SEC: 
+          sec=ClassDef::Union; break;
+        case Entry::STRUCT_SEC:
+        case Entry::STRUCTDOC_SEC: 
+          sec=ClassDef::Struct; break;
+        case Entry::INTERFACE_SEC:
+        case Entry::INTERFACEDOC_SEC:
+          sec=ClassDef::Interface; break;
+        case Entry::EXCEPTION_SEC:
+        case Entry::EXCEPTIONDOC_SEC:
+          sec=ClassDef::Exception; break;
+      }
+      Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
+          fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
+      QCString className;
+      QCString namespaceName;
+      extractNamespaceName(fullName,className,namespaceName);
+
+      //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
+
+      QCString tagName;
+      QCString refFileName;
+      if (root->tagInfo)
+      {
+        tagName     = root->tagInfo->tagName;
+        refFileName = root->tagInfo->fileName;
+      }
+      ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
+          tagName,refFileName);
+      cd->setDocumentation(root->doc); // copy docs to definition
+      cd->setBriefDescription(root->brief);
+      //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
+
+
+      ArgumentList *tArgList = 
+        getTemplateArgumentsFromName(fullName,root->tArgLists);
+      //printf("class %s template args=%s\n",fullName.data(),
+      //    tArgList ? tempArgListToString(tArgList).data() : "<none>");
+      cd->setTemplateArguments(tArgList);
+      cd->setProtection(root->protection);
+      cd->addSectionsToDefinition(root->anchors);
+      cd->setIsStatic(root->stat);
+
+      // file definition containing the class cd
+      cd->setBodySegment(root->bodyLine,root->endBodyLine);
+      cd->setBodyDef(fd);
+      if (!root->subGrouping) cd->setSubGrouping(FALSE);
+
+      addClassToGroups(root,cd);
+      cd->setRefItems(root->todoId,root->testId,root->bugId);
+
+      // see if the class is found inside a namespace 
+      bool found=addNamespace(root,cd);
+
+      cd->setFileDef(fd);
+      if (cd->hasDocumentation())
+      {
+        addIncludeFile(cd,fd,root);
+      }
+
+      // namespace is part of the class name
+      if (!found && !namespaceName.isEmpty())
+      {
+        NamespaceDef *nd = getResolvedNamespace(namespaceName);
+        if (nd)
         {
-          // this happens if a template class declared with @class is found
-          // before the actual definition.
-          ArgumentList *tArgList = 
-            getTemplateArgumentsFromName(fullName,root->tArgLists);
-          cd->setTemplateArguments(tArgList);
+          cd->setNamespace(nd);
+          nd->insertClass(cd);
+          found=TRUE;
         }
       }
-      else // new class
+
+      // if the class is not in a namespace then we insert 
+      // it in the file definition
+      if (!found && fd && (root->section & Entry::COMPOUND_MASK)) 
       {
-        
-        ClassDef::CompoundType sec=ClassDef::Class; 
-        switch(root->section)
-        {
-          case Entry::UNION_SEC: 
-          case Entry::UNIONDOC_SEC: 
-            sec=ClassDef::Union; break;
-          case Entry::STRUCT_SEC:
-          case Entry::STRUCTDOC_SEC: 
-            sec=ClassDef::Struct; break;
-          case Entry::INTERFACE_SEC:
-          case Entry::INTERFACEDOC_SEC:
-            sec=ClassDef::Interface; break;
-          case Entry::EXCEPTION_SEC:
-          case Entry::EXCEPTIONDOC_SEC:
-            sec=ClassDef::Exception; break;
-        }
-        Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
-            fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
-        QCString className;
-        QCString namespaceName;
-        extractNamespaceName(fullName,className,namespaceName);
+        //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
+        //    cd->name().data(),
+        //    fd->name().data(),
+        //    root->fileName.data()
+        //   );
+        fd->insertClass(cd);
+      }
 
-        //printf("New class: namespace `%s' name=`%s'\n",className.data(),namespaceName.data());
-        
-        QCString tagName;
-        QCString refFileName;
-        if (root->tagInfo)
-        {
-          tagName     = root->tagInfo->tagName;
-          refFileName = root->tagInfo->fileName;
-        }
-        ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
-                                  tagName,refFileName);
-        cd->setDocumentation(root->doc); // copy docs to definition
-        cd->setBriefDescription(root->brief);
-        //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
+      // the empty string test is needed for extract all case
+      cd->setBriefDescription(root->brief);
+      cd->insertUsedFile(root->fileName);
 
+      // add class to the list
+      //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
+      Doxygen::classSDict.append(fullName,cd);
 
-        ArgumentList *tArgList = 
-            getTemplateArgumentsFromName(fullName,root->tArgLists);
-        //printf("class %s template args=%s\n",fullName.data(),
-        //    tArgList ? tempArgListToString(tArgList).data() : "<none>");
-        cd->setTemplateArguments(tArgList);
-        cd->setProtection(root->protection);
-        cd->addSectionsToDefinition(root->anchors);
-        cd->setIsStatic(root->stat);
-
-        // file definition containing the class cd
-        cd->setBodySegment(root->bodyLine,root->endBodyLine);
-        cd->setBodyDef(fd);
-        if (!root->subGrouping) cd->setSubGrouping(FALSE);
-
-        addClassToGroups(root,cd);
-        cd->setRefItems(root->todoId,root->testId,root->bugId);
-
-        // see if the class is found inside a namespace 
-        bool found=addNamespace(root,cd);
-
-        cd->setFileDef(fd);
-        if (cd->hasDocumentation())
-        {
-          addIncludeFile(cd,fd,root);
-        }
-        
-        // namespace is part of the class name
-        if (!found && !namespaceName.isEmpty())
-        {
-          NamespaceDef *nd = getResolvedNamespace(namespaceName);
-          if (nd)
-          {
-            cd->setNamespace(nd);
-            nd->insertClass(cd);
-            found=TRUE;
-          }
-        }
-        
-        // if the class is not in a namespace then we insert 
-        // it in the file definition
-        if (!found && fd && (root->section & Entry::COMPOUND_MASK)) 
-        {
-          //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
-          //    cd->name().data(),
-          //    fd->name().data(),
-          //    root->fileName.data()
-          //   );
-          fd->insertClass(cd);
-        }
-        
-        // the empty string test is needed for extract all case
-        cd->setBriefDescription(root->brief);
-        cd->insertUsedFile(root->fileName);
-
-        // add class to the list
-        //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-        Doxygen::classSDict.append(fullName,cd);
-
-        // also add class to the correct structural context 
-        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
-        if (d==0)
-        {
-          //warn(root->fileName,root->startLine,
-          //     "Warning: Internal inconsistency: scope for class %s not "
-          //     "found!\n",fullName.data()
-          //    );
-        }
-        else
-        {
-          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
-          d->addInnerCompound(cd);
-          cd->setOuterScope(d);
-        }
+      // also add class to the correct structural context 
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+      if (d==0)
+      {
+        //warn(root->fileName,root->startLine,
+        //     "Warning: Internal inconsistency: scope for class %s not "
+        //     "found!\n",fullName.data()
+        //    );
+      }
+      else
+      {
+        //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+        d->addInnerCompound(cd);
+        cd->setOuterScope(d);
       }
     }
   }
+error:
   EntryListIterator eli(*root->sublist);
   Entry *e;
   for (;(e=eli.current());++eli)
@@ -1847,7 +1846,7 @@ static void buildFunctionList(Entry *root)
               //printf("match!\n");
               // see if we need to create a new member
               found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
-                    ((fd!=0 &&                          // no external reference and
+                    ((nd==0 && rnd==0 && fd!=0 &&       // no external reference and
                       fd->absFilePath()==root->fileName // prototype in the same file
                      ) 
                     ); 
@@ -2167,6 +2166,11 @@ static void transferFunctionDocumentation()
         }
         mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
         mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
+
+        int todoId = QMAX(mdec->todoId(),mdef->todoId());
+        int testId = QMAX(mdec->testId(),mdef->testId());
+        int bugId  = QMAX(mdec->bugId() ,mdef->bugId() );
+        mdec->setRefItems(todoId,testId,bugId);
       }
     }
   }
@@ -4775,6 +4779,7 @@ static void buildCompleteMemberLists()
          cd->subClasses()->count()==0 && // is a root of the hierarchy
          cd->baseClasses()->count()>0) // and has at least one base class
     {
+      //printf("*** merging members for %s\n",cd->name().data());
       cd->mergeMembers();
     }
   }
@@ -6954,8 +6959,8 @@ void parseInput()
   msg("Determining which enums are documented\n");
   findDocumentedEnumValues();
 
-  msg("Computing member references...\n");
-  computeMemberReferences(); 
+  //msg("Computing member references...\n");
+  //computeMemberReferences(); 
 
   msg("Computing member relations...\n");
   computeMemberRelations();
@@ -6975,6 +6980,9 @@ void parseInput()
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();
   
+  msg("Computing member references...\n");
+  computeMemberReferences(); 
+
   if (Config_getBool("INHERIT_DOCS"))
   {
     msg("Inheriting documentation...\n");
