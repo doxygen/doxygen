@@ -19,56 +19,84 @@
 #define _BUFSTR_H
 
 #include "qtbc.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-/*! String that can deal more efficiently with large large numbers
- *  of resizing. 
+/*! @brief Buffer used to store strings
+ *  
+ *  This buffer is used append characters and strings. It will automatically
+ *  resize itself, yet provide efficient random access to the content.
  */
-class BufStr : public QCString
+class BufStr 
 {
   public:
-    BufStr(int size) : QCString(size), offset(0), spareRoom(10240) {}
+    BufStr(int size) 
+      : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(0) 
+    {
+      m_buf = (char *)malloc(size);
+    }
+    ~BufStr()
+    {
+      free(m_buf);
+    }
     void addChar(char c)
     {
-      if (offset>=size()) 
-      {
-        QCString::resize(size()+spareRoom);
-      }
-      QCString::data()[offset++]=c;
+      makeRoomFor(1);
+      m_buf[m_writeOffset++]=c;
     }
     void addArray(const char *a,int len)
     {
-      if (offset+len>=size()) 
-      {
-        QCString::resize(size()+len+spareRoom);
-      }
-      memcpy(QCString::data()+offset,a,len);
-      offset+=len;
+      makeRoomFor(len);
+      memcpy(m_buf+m_writeOffset,a,len);
+      m_writeOffset+=len;
     }
-    uint curPos() { return offset; }
     void skip(uint s)
     {
-      if (offset+s>=size()) 
-      {
-        QCString::resize(size()+s+spareRoom);
-      }
-      offset+=s;
+      makeRoomFor(s);
+      m_writeOffset+=s;
     }
     void resize( uint newlen )
     {
-      //QCString::resize(newlen);
-      //if (offset>newlen)
-      //{
-      //  offset=newlen;
-      //}
-      offset=newlen;
-      if (offset>=size()) 
+      m_size=newlen;
+      if (m_writeOffset>=m_size) // offset out of range -> enlarge
       {
-        QCString::resize(size()+spareRoom);
+        m_size=m_writeOffset+m_spareRoom;
       }
+      m_buf = (char *)realloc(m_buf,m_size);
+    }
+    char *data() const
+    {
+      return m_buf;
+    }
+    char &at(uint i) const
+    {
+      return m_buf[i];
+    }
+    bool isEmpty() const
+    {
+      return m_writeOffset==0;
+    }
+    operator const char *() const
+    {
+      return m_buf;
+    }
+    uint curPos() const
+    { 
+      return m_writeOffset; 
     }
   private:
-    uint offset;
-    const int spareRoom; // 10Kb extra room to avoid frequent resizing
+    void makeRoomFor(uint size)
+    {
+      if (m_writeOffset+size>=m_size) 
+      {
+        resize(m_size+size+m_spareRoom);
+      }
+    }
+    uint m_size;
+    uint m_writeOffset;
+    const int m_spareRoom; // 10Kb extra room to avoid frequent resizing
+    char *m_buf;
 };
+
 
 #endif

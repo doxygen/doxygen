@@ -1882,8 +1882,8 @@ class C {};
 
   The third argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
-  between quotes even if it does not contain any spaces. The quotes are
-  stripped before the caption is displayed.
+  on a single line and between quotes even if it does not contain any 
+  spaces. The quotes are stripped before the caption is displayed.
 
   The fourth argument is also optional and can be used to specify the 
   width or height of the image. This is only useful 

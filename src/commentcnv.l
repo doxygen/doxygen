@@ -188,12 +188,16 @@ static QCString handleCondCmdInAliases(const QCString &s)
       }
       else // get argument
       {
+	ep=sp;
 	while ((c=*arg) && isId(c)) arg++,ep++;
 	if (ep>sp)
 	{
 	  QCString id = s.mid(sp,ep-sp);
 	  //printf("Found conditional section id %s\n",id.data());
 	  startCondSection(id);
+	}
+	else // invalid identifier
+	{
 	}
       }
       p=ep;

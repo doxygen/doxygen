@@ -338,31 +338,40 @@ static void checkUndocumentedParams()
 }
 
 /*! Check if a member has documentation for its parameter and or return
- *  type, if applicable.
+ *  type, if applicable. If found this will be stored in the member, this
+ *  is needed as a member can have brief and detailed documentation, while
+ *  only one of these needs to document the parameters.
  */
-static void checkNoDocumentedParams()
+static void detectNoDocumentedParams()
 {
   if (g_memberDef && Config_getBool("WARN_NO_PARAMDOC"))
   {
-    ArgumentList *al= g_memberDef->argumentList();
+    ArgumentList *al     = g_memberDef->argumentList();
     ArgumentList *declAl = g_memberDef->declArgumentList();
-    QString returnType = g_memberDef->typeString();
-    if (!g_hasParamCommand && // no @param command
-        al &&                 // but the member has a parameter list
-        al->count()>0         // with at least one parameter (that is not void)
-       )
+    QString returnType   = g_memberDef->typeString();
+    if (!g_memberDef->hasDocumentedParams() &&
+        g_hasParamCommand)
     {
-      ArgumentListIterator ali(*al);
-      Argument *a;
+      g_memberDef->setHasDocumentedParams(TRUE);
+    }
+    else if (!g_memberDef->hasDocumentedParams())
+    {
       bool allDoc=TRUE;
-      for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
+      if ( // member has parameters
+             al &&          // but the member has a parameter list
+             al->count()>0  // with at least one parameter (that is not void)
+         )
       {
-        allDoc = !a->docs.isEmpty();
-        printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
-      }
-      if (!allDoc) 
-      {
-        if (declAl) // try declaration arguments as well
+        ArgumentListIterator ali(*al);
+        Argument *a;
+
+        // see if all parameters have documentation
+        for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
+        {
+          allDoc = !a->docs.isEmpty();
+          //printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
+        }
+        if (!allDoc && declAl) // try declaration arguments as well
         {
           allDoc=TRUE;
           ArgumentListIterator ali(*declAl);
@@ -370,32 +379,33 @@ static void checkNoDocumentedParams()
           for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
           {
             allDoc = !a->docs.isEmpty();
-            printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
+            //printf("a->name=%s doc=%s\n",a->name.data(),a->docs.data());
           }
         }
-        if (!allDoc)
-        {
-          QString errMsg = 
-            "Warning: the parameters of member "+
-            QString(g_memberDef->qualifiedName())+
-            QString(argListToString(al))+
-            " are not documented.";
-          warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
-        }
       }
+      if (allDoc) 
+      {
+        g_memberDef->setHasDocumentedParams(TRUE);
+      }
+
     }
-    if (!g_hasReturnCommand &&   // no @return or @retval commands
-        !returnType.isEmpty() && // non empty
-        returnType!="void"       // end non void return type
+    //printf("Member %s hasReturnCommand=%d\n",g_memberDef->name().data(),g_hasReturnCommand);
+    if (!g_memberDef->hasDocumentedReturnType() && // docs not yet found
+        g_hasReturnCommand)
+    {
+      g_memberDef->setHasDocumentedReturnType(TRUE);
+    }
+    else if ( // see if return needs to documented 
+        g_memberDef->hasDocumentedReturnType() ||
+        returnType.isEmpty() ||          // empty return type
+        returnType.find("void")!=-1  ||  // void return type
+        !g_memberDef->isConstructor() || // a constructor
+        !g_memberDef->isDestructor()     // or destructor
        )
     {
-      QString errMsg = 
-        "Warning: the return type or values of member "+
-        QString(g_memberDef->qualifiedName())+
-        QString(argListToString(al))+
-        " are not documented.";
-      warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+      g_memberDef->setHasDocumentedReturnType(TRUE);
     }
+       
   }
 }
 
@@ -4953,7 +4963,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample, const char *exampleName,
-                            bool singleLine,bool isParam)
+                            bool singleLine, bool linkFromIndex)
 {
   
   //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
@@ -5052,7 +5062,8 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   }
 
   g_fileName = fileName;
-  g_relPath = ctx ? relativePathToRoot(ctx->getOutputFileBase()) : QString("");
+  g_relPath = (!linkFromIndex && ctx) ? 
+               relativePathToRoot(ctx->getOutputFileBase()) : QString("");
   //printf("ctx->name=%s relPath=%s\n",ctx->name().data(),g_relPath.data());
   g_memberDef = md;
   g_nodeStack.clear();
@@ -5086,11 +5097,8 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     delete v;
   }
 
-  if (!isParam)
-  {
-    checkUndocumentedParams();
-    checkNoDocumentedParams();
-  }
+  checkUndocumentedParams();
+  detectNoDocumentedParams();
 
   delete g_token;
 
@@ -5106,7 +5114,6 @@ DocNode *validatingParseText(const char *input)
 {
   //printf("------------ input ---------\n%s\n"
   //       "------------ end input -----\n",input);
-
   g_token = new TokenInfo;
   g_context = "";
   g_fileName = "<parseText>";
@@ -5128,19 +5135,23 @@ DocNode *validatingParseText(const char *input)
   g_paramsFound.clear();
   g_searchUrl="";
 
-  doctokenizerYYlineno=1;
-  doctokenizerYYinit(input,g_fileName);
-
-  // build abstract syntax tree
   DocText *txt = new DocText;
-  txt->parse();
 
-  if (Debug::isFlagSet(Debug::PrintTree))
+  if (input)
   {
-    // pretty print the result
-    PrintDocVisitor *v = new PrintDocVisitor;
-    txt->accept(v);
-    delete v;
+    doctokenizerYYlineno=1;
+    doctokenizerYYinit(input,g_fileName);
+
+    // build abstract syntax tree
+    txt->parse();
+
+    if (Debug::isFlagSet(Debug::PrintTree))
+    {
+      // pretty print the result
+      PrintDocVisitor *v = new PrintDocVisitor;
+      txt->accept(v);
+      delete v;
+    }
   }
 
   delete g_token;

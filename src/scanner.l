@@ -125,6 +125,7 @@ static QCString         aliasName;
 static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
+static QCString         formulaEnd;
 static bool             useOverrideCommands = FALSE;
 static bool             insideIDL = FALSE;		//!< processing IDL code?
 static bool             insideJava = FALSE;		//!< processing Java code?
@@ -160,7 +161,7 @@ static bool             insideCode;
 static bool             needsSemi;
 
 static int              depthIf;
-//static int  	        initializerSharpCount;
+static int  	        initBracketCount;
 static QCString         memberGroupRelates;
 static QCString         memberGroupInside;
 static QCString         xrefItemKey;
@@ -2059,7 +2060,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
 					  lastInitializerContext = YY_START;
-					  //initializerSharpCount=0;
+					  initBracketCount=0;
 					  BEGIN(ReadInitializer);
   					}
   /* Read initializer rules */
@@ -2079,18 +2080,20 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ReadInitializer>[;,]			{
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
-  					  //if (initializerSharpCount==0)
-					  //{
   					  if (*yytext==';' || lastInitializerContext==FindFields)
 					  {
   					    unput(*yytext);
   					    BEGIN(lastInitializerContext);
 					  }
-					  //}
-					  //else
-					  //{
-  					  //  current->initializer+=*yytext; 
-					  //}
+					  else if (*yytext==',' && initBracketCount==0) // for "int a=0,b=0"
+					  {
+  					    unput(*yytext);
+  					    BEGIN(lastInitializerContext);
+					  }
+					  else
+					  {
+  					    current->initializer+=*yytext; 
+					  }
   					}
 <ReadInitializer>\"			{
 					  if (insideIDL && insideCppQuote)
@@ -2105,7 +2108,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN(CopyString);
 					  }
 					}
-  /*
 <ReadInitializer>"->"			{
   					  current->initializer+=yytext; 
 					}
@@ -2115,15 +2117,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ReadInitializer>">>"			{
   					  current->initializer+=yytext; 
   					}
-<ReadInitializer>\<			{
-  					  initializerSharpCount++;
+<ReadInitializer>[<\[{(]		{
+  					  initBracketCount++;
   					  current->initializer+=*yytext; 
   					}
-<ReadInitializer>\>			{
-  					  initializerSharpCount--;
+<ReadInitializer>[>\]})]		{
+  					  initBracketCount--;
   					  current->initializer+=*yytext; 
   					}
-  */
 <ReadInitializer>{CHARLIT}              { 
                                           if (insidePHP) 
 					  {
@@ -2373,7 +2374,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <FindFields>"="				{
   					  lastInitializerContext = YY_START;
-					  //initializerSharpCount=0;
+					  initBracketCount=0;
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>","				{
@@ -2670,7 +2671,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <MemberSpec>"="				{ 
   					  lastInitializerContext=YY_START;
-					  //initializerSharpCount=0;
+					  initBracketCount=0;
   					  BEGIN(ReadInitializer);
   					  /* BEGIN(MemberSpecSkip); */
 					}
@@ -3137,6 +3138,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           //current->args += *yytext; 
 					  //BEGIN(FuncPtrInit);
   					  lastInitializerContext=YY_START;
+					  initBracketCount=0;
   					  BEGIN(ReadInitializer);
   					}
 <FuncPtrInit>[{;]			{
@@ -5002,6 +5004,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 							  insideFormula=TRUE;
 							  BEGIN(ReadFormulaLong); 
 							}
+<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f{"[^}\n]+"}"	{ 
+  							  lastFormulaContext = YY_START;
+							  formulaText="\\begin";
+							  formulaEnd=&yytext[2];
+							  formulaText+=formulaEnd;
+							  insideFormula=TRUE;
+							  BEGIN(ReadFormulaLong); 
+  							}
 <ReadFormulaShort>{CMD}"f$"				{
   							  formulaText+="$";
 							  if (lastFormulaContext==ClassDocBrief || 
@@ -5037,8 +5047,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 							    BEGIN(lastFormulaContext);
 							  }
   							}
-<ReadFormulaLong>{CMD}"f]"					{
-							  formulaText+="\\]";
+<ReadFormulaLong>{CMD}"f"[\}\]]				{
+  							  if (yytext[2]==']')
+							  {
+							    formulaText+="\\]";
+							  }
+							  else
+							  {
+							    formulaText+="\\end";
+							    formulaText+=formulaEnd;
+							  }
 							  if (lastFormulaContext==ClassDocBrief ||
 							      lastFormulaContext==LineDoc ||
 							      lastFormulaContext==JavaDoc ||

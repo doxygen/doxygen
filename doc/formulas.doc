@@ -23,14 +23,14 @@ formulas (as images) in the HTML documentation, you will also need to
 have the following tools installed
 <ul>
 <li>\c latex: the \f$\mbox{\LaTeX}\f$ compiler, needed to parse the formulas. 
-    To test I have used the teTeX 0.9 distribution.
+    To test I have used the teTeX 1.0 distribution.
 <li>\c dvips: a tool to convert DVI files to PostScript files 
-    I have used version 5.86 from Radical Eye software for testing.
+    I have used version 5.92b from Radical Eye software for testing.
 <li>\c gs: the GhostScript interpreter for converting PostScript files 
-    to bitmaps. I have used Aladdin GhostScript 5.10 for testing.
+    to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
 </ul>
 
-There are two ways to include formulas in the documentation.
+There are three ways to include formulas in the documentation.
 <ol>
 <li>Using in-text formulas that appear in the running text. 
     These formulas should be put between a pair of \\f\$ 
@@ -69,12 +69,34 @@ There are two ways to include formulas in the documentation.
              \right\} dt
           \right|
   \f]
+<li>Formulas or other latex elements that are not in a math 
+    environment can be specified using \\f{environment}, where
+    \c environment is the name of the \f$\mbox{\LaTeX}\f$ environment, 
+    the corresponding end command is \\f}. Here is an example for an 
+    equation array
+\verbatim
+   \f{eqnarray*}
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
+\endverbatim
+  which results in:
+   \f{eqnarray*}
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
 </ol>
-Formulas should be valid commands in \f$\mbox{\LaTeX}\f$'s math-mode.
+For the first two commands one should make sure formulas contain 
+valid commands in \f$\mbox{\LaTeX}\f$'s math-mode. For the third command
+the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may have to be necessary to remove the
-file <code>formula.repository</code> that is written in the html directory to 
+file <code>formula.repository</code> that is written to the html directory to 
 a rid of an incorrect formula
 
 \htmlonly

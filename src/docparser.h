@@ -53,7 +53,9 @@ void initDocParser();
  *  @param exampleName Base name of the example file (0 if isExample is FALSE).
  *  @param singleLine Output should be presented on a single line, so without
  *                   starting a new paragraph at the end.
- *  @param isParam   TRUE if the documentation is for a parameter.
+ *  @param linkFromIndex TRUE if the documentation is generated from an
+ *                   index page. In this case context is not used to determine
+ *                   the relative path when making a link.
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
@@ -61,7 +63,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *context, MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample,const char *exampleName=0,
-                            bool singleLine=FALSE,bool isParam=FALSE);
+                            bool singleLine=FALSE,bool linkFromIndex=FALSE);
 
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.

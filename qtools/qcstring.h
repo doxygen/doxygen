@@ -49,6 +49,8 @@
 #include <strings.h>
 #endif
 
+//#undef SMALLSTRING
+#define SMALLSTRING
 
 /*****************************************************************************
   Fixes and workarounds for some platforms
@@ -166,6 +168,11 @@ Q_EXPORT QDataStream &operator>>( QDataStream &, QByteArray & );
 
 
 
+#ifdef SMALLSTRING
+#define SCString QCString
+#include "scstring.h"
+#else
+
 /*****************************************************************************
   QCString class
  *****************************************************************************/
@@ -252,6 +259,7 @@ public:
     QCString    &operator+=( char c );
 };
 
+#endif
 
 /*****************************************************************************
   QCString stream functions

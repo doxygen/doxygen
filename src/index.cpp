@@ -885,7 +885,8 @@ void writeFileIndex(OutputList &ol)
               FALSE, // index words
               FALSE, // isExample
               0,     // example name
-              TRUE   // single line
+              TRUE,  // single line
+              TRUE   // link from index
              );
           //ol.docify(")");
         }
@@ -1011,7 +1012,10 @@ void writeNamespaceIndex(OutputList &ol)
                  nd,0,
                  abbreviate(nd->briefDescription(),nd->displayName()),
                  FALSE, // index words
-                 FALSE  // isExample
+                 FALSE, // isExample
+                 0,     // example name
+                 TRUE,  // single line
+                 TRUE   // link from index
                 );
         //ol.docify(")");
       }
@@ -1131,7 +1135,10 @@ void writeAnnotatedClassList(OutputList &ol)
                  cd,0,
                  abbreviate(cd->briefDescription(),cd->displayName()),
                  FALSE,  // indexWords
-                 FALSE   // isExample
+                 FALSE,  // isExample
+                 0,     // example name
+                 TRUE,  // single line
+                 TRUE   // link from index
                 );
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
