@@ -626,7 +626,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
   {
     dst->addSourceReferencedBy(src);
   }
-  if (Config_getBool("REFERENCES_RELATION") && 
+  if ((Config_getBool("REFERENCES_RELATION") || Config_getBool("CALL_GRAPH")) && 
       (src->isFunction() || src->isSlot())
      )
   {

@@ -1923,6 +1923,7 @@ void DocImage::parse()
   g_nodeStack.push(this);
   DBG(("DocImage::parse() start\n"));
 
+  // parse title
   doctokenizerYYsetStateTitle();
   int tok;
   while ((tok=doctokenizerYYlex()))
@@ -1946,26 +1947,24 @@ void DocImage::parse()
       }
     }
   }
-  if (!m_children.isEmpty())
+  // parse size attributes
+  tok=doctokenizerYYlex();
+  while (tok==TK_WORD) // there are values following the title
   {
-    tok=doctokenizerYYlex();
-    while (tok==TK_WORD) // there are values following the title
+    if (g_token->name=="width") 
     {
-      if (g_token->name=="width") 
-      {
-        m_width=g_token->chars;
-      }
-      else if (g_token->name=="height") 
-      {
-        m_height=g_token->chars;
-      }
-      else 
-      {
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unknown option %s after image title",
-            g_token->name.data());
-      }
-      tok=doctokenizerYYlex();
+      m_width=g_token->chars;
     }
+    else if (g_token->name=="height") 
+    {
+      m_height=g_token->chars;
+    }
+    else 
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unknown option %s after image title",
+          g_token->name.data());
+    }
+    tok=doctokenizerYYlex();
   }
   doctokenizerYYsetStatePara();
 

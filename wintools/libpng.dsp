@@ -25,7 +25,7 @@ CFG=libpng - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName "libpng"
 # PROP Scc_LocalPath "."
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libpng - Win32 Release"
@@ -45,10 +45,10 @@ RSC=rc.exe
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
-BSC32=snBsc.exe
+BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -68,10 +68,10 @@ LIB32=xilink6.exe -lib
 # ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\libpng" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FD /I /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
-BSC32=snBsc.exe
+BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -88,221 +88,85 @@ LIB32=xilink6.exe -lib
 
 SOURCE=..\libpng\png.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngerror.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pnggccrd.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngget.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngmem.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngpread.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngread.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrio.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrtran.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrutil.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngset.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngtrans.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngvcrd.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwio.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwrite.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwtran.c
 
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwutil.c
-
-!IF  "$(CFG)" == "libpng - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libpng - Win32 Debug"
-
-# ADD CPP /GR-
-
-!ENDIF 
 
 # End Source File
 # End Group

@@ -1313,7 +1313,7 @@ void writeDotGraph(DotNode *root,
                   )
 {
   // generate the graph description for dot
-  //printf("writeDotGraph(%s,%d)\n",baseName.data(),backArrows);
+  //printf("writeDotGraph(%s,%d,lrRank=%d)\n",baseName.data(),backArrows,lrRank);
   QFile f;
   f.setName(baseName+".dot");
   if (f.open(IO_WriteOnly))
@@ -1415,8 +1415,12 @@ static void findMaximalDotGraph(DotNode *root,
   }
   //printf("lastFit=%d\n",lastFit);
 
-  bool hasLRRank = (lrRank || (minDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH"))) &&
-                   !Config_getBool("UML_LOOK");
+  bool hasLRRank = (lrRank || 
+                     (minDistance==1 && 
+                      width>Config_getInt("MAX_DOT_GRAPH_WIDTH") &&
+                      !Config_getBool("UML_LOOK")
+                     )
+                   );
   
   writeDotGraph(root,
                 gt,

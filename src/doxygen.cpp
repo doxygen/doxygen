@@ -2277,7 +2277,9 @@ static void buildFunctionList(Entry *root)
               // merge ingroup specifiers
               if (md->getGroupDef()==0 && root->groups->first())
               {
-                addMemberToGroups(root,md);
+                // if we do addMemberToGroups here an undocumented declaration may prevent 
+                // the documented implementation below from being added 
+                //addMemberToGroups(root,md);
                 GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
                 md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
               }
@@ -3982,12 +3984,12 @@ static bool findGlobalMember(Entry *root,
                            const char *, 
                            const char *decl)
 {
-  QCString n=name;
-  if (n.isEmpty()) return FALSE;
-  if (n.find("::")!=-1) return FALSE; // skip undefined class members
   Debug::print(Debug::FindMembers,0,
        "2. findGlobalMember(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
           namespaceName.data(),name,tempArg,decl);
+  QCString n=name;
+  if (n.isEmpty()) return FALSE;
+  if (n.find("::")!=-1) return FALSE; // skip undefined class members
   MemberName *mn=Doxygen::functionNameSDict[n+tempArg]; // look in function dictionary
   if (mn==0)
   {
@@ -4286,7 +4288,7 @@ static void findMember(Entry *root,
       removeRedundantWhiteSpace(scopeName),FALSE); 
   
   // split scope into a namespace and a class part
-  extractNamespaceName(scopeName,className,namespaceName);
+  extractNamespaceName(scopeName,className,namespaceName,TRUE);
   //printf("scopeName=`%s' className=`%s' namespaceName=`%s'\n",
   //       scopeName.data(),className.data(),namespaceName.data());
   
@@ -4906,15 +4908,15 @@ static void findMember(Entry *root,
     }
     else // unrelated not overloaded member found
     {
-      if (className.isEmpty() && 
-          !findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+      bool globMem = findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl);
+      if (className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
              "Warning: class for member `%s' cannot "
              "be found.", funcName.data()
             ); 
       }
-      else if (!className.isEmpty())
+      else if (!className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
              "Warning: member `%s' of class `%s' cannot be found",

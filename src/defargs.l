@@ -325,6 +325,11 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
   					}
 <ReadFuncArgType,ReadFuncArgPtr>{ID}	{ 
   					  QCString name=yytext; //resolveDefines(yytext);
+					  if (YY_START==ReadFuncArgType && g_curArgArray=="[]") // Java style array
+					  {
+					    g_curArgTypeName+=" []";
+					    g_curArgArray.resize(0);
+					  }
 					  //printf("resolveName `%s'->`%s'\n",yytext,name.data());
   					  g_curArgTypeName+=name;
 					}

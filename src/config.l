@@ -2473,7 +2473,7 @@ void Config::create()
   cb = addBool(
                     "UML_LOOK",
                     "If the UML_LOOK tag is set to YES doxygen will generate inheritance and \n"
-	            "colloborations diagrams in a style similiar to the OMG's Unified Modeling \n"
+	            "collaboration diagrams in a style similiar to the OMG's Unified Modeling \n"
 		    "Language. \n",
 	            FALSE
 	      );

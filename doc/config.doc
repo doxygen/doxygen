@@ -35,7 +35,7 @@ new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (&quot;...&quot;).
 Multiple lines can be concatenated by inserting a backslash (\\)
 as the last character of a line. Environment variables can be expanded 
-using the pattern \c $(ENV_VARIABLE_NAME).
+using the pattern \c \$(ENV_VARIABLE_NAME).
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:

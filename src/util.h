@@ -155,7 +155,8 @@ bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 QCString convertNameToFile(const char *name,bool allowDots=FALSE);
 void extractNamespaceName(const QCString &scopeName,
-                          QCString &className,QCString &namespaceName);
+                          QCString &className,QCString &namespaceName,
+                          bool allowEmptyClass=FALSE);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 QCString stripScope(const char *name);
 int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
