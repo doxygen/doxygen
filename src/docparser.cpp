@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2161,11 +2161,15 @@ int DocIndexEntry::parse()
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after \\addindex command");
     goto endindexentry;
   }
+  doctokenizerYYsetStateTitle();
   m_entry="";
-  while ((tok=doctokenizerYYlex()) && tok!=TK_WHITESPACE && tok!=TK_NEWPARA)
+  while ((tok=doctokenizerYYlex()))
   {
     switch (tok)
     {
+      case TK_WHITESPACE:
+        m_entry+=" ";
+        break;
       case TK_WORD: 
       case TK_LNKWORD: 
         m_entry+=g_token->name;
@@ -2216,6 +2220,7 @@ int DocIndexEntry::parse()
     }
   }
   if (tok!=TK_WHITESPACE) retval=tok;
+  doctokenizerYYsetStatePara();
 endindexentry:
   DBG(("DocIndexEntry::parse() end retval=%x\n",retval));
   DocNode *n=g_nodeStack.pop();

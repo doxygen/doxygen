@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -187,7 +187,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
     XMLCodeGenerator(QTextStream &t) : m_t(t), m_lineNumber(-1),
       m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), 
       m_insideSpecialHL(FALSE) {}
-    virtual ~XMLCodeGenerator() {}
+    virtual ~XMLCodeGenerator() { }
     
     void codify(const char *text) 
     {
@@ -302,6 +302,10 @@ class XMLCodeGenerator : public BaseCodeDocInterface
         if (extRef) m_external=extRef;
       }
     }
+    void finish()
+    {
+      if (m_insideCodeLine) endCodeLine();
+    }
 
   private:
     QTextStream &m_t;  
@@ -394,14 +398,13 @@ void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
 {
   initParseCodeContext();
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  //xmlGen->m_inParStack.push(TRUE);
   parseCode(*xmlGen,
             0,
             fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,
             0,
             fd);
-  //t << xmlGen->getContents();
+  xmlGen->finish();
   delete xmlGen;
 }
 
@@ -525,6 +528,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),typeStr);
     t << "</type>" << endl;
+    t << "        <definition>" << md->definition() << "</definition>" << endl;
+    t << "        <argsstring>" << md->argsString() << "</argsstring>" << endl;
   }
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;

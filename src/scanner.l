@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3566,6 +3566,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ClassDocArg2>"\n"			{ yyLineNr++; 
 					  newDocState();
 					}
+<ClassDocArg2>{B}*"*/"			{
+					  newDocState();
+  					  unput('/');unput('*');
+  					}
 <ClassDocArg3>[<]?{FILE}[>]?		{
   					  //printf("ClassDocArg3=%s\n",yytext);
  					  current->includeName = yytext;
@@ -3576,6 +3580,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ClassDocArg3>"\n"			{ yyLineNr++; 
   					  newDocState();
 					}
+<ClassDocArg3>{B}*"*/"			{
+					  newDocState();
+  					  unput('/');unput('*');
+  					}
 <FileDocArg1>{FILE}			{
   					  current->name = stripQuotes(yytext);
 					  newDocState();

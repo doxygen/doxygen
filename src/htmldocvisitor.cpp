@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -24,6 +24,7 @@
 #include "code.h"
 #include "dot.h"
 #include "message.h"
+#include "config.h"
 
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
@@ -230,21 +231,22 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    m_t << "<div class=\"fragment\"><pre>";
-    m_hide = TRUE;
+    if (!m_hide) m_t << "<div class=\"fragment\"><pre>";
+    pushEnabled();
+    m_hide=TRUE;
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
-    m_hide = FALSE;
-    m_t << "</pre></div>"; 
+    popEnabled();
+    if (!m_hide) m_t << "</pre></div>"; 
   }
   else
   {
-    m_t << endl;
+    if (!m_hide) m_t << endl;
   }
 }
 
@@ -277,6 +279,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *)
 
 void HtmlDocVisitor::visitPre(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "<ol>";
@@ -290,6 +293,7 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
 
 void HtmlDocVisitor::visitPost(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "</ol>";
@@ -303,11 +307,13 @@ void HtmlDocVisitor::visitPost(DocAutoList *l)
 
 void HtmlDocVisitor::visitPre(DocAutoListItem *)
 {
+  if (m_hide) return;
   m_t << "<li>";
 }
 
 void HtmlDocVisitor::visitPost(DocAutoListItem *) 
 {
+  if (m_hide) return;
   m_t << "</li>";
 }
 
@@ -317,13 +323,14 @@ void HtmlDocVisitor::visitPre(DocPara *)
 
 void HtmlDocVisitor::visitPost(DocPara *p)
 {
+  if (m_hide) return;
   if (!p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameter sections
         p->parent()->kind()==DocNode::Kind_ParamSect
        ) 
      ) 
   {
-    m_t << "<p>";
+    m_t << "<p>\n";
   }
 }
 
@@ -339,6 +346,7 @@ void HtmlDocVisitor::visitPost(DocRoot *)
 
 void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
+  if (m_hide) return;
   m_t << "<dl compact><dt><b>";
   switch(s->type())
   {
@@ -384,6 +392,7 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 
 void HtmlDocVisitor::visitPost(DocSimpleSect *)
 {
+  if (m_hide) return;
   m_t << "</dd></dl>\n";
 }
 
@@ -393,34 +402,40 @@ void HtmlDocVisitor::visitPre(DocTitle *)
 
 void HtmlDocVisitor::visitPost(DocTitle *)
 {
+  if (m_hide) return;
   m_t << "</b></dt><dd>";
 }
 
 void HtmlDocVisitor::visitPre(DocSimpleList *sl)
 {
+  if (m_hide) return;
   m_t << "<ul>";
   if (!sl->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPost(DocSimpleList *sl)
 {
+  if (m_hide) return;
   m_t << "</ul>";
   if (!sl->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSimpleListItem *)
 {
+  if (m_hide) return;
   m_t << "<li>";
 }
 
 void HtmlDocVisitor::visitPost(DocSimpleListItem *li) 
 {
+  if (m_hide) return;
   m_t << "</li>";
   if (!li->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSection *s)
 {
+  if (m_hide) return;
   m_t << "<h" << s->level()+1 << ">";
   m_t << "<a name=\"" << s->anchor();
   m_t << "\"></a>" << endl;
@@ -434,6 +449,7 @@ void HtmlDocVisitor::visitPost(DocSection *)
 
 void HtmlDocVisitor::visitPre(DocHtmlList *s)
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "<ol" << htmlAttribsToString(s->attribs()) << ">\n"; 
   else 
@@ -442,6 +458,7 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
 
 void HtmlDocVisitor::visitPost(DocHtmlList *s) 
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "</ol>"; 
   else 
@@ -451,12 +468,14 @@ void HtmlDocVisitor::visitPost(DocHtmlList *s)
 
 void HtmlDocVisitor::visitPre(DocHtmlListItem *i)
 {
+  if (m_hide) return;
   m_t << "<li" << htmlAttribsToString(i->attribs()) << ">";
   if (!i->isPreformatted()) m_t << "\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlListItem *) 
 {
+  if (m_hide) return;
   m_t << "</li>\n";
 }
 
@@ -474,36 +493,43 @@ void HtmlDocVisitor::visitPost(DocHtmlListItem *)
 
 void HtmlDocVisitor::visitPre(DocHtmlDescList *dl)
 {
+  if (m_hide) return;
   m_t << "<dl" << htmlAttribsToString(dl->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescList *) 
 {
+  if (m_hide) return;
   m_t << "</dl>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlDescTitle *dt)
 {
+  if (m_hide) return;
   m_t << "<dt" << htmlAttribsToString(dt->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
+  if (m_hide) return;
   m_t << "</dt>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlDescData *dd)
 {
+  if (m_hide) return;
   m_t << "<dd" << htmlAttribsToString(dd->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescData *) 
 {
+  if (m_hide) return;
   m_t << "</dd>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 {
+  if (m_hide) return;
   bool hasBorder      = FALSE;
   bool hasCellSpacing = FALSE;
   bool hasCellPadding = FALSE;
@@ -525,21 +551,25 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 
 void HtmlDocVisitor::visitPost(DocHtmlTable *) 
 {
+  if (m_hide) return;
   m_t << "</table>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlRow *tr)
 {
+  if (m_hide) return;
   m_t << "<tr" << htmlAttribsToString(tr->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlRow *) 
 {
+  if (m_hide) return;
   m_t << "</tr>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlCell *c)
 {
+  if (m_hide) return;
   if (c->isHeading()) 
   {
     m_t << "<th" << htmlAttribsToString(c->attribs()) << ">"; 
@@ -552,11 +582,13 @@ void HtmlDocVisitor::visitPre(DocHtmlCell *c)
 
 void HtmlDocVisitor::visitPost(DocHtmlCell *c) 
 {
+  if (m_hide) return;
   if (c->isHeading()) m_t << "</th>"; else m_t << "</td>";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 {
+  if (m_hide) return;
   bool hasAlign      = FALSE;
   HtmlAttribListIterator li(c->attribs());
   HtmlAttrib *att;
@@ -571,38 +603,45 @@ void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 
 void HtmlDocVisitor::visitPost(DocHtmlCaption *) 
 {
+  if (m_hide) return;
   m_t << "</caption>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocInternal *)
 {
+  if (m_hide) return;
   m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
   m_t << "<p>" << endl;
 }
 
 void HtmlDocVisitor::visitPost(DocInternal *) 
 {
+  if (m_hide) return;
   m_t << "</p>" << endl;
 }
 
 void HtmlDocVisitor::visitPre(DocHRef *href)
 {
+  if (m_hide) return;
   m_t << "<a href=\"" << href->url() << "\">";
 }
 
 void HtmlDocVisitor::visitPost(DocHRef *) 
 {
+  if (m_hide) return;
   m_t << "</a>";
 }
 
 void HtmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
+  if (m_hide) return;
   m_t << "<h" << header->level() 
       << htmlAttribsToString(header->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlHeader *header) 
 {
+  if (m_hide) return;
   m_t << "</h" << header->level() << ">\n";
 }
 
@@ -610,6 +649,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Html)
   {
+    if (m_hide) return;
     QString baseName=img->name();
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
@@ -626,6 +666,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
   }
   else // other format -> skip
   {
+    pushEnabled();
     m_hide=TRUE;
   }
 }
@@ -634,6 +675,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 {
   if (img->type()==DocImage::Html)
   {
+    if (m_hide) return;
     if (img->hasCaption())
     {
       m_t << "</strong></p>";
@@ -642,12 +684,13 @@ void HtmlDocVisitor::visitPost(DocImage *img)
   }
   else // other format
   {
-    m_hide=FALSE;
+    popEnabled();
   }
 }
 
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
+  if (m_hide) return;
   QString baseName=df->file();
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -672,6 +715,7 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
 
 void HtmlDocVisitor::visitPost(DocDotFile *df) 
 {
+  if (m_hide) return;
   if (df->hasCaption())
   {
     m_t << "</strong></p>" << endl;
@@ -681,28 +725,33 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
 
 void HtmlDocVisitor::visitPre(DocLink *lnk)
 {
+  if (m_hide) return;
   startLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
 void HtmlDocVisitor::visitPost(DocLink *) 
 {
+  if (m_hide) return;
   endLink();
 }
 
 void HtmlDocVisitor::visitPre(DocRef *ref)
 {
+  if (m_hide) return;
   startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void HtmlDocVisitor::visitPost(DocRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
+  if (m_hide) return;
   QString refName=ref->file();
   if (refName.right(Doxygen::htmlFileExtension.length())!=
       QString(Doxygen::htmlFileExtension))
@@ -715,31 +764,46 @@ void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 
 void HtmlDocVisitor::visitPost(DocSecRefItem *) 
 {
+  if (m_hide) return;
   m_t << "</a> ";
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *)
 {
+  if (m_hide) return;
   m_t << "<multicol cols=3>" << endl;
   m_t << "<ul>" << endl;
 }
 
 void HtmlDocVisitor::visitPost(DocSecRefList *) 
 {
+  if (m_hide) return;
   m_t << "</ul>" << endl;
   m_t << "</multicol>" << endl;
 }
 
-void HtmlDocVisitor::visitPre(DocLanguage *)
+void HtmlDocVisitor::visitPre(DocLanguage *l)
 {
+  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+  if (l->id().lower()!=langId.lower())
+  {
+    pushEnabled();
+    m_hide = TRUE;
+  }
 }
 
-void HtmlDocVisitor::visitPost(DocLanguage *) 
+void HtmlDocVisitor::visitPost(DocLanguage *l) 
 {
+  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+  if (l->id().lower()!=langId.lower())
+  {
+    popEnabled();
+  }
 }
 
 void HtmlDocVisitor::visitPre(DocParamSect *s)
 {
+  if (m_hide) return;
   m_t << "<dl compact><dt><b>";
   switch(s->type())
   {
@@ -759,12 +823,14 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
 
 void HtmlDocVisitor::visitPost(DocParamSect *)
 {
+  if (m_hide) return;
   m_t << "  </table>" << endl;
   m_t << "</dl>" << endl;
 }
 
 void HtmlDocVisitor::visitPre(DocParamList *pl)
 {
+  if (m_hide) return;
   m_t << "    <tr><td valign=top><em>";
   QStrListIterator li(pl->parameters());
   const char *s;
@@ -779,11 +845,13 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
 
 void HtmlDocVisitor::visitPost(DocParamList *)
 {
+  if (m_hide) return;
   m_t << "</td></tr>" << endl;
 }
 
 void HtmlDocVisitor::visitPre(DocXRefItem *x)
 {
+  if (m_hide) return;
   m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
     << x->file() << Doxygen::htmlFileExtension << "#" << x->anchor() << "\">";
   filter(x->title());
@@ -792,16 +860,19 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
 
 void HtmlDocVisitor::visitPost(DocXRefItem *)
 {
+  if (m_hide) return;
   m_t << "</dd></dl>" << endl;
 }
 
 void HtmlDocVisitor::visitPre(DocInternalRef *ref)
 {
+  if (m_hide) return;
   startLink(0,ref->file(),ref->anchor());
 }
 
 void HtmlDocVisitor::visitPost(DocInternalRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
@@ -867,5 +938,18 @@ void HtmlDocVisitor::startLink(const QString &ref,const QString &file,const QStr
 void HtmlDocVisitor::endLink()
 {
   m_t << "</a>";
+}
+
+void HtmlDocVisitor::pushEnabled()
+{
+  m_enabled.push(new bool(m_hide));
+}
+
+void HtmlDocVisitor::popEnabled()
+{
+  bool *v=m_enabled.pop();
+  ASSERT(v!=0);
+  m_hide = *v;
+  delete v;
 }
 

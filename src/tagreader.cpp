@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1054,7 +1054,10 @@ void TagFileParser::buildLists(Entry *root)
     
     QString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
     fe->fileName = fullName;
-    FileDef *fd = new FileDef(m_tagName+":"+tfi->path,tfi->name,m_tagName);
+    FileDef *fd = new FileDef(m_tagName+":"+tfi->path,
+                              tfi->name,m_tagName,
+                              tfi->filename
+                             );
     FileName *mn;
     if ((mn=Doxygen::inputNameDict->find(tfi->name)))
     {

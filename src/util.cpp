@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -94,36 +94,76 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 #ifndef _WIN32
   isBatchFile=isBatchFile;
   /*! taken from the system() manpage on my Linux box */
-  int pid,status;
+  int pid,status=0;
 
   if (command==0) return 1;
-  pid = fork();
-  if (pid==-1) return -1;
-  if (pid==0)
+
+//#ifdef _OS_SOLARIS_
+
+  // on Solaris fork() duplicates the memory usage
+  // so we use vfork instead
+  
+  char buf[4096];
+  strcpy(buf,command);
+  strcat(buf," ");
+  strcat(buf,args);
+  
+  // spawn shell
+  if ((pid=vfork())<0)
   {
-    char buf[4096];
-    strcpy(buf,command);
-    strcat(buf," ");
-    strcat(buf,args);
-    const char * argv[4];
-    argv[0] = "sh";
-    argv[1] = "-c";
-    argv[2] = buf;
-    argv[3] = 0;
-    execve("/bin/sh",(char * const *)argv,environ);
-    exit(127);
+    status=-1;
   }
-  for (;;)
+  else if (pid==0)
   {
-    if (waitpid(pid,&status,0)==-1)
+     execl("/bin/sh","sh","-c",buf,(char*)0);
+     _exit(127);
+  }
+  else
+  {
+    while (waitpid(pid,&status,0 )<0)
     {
-      if (errno!=EINTR) return -1;
-    }
-    else
-    {
-      return status;
+      if (errno!=EINTR)
+      {
+        status=-1;
+        break;
+      }
     }
   }
+  return status;
+
+//#else  /* Other unices where clients do copy on demand for the parent's pages 
+//        * when forked.
+//        */
+//
+//  pid = fork();
+//  if (pid==-1) return -1;
+//  if (pid==0)
+//  {
+//    char buf[4096];
+//    strcpy(buf,command);
+//    strcat(buf," ");
+//    strcat(buf,args);
+//    const char * argv[4];
+//    argv[0] = "sh";
+//    argv[1] = "-c";
+//    argv[2] = buf;
+//    argv[3] = 0;
+//    execve("/bin/sh",(char * const *)argv,environ);
+//    exit(127);
+//  }
+//  for (;;)
+//  {
+//    if (waitpid(pid,&status,0)==-1)
+//    {
+//      if (errno!=EINTR) return -1;
+//    }
+//    else
+//    {
+//      return status;
+//    }
+//  }
+//#endif
+
 #else
   if (isBatchFile)
   {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -65,7 +65,7 @@ class FileDef : public Definition
   public:
     //enum FileType { Source, Header, Unknown };
 
-    FileDef(const char *p,const char *n,const char *ref=0);
+    FileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
    ~FileDef();
     DefType definitionType() { return TypeFile; }
 

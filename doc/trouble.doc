@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -49,7 +49,8 @@
 \endverbatim
   then doxygen will remove the braces and correctly parse the result.
 <li>Not all names in code fragments that are included in the documentation
-    are replaced by links (for instance when using \c SOURCE_BROWSER = \c YES). 
+    are replaced by links (for instance when using \c SOURCE_BROWSER = \c YES)
+    and links to overloaded members may point to the wrong member.
     This also holds for the "Referenced by" list that is generated for
     each function.
 
@@ -65,6 +66,9 @@
     moment. It only works if there is a specialized template class as
     well.
 <li>Not all special commands are properly translated to RTF.
+<li>Version 1.8.6 of dot (and maybe earlier versions too) do not 
+    generate proper map files, causing the graphs that doxygen generates
+    not to be properly clickable.
 </ul>
 
 

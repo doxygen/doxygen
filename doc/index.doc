@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -54,7 +54,7 @@ but is set-up to be highly portable. As a result, it runs on most
 other Unix flavors as well. Furthermore, executables for 
 Windows 9x/NT and Mac OS X are available.
 
-This manual is divided into three parts, each of which is divided into several 
+\n This manual is divided into three parts, each of which is divided into several 
 sections.
 
 The first part forms a user manual:
@@ -110,11 +110,11 @@ The third part provides information for developers:
               output languages.
 </ul>
 
-<h2>Doxygen license</h2>
+\n<h2>Doxygen license</h2>
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2002 by 
+Copyright &copy; 1997-2003 by 
 <a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
@@ -187,6 +187,9 @@ Thanks go to:
 <li>The Comms group of <a href="http://www.symbian.com">Symbian</a> for donating
     an ultra cool <a href="http://www.psion.com/revoplus">Revo plus</a> 
     organizer!
+<li>Steve Upstill of <a href="http://www.wetadigital.com/digital/index_flash.htm">
+    Weta Digital</a> for sending me some 
+    <a href="http://www.lordoftherings.net/">Lord of the Rings</a> goodies.
 <li>The band <a href="http://www.porcupinetree.com">Porcupine Tree</a> for 
     providing hours of great music to listen to while coding.
 <li>many, many others for suggestions, patches and bug reports.

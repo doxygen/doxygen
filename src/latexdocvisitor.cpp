@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -285,17 +285,18 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+    if (!m_hide) m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+    pushEnabled();
     m_hide = TRUE;
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
-    m_hide = FALSE;
-    m_t << "\\end{verbatim}\\normalsize" << endl; 
+    popEnabled();
+    if (m_hide) m_t << "\\end{verbatim}\\normalsize" << endl; 
   }
   else
   {
@@ -311,6 +312,7 @@ void LatexDocVisitor::visit(DocFormula *f)
 
 void LatexDocVisitor::visit(DocIndexEntry *i)
 {
+  if (m_hide) return;
   m_t << "\\index{" << escapeLabelName(i->entry()) << "@{";
   escapeMakeIndexChars(i->entry());
   m_t << "}}";
@@ -322,6 +324,7 @@ void LatexDocVisitor::visit(DocIndexEntry *i)
 
 void LatexDocVisitor::visitPre(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "\\begin{enumerate}" << endl;
@@ -334,6 +337,7 @@ void LatexDocVisitor::visitPre(DocAutoList *l)
 
 void LatexDocVisitor::visitPost(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "\\end{enumerate}" << endl;
@@ -346,6 +350,7 @@ void LatexDocVisitor::visitPost(DocAutoList *l)
 
 void LatexDocVisitor::visitPre(DocAutoListItem *)
 {
+  if (m_hide) return;
   m_t << "\\item ";
 }
 
@@ -359,6 +364,7 @@ void LatexDocVisitor::visitPre(DocPara *)
 
 void LatexDocVisitor::visitPost(DocPara *p)
 {
+  if (m_hide) return;
   if (!p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameter sections
         p->parent()->kind()==DocNode::Kind_ParamSect
@@ -376,6 +382,7 @@ void LatexDocVisitor::visitPost(DocRoot *)
 
 void LatexDocVisitor::visitPre(DocSimpleSect *s)
 {
+  if (m_hide) return;
   m_t << "\\begin{Desc}\n\\item[";
   switch(s->type())
   {
@@ -425,6 +432,7 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
 
 void LatexDocVisitor::visitPost(DocSimpleSect *)
 {
+  if (m_hide) return;
   m_t << "\\end{Desc}" << endl;
 }
 
@@ -434,22 +442,26 @@ void LatexDocVisitor::visitPre(DocTitle *)
 
 void LatexDocVisitor::visitPost(DocTitle *)
 {
+  if (m_hide) return;
   m_insideItem=FALSE;
   m_t << "]";
 }
 
 void LatexDocVisitor::visitPre(DocSimpleList *)
 {
+  if (m_hide) return;
   m_t << "\\begin{itemize}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocSimpleList *)
 {
+  if (m_hide) return;
   m_t << "\\end{itemize}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocSimpleListItem *)
 {
+  if (m_hide) return;
   m_t << "\\item ";
 }
 
@@ -459,6 +471,7 @@ void LatexDocVisitor::visitPost(DocSimpleListItem *)
 
 void LatexDocVisitor::visitPre(DocSection *s)
 {
+  if (m_hide) return;
   if (Config_getBool("PDF_HYPERLINKS"))
   {
     m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
@@ -493,6 +506,7 @@ void LatexDocVisitor::visitPost(DocSection *)
 
 void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "\\begin{enumerate}" << endl; 
   else 
@@ -501,6 +515,7 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
 
 void LatexDocVisitor::visitPost(DocHtmlList *s) 
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "\\end{enumerate}" << endl; 
   else 
@@ -509,6 +524,7 @@ void LatexDocVisitor::visitPost(DocHtmlList *s)
 
 void LatexDocVisitor::visitPre(DocHtmlListItem *)
 {
+  if (m_hide) return;
   m_t << "\\item ";
 }
 
@@ -530,22 +546,26 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 
 void LatexDocVisitor::visitPre(DocHtmlDescList *)
 {
+  if (m_hide) return;
   m_t << "\\begin{description}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocHtmlDescList *) 
 {
+  if (m_hide) return;
   m_t << "\\end{description}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocHtmlDescTitle *)
 {
+  if (m_hide) return;
   m_t << "\\item[";
   m_insideItem=TRUE;
 }
 
 void LatexDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
+  if (m_hide) return;
   m_insideItem=FALSE;
   m_t << "]";
 }
@@ -560,6 +580,7 @@ void LatexDocVisitor::visitPost(DocHtmlDescData *)
 
 void LatexDocVisitor::visitPre(DocHtmlTable *t)
 {
+  if (m_hide) return;
   if (t->hasCaption()) 
   {
     m_t << "\\begin{table}[h]";
@@ -569,6 +590,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
 
 void LatexDocVisitor::visitPost(DocHtmlTable *t) 
 {
+  if (m_hide) return;
   if (t->hasCaption())
   {
     m_t << "\\end{table}\n";
@@ -581,11 +603,13 @@ void LatexDocVisitor::visitPost(DocHtmlTable *t)
 
 void LatexDocVisitor::visitPre(DocHtmlCaption *)
 {
+  if (m_hide) return;
   m_t << "\\\\\\hline\n\\end{TabularC}\n\\centering\n\\caption{";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlCaption *) 
 {
+  if (m_hide) return;
   m_t << "}\n";
 }
 
@@ -595,6 +619,7 @@ void LatexDocVisitor::visitPre(DocHtmlRow *)
 
 void LatexDocVisitor::visitPost(DocHtmlRow *) 
 {
+  if (m_hide) return;
   m_t << "\\\\\\hline\n";
 }
 
@@ -604,22 +629,26 @@ void LatexDocVisitor::visitPre(DocHtmlCell *)
 
 void LatexDocVisitor::visitPost(DocHtmlCell *c) 
 {
+  if (m_hide) return;
   if (!c->isLast()) m_t << "&";
 }
 
 void LatexDocVisitor::visitPre(DocInternal *)
 {
+  if (m_hide) return;
   m_t << "\\begin{Desc}" << endl 
     << "\\item[" << theTranslator->trForInternalUseOnly() << "]" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocInternal *) 
 {
+  if (m_hide) return;
   m_t << "\\end{Desc}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocHRef *href)
 {
+  if (m_hide) return;
   if (Config_getBool("PDF_HYPERLINKS"))
   {
     m_t << "\\href{";
@@ -631,11 +660,13 @@ void LatexDocVisitor::visitPre(DocHRef *href)
 
 void LatexDocVisitor::visitPost(DocHRef *) 
 {
+  if (m_hide) return;
   m_t << "}";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlHeader *header)
 {
+  if (m_hide) return;
   if (Config_getBool("COMPACT_LATEX"))
   {
     switch(header->level())
@@ -661,6 +692,7 @@ void LatexDocVisitor::visitPre(DocHtmlHeader *header)
 
 void LatexDocVisitor::visitPost(DocHtmlHeader *) 
 {
+  if (m_hide) return;
   m_t << "}";
 }
 
@@ -668,6 +700,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Latex)
   {
+    if (m_hide) return;
     if (img->hasCaption())
     {
       m_t << "\\begin{figure}[H]" << endl;
@@ -699,6 +732,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
   }
   else // other format -> skip
   {
+    pushEnabled();
     m_hide=TRUE;
   }
 }
@@ -707,6 +741,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
 {
   if (img->type()==DocImage::Latex)
   {
+    if (m_hide) return;
     m_t << "}" << endl; // end mbox or caption
     if (img->hasCaption())
     {
@@ -716,12 +751,13 @@ void LatexDocVisitor::visitPost(DocImage *img)
   }
   else // other format
   {
-    m_hide=FALSE;
+    popEnabled();
   }
 }
 
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
+  if (m_hide) return;
   QString baseName=df->file();
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -767,6 +803,7 @@ void LatexDocVisitor::visitPre(DocDotFile *df)
 
 void LatexDocVisitor::visitPost(DocDotFile *df) 
 {
+  if (m_hide) return;
   m_t << "}" << endl; // end mbox or caption
   if (df->hasCaption())
   {
@@ -777,38 +814,45 @@ void LatexDocVisitor::visitPost(DocDotFile *df)
 
 void LatexDocVisitor::visitPre(DocLink *lnk)
 {
+  if (m_hide) return;
   startLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
 void LatexDocVisitor::visitPost(DocLink *) 
 {
+  if (m_hide) return;
   endLink();
 }
 
 void LatexDocVisitor::visitPre(DocRef *ref)
 {
+  if (m_hide) return;
   startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void LatexDocVisitor::visitPost(DocRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
 
 void LatexDocVisitor::visitPre(DocSecRefItem *)
 {
+  if (m_hide) return;
   m_t << "\\item \\contentsline{section}{";
 }
 
 void LatexDocVisitor::visitPost(DocSecRefItem *ref) 
 {
+  if (m_hide) return;
   m_t << "}{\\ref{" << ref->anchor() << "}}{}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocSecRefList *)
 {
+  if (m_hide) return;
   m_t << "\\footnotesize" << endl;
   m_t << "\\begin{multicols}{2}" << endl;
   m_t << "\\begin{CompactList}" << endl;
@@ -816,21 +860,34 @@ void LatexDocVisitor::visitPre(DocSecRefList *)
 
 void LatexDocVisitor::visitPost(DocSecRefList *) 
 {
+  if (m_hide) return;
   m_t << "\\end{CompactList}" << endl;
   m_t << "\\end{multicols}" << endl;
   m_t << "\\normalsize" << endl;
 }
 
-void LatexDocVisitor::visitPre(DocLanguage *)
+void LatexDocVisitor::visitPre(DocLanguage *l)
 {
+  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+  if (l->id().lower()!=langId.lower())
+  {
+    pushEnabled();
+    m_hide = TRUE;
+  }
 }
 
-void LatexDocVisitor::visitPost(DocLanguage *) 
+void LatexDocVisitor::visitPost(DocLanguage *l) 
 {
+  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+  if (l->id().lower()!=langId.lower())
+  {
+    popEnabled();
+  }
 }
 
 void LatexDocVisitor::visitPre(DocParamSect *s)
 {
+  if (m_hide) return;
   m_t << "\\begin{Desc}" << endl;
   m_t << "\\item[";
   switch(s->type())
@@ -850,12 +907,14 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
 
 void LatexDocVisitor::visitPost(DocParamSect *)
 {
+  if (m_hide) return;
   m_t << "\\end{description}" << endl;
   m_t << "\\end{Desc}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocParamList *pl)
 {
+  if (m_hide) return;
   m_t << "\\item[{\\em ";
   QStrListIterator li(pl->parameters());
   const char *s;
@@ -876,6 +935,7 @@ void LatexDocVisitor::visitPost(DocParamList *)
 
 void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
+  if (m_hide) return;
   m_t << "\\begin{Desc}" << endl;
   m_t << "\\item[";
   if (Config_getBool("PDF_HYPERLINKS"))
@@ -894,16 +954,19 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
 
 void LatexDocVisitor::visitPost(DocXRefItem *)
 {
+  if (m_hide) return;
   m_t << "\\end{Desc}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocInternalRef *ref)
 {
+  if (m_hide) return;
   startLink(0,ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPost(DocInternalRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
@@ -949,5 +1012,18 @@ void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QSt
 void LatexDocVisitor::endLink()
 {
   m_t << "}";
+}
+
+void LatexDocVisitor::pushEnabled()
+{
+  m_enabled.push(new bool(m_hide));
+}
+
+void LatexDocVisitor::popEnabled()
+{
+  bool *v=m_enabled.pop();
+  ASSERT(v!=0);
+  m_hide = *v;
+  delete v;
 }
 

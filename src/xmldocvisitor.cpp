@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -25,6 +25,7 @@
 #include "code.h"
 #include "dot.h"
 #include "message.h"
+#include "util.h"
 
 XmlDocVisitor::XmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -222,21 +223,25 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    m_t << "<programlisting>";
+    if (!m_hide)
+    {
+      m_t << "<programlisting>";
+    }
+    pushEnabled();
     m_hide = TRUE;
   }
   if (op->type()!=DocIncOperator::Skip) 
   {
-    parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
   }
   if (op->isLast())  
   {
-    m_hide = FALSE;
-    m_t << "</programlisting>"; 
+    popEnabled();
+    if (!m_hide) m_t << "</programlisting>"; 
   }
   else
   {
-    m_t << endl;
+    if (!m_hide) m_t << endl;
   }
 }
 
@@ -250,6 +255,7 @@ void XmlDocVisitor::visit(DocFormula *f)
 
 void XmlDocVisitor::visit(DocIndexEntry *ie)
 {
+  if (m_hide) return;
   m_t << "<indexentry>"
            "<primaryie>";
   filter(ie->entry());
@@ -264,6 +270,7 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
 
 void XmlDocVisitor::visitPre(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "<orderedlist>\n";
@@ -276,6 +283,7 @@ void XmlDocVisitor::visitPre(DocAutoList *l)
 
 void XmlDocVisitor::visitPost(DocAutoList *l)
 {
+  if (m_hide) return;
   if (l->isEnumList())
   {
     m_t << "</orderedlist>\n";
@@ -288,21 +296,25 @@ void XmlDocVisitor::visitPost(DocAutoList *l)
 
 void XmlDocVisitor::visitPre(DocAutoListItem *)
 {
+  if (m_hide) return;
   m_t << "<listitem>";
 }
 
 void XmlDocVisitor::visitPost(DocAutoListItem *) 
 {
+  if (m_hide) return;
   m_t << "</listitem>";
 }
 
 void XmlDocVisitor::visitPre(DocPara *) 
 {
+  if (m_hide) return;
   m_t << "<para>";
 }
 
 void XmlDocVisitor::visitPost(DocPara *)
 {
+  if (m_hide) return;
   m_t << "</para>";
 }
 
@@ -318,6 +330,7 @@ void XmlDocVisitor::visitPost(DocRoot *)
 
 void XmlDocVisitor::visitPre(DocSimpleSect *s)
 {
+  if (m_hide) return;
   m_t << "<simplesect kind=\"";
   switch(s->type())
   {
@@ -360,42 +373,50 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
 
 void XmlDocVisitor::visitPost(DocSimpleSect *)
 {
+  if (m_hide) return;
   m_t << "</simplesect>\n";
 }
 
 void XmlDocVisitor::visitPre(DocTitle *)
 {
+  if (m_hide) return;
   m_t << "<title>";
 }
 
 void XmlDocVisitor::visitPost(DocTitle *)
 {
+  if (m_hide) return;
   m_t << "</title>";
 }
 
 void XmlDocVisitor::visitPre(DocSimpleList *)
 {
+  if (m_hide) return;
   m_t << "<itemizedlist>\n";
 }
 
 void XmlDocVisitor::visitPost(DocSimpleList *)
 {
+  if (m_hide) return;
   m_t << "</itemizedlist>\n";
 }
 
 void XmlDocVisitor::visitPre(DocSimpleListItem *)
 {
+  if (m_hide) return;
   m_t << "<listitem>";
 }
 
 void XmlDocVisitor::visitPost(DocSimpleListItem *) 
 {
+  if (m_hide) return;
   m_t << "</listitem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocSection *s)
 {
-  m_t << "<sect" << s->level()+1 << ">";
+  if (m_hide) return;
+  m_t << "<sect" << s->level()+1 << " id=\"" << s->id() << "\">";
   filter(s->title());
   m_t << "</sect" << s->level()+1 << ">\n";
 }
@@ -406,6 +427,7 @@ void XmlDocVisitor::visitPost(DocSection *)
 
 void XmlDocVisitor::visitPre(DocHtmlList *s)
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "<orderedlist>\n"; 
   else 
@@ -414,6 +436,7 @@ void XmlDocVisitor::visitPre(DocHtmlList *s)
 
 void XmlDocVisitor::visitPost(DocHtmlList *s) 
 {
+  if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
     m_t << "</orderedlist>\n"; 
   else 
@@ -422,117 +445,140 @@ void XmlDocVisitor::visitPost(DocHtmlList *s)
 
 void XmlDocVisitor::visitPre(DocHtmlListItem *)
 {
+  if (m_hide) return;
   m_t << "<listitem>\n";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlListItem *) 
 {
+  if (m_hide) return;
   m_t << "</listitem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlDescList *)
 {
+  if (m_hide) return;
   m_t << "<variablelist>\n";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlDescList *) 
 {
+  if (m_hide) return;
   m_t << "</variablelist>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlDescTitle *)
 {
+  if (m_hide) return;
   m_t << "<varlistentry><term>";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlDescTitle *) 
 {
+  if (m_hide) return;
   m_t << "</term></varlistentry>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlDescData *)
 {
+  if (m_hide) return;
   m_t << "<listitem>";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlDescData *) 
 {
+  if (m_hide) return;
   m_t << "</listitem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
+  if (m_hide) return;
   m_t << "<table rows=\"" << t->numRows() 
       << "\" cols=\"" << t->numCols() << "\">" ;
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *) 
 {
+  if (m_hide) return;
   m_t << "</table>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlRow *)
 {
+  if (m_hide) return;
   m_t << "<row>\n";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlRow *) 
 {
+  if (m_hide) return;
   m_t << "</row>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlCell *c)
 {
+  if (m_hide) return;
   if (c->isHeading()) m_t << "<entry thead=\"yes\">"; else m_t << "<entry thead=\"no\">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlCell *) 
 {
+  if (m_hide) return;
   m_t << "</entry>"; 
 }
 
 void XmlDocVisitor::visitPre(DocHtmlCaption *)
 {
+  if (m_hide) return;
   m_t << "<caption>";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlCaption *) 
 {
+  if (m_hide) return;
   m_t << "</caption>\n";
 }
 
 void XmlDocVisitor::visitPre(DocInternal *)
 {
+  if (m_hide) return;
   m_t << "<internal>";
 }
 
 void XmlDocVisitor::visitPost(DocInternal *) 
 {
+  if (m_hide) return;
   m_t << "</internal>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocHRef *href)
 {
+  if (m_hide) return;
   m_t << "<ulink url=\"" << href->url() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocHRef *) 
 {
+  if (m_hide) return;
   m_t << "</ulink>";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
+  if (m_hide) return;
   m_t << "<heading" << header->level() << ">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlHeader *header) 
 {
+  if (m_hide) return;
   m_t << "</heading" << header->level() << ">\n";
 }
 
 void XmlDocVisitor::visitPre(DocImage *img)
 {
+  if (m_hide) return;
   m_t << "<image type=\"";
   switch(img->type())
   {
@@ -566,73 +612,87 @@ void XmlDocVisitor::visitPre(DocImage *img)
 
 void XmlDocVisitor::visitPost(DocImage *) 
 {
+  if (m_hide) return;
   m_t << "</image>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
+  if (m_hide) return;
   m_t << "<dotfile name=\"" << df->file() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *) 
 {
+  if (m_hide) return;
   m_t << "</dotfile>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocLink *lnk)
 {
+  if (m_hide) return;
   startLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
 void XmlDocVisitor::visitPost(DocLink *) 
 {
+  if (m_hide) return;
   endLink();
 }
 
 void XmlDocVisitor::visitPre(DocRef *ref)
 {
+  if (m_hide) return;
   startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void XmlDocVisitor::visitPost(DocRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
 
 void XmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
+  if (m_hide) return;
   m_t << "<tocitem id=\"" << ref->file() << "_1" << ref->anchor() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocSecRefItem *) 
 {
+  if (m_hide) return;
   m_t << "</tocitem>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocSecRefList *)
 {
+  if (m_hide) return;
   m_t << "<toclist>" << endl;
 }
 
 void XmlDocVisitor::visitPost(DocSecRefList *) 
 {
+  if (m_hide) return;
   m_t << "</toclist>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocLanguage *l)
 {
+  if (m_hide) return;
   m_t << "<language id=\"" << l->id() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocLanguage *) 
 {
+  if (m_hide) return;
   m_t << "</language>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocParamSect *s)
 {
+  if (m_hide) return;
   m_t << "<parameterlist kind=\"";
   switch(s->type())
   {
@@ -650,11 +710,13 @@ void XmlDocVisitor::visitPre(DocParamSect *s)
 
 void XmlDocVisitor::visitPost(DocParamSect *)
 {
+  if (m_hide) return;
   m_t << "</parameterlist>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocParamList *pl)
 {
+  if (m_hide) return;
   QStrListIterator li(pl->parameters());
   const char *s;
   for (li.toFirst();(s=li.current());++li)
@@ -668,11 +730,13 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
 
 void XmlDocVisitor::visitPost(DocParamList *)
 {
+  if (m_hide) return;
   m_t << "</parameterdescription>";
 }
 
 void XmlDocVisitor::visitPre(DocXRefItem *x)
 {
+  if (m_hide) return;
   m_t << "<xrefsect id=\"";
   m_t << x->file() << "_1" << x->anchor();
   m_t << "\">";
@@ -684,28 +748,33 @@ void XmlDocVisitor::visitPre(DocXRefItem *x)
 
 void XmlDocVisitor::visitPost(DocXRefItem *)
 {
+  if (m_hide) return;
   m_t << "</xrefdescription>";
   m_t << "</xrefsect>";
 }
 
 void XmlDocVisitor::visitPre(DocInternalRef *ref)
 {
+  if (m_hide) return;
   startLink(0,ref->file(),ref->anchor());
 }
 
 void XmlDocVisitor::visitPost(DocInternalRef *) 
 {
+  if (m_hide) return;
   endLink();
   m_t << " ";
 }
 
 void XmlDocVisitor::visitPre(DocCopy *c)
 {
+  if (m_hide) return;
   m_t << "<copydoc link=\"" << c->link() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocCopy *)
 {
+  if (m_hide) return;
   m_t << "</copydoc>" << endl;
 }
 
@@ -719,20 +788,7 @@ void XmlDocVisitor::visitPost(DocText *)
 
 void XmlDocVisitor::filter(const char *str)
 { 
-  if (str==0) return;
-  const char *p=str;
-  char c;
-  while (*p)
-  {
-    c=*p++;
-    switch(c)
-    {
-      case '<':  m_t << "&lt;"; break;
-      case '>':  m_t << "&gt;"; break;
-      case '&':  m_t << "&amp;"; break;
-      default:   m_t << c;
-    }
-  }
+  m_t << convertToXML(str);
 }
 
 void XmlDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
@@ -749,5 +805,18 @@ void XmlDocVisitor::startLink(const QString &ref,const QString &file,const QStri
 void XmlDocVisitor::endLink()
 {
   m_t << "</ref>";
+}
+
+void XmlDocVisitor::pushEnabled()
+{
+  m_enabled.push(new bool(m_hide));
+}
+
+void XmlDocVisitor::popEnabled()
+{
+  bool *v=m_enabled.pop();
+  ASSERT(v!=0);
+  m_hide = *v;
+  delete v;
 }
 
