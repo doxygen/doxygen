@@ -69,13 +69,14 @@ static uint     g_includeFileOffset;
 static uint     g_includeFileLength;
 
 // parser state
-static QString               g_context;
+static QString                g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
 static QStack<DocNode>        g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
+static QStack<DocStyleChange> g_initialStyleStack;
 static QList<Definition>      g_copyStack;
-static QString               g_fileName;
+static QString                g_fileName;
 
 struct DocParserContext
 {
@@ -84,6 +85,7 @@ struct DocParserContext
   bool insideHtmlLink;
   QStack<DocNode> nodeStack;
   QStack<DocStyleChange> styleStack;
+  QStack<DocStyleChange> initialStyleStack;
   QList<Definition> copyStack;
   MemberDef *memberDef;
   QString fileName;
@@ -96,27 +98,29 @@ static QStack<DocParserContext> g_parserStack;
 static void docParserPushContext()
 {
   doctokenizerYYpushContext();
-  DocParserContext *ctx = new DocParserContext;
-  ctx->context        = g_context;
-  ctx->inSeeBlock     = g_inSeeBlock;
-  ctx->insideHtmlLink = g_insideHtmlLink;
-  ctx->nodeStack      = g_nodeStack;
-  ctx->styleStack     = g_styleStack;
-  ctx->copyStack      = g_copyStack;
-  ctx->fileName       = g_fileName;
+  DocParserContext *ctx   = new DocParserContext;
+  ctx->context            = g_context;
+  ctx->inSeeBlock         = g_inSeeBlock;
+  ctx->insideHtmlLink     = g_insideHtmlLink;
+  ctx->nodeStack          = g_nodeStack;
+  ctx->styleStack         = g_styleStack;
+  ctx->initialStyleStack  = g_initialStyleStack;
+  ctx->copyStack          = g_copyStack;
+  ctx->fileName           = g_fileName;
   g_parserStack.push(ctx);
 }
 
 static void docParserPopContext()
 {
   DocParserContext *ctx = g_parserStack.pop();
-  g_context        = ctx->context;
-  g_inSeeBlock     = ctx->inSeeBlock;
-  g_insideHtmlLink = ctx->insideHtmlLink;
-  g_nodeStack      = ctx->nodeStack;
-  g_styleStack     = ctx->styleStack;
-  g_copyStack      = ctx->copyStack;
-  g_fileName       = ctx->fileName;
+  g_context             = ctx->context;
+  g_inSeeBlock          = ctx->inSeeBlock;
+  g_insideHtmlLink      = ctx->insideHtmlLink;
+  g_nodeStack           = ctx->nodeStack;
+  g_styleStack          = ctx->styleStack;
+  g_initialStyleStack   = ctx->initialStyleStack;
+  g_copyStack           = ctx->copyStack;
+  g_fileName            = ctx->fileName;
   delete ctx;
   doctokenizerYYpopContext();
 }
@@ -296,7 +300,7 @@ static void checkUndocumentedParams()
             "Warning: The following parameters of "+
             scope + QString(g_memberDef->name()) + 
             QString(argListToString(al)) +
-            " are not documented:";
+            " are not documented:\n";
         for (ali.toFirst();(a=ali.current());++ali)
         {
           QString argName = g_memberDef->isDefine() ? a->type : a->name;
@@ -559,6 +563,9 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
          ) ? tok : RetVal_OK; 
 }
 
+/*! Called when a style change starts. For instance a \<b\> command is
+ *  encountered.
+ */
 static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
           DocStyleChange::Style s,const HtmlAttribList *attribs)
 {
@@ -568,6 +575,9 @@ static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
   g_styleStack.push(sc);
 }
 
+/*! Called when a style change ends. For instance a \</b\> command is
+ *  encountered.
+ */
 static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
          DocStyleChange::Style s,const char *tagName)
 {
@@ -577,8 +587,16 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
       g_styleStack.top()->position()!=g_nodeStack.count() // wrong position
      )
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found </%s> tag without matching <%s> in the same paragraph",
-        tagName,tagName);
+    if (g_styleStack.isEmpty())
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found </%s> tag without matching <%s>",
+          tagName,tagName);
+    }
+    else
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found </%s> tag while expecting </%s>",
+          tagName,g_styleStack.top()->styleString());
+    }
   }
   else // end the section
   {
@@ -588,6 +606,10 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
   }
 }
 
+/*! Called at the end of a paragraph to close all open style changes
+ *  (e.g. a <b> without a </b>). The closed styles are pushed onto a stack
+ *  and entered again at the start of a new paragraph.
+ */
 static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
 {
   if (!g_styleStack.isEmpty())
@@ -595,26 +617,52 @@ static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
     DocStyleChange *sc = g_styleStack.top();
     while (sc && sc->position()>=g_nodeStack.count()) 
     { // there are unclosed style modifiers in the paragraph
-      const char *cmd="";
-      switch (sc->style())
-      {
-        case DocStyleChange::Bold:         cmd = "b"; break;
-        case DocStyleChange::Italic:       cmd = "em"; break;
-        case DocStyleChange::Code:         cmd = "code"; break;
-        case DocStyleChange::Center:       cmd = "center"; break;
-        case DocStyleChange::Small:        cmd = "small"; break;
-        case DocStyleChange::Subscript:    cmd = "subscript"; break;
-        case DocStyleChange::Superscript:  cmd = "superscript"; break;
-        case DocStyleChange::Preformatted: cmd = "pre"; break;
-      }
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: end of paragraph without end of style "
-             "command </%s>",cmd);
       children.append(new DocStyleChange(parent,g_nodeStack.count(),sc->style(),FALSE));
+      g_initialStyleStack.push(sc);
       g_styleStack.pop();
       sc = g_styleStack.top();
     }
   }
 }
+
+static void handleInitialStyleCommands(DocPara *parent,QList<DocNode> &children)
+{
+  DocStyleChange *sc;
+  while ((sc=g_initialStyleStack.pop()))
+  {
+    handleStyleEnter(parent,children,sc->style(),&sc->attribs());
+  }
+}
+
+const char *DocStyleChange::styleString() const
+{
+  switch (m_style)
+  {
+    case DocStyleChange::Bold:         return "b"; 
+    case DocStyleChange::Italic:       return "em"; 
+    case DocStyleChange::Code:         return "code"; 
+    case DocStyleChange::Center:       return "center"; 
+    case DocStyleChange::Small:        return "small"; 
+    case DocStyleChange::Subscript:    return "subscript"; 
+    case DocStyleChange::Superscript:  return "superscript"; 
+    case DocStyleChange::Preformatted: return "pre"; 
+  }
+  return "<invalid>";
+}
+
+static void handleUnclosedStyleCommands()
+{
+  if (!g_initialStyleStack.isEmpty())
+  {
+    DocStyleChange *sc = g_initialStyleStack.top();
+    g_initialStyleStack.pop();
+    handleUnclosedStyleCommands();
+    warn_doc_error(g_fileName,doctokenizerYYlineno,
+             "Warning: end of comment block while expecting "
+             "command </%s>",sc->styleString());
+  }
+}
+
 
 static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
@@ -828,13 +876,13 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             {
               handleStyleEnter(parent,children,DocStyleChange::Preformatted,&g_token->attribs);
               parent->setInsidePreformatted(TRUE);
-              doctokenizerYYsetInsidePre(TRUE);
+              //doctokenizerYYsetInsidePre(TRUE);
             }
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Preformatted,tokenName);
               parent->setInsidePreformatted(FALSE);
-              doctokenizerYYsetInsidePre(FALSE);
+              //doctokenizerYYsetInsidePre(FALSE);
             }
             break;
           case HTML_CODE:
@@ -2394,8 +2442,78 @@ int DocHtmlDescTitle::parse()
       switch (tok)
       {
         case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Illegal command %s as part of a <dt> tag",
-              g_token->name.data());
+          {
+            QString cmdName=g_token->name;
+            bool isJavaLink=FALSE;
+            switch (CmdMapper::map(cmdName))
+            {
+              case CMD_REF:
+                {
+                  int tok=doctokenizerYYlex();
+                  if (tok!=TK_WHITESPACE)
+                  {
+                    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
+                        g_token->name.data());
+                  }
+                  else
+                  {
+                    doctokenizerYYsetStateRef();
+                    tok=doctokenizerYYlex(); // get the reference id
+                    if (tok!=TK_WORD)
+                    {
+                      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
+                          tokToString(tok),cmdName.data());
+                    }
+                    else
+                    {
+                      DocRef *ref = new DocRef(this,g_token->name);
+                      m_children.append(ref);
+                      ref->parse();
+                    }
+                    doctokenizerYYsetStatePara();
+                  }
+                }
+                break;
+              case CMD_JAVALINK:
+                isJavaLink=TRUE;
+                // fall through
+              case CMD_LINK:
+                {
+                  int tok=doctokenizerYYlex();
+                  if (tok!=TK_WHITESPACE)
+                  {
+                    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
+                        cmdName.data());
+                  }
+                  else
+                  {
+                    doctokenizerYYsetStateLink();
+                    tok=doctokenizerYYlex();
+                    if (tok!=TK_WORD)
+                    {
+                      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
+                          tokToString(tok),cmdName.data());
+                    }
+                    else
+                    {
+                      doctokenizerYYsetStatePara();
+                      DocLink *lnk = new DocLink(this,g_token->name);
+                      m_children.append(lnk);
+                      QString leftOver = lnk->parse(isJavaLink);
+                      if (!leftOver.isEmpty())
+                      {
+                        m_children.append(new DocWord(this,leftOver));
+                      }
+                    }
+                  }
+                }
+
+                break;
+              default:
+                warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Illegal command %s as part of a <dt> tag",
+                               g_token->name.data());
+            }
+          }
           break;
         case TK_SYMBOL: 
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
@@ -2412,6 +2530,17 @@ int DocHtmlDescTitle::parse()
             else if (tagId==HTML_DT && g_token->endTag)
             {
               // ignore </dt> tag.
+            }
+            else if (tagId==HTML_DT)
+            {
+              // missing <dt> tag.
+              retval = RetVal_DescTitle;
+              goto endtitle;
+            }
+            else if (tagId==HTML_DL && g_token->endTag)
+            {
+              retval=RetVal_EndDesc;
+              goto endtitle;
             }
             else
             {
@@ -2518,7 +2647,7 @@ int DocHtmlDescList::parse()
     {
       retval=dd->parse();
     }
-    else
+    else if (retval!=RetVal_DescTitle)
     {
       // error
       break;
@@ -3630,7 +3759,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
     case HTML_PRE:
       handleStyleEnter(this,m_children,DocStyleChange::Preformatted,&g_token->attribs);
       setInsidePreformatted(TRUE);
-      doctokenizerYYsetInsidePre(TRUE);
+      //doctokenizerYYsetInsidePre(TRUE);
       break;
     case HTML_P:
       retval=TK_NEWPARA;
@@ -3759,13 +3888,20 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       {
         HtmlAttribListIterator li(tagHtmlAttribs);
         HtmlAttrib *opt;
+        bool found=FALSE;
         for (li.toFirst();(opt=li.current());++li)
         {
+          //printf("option name=%s value=%s\n",opt->name.data(),opt->value.data());
           if (opt->name=="src" && !opt->value.isEmpty())
           {
             DocImage *img = new DocImage(this,opt->value,DocImage::Html);
             m_children.append(img);
+            found = TRUE;
           }
+        }
+        if (!found)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: IMG tag does not have a SRC attribute!\n");
         }
       }
       break;
@@ -3849,9 +3985,9 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       handleStyleLeave(this,m_children,DocStyleChange::Small,"small");
       break;
     case HTML_PRE:
-      handleStyleLeave(this,m_children,DocStyleChange::Preformatted,"preformatted");
+      handleStyleLeave(this,m_children,DocStyleChange::Preformatted,"pre");
       setInsidePreformatted(FALSE);
-      doctokenizerYYsetInsidePre(FALSE);
+      //doctokenizerYYsetInsidePre(FALSE);
       break;
     case HTML_P:
       // ignore </p> tag
@@ -3918,6 +4054,7 @@ int DocPara::parse()
 {
   DBG(("DocPara::parse() start\n"));
   g_nodeStack.push(this);
+  handleInitialStyleCommands(this,m_children);
   int tok;
   int retval=0;
   while ((tok=doctokenizerYYlex())) // get the next token
@@ -4369,6 +4506,8 @@ void DocText::parse()
     }
   }
 
+  handleUnclosedStyleCommands();
+
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
 }
@@ -4423,6 +4562,8 @@ void DocRoot::parse()
     retval = in->parse();
   }
 
+  handleUnclosedStyleCommands();
+
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
 }
@@ -4443,6 +4584,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_memberDef = md;
   g_nodeStack.clear();
   g_styleStack.clear();
+  g_initialStyleStack.clear();
   g_inSeeBlock = FALSE;
   g_insideHtmlLink = FALSE;
   g_includeFileText = "";
@@ -4491,6 +4633,7 @@ DocNode *validatingParseText(const char *input)
   g_memberDef = 0;
   g_nodeStack.clear();
   g_styleStack.clear();
+  g_initialStyleStack.clear();
   g_inSeeBlock = FALSE;
   g_insideHtmlLink = FALSE;
   g_includeFileText = "";

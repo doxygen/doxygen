@@ -283,6 +283,7 @@ class DocStyleChange : public DocNode
       { if (attribs) m_attribs=*attribs; }
     Kind kind() const { return Kind_StyleChange; }
     Style style() const { return m_style; }
+    const char *styleString() const;
     bool enable() const { return m_enable; }
     uint position() const { return m_position; }
     DocNode *parent() const { return m_parent; }

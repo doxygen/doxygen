@@ -2524,8 +2524,8 @@ static void transferFunctionDocumentation()
               //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
               //}
 
-              mdec->setRefItems(mdef->specialListItems());
-              mdef->setRefItems(mdec->specialListItems());
+              mdec->mergeRefItems(mdef);
+              mdef->mergeRefItems(mdec);
 
               mdef->setMemberDeclaration(mdec);
               mdec->setMemberDefinition(mdef);

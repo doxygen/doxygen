@@ -58,7 +58,16 @@ inline void writeXMLCodeString(QTextStream &t,const char *s)
   char c;
   while ((c=*s++))
   {
-    if (c==' ') t << "<sp/>"; else t << c;
+    switch(c)
+    {
+      case ' ':  t << "<sp/>";  break;
+      case '<':  t << "&lt;";   break;
+      case '>':  t << "&gt;";   break;
+      case '&':  t << "&amp;";  break;
+      case '\'': t << "&apos;"; break; 
+      case '"':  t << "&quot;"; break;
+      default:   t << c;        break;         
+    }
   } 
 }
 
@@ -367,7 +376,7 @@ static void writeXMLDocBlock(QTextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE);
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text+"\n",FALSE);
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML

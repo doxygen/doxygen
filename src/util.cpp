@@ -317,15 +317,16 @@ QCString generateMarker(int id)
  */
 QCString stripFromPath(const QCString &path)
 {
-  const char *s=Config_getList("STRIP_FROM_PATH").first();
+  QStrList &l = Config_getList("STRIP_FROM_PATH");
+  const char *s=l.first();
   while (s)
   {
     QCString prefix = s;
-    if (path.left(prefix.length())==prefix)
+    if (stricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
       return path.right(path.length()-prefix.length());
     }
-    s = Config_getList("STRIP_FROM_PATH").next();
+    s = l.next();
   }
   return path;
 }
@@ -1687,11 +1688,11 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
           return FALSE; // more than a difference in name -> no match
         }
       }
-      else // maybe dst has a name while src has not
+      else  // maybe dst has a name while src has not
       {
         dstPos++;
         while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length()) 
+        if (dstPos!=dstAType.length() || !srcA->name.isEmpty()) 
         {
           NOMATCH
           return FALSE; // nope not a name -> no match
@@ -1718,12 +1719,16 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       {
         srcPos++;
         while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length()) 
+        if (srcPos!=srcAType.length() || !dstA->name.isEmpty()) 
         {
           NOMATCH
           return FALSE; // nope not a name -> no match
         }
       }
+    }
+    else
+    {
+      printf("something else!\n");
     }
   }
   MATCH
@@ -2574,8 +2579,6 @@ bool resolveLink(/* in */ const char *scName,
                  /* out */ QCString &resAnchor
                 )
 {
-  //printf("resolveLink clName=`%s' lr=`%s'\n",scName,lr);
-
   *resContext=0;
   *resPageInfo=0;
   
@@ -2583,6 +2586,8 @@ bool resolveLink(/* in */ const char *scName,
   FileDef  *fd;
   GroupDef *gd;
   PageInfo *pi;
+  ClassDef *cd;
+  NamespaceDef *nd;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
@@ -2620,7 +2625,17 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=fd;
     return TRUE;
   }
-  else // probably a class or member reference
+  else if ((cd=getClass(linkRef)))
+  {
+    *resContext=cd;
+    return TRUE;
+  }
+  else if ((nd=Doxygen::namespaceSDict.find(linkRef)))
+  {
+    *resContext=nd;
+    return TRUE;
+  }
+  else // probably a member reference
   {
     MemberDef *md;
     bool res = resolveRef(scName,lr,inSeeBlock,resContext,&md);

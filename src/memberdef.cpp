@@ -706,6 +706,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
   QCString cname  = d->name();
   QCString cfname = d->getOutputFileBase();
+  QCString osname = cname;
+  // in case of class members that are put in a group the name of the outerscope
+  // differs from the cname.
+  if (getOuterScope()) osname=getOuterScope()->name();
+  
 
   HtmlHelp *htmlHelp=0;
   bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
@@ -926,7 +931,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       !annMemb)
   {
     ol.startMemberDescription();
-    ol.parseDoc(briefFile(),briefLine(),cname,this,briefDescription(),FALSE);
+    ol.parseDoc(briefFile(),briefLine(),osname,this,briefDescription(),FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -1590,8 +1595,8 @@ void MemberDef::warnIfUndocumented()
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
      )
   {
-   warn_undoc(m_defFileName,m_defLine,"Warning: Member %s of %s %s is not documented.",
-        name().data(),t,d->name().data());
+   warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s of %s %s is not documented.",
+        name().data(),argsString()?argsString():"",t,d->name().data());
   }
 }
 

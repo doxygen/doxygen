@@ -669,25 +669,25 @@ class TranslatorEnglish : public Translator
     }
     
     virtual QCString trPublicMembers()
-    { return "Public Methods"; }
+    { return "Public Member Functions"; }
     virtual QCString trPublicSlots()
     { return "Public Slots"; }
     virtual QCString trSignals()
     { return "Signals"; }
     virtual QCString trStaticPublicMembers()
-    { return "Static Public Methods"; }
+    { return "Static Public Member Functions"; }
     virtual QCString trProtectedMembers()
-    { return "Protected Methods"; }
+    { return "Protected Member Functions"; }
     virtual QCString trProtectedSlots()
     { return "Protected Slots"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Static Protected Methods"; }
+    { return "Static Protected Member Functions"; }
     virtual QCString trPrivateMembers()
-    { return "Private Methods"; }
+    { return "Private Member Functions"; }
     virtual QCString trPrivateSlots()
     { return "Private Slots"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Static Private Methods"; }
+    { return "Static Private Member Functions"; }
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -1126,7 +1126,7 @@ class TranslatorEnglish : public Translator
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return "DCOP Methods";
+      return "DCOP Member Functions";
     }
 
 //////////////////////////////////////////////////////////////////////////
