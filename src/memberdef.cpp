@@ -31,6 +31,7 @@
 #include "groupdef.h"
 #include "defargs.h"
 #include "docparser.h"
+#include "dot.h"
 //#include "xml.h"
 
 
@@ -282,6 +283,7 @@ MemberDef::MemberDef(const char *df,int dl,
   //scopeTAL=0;
   //membTAL=0;
   m_defTmpArgLists=0;
+  m_hasCallGraph = FALSE;
   initLines=0;
   type=t;
   if (mt==Typedef && type.left(8)=="typedef ") type=type.mid(8);
@@ -1568,7 +1570,24 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
     ol.popGeneratorState();
 
+    if ((m_hasCallGraph || Config_getBool("CALL_GRAPH")) 
+        && isFunction() && Config_getBool("HAVE_DOT")
+       )
+    {
+      DotCallGraph callGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+      if (!callGraph.isTrivial())
+      {
+        msg("Generating call graph for function %s\n",qualifiedName().data());
+        ol.disable(OutputGenerator::Man);
+        ol.newParagraph();
+        ol.startCallGraph();
+        //ol.parseText(theTranslator->trCallGraph());
+        ol.endCallGraph(callGraph);
+        ol.enableAll();
+      }
+    }
   }
+
 }
 
 void MemberDef::warnIfUndocumented()
@@ -1990,5 +2009,11 @@ void MemberDef::setDeclArgumentList(ArgumentList *al)
 void MemberDef::findSectionsInDocumentation()
 {
   docFindSections(documentation(),this,0,docFile());  
+}
+
+void MemberDef::enableCallGraph(bool e) 
+{ 
+  m_hasCallGraph=e; 
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 

@@ -225,6 +225,10 @@ class MemberDef : public Definition
     //void setIndentDepth( int i) { indDepth=i; }
     //int  indentDepth() { return indDepth; }
 
+    // callgraph related members
+    bool hasCallGraph() const { return m_hasCallGraph; }
+    void enableCallGraph(bool e);
+    
     bool visibleMemberGroup(bool hideNoHeader);
     MemberDef *templateMaster() const { return m_templateMaster; } 
 
@@ -292,6 +296,7 @@ class MemberDef : public Definition
     bool annScope;            // member is part of an annoymous scope
     bool annUsed;             
     bool annShown;           
+    bool m_hasCallGraph;
     //int  indDepth;            // indentation depth for this member if inside an annonymous scope
     int  maxInitLines;        // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer

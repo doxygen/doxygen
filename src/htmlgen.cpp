@@ -1053,6 +1053,15 @@ void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
   g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
 }
 
+void HtmlGenerator::startCallGraph()
+{
+}
+
+void HtmlGenerator::endCallGraph(DotCallGraph &g)
+{
+  g.writeGraph(t,BITMAP,Config_getString("HTML_OUTPUT"));
+}
+
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
   g.writeGraph(t,Config_getString("HTML_OUTPUT"));

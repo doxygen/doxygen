@@ -47,6 +47,7 @@ documentation:
 \refitem cmdbrief \\brief
 \refitem cmdbug \\bug
 \refitem cmdc \\c
+\refitem cmdcallgraph \\callgraph
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcopydoc \\copydoc
@@ -66,6 +67,7 @@ documentation:
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
 \refitem cmdendverbatim \\endverbatim
+\refitem cmdendxmlonly \\endxmlonly
 \refitem cmdenum \\enum
 \refitem cmdexample \\example
 \refitem cmdexception \\exception
@@ -129,6 +131,7 @@ documentation:
 \refitem cmdversion \\version
 \refitem cmdwarning \\warning
 \refitem cmdweakgroup \\weakgroup
+\refitem cmdxmlonly \\xmlonly
 \refitem cmdxrefitem \\xrefitem
 \refitem cmddollar \\\$
 \refitem cmdat \\\@
@@ -180,6 +183,17 @@ doxygen. Unrecognized commands are treated as normal text.
 
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup" and
   \ref cmdweakgroup "\\weakgroup".
+
+\section cmdcallgraph \callgraph 
+
+  \addindex \\callgraph
+  When this command is put in a comment block of a function or method
+  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will 
+  generate a call graph for that function (provided the implementation of the
+  function or method calls other documented functions). The call graph will 
+  generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
+  \note The completeness (and correctness) of the call graph depends on the 
+  doxygen code parser which is not perfect.
 
 \section cmdclass \class <name> [<header-file>] [<header-name>]
 
@@ -1552,6 +1566,14 @@ ALIASES  = "english=\if english" \
   \sa section \ref cmdverbatim "\\verbatim".
 
 <hr>
+\section cmdendxmlonly \endxmlonly
+
+  \addindex \\endxmlonly
+  Ends a block of text that was started with a \\xmlonly command.
+  
+  \sa section \ref cmdxmlonly "\\xmlonly".
+
+<hr>
 \section cmdfdollar \f$
 
   \addindex \\f\$
@@ -1739,6 +1761,19 @@ ALIASES  = "english=\if english" \
 
   \warning Make sure you include a \\endverbatim command for each 
   \\verbatim command or the parser will get confused!
+
+<hr>
+\section cmdxmlonly \xmlonly
+
+  \addindex \\xmlonly
+  Starts a block of text that will be verbatim included in the
+  generated XML output only. The block ends with a
+  endxmlonly command.
+
+  This command can be used to include custom XML tags. 
+
+  \sa section \ref cmdhtmlonly "\\htmlonly" and section 
+              \ref cmdlatexonly "\\latexonly".
 
 <hr>
 \section cmdbackslash \\

@@ -222,6 +222,11 @@ should send me a code fragment that triggers the message. The workaround
 the problem put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
+<li><b>When running make in the latex dir I get "TeX capacity exceeded". Now what?</b>
+
+You can edit the texmf.cfg file to increase the default values of the 
+various buffers and then run "texconfig init".
+
 <li><b>Why are dependencies via STL classes not shown in the dot graphs?</b>
 
 Doxygen is unware of the STL classes, so it does not know that class A relates

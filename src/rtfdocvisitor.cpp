@@ -304,9 +304,8 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "}" << endl;
       break;
     case DocVerbatim::HtmlOnly: 
-      /* nothing */ 
-      break;
     case DocVerbatim::LatexOnly: 
+    case DocVerbatim::XmlOnly: 
       /* nothing */
       break;
   }

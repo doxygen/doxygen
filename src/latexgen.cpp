@@ -1388,6 +1388,15 @@ void LatexGenerator::endInclDepGraph(DotInclDepGraph &g)
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"));
 }
 
+void LatexGenerator::startCallGraph() 
+{
+}
+
+void LatexGenerator::endCallGraph(DotCallGraph &g) 
+{
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"));
+}
+
 void LatexGenerator::startDescription() 
 { 
   t << "\\begin{description}" << endl; 

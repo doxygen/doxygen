@@ -1224,8 +1224,6 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					    g_scopeStack.push(SCOPEBLOCK);
 					    pushScope(g_curClassName);
 					    //printf("***** g_curClassName=%s\n",g_curClassName.data());
-					    //CodeClassDef *cd=new CodeClassDef(g_ccd);
-					    //g_codeClassDict.insert(cd->name,cd);
 					    if (getResolvedClass(g_currentDefinition,g_curClassName)==0)
 					    {
 					      g_curClassDef=new ClassDef("<code>",1,
@@ -1611,9 +1609,6 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    BEGIN( SkipInits );
 					  }
   					}
- /*
-<MemberCall2,FuncCall>")"({BN}"const"|"volatile")*{BN}*"{" 	{
-  */
 <CallEnd>({BN}"const"|"volatile")*{BN}*"{" {
                                           if (g_insideBody)
 					  {
@@ -1622,10 +1617,19 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_theCallContext.popScope();
 					  g_parmType.resize(0);g_parmName.resize(0);
-					  if (g_name.find("::")!=-1) 
+					  int index = g_name.findRev("::");
+					  if (index!=-1) 
 					  {
+					    ClassDef *cd=getResolvedClass(Doxygen::globalScope,g_name.left(index));
+					    if (cd)
+					    {
+					      setClassScope(cd->name());
+					    }
+					    else
+					    {
+					      setClassScope(g_realScope);
+					    }
   					    g_scopeStack.push(SCOPEBLOCK);
-					    setClassScope(g_realScope);
 					  }
 					  else
 					  {

@@ -198,8 +198,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_firstCol=TRUE;
       break;
     case DocVerbatim::HtmlOnly: 
-      /* nothing */ 
-      break;
+    case DocVerbatim::XmlOnly: 
     case DocVerbatim::LatexOnly: 
       /* nothing */ 
       break;

@@ -1298,6 +1298,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
+      //printf("name=%s index=%d\n",cd->className().data(),index);
       if (toupper(cd->className().at(index))!=startLetter) // new begin letter => new header
       {
         startLetter=toupper(cd->className().at(index));
@@ -2270,6 +2271,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp = 0;
+  if (level>20)
+  {
+    warn(gd->getDefFileName(),gd->getDefLine(),
+        "Warning: maximum nesting level exceeded for group %s: check for possible recursive group relation!\n",gd->name().data()
+        );
+    return;
+  }
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
   bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
@@ -2433,8 +2441,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
             md=members->next();
           }
 
-          if(htmlHelp) htmlHelp->decContentsDepth();
-          if(ftvHelp)  ftvHelp->decContentsDepth();
+          if(htmlHelp && !first) htmlHelp->decContentsDepth();
+          if(ftvHelp && !first)  ftvHelp->decContentsDepth();
 
         }
       }

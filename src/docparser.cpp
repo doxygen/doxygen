@@ -826,6 +826,15 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_XMLONLY:
+          {
+            doctokenizerYYsetStateXmlOnly();
+            tok = doctokenizerYYlex();
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: xmlonly section ended without end marker",doctokenizerYYlineno);
+            doctokenizerYYsetStatePara();
+          }
+          break;
         case CMD_FORMULA:
           {
             DocFormula *form=new DocFormula(parent,g_token->id);
@@ -3043,7 +3052,8 @@ int DocParamList::parse(const QString &cmdName)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment block while parsing the "
         "argument of command %s",cmdName.data());
-    return 0;
+    retval=0;
+    goto endparamlist;
   }
   ASSERT(tok==TK_WHITESPACE);
 
@@ -3051,6 +3061,7 @@ int DocParamList::parse(const QString &cmdName)
   m_paragraph->markFirst();
   m_paragraph->markLast();
 
+endparamlist:
   DBG(("DocParamList::parse() end retval=%d\n",retval));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
@@ -3588,6 +3599,15 @@ int DocPara::handleCommand(const QString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_XMLONLY:
+      {
+        doctokenizerYYsetStateXmlOnly();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: xmlonly section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_VERBATIM:
       {
         doctokenizerYYsetStateVerbatim();
@@ -3600,6 +3620,7 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDLATEXONLY:
+    case CMD_ENDXMLONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
@@ -4491,6 +4512,9 @@ int DocSection::parse()
     retval=0; // stop parsing
             
   }
+  else
+  {
+  }
 
   INTERNAL_ASSERT(retval==0 || 
                   retval==RetVal_Section || 
@@ -4615,6 +4639,18 @@ void DocRoot::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid list item found");
     }
+    else if (retval==RetVal_Subsection)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found subsection command outside of section context!");
+    }
+    else if (retval==RetVal_Subsubsection)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found subsubsection command outside of subsection context!");
+    }
+    else if (retval==RetVal_Paragraph)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found paragraph command outside of subsubsection context!");
+    }
   } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
   if (lastPar) lastPar->markLast();
 
@@ -4641,6 +4677,7 @@ void DocRoot::parse()
     m_children.append(in);
     retval = in->parse();
   }
+
 
   handleUnclosedStyleCommands();
 

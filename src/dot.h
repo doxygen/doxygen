@@ -29,6 +29,7 @@ class FileDef;
 class QTextStream;
 class DotNodeList;
 class ClassSDict;
+class MemberDef;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
@@ -48,7 +49,7 @@ struct EdgeInfo
 class DotNode
 {
   public:
-    enum GraphType { Dependency, Inheritance, Collaboration, Hierarchy };
+    enum GraphType { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
     DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE,ClassDef *cd=0);
    ~DotNode();
     void addChild(DotNode *n,
@@ -96,6 +97,7 @@ class DotNode
     friend class DotClassGraph;
     friend class DotInclDepGraph;
     friend class DotNodeList;
+    friend class DotCallGraph;
     friend void writeDotGraph(
                       DotNode *root,
                       GraphType gt,
@@ -173,6 +175,25 @@ class DotInclDepGraph
     int             m_maxDistance;
     bool            m_inverse;
     int             m_recDepth;
+};
+
+class DotCallGraph
+{
+  public:
+    DotCallGraph(MemberDef *md,int maxRecursionDepth);
+   ~DotCallGraph();
+    QCString writeGraph(QTextStream &t, GraphOutputFormat f,
+                        const char *path,bool writeImageMap=TRUE);
+    void buildGraph(DotNode *n,MemberDef *md,int distance);
+    bool isTrivial() const;
+    
+  private:
+    DotNode        *m_startNode;
+    static int      m_curNodeNumber;
+    QDict<DotNode> *m_usedNodes;
+    int             m_maxDistance;
+    int             m_recDepth;
+    QCString        m_diskName;
 };
 
 void generateGraphLegend(const char *path);

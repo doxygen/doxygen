@@ -252,6 +252,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
       m_t << "\\end{verbatim}\\normalsize" << endl; 
       break;
     case DocVerbatim::HtmlOnly: 
+    case DocVerbatim::XmlOnly: 
       /* nothing */ 
       break;
     case DocVerbatim::LatexOnly: 
@@ -295,8 +296,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
 
 void LatexDocVisitor::visit(DocIncOperator *op)
 {
-  printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
-      op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
+  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
     if (!m_hide) m_t << "\n\n\\footnotesize\\begin{verbatim}"; 

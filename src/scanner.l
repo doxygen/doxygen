@@ -289,23 +289,30 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
 {
   if (listName==0) return;
 
+  //printf("addXRefItem(%s,%s,%s)\n",listName,itemTitle,listTitle);
   ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
   {
     refList = new RefList(listName,listTitle,itemTitle);
     Doxygen::xrefLists->insert(listName,refList);
+    //printf("new list!\n");
   }
   if (current->sli)
   {
     QListIterator<ListItemInfo> slii(*current->sli);
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (strcmp(lii->type,listName)==0) break;
+      if (strcmp(lii->type,listName)==0) 
+      {
+	//printf("found %s lii->type=%s\n",listName,lii->type);
+	break;
+      }
     }
   }
   if (lii) // already found item of same type before
   {
+    //printf("listName=%s item id = %d\n",listName,lii->itemId);
     RefItem *item = refList->getRefItem(lii->itemId);
     ASSERT(item!=0);
     item->text += " <p>";
@@ -315,6 +322,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
   else // new item
   {
     int itemId  = refList->addRefItem();
+    //printf("listName=%s item id = %d\n",listName,itemId);
     char anchorLabel[1024];
     sprintf(anchorLabel,"_%s%06d",listName,itemId);
     RefItem *item = refList->getRefItem(itemId);
@@ -484,7 +492,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"typedef"|"def"|"overload")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -1365,7 +1373,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
-<FindMembers,ReadBody,ReadNSBody>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
+<FindMembers,ReadBody,ReadNSBody,SkipCurly,SkipCurlyCpp>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
                                           yyLineNr = atoi(&yytext[1]);
 					  //printf("setting line number to %d\n",yyLineNr);
 					  lastPreLineCtrlContext = YY_START;
@@ -3900,7 +3908,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  pSkipDoc=&current->brief;
 					  BEGIN(SkipCode);
   					}
-<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly")/[^a-z_A-Z0-9] {
+<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					  BEGIN(lastVerbState);
   					}
@@ -4016,13 +4024,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += yytext; 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f$"	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="$"; 
 							  insideFormula=TRUE;
 							  BEGIN(ReadFormulaShort); 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f["	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f["	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="\\["; 
 							  insideFormula=TRUE;
@@ -4036,9 +4044,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 							      lastFormulaContext==AfterDocBrief ||
 							      lastFormulaContext==AfterDocLine
 							     )
+							  {
 							    current->brief += addFormula();
+							  }
+							  else if (lastFormulaContext==CopyArgComment ||
+							           lastFormulaContext==CopyArgCommentLine)
+							  {
+							    fullArgString += addFormula();
+							  }
 							  else
+							  {
 							    current->doc += addFormula();
+							  }
 							  insideFormula=FALSE;
 							  BEGIN(lastFormulaContext);
   							}
@@ -4062,9 +4079,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 							      lastFormulaContext==AfterDocBrief ||
 							      lastFormulaContext==AfterDocLine
 							     )
+							  {
 							    current->brief += addFormula();
+							  }
+							  else if (lastFormulaContext==CopyArgComment ||
+							           lastFormulaContext==CopyArgCommentLine)
+							  {
+							    fullArgString += addFormula();
+							  }
 							  else
+							  {
 							    current->doc += addFormula();
+							  }
 							  insideFormula=FALSE;
 							  BEGIN(lastFormulaContext);
   							}
@@ -4250,6 +4276,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
 					  current->initLines = 0; // OFF
+  					}
+<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"callgraph"/[^a-z_A-Z0-9] {
+					  current->callGraph = TRUE; // ON
   					}
 <GroupName>{ID}				{
   					  current->groups->append(

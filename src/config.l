@@ -1288,8 +1288,8 @@ void Config::create()
                     "The default language is English, other supported languages are: \n"
 		    "Brazilian, Catalan, Chinese, Chinese-Traditional, Croatian, Czech, Danish, Dutch, \n"
 		    "Finnish, French, German, Greek, Hungarian, Italian, Japanese, Japanese-en \n"
-		    "(Japanese with english messages), Korean, Norwegian, Polish, Portuguese, \n"
-		    "Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish and Ukrainian.\n",
+		    "(Japanese with English messages), Korean, Norwegian, Polish, Portuguese, \n"
+		    "Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.\n",
 		    "English"
                    );
 #ifdef LANG_BR
@@ -1381,8 +1381,8 @@ void Config::create()
 		    "The encoding is not always determined by the language that is chosen, \n"
 		    "but also whether or not the output is meant for Windows or non-Windows users. \n"
 		    "In case there is a difference, setting the USE_WINDOWS_ENCODING tag to YES \n"
-		    "forces the Windows enconding, (this is the default for the Windows binary), \n"
-		    "whereas setting the tag to NO uses a Unix-style encoding (the default for the \n"
+		    "forces the Windows encoding (this is the default for the Windows binary), \n"
+		    "whereas setting the tag to NO uses a Unix-style encoding (the default for \n"
 		    "all platforms other than Windows).\n",
 #if defined(_WIN32) || defined(__CYGWIN__)
 		    TRUE
@@ -1430,7 +1430,7 @@ void Config::create()
                     "HIDE_UNDOC_CLASSES",
                     "If the HIDE_UNDOC_CLASSES tag is set to YES, Doxygen will hide all \n"
                     "undocumented classes that are normally visible in the class hierarchy. \n"
-                    "If set to NO (the default) these class will be included in the various \n"
+                    "If set to NO (the default) these classes will be included in the various \n"
                     "overviews. This option has no effect if EXTRACT_ALL is enabled. \n",
                     FALSE
                  );
@@ -1491,7 +1491,7 @@ void Config::create()
   cl = addList(
                     "STRIP_FROM_PATH",
                     "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
-                    "can be used to strip a user defined part of the path. Stripping is \n"
+                    "can be used to strip a user-defined part of the path. Stripping is \n"
                     "only done if one of the specified strings matches the left-hand part of \n"
                     "the path. It is allowed to use relative paths in the argument list.\n"
                  );
@@ -1507,10 +1507,10 @@ void Config::create()
   cb = addBool(
                     "CASE_SENSE_NAMES",
                     "If the CASE_SENSE_NAMES tag is set to NO then Doxygen will only generate \n"
-                    "file names in lower case letters. If set to YES upper case letters are also \n"
+                    "file names in lower-case letters. If set to YES upper-case letters are also \n"
                     "allowed. This is useful if you have classes or files whose names only differ \n"
                     "in case and if your file system supports case sensitive file names. Windows \n"
-                    "users are adviced to set this option to NO.\n",
+                    "users are advised to set this option to NO.\n",
                     TRUE
                  );
   cb = addBool(
@@ -1530,7 +1530,7 @@ void Config::create()
   cb = addBool(
                     "SHOW_INCLUDE_FILES",
                     "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
-                    "will put list of the files that are included by a file in the documentation \n"
+                    "will put a list of the files that are included by a file in the documentation \n"
                     "of that file. \n",
                     TRUE
                  );
@@ -1539,7 +1539,7 @@ void Config::create()
                     "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
                     "will interpret the first line (until the first dot) of a JavaDoc-style \n"
                     "comment as the brief description. If set to NO, the JavaDoc \n"
-                    "comments  will behave just like the Qt-style comments (thus requiring an \n"
+                    "comments will behave just like the Qt-style comments (thus requiring an \n"
                     "explict @brief command for a brief description. \n",
                     FALSE
                  );
@@ -1629,7 +1629,7 @@ void Config::create()
                     "as commands in the documentation. An alias has the form \"name=value\". \n"
                     "For example adding \"sideeffect=\\par Side Effects:\\n\" will allow you to \n"
                     "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
-                    "will result in a user defined paragraph with heading \"Side Effects:\". \n"
+                    "will result in a user-defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
                  );
   cl = addList(
@@ -1640,7 +1640,7 @@ void Config::create()
   ci = addInt(
                     "MAX_INITIALIZER_LINES",
                     "The MAX_INITIALIZER_LINES tag determines the maximum number of lines \n"
-                    "the initial value of a variable or define consist of for it to appear in \n"
+                    "the initial value of a variable or define consists of for it to appear in \n"
                     "the documentation. If the initializer consists of more lines than specified \n"
                     "here it will be hidden. Use a value of 0 to hide initializers completely. \n"
                     "The appearance of the initializer of individual variables and defines in the \n"
@@ -1652,7 +1652,7 @@ void Config::create()
                     "OPTIMIZE_OUTPUT_FOR_C",
                     "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources \n"
                     "only. Doxygen will then generate output that is more tailored for C. \n"
-                    "For instance some of the names that are used will be different. The list \n"
+                    "For instance, some of the names that are used will be different. The list \n"
                     "of all members will be omitted, etc. \n",
                     FALSE
                  );
@@ -1660,7 +1660,7 @@ void Config::create()
                     "OPTIMIZE_OUTPUT_JAVA",
                     "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources \n"
                     "only. Doxygen will then generate output that is more tailored for Java. \n"
-                    "For instance namespaces will be presented as packages, qualified scopes \n"
+                    "For instance, namespaces will be presented as packages, qualified scopes \n"
                     "will look different, etc. \n",
                     FALSE
                  );
@@ -1921,7 +1921,7 @@ void Config::create()
   cs->addDependency("GENERATE_HTML");
   cs = addString(
                     "HTML_STYLESHEET",
-                    "The HTML_STYLESHEET tag can be used to specify a user defined cascading \n"
+                    "The HTML_STYLESHEET tag can be used to specify a user-defined cascading \n"
                     "style sheet that is used by each HTML page. It can be used to \n"
                     "fine-tune the look of the HTML output. If the tag is left blank doxygen \n"
                     "will generate a default style sheet \n"
@@ -1957,8 +1957,8 @@ void Config::create()
                     "HHC_LOCATION",
                     "If the GENERATE_HTMLHELP tag is set to YES, the HHC_LOCATION tag can \n"
                     "be used to specify the location (absolute path including file name) of \n"
-		    "the HTML help compiler (hhc.exe). If non empty doxygen will try to run \n"
-		    "the html help compiler on the generated index.hhp.\n"
+		    "the HTML help compiler (hhc.exe). If non-empty doxygen will try to run \n"
+		    "the HTML help compiler on the generated index.hhp.\n"
                    );
   cs->addDependency("GENERATE_HTML");
   cb = addBool(
@@ -1980,7 +1980,7 @@ void Config::create()
   cb = addBool(
                     "TOC_EXPAND",
                     "The TOC_EXPAND flag can be set to YES to add extra items for group members \n"
-                    "to the contents of the Html help documentation and to the tree view. \n",
+                    "to the contents of the HTML help documentation and to the tree view. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
@@ -2431,9 +2431,9 @@ void Config::create()
   cb = addBool(
                     "CLASS_DIAGRAMS",
                     "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
-                    "generate a inheritance diagram (in Html, RTF and LaTeX) for classes with base or \n"
+                    "generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base or \n"
                     "super classes. Setting the tag to NO turns the diagrams off. Note that this \n"
-		    "option is superceded by the HAVE_DOT option below. This is only a fallback. It is \n"
+		    "option is superseded by the HAVE_DOT option below. This is only a fallback. It is \n"
 		    "recommended to install and use dot, since it yield more powerful graphs. \n",
                     TRUE
                  );
@@ -2471,6 +2471,14 @@ void Config::create()
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
+                    "UML_LOOK",
+                    "If the UML_LOOK tag is set to YES doxygen will generate inheritance and \n"
+	            "colloborations diagrams in a style similiar to the OMG's Unified Modeling \n"
+		    "Language. \n",
+	            FALSE
+	      );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
                     "TEMPLATE_RELATIONS",
 		    "If set to YES, the inheritance and collaboration graphs will show the \n"
 		    "relations between templates and their instances. \n",
@@ -2493,6 +2501,16 @@ void Config::create()
                     "documented header file showing the documented files that directly or \n"
                     "indirectly include this file. \n",
                     TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "CALL_GRAPH",
+                    "If the CALL_GRAPH and HAVE_DOT tags are set to YES then doxygen will \n"
+		    "generate a call dependency graph for every global function or class method. \n"
+                    "Note that enabling this option will significantly increase the time of a run. \n"
+		    "So in most cases it will be better to enable call graphs for selected \n"
+		    "functions only using the \\callgraph command.\n",
+                    FALSE
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
@@ -2556,7 +2574,7 @@ void Config::create()
 		    "1 or 2 may greatly reduce the computation time needed for large code bases. Also \n"
 		    "note that a graph may be further truncated if the graph's image dimensions are \n"
 		    "not sufficient to fit the graph (see MAX_DOT_GRAPH_WIDTH and MAX_DOT_GRAPH_HEIGHT). \n"
-		    "If 0 is used fot the depth value (the default), the graph is not depth constraint. \n",
+		    "If 0 is used for the depth value (the default), the graph is not depth-constrained. \n",
                     0,1000,0
                 );
   ci->addDependency("HAVE_DOT");
@@ -2571,7 +2589,7 @@ void Config::create()
   cb = addBool(
                     "DOT_CLEANUP",
                     "If the DOT_CLEANUP tag is set to YES (the default) Doxygen will \n"
-                    "remove the intermedate dot files that are used to generate \n"
+                    "remove the intermediate dot files that are used to generate \n"
                     "the various graphs. \n",
                     TRUE
                  );

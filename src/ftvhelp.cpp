@@ -437,13 +437,17 @@ int FTVHelp::decContentsDepth()
 {
   //int i; for (i=0;i<m_dc;i++) m_cts << "  ";
 
-  m_indent--;
-  QList<FTVNode> *nl = &m_indentNodes[m_indent];
-  FTVNode *parent = nl->getLast();
-  QList<FTVNode> *children = &m_indentNodes[m_indent+1];
-  while (!children->isEmpty())
+  ASSERT(m_indent>0);
+  if (m_indent>0)
   {
-    parent->children.append(children->take(0));
+    m_indent--;
+    QList<FTVNode> *nl = &m_indentNodes[m_indent];
+    FTVNode *parent = nl->getLast();
+    QList<FTVNode> *children = &m_indentNodes[m_indent+1];
+    while (!children->isEmpty())
+    {
+      parent->children.append(children->take(0));
+    }
   }
   return m_indent;
 }

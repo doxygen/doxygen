@@ -2223,6 +2223,27 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   DBG_RTF(t << "{\\comment (endInclDepGraph)}"    << endl)
 }
 
+void RTFGenerator::startCallGraph()
+{
+  DBG_RTF(t << "{\\comment (startCallGraph)}"    << endl)
+}
+
+void RTFGenerator::endCallGraph(DotCallGraph &g)
+{
+  newParagraph();
+
+  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),FALSE);
+
+  // display the file
+  t << "{" << endl;
+  t << rtf_Style_Reset << endl;
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << "}" << endl;
+  DBG_RTF(t << "{\\comment (endCallGraph)}"    << endl)
+}
+
 /** Tests the integrity of the result by counting brackets.
  *
  */
