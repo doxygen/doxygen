@@ -31,6 +31,7 @@
 int main(int argc,char **argv)
 {
   initDoxygen();
+
   readConfiguration(argc,argv);
   parseInput();
   generateOutput();

@@ -120,7 +120,7 @@ class Definition
     int getDefLine() const { return m_defLine; }
 
     virtual Definition *findInnerCompound(const char *name);
-    virtual Definition *getOuterScope() { return m_outerScope; }
+    virtual Definition *getOuterScope() const { return m_outerScope; }
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d) { m_outerScope = d; }
 

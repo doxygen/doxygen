@@ -25,103 +25,25 @@
 
 class Translator
 {
+  private:
+    /* Tables for encoding conversions. */
+    static const char Win1250ToISO88592Tab[];
+    static const char ISO88592ToWin1250Tab[];
+    static Q_UINT16 Koi8RToWindows1251Tab[128];
+    static Q_UINT16 Windows1251ToKoi8RTab[128];
+
   protected:
-    static const char WinToISOTab[];
-    static const char ISOToWinTab[];
-    static Q_UINT16 koi8_r[128];
-    static Q_UINT16 windows_1251[128];
     /*! Returns the string converted from windows-1250 to iso-8859-2. */
-    /* The method was designed initially for translator_cz.h. 
-     * It is used for on-line encoding conversion related to
-     * conditional compilation in Unix/MS Windows environments
-     * (both use different encoding).  Later, the translator_hr.h
-     * (by Boris Bralo) used and improved the same style. As the
-     * method with the translation table was the same, the
-     * decision to move it to this base class was made. The same
-     * holds for ISO88592ToWin1250() method. 
-     * 
-     * Alexandr Chelpanov used the same approach for
-     * Koi8RToWindows1251() and Windows1251ToKoi8R() methods.  Notice,
-     * that he uses Unicode tables.
-     * 
-     * It is recommended for possibly other similar methods in future.
-     */
-    QCString Win1250ToISO88592(const QCString & sInput)
-    {
-      // The conversion table for characters >127
-      // 
-      
-      QCString result;
-      int len = sInput.length();
-
-      for (int i = 0; i < len; ++i)
-      {
-        unsigned int c = sInput[i];  
-        result += (c > 127) ? WinToISOTab[c & 0x7F] : c;
-      }
-      return result;
-    }
+    QCString Win1250ToISO88592(const QCString & sInput);
     
-    /*! returns the string converted from iso-8859-2 to windows-1250 */
-    /* See the comments of the Win1250ToISO88592() method for details. */
-    QCString ISO88592ToWin1250(const QCString & sInput)
-    {
-      // The conversion table for characters >127
-      // 
-      QCString result;
-      int len = sInput.length();
-
-      for (int i = 0; i < len; ++i)
-      {
-        unsigned int c = sInput[i];  
-        result += (c > 127) ? ISOToWinTab[c & 0x7F] : c;
-      }
-      return result;
-    }
+    /*! Returns the string converted from iso-8859-2 to windows-1250. */
+    QCString ISO88592ToWin1250(const QCString & sInput);
     
     /*! Returns the string converted from koi8-r to windows-1251. */
-    /* The method was designed initially for translator_cz.h. 
-       It is used for on-line encoding conversion related to conditional
-       compilation in Unix/MS Windows environments (both use different
-       encoding). 
-       Encoding table got from QT:qtextcodec.cpp
-     */
-    QCString Koi8RToWindows1251( const QCString & sInput )
-    {
+    QCString Koi8RToWindows1251( const QCString & sInput );
 
-      QString result;
-      int len = sInput.length();
-
-      result.setUnicode(0, len);
-      QChar* uc = (QChar*)result.unicode(); // const_cast
-      const unsigned char * c = (const unsigned char *)(const char*)sInput;
-      for( int i=0; i<len; i++ ) {
-        if ( c[i] > 127 )
-          uc[i] = koi8_r[c[i]-128];
-        else
-          uc[i] = c[i];
-      }
-      return result.local8Bit();
-    }
-    /*! returns the string converted from Windows-1251 to koi8-r */
-    /* See the comments of the Koi8RToWindows1251() method for details.
-       Encoding table got from QT:qtextcodec.cpp */
-    QCString Windows1251ToKoi8R( const QCString & sInput )
-    {
-      QString result;
-      int len = sInput.length();
-
-      result.setUnicode(0, len);
-      QChar* uc = (QChar*)result.unicode(); // const_cast
-      const unsigned char * c = (const unsigned char *)(const char*)sInput;
-      for( int i=0; i<len; i++ ) {
-        if ( c[i] > 127 )
-          uc[i] = windows_1251[c[i]-128];
-        else
-          uc[i] = c[i];
-      }
-      return result.local8Bit();
-    }
+    /*! Returns the string converted from windows-1251 to koi8-r. */
+    QCString Windows1251ToKoi8R( const QCString & sInput );
 
   public:
 
@@ -134,19 +56,15 @@ class Translator
 
     // --- Language control methods -------------------
     
-    /*! Used for identification of the language. May resemble 
-     * the string returned by latexBabelPackage(), but it is not used
-     * for the same purpose. The identification should not be translated.
-     * It should be replaced by the name of the language in English
-     * (e.g. Czech, Japanese, Russian, etc.). It should be equal to 
-     * the identification in language.cpp.
+    /*! Used for identification of the language. 
+     * See the comment for the translator_en.h method implementation
+     * for details.
      */
     virtual QCString idLanguage() = 0;
 
-    /*! Used to get the command(s) for the language support. This method
-     *  was designed for languages which do not prefer babel package.
-     *  If this methods returns empty string, then the latexBabelPackage()
-     *  method is used to generate the command for using the babel package.
+    /*! Used to get the command(s) for the language support. 
+     * See the comment for the translator_en.h method implementation
+     * for details.
      */
     virtual QCString latexLanguageSupportCommand() = 0;
 

@@ -79,10 +79,10 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.endMemberDocName();
   Argument *a=argList->first();
   QCString cName;
-  if (md->scopeDefTemplateArguments())
-  {
-    cName=tempArgListToString(md->scopeDefTemplateArguments());
-  }
+  //if (md->scopeDefTemplateArguments())
+  //{
+  //  cName=tempArgListToString(md->scopeDefTemplateArguments());
+  //}
   if (cd)
   {
     cName=cd->name();
@@ -245,8 +245,9 @@ MemberDef::MemberDef(const char *df,int dl,
   enumFields=0;
   enumScope=0;
   enumDeclList=0;
-  scopeTAL=0;
-  membTAL=0;
+  //scopeTAL=0;
+  //membTAL=0;
+  m_defTmpArgLists=0;
   initLines=0;
   type=t;
   args=a;
@@ -320,6 +321,7 @@ MemberDef::~MemberDef()
   delete enumFields;
   delete argList;
   delete tArgList;
+  delete m_defTmpArgLists;
 }
 
 void MemberDef::insertReimplementedBy(MemberDef *md)
@@ -385,38 +387,34 @@ QCString MemberDef::getOutputFileBase() const
   return "dummy";
 }
 
-static void copyArgumentList(const ArgumentList *src,ArgumentList *dst)
-{
-  ArgumentListIterator tali(*src);
-  Argument *a;
-  for (;(a=tali.current());++tali)
-  {
-    dst->append(new Argument(*a));
-  }
-  dst->constSpecifier    = src->constSpecifier;
-  dst->volatileSpecifier = src->volatileSpecifier;
-  dst->pureSpecifier     = src->pureSpecifier;
-}
+//void MemberDef::setScopeDefTemplateArguments(ArgumentList *tal)
+//{
+//  // copy function arguments (if any)
+//  if (tal)
+//  {
+//    scopeTAL = new ArgumentList;
+//    scopeTAL->setAutoDelete(TRUE);
+//    copyArgumentList(tal,scopeTAL);
+//  }
+//}
+//
+//void MemberDef::setMemberDefTemplateArguments(ArgumentList *tal)
+//{
+//  // copy function arguments (if any)
+//  if (tal)
+//  {
+//    membTAL = new ArgumentList;
+//    membTAL->setAutoDelete(TRUE);
+//    copyArgumentList(tal,membTAL);
+//  }
+//}
 
-void MemberDef::setScopeDefTemplateArguments(ArgumentList *tal)
+void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 {
-  // copy function arguments (if any)
-  if (tal)
+  if (lists)
   {
-    scopeTAL = new ArgumentList;
-    scopeTAL->setAutoDelete(TRUE);
-    copyArgumentList(tal,scopeTAL);
-  }
-}
-
-void MemberDef::setMemberDefTemplateArguments(ArgumentList *tal)
-{
-  // copy function arguments (if any)
-  if (tal)
-  {
-    membTAL = new ArgumentList;
-    membTAL->setAutoDelete(TRUE);
-    copyArgumentList(tal,membTAL);
+    if (m_defTmpArgLists) delete m_defTmpArgLists;
+    m_defTmpArgLists = copyArgumentLists(lists);
   }
 }
 
@@ -633,10 +631,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (tArgList)
   {
     writeTemplatePrefix(ol,tArgList);
-  }
-  else if (membTAL)
-  {
-    writeTemplatePrefix(ol,membTAL);
+    ol.lineBreak();
   }
 
   QCString ltype(type);
@@ -979,43 +974,50 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       }
 
       ClassDef *cd=getClassDef();
-      ArgumentList *scopeAl=scopeDefTemplateArguments();
-      if (scopeAl==0 && cd) scopeAl=cd->templateArguments(); 
-
-      ArgumentList *membAl=memberDefTemplateArguments();
-      if (membAl==0) membAl=templateArguments();
-
       if (!Config_getBool("HIDE_SCOPE_NAMES"))
       {
-        if (scopeAl && !related) // class template prefix
+        bool first=TRUE;
+        if (m_defTmpArgLists) 
+          // definition has explicate template parameter declarations
         {
-          ol.startMemberDocPrefixItem();
-          writeTemplatePrefix(ol,scopeAl);
-          ol.endMemberDocPrefixItem();
-        }
-        if (scopeAl && membAl) ol.docify(" ");
-
-        if (membAl) // function template prefix
-        {
-          ol.startMemberDocPrefixItem();
-          writeTemplatePrefix(ol,membAl);
-          ol.endMemberDocPrefixItem();
-        }
-        if (cd)
-        {
-          QCString cName=cd->name();
-          int il=cName.find('<');
-          int ir=cName.findRev('>');
-          if (il!=-1 && ir!=-1 && ir>il)
+          QListIterator<ArgumentList> ali(*m_defTmpArgLists);
+          ArgumentList *tal;
+          for (ali.toFirst();(tal=ali.current());++ali)
           {
-            ldef=addTemplateNames(ldef,
-                cName.left(il),          /* class without template spec */
-                cName.mid(il,ir-il+1)    /* templ spec */
-                                ); 
+            if (tal->count()>0)
+            {
+              if (!first) ol.docify(" ");
+              ol.startMemberDocPrefixItem();
+              writeTemplatePrefix(ol,tal);
+              ol.endMemberDocPrefixItem();
+            }
           }
-          else if (scopeAl)
+        }
+        else
+        {
+          if (cd)
           {
-            ldef=addTemplateNames(ldef,cName,tempArgListToString(scopeAl));
+            QList<ArgumentList> tempParamLists;
+            cd->getTemplateParameterLists(tempParamLists);
+            //printf("#tempParamLists=%d\n",tempParamLists.count());
+            QListIterator<ArgumentList> ali(tempParamLists);
+            ArgumentList *tal;
+            for (ali.toFirst();(tal=ali.current());++ali)
+            {
+              if (tal->count()>0)
+              {
+                if (!first) ol.docify(" ");
+                ol.startMemberDocPrefixItem();
+                writeTemplatePrefix(ol,tal);
+                ol.endMemberDocPrefixItem();
+              }
+            }
+          }
+          if (tArgList) // function template prefix
+          {
+            ol.startMemberDocPrefixItem();
+            writeTemplatePrefix(ol,tArgList);
+            ol.endMemberDocPrefixItem();
           }
         }
       }
@@ -1492,6 +1494,7 @@ QCString MemberDef::getScopeString() const
 
 QCString MemberDef::anchor() const
 {
+  if (m_templateMaster) return m_templateMaster->anchor();
   if (enumScope) return enumScope->anchor()+anc;
   return anc;
 }

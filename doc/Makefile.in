@@ -31,6 +31,6 @@ clean:
 language: language.doc 
 
 language.doc: $(wildcard ../src/translator*.h) maintainers.txt language.tpl translator.pl
-	$(PERL) translator.pl
+	$(ENV) VERSION=$(VERSION) DOXYGEN_DOCDIR=. $(PERL) translator.pl
 
 FORCE:

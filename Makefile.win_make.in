@@ -27,6 +27,6 @@ ps: docs
 	cd latex & $(MAKE)
 
 src\version.cpp: Makefile
-	echo char versionString[]="$(VERSION)"; > src\version.cpp
+	echo char versionString[]="""$(VERSION)"""; > src\version.cpp
 
 FORCE:

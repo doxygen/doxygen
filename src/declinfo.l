@@ -27,6 +27,7 @@
 
 #include "declinfo.h"
 #include "util.h"
+#include "message.h"
   
   
 #define YY_NO_UNPUT
@@ -157,6 +158,8 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 				  sharpCount=0;
   				  BEGIN(Template);
   				}
+<Template>"<<"			{ name+="<<"; }
+<Template>">>"			{ name+=">>"; }
 <Template>"<"			{
   				  name+="<";
   				  sharpCount++;
@@ -235,16 +238,29 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
     name=name.left(nb);
   }
 
-  cl=scope.copy();
-  //printf("scope=`%s'\n",scope.data());
-  int il=0,ir=0;
-  if ((il=cl.find('<'))!=-1 && (ir=cl.findRev('>'))!=-1) // split up scope and template arguments
+#if 0
   {
-    ctl=removeRedundantWhiteSpace(cl.mid(il,ir-il+1));
-    cl=cl.left(il)+cl.right(cl.length()-ir-1);
+    int l=scope.length();
+    int i=0;
+    int skipCount=0;
+    cl.resize(0);
+    ctl.resize(0);
+    for (i=0;i<l;i++)
+    {
+      char c=scope.at(i);
+      if (c=='<') 
+	skipCount++;
+      else if (c=='>') 
+	skipCount--;
+      else if (skipCount==0) 
+	cl+=c;
+    }
   }
-  //printf("cl=`%s' ctl=`%s'\n",cl.data(),ctl.data());
+#endif
+  cl=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(scope),FALSE); 
+  ctl.resize(0);
   n=removeRedundantWhiteSpace(name);
+  int il,ir;
   if ((il=n.find('<'))!=-1 && (ir=n.findRev('>'))!=-1)
     // TODO: handle cases like where n="operator<< <T>" 
   {
@@ -285,9 +301,9 @@ void dumpDecl(const char *s)
   QCString name;
   QCString args;
   QCString funcTNames;
-  printf("-----------------------------------------\n");
+  msg("-----------------------------------------\n");
   parseFuncDecl(s,className,classTNames,type,name,args,funcTNames);
-  printf("type=`%s' class=`%s' classTempl=`%s' name=`%s' "
+  msg("type=`%s' class=`%s' classTempl=`%s' name=`%s' "
          "funcTemplateNames=`%s' args=`%s'\n",
 	    type.data(),className.data(),classTNames.data(),
 	    name.data(),funcTNames.data(),args.data()

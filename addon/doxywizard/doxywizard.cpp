@@ -56,32 +56,23 @@ static bool loadConfig( QString loadFile )
                         );
     return FALSE;
   }
-  QFile f( loadFile );
-  if ( !f.open(IO_ReadOnly) )
-  {
-    QMessageBox::warning(0,
-                         "Warning","Cannot open input "+loadFile+
-                         " for reading!.",
-                         "abort"
-                        );
-    exit(1);
-  }
 
   // set config values to their defaults
   Config::instance()->init();
 
-  // read file into a string buffer
-  int fsize = fi.size();
-  QCString contents(fsize+1); // add room for \0 terminator
-  f.readBlock(contents.data(),fsize);
-  contents[fsize]='\0';
-
   // parse the config file
   // this will initialize the various Config data members
-  Config::instance()->parse(contents,loadFile);
+  if (Config::instance()->parse(loadFile))
+  {
+    QMessageBox::warning(0,
+                         "Warning","Cannot open or read input "+loadFile+"!",
+                         "abort"
+                        );
+    return FALSE;
+  }
+    
   Config::instance()->convertStrToVal();
 
-  f.close();
   return TRUE;
 }
 
@@ -322,7 +313,7 @@ void Wizard::about()
                       "<qt><center>A tool to create and edit configuration files "
                       "that can be read by doxygen.</center><p>"
                       "<center>Written by Dimitri van Heesch</center><p>"
-                      "<center>(c) 2000</center></qt>"
+                      "<center>(c) 2000-2001</center></qt>"
                     );
 }
 

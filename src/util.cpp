@@ -1248,6 +1248,11 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     {
       if (!isspace(dstAType.at(dstPos))) // maybe the names differ
       {
+        if (!dstA->name.isEmpty()) // dst has its name separated from its type
+        {
+          NOMATCH
+          return FALSE;
+        }
         while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
         if (dstPos!=dstAType.length()) 
         {
@@ -1270,6 +1275,11 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     {
       if (!isspace(srcAType.at(srcPos))) // maybe the names differ
       {
+        if (!srcA->name.isEmpty()) // src has its name separated from its type
+        {
+          NOMATCH
+          return FALSE;
+        }
         while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
         if (srcPos!=srcAType.length()) 
         {
@@ -2860,7 +2870,7 @@ QCString substituteTemplateArgumentsInString(
 {
   if (formalArgs==0) return name;
   QCString result;
-  static QRegExp re("[a-z_A-Z][:a-z_A-Z0-9]*");
+  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
   int p=0,l,i;
   // for each identifier in the base class name (e.g. B<T> -> B and T)
   while ((i=re.match(name,p,&l))!=-1)
@@ -2901,4 +2911,90 @@ QCString substituteTemplateArgumentsInString(
 }
 
 
+/*! Makes a deep copy of argument list \a src. Will allocate memory, that
+ *  is owned by the caller. 
+ */
+ArgumentList *copyArgumentList(const ArgumentList *src)
+{
+  ASSERT(src!=0);
+  ArgumentList *dst = new ArgumentList;
+  dst->setAutoDelete(TRUE);
+  ArgumentListIterator tali(*src);
+  Argument *a;
+  for (;(a=tali.current());++tali)
+  {
+    dst->append(new Argument(*a));
+  }
+  dst->constSpecifier    = src->constSpecifier;
+  dst->volatileSpecifier = src->volatileSpecifier;
+  dst->pureSpecifier     = src->pureSpecifier;
+  return dst;
+}
+
+/*! Makes a deep copy of the list of argument lists \a srcLists. 
+ *  Will allocate memory, that is owned by the caller.
+ */
+QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
+{
+  ASSERT(srcLists!=0);
+  QList<ArgumentList> *dstLists = new QList<ArgumentList>;
+  dstLists->setAutoDelete(TRUE);
+  QListIterator<ArgumentList> sli(*srcLists);
+  ArgumentList *sl;
+  for (;(sl=sli.current());++sli)
+  {
+    dstLists->append(copyArgumentList(sl));
+  }
+  return dstLists;
+}
+
+/*! Strips template specifiers from scope \a fullName, except those 
+ *  that make up specialized classes. The switch \a parentOnly 
+ *  determines whether or not a template "at the end" of a scope 
+ *  should be considered, e.g. with \a parentOnly is \c TRUE, A<T>::B<S> will 
+ *  try to strip <T> and not <S>, while \a parentOnly is \c FALSE will 
+ *  strip both unless A<T> or B<S> are specialized template classes. 
+ */
+QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
+                                          bool parentOnly)
+{
+  QCString result;
+  int p=0;
+  int l=fullName.length();
+  int i=fullName.find('<');
+  int si= i==-1 ? -1 : fullName.find("::",i);
+  while (i!=-1 && (!parentOnly || i<si))
+  {
+    result+=fullName.mid(p,i-p);
+    //printf("1:result+=%s\n",fullName.mid(p,i-p).data());
+    int e=i+1;
+    bool done=FALSE;
+    int count=1;
+    while (e<l && !done)
+    {
+      char c=fullName.at(e++);
+      if (c=='<') 
+      {
+        count++;
+      }
+      else if (c=='>') 
+      {
+        count--;
+        done = count==0;
+      }
+    }
+    //printf("  trying %s\n",(result+fullName.mid(i,e-i)).data());
+    if (getClass(result+fullName.mid(i,e-i))!=0)
+    {
+      result+=fullName.mid(i,e-i);
+      //printf("2:result+=%s\n",fullName.mid(i,e-i-1).data());
+    }
+    p=e;
+    i=fullName.find('<',p);
+    si= i==-1 ? -1 : fullName.find("::",i);
+  }
+  result+=fullName.right(l-p);
+  //printf("3:result+=%s\n",fullName.right(l-p).data());
+  return result;
+}
 

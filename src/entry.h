@@ -252,8 +252,9 @@ class Entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
     ArgumentList *argList;    //!< member arguments as a list
-    ArgumentList *tArgList;   //!< template argument list
-    ArgumentList *mtArgList;  //!< member template argument list
+    QList<ArgumentList> *tArgLists; //!< template argument declarations
+    //ArgumentList *tArgList;   //!< template argument lists (for each scope)
+    //ArgumentList *mtArgList;  //!< member template argument list
     QCString     scopeSpec;   //!< template specialization of the scope
     QCString     memberSpec;  //!< template specialization of the member
     QCString	 program;     //!< the program text

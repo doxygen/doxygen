@@ -362,6 +362,39 @@ static void setContext()
   insideJava = fileName.right(5)==".java";
 }
 
+static void prependScope()
+{
+  if (current_root->section & Entry::SCOPE_MASK)
+  {
+    //printf("--- prependScope %s to %s\n",current_root->name.data(),current->name.data());
+    current->name.prepend(current_root->name+"::");
+    if (current_root->tArgLists)
+    {
+      if (current->tArgLists==0)
+      {
+	current->tArgLists = new QList<ArgumentList>;
+	current->tArgLists->setAutoDelete(TRUE);
+      }
+      //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
+      QListIterator<ArgumentList> talsi(*current_root->tArgLists);
+      ArgumentList *srcAl=0;
+      for (talsi.toLast();(srcAl=talsi.current());--talsi)
+      {
+        ArgumentList *dstAl = new ArgumentList;
+	dstAl->setAutoDelete(TRUE);
+	QListIterator<Argument> tali(*srcAl);
+        Argument *a;
+        for (;(a=tali.current());++tali)
+        {
+          dstAl->append(new Argument(*a));
+        //printf("appending argument %s %s\n",a->type.data(),a->name.data());
+        }	  
+        current->tArgLists->insert(0,dstAl);	
+      }
+    }
+  }
+}
+
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -793,15 +826,15 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
-					  if (current->mtArgList) // transfer template arguments
-					  {
-					    if (current->tArgList)
-					    {
-					      delete current->tArgList;
-					    }
-					    current->tArgList = current->mtArgList;
-					    current->mtArgList = 0;
-					  }
+					  //if (current->mtArgList) // transfer template arguments
+					  //{
+					  //  if (current->tArgList)
+					  //  {
+					  //    delete current->tArgList;
+					  //  }
+					  //  current->tArgList = current->mtArgList;
+					  //  current->mtArgList = 0;
+					  //}
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
@@ -813,15 +846,15 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
-					  if (current->mtArgList) // transfer template arguments
-					  {
-					    if (current->tArgList)
-					    {
-					      delete current->tArgList;
-					    }
-					    current->tArgList = current->mtArgList;
-					    current->mtArgList = 0;
-					  }
+					  //if (current->mtArgList) // transfer template arguments
+					  //{
+					  //  if (current->tArgList)
+					  //  {
+					  //    delete current->tArgList;
+					  //  }
+					  //  current->tArgList = current->mtArgList;
+					  //  current->mtArgList = 0;
+					  //}
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
@@ -870,18 +903,27 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //if (current->tArgList /*|| (current_root->section&Entry::COMPOUND_MASK)*/)
 					  //{
 					  //  printf("-------> member template \n");
-					    if (current->mtArgList)
-					    {
-					      if (current->tArgList)
-					      {
-					        delete current->tArgList;
-					      }
-					      current->tArgList = current->mtArgList;
-					      current->mtArgList = 0;
-                                            }
-					    current->mtArgList = new ArgumentList;
-					    current->mtArgList->setAutoDelete(TRUE);
-					    currentArgumentList = current->mtArgList;
+					  if (current->tArgLists==0)
+					  {
+					    current->tArgLists = new QList<ArgumentList>;
+					    current->tArgLists->setAutoDelete(TRUE);
+					  }
+					  ArgumentList *al = new ArgumentList;
+					  al->setAutoDelete(TRUE);
+					  current->tArgLists->append(al);
+					  currentArgumentList = al;
+					  //if (current->mtArgList)
+					  //  {
+					  //    if (current->tArgList)
+					  //    {
+					  //      delete current->tArgList;
+					  //    }
+					  //    current->tArgList = current->mtArgList;
+					  //    current->mtArgList = 0;
+                                          //  }
+					  //  current->mtArgList = new ArgumentList;
+					  //  current->mtArgList->setAutoDelete(TRUE);
+					  //  currentArgumentList = current->mtArgList;
 					  //}
 					  //else // class template specifier
 					  //{
@@ -961,11 +1003,11 @@ TITLE     [tT][iI][tT][lL][eE]
   					  sharpCount=0;
 					  lineCount();
 					  addType( current );
-					  if (current->mtArgList && current->tArgList==0)
-					  {
-					    current->tArgList=current->mtArgList;
-					    current->mtArgList=0;
-					  }
+					  //if (current->mtArgList && current->tArgList==0)
+					  //{
+					  //  current->tArgList=current->mtArgList;
+					  //  current->mtArgList=0;
+					  //}
   					  current->name=yytext;
 					  current->name=current->name.stripWhiteSpace();
 					  current->scopeSpec.resize(0);
@@ -1039,12 +1081,12 @@ TITLE     [tT][iI][tT][lL][eE]
   					  // correct for misinterpreting return type as scope name: example: A<T> func()
                                           //printf("YY_START=%d current->tArgList=%p current->mtArgList=%p\n",
 					  //       YY_START,current->tArgList,current->mtArgList);
-  					  if (YY_START==FindMembers /*&& current->tArgList*/ && current->mtArgList==0)
-					  {
-					    current->mtArgList=current->tArgList;
-					    current->tArgList=0;
-					    current->scopeSpec.resize(0);
-					  }
+  					  //if (YY_START==FindMembers /*&& current->tArgList*/ && current->mtArgList==0)
+					  //{
+					  //  current->mtArgList=current->tArgList;
+					  //  current->tArgList=0;
+					  //  current->scopeSpec.resize(0);
+					  //}
 					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
@@ -1563,10 +1605,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					    QCString &cn = current->name;
 					    QCString rn = current_root->name.copy();
 					    //printf("cn=`%s' rn=`%s'\n",cn.data(),rn.data());
-					    if (!cn.isEmpty() && !rn.isEmpty() && 
-					       (current_root->section & Entry::SCOPE_MASK))
+					    if (!cn.isEmpty() && !rn.isEmpty())
 					    {
-					      cn.prepend(rn+"::");
+					      prependScope();
+					      //cn.prepend(rn+"::");
 					    }
 					    if (isTypedef && cn.isEmpty())
 					    {
@@ -1608,10 +1650,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->program+=","; // add field terminator
 					  }
   				          current->name=yytext;
-					  if (current_root->section & Entry::SCOPE_MASK)
-					  {
-					    current->name.prepend(current_root->name+"::");
-					  }
+					  prependScope();
   					  current->args = current->args.simplifyWhiteSpace();
   					  current->type = current->type.simplifyWhiteSpace();
 					  //printf("Adding compound %s %s %s\n",current->type.data(),current->name.data(),current->args.data());
@@ -2934,20 +2973,14 @@ TITLE     [tT][iI][tT][lL][eE]
 <ClassDocArg1>{SCOPENAME}/"<"		{
 					  current->name = yytext;
 					  // prepend outer scope name 
-					  if (current_root->section & Entry::SCOPE_MASK)
-					  {
-					    current->name.prepend(current_root->name+"::");
-					  }
+					  prependScope();
 					  lastClassTemplSpecContext = ClassDocArg2;
 					  BEGIN( ClassTemplSpec );
   					}
 <ClassDocArg1>{SCOPENAME}		{
 					  current->name = yytext;
 					  // prepend outer scope name 
-					  if (current_root->section & Entry::SCOPE_MASK)
-					  {
-					    current->name.prepend(current_root->name+"::");
-					  }
+					  prependScope();
 					  BEGIN( ClassDocArg2 );
 					}
 <ClassDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
@@ -3045,10 +3078,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <EnumDocArg1>{SCOPEID}			{
   					  current->name = yytext;
-					  if (current_root->section & Entry::SCOPE_MASK)
-					  {
-					    current->name.prepend(current_root->name+"::");
-					  }
+					  prependScope();
   					  newDocState();
   					}
 <EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
@@ -3859,16 +3889,6 @@ static void parseCompounds(Entry *rt)
 
       memberGroupId = NOGROUP;
       
-      // rebuild compound's group context 
-      //QCString *s = ce->groups->first();
-      //if (s)
-      //{
-      // lastDefGroup=*s;
-      //	startGroup();
-      //}
-
-      //current->mGrpId = memberGroupId = ce->mGrpId;
-
       scanYYlex() ;
       delete current; current=0;
       ce->program.resize(0);

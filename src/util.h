@@ -153,5 +153,10 @@ bool extractClassNameFromType(const QCString &type,int &pos,
 QCString substituteTemplateArgumentsInString(
        const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs);
 
+ArgumentList *copyArgumentList(const ArgumentList *src);
+QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
+QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
+                                          bool parentOnly=TRUE);
+
 #endif
 

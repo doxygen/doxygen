@@ -2703,6 +2703,8 @@ void writeIndex(OutputList &ol)
   ol.startIndexSection(isTitlePageAuthor);
   parseText(ol,theTranslator->trGeneratedBy());
   ol.endIndexSection(isTitlePageAuthor);
+  ol.enable(OutputGenerator::Latex);
+
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(isMainPage);
@@ -2716,7 +2718,6 @@ void writeIndex(OutputList &ol)
     }
     ol.endIndexSection(isMainPage);
   }
-  ol.enable(OutputGenerator::Latex);
 
   
   if (documentedPackages>0)

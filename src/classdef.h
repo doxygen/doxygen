@@ -184,6 +184,16 @@ class ClassDef : public Definition
      */
     virtual Definition *findInnerCompound(const char *name);
 
+    /*! Returns the template parameter lists that form the template
+     *  declaration of this class.
+     *  
+     *  Example: <code>template<class T> class TC {};</code>
+     *  will return a list with one ArgumentList containing one argument
+     *  with type="class" and name="T".
+     */
+    void getTemplateParameterLists(QList<ArgumentList> &lists) const;
+    QCString qualifiedNameWithTemplateParameters(
+        QList<ArgumentList> *actualParams=0) const;
 
     /* member lists by protection */
     MemberList pubMembers;

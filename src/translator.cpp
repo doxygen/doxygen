@@ -1,6 +1,15 @@
+/*! \file translator.cpp 
+ *  \brief Implementation of generally used translator methods.
+ * 
+ * This file contains implementation of the translator methods that
+ * are not expected to be reimplemented by derived translator classes.
+ * It also contains static data tables used by the methods.
+ *  
+ */
 #include "translator.h"
 
-const char Translator::WinToISOTab[] = 
+/*! The translation table used by Win1250ToISO88592() method. */
+const char Translator::Win1250ToISO88592Tab[] = 
 {
   '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
   '\x88', '\x89', '\xA9', '\x8B', '\xA6', '\xAB', '\xAE', '\xAC',
@@ -22,7 +31,8 @@ const char Translator::WinToISOTab[] =
 };
 
 
-const char Translator::ISOToWinTab[] = {
+/*! The translation table used by ISO88592ToWin1250() method. */
+const char Translator::ISO88592ToWin1250Tab[] = {
   '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
   '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F',
   '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97',
@@ -42,7 +52,9 @@ const char Translator::ISOToWinTab[] = {
   '\0'
 };
 
-Q_UINT16 Translator::koi8_r[128] = 
+
+/*! The translation table used by Koi8RToWindows1251() method. */
+Q_UINT16 Translator::Koi8RToWindows1251Tab[128] = 
 { 0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
   0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
   0x2591, 0x2592, 0x2593, 0x2320, 0x25A0, 0x2219/**/, 0x221A, 0x2248,
@@ -62,7 +74,8 @@ Q_UINT16 Translator::koi8_r[128] =
 };
 
 
-Q_UINT16 Translator::windows_1251[128] = 
+/*! The translation table used by Windows1251ToKoi8R() method. */
+Q_UINT16 Translator::Windows1251ToKoi8RTab[128] = 
 { 0x0402, 0x0403, 0x201A, 0x0453, 0x201E, 0x2026, 0x2020, 0x2021,
   0x20AC, 0x2030, 0x0409, 0x2039, 0x040A, 0x040C, 0x040B, 0x040F,
   0x0452, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
@@ -81,4 +94,100 @@ Q_UINT16 Translator::windows_1251[128] =
   0x0448, 0x0449, 0x044A, 0x044B, 0x044C, 0x044D, 0x044E, 0x044F
 };
 
+
+/*! Returns the string converted from windows-1250 to iso-8859-2. */
+/* The method was designed initially for translator_cz.h. 
+ * It is used for on-line encoding conversion related to
+ * conditional compilation in Unix/MS Windows environments
+ * (both use different encoding).  Later, the translator_hr.h
+ * (by Boris Bralo) used and improved the same style. As the
+ * method with the translation table was the same, the
+ * decision to move it to this base class was made. The same
+ * holds for ISO88592ToWin1250() method. 
+ * 
+ * Alexandr Chelpanov used the same approach for
+ * Koi8RToWindows1251() and Windows1251ToKoi8R() methods.  Notice,
+ * that he uses Unicode tables.
+ * 
+ * It is recommended for possibly other similar methods in future.
+ */
+QCString Translator::Win1250ToISO88592(const QCString & sInput)
+{
+  // The conversion table for characters >127
+  // 
+  
+  QCString result;
+  int len = sInput.length();
+
+  for (int i = 0; i < len; ++i)
+  {
+    unsigned int c = sInput[i];  
+    result += (c > 127) ? Win1250ToISO88592Tab[c & 0x7F] : c;
+  }
+  return result;
+}
+
+
+/*! returns the string converted from iso-8859-2 to windows-1250 */
+/* See the comments of the Win1250ToISO88592() method for details. */
+QCString Translator::ISO88592ToWin1250(const QCString & sInput)
+{
+  // The conversion table for characters >127
+  // 
+  QCString result;
+  int len = sInput.length();
+
+  for (int i = 0; i < len; ++i)
+  {
+    unsigned int c = sInput[i];  
+    result += (c > 127) ? ISO88592ToWin1250Tab[c & 0x7F] : c;
+  }
+  return result;
+}
+
+
+/*! Returns the string converted from koi8-r to windows-1251. */
+/* The method was designed initially for translator_cz.h. 
+   It is used for on-line encoding conversion related to conditional
+   compilation in Unix/MS Windows environments (both use different
+   encoding). Encoding table got from QT:qtextcodec.cpp
+ */
+QCString Translator::Koi8RToWindows1251( const QCString & sInput )
+{
+
+  QString result;
+  int len = sInput.length();
+
+  result.setUnicode(0, len);
+  QChar* uc = (QChar*)result.unicode(); // const_cast
+  const unsigned char * c = (const unsigned char *)(const char*)sInput;
+  for( int i=0; i<len; i++ ) {
+    if ( c[i] > 127 )
+      uc[i] = Koi8RToWindows1251Tab[c[i]-128];
+    else
+      uc[i] = c[i];
+  }
+  return result.local8Bit();
+}
+
+
+/*! returns the string converted from Windows-1251 to koi8-r */
+/* See the comments of the Koi8RToWindows1251() method for details.
+   Encoding table got from QT:qtextcodec.cpp */
+QCString Translator::Windows1251ToKoi8R( const QCString & sInput )
+{
+  QString result;
+  int len = sInput.length();
+
+  result.setUnicode(0, len);
+  QChar* uc = (QChar*)result.unicode(); // const_cast
+  const unsigned char * c = (const unsigned char *)(const char*)sInput;
+  for( int i=0; i<len; i++ ) {
+    if ( c[i] > 127 )
+      uc[i] = Windows1251ToKoi8RTab[c[i]-128];
+    else
+      uc[i] = c[i];
+  }
+  return result.local8Bit();
+}
 
