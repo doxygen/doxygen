@@ -3137,11 +3137,41 @@ const char *getOverloadDocs()
 void addMembersToMemberGroup(MemberList *ml,
     MemberGroupSDict *memberGroupSDict,Definition *context)
 {
+  //printf("addMemberToMemberGroup()\n");
   MemberListIterator mli(*ml);
   MemberDef *md;
   uint index;
   for (index=0;(md=mli.current());)
   {
+    if (md->isEnumerate()) // insert enum value of this enum into groups
+    {
+      QList<MemberDef> *fmdl=md->enumFieldList();
+      if (fmdl)
+      {
+        MemberDef *fmd=fmdl->first();
+        while (fmd)
+        {
+          int groupId=fmd->getMemberGroupId();
+          if (groupId!=-1)
+          {
+            QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+            QCString *pDocs      = Doxygen::memberDocDict[groupId];
+            if (pGrpHeader)
+            {
+              MemberGroup *mg = memberGroupSDict->find(groupId);
+              if (mg==0)
+              {
+                mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+                memberGroupSDict->append(groupId,mg);
+              }
+              mg->insertMember(context,fmd); // insert in member group
+              fmd->setMemberGroup(mg);
+            }
+          }
+          fmd=fmdl->next();
+        }
+      }
+    }
     int groupId=md->getMemberGroupId();
     if (groupId!=-1)
     {
@@ -3156,23 +3186,6 @@ void addMembersToMemberGroup(MemberList *ml,
           memberGroupSDict->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list
-        //if (allMembers) // remove from all member list as well
-        //{
-        //  MemberNameInfo *mni = allMembers->find(md->name());
-        //  if (mni)
-        //  {
-        //    QListIterator<MemberInfo> mii(*mni);
-        //    MemberInfo *mi;
-        //    for (;(mi=mii.current());++mii)
-        //    {
-        //      if (mi->memberDef==md)
-        //      {
-        //        mni->remove(mi);
-        //        break;
-        //      }
-        //    }
-        //  }
-        //}
         mg->insertMember(context,md); // insert in member group
         md->setMemberGroup(mg);
         continue;

@@ -26,7 +26,7 @@
 
 #include <png.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "pngenc.h"
 #include "message.h"
 

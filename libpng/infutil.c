@@ -1,5 +1,5 @@
 /* inflate_util.c -- data and routines common to blocks and codes
- * Copyright (C) 1995-1998 Mark Adler
+ * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -20,10 +20,7 @@ uInt inflate_mask[17] = {
 
 
 /* copy as much as possible from the sliding window to the output area */
-int inflate_flush(s, z, r)
-inflate_blocks_statef *s;
-z_streamp z;
-int r;
+int inflate_flush(inflate_blocks_statef *s, z_streamp z, int r)
 {
   uInt n;
   Bytef *p;

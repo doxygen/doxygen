@@ -957,7 +957,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLCHAR   [a-z_A-Z0-9\~\:\?\@\&\%\#\.\-\+\/\=]
+URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=\(\)]
 URLMASK   ([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+)
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9\x80-\xff]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]*"\"")

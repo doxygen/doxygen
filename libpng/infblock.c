@@ -1,5 +1,5 @@
 /* infblock.c -- interpret and process block types to last block
- * Copyright (C) 1995-1998 Mark Adler
+ * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -65,10 +65,7 @@ local const uInt border[] = { /* Order of the bit length code lengths */
  */
 
 
-void inflate_blocks_reset(s, z, c)
-inflate_blocks_statef *s;
-z_streamp z;
-uLongf *c;
+void inflate_blocks_reset(inflate_blocks_statef *s, z_streamp z, uLongf *c)
 {
   if (c != Z_NULL)
     *c = s->check;
@@ -86,10 +83,7 @@ uLongf *c;
 }
 
 
-inflate_blocks_statef *inflate_blocks_new(z, c, w)
-z_streamp z;
-check_func c;
-uInt w;
+inflate_blocks_statef *inflate_blocks_new(z_streamp z, check_func c, uInt w)
 {
   inflate_blocks_statef *s;
 
@@ -117,10 +111,7 @@ uInt w;
 }
 
 
-int inflate_blocks(s, z, r)
-inflate_blocks_statef *s;
-z_streamp z;
-int r;
+int inflate_blocks(inflate_blocks_statef *s, z_streamp z, int r)
 {
   uInt t;               /* temporary storage */
   uLong b;              /* bit buffer */
@@ -249,10 +240,12 @@ int r;
                              &s->sub.trees.tb, s->hufts, z);
       if (t != Z_OK)
       {
-        ZFREE(z, s->sub.trees.blens);
         r = t;
         if (r == Z_DATA_ERROR)
+        {
+          ZFREE(z, s->sub.trees.blens);
           s->mode = BAD;
+        }
         LEAVE
       }
       s->sub.trees.index = 0;
@@ -313,11 +306,13 @@ int r;
         t = inflate_trees_dynamic(257 + (t & 0x1f), 1 + ((t >> 5) & 0x1f),
                                   s->sub.trees.blens, &bl, &bd, &tl, &td,
                                   s->hufts, z);
-        ZFREE(z, s->sub.trees.blens);
         if (t != Z_OK)
         {
           if (t == (uInt)Z_DATA_ERROR)
+          {
+            ZFREE(z, s->sub.trees.blens);
             s->mode = BAD;
+          }
           r = t;
           LEAVE
         }
@@ -329,6 +324,7 @@ int r;
         }
         s->sub.decode.codes = c;
       }
+      ZFREE(z, s->sub.trees.blens);
       s->mode = CODES;
     case CODES:
       UPDATE
@@ -364,9 +360,7 @@ int r;
 }
 
 
-int inflate_blocks_free(s, z)
-inflate_blocks_statef *s;
-z_streamp z;
+int inflate_blocks_free(inflate_blocks_statef *s, z_streamp z)
 {
   inflate_blocks_reset(s, z, Z_NULL);
   ZFREE(z, s->window);
@@ -377,10 +371,7 @@ z_streamp z;
 }
 
 
-void inflate_set_dictionary(s, d, n)
-inflate_blocks_statef *s;
-const Bytef *d;
-uInt  n;
+void inflate_set_dictionary(inflate_blocks_statef *s, const Bytef *d, uInt n)
 {
   zmemcpy(s->window, d, n);
   s->read = s->write = s->window + n;
@@ -391,8 +382,7 @@ uInt  n;
  * by Z_SYNC_FLUSH or Z_FULL_FLUSH. 
  * IN assertion: s != Z_NULL
  */
-int inflate_blocks_sync_point(s)
-inflate_blocks_statef *s;
+int inflate_blocks_sync_point(inflate_blocks_statef *s)
 {
   return s->mode == LENS;
 }

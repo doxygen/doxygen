@@ -1,5 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-1998 Mark Adler
+ * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -11,7 +11,7 @@
 #endif
 
 const char inflate_copyright[] =
-   " inflate 1.1.3 Copyright 1995-1998 Mark Adler ";
+   " inflate 1.1.4 Copyright 1995-2002 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -90,22 +90,21 @@ local const uInt cpdext[30] = { /* Extra bits for distance codes */
 /* If BMAX needs to be larger than 16, then h and x[] should be uLong. */
 #define BMAX 15         /* maximum bit length of any code */
 
-local int huft_build(b, n, s, d, e, t, m, hp, hn, v)
-uIntf *b;               /* code lengths in bits (all assumed <= BMAX) */
-uInt n;                 /* number of codes (assumed <= 288) */
-uInt s;                 /* number of simple-valued codes (0..s-1) */
-const uIntf *d;         /* list of base values for non-simple codes */
-const uIntf *e;         /* list of extra bits for non-simple codes */
-inflate_huft * FAR *t;  /* result: starting table */
-uIntf *m;               /* maximum lookup bits, returns actual */
-inflate_huft *hp;       /* space for trees */
-uInt *hn;               /* hufts used in space */
-uIntf *v;               /* working area: values in order of bit length */
+local int huft_build(uIntf *b, uInt n, uInt s, const uIntf *d, const uIntf *e, inflate_huft **t, uIntf *m, inflate_huft *hp, uInt *hn, uIntf *v)
+                        /* code lengths in bits (all assumed <= BMAX) */
+                        /* number of codes (assumed <= 288) */
+                        /* number of simple-valued codes (0..s-1) */
+                        /* list of base values for non-simple codes */
+                        /* list of extra bits for non-simple codes */
+                        /* result: starting table */
+                        /* maximum lookup bits, returns actual */
+                        /* space for trees */
+                        /* hufts used in space */
+                        /* working area: values in order of bit length */
 /* Given a list of code lengths and a maximum table size, make a set of
    tables to decode that set of codes.  Return Z_OK on success, Z_BUF_ERROR
    if the given code set is incomplete (the tables are still built in this
-   case), Z_DATA_ERROR if the input is invalid (an over-subscribed set of
-   lengths), or Z_MEM_ERROR if not enough memory. */
+   case), or Z_DATA_ERROR if the input is invalid. */
 {
 
   uInt a;                       /* counter for codes of length k */
@@ -231,7 +230,7 @@ uIntf *v;               /* working area: values in order of bit length */
 
         /* allocate new table */
         if (*hn + z > MANY)     /* (note: doesn't matter for fixed) */
-          return Z_MEM_ERROR;   /* not enough memory */
+          return Z_DATA_ERROR;  /* overflow of MANY */
         u[h] = q = hp + *hn;
         *hn += z;
 
@@ -291,12 +290,12 @@ uIntf *v;               /* working area: values in order of bit length */
 }
 
 
-int inflate_trees_bits(c, bb, tb, hp, z)
-uIntf *c;               /* 19 code lengths */
-uIntf *bb;              /* bits tree desired/actual depth */
-inflate_huft * FAR *tb; /* bits tree result */
-inflate_huft *hp;       /* space for trees */
-z_streamp z;            /* for messages */
+int inflate_trees_bits(uIntf *c, uIntf *bb, inflate_huft **tb, inflate_huft *hp, z_streamp z)
+                        /* 19 code lengths */
+                        /* bits tree desired/actual depth */
+                        /* bits tree result */
+                        /* space for trees */
+                        /* for messages */
 {
   int r;
   uInt hn = 0;          /* hufts used in space */
@@ -318,16 +317,16 @@ z_streamp z;            /* for messages */
 }
 
 
-int inflate_trees_dynamic(nl, nd, c, bl, bd, tl, td, hp, z)
-uInt nl;                /* number of literal/length codes */
-uInt nd;                /* number of distance codes */
-uIntf *c;               /* that many (total) code lengths */
-uIntf *bl;              /* literal desired/actual bit depth */
-uIntf *bd;              /* distance desired/actual bit depth */
-inflate_huft * FAR *tl; /* literal/length tree result */
-inflate_huft * FAR *td; /* distance tree result */
-inflate_huft *hp;       /* space for trees */
-z_streamp z;            /* for messages */
+int inflate_trees_dynamic(uInt nl, uInt nd, uIntf *c, uIntf *bl, uIntf *bd, inflate_huft **tl, inflate_huft **td, inflate_huft *hp, z_streamp z)
+                        /* number of literal/length codes */
+                        /* number of distance codes */
+                        /* that many (total) code lengths */
+                        /* literal desired/actual bit depth */
+                        /* distance desired/actual bit depth */
+                        /* literal/length tree result */
+                        /* distance tree result */
+                        /* space for trees */
+                        /* for messages */
 {
   int r;
   uInt hn = 0;          /* hufts used in space */
@@ -396,12 +395,12 @@ local inflate_huft *fixed_td;
 #endif
 
 
-int inflate_trees_fixed(bl, bd, tl, td, z)
-uIntf *bl;               /* literal desired/actual bit depth */
-uIntf *bd;               /* distance desired/actual bit depth */
-inflate_huft * FAR *tl;  /* literal/length tree result */
-inflate_huft * FAR *td;  /* distance tree result */
-z_streamp z;             /* for memory allocation */
+int inflate_trees_fixed(uIntf *bl, uIntf *bd, inflate_huft **tl, inflate_huft **td, z_streamp z)
+                         /* literal desired/actual bit depth */
+                         /* distance desired/actual bit depth */
+                         /* literal/length tree result */
+                         /* distance tree result */
+                         /* for memory allocation */
 {
 #ifdef BUILDFIXED
   /* build fixed tables if not already */

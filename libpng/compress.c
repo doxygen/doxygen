@@ -1,5 +1,5 @@
 /* compress.c -- compress a memory buffer
- * Copyright (C) 1995-1998 Jean-loup Gailly.
+ * Copyright (C) 1995-2002 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -18,12 +18,7 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
-    uLong sourceLen;
-    int level;
+int ZEXPORT compress2 (Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen, int level)
 {
     z_stream stream;
     int err;
@@ -58,11 +53,7 @@ int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
 
 /* ===========================================================================
  */
-int ZEXPORT compress (dest, destLen, source, sourceLen)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
-    uLong sourceLen;
+int ZEXPORT compress (Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
 {
     return compress2(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
