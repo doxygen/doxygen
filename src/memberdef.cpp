@@ -567,10 +567,11 @@ bool MemberDef::isBriefSectionVisible() const
     //    "", //getFileDef()->name().data(),
     //    argsString());
 
-    QCString *pMemGrp = Doxygen::memberDocDict[grpId];
+    MemberGroupInfo *info = Doxygen::memGrpInfoDict[grpId];
+    //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
     bool hasDocs = hasDocumentation() || 
                     // part of a documented member group
-                   (grpId!=-1 && pMemGrp && !pMemGrp->isEmpty());
+                   (grpId!=-1 && info && !info->doc.isEmpty());
   
     // only include static members with file/namespace scope if 
     // explicitly enabled in the config file
@@ -1969,6 +1970,6 @@ void MemberDef::setDeclArgumentList(ArgumentList *al)
 
 void MemberDef::findSectionsInDocumentation()
 {
-  docFindSections(documentation(),0,this,0);  
+  docFindSections(documentation(),0,this,0,docFile());  
 }
 

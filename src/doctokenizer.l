@@ -51,6 +51,7 @@ static MemberGroup *g_memberGroup;
 static QCString     g_secLabel;
 static QCString     g_secTitle;
 static SectionInfo::SectionType g_secType;
+static QCString     g_endMarker;
 
 struct DocLexerContext
 {
@@ -286,10 +287,10 @@ OPMASK    ({BLANK}*{OPNORM}({FUNCARG}?))|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
-WORD1     [^ \t\n\r\\@<>(){}&$#,.]+|"{"|"}"
-WORD2     "."|","|"("|")"
-WORD1NQ   [^ \t\n\r\\@<>(){}&$#,."]+ 
-WORD2NQ   "."|","|"("|")"
+WORD1     [^ \t\n\r\\@<>()\[\]:;\?{}&$#,.]+|"{"|"}"
+WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
+WORD1NQ   [^ \t\n\r\\@<>()\[\]:;\?{}&$#,."]+ 
+WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
@@ -325,6 +326,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 %s St_SecLabel1
 %s St_SecLabel2
 %s St_SecTitle
+%x St_SecSkip
 
 %%
 <St_Para>\r               /* skip carriage return */
@@ -383,9 +385,9 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                        }
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
                          QString tagName(yytext+1);
-			 int i=tagName.find(':');
-  			 g_token->name = tagName.left(i);
-			 g_token->text = tagName.mid(i+1,tagName.length()-i-2);
+			 int index=tagName.find(':');
+  			 g_token->name = tagName.left(index);
+			 g_token->text = tagName.mid(index+1,tagName.length()-index-2);
 			 return TK_RCSTAG;
   		       }
 <St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
@@ -720,6 +722,41 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                                       g_secType = SectionInfo::Paragraph; 
                                       BEGIN(St_SecLabel2); 
                                     }
+<St_Sections>{CMD}"verbatim"	    {
+                                      g_endMarker="endverbatim";
+				      BEGIN(St_SecSkip);
+  				    }
+<St_Sections>{CMD}"htmlonly"	    {
+                                      g_endMarker="endhtmlonly";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"latexonly"	    {
+                                      g_endMarker="endlatexonly";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"code"	    {
+                                      g_endMarker="endcode";
+				      BEGIN(St_SecSkip);
+  				    }
+<St_Sections>"<!--"                 {
+                                      g_endMarker="-->";
+				      BEGIN(St_SecSkip);
+                                    }
+<St_SecSkip>{CMD}{ID}		    {
+                                      if (strcmp(yytext+1,g_endMarker)==0)
+				      {
+					BEGIN(St_Sections);
+				      }
+                                    }
+<St_SecSkip>"-->"		    {
+                                      if (strcmp(yytext,g_endMarker)==0)
+				      {
+					BEGIN(St_Sections);
+				      }
+                                    }
+<St_SecSkip>[^a-z_A-Z0-9\-]+
+<St_SecSkip>.
+<St_SecSkip>\n
 <St_Sections>.
 <St_Sections>\n        
 <St_SecLabel1>{LABELID} { 
@@ -756,7 +793,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 //--------------------------------------------------------------------------
 
 void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
-                                MemberGroup *mg)
+                                MemberGroup *mg,const char *fileName)
 {
   if (input==0) return;
   g_inputString = input;
@@ -765,6 +802,7 @@ void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
   g_pageInfo    = pi;
   g_definition  = d;
   g_memberGroup = mg;
+  g_fileName    = fileName;
   BEGIN(St_Sections);
   doctokenizerYYlineno = 1;
   doctokenizerYYlex();

@@ -37,7 +37,7 @@
 //}
 
 MemberGroup::MemberGroup(Definition *parent,
-      int id,const char *hdr,const char *d) /* : Definition(idToName(id)) */
+      int id,const char *hdr,const char *d,const char *docFile) 
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList      = new MemberList;
@@ -49,6 +49,7 @@ MemberGroup::MemberGroup(Definition *parent,
   inDeclSection   = 0;
   m_numDecMembers = -1;
   m_parent        = parent;
+  m_docFile       = docFile;
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -216,7 +217,7 @@ void MemberGroup::addListReferences(Definition *def)
 
 void MemberGroup::findSectionsInDocumentation()
 {
-  docFindSections(doc,0,0,this);
+  docFindSections(doc,0,0,this,m_docFile);
   memberList->findSectionsInDocumentation();
 }
 

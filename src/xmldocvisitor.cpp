@@ -76,6 +76,8 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Hash:    m_t << "#"; break;
     case DocSymbol::Percent: m_t << "%"; break;
     case DocSymbol::Copy:    m_t << "<copy/>"; break;
+    case DocSymbol::Tm:      m_t << "<trademark/>"; break;
+    case DocSymbol::Reg:     m_t << "<registered/>"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;
     case DocSymbol::Uml:     m_t << "<umlaut char=\"" << s->letter() << "\"/>"; break;
@@ -334,7 +336,7 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Date: 
       m_t << "date"; break;
     case DocSimpleSect::Note: 
-      m_t << "bug"; break;
+      m_t << "note"; break;
     case DocSimpleSect::Warning:
       m_t << "warning"; break;
     case DocSimpleSect::Pre:
@@ -349,6 +351,8 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
       m_t << "attention"; break;
     case DocSimpleSect::User: 
       m_t << "par"; break;
+    case DocSimpleSect::Rcs: 
+      m_t << "rcs"; break;
     case DocSimpleSect::Unknown:  break;
   }
   m_t << "\">";

@@ -59,7 +59,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 DocNode *validatingParseText(const char *input);
 
 /*! Searches for section and anchor commands in the input */
-void docFindSections(const char *input,PageInfo *pi,Definition *d,MemberGroup *m);
+void docFindSections(const char *input,PageInfo *pi,Definition *d,MemberGroup *m,const char *fileName);
 
 //---------------------------------------------------------------------------
 
@@ -156,6 +156,7 @@ template<class T> class CompAccept
   
   protected:
     QList<DocNode> m_children;
+    QList<DocNode> &getChildren() const { return m_children; }
 };
 
 
@@ -297,7 +298,7 @@ class DocSymbol : public DocNode
 {
   public:
     enum SymType { Unknown=0, BSlash,At,Less,Greater,Amp,Dollar,Hash,Percent, 
-                   Copy, Apos, Quot, Uml, Acute, Grave, Circ, Tilde, Szlig,
+                   Copy, Tm, Reg, Apos, Quot, Uml, Acute, Grave, Circ, Tilde, Szlig,
                    Cedil, Ring, Nbsp
                  };
     DocSymbol(DocNode *parent,SymType s,char letter='\0') : 
@@ -506,6 +507,7 @@ class DocTitle : public CompAccept<DocTitle>, public DocNode
   public:
     DocTitle(DocNode *parent) : m_parent(parent) {}
     void parse();
+    void parseFromString(const QString &title);
     Kind kind() const { return Kind_Title; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocTitle>::accept(this,v); }
@@ -856,11 +858,12 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     enum Type 
     {  
        Unknown, See, Return, Author, Authors, Version, Since, Date,
-       Note, Warning, Pre, Post, Invar, Remark, Attention, User
+       Note, Warning, Pre, Post, Invar, Remark, Attention, User, Rcs
     };
     DocSimpleSect(DocNode *parent,Type t);
     virtual ~DocSimpleSect();
     int parse(bool userTitle);
+    int parseRcs();
     Kind kind() const { return Kind_SimpleSect; }
     Type type() const { return m_type; }
     DocNode *parent() const { return m_parent; }

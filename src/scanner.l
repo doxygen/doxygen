@@ -77,6 +77,7 @@ static int              lastClassTemplSpecContext;
 static int              lastSkipHtmlCommentContext;
 static int              lastIfContext;
 static int              lastInternalDocContext;
+static int              lastPreLineCtrlContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -448,7 +449,8 @@ static void setContext()
   insideIDL  = fileName.right(4)==".idl" || fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
   insideCS   = fileName.right(3)==".cs";
-  insidePHP  = fileName.right(4)==".php" || fileName.right(4)==".inc";
+  insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
+               fileName.right(4)==".inc";
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -1366,8 +1368,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
-<FindMembers>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
+<FindMembers,ReadBody>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
                                           yyLineNr = atoi(&yytext[1]);
+					  //printf("setting line number to %d\n",yyLineNr);
+					  lastPreLineCtrlContext = YY_START;
   					  BEGIN( PreLineCtrl );
   					}
 <PreLineCtrl>"\""[^\n\"]*"\""		{
@@ -1375,7 +1379,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <PreLineCtrl>.				{}
 <PreLineCtrl>\n				{
-  					  BEGIN(FindMembers);
+                                          yyLineNr++;
+  					  BEGIN( lastPreLineCtrlContext );
   					}
 <SkipCPP>.
 <SkipCPP>\\[\r]*"\n"[\r]*		{ yyLineNr++ ; }
@@ -1560,7 +1565,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN( Doc );
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}"|"/*"([!*]?){B}*{CMD}"}"{B}*"*/"	{
+<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
                                           if (memberGroupId==NOGROUP && autoGroupStack.isEmpty())
                                           {
                                             warn(yyFileName,yyLineNr,
@@ -1851,7 +1856,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody>[^\r\n{}"'/]*			{ current->program += yytext ; }
+<ReadBody>[^\r\n\#{}"'/]*		{ current->program += yytext ; }
 <ReadBody>"//".*			{ current->program += yytext ; }
 <ReadBody>\"				{ current->program += yytext ; 
                                           pCopyQuotedString = &current->program;
@@ -3659,9 +3664,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    memberGroupDocs+="\n\n";
 					  }
 					  memberGroupDocs+=current->doc;
-					  Doxygen::memberDocDict.insert(memberGroupId,
-					      new QCString(memberGroupDocs)
-								       );
+					  //Doxygen::memberDocDict.insert(memberGroupId,
+					  //    new QCString(memberGroupDocs)
+					  //    );
+					  MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
+					  if (info) 
+					  {
+					    info->doc = memberGroupDocs;
+					    info->docFile = yyFileName;
+					  }
 					  current->doc.resize(0);
 					  current->brief.resize(0);
 					  BEGIN(lastDocContext);
@@ -4583,9 +4594,13 @@ static void startGroup()
       memberGroupHeader="[NOHEADER]";
     }
     memberGroupId = newMemberGroupId();
-    Doxygen::memberHeaderDict.insert(memberGroupId,
-	new QCString(memberGroupHeader.stripWhiteSpace())
-			   );
+    MemberGroupInfo *info = new MemberGroupInfo;
+    info->header = memberGroupHeader.stripWhiteSpace();
+    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
+    //Doxygen::memberHeaderDict.insert(memberGroupId,
+    //	new QCString(memberGroupHeader.stripWhiteSpace())
+    //			   );
+    
     memberGroupRelates = current->relates.copy();
     memberGroupInside = current->inside.copy();
     current->mGrpId = memberGroupId;
@@ -4609,9 +4624,12 @@ static void startGroupInDoc()
     //  endGroup();
     //}
     memberGroupId = newMemberGroupId();
-    Doxygen::memberHeaderDict.insert(memberGroupId,
-	new QCString(memberGroupHeader.stripWhiteSpace())
-			   );
+    MemberGroupInfo *info = new MemberGroupInfo;
+    info->header = memberGroupHeader.stripWhiteSpace();
+    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
+    //Doxygen::memberHeaderDict.insert(memberGroupId,
+    //	new QCString(memberGroupHeader.stripWhiteSpace())
+    //			   );
     memberGroupRelates = current->relates.copy();
     memberGroupInside = current->inside.copy();
     current->mGrpId = memberGroupId;
@@ -4627,9 +4645,15 @@ static void endGroup()
 {
   if (memberGroupId!=NOGROUP) // end of member group
   {
-    Doxygen::memberDocDict.insert(memberGroupId,
-	new QCString(memberGroupDocs)
-			);
+    //Doxygen::memberDocDict.insert(memberGroupId,
+    //	new QCString(memberGroupDocs)
+    //			);
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
+    if (info) 
+    {
+      info->doc = memberGroupDocs;
+      info->docFile = yyFileName;
+    }
     memberGroupId=NOGROUP;
     memberGroupRelates.resize(0);
     memberGroupInside.resize(0);

@@ -103,65 +103,59 @@ void msg(const char *fmt, ...)
   }
 }
 
+static void do_warn(const char *tag, const char *file, int line, const char *fmt, va_list args)
+{
+  if (!Config_getBool(tag)) return; // warning type disabled
+  char text[4096];
+  vsprintf(text, fmt, args);
+  if (file==0) file="<unknown>";
+  switch(warnFormatOrder)
+  {
+    case 1: fprintf(warnFile,outputFormat,file,line,text); break;
+    case 2: fprintf(warnFile,outputFormat,text,line,file); break;
+    case 3: fprintf(warnFile,outputFormat,line,text,file); break;
+    case 4: fprintf(warnFile,outputFormat,file,text,line); break;
+    case 5: fprintf(warnFile,outputFormat,text,file,line); break;
+    case 6: fprintf(warnFile,outputFormat,line,file,text); break;
+    default:
+      printf("Error: warning format has not been initialized!\n");
+  }
+}
+
 void warn(const char *file,int line,const char *fmt, ...)
 {
-  if (Config_getBool("WARNINGS"))
-  {
-    if (file==0) file="<unknown>";
-    char text[4096];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(text, fmt, args);
-    va_end(args); 
-    switch(warnFormatOrder)
-    {
-      case 1: fprintf(warnFile,outputFormat,file,line,text); break;
-      case 2: fprintf(warnFile,outputFormat,text,line,file); break;
-      case 3: fprintf(warnFile,outputFormat,line,text,file); break;
-      case 4: fprintf(warnFile,outputFormat,file,text,line); break;
-      case 5: fprintf(warnFile,outputFormat,text,file,line); break;
-      case 6: fprintf(warnFile,outputFormat,line,file,text); break;
-      default:
-        printf("Error: warning format has not been initialized!\n");
-    }
-  }
+  va_list args;
+  va_start(args, fmt);
+  do_warn("WARNINGS", file, line, fmt, args);
+  va_end(args); 
 }
 
 void warn_cont(const char *fmt, ...)
 {
-  if (Config_getBool("WARNINGS"))
-  {
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(warnFile, fmt, args);
-    va_end(args); 
-  }
+  if (!Config_getBool("WARNINGS"))
+    return;
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(warnFile, fmt, args);
+  va_end(args); 
 }
   
 void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
-  if (Config_getBool("WARN_IF_UNDOCUMENTED"))
-  {
-    if (file==0) file="<unknwon>";
-    char text[4096];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(text, fmt, args);
-    va_end(args); 
-    switch(warnFormatOrder)
-    {
-      case 1: fprintf(warnFile,outputFormat,file,line,text); break;
-      case 2: fprintf(warnFile,outputFormat,text,line,file); break;
-      case 3: fprintf(warnFile,outputFormat,line,text,file); break;
-      case 4: fprintf(warnFile,outputFormat,file,text,line); break;
-      case 5: fprintf(warnFile,outputFormat,text,file,line); break;
-      case 6: fprintf(warnFile,outputFormat,line,file,text); break;
-      default:
-        printf("Error: warning format has not been initialized!\n");
-    }
-  }
+  va_list args;
+  va_start(args, fmt);
+  do_warn("WARN_IF_UNDOCUMENTED", file, line, fmt, args);
+  va_end(args);
 }
   
+void warn_doc_error(const char *file,int line,const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_warn("WARN_IF_DOC_ERROR", file, line, fmt, args);
+  va_end(args);
+}
+
 void err(const char *fmt, ...)
 {
   va_list args;

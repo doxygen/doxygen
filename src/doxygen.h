@@ -87,8 +87,9 @@ class Doxygen
     static FormulaDict formulaNameDict;
     static StringDict tagDestinationDict; 
     static StringDict aliasDict; 
-    static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
-    static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
+    static QIntDict<MemberGroupInfo> memGrpInfoDict;
+    //static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
+    //static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
     static QDict<void> expandAsDefinedDict;
     static NamespaceDef *globalScope;
     static QDict<RefList> *specialLists; // array of special lists: todo, test, bug, deprecated ...
