@@ -30,6 +30,7 @@ class QTextStream;
 class DotNodeList;
 class ClassSDict;
 class MemberDef;
+class Definition;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
@@ -197,6 +198,7 @@ class DotCallGraph
     int             m_maxDistance;
     int             m_recDepth;
     QCString        m_diskName;
+    Definition *    m_scope;
 };
 
 void generateGraphLegend(const char *path);

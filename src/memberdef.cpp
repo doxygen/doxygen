@@ -543,7 +543,17 @@ QCString MemberDef::anchor() const
   if (groupAlias)       return groupAlias->anchor();
   if (m_templateMaster) return m_templateMaster->anchor();
   if (enumScope) result.prepend(enumScope->anchor());
-  if (group) result.prepend("g");
+  if (group) 
+  {
+    if (groupMember)
+    {
+      result=groupMember->anchor();
+    }
+    else
+    {
+      result.prepend("g");
+    }
+  }
   return result;
 }
 
@@ -1184,11 +1194,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
   QCString scopeName = scName;
+  QCString memAnchor = anchor();
   if (container->definitionType()==TypeGroup)
   {
     if (getClassDef())          scopeName=getClassDef()->name();
     else if (getNamespaceDef()) scopeName=getNamespaceDef()->name();
     else if (getFileDef())      scopeName=getFileDef()->name();
+  }
+  else if (container->definitionType()==TypeFile && getNamespaceDef())
+  { // member is in a namespace, but is written as part of the file documentation
+    // as well, so we need to make sure its label is unique.
+    memAnchor.prepend("file_");
   }
 
   QCString cname  = container->name();
@@ -1200,7 +1216,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
   {
     HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addIndexItem(cname,name(),cfname,anchor());
+    htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
   }
 
   // get member name
@@ -1242,11 +1258,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
-        ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
-        ol.startMemberDoc(cname,name(),anchor(),name());
+        ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+        ol.startMemberDoc(cname,name(),memAnchor,name());
         if (hasHtmlHelp)
         {
-          htmlHelp->addIndexItem(cname,name(),cfname,anchor());
+          htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
         }
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
@@ -1258,11 +1274,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (!found) // anonymous compound
     {
       //printf("Anonymous compound `%s'\n",cname.data());
-      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
-      ol.startMemberDoc(cname,name(),anchor(),name());
+      ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+      ol.startMemberDoc(cname,name(),memAnchor,name());
       if (hasHtmlHelp)
       {
-        htmlHelp->addIndexItem(cname,name(),cfname,anchor());
+        htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
       }
       // strip anonymous compound names from definition
       int si=ldef.find(' '),pi,ei=i+l;
@@ -1280,11 +1296,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
   else // not an enum value
   {
-    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
-    ol.startMemberDoc(cname,name(),anchor(),name());
+    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+    ol.startMemberDoc(cname,name(),memAnchor,name());
     if (hasHtmlHelp)
     {
-      htmlHelp->addIndexItem(cname,name(),cfname,anchor());
+      htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
     }
 
     ClassDef *cd=getClassDef();
@@ -1457,7 +1473,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.endMemberDocName();
     ol.endMemberDoc(FALSE);
   }
-  ol.endDoxyAnchor(cfname,anchor());
+  ol.endDoxyAnchor(cfname,memAnchor);
   ol.startIndent();
 
   ol.pushGeneratorState();
@@ -1872,7 +1888,9 @@ void MemberDef::setAnchor(const char *a)
   anc=a;
 }
 
-void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs)
+void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
+                            const QCString &fileName,int startLine,
+                            bool hasDocs,MemberDef *member)
 {
   //printf("%s MemberDef::setGroupDef(%s)\n",name().data(),gd->name().data());
   group=gd;
@@ -1880,6 +1898,7 @@ void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString
   groupFileName=fileName;
   groupStartLine=startLine;
   groupHasDocs=hasDocs;
+  groupMember=member;
 }
 
 void MemberDef::setEnumScope(MemberDef *md) 

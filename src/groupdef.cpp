@@ -828,7 +828,8 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       if (success)
       {
         //printf("insertMember successful\n");
-        md->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
+        md->setGroupDef(fgd,pri,root->fileName,root->startLine,
+                        !root->doc.isEmpty());
         ClassDef *cd = md->getClassDefOfAnonymousType();
         if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
       }

@@ -242,6 +242,7 @@ class MainWidget : public QMainWindow
   public:
     MainWidget(QWidget *parent=0);
    ~MainWidget();
+    void loadConfigFromFile(const QString &);
 
   private slots:
     void launchWizard();
@@ -263,7 +264,6 @@ class MainWidget : public QMainWindow
     
   private:
     void setConfigSaved(bool);
-    void loadConfigFromFile(const QString &);
     void addRecentFile(const QString &);
 
     QPushButton *m_wizard;

@@ -52,42 +52,37 @@ static const char *defaultStyleSheet =
 "DIV.qindex {\n"
 "	width: 100%;\n"
 "	background-color: #eeeeff;\n"
-"	border: 1px solid #B0B0B0;\n"
+"	border: 1px solid #b0b0b0;\n"
 "	text-align: center;\n"
 "	margin: 2px;\n"
 "	padding: 2px;\n"
-"	line-height: 120%;\n"
+"	line-height: 140%;\n"
 "}\n"
 "A.qindex {\n"
 "       text-decoration: none;\n"
 "       font-weight: bold;\n"
 "       color: #1A419D;\n"
-"       padding: 2px;\n"
 "}\n"
 "A.qindex:visited {\n"
 "       text-decoration: none;\n"
 "       font-weight: bold;\n"
 "       color: #1A419D\n"
-"       padding: 2px;\n"
 "}\n"
 "A.qindex:hover {\n"
 "	text-decoration: none;\n"
 "	background-color: #ddddff;\n"
-"	padding: 2px;\n"
 "}\n"
 "A.qindexHL {\n"
 "	text-decoration: none;\n"
 "	font-weight: bold;\n"
 "	background-color: #6666cc;\n"
 "	color: #ffffff;\n"
-"	padding: 2px 6px;\n"
 "	border: 1px double #9295C2;\n"
 "}\n"
 "A.qindexHL:hover {\n"
 "	text-decoration: none;\n"
 "	background-color: #6666cc;\n"
 "	color: #ffffff;\n"
-"	padding: 2px 6px;\n"
 "}\n"
 "A.qindexHL:visited { text-decoration: none; background-color: #6666cc; color: #ffffff }\n"
 "A.el { text-decoration: none; font-weight: bold }\n"
@@ -359,9 +354,9 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   QTextStream t(&file);
   t << "<hr size=\"1\"><address style=\"align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
-  t << " <a href=\"http://www.doxygen.org/index.html\">"
+  t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-    << "align=\"middle\" border=0>"
+    << "align=\"middle\" border=\"0\">"
     << "</a> $doxygenversion";
   t << "</small></address>\n"
     << "</body>\n"
@@ -446,9 +441,9 @@ static void writePageFooter(QTextStream &t,const QCString &lastTitle,
         dateToString(TRUE),
         Config_getString("PROJECT_NAME")
         );
-    t << endl << "<a href=\"http://www.doxygen.org/index.html\">";
+    t << "&nbsp;" << endl << "<a href=\"http://www.doxygen.org/index.html\">";
     t << endl << "<img src=\"" << relPath << "doxygen.png\" alt=\"doxygen\" " 
-      << "align=\"middle\" border=0 >" << "</a> " << versionString << " ";
+      << "align=\"middle\" border=\"0\">" << "</a> " << versionString << " ";
     t << "</small></address>";
     if (Debug::isFlagSet(Debug::Validate))
     {
@@ -529,7 +524,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *name)
 {
-  t << "<a class=\"anchor\" name=\"" << anchor << "\" doxytag=\"" << name << "\" ></a>";
+  t << "<a class=\"anchor\" name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)
@@ -859,9 +854,9 @@ void HtmlGenerator::startMemberItem(int annoType)
     t << "<tr>";
     switch(annoType)
     {
-      case 0:  t << "<td class=\"memItemLeft\" nowrap align=right valign=top>"; break;
+      case 0:  t << "<td class=\"memItemLeft\" nowrap align=\"right\" valign=\"top\">"; break;
       case 1:  t << "<td class=\"memItemLeft\" nowrap>"; break;
-      default: t << "<td class=\"memItemLeft\" nowrap valign=top>"; break;
+      default: t << "<td class=\"memItemLeft\" nowrap valign=\"top\">"; break;
     }
   }
   else
@@ -886,7 +881,7 @@ void HtmlGenerator::insertMemberAlign()
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "&nbsp;</td><td class=\"memItemRight\" valign=bottom>"; 
+    t << "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">"; 
   }
 }
 
@@ -921,7 +916,7 @@ void HtmlGenerator::startMemberSections()
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<table border=0 cellpadding=0 cellspacing=0>" << endl;
+    t << "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">" << endl;
     // HTML is not recursively decomposable, sorry
     t << "<tr><td></td></tr>" << endl;
   }
@@ -941,7 +936,7 @@ void HtmlGenerator::startMemberHeader()
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<tr><td colspan=2><br><h2>";
+    t << "<tr><td colspan=\"2\"><br><h2>";
   }
   else
   {
@@ -965,7 +960,7 @@ void HtmlGenerator::endMemberHeader()
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td colspan=2>";
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
@@ -1036,7 +1031,7 @@ void HtmlGenerator::startMemberDocName(bool align)
   t << "        <tr>" << endl;
   t << "          <td class=\"md\" nowrap valign=\"top\"";
   if (align) t << " align=\"right\"";
-  t << "> ";
+  t << ">";
 }
 
 void HtmlGenerator::endMemberDocName()
@@ -1213,7 +1208,7 @@ void HtmlGenerator::startIndent()
   
   //t << "<div class=\"in\">" << endl; 
 
-  t << "<table cellspacing=5 cellpadding=0 border=0>\n"
+  t << "<table cellspacing=\"5\" cellpadding=\"0\" border=\"0\">\n"
        "  <tr>\n"
        "    <td>\n"
        "      &nbsp;\n"

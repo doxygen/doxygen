@@ -1995,6 +1995,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					  addType();
   					  g_name+=yytext; 
 					}
+<Body>{SCOPENAME}/{B}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
+					  generateClassOrGlobalLink(*g_code,yytext,TRUE);
+					  addType();
+  					  g_name+=yytext; 
+					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  addType();

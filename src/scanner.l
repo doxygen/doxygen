@@ -2636,7 +2636,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ReadBody,ReadNSBody,ReadBodyIntf>{BN}+	{ current->program += yytext ;
 					  lineCount() ;
 					}
-<ReadBodyIntf>"@end"			{ // end of Objective C block
+<ReadBodyIntf>"@end"/[^a-z_A-Z0-9]	{ // end of Objective C block
 					  current_root->addSubEntry( current ) ;
   					  current=new Entry;
 					  initEntry();
@@ -5475,7 +5475,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  unput('\n');
   					  BEGIN( lastInternalDocContext );
   					}
-<AfterDoc>{CMD}"brief"			{ BEGIN(AfterDocBrief); }
+<AfterDoc>{CMD}"brief"			{ current->brief.resize(0); BEGIN(AfterDocBrief); }
 <AfterDoc>"/*"|"//"			{ current->doc+=yytext; }
 <AfterDoc>^{B}*"*"+/[^/]			
 <AfterDoc>\n				{ current->doc+=yytext; yyLineNr++; }

@@ -164,7 +164,9 @@ class MemberDef : public Definition
     void setMaxInitLines(int lines)        { userInitLines=lines; }
     void setMemberClass(ClassDef *cd);
     void setSectionList(Definition *d,MemberList *sl);
-    void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
+    void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
+                     const QCString &fileName,int startLine,bool hasDocs,
+                     MemberDef *member=0);
     void setExplicitExternal(bool b)       { explExt=b; }
     void setReadAccessor(const char *r)    { read=r; }
     void setWriteAccessor(const char *w)   { write=w; }
@@ -360,6 +362,7 @@ class MemberDef : public Definition
     QCString groupFileName;   // file where this grouping was defined
     int groupStartLine;       // line  "      "      "     "     "
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
+    MemberDef *groupMember;
     MemberDef *m_templateMaster;
     SDict<MemberList> *classSectionSDict;
     bool docsForDefinition;   // TRUE => documentation block is put before

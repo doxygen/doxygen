@@ -48,7 +48,7 @@ class Definition
     enum DefType 
     { 
       TypeClass, TypeMember, TypeFile, TypeGroup, 
-      TypeNamespace, TypePackage, TypePage
+      TypeNamespace, TypePackage, TypePage, TypeDir
     };
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() = 0;

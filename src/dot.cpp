@@ -962,7 +962,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   QDir thisDir;
 
   // put each connected subgraph of the hierarchy in a row of the HTML output
-  out << "<table border=0 cellspacing=10 cellpadding=0>" << endl;
+  out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">" << endl;
 
   QListIterator<DotNode> dnli(*m_rootSubgraphs);
   DotNode *n;
@@ -2105,11 +2105,21 @@ DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth)
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
+  m_scope    = md->getOuterScope();
   QCString uniqueId;
   uniqueId = md->getReference()+"$"+
              md->getOutputFileBase()+"#"+md->anchor();
+  QCString name;
+  if (Config_getBool("HIDE_SCOPE_NAMES"))
+  {
+    name = md->name();
+  }
+  else
+  {
+    name = md->qualifiedName();
+  }
   m_startNode = new DotNode(m_curNodeNumber++,
-                            md->qualifiedName(),
+                            linkToText(name,FALSE),
                             uniqueId.data(),
                             0,       // distance
                             TRUE     // root node
@@ -2280,9 +2290,19 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
         }
         else
         {
+          QCString name;
+          if (Config_getBool("HIDE_SCOPE_NAMES"))
+          {
+            name  = rmd->getOuterScope()==m_scope ? 
+                    rmd->name() : rmd->qualifiedName();
+          }
+          else
+          {
+            name = rmd->qualifiedName();
+          }
           bn = new DotNode(
               m_curNodeNumber++,
-              rmd->qualifiedName(),
+              linkToText(name,FALSE),
               uniqueId,
               distance
               );

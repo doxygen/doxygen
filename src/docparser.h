@@ -507,12 +507,15 @@ class DocCopy : public CompAccept<DocCopy>, public DocNode
 class DocAutoList : public CompAccept<DocAutoList>, public DocNode
 {
   public:
-    DocAutoList(DocNode *parent,int indent,bool isEnumList) : 
-      m_parent(parent), m_indent(indent), m_isEnumList(isEnumList) {}
+    DocAutoList(DocNode *parent,int indent,bool isEnumList,
+                int depth) : 
+      m_parent(parent), m_indent(indent), m_isEnumList(isEnumList),
+      m_depth(depth) {}
     Kind kind() const          { return Kind_AutoList; }
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
     DocNode *parent() const    { return m_parent; }
+    int depth() const          { return m_depth; }
     void accept(DocVisitor *v) { CompAccept<DocAutoList>::accept(this,v); }
     int parse();
 
@@ -520,6 +523,7 @@ class DocAutoList : public CompAccept<DocAutoList>, public DocNode
     DocNode *m_parent;
     int      m_indent;
     bool     m_isEnumList;
+    int      m_depth;
 };
 
 
