@@ -18,8 +18,7 @@
 
 LEX        = flex
 YACC       = bison
-PERL       = perl
-INCBUFSIZE = $(PERL) -n -e 's/YY_BUF_SIZE 16384/YY_BUF_SIZE 262144/g; print $$_;'
+INCBUFSIZE = $(PERL) increasebuffer.pl
 
 #${
 sub GenerateDep {

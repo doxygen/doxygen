@@ -41,7 +41,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
       {
         return "Shift_JIS";
       }
@@ -70,7 +70,7 @@ class TranslatorJapanese : public Translator
   /*! The decode() can change euc into sjis */
   inline QCString decode(const QCString & sInput)
   {
-    if (Config_getBool("USE_WINDOWS_ENCONDING"))
+    if (Config_getBool("USE_WINDOWS_ENCODING"))
     {
       return JapaneseEucToSjis(sInput);
     }
@@ -89,7 +89,7 @@ class TranslatorJapanese : public Translator
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
       {
         return "Shift_JIS";
       }

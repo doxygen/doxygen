@@ -735,13 +735,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!cname.isEmpty()) doxyName.prepend(cname+"::");
     ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
 
-    ol.addIndexItem(name(),cname);
-    ol.addIndexItem(cname,name());
-
-    if (hasHtmlHelp)
-    {
-      htmlHelp->addIndexItem(cname,name(),cfname,anchor());
-    }
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
     ol.docify("\n");
@@ -1035,9 +1028,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       else if (getFileDef())      scopeName=getFileDef()->name();
     }
   
-    // get definition. 
     QCString cname  = container->name();
     QCString cfname = container->getOutputFileBase();  
+
+    ol.addIndexItem(name(),cname);
+    ol.addIndexItem(cname,name());
+
+    if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
+    {
+      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addIndexItem(cname,name(),cfname,anchor());
+    }
 
     // get member name
     QCString doxyName=name().copy();
@@ -1909,7 +1910,9 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
           {
             typeDecl.pushGeneratorState();
             typeDecl.disableAllBut(OutputGenerator::Html);
+            typeDecl.enable(OutputGenerator::Latex);
             typeDecl.lineBreak(); 
+            typeDecl.disable(OutputGenerator::Latex);
             typeDecl.writeString("&nbsp;&nbsp;");
             typeDecl.popGeneratorState();
           }

@@ -23,12 +23,6 @@
 
 #define MAX_INDENT 1024
 
-#if 0
-const char treeview_data[]=
-#include "treeview.h"
-;
-#endif
-
 unsigned char ftv2blank_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
   0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x16,
@@ -348,116 +342,6 @@ struct FTVNode
   FTVNode *parent;
 };
 
-#if 0
-static void generateFolderTreeViewData()
-{
-  // Generate tree view script
-  QCString fileName=Config_getString("HTML_OUTPUT")+"/treeview.js";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
-  {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  else
-  {
-    QTextStream t(&f);
-    t << treeview_data;
-    f.close();
-  }
-
-  // Generate alternative index.html as a frame
-  fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
-  f.setName(fileName);
-  if (!f.open(IO_WriteOnly))
-  {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  else
-  {
-    QTextStream t(&f);
-#if QT_VERSION >= 200
-    t.setEncoding(QTextStream::Latin1);
-#endif
-    t << "<html><head>";
-    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
-      << theTranslator->idLanguageCharset() << "\">\n";
-    t << "<title>"; 
-    if (Config_getString("PROJECT_NAME").isEmpty())
-    {
-      t << "Doxygen Documentation";
-    }
-    else
-    {
-      t << Config_getString("PROJECT_NAME");
-    }
-    t << "</title></head>" << endl;
-    t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
-    t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
-    t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
-    t << "</frameset>" << endl;
-    t << "</html>" << endl;
-    f.close();
-  }
-  
-  // Generate tree view frame
-  fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
-  f.setName(fileName);
-  if (!f.open(IO_WriteOnly))
-  {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  else
-  {
-    QTextStream t(&f);
-    t << "<html><head>" << endl;
-    t << "<link rel=\"stylesheet\" href=\"";
-    QCString cssname=Config_getString("HTML_STYLESHEET");
-    if (cssname.isEmpty())
-    {
-      t << "doxygen.css";
-    }
-    else
-    {
-      QFileInfo cssfi(cssname);
-      if (!cssfi.exists())
-      {
-        err("Error: user specified HTML style sheet file does not exist!\n");
-      }
-      t << cssfi.fileName();
-    }
-    t << "\">" << endl;
-    t << "<script src=\"treeview.js\"></script>" << endl;
-    t << "<script src=\"tree.js\"></script>" << endl;
-    t << "<script>" << endl;
-    t << "initializeDocument()" << endl;
-    t << "</script>" << endl;
-    t << "</head>" << endl;
-    t << "<body bgcolor=\"#ffffff\">" << endl;
-    t << "</body>" << endl;
-    t << "</html>" << endl;
-    f.close();
-  }
-
-  // Generate tree view images
-  ImageInfo *p = image_info;
-  while (p->name)
-  {
-    QCString fileName=Config_getString("HTML_OUTPUT")+"/"+p->name;
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly)) 
-      f.writeBlock((char *)p->data,p->len);
-    else
-    {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
-    }
-    f.close();
-    p++;
-  }
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -495,32 +379,6 @@ FTVHelp *FTVHelp::getInstance()
  */
 void FTVHelp::initialize()
 {
-#if 0
-  /* open the contents file */
-  QCString fName = Config_getString("HTML_OUTPUT") + "/tree.js";
-  m_cf = new QFile(fName);
-  if (!m_cf->open(IO_WriteOnly))
-  {
-    err("Could not open file %s for writing\n",fName.data());
-    exit(1);
-  }
-  /* Write the header of the contents file */
-  m_cts.setDevice(m_cf);
-#if QT_VERSION >= 200
-  m_cts.setEncoding(QTextStream::Latin1);
-#endif
-
-  m_cts << "foldersTree = gFld(\"<b>";
-  if (Config_getString("PROJECT_NAME").isEmpty())
-  {
-    m_cts << "Root";
-  }
-  else
-  {
-    m_cts << Config_getString("PROJECT_NAME");
-  }
-  m_cts << "</b>\", \"\", \"\")\n";
-#endif
 }
 
 /*! Finalizes the FTV help. This will finish and close the
@@ -594,52 +452,6 @@ void FTVHelp::addContentsItem(bool isDir,
     newNode->parent = pnl->getLast();
   }
   
-#if 0
-  int i; for (i=0;i<m_dc;i++) m_cts << "  ";
-  QCString parent;
-  QCString tagName = ref;
-  QCString tagDir;
-  if (ref)
-  {
-    tagName += ":";
-    QCString *s = Doxygen::tagDestinationDict[ref];
-    if (s)
-    {
-      tagDir = *s + "/";
-      tagName += tagDir;
-    }
-  }
-  if (m_dc==0) parent="foldersTree"; else parent.sprintf("aux%d",m_dc); 
-  if (isDir) // directory entry
-  {
-    m_cts << "aux" << m_dc+1 << " = insFld(" << parent << ", gFld(\"" 
-          << name << "\", \"" << tagName << "\", ";
-    if (file)      // file optional param
-    {
-      m_cts << "\"" << tagDir << file << Doxygen::htmlFileExtension << "\"))";
-    }
-    else
-    {
-      m_cts << "\"\"))";
-    }
-  }
-  else // text entry
-  {
-    m_cts << "     insDoc(" << parent << ", gLnk(\"" 
-          << name << "\", \"" << tagName << "\", ";
-    if (file)      // ref optional param
-    {
-      m_cts << "\"" << tagDir << file << Doxygen::htmlFileExtension;
-      if (anchor) m_cts << "#" << anchor;  
-      m_cts << "\"))";
-    }
-    else
-    {
-      m_cts << "\"\"))";
-    }
-  }
-  m_cts << "\n";
-#endif
 }
 
 static int folderId=1;
@@ -767,6 +579,7 @@ void FTVHelp::generateTreeView()
 #if QT_VERSION >= 200
     t.setEncoding(QTextStream::Latin1);
 #endif
+    t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
     t << "<html><head>";
     t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
       << theTranslator->idLanguageCharset() << "\">\n";
@@ -801,7 +614,8 @@ void FTVHelp::generateTreeView()
     QTextStream t(&f);
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
-    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=ISO-8859-1\" />\n";
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=\""
+      << theTranslator->idLanguageCharset() << "\" />\n";
     t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
     t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
     t << "    <link rel=\"stylesheet\" href=\"";

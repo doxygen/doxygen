@@ -7521,6 +7521,8 @@ void parseInput()
   int sp;for (sp=0;sp<tabSize;sp++) spaces.at(sp)=' ';
   spaces.at(tabSize)='\0';
 
+  compoundKeywordDict.insert("template class",(void *)8);
+  compoundKeywordDict.insert("template struct",(void *)8);
   compoundKeywordDict.insert("class",(void *)8);
   compoundKeywordDict.insert("struct",(void *)8);
   compoundKeywordDict.insert("union",(void *)8);
