@@ -39,6 +39,7 @@ struct Config
   static QCString manOutputDir;       // the directory to put the man pages
   static QCString outputLanguage;     // the output language
   static QCString headerFile;         // the name of the personal HTML header 
+  static QCString latexHeaderFile;    // the name of the personal LaTeX header 
   static QCString footerFile;         // the name of the personal HTML footer 
   static QCString cgiName;            // the name of the CGI binary           
   static QCString cgiURL;             // the absolute URL to the CGI binary   
@@ -91,6 +92,9 @@ struct Config
   static bool     autoBriefFlag;      // javadoc comments behaves as Qt comments.
   static bool     htmlHelpFlag;       // should html help files be generated?
   static bool     alphaIndexFlag;     // should an alphabetical index be generated?
+  static bool     pdfHyperFlag;       // generate latex prepared creating hyperlinked pdfs.
+  static bool     inheritDocsFlag;    // inheritance of documentation enabled? 
+  static bool     inlineInfoFlag;     // show info about inline members?
 };
 
 #endif

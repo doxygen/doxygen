@@ -39,6 +39,7 @@ class BaseClassList;
 class MemberInfoList;
 class MemberInfoDict;
 class NamespaceDef;
+class MemberDef;
 
 class ClassDef : public Definition
 {
@@ -76,7 +77,7 @@ class ClassDef : public Definition
     void writeMemberList(OutputList &ol);
     void writeIncludeFile(OutputList &ol);
     //void writeMembersToContents();
-    void writeDeclaration(OutputList &ol);
+    void writeDeclaration(OutputList &ol,MemberDef *md);
     bool addExample(const char *anchor,const char *name, const char *file);
     bool hasExamples();
     //void writeExample(OutputList &ol);
@@ -84,9 +85,9 @@ class ClassDef : public Definition
     Protection protection() const { return prot; }
     /*! a link to this class is possible within this project */
     bool isLinkableInProject() 
-    { int i = name().findRev("::");
-      if (i==-1) i=0; else i+=2;
-      return !name().isEmpty() && name().at(i)!='@' && 
+    { //int i = name().findRev("::");
+      //if (i==-1) i=0; else i+=2;
+      return !name().isEmpty() && name().find('@')==-1 && 
              (prot!=Private || Config::extractPrivateFlag) &&
              hasDocumentation() && !isReference();
     }
@@ -167,6 +168,7 @@ struct BaseClassDef
 class BaseClassList : public QList<BaseClassDef>
 {
   public:
+   ~BaseClassList() {}
     int compareItems(GCI item1,GCI item2)
     {
       ClassDef *c1=((BaseClassDef *)item1)->classDef;

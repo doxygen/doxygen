@@ -72,10 +72,10 @@ class OutputList
     { forall(&OutputGenerator::endFile); }
     void endPlainFile() 
     { forall(&OutputGenerator::endPlainFile); }
-    void startTitleHead() 
-    { forall(&OutputGenerator::startTitleHead); }
-    void endTitleHead(const char *name)
-    { forall(&OutputGenerator::endTitleHead,name); }
+    void startTitleHead(const char *fileName) 
+    { forall(&OutputGenerator::startTitleHead,fileName); }
+    void endTitleHead(const char *fileName,const char *name)
+    { forall(&OutputGenerator::endTitleHead,fileName,name); }
     void startTitle() 
     { forall(&OutputGenerator::startTitle); }
     void endTitle() 
@@ -96,10 +96,10 @@ class OutputList
     { forall(&OutputGenerator::startEnumList); }
     void endEnumList() 
     { forall(&OutputGenerator::endEnumList); }
-    void startAlfabeticalIndexList()
-    { forall(&OutputGenerator::startAlfabeticalIndexList); }
-    void endAlfabeticalIndexList()
-    { forall(&OutputGenerator::endAlfabeticalIndexList); }
+    void startAlphabeticalIndexList()
+    { forall(&OutputGenerator::startAlphabeticalIndexList); }
+    void endAlphabeticalIndexList()
+    { forall(&OutputGenerator::endAlphabeticalIndexList); }
     void writeIndexHeading(const char *s)
     { forall(&OutputGenerator::writeIndexHeading,s); }
     void writeIndexItem(const char *ref,const char *file,const char *text)
@@ -177,16 +177,20 @@ class OutputList
     { forall(&OutputGenerator::endEmphasis); }
     void writeChar(char c)
     { forall(&OutputGenerator::writeChar,c); }
-    void startMemberDoc(const char *clName,const char *memName,const char *anchor)
-    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor); }
+    void startMemberDoc(const char *clName,const char *memName,
+                        const char *anchor,const char *title)
+    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title); }
     void endMemberDoc() 
     { forall(&OutputGenerator::endMemberDoc); }
-    void writeDoxyAnchor(const char *clName,const char *anchor,const char *name)
-    { forall(&OutputGenerator::writeDoxyAnchor,clName,anchor,name); }
+    void startDoxyAnchor(const char *fn,    const char *cn,
+                         const char *anchor,const char *name)
+    { forall(&OutputGenerator::startDoxyAnchor,fn,cn,anchor,name); }
+    void endDoxyAnchor()
+    { forall(&OutputGenerator::endDoxyAnchor); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
-    void writeLatexLabel(const char *scope,const char *anchor) 
-    { forall(&OutputGenerator::writeLatexLabel,scope,anchor); }
+    //void writeLatexLabel(const char *scope,const char *anchor) 
+    //{ forall(&OutputGenerator::writeLatexLabel,scope,anchor); }
     void startDescription() 
     { forall(&OutputGenerator::startDescription); }
     void endDescription() 
@@ -289,8 +293,10 @@ class OutputList
     { forall(&OutputGenerator::startColorFont,r,g,b); }
     void endColorFont()
     { forall(&OutputGenerator::endColorFont); }
-    void writePageRef(const char *c,const char *a)
-    { forall(&OutputGenerator::writePageRef,c,a); }
+    void startPageRef()
+    { forall(&OutputGenerator::startPageRef); }
+    void endPageRef(const char *c,const char *a)
+    { forall(&OutputGenerator::endPageRef,c,a); }
     void startQuickIndexItem(const char *s,const char *l)
     { forall(&OutputGenerator::startQuickIndexItem,s,l); }
     void endQuickIndexItem()
@@ -299,6 +305,8 @@ class OutputList
     { forall(&OutputGenerator::writeFormula,n,t); }
     void writeNonBreakableSpace()
     { forall(&OutputGenerator::writeNonBreakableSpace); }
+    void writeImage(const char *n,const char *w,const char *h)
+    { forall(&OutputGenerator::writeImage,n,w,h); }
 
   private:
     void debug();
@@ -307,13 +315,15 @@ class OutputList
     void forall(void (OutputGenerator::*func)());
     FORALLPROTO1(const char *);
     FORALLPROTO1(char);
-    FORALLPROTO1(int);
-    FORALLPROTO1(bool);
     FORALLPROTO1(IndexSections);
-    FORALLPROTO2(const char *,const char *);
-    FORALLPROTO2(int,bool);
+    FORALLPROTO1(int);
+#if defined(HAS_BOOL_TYPE)
+    FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);
+#endif
+    FORALLPROTO2(int,bool);
+    FORALLPROTO2(const char *,const char *);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);

@@ -50,19 +50,7 @@ class Definition
     /*! sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    void setBriefDescription(const char *b) 
-      { 
-        brief=((QCString) b).stripWhiteSpace(); 
-        int bl=brief.length(); 
-        if (bl>0) // add puntuation if needed
-        {
-          switch(brief.at(bl-1))
-          {
-            case '.': case '!': case '?': break;
-            default: brief+='.'; break;
-          }
-        }
-      }
+    void setBriefDescription(const char *b);
     /*! returns TRUE iff the definition is documented */
     virtual bool hasDocumentation() 
       { return !doc.isNull() || !brief.isNull() || Config::extractAllFlag; }

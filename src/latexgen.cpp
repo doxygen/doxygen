@@ -26,6 +26,25 @@
 #include "diagram.h"
 #include "language.h"
 
+static QCString filterTitle(const char *s)
+{
+  QCString tmp=s,result;
+  uint i;for (i=0;i<tmp.length();i++)
+  {
+    char c=tmp.at(i);
+    switch(c)
+    {
+      case '#': result+="\\#";  break;
+      case '"': result+="\\\""; break;
+      case '%': result+="\\%";  break;
+      case '[': result+="{";    break;
+      case ']': result+="}";    break;
+      default:  result+=c;      break;
+    }
+  }
+  return result;  
+}
+
 //static QCString escapeLabelName(const QCString &s)
 //{
 //  QCString result;
@@ -49,6 +68,7 @@ LatexGenerator::LatexGenerator()
 {
   dir=Config::latexOutputDir;
   col=0;
+  //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
   insideTabbing=FALSE;
 }
 
@@ -66,8 +86,17 @@ void LatexGenerator::append(const OutputGenerator *g)
 {
   t << g->getContents();
   col+=((LatexGenerator *)g)->col;
+  insideTabbing=insideTabbing || ((LatexGenerator *)g)->insideTabbing;
+  //printf("LatexGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
+  //    insideTabbing ? "TRUE" : "FALSE" );
 }
 
+OutputGenerator *LatexGenerator::copy()
+{
+  LatexGenerator *result = new LatexGenerator;
+  result->insideTabbing=insideTabbing;
+  return result;
+}
 
 void LatexGenerator::init()
 {
@@ -91,6 +120,9 @@ void LatexGenerator::init()
     << endl
     << "ps: refman.ps" << endl
     << endl
+    << "pdf: ps" << endl
+    << "\tps2pdf refman.ps refman.pdf" << endl
+    << endl
     << "refman.ps: refman.dvi" << endl
     << "\tdvips -o refman.ps refman.dvi" << endl
     << endl
@@ -102,7 +134,7 @@ void LatexGenerator::init()
     << "\techo \"Rerunning latex....\"" << endl
     << "\tlatex refman.tex" << endl
     << "clean:" << endl
-    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log" << endl;
+    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out" << endl;
 }
 
 void LatexGenerator::startFile(const char *name,const char *,bool)
@@ -134,42 +166,67 @@ void LatexGenerator::startIndexSection(IndexSections is)
   {
     case isTitlePageStart:
       {
-        if (Config::paperType=="a4wide") paperName="a4"; else paperName=Config::paperType;
-        t << "\\documentclass[" << paperName << "paper]{";
-        if (Config::compactLatexFlag) t << "article"; else t << "book";
-        t << "}\n";
-        if (Config::paperType=="a4wide") t << "\\usepackage{a4wide}\n";
-        t << "\\usepackage{makeidx}\n"
-          "\\usepackage{fancyheadings}\n"
-          "\\usepackage{epsf}\n"
-          "\\usepackage{float}\n"
-          "\\usepackage{doxygen}\n";
-        if (!theTranslator->latexBabelPackage().isEmpty())
+        if (Config::latexHeaderFile.isEmpty())
         {
-          t << "\\usepackage{" << theTranslator->latexBabelPackage() << "}\n";
+          if (Config::paperType=="a4wide") paperName="a4"; else paperName=Config::paperType;
+          t << "\\documentclass[" << paperName << "paper";
+          if (Config::pdfHyperFlag) t << ",ps2pdf";
+          t << "]{";
+          if (Config::compactLatexFlag) t << "article"; else t << "book";
+          t << "}\n";
+          if (Config::paperType=="a4wide") t << "\\usepackage{a4wide}\n";
+          t << "\\usepackage{makeidx}\n"
+            "\\usepackage{fancyheadings}\n"
+            "\\usepackage{epsfig}\n"
+            "\\usepackage{float}\n"
+            "\\usepackage{doxygen}\n";
+          if (Config::pdfHyperFlag) 
+          {
+            t << "\\usepackage{times}" << endl
+              << "\\usepackage[backref=true," << endl
+              << "            pagebackref=true," << endl
+              << "            colorlinks=true," << endl
+              << "            linkcolor=blue" << endl
+              << "           ]{hyperref}" << endl;
+          }
+          if (!theTranslator->latexBabelPackage().isEmpty())
+          {
+            t << "\\usepackage{" << theTranslator->latexBabelPackage() << "}\n";
+          }
+          const char *s=Config::extraPackageList.first();
+          while (s)
+          {
+            t << "\\usepackage{" << s << "}\n";
+            s=Config::extraPackageList.next();
+          }
+          t << "\\makeindex\n"
+            "\\setcounter{tocdepth}{1}\n"
+            "\\setlength{\\footrulewidth}{0.4pt}\n"
+            "\\begin{document}\n"
+            "\\title{";
+          //docify(projectName);
+          //t << " Reference Manual";
+          //if (!projectNumber.isEmpty()) 
+          //{
+          //  t << "\\\\[1ex]\\large "; 
+          //  docify(projectNumber);
+          //}
         }
-        const char *s=Config::extraPackageList.first();
-        while (s)
+        else
         {
-          t << "\\usepackage{" << s << "}\n";
-          s=Config::extraPackageList.next();
+          t << fileToString(Config::latexHeaderFile);
         }
-        t << "\\makeindex\n"
-          "\\setcounter{tocdepth}{1}\n"
-          "\\setlength{\\footrulewidth}{0.4pt}\n"
-          "\\begin{document}\n"
-          "\\title{";
-        //docify(projectName);
-        //t << " Reference Manual";
-        //if (!projectNumber.isEmpty()) 
-        //{
-        //  t << "\\\\[1ex]\\large "; 
-        //  docify(projectNumber);
-        //}
       }
       break;
     case isTitlePageAuthor:
-      t << "}\n\\author{";
+      if (Config::latexHeaderFile.isEmpty())
+      {
+        t << "}\n\\author{";
+      }
+      break;
+    case isMainPage:
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Introduction}\n"
       break;
     case isModuleIndex:
       if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
@@ -288,14 +345,20 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isTitlePageStart:
       break;
     case isTitlePageAuthor:
-      t << " Doxygen}\n"
-        "\\date{" << dateToString(TRUE) << "}\n"
-        "\\maketitle\n"
-        "\\pagenumbering{roman}\n";
-      if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
-      t << "\\tableofcontents\n";
-      if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
-      t << "\\pagenumbering{arabic}\n";
+      if (Config::latexHeaderFile.isEmpty())
+      {
+        t << " Doxygen}\n"
+          "\\date{" << dateToString(TRUE) << "}\n"
+          "\\maketitle\n"
+          "\\pagenumbering{roman}\n";
+        if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
+        t << "\\tableofcontents\n";
+        if (!Config::compactLatexFlag) t << "\\clearemptydoublepage\n";
+        t << "\\pagenumbering{arabic}\n";
+      }
+      break;
+    case isMainPage:
+      t << "}\n\\input{index}\n";
       break;
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
@@ -495,14 +558,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch \\copyright 1997-1999}]{}\n";
+        t << " Dimitri van Heesch (c) 1997-1999}]{}\n";
         //QCString dtString=dateToString(FALSE);
         t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize ";
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch \\copyright 1997-1999}}\n";
+        t << " Dimitri van Heesch (c) 1997-1999}}\n";
         t << "\\cfoot{}\n";
         t << "\\newenvironment{CompactList}\n";
         t << "{\\begin{list}{}{\n";
@@ -553,19 +616,6 @@ void LatexGenerator::writeStyleInfo(int part)
   }
 }
 
-void LatexGenerator::endTitleHead(const char *name)
-{
-  t << "}" << endl;
-  if (name)
-  {
-    t << "\\label{" << name << "}\\index{" 
-      << name << "@{";
-    docify(name);
-    t << "}}";
-  }
-  t << endl;
-}
-
 void LatexGenerator::newParagraph()
 {
   t << endl << endl;
@@ -584,7 +634,7 @@ void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
   {
     t << "\\contentsline{section}{";
     docify(name);
-    t << "}{\\pageref{" << name << "}}" << endl;
+    t << "}{\\pageref{" << name << "}}{}" << endl;
   }
   else
     docify(name);
@@ -620,7 +670,7 @@ void LatexGenerator::writeStartAnnoItem(const char *,const char *,
 
 void LatexGenerator::writeEndAnnoItem(const char *name)
 {
-  t << "}{\\pageref{" << name << "}}" << endl;
+  t << "}{\\pageref{" << name << "}}{}" << endl;
 }
 
 //void LatexGenerator::writeClassLink(const char *,const char *,
@@ -631,17 +681,34 @@ void LatexGenerator::writeEndAnnoItem(const char *name)
 //  t << "}"; 
 //}
 
-void LatexGenerator::writeObjectLink(const char *, const char *,
-                                     const char *, const char *text)
+void LatexGenerator::writeObjectLink(const char *ref, const char *f,
+                                     const char *anchor, const char *text)
 {
-  t << "{\\bf ";
-  docify(text);
-  t << "}"; 
+  if (!ref && Config::pdfHyperFlag)
+  {
+    t << "\\hyperlink{";
+    if (f) t << f;
+    if (anchor) t << "_" << anchor; 
+    t << "}{";
+    docify(text);
+    t << "}";
+  }
+  else
+  {
+    t << "{\\bf ";
+    docify(text);
+    t << "}";
+  } 
 }
 
-void LatexGenerator::writePageRef(const char *clname, const char *anchor)
+void LatexGenerator::startPageRef()
 {
-  t << " {\\rm (p.~\\pageref{";
+  t << " {\\rm (";
+}
+
+void LatexGenerator::endPageRef(const char *clname, const char *anchor)
+{
+  t << "~\\pageref{";
   if (clname) t << clname; 
   if (anchor) t << "_" << anchor;
   t << "})}";
@@ -654,6 +721,30 @@ void LatexGenerator::writeCodeLink(const char *,const char *,
   col+=strlen(name);
 }
 
+void LatexGenerator::startTitleHead(const char *fileName)
+{
+  if (Config::pdfHyperFlag && fileName)
+  {
+    t << "\\hypertarget{" << fileName << "}{" << endl;
+  }
+  if (Config::compactLatexFlag) t << "\\subsection{"; else t << "\\section{"; 
+}
+
+void LatexGenerator::endTitleHead(const char *fileName,const char *name)
+{
+  t << "}" << endl;
+  if (name)
+  {
+    t << "\\label{" << name << "}\\index{" 
+      << name << "@{";
+    docify(name);
+    t << "}}" << endl;
+    if (Config::pdfHyperFlag && fileName)
+    {
+      t << "}" << endl;
+    }
+  }
+}
 
 void LatexGenerator::startTitle()
 {
@@ -671,7 +762,9 @@ void LatexGenerator::endGroupHeader()
 }
 
 void LatexGenerator::startMemberDoc(const char *clname,
-                                    const char *memname,const char *)
+                                    const char *memname,
+                                    const char *,
+                                    const char *title)
 { 
   t << "\\index{";
   if (clname)
@@ -695,22 +788,40 @@ void LatexGenerator::startMemberDoc(const char *clname,
   }
   t << "}" << endl;
   //
-  if (Config::compactLatexFlag) t << "\\subsubsection{"; else t << "\\subsection{";
-  t << "\\setlength{\\rightskip}{0pt plus 5cm}";
+  if (Config::compactLatexFlag) t << "\\subsubsection"; else t << "\\subsection";
+  if (Config::pdfHyperFlag && title) t << "[" << filterTitle(title) << "]";
+  t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
 }
 
-void LatexGenerator::writeDoxyAnchor(const char *clname,const char *anchor,const char *)
+void LatexGenerator::startDoxyAnchor(const char *fName,const char *clname,
+                                     const char *anchor,const char *)
 {
   t << "\\label{";
   if (clname) t << clname;
   if (anchor) t << "_" << anchor;
   t << "}" << endl;
+  if (Config::pdfHyperFlag)
+  {
+    t << "\\hypertarget{";
+    if (fName) t << fName;
+    if (anchor) t << "_" << anchor;
+    t << "}{" << endl;
+  }
 }
 
-void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
+void LatexGenerator::endDoxyAnchor()
 {
-  writeDoxyAnchor(clName,anchor,0);
+  if (Config::pdfHyperFlag)
+  {
+    t << "}" << endl;
+  }
 }
+
+
+//void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
+//{
+//  writeDoxyAnchor(0,clName,anchor,0);
+//}
 
 void LatexGenerator::addToIndex(const char *s1,const char *s2)
 {
@@ -748,7 +859,7 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
 {
   t << "\\contentsline{section}{";
   docify(title);
-  t << "}{\\ref{" << lab << "}}" << endl;
+  t << "}{\\ref{" << lab << "}}{}" << endl;
 }
 
 void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
@@ -793,8 +904,16 @@ void LatexGenerator::docify(const char *str)
         case '>':  t << "$>$";           break;
         case '|':  t << "$|$";           break;
         case '~':  t << "$\\sim$";       break;
+        case '[':  if (Config::pdfHyperFlag) 
+                     t << "\\mbox{[}"; 
+                   else 
+                     t << "[";
+                   break;
         case ']':  if (pc=='[') t << "$\\,$";
-                   t << "]";             
+                   if (Config::pdfHyperFlag)
+                     t << "\\mbox{]}";
+                   else
+                     t << "]";             
                    break;
         case '-':  if (*p=='>') 
                      { t << " $\\rightarrow$ "; p++; }
@@ -966,6 +1085,7 @@ void LatexGenerator::startMemberItem(bool,int annType)
       default: 
         t << "\\begin{tabbing}" << endl;
         t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill" << endl;
+        //printf("LatexGenerator::startMemberItem() insideTabbing=TRUE\n");
         insideTabbing=TRUE;
         break;
     }
@@ -974,9 +1094,10 @@ void LatexGenerator::startMemberItem(bool,int annType)
 
 void LatexGenerator::endMemberItem(bool,const char *,const char *,bool endItem) 
 {
-  if (endItem)
+  if (insideTabbing && endItem)
   {
     t << endl << "\\end{tabbing}";
+    //printf("LatexGenerator::endMemberItem() insideTabbing=FALSE\n");
     insideTabbing=FALSE;
   }
   if (insideTabbing)
@@ -1006,3 +1127,12 @@ void LatexGenerator::endMemberList()
     t << "\\end{CompactItemize}"   << endl; 
 }
 
+void LatexGenerator::writeImage(const char *name,const char *w,const char *h)
+{
+  t << "\\mbox{\\epsfig{file=" << name;
+  if (w)
+    t << "," << w; 
+  else if (h)
+    t << "," << h;
+  t << "}}" << endl;
+}

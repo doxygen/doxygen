@@ -25,7 +25,7 @@ recursive-descent parser that is built into \c doxygen.
 The file may contain tabs and newlines for formatting purposes.
 The statements in the file are case-sensitive.
 Comments may be placed anywhere within the file (except within quotes).
-Comments begin with the \c # character and end at the end of the 
+Comments begin with the \# character and end at the end of the 
 line.
 
 The file essentially consists of a list of assignment statements.
@@ -38,11 +38,95 @@ as the last character of a line.
 Environment variables can expanded using the pattern \c $(ENV_VARIABLE_NAME).
 
 The configuration options can be divided into several categories.
-Below is a list of tags that are recognized for each category.
+Below is an alphabetical index of the tags that are recognized 
+followed by the descriptions of the tags grouped by category.
+
+\htmlonly
+<multicol cols=3>
+<ul>
+\endhtmlonly
+\latexonly
+\footnotesize
+\begin{multicols}{3}
+\begin{CompactList}
+\endlatexonly
+<li> \refitem cfg_allexternals ALLEXTERNALS 
+<li> \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
+<li> \refitem cfg_bin_abspath BIN_ABSPATH 
+<li> \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
+<li> \refitem cfg_case_sense_names CASE_SENSE_NAMES 
+<li> \refitem cfg_cgi_name CGI_NAME 
+<li> \refitem cfg_cgi_url CGI_URL 
+<li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
+<li> \refitem cfg_compact_latex COMPACT_LATEX 
+<li> \refitem cfg_disable_index DISABLE_INDEX 
+<li> \refitem cfg_doc_abspath DOC_ABSPATH 
+<li> \refitem cfg_doc_url DOC_URL
+<li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
+<li> \refitem cfg_example_path EXAMPLE_PATH
+<li> \refitem cfg_exclude EXCLUDE
+<li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
+<li> \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
+<li> \refitem cfg_ext_doc_paths EXT_DOC_PATHS
+<li> \refitem cfg_extra_packages EXTRA_PACKAGES
+<li> \refitem cfg_extract_all EXTRACT_ALL
+<li> \refitem cfg_extract_private EXTRACT_PRIVATE
+<li> \refitem cfg_file_patterns FILE_PATTERNS
+<li> \refitem cfg_full_path_names FULL_PATH_NAMES
+<li> \refitem cfg_generate_html GENERATE_HTML
+<li> \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
+<li> \refitem cfg_generate_latex GENERATE_LATEX
+<li> \refitem cfg_generate_man GENERATE_MAN
+<li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
+<li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
+<li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
+<li> \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
+<li> \refitem cfg_html_footer HTML_FOOTER
+<li> \refitem cfg_html_header HTML_HEADER
+<li> \refitem cfg_html_output HTML_OUTPUT
+<li> \refitem cfg_include_path INCLUDE_PATH
+<li> \refitem cfg_inherit_docs INHERIT_DOCS
+<li> \refitem cfg_inline_info INLINE_INFO
+<li> \refitem cfg_input INPUT
+<li> \refitem cfg_input_filter INPUT_FILTER
+<li> \refitem cfg_internal_docs INTERNAL_DOCS
+<li> \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
+<li> \refitem cfg_latex_header LATEX_HEADER
+<li> \refitem cfg_latex_output LATEX_OUTPUT
+<li> \refitem cfg_macro_expansion MACRO_EXPANSION
+<li> \refitem cfg_man_extension MAN_EXTENSION
+<li> \refitem cfg_man_output MAN_OUTPUT
+<li> \refitem cfg_output_directory OUTPUT_DIRECTORY
+<li> \refitem cfg_output_language OUTPUT_LANGUAGE
+<li> \refitem cfg_paper_type PAPER_TYPE
+<li> \refitem cfg_perl_path PERL_PATH
+<li> \refitem cfg_predefined PREDEFINED
+<li> \refitem cfg_project_name PROJECT_NAME
+<li> \refitem cfg_project_number PROJECT_NUMBER
+<li> \refitem cfg_quiet QUIET
+<li> \refitem cfg_recursive RECURSIVE
+<li> \refitem cfg_repeat_brief REPEAT_BRIEF
+<li> \refitem cfg_search_includes SEARCH_INCLUDES
+<li> \refitem cfg_searchengine SEARCHENGINE
+<li> \refitem cfg_source_browser SOURCE_BROWSER
+<li> \refitem cfg_strip_from_path STRIP_FROM_PATH
+<li> \refitem cfg_tagfiles TAGFILES
+<li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
+<li> \refitem cfg_warnings WARNINGS
+\htmlonly
+</ul>
+</multicol>
+\endhtmlonly
+\latexonly
+\end{CompactList}
+\end{multicols}
+\normalsize
+\endlatexonly
 
 \subsection config_general General options
 <dl>
 
+\anchor cfg_project_name
 <dt>\c PROJECT_NAME <dd>
  \addindex PROJECT_NAME
  The \c PROJECT_NAME tag is a single word (or a sequence of words
@@ -50,12 +134,14 @@ Below is a list of tags that are recognized for each category.
  documentation is generated. This name is used in the title of most 
  generated pages and in a few other places.
 
+\anchor cfg_project_number
 <dt>\c PROJECT_NUMBER <dd>
  \addindex PROJECT_NUMBER
  The \c PROJECT_NUMBER tag can be used to enter a project or revision number.
  This could be handy for archiving the generated documentation or
  if some version control system is used.
 
+\anchor cfg_output_directory
 <dt>\c OUTPUT_DIRECTORY <dd> 
  \addindex OUTPUT_DIRECTORY
  The \c OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
@@ -63,6 +149,7 @@ Below is a list of tags that are recognized for each category.
  If a relative path is entered, it will be relative to the location 
  where doxygen was started. If left blank the current directory will be used.
 
+\anchor cfg_output_language
 <dt>\c OUTPUT_LANGUAGE <dd>
  \addindex OUTPUT_LANGUAGE
  The \c OUTPUT_LANGUAGE tag is used to specify the language in which all
@@ -71,6 +158,7 @@ Below is a list of tags that are recognized for each category.
  The default language is English, other supported languages are:
  Dutch, French, Italian, Czech, Swedish, German and Japanese.
 
+\anchor cfg_quiet
 <dt>\c QUIET <dd>
  \addindex QUIET
  The \c QUIET tag can be used to turn on/off the messages that are generated
@@ -78,6 +166,7 @@ Below is a list of tags that are recognized for each category.
  where \c YES implies that the messages are off.
  If left blank \c NO is used.
 
+\anchor cfg_warnings
 <dt>\c WARNINGS <dd>
  \addindex WARNINGS
  The \c WARNINGS tag can be used to turn on/off the warning messages that are
@@ -86,6 +175,7 @@ Below is a list of tags that are recognized for each category.
 
  \b Tip: Turn warnings on while writing the documentation.
 
+\anchor cfg_disable_index
 <dt>\c DISABLE_INDEX <dd>
  \addindex DISABLE_INDEX
  If you want full control over the layout of the generated HTML pages it
@@ -94,6 +184,7 @@ Below is a list of tags that are recognized for each category.
  top of each page. A value of NO (the default) enables the index and the
  value YES disables it.
 
+\anchor cfg_extract_all
 <dt>\c EXTRACT_ALL <dd>
  \addindex EXTRACT_ALL
  If the \c EXTRACT_ALL tag is set to \c YES all classes and functions will be
@@ -102,11 +193,13 @@ Below is a list of tags that are recognized for each category.
  \b Notice: This will also disable the warnings about undocumented members 
  that are normally produced when \c WARNINGS is set to \c YES
 
+\anchor cfg_extract_private
 <dt>\c EXTRACT_PRIVATE <dd>
  \addindex EXTRACT_PRIVATE
  If the \c EXTRACT_PRIVATE tag is set to \c YES all
  documentation for private members will be extracted as well.
 
+\anchor cfg_hide_undoc_members
 <dt>\c HIDE_UNDOC_MEMBERS <dd>
  \addindex HIDE_UNDOC_MEMBERS
  If the \c HIDE_UNDOC_MEMBERS tag is set to \c YES, Doxygen will hide all
@@ -114,6 +207,7 @@ Below is a list of tags that are recognized for each category.
  If set to \c NO (the default) these members will be included in the
  various overviews, but no documentation section is generated.
 
+\anchor cfg_hide_undoc_classes
 <dt>\c HIDE_UNDOC_CLASSES <dd>
  \addindex HIDE_UNDOC_CLASSES
  If the \c HIDE_UNDOC_CLASSESS tag is set to \c YES, Doxygen will hide all
@@ -121,6 +215,7 @@ Below is a list of tags that are recognized for each category.
  If set to \c NO (the default) these classes will be included in the
  various overviews.
 
+\anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
  \addindex BRIEF_MEMBER_DESC
  If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) Doxygen will
@@ -128,6 +223,7 @@ Below is a list of tags that are recognized for each category.
  the file and class documentation (similar to JavaDoc).
  Set to NO to disable this.
 
+\anchor cfg_internal_docs
 <dt>\c INTERNAL_DOCS <dd>
  \addindex INTERNAL_DOCS
  The \c INTERNAL_DOCS tag determines if documentation
@@ -135,6 +231,7 @@ Below is a list of tags that are recognized for each category.
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
 
+\anchor cfg_repeat_brief
 <dt>\c REPEAT_BRIEF <dd>
  \addindex REPEAT_BRIEF
  If the \c REPEAT_BRIEF tag is set to \c YES (the default) Doxygen will 
@@ -145,12 +242,14 @@ Below is a list of tags that are recognized for each category.
  If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
  brief descriptions will be completely suppressed.
 
+\anchor cfg_full_path_names
 <dt>\c FULL_PATH_NAMES <dd>
  \addindex FULL_PATH_NAMES
  If the \c FULL_PATH_NAMES tag is set to \c YES Doxygen will prepend the full
  path before files name in the file list and in the header files. If set
  to NO the shortest path that makes the file name unique will be used
 
+\anchor cfg_strip_from_path
 <dt>\c STRIP_FROM_PATH <dd>
  \addindex STRIP_FROM_PATH
  If the \c FULL_PATH_NAMES tag is set to \c YES then the \c STRIP_FROM_PATH tag
@@ -158,18 +257,21 @@ Below is a list of tags that are recognized for each category.
  only done if one of the specified strings matches the left-hand part of the 
  path.
 
+\anchor cfg_class_diagrams
 <dt>\c CLASS_DIAGRAMS <dd>
  \addindex CLASS_DIAGRAMS
  If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) Doxygen will
- generate a class diagram (in Html and LaTeX) for classes with base or
+ generate a class diagram (in Html and \f$\mbox{\LaTeX}\f$) for classes with base or
  super classes. Setting the tag to \c NO turns the diagrams off.
 
+\anchor cfg_source_browser
 <dt>\c SOURCE_BROWSER <dd>
  \addindex SOURCE_BROWSER
  If the \c SOURCE_BROWSER tag is set to \c YES than the body of a member or
  function will be appended as a block of code to the documentation of.
  that member or function.
 
+\anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
  \addindex CASE_SENSE_NAMES
  If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then Doxygen
@@ -178,25 +280,40 @@ Below is a list of tags that are recognized for each category.
  classes or files whose names only differ in case and if your file system
  supports case sensitive file names.
 
+\anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>
  \addindex VERBATIM_HEADERS
-  If the VERBATIM_HEADERS tag is set the YES (the default) then Doxygen\n";
-  will generate a verbatim copy of the header file for each class for\n";
-  which an include is specified. Set to NO to disable this.\n";
+  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then Doxygen
+  will generate a verbatim copy of the header file for each class for
+  which an include is specified. Set to NO to disable this.
   \sa Section \ref cmdclass "\\class".
 
+\anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
  \addinex JAVADOC_AUTOBRIEF
-  If the JAVADOC_NO_AUTOBRIEF is set to YES (the default) then Doxygen
+  If the \c JAVADOC_NO_AUTOBRIEF is set to \c YES (the default) then Doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO, the Javadoc-style will
   behave just like the Qt-style comments.
+
+\anchor cfg_inherit_docs
+<dt>\c INHERIT_DOCS <dd>
+ \addindex INHERIT_DOCS
+ If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
+ member inherits the documentation from any documented member that it
+ reimplements.
+
+\anchor cfg_inline_info
+<dt> INLINE_INFO <dd>
+ If the \c INLINE_INFO tag is set to \c YES (the default) then a tag [inline]
+ is inserted in the documentation for inline members.
 
 </dl>
 
 \subsection config_input Input related options
 <dl>
 
+\anchor cfg_input
 <dt>\c INPUT <dd>
  \addindex INPUT
  The \c INPUT tag is used to specify the files and/or directories that contain 
@@ -206,6 +323,7 @@ Below is a list of tags that are recognized for each category.
 
  \b Notice: This tag (and only this tag) is \e required.
 
+\anchor cfg_file_patterns
 <dt>\c FILE_PATTERNS <dd>
  \addindex FILE_PATTERNS
  If the value of the \c INPUT tag contains directories, you can use the 
@@ -214,31 +332,35 @@ Below is a list of tags that are recognized for each category.
  in the directories. If left blank all files are included 
  (i.e. wildcard <tt>*</tt>).
 
+\anchor cfg_recursive
 <dt>\c RECURSIVE <dd>
  \addindex RECURSIVE
  The \c RECURSIVE tag can be used to specify whether or not subdirectories
  should be searched for input files as well. Possible values are \c YES 
  and \c NO.  If left blank \c NO is used.
 
+\anchor cfg_exclude
 <dt>\c EXCLUDE <dd>
  \addindex EXCLUDE
  The \c EXCLUDE tag can be used to specify files and/or directories that should
  excluded from the \c INPUT source files. This way you can easily exclude a
  subdirectory from a directory tree whose root is specified with the \c INPUT tag.
 
+\anchor cfg_exclude_patterns
 <dt>\c EXCLUDE_PATTERNS <dd>
  \addindex EXCLUDE_PATTERNS
  If the value of the INPUT tag contains directories, you can use the
  \c EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
  certain files from those directories.
 
-
+\anchor cfg_example_path
 <dt>\c EXAMPLE_PATH <dd>
  \addindex EXAMPLE_PATH
  The \c EXAMPLE_PATH tag can be used to specify one or more files or
  directories that contain example code fragments that are included (see
  the \\include command in section \ref cmdinclude "\\include").
 
+\anchor cfg_input_filter
 <dt>\c INPUT_FILTER <dd>
  \addindex INPUT_FILTER
  The \c INPUT_FILTER tag can be used to specify a program that doxygen should
@@ -257,17 +379,20 @@ Below is a list of tags that are recognized for each category.
 \subsection html_output HTML related options
 <dl>
 
+\anchor cfg_generate_html
 <dt>\c GENERATE_HTML <dd>
  \addindex GENERATE_HTML
  If the \c GENERATE_HTML tag is set to \c YES (the default) Doxygen will
  generate HTML output
 
+\anchor cfg_html_output
 <dt>\c HTML_OUTPUT <dd>
  \addindex HTML_OUTPUT
  The \c HTML_OUTPUT tag is used to specify where the HTML docs will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
  put in front of it. If left blank `html' will be used as the default path.
 
+\anchor cfg_html_header
 <dt>\c HTML_HEADER <dd>      
  \addindex HTML_HEADER
  The \c HTML_HEADER tag can be used to specify a user defined HTML 
@@ -289,6 +414,7 @@ Below is a list of tags that are recognized for each category.
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, or only the current date. 
    
+\anchor cfg_html_footer
 <dt>\c HTML_FOOTER <dd>
  \addindex HTML_FOOTER
  The \c HTML_FOOTER tag can be used to specify a user defined HTML footer for 
@@ -305,6 +431,7 @@ Below is a list of tags that are recognized for each category.
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, or only the current date. 
 
+\anchor cfg_html_align_members
 <dt>\c HTML_ALIGN_MEMBERS <dd>
 
 If the \c HTML_ALIGN_MEMBERS tag is set to \c YES, the members of classes,
@@ -315,6 +442,7 @@ NO a bullet list will be used.
 Setting this tag to NO will become obsolete in the future, since I only
 intent to support and test the aligned representation.
 
+\anchor cfg_generate_htmlhelp
 <dt>\c GENERATE_HTMLHELP <dd>
 
 If the \c GENERATE_HTMLHELP tag is set to \c YES, 
@@ -337,6 +465,7 @@ and you can search for words in the documentation
 (which basically renders \c doxysearch obsolete on Windows). 
 The HTML workshop also contains a viewer for compressed HTML files.
 
+\anchor cfg_alphabetical_index
 <dt>\c ALPHABETICAL_INDEX <dd>
 
 If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
@@ -348,23 +477,28 @@ a lot of classes, structs, unions or interfaces.
 \subsection latex_output LaTeX related options
 <dl>
 
+\anchor cfg_generate_latex
 <dt>\c GENERATE_LATEX <dd>
  \addindex GENERATE_LATEX
  If the \c GENERATE_LATEX tag is set to \c YES (the default) Doxygen will
  generate Latex output.
 
+\anchor cfg_latex_output
 <dt>\c LATEX_OUTPUT <dd>
  \addindex LATEX_OUTPUT
- The \c LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put.
+ The \c LATEX_OUTPUT tag is used to specify where the \f$\mbox{\LaTeX}\f$ 
+ docs will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
  put in front of it. If left blank `latex' will be used as the default path.
 
+\anchor cfg_compact_latex
 <dt>\c COMPACT_LATEX <dd>
  \addindex COMPACT_LATEX
  If the \c COMPACT_LATEX tag is set to \c YES Doxygen generates more compact
- LaTeX documents. This may be useful for small projects and may help to
+ \f$\mbox{\LaTeX}\f$ documents. This may be useful for small projects and may help to
  save some trees in general.
 
+\anchor cfg_paper_type
 <dt>\c PAPER_TYPE <dd>
  \addindex PAPER_TYPE
  The PAPER_TYPE tag can be used to set the paper type that is used
@@ -378,25 +512,64 @@ a lot of classes, structs, unions or interfaces.
  </ul> 
  If left blank a4wide will be used.
 
+\anchor cfg_extra_packages
 <dt>\c EXTRA_PACKAGES <dd>
  \addindex EXTRA_PACKAGES
- The EXTRA_PACKAGES tag can be used to specify one or more LaTeX 
- package names that should be included in the LaTeX output.
+ The EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
+ package names that should be included in the \f$\mbox{\LaTeX}\f$ output.
  To get the times font for instance you can specify 
 \verbatim
 EXTRA_PACKAGES = times
 \endverbatim
  If left blank no extra packages will be included.
+
+\anchor cfg_latex_header
+<dt>\c LATEX_HEADER <dd>
+ \addindex LATEX_HEADER
+ The \c LATEX_HEADER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ 
+ header for the generated latex document. The header should contain everything 
+ until the first chapter. If it is left blank doxygen will generate a 
+ standard header, which looks as follows for the default 
+ configuration settings:
+
+\verbatim
+\documentclass[a4paper]{book}
+\usepackage{a4wide}
+\usepackage{makeidx}
+\usepackage{fancyheadings}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{doxygen}
+\makeindex
+\setcounter{tocdepth}{1}
+\setlength{\footrulewidth}{0.4pt}
+\begin{document}
+\title{Reference Manual}
+\author{Generated by Doxygen}
+\date{Thu Sep 30 19:58:32 1999}
+\maketitle
+\pagenumbering{roman}
+\clearemptydoublepage
+\tableofcontents
+\clearemptydoublepage
+\pagenumbering{arabic}
+\endverbatim
+ 
+ \par Notice: 
+   Only use a user defined header if you know what you are doing!
+
 </dl>
 
 \subsection man_output Man page related options
 <dl>
 
+\anchor cfg_generate_man
 <dt>\c GENERATE_MAN <dd>
  \addindex GENERATE_MAN
  If the \c GENERATE_MAN tag is set to \c YES (the default) Doxygen will
  generate man pages for classes and files.
 
+\anchor cfg_man_output
 <dt>\c MAN_OUTPUT <dd>
  \addindex MAN_OUTPUT
  The \c MAN_OUTPUT tag is used to specify where the man pages will be put.
@@ -405,6 +578,7 @@ EXTRA_PACKAGES = times
  A directory man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
 
+\anchor cfg_man_extension
 <dt>\c MAN_EXTENSION <dd>
  \addindex MAX_EXTENSION
  The MAN_EXTENSION tag determines the extension that is added to
@@ -414,29 +588,34 @@ EXTRA_PACKAGES = times
 \subsection config_prepro Preprocessor related options
 <dl>
 
+\anchor cfg_enable_preprocessing
 <dt>\c ENABLE_PREPROCESSING <dd>
  \addindex ENABLE_PREPROCESSING
  If the \c ENABLE_PREPROCESSING tag is set to \c YES (the default) Doxygen will
  evaluate all C-preprocessor directives found in the sources and include
  files. 
 
+\anchor cfg_macro_expansion
 <dt>\c MACRO_EXPANSION <dd>
  \addindex MACRO_EXPANSION
  If the \c MACRO_EXPANSION tag is set to \c YES Doxygen will expand all macro
  names in the source code. If set to \c NO (the default) only conditional 
  compilation will be performed.
 
+\anchor cfg_search_includes
 <dt>\c SEARCH_INCLUDES <dd>
  \addindex SEARCH_INCLUDES 
  If the \c SEARCH_INCLUDES tag is set to \c YES (the default) the includes files
  in the \c INCLUDE_PATH (see below) will be search if a \#include is found.
 
+\anchor cfg_include_path
 <dt>\c INCLUDE_PATH <dd>
  \addindex INCLUDE_PATH
  The \c INCLUDE_PATH tag can be used to specify one or more directories that
  contain include files that are not input files but should be processed by
  the preprocessor.
 
+\anchor cfg_predefined
 <dt>\c PREDEFINED <dd>
  \addindex PREDEFINED
  The \c PREDEFINED tag can be used to specify one or more macro names that
@@ -445,6 +624,7 @@ EXTRA_PACKAGES = times
  <code>name</code> or <code>name=definition</code> (no spaces). 
  If the definition and the = are omitted =1 is assumed.
 
+\anchor cfg_expand_only_predef
 <dt>\c EXPAND_ONLY_PREDEF <dd>
  \addindex EXPAND_ONLY_PREDEF
  If the \c EXPAND_ONLY_PREDEF and \c MACRO_EXPANSION tags are both set to YES
@@ -456,6 +636,7 @@ EXTRA_PACKAGES = times
 \subsection config_extref External reference options
 <dl>
 
+\anchor cfg_tagfiles
 <dt>\c TAGFILES <dd> 
  \addindex TAGFILES
  The \c TAGFILES tag can be used to specify one or more tagfiles. 
@@ -467,6 +648,7 @@ EXTRA_PACKAGES = times
   in the directory in which doxygen is run, you must also specify the
   path to the tagfile here.
 
+\anchor cfg_generate_tagfile
 <dt>\c GENERATE_TAGFILE <dd>
  \addindex GENERATE_TAGFILE
  When a file name is specified after \c GENERATE_TAGFILE, doxygen will create
@@ -474,12 +656,14 @@ EXTRA_PACKAGES = times
  See section \ref doxytag_usage for more information about the usage of 
  tag files.
 
+\anchor cfg_allexternals
 <dt>\c ALLEXTERNALS <dd>
  \addindex ALLEXTERNALS
  if the \c ALLEXTERNALS tag is set to \c YES all external class will be listed
  in the class index. If set to \c NO only the inherited external classes
  will be listed.
 
+\anchor cfg_perl_path
 <dt>\c PERL_PATH <dd>
  \addindex PERL_PATH
  The \c PERL_PATH should be the absolute path and name of the perl script
@@ -489,6 +673,7 @@ EXTRA_PACKAGES = times
 \subsection config_search Search engine options
 <dl>
 
+\anchor cfg_searchengine
 <dt>\c SEARCHENGINE <dd>
  \addindex SEARCHENGINE
  The \c SEARCHENGINE tag specifies whether or not a 
@@ -496,18 +681,21 @@ EXTRA_PACKAGES = times
  If set to \c NO or left blank, the values of all other tags in this section 
  will be ignored.
 
+\anchor cfg_cgi_name
 <dt>\c CGI_NAME <dd>
  \addindex CGI_NAME
  The \c CGI_NAME tag should be the name of the CGI script that
  starts the search engine (<tt>doxysearch</tt>) with the correct parameters.
  A script with this name will be generated by doxygen.
 
+\anchor cfg_cgi_url
 <dt>\c CGI_URL <dd>
  \addindex CGI_URL
  The \c CGI_URL tag should be the absolute URL to the directory where the
  cgi binaries are located. See the documentation of your http daemon for 
  details.
 
+\anchor cfg_doc_url
 <dt>\c DOC_URL <dd>
  \addindex DOC_URL
  The \c DOC_URL tag should be the absolute URL to the directory where the
@@ -515,17 +703,20 @@ EXTRA_PACKAGES = times
  documentation, with <tt>file://</tt> prepended to it, will be used. 
  This is correct for local viewing only.
 
+\anchor cfg_doc_abspath
 <dt>\c DOC_ABSPATH <dd>
  \addindex DOC_ABSPATH
  The \c DOC_ABSPATH tag should be the absolute path to the directory where the
  documentation is located. If left blank the directory on the local machine
  will be used.
 
+\anchor cfg_bin_abspath
 <dt>\c BIN_ABSPATH <dd>     
  \addindex BIN_ABSPATH
  The \c BIN_ABSPATH tag must point to the directory where the doxysearch binary
  is installed.
 
+\anchor cfg_ext_doc_paths
 <dt>\c EXT_DOC_PATHS <dd>  
  \addindex EXT_DOC_PATHS
  The \c EXT_DOC_PATHS tag can be used to specify one or more paths to 

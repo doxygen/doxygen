@@ -687,7 +687,7 @@ class Translator
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
       }
-      result+="was generated from the following file";
+      result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -696,9 +696,26 @@ class Translator
      * list.
      */
     virtual QCString trAlphabeticalList()
-    {
-      return "Alphabetical List";
-    }
+    { return "Alphabetical List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990901
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the heading text for the retval command. */
+    virtual QCString trReturnValues()
+    { return "Return values"; }
+
+    /*! This is in the (quick) index as a link to the main page (index.html)
+     */
+    virtual QCString trMainPage()
+    { return "Main Page"; }
+
+    /*! This is used in references to page that are put in the LaTeX 
+     *  documentation. It should be an abbreviation of the word page.
+     */
+    virtual QCString trPageAbbreviation()
+    { return "p."; }
 };
 
 

@@ -63,7 +63,7 @@ static void addClass(const char *name,const char *fileName)
 
 static void addFile(const char *name)
 {
-  //printf("adding file %s\n",name);
+  //printf("adding file %s tagName=`%s'\n",name,tagName.data());
   fd = new FileDef(0,name,tagName);
   FileName *mn;
   if ((mn=inputNameDict[name]))

@@ -59,6 +59,7 @@ class FileNameDict : public QDict<FileName>
 {
   public:
     FileNameDict(uint size) : QDict<FileName>(size) {}
+   ~FileNameDict() {}
 };
 
 #endif

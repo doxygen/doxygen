@@ -256,11 +256,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,ClassDef *cd,
             //     )
             //    )
             //   )
-            if (md->hasDocumentation() || md->hasDocumentedEnumValues())
+            if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
             {
               if (Config::genTagFile.length()>0)
                 tagFile << md->name() << " " << md->anchor() 
-                  << " \"" << md->argsString() << "\"";
+                  << " \"\"" << endl;
               md->writeLink(typeDecl,cd,nd,fd,0);
             }
             else

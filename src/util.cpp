@@ -39,18 +39,52 @@ bool isId(char c)
   return c=='_' || isalnum(c);
 }
 
-// strip annonymous part of the scope
-QCString stripAnnonymousScope(const QCString &s)
+// strip annonymous left hand side part of the scope
+//QCString stripAnnonymousScope(const QCString &s)
+//{
+//  QCString result=s;
+//  int i=0;
+//  while (!result.isEmpty() && result.at(0)=='@' && (i=result.find("::"))!=-1)
+//  { 
+//    result=result.right(result.length()-i-2);
+//  }
+//  //if (result.at(0)=='@')
+//  //{
+//  //  result.resize(0);
+//  //}
+//  return result;
+//}
+
+// strip annonymous left hand side part of the scope
+QCString stripAnnonymousNamespaceScope(const QCString &s)
 {
-  QCString result=s;
-  int i=0;
-  while (!result.isEmpty() && result.at(0)=='@' && (i=result.find("::"))!=-1)
-  { 
-    result=result.right(result.length()-i-2);
+  int oi=0,i=0,p=0;
+  if (s.isEmpty()) return s;
+  while (s.at(p)=='@' && (i=s.find("::",p))!=-1 && 
+         namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
+  if (oi==0) 
+  {
+    //printf("stripAnnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.data());
+    return s;
   }
-  return result;
+  else 
+  {
+    //printf("stripAnnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.right(s.length()-oi-2).data());
+    return s.right(s.length()-oi-2);
+  }
 }
 
+void writePageRef(OutputList &ol,const char *cn,const char *mn)
+{
+  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  bool manOn  = ol.isEnabled(OutputGenerator::Man);
+  ol.startPageRef();
+  ol.disableAllBut(OutputGenerator::Latex);
+  ol.docify(theTranslator->trPageAbbreviation());
+  ol.endPageRef(cn,mn);
+  if (htmlOn) ol.enable(OutputGenerator::Html);
+  if (manOn)  ol.enable(OutputGenerator::Man);
+}
 
 QCString generateMarker(int id)
 {
@@ -159,8 +193,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   return result;
 }  
 
-
-
 bool rightScopeMatch(const QCString &scope, const QCString &name)
 {
   return (name==scope || // equal 
@@ -244,12 +276,14 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
         }
       } while (!found && scopeOffset>=0);
 
+      //if (!found) printf("Trying to link %s in %s\n",word.data(),scName);
       if (!found && 
           getDefs(scName,word,0,md,cd,fd,nd) && 
-          (md->isTypedef() || md->isEnumerate()) &&
+          (md->isTypedef() || md->isEnumerate() || md->isReference()) && 
           md->isLinkable() 
          )
       {
+        //printf("Found ref\n");
         Definition *d=0;
         if (cd) d=cd; else if (nd) d=nd; else d=fd;
         if (d && d->isLinkable())
@@ -369,17 +403,17 @@ QCString tempArgListToString(ArgumentList *al)
 
 static bool manIsEnabled;
 
-void startTitle(OutputList &ol)
+void startTitle(OutputList &ol,const char *fileName)
 {
-  ol.startTitleHead();
+  ol.startTitleHead(fileName);
   manIsEnabled=ol.isEnabled(OutputGenerator::Man);
   if (manIsEnabled) ol.disable(OutputGenerator::Man);
 }
 
-void endTitle(OutputList &ol,const char *name)
+void endTitle(OutputList &ol,const char *fileName,const char *name)
 {
   if (manIsEnabled) ol.enable(OutputGenerator::Man); 
-  ol.endTitleHead(name);
+  ol.endTitleHead(fileName,name);
 }
 
 void writeQuickLinks(OutputList &ol,bool compact,bool ext)
@@ -391,6 +425,12 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   if (manEnabled) ol.disable(OutputGenerator::Man);
   if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
+
+  if (!compact) ol.writeListItem();
+  ol.startQuickIndexItem(extLink,absPath+"index.html");
+  parseText(ol,theTranslator->trMainPage());
+  ol.endQuickIndexItem();
+
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
@@ -1428,15 +1468,19 @@ void generateRef(OutputList &ol,const char *scName,
       {
         ol.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),0,linkText);
-        if (!cd->isReference()) 
-          ol.writePageRef(cd->name(),0);
+        if (!cd->isReference() && !Config::pdfHyperFlag) 
+        {
+          writePageRef(ol,cd->name(),0);
+        }
       }
       else // scope matches that of a namespace
       {
         ol.writeObjectLink(nd->getReference(),
             nd->getOutputFileBase(),0,linkText);
-        if (!nd->getReference()) 
-          ol.writePageRef(nd->name(),0);
+        if (!nd->getReference() && !Config::pdfHyperFlag) 
+        {
+          writePageRef(ol,nd->name(),0);
+        }
       }
       // link has been written, stop now.
       return;
@@ -1532,15 +1576,15 @@ void generateRef(OutputList &ol,const char *scName,
     }
 
     // generate the page reference (for LaTeX)
-    if (cName.length()>0 || aName.length()>0)
+    if (!Config::pdfHyperFlag && (cName.length()>0 || aName.length()>0))
     {
       if (
           (cd && cd->isLinkableInProject()) || 
           (fd && !fd->isReference()) ||
-          (nd /* TODO: && !nd->isReference() */)
+          (nd && !nd->isReference()) 
          ) 
       {
-        ol.writePageRef(cName,aName);
+        writePageRef(ol,cName,aName);
       }
     }
     return;

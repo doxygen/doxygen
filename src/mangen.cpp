@@ -92,11 +92,7 @@ void ManGenerator::endFile()
   endPlainFile();
 }
 
-void ManGenerator::writeDoxyAnchor(const char *, const char *,const char *)
-{
-}
-
-void ManGenerator::endTitleHead(const char *name)
+void ManGenerator::endTitleHead(const char *,const char *name)
 {
   t << ".TH " << name << " 3 \"" << dateToString(FALSE) << "\" \"";
   if (Config::projectName.isEmpty()) 
@@ -284,7 +280,7 @@ void ManGenerator::endCodeFragment()
   col=0;
 }
 
-void ManGenerator::startMemberDoc(const char *,const char *,const char *) 
+void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   if (!firstCol) t << endl;
   t << ".SS "; 

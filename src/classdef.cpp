@@ -232,11 +232,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   } 
   pageTitle+=pageType+" Reference";
   startFile(ol,fileName,pageTitle);
-  startTitle(ol);
+  startTitle(ol,getOutputFileBase());
   //ol.docify(name()+" "+pageType.right(pageType.length()-1)+" ");
   //parseText(ol,theTranslator->trReference());
   parseText(ol,theTranslator->trCompoundReference(name(),compType));
-  endTitle(ol,name());
+  endTitle(ol,getOutputFileBase(),name());
 
   // write brief description
   OutputList briefOutput(&ol); 
@@ -694,9 +694,9 @@ void ClassDef::writeMemberList(OutputList &ol)
   // do not generate Latex output
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,memListFileName,theTranslator->trMemberList());
-  startTitle(ol);
+  startTitle(ol,0);
   parseText(ol,name()+" "+theTranslator->trMemberList());
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
   ol.writeObjectLink(getReference(),fileName,0,name());
   parseText(ol,theTranslator->trIncludingInheritedMembers());
@@ -746,7 +746,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeListItem();
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
               md->anchor(),name);
-          if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
+          if ( md->isFunction() || md->isSignal() || md->isSlot() ||
+               (md->isFriend() && md->argsString())) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
             parseText(ol," "+theTranslator->trEnumName());
@@ -786,7 +787,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           memberWritten=TRUE;
         }
         if ((protect!=Public || md->isStatic() || virt!=Normal || 
-             md->isFriend() || md->isRelated()
+             md->isFriend() || md->isRelated() || 
+             (md->isInline() && Config::inlineInfoFlag)
             )
             && memberWritten)
         {
@@ -797,6 +799,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           else if (md->isRelated()) sl.append("related");
           else
           {
+            if (Config::inlineInfoFlag && md->isInline())        
+                                       sl.append("inline");
             if (protect==Protected)    sl.append("protected");
             else if (protect==Private) sl.append("private");
             if (virt==Virtual)         sl.append("virtual");
@@ -831,11 +835,11 @@ void ClassDef::writeIncludeFile(OutputList &ol)
   //printf("incFile=%s\n",incFile->absFilePath().data());
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,fileName+"-include",name()+" Include File");
-  startTitle(ol);
+  startTitle(ol,0);
   QCString n=incName.copy();
   if (incName.isNull()) n=incFile->name();
   parseText(ol,n);
-  endTitle(ol,0);
+  endTitle(ol,0,0);
   parseText(ol,theTranslator->trVerbatimText(incFile->name()));
   ol.writeRuler();
   ol.startCodeFragment();
@@ -992,15 +996,25 @@ bool ClassDef::hasNonReferenceSuperClass()
 //  htmlHelp->decContentsDepth();
 //}
 
-void ClassDef::writeDeclaration(OutputList &ol)
+void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md)
 {
   //ol.insertMemberAlign();
+  //printf("ClassName=`%s'\n",name().data());
   switch(compType)
   {
-    case Class:  ol.docify("class {");  break;
-    case Struct: ol.docify("struct {"); break;
-    default:     ol.docify("union {");  break; 
+    case Class:  ol.docify("class"); break;
+    case Struct: ol.docify("struct"); break;
+    default:     ol.docify("union");  break; 
   } 
+  int ri=name().findRev("::");
+  if (ri==-1) ri=name().length();
+  QCString cn=name().right(name().length()-ri-2);
+  if (!cn.isEmpty() && cn.at(0)!='@' && md)
+  { 
+    ol.docify(" ");
+    ol.writeObjectLink(0,0,md->anchor(),cn);
+  }
+  ol.docify(" {");
   ol.endMemberItem(FALSE,0,0,FALSE); // TODO: pass correct group parameters
 
   // insert members of this class

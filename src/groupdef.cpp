@@ -78,9 +78,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.disable(OutputGenerator::Man);
   startFile(ol,fileName,title);
-  startTitle(ol);
+  startTitle(ol,getOutputFileBase());
   ol.docify(title);
-  endTitle(ol,name());
+  endTitle(ol,getOutputFileBase(),name());
 
   //brief=brief.stripWhiteSpace();
   //int bl=brief.length();
@@ -112,13 +112,18 @@ void GroupDef::writeDocumentation(OutputList &ol)
   }
   if (classList->count()>0)
   {
-    ol.startMemberHeader();
-    parseText(ol,theTranslator->trCompounds());
-    ol.endMemberHeader();
-    ol.startIndexList();
     ClassDef *cd=classList->first();
+    bool found=FALSE;
     while (cd)
     {
+      if (!found)
+      {
+        ol.startMemberHeader();
+        parseText(ol,theTranslator->trCompounds());
+        ol.endMemberHeader();
+        ol.startIndexList();
+        found=TRUE;
+      }
       QCString type;
       switch (cd->compoundType())
       {

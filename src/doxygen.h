@@ -113,6 +113,7 @@ extern NamespaceDict namespaceDict;
 extern FormulaList formulaList;
 extern FormulaDict formulaDict;
 extern FormulaDict formulaNameDict;
+extern PageInfo *mainPage;
 
 extern int annotatedClasses;
 extern int hierarchyClasses;

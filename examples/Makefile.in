@@ -75,7 +75,7 @@ autolink/html/index.html: autolink.cpp autolink.cfg
 
 tag/html/index.html: tag.cpp tag.cfg 
 	$(DOXYGEN)/bin/doxygen tag.cfg
-	sed -e "1,1s.perl.$(PERL).g" tag/html/installdox >tag/html/installdox.perl
+	sed -e "1,1s#perl#$(PERL)#g" tag/html/installdox >tag/html/installdox.perl
 	cd tag/html ; $(PERL) installdox.perl -lexample.tag@../../example/html
 
 restypedef/html/index.html: restypedef.cpp restypedef.cfg 

@@ -19,17 +19,18 @@ distclean: clean
 
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin
-	$(INSTTOOL) -d $(INSTALL)/share/doxygen/doc
-	$(INSTTOOL) -d $(INSTALL)/share/doxygen/examples
+	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
+	$(INSTTOOL) -d $(INSTALL)/doc/doxygen
 	$(INSTTOOL) -m 755 bin/doxy* $(INSTALL)/bin
-	cp -r doc $(INSTALL)/share/doxygen
-	cp -r examples $(INSTALL)/share/doxygen
-	echo "DOXYGEN  = $(INSTALL)" > $(INSTALL)/share/doxygen/doc/Makefile
-	echo "DOXYDOCS = $(INSTALL)/share/doxygen" >> $(INSTALL)/share/doxygen/doc/Makefile
-	echo "VERSION  = $(VERSION)" >> $(INSTALL)/share/doxygen/doc/Makefile
-	cat doc/Makefile.in >> $(INSTALL)/share/doxygen/doc/Makefile
-	cd $(INSTALL)/share/doxygen/examples ; $(MAKE)
-	cd $(INSTALL)/share/doxygen/doc ; $(MAKE)
+	cp -r doc $(INSTALL)/doc/doxygen
+	cp -r examples $(INSTALL)/doc/doxygen
+	echo "DOXYGEN  = $(INSTALL)" > $(INSTALL)/doc/doxygen/doc/Makefile
+	echo "DOXYDOCS = .." >> $(INSTALL)/doc/doxygen/doc/Makefile
+	echo "VERSION  = $(VERSION)" >> $(INSTALL)/doc/doxygen/doc/Makefile
+	cat doc/Makefile.in >> $(INSTALL)/doc/doxygen/doc/Makefile
+	cd $(INSTALL)/doc/doxygen/examples ; $(MAKE)
+	cd $(INSTALL)/doc/doxygen/doc ; $(MAKE)
+	rm -rf $(INSTALL)/doc/doxygen/doc
 
 docs: FORCE
 	cd examples ; $(MAKE)
@@ -38,10 +39,13 @@ docs: FORCE
 ps: docs
 	cd latex ; $(MAKE)
 
+pdf: docs
+	cd latex ; $(MAKE)
+
 archive: distclean
 	tar zcvf dx`date +%y%m%d`.tgz tmake doc wintools examples bin objects \
-	       src configure Makefile.in Makefile.win.in INSTALL make.bat \
-	       LANGUAGE.HOWTO LICENSE PLATFORMS VERSION
+	       src configure configure.bin Makefile.in Makefile.win.in INSTALL \
+	       make.bat LANGUAGE.HOWTO LICENSE PLATFORMS VERSION
 
 src/version.cpp: Makefile
 	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp

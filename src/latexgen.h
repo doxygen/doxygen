@@ -27,7 +27,7 @@ class LatexGenerator : public OutputGenerator
     LatexGenerator();
    ~LatexGenerator();
 
-    OutputGenerator *copy() { return new LatexGenerator; }
+    OutputGenerator *copy();
     //OutputGenerator *clone() { return new LatexGenerator(*this); }
     void append(const OutputGenerator *o);
     void enable() { active=TRUE; }
@@ -50,9 +50,9 @@ class LatexGenerator : public OutputGenerator
     void startProjectNumber();
     void endProjectNumber() {}
     void writeStyleInfo(int part);
-    void startTitleHead() { startTitle(); }
+    void startTitleHead(const char *);
     void startTitle();
-    void endTitleHead(const char *name);
+    void endTitleHead(const char *,const char *name);
     void endTitle()   { t << "}"; }
 
     void newParagraph();
@@ -63,8 +63,8 @@ class LatexGenerator : public OutputGenerator
     void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
     void startEnumList()  { t << "\\begin{enumerate}"      << endl; }
     void endEnumList()    { t << "\\end{enumerate}"        << endl; }
-    void startAlfabeticalIndexList() {}
-    void endAlfabeticalIndexList() {} 
+    void startAlphabeticalIndexList() {}
+    void endAlphabeticalIndexList() {} 
     void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
@@ -96,7 +96,7 @@ class LatexGenerator : public OutputGenerator
     void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
-    void writeRuler() { t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}"; }
+    void writeRuler() { t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; }
     void writeAnchor(const char *name) { t << "\\label{" << name << "}" << endl; }
     void startCodeFragment() { t << "\\small\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
@@ -111,12 +111,13 @@ class LatexGenerator : public OutputGenerator
     void startDescItem()    { t << "\\item["; }
     void endDescItem()      { t << "]" << endl; }
     void lineBreak() { t << "\\par\n"; }
-    void startMemberDoc(const char *,const char *,const char *);
+    void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc() { t << "}"; }
-    void writeDoxyAnchor(const char *,const char *,const char *);
+    void startDoxyAnchor(const char *,const char *,const char *,const char *);
+    void endDoxyAnchor();
     void writeChar(char c);
     void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
-    void writeLatexLabel(const char *scope,const char *anchor);
+    //void writeLatexLabel(const char *scope,const char *anchor);
     void writeStartAnnoItem(const char *type,const char *file, 
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
@@ -157,10 +158,10 @@ class LatexGenerator : public OutputGenerator
     void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
-    void startDescList()     { t << "\\begin{Desc}\\item["; }
+    void startDescList()     { t << "\\begin{Desc}\n\\item["; }
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
-    void endDescList()       { t << "\\end{Desc}"; }
+    void endDescList()       { t << "\\end{Desc}" << endl; }
     void writeSection(const char *,const char *,bool);
     void writeSectionRef(const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
@@ -174,11 +175,13 @@ class LatexGenerator : public OutputGenerator
     void endClassDiagram(ClassDiagram &,const char *,const char *);
     void startColorFont(uchar,uchar,uchar) {}
     void endColorFont()   {}
-    void writePageRef(const char *,const char *);
+    void startPageRef();
+    void endPageRef(const char *,const char *);
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
     void writeFormula(const char *,const char *);
     void writeNonBreakableSpace();
+    void writeImage(const char *,const char *,const char *);
     
     //static void docifyStatic(QTextStream &t,const char *str);
     

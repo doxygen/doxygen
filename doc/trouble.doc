@@ -48,8 +48,8 @@
   int *(a[20]);
 \endverbatim
   then doxygen will remove the braces and correctly parse the result.
-<li>Not all names in code fragments that are include in the documentation
-    are replaced by links (for instance when using SOURCE_BROWSER = YES). 
+<li>Not all names in code fragments that are included in the documentation
+    are replaced by links (for instance when using \c SOURCE_BROWSER = \c YES). 
     For a part this is because the code parser isn't smart enough at the
     moment. I'll try to improve this in the future. But even with these
     improvements not everthing can be properly linked to the corresponding

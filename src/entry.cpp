@@ -65,6 +65,7 @@ Entry::Entry(const Entry &e)
   fileName    = e.fileName.copy();
   startLine   = e.startLine;
   mGrpId      = e.mGrpId;
+  inLine      = e.inLine;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -207,6 +208,7 @@ void Entry::reset()
   slot    = FALSE;
   stat    = FALSE;
   proto   = FALSE;
+  inLine  = FALSE;
   protection = Public;
   sublist->clear();
   extends->clear();

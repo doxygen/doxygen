@@ -86,6 +86,7 @@ class MemberNameInfoIterator : public QListIterator<MemberInfo>
 class MemberNameInfoList : public QList<MemberNameInfo>
 {
   public:
+   ~MemberNameInfoList() {}
     int compareItems(GCI item1,GCI item2) 
     { return stricmp(
                      ((MemberNameInfo *)item1)->memberName(),
@@ -98,6 +99,7 @@ class MemberNameInfoDict : public QDict<MemberNameInfo>
 {
   public:
     MemberNameInfoDict(int size) : QDict<MemberNameInfo>(size) {}
+   ~MemberNameInfoDict() {}
 };
 
 class MemberNameInfoListIterator : public QListIterator<MemberNameInfo>

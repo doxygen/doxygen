@@ -53,8 +53,8 @@ class OutputGenerator
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;
     virtual void writeStyleInfo(int part) = 0;
-    virtual void startTitleHead() = 0;
-    virtual void endTitleHead(const char *name) = 0;
+    virtual void startTitleHead(const char *) = 0;
+    virtual void endTitleHead(const char *fileName,const char *name) = 0;
     virtual void startTitle() = 0;
     virtual void endTitle()   = 0;
     virtual void newParagraph()   = 0;
@@ -67,8 +67,8 @@ class OutputGenerator
     virtual void endEnumList()    = 0;
     virtual void startBold()      = 0;
     virtual void endBold()        = 0;
-    virtual void startAlfabeticalIndexList() = 0;
-    virtual void endAlfabeticalIndexList() = 0;
+    virtual void startAlphabeticalIndexList() = 0;
+    virtual void endAlphabeticalIndexList() = 0;
     virtual void writeIndexHeading(const char *s) = 0;
     virtual void writeIndexItem(const char *ref,const char *file,
                                 const char *text) = 0;
@@ -109,11 +109,14 @@ class OutputGenerator
     virtual void startEmphasis() = 0;
     virtual void endEmphasis() = 0;
     virtual void writeChar(char c) = 0;
-    virtual void startMemberDoc(const char *,const char *,const char *) = 0;
+    virtual void startMemberDoc(const char *,const char *,
+                                const char *,const char *) = 0;
     virtual void endMemberDoc() = 0;
-    virtual void writeDoxyAnchor(const char *clName,const char *anchor,const char *name) = 0;
+    virtual void startDoxyAnchor(const char *fileName,const char *clName,
+                                 const char *anchor,const char *name) = 0;
+    virtual void endDoxyAnchor() = 0;
     virtual void writeLatexSpacing() = 0;
-    virtual void writeLatexLabel(const char *clName,const char *anchor) = 0;
+    //virtual void writeLatexLabel(const char *clName,const char *anchor) = 0;
     virtual void writeStartAnnoItem(const char *type,const char *file,
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
@@ -166,11 +169,13 @@ class OutputGenerator
     virtual void endClassDiagram(ClassDiagram &,const char *,const char *) = 0;
     virtual void startColorFont(uchar r,uchar g,uchar b) = 0;
     virtual void endColorFont() = 0;
-    virtual void writePageRef(const char *,const char *) = 0;
+    virtual void startPageRef() = 0;
+    virtual void endPageRef(const char *,const char *) = 0;
     virtual void startQuickIndexItem(const char *s,const char *l) = 0;
     virtual void endQuickIndexItem() = 0;
     virtual void writeFormula(const char *,const char *) = 0;
     virtual void writeNonBreakableSpace() = 0;
+    virtual void writeImage(const char *,const char *,const char *) = 0;
     
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }

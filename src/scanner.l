@@ -115,6 +115,7 @@ static int              includeFileLength = 0;
 static bool             firstLine;
 static bool             isTypedef;
 static bool             inParamBlock;
+static bool             inRetValBlock;
 static bool             inExceptionBlock;
 static bool             inSeeBlock;
 static bool             inReturnBlock;
@@ -149,6 +150,7 @@ static QCString         *copyArgString;
 
 static ArgumentList     *currentArgumentList;
 static QCString         *currentTemplateSpec;
+static QCString         curImageName;
 
 //-----------------------------------------------------------------------------
 
@@ -186,6 +188,7 @@ static void initParser()
   firstLine = TRUE;
   isTypedef = FALSE;
   inParamBlock = FALSE;
+  inRetValBlock = FALSE;
   inExceptionBlock = FALSE;
   inSeeBlock = FALSE;
   inReturnBlock = FALSE;
@@ -534,7 +537,7 @@ static void newDocState();
 
 static bool inBlock()
 {
-  return inParamBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
+  return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
          inVersionBlock || inDateBlock || inWarningBlock || inBugBlock ||
 	 inParBlock || inExceptionBlock;
 }
@@ -542,7 +545,7 @@ static bool inBlock()
 static void endBlock()
 {
     outDoc->endDescList();
-    inParamBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
+    inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
     inVersionBlock=inDateBlock=inBugBlock=inWarningBlock=
     inParBlock=inExceptionBlock=FALSE;
 }
@@ -692,6 +695,7 @@ VAR	  [vV][aA][rR]
 %x	ClassName
 %x	ClassVar
 %x	Bases
+%x	BasesProt
 %x	NextSemi
 %x	FindMembers
 %x	FindMemberName
@@ -803,6 +807,10 @@ VAR	  [vV][aA][rR]
 %x	DocRefArgStart
 %x      DocRefItem
 %x      DocRefItemName
+%x	DocImage
+%x	DocHtmlImageName
+%x	DocLatexImageName
+%x	DocLatexImageWidth
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1031,7 +1039,7 @@ VAR	  [vV][aA][rR]
   					    outDoc->writeDescItem();
 					  }
 				        }
-<DocScan>("\\"|"@")"bug"{BN}+		{
+<DocScan>("\\"|"@")"bug"[s]?{BN}+		{
   				          endArgumentList();
   					  if (!inBugBlock)
 					  {
@@ -1107,7 +1115,7 @@ VAR	  [vV][aA][rR]
 					    outDoc->docify(", ");
 					  }
   					}
-<DocScan>("\\"|"@")"return"{BN}+	{
+<DocScan>("\\"|"@")("return"([s])?|"result"){BN}+	{
   				          endArgumentList();
   					  if (!inReturnBlock)
 					  {
@@ -1150,9 +1158,22 @@ VAR	  [vV][aA][rR]
 					    if (inBlock()) endBlock();
 					    inParamBlock=TRUE;
 					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Parameters: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trParameters()+": ");
+					    outDoc->endBold();
+  					    outDoc->endDescTitle();
+					  }
+  				          BEGIN(DocParam); 
+  					}
+<DocScan>("\\"|"@")"retval"{BN}+	{
+  				          endArgumentList();
+  					  if (!inRetValBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inRetValBlock=TRUE;
+					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trReturnValues()+": ");
 					    outDoc->endBold();
   					    outDoc->endDescTitle();
 					  }
@@ -1174,7 +1195,7 @@ VAR	  [vV][aA][rR]
 					  BEGIN(DocException);
   					}
 <DocScan>"\\capt".*
-<DocParam>{SCOPENAME}			{
+<DocParam>[a-z_A-Z0-9:]+		{
   					  outDoc->writeDescItem();
 					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
@@ -1288,6 +1309,52 @@ VAR	  [vV][aA][rR]
 					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
 					    outDoc->writeBoldString("unknown reference!");
 					  }
+					  BEGIN(DocScan);
+  					}
+<DocScan>("\\"|"@")"image"{B}+		{
+  					  BEGIN(DocImage); 
+  					}
+<DocImage>[hH][tT][mM][lL]		{
+  					  BEGIN(DocHtmlImageName);
+  					}
+<DocImage>[lL][aA][tT][eE][xX]		{
+  					  BEGIN(DocLatexImageName);
+  					}
+<DocHtmlImageName>{FILE}|{URLMASK}      {
+  				          outDoc->disableAllBut(OutputGenerator::Html);
+					  outDoc->writeImage(yytext,0,0);
+					  outDoc->enableAll();
+					  BEGIN(DocScan);
+  					}
+<DocLatexImageName>{FILE}		{
+  					  curImageName = yytext;
+					  BEGIN(DocLatexImageWidth);
+  					}
+<DocLatexImageWidth>\n			{ // no width specified
+  				          outDoc->disableAllBut(OutputGenerator::Html);
+					  outDoc->writeImage(curImageName,0,0);
+					  outDoc->enableAll();
+					  BEGIN(DocScan);
+  					}
+<DocLatexImageWidth>"width"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
+  				          outDoc->disableAllBut(OutputGenerator::Latex);
+					  outDoc->writeImage(curImageName,yytext,0);
+					  outDoc->enableAll();
+					  BEGIN(DocScan);
+  					}
+<DocLatexImageWidth>"height"{B}*"="{B}*[0-9\.]+({B}*{ID})?	{
+  				          outDoc->disableAllBut(OutputGenerator::Latex);
+					  outDoc->writeImage(curImageName,0,yytext);
+					  outDoc->enableAll();
+					  BEGIN(DocScan);
+  					}
+<DocImage>[a-z_A-Z0-9\.\-]+		{
+					  warn("Warning: %s is an unsupported output format for \\image\n",yytext);
+  					}
+<DocImage,DocHtmlImageName,DocLatexImageName>\n {
+  					  warn("Warning: invalid \\image command found!\n");
+					  yyLineNr++;
+					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
 <DocScan>("\\"|"@")"code"/{BN}+	        { 
@@ -1697,9 +1764,6 @@ VAR	  [vV][aA][rR]
 					  current->argList->clear();
 					  lineCount() ;
 					}
-  /*
-<FindMembers>"inline"     		
-  */
 <FindMembers>{BN}+			{
   					  lineCount();
   					}
@@ -1715,7 +1779,9 @@ VAR	  [vV][aA][rR]
 					  current->virt = Virtual;
 					  lineCount();
 					}
-<FindMembers>{B}*"inline"{BN}+		{ lineCount(); }
+<FindMembers>{B}*"inline"{BN}+		{ current->inLine = TRUE;
+                                          lineCount(); 
+                                        }
 <FindMembers>{B}*"typename"{BN}+	{ lineCount(); }
 <FindMembers>{B}*"namespace"{BN}+	{ 
   					  isTypedef=FALSE;
@@ -2177,7 +2243,8 @@ VAR	  [vV][aA][rR]
 					  else
 					  {
 					    QCString &cn = current->name;
-					    QCString rn = stripAnnonymousScope(current_root->name);
+					    //QCString rn = stripAnnonymousScope(current_root->name);
+					    QCString rn = current_root->name.copy();
 					    //printf("cn=`%s' rn=`%s'\n",cn.data(),rn.data());
 					    if (!cn.isEmpty() && !rn.isEmpty() && 
 					      (current_root->section & Entry::SCOPE_MASK))
@@ -2202,8 +2269,10 @@ VAR	  [vV][aA][rR]
 					      //printf("adding `%s' `%s' `%s' brief=%s\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data());
 					      current_root->addSubEntry( current ) ;
 					      current = new Entry(*current);
-					      if (current->section == Entry::NAMESPACE_SEC)
-					      { // a namespace ends with a closing bracket
+					      if (current->section==Entry::NAMESPACE_SEC || 
+						  current->section==Entry::INTERFACE_SEC
+						 )
+					      { // namespaces and interfaces ends with a closing bracket without semicolon
 						current->reset();
 						current->protection = protection ;
 						current->sig = sig;
@@ -2254,7 +2323,33 @@ VAR	  [vV][aA][rR]
 					  msType = yytext; msType=msType.left(i);
 					}
 <MemberSpec>[,;]			{
-					  if (msName.length()>0)
+  					  if (msName.isEmpty() && !current->name.isEmpty())
+					   /* && (current->section & Entry::COMPOUND_MASK)) */
+					  { 
+					    // see if the compound does not have a name or is inside another
+					    // annonymous compound. If so we insert a 
+					    // special `annonymous' variable.
+					    Entry *p=current_root;
+					    while (p)
+					    {
+					      // only look for class scopes, not namespace scopes
+					      if (p->section & Entry::COMPOUND_MASK)
+					      {
+						//printf("Trying scope `%s'\n",p->name.data());
+						int i=p->name.findRev("::");
+						int pi = (i==-1) ? 0 : i+2;
+						if (p->name.at(pi)=='@')
+						{
+						  // annonymous compound inside -> insert dummy variable name
+						  //printf("Adding annonymous variable for scope %s\n",p->name.data());
+						  msName.sprintf("@%d",anonCount++); 
+						  break;
+						}
+					      }
+					      p=p->parent;
+					    }
+					  }
+					  if (!msName.isEmpty())
 					  {
   					    Entry *varEntry=new Entry;
 					    varEntry->protection = current->protection ;
@@ -2518,6 +2613,11 @@ VAR	  [vV][aA][rR]
 					  lineCount() ;
 					  BEGIN( ExcpRound ) ;
 					}
+<FuncQual>{BN}*"raises"{BN}*"("         {
+  					  current->exception = " raises(" ;
+					  lineCount() ;
+					  BEGIN( ExcpRound ) ;
+  					}
 <ExcpRound>"("				{ current->exception += *yytext ;
 					  ++bracketCount ;
 					}
@@ -2588,7 +2688,8 @@ VAR	  [vV][aA][rR]
 					  {
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
 					    QRegExp re("([^)]*)");
-					    if (!current->type.isNull() && current->type.find(re,0)!=-1)
+					    if (!current->type.isNull() && 
+						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
 					      //printf("Scanner.l: found function variable!\n");
 					      current->section = Entry::VARIABLE_SEC;
@@ -2600,9 +2701,8 @@ VAR	  [vV][aA][rR]
 					      current->proto = TRUE;
 					    }
 					  }
-					  //printf("Adding entry `%s' groupId=%d groupHeader=`%s'\n",
-					  //    current->name.data(),current->mGrpId,current->mGrpId!=-1 ? 
-					  //        memberGroupDict[current->mGrpId]->header().data() : "");
+					  //printf("Adding entry `%s' inLine`%d'\n",
+					  //    current->name.data(),current->inLine);
 					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
@@ -2615,6 +2715,8 @@ VAR	  [vV][aA][rR]
 					  lastCurlyContext = FindMembers;
 					  if( *yytext == '{' )
 					  {
+					    if (current_root->section & Entry::COMPOUND_MASK)
+					      previous->inLine = TRUE;
 					    addToBody(yytext);
 					    BEGIN( SkipCurly ) ;
 					  }
@@ -2779,7 +2881,7 @@ VAR	  [vV][aA][rR]
 					    baseProt=Private;
                                           baseVirt=Normal;
 					  baseName.resize(0);
-					  BEGIN( Bases ) ;
+					  BEGIN( BasesProt ) ;
 					}
 <ClassVar>[;=*&]			{
     					  unput(*yytext);
@@ -2792,17 +2894,25 @@ VAR	  [vV][aA][rR]
 					    current->name.sprintf("@%d",anonCount++);
 					  BEGIN( Curly ) ;
 					}
-<Bases>"virtual"                        { baseVirt = Virtual; }
-<Bases>"public"                         { baseProt = Public; }
-<Bases>"protected"                      { baseProt = Protected; }
-<Bases>"private"                        { baseProt = Private; }
-<Bases>({ID}{BN}*"::"{BN}*)*{ID}	{ 
+<BasesProt>"virtual"                    { baseVirt = Virtual; }
+<BasesProt>"public"                     { baseProt = Public; }
+<BasesProt>"protected"                  { baseProt = Protected; }
+<BasesProt>"private"                    { baseProt = Private; }
+<BasesProt>{BN}				{}
+<BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
+<Bases>("::")*{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
   					  //current->extends->append(
 					  //  new BaseInfo(yytext,baseProt,baseVirt)
 					  //) ;
-  					  baseName += yytext;
-					  current->args += ' ' ;
-					  current->args += yytext ;
+  					  if (*yytext != ':')
+  					    baseName += yytext;
+					  else
+					    baseName += (yytext+2);
+					  current->args += ' ';
+					  if (*yytext != ':')
+					    current->args += yytext;
+					  else
+					    current->args += (yytext+2);
 					}
 <ClassVar>"<"   	                { current->name += *yytext;
   					  sharpCount=1; 
@@ -2845,6 +2955,7 @@ VAR	  [vV][aA][rR]
 					  baseProt=Private;
 					  baseVirt=Normal;
 					  baseName.resize(0);
+					  BEGIN(BasesProt);
 					}
 <Bases>{B}*"{"{B}*			{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
@@ -2938,6 +3049,10 @@ VAR	  [vV][aA][rR]
   					}
 <JavaDoc>"@short"{B}+			{
   					  lastBriefContext=Doc;
+  					  BEGIN( ClassDocBrief ); 
+					}
+<JavaDoc>"\\brief"{B}+			{
+  					  lastBriefContext=tmpDocType;
   					  BEGIN( ClassDocBrief ); 
 					}
 <JavaDoc>^(({B}*"*"+)?){BL}		{
@@ -3061,6 +3176,12 @@ VAR	  [vV][aA][rR]
 					  current->startLine = yyLineNr;
 					  BEGIN( PageDocArg1 );
   					}
+<Doc,JavaDoc>{B}*("\\"|"@")"mainpage"{B}* {
+  					  current->section = Entry::MAINPAGEDOC_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  BEGIN( PageDocArg2 );
+  					}
 <Doc,JavaDoc>{B}*("\\"|"@")"file"{B}*	{
   					  current->section = Entry::FILEDOC_SEC;
 					  current->fileName = yyFileName;
@@ -3150,8 +3271,6 @@ VAR	  [vV][aA][rR]
 					  newDocState();
   				        }
 <FileDocArg1>"\n"			{
-  					  //warn("Warning: missing argument after "
-					  //     "\\file at line %d of %s.\n",yyLineNr,yyFileName);
   					  current->name = yyFileName;
   					  yyLineNr++;
 					  newDocState();
@@ -3430,17 +3549,18 @@ VAR	  [vV][aA][rR]
   					  current->brief=current->brief.stripWhiteSpace();
 					  BEGIN( lastBriefContext ); 
   					}
+<ClassDocBrief>{BS}/("\\"|"@")"image"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"author"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"internal" { BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"version"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/"\\date"	        { BEGIN( lastBriefContext ); }
+<ClassDocBrief>{BS}/("\\"|"@")"date"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"param"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"exception" { BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"return"	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\sa"|"@see")	{ BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\"|"@")"bug"	{ BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"warning"	        { BEGIN( lastBriefContext ); }
-<ClassDocBrief>{BS}/("\\"|"@")"par"{BN}+	{ BEGIN( lastBriefContext ); }
+<ClassDocBrief>{BS}/("\\"|"@")"warning"	 { BEGIN( lastBriefContext ); }
+<ClassDocBrief>{BS}/("\\"|"@")"par"{BN}+ { BEGIN( lastBriefContext ); }
 <ClassDocBrief>{BS}/("\\brief"|"@short"){BN}+ {
   					  lastBriefContext=YY_START;
   					  BEGIN( ClassDocBrief ); 
@@ -3529,6 +3649,7 @@ VAR	  [vV][aA][rR]
 					  current->name = current->name.stripWhiteSpace();
 					  newDocState();
   					}
+<Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
 <Doc>.					{ current->doc += *yytext; }
 <DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
 <Doc>\n					{ yyLineNr++; current->doc += *yytext; }
@@ -3564,6 +3685,12 @@ VAR	  [vV][aA][rR]
 					  BEGIN(lastAfterDocContext);
   					}
 <AfterDocBrief>"."/{BN}			{ BEGIN(AfterDoc); }
+<LineDoc,AfterDocBrief,AfterDocLine>("\\"|"@")"internal"	{ 
+                                          current->brief+="\\internal"; 
+					}
+<Doc,AfterDoc>("\\"|"@")"internal"	{ 
+                                          current->doc+="\\internal"; 
+					}
 <AfterDoc>("\\"|"@")"brief"		{ BEGIN(AfterDocBrief); }
 <AfterDoc>"/*"|"//"			{ current->doc+=yytext; }
 <AfterDoc>^{B}*"*"+/[^/]			

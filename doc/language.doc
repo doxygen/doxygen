@@ -152,6 +152,31 @@ Here is a list of the languages and their current maintainers:
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>
+        Finnish
+      </TD>
+      <TD>
+        Olli Korhonen
+      </TD>
+      <TD>
+        <a href="mailto:Olli.Korhonen@ccc.fi">
+                        Olli.Korhonen@ccc.fi</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Russian
+      </TD>
+      <TD>
+        Vladimir Vodolazkiy
+      </TD>
+      <TD>
+        <a href="mailto:voldemarus@geocities.com">
+                        voldemarus@geocities.com</a>
+      </TD>
+  </TR>
+
+  <TR BGCOLOR="#ffffff">
+      <TD>
         Dutch
       </TD>  
       <TD>
@@ -191,6 +216,10 @@ Here is a list of the languages and their current maintainers:
   Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} \\
   \hline
   Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} \\
+  \hline
+  Finish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} \\
+  \hline
+  Russian & Vladimir Vodolazkiy & {\tt voldemarus@geocities.com} \\
   \hline
   Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} \\
   \hline
