@@ -46,8 +46,8 @@ class FTVHelp
     void generateLink(QTextStream &t,FTVNode *n);
     FTVHelp();
    ~FTVHelp();
-    QFile *m_cf; 
-    QTextStream m_cts;
+    //QFile *m_cf; 
+    //QTextStream m_cts;
     //int m_dc;
     static FTVHelp *m_theInstance;
     QList<FTVNode> *m_indentNodes;

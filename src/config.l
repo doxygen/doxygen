@@ -1362,6 +1362,21 @@ void Config::create()
   ce->addValue("Ukrainian");
 #endif
   cb = addBool(
+                    "USE_WINDOWS_ENCODING",
+		    "This tag can be used to specify the encoding used in the generated output. \n"
+		    "The encoding is not always determined by the language that is chosen, \n"
+		    "but also whether or not the output is meant for Windows or non-Windows users. \n"
+		    "In case there is a difference, setting the USE_WINDOWS_ENCODING tag to YES \n"
+		    "forces the Windows enconding, (this is the default for the Windows binary), \n"
+		    "whereas setting the tag to NO uses a Unix-style encoding (the default for the \n"
+		    "all platforms other than Windows).\n",
+#if defined(_WIN32) || defined(__CYGWIN__)
+		    TRUE
+#else
+		    FALSE
+#endif
+		 );
+  cb = addBool(
                     "EXTRACT_ALL",
                     "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
                     "documentation are documented, even if no documentation was available. \n"
@@ -1975,7 +1990,7 @@ void Config::create()
                     "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
                     "generated containing a tree-like index structure (just like the one that \n"
                     "is generated for HTML Help). For this to work a browser that supports \n"
-                    "JavaScript, DHTML, CSS and frames is required (for instance Mozilla, \n"
+                    "JavaScript, DHTML, CSS and frames is required (for instance Mozilla 1.0+, \n"
 		    "Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are \n"
 		    "probably better off using the HTML help feature. \n",
                     FALSE
@@ -2084,6 +2099,14 @@ void Config::create()
                     "command to the generated LaTeX files. This will instruct LaTeX to keep \n"
                     "running if errors occur, instead of asking the user for help. \n"
                     "This option is also used when generating formulas in HTML. \n",
+                    FALSE
+                 );
+  cb->addDependency("GENERATE_LATEX");
+  cb = addBool(
+                    "LATEX_HIDE_INDICES",
+                    "If LATEX_HIDE_INDICES is set to YES then doxygen will not \n"
+                    "include the index chapters (such as File Index, Compound Index, etc.) \n"
+                    "in the output. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_LATEX");

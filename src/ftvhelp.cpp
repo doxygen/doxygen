@@ -471,7 +471,7 @@ FTVHelp::FTVHelp()
 {
   /* initial depth */
   //m_dc = 0;
-  m_cf = 0;
+  //m_cf = 0;
   m_indentNodes = new QList<FTVNode>[MAX_INDENT];
   m_indentNodes[0].setAutoDelete(TRUE);
   m_indent=0;
@@ -495,6 +495,7 @@ FTVHelp *FTVHelp::getInstance()
  */
 void FTVHelp::initialize()
 {
+#if 0
   /* open the contents file */
   QCString fName = Config_getString("HTML_OUTPUT") + "/tree.js";
   m_cf = new QFile(fName);
@@ -519,6 +520,7 @@ void FTVHelp::initialize()
     m_cts << Config_getString("PROJECT_NAME");
   }
   m_cts << "</b>\", \"\", \"\")\n";
+#endif
 }
 
 /*! Finalizes the FTV help. This will finish and close the
@@ -527,9 +529,9 @@ void FTVHelp::initialize()
  */
 void FTVHelp::finalize()
 {
-  m_cts.unsetDevice();
-  m_cf->close();
-  delete m_cf;
+  //m_cts.unsetDevice();
+  //m_cf->close();
+  //delete m_cf;
   generateTreeView();
   //generateFolderTreeViewData();
 }
@@ -690,6 +692,8 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
 void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
 {
   QCString *dest;
+  //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
+  //    n->ref.data(),n->file.data(),n->anchor.data());
   if (!n->ref.isEmpty()) // link to entity imported via tag file
   {
     t << "<a class=\"elRef\" ";
@@ -920,7 +924,17 @@ void FTVHelp::generateTreeView()
     t << "\n";
     t << "  <body bgcolor=\"#ffffff\">\n";
     t << "    <div class=\"directory\">\n";
-    t << "      <h3>Root</h3>\n";
+    t << "      <h3>";
+    QCString &projName = Config_getString("PROJECT_NAME");
+    if (projName.isEmpty())
+    {
+      t << "Root";
+    }
+    else
+    {
+      t << projName;
+    }
+    t << "</h3>\n";
     t << "      <div style=\"display: block;\">\n";
 
     generateTree(t,m_indentNodes[0],0);

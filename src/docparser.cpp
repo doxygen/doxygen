@@ -562,11 +562,11 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
       {
         case TK_COMMAND: 
 	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Illegal command \\%s as the argument of a \\%s command",
-	       tokenName.data(),cmdName.data());
+	       g_token->name.data(),cmdName.data());
           break;
         case TK_SYMBOL: 
 	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
-               tokenName.data());
+               g_token->name.data());
           break;
         default:
 	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s",
@@ -688,8 +688,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
   Definition *compound=0;
   MemberDef  *member=0;
-  QString name = g_token->name;
-  if (name.at(0)=='#') name=name.right(name.length()-1);
+  QString name = linkToText(g_token->name);
   if (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
     if (member) // member link
@@ -1615,7 +1614,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   }
   else if (resolveLink(g_context,target,TRUE,&compound,&pageInfo,anchor))
   {
-    m_text = target;
+    m_text = linkToText(target);
     m_anchor = anchor;
     if (pageInfo) // ref to page 
     {
@@ -3526,7 +3525,14 @@ int DocPara::handleCommand(const QString &cmdName)
       {
         doctokenizerYYsetStateCode();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Code,g_isExample,g_fileName));
+        // search for the first non-whitespace line, index is stored in li
+        int i=0,li=0,l=g_token->verb.length();
+        while (i<l && g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n')
+        {
+          if (g_token->verb.at(i)=='\n') li=i+1;
+          i++;
+        }
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_fileName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: code section ended without end marker");
         doctokenizerYYsetStatePara();
       }

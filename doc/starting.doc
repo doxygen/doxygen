@@ -95,6 +95,13 @@ To omit all \c test directories from a source tree for instance, one could use:
 \verbatim EXCLUDE_PATTERNS = */test/* 
 \endverbatim
 
+Doxygen normally parses files if they are C or C++ sources. If a file
+has a <code>.idl</code> or <code>.odl</code> extension it is treated as an
+IDL file. If it has a <code>.java</code> extension it is treated as a file
+written in Java. Files ending with <code>.cs</code> are treated as C# files.
+Finally, files with the extensions <code>.php</code>, <code>.php4</code>,
+<code>.inc</code> or <code>.phtml</code> are treated as PHP sources.
+
 If you start using doxygen for an existing project (thus without any 
 documentation that doxygen is aware of), you can still get an idea of
 what the documented result would be. To do so, you must set 

@@ -41,11 +41,14 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-#ifdef __CYGWIN__
-      return "Shift_JIS";
-#else
-      return "euc-jp";
-#endif
+      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      {
+        return "Shift_JIS";
+      }
+      else
+      {
+        return "euc-jp";
+      }
     }
     virtual QCString trRTFansicp()
     {
@@ -66,13 +69,16 @@ class TranslatorJapanese : public Translator
  private:
   /*! The decode() can change euc into sjis */
   inline QCString decode(const QCString & sInput)
+  {
+    if (Config_getBool("USE_WINDOWS_ENCONDING"))
     {
-#ifdef __CYGWIN__
       return JapaneseEucToSjis(sInput);
-#else
-      return sInput;
-#endif
     }
+    else
+    {
+      return sInput;
+    }
+  }
   public:
     virtual QCString idLanguage()
     { return "japanese"; }
@@ -83,11 +89,14 @@ class TranslatorJapanese : public Translator
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-#ifdef __CYGWIN__
-      return "Shift_JIS";
-#else
-      return "euc-jp";
-#endif
+      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      {
+        return "Shift_JIS";
+      }
+      else
+      {
+        return "euc-jp";
+      }
     }
 
     /*! used in the compound documentation before a list of related functions. */

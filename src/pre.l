@@ -99,6 +99,7 @@ static bool               g_nospaces; // add extra spaces during macro expansion
 static bool               g_macroExpansion; // from the configuration
 static bool               g_expandOnlyPredef; // from the configuration
 static int                g_commentCount;
+static bool               g_insideComment;
 
 
 static void setFileName(const char *name)
@@ -1534,6 +1535,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
 					  outputArray(tmp.data(),tmp.length());
 					  g_quoteArg=FALSE;
+					  g_insideComment=FALSE;
 					  BEGIN(DefineText); 
   					}
 <DefName>{ID}/{B}*"\n"			{
@@ -1549,6 +1551,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    QCString tmp=(QCString)"#define "+g_defName;
 					    outputArray(tmp.data(),tmp.length());
 					    g_quoteArg=FALSE;
+					    g_insideComment=FALSE;
 					    BEGIN(DefineText);
 					  }
 					  else // define is a guard => hide
@@ -1590,6 +1593,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
 					  outputArray(tmp.data(),tmp.length());
 					  g_quoteArg=FALSE;
+					  g_insideComment=FALSE;
   					  BEGIN(DefineText);
   					}
 <DefineArg>{ID}{B}*("..."?)		{
@@ -1608,6 +1612,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineText>"/**"|"/*!"			{
   					  g_defText+=yytext;
 					  g_defLitText+=yytext;
+					  g_insideComment=TRUE;
+  					}
+<DefineText>"*/"			{
+  					  g_defText+=yytext;
+					  g_defLitText+=yytext;
+					  g_insideComment=FALSE;
   					}
 <DefineText>"/*"|"/**<"|"/*!<"		{
   					  outputArray(yytext,yyleng);
@@ -1757,13 +1767,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineText>{B}*			{ g_defText += ' '; g_defLitText+=yytext; }
 <DefineText>{B}*"##"{B}*		{ g_defText += "##"; g_defLitText+=yytext; }
 <DefineText>"@"				{ g_defText += "@@"; g_defLitText+=yytext; }
-<DefineText>\"				{ g_defText += *yytext; 
+<DefineText>\"				{ 
+                                          g_defText += *yytext; 
   					  g_defLitText+=yytext; 
-					  BEGIN(SkipDoubleQuote);
+					  if (!g_insideComment)
+					  {
+					    BEGIN(SkipDoubleQuote);
+					  }
   					}
 <DefineText>\'				{ g_defText += *yytext;
   					  g_defLitText+=yytext; 
-  					  BEGIN(SkipSingleQuote);
+					  if (!g_insideComment)
+					  {
+  					    BEGIN(SkipSingleQuote);
+					  }
 					}
 <SkipDoubleQuote>"//"			{ g_defText += yytext; g_defLitText+=yytext; }
 <SkipDoubleQuote>"/*"			{ g_defText += yytext; g_defLitText+=yytext; }

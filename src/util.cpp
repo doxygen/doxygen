@@ -2535,6 +2535,28 @@ bool resolveRef(/* in */  const char *scName,
   return FALSE;
 }
 
+QCString linkToText(const char *link)
+{
+  QCString result=link;
+  if (!result.isEmpty())
+  {
+    // replace # by ::
+    result=substitute(result,"#","::");
+    // replace . by ::
+    result=substitute(result,".","::");
+    // strip :: prefix if present
+    if (result.at(0)==':' && result.at(1)==':')
+    {
+      result=result.right(result.length()-2);
+    }
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      result=substitute(result,"::",".");
+    }
+  }
+  return result;
+}
+
 /*!
  * generate a reference to a class, namespace or member.
  * `scName' is the name of the scope that contains the documentation 
@@ -2563,17 +2585,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   MemberDef *md;
 
   // create default link text
-  QCString linkText = rt;
-  if (linkText.isEmpty())
-  {
-    linkText=substitute(name,"#","::");
-    linkText=substitute(linkText,".","::");
-    // strip :: prefix if present
-    if (linkText.at(0)==':' && linkText.at(1)==':')
-    {
-      linkText=linkText.right(linkText.length()-2);
-    }
-  }
+  QCString linkText = linkToText(rt);
 
   if (resolveRef(scName,name,inSeeBlock,&compound,&md))
   {
@@ -2699,17 +2711,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   Definition *compound;
   PageInfo *pageInfo;
-  QCString anchor,linkText=lt;
-  if (linkText.isEmpty())
-  {
-    linkText=substitute(lr,"#","::");
-    linkText=substitute(linkText,".","::");
-    // strip :: prefix if present
-    if (linkText.at(0)==':' && linkText.at(1)==':')
-    {
-      linkText=linkText.right(linkText.length()-2);
-    }
-  }
+  QCString anchor,linkText=linkToText(lt);
   //printf("generateLink linkText=%s\n",linkText.data());
   if (resolveLink(clName,lr,inSeeBlock,&compound,&pageInfo,anchor))
   {

@@ -203,6 +203,7 @@ void filterLatexString(QTextStream &t,const char *str,
                        bool insideTabbing=FALSE,bool insidePre=FALSE,
                        bool insideItem=FALSE);
 QCString rtfFormatBmkStr(const char *name);
+QCString linkToText(const char *link);
 
 #endif
 

@@ -194,6 +194,7 @@ static void initEntry()
   current->inside     = memberGroupInside.copy();
   if (!autoGroupStack.isEmpty())
   {
+    //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
     current->groups->append(new Grouping(*autoGroupStack.top()));
   }
 }
@@ -534,7 +535,7 @@ UL        [uU][lL]
 OL	  [oO][lL]
 DL	  [dD][lL]
 TITLE     [tT][iI][tT][lL][eE]
-CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 
 %option noyywrap
@@ -2594,7 +2595,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  BEGIN(SkipCPP);
 					}	
 <Function>":"				{
-  					  BEGIN(SkipInits);
+  					  if (!insidePHP) BEGIN(SkipInits);
   					}
 <Function>[;{,]				{ 
 					  current->name=current->name.simplifyWhiteSpace();

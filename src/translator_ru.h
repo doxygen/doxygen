@@ -56,11 +56,14 @@ class TranslatorRussian : public Translator
      */
     inline QCString decode(const QCString & sInput)
     { 
-#ifdef _WIN32
-      return Koi8RToWindows1251(sInput);
-#else
-      return sInput;
-#endif
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
+      {
+        return Koi8RToWindows1251(sInput);
+      }
+      else
+      {
+        return sInput;
+      }
     }
 
   public:
@@ -70,19 +73,29 @@ class TranslatorRussian : public Translator
 
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
-#ifdef _WIN32
-    { return "\\usepackage[cp1251]{inputenc}\n\\usepackage[russian]{babel}\n"; }
-#else
-    { return "\\usepackage[koi8-r]{inputenc}\n\\usepackage[russian]{babel}\n"; }
-#endif
+    {
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
+      { 
+        return "\\usepackage[cp1251]{inputenc}\n\\usepackage[russian]{babel}\n"; 
+      }
+      else
+      { 
+        return "\\usepackage[koi8-r]{inputenc}\n\\usepackage[russian]{babel}\n"; 
+      }
+    }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
-#ifdef _WIN32
-    { return "Windows-1251"; }
-#else
-    { return "koi8-r"; }
-#endif
+    {
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
+      { 
+        return "Windows-1251"; 
+      }
+      else
+      { 
+        return "koi8-r"; 
+      }
+    }
 
     // --- Language translation methods -------------------
 
