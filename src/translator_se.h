@@ -69,7 +69,7 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_3_3
+class TranslatorSwedish : public TranslatorAdapter_1_3_8
 {
   public:
 
@@ -1350,7 +1350,56 @@ class TranslatorSwedish : public TranslatorAdapter_1_3_3
       return "Här är anropnings diagrammet för den här funktionen:";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
 
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Sök efter";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Sökresultat";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Tyvärr finns det inga dokument som matchar din sökning.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Hittade <b>1</b> dokument som matchar din sökning.";
+      }
+      else 
+      {
+        return "Hittade <b>$num</b> dokument som matchar din sökning. "
+               "Visar de bästa träffarna först.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Träffar:";
+    }
 
 };
 

@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_3_3
+class TranslatorChinese : public Translator
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -1467,9 +1467,22 @@ class TranslatorChinese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trSearchMatches()
     {
-      return "Matches:";
+      /* return "Matches:"; */
       return "符合的结果:";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      /* return filename + " Source File"; */
+      return filename + CN_SPC"源文件";
+    }
+    
 };
 
 #endif

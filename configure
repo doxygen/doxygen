@@ -194,6 +194,9 @@ if test -z "$f_platform"; then
     Cygwin:*)
       f_platform=win32-g++
       ;;
+    *MiNT:*)
+      f_platform=m68k-atari-mint-g++
+      ;;
     *)
     echo
     echo "Your platform was not recognised by this configure script"
@@ -431,6 +434,13 @@ HAVE_DOT  = $f_dot
 EOF
 fi
 
+if test "$f_platform" = "m68k-atari-mint-g++"; then
+  cat >> .makeconfig <<EOF
+TMAKE += -unix
+EOF
+fi
+
+
 touch .tmakeconfig
 if test "$f_shared" = NO; then
   if test "$f_platform" = "osf1-cxx" -o "$f_platform" = "irix-n32"; then
@@ -526,8 +536,7 @@ done
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,
-		  DK,SK,UA,GR,TW,SR,CA,LT,ZA);
+	@allowed=(split(/,/,"NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA"));
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

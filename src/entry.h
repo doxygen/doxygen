@@ -289,6 +289,8 @@ class Entry
     QCString     inbodyFile;  //!< file in which the body doc was found
     QCString     relates;     //!< related class (doc block)
     bool         relatesDup;  //!< keep duplicate doc in original file also
+    QCString     read;        //!< property read accessor
+    QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
     int          bodyLine;    //!< line number of the definition in the source

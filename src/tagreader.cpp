@@ -99,6 +99,7 @@ class TagIncludeInfo
     QString name;
     QString text;
     bool isLocal;
+    bool isImported;
 };
 
 /*! Container for file specific info that can be read from a tagfile */
@@ -470,6 +471,7 @@ class TagFileParser : public QXmlDefaultHandler
         m_curIncludes->id = attrib.value("id");
         m_curIncludes->name = attrib.value("name");
         m_curIncludes->isLocal = attrib.value("local")=="yes" ? TRUE : FALSE;
+        m_curIncludes->isImported = attrib.value("imported")=="yes" ? TRUE : FALSE;
         m_curFile->includes.append(m_curIncludes);
       }
       else
@@ -1215,7 +1217,7 @@ void TagFileParser::addIncludes()
                 //        ifd->getOutputFileBase().data(),ii->id.data());
                 if (ifd->getOutputFileBase()==QCString(ii->id))
                 {
-                  fd->addIncludeDependency(ifd,ii->text,ii->isLocal);
+                  fd->addIncludeDependency(ifd,ii->text,ii->isLocal,ii->isImported);
                 }
               }
             }

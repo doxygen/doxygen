@@ -667,6 +667,48 @@ static void handleInitialStyleCommands(DocPara *parent,QList<DocNode> &children)
   }
 }
 
+static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttribList &tagHtmlAttribs)
+{
+  HtmlAttribListIterator li(tagHtmlAttribs);
+  HtmlAttrib *opt;
+  int index=0;
+  int retval = RetVal_OK;
+  for (li.toFirst();(opt=li.current());++li,++index)
+  {
+    if (opt->name=="name") // <a name=label> tag
+    {
+      if (!opt->value.isEmpty())
+      {
+        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE);
+        children.append(anc);
+        break; // stop looking for other tag attribs
+      }
+      else
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found <a> tag with name option but without value!");
+      }
+    }
+    else if (opt->name=="href") // <a href=url>..</a> tag
+    {
+      // copy attributes
+      HtmlAttribList attrList = tagHtmlAttribs;
+      // and remove the href attribute
+      bool result = attrList.remove(index);
+      ASSERT(result);
+      DocHRef *href = new DocHRef(parent,attrList,opt->value);
+      children.append(href);
+      g_insideHtmlLink=TRUE;
+      retval = href->parse();
+      g_insideHtmlLink=FALSE;
+      break;
+    }
+    else // unsupported option for tag a
+    {
+    }
+  }
+  return retval;
+}
+
 const char *DocStyleChange::styleString() const
 {
   switch (m_style)
@@ -1924,6 +1966,11 @@ endlink:
 
 //---------------------------------------------------------------------------
 
+DocDotFile::DocDotFile(DocNode *parent,const QString &name) : 
+      m_parent(parent), m_name(name), m_relPath(g_relPath)
+{
+}
+
 void DocDotFile::parse()
 {
   g_nodeStack.push(this);
@@ -2000,6 +2047,12 @@ void DocDotFile::parse()
 
 
 //---------------------------------------------------------------------------
+
+DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QString &name,Type t) : 
+      m_parent(parent), m_attribs(attribs), m_name(name), 
+      m_type(t), m_relPath(g_relPath)
+{
+}
 
 void DocImage::parse()
 {
@@ -2134,11 +2187,24 @@ int DocHtmlHeader::parse()
               }
               goto endheader;
             }
+            else if (tagId==HTML_A)
+            {
+              if (!g_token->endTag)
+              {
+                handleAHref(this,m_children,g_token->attribs);
+              }
+            }
+            else if (tagId==HTML_BR)
+            {
+              DocLineBreak *lb = new DocLineBreak(this);
+              m_children.append(lb);
+            }
             else
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected html tag <%s%s> found within <h%d> context",
                   g_token->endTag?"/":"",g_token->name.data(),m_level);
             }
+            
           }
           break;
         case TK_SYMBOL: 
@@ -4042,44 +4108,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       }
       break;
     case HTML_A:
-      {
-        HtmlAttribListIterator li(tagHtmlAttribs);
-        HtmlAttrib *opt;
-        int index=0;
-        for (li.toFirst();(opt=li.current());++li,++index)
-        {
-          if (opt->name=="name") // <a name=label> tag
-          {
-            if (!opt->value.isEmpty())
-            {
-              DocAnchor *anc = new DocAnchor(this,opt->value,TRUE);
-              m_children.append(anc);
-              break; // stop looking for other tag attribs
-            }
-            else
-            {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found <a> tag with name option but without value!");
-            }
-          }
-          else if (opt->name=="href") // <a href=url>..</a> tag
-          {
-            // copy attributes
-            HtmlAttribList attrList = tagHtmlAttribs;
-            // and remove the href attribute
-            bool result = attrList.remove(index);
-            ASSERT(result);
-            DocHRef *href = new DocHRef(this,attrList,opt->value);
-            m_children.append(href);
-            g_insideHtmlLink=TRUE;
-            retval = href->parse();
-            g_insideHtmlLink=FALSE;
-            break;
-          }
-          else // unsupported option for tag a
-          {
-          }
-        }
-      }
+      retval=handleAHref(this,m_children,tagHtmlAttribs);
       break;
     case HTML_H1:
       retval=handleHtmlHeader(tagHtmlAttribs,1);
@@ -4273,6 +4302,7 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       break;
     default:
       // we should not get here!
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected end tag %s\n",tagName.data());
       ASSERT(0);
       break;
   }

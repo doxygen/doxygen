@@ -46,6 +46,7 @@ struct IncludeInfo
   FileDef *fileDef;
   QCString includeName;
   bool local;
+  bool imported;
 };
 
 /*! \class FileDef filedef.h
@@ -140,8 +141,8 @@ class FileDef : public Definition
 
     bool generateSourceFile() const;
 
-    void addIncludeDependency(FileDef *fd,const char *incName,bool local);
-    void addIncludedByDependency(FileDef *fd,const char *incName,bool local);
+    void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported);
+    void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported);
     QList<IncludeInfo> *includeFileList() const { return includeList; }
     QList<IncludeInfo> *includedByFileList() const { return includedByList; }
 
@@ -286,7 +287,8 @@ class Directory : public DirEntry
     QList<DirEntry> m_children;
 };
 
-void generateFileTree(QTextStream &t);
+//void generateFileTree(QTextStream &t);
+void generateFileTree();
 
 #endif
 

@@ -70,6 +70,8 @@ Entry::Entry(const Entry &e)
   docFile     = e.docFile.copy();
   relates     = e.relates.copy();
   relatesDup  = e.relatesDup;
+  read        = e.read.copy();
+  write       = e.write.copy();
   brief       = e.brief.copy();
   briefLine   = e.briefLine;
   briefFile   = e.briefFile.copy();
