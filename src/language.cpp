@@ -97,6 +97,9 @@
 #ifdef LANG_GR
 #include "translator_gr.h"
 #endif
+#ifdef LANG_SR
+#include "translator_sr.h"
+#endif
 //#ifdef LANG_JS
 //#include "translator_js.h"
 //#endif
@@ -153,6 +156,10 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("japanese"))
   {
     theTranslator=new TranslatorJapanese;
+  }
+  else if (L_EQUAL("japanese-en"))
+  {
+    theTranslator=new TranslatorJapaneseEn;
   }
 #endif
 #ifdef LANG_ES
@@ -261,6 +268,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("greek"))
   {
     theTranslator=new TranslatorGreek;
+  }
+#endif
+#ifdef LANG_SR
+  else if (L_EQUAL("serbian"))
+  {
+    theTranslator=new TranslatorSerbian;
   }
 #endif
 //  else if (L_EQUAL("japanese-sjis"))

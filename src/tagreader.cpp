@@ -1159,15 +1159,19 @@ void TagFileParser::addIncludes()
   TagFileInfo *tfi = m_tagFileFiles.first();
   while (tfi)
   {
+    //printf("tag file tagName=%s path=%s name=%s\n",m_tagName.data(),tfi->path.data(),tfi->name.data());
     FileName *fn = Doxygen::inputNameDict->find(tfi->name);
     if (fn)
     {
+      //printf("found\n");
       FileNameIterator fni(*fn);
       FileDef *fd;
       for (;(fd=fni.current());++fni)
       {
+        //printf("input file path=%s name=%s\n",fd->getPath().data(),fd->name().data());
         if (fd->getPath()==QCString(m_tagName+":"+tfi->path))
         {
+          //printf("found\n");
           QListIterator<TagIncludeInfo> mii(tfi->includes);
           TagIncludeInfo *ii;
           for (;(ii=mii.current());++mii)
@@ -1212,4 +1216,5 @@ void parseTagFile(Entry *root,const char *fullName,const char *tagName)
   handler.buildLists(root);
   handler.addIncludes();
 }
+
 

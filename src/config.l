@@ -1248,9 +1248,9 @@ void Config::create()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
 		    "Brazilian, Chinese, Chinese-Traditional, Croatian, Czech, Danish, Dutch, \n"
-		    "Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean, \n"
-		    "Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Slovene, \n"
-		    "Spanish, Swedish and Ukrainian.\n",
+		    "Finnish, French, German, Greek, Hungarian, Italian, Japanese, Japanese-en \n"
+		    "(Japanese with english messages), Korean, Norwegian, Polish, Portuguese, \n"
+		    "Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish and Ukrainian.\n",
 		    "English"
                    );
 #ifdef LANG_BR
@@ -1295,6 +1295,7 @@ void Config::create()
 #endif
 #ifdef LANG_JP
   ce->addValue("Japanese");
+  ce->addValue("Japanese-en");
 #endif
 #ifdef LANG_KR
   ce->addValue("Korean");
@@ -1313,6 +1314,9 @@ void Config::create()
 #endif
 #ifdef LANG_RU
   ce->addValue("Russian");
+#endif
+#ifdef LANG_SR
+  ce->addValue("Serbian");
 #endif
 #ifdef LANG_SK
   ce->addValue("Slovak");

@@ -239,7 +239,7 @@ followed by the descriptions of the tags grouped by category.
  The default language is English, other supported languages are:
  Brazilian, Chinese, Croatian, Czech, Danish, Dutch, Finnish, French,
  German, Greek, Hungarian, Italian, Japanese, Korean, Norwegian, Polish,
- Portuguese, Romanian, Russian, Slovak, Slovene, Spanish and Swedish.
+ Portuguese, Romanian, Russian, Serbian, Slovak, Slovene, Spanish and Swedish.
 
 \anchor cfg_extract_all
 <dt>\c EXTRACT_ALL <dd>

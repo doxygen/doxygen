@@ -118,6 +118,11 @@
 #  - Some defined() operators used on hash elements were replaced
 #    by exists() operators where appropriate.
 #
+# 2002/05/21
+#  - Changes to display languages with two words more naturally 
+#    (like "Chinese Traditional" instead of "Chinesetraditional"
+#    or "Brazilian Portuguese" instead of "Brazilian").
+# 
 ################################################################
 
 use 5.005;
@@ -607,6 +612,7 @@ xxxTABLE_FOOTxxx
     my $languages =  join(", ", @languages);
     $languages =~ s{((\w+,\s){5})}{$1\n}g;
     $languages =~ s{Brazilian}{Brazilian Portuguese};
+    $languages =~ s{Chinesetraditional}{Chinese Traditional};
     $languages =~ s{(,\s+)(\w+)$}{$1and $2}s;
     
     $output =~ s{\$languages}{$languages};
@@ -692,6 +698,15 @@ xxxTABLE_FOOTxxx
     # information, and add it to the tables. #{{{
     #
     foreach my $lang (sort keys %language) {
+
+        # Transform the key for the language into more human readable
+        # form.  Basically, only languages with two words are going to be
+        # corrected. #{{{
+        #
+        my $lang_readable = $lang;
+        $lang_readable =~ s{Brazilian}{Brazilian Portuguese};
+        $lang_readable =~ s{Chinesetraditional}{Chinese Traditional};
+        ##}}}
         
         # Read the line with info for the language and separate 
         # the status. #{{{
@@ -748,7 +763,7 @@ xxxTABLE_FOOTxxx
         #
         my $item = $htmlTableRow;
         
-        $item =~ s{\$lang}{$lang};
+        $item =~ s{\$lang}{$lang_readable};
         $item =~ s{\$maintainer}{$name};
         $item =~ s{\$email}{$email};
         $item =~ s{\$status}{$status};
@@ -774,7 +789,7 @@ xxxTABLE_FOOTxxx
         $name = $1;
         $email = $2;
         
-        $item =~ s{\$lang}{$lang};
+        $item =~ s{\$lang}{$lang_readable};
         $item =~ s{\$maintainer}{$name};
         $item =~ s{\$email}{$email};
         $item =~ s{\$status}{$status};
@@ -1187,6 +1202,7 @@ print STDERR "\n\n";
     my $languages =  join(", ", @languages);
     $languages =~ s{((\w+,\s){5})}{$1\n}g;
     $languages =~ s{Brazilian}{Brazilian Portuguese};
+    $languages =~ s{Chinesetraditional}{Chinese Traditional};
     $languages =~ s{(,\s+)(\w+)$}{$1and $2.}s;
 
     print FOUT "$languages\n";

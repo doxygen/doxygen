@@ -5754,13 +5754,19 @@ static void resolveUserReferences()
         si->fileName=si->definition->getOutputFileBase().copy();
       }
     }
-    // hack: the items of a todo/test list are all fragments from different files, 
-    // so the resulting section's all have the wrong file name (not from the
-    // todo/test list, but from the file in which they are defined). We correct this
-    // here by looking at the generated section labels!
+    // hack: the items of a todo/test/bug list are all fragments from 
+    // different files, so the resulting section's all have the wrong file 
+    // name (not from the todo/test/bug list, but from the file in which they 
+    // are defined). We correct this here by looking at the generated section 
+    // labels!
     if (si->label.left(5)=="_todo" || si->label.left(5)=="_test") 
     {
       si->fileName=si->label.mid(1,4); // extract "todo" or "test"
+      si->generated=TRUE;
+    }
+    else if (si->label.left(4)=="_bug")
+    {
+      si->fileName="bug";
       si->generated=TRUE;
     }
   }
@@ -6774,11 +6780,11 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
 
-		  QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
-		  if (!setTranslator(outputLanguage))
-		  {
-			  err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
-		  }
+          QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+          if (!setTranslator(outputLanguage))
+          {
+            err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+          }
 
           QFile f;
           if (openOutputFile(argv[optind+1],f))
@@ -6820,11 +6826,11 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
 
-		  QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
-		  if (!setTranslator(outputLanguage))
-		  {
-			  err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
-		  }
+          QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+          if (!setTranslator(outputLanguage))
+          {
+            err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+          }
 
           QFile f;
           if (openOutputFile(argv[optind+1],f))
@@ -7158,7 +7164,7 @@ void parseInput()
    **************************************************************************/
 
   Entry *root=new Entry;
-  msg("Reading tag files\n");
+  msg("Reading and parsing tag files\n");
   
   QStrList &tagFileList = Config_getList("TAGFILES");
   s=tagFileList.first();

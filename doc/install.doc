@@ -397,7 +397,7 @@ Here is what is required:
     of the cygwin tools that I put together just to compile doxygen.
 
     As a third alternative one could use the GNUWin32 tools that can be
-    found at http://gnuwin32.sourceforge.net/
+    found at http://gnuwin32.sourceforge.net/ 
     
     Make sure the <code>BISONLIB</code> environment variable points to the
     location where the files <code>bison.simple</code> and 
@@ -473,6 +473,7 @@ Here is what is required:
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.
 </ul>
+
 
 Compilation is now done by performing the following steps:
 

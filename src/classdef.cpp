@@ -1189,6 +1189,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
           ol.docify(stripFromPath(path));
         }
 
+        // for HTML 
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
         if (fd->generateSourceFile())
         {
           ol.writeObjectLink(0,fd->getSourceFileBase(),0,fd->name());
@@ -1202,6 +1205,24 @@ void ClassDef::writeDocumentation(OutputList &ol)
         {
           ol.docify(fd->name());
         }
+        ol.popGeneratorState();
+
+        // for other output formats
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::Html);
+        if (fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+              fd->name());
+        }
+        else
+        {
+          ol.docify(fd->name());
+        }
+
+        ol.popGeneratorState();
+
+        
       }
       file=m_files.next();
     }

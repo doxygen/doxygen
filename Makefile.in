@@ -48,7 +48,7 @@ install: doxywizard_install
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxysearch $(INSTALL)/bin
 
-install_docs:
+install_docs: install
 	$(INSTTOOL) -d $(DOCDIR)
 	cp -r doc $(DOCDIR)
 	cp -r examples $(DOCDIR)
@@ -62,15 +62,11 @@ install_docs:
 	rm -rf $(DOCDIR)/doc
 	cd $(DOCDIR)/latex ; $(MAKE)
 	cp $(DOCDIR)/latex/doxygen_manual.pdf $(DOCDIR)
-	cp $(DOCDIR)/latex/doxygen_manual.ps  $(DOCDIR)
 	rm -rf $(DOCDIR)/latex
 
 docs: FORCE
 	cd examples ; $(MAKE)
 	cd doc ; $(MAKE)
-
-ps: docs
-	cd latex ; $(MAKE)
 
 pdf: docs
 	cd latex ; $(MAKE)

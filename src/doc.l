@@ -966,6 +966,13 @@ static void checkArgName(const QCString &name,bool isParam)
 
 /* ----------------------------------------------------------------- */
 
+/*! Looks for a documentation block with name commandName in the current
+ *  context (copyDocScope). The resulting documentation string is
+ *  put in pDoc, the definition in which the documentation was found is
+ *  put in pDef.
+ *  @retval TRUE if name was found.
+ *  @retval FALSE if name was not found.
+ */
 bool findDocsForMemberOrCompound(const char *commandName,
                                  QCString *pDoc,
                                  Definition **pDef)
@@ -976,53 +983,40 @@ bool findDocsForMemberOrCompound(const char *commandName,
   int l=cmdArg.length();
   if (l==0) return FALSE;
 
+  int funcStart=cmdArg.find('(');
+  if (funcStart==-1) funcStart=l;
+  //int lastScopeStart=cmdArg.findRev("::",funcStart);
+  //int lastScopeEnd = lastScopeStart==-1 ? 0 : lastScopeStart+2;
+  //QCString scope=cmdArg.left(QMAX(lastScopeStart,0));
+  //QCString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
+  QCString name=cmdArg.left(funcStart);
+  QCString args=cmdArg.right(l-funcStart);
+
+  // try if the link is to a member
+  MemberDef    *md=0;
+  ClassDef     *cd=0;
+  FileDef      *fd=0;
+  NamespaceDef *nd=0;
+  GroupDef     *gd=0;
+  PageInfo     *pi=0;
+  bool found = getDefs(copyDocScope,name,args,md,cd,fd,nd,gd,FALSE,0,TRUE);
+  if (found && md)
+  {
+    *pDoc=md->documentation();
+    *pDef=md;
+    return TRUE;
+  }
+
+
   int scopeOffset=copyDocScope.length();
   do // for each scope
   {
-    int funcStart=cmdArg.find('(');
-    if (funcStart==-1) funcStart=l;
-    int lastScopeStart=cmdArg.findRev("::",funcStart);
-    int lastScopeEnd = lastScopeStart==-1 ? 0 : lastScopeStart+2;
-    QCString scope=cmdArg.left(QMAX(lastScopeStart,0));
-    QCString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
-    QCString args=cmdArg.right(l-funcStart);
-
-    if (scope.isEmpty())
-    {
-      if (scopeOffset>0)
-      {
-        scope=copyDocScope.left(scopeOffset);
-      }
-    }
-    else
-    {
-      if (scopeOffset>0)
-      {
-	scope.prepend(copyDocScope.left(scopeOffset)+"::");
-      }
-    }
-    //printf("findDocsForMemberOrCompound: scope=`%s' name=`%s' arg=`%s'\n",scope.data(),name.data(),args.data());
-
-    // try if the link is to a member
-    MemberDef    *md=0;
-    ClassDef     *cd=0;
-    FileDef      *fd=0;
-    NamespaceDef *nd=0;
-    GroupDef     *gd=0;
-    PageInfo     *pi=0;
-    bool found = getDefs(scope,name,args,md,cd,fd,nd,gd,FALSE,0,TRUE);
-    if (found && md)
-    {
-      *pDoc=md->documentation();
-      *pDef=md;
-      return TRUE;
-    }
-
     QCString fullName=cmdArg;
     if (scopeOffset>0)
     {
       fullName.prepend(copyDocScope.left(scopeOffset)+"::");
     }
+    //printf("Trying fullName=`%s'\n",fullName.data());
 
     // try class, namespace, group, page, file reference
     cd = Doxygen::classSDict[fullName];
@@ -1071,7 +1065,7 @@ bool findDocsForMemberOrCompound(const char *commandName,
       scopeOffset = copyDocScope.findRev("::",scopeOffset-1);
       if (scopeOffset==-1) scopeOffset=0;
     }
-  } while (scopeOffset>0);
+  } while (scopeOffset>=0);
 
   
   return FALSE;
@@ -1108,8 +1102,8 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=\(\)]
-URLMASK   ([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+)
+URLCHAR   [a-z_A-Z0-9\!\~\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
+URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))("("{URLCHAR}*")")?
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9\x80-\xff]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]*"\"")
 ATTR      ({B}+[^>\n]*)?
@@ -2983,9 +2977,13 @@ void resolveCopyDocCommands(const char *scope,QCString &docString)
 void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
               const char *clName,MemberDef *md,const QCString &docStr)
 {
+  strcpy(yyFileName,fileName);
+  yyLineNr = startLine;
+
   QCString docString=docStr;
   resolveCopyDocCommands(clName,docString);
   
+  yyLineNr = startLine;
   //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
   initParser();
   initParseCodeContext();
@@ -2995,8 +2993,6 @@ void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
   hasParamCommand = FALSE;
   paramsFound.setAutoDelete(FALSE);
   paramsFound.clear();
-  strcpy(yyFileName,fileName);
-  yyLineNr = startLine;
   parseDocument(od,docString);
 
   if (md && hasParamCommand && Config_getBool("WARN_IF_UNDOCUMENTED"))
