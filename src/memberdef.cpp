@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1113,7 +1113,17 @@ bool MemberDef::isDetailedSectionLinkable() const
   //
   bool inAnonymousScope = !briefDescription().isEmpty() && annUsed;
 
-  return ((docFilter && staticFilter && privateFilter) || inAnonymousScope);
+  // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
+  // is true
+  bool friendCompoundFilter = !(Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+                                isFriend() &&
+                                (type=="friend class" || 
+                                  type=="friend struct" ||
+                                  type=="friend union"
+                                )
+                               );
+  
+  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter) || inAnonymousScope);
 }
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup) const          

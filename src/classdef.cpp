@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -42,8 +42,9 @@
 ClassDef::ClassDef(
     const char *defFileName,int defLine,
     const char *nm,CompoundType ct,
-    const char *lref,const char *fName) 
- : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm)) 
+    const char *lref,const char *fName,
+    bool isSymbol) 
+ : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm),0,0,isSymbol) 
 {
   m_compType=ct;
   QCString compoundName=compoundTypeString();
@@ -219,12 +220,18 @@ void ClassDef::internalInsertMember(MemberDef *md,
     if (md->isRelated() && 
         (Config_getBool("EXTRACT_PRIVATE") || prot!=Private))
     {
-      related.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        related.inSort(md);
+      else
+        related.append(md);
       md->setSectionList(this,&related);
     }
     else if (md->isFriend())
     {
-      friends.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        friends.inSort(md);
+      else
+        friends.append(md);
       md->setSectionList(this,&friends);
     }
     else
@@ -232,19 +239,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
       switch (md->memberType())
       {
         case MemberDef::Signal: // Qt specific
-          signals.append(md);
+          if (Config_getBool("SORT_BRIEF_DOCS"))
+            signals.inSort(md);
+          else
+            signals.append(md);
           md->setSectionList(this,&signals);
           break;
         case MemberDef::DCOP:   // KDE2 specific
-          dcopMethods.append(md);
+          if (Config_getBool("SORT_BRIEF_DOCS"))
+            dcopMethods.inSort(md);
+          else
+            dcopMethods.append(md);
           md->setSectionList(this,&dcopMethods);
           break;
         case MemberDef::Property:
-          properties.append(md);
+          if (Config_getBool("SORT_BRIEF_DOCS"))
+            properties.inSort(md);
+          else
+            properties.append(md);
           md->setSectionList(this,&properties);
           break;
         case MemberDef::Event:
-          events.append(md);
+          if (Config_getBool("SORT_BRIEF_DOCS"))
+            events.inSort(md);
+          else
+            events.append(md);
           md->setSectionList(this,&events);
           break;
         case MemberDef::Slot:   // Qt specific
@@ -252,16 +271,25 @@ void ClassDef::internalInsertMember(MemberDef *md,
           {
             case Protected: 
             case Package: // slots in packages are not possible!
-              proSlots.append(md); 
+              if (Config_getBool("SORT_BRIEF_DOCS"))
+                proSlots.inSort(md);
+              else
+                proSlots.append(md); 
               md->setSectionList(this,&proSlots);
               break;
               break;
             case Public:    
-              pubSlots.append(md); 
+              if (Config_getBool("SORT_BRIEF_DOCS"))
+                pubSlots.inSort(md);
+              else
+                pubSlots.append(md); 
               md->setSectionList(this,&pubSlots);
               break;
             case Private:   
-              priSlots.append(md);
+              if (Config_getBool("SORT_BRIEF_DOCS"))
+                priSlots.inSort(md);
+              else
+                priSlots.append(md);
               md->setSectionList(this,&priSlots);
               break;
           }
@@ -274,19 +302,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proStaticAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    proStaticAttribs.inSort(md);
+                  else
+                    proStaticAttribs.append(md); 
                   md->setSectionList(this,&proStaticAttribs);
                   break;
                 case Package: 
-                  pacStaticAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pacStaticAttribs.inSort(md);
+                  else
+                    pacStaticAttribs.append(md); 
                   md->setSectionList(this,&pacStaticAttribs);
                   break;
                 case Public:    
-                  pubStaticAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pubStaticAttribs.inSort(md);
+                  else
+                    pubStaticAttribs.append(md); 
                   md->setSectionList(this,&pubStaticAttribs);
                   break;
                 case Private:   
-                  priStaticAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    priStaticAttribs.inSort(md);
+                  else
+                    priStaticAttribs.append(md); 
                   md->setSectionList(this,&priStaticAttribs);
                   break;
               }
@@ -296,19 +336,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proStaticMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    proStaticMethods.inSort(md);
+                  else
+                    proStaticMethods.append(md); 
                   md->setSectionList(this,&proStaticMethods);
                   break;
                 case Package: 
-                  pacStaticMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pacStaticMethods.inSort(md);
+                  else
+                    pacStaticMethods.append(md); 
                   md->setSectionList(this,&pacStaticMethods);
                   break;
                 case Public:    
-                  pubStaticMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pubStaticMethods.inSort(md);
+                  else
+                    pubStaticMethods.append(md); 
                   md->setSectionList(this,&pubStaticMethods);
                   break;
                 case Private:   
-                  priStaticMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    priStaticMethods.inSort(md);
+                  else
+                    priStaticMethods.append(md); 
                   md->setSectionList(this,&priStaticMethods);
                   break;
               }
@@ -321,19 +373,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    proAttribs.inSort(md);
+                  else
+                    proAttribs.append(md); 
                   md->setSectionList(this,&proAttribs);
                   break;
                 case Package:
-                  pacAttribs.append(md);
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pacAttribs.inSort(md);
+                  else
+                    pacAttribs.append(md);
                   md->setSectionList(this,&pacAttribs);
                   break;
                 case Public:    
-                  pubAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pubAttribs.inSort(md);
+                  else
+                    pubAttribs.append(md); 
                   md->setSectionList(this,&pubAttribs);
                   break;
                 case Private:   
-                  priAttribs.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    priAttribs.inSort(md);
+                  else
+                    priAttribs.append(md); 
                   md->setSectionList(this,&priAttribs);
                   break;
               }
@@ -343,19 +407,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proTypes.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    proTypes.inSort(md);
+                  else
+                    proTypes.append(md); 
                   md->setSectionList(this,&proTypes); 
                   break;
                 case Package: 
-                  pacTypes.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pacTypes.inSort(md);
+                  else
+                    pacTypes.append(md); 
                   md->setSectionList(this,&pacTypes); 
                   break;
                 case Public:    
-                  pubTypes.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pubTypes.inSort(md);
+                  else
+                    pubTypes.append(md); 
                   md->setSectionList(this,&pubTypes); 
                   break;
                 case Private:   
-                  priTypes.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    priTypes.inSort(md);
+                  else
+                    priTypes.append(md); 
                   md->setSectionList(this,&priTypes); 
                   break;
               }
@@ -365,19 +441,31 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  proMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    proMethods.inSort(md);
+                  else
+                    proMethods.append(md); 
                   md->setSectionList(this,&proMethods); 
                   break;
                 case Package: 
-                  pacMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pacMethods.inSort(md);
+                  else
+                    pacMethods.append(md); 
                   md->setSectionList(this,&pacMethods); 
                   break;
                 case Public:    
-                  pubMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    pubMethods.inSort(md);
+                  else
+                    pubMethods.append(md); 
                   md->setSectionList(this,&pubMethods); 
                   break;
                 case Private:   
-                  priMethods.append(md); 
+                  if (Config_getBool("SORT_BRIEF_DOCS"))
+                    priMethods.inSort(md);
+                  else
+                    priMethods.append(md); 
                   md->setSectionList(this,&priMethods); 
                   break;
               }
@@ -509,7 +597,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
     m_isAbstract=TRUE;
   }
 
-  if (addToAllList)
+  if (addToAllList && 
+      !(Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+        md->isFriend() &&
+        (QCString(md->typeString())=="friend class" || 
+         QCString(md->typeString())=="friend struct" ||
+         QCString(md->typeString())=="friend union")))
   {
     //printf("=======> adding member %s to class %s\n",md->name().data(),name().data());
     MemberInfo *mi = new MemberInfo((MemberDef *)md,

@@ -3,14 +3,10 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Doxygen"=.\Doxygen.dsp - Package Owner=<4>
+Project: "Doxygen"=".\Doxygen.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    Doxygen
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -19,45 +15,19 @@ Package=<4>
     Project_Dep_Name libpng
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name zlib.dsp
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name zlib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name Doxysearch
+    Project_Dep_Name qtools
     End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "Doxysearch"=.\Doxysearch.dsp - Package Owner=<4>
+Project: "Doxytag"=".\Doxytag.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    Doxysearch
-    .
-    end source code control
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Doxytag
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "Doxytag"=.\Doxytag.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    Doxytag
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -69,14 +39,10 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libpng"=.\libpng.dsp - Package Owner=<4>
+Project: "libpng"=".\libpng.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    libpng
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -85,14 +51,10 @@ Package=<4>
 
 ###############################################################################
 
-Project: "qtools"=.\qtools.dsp - Package Owner=<4>
+Project: "qtools"=".\qtools.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    qtools
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -101,14 +63,10 @@ Package=<4>
 
 ###############################################################################
 
-Project: "zlib"=.\zlib.dsp - Package Owner=<4>
+Project: "zlib"=".\zlib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    zlib
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -121,10 +79,6 @@ Global:
 
 Package=<5>
 {{{
-    begin source code control
-    Doxygen
-    .
-    end source code control
 }}}
 
 Package=<3>

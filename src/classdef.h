@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -305,7 +305,8 @@ class ClassDef : public Definition
      */
     ClassDef(const char *fileName,int startLine,
              const char *name,CompoundType ct,
-             const char *ref=0,const char *fName=0);
+             const char *ref=0,const char *fName=0,
+             bool isSymbol=TRUE);
     /*! Destroys a compound definition. */
    ~ClassDef();
 

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -132,7 +132,7 @@ void GroupDef::findSectionsInDocumentation()
 
 void GroupDef::addFile(const FileDef *def)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_BRIEF_DOCS"))
     fileList->inSort(def);
   else
     fileList->append(def);
@@ -140,7 +140,7 @@ void GroupDef::addFile(const FileDef *def)
 
 void GroupDef::addClass(const ClassDef *cd)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_BRIEF_DOCS"))
     classSDict->inSort(cd->name(),cd);
   else
     classSDict->append(cd->name(),cd);
@@ -148,7 +148,7 @@ void GroupDef::addClass(const ClassDef *cd)
 
 void GroupDef::addNamespace(const NamespaceDef *def)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_BRIEF_DOCS"))
     namespaceList->inSort(def);  
   else
     namespaceList->append(def);
@@ -234,28 +234,52 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      if (!docOnly) decVarMembers.append(md); 
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decVarMembers.inSort(md);
+        else
+          decVarMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docVarMembers.inSort(md); 
       else
         docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (!docOnly) decFuncMembers.append(md);
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decFuncMembers.inSort(md);
+        else
+          decFuncMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))    
         docFuncMembers.inSort(md); 
       else
         docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (!docOnly) decTypedefMembers.append(md);
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decTypedefMembers.inSort(md);
+        else
+          decTypedefMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docTypedefMembers.inSort(md); 
       else
         docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (!docOnly) decEnumMembers.append(md);
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decEnumMembers.inSort(md);
+        else
+          decEnumMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docEnumMembers.inSort(md); 
       else
@@ -264,14 +288,26 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
     case MemberDef::EnumValue:    
       break;
     case MemberDef::Prototype:    
-      if (!docOnly) decProtoMembers.append(md);
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decProtoMembers.inSort(md);
+        else
+          decProtoMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docProtoMembers.inSort(md); 
       else
         docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (!docOnly) decDefineMembers.append(md);
+      if (!docOnly)
+      {
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decDefineMembers.inSort(md);
+        else
+          decDefineMembers.append(md);
+      }
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docDefineMembers.inSort(md); 
       else
@@ -533,7 +569,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
     while (gd)
     {
       ol.startMemberItem(0);
-      //ol.insertMemberAlign();
+      ol.docify(theTranslator->trGroup(FALSE,TRUE));
+      ol.insertMemberAlign();
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
       if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -74,7 +74,8 @@ static void removeFromMap(Definition *d)
 }
 
 Definition::Definition(const char *df,int dl,
-                       const char *name,const char *b,const char *d)
+                       const char *name,const char *b,
+                       const char *d,bool isSymbol)
 {
   //QCString ns;
   m_defFileName = df;
@@ -108,12 +109,13 @@ Definition::Definition(const char *df,int dl,
   m_briefFile=(QCString)"<"+name+">";
   m_docLine=1;
   m_docFile=(QCString)"<"+name+">";
-  addToMap(name,this);
+  m_isSymbol = isSymbol;
+  if (m_isSymbol) addToMap(name,this);
 }
 
 Definition::~Definition()
 {
-  removeFromMap(this);
+  if (m_isSymbol) removeFromMap(this);
   delete m_sectionDict;
   delete m_sourceRefByDict;
   delete m_sourceRefsDict;

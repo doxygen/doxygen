@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1034,7 +1034,8 @@ ClassDef *getResolvedClass(Definition *scope,
                            FileDef *fileScope,
                            const char *n,
                            MemberDef **pTypeDef,
-                           QCString *pTemplSpec
+                           QCString *pTemplSpec,
+                           bool mayBeUnlinkable
                           )
 {
   g_resolvedTypedefs.clear();
@@ -1049,7 +1050,10 @@ ClassDef *getResolvedClass(Definition *scope,
   //printf("-------- start\n");
   //printf("getResolvedClass(%s,%s)\n",scope?scope->name().data():"<global>",n);
   ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
-  if (result && !result->isLinkable()) result=0; // don't link to artifical classes
+  if (!mayBeUnlinkable && result && !result->isLinkable()) 
+  {
+    result=0; // don't link to artifical/hidden classes
+  }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
   //
@@ -1616,11 +1620,20 @@ QCString yearToString()
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 {
   if (cd==bcd) return level; 
+  if (level==256)
+  {
+    err("Error: Internal inconsistency: found class %s seem to have a recursive "
+        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
+    return -1;
+  }
   BaseClassListIterator bcli(*cd->baseClasses());
   int m=maxInheritanceDepth; 
   for ( ; bcli.current() ; ++bcli)
   {
-    m=QMIN(minClassDistance(bcli.current()->classDef,bcd,level+1),m);
+    //printf("class %s base class %s\n",cd->name().data(),bcli.current()->classDef->name().data());
+    int mc=minClassDistance(bcli.current()->classDef,bcd,level+1);
+    if (mc<m) m=mc;
+    if (m<0) break;
   }
   return m;
 }
@@ -2575,14 +2588,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //printf("  >Searching for arbitrary member\n");
           for (mmli.toFirst();(mmd=mmli.current());++mmli)
           {
-            if (//(mmd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
-                //(
-                //mmd->hasDocumentation() 
-                /*mmd->detailsAreVisible()*/
-                //|| mmd->isReference()
-                //)
-                mmd->isLinkable()
-               )
+            if (mmd->isLinkable())
             {
               ClassDef *mcd=mmd->getClassDef();
               //printf("  >Class %s found\n",mcd->name().data());

@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -129,6 +129,9 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
                                       public IBaseHandler
 {
   public:
+    typedef typename ElementMapper<T>::StartElementHandlerT StartElementHandlerT;
+    typedef typename ElementMapper<T>::EndElementHandlerT EndElementHandlerT;
+
     BaseHandler() : m_delegateHandler(0), m_fallBackHandler(0)
     {
     }
@@ -285,12 +288,16 @@ template<class T> class BaseFallBackHandler : public ElementMapper<T>,
                                               public IFallBackHandler
 {
   public:
+    typedef typename ElementMapper<T>::StartElementHandlerT StartElementHandlerT;
+    typedef typename ElementMapper<T>::EndElementHandlerT EndElementHandlerT;
+
     BaseFallBackHandler() 
     {
     }
     virtual ~BaseFallBackHandler()
     {
     }
+    
     bool handleStartElement(const QString & name, 
                                     const QXmlAttributes & attrib)
     {

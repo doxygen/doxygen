@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -539,33 +539,46 @@ void FileDef::insertMember(MemberDef *md)
 {
   //printf("%s:FileDef::insertMember(%s)\n",name().data(),md->name().data());
   allMemberList.append(md); 
+  bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   switch(md->memberType())
   {
     case MemberDef::Variable:     
     case MemberDef::Property:     
-      decVarMembers.append(md);
+      if (sortBriefDocs)
+        decVarMembers.inSort(md);
+      else
+        decVarMembers.append(md);
       if (sortMemberDocs)
         docVarMembers.inSort(md); 
       else
         docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      decFuncMembers.append(md);
+      if (sortBriefDocs)
+        decFuncMembers.inSort(md);
+      else
+        decFuncMembers.append(md);
       if (sortMemberDocs)    
         docFuncMembers.inSort(md); 
       else
         docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      decTypedefMembers.append(md);
+      if (sortBriefDocs)
+        decTypedefMembers.inSort(md);
+      else
+        decTypedefMembers.append(md);
       if (sortMemberDocs)
         docTypedefMembers.inSort(md); 
       else
         docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      decEnumMembers.append(md);
+      if (sortBriefDocs)
+        decEnumMembers.inSort(md);
+      else
+        decEnumMembers.append(md);
       if (sortMemberDocs)
         docEnumMembers.inSort(md); 
       else
@@ -574,14 +587,20 @@ void FileDef::insertMember(MemberDef *md)
     case MemberDef::EnumValue:    // enum values are shown inside their enums
       break;
     case MemberDef::Prototype:    
-      decProtoMembers.append(md);
+      if (sortBriefDocs)
+        decProtoMembers.inSort(md);
+      else
+        decProtoMembers.append(md);
       if (sortMemberDocs)
         docProtoMembers.inSort(md); 
       else
         docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      decDefineMembers.append(md);
+      if (sortBriefDocs)
+        decDefineMembers.inSort(md);
+      else
+        decDefineMembers.append(md);
       if (sortMemberDocs)
         docDefineMembers.inSort(md); 
       else
@@ -600,7 +619,7 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_BRIEF_DOCS"))
     classSDict->inSort(cd->name(),cd);
   else
     classSDict->append(cd->name(),cd);
@@ -611,7 +630,7 @@ void FileDef::insertNamespace(NamespaceDef *nd)
 {
   if (!nd->name().isEmpty() && namespaceSDict->find(nd->name())==0)
   {
-    if (Config_getBool("SORT_MEMBER_DOCS"))
+    if (Config_getBool("SORT_BRIEF_DOCS"))
       namespaceSDict->inSort(nd->name(),nd);
     else
       namespaceSDict->append(nd->name(),nd);

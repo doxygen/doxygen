@@ -122,6 +122,14 @@
 #  - Changes to display languages with two words more naturally 
 #    (like "Chinese Traditional" instead of "Chinesetraditional"
 #    or "Brazilian Portuguese" instead of "Brazilian").
+#
+# ATTENTION! Development of this script is stopped. Only the errors
+# are going to be fixed. Look for the translator.py as the replacement. 
+#
+# 2003/12/18
+#  - Fixed the bug for maintainers with name starting with special 
+#    character (like &Aacute;).
+#  - The &Aacute; translation to LaTeX.
 # 
 ################################################################
 
@@ -648,7 +656,7 @@ xxxTABLE_FOOTxxx
     # Join the information for one language into one line,
     # and remove empty lines.
     #
-    $maintainers =~ s{\b\n\b}{<sep/>}sg;
+    $maintainers =~ s{\b\n(\S)}{<sep/>$1}sg;
     $maintainers =~ s{\n{2,}}{\n}sg;    
     $maintainers =~ s{^\n+}{}s;
     $maintainers =~ s{\n+$}{}s;
@@ -719,6 +727,11 @@ xxxTABLE_FOOTxxx
         if ($i == 0) { 
             $i = $status =~ s{^TranslatorAdapter_(\d)_(\d)_(\d)}
                              {$1.$2.$3}x;
+        }
+        
+        if ($i == 0) { 
+            $i = $status =~ s{^TranslatorAdapter_(\d)_(\d)}
+                             {$1.$2}x;
         }
         
         if ($i == 0) { 
@@ -831,6 +844,7 @@ xxxTABLE_FOOTxxx
     $tableHTML =~ s{&rcaron;}{&#x0159;}sg; 
     
     $tableLATEX =~ s/&aacute;/\\'{a}/sg;
+    $tableLATEX =~ s/&Aacute;/\\'{A}/sg;
     $tableLATEX =~ s/&auml;/\\"{a}/sg;
     $tableLATEX =~ s/&ouml;/\\"{o}/sg;
     $tableLATEX =~ s/&oslash;/\\o{}/sg;

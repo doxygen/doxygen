@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -138,7 +138,8 @@ ClassDef *getResolvedClass(Definition *scope,
                            FileDef *fileScope,
                            const char *key,
                            MemberDef **pTypeDef=0,
-                           QCString *pTemplSpec=0);
+                           QCString *pTemplSpec=0,
+                           bool mayBeUnlinkable=FALSE);
 NamespaceDef *getResolvedNamespace(const char *key);
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);

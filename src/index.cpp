@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1629,11 +1629,15 @@ void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter
     while (md && !found)
     {
       ClassDef *cd;
+      bool isFriendToHide = Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+                            (QCString(md->typeString())=="friend class" || 
+                             QCString(md->typeString())=="friend struct" ||
+                             QCString(md->typeString())=="friend union");
       if (
            md->isLinkableInProject() &&
            (cd=md->getClassDef()) &&
            cd->isLinkableInProject() && cd->templateMaster()==0 &&
-           ( filter==CMHL_All ||
+           ( filter==CMHL_All        && !(md->isFriend() && isFriendToHide) ||
             (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
             (filter==CMHL_Variables  && md->isVariable())  ||
             (filter==CMHL_Typedefs   && md->isTypedef())   ||
@@ -1641,7 +1645,7 @@ void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter
             (filter==CMHL_EnumValues && md->isEnumValue()) ||
             (filter==CMHL_Properties && md->isProperty())  ||
             (filter==CMHL_Events     && md->isEvent())     ||
-            (filter==CMHL_Related    && (md->isRelated() || md->isFriend()))
+            (filter==CMHL_Related    && (md->isRelated() || (md->isFriend() && !isFriendToHide)))
            )
          ) 
       { 
@@ -1722,11 +1726,15 @@ int countClassMembers(int filter)
     ClassDef *cd;
     while (md && !found)
     {
+      bool isFriendToHide = Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+                            (QCString(md->typeString())=="friend class" || 
+                             QCString(md->typeString())=="friend struct" ||
+                             QCString(md->typeString())=="friend union");
       if (
           md->isLinkableInProject() && 
           (cd=md->getClassDef()) && 
           cd->isLinkableInProject() &&
-          ( filter==CMHL_All ||
+          ( filter==CMHL_All        && !(md->isFriend() && isFriendToHide) ||
            (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
            (filter==CMHL_Variables  && md->isVariable())  ||
            (filter==CMHL_Typedefs   && md->isTypedef())   ||
@@ -1734,7 +1742,7 @@ int countClassMembers(int filter)
            (filter==CMHL_EnumValues && md->isEnumValue()) ||
            (filter==CMHL_Properties && md->isProperty())  ||
            (filter==CMHL_Events     && md->isEvent())     ||
-           (filter==CMHL_Related    && (md->isRelated() || md->isFriend()))
+           (filter==CMHL_Related    && (md->isRelated() || (md->isFriend() && !isFriendToHide)))
           )
          )
       {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -239,6 +239,44 @@ static FILE *findFile(const char *fileName,bool localInclude)
   return 0;
 }
 
+static QCString extractTrailingComment(const char *s)
+{
+  if (s==0) return "";
+  int i=strlen(s)-1;
+  while (i>=0)
+  {
+    char c=s[i];
+    switch (c)
+    {
+      case '/':
+	{
+	  i--;
+	  if (i>=0 && s[i]=='*') // end of a comment block
+	  {
+	    i--;
+	    while (i>0 && !(s[i-1]=='/' && s[i]=='*')) i--;
+	    if (i==0) return s; else return &s[i-1];
+	  }
+	  else
+	  {
+	    return "";
+	  }
+	} 
+	break;
+	// whitespace or line-continuation
+      case ' ':
+      case '\t': 
+      case '\r':
+      case '\n':
+      case '\\':
+	break;
+      default:
+	return "";
+    }
+    i--;
+  }
+  return "";
+}
 
 static int getNextChar(const QCString &expr,QCString *rest,uint &pos);
 static int getCurrentChar(const QCString &expr,QCString *rest,uint pos);
@@ -1819,6 +1857,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <DefineText>\n				{
 					  g_defLitText+=yytext;
+					  QCString comment=extractTrailingComment(g_defLitText);
+					  if (!comment.isEmpty())
+					  {
+					    outputArray(comment,comment.length());
+					  }
   					  outputChar('\n');
   					  Define *def=0;
 					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());

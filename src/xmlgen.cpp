@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -67,20 +67,28 @@ inline void writeXMLString(QTextStream &t,const char *s)
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(QTextStream &t,const char *s)
+inline void writeXMLCodeString(QTextStream &t,const char *s, int &col)
 {
   char c;
   while ((c=*s++))
   {
     switch(c)
     {
-      case ' ':  t << "<sp/>";  break;
-      case '<':  t << "&lt;";   break;
-      case '>':  t << "&gt;";   break;
-      case '&':  t << "&amp;";  break;
-      case '\'': t << "&apos;"; break; 
-      case '"':  t << "&quot;"; break;
-      default:   t << c;        break;         
+      case '\t': 
+      { 
+	int spacesToNextTabStop = 
+          Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE")); 
+	col+=spacesToNextTabStop;
+	while (spacesToNextTabStop--) t << "<sp/>";
+	break;
+	}
+      case ' ':  t << "<sp/>"; col++;  break;
+      case '<':  t << "&lt;"; col++;   break;
+      case '>':  t << "&gt;"; col++;   break;
+      case '&':  t << "&amp;"; col++;  break;
+      case '\'': t << "&apos;"; col++; break; 
+      case '"':  t << "&quot;"; col++; break;
+      default:   t << c; col++;        break;         
     }
   } 
 }
@@ -231,7 +239,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
         m_t << "<highlight class=\"normal\">";
         m_normalHLNeedStartTag=FALSE;
       }
-      writeXMLCodeString(m_t,text);
+      writeXMLCodeString(m_t,text,col);
     }
     void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *name) 
@@ -243,6 +251,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
         m_normalHLNeedStartTag=FALSE;
       }
       writeXMLLink(m_t,ref,file,anchor,name);
+      col+=strlen(name);
     }
     void startCodeLine() 
     {
@@ -270,6 +279,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
       }
       m_t << ">"; 
       m_insideCodeLine=TRUE;
+      col=0;
     }
     void endCodeLine() 
     {
@@ -347,6 +357,7 @@ class XMLCodeGenerator : public BaseCodeDocInterface
     QCString m_external;
     int m_lineNumber;
     bool m_isMemberRef;
+    int col;
 
     bool m_insideCodeLine;
     bool m_normalHLNeedStartTag;
@@ -1365,8 +1376,12 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     PageDef *pd;
     for (pli.toFirst();(pd=pli.current());++pli)
     {
-      t << "    <innerpage refid=\"" << pd->getOutputFileBase()
-        << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
+      t << "    <innerpage refid=\"" << pd->getOutputFileBase();
+      if (pd->getGroupDef())
+      {
+        t << "_" << pd->name();
+      }
+      t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
     }
   }
 
@@ -1409,19 +1424,25 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   ti << "  </compound>" << endl;
 }
 
-static void generateXMLForPage(PageDef *pd,QTextStream &ti)
+static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
 {
   // + name
   // + title
   // + documentation
 
+  const char *kindName = isExample ? "example" : "page";
+
   if (pd->isReference()) return;
   
   QCString pageName = pd->getOutputFileBase();
+  if (pd->getGroupDef())
+  {
+    pageName+=(QCString)"_"+pd->name();
+  }
   if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
   
   ti << "  <compound refid=\"" << pageName
-     << "\" kind=\"page\"><name>" << convertToXML(pd->name()) 
+     << "\" kind=\"" << kindName << "\"><name>" << convertToXML(pd->name()) 
      << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("XML_OUTPUT");
@@ -1437,7 +1458,7 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti)
   t.setEncoding(QTextStream::Latin1);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
-  t << "\" kind=\"page\">" << endl;
+  t << "\" kind=\"" << kindName << "\">" << endl;
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
   SectionInfo *si = Doxygen::sectionDict.find(pd->name());
@@ -1446,8 +1467,10 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti)
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
   }
   t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,pd->documentation());
+  writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
+      pd->documentation()+"\n\\include "+pd->name());
   t << "    </detaileddescription>" << endl;
+
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
@@ -1573,17 +1596,28 @@ void generateXML()
     msg("Generating XML output for group %s\n",gd->name().data());
     generateXMLForGroup(gd,t);
   }
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    msg("Generating XML output for page %s\n",pd->name().data());
-    generateXMLForPage(pd,t);
+    PageSDict::Iterator pdi(*Doxygen::pageSDict);
+    PageDef *pd=0;
+    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      msg("Generating XML output for page %s\n",pd->name().data());
+      generateXMLForPage(pd,t,FALSE);
+    }
+  }
+  {
+    PageSDict::Iterator pdi(*Doxygen::exampleSDict);
+    PageDef *pd=0;
+    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      msg("Generating XML output for example %s\n",pd->name().data());
+      generateXMLForPage(pd,t,TRUE);
+    }
   }
   if (Doxygen::mainPage)
   {
     msg("Generating XML output for the main page\n");
-    generateXMLForPage(Doxygen::mainPage,t);
+    generateXMLForPage(Doxygen::mainPage,t,FALSE);
   }
 
   //t << "  </compoundlist>" << endl;

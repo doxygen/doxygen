@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -109,7 +109,7 @@ void NamespaceDef::insertClass(ClassDef *cd)
 {
   if (classSDict->find(cd->name())==0)
   {
-    if (Config_getBool("SORT_MEMBER_DOCS"))
+    if (Config_getBool("SORT_BRIEF_DOCS"))
       classSDict->inSort(cd->name(),cd);
     else
       classSDict->append(cd->name(),cd);
@@ -145,28 +145,40 @@ void NamespaceDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      decVarMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decVarMembers.inSort(md);
+      else
+        decVarMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docVarMembers.inSort(md); 
       else
         docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      decFuncMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decFuncMembers.inSort(md);
+      else
+        decFuncMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))    
         docFuncMembers.inSort(md); 
       else
         docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      decTypedefMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decTypedefMembers.inSort(md);
+      else
+        decTypedefMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docTypedefMembers.inSort(md); 
       else
         docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      decEnumMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decEnumMembers.inSort(md);
+      else
+        decEnumMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docEnumMembers.inSort(md); 
       else
@@ -175,14 +187,20 @@ void NamespaceDef::insertMember(MemberDef *md)
     case MemberDef::EnumValue:    
       break;
     case MemberDef::Prototype:    
-      decProtoMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decProtoMembers.inSort(md);
+      else
+        decProtoMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docProtoMembers.inSort(md); 
       else
         docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      decDefineMembers.append(md);
+      if (Config_getBool("SORT_BRIEF_DOCS"))
+        decDefineMembers.inSort(md);
+      else
+        decDefineMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docDefineMembers.inSort(md); 
       else
