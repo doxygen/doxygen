@@ -17,10 +17,10 @@ all: Makefile.qtools Makefile
 	$(MAKE) -f Makefile.qtools    $@
 
 Makefile.qtools: qtools.pro 
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) qtools.pro >Makefile.qtools
+	$(ENV) $(PERL) $(TMAKE) qtools.pro >Makefile.qtools
 
 tmake: 
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) qtools.pro >Makefile.qtools
+	$(ENV) $(PERL) $(TMAKE) qtools.pro >Makefile.qtools
 
 clean: Makefile.qtools 
 	$(MAKE) -f Makefile.qtools    clean 

@@ -328,6 +328,7 @@ test -f .tmakeconfig && rm .tmakeconfig
 cat > .makeconfig <<EOF
 DOXYGEN   = $PWD
 TMAKEPATH = $PWD/tmake/lib/$f_platform
+ENV       = env TMAKEPATH=\$(TMAKEPATH)
 TMAKE     = $PWD/tmake/bin/tmake
 MAKE      = $f_make
 PERL      = $f_perl
