@@ -32,7 +32,6 @@
 #include "expert.h"
 #include "config.h"
 
-
 const int messageTimeout = 5000; //!< status bar message timeout in millisec.
 
 #if defined(Q_OS_MACX)
@@ -46,6 +45,34 @@ QCString getResourcePath()
   result+="/Contents/Resources/";
   return result;
 }
+
+#define GRAPHVIZ_PATH    "/Applications/Graphviz.app"
+#define DOT_PATH         GRAPHVIZ_PATH "/Contents/MacOS"
+#define DOT_LOCATION     DOT_PATH "/dot"
+
+bool checkIfDotInstalled()
+{
+  QFileInfo fi(GRAPHVIZ_PATH);
+  if (fi.exists() && fi.isDir())
+  {
+    fi.setFile(DOT_LOCATION);
+    if (fi.exists() && fi.isFile())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void setDotPath()
+{
+  if (checkIfDotInstalled())
+  {
+    Config_getString("DOT_PATH")=DOT_PATH;
+    Config_getBool("HAVE_DOT")=TRUE;
+  }
+}
+
 #endif
 
 
@@ -651,10 +678,7 @@ MainWidget::MainWidget(QWidget *parent)
   Config::instance()->init();
   Config::instance()->check();
 #if defined(Q_OS_MACX)
-  // we bundle dot with doxywizard on the Mac so we can safely enable
-  // it here
-  Config_getString("DOT_PATH")=getResourcePath();
-  Config_getBool("HAVE_DOT")=TRUE;
+  setDotPath();
 #endif
   
   QWidget *w = new QWidget(this);
@@ -1079,7 +1103,10 @@ void MainWidget::launchWizard()
         break;
     }
 #if defined(Q_OS_MACX)
-    Config_getString("DOT_PATH")=getResourcePath();
+    if (Config_getBool("HAVE_DOT"))
+    {
+      setDotPath();
+    }
 #endif
     setConfigSaved(FALSE);
   }
@@ -1098,9 +1125,11 @@ void MainWidget::loadConfigFromFile(const QString &fn)
   {
     Config::instance()->convertStrToVal();
 #if defined(Q_OS_MACX)
-    if (Config_getString("DOT_PATH")!=getResourcePath())
+    if (checkIfDotInstalled() && 
+        qstricmp(Config_getString("DOT_PATH"),DOT_PATH)!=0
+       )
     {
-      Config_getString("DOT_PATH")=getResourcePath();
+      Config_getString("DOT_PATH")=DOT_PATH;
       setConfigSaved(FALSE);
     }
     else
@@ -1134,12 +1163,9 @@ void MainWidget::launchExpert()
   expert.init();
   expert.exec();
 #if defined(Q_OS_MACX)
-  // we bundle dot with doxywizard on the Mac so we can safely enable
-  // it here
-  Config_getString("DOT_PATH")=getResourcePath();
-  Config_getBool("HAVE_DOT")=TRUE;
+  setDotPath();
 #endif
-  setConfigSaved(FALSE);
+  if (expert.hasChanged()) setConfigSaved(FALSE);
 }
 
 void MainWidget::saveDefaults()
@@ -1191,10 +1217,7 @@ void MainWidget::resetConfig()
     // initialize config settings
     Config::instance()->init();
 #if defined(Q_OS_MACX)
-    // we bundle dot with doxywizard on the Mac so we can safely enable
-    // it here
-    Config_getString("DOT_PATH")=getResourcePath();
-    Config_getBool("HAVE_DOT")=TRUE;
+    setDotPath();
 #endif
 
     m_configFileName = "";

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -677,8 +677,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
 %option noyywrap
 
+  /* language parsing states */
 %x	Define
-%x      DefineArg
 %x	DefineEnd
 %x	CompoundName
 %x	ClassVar
@@ -705,8 +705,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	ReadBodyIntf
 %x	Using
 %x	UsingDirective
-%x	NameSpaceDocArg1
-%x	PackageDocArg1
 %x	SkipCurly
 %x	SkipCurlyCpp
 %x	SkipCurlyEndDoc
@@ -719,23 +717,91 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	SkipCxxComment
 %x      SkipCurlyBlock
 %x      SkipRoundBlock
-%x	SkipCode
 %x	Sharp
 %x      SkipSharp
 %x	SkipRound
 %x	SkipSquare
-%x	SkipSection
-%x	IfGuard
-%x	IfNotGuard
 %x	TypedefName
 %x	TryFunctionBlock
 %x	TryFunctionBlockEnd
 %x	Comment
+%x	PackageName
+%x	JavaImport
+%x	CSAccessorDecl
+%x	PreLineCtrl
+%x	DefinePHP
+%x	DefinePHPEnd
+%x	OldStyleArgs
+%x	SkipVerbString
+%x      ObjCMethod
+%x      ObjCReturnType
+%x      ObjCParams
+%x      ObjCParamType
+%x      ObjCProtocolList
+%x	QtPropType
+%x	QtPropName
+%x	QtPropAttr
+%x	QtPropRead
+%x	QtPropWrite
+%x	ReadInitializer
+%x	GetCallType
+%x	CppQuote
+%x	EndCppQuote
+%x      MemberSpec
+%x      MemberSpecSkip
+%x	EndTemplate
+%x	FuncPtr
+%x	EndFuncPtr
+%x	ReadFuncArgType
+%x	ReadTempArgs
+%x	IDLUnionCase
+%x	NSAliasName
+%x	NSAliasArg
+%x	CopyString
+%x	CopyPHPString
+%x	CopyRound
+%x	CopyCurly
+%x	SkipUnionSwitch
+%x	Specialization
+%x	FuncPtrInit
+%x	FuncFunc
+%x	FuncFuncEnd
+%x	FuncFuncType
+
+
+  /* comment parsing states.
+   * What can happen in while parsing a comment block:
+   *   commands (e.g. @page, or \page)
+   *   escaped commands (e.g. @@page or \\page).
+   *   directories (e.g. \doxygen\src\)
+   *   HTML commands (e.g. <PRE>...</PRE>)
+   *   autolists.
+   *   newlines.
+   *   words and whitespace and other characters (#,?!, etc).
+   */
+  /*   start states. TODO: reduce to one state */
 %x      Doc
 %x	JavaDoc
-%x      ClassDoc
 %x      LineDoc
+%x	AfterDoc
+%x	AfterDocBrief
+%x	AfterDocLine
+  /*   internal states */
+  /*     page related */
+%x      PageDoc
+%x      PageDocTitle
+%x      PageDocArg1
+%x      PageDocArg2
+%x	ExampleDocArg1
+
+%x      ClassDoc
 %x      DefLineDoc
+%x	SkipSection
+%x	IfGuard
+%x	IfNotGuard
+%x	NameSpaceDocArg1
+%x	PackageDocArg1
+%x	SkipCode
 %x      ClassDocArg1
 %x      CategoryDocArg1
 %x      ClassDocArg2
@@ -754,32 +820,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	DocInternal
 %x	DocInternalLine
 %x	DocBaseClass
-%x	CppQuote
-%x	EndCppQuote
 %x	GroupDocArg1
 %x	GroupDocArg2
 %x	GroupName
 %x	GroupHeader
 %x	StoreGroupDocs
-%x	AfterDoc
-%x	AfterDocBrief
-%x	AfterDocLine
-%x      PageDoc
-%x      PageDocTitle
-%x      PageDocArg1
-%x      PageDocArg2
 %x      FileDocArg1
 %x      FileDocArg2
-%x	ExampleDocArg1
 %x	EnumDocArg1
-%x	FuncPtr
-%x	EndFuncPtr
-%x	FuncPtrInit
-%x	FuncFunc
-%x	FuncFuncEnd
-%x	FuncFuncType
-%x      MemberSpec
-%x      MemberSpecSkip
 %x	SkipVerbatim
 %x      TodoParam
 %x      TestParam
@@ -791,48 +839,15 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x      XRefItemParam4
 %x	SectionLabel
 %x	SectionTitle
-%x	SkipTemplate
-%x	EndTemplate
 %x      CopyArgString
 %x	CopyArgRound
 %x	CopyArgSharp
 %x	CopyArgComment
 %x	CopyArgCommentLine
-%x	SkipUnionSwitch
-%x	ReadFuncArgType
-%x	ReadTempArgs
-%x	Specialization
 %x      SkipHtmlComment
 %x      ReadFormulaShort
 %x	ReadFormulaLong
 %x	AnchorLabel
-%x	ReadInitializer
-%x	CopyString
-%x	CopyPHPString
-%x	CopyRound
-%x	CopyCurly
-%x	IDLUnionCase
-%x	NSAliasName
-%x	NSAliasArg
-%x	PackageName
-%x	GetCallType
-%x	JavaImport
-%x	CSAccessorDecl
-%x	PreLineCtrl
-%x	DefinePHP
-%x	DefinePHPEnd
-%x	OldStyleArgs
-%x	SkipVerbString
-%x      ObjCMethod
-%x      ObjCReturnType
-%x      ObjCParams
-%x      ObjCParamType
-%x      ObjCProtocolList
-%x	QtPropType
-%x	QtPropName
-%x	QtPropAttr
-%x	QtPropRead
-%x	QtPropWrite
 
 %%
 
@@ -2331,6 +2346,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                           {
                                             current->type = current->type.mid(3);
                                           }
+					  bool needNewCurrent=FALSE;
 					  if (!current->name.isEmpty() && current->section!=Entry::ENUM_SEC)
 					  {
 					    current->type=current->type.simplifyWhiteSpace();
@@ -2340,14 +2356,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    current->fileName = yyFileName;
 					    current->startLine = yyLineNr;
 					    current_root->addSubEntry( current ) ;
-					  }
-					  else
-					  {
-					    delete current;
+					    needNewCurrent=TRUE;
 					  }
 					  if ( *yytext == ',')
 					  {
-					    current = new Entry(*current);
+					    if (needNewCurrent)
+					    {
+					      current = new Entry(*current);
+					    }
 					    current->name.resize(0);
 					    current->args.resize(0);
 					    current->initializer.resize(0);
@@ -2358,7 +2374,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					  else
 					  {
-					    current = new Entry ;
+					    if (needNewCurrent)
+					    {
+					      current = new Entry ;
+					    }
 					    initEntry();
 					  }
 					  BEGIN( FindMembers ) ;
@@ -5023,7 +5042,17 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                           current->doc+=yytext;
 					  BEGIN(SectionTitle);
   					}
-<SectionTitle>[^\n*]*/"\n"		{
+<SectionTitle>[^\n*]*/"\n"              {
+					  sectionTitle+=yytext;
+					  sectionTitle=sectionTitle.stripWhiteSpace();
+					  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 
+  					  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
+  					  current->anchors->append(si);
+                                          Doxygen::sectionDict.insert(yytext,si);
+                                          current->doc+=yytext;
+					  BEGIN(lastSectionContext);
+  					}
+<SectionTitle>[^\n*]*/"\\_linebr"       {
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
 					  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 

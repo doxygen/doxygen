@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -48,6 +48,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
   m_dependencies->setAutoDelete(TRUE);
   m_inputWidgets = new QDict< IInput >;
   m_switches = new QDict< QObject >;
+  m_changed = FALSE;
 
   setHelpButton();
   
@@ -94,7 +95,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           pageLayout->addWidget(inputString);
           QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
           QToolTip::add(inputString,option->docs());
-          connect(inputString,SIGNAL(changed()),SIGNAL(changed()));
+          connect(inputString,SIGNAL(changed()),SLOT(changed()));
           m_inputWidgets->insert(option->name(),inputString);
           addDependency(m_switches,option->dependsOn(),option->name());
         }
@@ -117,7 +118,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           inputString->init();
           QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
           QToolTip::add(inputString, option->docs());
-          connect(inputString,SIGNAL(changed()),SIGNAL(changed()));
+          connect(inputString,SIGNAL(changed()),SLOT(changed()));
           m_inputWidgets->insert(option->name(),inputString);
           addDependency(m_switches,option->dependsOn(),option->name());
         }
@@ -142,7 +143,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           pageLayout->addWidget(inputStrList);
           QWhatsThis::add(inputStrList, option->docs().simplifyWhiteSpace() );
           QToolTip::add(inputStrList, option->docs());
-          connect(inputStrList,SIGNAL(changed()),SIGNAL(changed()));
+          connect(inputStrList,SIGNAL(changed()),SLOT(changed()));
           m_inputWidgets->insert(option->name(),inputStrList);
           addDependency(m_switches,option->dependsOn(),option->name());
         }
@@ -159,7 +160,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           pageLayout->addWidget(inputBool);
           QWhatsThis::add(inputBool, option->docs().simplifyWhiteSpace() );
           QToolTip::add(inputBool, option->docs() );
-          connect(inputBool,SIGNAL(changed()),SIGNAL(changed()));
+          connect(inputBool,SIGNAL(changed()),SLOT(changed()));
           m_inputWidgets->insert(option->name(),inputBool);
           addDependency(m_switches,option->dependsOn(),option->name());
         }
@@ -177,7 +178,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           pageLayout->addWidget(inputInt);
           QWhatsThis::add(inputInt, option->docs().simplifyWhiteSpace() );
           QToolTip::add(inputInt, option->docs() );
-          connect(inputInt,SIGNAL(changed()),SIGNAL(changed()));
+          connect(inputInt,SIGNAL(changed()),SLOT(changed()));
           m_inputWidgets->insert(option->name(),inputInt);
           addDependency(m_switches,option->dependsOn(),option->name());
         }
@@ -197,8 +198,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
     emit toggle(di.currentKey(),((InputBool *)obj)->getState());
   }
 
-  connect(this,SIGNAL(helpButtonPressed()),
-          this,SLOT(handleHelp()));
+  connect(this,SIGNAL(helpButtonPressed()),this,SLOT(handleHelp()));
   
 }
 
@@ -267,5 +267,10 @@ void Expert::init()
     emit toggle(dio.currentKey(),((InputBool *)obj)->getState());
   }
   
+}
+
+void Expert::changed()
+{
+  m_changed=TRUE;  
 }
 

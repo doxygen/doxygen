@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -617,7 +617,8 @@ void DotNode::writeBox(QTextStream &t,
            );
   t << "  Node" << reNumberNode(m_number,reNumber) << " [label=\"";
 
-  if (Config_getBool("UML_LOOK") && (gt==Inheritance || gt==Collaboration))
+  if (m_classDef && Config_getBool("UML_LOOK") && 
+      (gt==Inheritance || gt==Collaboration))
   {
     t << "{" << convertLabel(m_label);
     t << "\\n|";
@@ -3081,7 +3082,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
     QCString imgName = baseName+"."+imgExt;
     QCString mapName=baseName+".map";
 
-    DotRunner dotRun(baseName);
+    DotRunner dotRun(baseName+".dot");
     dotRun.addJob(imgExt,imgName);
     if (writeImageMap) dotRun.addJob("imap",mapName);
     if (!dotRun.run())
