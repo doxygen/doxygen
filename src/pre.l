@@ -1040,6 +1040,14 @@ BN	[ \t\r\n]
  					  outputArray(yytext,yyleng); 
   					  BEGIN(CopyLine); 
 					}
+<Start>^{B}*[_A-Z][_A-Z0-9]*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
+					  int i;
+					  for (i=yyleng-1;i>=0;i--)
+					  {
+					    unput(yytext[i]);
+					  }
+					  BEGIN(CopyLine);
+                                        }
 <Start>^{B}*[_A-Z][_A-Z0-9]*"("[^\)\n]*")"{B}*\n { // function like macro
   					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
 					  QCString name(yytext);

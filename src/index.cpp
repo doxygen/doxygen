@@ -350,10 +350,12 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
         {
           // UGLY HACK!
           ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Latex);
+          ol.disable(OutputGenerator::Man);
+          ol.disable(OutputGenerator::Html);
           if (level<6) ol.startIndexList();
           ol.enableAll();
           ol.disable(OutputGenerator::Latex);
+          ol.disable(OutputGenerator::RTF);
           ol.startItemList();
           ol.popGeneratorState();
         }
@@ -408,10 +410,12 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
     {
       // UGLY HACK!
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputGenerator::Html);
       if (level<6) ol.endIndexList();
       ol.enableAll();
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
       ol.endItemList();
       ol.popGeneratorState();
     }
@@ -571,10 +575,12 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
           {
             // UGLY HACK!
             ol.pushGeneratorState();
-            ol.disableAllBut(OutputGenerator::Latex);
+            ol.disable(OutputGenerator::Html);
+            ol.disable(OutputGenerator::Man);
             ol.startIndexList();
             ol.enableAll();
             ol.disable(OutputGenerator::Latex);
+            ol.disable(OutputGenerator::RTF);
             ol.startItemList();
             ol.popGeneratorState();
           }
@@ -651,10 +657,12 @@ void writeClassHierarchy(OutputList &ol)
     {
       // UGLY HACK!
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Man);
       ol.endIndexList();
       ol.enableAll();
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
       ol.endItemList();
       ol.popGeneratorState();
     }
@@ -2025,7 +2033,7 @@ void writeExampleIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startItemList();
-  PageSDictIterator pdi(*Doxygen::exampleSDict);
+  PageSDict::Iterator pdi(*Doxygen::exampleSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -2063,7 +2071,7 @@ void writeExampleIndex(OutputList &ol)
 void countRelatedPages(int &docPages,int &indexPages)
 {
   docPages=indexPages=0;
-  PageSDictIterator pdi(*Doxygen::pageSDict);
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -2129,7 +2137,7 @@ void writePageIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
   ol.startItemList();
-  PageSDictIterator pdi(*Doxygen::pageSDict);
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
@@ -2180,9 +2188,9 @@ void writePageIndex(OutputList &ol)
 int countGroups()
 {
   int count=0;
-  GroupListIterator gli(Doxygen::groupList);
+  GroupSDict::Iterator gli(Doxygen::groupSDict);
   GroupDef *gd;
-  for (;(gd=gli.current());++gli)
+  for (gli.toFirst();(gd=gli.current());++gli)
   {
     if (!gd->isReference())
     {
@@ -2237,8 +2245,6 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     ftvHelp = FTVHelp::getInstance();
   }
 
-  GroupDef *subgd = 0;
-  GroupListIterator gli(*gd->groupList);
   if (!gd->visited && (!gd->isASubGroup() || subLevel))
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
@@ -2251,7 +2257,6 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
       numSubItems += gd->docDefineMembers.count();
       numSubItems += gd->docTypedefMembers.count();
       numSubItems += gd->docEnumMembers.count();
-      numSubItems += gd->docEnumValMembers.count();
       numSubItems += gd->docFuncMembers.count();
       numSubItems += gd->docVarMembers.count();
       numSubItems += gd->docProtoMembers.count();
@@ -2293,7 +2298,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     //ol.writeEndAnnoItem(gd->getOutputFileBase());
 
     // write pages
-    PageSDictIterator pli(*gd->pageDict);
+    PageSDict::Iterator pli(*gd->pageDict);
     PageInfo *pi = 0;
     for (pli.toFirst();(pi=pli.current());++pli)
     {
@@ -2316,6 +2321,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     if (hasSubGroups)
     {
       ol.startItemList();
+      QListIterator<GroupDef> gli(*gd->groupList);
+      GroupDef *subgd = 0;
       for (gli.toLast();(subgd=gli.current());--gli)
       {
         writeGroupTreeNode(ol,subgd,TRUE);
@@ -2338,7 +2345,6 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
         MemInfo(&gd->docDefineMembers,  theTranslator->trDefines()),
         MemInfo(&gd->docTypedefMembers, theTranslator->trTypedefs()),
         MemInfo(&gd->docEnumMembers,    theTranslator->trEnumerations()),
-        MemInfo(&gd->docEnumValMembers, theTranslator->trEnumerationValues()),
         MemInfo(&gd->docFuncMembers,    theTranslator->trFunctions()),
         MemInfo(&gd->docVarMembers,     theTranslator->trVariables()),
         MemInfo(&gd->docProtoMembers,   theTranslator->trFuncProtos()),
@@ -2491,7 +2497,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
           ftvHelp->incContentsDepth();
         }
 
-        PageSDictIterator eli(*(gd->exampleDict));
+        PageSDict::Iterator eli(*(gd->exampleDict));
         PageInfo *pi=eli.toFirst();
         while (pi)
         {
@@ -2521,9 +2527,9 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 void writeGroupHierarchy(OutputList &ol)
 {
   ol.startItemList();
-  GroupListIterator gli(Doxygen::groupList);
+  GroupSDict::Iterator gli(Doxygen::groupSDict);
   GroupDef *gd;
-  for (;(gd=gli.current());++gli)
+  for (gli.toFirst();(gd=gli.current());++gli)
   {
     writeGroupTreeNode(ol,gd,FALSE);
   }

@@ -119,6 +119,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
 <li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 <li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
+<li> \refitem cfg_hide_undoc_relations HIDE_UNDOC_RELATIONS
 <li> \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
 <li> \refitem cfg_html_footer HTML_FOOTER
 <li> \refitem cfg_html_header HTML_HEADER
@@ -317,13 +318,6 @@ followed by the descriptions of the tags grouped by category.
  that is typed after a \\internal command is included. If the tag is set
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
-
-\anchor cfg_class_diagrams
-<dt>\c CLASS_DIAGRAMS <dd>
- \addindex CLASS_DIAGRAMS
- If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
- generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
- super classes. Setting the tag to \c NO turns the diagrams off.
 
 \anchor cfg_source_browser
 <dt>\c SOURCE_BROWSER <dd>
@@ -1133,9 +1127,19 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 
 </dl>
 \subsection config_dot Dot options
-\anchor cfg_have_dot
+\anchor cfg_class_diagrams
 <dl>
 
+<dt>\c CLASS_DIAGRAMS <dd>
+ \addindex CLASS_DIAGRAMS
+ If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
+ generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
+ super classes. Setting the tag to \c NO turns the diagrams off.
+ Note that this option is superceded by the HAVE_DOT option below. 
+ This is only a fallback. It is recommended to install and use dot, 
+ since it yield more powerful graphs. 
+
+\anchor cfg_have_dot
 <dt>\c HAVE_DOT <dd>
  \addindex HAVE_DOT
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
@@ -1165,6 +1169,13 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex TEMPLATE_RELATIONS
  If the \c TEMPLATE_RELATIONS and \c HAVE_DOT tags are set to \c YES then 
  doxygen will show the relations between templates and their instances.
+
+\anchor cfg_hide_undoc_relations
+<dt>\c HIDE_UNDOC_RELATIONS <dd>
+ \addindex HIDE_UNDOC_RELATIONS
+ If set to YES, the inheritance and collaboration graphs will hide
+ inheritance and usage relations if the target is undocumented
+ or is not a class.
 
 \anchor cfg_include_graph
 <dt>\c INCLUDE_GRAPH <dd>

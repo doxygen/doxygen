@@ -969,16 +969,16 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isModuleDocumentation:
       {
         //Module Documentation
-        GroupDef *gd=Doxygen::groupList.first();
+        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupDef *gd;
         bool found=FALSE;
-        while (gd && !found)
+        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
         {
           if (!gd->isReference())
           {
             beginRTFChapter();
             found=TRUE;
           }
-          gd=Doxygen::groupList.next();
         }
       }
       break;
@@ -1185,9 +1185,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=Doxygen::groupList.first();
+        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupDef *gd;
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
-        while (gd)
+        for (gli.toFirst();(gd=gli.current());++gli)
         {
           if (!gd->isReference())
           {
@@ -1196,7 +1197,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << gd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
-          gd=Doxygen::groupList.next();
         }
       }
       break;
@@ -1301,7 +1301,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         //t << "}\n";
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
-        PageSDictIterator pdi(*Doxygen::exampleSDict);
+        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
         PageInfo *pi=pdi.toFirst();
         if (pi)
         {
@@ -1323,7 +1323,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation:
       {
         t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
-        PageSDictIterator pdi(*Doxygen::pageSDict);
+        PageSDict::Iterator pdi(*Doxygen::pageSDict);
         PageInfo *pi=pdi.toFirst();
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
@@ -1960,9 +1960,10 @@ void RTFGenerator::endMemberDescription()
 void RTFGenerator::startDescList(SectionTypes)     
 { 
   DBG_RTF(t << "{\\comment (startDescList)}"    << endl)
-  t << "{";
-  newParagraph();
+  t << "{"; // ends at endDescList
+  t << "{"; // ends at endDescTitle
   startBold();
+  newParagraph();
 }
 
 void RTFGenerator::endDescTitle()      
@@ -1978,25 +1979,23 @@ void RTFGenerator::endDescTitle()
 void RTFGenerator::writeDescItem()
 {
   DBG_RTF(t << "{\\comment (writeDescItem) }"    << endl)
-  //	incrementIndentLevel();
-  //t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
 }
 
 void RTFGenerator::endDescList()       
 {
   DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
   newParagraph();
-  //t << "}";
   decrementIndentLevel();
   m_omitParagraph = TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
-  t << Rtf_Style_Reset << endl;
+  t << "}";
 }
 
 void RTFGenerator::startParamList(ParamListTypes)     
 { 
   DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
-  t << "{";
+  t << "{"; // ends at endParamList
+  t << "{"; // ends at endDescTitle
+  startBold();
   newParagraph();
 }
 
@@ -2004,10 +2003,9 @@ void RTFGenerator::endParamList()
 {
   DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
   newParagraph();
-  t << "}";
   decrementIndentLevel();
   m_omitParagraph = TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
+  t << "}";
 }
 
 
@@ -2295,7 +2293,7 @@ void RTFGenerator::endDotFile(bool)
 void RTFGenerator::startDescTable()  
 { 
   DBG_RTF(t << "{\\comment (startDescTable) }"    << endl)
-  t << "{" << endl;
+  //t << "{" << endl;
   //incrementIndentLevel();
   //t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
 }
@@ -2304,7 +2302,7 @@ void RTFGenerator::endDescTable()
 { 
   //decrementIndentLevel();
   DBG_RTF(t << "{\\comment (endDescTable)}"      << endl)
-  t << "}" << endl;
+  //t << "}" << endl;
   //t << Rtf_Style_Reset << styleStack.top();
 }
 
@@ -2327,12 +2325,14 @@ void RTFGenerator::endDescTableTitle()
 void RTFGenerator::startDescTableData() 
 {
   DBG_RTF(t << "{\\comment (startDescTableData) }"    << endl)
+  m_omitParagraph=FALSE;
 }
 
 void RTFGenerator::endDescTableData() 
 {
   DBG_RTF(t << "{\\comment (endDescTableData) }"    << endl)
   newParagraph();
+  m_omitParagraph=TRUE;
 }
 
 // a style for list formatted as a "bulleted list"
@@ -2661,6 +2661,50 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   t << "}" << endl;
 }
 
+/** Tests the integrity of the result by counting brackets.
+ *
+ */
+void testRTFOutput(const char *name)
+{
+  int bcount=0;
+  int line=1;
+  int c;
+  QFile f(name);
+  if (f.open(IO_ReadOnly))
+  {
+    while ((c=f.getch())!=-1)
+    {
+      if (c=='\\') // escape char
+      {
+        c=f.getch();
+        if (c==-1) break;
+      } 
+      else if (c=='{') // open bracket
+      {
+        bcount++;
+      }
+      else if (c=='}') // close bracket
+      {
+        bcount--;
+        if (bcount<0)
+        {
+          goto err;
+          break;
+        }
+      }
+      else if (c=='\n') // newline
+      {
+        line++;
+      }
+    }
+  }
+  if (bcount==0) return; // file is OK.
+err:
+  err("Error: RTF integrity test failed at line %d of %s due to a bracket mismatch.\n",line,name);
+  err("       Please try to create a small code example that produces this error \n"
+      "       and send that to dimitri@stack.nl.\n");
+}
+
 /**
  * This is an API to a VERY brittle RTF preprocessor that combines nested
  * RTF files.  This version replaces the infile with the new file 
@@ -2707,6 +2751,8 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   outf.close();
   thisDir.remove(mainRTFName);
   thisDir.rename(combinedName,mainRTFName);
+
+  testRTFOutput(mainRTFName);
 
   QDir::setCurrent(oldDir);
   return TRUE;

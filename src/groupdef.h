@@ -19,8 +19,7 @@
 #define GROUPDEF_H
 
 #include "qtbc.h"
-#include <qlist.h>
-#include <qdict.h>
+#include "sortdict.h"
 #include "definition.h"
 #include "memberlist.h"
 #include "memberdef.h"
@@ -76,6 +75,8 @@ class GroupDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
 
+    void addListReferences();
+
     bool visited;    // number of times accessed for output - KPW
 
     friend void writeGroupTreeNode(OutputList&, GroupDef*,bool);      
@@ -91,8 +92,8 @@ class GroupDef : public Definition
     FileList *fileList;                 // list of files in the group
     ClassSDict *classSDict;             // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
-    GroupList *groupList;               // list of sub groups.
-    GroupList *parentGroupList;         // list of parent groups.
+    GroupList *groupList;              // list of sub groups.
+    GroupList *parentGroupList;        // list of parent groups.
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
 
@@ -113,7 +114,6 @@ class GroupDef : public Definition
     MemberList docProtoMembers;
     MemberList docTypedefMembers;
     MemberList docEnumMembers;
-    MemberList docEnumValMembers;
     MemberList docFuncMembers;
     MemberList docVarMembers;
 
@@ -122,14 +122,15 @@ class GroupDef : public Definition
     MemberGroupDict *memberGroupDict;
 };
 
-class GroupList : public QList<GroupDef>
-{
-};
-
-class GroupListIterator : public QListIterator<GroupDef>
+class GroupSDict : public SDict<GroupDef>
 {
   public:
-    GroupListIterator(const GroupList &l) : QListIterator<GroupDef>(l) {}
+    GroupSDict(uint size) : SDict<GroupDef>(size) {}
+    virtual ~GroupSDict() {}
+};
+
+class GroupList : public QList<GroupDef>
+{
 };
 
 void addClassToGroups(Entry *root,ClassDef *cd);

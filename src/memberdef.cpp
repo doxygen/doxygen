@@ -1675,3 +1675,20 @@ void MemberDef::setInitializer(const char *initializer)
   init=init.left(p+1);
   initLines=init.contains('\n');
 }
+
+void MemberDef::addListReference(Definition *d)
+{
+  visited=TRUE;
+  QCString memLabel;
+  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+  {
+    memLabel=theTranslator->trGlobal(TRUE,TRUE);
+  }
+  else
+  {
+    memLabel=theTranslator->trMember(TRUE,TRUE);
+  }
+  addRefItem(todoId(),testId(),bugId(),memLabel,
+      d->getOutputFileBase()+":"+anchor(),name(),argsString());
+}
+

@@ -2223,7 +2223,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>{CMD}("\\"|"@"|"<"|">"|"&"|"$"|"#"|"%") {
   					  outDoc->docify(&yytext[1]);
   					}
-<DocScan,DocEmphasis,DocBold,DocCode>"%"[a-zA-Z_0-9\-]+		{
+<DocScan,DocEmphasis,DocBold,DocCode>"%"[a-z_A-Z][a-z_A-Z0-9:\-]* {
   					  outDoc->docify(yytext+1);
   					}
 <DocEmphasis>{FILEMASK}			{

@@ -65,6 +65,7 @@ class MemberGroup /* : public Definition */
     int numDecMembers() const;
     int numDocMembers() const;
     void setInGroup(bool b);
+    void addListReferences(Definition *d);
 
   private: 
     MemberList *memberList;      // list of all members in the group

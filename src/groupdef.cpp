@@ -62,7 +62,6 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   docProtoMembers.setInGroup(TRUE);
   docTypedefMembers.setInGroup(TRUE);
   docEnumMembers.setInGroup(TRUE);
-  docEnumValMembers.setInGroup(TRUE);
   docFuncMembers.setInGroup(TRUE);
   docVarMembers.setInGroup(TRUE);
 
@@ -290,8 +289,6 @@ void GroupDef::removeMember(MemberDef *md)
         docEnumMembers.remove(md);
         break;
       case MemberDef::EnumValue:    
-	decEnumValMembers.remove(md);
-	docEnumValMembers.remove(md);
         break;
       case MemberDef::Prototype:    
         decProtoMembers.remove(md);
@@ -527,7 +524,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
   PageInfo *pi=0;
-  PageSDictIterator pdi(*pageDict);
+  PageSDict::Iterator pdi(*pageDict);
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     if (!pi->isReference())
@@ -590,7 +587,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addClass(cd);
       //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
@@ -607,7 +604,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
   {
     GroupDef *gd=0;
     //printf("group `%s'\n",s->data());
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addNamespace(nd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
@@ -622,7 +619,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]) &&
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]) &&
 	!gd->containsGroup(subGroup) )
     {
       gd->addGroup(subGroup);
@@ -645,7 +642,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   {
     GroupDef *gd=0;
     if (!g->groupname.isEmpty() &&
-        (gd=Doxygen::groupDict[g->groupname]) &&
+        (gd=Doxygen::groupSDict[g->groupname]) &&
 	g->pri >= pri)
     {
       if( fgd && g->pri == pri ) {
@@ -724,7 +721,7 @@ void addExampleToGroups(Entry *root,PageInfo *eg)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
     {
       gd->addExample(eg);
       //printf("Example %s: in group %s\n",eg->name().data(),s->data());
@@ -736,3 +733,25 @@ QCString GroupDef::getOutputFileBase() const
 { 
   return convertNameToFile(fileName); 
 }
+
+void GroupDef::addListReferences()
+{
+  addRefItem(todoId(),testId(),bugId(),
+             theTranslator->trGroup(TRUE,TRUE),
+             getOutputFileBase(),name()
+            );
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->addListReferences(this);
+  }
+  docDefineMembers.addListReferences(this);
+  docProtoMembers.addListReferences(this);
+  docTypedefMembers.addListReferences(this);
+  docEnumMembers.addListReferences(this);
+  docFuncMembers.addListReferences(this);
+  docVarMembers.addListReferences(this);
+}
+
+

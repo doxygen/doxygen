@@ -1091,11 +1091,6 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  int s=0;while (!isId(yytext[s])) s++;
                                           int e=yyleng-1;while (!isId(yytext[e])) e--;
 					  QCString varname = ((QCString)yytext).mid(s,e-s+1); 
-					  //QCString text=yytext;
-					  //QCString tmp=varname.copy();
-					  //g_code->codify(text.left(s+1));
-					  //generateClassLink(*g_code,tmp.data());
-					  //g_code->codify(text.right(yyleng-e-1));
 					  addType();
   					  g_name=varname; 
 					}

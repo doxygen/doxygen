@@ -1307,13 +1307,6 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
-                    "CLASS_DIAGRAMS",
-                    "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
-                    "generate a class diagram (in Html and LaTeX) for classes with base or \n"
-                    "super classes. Setting the tag to NO turns the diagrams off. \n",
-                    TRUE
-                 );
-  cb = addBool(
                     "SOURCE_BROWSER",
                     "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
                     "be generated. Documented entities will be cross-referenced with these sources. \n",
@@ -1717,8 +1710,10 @@ void Config::create()
                     "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
                     "generated containing a tree-like index structure (just like the one that \n"
                     "is generated for HTML Help). For this to work a browser that supports \n"
-                    "JavaScript and frames is required (for instance Netscape 4.0+ \n"
-                    "or Internet explorer 4.0+). ",
+                    "JavaScript and frames is required (for instance Mozilla, Netscape 4.0+, \n"
+                    "or Internet explorer 4.0+). Note that for large projects the tree generation \n"
+		    "can take a very long time. In such cases it is better to disable this feature. \n"
+		    "Windows users are probably better off using the HTML help feature. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
@@ -2021,6 +2016,15 @@ void Config::create()
   addInfo(  "Dot","Configuration options related to the dot tool   ");
   //-----------------------------------------------------------------------------------------------
   cb = addBool(
+                    "CLASS_DIAGRAMS",
+                    "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
+                    "generate a inheritance diagram (in Html, RTF and LaTeX) for classes with base or \n"
+                    "super classes. Setting the tag to NO turns the diagrams off. Note that this \n"
+		    "option is superceded by the HAVE_DOT option below. This is only a fallback. It is \n"
+		    "recommended to install and use dot, since it yield more powerful graphs. \n",
+                    TRUE
+                 );
+  cb = addBool(
                     "HAVE_DOT",
                     "If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is \n"
                     "available from the path. This tool is part of Graphviz, a graph visualization \n"
@@ -2050,6 +2054,14 @@ void Config::create()
                     "TEMPLATE_RELATIONS",
 		    "If set to YES, the inheritance and collaboration graphs will show the \n"
 		    "relations between templates and their instances. \n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "HIDE_UNDOC_RELATIONS",
+		    "If set to YES, the inheritance and collaboration graphs will hide \n"
+		    "inheritance and usage relations if the target is undocumented \n"
+		    "or is not a class. \n",
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");

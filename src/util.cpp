@@ -40,7 +40,7 @@
 #include "example.h"
 #include "version.h"
 #include "groupdef.h"
-//#include "xml.h"
+#include "reflist.h"
 #include "page.h"
 
 #ifndef _WIN32
@@ -2557,7 +2557,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
     }
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupDict[nameStr]))
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict[nameStr]))
   { // group link
     od.startTextLink(gd->getOutputFileBase(),0);
     if (rt) // explict link text
@@ -2636,7 +2636,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
     }
     return TRUE;
   }
-  else if ((gd=Doxygen::groupDict[linkRef])) // link to a group
+  else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
   {
     od.startTextLink(gd->getOutputFileBase(),0);
     if (lt)
@@ -3430,4 +3430,179 @@ found:
   //printf("getScopeFragment(%s,%d)=%s\n",s.data(),p,s.mid(p,*l).data());
   return p;
 }
+
+//----------------------------------------------------------------------------
+
+void addRelatedPage(const char *name,const QCString &ptitle,
+                           const QCString &doc,QList<QCString> *anchors,
+                           const char *fileName,int startLine,
+                           int todoId,int testId,int bugId,GroupDef *gd=0,
+                           TagInfo *tagInfo=0
+                          )
+{
+  PageInfo *pi=0;
+  if ((pi=Doxygen::pageSDict->find(name)) && !tagInfo)
+  {
+    // append documentation block to the page.
+    pi->doc+="\n\n"+doc;
+  }
+  else // new page
+  {
+    QCString baseName=name;
+    if (baseName.right(4)==".tex") 
+      baseName=baseName.left(baseName.length()-4);
+    else if (baseName.right(5)==".html")
+      baseName=baseName.left(baseName.length()-5);
+    
+    QCString title=ptitle.stripWhiteSpace();
+    pi=new PageInfo(fileName,startLine,baseName,doc,title);
+    pi->todoId=todoId;
+    pi->testId=testId;
+    pi->bugId=bugId;
+    if (tagInfo)
+    {
+      pi->reference = tagInfo->tagName;
+    }
+
+    QCString pageName;
+    if (Config_getBool("CASE_SENSE_NAMES"))
+      pageName=pi->name.copy();
+    else
+      pageName=pi->name.lower();
+    //setFileNameForSections(anchors,pageName,pi);
+    pi->fileName = pageName;
+    pi->addSections(anchors);
+
+    Doxygen::pageSDict->append(baseName,pi);
+
+    if (gd) gd->addPage(pi);
+    
+    if (!pi->title.isEmpty())
+    {
+      //outputList->writeTitle(pi->name,pi->title);
+
+      // a page name is a label as well!
+      SectionInfo *si=new SectionInfo(
+          pi->name,pi->title,SectionInfo::Section,pi->reference);
+      if (gd)
+      {
+        si->fileName=gd->getOutputFileBase();
+      }
+      else if (pi->inGroup)
+      {
+        si->fileName=pi->inGroup->getOutputFileBase().copy();
+      }
+      else
+      {
+        si->fileName=pageName;
+      }
+      //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
+      //      si->label.data(),si->definition?si->definition->name().data():"<none>",
+      //      si->fileName.data());
+      //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
+      //printf("Adding section info %s\n",pi->name.data());
+      Doxygen::sectionDict.insert(pageName,si);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void addRefItem(int todoId,int testId,int bugId,const char *prefix,
+                        const char *name,const char *title,const char *args=0)
+{
+
+  //printf("addRefItem(%s) todoId=%d testId=%d bugId=%d\n",name,todoId,testId,bugId);
+
+  ////////////////////////////////////////////////////////////
+  // add item to the todo list
+  ////////////////////////////////////////////////////////////
+
+  if (todoId>0 && Config_getBool("GENERATE_TODOLIST"))
+  {
+    RefItem *item = todoList.getRefItem(todoId);
+    ASSERT(item!=0);
+    if (item->written) return;
+
+    QCString doc;
+    doc += "<dl><dt>\\anchor ";
+    doc += item->listAnchor;
+    doc += "\n";
+    doc += prefix;
+    doc += " \\_internalref ";
+    doc += name;
+    doc += " \"";
+    doc += title;
+    doc += "\"";
+    if (args) doc += args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    doc += "</dd></dl>\n";
+    //printf("Todo page: %s\n",doc.data());
+    addRelatedPage("todo",theTranslator->trTodoList(),doc,0,"generated",1,0,0,0);
+
+    item->written=TRUE;
+  }
+
+  ////////////////////////////////////////////////////////////
+  // add item to the test list
+  ////////////////////////////////////////////////////////////
+
+  if (testId>0 && Config_getBool("GENERATE_TESTLIST"))
+  {
+    RefItem *item = testList.getRefItem(testId);
+    ASSERT(item!=0);
+    if (item->written) return;
+
+    QCString doc;
+    doc += "<dl><dt>\\anchor ";
+    doc += item->listAnchor;
+    doc += "\n";
+    doc += prefix;
+    doc += " \\_internalref ";
+    doc += name;
+    doc += " \"";
+    doc += title;
+    doc += "\"";
+    if (args) doc += args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    doc += "</dd></dl>\n";
+    //printf("Test page: %s\n",doc.data());
+    addRelatedPage("test",theTranslator->trTestList(),doc,0,"generated",1,0,0,0);
+
+    item->written=TRUE;
+  }
+  
+  ////////////////////////////////////////////////////////////
+  // add item to the bug list
+  ////////////////////////////////////////////////////////////
+
+  if (bugId>0 && Config_getBool("GENERATE_BUGLIST"))
+  {
+    RefItem *item = bugList.getRefItem(bugId);
+    ASSERT(item!=0);
+    if (item->written) return;
+
+    QCString doc;
+    doc += "<dl><dt>\\anchor ";
+    doc += item->listAnchor;
+    doc += "\n";
+    doc += prefix;
+    doc += " \\_internalref ";
+    doc += name;
+    doc += " \"";
+    doc += title;
+    doc += "\"";
+    if (args) doc += args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    doc += "</dd></dl>\n";
+    //printf("Bug page: %s\n",doc.data());
+    addRelatedPage("bug",theTranslator->trBugList(),doc,0,"generated",1,0,0,0);
+
+    item->written=TRUE;
+  }
+}
+
 

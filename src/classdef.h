@@ -272,6 +272,7 @@ class ClassDef : public Definition
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
     void setClassIsArtificial() { m_artificial = TRUE; }
     void setIsStatic(bool b) { m_isStatic=b; }
+    void addListReferences();
 
     /*! Creates a new compound definition.
      *  \param outerScope class, file or namespace in which this class is

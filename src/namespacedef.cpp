@@ -374,4 +374,23 @@ void NamespaceDef::addInnerCompound(Definition *d)
   m_innerCompounds->append(d->localName(),d);
 }
 
+void NamespaceDef::addListReferences()
+{
+  addRefItem(todoId(),testId(),bugId(),
+             theTranslator->trNamespace(TRUE,TRUE),
+             getOutputFileBase(),name()
+            );
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->addListReferences(this);
+  }
+  docDefineMembers.addListReferences(this);
+  docProtoMembers.addListReferences(this);
+  docTypedefMembers.addListReferences(this);
+  docEnumMembers.addListReferences(this);
+  docFuncMembers.addListReferences(this);
+  docVarMembers.addListReferences(this);
+}
 

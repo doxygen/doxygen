@@ -553,4 +553,25 @@ void MemberList::addMemberGroup(MemberGroup *mg)
   memberGroupList->append(mg);
 }
 
+void MemberList::addListReferences(Definition *def)
+{
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()) ; ++mli)
+  {
+    if (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup)
+    {
+      md->addListReference(def);
+    }
+  }
+  if (memberGroupList)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->addListReferences(def);
+    }
+  }
+}
 

@@ -783,6 +783,7 @@ void CodeLineHandler::endLineNumber()
   printf("end linenumber\n");
   m_parent->setDelegate(0);
 }
+
 //----------------------------------------------------------------------
 // ProgramListingHandler
 //----------------------------------------------------------------------

@@ -230,6 +230,7 @@ class MemberDef : public Definition
     MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
                ArgumentList *actualArgs);
     void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
+    void addListReference(Definition *d);
         
     bool visited;
     
