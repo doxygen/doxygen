@@ -2668,12 +2668,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->args += yytext;
 					}
 <Bases>{BN}*{ID}("."{ID})*		{ // Java style class
-    					  QCString name = yytext;
-					  int i=name.findRev('.');
-					  if (i!=-1) // strip part before dots
-					  {
-					    name=name.right(name.length()-i-1);
-					  }
+    					  QCString name = substitute(yytext,".","::");
 					  baseName += name;
 					  current->args += ' ';
 					  current->args += name;

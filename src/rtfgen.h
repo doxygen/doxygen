@@ -114,8 +114,8 @@ class RTFGenerator : public OutputGenerator
     void endCodeFragment();
     void startPreFragment()      { startCodeFragment(); }
     void endPreFragment()        { endCodeFragment(); }
-    void startVerbatimFragment() { startVerbatimFragment(); }
-    void endVerbatimFragment()   { endVerbatimFragment(); }
+    void startVerbatimFragment() { startCodeFragment(); }
+    void endVerbatimFragment()   { endCodeFragment(); }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }

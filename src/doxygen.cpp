@@ -1908,6 +1908,24 @@ static void buildFunctionList(Entry *root)
                 md->setDocsForDefinition(!root->proto);
                 ArgumentList *argList = new ArgumentList;
                 stringToArgumentList(root->args,argList);
+                //printf("root->argList=%p\n",root->argList);
+                //if (root->argList)
+                //{
+                //  ArgumentListIterator ali1(*root->argList);
+                //  ArgumentListIterator ali2(*argList);
+                //  Argument *sa,*da;
+                //  for (;(sa=ali1.current()) && (da=ali2.current());++ali1,++ali2)
+                //  {
+                //    printf("sa->name=%s (doc=%s) da->name=%s (doc=%s)\n",
+                //        sa->name.data(),sa->docs.data(),
+                //        da->name.data(),da->docs.data()
+                //        );
+                //    if (!sa->docs.isEmpty() && da->docs.isEmpty())
+                //    {
+                //      da->docs=sa->docs.copy();
+                //    }
+                //  }
+                //}
                 if (root->proto)
                 {
                   md->setDeclArgumentList(argList);
@@ -1957,6 +1975,9 @@ static void buildFunctionList(Entry *root)
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,FALSE,
               MemberDef::Function,tArgList,root->argList);
+          //printf("new member %p\n",md);
+
+
           if (root->tagInfo) 
           {
             md->setAnchor(root->tagInfo->anchor);
@@ -2154,6 +2175,33 @@ static void findFriends()
 
 //----------------------------------------------------------------------
 
+static void transferArgumentDocumentation(ArgumentList *decAl,ArgumentList *defAl)
+{
+  if (decAl && defAl)
+  {
+    ArgumentListIterator decAli(*decAl);
+    ArgumentListIterator defAli(*defAl);
+    Argument *decA,*defA;
+    for (decAli.toFirst(),defAli.toFirst();
+        (decA=decAli.current()) && (defA=defAli.current());
+        ++decAli,++defAli)
+    {
+      //printf("Argument decA->name=%s (doc=%s) defA->name=%s (doc=%s)\n",
+      //    decA->name.data(),decA->docs.data(),
+      //    defA->name.data(),defA->docs.data()
+      //      );
+      if (decA->docs.isEmpty() && !defA->docs.isEmpty())
+      {
+        decA->docs = defA->docs.copy();
+      }
+      else if (defA->docs.isEmpty() && !decA->docs.isEmpty())
+      {
+        defA->docs = decA->docs.copy();
+      }
+    }
+  }
+}
+
 static void transferFunctionDocumentation()
 {
   //printf("transferFunctionDocumentation()\n");
@@ -2185,22 +2233,14 @@ static void transferFunctionDocumentation()
         matchArguments(mdef->argumentList(),mdec->argumentList())
        ) /* match found */
     {
-      /* FIX: Always match declaration and definition.
-      FileDef *fdef = mdef->getFileDef();
-      FileDef *fdec = mdec->getFileDef();
-
-      // check if not in different but documented files
-      if (Config_getBool("EXTRACT_ALL") || 
-          fdef==fdec || 
-          (fdef!=0 && (!fdef->hasDocumentation() || !fdec->hasDocumentation()))
-         )
-      */
-      {
-        //printf("Found member %s: definition in %s (doc=%d) and declation in %s (doc=%d)\n",
+        //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
         //    mn->memberName(),
-        //    mdef->getFileDef()->name().data(),!mdef->documentation().isEmpty(),
-        //    mdec->getFileDef()->name().data(),!mdec->documentation().isEmpty()
+        //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
+        //    mdec->getFileDef()->name().data(),mdec->documentation().data()
         //   );
+
+        // first merge argument documentation
+        transferArgumentDocumentation(mdec->argumentList(),mdef->argumentList());
 
         /* copy documentation between function definition and declaration */
         if (!mdec->briefDescription().isEmpty())
@@ -2218,6 +2258,10 @@ static void transferFunctionDocumentation()
           mdec->setDocsForDefinition(mdef->isDocsForDefinition());
           ArgumentList *mdefAl = new ArgumentList;
           stringToArgumentList(mdef->argsString(),mdefAl);
+          if (mdef->argumentList())
+          {
+            transferArgumentDocumentation(mdef->argumentList(),mdefAl);
+          }
           mdec->setArgumentList(mdefAl);
         }
         else if (!mdec->documentation().isEmpty())
@@ -2227,6 +2271,10 @@ static void transferFunctionDocumentation()
           mdef->setDocsForDefinition(mdec->isDocsForDefinition());
           ArgumentList *mdecAl = new ArgumentList;
           stringToArgumentList(mdec->argsString(),mdecAl);
+          if (mdec->argumentList())
+          {
+            transferArgumentDocumentation(mdec->argumentList(),mdecAl);
+          }
           mdef->setDeclArgumentList(mdecAl);
         }
         if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
@@ -2244,27 +2292,6 @@ static void transferFunctionDocumentation()
         mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
         mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
         
-        ArgumentList *decAl = mdec->argumentList();
-        ArgumentList *defAl = mdef->argumentList();
-        if (decAl && defAl)
-        {
-          ArgumentListIterator decAli(*decAl);
-          ArgumentListIterator defAli(*defAl);
-          Argument *decA,*defA;
-          for (decAli.toFirst(),defAli.toFirst();
-              (decA=decAli.current()) && (defA=defAli.current());
-              ++decAli,++defAli)
-          {
-            if (decA->docs.isEmpty() && !defA->docs.isEmpty())
-            {
-              decA->docs = defA->docs.copy();
-            }
-            else if (defA->docs.isEmpty() && !decA->docs.isEmpty())
-            {
-              defA->docs = decA->docs.copy();
-            }
-          }
-        }
 
         // copy group info.
         //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
@@ -2281,7 +2308,6 @@ static void transferFunctionDocumentation()
         int testId = QMAX(mdec->testId(),mdef->testId());
         int bugId  = QMAX(mdec->bugId() ,mdef->bugId() );
         mdec->setRefItems(todoId,testId,bugId);
-      }
     }
   }
 }
@@ -2552,6 +2578,7 @@ static void findUsedClassesForClass(Entry *root,
                 if (usedCd)
                 {
                   if (isArtificial) usedCd->setClassIsArtificial();
+                  Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
                   instanceCd->addUsedClass(usedCd,md->name());
                 }
               }
@@ -2583,6 +2610,7 @@ static void findUsedClassesForClass(Entry *root,
             if (usedCd) 
             {
               found=TRUE;
+              Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
               instanceCd->addUsedClass(usedCd,md->name()); // class exists 
             }
           }
@@ -2610,6 +2638,7 @@ static void findUsedClassesForClass(Entry *root,
           if (usedCd)
           {
             if (isArtificial) usedCd->setClassIsArtificial();
+             Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
             instanceCd->addUsedClass(usedCd,md->name()); 
           }
         }
@@ -2653,6 +2682,7 @@ static void findBaseClassesForClass(
       {
         tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
       }
+      //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
       if (mode==DocumentedOnly)
       {
@@ -2779,6 +2809,7 @@ static bool findClassRelation(
      biName=biName.right(biName.length()-2);
      explicitGlobalScope=TRUE;
   }
+  //printf("biName=`%s'\n",biName.data());
 
   Entry *parentNode=root->parent;
   bool lastParent=FALSE;
@@ -2817,7 +2848,7 @@ static bool findClassRelation(
       if (!isRecursiveBaseClass(root->name,baseClassName) || explicitGlobalScope)
       {
         Debug::print(
-            Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",
+            Debug::Classes,0,"    class relation %s inherited/used by %s found (%s and %s)\n",
             baseClassName.data(),
             root->name.data(),
             (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),

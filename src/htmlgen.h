@@ -254,8 +254,8 @@ class HtmlGenerator : public OutputGenerator
     void startParameterList();
     void endParameterList();
 
-    void startFontClass(const char *s) { t << "<font class=\"" << s << "\">"; }
-    void endFontClass() { t << "</font>"; }
+    void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
+    void endFontClass() { t << "</span>"; }
 
     void startHtmlOnly()  {}
     void endHtmlOnly()    {}

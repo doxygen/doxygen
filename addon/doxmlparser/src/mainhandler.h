@@ -76,6 +76,7 @@ class MainHandler : public IDoxygen, public BaseHandler<MainHandler>
     QDict<QList<CompoundEntry> > m_memberNameDict;
     QString                      m_xmlDirName;
     QDict<CompoundHandler>       m_compoundsLoaded;
+    bool                         m_insideMember;
 };
 
 #endif

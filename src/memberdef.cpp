@@ -340,6 +340,7 @@ MemberDef::MemberDef(const char *df,int dl,
     Argument *a;
     for (;(a=ali.current());++ali)
     {
+      //printf("copy argument %s (doc=%s)\n",a->name.data(),a->docs.data());
       defArgList->append(new Argument(*a));
     }
     defArgList->constSpecifier    = al->constSpecifier;

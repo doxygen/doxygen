@@ -1083,19 +1083,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // + template arguments 
   //     (templateArguments(), definitionTemplateParameterLists())
   
+  // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
 
-  ti << "    <member id=\"" << md->getOutputFileBase() 
-     << "_1" << md->anchor() << "\">" << convertToXML(md->name()) << "</member>" << endl;
-  
-  QCString scopeName;
-  if (md->getClassDef()) 
-    scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef()) 
-    scopeName=md->getNamespaceDef()->name();
-    
-  t << "      <memberdef kind=\"";
-  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
   QCString memType;
   bool isFunc=FALSE;
   switch (md->memberType())
@@ -1113,6 +1103,19 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     case MemberDef::DCOP:        memType="dcop";      isFunc=TRUE; break;
     case MemberDef::Slot:        memType="slot";      isFunc=TRUE; break;
   }
+
+  ti << "    <member refid=\"" << md->getOutputFileBase() 
+     << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>" 
+     << convertToXML(md->name()) << "</name></member>" << endl;
+  
+  QCString scopeName;
+  if (md->getClassDef()) 
+    scopeName=md->getClassDef()->name();
+  else if (md->getNamespaceDef()) 
+    scopeName=md->getNamespaceDef()->name();
+    
+  t << "      <memberdef kind=\"";
+  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
   t << memType << "\" id=\"";
   t << md->getOutputFileBase()
     << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
@@ -1407,7 +1410,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
-  ti << "  <compound id=\"" << cd->getOutputFileBase() 
+  ti << "  <compound refid=\"" << cd->getOutputFileBase() 
+     << "\" kind=\"" << cd->compoundTypeString()
      << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
@@ -1477,7 +1481,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Pure:    t << "pure-virtual"; break;
       }
       t << "\">" << convertToXML(bcd->classDef->displayName()) 
-        << "</basecompoundref>" << endl;
+        << "</derivedcompoundref>" << endl;
     }
   }
 
@@ -1573,8 +1577,9 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
 
   if (nd->isReference()) return; // skip external references
 
-  ti << "  <compound id=\"" << nd->getOutputFileBase() 
-     << "\"><name>" << convertToXML(nd->name()) << "</name>" << endl;
+  ti << "  <compound refid=\"" << nd->getOutputFileBase() 
+     << "\" kind=\"namespace\"" << "><name>" 
+     << convertToXML(nd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+nd->getOutputFileBase()+".xml";
@@ -1663,8 +1668,9 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   
   if (fd->isReference()) return; // skip external references
   
-  ti << "  <compound id=\"" << fd->getOutputFileBase() 
-     << "\"><name>" << convertToXML(fd->name()) << "</name>" << endl;
+  ti << "  <compound refid=\"" << fd->getOutputFileBase() 
+     << "\" kind=\"file\"><name>" << convertToXML(fd->name()) 
+     << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+fd->getOutputFileBase()+".xml";
@@ -1796,8 +1802,8 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
 
   if (gd->isReference()) return; // skip external references
 
-  ti << "  <compound id=\"" << gd->getOutputFileBase() 
-     << "\"><name>" << convertToXML(gd->name()) << "</name>" << endl;
+  ti << "  <compound refid=\"" << gd->getOutputFileBase() 
+     << "\" kind=\"group\"><name>" << convertToXML(gd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+gd->getOutputFileBase()+".xml";
@@ -1857,7 +1863,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     for (pli.toFirst();(pi=pli.current());++pli)
     {
       t << "    <innerpage refid=\"" << pi->getOutputFileBase()
-        << "\"/>" << convertToXML(pi->title) << "</innerpage>" << endl;
+        << "\">" << convertToXML(pi->title) << "</innerpage>" << endl;
     }
   }
 
@@ -1869,7 +1875,8 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     for (gli.toFirst();(sgd=gli.current());++gli)
     {
       t << "    <innergroup refid=\"" << gd->getOutputFileBase()
-        << "\"/>" << convertToXML(sgd->groupTitle()) << "</innergroup>" << endl;
+        << "\">" << convertToXML(sgd->groupTitle()) 
+        << "</innergroup>" << endl;
     }
   }
 
@@ -1907,8 +1914,8 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
 
   if (pi->isReference()) return;
   
-  ti << "  <compound id=\"" << pi->getOutputFileBase() 
-     << "\"><name>" << convertToXML(pi->name) << "</name>" << endl;
+  ti << "  <compound refid=\"" << pi->getOutputFileBase() 
+     << "\" kind=\"page\"><name>" << convertToXML(pi->name) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+pi->getOutputFileBase()+".xml";

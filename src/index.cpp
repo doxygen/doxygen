@@ -417,11 +417,11 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
         }
         if (hasHtmlHelp)
         {
-          htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
         }
       }
       else
@@ -429,11 +429,11 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
         ol.writeIndexItem(0,0,cd->name());
         if (hasHtmlHelp)
         {
-          htmlHelp->addContentsItem(hasChildren,cd->name(),0);
+          htmlHelp->addContentsItem(hasChildren,cd->displayName(),0);
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,0,0,0,cd->name());
+          ftvHelp->addContentsItem(hasChildren,0,0,0,cd->displayName());
         }
       }
       if (hasChildren)
@@ -492,11 +492,11 @@ void writeClassTree(BaseClassList *cl,int level)
       {
         if (hasHtmlHelp)
         {
-            htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+            htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
         }
         if (hasFtvHelp)
         {
-            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
         }
       }
       if (hasChildren)
@@ -530,11 +530,11 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
       {
         if (hasHtmlHelp)
         {
-          HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
         }
         if (hasFtvHelp)
         {
-          FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+          FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
         }
       }
       if (hasChildren)
@@ -624,11 +624,11 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
           }
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+            htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
           }
         }
         else
@@ -636,11 +636,11 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
           ol.writeIndexItem(0,0,cd->displayName());
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(hasChildren,cd->name(),0);
+            htmlHelp->addContentsItem(hasChildren,cd->displayName(),0);
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(hasChildren,0,0,0,cd->name());
+            ftvHelp->addContentsItem(hasChildren,0,0,0,cd->displayName());
           }
         }
         if (hasChildren) 
@@ -1140,11 +1140,11 @@ void writeNamespaceIndex(OutputList &ol)
       //ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
-        htmlHelp->addContentsItem(FALSE,nd->name(),nd->getOutputFileBase());
+        htmlHelp->addContentsItem(FALSE,nd->displayName(),nd->getOutputFileBase());
       }
       if (hasFtvHelp)
       {
-        ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->name());
+        ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->displayName());
       }
     }
   }
@@ -1216,11 +1216,11 @@ void writeAnnotatedClassList(OutputList &ol)
       //ol.writeEndAnnoItem(cd->getOutputFileBase());
       if (hasHtmlHelp)
       {
-        HtmlHelp::getInstance()->addContentsItem(FALSE,cd->name(),cd->getOutputFileBase());
+        HtmlHelp::getInstance()->addContentsItem(FALSE,cd->displayName(),cd->getOutputFileBase());
       }
       if (hasFtvHelp)
       {
-        FTVHelp::getInstance()->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+        FTVHelp::getInstance()->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
       }
     }
   }

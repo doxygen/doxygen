@@ -360,53 +360,100 @@ int guessSection(const char *name)
   return 0;
 }
 
-QCString resolveTypeDef(Definition *d,const QCString &name)
+QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
+                        Definition **typedefContext)
 {
-  //printf("resolveTypeDef(%s,%s)\n",d ? d->name().data() : "<none>",name.data());
+  //printf("resolveTypeDef(%s,%s)\n",
+  //          context ? context->name().data() : "<none>",qualifiedName.data());
   QCString result;
-  if (name.isEmpty()) return result;
+  if (qualifiedName.isEmpty()) return result;
 
-  Definition *mContext=d;
+  Definition *mContext=context;
+  if (typedefContext) *typedefContext=context;
+
+  // see if the qualified name has a scope part
+  int scopeIndex = qualifiedName.findRev("::");
+  QCString resName=qualifiedName;
+  if (scopeIndex!=-1) // strip scope part for the name
+  {
+    resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
+  }
+  else
+  {
+    resName=qualifiedName;
+  }
   MemberDef *md=0;
   while (mContext && md==0)
   {
-    MemberNameSDict *mnd=0;
-    if (mContext->definitionType()==Definition::TypeClass)
+    // step 1: get the right scope
+    Definition *resScope=mContext;
+    if (scopeIndex!=-1) 
     {
-      mnd=&Doxygen::memberNameSDict;
-    }
-    else
-    {
-      mnd=&Doxygen::functionNameSDict;
-    }
-    MemberName *mn=mnd->find(name);
-    if (mn)
-    {
-      MemberNameIterator mni(*mn);
-      MemberDef *tmd=0;
-      for (;(tmd=mni.current());++mni)
+      // split-off scope part
+      QCString resScopeName = qualifiedName.left(scopeIndex);
+      //printf("resScopeName=`%s'\n",resScopeName.data());
+
+      // look-up scope in context
+      int is,ps=0;
+      int l;
+      while ((is=getScopeFragment(resScopeName,ps,&l))!=-1)
       {
-        //printf("Found member %s scope=%p mContext=%p\n",tmd->name().data(),
-        //    tmd->getOuterScope(),mContext);
-        if (tmd->isTypedef() && tmd->getOuterScope()==mContext)
+        QCString qualScopePart = resScopeName.mid(is,l);
+        QCString tmp = resolveTypeDef(context,qualScopePart);
+        if (!tmp.isEmpty()) qualScopePart=tmp;
+        resScope = resScope->findInnerCompound(qualScopePart);
+        //printf("qualScopePart=`%s' resScope=%p\n",qualScopePart.data(),resScope);
+        if (resScope==0) break;
+        ps=is+l;
+      }
+    }
+    
+    // step 2: get the member
+    if (resScope) // no scope or scope found in the current context 
+    {
+      //printf("scope found: %s, look for typedef %s\n",
+      //     resScope->qualifiedName().data(),resName.data());
+      MemberNameSDict *mnd=0;
+      if (resScope->definitionType()==Definition::TypeClass)
+      {
+        mnd=&Doxygen::memberNameSDict;
+      }
+      else
+      {
+        mnd=&Doxygen::functionNameSDict;
+      }
+      MemberName *mn=mnd->find(resName);
+      if (mn)
+      {
+        MemberNameIterator mni(*mn);
+        MemberDef *tmd=0;
+        for (;(tmd=mni.current());++mni)
         {
-          md=tmd;
+          //printf("Found member %s scope=%p mContext=%p\n",tmd->name().data(),
+          //    tmd->getOuterScope(),mContext);
+          if (tmd->isTypedef() && tmd->getOuterScope()==resScope)
+          {
+            md=tmd;
+          }
         }
       }
     }
     mContext=mContext->getOuterScope();
   }
+
+  // step 3: get the member's type
   if (md)
   {
     //printf("Found typedef name `%s' in scope `%s' value=`%s'\n",
-    //    name.data(),d->name().data(),md->typeString()
+    //    qualifiedName.data(),context->name().data(),md->typeString()
     //    );
     result=md->typeString();
+    if (typedefContext) *typedefContext=md->getOuterScope();
   }
   else
   {
     //printf("Typedef `%s' not found in scope `%s'!\n",
-    //    name.data(),d ? d->name().data() : "<global>");
+    //    qualifiedName.data(),context ? context->name().data() : "<global>");
   }
   return result;
   
@@ -456,32 +503,27 @@ ClassDef *getResolvedClass(
   QCString name = n;
   if (scope==0) scope=Doxygen::globalScope;
   if (name.isEmpty()) return 0;
-  int index = name.findRev("::");
+  //int index = name.findRev("::");
   ClassDef *cd=0;
 
+  //printf("===================\n");
   do
   {
-    //fprintf(stderr,"getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
-    QCString subst;
-    if (index!=-1)
-    {
-      subst = resolveTypeDef(scope,name.right(name.length()-index-2));
-    }
-    else
-    {
-      subst = resolveTypeDef(scope,name);
-    }
-    //printf("  typedef subst=`%s'\n",subst.data());
+    //printf("trying getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
+    Definition *typedefScope = 0;
+    QCString subst = resolveTypeDef(scope,name,&typedefScope);
 
     if (!subst.isEmpty())
     {
+      //printf("  typedef value=%s typedefScope=%s\n",subst.data(),
+      //          typedefScope?typedefScope->qualifiedName().data():0);
       // strip * and & from n
       int ip=subst.length()-1;
       while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
       subst=subst.left(ip+1);
 
       if (pIsTypeDef) *pIsTypeDef=TRUE;
-      if (subst==name) // avoid resolving typedef struct foo foo; 
+      if (subst==name) // avoid resolving "typedef struct foo foo"; 
       {
         cd = Doxygen::classSDict.find(name);
         if (cd) goto found;
@@ -492,8 +534,8 @@ ClassDef *getResolvedClass(
         QCString newSubst;
         QCString typeName = subst;
 
-        if (index!=-1) typeName.prepend(name.left(index)+"::");
-        while (!(newSubst=resolveTypeDef(scope,typeName)).isEmpty() 
+        //if (index!=-1) typeName.prepend(name.left(index)+"::");
+        while (!(newSubst=resolveTypeDef(typedefScope,typeName)).isEmpty() 
             && count<10)
         {
           if (typeName==newSubst) 
@@ -511,7 +553,7 @@ ClassDef *getResolvedClass(
           //printf("  getResolvedClass `%s'->`%s'\n",name.data(),subst.data());
 
           typeName=newSubst;
-          if (index!=-1) typeName.prepend(name.left(index)+"::");
+          //if (index!=-1) typeName.prepend(name.left(index)+"::");
           count++;
         }
         if (count==10)
@@ -523,7 +565,14 @@ ClassDef *getResolvedClass(
         else
         {
           int i;
-          cd = Doxygen::classSDict.find(typeName);
+          if (typedefScope)
+          {
+            cd = Doxygen::classSDict.find(typedefScope->qualifiedName()+"::"+typeName);
+          }
+          if (cd==0)
+          {
+            cd = Doxygen::classSDict.find(typeName);
+          }
           //printf("  getClass: subst %s->%s cd=%p\n",name.data(),typeName.data(),cd);
           if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
           {
@@ -534,8 +583,9 @@ ClassDef *getResolvedClass(
         }
       }
     }
-    else
+    else // not a typedef
     {
+      //printf("  not a typedef value\n");
       if (pIsTypeDef) *pIsTypeDef=FALSE;
       if (scope!=Doxygen::globalScope) 
         cd = Doxygen::classSDict.find(scope->name()+"::"+name);
@@ -550,7 +600,7 @@ ClassDef *getResolvedClass(
   } while (scope);
 
 found:
-  //fprintf(stderr, "getResolvedClass()=%s\n",cd?cd->name().data():"<none>");
+  //printf("getResolvedClass()=%s\n",cd?cd->name().data():"<none>");
   return cd;
 }
 

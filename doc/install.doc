@@ -395,6 +395,9 @@ Here is what is required:
     download only a <a href="http://www.doxygen.org/dl/cygwin_tools.zip">small subset</a> 
     \latexonly(see {\tt http://www.doxygen.org/dl/cygwin\_tools.zip})\endlatexonly
     of the cygwin tools that I put together just to compile doxygen.
+
+    As a third alternative one could use the GNUWin32 tools that can be
+    found at http://gnuwin32.sourceforge.net/
     
     Make sure the <code>BISONLIB</code> environment variable points to the
     location where the files <code>bison.simple</code> and 
