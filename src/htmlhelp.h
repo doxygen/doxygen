@@ -87,6 +87,7 @@ class HtmlHelp
     HtmlHelpIndex *index;
     int dc;
     QStrList indexFiles;
+    QDict<void> indexFileDict;
     static HtmlHelp *theInstance;
 };
 

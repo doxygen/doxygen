@@ -262,12 +262,12 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    a->attrib = g_curArgAttrib.copy();
 					    if (i>=0 && g_curArgTypeName.at(i)!=':')
 					    { // type contains a name
-					      a->type = g_curArgTypeName.left(i+1).stripWhiteSpace();
+					      a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
 					      a->name = g_curArgTypeName.right(g_curArgTypeName.length()-i-1);
 					    }
 					    else // assume only the type was specified, try to determine name later 
 					    {
-					      a->type = g_curArgTypeName.stripWhiteSpace();  
+					      a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
 					    }
 					    a->array  = removeRedundantWhiteSpace(g_curArgArray);
 					    a->defval = g_curArgDefValue.copy();
@@ -365,7 +365,6 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
   if (al==0) return; 
   if (argsString==0) return;
   g_inputString   = argsString;
-  //printf("stringToArgumentList(%s)\n",argsString);
   g_inputPosition = 0;
   g_curArgTypeName.resize(0);
   g_curArgDefValue.resize(0);
@@ -374,6 +373,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
   defargsYYrestart( defargsYYin );
   BEGIN( Start );
   defargsYYlex();
+  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
 }
 
 extern "C" { // some bogus code to keep the compiler happy

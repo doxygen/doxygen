@@ -871,6 +871,8 @@ void writeFileIndex(OutputList &ol)
         {
           path=stripFromPath(fd->getPath().copy());
         }
+        QCString fullName=fd->name();
+        if (!path.isEmpty()) fullName.prepend(path+"/");
 
         // --------------- LaTeX/RTF only -------------------------
         if (doc)
@@ -907,11 +909,11 @@ void writeFileIndex(OutputList &ol)
           ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE,fd->name(),fd->getOutputFileBase());
+            htmlHelp->addContentsItem(FALSE,fullName,fd->getOutputFileBase());
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+            ftvHelp->addContentsItem(FALSE,fd->getReference(),fd->getOutputFileBase(),0,fullName);
           }
         }
         else

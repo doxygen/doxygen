@@ -357,8 +357,12 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDocPrefixItem() = 0;
     virtual void startMemberDocName() = 0;
     virtual void endMemberDocName() = 0;
-    virtual void startParameter(bool) = 0;
-    virtual void endParameter(bool) = 0;
+    virtual void startParameterType(bool) = 0;
+    virtual void endParameterType() = 0;
+    virtual void startParameterName() = 0;
+    virtual void endParameterName(bool,bool) = 0;
+    virtual void startParameterList() = 0;
+    virtual void endParameterList() = 0;
 
   protected:
     QTextStream fs;

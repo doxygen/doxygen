@@ -27,48 +27,47 @@ f_prefix=/usr
 f_insttool=NO
 f_english=NO
 f_wizard=NO
-f_xmlgen=NO
 
 while test -n "$1";  do
   case $1 in
-    --prefix)
+    --prefix | -prefix)
        shift; f_prefix=$1
        ;;
-    --shared)
+    --docdir | -docdir)
+       shift; f_docdir=$1/doxygen
+       ;;
+    --shared | -shared)
        f_shared=YES
        ;;
-    --static)
+    --static | -static)
        f_shared=NO
        ;;
-    --release)
+    --release | -release)
        f_debug=NO
        ;;
-    --debug)
+    --debug | -debug)
        f_debug=YES
        ;;
-    --english-only)
+    --english-only | -english-only)
        f_english=YES
        ;;
-    --platform)
+    --platform | -platform)
        shift; f_platform=$1
        ;;
-    --make)
+    --make | -make)
        shift; f_make=$1
        ;;
-    --dot)
+    --dot | -dot)
        shift; f_dot=$1
        ;;
-    --perl)
+    --perl | -perl)
        shift; f_perl=$1
        ;;
-    --install)
+    --install | -install)
        shift; f_insttool=$1
        ;;
-    --with-doxywizard)
+    --with-doxywizard | -with-doxywizard)
        f_wizard=YES
-       ;;
-    --with-xmlgen)
-       f_xmlgen=YES
        ;;
     -h | -help | --help)
        f_help=y
@@ -86,45 +85,35 @@ if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--make name] [--dot name] [--platform target] 
-          [--prefix dir] [--install name] [--english-only] 
-          [--with-doxywizard] [--with-xmlgen]
+          [--prefix dir] [--docdir dir] [--install name] [--english-only] 
+          [--with-doxywizard] 
 
 Options: 
 
   --help                Print this help
-
   --shared | --static   Build using shared or static linking
 		        [default: shared]
-
   --release | --debug   Build for release or debug 
 		        [default: release]
-
   --perl name           Use \`name' as the name of the perl interpreter 
 		        [default: autodetect]
-
   --make name           Use \`name' as the name of the GNU make tool
 		        [default: autodetect]
-
   --dot name            Use \`name' as the name of the dot tool that
                         is part of the Graphviz package.
                         [default: autodetect]
-
   --platform target     Do not detect platform but use \`target' instead.
                         See PLATFORMS for a list of possibilities
-
-  --prefix dir          Installation prefix directory
+  --prefix dir          Installation prefix directory (doxygen will be
+                        put in PREFIX/bin/doxygen)
                         [default: /usr]
-  
+  --docdir dir          Documentation is installed in DOCDIR/doxygen/
+                        [default: PREFIX/share/doc/packages]
   --install name        Use \`name' as the name of the GNU install tool
                         [default: autodetect]
-
   --english-only        Include support for English only.
-
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt 2.x.x
-
-  --with-xmlgen         Builds a separate doxygen executable that 
-                        generates XML output.
 
 EOF
   test "$f_error" = y && exit 1
@@ -206,6 +195,10 @@ if test -z "$f_platform"; then
   f_plf_auto=YES
 fi
 
+if test -z "$f_docdir"; then
+  f_docdir=$f_prefix/share/doc/packages/doxygen
+fi
+
 if test "$f_plf_auto" = NO; then
   echo -n "  Checking for platform $f_platform... "
   if test '!' -d tmake/lib/$f_platform; then
@@ -277,10 +270,8 @@ if test "$f_insttool" = NO; then
     for j in $install_dirs; do
       if test -x "$j/$i"; then
         install_found=YES
-        if $j/$i --version 2>/dev/null | grep GNU >/dev/null; then
-          install_prog="$j/$i"
-          break 2
-        fi
+        install_prog="$j/$i"
+        break 2
       fi
     done
   done
@@ -371,6 +362,7 @@ VERSION   = `cat VERSION`
 INSTALL   = $f_prefix
 INSTTOOL  = $f_insttool
 DOXYDOCS  = ..
+DOCDIR    = $f_docdir
 EOF
 
 if test "$f_dot" != NO; then
@@ -406,7 +398,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in addon/xmlgen/Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/xmlread/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/xmlparse/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -427,18 +419,10 @@ EOF
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard" >> $DST
        fi
-       if test $f_xmlgen = YES; then
-         echo "	\$(MAKE) -C addon/xmlgen" >> $DST
-       fi
        echo "" >> $DST
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard install" >> $DST
-       fi
-       echo "" >> $DST
-       echo "xmlgen_install:" >> $DST
-       if test $f_xmlgen = YES; then
-         echo "	\$(MAKE) -C addon/xmlgen install" >> $DST
        fi
        echo "" >> $DST
      fi
@@ -446,7 +430,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlread/xmlread.pro.in addon/xmlgen/xmlgen.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlparse/xmlparse.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

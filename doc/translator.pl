@@ -575,7 +575,7 @@ xxxTABLE_FOOTxxx
     ##}}}
     
     # Finish the tables, and substitute the mark in the doc
-    # template by the contatenation of the tables.  Add NOSPAM to
+    # template by the concatenation of the tables.  Add NOSPAM to
     # email addresses in the HTML table.  Replace the special
     # character sequences. #{{{
     #

@@ -2165,28 +2165,68 @@ void Config::create()
   // The IMAGE_PATTERNS tag is now officially obsolete.
 }
 
+static QCString configFileToString(const char *name)
+{
+  if (name==0 || name[0]==0) return 0;
+  QFile f;
+
+  bool fileOpened=FALSE;
+  if (name[0]=='-' && name[1]==0) // read from stdin
+  {
+    fileOpened=f.open(IO_ReadOnly,stdin);
+    if (fileOpened)
+    {
+      const int bSize=4096;
+      QCString contents(bSize);
+      int totalSize=0;
+      int size;
+      while ((size=f.readBlock(contents.data()+totalSize,bSize))==bSize)
+      {
+        totalSize+=bSize;
+        contents.resize(totalSize+bSize); 
+      }
+      totalSize+=size+2;
+      contents.resize(totalSize);
+      contents.at(totalSize-2)='\n'; // to help the scanner
+      contents.at(totalSize-1)='\0';
+      return contents;
+    }
+  }
+  else // read from file
+  {
+    QFileInfo fi(name);
+    if (!fi.exists() || !fi.isFile())
+    {
+      config_err("Error: file `%s' not found\n",name);
+      return "";
+    }
+      f.setName(name);
+      fileOpened=f.open(IO_ReadOnly);
+      if (fileOpened)
+      {
+        int fsize=f.size();
+        QCString contents(fsize+2);
+        f.readBlock(contents.data(),fsize);
+        if (fsize==0 || contents[fsize-1]=='\n') 
+          contents[fsize]='\0';
+        else
+          contents[fsize]='\n'; // to help the scanner
+        contents[fsize+1]='\0';
+        f.close();
+        return contents;
+      }
+  }
+  if (!fileOpened)  
+  {
+    config_err("Error: cannot open file `%s' for reading\n",name);
+  }
+  return "";
+}
+
 
 bool Config::parse(const char *fn)
 {
-  QFileInfo fi( fn );
-  if (!fi.exists())
-  {
-    return FALSE;
-  }
-  QFile f( fn );
-  if (!f.open(IO_ReadOnly))
-  {
-    return FALSE;
-  }
-  // read file into a string buffer
-  int fsize = fi.size();
-  QCString contents(fsize+1); // add room for \0 terminator
-  if (f.readBlock(contents.data(),fsize)!=fsize)
-  {
-    return FALSE;
-  }
-  contents[fsize]='\0';
-
+  QCString contents = configFileToString(fn); 
   config = Config::instance();
   inputString   = contents.data();
   inputPosition = 0;

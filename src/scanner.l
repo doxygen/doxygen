@@ -329,6 +329,7 @@ static void checkDocs()
   }
 }
 
+#if 0
 static QCString extractName(const QCString &s)
 {
   //static const QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
@@ -354,6 +355,7 @@ static QCString extractName(const QCString &s)
         ) l--;
   return removeRedundantWhiteSpace(result.left(l+1));
 }
+#endif
 
 static void setContext()
 {
@@ -1459,16 +1461,18 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->type=current->type.simplifyWhiteSpace();
 					  current->args=current->args.simplifyWhiteSpace();
 					  current->name=current->name.stripWhiteSpace();
-					  if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
-					  {
-					    // add typedef to dictionary
-					    QCString dest = extractName(current->type.right(current->type.length()-8));
-					    if (Doxygen::typedefDict[current->name]==0 && !dest.isEmpty())
-					    {		
-					      //printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
-                                              Doxygen::typedefDict.insert(current->name, new QCString(dest));
-					    }
-					  }
+					  //if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
+					  //{
+					  //  // add typedef to dictionary
+					  //  QCString dest = extractName(current->type.right(current->type.length()-8));
+					  //  if (Doxygen::typedefDict[current->name]==0 && !dest.isEmpty())
+					  //  {		
+					  //    //printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
+					  //    QCString scope;
+					  //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
+                                          //    Doxygen::typedefDict.insert(current->name, new TypedefInfo(dest,scope));
+					  //  }
+					  //}
 					  current->section = Entry::VARIABLE_SEC ;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1714,16 +1718,18 @@ TITLE     [tT][iI][tT][lL][eE]
 					    //if (!current->name.isEmpty() && current->name[0]!='@' && 
 					    //    current->parent->section & Entry::COMPOUND_MASK)
 					    //  varEntry->type+=current->parent->name+"::";
-					    if (isTypedef)
-					    {
-					      varEntry->type.prepend("typedef ");
-					      //printf("current->name = %s %s\n",current->name.data(),msName.data());
-					      if (!current->name.isEmpty() && current->name.at(0)!='@')
-					      {
-						//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
-                                                Doxygen::typedefDict.insert(msName,new QCString(current->name));
-					      }
-					    }
+					    //if (isTypedef)
+					    //{
+					    //  varEntry->type.prepend("typedef ");
+					    //  //printf("current->name = %s %s\n",current->name.data(),msName.data());
+					    //  if (!current->name.isEmpty() && current->name.at(0)!='@')
+					    //  {
+					    //	//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
+					    //    QCString scope;
+					    //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
+                                            //    Doxygen::typedefDict.insert(msName,new TypedefInfo(current->name,scope));
+					    //  }
+					    //}
 					    varEntry->type+=current->name+msType;
 					    varEntry->fileName = yyFileName;
 					    varEntry->startLine = yyLineNr;
@@ -2397,15 +2403,17 @@ TITLE     [tT][iI][tT][lL][eE]
 					  }
 					  else
 					  {
-					    if (isTypedef)
-					    {
-					      //QCString dest = extractName(current->name);
-				   	      //printf("3>>>>>>>>>> adding %s->%s\n",yytext,current->name.data());
-                                              Doxygen::typedefDict.insert(yytext,new QCString(current->name));
-					      //current->extends->append(
-					      //   new BaseInfo(yytext,Public,Normal)
-					      //		      );
-					    }
+					    //if (isTypedef)
+					    //{
+					    //  //QCString dest = extractName(current->name);
+				   	    //  //printf("3>>>>>>>>>> adding %s->%s\n",yytext,current->name.data());
+					    //  QCString scope;
+					    //  if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
+                                            //  Doxygen::typedefDict.insert(yytext,new TypedefInfo(current->name,scope));
+					    //  //current->extends->append(
+					    //  //   new BaseInfo(yytext,Public,Normal)
+					    //  //		      );
+					    //}
 					    current->type += ' ' ;
 					    current->type += current->name ;
 					    current->name = yytext ;

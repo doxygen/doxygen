@@ -16,7 +16,7 @@
  * The translation into French was provided by
  *   Christophe Bordeux (bordeux@lig.di.epfl.ch)
  *   and after version 1.2.0 by Xavier Outhier (xouthier@yahoo.fr)
- *   member of of the non for profit association D2SET (http://www.d2set.org,
+ *   member of the non for profit association D2SET (http://www.d2set.org,
  *   d2set@d2set.org).
  */
 

@@ -1,7 +1,7 @@
 Name: doxygen
-Version: 1.2.8_20010723
+Version: 1.2.9
 Summary: documentation system for C, C++ and IDL
-Release: 3
+Release: 4
 Source: doxygen-%{version}.src.tar.gz
 
 Copyright: GPL
@@ -41,13 +41,20 @@ Autor:
 %setup -n doxygen-%{version}
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard
+CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard --with-xmlgen
+# the next path is Suse specific
+QTDIR=/usr/lib/qt2
+PATH=${QTDIR}/bin:$PATH
+export QTDIR PATH
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install INSTALL=$RPM_BUILD_ROOT/usr DOCDIR=$RPM_BUILD_ROOT%{_docdir}/doxygen
-install -m 644 LICENSE LANGUAGE.HOWTO PLATFORMS README VERSION $RPM_BUILD_ROOT%{_docdir}/doxygen
+make install install_docs INSTALL=$RPM_BUILD_ROOT/usr \
+                          DOCDIR=$RPM_BUILD_ROOT%{_docdir}/doxygen
+install -m 644 LICENSE LANGUAGE.HOWTO PLATFORMS README VERSION \
+        $RPM_BUILD_ROOT%{_docdir}/doxygen
+
 find $RPM_BUILD_ROOT -name CVS -type d -depth -exec rm -r {} \;
 
 %files
@@ -59,6 +66,11 @@ find $RPM_BUILD_ROOT -name CVS -type d -depth -exec rm -r {} \;
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sun Jun 10 2001 Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
+ - update to 1.2.8.1
+* Tue Jun 5 2001 Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
+ - update to 1.2.8
+ - enable XML-Generator
 * Mon Apr 16 2001 Jens Seidel <jensseidel@users.sourceforge.net>
  - new decription (english, german)
  - use of %{_docdir}

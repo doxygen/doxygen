@@ -12,7 +12,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-PROJECT_NAME      = 
+PROJECT_NAME      = "Doxygen manual"
 OUTPUT_DIRECTORY  = ..
 HTML_HEADER       = 
 HTML_FOOTER       = 

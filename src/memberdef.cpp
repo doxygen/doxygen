@@ -75,8 +75,18 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ArgumentList *argList=md->argumentList();
   if (argList==0) return; // member has no function like argument list
   if (!md->isDefine()) ol.docify(" ");
+
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.endMemberDocName();
+  ol.startParameterList(); 
+  ol.enableAll();
+  ol.disable(OutputGenerator::Html);
   ol.docify("("); // start argument list
   ol.endMemberDocName();
+  ol.popGeneratorState();
+  //printf("===> name=%s isDefine=%d\n",md->name().data(),md->isDefine());
+
   Argument *a=argList->first();
   QCString cName;
   //if (md->scopeDefTemplateArguments())
@@ -106,10 +116,10 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   //printf("~~~ %s cName=%s\n",md->name().data(),cName.data());
 
   //if (!md->isDefine()) ol.startParameter(TRUE); else ol.docify(" ");
-  ol.startParameter(TRUE); 
   bool first=TRUE;
   while (a)
   {
+    if (!md->isDefine() || first) ol.startParameterType(first);
     QRegExp re(")(");
     int vp;
     if (!a->attrib.isEmpty()) // argument has an IDL attribute
@@ -127,6 +137,11 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       QCString n=a->type;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n);
+    }
+    if (!md->isDefine())
+    {
+      ol.endParameterType();
+      ol.startParameterName();
     }
     if (!a->name.isEmpty()) // argument has a name
     { 
@@ -146,7 +161,8 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (vp!=-1) // write the part of the argument type 
                 // that comes after the name
     {
-      linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),a->type.right(a->type.length()-vp));
+      linkifyText(TextGeneratorOLImpl(ol),scopeName,
+                  md->name(),a->type.right(a->type.length()-vp));
     }
     if (!a->defval.isEmpty()) // write the default value
     {
@@ -161,17 +177,30 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.docify(", "); // there are more arguments
       if (!md->isDefine()) 
       {
-        ol.endParameter(first);
-        ol.startParameter(FALSE);
+        ol.endParameterName(FALSE,FALSE);
+        ol.startParameterType(FALSE);
       }
     }
     first=FALSE;
   }
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  if (!first) ol.writeString("&nbsp;");
-  ol.popGeneratorState();
+  ol.disable(OutputGenerator::Html);
+  //if (!first) ol.writeString("&nbsp;");
   ol.docify(")"); // end argument list
+  ol.enableAll();
+  ol.disableAllBut(OutputGenerator::Html);
+  if (!md->isDefine()) 
+  {
+    if (first) ol.startParameterName();
+    ol.endParameterName(TRUE,argList->count()<2);
+  }
+  else 
+  {
+    ol.endParameterType();
+    ol.startParameterName();
+    ol.endParameterName(TRUE,TRUE);
+  }
+  ol.popGeneratorState();
   if (argList->constSpecifier)
   {
     ol.docify(" const");
@@ -250,6 +279,12 @@ MemberDef::MemberDef(const char *df,int dl,
   m_defTmpArgLists=0;
   initLines=0;
   type=t;
+  if (mt==Typedef && type.left(8)=="typedef ") type=type.mid(8);
+  if (type.left(7)=="struct ") type=type.right(type.length()-7);
+  if (type.left(6)=="class " ) type=type.right(type.length()-6);
+  if (type.left(6)=="union " ) type=type.right(type.length()-6);
+  type=removeRedundantWhiteSpace(type);
+
   args=a;
   args=removeRedundantWhiteSpace(args);
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
@@ -635,6 +670,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   QCString ltype(type);
+  if (mtype==Typedef) ltype.prepend("typedef ");
   // strip `static' keyword from ltype
   if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip `friend' keyword from ltype
@@ -1092,7 +1128,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.docify("]");
       ol.endTypewriter();
     }
-    if (!isDefine()) ol.endParameter(TRUE);
+    if (!isDefine() && argList) ol.endParameterList();
     ol.endMemberDoc();
     ol.endDoxyAnchor(cfname,anchor());
     ol.startIndent();
@@ -1108,6 +1144,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                        )
        )
     {
+      //printf("md=%s initLines=%d init=`%s'\n",name().data(),initLines,init.data());
       ol.startBold();
       if (mtype==Define)
         parseText(ol,theTranslator->trDefineValue());
@@ -1439,7 +1476,8 @@ bool MemberDef::isLinkableInProject() const
          ((hasDocumentation() && !isReference())  
          ) && 
          (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && // not a private class member
-         (classDef!=0 || Config_getBool("EXTRACT_STATIC") || !isStatic()); // not a static file/namespace member
+         (classDef!=0 || Config_getBool("EXTRACT_STATIC") || 
+          !isStatic()); // not a static file/namespace member
 }
 
 bool MemberDef::isLinkable() const

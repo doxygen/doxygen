@@ -103,6 +103,7 @@ ClassDef::ClassDef(
   m_templateMaster =0;
   m_templBaseClassNames = 0;
   m_artificial = FALSE;
+  m_isAbstract = FALSE;
 }
 
 // destroy the class definition
@@ -453,6 +454,11 @@ void ClassDef::insertMember(MemberDef *md)
     
   }
 
+  if (md->virtualness()==Pure)
+  {
+    m_isAbstract=TRUE;
+  }
+
   MemberInfo *mi = new MemberInfo((MemberDef *)md,
                        md->protection(),md->virtualness(),FALSE);
   MemberNameInfo *mni=0;
@@ -660,7 +666,10 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
         if (a) ol.docify(", ");
       }
       ol.docify(">");
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.lineBreak();
+      ol.popGeneratorState();
     }
     ol.docify(type.lower()+" "+name);
     ol.endSubsubsection();
@@ -1186,8 +1195,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ClassDef *innerCd;
     for (cli.toFirst();(innerCd=cli.current());++cli)
     {
-      msg("Generating docs for nested compound %s...\n",innerCd->name().data());
-      innerCd->writeDocumentation(ol);
+      if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0)
+      {
+        msg("Generating docs for nested compound %s...\n",innerCd->name().data());
+        innerCd->writeDocumentation(ol);
+      }
     }
   }
 }

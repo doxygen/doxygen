@@ -12,9 +12,8 @@
  *
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <chino@grad.icmc.sc.usp.br>
- *   Version: 1.2.6.1 (2001/04/13)
+ *   Version: 1.2.8.2 (2001/07/24)
  */
-
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
@@ -33,8 +32,9 @@ class TranslatorBrazilian: public Translator
      */
     virtual QCString idLanguage()
     {
+      /* I'm not sure if it is correct. I did not found the documentation
+      of BabelPackage. If you know the right string, please contact me. */
       return "portuges";
-      /* I'm not sure if it is correct. I did not found the documentation of BabelPackage*/
     }
 
     /*! Used to get the command(s) for the language support. This method
@@ -46,10 +46,6 @@ class TranslatorBrazilian: public Translator
     {
       return "Brazilian";
     }
-
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString latexBabelPackage()
-    { return ""; }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -137,12 +133,6 @@ class TranslatorBrazilian: public Translator
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return "definida em"; }
-
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    virtual QCString trVerbatimText(const char *f)
-    { return (QCString)"Este é o texto original do arquivo "+f+"."; }
 
     // quick reference sections
 
@@ -417,10 +407,6 @@ class TranslatorBrazilian: public Translator
     virtual QCString trEnumerationValues()
     { return "Valores Enumerados"; }
 
-    /*! This is used in man pages as the author section. */
-    virtual QCString trAuthor()
-    { return "Autor"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -478,12 +464,6 @@ class TranslatorBrazilian: public Translator
       }
     }
 
-    /*! This is used in the documentation of a group before the list of
-     *  links to documented files
-     */
-    virtual QCString trFiles()
-    { return "Arquivos"; }
-
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
@@ -530,10 +510,6 @@ class TranslatorBrazilian: public Translator
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return "Data"; }
-
-    /*! this text is generated when the \\author command is used. */
-    virtual QCString trAuthors()
-    { return "Autor(es)"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
@@ -1322,6 +1298,5 @@ and
       if (!singular)  result+="es";
       return result;
     }
-
 };
 #endif

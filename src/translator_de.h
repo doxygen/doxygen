@@ -49,6 +49,9 @@
 //    - Update for "new since 1.2.7-20010524" version:
 //      removed trAuthors(), trAuthor(), added trAuthor(bool, bool)
 //
+//   2001/07/24 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - trClassDocumentation() updated as in the English translator.
+//
 // Todo: 
 //   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
 //     strings (see translator_en.h)
@@ -334,7 +337,12 @@ class TranslatorGerman : public Translator
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { return "Klassen-Dokumentation"; }
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        return "Datenstruktur-Dokumentation"; 
+      else
+        return "Klassen-Dokumentation";
+    }
 
     /*  This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
@@ -990,7 +998,8 @@ class TranslatorGerman : public Translator
       return "Erklärung des Graphen";
     }
 
-    /* page explaining how the dot graph's should be interpreted */
+    /* page explaining how the dot graph's should be interpreted 
+       The %A in the text below are to prevent link to classes called "A". */
     virtual QCString trLegendDocs()
     {
       return 

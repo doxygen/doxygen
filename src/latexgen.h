@@ -239,8 +239,12 @@ class LatexGenerator : public OutputGenerator
     void endMemberDocPrefixItem() {}
     void startMemberDocName() {}
     void endMemberDocName() {}
-    void startParameter(bool) {}
-    void endParameter(bool) {}
+    void startParameterType(bool) {}
+    void endParameterType() {}
+    void startParameterName() {}
+    void endParameterName(bool,bool) {}
+    void startParameterList() {}
+    void endParameterList() {}
 
     void startFontClass(const char *) {}
     void endFontClass() {}

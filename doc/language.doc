@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.8-20010723), 24 languages 
+Currently (version 1.2.8-20010726), 24 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -101,13 +101,13 @@ when the translator was updated.
   <TR BGCOLOR="#ffffff">
       <TD>French</TD>  
       <TD>Xavier Outhier</TD>
-      <TD>xavier.outhier@NOSPAM.anfdata.cz</TD>
+      <TD>xouthier@NOSPAM.yahoo.fr</TD>
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>German</TD>  
       <TD>Jens Seidel<br>Jens Breitenstein</TD>
-      <TD>jensseidel@NOSPAM.users.sourceforge.net<br>Jens.Breitenstein@NOSPAM.tlc.de</TD>
+      <TD>jensseidel@NOSPAM.users.sf.net<br>Jens.Breitenstein@NOSPAM.tlc.de</TD>
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -222,9 +222,9 @@ when the translator was updated.
   \hline
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & 1.0.0 \\
   \hline
-  French & Xavier Outhier & {\tt xavier.outhier@anfdata.cz} & up-to-date \\
+  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
   \hline
-  German & Jens Seidel & {\tt jensseidel@users.sourceforge.net} & up-to-date \\
+  German & Jens Seidel & {\tt jensseidel@users.sf.net} & up-to-date \\
    & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} &  \\
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
@@ -295,13 +295,13 @@ Just follow these steps:
 \endverbatim
     after the <code>if { ... }</code>
 <li>Edit libdoxygen.pro.in and add \c translator_xx.h to 
-    the \c HEADERS line in the file doxygen.pro.
+    the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> twice.
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 
-     name of the your language (use lower case characters only). Depending
+     name of your language (use lower case characters only). Depending
      on the language you may also wish to change the member functions 
      latexLanguageSupportCommand(), idLanguageCharset() and others
      (you will recognize them when you start the work).

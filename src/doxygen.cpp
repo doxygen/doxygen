@@ -98,7 +98,7 @@ StringDict     Doxygen::aliasDict(257);          // aliases
 FileNameDict   *Doxygen::includeNameDict;        // include names
 FileNameDict   *Doxygen::exampleNameDict;        // examples
 FileNameDict   *Doxygen::imageNameDict;          // images
-StringDict     Doxygen::typedefDict(1009);       // all typedefs
+//TypedefDict    Doxygen::typedefDict(1009);       // all typedefs
 StringDict     Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict     Doxygen::tagDestinationDict(257); // all tag locations
                                         // a member group
@@ -140,7 +140,7 @@ void clearAll()
   Doxygen::includeNameDict->clear();  
   Doxygen::exampleNameDict->clear();  
   Doxygen::imageNameDict->clear();     
-  Doxygen::typedefDict.clear();      
+  //Doxygen::typedefDict.clear();      
   Doxygen::groupDict.clear();         
   Doxygen::formulaDict.clear();      
   Doxygen::formulaNameDict.clear();  
@@ -172,7 +172,7 @@ void statistics()
   fprintf(stderr,"--- aliasDict stats ----\n");
   Doxygen::aliasDict.statistics();
   fprintf(stderr,"--- typedefDict stats ----\n");
-  Doxygen::typedefDict.statistics();
+  //Doxygen::typedefDict.statistics();
   fprintf(stderr,"--- namespaceAliasDict stats ----\n");
   Doxygen::namespaceAliasDict.statistics();
   fprintf(stderr,"--- groupDict stats ----\n");
@@ -937,9 +937,6 @@ static void buildClassList(Entry *root)
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
         if (d==0)
         {
-          // TODO: Due to the order in which the tag file is written
-          // a nested class can be found before its parent!
-          //
           //warn(root->fileName,root->startLine,
           //     "Warning: Internal inconsistency: scope for class %s not "
           //     "found!\n",fullName.data()
@@ -1263,8 +1260,6 @@ static void findUsingDeclarations(Entry *root)
   }
 }
 
-
-
 //----------------------------------------------------------------------
 
 static MemberDef *addVariableToClass(
@@ -1401,6 +1396,7 @@ static MemberDef *addVariableToClass(
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileName);
+  root->section = Entry::EMPTY_SEC;
   return md;
 }
 
@@ -1569,6 +1565,7 @@ static MemberDef *addVariableToFile(
     Doxygen::functionNameDict.insert(name,mn);
     Doxygen::functionNameList.append(mn);
   }
+  root->section = Entry::EMPTY_SEC;
   return md;
 }
 
@@ -1983,6 +1980,7 @@ static void buildMemberList(Entry *root)
         cd->insertUsedFile(root->fileName);
 
         addMemberToGroups(root,md);
+        root->section = Entry::EMPTY_SEC;
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
@@ -2176,6 +2174,7 @@ static void buildMemberList(Entry *root)
             Doxygen::functionNameList.append(mn);
           }
           addMemberToGroups(root,md);
+          root->section = Entry::EMPTY_SEC;
         }
         else
         {
@@ -2397,28 +2396,6 @@ static void replaceNamespaceAliases(QCString &scope,int i)
   //printf("replaceNamespaceAliases() result=%s\n",scope.data());
 }
 
-static QCString resolveTypeDef(const QCString &name)
-{
-  QCString typeName;
-  if (!name.isEmpty()) 
-  {
-    QCString *subst = Doxygen::typedefDict[name];
-    if (subst)
-    {
-      int count=0;
-      typeName=*subst;
-      QCString *newSubst;
-      while ((newSubst=Doxygen::typedefDict[typeName]) && count<10)
-      {
-        if (typeName==*newSubst) break; // prevent lock-up
-        typeName=*newSubst;
-        count++;
-      }
-    }
-  }
-  return typeName;
-}
-
 /*! make a dictionary of all template arguments of class cd
  * that are part of the base class name. 
  * Example: A template class A with template arguments <R,S,T> 
@@ -2507,7 +2484,7 @@ static void findUsedClassesForClass(Entry *root,
         //printf("extractClassNameFromType(%s)\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
         {
-          QCString typeName = resolveTypeDef(usedClassName);
+          QCString typeName = resolveTypeDef(masterCd,usedClassName);
           QCString usedName = usedClassName+templSpec;
           if (!typeName.isEmpty())
           {
@@ -2566,14 +2543,14 @@ static void findUsedClassesForClass(Entry *root,
               QCString scopeName = scope ? scope->qualifiedName().data() : 0;
               if (!scopeName.isEmpty())
               {
-                usedCd=getResolvedClass(scopeName+"::"+usedName,0,&templSpec);
-                if (usedCd==0) usedCd=getResolvedClass(scopeName+"::"+usedClassName,0,&templSpec);
+                usedCd=getResolvedClass(masterCd,scopeName+"::"+usedName,0,&templSpec);
+                if (usedCd==0) usedCd=getResolvedClass(masterCd,scopeName+"::"+usedClassName,0,&templSpec);
                 //printf("Search for class %s result=%p\n",(scopeName+"::"+usedName).data(),usedCd);
               }
               else
               {
-                usedCd=getResolvedClass(usedName,0,&templSpec);
-                if (usedCd==0) usedCd=getResolvedClass(usedClassName,0,&templSpec);
+                usedCd=getResolvedClass(masterCd,usedName,0,&templSpec);
+                if (usedCd==0) usedCd=getResolvedClass(masterCd,usedClassName,0,&templSpec);
                 //printf("Search for class %s result=%p\n",usedName.data(),usedCd);
               }
               if (scope) scope=scope->getOuterScope();
@@ -2735,17 +2712,19 @@ static bool findClassRelation(
       //printf("scopePrefix=`%s' bi->name=`%s'\n",
       //    scopeName.left(scopeOffset).data(),bi->name.data());
 
-      QCString baseClassName=stripTemplateSpecifiersFromScope
-                          (removeRedundantWhiteSpace(bi->name));
+      QCString baseClassName=bi->name;
       if (scopeOffset>0)
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
+      baseClassName=stripTemplateSpecifiersFromScope
+                          (removeRedundantWhiteSpace(baseClassName));
       bool baseClassIsTypeDef;
       QCString templSpec;
-      ClassDef *baseClass=getResolvedClass(baseClassName,&baseClassIsTypeDef,&templSpec);
+      ClassDef *baseClass=getResolvedClass(cd,baseClassName,&baseClassIsTypeDef,&templSpec);
+      //printf("baseClassName=%s baseClass=%p cd=%p\n",baseClassName.data(),baseClass,cd);
       //printf("    baseClassName=`%s' baseClass=%s templSpec=%s\n",
-      //                     baseClassName.data(),
+      //                    baseClassName.data(),
       //                     baseClass?baseClass->name().data():"<none>",
       //                     templSpec.data()
       //      );
@@ -2787,7 +2766,7 @@ static bool findClassRelation(
           {
             templSpec=baseClassName.mid(i,e-i);
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-            baseClass=getResolvedClass(baseClassName);
+            baseClass=getResolvedClass(cd,baseClassName);
             //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
             //      baseClass,baseClassName.data(),templSpec.data());
           }
@@ -2799,7 +2778,7 @@ static bool findClassRelation(
         {
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,i);
-          baseClass=getResolvedClass(baseClassName);
+          baseClass=getResolvedClass(cd,baseClassName);
           found=baseClass!=0 && baseClass!=cd;
         }
         
@@ -2818,7 +2797,7 @@ static bool findClassRelation(
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 QCString fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(cd,fName))!=0 && baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -2844,7 +2823,7 @@ static bool findClassRelation(
           {
             NamespaceList *nl = nd->getUsedNamespaces();
             QCString fName = nd->name()+"::"+baseClassName;
-            found = (baseClass=getResolvedClass(fName))!=0 && root->name!=fName;
+            found = (baseClass=getResolvedClass(cd,fName))!=0 && root->name!=fName;
             if (nl) // try to prepend any of the using namespace scopes.
             {
               NamespaceListIterator nli(*nl);
@@ -2852,7 +2831,7 @@ static bool findClassRelation(
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(cd,fName))!=0 && baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -3849,13 +3828,13 @@ static void findMember(Entry *root,
   if (!funcDecl.isEmpty() && funcDecl[0]!=' ') funcDecl.prepend(" ");
   
   // remove some superfluous spaces
-  funcDecl=substitute(
-             substitute(
-               substitute(funcDecl,"~ ","~"),
-               ":: ","::"
-             ),
-             " ::","::"
-           );
+  funcDecl= substitute(
+              substitute(
+                substitute(funcDecl,"~ ","~"),
+                ":: ","::"
+              ),
+              " ::","::"
+            );
   
   // extract information from the declarations
   parseFuncDecl(funcDecl,scopeName,classTempList,funcType,funcName,
@@ -7005,7 +6984,7 @@ void parseInput()
   msg("Building class list...\n");
   buildClassList(root);
   findUsingDeclarations(root);
-  
+
   msg("Building example list...\n");
   buildExampleList(root);
   

@@ -195,6 +195,11 @@ class ClassDef : public Definition
     QCString qualifiedNameWithTemplateParameters(
         QList<ArgumentList> *actualParams=0) const;
 
+    /*! Returns TRUE if there is at least one pure virtual member in this
+     *  class.
+     */
+    bool isAbstract() const { return m_isAbstract; }
+
     /* member lists by protection */
     MemberList pubMembers;
     MemberList proMembers;
@@ -402,6 +407,9 @@ class ClassDef : public Definition
      *  the inheritance tree.
      */
     bool m_artificial;
+
+    /*! Is this an abstact class? */
+    bool m_isAbstract;
 };
 
 /*! \brief Class that contains information about a usage relation. 

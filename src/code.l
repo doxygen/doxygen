@@ -328,7 +328,7 @@ static void addVariable()
   else 
   {
     int i;
-    if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
+    if ((getResolvedClass(g_currentDefinition,g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
     {
       //printf("adding variable `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
       g_cvd.classScope=g_classScope;
@@ -337,7 +337,7 @@ static void addVariable()
     else if ((i=g_cvd.type.find('<'))>0)
     {
       g_cvd.type = g_cvd.type.left(i);
-      if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
+      if ((getResolvedClass(g_currentDefinition,g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
       {
         //printf("adding template type variable `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
         g_cvd.classScope=g_classScope;
@@ -359,7 +359,7 @@ static void addParameter()
   else 
   {
     int i;
-    if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
+    if ((getResolvedClass(g_currentDefinition,g_cvd.type)) || (g_codeClassDict[g_cvd.type])) 
     {
       //printf("adding parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
       g_cvd.classScope=g_classScope;
@@ -368,7 +368,7 @@ static void addParameter()
     else if ((i=g_cvd.type.find('<'))>0)
     {
       g_cvd.type = g_cvd.type.left(i);
-      if ((getResolvedClass(g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
+      if ((getResolvedClass(g_currentDefinition,g_cvd.type)) || (g_codeClassDict[g_cvd.type.left(i)]))
       {
         //printf("adding template type parameter `%s' `%s'\n",g_cvd.type.data(),g_cvd.name.data());
         g_cvd.classScope=g_classScope;
@@ -409,10 +409,10 @@ static void generateClassLink(OutputDocInterface &ol,char *clName,int *clNameLen
   QCString className=clName;
   if (clNameLen) *clNameLen=0;
   if (className.isEmpty()) return;
-  ClassDef *cd=getResolvedClass(className);
+  ClassDef *cd=getResolvedClass(g_currentDefinition,className);
   if (cd==0 && (i=className.find('<'))!=-1)
   {
-    cd=getResolvedClass(className.left(i));
+    cd=getResolvedClass(g_currentDefinition,className.left(i));
   }
   if (cd && cd->isLinkable())
   {
@@ -458,11 +458,11 @@ static ClassDef *stripClassName(const char *s)
     //printf("g_classScope=`%s' clName=`%s'\n",g_classScope.data(),clName.data());
     if (!g_classScope.isEmpty())
     {
-      cd=getResolvedClass(g_classScope+"::"+clName);
+      cd=getResolvedClass(g_currentDefinition,g_classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(clName);
+      cd=getResolvedClass(g_currentDefinition,clName);
     }
     if (cd) 
     {
@@ -632,7 +632,7 @@ static void generateMemberLink(OutputDocInterface &ol,const char *varName,
   }
   else
   {
-    ClassDef *vcd = getResolvedClass(g_classScope);
+    ClassDef *vcd = getResolvedClass(g_currentDefinition,g_classScope);
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName);

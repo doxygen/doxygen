@@ -48,7 +48,8 @@ static const char *defaultStyleSheet =
       "DL.el { margin-left: -1cm }\n"
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
       "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
-      "TD.md { background-color: #f2f2ff }\n"
+      "TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
+      "TD.mdname { background-color: #f2f2ff; font-weight: bold; font-style: italic }\n"
       "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
       "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
       "FONT.keyword       { color: #008000 }\n"
@@ -160,6 +161,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
 void HtmlGenerator::startFile(const char *name,const char *,
                               const char *title,bool external)
 {
+  //printf("HtmlGenerator::startFile(%s)\n",name);
   QCString fileName=name;
   lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
@@ -870,13 +872,13 @@ void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td colspan=\"2\"><b>" << endl; 
+  t << "          <td class=\"md\" colspan=\"4\">" << endl; 
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- endMemberDocPrefixItem -->" << endl;)
-  t << "          </b></td>" << endl;
+  t << "          </td>" << endl;
   t << "        </tr>" << endl;
 }
 
@@ -884,49 +886,84 @@ void HtmlGenerator::startMemberDocName()
 {
   DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td nowrap valign=\"top\"><b> " << endl;
+  t << "          <td class=\"md\" nowrap valign=\"top\"> " << endl;
 }
 
 void HtmlGenerator::endMemberDocName()
 {
   DBG_HTML(t << "<!-- endMemberDocName -->" << endl;)
   t << endl;
-  t << "          </b></td>" << endl;
+  t << "          </td>" << endl;
 }
 
-void HtmlGenerator::startParameter(bool first)
+void HtmlGenerator::startParameterList()
+{
+  DBG_HTML(t << "<!-- startParameterList -->" << endl;)
+  t << "          <td class=\"md\">(&nbsp</td>" << endl;
+}
+
+void HtmlGenerator::startParameterType(bool first)
 {
   if (first)
   {
-    DBG_HTML(t << "<!-- startFirstParameter -->" << endl;)
-    t << "          <td valign=\"bottom\"><b>" << endl;
+    DBG_HTML(t << "<!-- startFirstParameterType -->" << endl;)
+    t << "          <td class=\"md\">";
   }
   else
   {
-    DBG_HTML(t << "<!-- startParameter -->" << endl;)
+    DBG_HTML(t << "<!-- startParameterType -->" << endl;)
     t << "        <tr>" << endl;
     t << "          <td></td>" << endl;
-    t << "          <td><b>"   << endl;
+    t << "          <td></td>" << endl;
+    t << "          <td class=\"md\">";
   }
 }
 
-void HtmlGenerator::endParameter(bool first)
+void HtmlGenerator::endParameterType()
 {
-  if (first)
+  DBG_HTML(t << "<!-- endParameterType -->" << endl;)
+  t << "          </td>" << endl;
+}
+
+void HtmlGenerator::startParameterName()
+{
+  DBG_HTML(t << "<!-- startParameterName -->" << endl;)
+  t << "          <td class=\"mdname\">";
+}
+
+void HtmlGenerator::endParameterName(bool last,bool emptyList)
+{
+  DBG_HTML(t << "<!-- endParameterName -->" << endl;)
+  if (last)
   {
-    DBG_HTML(t << "<!-- endFirstParameter -->" << endl;)
-    t << endl;
-    t << "          </b></td>" << endl;
-    //t << "          <td width=\"300\"><img src=\"null.gif\"></td>" << endl;
-    t << "        </tr>" << endl;
+    if (emptyList)
+    {
+      t << "          </td>" << endl;
+      t << "          <td class=\"md\">)&nbsp;</td>" << endl;
+      t << "          <td class=\"md\">";
+    }
+    else
+    {
+      t << "          </td>" << endl;
+      t << "        </tr>" << endl;
+      t << "        <tr>" << endl;
+      t << "          <td></td>" << endl;
+      t << "          <td class=\"md\">)&nbsp</td>" << endl;
+      t << "          <td class=\"md\" colspan=\"2\">";
+    }
   }
   else
   {
-    DBG_HTML(t << "<!-- endParameter -->" << endl;)
-    t << endl;
-    t << "          </b></td>" << endl;
+    t << "          </td>" << endl;
     t << "        </tr>" << endl;
   }
+}
+
+void HtmlGenerator::endParameterList()
+{
+  DBG_HTML(t << "<!-- endParameterList -->" << endl;)
+  t << "          </td>" << endl;
+  t << "        </tr>" << endl;
 }
 
 void HtmlGenerator::endMemberDoc()     

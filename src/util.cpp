@@ -332,6 +332,77 @@ int guessSection(const char *name)
   return 0;
 }
 
+QCString resolveTypeDef(Definition *d,const QCString &name)
+{
+  //printf("resolveTypeDef(%s,%s)\n",d ? d->name().data() : "<none>",name.data());
+  QCString result;
+  if (name.isEmpty()) return result;
+  Definition *mContext=d;
+  MemberDef *md=0;
+  while (mContext && md==0)
+  {
+    MemberNameDict *mnd=0;
+    if (mContext->definitionType()==Definition::TypeClass)
+    {
+      mnd=&Doxygen::memberNameDict;
+    }
+    else
+    {
+      mnd=&Doxygen::functionNameDict;
+    }
+    MemberName *mn=mnd->find(name);
+    if (mn)
+    {
+      MemberNameIterator mni(*mn);
+      MemberDef *tmd=0;
+      for (;(tmd=mni.current());++mni)
+      {
+        //printf("Found member %s scope=%p mContext=%p\n",tmd->name().data(),
+        //    tmd->getOuterScope(),mContext);
+        if (tmd->isTypedef() && tmd->getOuterScope()==mContext)
+        {
+          md=tmd;
+        }
+      }
+    }
+    mContext=mContext->getOuterScope();
+  }
+  if (md)
+  {
+    //printf("Found typedef name `%s' in scope `%s' value=`%s'\n",
+    //    name.data(),d->name().data(),md->typeString()
+    //    );
+    result=md->typeString();
+  }
+  else
+  {
+    //printf("Typedef `%s' not found in scope `%s'!\n",
+    //    name.data(),d ? d->name().data() : "<global>");
+  }
+  return result;
+  
+#if 0
+  QCString typeName;
+  if (!name.isEmpty()) 
+  {
+    TypedefInfo *ti = Doxygen::typedefDict[name];
+    if (ti)
+    {
+      int count=0;
+      typeName=ti->value;
+      TypedefInfo *newTi;
+      while ((newTi=Doxygen::typedefDict[typeName]) && count<10)
+      {
+        if (typeName==newTi->value) break; // prevent lock-up
+        typeName=newTi->value;
+        count++;
+      }
+    }
+  }
+  return typeName;
+#endif
+}
+
 /*! Get a class definition given its name. 
  *  Returns 0 if the class is not found.
  */
@@ -366,32 +437,54 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-ClassDef *getResolvedClass(const char *n,bool *pIsTypeDef,QCString *pTemplSpec)
+ClassDef *getResolvedClass(
+                           Definition *scope,
+                           const char *n,
+                           bool *pIsTypeDef,
+                           QCString *pTemplSpec
+                          )
 {
+  //printf("getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>",
+  //                                   n);
   QCString name = n;
   if (name.isEmpty()) return 0;
+  if (scope==0) scope=Doxygen::globalScope;
   int i = name.findRev("::");
-  QCString *subst = 0;
-  if (i!=-1) subst = Doxygen::typedefDict[name.right(name.length()-i-2)];
-  if (subst==0) subst = Doxygen::typedefDict[name],i=-1;
-  if (subst) // there is a typedef with this name
+  //QCString subst = 0;
+  //if (i!=-1) subst = Doxygen::typedefDict[name.right(name.length()-i-2)];
+  //if (subst==0) subst = Doxygen::typedefDict[name],i=-1;
+  //if (subst) // there is a typedef with this name
+  QCString subst;
+  if (i!=-1)
+  {
+    subst = resolveTypeDef(scope,name.right(name.length()-i-2));
+  }
+  else
+  {
+    subst = resolveTypeDef(scope,name);
+  }
+  
+  if (!subst.isEmpty())
   {
     if (pIsTypeDef) *pIsTypeDef=TRUE;
     //printf("getResolvedClass `%s'->`%s'\n",name.data(),subst->data());
-    if (*subst==name) // avoid resolving typedef struct foo foo; 
+    if (subst==name) // avoid resolving typedef struct foo foo; 
     {
       return Doxygen::classSDict.find(name);
     }
     int count=0; // recursion detection guard
-    QCString *newSubst;
-    QCString typeName = *subst;
+    QCString newSubst;
+    QCString typeName = subst;
     if (i!=-1) typeName.prepend(name.left(i)+"::");
-    while ((newSubst=Doxygen::typedefDict[typeName]) && count<10)
+    while (!(newSubst=resolveTypeDef(scope,typeName)).isEmpty() 
+           && count<10)
     {
-      if (typeName==*newSubst) 
-        return Doxygen::classSDict.find(subst->data()); // for breaking typedef struct A A; 
+      if (typeName==newSubst) 
+      {
+        return Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
+      }
       subst=newSubst;
-      typeName=*newSubst;
+      typeName=newSubst;
       if (i!=-1) typeName.prepend(name.left(i)+"::");
       count++;
     }
@@ -437,15 +530,19 @@ static bool findOperator(const QCString &s,int i)
   return TRUE;
 }
 
+static const char constScope[] = { 'c', 'o', 'n', 's', 't', ':' };
+
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   if (s.isEmpty()) return s;
   QCString result;
   uint i;
   uint l=s.length();
+  uint csp=0;
   for (i=0;i<l;i++)
   {
     char c=s.at(i);
+    if (csp<6 && c==constScope[csp]) csp++; else csp=0;
     if (i<l-2 && c=='<' &&  // current char is a <
         (isId(s.at(i+1)) || isspace(s.at(i+1))) && // next char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
@@ -468,6 +565,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=' ';
       result+=s.at(i);
+    }
+    else if (c==':' && csp==6)
+    {
+      result+=" :";
+      csp=0;
     }
     else if (!isspace(c) ||
 	      ( i!=0 && i!=l-1 && 
@@ -914,46 +1016,24 @@ int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 // strip any template specifiers that follow className in string s
 static QCString trimTemplateSpecifiers(const QCString &className,const QCString &s)
 {
-  // first we resolve any defines
-  //int i=0,p,l;
-  //QCString result;
-  //QRegExp r("[A-Z_a-z][A-Z_a-z0-9]*");
-  //while ((p=r.match(s,i,&l))!=-1)
-  //{
-  //  if (p>i) result+=s.mid(i,p-i);
-  //  result+=resolveDefines(s.mid(p,l));
-  //  i=p+l;
-  //}
-  //if (i<(int)s.length()) result+=s.mid(i,s.length()-i);
-  
+  //printf("trimTemplateSpecifiers(%s,%s)\n",className.data(),s.data());
+  ClassDef *cd=getClass(className);
+  if (cd==0) return s;
+
+  QCString qualName=cd->qualifiedNameWithTemplateParameters();
+  //printf("QualifiedName = %s\n",qualName.data());
   // We strip the template arguments following className (if any)
-  QCString result=s.copy();
-  int l=className.length();
-  if (l>0) // there is a class name
+  QCString result=s;
+  if (!qualName.isEmpty()) // there is a class name
   {
     int i,p=0;
-    while ((i=result.find(className,p))!=-1) // class name is in the argument type
+    // TODO: also try smaller parts of the qualName, since we 
+    // could be inside a namespace or class.
+    while ((i=result.find(qualName,p))!=-1) // class name is in the argument type
     {
-      uint s=i+l;
-      if (s<result.length() && result.at(s)=='<') // class has template args
-      {
-        int b=1;
-        uint e=s+1;
-        while (b>0 && e<result.length()) // find matching >
-        {
-          if (result.at(e)=='<') b++;
-          else if (result.at(e)=='>') b--;
-          e++;
-        }
-        // remove template argument
-        result=result.left(s)+result.right(result.length()-e);
-        if (result.length()>s && (result.at(s)=='*' || result.at(s)=='&'))
-        {
-          // insert a space to keep the argument in the canonical form
-          result=result.left(s)+" "+result.right(result.length()-s);
-        }
-      }
-      p=i+l;
+      int ql=qualName.length();
+      result=result.left(i)+cd->name()+result.right(result.length()-i-ql);
+      p=i+cd->name().length();
     }
   }
   return result;
@@ -981,6 +1061,7 @@ static QCString trimScope(const QCString &name,const QCString &s)
     scopeOffset=name.findRev("::",scopeOffset-1);
     result = tmp;
   } while (scopeOffset>0);   
+  //printf("trimScope(name=%s,scope=%s)=%s\n",name.data(),s.data(),result.data());
   return result;
 }
 
@@ -1085,6 +1166,23 @@ void stripIrrelevantConstVolatile(QCString &s)
   }
 }
 
+#if 0 // should be done differently
+static QCString resolveTypeDefs(const QCString &s)
+{
+  QCString result;
+  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+  int p=0,l,i;
+  while ((i=re.match(s,p,&l))!=-1)
+  {
+    result += s.mid(p,i-p);
+    result += resolveTypeDef(s.mid(i,l));
+    p=i+l;
+  }
+  result+=s.right(s.length()-p);
+  return result;
+}
+#endif
+
 // a bit of debug support for matchArguments
 #define MATCH
 #define NOMATCH
@@ -1097,6 +1195,15 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    NamespaceList *usingNamespaces,
                    ClassList *usingClasses)
 {
+  //printf("match argument start %s:%s <-> %s:%s\n",
+  //    srcA->type.data(),srcA->name.data(),
+  //    dstA->type.data(),dstA->name.data());
+
+  // TODO: resolve any typedefs names that are part of srcA->type
+  //       before matching. This should use className and namespaceName
+  //       and usingNamespaces and usingClass to determine which typedefs
+  //       are in-scope, so it will not be very efficient :-(
+  
   QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
   QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
@@ -1106,20 +1213,33 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   // from a syntactic point of view they would be two names of the same 
   // type "const". This is not fool prove ofcourse, but should at least 
   // catch the most common cases.
-  if (srcAType=="const" && !srcA->name.isEmpty())
+  if ((srcAType=="const" || srcAType=="volatile") && !srcA->name.isEmpty())
   {
     srcAType+=" ";
     srcAType+=srcA->name;
   } 
-  if (dstAType=="const" && !dstA->name.isEmpty())
+  if ((dstAType=="const" || dstAType=="volatile") && !dstA->name.isEmpty())
   {
     dstAType+=" ";
     dstAType+=dstA->name;
   }
-  //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
+  if (srcA->name=="const" || srcA->name=="volatile")
+  {
+    srcAType+=srcA->name;
+  }
+  if (dstA->name=="const" || dstA->name=="volatile")
+  {
+    dstAType+=dstA->name;
+  }
       
   stripIrrelevantConstVolatile(srcAType);
   stripIrrelevantConstVolatile(dstAType);
+
+  //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
+  //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
+
+  //printf("srcA=%s:%s dstA=%s:%s\n",srcAType.data(),srcA->name.data(),
+  //      dstAType.data(),dstA->name.data());
 
   if (srcA->array!=dstA->array) // nomatch for char[] against char
   {
@@ -1132,7 +1252,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
     trimNamespaceScope(srcAType,dstAType);
-
+  
     //QCString srcScope;
     //QCString dstScope;
 
@@ -1192,7 +1312,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       MATCH
       return TRUE;
     }
-    //printf("srcA=%s::%s dstA=%s::%s\n",srcAType.data(),srcA->name.data(),
+    
+    //printf("2. srcA=%s:%s dstA=%s:%s\n",srcAType.data(),srcA->name.data(),
     //    dstAType.data(),dstA->name.data());
 
     uint srcPos=0,dstPos=0; 
@@ -1309,10 +1430,28 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
                    NamespaceList *usingNamespaces,
                    ClassList *usingClasses)
 {
+  //printf("merge argument start %s:%s <-> %s:%s\n",
+  //    srcA->type.data(),srcA->name.data(),
+  //    dstA->type.data(),dstA->name.data());
+
+  if ((srcA->type=="const" || srcA->type=="volatile") && !srcA->name.isEmpty())
+  {
+    srcA->type+=" ";
+    srcA->type+=srcA->name;
+    srcA->name.resize(0);
+  } 
+  if ((dstA->type=="const" || dstA->type=="volatile") && !dstA->name.isEmpty())
+  {
+    dstA->type+=" ";
+    dstA->type+=dstA->name;
+    dstA->name.resize(0);
+  } 
+  
   QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
   QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
   if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+
   stripIrrelevantConstVolatile(srcAType);
   stripIrrelevantConstVolatile(dstAType);
 
@@ -1323,6 +1462,7 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
     trimNamespaceScope(srcAType,dstAType);
+
 
     //QCString srcScope;
     //QCString dstScope;
@@ -1376,14 +1516,14 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
     {
       srcA->type=srcAType+" "+srcA->name;
       srcA->name.resize(0);
-      return;
+      goto done;
     }
     else if (!dstA->name.isEmpty() && !srcA->type.isEmpty() &&
         (dstAType+" "+dstA->name)==srcAType)
     {
       dstA->type=dstAType+" "+dstA->name;
       dstA->name.resize(0);
-      return;
+      goto done;
     }
     //printf("srcA=%s::%s dstA=%s::%s\n",srcAType.data(),srcA->name.data(),
     //    dstAType.data(),dstA->name.data());
@@ -1465,7 +1605,7 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
         srcA->type=srcAType.left(startPos).stripWhiteSpace();
       }
     }
-    return;
+    goto done;
   }
   //printf("match exactly\n");
   if (srcA->name.isEmpty() && dstA->name.isEmpty()) 
@@ -1491,6 +1631,10 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
   {
     dstA->name = srcA->name.copy(); 
   }
+done:
+  //printf("merge argument result %s:%s <-> %s:%s\n",
+  //    srcA->type.data(),srcA->name.data(),
+  //    dstA->type.data(),dstA->name.data());
   return;
 }
 
@@ -1632,23 +1776,26 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
       //printf("Defval changing `%s'->`%s'\n",dstA->defval.data(),srcA->defval.data());
       dstA->defval=srcA->defval.copy();
     }
-    if (srcA->name.isEmpty() && !dstA->name.isEmpty())
+    if (srcA->type==dstA->type)
     {
-      //printf("type: `%s':=`%s'\n",srcA->type.data(),dstA->type.data());
-      //printf("name: `%s':=`%s'\n",srcA->name.data(),dstA->name.data());
-      srcA->type = dstA->type.copy();
-      srcA->name = dstA->name.copy();
-    }
-    else if (!srcA->name.isEmpty() && dstA->name.isEmpty())
-    {
-      //printf("type: `%s':=`%s'\n",dstA->type.data(),srcA->type.data());
-      //printf("name: `%s':=`%s'\n",dstA->name.data(),srcA->name.data());
-      dstA->type = srcA->type.copy();
-      dstA->name = dstA->name.copy();
-    }
-    else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
-    {
-      srcA->name = dstA->name.copy();
+      if (srcA->name.isEmpty() && !dstA->name.isEmpty())
+      {
+        //printf("type: `%s':=`%s'\n",srcA->type.data(),dstA->type.data());
+        //printf("name: `%s':=`%s'\n",srcA->name.data(),dstA->name.data());
+        srcA->type = dstA->type.copy();
+        srcA->name = dstA->name.copy();
+      }
+      else if (!srcA->name.isEmpty() && dstA->name.isEmpty())
+      {
+        //printf("type: `%s':=`%s'\n",dstA->type.data(),srcA->type.data());
+        //printf("name: `%s':=`%s'\n",dstA->name.data(),srcA->name.data());
+        dstA->type = srcA->type.copy();
+        dstA->name = dstA->name.copy();
+      }
+      else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
+      {
+        srcA->name = dstA->name.copy();
+      }
     }
     int i1=srcA->type.find("::"),
         i2=dstA->type.find("::"),
@@ -1766,7 +1913,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       //printf("Trying class scope %s\n",className.data());
 
       ClassDef *fcd=0;
-      if ((fcd=getResolvedClass(className)) &&  // is it a documented class
+      if ((fcd=getResolvedClass(Doxygen::globalScope,className)) &&  // is it a documented class
            fcd->isLinkable() 
          )
       {
@@ -2002,7 +2149,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               bmd = 0;
               break;
             }
-            if (!(md->isStatic())) bmd = md;     
+            if (!(md->isStatic()) || Config_getBool("EXTRACT_STATIC")) bmd = md;     
           }
           if (bmd) md=bmd;
         }
@@ -2195,7 +2342,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd,
               scopePos==0 && !memberScopeFirst))
   {
-    //printf("after getDefs nd=%p\n",nd);
+    //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
     QCString anchor;
     if (md->isLinkable()) anchor = md->anchor();
     QCString cName,aName;
