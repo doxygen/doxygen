@@ -57,7 +57,8 @@ class MemberDef : public Definition
       Prototype,
       Signal,
       Slot,
-      Friend
+      Friend,
+      DCOP
     };
 
     enum
@@ -107,6 +108,7 @@ class MemberDef : public Definition
     bool isFunction() const               { return mtype==Function;    } 
     bool isDefine() const                 { return mtype==Define;      }
     bool isFriend() const                 { return mtype==Friend;      }
+    bool isDCOP() const                   { return mtype==DCOP;        }
     bool isRelated() const                { return related; }
     bool isStatic() const                 { return stat; }
     bool isInline() const                 { return (memSpec&Entry::Inline)!=0; }

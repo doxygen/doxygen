@@ -48,8 +48,7 @@ Entry::Entry(const Entry &e)
   //printf("Copy New Entry %d\n",num);
   section     = e.section;
   protection  = e.protection;
-  sig         = e.sig;
-  slot        = e.slot;
+  mtype       = e.mtype;
   stat        = e.stat;
   explicitExternal = e.explicitExternal;
   virt        = e.virt;
@@ -219,9 +218,8 @@ void Entry::reset()
   todoId = 0;
   testId = 0;
   section = EMPTY_SEC;
-  sig     = FALSE;
+  mtype   = Method;
   virt    = Normal;
-  slot    = FALSE;
   stat    = FALSE;
   proto   = FALSE;
   explicitExternal = FALSE;

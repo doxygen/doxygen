@@ -90,6 +90,7 @@ FileNameDict   *includeNameDict;        // include names
 FileNameDict   *exampleNameDict;        // examples
 FileNameDict   *imageNameDict;          // images
 StringDict     typedefDict(1009);       // all typedefs
+StringDict     namespaceAliasDict(257); // all namespace aliases
 GroupDict      groupDict(257);          // all groups
 FormulaDict    formulaDict(1009);       // all formulas
 FormulaDict    formulaNameDict(1009);   // the label name of all formulas
@@ -502,7 +503,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
         // generate code for header
       {
         cd->setIncludeFile(fd,iName,local);
-        fd->setGenerateSource(TRUE);
+        //fd->setGenerateSource(TRUE);
       }
       else // put #include in the class documentation without link
       {
@@ -526,7 +527,7 @@ static bool addNamespace(Entry *root,ClassDef *cd)
         //printf("addNameSpace() trying: %s\n",e->name.data());
         QCString nsName = stripAnnonymousNamespaceScope(e->name);
         if (!nsName.isEmpty() && nsName.at(0)!='@' &&
-            (nd=namespaceDict[nsName])
+            (nd=getResolvedNamespace(nsName))
            )
         {
           cd->setNamespace(nd);
@@ -688,7 +689,7 @@ static void buildClassList(Entry *root)
         // namespace is part of the class name
         if (!found && !namespaceName.isEmpty())
         {
-          NamespaceDef *nd = namespaceDict[namespaceName];
+          NamespaceDef *nd = getResolvedNamespace(namespaceName);
           if (nd)
           {
             cd->setNamespace(nd);
@@ -850,7 +851,7 @@ static void findUsingDirectives(Entry *root)
         nsName=root->parent->name.copy();
         if (!nsName.isEmpty())
         {
-          nd = namespaceDict[nsName];
+          nd = getResolvedNamespace(nsName);
         }
       }
 
@@ -864,7 +865,7 @@ static void findUsingDirectives(Entry *root)
         QCString scope=scopeOffset>0 ? 
                       nsName.left(scopeOffset)+"::" : QCString();
         //printf("Trying with scope=`%s'\n",scope.data());
-        usingNd = namespaceDict[scope+root->name];
+        usingNd = getResolvedNamespace(scope+root->name);
         if (scopeOffset==0)
         {
           scopeOffset=-1;
@@ -959,7 +960,7 @@ static void findUsingDeclarations(Entry *root)
         scName=root->parent->name.copy();
         if (!scName.isEmpty())
         {
-          nd = namespaceDict[scName];
+          nd = getResolvedNamespace(scName);
         }
       }
 
@@ -1175,7 +1176,7 @@ static MemberDef *addVariableToFile(
     QCString nscope=removeAnnonymousScopes(scope);
     if (!nscope.isEmpty())
     {
-      nd = namespaceDict[nscope];
+      nd = getResolvedNamespace(nscope);
     }
   }
   QCString def;
@@ -1221,7 +1222,7 @@ static MemberDef *addVariableToFile(
       NamespaceDef *nd=0;
       if (!nscope.isEmpty())
       {
-        nd = namespaceDict[nscope];
+        nd = getResolvedNamespace(nscope);
       }
       if (nd==0 || md->getNamespaceDef()==nd) 
         // variable already in the scope
@@ -1540,10 +1541,11 @@ static void buildMemberList(Entry *root)
         if (name.left(2)=="::") name=name.right(name.length()-2);
 
         MemberDef::MemberType mtype;
-        if (isFriend)        mtype=MemberDef::Friend;
-        else if (root->sig)  mtype=MemberDef::Signal;
-        else if (root->slot) mtype=MemberDef::Slot;
-        else                 mtype=MemberDef::Function;
+        if (isFriend)                 mtype=MemberDef::Friend;
+        else if (root->mtype==Signal) mtype=MemberDef::Signal;
+        else if (root->mtype==Slot)   mtype=MemberDef::Slot;
+        else if (root->mtype==DCOP)   mtype=MemberDef::DCOP;
+        else                          mtype=MemberDef::Function;
 
         // strip redundant template specifier for constructors
         if ((i=name.find('<'))!=-1 && name.find('>')!=-1)
@@ -1699,7 +1701,7 @@ static void buildMemberList(Entry *root)
             NamespaceDef *rnd = 0;
             if (!root->parent->name.isEmpty())
             {
-              rnd = namespaceDict[root->parent->name];
+              rnd = getResolvedNamespace(root->parent->name);
             }
             FileDef *fd = md->getFileDef();
             QCString nsName,rnsName;
@@ -1811,7 +1813,7 @@ static void buildMemberList(Entry *root)
             QCString nscope=removeAnnonymousScopes(root->parent->name);
             if (!nscope.isEmpty())
             {
-              nd = namespaceDict[nscope];
+              nd = getResolvedNamespace(nscope);
             }
           }
 
@@ -3197,7 +3199,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           bool ambig;
           FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
           NamespaceDef *nd=0;
-          if (!namespaceName.isEmpty()) nd=namespaceDict[namespaceName];
+          if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
           tcd = findClassDefinition(fd,nd,scopeName,classTempList);
           
           if (cd && tcd==cd) // member's classes match
@@ -3367,8 +3369,9 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
         if (unique)
         {
           MemberDef::MemberType mtype;
-          if      (root->sig)  mtype=MemberDef::Signal;
-          else if (root->slot) mtype=MemberDef::Slot;
+          if      (root->mtype==Signal)  mtype=MemberDef::Signal;
+          else if (root->mtype==Slot)    mtype=MemberDef::Slot;
+          else if (root->mtype==DCOP)    mtype=MemberDef::DCOP;
           else                 mtype=MemberDef::Function;
           
           // new overloaded member function
@@ -3440,10 +3443,12 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
         if (newMember) // need to create a new member
         {
           MemberDef::MemberType mtype;
-          if (root->sig)  
+          if (root->mtype==Signal)  
             mtype=MemberDef::Signal;
-          else if (root->slot) 
+          else if (root->mtype==Slot) 
             mtype=MemberDef::Slot;
+          else if (root->mtype==DCOP)
+            mtype=MemberDef::DCOP;
           else                 
             mtype=MemberDef::Function;
 
@@ -3679,7 +3684,7 @@ static void findEnums(Entry *root)
     {
       QCString scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      if ((cd=getClass(scope))==0) nd=namespaceDict[scope];
+      if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
     }
     else // no scope, check the scope in which the docs where found
     {
@@ -3688,7 +3693,7 @@ static void findEnums(Entry *root)
          ) // found enum docs inside a compound
       {
         QCString scope=root->parent->name;
-        if ((cd=getClass(scope))==0) nd=namespaceDict[scope];
+        if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
       }
       name=root->name.copy();
     }
@@ -4103,7 +4108,9 @@ static void generateFileSources()
       for (;(fd=fni.current());++fni)
       {
         bool src = !fd->isReference() &&
-                   (fd->generateSource() || Config::sourceBrowseFlag);
+                   (Config::verbatimHeaderFlag
+                    //fd->generateSource() 
+                    || Config::sourceBrowseFlag);
         if (src)
         {
           msg("Generating code for file %s...\n",fd->name().data());
@@ -5883,8 +5890,11 @@ int main(int argc,char **argv)
   msg("Adding members to member groups.\n");
   addMembersToMemberGroup();
 
-  msg("Distributing member group documentation.\n");
-  distributeMemberGroupDocumentation();
+  if (Config::distributeDocFlag)
+  {
+    msg("Distributing member group documentation.\n");
+    distributeMemberGroupDocumentation();
+  }
   
   msg("Building full member lists recursively...\n");
   buildCompleteMemberLists();

@@ -69,7 +69,7 @@ class Definition
     virtual bool isLinkableInProject() = 0;
     virtual bool isLinkable() = 0;
 
-    bool isReference() { return !ref.isEmpty(); }
+    bool isReference() const { return !ref.isEmpty(); }
     void setReference(const char *r) { ref=r; }
     QCString getReference() { return ref; }
 

@@ -22,9 +22,9 @@ Doxygen has support for multiple languages. This means that the text fragments t
 doxygen generates can changed into languages other than English 
 (the default) at configuration time.
 <p>
-Currently, supported languages are English, French, Czech, Dutch, 
-Swedish, Italian, German and Japanese. A number
-of people have volunteered to add support for other languages as well.
+Currently, supported languages are English, French, Czech, Dutch, Spannish,
+Swedish, Russian, Czech, Croatian, Italian, Hungarian, Finnish, German and Japanese, 
+and Korean. 
 Here is a list of the languages and their current maintainers:
 <p>
 
@@ -157,6 +157,30 @@ Here is a list of the languages and their current maintainers:
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>
+        Korean
+      </TD>
+      <TD>
+        Richard Kim
+      </TD>
+      <TD>
+        <a href="mailto:ryk@NOSPAM.dspwiz.com">
+                        ryk@NOSPAM.dspwiz.com</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Hungarian
+      </TD>
+      <TD>
+        Földvári György
+      </TD>
+      <TD>
+        <a href="mailto:foldvari@NOSPAM.diatronltd.com">
+                        foldvari@NOSPAM.diatronltd.com</a>
+      </TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
         Croatian
       </TD>
       <TD>
@@ -167,7 +191,6 @@ Here is a list of the languages and their current maintainers:
                         boris.bralo@NOSPAM.zg.tel.hr</a>
       </TD>
   </TR>
-
   <TR BGCOLOR="#ffffff">
       <TD>
         Polish
@@ -224,6 +247,10 @@ Here is a list of the languages and their current maintainers:
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} \\
   \hline
   Russian & Nickolay Semyonov & {\tt snob@int.spb.ru} \\
+  \hline
+  Korean  & Richard Kim & {\\tt ryk@dspwiz.com} \\
+  \hline
+  Hungarian & Földvári György & {\\tt foldvari@diatronltd.com} \\
   \hline
   Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} \\
   \hline

@@ -169,6 +169,16 @@ EXCLUDE_PATTERNS = */test/*
 Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
 remove the % and keep the word unlinked.
 
+<li><b>Help! I get the cryptic message 
+ "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
+
+This error happens when doxygen lexical scanner has a rules that matches
+more than 16K input character in one go. I've seen this happening 
+on a very large generated file (>16K lines), where the built-in preprocessor 
+converted it into an empty file (with >16K of newlines). Another case
+where this might happen is if you have lines in you code with more than
+16K characters.
+
 </ol>
 
 \htmlonly

@@ -23,6 +23,7 @@
 
 enum Protection { Public, Protected, Private } ;
 enum Specifier { Normal, Virtual, Pure } ;
+enum MethodTypes { Method, Signal, Slot, DCOP };
 
 struct BaseInfo 
 {
@@ -161,8 +162,9 @@ class Entry
 
     int        section;       // entry type (see Sections);
     Protection protection;    // class protection
-    bool sig;                 // a Qt signal ?
-    bool slot;                // a Qt slot ?
+    //bool sig;                 // a Qt signal ?
+    //bool slot;                // a Qt slot ?
+    MethodTypes mtype;        // signal, slot or dcop method?
     bool stat;                // static ?
     bool explicitExternal;    // explicitly defined as external?
     bool proto;               // prototype ?

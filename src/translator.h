@@ -24,6 +24,89 @@
 
 class Translator
 {
+  protected:
+    /*! Returns the string converted from windows-1250 to iso-8859-2. */
+    /* The method was designed initially for translator_cz.h. 
+       It is used for on-line encoding conversion related to conditional
+       compilation in Unix/MS Windows environments (both use different
+       encoding). Later, the translator_hr.h (by Boris Bralo) used and 
+       improved the same style. As the method with the translation table
+       was the same, the decision to move it to this base class was made.
+       The same holds for ISO88592ToWin1250() method. It is recommended
+       for possibly other similar methods in future.
+     */
+    QCString Win1250ToISO88592(const QCString & sInput)
+    {
+      // The conversion table for characters >127
+      // 
+      static const char WinToISOTab[] = {
+        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
+        '\x88', '\x89', '\xA9', '\x8B', '\xA6', '\xAB', '\xAE', '\xAC',
+        '\x90', '\x91', '\x92', '\x93', '\x94', '\x2E', '\x96', '\x97',
+        '\x98', '\x99', '\xB9', '\x9B', '\xB6', '\xBB', '\xBE', '\xBC',
+        '\xA0', '\x20', '\x20', '\xA3', '\xA4', '\xA1', '\xA6', '\xA7',
+        '\x22', '\xA9', '\xAA', '\x3C', '\xAC', '\x2D', '\xAE', '\xAF',
+        '\x2E', '\x2B', '\x20', '\xB3', '\x27', '\x75', '\xB6', '\xB7',
+        '\x20', '\xB1', '\xBA', '\x3E', '\xA5', '\x22', '\xB5', '\xBF',
+        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
+        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
+        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
+        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\x2D',
+        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        '\0'
+      };
+      
+      QCString result;
+      int len = sInput.length();
+
+      for (int i = 0; i < len; ++i)
+      {
+        unsigned int c = sInput[i];  
+        result += (c > 127) ? WinToISOTab[c & 0x7F] : c;
+      }
+      return result;
+    }
+    
+    /*! returns the string converted from iso-8859-2 to windows-1250 */
+    /* See the comments of the Win1250ToISO88592() method for details. */
+    QCString ISO88592ToWin1250(const QCString & sInput)
+    {
+      // The conversion table for characters >127
+      // 
+      static const char ISOToWinTab[] = {
+        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
+        '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F',
+        '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97',
+        '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F',
+        '\xA0', '\xA5', '\xA2', '\xA3', '\xA4', '\xBC', '\x8C', '\xA7',
+        '\xA8', '\x8A', '\xAA', '\x8D', '\x8F', '\xAD', '\x8E', '\xAF',
+        '\xB0', '\xB9', '\xB2', '\xB3', '\xB4', '\xBE', '\x9C', '\xB7',
+        '\xB8', '\x9A', '\xBA', '\x9D', '\x9F', '\xBD', '\x9E', '\xBF',
+        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
+        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
+        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
+        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7',
+        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        '\0'
+      };
+      QCString result;
+      int len = sInput.length();
+
+      for (int i = 0; i < len; ++i)
+      {
+        unsigned int c = sInput[i];  
+        result += (c > 127) ? ISOToWinTab[c & 0x7F] : c;
+      }
+      return result;
+    }
+    
+   
   public:
 
     // --- Language contol methods -------------------
@@ -991,6 +1074,16 @@ class Translator
     virtual QCString trTestList()
     {
       return "Test List";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "DCOP Methods";
     }
 
 };

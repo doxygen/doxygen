@@ -775,7 +775,7 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Spanish, Russian, Croatian, Polish, and Portuguese.\n"
+                    "Korean, Hungarian, Spanish, Russian, Croatian, Polish, and Portuguese.\n"
                    );
   ConfigString::addFixedValue("outputLanguage","English");
   ConfigString::addFixedValue("outputLanguage","Dutch");
@@ -785,7 +785,9 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Swedish");
   ConfigString::addFixedValue("outputLanguage","German");
   ConfigString::addFixedValue("outputLanguage","Finnish");
+  ConfigString::addFixedValue("outputLanguage","Hungarian");
   ConfigString::addFixedValue("outputLanguage","Japanese");
+  ConfigString::addFixedValue("outputLanguage","Korean");
   ConfigString::addFixedValue("outputLanguage","Spanish");
   ConfigString::addFixedValue("outputLanguage","Russian");
   ConfigString::addFixedValue("outputLanguage","Croatian");
@@ -920,11 +922,11 @@ void init()
                     "CASE_SENSE_NAMES",
                     "TRUE",
                     "determines if output can be mixed case.",
-                    "If the CASE_SENSE_NAMES tag is set to NO (the default) then Doxygen \n"
-                    "will only generate file names in lower case letters. If set to \n"
-                    "YES upper case letters are also allowed. This is useful if you have \n"
-                    "classes or files whose names only differ in case and if your file system \n"
-                    "supports case sensitive file names. \n"
+                    "If the CASE_SENSE_NAMES tag is set to NO then Doxygen will only generate \n"
+                    "file names in lower case letters. If set to YES upper case letters are also \n"
+                    "allowed. This is useful if you have classes or files whose names only differ \n"
+                    "in case and if your file system supports case sensitive file names. Windows \n"
+                    "users are adviced to set this option to NO.\n"
                  );
   ConfigBool::add(  "hideScopeNames",
                     "HIDE_SCOPE_NAMES",
@@ -983,6 +985,15 @@ void init()
                     "alphabetically by member name. If set to NO the members will appear in \n"
                     "declaration order. \n"
                  );
+  ConfigBool::add(  "distributeDocFlag",
+                    "DISTRIBUTE_GROUP_DOC",
+                    "FALSE",
+                    "distribute docs over member group?",
+                    "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
+                    "tag is set to YES, then doxygen will reuse the documentation of the first \n"
+                    "member in the group (if any) for the other members of the group. By default \n"
+                    "all members of a group must be documented explicitly.\n"  
+                 );
   ConfigInt::add(   "tabSize",
                     "TAB_SIZE",
                     "8",
@@ -1019,7 +1030,7 @@ void init()
                     "",
                     "list of aliases",
                     "This tag can be used to specify a number of aliases that acts \n"
-                    "as commands in the documentation. An alias has the form \"\\name=value\". \n"
+                    "as commands in the documentation. An alias has the form \"name=value\". \n"
                     "For example adding \"sideeffect=\\par Side Effects:\\n\" will allow you to \n"
                     "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"

@@ -2043,7 +2043,14 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else
 					  {
-					    outDoc->newParagraph(); 
+					    if (insidePre)
+					    {
+					      outDoc->docify(yytext);
+					    }
+					    else
+					    {
+					      outDoc->newParagraph(); 
+					    }
 					  }
 					  if (inBlock()) endBlock();
 					}

@@ -167,6 +167,7 @@ class ClassDef : public Definition
     MemberList related;
     MemberList signals;
     MemberList friends;
+    MemberList dcopMethods;
     
     /* member list by types */
     MemberList constructors;

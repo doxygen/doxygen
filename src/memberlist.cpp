@@ -73,6 +73,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
         case MemberDef::Variable:    varCnt++,m_count++;  break;
         case MemberDef::Function:    // fall through
         case MemberDef::Signal:      // fall through
+        case MemberDef::DCOP:        // fall through
         case MemberDef::Slot:        if (!md->isRelated() || md->getClassDef())
                                        funcCnt++,m_count++; 
                                      break;
@@ -409,7 +410,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     for ( ; (md=mli.current()) ; ++mli )
     {
       if (
-          ( md->isFunction() || md->isSignal() || md->isSlot()) &&
+          ( md->isFunction() || md->isSignal() || md->isSlot() || md->isDCOP()) &&
           ( !md->isRelated() || md->getClassDef() ) &&
           inGroup==md->visibleMemberGroup(sectionPerType)
          ) 
