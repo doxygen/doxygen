@@ -13,6 +13,8 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
+ * Polish translation was updated to version 1.2.16 by
+ * Piotr Kaminski (Piotr.Kaminski@ctm.gdynia.pl)
  */
 
 #ifndef TRANSLATOR_PL_H
@@ -20,7 +22,7 @@
 
 #include "translator_adapter.h"
 
-class TranslatorPolish : public TranslatorAdapter_1_2_1
+class TranslatorPolish : public Translator
 {
   public:
 
@@ -47,6 +49,10 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage() 
     { return "polish"; }
+
+    /*! return the language charset. This will be used for the HTML output */
+    virtual QCString idLanguageCharset()
+    { return "iso-8859-2"; }
 
     // --- Language translation methods -------------------
 
@@ -457,7 +463,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns()
-    { return "Powroty"; }
+    { return "Zwraca"; }
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
@@ -479,14 +485,14 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList()
-    { return "Lista Obszarów Nazw"; }
+    { return "Lista Przestrzeni Nazw"; }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Tutaj znajduj± siê wszystkie ";
       if (!extractAll) result+="udokumentowane ";
-      result+="obszary nazw wraz z ich krótkimi opisami:";
+      result+="przestrzenie nazw wraz z ich krótkimi opisami:";
       return result;
     }
 
@@ -540,7 +546,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result="Referencje Obszaru Nazw ";
+      QCString result="Referencje Przestrzeni Nazw ";
       result+=namespaceName;
       return result;
     }
@@ -626,7 +632,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers()
-    { return "Sk³adowe Obszaru Nazw"; }
+    { return "Sk³adowe Przestrzeni Nazw"; }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll)
@@ -635,22 +641,22 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
       if (!extractAll) result+="udokumentowanych ";
       result+="sk³adowych wraz z odno¶nikami do ";
       if (extractAll) 
-        result+="dokumentacji obszarów nazw dla ka¿dej sk³adowej:";
+        result+="dokumentacji przestrzeni nazw dla ka¿dej sk³adowej:";
       else 
-        result+="obszarów nazw do których sk³adowe te nale¿±:";
+        result+="przestrzeni nazw do których sk³adowe te nale¿±:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the 
      *  index of all namespaces.
      */
     QCString trNamespaceIndex()
-    { return "Indeks Obszarów Nazw"; }
+    { return "Indeks Przestrzeni Nazw"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation()
-    { return "Dokumentacja Obszarów Nazw"; }
+    { return "Dokumentacja Przestrzeni Nazw"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -660,7 +666,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
      *  namespaces in a file.
      */
     QCString trNamespaces()
-    { return "Obszary Nazw"; }
+    { return "Przestrzenie Nazw"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -940,13 +946,13 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
         "jest ustawiony na 200, odniesie to rezultat w nastêpuj±cym wykresie:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "Pude³ka w powy¿szym wykresie maj± nastêpuj±ce znaczenie:\n"
+        "Prostok±ty w powy¿szym wykresie maj± nastêpuj±ce znaczenie:\n"
         "<ul>\n"
-        "<li>Wype³nione czarne pude³ko reprezentuje strukturê lub klasê dla "
+        "<li>Wype³niony czarny prostok±t reprezentuje strukturê lub klasê dla "
         "której zosta³ wygenerowany wykres.\n"
-        "<li>Pude³ko z czarn± obwolut± oznacza udokumentowan± strukturê lub klasê.\n"
-        "<li>Pude³ko z szar± obwolut± oznacza nieudokumentowan± strukturê lub klasê.\n"
-        "<li>Pude³ko z czerwon± obwolut± oznacza udokumentowan± strukturê lub klasê dla\n"
+        "<li>Prostok±t z czarn± obwolut± oznacza udokumentowan± strukturê lub klasê.\n"
+        "<li>Prostok±t z szar± obwolut± oznacza nieudokumentowan± strukturê lub klasê.\n"
+        "<li>Prostok±t z czerwon± obwolut± oznacza udokumentowan± strukturê lub klasê dla\n"
         "której nie s± pokazane wszystkie relacje dziedziczenia/zawierania. Wykres jest "
         "okrojony, je¶li nie mie¶ci siê w okre¶lonych brzegach."
         "</ul>\n"
@@ -980,6 +986,247 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
     QCString trTestList()
     {
       return "Lista Testu";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "Metody DCOP";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return "W³a¶ciwo¶ci";
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return "Dokumentacja W³a¶ciwo¶ci";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return "Interfejsy";
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Struktury Danych";
+      }
+      else
+      {
+        return "Klasy";
+      }
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return (QCString)"Pakiet "+name;
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return "Lista Pakietów";
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return "Oto lista pakietów wraz z krótkim opisem (o ile jest dostêpny):";
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return "Pakiety";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return "Dokumentacja Pakietu";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "Warto¶æ:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \\bug item */
+    virtual QCString trBug()
+    {
+      return "B³±d";
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return "Lista b³êdów";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6-20010422
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file */
+    virtual QCString trRTFansicp()
+    {
+      return "1250";
+    }
+    
+    /*! Used as ansicpg for RTF fcharset */
+    virtual QCString trRTFCharSet()
+    {
+      return "238";
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Indeks";
+    }
+                                                                          
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Klas" : "klas"));
+      result+=(singular ? "a" : "y");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Plik" : "plik"));
+      if (!singular)  result+="i";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Przestrze" : "przestrze"));
+      result+=(singular ? "ñ" : "nie");
+      result+=" nazw";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Grupa" : "grupa"));
+      result+=(singular ? "a" : "y");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Ston" : "stron"));
+      result+=(singular ? "a" : "y");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Sk³adow" : "sk³adow"));
+      result+=(singular ? "a" : "e");
+      return result; 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Pol" : "pol"));
+      result+=(singular ? "e" : "a");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Global" : "global"));
+      result+=(singular ? "ny" : "ne");
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Auto" : "auto"));
+      result += (singular) ? "r" : "rzy";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Wskazuje na";
+    }
+
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+    
+
+    virtual QCString trImplementedFromList(int numEntries) 
+    { 
+      return "Implementuje "+trWriteList(numEntries)+".";
+    }
+
+    virtual QCString trImplementedInList(int numEntries) 
+    {
+      return "Implementowany w "+trWriteList(numEntries)+".";
     }
 
 };

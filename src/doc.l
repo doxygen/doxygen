@@ -39,6 +39,7 @@
 #include "language.h"
 #include "outputlist.h"
 #include "reflist.h"
+#include "page.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -104,6 +105,44 @@ static QCString         internalRefAnchor;
 static QCString         caption;
 static QStack<char>	  currentListIndent; // indent stack of all list items 
 static bool insideItemList = FALSE;
+
+struct DocLexerContext
+{
+  int rule;
+  int position;
+  const char *inputString;
+  YY_BUFFER_STATE lexerState;
+};
+
+static QStack<DocLexerContext> lexerStack;
+
+static void pushContext()
+{
+  DocLexerContext *ctx = new DocLexerContext;
+  ctx->rule = YY_START;
+  ctx->position = inputPosition;
+  ctx->inputString = inputString;
+  ctx->lexerState = YY_CURRENT_BUFFER;
+  lexerStack.push(ctx);
+  yy_switch_to_buffer(yy_create_buffer(docYYin, YY_BUF_SIZE));  
+}
+
+static bool popContext()
+{
+  if (lexerStack.isEmpty()) return TRUE; 
+  DocLexerContext *ctx = lexerStack.pop();
+  inputPosition = ctx->position;
+  inputString = ctx->inputString;
+  yy_delete_buffer(YY_CURRENT_BUFFER);
+  yy_switch_to_buffer(ctx->lexerState);
+  BEGIN(ctx->rule);
+  delete ctx;
+  return TRUE;
+}
+  
+static QCString         copyDocString;
+static QCString         copyDocScope;
+static QList<void>      copyDocDefList;
 
 //-----------------------------------------------------------------------------
 
@@ -926,6 +965,119 @@ static void checkArgName(const QCString &name,bool isParam)
 }
 
 /* ----------------------------------------------------------------- */
+
+bool findDocsForMemberOrCompound(const char *commandName,
+                                 QCString *pDoc,
+                                 Definition **pDef)
+{
+  pDoc->resize(0);
+  *pDef=0;
+  QCString cmdArg=commandName;
+  int l=cmdArg.length();
+  if (l==0) return FALSE;
+
+  int scopeOffset=copyDocScope.length();
+  do // for each scope
+  {
+    int funcStart=cmdArg.find('(');
+    if (funcStart==-1) funcStart=l;
+    int lastScopeStart=cmdArg.findRev("::",funcStart);
+    int lastScopeEnd = lastScopeStart==-1 ? 0 : lastScopeStart+2;
+    QCString scope=cmdArg.left(QMAX(lastScopeStart,0));
+    QCString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
+    QCString args=cmdArg.right(l-funcStart);
+
+    if (scope.isEmpty())
+    {
+      if (scopeOffset>0)
+      {
+        scope=copyDocScope.left(scopeOffset);
+      }
+    }
+    else
+    {
+      if (scopeOffset>0)
+      {
+	scope.prepend(copyDocScope.left(scopeOffset)+"::");
+      }
+    }
+    //printf("findDocsForMemberOrCompound: scope=`%s' name=`%s' arg=`%s'\n",scope.data(),name.data(),args.data());
+
+    // try if the link is to a member
+    MemberDef    *md=0;
+    ClassDef     *cd=0;
+    FileDef      *fd=0;
+    NamespaceDef *nd=0;
+    GroupDef     *gd=0;
+    PageInfo     *pi=0;
+    bool found = getDefs(scope,name,args,md,cd,fd,nd,gd,FALSE,0,TRUE);
+    if (found && md)
+    {
+      *pDoc=md->documentation();
+      *pDef=md;
+      return TRUE;
+    }
+
+    QCString fullName=cmdArg;
+    if (scopeOffset>0)
+    {
+      fullName.prepend(copyDocScope.left(scopeOffset)+"::");
+    }
+
+    // try class, namespace, group, page, file reference
+    cd = Doxygen::classSDict[fullName];
+    if (cd) // class 
+    {
+      *pDoc=cd->documentation();
+      *pDef=cd;
+      return TRUE;
+    }
+    nd = Doxygen::namespaceSDict[fullName];
+    if (nd) // namespace
+    {
+      *pDoc=nd->documentation();
+      *pDef=nd;
+      return TRUE;
+    }
+    gd = Doxygen::groupSDict[cmdArg];
+    if (gd) // group
+    {
+      *pDoc=gd->documentation();
+      *pDef=gd;
+      return TRUE;
+    }
+    pi = Doxygen::pageSDict->find(cmdArg);
+    if (pi) // page
+    {
+      *pDoc=pi->doc;
+      *pDef=(Definition *)pi;
+      return TRUE;
+    }
+    bool ambig;
+    fd = findFileDef(Doxygen::inputNameDict,cmdArg,ambig);
+    if (fd && !ambig) // file
+    {
+      *pDoc=fd->documentation();
+      *pDef=fd;
+      return TRUE;
+    }
+
+    if (scopeOffset==0)
+    {
+      scopeOffset=-1;
+    }
+    else
+    {
+      scopeOffset = copyDocScope.findRev("::",scopeOffset-1);
+      if (scopeOffset==-1) scopeOffset=0;
+    }
+  } while (scopeOffset>0);
+
+  
+  return FALSE;
+}
+
+/* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
@@ -943,7 +1095,6 @@ static int yyread(char *buf,int max_size)
 
 //ATTR      ((({BN}+[^\>]+)/">")?)
 %}
-
 CMD	  ("\\"|"@")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
@@ -1012,6 +1163,7 @@ OPARG     "("[a-z_A-Z0-9,\<\> \t\*\&]*")"
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {B}+[^(\r\n.,]+
 OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
+LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))? 
 
 %option noyywrap
 
@@ -1064,6 +1216,9 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocDotFile
 %x	DocDotFileOpt
 %x	DocSkipLanguage
+%x	DocCopyFind
+%x	DocCopyArg
+%x	DocCopySkipVerb
 
 %%
 
@@ -1219,13 +1374,12 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>{CMD}"link"/{BN}	        { BEGIN( DocLink ); }
 <DocScan>"{"{CMD}"link"{BN}+	        { BEGIN( DocJavaLink ); }
 <DocSkipWord>[a-z_A-Z0-9.:()]+		{ BEGIN( DocScan ); }
-<DocLink>[a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?  {  // TODO: support operators as well!
+<DocLink>{LINKMASK}                     { // TODO: support operators as well!
   					  linkRef  = stripKnownExtensions(yytext);
 					  linkText = "";
   					  BEGIN( DocLinkText ); 
 					}
-<DocJavaLink>([a-z_A-Z0-9]+".")+	{ /* Skip scope prefix (TODO: fix) */ }
-<DocJavaLink>([a-z_A-Z0-9]*"#")?[a-z_A-Z0-9]+("("[a-z_A-Z0-9.,:~&*()\ \[\]]*")")?({B}*("const"|"volatile"))? {  // TODO: support operators as well!
+<DocJavaLink>{LINKMASK}                 { // TODO: support operators as well!
   					  linkRef  = yytext;
 					  linkText = "";
 					  BEGIN( DocJavaLinkText );
@@ -2663,6 +2817,51 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocCode,DocEmphasis,DocBold,DocScan,Text>.  { 
 					  outDoc->writeChar(*yytext);
 					}
+<DocCopyFind>{CMD}"copydoc"{B}+		{ // found copydoc command
+  					  BEGIN(DocCopyArg);
+  					}
+<DocCopyFind>{CMD}"verbatim"/[^a-z_A-Z0-9] { // skip verbatim sections
+                                          copyDocString+=yytext; 
+                                          BEGIN(DocCopySkipVerb);
+                                        }
+<DocCopyFind>[^@\\\n]+			{ copyDocString+=yytext; }
+<DocCopyFind>"\\\\"|"@@"		{ copyDocString+=yytext; /* skip escaped commands */ }
+<DocCopySkipVerb>[^@\\\n]+		{ copyDocString+=yytext; }
+<DocCopySkipVerb>{CMD}"endverbatim"	{ copyDocString+=yytext; 
+                                          BEGIN(DocCopyFind);
+                                        }
+<DocCopyFind,DocCopySkipVerb>\n		{ copyDocString+=yytext; }
+<DocCopyFind,DocCopySkipVerb>.		{ copyDocString+=yytext; }
+<DocCopyArg>{LINKMASK}			{ //printf("found @copydoc with arg `%s'\n",yytext);
+                                          QCString doc;
+					  Definition *def;
+                                          if (findDocsForMemberOrCompound(yytext,&doc,&def))
+					  {
+					    //printf("found docs `%s'\n",doc.data());
+					    if (copyDocDefList.findRef(def)!=-1)
+					    {
+					      warn(yyFileName,yyLineNr,"Recursive @copydoc relation!");
+					    }
+					    else
+					    {
+					      copyDocDefList.append(def);
+					      pushContext();
+					      inputString = doc;
+					      inputPosition = 0;
+					      BEGIN(DocCopyFind);
+					      docYYlex();
+					      popContext();
+					      copyDocDefList.remove(def);
+					      BEGIN(DocCopyFind);
+					    }
+					  }
+					  else // reference not found!
+					  {
+					    warn(yyFileName,yyLineNr,"Argument `%s' of @copydoc command "
+						 "could not be resolved!",yytext);
+					  }
+                                          BEGIN(DocCopyFind);
+					}
 <*>\n					{ yyLineNr++ ; }
 <*>.
 
@@ -2672,57 +2871,33 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 
 void scanString(const char *s)
 {
-  const char *oldInputString = inputString;
-  int oldInputPosition = inputPosition;
-  int oldRule = YY_START;
-  YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(docYYin, YY_BUF_SIZE));  
+  pushContext();
   inputString  = s;
   inputPosition = 0;
   BEGIN( Text );
   docYYlex();
-  yy_delete_buffer(YY_CURRENT_BUFFER);
-  yy_switch_to_buffer(oldBuffer);
-  inputString = oldInputString;
-  inputPosition = oldInputPosition;
-  BEGIN( oldRule );
+  popContext();
 }
 
 void scanDoc(const char *s)
 {
-  const char *oldInputString = inputString;
-  int oldInputPosition = inputPosition;
-  int oldRule = YY_START;
-  YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(docYYin, YY_BUF_SIZE));  
+  pushContext();
   inputString  = s;
   inputPosition = 0;
   BEGIN( DocScan );
   docYYlex();
-  yy_delete_buffer(YY_CURRENT_BUFFER);
-  yy_switch_to_buffer(oldBuffer);
-  inputString = oldInputString;
-  inputPosition = oldInputPosition;
-  BEGIN( oldRule );
+  popContext();
 }
 
 void internalParseDocument(const char *s)
 {
   if (s==0) return;
-  const char *oldInputString = inputString;
-  int oldInputPosition = inputPosition;
-  int oldRule = YY_START;
-  YY_BUFFER_STATE oldBuffer = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(docYYin, YY_BUF_SIZE));  
+  pushContext();
   inputString  = s;
   inputPosition = 0;
   BEGIN( DocScan );
   docYYlex();
-  yy_delete_buffer(YY_CURRENT_BUFFER);
-  yy_switch_to_buffer(oldBuffer);
-  inputString = oldInputString;
-  inputPosition = oldInputPosition;
-  BEGIN( oldRule );
+  popContext();
 }
 
 //----------------------------------------------------------------------------
@@ -2790,9 +2965,27 @@ void parseDocument(OutputDocInterface &od,const QCString &docString)
 
 //----------------------------------------------------------------------------
 
-void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
-              const char *clName,MemberDef *md,const QCString &docString)
+// in this pass all @copydoc commands are resolved.
+void resolveCopyDocCommands(const char *scope,QCString &docString)
 {
+  copyDocString.resize(0);
+  copyDocScope = scope;
+  inputString = docString;
+  inputPosition = 0;
+  docYYrestart( docYYin ); 
+  BEGIN( DocCopyFind );
+  docYYlex();
+  docString = copyDocString;
+}
+
+//----------------------------------------------------------------------------
+
+void parseDoc(OutputDocInterface &od,const char *fileName,int startLine,
+              const char *clName,MemberDef *md,const QCString &docStr)
+{
+  QCString docString=docStr;
+  resolveCopyDocCommands(clName,docString);
+  
   //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
   initParser();
   initParseCodeContext();

@@ -57,6 +57,7 @@ Norwegian
 Lars Erik Jordet: lej@circuitry.no
 
 Polish 
+Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl
 Grzegorz Kowal:  g_kowal@poczta.onet.pl
 
 Portuguese
