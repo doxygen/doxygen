@@ -2433,8 +2433,8 @@ void Config::create()
                     "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
                     "generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base or \n"
                     "super classes. Setting the tag to NO turns the diagrams off. Note that this \n"
-		    "option is superseded by the HAVE_DOT option below. This is only a fallback. It is \n"
-		    "recommended to install and use dot, since it yield more powerful graphs. \n",
+		    "option is superceded by the HAVE_DOT option below. This is only a fallback. It is \n"
+		    "recommended to install and use dot, since it yields more powerful graphs. \n",
                     TRUE
                  );
   cb = addBool(

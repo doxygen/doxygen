@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2003/06: translated new items used since version 1.3.1
  *  2003/04: translated new items used since version 1.3
  *  2002/11: translated new items used since version 1.2.18
  *  2002/08: translated new items used since version 1.2.17
@@ -68,7 +69,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_3_1
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1428,6 +1429,23 @@ class TranslatorItalian : public TranslatorAdapter_1_3_1
     virtual QCString trStaticPackageAttribs()
     {
       return "Attributi statici con visibilità di package";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Tutto";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Questo è il grafo delle chiamate per questa funzione:";
     }
 
 };

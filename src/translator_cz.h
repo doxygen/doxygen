@@ -20,18 +20,9 @@
 
 
 // The first translation from English to Czech was started by
-// Vlastimil Havran. He wrote:
-// 
-//   "In the cases where are more translations possible I hope
-//    that I have selected the most reasonable text. If not, please,
-//    mail the comments and text proposals to
-//
-//    havran@fel.cvut.cz, 1999/04/11"
-//    
-// The prototype version of Czech strings with diacritics was
-// implemented by Petr Prikryl (prikrylp@skil.cz), 2000/06/20. As
-// Vlastimil was quite busy at the time, he agreed that Petr be the
-// maintainer for a while (from 2000/06/20).
+// Vlastimil Havran (1999--2000). The prototype version of Czech strings 
+// with diacritics was implemented by Petr Prikryl (prikrylp@skil.cz), 
+// 2000/06/20. Vlastimil agreed that Petr be the new maintainer.
 //
 // Updates:
 // --------
@@ -144,12 +135,10 @@
 // 2002/07/29
 //  - The new trDeprecatedList() implemented.
 //
-// 2002/10/15
-//  - The new trEvents() and trEventDocumentation() implemented.
-//  
-// 2003/04/28
-//  - The five new methods "since 1.3" implemented.
-//
+// 2002/10/15 - The new trEvents() and trEventDocumentation() implemented.
+// 2003/04/28 - Five new methods "since 1.3" implemented.
+// 2003/06/10 - Two new methods "since 1.3.1" implemented.
+
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -168,7 +157,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public TranslatorAdapter_1_3_1
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1602,6 +1591,23 @@ class TranslatorCzech : public TranslatorAdapter_1_3_1
       return decode("Statické atributy balíku");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return decode("Vše");
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return decode("Graf volání této funkce:");
+    }
+   
 };
 
 #endif // TRANSLATOR_CZ_H

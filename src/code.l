@@ -41,8 +41,9 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
   
-#define SCOPEBLOCK (int *)4
-#define INNERBLOCK (int *)8
+#define CLASSBLOCK (int *)4
+#define SCOPEBLOCK (int *)8
+#define INNERBLOCK (int *)12
 
 /* -----------------------------------------------------------------
  *	statics
@@ -525,7 +526,7 @@ static ClassDef *stripClassName(const char *s)
 static MemberDef *setCallContextForVar(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  //printf("setCallContextForVar(%s)\n",name.data());
+  //printf("setCallContextForVar(%s) g_classScope=%s\n",name.data(),g_classScope.data());
 
   int scopeEnd = name.findRev("::");
   if (scopeEnd!=-1) // name with explicit scope
@@ -550,6 +551,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
+    //printf("local variable\n");
     if (mcd!=VariableContext::dummyContext)
     {
       //printf("local var `%s' mcd=%s\n",name.data(),mcd->name().data());
@@ -565,7 +567,11 @@ static MemberDef *setCallContextForVar(const QCString &name)
       MemberDef *md=mcd->getMemberByName(name);
       if (md) 
       {
-	g_theCallContext.setClass(stripClassName(md->typeString()));
+	if (g_scopeStack.top()!=CLASSBLOCK)
+	{
+          //printf("class member `%s' mcd=%s\n",name.data(),mcd->name().data());
+	  g_theCallContext.setClass(stripClassName(md->typeString()));
+	}
 	return md;
       }
     }
@@ -1146,7 +1152,8 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <Body,MemberCall,MemberCall2>"}"	{ 
                                           g_theVarContext.popScope();
 
-  					  if (g_scopeStack.pop()==SCOPEBLOCK) 
+					  int *scope = g_scopeStack.pop();
+  					  if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
 					  {
 					    popScope();
 					  }
@@ -1221,7 +1228,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  if (g_insideBody) g_bodyCurlyCount++;
 					  if (!g_curClassName.isEmpty()) // valid class name
 					  {
-  					    g_scopeStack.push(SCOPEBLOCK);
+  					    g_scopeStack.push(CLASSBLOCK);
 					    pushScope(g_curClassName);
 					    //printf("***** g_curClassName=%s\n",g_curClassName.data());
 					    if (getResolvedClass(g_currentDefinition,g_curClassName)==0)
@@ -1509,7 +1516,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_saveType = g_type.copy();
   					  if (!g_type.isEmpty()) 
 					  {
-					    g_theVarContext.addVariable(g_type,g_name);
+					    if (g_scopeStack.top()!=CLASSBLOCK)
+					    {
+					      g_theVarContext.addVariable(g_type,g_name);
+					    }
 					    g_name.resize(0);
 					  }
 					  if (*yytext==';') 
@@ -1903,6 +1913,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
+                                          if (YY_START==SkipComment) REJECT;
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;

@@ -72,6 +72,7 @@ EXCLUDE                = src/code.cpp \
                          src/suffixtree.h \
                          src/searchindex.cpp \
                          src/searchindex.h \
+                         src/commentcnv.cpp
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = 

@@ -195,15 +195,15 @@ remove the % and keep the word unlinked.
 
 No, not as such; doxygen needs to understand the structure of what it reads. 
 If you don't mind spending some time on it, there are several options:
-- If the grammer of X is close to C or C++, then it is probably not too hard to
+- If the grammar of X is close to C or C++, then it is probably not too hard to
   tweak src/scanner.l a bit so the language is supported. This is done
   for all other languages directly supported by doxygen 
   (i.e. Java, IDL, C#, PHP).
-- If the grammer of X is somewhat different than you can write an input
+- If the grammar of X is somewhat different than you can write an input
   filter that translates X into something similar enough to C/C++ for
   doxygen to understand (this approach is taken for VB, Object Pascal, and
   Javascript, see http://www.stack.nl/~dimitri/doxygen/download.html#helpers).
-- If the grammer is completely different one could write a parser for X and 
+- If the grammar is completely different one could write a parser for X and 
   write a backend that produces a similar syntax tree as is done by 
   src/scanner.l (and also by src/tagreader.cpp while reading tag files).
 
@@ -218,8 +218,8 @@ where this might happen is if you have lines in your code with more than
 16K characters. 
 
 If you have run into such a case and want me to fix it, you
-should send me a code fragment that triggers the message. The workaround
-the problem put some line-breaks into your file, split it up into smaller 
+should send me a code fragment that triggers the message. To work around
+the problem, put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
 <li><b>When running make in the latex dir I get "TeX capacity exceeded". Now what?</b>

@@ -940,6 +940,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleLink(const QString &cmdName,bool isJavaLink);
     void handleRef(const QString &cmdName);
     void handleSection(const QString &cmdName);
+    int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
     int handleLanguageSwitch();
 
   private:
