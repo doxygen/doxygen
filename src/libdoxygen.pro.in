@@ -71,7 +71,9 @@ HEADERS      =	bufstr.h \
                 printdocvisitor.h \
 		qtbc.h \
 		reflist.h \
+                rtfdocvisitor.h \
 		rtfgen.h \
+		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
 		section.h \
@@ -162,7 +164,9 @@ SOURCES      =	ce_lex.cpp \
                 pngenc.cpp \
 		pre.cpp \
 		reflist.cpp \
+                rtfdocvisitor.cpp \
 		rtfgen.cpp \
+		rtfstyle.cpp \
 		scanner.cpp \
 		searchindex.cpp \
 		suffixtree.cpp \

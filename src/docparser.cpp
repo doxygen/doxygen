@@ -1392,6 +1392,7 @@ QCString DocLink::parse(bool isJavaLink)
           printf("Error: Unsupported symbol %s found at line %d\n",
               g_token->name.data(),doctokenizerYYlineno);
           break;
+        case TK_LNKWORD: 
         case TK_WORD: 
           if (isJavaLink) // special case to detect closing }
           {
@@ -3894,7 +3895,7 @@ void DocRoot::parse()
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,const char *input)
 {
-  //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
+  printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   
   printf("========== validating %s at line %d\n",fileName,startLine);
   g_token = new TokenInfo;

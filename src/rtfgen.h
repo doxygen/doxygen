@@ -107,7 +107,7 @@ class RTFGenerator : public OutputGenerator
     //void memberGroupSeparator() {}
     void insertMemberAlign() {}
 
-    void writeRuler(){RtfwriteRuler_thin();};
+    void writeRuler() { rtfwriteRuler_thin(); }
 	
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
@@ -262,12 +262,12 @@ class RTFGenerator : public OutputGenerator
     RTFGenerator(const RTFGenerator &);
     RTFGenerator &operator=(const RTFGenerator &);
 
-    const char *Rtf_BList_DepthStyle();
-    const char *Rtf_CList_DepthStyle();
-    const char *Rtf_EList_DepthStyle();
-    const char *Rtf_LCList_DepthStyle();
-    const char *Rtf_DList_DepthStyle();
-    const char *Rtf_Code_DepthStyle();
+    const char *rtf_BList_DepthStyle();
+    const char *rtf_CList_DepthStyle();
+    const char *rtf_EList_DepthStyle();
+    const char *rtf_LCList_DepthStyle();
+    const char *rtf_DList_DepthStyle();
+    const char *rtf_Code_DepthStyle();
     void incrementIndentLevel();
     void decrementIndentLevel();
     int  col;
@@ -280,11 +280,11 @@ class RTFGenerator : public OutputGenerator
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
-    void RtfwriteRuler_doubleline() { t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_emboss() { t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_thick() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
-    void RtfwriteRuler_thin() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
-    void WriteRTFReference(const char *label);
+    void rtfwriteRuler_doubleline() { t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void rtfwriteRuler_emboss() { t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
+    void rtfwriteRuler_thick() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
+    void rtfwriteRuler_thin() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
+    void writeRTFReference(const char *label);
     char *getMultiByte(int c);
 };
 

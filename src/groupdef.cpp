@@ -162,7 +162,7 @@ void GroupDef::addMembersToMemberGroup()
 }
 
 
-void GroupDef::insertMember(MemberDef *md,bool docOnly)
+bool GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
   //printf("GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
@@ -173,10 +173,17 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
       MemberDef *srcMd = srcMi->memberDef;
-      if (matchArguments(srcMd->argumentList(),md->argumentList()) && 
-          srcMd->getOuterScope()==md->getOuterScope())
+
+      bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
+          // both inside a file => definition and declaration do not have to be in the same file
+           (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
+            md->getOuterScope()->definitionType()==Definition::TypeFile); 
+      
+      if (matchArguments(srcMd->argumentList(),md->argumentList()) &&
+          sameScope
+         )
       {
-        return; // member already added
+        return FALSE; // member already added
       }
     }
     mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
@@ -187,6 +194,7 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
     mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));
     allMemberNameInfoSDict->append(mni->memberName(),mni);
   }
+  //printf("Added member!\n");
   allMemberList->append(md); 
   switch(md->memberType())
   {
@@ -241,7 +249,7 @@ void GroupDef::insertMember(MemberDef *md,bool docOnly)
            md->getClassDef() ? md->getClassDef()->name().data() : "",
            name().data());
   }
-  //addMemberToGroup(md,groupId);
+  return TRUE;
 }
 
 void GroupDef::removeMember(MemberDef *md)
@@ -723,10 +731,13 @@ void addMemberToGroups(Entry *root,MemberDef *md)
     if (insertit)
     {
       //printf("insertMember\n");
-      fgd->insertMember(md);
-      md->setGroupDef(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
-      ClassDef *cd = md->getClassDefOfAnonymousType();
-      if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+      bool success = fgd->insertMember(md);
+      if (success)
+      {
+        md->setGroupDef(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+        ClassDef *cd = md->getClassDefOfAnonymousType();
+        if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+      }
     }
   }
 }

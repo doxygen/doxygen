@@ -55,7 +55,7 @@ class GroupDef : public Definition
     void addParentGroup(const GroupDef *def);
     void addPage(PageInfo *def);                // pages in this group
     void addExample(const PageInfo *def);       // examples in this group
-    void insertMember(MemberDef *def,bool docOnly=FALSE);
+    bool insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
     void writeDetailedDocumentation(OutputList &ol);

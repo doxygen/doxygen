@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _HTMLDOCVISITOR_H
-#define _HTMLDOCVISITOR_H
+#ifndef _RTFDOCVISITOR_H
+#define _RTFDOCVISITOR_H
 
 #include "docvisitor.h"
 
@@ -25,11 +25,11 @@ class QTextStream;
 class BaseCodeDocInterface;
 class QCString;
 
-/*! @brief Concrete visitor implementation for HTML output. */
-class HtmlDocVisitor : public DocVisitor
+/*! @brief Concrete visitor implementation for RTF output. */
+class RTFDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -57,7 +57,7 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
     void visitPost(DocAutoListItem *);
-    void visitPre(DocPara *) ;
+    void visitPre(DocPara *);
     void visitPost(DocPara *);
     void visitPre(DocRoot *);
     void visitPost(DocRoot *);
@@ -69,10 +69,10 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocSimpleList *);
     void visitPre(DocSimpleListItem *);
     void visitPost(DocSimpleListItem *);
-    void visitPre(DocSection *);
+    void visitPre(DocSection *s);
     void visitPost(DocSection *);
-    void visitPre(DocHtmlList *);
-    void visitPost(DocHtmlList *) ;
+    void visitPre(DocHtmlList *s);
+    void visitPost(DocHtmlList *s);
     void visitPre(DocHtmlListItem *);
     void visitPost(DocHtmlListItem *);
     void visitPre(DocHtmlPre *);
@@ -83,14 +83,14 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocHtmlDescTitle *);
     void visitPre(DocHtmlDescData *);
     void visitPost(DocHtmlDescData *);
-    void visitPre(DocHtmlTable *);
-    void visitPost(DocHtmlTable *);
+    void visitPre(DocHtmlTable *t);
+    void visitPost(DocHtmlTable *t);
+    void visitPre(DocHtmlCaption *);
+    void visitPost(DocHtmlCaption *);
     void visitPre(DocHtmlRow *);
     void visitPost(DocHtmlRow *) ;
     void visitPre(DocHtmlCell *);
     void visitPost(DocHtmlCell *);
-    void visitPre(DocHtmlCaption *);
-    void visitPost(DocHtmlCaption *);
     void visitPre(DocIndexEntry *);
     void visitPost(DocIndexEntry *);
     void visitPre(DocInternal *);
@@ -98,14 +98,14 @@ class HtmlDocVisitor : public DocVisitor
     void visitPre(DocHRef *);
     void visitPost(DocHRef *);
     void visitPre(DocHtmlHeader *);
-    void visitPost(DocHtmlHeader *);
+    void visitPost(DocHtmlHeader *) ;
     void visitPre(DocImage *);
     void visitPost(DocImage *);
     void visitPre(DocDotFile *);
     void visitPost(DocDotFile *);
-    void visitPre(DocLink *);
+    void visitPre(DocLink *lnk);
     void visitPost(DocLink *);
-    void visitPre(DocRef *);
+    void visitPre(DocRef *ref);
     void visitPost(DocRef *);
     void visitPre(DocSecRefItem *);
     void visitPost(DocSecRefItem *);
@@ -133,7 +133,8 @@ class HtmlDocVisitor : public DocVisitor
     void filter(const char *str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
-    void endLink();
+    void endLink(const QCString &ref);
+    QCString getStyle(const char *name);
 
     //--------------------------------------
     // state variables
@@ -143,6 +144,7 @@ class HtmlDocVisitor : public DocVisitor
     BaseCodeDocInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
+    int m_indentLevel;
 };
 
 #endif

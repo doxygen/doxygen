@@ -190,7 +190,7 @@ int getScopeFragment(const QCString &s,int p,int *l);
 int filterCRLF(char *buf,int len);
 void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
                         const char *name,const char *title,const char *args=0);
-void addRelatedPage(const char *name,const QCString &ptitle,
+PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
@@ -201,6 +201,7 @@ QCString escapeCharsInString(const char *name,bool allowDots);
 void addGroupListToTitle(OutputList &ol,Definition *d);
 void filterLatexString(QTextStream &t,const char *str,
                        bool insideTabbing=FALSE,bool insidePre=FALSE);
+QCString rtfFormatBmkStr(const char *name);
 
 #endif
 

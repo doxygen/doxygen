@@ -29,6 +29,7 @@
 #include "version.h"
 #include "dot.h"
 #include "page.h"
+#include "docparser.h"
 #include "latexdocvisitor.h"
 
 //static QCString filterTitle(const char *s)

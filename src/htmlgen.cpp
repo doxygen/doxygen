@@ -30,6 +30,7 @@
 #include "dot.h"
 #include "language.h"
 #include "htmlhelp.h"
+#include "docparser.h"
 #include "htmldocvisitor.h"
 
 // #define GROUP_COLOR "#ff8080"

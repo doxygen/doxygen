@@ -282,6 +282,12 @@ static void addSection()
 {
   //printf("New section pageName=%s label=%s title=%s\n",
   //    current->name.data(),sectionLabel.data(),sectionTitle.data());
+  if (current->name.isEmpty() || current->section != Entry::PAGEDOC_SEC)
+  {
+    warn(yyFileName,yyLineNr,"Warning: found section or anchor with label `%s' "
+	                     "outside of \\page context!\n",sectionLabel.data());
+    return;
+  }
   if (sectionLabel.isEmpty()) return;
   if (Doxygen::sectionDict.find(sectionLabel)==0)
   {
@@ -3343,7 +3349,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->name = yytext;
 					  newDocState();
   					}
-<NameSpaceDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<NameSpaceDocArg1>"\\"{B}*"\n"		{ 
+                                          yyLineNr++; 
+                                        }
 <NameSpaceDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
@@ -3355,7 +3363,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->name = yytext;
 					  newDocState();
   					}
-<PackageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<PackageDocArg1>"\\"{B}*"\n"		{ 
+                                          yyLineNr++; 
+                                        }
 <PackageDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
@@ -3376,7 +3386,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  prependScope();
 					  BEGIN( ClassDocArg2 );
 					}
-<ClassDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<ClassDocArg1>"\\"{B}*"\n"		{ 
+                                          yyLineNr++; 
+                                        }
 <ClassDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
@@ -3394,7 +3406,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    current->name=current->name.left(current->name.length()-5);
 					  BEGIN(GroupDocArg2);
   					}
-<GroupDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<GroupDocArg1>"\\"{B}*"\n"		{ yyLineNr++; 
+                                        }
 <GroupDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing group name after %s",
@@ -3408,7 +3421,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           yyLineNr--;
   					  unput('/');unput('*');unput('\n');
   					}
-<GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; }
+<GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
+                                        }
 <GroupDocArg2>[^\n\*]+			{
 					  current->type += yytext;
 					  current->type = current->type.stripWhiteSpace();
@@ -3428,7 +3442,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->includeFile = stripQuotes(yytext);
 					  BEGIN( ClassDocArg3 );
 					}
-<ClassDocArg2>"\\"{B}*"\n"		{ yyLineNr++; }
+<ClassDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
+                                        }
 <ClassDocArg2>"\n"			{ yyLineNr++; 
 					  newDocState();
 					}
@@ -3437,7 +3452,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
  					  current->includeName = yytext;
   					  newDocState();
 					}
-<ClassDocArg3>"\\"{B}*"\n"		{ yyLineNr++; }
+<ClassDocArg3>"\\"{B}*"\n"		{ yyLineNr++;
+                                        }
 <ClassDocArg3>"\n"			{ yyLineNr++; 
   					  newDocState();
 					}
@@ -3445,7 +3461,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->name = stripQuotes(yytext);
 					  newDocState();
   				        }
-<FileDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<FileDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
+                                        }
 <FileDocArg1>"\n"			{
   					  current->name = yyFileName;
   					  yyLineNr++;
@@ -3455,7 +3472,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->name = stripQuotes(yytext);
 					  BEGIN( PageDocArg2 ); 
 					}
-<PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; 
+					  current->doc+="\n";
+                                        }
 <PageDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after "
@@ -3476,11 +3495,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  prependScope();
   					  newDocState();
   					}
-<EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
+<EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
+					  current->doc+="\n";
+                                        }
 <EnumDocArg1>"\n"			{
   					  warn(yyFileName,yyLineNr,
                                                "Warning: missing argument after \\enum."
                                               );
+					  current->doc+="\n";
   					  yyLineNr++;
 					  BEGIN( Doc );
   					}
@@ -3504,6 +3526,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <GroupHeader>\n				{
   					  yyLineNr++;
+					  current->doc+="\n";
 					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
 					  startGroupInDoc();
 					  newDocState();
@@ -4255,7 +4278,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
-  					  current->doc+=' '; 
+					  current->doc+=' '; 
 					}
 
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text

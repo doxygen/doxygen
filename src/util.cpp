@@ -2136,12 +2136,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             }
           }
         }
+        //printf("found %d candidate members\n",members.count());
         if (members.count()!=1 && !strcmp(args,"()"))
         {
           // no exact match found, but if args="()" an arbitrary 
           // member will do
           md=mn->last();
-          while (md)
+          while (md && md->isLinkable())
           {
             //printf("Found member `%s'\n",md->name().data());
             //printf("member is linkable md->name()=`%s'\n",md->name().data());
@@ -2363,6 +2364,7 @@ bool resolveRef(/* in */  const char *scName,
   GroupDef     *gd = 0;
 
   // check if nameStr is a member or global.
+  //printf("getDefs(scope=%s,name=%s,args=%s\n",scopeStr.data(),nameStr.data(),argsStr.data());
   if (getDefs(scopeStr,nameStr,argsStr,
               md,cd,fd,nd,gd,
               scopePos==0 && !memberScopeFirst,
@@ -2378,6 +2380,8 @@ bool resolveRef(/* in */  const char *scName,
     else if (fd) *resContext=fd;
     else if (gd) *resContext=gd;
     else         { *resContext=0; *resMember=0; return FALSE; }
+    //printf("member=%s (md=%p) anchor=%s linkable()=%d context=%s\n",
+    //    md->name().data(),md,md->anchor().data(),md->isLinkable(),(*resContext)->name().data());
     return TRUE;
   }
   else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict[nameStr]))
@@ -2539,6 +2543,7 @@ bool resolveLink(/* in */ const char *scName,
 bool generateLink(OutputDocInterface &od,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
+  //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   Definition *compound;
   PageInfo *pageInfo;
   QCString anchor,linkText=lt;
@@ -3386,7 +3391,7 @@ found:
 
 //----------------------------------------------------------------------------
 
-void addRelatedPage(const char *name,const QCString &ptitle,
+PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
@@ -3474,6 +3479,7 @@ void addRelatedPage(const char *name,const QCString &ptitle,
       Doxygen::sectionDict.insert(pageName,si);
     }
   }
+  return pi;
 }
 
 //----------------------------------------------------------------------------
@@ -3902,3 +3908,47 @@ void filterLatexString(QTextStream &t,const char *str,
     }
   }
 }
+
+
+QCString rtfFormatBmkStr(const char *name)
+{
+  static QCString g_nextTag( "AAAAAAAAAA" );
+  static QDict<QCString> g_tagDict( 5003 );
+
+  g_tagDict.setAutoDelete(TRUE);
+
+  // To overcome the 40-character tag limitation, we
+  // substitute a short arbitrary string for the name
+  // supplied, and keep track of the correspondence
+  // between names and strings.
+  QCString key( name );
+  QCString* tag = g_tagDict.find( key );
+  if ( !tag )
+  {
+     // This particular name has not yet been added
+     // to the list. Add it, associating it with the
+     // next tag value, and increment the next tag.
+     tag = new QCString( g_nextTag.copy() ); // Make sure to use a deep copy!
+     g_tagDict.insert( key, tag );
+
+     // This is the increment part
+     char* nxtTag = g_nextTag.data() + g_nextTag.length() - 1;
+     for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
+     {
+         if ( ( ++(*nxtTag) ) > 'Z' )
+         {
+            (*nxtTag) = 'A';
+         }
+         else
+         {
+            // Since there was no carry, we can stop now
+            break;
+         }
+     }
+  }
+  
+  return *tag;
+}
+
+
+

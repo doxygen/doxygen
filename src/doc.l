@@ -1130,8 +1130,10 @@ static int yyread(char *buf,int max_size)
     return c;
 }
 
-//ATTR      ((({BN}+[^\>]+)/">")?)
+ //LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
+ //ATTR      ((({BN}+[^\>]+)/">")?)
 %}
+
 CMD	  ("\\"|"@")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
@@ -1200,7 +1202,7 @@ OPARG     "("[a-z_A-Z0-9,\<\> \t\*\&]*")"
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {B}+[^(\r\n.,]+
 OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
-LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))? 
+LINKMASK  [^ \t\n\r\\@<&$]+("("[^\n)]*")")?({B}*("const"|"volatile"))? 
 
 %option noyywrap
 
@@ -1785,7 +1787,7 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
 					    currentListIndent.push("P");
-  					    outDoc->startSimpleSect(BaseOutputDocInterface::Return,0,0,theTranslator->trReturns()+":");
+  					    outDoc->startSimpleSect(BaseOutputDocInterface::Return,0,0,theTranslator->trReturns()+": ");
 					    outDoc->writeDescItem();
 					  }
   					}

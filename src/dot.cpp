@@ -1793,8 +1793,10 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QCString imgName = (QCString)outFile+"."+imgExt;
   if (format==BITMAP)
   {
-    dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",imgExt.data(),
-        inFile,imgName.data());
+    dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",
+        imgExt.data(),
+        inFile,
+        imgName.data());
   }
   else // format==EPS
   {
