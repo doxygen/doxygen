@@ -99,14 +99,16 @@ class DotNode
     friend class DotNodeList;
     friend class DotCallGraph;
     friend void writeDotGraph(
-                      DotNode *root,
-                      GraphType gt,
-                      GraphOutputFormat f,
-                      const QCString &baseName,
-                      bool lrRank,
-                      bool renderParents,
-                      int distance,
-                      bool backArrow
+                      DotNode *root, GraphType gt,
+                      GraphOutputFormat f, const QCString &baseName,
+                      bool lrRank, bool renderParents,
+                      int distance, bool backArrows
+                     );
+    friend QCString computeMd5Signature(
+                      DotNode *root, GraphType gt,
+                      GraphOutputFormat f, 
+                      bool lrRank, bool renderParents,
+                      int distance, bool backArrows
                      );
 };
 

@@ -193,6 +193,10 @@ function filter_results($docs,&$requiredWords,&$forbiddenWords)
 
 function compare_rank($a,$b)
 {
+  if ($a["rank"] == $b["rank"]) 
+  {
+    return 0;
+  }
   return ($a["rank"]>$b["rank"]) ? -1 : 1; 
 }
 

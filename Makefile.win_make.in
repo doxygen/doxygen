@@ -1,6 +1,7 @@
 all: src\version.cpp
 	set TMAKEPATH=$(TMAKEPATH) & cd qtools & $(MAKE)
 	set TMAKEPATH=$(TMAKEPATH) & cd libpng & $(MAKE)
+	set TMAKEPATH=$(TMAKEPATH) & cd libmd5 & $(MAKE)
 	set TMAKEPATH=$(TMAKEPATH) & cd src & $(MAKE)
 
 clean:

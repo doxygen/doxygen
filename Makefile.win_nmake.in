@@ -6,6 +6,9 @@ all: src\version.cpp
 	cd libpng
 	$(MAKE)
 	cd ..
+	cd libmd5
+	$(MAKE)
+	cd ..
 	cd src 
 	$(MAKE)
 

@@ -436,6 +436,7 @@ void ManDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
   m_indent+=2;
+  m_t << ".PD 0" << endl;
 }
 
 void ManDocVisitor::visitPost(DocSimpleList *)
@@ -482,6 +483,7 @@ void ManDocVisitor::visitPre(DocHtmlList *)
 {
   if (m_hide) return;
   m_indent+=2;
+  m_t << ".PD 0" << endl;
 }
 
 void ManDocVisitor::visitPost(DocHtmlList *) 

@@ -1412,7 +1412,7 @@ void HtmlGenerator::writeSearchPage()
         writeDefaultQuickLinks(t,TRUE,HLI_Search);
       }
 
-      t << "<?php \n\n";
+      t << "\n<?php\n\n";
       t << "function search_results()\n";
       t << "{\n";
       t << "  return \"" << theTranslator->trSearchResultsTitle() << "\";\n";
