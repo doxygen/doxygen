@@ -68,7 +68,7 @@ follow these steps:
     documentation. Apart from the documentation, Doxygen will create the 
     following files:
     <ul>
-    <li>A small shell script. the name of the script is determined by the
+    <li>A small shell script. The name of the script is determined by the
         \c CGI_NAME tag in the configuration file.
         The script is a small wrapper that calls \c doxysearch with
         the correct parameters. Using this script allows multiple 

@@ -1191,7 +1191,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
+					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -1211,7 +1211,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
+					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -1237,7 +1237,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->brief.resize(0);
 					    BEGIN(AfterDocLine);
 					  }
-					  else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
+					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					  {
 					    current->brief.resize(0);
 					    BEGIN(AfterDocBrief);
@@ -2200,7 +2200,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    afterDocTerminator = '}';
 					    if (yytext[yyleng-3]=='/')
 					      BEGIN(AfterDocLine);
-					    else if (yytext[yyleng-2]=='*' && Config::instance()->getBool("JAVADOC_AUTOBRIEF"))
+					    else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
 					      BEGIN(AfterDocBrief);
 					    else
 					      BEGIN(AfterDoc);
@@ -2522,7 +2522,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
 					    current->inside = current_root->name+"::";
-					  if (!Config::instance()->getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
+					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
 					    tmpDocType=-1;
 					    if (YY_START==ReadBody)

@@ -31,7 +31,7 @@ PackageDef::PackageDef(const char *df,int dl,const char *na,const char *ref) :
    Definition(df,dl,na)
 {
   classList       = new ClassList;
-  packageFileName = "package_"+convertFileName(na);
+  packageFileName = (QCString)"package_"+na;
   setReference(ref);
 }
 
@@ -42,7 +42,7 @@ PackageDef::~PackageDef()
 
 void PackageDef::addClass(const ClassDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     classList->inSort(def);
   else
     classList->append(def);
@@ -73,7 +73,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "  <compound kind=\"package\">" << endl;
   }
@@ -86,7 +86,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
   classList->writeDeclaration(ol,&ct,theTranslator->trClasses());
   ol.endMemberSections();
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -105,7 +105,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     ol.endGroupHeader();
 
     // repeat brief description
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
       ol.newParagraph();
@@ -120,5 +120,10 @@ void PackageDef::writeDocumentation(OutputList &ol)
 
   endFile(ol); 
   ol.popGeneratorState();
+}
+
+QCString PackageDef::getOutputFileBase() const 
+{ 
+  return convertNameToFile(packageFileName); 
 }
 

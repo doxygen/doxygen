@@ -35,7 +35,7 @@ class PackageDef : public Definition
     PackageDef(const char *fName,int line, const char *name,const char *ref=0);
    ~PackageDef();
     DefType definitionType() { return TypePackage; }
-    QCString getOutputFileBase() const { return packageFileName; }
+    QCString getOutputFileBase() const ;
     void addClass(const ClassDef *def);
     void writeDocumentation(OutputList &ol);
     bool isLinkableInProject()

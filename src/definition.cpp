@@ -17,6 +17,7 @@
 
 #include "qtbc.h"
 #include <ctype.h>
+#include <qregexp.h>
 #include "config.h"
 #include "definition.h"
 #include "doxygen.h"
@@ -25,7 +26,7 @@
 #include "outputlist.h"
 #include "doc.h"
 #include "code.h"
-#include <qregexp.h>
+#include "util.h"
 
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
@@ -52,37 +53,6 @@ Definition::~Definition()
   delete sourceRefDict;
 }
 
-QCString Definition::nameToFile(const char *name,bool allowDots)
-{
-  return convertNameToFile(name,allowDots);
-#if 0
-  QCString result;
-  char c;
-  const char *p=name;
-  while ((c=*p++)!=0)
-  {
-    switch(c)
-    {
-      case ':': result+="_"; break;
-      case '<': result+="_lt"; break;
-      case '>': result+="_gt"; break;
-      case '*': result+="_ast"; break;
-      case '&': result+="_amp"; break;
-      case '|': result+="_p_"; break;
-      case '!': result+="_e_"; break;
-      case ',': result+="_x_"; break;
-      case ' ': break;
-      default: 
-        if (Config::instance()->getBool("CASE_SENSE_NAMES"))
-          result+=c;
-        else
-          result+=tolower(c); 
-        break;
-    }
-  }
-  return result;
-#endif
-}
 
 void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 {
@@ -111,7 +81,7 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 
 void Definition::writeDocAnchorsToTagFile()
 {
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
   {
     QDictIterator<SectionInfo> sdi(*sectionDict);
     SectionInfo *si;
@@ -183,7 +153,7 @@ static bool readCodeFragment(const char *fileName,
           }
           else if (c=='\t') 
           {
-            col+=Config::instance()->getInt("TAB_SIZE") - (col%Config::instance()->getInt("TAB_SIZE"));
+            col+=Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
           }
           else
           {
@@ -249,7 +219,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config::instance()->getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef)
+  if (Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef)
   {
     //ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
@@ -269,7 +239,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         parseText(ol,refText.left(lineMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,bodyDef->sourceName(),
+        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -283,7 +253,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,bodyDef->sourceName(),
+        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
             0,bodyDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -301,7 +271,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         parseText(ol,refText.left(fileMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,bodyDef->sourceName(),
+        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
             0,bodyDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -315,7 +285,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,bodyDef->sourceName(),
+        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -346,7 +316,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        startBodyLine,endBodyLine,bodyDef);
-  if (Config::instance()->getBool("INLINE_SOURCES") && startBodyLine!=-1 && 
+  if (Config_getBool("INLINE_SOURCES") && startBodyLine!=-1 && 
       endBodyLine>=startBodyLine && bodyDef)
   {
     QCString codeFragment;
@@ -373,7 +343,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
-  if (Config::instance()->getBool("SOURCE_BROWSER") && sourceRefList)
+  if (Config_getBool("SOURCE_BROWSER") && sourceRefList)
   {
     ol.newParagraph();
     parseText(ol,theTranslator->trReferencedBy());
@@ -406,7 +376,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
           ol.disableAllBut(OutputGenerator::Html);
           QCString lineStr,anchorStr;
           anchorStr.sprintf("l%05d",md->getStartBodyLine());
-          ol.writeObjectLink(0,md->getBodyDef()->sourceName(),anchorStr,name);
+          ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
           ol.popGeneratorState();
 
           // for the other output formats just mention the name
@@ -434,7 +404,7 @@ bool Definition::hasDocumentation()
 { 
   return !doc.isEmpty() ||             // has detailed docs
          !brief.isEmpty() ||           // has brief description
-         Config::instance()->getBool("EXTRACT_ALL");       // extract everything
+         Config_getBool("EXTRACT_ALL");       // extract everything
 }
 
 void Definition::addSourceReference(MemberDef *md)

@@ -327,6 +327,12 @@ class ConfigBool : public ConfigOption
     bool m_defValue;
 };
 
+#define Config_getString(val)  Config::instance()->getString(__FILE__,__LINE__,val)
+#define Config_getInt(val)     Config::instance()->getInt(__FILE__,__LINE__,val)
+#define Config_getList(val)    Config::instance()->getList(__FILE__,__LINE__,val)
+#define Config_getEnum(val)    Config::instance()->getEnum(__FILE__,__LINE__,val)
+#define Config_getBool(val)    Config::instance()->getBool(__FILE__,__LINE__,val)
+
 /*! \brief Singleton for configuration variables.
  *
  *  This object holds the global static variables
@@ -357,11 +363,11 @@ struct Config
     ////////////////////////
     // get functions
     ////////////////////////
-    QCString &getString(const char *name) const;
-    QStrList &getList(const char *name) const;
-    QCString &getEnum(const char *name) const;
-    int      &getInt(const char *name) const;
-    bool     &getBool(const char *name) const;
+    QCString &getString(const char *fileName,int num,const char *name) const;
+    QStrList &getList(const char *fileName,int num,const char *name) const;
+    QCString &getEnum(const char *fileName,int num,const char *name) const;
+    int      &getInt(const char *fileName,int num,const char *name) const;
+    bool     &getBool(const char *fileName,int num,const char *name) const;
     ConfigOption *get(const char *name) const
     {
       return m_dict->find(name); 

@@ -76,16 +76,6 @@ class TranslatorCroatian : public Translator
         { return "Dokumentacija funkcija"; }
     QCString trMemberDataDocumentation()
     { return "Documentacija varijabli"; }
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-      QCString result= (QCString)"Dokumentacija za "+s+
-                       "je generirana iz ";
-      if (single)
-                  result+= "datoteke :";
-          else
-                  result+= "slijedeæih datoteka:";
-      return decode(result);
-    }
     QCString trMore()
     { return decode("Op¹irnije..."); }
     QCString trListOfAllMembers()

@@ -102,7 +102,7 @@ static QCString dateToRTFDateString()
 
 RTFGenerator::RTFGenerator() : OutputGenerator()
 {
-  dir=Config::instance()->getString("RTF_OUTPUT");
+  dir=Config_getString("RTF_OUTPUT");
   col=0;
   //insideTabbing=FALSE;
   m_listLevel = 0;
@@ -695,7 +695,7 @@ static void loadExtensions(const char *name)
 
 void RTFGenerator::init()
 {
-  QCString dir=Config::instance()->getString("RTF_OUTPUT");
+  QCString dir=Config_getString("RTF_OUTPUT");
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
   {
@@ -716,14 +716,14 @@ void RTFGenerator::init()
   }
 
   // overwrite some (or all) definitions from file
-  QCString &rtfStyleSheetFile = Config::instance()->getString("RTF_STYLESHEET_FILE");
+  QCString &rtfStyleSheetFile = Config_getString("RTF_STYLESHEET_FILE");
   if (!rtfStyleSheetFile.isEmpty())
   {
     loadStylesheet(rtfStyleSheetFile, Rtf_Style);
   }
 
   // If user has defined an extension file, load its contents.
-  QCString &rtfExtensionsFile = Config::instance()->getString("RTF_EXTENSIONS_FILE");
+  QCString &rtfExtensionsFile = Config_getString("RTF_EXTENSIONS_FILE");
   if (!rtfExtensionsFile.isEmpty())
   {
     loadExtensions(rtfExtensionsFile);
@@ -820,7 +820,7 @@ void RTFGenerator::beginRTFChapter()
   t << Rtf_Style_Reset;
 
   // if we are compact, no extra page breaks...
-  if (Config::instance()->getBool("COMPACT_RTF"))
+  if (Config_getBool("COMPACT_RTF"))
   {
     //		t <<"\\sect\\sectd\\sbknone\n";
     t <<"\\sect\\sbknone\n";
@@ -840,7 +840,7 @@ void RTFGenerator::beginRTFSection()
   t << Rtf_Style_Reset;
 
   // if we are compact, no extra page breaks...
-  if (Config::instance()->getBool("COMPACT_RTF"))
+  if (Config_getBool("COMPACT_RTF"))
   {
     //		t <<"\\sect\\sectd\\sbknone\n";
     t <<"\\sect\\sbknone\n";
@@ -1051,7 +1051,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         // User has overridden document title in extensions file
         t << "}" << title;
       else
-        t << "}" << Config::instance()->getString("PROJECT_NAME");
+        t << "}" << Config_getString("PROJECT_NAME");
       break;
     case isTitlePageAuthor:
       {
@@ -1096,7 +1096,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
          
         t << Rtf_Style_Reset << Rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
         t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
-        t << "Version " << Config::instance()->getString("PROJECT_NUMBER") << "\\par";
+        t << "Version " << Config_getString("PROJECT_NUMBER") << "\\par";
         t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
           "{\\fldrslt CREATEDATE}}\\par"<<endl;
         t << "\\page\\page";
@@ -1292,16 +1292,16 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           t << "\\par " << Rtf_Style_Reset << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertFileName(pi->name);
-          t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          t << convertNameToFile(pi->name+"-example");
+          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
         for (++pdi;(pi=pdi.current());++pdi)
         {
           t << "\\par " << Rtf_Style_Reset << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << convertFileName(pi->name);
-          t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          t << convertNameToFile(pi->name+"-example");
+          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
         }
       }
       break;
@@ -1316,7 +1316,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
           if (!pi->inGroup && !pi->isReference())
           {
             QCString pageName;
-            if (Config::instance()->getBool("CASE_SENSE_NAMES"))
+            if (Config_getBool("CASE_SENSE_NAMES"))
               pageName=pi->name.copy();
             else
               pageName=pi->name.lower();
@@ -1485,7 +1485,7 @@ void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
 void RTFGenerator::startHtmlLink(const char *url)
 {
 
-  if (Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
     t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
     t << url;
@@ -1500,7 +1500,7 @@ void RTFGenerator::startHtmlLink(const char *url)
 
 void RTFGenerator::endHtmlLink()
 {
-  if (Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
     t << "}}}" << endl;
   }
@@ -1523,7 +1523,7 @@ void RTFGenerator::writeStartAnnoItem(const char *,const char *f,
   DBG_RTF(t << "{\\comment (writeStartAnnoItem)}" << endl)
   t << "{\\b ";
   if (path) docify(path);
-  if (f && Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (f && Config_getBool("RTF_HYPERLINKS"))
   {
     t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
     t << formatBmkStr(f);
@@ -1598,7 +1598,7 @@ void RTFGenerator::endSubsubsection()
 
 void RTFGenerator::startTextLink(const char *f,const char *anchor)
 {
-  if (Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
     QCString ref;
     if (f)
@@ -1620,7 +1620,7 @@ void RTFGenerator::startTextLink(const char *f,const char *anchor)
 
 void RTFGenerator::endTextLink()
 {
-  if (Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (Config_getBool("RTF_HYPERLINKS"))
   {
     t << "}}}" << endl;
   }
@@ -1629,7 +1629,7 @@ void RTFGenerator::endTextLink()
 void RTFGenerator::writeObjectLink(const char *ref, const char *f,
     const char *anchor, const char *text)
 {
-  if (!ref && Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (!ref && Config_getBool("RTF_HYPERLINKS"))
   {
     QCString refName;
     if (f)
@@ -1685,7 +1685,7 @@ void RTFGenerator::endPageRef(const char *clname, const char *anchor)
 void RTFGenerator::writeCodeLink(const char *ref,const char *f,
     const char *anchor,const char *name)
 {
-  if (!ref && Config::instance()->getBool("RTF_HYPERLINKS"))
+  if (!ref && Config_getBool("RTF_HYPERLINKS"))
   {
     QCString refName;
     if (f)
@@ -1740,7 +1740,7 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
     //  writeAnchor(0,name);
     //}
     //
-    //if (Config::instance()->getBool("RTF_HYPERLINKS") && fileName)
+    //if (Config_getBool("RTF_HYPERLINKS") && fileName)
     //{
       writeAnchor(fileName,0);
     //}
@@ -1750,7 +1750,7 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
 void RTFGenerator::startTitle()
 {
   DBG_RTF(t <<"{\\comment startTitle}" << endl)
-  if (Config::instance()->getBool("COMPACT_RTF"))
+  if (Config_getBool("COMPACT_RTF"))
     beginRTFSection();
   else
     beginRTFChapter();
@@ -2054,7 +2054,7 @@ void RTFGenerator::codify(const char *str)
       c=*p++;
       switch(c)
       {
-        case '\t':  spacesToNextTabStop = Config::instance()->getInt("TAB_SIZE") - (col%Config::instance()->getInt("TAB_SIZE"));
+        case '\t':  spacesToNextTabStop = Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
                     t << spaces.left(spacesToNextTabStop); 
                     col+=spacesToNextTabStop;
                     break; 
@@ -2528,7 +2528,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  g.writeGraph(t,GIF,Config::instance()->getString("RTF_OUTPUT"),TRUE,FALSE);
+  g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2547,7 +2547,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  g.writeGraph(t,GIF,Config::instance()->getString("RTF_OUTPUT"),FALSE);
+  g.writeGraph(t,GIF,Config_getString("RTF_OUTPUT"),FALSE);
 
   //QCString diskName = g.diskName();
 

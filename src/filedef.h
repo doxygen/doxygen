@@ -25,6 +25,7 @@
 #include "config.h"
 #include "definition.h"
 #include "memberlist.h"
+#include "util.h"
 
 class FileDef;
 class FileList;
@@ -72,19 +73,28 @@ class FileDef : public Definition
     /*! Returns the unique file name (this may include part of the path). */
     QCString name() const 
     { 
-      if (Config::instance()->getBool("FULL_PATH_NAMES")) 
+      if (Config_getBool("FULL_PATH_NAMES")) 
         return filename; 
       else 
         return Definition::name(); 
     } 
     
-    QCString getOutputFileBase() const { return diskname; }
+    QCString getOutputFileBase() const 
+    { return convertNameToFile(diskname); }
+
+    QCString getFileBase() const
+    { return diskname; }
+
+    QCString getSourceFileBase() const
+    { return convertNameToFile(diskname+"-source"); }
+    
+    /*! Returns the name of the verbatim copy of this file (if any). */
+    QCString includeName() const 
+    { return convertNameToFile(diskname+"-source"); }
     
     /*! Returns the absolute path including the file name. */
     QCString absFilePath() const { return filepath; }
     
-    /*! Returns the name of the verbatim copy of this file (if any). */
-    QCString includeName() const { return diskname+"-source"; }
     
     /*! Returns the name as it is used in the documentation */
     QCString docName() const { return docname; }
@@ -178,34 +188,6 @@ class FileDef : public Definition
     PackageDef *package;
 };
 
-#if 0 // obsolete 
-/*! \class FileList filedef.h
-    \brief This class is list of file definitions. 
-    
-    It is based on QList.
-*/
-
-class FileList : public QList<FileDef>
-{ 
-  public:
-    FileList();
-   ~FileList();
-   
-   int compareItems(GCI item1,GCI item2);
-};
-
-/*! \class FileListIterator filedef.h
-    \brief This class represents a file list iterator.
-    
-    It is based on QListIterator.
-*/
-
-class FileListIterator : public QListIterator<FileDef>
-{
-  public:
-    FileListIterator(const FileList &list);
-};
-#endif
 
 class FileList : public QList<FileDef>
 {

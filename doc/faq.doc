@@ -73,7 +73,7 @@ Alternatively, you can put all members in a group (or module)
 using the \\ingroup command and then document the group using a comment
 block containing the \\defgroup command.
  
-<li><b>How can I avoid that some code fragment is parsed by Doxyen?</b>
+<li><b>How can I make doxygen ignore some code fragment?</b>
 <p>
 You can use Doxygen's preprocessor for this: 
 If you put
@@ -164,7 +164,7 @@ In the HEAD section of the HTML page.
 
 <li><b>Why does doxygen use Qt?</b>
 
-The most important reason is too have a platform abstraction for most 
+The most important reason is to have a platform abstraction for most 
 Unices and Windows by means of the QFile, QFileInfo, QDir, QDate, 
 QTime and QIODevice classes. 
 Another reason is for the nice and bug free utility classes, like QList, 

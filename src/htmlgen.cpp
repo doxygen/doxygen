@@ -63,7 +63,7 @@ static QCString g_footer;
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
-  dir=Config::instance()->getString("HTML_OUTPUT");
+  dir=Config_getString("HTML_OUTPUT");
   col=0;  
 }
 
@@ -80,15 +80,15 @@ void HtmlGenerator::append(const OutputGenerator *g)
 
 void HtmlGenerator::init()
 {
-  QDir d(Config::instance()->getString("HTML_OUTPUT"));
-  if (!d.exists() && !d.mkdir(Config::instance()->getString("HTML_OUTPUT")))
+  QDir d(Config_getString("HTML_OUTPUT"));
+  if (!d.exists() && !d.mkdir(Config_getString("HTML_OUTPUT")))
   {
-    err("Could not create output directory %s\n",Config::instance()->getString("HTML_OUTPUT").data());
+    err("Could not create output directory %s\n",Config_getString("HTML_OUTPUT").data());
     exit(1);
   }
-  writeLogo(Config::instance()->getString("HTML_OUTPUT"));
-  if (!Config::instance()->getString("HTML_HEADER").isEmpty()) g_header=fileToString(Config::instance()->getString("HTML_HEADER"));
-  if (!Config::instance()->getString("HTML_FOOTER").isEmpty()) g_footer=fileToString(Config::instance()->getString("HTML_FOOTER"));
+  writeLogo(Config_getString("HTML_OUTPUT"));
+  if (!Config_getString("HTML_HEADER").isEmpty()) g_header=fileToString(Config_getString("HTML_HEADER"));
+  if (!Config_getString("HTML_FOOTER").isEmpty()) g_footer=fileToString(Config_getString("HTML_FOOTER"));
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
@@ -107,17 +107,17 @@ static void writeDefaultHeaderFile(QTextStream &t,const char *title,
     "<title>" << title << "</title>\n";
   t << "<link ";
   if (external) 
-    t << "doxygen=\"_doc:" << Config::instance()->getString("DOC_URL") 
-      << "\" href=\"" << Config::instance()->getString("DOC_URL") << "/";
+    t << "doxygen=\"_doc:" << Config_getString("DOC_URL") 
+      << "\" href=\"" << Config_getString("DOC_URL") << "/";
   else
     t << "href=\"";
-  if (Config::instance()->getString("HTML_STYLESHEET").isEmpty())
+  if (Config_getString("HTML_STYLESHEET").isEmpty())
   {
     t << "doxygen.css";
   }
   else
   {
-    QFileInfo cssfi(Config::instance()->getString("HTML_STYLESHEET"));
+    QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
     if (!cssfi.exists())
     {
       err("Error: user specified HTML style sheet file does not exist!\n");
@@ -157,7 +157,7 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   lastTitle=title;
   if (fileName.right(5)!=".html") fileName+=".html";
   startPlainFile(fileName);
-  if (Config::instance()->getBool("GENERATE_HTMLHELP"))
+  if (Config_getBool("GENERATE_HTMLHELP"))
   {
     HtmlHelp::getInstance()->addIndexFile(fileName);
   }
@@ -220,8 +220,8 @@ void HtmlGenerator::writeFooter(int part,bool external)
         t << endl << "<img ";
         if (external)
         {
-          t << "doxygen=\"_doc:" << Config::instance()->getString("DOC_URL") 
-            << "\" src=\"" << Config::instance()->getString("DOC_URL") << "/";
+          t << "doxygen=\"_doc:" << Config_getString("DOC_URL") 
+            << "\" src=\"" << Config_getString("DOC_URL") << "/";
         }
         else
         {
@@ -260,7 +260,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 {
   if (part==0)
   {
-    if (Config::instance()->getString("HTML_STYLESHEET").isEmpty()) // write default style sheet
+    if (Config_getString("HTML_STYLESHEET").isEmpty()) // write default style sheet
     {
       startPlainFile("doxygen.css"); 
       
@@ -273,15 +273,15 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      QFileInfo cssfi(Config::instance()->getString("HTML_STYLESHEET"));
+      QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
       if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
       {
-        err("Error: style sheet %s does not exist or is not readable!", Config::instance()->getString("HTML_STYLESHEET").data());
+        err("Error: style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
       }
       else
       {
         startPlainFile(cssfi.fileName());
-        t << fileToString(Config::instance()->getString("HTML_STYLESHEET"));
+        t << fileToString(Config_getString("HTML_STYLESHEET"));
         endPlainFile();
       }
     }
@@ -347,7 +347,7 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
   {
     t << "</b>";
   }
-  //if (Config::instance()->getBool("GENERATE_HTMLHELP") && f)
+  //if (Config_getBool("GENERATE_HTMLHELP") && f)
   //{
   //  htmlHelp->addItem(name,((QCString)f)+".html");
   //}
@@ -361,7 +361,7 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
   t << "<a class=\"el\" href=\"" << f << ".html\">";
   docify(name);
   t << "</a> ";
-  //if (Config::instance()->getBool("GENERATE_HTMLHELP") && f)
+  //if (Config_getBool("GENERATE_HTMLHELP") && f)
   //{
   //  htmlHelp->addItem(name, ((QCString)f)+".html");
   //}
@@ -438,7 +438,7 @@ void HtmlGenerator::endTextLink()
 void HtmlGenerator::startHtmlLink(const char *url)
 {
   t << "<a ";
-  if (Config::instance()->getBool("GENERATE_TREEVIEW")) t << "target=\"top\" ";
+  if (Config_getBool("GENERATE_TREEVIEW")) t << "target=\"top\" ";
   t << "href=\"";
   if (url) t << url;
   t << "\">"; 
@@ -555,7 +555,7 @@ void HtmlGenerator::codify(const char *str)
       switch(c)
       {
         case '\t': spacesToNextTabStop = 
-                         Config::instance()->getInt("TAB_SIZE") - (col%Config::instance()->getInt("TAB_SIZE")); 
+                         Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE")); 
                    t << spaces.left(spacesToNextTabStop); 
                    col+=spacesToNextTabStop; 
                    break; 
@@ -639,7 +639,7 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
 void HtmlGenerator::startMemberList()  
 { 
   DBG_HTML(t << "<!-- startMemberList -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
   }
   else
@@ -651,7 +651,7 @@ void HtmlGenerator::startMemberList()
 void HtmlGenerator::endMemberList()    
 { 
   DBG_HTML(t << "<!-- endMemberList -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
   }
   else
@@ -667,7 +667,7 @@ void HtmlGenerator::endMemberList()
 void HtmlGenerator::startMemberItem(int annoType) 
 { 
   DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "<tr>";
     switch(annoType)
@@ -686,7 +686,7 @@ void HtmlGenerator::startMemberItem(int annoType)
 void HtmlGenerator::endMemberItem(bool) 
 { 
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</td></tr>"; 
   }
@@ -697,7 +697,7 @@ void HtmlGenerator::endMemberItem(bool)
 void HtmlGenerator::insertMemberAlign() 
 { 
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "&nbsp;</td><td valign=bottom>"; 
   }
@@ -706,7 +706,7 @@ void HtmlGenerator::insertMemberAlign()
 void HtmlGenerator::startMemberDescription() 
 { 
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     //t << "<tr><td><img src=null.gif></td><td><img src=null.gif></td>"
     //     "<td></td><td><font size=-1><em>"; 
@@ -721,7 +721,7 @@ void HtmlGenerator::startMemberDescription()
 void HtmlGenerator::endMemberDescription()   
 { 
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</em></font><br><br></td></tr>" << endl; 
   }
@@ -734,7 +734,7 @@ void HtmlGenerator::endMemberDescription()
 void HtmlGenerator::startMemberSections()
 {
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "<table border=0 cellpadding=0 cellspacing=0>" << endl;
   }
@@ -743,7 +743,7 @@ void HtmlGenerator::startMemberSections()
 void HtmlGenerator::endMemberSections()
 {
   DBG_HTML(t << "<!-- endMemberSections -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</table>" << endl;
   }
@@ -752,7 +752,7 @@ void HtmlGenerator::endMemberSections()
 void HtmlGenerator::startMemberHeader()
 {
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "<tr><td colspan=2><br><h2>";
   }
@@ -765,7 +765,7 @@ void HtmlGenerator::startMemberHeader()
 void HtmlGenerator::endMemberHeader()
 {
   DBG_HTML(t << "<!-- endMemberHeader -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS"))
+  if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</h2></td></tr>" << endl;
   }
@@ -778,19 +778,19 @@ void HtmlGenerator::endMemberHeader()
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td colspan=2>";
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td colspan=2>";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  if (Config::instance()->getBool("HTML_ALIGN_MEMBERS")) t << "<br><br></td></tr>" << endl;
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br><br></td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
 { 
   t << "<ul>"  << endl; 
-  //if (Config::instance()->getBool("GENERATE_HTMLHELP"))
+  //if (Config_getBool("GENERATE_HTMLHELP"))
   //{
   //  if (htmlHelp->depth()==0) htmlHelp->addItem(lastTitle,lastFile);
   //  htmlHelp->incDepth();
@@ -800,7 +800,7 @@ void HtmlGenerator::startIndexList()
 void HtmlGenerator::endIndexList()
 {
   t << "</ul>" << endl;
-  //if (Config::instance()->getBool("GENERATE_HTMLHELP"))
+  //if (Config_getBool("GENERATE_HTMLHELP"))
   //{
   //  htmlHelp->decDepth();
   //}
@@ -936,7 +936,7 @@ void HtmlGenerator::startDotGraph()
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,GIF,Config::instance()->getString("HTML_OUTPUT"));
+  g.writeGraph(t,GIF,Config_getString("HTML_OUTPUT"));
 }
 
 void HtmlGenerator::startInclDepGraph()
@@ -945,12 +945,12 @@ void HtmlGenerator::startInclDepGraph()
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,GIF,Config::instance()->getString("HTML_OUTPUT"));
+  g.writeGraph(t,GIF,Config_getString("HTML_OUTPUT"));
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
-  g.writeGraph(t,Config::instance()->getString("HTML_OUTPUT"));
+  g.writeGraph(t,Config_getString("HTML_OUTPUT"));
 }
 
 void HtmlGenerator::startMemberGroupHeader(bool)

@@ -117,7 +117,7 @@ class Translator
      * for the same purpose. The identification should not be translated.
      * It should be replaced by the name of the language in English
      * (e.g. Czech, Japanese, Russian, etc.). It should be equal to 
-     * the identification in language.h.
+     * the identification in language.cpp.
      */
     virtual QCString idLanguage()
     { return "english"; }
@@ -169,7 +169,7 @@ class Translator
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     { 
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Field Documentation"; 
       }
@@ -221,6 +221,7 @@ class Translator
     virtual QCString trDefinedIn()
     { return "defined in"; }
 
+    // TODO: trVerbatimText is no longer used => remove!
     /*! put as in introduction in the verbatim header file of a class.
      *  parameter f is the name of the include file.
      */
@@ -242,7 +243,7 @@ class Translator
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     { 
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures";
       }
@@ -263,7 +264,7 @@ class Translator
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Fields"; 
       }
@@ -276,7 +277,7 @@ class Translator
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     { 
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Globals"; 
       }
@@ -317,7 +318,7 @@ class Translator
     virtual QCString trCompoundListDescription()
     { 
       
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Here are the data structures with brief descriptions:"; 
       }
@@ -336,7 +337,7 @@ class Translator
       {
         result+="documented ";
       }
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="struct and union fields";
       }
@@ -347,7 +348,7 @@ class Translator
       result+=" with links to ";
       if (extractAll) 
       {
-        if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
           result+="the struct/union documentation for each field:";
         }
@@ -358,7 +359,7 @@ class Translator
       }
       else 
       {
-        if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
           result+="the structures/unions they belong to:";
         }
@@ -376,7 +377,7 @@ class Translator
       QCString result="Here is a list of all ";
       if (!extractAll) result+="documented ";
       
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="functions, variables, defines, enums, and typedefs";
       }
@@ -438,7 +439,7 @@ class Translator
      */
     virtual QCString trCompoundIndex()
     {
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
         return "Data Structure Index";
       }
@@ -581,7 +582,7 @@ class Translator
      */
     virtual QCString trCompounds()
     { 
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures"; 
       }
@@ -740,9 +741,6 @@ class Translator
       return result;
     }
     
-    /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union 
-     */
     virtual QCString trPublicMembers()
     { return "Public Methods"; }
     virtual QCString trPublicSlots()
@@ -763,7 +761,6 @@ class Translator
     { return "Private Slots"; }
     virtual QCString trStaticPrivateMembers()
     { return "Static Private Methods"; }
-    /*! \endmgroup */ 
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -1021,7 +1018,7 @@ class Translator
     }
     virtual QCString trPublicAttribs()
     {
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Fields";
       }
@@ -1063,7 +1060,7 @@ class Translator
 // new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a marker that is put before a todo item */
+    /*! Used as a marker that is put before a \\todo item */
     virtual QCString trTodo()
     {
       return "Todo";
@@ -1224,7 +1221,7 @@ class Translator
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      if (Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Data Structures";
       }

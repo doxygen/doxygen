@@ -279,7 +279,7 @@ MemberDef::MemberDef(const char *df,int dl,
   indDepth=0;
   section=0;
   explExt=FALSE;
-  maxInitLines=Config::instance()->getInt("MAX_INITIALIZER_LINES");
+  maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
   userInitLines=-1;
   docEnumValues=FALSE;
   // copy function template arguments (if any)
@@ -484,19 +484,19 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // (they are displayed by there parent placeholder)
   if (annScope) return;
   // hide undocumented members unless overwritten by the configuration
-  if (!hasDocs && Config::instance()->getBool("HIDE_UNDOC_MEMBERS")) return;
+  if (!hasDocs && Config_getBool("HIDE_UNDOC_MEMBERS")) return;
   // hide members with no detailed desciption and brief descriptions explicitly
   // disabled.
-  if (Config::instance()->getBool("HIDE_UNDOC_MEMBERS") && documentation().isEmpty() && 
-      !Config::instance()->getBool("BRIEF_MEMBER_DESC") && !Config::instance()->getBool("REPEAT_BRIEF") 
+  if (Config_getBool("HIDE_UNDOC_MEMBERS") && documentation().isEmpty() && 
+      !Config_getBool("BRIEF_MEMBER_DESC") && !Config_getBool("REPEAT_BRIEF") 
      ) return;
   // hide static file & namespace members unless extract static is on
-  if (cd==0 && isStatic() && !Config::instance()->getBool("EXTRACT_STATIC")) return;
+  if (cd==0 && isStatic() && !Config_getBool("EXTRACT_STATIC")) return;
 
   // hide private member that are put into a member group. Non-grouped
   // members are not rendered anyway.
   //printf("md->name()=`%s' Protection=%d\n",name().data(),protection());
-  if (inGroup && protection()==Private && !Config::instance()->getBool("EXTRACT_PRIVATE")) return;
+  if (inGroup && protection()==Private && !Config_getBool("EXTRACT_PRIVATE")) return;
 
   QCString ltype=type.copy();
   // strip `static' keyword from ltype
@@ -508,7 +508,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if ((ltype.isEmpty() || (i=r.match(ltype,0,&l))==-1) || !enumUsed())
   {
     
-    if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
+    if (!Config_getString("GENERATE_TAGFILE").isEmpty())
     {
       Doxygen::tagFile << "    <member kind=\"";
       switch (mtype)
@@ -586,7 +586,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     //}
     
     HtmlHelp *htmlHelp=0;
-    bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
+    bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
     if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
     
     // search for the last anonymous scope in the member type
@@ -627,7 +627,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     
     // If there is no detailed description we need to write the anchor here.
     bool detailsVisible = detailsAreVisible();
-    if (!detailsVisible && !Config::instance()->getBool("EXTRACT_ALL") && !annMemb)
+    if (!detailsVisible && !Config_getBool("EXTRACT_ALL") && !annMemb)
     {
       QCString doxyName=name().copy();
       if (!cname.isEmpty()) doxyName.prepend(cname+"::");
@@ -711,7 +711,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       linkifyText(TextGeneratorOLImpl(ol),cname,name(),ltype,TRUE); 
     }
     bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-    if (htmlOn && Config::instance()->getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
+    if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
     {
       ol.disable(OutputGenerator::Html);
     }
@@ -810,7 +810,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       }
     }
 
-    if (!detailsVisible && !Config::instance()->getBool("EXTRACT_ALL") && !annMemb)
+    if (!detailsVisible && !Config_getBool("EXTRACT_ALL") && !annMemb)
     {
       ol.endDoxyAnchor(cfname,anchor());
     }
@@ -819,7 +819,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     
     //ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef || annMemb);
     // write brief description
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("BRIEF_MEMBER_DESC") && !annMemb)
+    if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC") && !annMemb)
     {
       ol.startMemberDescription();
       parseDoc(ol,defFileName,defLine,cname,name(),briefDescription());
@@ -858,7 +858,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                   )
 {
   // hide global static functions unless extractStaticFlag is enabled
-  if (getClassDef()==0 && isStatic() && !Config::instance()->getBool("EXTRACT_STATIC")) return;
+  if (getClassDef()==0 && isStatic() && !Config_getBool("EXTRACT_STATIC")) return;
   // hide member that are documented in their own group
   if (group!=0 && container->definitionType()!=TypeGroup) return;
 
@@ -874,7 +874,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
   if (
-      Config::instance()->getBool("EXTRACT_ALL") || hasDocs 
+      Config_getBool("EXTRACT_ALL") || hasDocs 
       || /* member is part of an anonymous scope that is the type of
           * another member in the list.
           */ 
@@ -910,7 +910,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     ol.pushGeneratorState();
 
-    bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
+    bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
     HtmlHelp *htmlHelp = 0;
     if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
@@ -979,7 +979,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //if (cd && (!isRelated() || templateArguments()!=0) && 
       //    ((al=scopeDefTemplateArguments()) || (al=cd->templateArguments()))
       //   ) 
-      if (!Config::instance()->getBool("HIDE_SCOPE_NAMES"))
+      if (!Config_getBool("HIDE_SCOPE_NAMES"))
       {
         if (scopeAl && !related) // class template prefix
         {
@@ -1049,7 +1049,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     if (protection()!=Public || lvirt!=Normal ||
         isFriend() || isRelated() || isExplicit() ||
-        isMutable() || (isInline() && Config::instance()->getBool("INLINE_INFO")) ||
+        isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
         isSignal() || isSlot() ||
         isStatic()
        )
@@ -1063,7 +1063,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       else if (isRelated()) sl.append("related");
       else
       {
-        if      (Config::instance()->getBool("INLINE_INFO") && isInline())              
+        if      (Config_getBool("INLINE_INFO") && isInline())              
                                           sl.append("inline");
         if      (isExplicit())            sl.append("explicit");
         if      (isMutable())             sl.append("mutable");
@@ -1115,8 +1115,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     
     /* write brief description */
     if (!briefDescription().isEmpty() && 
-        (Config::instance()->getBool("REPEAT_BRIEF")  
-         /* || (!Config::instance()->getBool("BRIEF_MEMBER_DESC") && documentation().isEmpty())*/
+        (Config_getBool("REPEAT_BRIEF")  
+         /* || (!Config_getBool("BRIEF_MEMBER_DESC") && documentation().isEmpty())*/
         ) /* || !annMemb */
        )  
     { 
@@ -1195,7 +1195,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             ol.addIndexItem(fmd->name(),cname);
             ol.addIndexItem(cname,fmd->name());
 
-            if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP"))
+            if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
             {
               HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());
             }
@@ -1275,7 +1275,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if ( bcd->isLinkableInProject()/* && !Config::instance()->getBool("PDF_HYPERLINKS")*/ ) 
+            if ( bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ ) 
             {
               writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
             }
@@ -1284,7 +1284,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 0,bcd->name());
-            if (bcd->isLinkableInProject()/* && !Config::instance()->getBool("PDF_HYPERLINKS")*/ )
+            if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ )
             {
               writePageRef(ol,bcd->getOutputFileBase(),0);
             }
@@ -1350,7 +1350,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if (bcd->isLinkableInProject()/* && !Config::instance()->getBool("PDF_HYPERLINKS")*/ ) 
+            if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ ) 
             {
               writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
             }
@@ -1385,7 +1385,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     ol.endIndent();
     // enable LaTeX again
-    //if (Config::instance()->getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
+    //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
     ol.popGeneratorState();
 
   }
@@ -1420,8 +1420,8 @@ bool MemberDef::isLinkableInProject()
   return !name().isEmpty() && name().at(0)!='@' &&
          ((hasDocumentation() && !isReference())  
          ) && 
-         (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE") || isFriend()) && // not a private class member
-         (classDef!=0 || Config::instance()->getBool("EXTRACT_STATIC") || !isStatic()); // not a static file/namespace member
+         (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || isFriend()) && // not a private class member
+         (classDef!=0 || Config_getBool("EXTRACT_STATIC") || !isStatic()); // not a static file/namespace member
 }
 
 bool MemberDef::isLinkable()
@@ -1432,12 +1432,12 @@ bool MemberDef::isLinkable()
 bool MemberDef::detailsAreVisible() const          
 { 
   return !documentation().isEmpty() || // has detailed docs
-         //((Config::instance()->getBool("SOURCE_BROWSER") || Config::instance()->getBool("INLINE_SOURCES")) && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
+         //((Config_getBool("SOURCE_BROWSER") || Config_getBool("INLINE_SOURCES")) && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
          (!briefDescription().isEmpty() && 
-           (!Config::instance()->getBool("BRIEF_MEMBER_DESC") || Config::instance()->getBool("ALWAYS_DETAILED_SEC")) && 
-           Config::instance()->getBool("REPEAT_BRIEF") // has brief description inside detailed area
+           (!Config_getBool("BRIEF_MEMBER_DESC") || Config_getBool("ALWAYS_DETAILED_SEC")) && 
+           Config_getBool("REPEAT_BRIEF") // has brief description inside detailed area
          ) ||
          (initLines>0 && initLines<maxInitLines) ||
          (argList!=0 && argList->hasDocumentation())

@@ -97,7 +97,7 @@ extern bool matchArguments(ArgumentList *,ArgumentList *,
                            NamespaceList *usingList=0);
 extern void mergeArguments(ArgumentList *,ArgumentList *);
 extern QCString substituteClassNames(const QCString &s);
-extern QCString convertFileName(const QCString &s);
+//extern QCString convertFileName(const QCString &s);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);

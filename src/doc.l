@@ -547,7 +547,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     //printf("Parsed[%d]=%d\n",i,marker[i]);
     if (marker[i]=='\t')
     {
-      indent+=Config::instance()->getInt("TAB_SIZE") - (indent%Config::instance()->getInt("TAB_SIZE"));
+      indent+=Config_getInt("TAB_SIZE") - (indent%Config_getInt("TAB_SIZE"));
     }
     else if (marker[i]=='\n')
     {
@@ -678,13 +678,13 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
       switch(type)
       {
 	case IT_Html: 
-	  outputDir = Config::instance()->getString("HTML_OUTPUT");
+	  outputDir = Config_getString("HTML_OUTPUT");
 	  break;
 	case IT_Latex: 
-	  outputDir = Config::instance()->getString("LATEX_OUTPUT");
+	  outputDir = Config_getString("LATEX_OUTPUT");
 	  break;
 	case IT_RTF:
-	  outputDir = Config::instance()->getString("RTF_OUTPUT");
+	  outputDir = Config_getString("RTF_OUTPUT");
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
@@ -1009,7 +1009,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->codify(c);
   					}
 <DocScan>{CMD}"internal"/{BN}	        { 
-					  if (!Config::instance()->getBool("INTERNAL_DOCS"))
+					  if (!Config_getBool("INTERNAL_DOCS"))
 					  {
 					    outDoc->newParagraph();
 					    scanString(theTranslator->trForInternalUseOnly()+"\n");
@@ -1328,7 +1328,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\todo "[0-9]+		{ // this tag is generated in an earlier pass
-  					  if (Config::instance()->getBool("GENERATE_TODOLIST"))
+  					  if (Config_getBool("GENERATE_TODOLIST"))
 					  {
 					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-6);
@@ -1350,7 +1350,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\test "[0-9]+		{ // this tag is generated in an earlier pass
-  				          if (Config::instance()->getBool("GENERATE_TESTLIST"))
+  				          if (Config_getBool("GENERATE_TESTLIST"))
 					  {
   					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-6);
@@ -1372,7 +1372,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocScan>"\\bug "[0-9]+			{ // this tag is generated in an earlier pass
-  				          if (Config::instance()->getBool("GENERATE_BUGLIST"))
+  				          if (Config_getBool("GENERATE_BUGLIST"))
 					  {
   					    QCString numStr=yytext;
 					    numStr=numStr.right(numStr.length()-5);
@@ -1656,7 +1656,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
   					}
 <DocIf>[^\n\t ]+			{
-  					  if (Config::instance()->getList("ENABLED_SECTIONS").find(yytext)==-1)
+  					  if (Config_getList("ENABLED_SECTIONS").find(yytext)==-1)
 					  {
 					    outDoc->disableAll();
 					  }

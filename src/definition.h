@@ -53,7 +53,7 @@ class Definition
      */
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */
-    const QCString sourceName() const { return getOutputFileBase()+"-source"; }
+    const QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
     /*! Returns the detailed description of this definition */
     const QCString& documentation() const { return doc; }
     /*! Returns the brief description of this definition */
@@ -80,14 +80,6 @@ class Definition
     bool isReference() const { return !ref.isEmpty(); }
     void setReference(const char *r) { ref=r; }
     QCString getReference() const { return ref; }
-
-    /*! returns the base file name that corresponds with the \a name of this 
-     *  definition. This replaces a number of special characters in the
-     *  name by string that are more suitable to use in file names.
-     *  The function getOutputFileBase() also uses this function in most cases.
-     *  \sa setName(),Definition()
-     */
-    QCString nameToFile(const char *name,bool allowDot=FALSE);
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.

@@ -27,7 +27,7 @@
 
 ManGenerator::ManGenerator() : OutputGenerator()
 {
-  dir=Config::instance()->getString("MAN_OUTPUT")+"/man3";
+  dir=Config_getString("MAN_OUTPUT")+"/man3";
   firstCol=TRUE;
   paragraph=FALSE;
   col=0;
@@ -56,16 +56,16 @@ void ManGenerator::append(const OutputGenerator *g)
 
 void ManGenerator::init()
 {
-  QDir d(Config::instance()->getString("MAN_OUTPUT"));
-  if (!d.exists() && !d.mkdir(Config::instance()->getString("MAN_OUTPUT")))
+  QDir d(Config_getString("MAN_OUTPUT"));
+  if (!d.exists() && !d.mkdir(Config_getString("MAN_OUTPUT")))
   {
-    err("Could not create output directory %s\n",Config::instance()->getString("MAN_OUTPUT").data());
+    err("Could not create output directory %s\n",Config_getString("MAN_OUTPUT").data());
     exit(1);
   }
-  d.setPath(Config::instance()->getString("MAN_OUTPUT")+"/man3");
-  if (!d.exists() && !d.mkdir(Config::instance()->getString("MAN_OUTPUT")+"/man3"))
+  d.setPath(Config_getString("MAN_OUTPUT")+"/man3");
+  if (!d.exists() && !d.mkdir(Config_getString("MAN_OUTPUT")+"/man3"))
   {
-    err("Could not create output directory %s/man3\n",Config::instance()->getString("MAN_OUTPUT").data());
+    err("Could not create output directory %s/man3\n",Config_getString("MAN_OUTPUT").data());
     exit(1);
   }
 }
@@ -105,9 +105,9 @@ void ManGenerator::startFile(const char *name,const char *,bool)
   {
     fileName=fileName.left(i); 
   }
-  if (convertToQCString(fileName.right(2))!=Config::instance()->getString("MAN_EXTENSION")) 
+  if (convertToQCString(fileName.right(2))!=Config_getString("MAN_EXTENSION")) 
   {
-    fileName+=Config::instance()->getString("MAN_EXTENSION");
+    fileName+=Config_getString("MAN_EXTENSION");
   }
   startPlainFile(fileName);
   firstCol=TRUE;
@@ -121,10 +121,10 @@ void ManGenerator::endFile()
 void ManGenerator::endTitleHead(const char *,const char *name)
 {
   t << ".TH \"" << name << "\" 3 \"" << dateToString(FALSE) << "\" \"";
-  if (Config::instance()->getString("PROJECT_NAME").isEmpty()) 
+  if (Config_getString("PROJECT_NAME").isEmpty()) 
     t << "Doxygen";
   else
-    t << Config::instance()->getString("PROJECT_NAME");
+    t << Config_getString("PROJECT_NAME");
   t << "\" \\\" -*- nroff -*-" << endl;
   t << ".ad l" << endl;
   t << ".nh" << endl;
@@ -248,7 +248,7 @@ void ManGenerator::codify(const char *str)
       switch(c)
       {
         case '\t':  spacesToNextTabStop =
-                          Config::instance()->getInt("TAB_SIZE") - (col%Config::instance()->getInt("TAB_SIZE"));
+                          Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
                     t << spaces.left(spacesToNextTabStop); 
                     col+=spacesToNextTabStop; 
                     break;

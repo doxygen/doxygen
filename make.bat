@@ -28,11 +28,13 @@ type makeconfig                 > doc\Makefile
 type doc\Makefile.win_%MAKE%.in >>doc\Makefile
 
 REM build in release or debug mode 
-type qtools\qtools.pro.in | sed "s/\$extraopts/%MODE%/g" >qtools\qtools.pro
-type src\libdoxygen.pro.in | sed "s/\$extraopts/%MODE%/g" >src\libdoxygen.pro
-type src\doxygen.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxygen.pro
-type src\doxytag.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxytag.pro
-type src\doxysearch.pro.in | sed "s/\$extraopts/%MODE%/g" >src\doxysearch.pro
+REM sed is used to replace $extraopts by either debug or release while copying
+sed "s/\$extraopts/%MODE%/g" qtools\qtools.pro.in >qtools\qtools.pro
+sed "s/\$extraopts/%MODE%/g" src\libdoxygen.pro.in >src\libdoxygen.pro
+sed "s/\$extraopts/%MODE%/g" src\libdoxycfg.pro.in >src\libdoxycfg.pro
+sed "s/\$extraopts/%MODE%/g" src\doxygen.pro.in >src\doxygen.pro
+sed "s/\$extraopts/%MODE%/g" src\doxytag.pro.in >src\doxytag.pro
+sed "s/\$extraopts/%MODE%/g" src\doxysearch.pro.in >src\doxysearch.pro
 
 REM run make
 %MAKE%.exe
