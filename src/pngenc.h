@@ -22,6 +22,7 @@
 
 typedef unsigned char  Byte;
 
+/*! \brief Entry in the color palette of a PNG image */
 struct Color
 {
   Byte red;
@@ -29,14 +30,17 @@ struct Color
   Byte blue;
 };
 
+/*! \brief PNG image encoder
+ *
+ *  This class allows to encode a raw image to a compressed PNG.
+ *  Use write() to save the result to disk.
+ */
 class PngEncoder
 {
   public:
     PngEncoder(Byte *rawBytes,Color *p,int w,int h,Byte d,int t);
    ~PngEncoder();
     void write(const char *fileName);
-   
-  protected:
    
   private:
     // image variables

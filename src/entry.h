@@ -136,9 +136,9 @@ struct Grouping
   {
     GROUPING_LOWEST,
     GROUPING_AUTO_WEAK = 
-      GROUPING_LOWEST,   //!< membership in group was defined via \@weakgroup 
-    GROUPING_AUTO_ADD,    //!< membership in group was defined via \@add[to]group 
-    GROUPING_AUTO_DEF,    //!< membership in group was defined via \@defgroup
+      GROUPING_LOWEST,     //!< membership in group was defined via \@weakgroup 
+    GROUPING_AUTO_ADD,     //!< membership in group was defined via \@add[to]group 
+    GROUPING_AUTO_DEF,     //!< membership in group was defined via \@defgroup
     GROUPING_AUTO_HIGHEST = GROUPING_AUTO_DEF,
     GROUPING_INGROUP,      //!< membership in group was defined by \@ingroup
     GROUPING_HIGHEST = GROUPING_INGROUP
@@ -306,9 +306,9 @@ class Entry
     bool        objc;         //!< Objective-C construct
     enum 
     {
-      GROUPDOC_NORMAL,        //<! defgroup
-      GROUPDOC_ADD,           //<! addgroup
-      GROUPDOC_WEAK           //<! weakgroup
+      GROUPDOC_NORMAL,        //!< defgroup
+      GROUPDOC_ADD,           //!< addgroup
+      GROUPDOC_WEAK           //!< weakgroup
     } groupDocType;           //!< kind of group
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const

@@ -1999,7 +1999,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <SkipString>"//"|"/*"			{
   					  g_code->codify(yytext);
   					}
-<SkipString>\"				{
+<SkipString>@?\"				{
   					  g_code->codify(yytext);
 					  endFontClass();
   					  BEGIN( g_lastStringContext );

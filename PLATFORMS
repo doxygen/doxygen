@@ -1,5 +1,6 @@
 aix-g++        
 aix-xlc       
+beos-g++       
 dgux-g++       
 freebsd-g++   
 gnu-g++        

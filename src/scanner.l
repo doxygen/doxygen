@@ -2154,7 +2154,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                             current->type = current->type.mid(3);
                                           }
 					  current->type=current->type.simplifyWhiteSpace();
-					  current->args=current->args.simplifyWhiteSpace();
+					  current->args=removeRedundantWhiteSpace(current->args);
+					                // was: current->args.simplifyWhiteSpace();
 					  current->name=current->name.stripWhiteSpace();
 					  //if (!current->name.isEmpty() && current->type.left(8)=="typedef ")
 					  //{
@@ -2338,7 +2339,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					        current->program+=','; // add field terminator
 					      }
 					      // add compound definition to the tree
-  					      current->args = current->args.simplifyWhiteSpace();
+					      current->args=removeRedundantWhiteSpace(current->args);
+					                // was: current->args.simplifyWhiteSpace();
   					      current->type = current->type.simplifyWhiteSpace();
   					      current->name = current->name.stripWhiteSpace();
 					      //printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
@@ -3082,7 +3084,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <Function>[;{,]				{ 
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
-  					  current->args=current->args.simplifyWhiteSpace();
+					  current->args=removeRedundantWhiteSpace(current->args);
+					                // was: current->args.simplifyWhiteSpace();
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
@@ -3694,7 +3697,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <Comment>"/*"				{ current->program += yytext ; } 
 <Comment>"//"				{ current->program += yytext ; }
-<Comment>[^\n\*]+			{ current->program += yytext ; }
+<Comment>[^\n\/\*]+			{ current->program += yytext ; }
 <Comment>"*/"				{ current->program += yytext ;
 					  BEGIN( lastContext ) ;
 					}

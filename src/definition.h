@@ -25,8 +25,6 @@
 class FileDef;
 class OutputList;
 class SectionDict;
-//class MemberList;
-//class MemberDict;
 class MemberSDict;
 class MemberDef;
 class GroupDef;
@@ -52,7 +50,7 @@ class Definition
       TypeClass, TypeMember, TypeFile, TypeGroup, 
       TypeNamespace, TypePackage, TypePage
     };
-    /*! Use this for dynamic inspection of the derived class */
+    /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() = 0;
     
     /*! Create a new definition */
@@ -60,51 +58,110 @@ class Definition
         const char *defFileName,int defLine,
         const char *name,const char *b=0,const char *d=0,
         bool isSymbol=TRUE);
+
     /*! Destroys the definition */
     virtual ~Definition();
+
     /*! Returns the name of the definition */
     const QCString& name() const { return m_name; }
+
     /*! Returns the base name of the output file that contains this 
      *  definition. 
      */
     virtual QCString qualifiedName();
+
+    /*! Returns the local name without any scope qualifiers. */
     QCString localName() const;
+
+    /*! Returns the base file name (without extension) of this definition.
+     *  as it is referenced to/written to disk.
+     */
     virtual QCString getOutputFileBase() const = 0;
+
     /*! Returns the name of the source listing of this file. */
     const QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
+
     /*! Returns the detailed description of this definition */
     const QCString& documentation() const { return m_doc; }
+    
     /*! Returns the brief description of this definition */
     const QCString& briefDescription() const { return m_brief; }
+
     /*! Sets a new \a name for the definition */
     void setName(const char *name) { m_name=name; }
+
     /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
+
+    /*! Returns the line number at which the detailed documentation was found. */
     int docLine() const { return m_docLine; }
+
+    /*! Returns the file in which the detailed documentation block was found. 
+     *  This can differ from getDefFileName().
+     */
     QCString docFile() const { return m_docFile; }
+
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
     void setBriefDescription(const char *b,const char *briefFile,int briefLine);
+
+    /*! Returns the line number at which the brief description was found. */
     int briefLine() const { return m_briefLine; }
+
+    /*! Returns the file in which the brief description was found. 
+     *  This can differ from getDefFileName().
+     */
     QCString briefFile() const { return m_briefFile; }
+
+    /*! returns the file in which this definition was found */
+    QCString getDefFileName() const { return m_defFileName; }
+
+    /*! returns the line number at which the definition was found */
+    int getDefLine() const { return m_defLine; }
+
     /*! Returns TRUE iff the definition is documented */
     virtual bool hasDocumentation() const;
+
+    /*! Returns TRUE iff it is possible to link to this item within this
+     *  project. 
+     */
     virtual bool isLinkableInProject() const = 0;
+
+    /*! Returns TRUE iff it is possible to link to this item. This can
+     *  be a link to another project imported via a tag file. 
+     */
     virtual bool isLinkable() const = 0;
+
+    /*! If this definition was imported via a tag file, this function
+     *  returns the tagfile for the external project. This can be
+     *  translated into an external link target via 
+     *  Doxygen::tagDestinationDict
+     */
     virtual QCString getReference() const { return m_ref; }
 
-    // symbols
-    QCString symbolName() const { return m_symbolName; }
-    void setSymbolName(const QCString &name) { m_symbolName=name; }
-
+    /*! Returns TRUE if this definition is imported via a tag file. */
     virtual bool isReference() const { return !m_ref.isEmpty(); }
+
+    /*! Sets the tag file id via which this definition was imported. */
     void setReference(const char *r) { m_ref=r; }
+
+    /*! Returns the name of this definition as it appears in the symbol map.
+     */
+    QCString symbolName() const { return m_symbolName; }
+
+    /*! Sets the name of this definition as it should appear in the symbol map.
+     */
+    void setSymbolName(const QCString &name) { m_symbolName=name; }
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
      */
     void addSectionsToDefinition(QList<SectionInfo> *anchorList);
+
+    /*! Writes the documentation anchors of the definition to 
+     *  the Doxygen::tagFile stream.
+     */
     void writeDocAnchorsToTagFile();
 
     // source references
@@ -120,28 +177,14 @@ class Definition
     void addSourceReferencedBy(MemberDef *d);
     void addSourceReferences(MemberDef *d);
 
-    //{ 
-    //  if (todoId!=0) m_todoId=todoId; 
-    //  if (testId!=0) m_testId=testId; 
-    //  if (bugId!=0)  m_bugId=bugId; 
-    //}
-    //int todoId() const { return m_todoId; }
-    //int testId() const { return m_testId; }
-    //int bugId() const { return m_bugId; }
     void setRefItems(const QList<ListItemInfo> *sli);
     void mergeRefItems(Definition *d);
     const QList<ListItemInfo> *xrefListItems() const;
-
-    /*! returns the file in which this definition was found */
-    QCString getDefFileName() const { return m_defFileName; }
-    /*! returns the line number at which the definition was found */
-    int getDefLine() const { return m_defLine; }
 
     virtual Definition *findInnerCompound(const char *name);
     virtual Definition *getOuterScope() const { return m_outerScope; }
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d) { m_outerScope = d; }
-    virtual void computeReachability();
 
     MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
     MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }
@@ -149,7 +192,6 @@ class Definition
     void makePartOfGroup(GroupDef *gd);
     GroupList *partOfGroups() const { return m_partOfGroups; }
     QCString convertNameToFile(const char *name,bool allowDots=FALSE) const;
-    void addReachableDef(Definition *d,int distance);
 
   protected:
     int      m_startBodyLine;   // line number of the start of the definition
@@ -168,10 +210,6 @@ class Definition
                                // in the future m_name should become m_localName
     /*! List of groups this definition is part of */
     GroupList *m_partOfGroups;
-
-    // reachability of other definitions from this one
-    QDict<ReachableDefinition> m_reachableDefs;
-    bool m_reachabilityComputed;
 
   private: 
     int getXRefListId(const char *listName) const;

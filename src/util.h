@@ -57,7 +57,7 @@ class Definition;
 class TextGeneratorIntf
 {
   public:
-    virtual void writeString(const char *) const = 0;
+    virtual void writeString(const char *,bool) const = 0;
     virtual void writeBreak() const = 0;
     virtual void writeLink(const char *extRef,const char *file,
                       const char *anchor,const char *text
@@ -68,7 +68,7 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorOLImpl(OutputDocInterface &od);
-    void writeString(const char *s) const;
+    void writeString(const char *s,bool keepSpaces) const;
     void writeBreak() const;
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
@@ -85,7 +85,8 @@ void linkifyText(const TextGeneratorIntf &ol,
                  const char *name,
                  const char *text,
                  bool autoBreak=FALSE,
-                 bool external=TRUE
+                 bool external=TRUE,
+                 bool keepSpaces=FALSE
                 );
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
 QCString fileToString(const char *name,bool filter=FALSE);

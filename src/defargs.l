@@ -300,9 +300,9 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					      {
 						a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
 					      }
-					      //printf("a->type=%s a->name=%s a->array=%s\n",a->type.data(),a->name.data());
 					      a->array  += removeRedundantWhiteSpace(g_curArgArray);
 					      a->defval = g_curArgDefValue.copy();
+					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
 					      a->docs   = g_curArgDocs.stripWhiteSpace();
 					      //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
 					      g_argList->append(a);

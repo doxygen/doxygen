@@ -130,6 +130,8 @@
 #define _OS_UNIXWARE7_
 #elif defined(__CYGWIN__)
 #define _OS_CYGWIN_
+#elif defined(__BEOS__)
+#define _OS_BEOS_
 #else
 #error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
 #endif

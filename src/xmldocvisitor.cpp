@@ -445,7 +445,9 @@ void XmlDocVisitor::visitPost(DocSimpleListItem *)
 void XmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
-  m_t << "<sect" << s->level() << " id=\"" << s->id() << "\">" << endl;
+  m_t << "<sect" << s->level() << " id=\"" << s->file();
+  if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
+  m_t << "\">" << endl;
   m_t << "<title>";
   filter(s->title());
   m_t << "</title>" << endl;

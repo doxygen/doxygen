@@ -188,7 +188,11 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       QCString n=a->defval;
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       ol.docify(" = ");
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n); 
+
+      ol.startTypewriter();
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n,FALSE,TRUE,TRUE); 
+      ol.endTypewriter();
+
     }
     a=defArgList->next();
     if (a) 
@@ -618,21 +622,11 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
                       FileDef *,GroupDef *gd)
 {
-  //Definition *d=0;
-  //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
-  //if (d==0) { err("Member %s without definition! Please report this bug!\n",name().data()); return; }
-  //if (group!=0 && gd==0) // forward link to the group
-  //{
-  //  ol.writeObjectLink(group->getReference(),group->getOutputFileBase(),anchor(),name());
-  //}
-  //else // local link
-  //{
-    QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
-    QCString n = name();
-    if (classDef && gd) n.prepend(classDef->name()+sep);
-    else if (nspace && gd) n.prepend(nspace->name()+sep);
-    ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
-  //}
+  QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
+  QCString n = name();
+  if (classDef && gd) n.prepend(classDef->name()+sep);
+  else if (nspace && gd) n.prepend(nspace->name()+sep);
+  ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
 }
 
 /*! If this member has an anonymous class/struct/union as its type, then
@@ -985,7 +979,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!name().isEmpty() && name().at(0)!='@') // hide annonymous stuff 
   {
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
-    if (isLinkable())
+    if (!(name().isEmpty() || name().at(0)=='@') && // name valid
+        (hasDocumentation() || isReference()) && // has docs
+        !(prot==Private && !Config_getBool("EXTRACT_PRIVATE") && mtype!=Friend) && // hidden due to protection
+        !(isStatic() && classDef==0 && !Config_getBool("EXTRACT_STATIC")) // hidden due to static-ness
+       )
     {
       if (annMemb)
       {
@@ -1075,8 +1073,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // write brief description
   if (!briefDescription().isEmpty() && 
-      Config_getBool("BRIEF_MEMBER_DESC") && 
-      !annMemb)
+      Config_getBool("BRIEF_MEMBER_DESC") 
+      /* && !annMemb */
+     )
   {
     ol.startMemberDescription();
     ol.parseDoc(briefFile(),briefLine(),getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE);
@@ -1144,7 +1143,7 @@ bool MemberDef::isDetailedSectionLinkable() const
   // member is part of an anonymous scope that is the type of
   // another member in the list.
   //
-  bool inAnonymousScope = !briefDescription().isEmpty() && annUsed;
+  //bool inAnonymousScope = !briefDescription().isEmpty() && annUsed;
 
   // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
   // is true
@@ -1156,7 +1155,7 @@ bool MemberDef::isDetailedSectionLinkable() const
                                 )
                                );
   
-  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter) || inAnonymousScope);
+  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter) /*|| inAnonymousScope*/);
 }
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup) const          
@@ -2050,7 +2049,10 @@ Specifier MemberDef::virtualness() const
 
 bool MemberDef::isConstructor() const            
 { 
-  return classDef ? name()==classDef->localName() : FALSE; 
+  if (classDef) 
+     return name()==classDef->localName();
+  else
+     return FALSE; 
 }
 
 bool MemberDef::isDestructor() const

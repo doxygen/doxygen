@@ -30,7 +30,7 @@ clean:
 
 language: language.doc
 
-language.doc: maintainers.txt language.tpl translator.pl
-	set DOXYGEN_DOCDIR=. & set VERSION=$(VERSION) & $(PERL) translator.pl
+language.doc: maintainers.txt language.tpl translator.py
+	set DOXYGEN_DOCDIR=. & set VERSION=$(VERSION) & python translator.py
 
 FORCE:

@@ -986,7 +986,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
       ol.endTextLink();
       ol.popGeneratorState();
+
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::RTF);
       ol.newParagraph();
+      ol.popGeneratorState();
     }
   }
   ol.writeSynopsis();
